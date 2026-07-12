@@ -12,11 +12,12 @@ const events = [
 ];
 
 export default function Terminal() {
+  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
   return <main className="dashboard">
     <aside className="dashSide">
       <a href="/" className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b></span></a>
       <nav><a className="active" href="#overview">Overview</a><a href="#levels">Key levels</a><a href="#scenarios">Scenarios</a><a href="#options">Options desk</a><a href="#calendar">Calendar</a></nav>
-      <div className="sidePlan"><span>PREVIEW MODE</span><p>Explore the Terminal before choosing your membership.</p><a href="/#membership">View plans ↗</a></div>
+      <div className="sidePlan"><span>MEMBER SERVICES</span><p>Update your card, view invoices or cancel through Stripe.</p><a href={portalUrl}>Manage subscription ↗</a></div>
     </aside>
     <div className="dashMain" id="overview">
       <header className="dashTop"><div><span className="kicker">NASH AI TERMINAL™</span><h1>Good morning, trader.</h1><p>Monday · Pre-market briefing · Illustrative preview</p></div><div className="sessionBadge"><span>SESSION RISK</span><b>● ELEVATED</b></div></header>

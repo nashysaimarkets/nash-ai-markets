@@ -16,6 +16,7 @@ const included = [
 export default function Home() {
   const proCheckout = process.env.STRIPE_PRO_PAYMENT_LINK || process.env.STRIPE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Pro%20early%20access";
   const eliteCheckout = process.env.STRIPE_ELITE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Elite%20early%20access";
+  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20NASH%20AI%20subscription";
   return (
     <main>
       <header className="nav shell">
@@ -121,7 +122,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><div className="footerLinks"><a href="#brief">The Brief</a><a href="#membership">Membership</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
+      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><div className="footerLinks"><a href="#brief">The Brief</a><a href="#membership">Membership</a><a href={portalUrl}>Manage subscription</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
     </main>
   );
 }
