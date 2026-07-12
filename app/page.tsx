@@ -23,8 +23,9 @@ export default function Home() {
         </a>
         <nav aria-label="Main navigation">
           <a href="#brief">The Brief</a>
+          <a href="#process">How it works</a>
           <a href="#membership">Membership</a>
-          <a href="#about">About</a>
+          <a href="#faq">FAQ</a>
         </nav>
         <a className="navCta" href="#membership">Get the brief <span>↗</span></a>
       </header>
@@ -72,6 +73,17 @@ export default function Home() {
         <div className="featureGrid">{features.map((f) => <article key={f.n}><span>{f.n}</span><div className="iconLine"/><h3>{f.title}</h3><p>{f.copy}</p></article>)}</div>
       </section>
 
+      <section className="process" id="process">
+        <div className="shell">
+          <div className="processIntro"><span className="kicker">FROM NOISE TO PLAN</span><h2>Your morning,<br/><em>mapped in minutes.</em></h2><p>One concise briefing delivered before the US session. Read it with your coffee, mark your chart, and know the conditions that matter.</p></div>
+          <div className="steps">
+            <article><b>06:30–07:00</b><span>01</span><h3>Markets scanned</h3><p>Overnight moves, macro catalysts, volatility and cross-market signals are reviewed.</p></article>
+            <article><b>BEFORE US OPEN</b><span>02</span><h3>Your brief arrives</h3><p>A structured report lands in your inbox with the day’s levels, scenarios and risk rating.</p></article>
+            <article><b>YOUR DECISION</b><span>03</span><h3>Trade—or stand aside</h3><p>Use the plan to prepare your own entries, risk and no-trade conditions. Discipline comes first.</p></article>
+          </div>
+        </div>
+      </section>
+
       <section className="membership" id="membership">
         <div className="shell memberGrid">
           <div><span className="kicker">FOUNDING MEMBERSHIP</span><h2>Start every session<br/><em>with a plan.</em></h2><p className="memberLead">Join the early-access list and be first to receive the NASH AI Daily Brief when membership opens.</p><ul>{included.map((x) => <li key={x}><span>✓</span>{x}</li>)}</ul></div>
@@ -85,7 +97,18 @@ export default function Home() {
 
       <section className="about shell" id="about"><span className="kicker">BUILT FOR REAL TRADERS</span><div><h2>Less noise.<br/>Better decisions.</h2><p>NASH AI Markets turns complex market information into a clear, practical pre-market plan. We don’t promise certainty. We show the levels, the scenarios and the risk — so you can make your own informed decisions.</p></div></section>
 
-      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
+      <section className="faq shell" id="faq">
+        <div className="faqTitle"><span className="kicker">STRAIGHT ANSWERS</span><h2>Before you join.</h2></div>
+        <div className="faqList">
+          <details><summary>Is this financial advice?<span>+</span></summary><p>No. NASH AI Markets provides general educational commentary and market analysis. It does not take account of your personal circumstances or tell you what you should buy or sell.</p></details>
+          <details><summary>When will I receive the brief?<span>+</span></summary><p>The aim is to deliver each briefing before the main US trading session, giving you time to review the key levels, scheduled events and scenarios.</p></details>
+          <details><summary>Is it suitable for beginners?<span>+</span></summary><p>The clear format is accessible, but futures and options are complex, high-risk products. You should understand the instruments and practise risk management before trading with real money.</p></details>
+          <details><summary>Does NASH AI guarantee profitable trades?<span>+</span></summary><p>No—and no credible service can. The brief helps you prepare for multiple outcomes and clearly states uncertainty. Losses are always possible.</p></details>
+          <details><summary>Can I cancel at any time?<span>+</span></summary><p>Yes. The founding membership is planned as a flexible monthly subscription with no long-term contract.</p></details>
+        </div>
+      </section>
+
+      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><div className="footerLinks"><a href="#brief">The Brief</a><a href="#membership">Membership</a><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
     </main>
   );
 }

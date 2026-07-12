@@ -1,0 +1,31 @@
+.process { background:#0a1713; border-top:1px solid #ffffff12; border-bottom:1px solid #ffffff12; padding:110px 0; }
+.processIntro { display:grid; grid-template-columns:.7fr 1.2fr .8fr; gap:45px; align-items:start; }
+.processIntro h2 { font-size:50px; line-height:1; letter-spacing:-2.8px; margin:0; }
+.processIntro h2 em { color:var(--green); font-family:Georgia,serif; font-weight:400; }
+.processIntro p { margin:0; color:#89958f; line-height:1.7; font-size:13px; }
+.steps { display:grid; grid-template-columns:repeat(3,1fr); margin-top:70px; border-top:1px solid #ffffff1c; }
+.steps article { position:relative; padding:35px 35px 10px 0; border-right:1px solid #ffffff1c; }
+.steps article + article { padding-left:35px; }
+.steps b { font:9px "Courier New"; color:var(--green); letter-spacing:1px; }
+.steps span { float:right; color:#30403a; font:38px Georgia; }
+.steps h3 { margin:55px 0 15px; font-size:18px; }
+.steps p { color:#7f8c86; font-size:12px; line-height:1.7; }
+.faq { padding:110px 0; display:grid; grid-template-columns:.7fr 1.3fr; gap:70px; border-top:1px solid #ffffff12; }
+.faqTitle h2 { font:46px Georgia; margin:20px 0; }
+.faqList details { border-top:1px solid #ffffff20; padding:22px 0; }
+.faqList details:last-child { border-bottom:1px solid #ffffff20; }
+.faqList summary { list-style:none; cursor:pointer; font-size:15px; display:flex; justify-content:space-between; }
+.faqList summary::-webkit-details-marker { display:none; }
+.faqList summary span { color:var(--green); font-size:20px; transition:transform .2s ease; }
+.faqList details[open] summary span { transform:rotate(45deg); }
+.faqList p { color:#88948e; font-size:13px; line-height:1.7; max-width:650px; padding-right:35px; }
+.footerLinks { display:flex; gap:28px; align-items:center; }
+.footerLinks a { text-decoration:none; }
+@media(max-width:800px) {
+  .processIntro,.faq { grid-template-columns:1fr; }
+  .steps { grid-template-columns:1fr; }
+  .steps article,.steps article + article { padding:30px 0; border-right:0; border-bottom:1px solid #ffffff1c; }
+  .steps h3 { margin-top:30px; }
+  .footerLinks { display:block; margin-top:25px; }
+  .footerLinks a { display:block; margin:12px 0; }
+}
