@@ -1,0 +1,91 @@
+const features = [
+  { n: "01", title: "The overnight picture", copy: "Asia, Europe and US futures condensed into the moves that matter before the bell." },
+  { n: "02", title: "Levels with context", copy: "Key support, resistance and expected move — plus what would invalidate each scenario." },
+  { n: "03", title: "A plan, not a prediction", copy: "Bull, bear and no-trade cases written for practical futures and options decisions." },
+];
+
+const included = [
+  "Overnight futures & global market moves",
+  "Treasury yields, VIX and US dollar check",
+  "Today’s economic calendar and catalysts",
+  "Bullish, bearish and no-trade scenarios",
+  "Key levels and expected move",
+  "Clear daily risk rating",
+];
+
+export default function Home() {
+  return (
+    <main>
+      <header className="nav shell">
+        <a href="#top" className="brand" aria-label="NASH AI Markets home">
+          <span className="mark"><i /></span>
+          <span>NASH <b>AI</b> MARKETS</span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href="#brief">The Brief</a>
+          <a href="#membership">Membership</a>
+          <a href="#about">About</a>
+        </nav>
+        <a className="navCta" href="#membership">Get the brief <span>↗</span></a>
+      </header>
+
+      <section className="hero shell" id="top">
+        <div className="heroCopy">
+          <div className="eyebrow"><span /> S&amp;P 500 PRE-MARKET INTELLIGENCE</div>
+          <h1>See the market.<br/><em>Plan the trade.</em></h1>
+          <p className="lead">A focused daily S&amp;P 500 futures briefing that cuts through the noise — with key levels, catalysts, scenarios and risk clearly mapped before the US session.</p>
+          <div className="heroActions">
+            <a className="primary" href="#membership">Join NASH AI <span>↗</span></a>
+            <a className="textLink" href="#brief">See what’s inside <span>↓</span></a>
+          </div>
+          <div className="trust"><span>✓</span> Clear uncertainty &nbsp; <span>✓</span> No hype &nbsp; <span>✓</span> Cancel anytime</div>
+        </div>
+
+        <div className="terminalWrap" aria-label="Example daily market briefing">
+          <div className="glow" />
+          <div className="terminal">
+            <div className="termTop"><div><i/><i/><i/></div><span>NASH AI / DAILY BRIEF</span><b>LIVE</b></div>
+            <div className="termDate"><span>MONDAY / PRE-MARKET</span><strong>07:00 <small>UK</small></strong></div>
+            <div className="riskRow"><span>SESSION RISK</span><b>● ELEVATED</b></div>
+            <div className="metricGrid">
+              <div><small>ES FUTURES</small><strong>6,318.25</strong><em className="up">+0.34%</em></div>
+              <div><small>VIX</small><strong>16.42</strong><em className="down">−1.08%</em></div>
+              <div><small>10Y YIELD</small><strong>4.31%</strong><em className="up">+3 bps</em></div>
+              <div><small>US DOLLAR</small><strong>97.84</strong><em>FLAT</em></div>
+            </div>
+            <div className="levels">
+              <div className="levelsTitle"><span>KEY LEVELS</span><small>ES FUTURES</small></div>
+              <div className="level"><span>R2</span><b>6,350</b><i/><em>Momentum breakout</em></div>
+              <div className="level active"><span>R1</span><b>6,332</b><i/><em>First resistance</em></div>
+              <div className="level"><span>PV</span><b>6,310</b><i/><em>Daily pivot</em></div>
+              <div className="level"><span>S1</span><b>6,288</b><i/><em>First support</em></div>
+            </div>
+            <div className="bias"><span>TODAY’S BIAS</span><b>NEUTRAL → BULLISH</b><p>Above 6,310, buyers retain control. Acceptance below the pivot shifts focus to 6,288.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <div className="ticker"><div>FUTURES <b>•</b> OPTIONS <b>•</b> LEVELS <b>•</b> VOLATILITY <b>•</b> MACRO <b>•</b> RISK FIRST <b>•</b> FUTURES <b>•</b> OPTIONS <b>•</b> LEVELS</div></div>
+
+      <section className="section shell" id="brief">
+        <div className="sectionHead"><div><span className="kicker">YOUR DAILY EDGE</span><h2>Everything that matters.<br/><em>Nothing that doesn’t.</em></h2></div><p>Built for traders who want a structured view before the market opens — without spending hours piecing it together.</p></div>
+        <div className="featureGrid">{features.map((f) => <article key={f.n}><span>{f.n}</span><div className="iconLine"/><h3>{f.title}</h3><p>{f.copy}</p></article>)}</div>
+      </section>
+
+      <section className="membership" id="membership">
+        <div className="shell memberGrid">
+          <div><span className="kicker">FOUNDING MEMBERSHIP</span><h2>Start every session<br/><em>with a plan.</em></h2><p className="memberLead">Join the early-access list and be first to receive the NASH AI Daily Brief when membership opens.</p><ul>{included.map((x) => <li key={x}><span>✓</span>{x}</li>)}</ul></div>
+          <div className="priceCard">
+            <div className="tag">EARLY ACCESS</div><p>NASH AI DAILY BRIEF</p><div className="price"><span>£</span><strong>19</strong><small>/ month</small></div><p className="priceNote">Founding member rate. Cancel anytime.</p>
+            <a className="primary full" href="mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Early%20Access">Request early access <span>↗</span></a>
+            <small className="secure">No payment taken today</small>
+          </div>
+        </div>
+      </section>
+
+      <section className="about shell" id="about"><span className="kicker">BUILT FOR REAL TRADERS</span><div><h2>Less noise.<br/>Better decisions.</h2><p>NASH AI Markets turns complex market information into a clear, practical pre-market plan. We don’t promise certainty. We show the levels, the scenarios and the risk — so you can make your own informed decisions.</p></div></section>
+
+      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
+    </main>
+  );
+}
