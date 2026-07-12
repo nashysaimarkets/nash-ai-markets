@@ -27,6 +27,7 @@ export default function Home() {
           <a href="#brief">The Brief</a>
           <a href="#process">How it works</a>
           <a href="#membership">Membership</a>
+          <a href="/terminal">Terminal</a>
           <a href="#faq">FAQ</a>
         </nav>
         <a className="navCta" href="#membership">Get the brief <span>↗</span></a>
@@ -40,6 +41,7 @@ export default function Home() {
           <div className="heroActions">
             <a className="primary" href="#membership">Join NASH AI <span>↗</span></a>
             <a className="textLink" href="#brief">See what’s inside <span>↓</span></a>
+            <a className="textLink" href="/terminal">Preview terminal <span>↗</span></a>
           </div>
           <div className="trust"><span>✓</span> Clear uncertainty &nbsp; <span>✓</span> No hype &nbsp; <span>✓</span> Cancel anytime</div>
         </div>
