@@ -47,6 +47,17 @@
 .legal h2 { font-size:20px; margin:36px 0 10px; }
 .legal p { color:#9aa6a1; font-size:14px; line-height:1.8; }
 .legal a { color:var(--green); }
+.outcome { min-height:100vh; display:grid; place-items:center; padding:40px 24px; background:radial-gradient(circle at 50% 20%,#123126 0,#07110f 48%); }
+.outcomeCard { width:min(640px,100%); text-align:center; border:1px solid #38f28e44; background:#091511; padding:55px; box-shadow:0 30px 80px #0008; }
+.outcomeMark { display:grid; place-items:center; margin:0 auto 28px; width:52px; height:52px; border-radius:50%; border:1px solid var(--green); color:var(--green); font-size:23px; }
+.outcomeMark.muted { color:#88948e; border-color:#ffffff38; }
+.outcome h1 { font-size:50px; line-height:1; letter-spacing:-2.5px; margin:22px 0; }
+.outcome h1 em { color:var(--green); font:400 1em Georgia; }
+.outcomeCard > p:not(.kicker) { color:#9aa6a1; font-size:14px; line-height:1.8; }
+.nextBox { text-align:left; border-top:1px solid #ffffff1b; border-bottom:1px solid #ffffff1b; margin:32px 0; padding:25px 0; }
+.nextBox b { color:var(--green); font:9px "Courier New"; letter-spacing:1.5px; }
+.nextBox ol { padding-left:20px; color:#9aa6a1; font-size:12px; line-height:2; }
+.nextBox strong { color:#dfe5e2; }.outcomeCard > small { display:block; color:#6f7c76; margin-top:22px; }.outcomeCard > small a { color:var(--green); }
 @media(max-width:800px) {
   .processIntro,.faq,.sampleHead { grid-template-columns:1fr; }
   .steps { grid-template-columns:1fr; }
@@ -58,4 +69,5 @@
   .scenarioGrid article { border-right:0; border-bottom:1px solid #ffffff1c; }
   .scenarioGrid article:last-child { border-bottom:0; }
   .legal h1 { font-size:42px; }
+  .outcomeCard { padding:38px 24px; }.outcome h1 { font-size:39px; }
 }

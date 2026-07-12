@@ -14,6 +14,7 @@ const included = [
 ];
 
 export default function Home() {
+  const checkoutUrl = process.env.STRIPE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Founding%20Membership";
   return (
     <main>
       <header className="nav shell">
@@ -99,8 +100,8 @@ export default function Home() {
           <div><span className="kicker">FOUNDING MEMBERSHIP</span><h2>Start every session<br/><em>with a plan.</em></h2><p className="memberLead">Join the early-access list and be first to receive the NASH AI Daily Brief when membership opens.</p><ul>{included.map((x) => <li key={x}><span>✓</span>{x}</li>)}</ul></div>
           <div className="priceCard">
             <div className="tag">EARLY ACCESS</div><p>NASH AI DAILY BRIEF</p><div className="price"><span>£</span><strong>19</strong><small>/ month</small></div><p className="priceNote">Founding member rate. Cancel anytime.</p>
-            <a className="primary full" href="mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Early%20Access">Request early access <span>↗</span></a>
-            <small className="secure">No payment taken today</small>
+            <a className="primary full" href={checkoutUrl}>Become a founding member <span>↗</span></a>
+            <small className="secure">Secure checkout · Cancel anytime</small>
           </div>
         </div>
       </section>
