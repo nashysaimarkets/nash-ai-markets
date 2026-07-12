@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 
-export default function LoginForm() {
+export default function LoginForm({ supabaseUrl, supabaseKey }: { supabaseUrl: string; supabaseKey: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -11,7 +11,7 @@ export default function LoginForm() {
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setMessage("");
-    const supabase = createClient();
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setMessage("We couldn't sign you in. Check your membership email and password, or contact support.");
     else window.location.assign("/terminal");
