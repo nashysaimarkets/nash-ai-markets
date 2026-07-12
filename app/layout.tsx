@@ -13,8 +13,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Starter Project",
-  description: "A clean starting point for building your site.",
+  title: {
+    default: "NASH AI Markets | S&P 500 Pre-Market Intelligence",
+    template: "%s | NASH AI Markets",
+  },
+  description: "A focused daily S&P 500 futures briefing with key levels, market catalysts, bullish and bearish scenarios, and a clear risk rating.",
+  keywords: ["S&P 500 futures", "pre-market brief", "market analysis", "futures trading", "options trading"],
+  openGraph: {
+    title: "NASH AI Markets — See the market. Plan the trade.",
+    description: "Daily S&P 500 pre-market intelligence, built around scenarios and risk.",
+    type: "website",
+  },
   other: {
     "codex-preview": "development",
   },
@@ -30,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en-GB">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

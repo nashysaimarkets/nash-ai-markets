@@ -73,6 +73,16 @@ export default function Home() {
         <div className="featureGrid">{features.map((f) => <article key={f.n}><span>{f.n}</span><div className="iconLine"/><h3>{f.title}</h3><p>{f.copy}</p></article>)}</div>
       </section>
 
+      <section className="sample shell" id="sample">
+        <div className="sampleHead"><span className="kicker">INSIDE THE DAILY BRIEF</span><h2>Three scenarios.<br/><em>One disciplined plan.</em></h2><p>A representative example of how each session is framed. Levels shown are illustrative—not live market data.</p></div>
+        <div className="scenarioGrid">
+          <article className="bull"><div><span>01</span><b>BULL CASE</b></div><h3>Acceptance above resistance</h3><p>Buyers hold the daily pivot and establish value above first resistance. Momentum improves if breadth confirms.</p><ul><li>Trigger: sustained trade above R1</li><li>Invalidation: rejection back below pivot</li><li>Risk: chasing an opening spike</li></ul></article>
+          <article className="bear"><div><span>02</span><b>BEAR CASE</b></div><h3>Failed breakout and reversal</h3><p>Price rejects resistance, loses the pivot and sellers gain control toward first support.</p><ul><li>Trigger: pivot loss with confirmation</li><li>Invalidation: reclaim and hold above R1</li><li>Risk: shorting directly into support</li></ul></article>
+          <article className="neutral"><div><span>03</span><b>NO-TRADE CASE</b></div><h3>Range without confirmation</h3><p>Price remains trapped between key levels while volatility and volume offer no clear advantage.</p><ul><li>Condition: repeated pivot whipsaws</li><li>Response: reduce size or stand aside</li><li>Priority: protect mental capital</li></ul></article>
+        </div>
+        <p className="sampleNote">ILLUSTRATIVE FORMAT ONLY · NOT A CURRENT SIGNAL OR RECOMMENDATION</p>
+      </section>
+
       <section className="process" id="process">
         <div className="shell">
           <div className="processIntro"><span className="kicker">FROM NOISE TO PLAN</span><h2>Your morning,<br/><em>mapped in minutes.</em></h2><p>One concise briefing delivered before the US session. Read it with your coffee, mark your chart, and know the conditions that matter.</p></div>
@@ -108,7 +118,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><div className="footerLinks"><a href="#brief">The Brief</a><a href="#membership">Membership</a><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
+      <footer><div className="shell footerTop"><div className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></div><div className="footerLinks"><a href="#brief">The Brief</a><a href="#membership">Membership</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a></div></div><div className="shell disclaimer">Trading futures and options involves substantial risk and is not suitable for everyone. NASH AI Markets provides educational market commentary only and does not provide personal financial advice, investment recommendations or guaranteed outcomes. Past performance is not indicative of future results.<span>© 2026 NASH AI Markets</span></div></footer>
     </main>
   );
 }
