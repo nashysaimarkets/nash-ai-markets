@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { createClient } from "../../utils/supabase/server";
 
 export const metadata: Metadata = {
   title: "NASH AI Terminal™",
@@ -11,13 +13,16 @@ const events = [
   ["19:00 UK", "Federal Reserve speaker", "MED"],
 ];
 
-export default function Terminal() {
+export default async function Terminal() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
   const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
   return <main className="dashboard">
     <aside className="dashSide">
       <a href="/" className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b></span></a>
       <nav><a className="active" href="#overview">Overview</a><a href="#levels">Key levels</a><a href="#scenarios">Scenarios</a><a href="#options">Options desk</a><a href="#calendar">Calendar</a></nav>
-      <div className="sidePlan"><span>MEMBER SERVICES</span><p>Update your card, view invoices or cancel through Stripe.</p><a href={portalUrl}>Manage subscription ↗</a></div>
+      <div className="sidePlan"><span>MEMBER SERVICES</span><p>{user.email}<br/>Update your card, invoices or cancellation through Stripe.</p><a href={portalUrl}>Manage subscription ↗</a><a href="/auth/signout">Sign out ↗</a></div>
     </aside>
     <div className="dashMain" id="overview">
       <header className="dashTop"><div><span className="kicker">NASH AI TERMINAL™</span><h1>Good morning, trader.</h1><p>Monday · Pre-market briefing · Illustrative preview</p></div><div className="sessionBadge"><span>SESSION RISK</span><b>● ELEVATED</b></div></header>

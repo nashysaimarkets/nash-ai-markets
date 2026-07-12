@@ -29,6 +29,7 @@ export default function Home() {
           <a href="#process">How it works</a>
           <a href="#membership">Membership</a>
           <a href="/terminal">Terminal</a>
+          <a href="/login">Member login</a>
           <a href="#faq">FAQ</a>
         </nav>
         <a className="navCta" href="#membership">Get the brief <span>↗</span></a>
