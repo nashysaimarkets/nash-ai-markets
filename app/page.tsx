@@ -14,7 +14,8 @@ const included = [
 ];
 
 export default function Home() {
-  const checkoutUrl = process.env.STRIPE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Founding%20Membership";
+  const proCheckout = process.env.STRIPE_PRO_PAYMENT_LINK || process.env.STRIPE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Pro%20early%20access";
+  const eliteCheckout = process.env.STRIPE_ELITE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Elite%20early%20access";
   return (
     <main>
       <header className="nav shell">
@@ -96,14 +97,13 @@ export default function Home() {
       </section>
 
       <section className="membership" id="membership">
-        <div className="shell memberGrid">
-          <div><span className="kicker">FOUNDING MEMBERSHIP</span><h2>Start every session<br/><em>with a plan.</em></h2><p className="memberLead">Join the early-access list and be first to receive the NASH AI Daily Brief when membership opens.</p><ul>{included.map((x) => <li key={x}><span>✓</span>{x}</li>)}</ul></div>
-          <div className="priceCard">
-            <div className="tag">EARLY ACCESS</div><p>NASH AI DAILY BRIEF</p><div className="price"><span>£</span><strong>19</strong><small>/ month</small></div><p className="priceNote">Founding member rate. Cancel anytime.</p>
-            <a className="primary full" href={checkoutUrl}>Become a founding member <span>↗</span></a>
-            <small className="secure">Secure checkout · Cancel anytime</small>
-          </div>
+        <div className="shell pricingIntro"><span className="kicker">CHOOSE YOUR EDGE</span><h2>Start every session<br/><em>with a plan.</em></h2><p className="memberLead">Start free, or unlock the full daily intelligence built for active futures and options traders. Upgrade, downgrade or cancel anytime.</p></div>
+        <div className="shell pricingGrid">
+          <article className="tierCard"><p>FREE</p><div className="tierPrice"><span>£</span><strong>0</strong><small>/ month</small></div><p className="tierCopy">A clear first look at the NASH AI approach.</p><ul><li><span>✓</span>Weekly market outlook</li><li><span>✓</span>Selected key levels</li><li><span>✓</span>Market education updates</li></ul><a className="tierButton" href="mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Free%20access">Start free <span>↗</span></a></article>
+          <article className="tierCard featured"><div className="tag">MOST POPULAR</div><p>PRO</p><div className="tierPrice"><span>£</span><strong>16.99</strong><small>/ month</small></div><p className="tierCopy">The complete pre-market plan, every trading day.</p><ul>{included.map((x) => <li key={x}><span>✓</span>{x}</li>)}</ul><a className="primary full" href={proCheckout}>Choose Pro <span>↗</span></a></article>
+          <article className="tierCard"><p>ELITE</p><div className="tierPrice"><span>£</span><strong>39.99</strong><small>/ month</small></div><p className="tierCopy">Everything in Pro, with deeper options-focused intelligence.</p><ul><li><span>✓</span>Everything included in Pro</li><li><span>✓</span>Daily options setup</li><li><span>✓</span>Expanded volatility context</li><li><span>✓</span>Priority product access</li></ul><a className="tierButton" href={eliteCheckout}>Choose Elite <span>↗</span></a></article>
         </div>
+        <p className="shell pricingSafety">EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL ANYTIME</p>
       </section>
 
       <section className="about shell" id="about"><span className="kicker">BUILT FOR REAL TRADERS</span><div><h2>Less noise.<br/>Better decisions.</h2><p>NASH AI Markets turns complex market information into a clear, practical pre-market plan. We don’t promise certainty. We show the levels, the scenarios and the risk — so you can make your own informed decisions.</p></div></section>

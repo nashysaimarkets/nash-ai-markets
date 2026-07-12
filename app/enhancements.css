@@ -71,3 +71,24 @@
   .legal h1 { font-size:42px; }
   .outcomeCard { padding:38px 24px; }.outcome h1 { font-size:39px; }
 }
+
+.pricingIntro { display:grid; grid-template-columns:.45fr 1fr .7fr; gap:55px; align-items:start; }
+.pricingIntro h2,.pricingIntro p { margin-top:0; }
+.pricingGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:65px; align-items:stretch; }
+.tierCard { position:relative; background:#e7e5dd; border:1px solid #10201920; padding:36px 30px; display:flex; flex-direction:column; }
+.tierCard.featured { background:#08130f; color:white; box-shadow:10px 10px 0 #38f28e; transform:translateY(-8px); }
+.tierCard .tag { position:absolute; top:0; right:0; }
+.tierCard>p:first-of-type { font-size:10px; letter-spacing:2px; font-weight:bold; margin:0 0 28px; }
+.tierPrice { display:flex; align-items:start; min-height:64px; }
+.tierPrice span { font-size:18px; margin:5px 3px 0 0; }
+.tierPrice strong { font-size:48px; line-height:.9; letter-spacing:-2px; }
+.tierPrice small { align-self:end; color:#68736e; margin:0 0 6px 7px; }
+.tierCopy { color:#68736e; font-size:12px; line-height:1.6; min-height:40px; }
+.featured .tierCopy { color:#9eaaa5; }
+.tierCard ul { columns:1; padding:22px 0 12px; border-top:1px solid #10201920; flex:1; }
+.featured ul { border-color:#ffffff18; }
+.tierCard li { font-size:11px; margin:0 0 14px; line-height:1.4; }
+.tierButton { display:flex; justify-content:space-between; color:#0a1612; text-decoration:none; border:1px solid #0a161244; padding:17px 18px; font-size:11px; font-weight:bold; letter-spacing:.8px; }
+.tierButton:hover { border-color:#0a1612; }
+.pricingSafety { text-align:center; color:#77827d; font:8px "Courier New"; letter-spacing:1.3px; margin-top:38px; }
+@media(max-width:800px) { .pricingIntro { display:block; } .pricingIntro h2,.pricingIntro p { margin-top:30px; } .pricingGrid { grid-template-columns:1fr; } .tierCard.featured { transform:none; box-shadow:7px 7px 0 #38f28e; } }
