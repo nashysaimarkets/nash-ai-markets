@@ -17,12 +17,19 @@ export default async function Terminal() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const { data: membership } = await supabase
+    .from("memberships")
+    .select("plan,status,current_period_end")
+    .eq("email", user.email?.toLowerCase() ?? "")
+    .in("status", ["active", "trialing"])
+    .maybeSingle();
+  if (!membership) redirect("/membership-required");
   const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
   return <main className="dashboard">
     <aside className="dashSide">
       <a href="/" className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b></span></a>
       <nav><a className="active" href="#overview">Overview</a><a href="#levels">Key levels</a><a href="#scenarios">Scenarios</a><a href="#options">Options desk</a><a href="#calendar">Calendar</a></nav>
-      <div className="sidePlan"><span>MEMBER SERVICES</span><p>{user.email}<br/>Update your card, invoices or cancellation through Stripe.</p><a href={portalUrl}>Manage subscription ↗</a><a href="/auth/signout">Sign out ↗</a></div>
+      <div className="sidePlan"><span>{membership.plan.toUpperCase()} MEMBER</span><p>{user.email}<br/>Update your card, invoices or cancellation through Stripe.</p><a href={portalUrl}>Manage subscription ↗</a><a href="/auth/signout">Sign out ↗</a></div>
     </aside>
     <div className="dashMain" id="overview">
       <header className="dashTop"><div><span className="kicker">NASH AI TERMINAL™</span><h1>Good morning, trader.</h1><p>Monday · Pre-market briefing · Illustrative preview</p></div><div className="sessionBadge"><span>SESSION RISK</span><b>● ELEVATED</b></div></header>
