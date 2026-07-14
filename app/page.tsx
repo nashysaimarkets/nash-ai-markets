@@ -13,7 +13,7 @@ const included = [
   "Clear daily risk rating",
 ];
 
-export default function process.env.STRIPE_PAYMENT_LINK ||
+export default function Home() {
   const proCheckout = "https://buy.stripe.com/28E3co7035NO81VgPBdMI00";
   const eliteCheckout = "https://buy.stripe.com/fZu8wI4RV2BC95ZczldMI01";
     <main>
