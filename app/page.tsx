@@ -14,7 +14,7 @@ const included = [
 ];
 
 export default function process.env.STRIPE_PAYMENT_LINK ||
-  const eliteCheckout = process.env.STRIPE_ELITE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Elite%20early%20access";
+  const proCheckout = "https://buy.stripe.com/28E3co7035NO81VgPBdMI00";
   const eliteCheckout = "https://buy.stripe.com/fZu8wI4RV2BC95ZczldMI01";
     <main>
       <header className="nav shell">
