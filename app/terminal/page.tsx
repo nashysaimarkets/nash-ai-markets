@@ -41,9 +41,7 @@ const keyLevels = [
   ["S2", "6,264", "Overnight range low", "support"],
 ] as const;
 
-export default async function Terminal() {
-  const supabase = await createClient();
-  const {
+
   export default async function Terminal() {
   const supabase = await createClient();
 
