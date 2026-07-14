@@ -13,11 +13,9 @@ const included = [
   "Clear daily risk rating",
 ];
 
-export default function Home() {
-  const proCheckout = process.env.STRIPE_PRO_PAYMENT_LINK || process.env.STRIPE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Pro%20early%20access";
+export default function process.env.STRIPE_PAYMENT_LINK ||
   const eliteCheckout = process.env.STRIPE_ELITE_PAYMENT_LINK || "mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Elite%20early%20access";
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20NASH%20AI%20subscription";
-  return (
+  const eliteCheckout = "https://buy.stripe.com/fZu8wI4RV2BC95ZczldMI01";
     <main>
       <header className="nav shell">
         <a href="#top" className="brand" aria-label="NASH AI Markets home">
