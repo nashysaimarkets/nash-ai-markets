@@ -1,45 +1,24 @@
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
+import { runBullseyeEngine } from "../lib/bullseye-engine";
+import { formatUkTimestamp, getMarketSnapshot } from "../lib/market-data";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Mission Control | NASH AI Markets",
-  description: "The NASH AI Markets Mission Control pre-market intelligence workspace.",
+  description: "The NASH AI Markets Mission Control intelligence workspace.",
 };
 
-type ScoreComponent = { label: string; score: number };
-type MarketEvent = { time: string; name: string; risk: "HIGH" | "MED"; countdown: string };
-
-const events: MarketEvent[] = [
-  { time: "13:30 UK", name: "US inflation data", risk: "HIGH", countdown: "01:24:18" },
-  { time: "14:30 UK", name: "US cash session opens", risk: "HIGH", countdown: "02:24:18" },
-  { time: "19:00 UK", name: "Federal Reserve speaker", risk: "MED", countdown: "06:54:18" },
-];
-
-const weatherDetails = [
-  ["PRESSURE", "Bullish and rising"],
-  ["WIND", "Moderate buying"],
-  ["VISIBILITY", "Good"],
-  ["STORM RISK", "Elevated after 13:30"],
-] as const;
-
-const scoreComponents: ScoreComponent[] = [
-  { label: "Trend", score: 88 },
-  { label: "Momentum", score: 82 },
-  { label: "Liquidity", score: 76 },
-  { label: "Breadth", score: 79 },
-  { label: "Volatility", score: 68 },
-  { label: "Macro", score: 61 },
-];
-
-const keyLevels = [
-  ["R2", "6,350", "Momentum breakout", "resistance"],
-  ["R1", "6,332", "First resistance", "resistance"],
-  ["PV", "6,310", "Daily pivot", "pivot"],
-  ["S1", "6,288", "First support", "support"],
-  ["S2", "6,264", "Overnight range low", "support"],
-] as const;
+function statusMessage(status: string): string {
+  if (status === "LIVE") return "VERIFIED LIVE DATA";
+  if (status === "DELAYED") return "VERIFIED DELAYED DATA";
+  if (status === "UNAVAILABLE") return "LIVE FEED UNAVAILABLE — SAFE FALLBACK ACTIVE";
+  return "PREVIEW DATA — FORMAT DEMONSTRATION ONLY";
+}
 
 export default async function Terminal() {
   const supabase = await createClient();
@@ -47,13 +26,8 @@ export default async function Terminal() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  if (!user.email) {
-    redirect("/?membership=required#membership");
-  }
+  if (!user) redirect("/login");
+  if (!user.email) redirect("/?membership=required#membership");
 
   const { data: membership } = await supabase
     .from("memberships")
@@ -63,9 +37,12 @@ export default async function Terminal() {
     .in("plan", ["pro", "elite"])
     .maybeSingle();
 
-  if (!membership) {
-    redirect("/?membership=required#membership");
-  }
+  if (!membership) redirect("/?membership=required#membership");
+
+  const snapshot = await getMarketSnapshot();
+  const bullseye = runBullseyeEngine(snapshot);
+  const asOf = formatUkTimestamp(snapshot.asOf);
+  const isVerified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
 
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
@@ -81,15 +58,16 @@ export default async function Terminal() {
 
         <nav aria-label="Member navigation">
           <a className="active" href="#overview">Mission Control</a>
-          <a href="#brief">Morning Brief</a>
-          <a href="#levels">Key Levels</a>
-          <a href="#scenarios">Scenarios</a>
+          <a href="#brief">Mission Brief</a>
+          <a href="#levels">Market Map</a>
+          <a href="#scenarios">Probability Engine</a>
           <a href="#calendar">Economic Clock</a>
         </nav>
 
         <div className="mcMemberCard">
           <span>MEMBER SERVICES</span>
           <p>{user.email}</p>
+          <p>{membership.plan.toUpperCase()} MEMBER</p>
           <a href={portalUrl}>Manage subscription ↗</a>
           <a href="/auth/signout">Sign out ↗</a>
         </div>
@@ -98,44 +76,62 @@ export default async function Terminal() {
       <section className="mcMain" id="overview">
         <header className="mcHeader">
           <div>
-            <span className="kicker">MISSION CONTROL™</span>
+            <span className="kicker">MISSION CONTROL™ V2</span>
             <h1>Good morning, trader.</h1>
-            <p>Pre-market intelligence · Illustrative preview</p>
+            <p>{snapshot.source} · As of {asOf} UK</p>
           </div>
-          <div className="mcStatus">
-            <span>SESSION STATUS</span>
-            <strong><i /> PREPARATION WINDOW</strong>
+          <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}>
+            <span>DATA STATUS</span>
+            <strong><i /> {snapshot.status}</strong>
           </div>
         </header>
 
         <div className="mcPreviewNotice">
-          PREVIEW DATA — FORMAT DEMONSTRATION ONLY, NOT LIVE MARKET DATA OR A TRADING SIGNAL
+          {statusMessage(snapshot.status)}
+          {!isVerified && " · NOT CURRENT MARKET DATA OR A TRADING SIGNAL"}
         </div>
+
+        <section className="mcKpiStrip" aria-label="Market snapshot">
+          {snapshot.quotes.map((quote) => (
+            <article key={quote.symbol}>
+              <span>{quote.label}</span>
+              <strong>{quote.value}</strong>
+              <b className={quote.direction}>{quote.change}</b>
+            </article>
+          ))}
+        </section>
 
         <section className="mcHeroGrid">
           <article className="mcPanel weatherPanel">
             <div className="mcPanelHead">
-              <div><span>TODAY&apos;S MARKET WEATHER™</span><h2>Mostly sunny</h2></div>
-              <div className="weatherIcon" aria-hidden="true">☀</div>
+              <div>
+                <span>MARKET WEATHER™</span>
+                <h2>{bullseye.weather}</h2>
+              </div>
+              <div className="weatherIcon" aria-hidden="true">
+                {bullseye.weather === "STORMY" ? "⚡" : bullseye.weather === "CLEAR" ? "☀" : "◐"}
+              </div>
             </div>
-            <p className="weatherForecast">
-              Constructive conditions favour trend continuation while the daily pivot holds, with storm risk increasing around scheduled US data.
-            </p>
+            <p className="weatherForecast">{snapshot.summary}</p>
             <div className="weatherRows">
-              {weatherDetails.map(([label, value]) => (
-                <div key={label}><span>{label}</span><strong>{value}</strong></div>
-              ))}
+              <div><span>WORKING BIAS</span><strong>{bullseye.bias}</strong></div>
+              <div><span>SESSION RISK</span><strong>{bullseye.risk}</strong></div>
+              <div><span>CONFIDENCE</span><strong>{bullseye.confidence}%</strong></div>
+              <div><span>DATA STATE</span><strong>{snapshot.status}</strong></div>
             </div>
           </article>
 
           <article className="mcPanel scorePanel">
             <div className="mcPanelHead">
               <div><span>BULLSEYE SCORE™</span><h2>Evidence alignment</h2></div>
-              <strong className="scoreValue">82</strong>
+              <strong className="scoreValue">{bullseye.score}</strong>
             </div>
-            <div className="confidenceLine"><span>DECISION CONFIDENCE</span><b>HIGH · 84%</b></div>
+            <div className="confidenceLine">
+              <span>DECISION CONFIDENCE</span>
+              <b>{bullseye.confidence}%</b>
+            </div>
             <div className="scoreComponents">
-              {scoreComponents.map(({ label, score }) => (
+              {Object.entries(snapshot.evidence).map(([label, score]) => (
                 <div key={label}>
                   <span>{label}</span>
                   <i><em style={{ width: `${score}%` }} /></i>
@@ -147,42 +143,40 @@ export default async function Terminal() {
 
           <article className="mcPanel dnaPanel">
             <div className="mcPanelHead">
-              <div><span>MARKET DNA™</span><h2>Breakout watch</h2></div>
-              <small>MODERATE CONVICTION</small>
+              <div><span>MARKET DNA™</span><h2>Current regime</h2></div>
+              <small>{bullseye.risk} RISK</small>
             </div>
             <ul>
-              <li>Constructive overnight structure</li>
-              <li>Healthy but not exceptional participation</li>
-              <li>Event risk may interrupt trend conditions</li>
-              <li>Confirmation required above resistance</li>
+              {bullseye.dna.map((item) => <li key={item}>{item}</li>)}
             </ul>
-            <div className="dnaTag">TRENDING · EVENT-SENSITIVE · LIQUID</div>
+            <div className="dnaTag">{bullseye.dna.join(" · ")}</div>
           </article>
         </section>
 
         <section className="mcPanel missionBrief" id="brief">
           <div className="mcPanelHead">
             <div><span>AI MISSION BRIEF</span><h2>What matters today</h2></div>
-            <small>READ TIME · 45 SEC</small>
+            <small>VERIFY BEFORE ACTING</small>
           </div>
-          <p>
-            Overnight futures remain constructive with buyers maintaining control above yesterday&apos;s value area. Volatility is contained, but scheduled US inflation data creates a clear risk window before the cash open. The base case remains cautiously bullish while price holds above the daily pivot. A sustained loss of first support would reduce confidence and return the lower overnight range to focus.
-          </p>
+          <p>{snapshot.summary}</p>
           <div className="briefActions">
-            <div><span>PREPARE FOR</span><strong>Data-driven volatility</strong></div>
-            <div><span>AVOID</span><strong>Chasing the opening spike</strong></div>
-            <div><span>VIEW CHANGES IF</span><strong>Support fails with rising VIX</strong></div>
+            <div><span>PREPARE FOR</span><strong>{bullseye.risk} session risk</strong></div>
+            <div><span>PRIMARY BIAS</span><strong>{bullseye.bias}</strong></div>
+            <div><span>STAND ASIDE IF</span><strong>Levels repeatedly fail without participation</strong></div>
           </div>
         </section>
 
         <div className="mcTwoColumn">
           <section className="mcPanel" id="levels">
             <div className="mcPanelHead">
-              <div><span>MARKET MAP</span><h2>Key levels</h2></div><small>ES FUTURES</small>
+              <div><span>MARKET MAP</span><h2>Key levels</h2></div>
+              <small>ES FUTURES</small>
             </div>
-            {keyLevels.map(([label, value, note, type]) => (
-              <div className={`mcLevel ${type}`} key={label}>
-                <span>{label}</span><strong>{value}</strong><p>{note}</p>
+            {snapshot.levels.map((level) => (
+              <div className={`mcLevel ${level.type}`} key={level.label}>
+                <span>{level.label}</span>
+                <strong>{level.value}</strong>
+                <p>{level.note}</p>
               </div>
             ))}
           </section>
@@ -192,9 +186,9 @@ export default async function Terminal() {
               <div><span>ECONOMIC CLOCK™</span><h2>Next risk windows</h2></div>
               <small>UK TIME</small>
             </div>
-            {events.map((event) => (
-              <div className="clockEvent" key={event.name}>
-                <div><strong>{event.time}</strong><span>{event.countdown}</span></div>
+            {snapshot.events.map((event) => (
+              <div className="clockEvent" key={`${event.time}-${event.name}`}>
+                <div><strong>{event.time}</strong><span>CHECK CALENDAR</span></div>
                 <p>{event.name}</p>
                 <b className={event.risk === "HIGH" ? "high" : "medium"}>{event.risk}</b>
               </div>
@@ -204,21 +198,40 @@ export default async function Terminal() {
 
         <section className="mcPanel scenariosPanel" id="scenarios">
           <div className="mcPanelHead">
-            <div><span>DECISION FRAMEWORK</span><h2>Session scenarios</h2></div><small>WAIT FOR CONFIRMATION</small>
+            <div><span>PROBABILITY ENGINE™</span><h2>Session scenarios</h2></div>
+            <small>MODELLED · NOT CERTAINTY</small>
+          </div>
+          <div className="probabilityBar" aria-label="Scenario probabilities">
+            <i style={{ width: `${bullseye.bullProbability}%` }} />
+            <b style={{ width: `${bullseye.bearProbability}%` }} />
+            <em style={{ width: `${bullseye.noTradeProbability}%` }} />
           </div>
           <div className="scenarioCards">
-            <article className="bull"><b>BULL CASE · 64%</b><h3>Acceptance above R1</h3><p>Momentum improves above 6,332 with breadth confirmation. Target the next mapped resistance rather than chasing the initial break.</p></article>
-            <article className="bear"><b>BEAR CASE · 24%</b><h3>Daily pivot failure</h3><p>Acceptance below 6,310 shifts focus toward 6,288. Rising volatility would strengthen the bearish scenario.</p></article>
-            <article className="wait"><b>NO-TRADE · 12%</b><h3>Range and whipsaw</h3><p>Repeated pivot crosses without participation favour patience, reduced exposure and waiting for clearer structure.</p></article>
+            <article className="bull">
+              <b>BULL CASE · {bullseye.bullProbability}%</b>
+              <h3>Acceptance above resistance</h3>
+              <p>Momentum improves only after price accepts above mapped resistance with participation.</p>
+            </article>
+            <article className="bear">
+              <b>BEAR CASE · {bullseye.bearProbability}%</b>
+              <h3>Pivot and support failure</h3>
+              <p>A sustained pivot loss with rising volatility shifts attention toward verified support.</p>
+            </article>
+            <article className="wait">
+              <b>NO-TRADE · {bullseye.noTradeProbability}%</b>
+              <h3>Range and whipsaw</h3>
+              <p>Repeated level crosses without confirmation favour patience and reduced exposure.</p>
+            </article>
           </div>
         </section>
 
         <footer className="mcFooter">
-          Educational market commentary only. Futures and options involve substantial risk. Preview values are illustrative and are not current market data.
+          Educational market commentary only. Futures and options involve substantial risk.
+          Model probabilities are decision-support estimates, not predictions. Verify the
+          displayed status, timestamp, source and levels independently.
           <Link href="/">Back to NASH AI Markets</Link>
         </footer>
       </section>
     </main>
   );
 }
-
