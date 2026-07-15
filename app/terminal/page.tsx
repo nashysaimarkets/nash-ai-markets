@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { runBullseyeEngine } from "../lib/bullseye-engine";
-import { formatUkTimestamp, getMarketSnapshot } from "../lib/market-data";
+import { formatSnapshotAge, formatUkTimestamp, getMarketSnapshot } from "../lib/market-data";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +42,7 @@ export default async function Terminal() {
   const snapshot = await getMarketSnapshot();
   const bullseye = runBullseyeEngine(snapshot);
   const asOf = formatUkTimestamp(snapshot.asOf);
+  const snapshotAge = formatSnapshotAge(snapshot.asOf);
   const isVerified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
 
   const portalUrl =
@@ -78,7 +79,7 @@ export default async function Terminal() {
           <div>
             <span className="kicker">MISSION CONTROL™ V2</span>
             <h1>Good morning, trader.</h1>
-            <p>{snapshot.source} · As of {asOf} UK</p>
+            <p>{snapshot.source} · As of {asOf} UK · {snapshotAge}</p>
           </div>
           <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}>
             <span>DATA STATUS</span>
