@@ -114,7 +114,7 @@ export default function Home() {
                 <i />
               </div>
               <span>NASH AI / DAILY BRIEF</span>
-              <b>LIVE</b>
+              <b>PREVIEW</b>
             </div>
 
             <div className="termDate">
