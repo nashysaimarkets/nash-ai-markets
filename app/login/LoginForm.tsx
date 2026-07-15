@@ -11,9 +11,15 @@ export default function LoginForm() {
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setMessage("");
     const supabase = createClient();
+    const redirectOrigin = window.location.hostname === "localhost"
+      ? window.location.origin
+      : "https://www.nashaimarkets.com";
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/terminal` },
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${redirectOrigin}/auth/callback?next=/terminal`,
+      },
     });
     setMessage(error ? error.message : "Check your email for your secure sign-in link.");
     setLoading(false);
@@ -26,3 +32,4 @@ export default function LoginForm() {
     {message && <p className="loginMessage" role="status">{message}</p>}
   </form>;
 }
+
