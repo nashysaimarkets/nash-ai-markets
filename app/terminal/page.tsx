@@ -8,6 +8,7 @@ import { formatMarketGatewayDataAge } from "../lib/live-market-gateway";
 import { formatSnapshotAge, formatUkTimestamp } from "../lib/market-data";
 import { createDashboardViewModel } from "./lib/dashboard-data";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
+import { terminalStatusMessage } from "./lib/terminal-state";
 import { Panel } from "./components/Panel";
 import { MetricChip } from "./components/MetricChip";
 import { DecisionVerdict } from "./components/DecisionVerdict";
@@ -19,13 +20,6 @@ export const metadata: Metadata = {
   title: "Mission Control | NASH AI Markets",
   description: "The NASH AI Markets Mission Control intelligence workspace.",
 };
-
-function statusMessage(status: string): string {
-  if (status === "LIVE") return "VERIFIED LIVE DATA";
-  if (status === "DELAYED") return "VERIFIED DELAYED DATA";
-  if (status === "UNAVAILABLE") return "LIVE FEED UNAVAILABLE — SAFE FALLBACK ACTIVE";
-  return "PREVIEW DATA — FORMAT DEMONSTRATION ONLY";
-}
 
 export default async function Terminal() {
   const supabase = await createClient();
@@ -83,7 +77,10 @@ export default async function Terminal() {
           </div>
         </header>
 
-        <div className="mcPreviewNotice">{statusMessage(snapshot.status)}{!isVerified && " · NOT CURRENT MARKET DATA OR A TRADING SIGNAL"}</div>
+        <div className="mcPreviewNotice" role={!isVerified ? "alert" : undefined}>
+          <span>{terminalStatusMessage(snapshot.status, gatewayStatus.failureCount)}{!isVerified && " · SAFE FALLBACK ACTIVE"}</span>
+          {!isVerified ? <a href="/terminal">Retry verified data ↗</a> : null}
+        </div>
 
         <section className="mcKpiStrip" aria-label="Market snapshot">
           {viewModel.heroMetrics.map((metric) => (

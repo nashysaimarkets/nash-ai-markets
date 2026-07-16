@@ -5,6 +5,7 @@ import { createDashboardViewModel } from "../app/terminal/lib/dashboard-data.ts"
 import { createDataProvenance } from "../app/terminal/lib/provenance.ts";
 import { createTerminalMarketDataProvider, getTerminalMarketData } from "../app/terminal/lib/terminal-market-data-provider.ts";
 import { createCompositeMarketDataProvider, LiveMarketGateway, REQUIRED_MARKET_GATEWAY_COVERAGE } from "../app/lib/live-market-gateway.ts";
+import { panelUnavailableMessage, TERMINAL_SKELETON_PANELS, terminalStatusMessage } from "../app/terminal/lib/terminal-state.ts";
 
 test("builds a terminal dashboard view model from the market snapshot", () => {
   const snapshot = {
@@ -265,6 +266,60 @@ test("marks permitted delayed provider data as degraded without fallback", async
   assert.equal(status.connectionStatus, "degraded");
   assert.equal(status.dataAgeMs, 10 * 60_000);
   assert.equal(status.fallbackActive, false);
+});
+
+test("recovers on retry after a failed provider response", async () => {
+  const now = Date.parse("2026-07-16T12:00:00.000Z");
+  let attempts = 0;
+  const gateway = new LiveMarketGateway({
+    providerName: "Recovering provider",
+    maxRetries: 1,
+    retryDelayMs: 0,
+    logger: () => undefined,
+    provider: { fetchSnapshot: async () => {
+      attempts += 1;
+      if (attempts === 1) throw new Error("temporary timeout");
+      return {
+        status: "LIVE",
+        source: "Recovering provider",
+        asOf: new Date(now - 30_000).toISOString(),
+        quotes: [{ symbol: "ES", label: "ES FUTURES", value: "6,320.00", change: "+0.20%", direction: "up" as const }],
+        levels: [],
+        events: [],
+        bias: "NEUTRAL",
+        risk: "MODERATE" as const,
+        summary: "Recovered provider data",
+        evidence: {},
+      };
+    } },
+  });
+
+  const snapshot = await gateway.fetchSnapshot(now);
+  const status = gateway.getStatus();
+  assert.equal(attempts, 2);
+  assert.equal(snapshot.status, "LIVE");
+  assert.equal(snapshot.quotes[0]?.symbol, "ES");
+  assert.equal(status.connectionStatus, "connected");
+  assert.equal(status.failureCount, 1);
+  assert.equal(status.fallbackActive, false);
+});
+
+test("defines loading placeholders for every terminal market panel", () => {
+  assert.equal(TERMINAL_SKELETON_PANELS.length, 23);
+  assert.equal(new Set(TERMINAL_SKELETON_PANELS.map((panel) => panel.key)).size, 23);
+  assert.deepEqual(new Set(TERMINAL_SKELETON_PANELS.map((panel) => panel.className)), new Set([
+    "panelProvenance", "panelVerdict", "panelEliteTrade", "panelFutures", "panelBrief", "panelBriefing",
+    "panelCalendarCompact", "panelMovers", "panelHeadlines", "panelSentiment", "panelRisk", "panelProbabilities",
+    "panelExpectedMove", "panelBias", "panelOptionsBias", "panelLevels", "panelVix", "panelTreasuries",
+    "panelDollar", "panelCalendar", "panelFearGreed", "panelOptions",
+  ]));
+});
+
+test("provides recovery-safe unavailable messaging", () => {
+  assert.match(terminalStatusMessage("UNAVAILABLE", 2), /2 FAILED ATTEMPTS/);
+  assert.match(terminalStatusMessage("UNAVAILABLE", 2), /NO CURRENT MARKET SIGNALS/);
+  assert.match(panelUnavailableMessage("UNAVAILABLE") ?? "", /recover automatically/);
+  assert.equal(panelUnavailableMessage("LIVE"), null);
 });
 
 test("merges market slice adapters into a composite snapshot", async () => {
