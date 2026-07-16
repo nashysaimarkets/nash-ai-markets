@@ -1,6 +1,6 @@
 import type { BullseyeResult } from "../../lib/bullseye-engine";
 import type { MarketLevel, MarketSnapshot } from "../../lib/market-data";
-import type { DataProvenance } from "../lib/provenance";
+import { createDataProvenance, type DataProvenance } from "../lib/provenance.ts";
 
 export type DashboardMetric = {
   label: string;
@@ -12,6 +12,7 @@ export type DashboardMetric = {
 export type DashboardViewModel = {
   heroMetrics: DashboardMetric[];
   provenance: DataProvenance;
+  analysisProvenance: DataProvenance;
   verdict: {
     overallBias: string;
     confidenceScore: number;
@@ -131,17 +132,26 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
   const profitTarget2 = overallBias === "Bullish" ? "Second resistance" : overallBias === "Bearish" ? "Second support" : "Edge of the range";
   const noTradeWarning = confidenceScore < 55 ? "Confidence is too low for fresh risk. Stand aside until the setup improves." : undefined;
 
-  const provenance: DataProvenance = {
+  const provenance = createDataProvenance({
     source: snapshot.source,
     lastUpdated: snapshot.asOf,
     status: snapshot.status === "LIVE" ? "LIVE" : snapshot.status === "DELAYED" ? "DELAYED" : snapshot.status === "UNAVAILABLE" ? "UNAVAILABLE" : "PLACEHOLDER",
     kind: "fact",
-    badgeLabel: snapshot.status === "LIVE" ? "Live" : snapshot.status === "DELAYED" ? "Delayed" : snapshot.status === "UNAVAILABLE" ? "Unavailable" : "Placeholder",
-  };
+    provider: snapshot.source,
+  });
+
+  const analysisProvenance = createDataProvenance({
+    source: snapshot.source,
+    lastUpdated: snapshot.asOf,
+    status: snapshot.status === "LIVE" || snapshot.status === "DELAYED" ? "VERIFIED" : snapshot.status === "UNAVAILABLE" ? "UNAVAILABLE" : "MODELLED",
+    kind: "analysis",
+    provider: "NASH AI Analysis",
+  });
 
   return {
     heroMetrics,
     provenance,
+    analysisProvenance,
     verdict: {
       overallBias,
       confidenceScore,

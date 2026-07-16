@@ -1,4 +1,4 @@
-import type { DataProvenance } from "../lib/provenance";
+import type { DataProvenance } from "../lib/provenance.ts";
 
 type DataProvenanceBadgeProps = {
   provenance: DataProvenance;

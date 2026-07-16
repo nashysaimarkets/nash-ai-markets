@@ -57,7 +57,9 @@ test("builds a terminal dashboard view model from the market snapshot", () => {
   assert.equal(viewModel.eliteTradeSetup.direction, "Long");
   assert.equal(viewModel.eliteTradeSetup.status, "Waiting");
 
-  const provenance = createDataProvenance({ source: "Demo feed", lastUpdated: "2026-07-16T07:00:00.000Z", status: "PLACEHOLDER", kind: "fact" });
+  const provenance = createDataProvenance({ source: "Demo feed", lastUpdated: "2026-07-16T07:00:00.000Z", status: "PLACEHOLDER", kind: "fact", provider: "Demo Provider" });
   assert.equal(provenance.status, "PLACEHOLDER");
   assert.equal(provenance.source, "Demo feed");
+  assert.equal(provenance.provider, "Demo Provider");
+  assert.equal(provenance.badgeLabel, "Placeholder");
 });

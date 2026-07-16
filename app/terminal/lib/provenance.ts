@@ -1,4 +1,4 @@
-export type DataStatus = "LIVE" | "DELAYED" | "MODELLED" | "PLACEHOLDER" | "UNAVAILABLE";
+export type DataStatus = "LIVE" | "DELAYED" | "VERIFIED" | "MODELLED" | "PLACEHOLDER" | "UNAVAILABLE";
 export type DataKind = "fact" | "analysis";
 
 export type DataProvenance = {
@@ -6,6 +6,7 @@ export type DataProvenance = {
   lastUpdated: string;
   status: DataStatus;
   kind: DataKind;
+  provider: string;
   badgeLabel: string;
 };
 
@@ -14,22 +15,26 @@ export function createDataProvenance(input: {
   lastUpdated: string;
   status: DataStatus;
   kind: DataKind;
+  provider?: string;
 }): DataProvenance {
   const badgeLabel = input.status === "LIVE"
     ? "Live"
     : input.status === "DELAYED"
       ? "Delayed"
-      : input.status === "MODELLED"
-        ? "Modelled"
-        : input.status === "PLACEHOLDER"
-          ? "Placeholder"
-          : "Unavailable";
+      : input.status === "VERIFIED"
+        ? "Verified"
+        : input.status === "MODELLED"
+          ? "Modelled"
+          : input.status === "PLACEHOLDER"
+            ? "Placeholder"
+            : "Unavailable";
 
   return {
     source: input.source,
     lastUpdated: input.lastUpdated,
     status: input.status,
     kind: input.kind,
+    provider: input.provider ?? "NASH AI Markets",
     badgeLabel,
   };
 }

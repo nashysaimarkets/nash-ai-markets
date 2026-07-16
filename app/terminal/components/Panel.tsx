@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DataProvenance } from "../lib/provenance";
+import type { DataProvenance } from "../lib/provenance.ts";
 import { DataProvenanceBlock } from "./DataProvenanceBlock";
 
 type PanelProps = {

@@ -1,4 +1,4 @@
-import type { DataProvenance } from "../lib/provenance";
+import type { DataProvenance } from "../lib/provenance.ts";
 import { DataProvenanceBadge } from "./DataProvenanceBadge";
 
 type DataProvenanceBlockProps = {
@@ -11,6 +11,10 @@ export function DataProvenanceBlock({ provenance }: DataProvenanceBlockProps) {
       <div className="dataProvenanceBlockMeta">
         <span>Source</span>
         <strong>{provenance.source}</strong>
+      </div>
+      <div className="dataProvenanceBlockMeta">
+        <span>Provider</span>
+        <strong>{provenance.provider}</strong>
       </div>
       <div className="dataProvenanceBlockMeta">
         <span>Last updated</span>

@@ -45,18 +45,6 @@ export default async function Terminal() {
   const snapshot = await getMarketSnapshot();
   const bullseye = runBullseyeEngine(snapshot);
   const viewModel = createDashboardViewModel(snapshot, bullseye);
-  const factProvenance = {
-    ...viewModel.provenance,
-    kind: "fact" as const,
-    status: viewModel.provenance.status,
-    badgeLabel: viewModel.provenance.badgeLabel,
-  };
-  const analysisProvenance = {
-    ...viewModel.provenance,
-    kind: "analysis" as const,
-    status: viewModel.provenance.status === "UNAVAILABLE" ? "UNAVAILABLE" as const : "MODELLED" as const,
-    badgeLabel: viewModel.provenance.status === "UNAVAILABLE" ? "Unavailable" : "Modelled",
-  };
   const asOf = formatUkTimestamp(snapshot.asOf);
   const snapshotAge = formatSnapshotAge(snapshot.asOf);
   const isVerified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
@@ -102,10 +90,10 @@ export default async function Terminal() {
         </section>
 
         <section className="terminalDashboardGrid" aria-label="Dashboard sections">
-          <Panel eyebrow="DATA PROVENANCE" title="Dashboard source status" subtitle="Fact vs analysis" className="panelProvenance" id="provenance" provenance={factProvenance}>
+          <Panel eyebrow="DATA PROVENANCE" title="Dashboard source status" subtitle="Fact vs analysis" className="panelProvenance" id="provenance" provenance={viewModel.provenance}>
             <p className="panelBody">The dashboard now records provenance metadata for each card so you can distinguish validated facts from AI-generated analysis at a glance.</p>
           </Panel>
-          <Panel eyebrow="NASH AI DECISION ENGINE" title="Market verdict" subtitle="Synthesised recommendation" className="panelVerdict" id="verdict">
+          <Panel eyebrow="NASH AI DECISION ENGINE" title="Market verdict" subtitle="Synthesised recommendation" className="panelVerdict" id="verdict" provenance={viewModel.analysisProvenance}>
             <DecisionVerdict
               overallBias={viewModel.verdict.overallBias}
               confidenceScore={viewModel.verdict.confidenceScore}
@@ -120,7 +108,7 @@ export default async function Terminal() {
             />
           </Panel>
 
-          <Panel eyebrow="ELITE TRADE SETUP" title="Trade of the day" subtitle="Premium execution view" className="panelEliteTrade" id="elite-trade">
+          <Panel eyebrow="ELITE TRADE SETUP" title="Trade of the day" subtitle="Premium execution view" className="panelEliteTrade" id="elite-trade" provenance={viewModel.analysisProvenance}>
             <EliteTradeSetup
               title={viewModel.eliteTradeSetup.title}
               direction={viewModel.eliteTradeSetup.direction}
@@ -136,7 +124,7 @@ export default async function Terminal() {
             />
           </Panel>
 
-          <Panel eyebrow="S&P 500 FUTURES" title="Futures snapshot" subtitle="ES / NQ / RTY" className="panelFutures" id="futures">
+          <Panel eyebrow="S&P 500 FUTURES" title="Futures snapshot" subtitle="ES / NQ / RTY" className="panelFutures" id="futures" provenance={viewModel.provenance}>
             <div className="futuresHero">
               <div>
                 <span className="displayValue">{viewModel.futures.value}</span>
@@ -162,7 +150,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="AI MARKET BRIEFING" title="What matters now" subtitle="Modelled context" className="panelBrief" id="brief">
+          <Panel eyebrow="AI MARKET BRIEFING" title="What matters now" subtitle="Modelled context" className="panelBrief" id="brief" provenance={viewModel.analysisProvenance}>
             <div className="briefingSummary">
               <div className="briefingScore">
                 <strong>{viewModel.briefing.score}</strong>
@@ -180,21 +168,21 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="PRE-MARKET BRIEF" title="Opening setup" subtitle="Session prep" className="panelBriefing">
+          <Panel eyebrow="PRE-MARKET BRIEF" title="Opening setup" subtitle="Session prep" className="panelBriefing" provenance={viewModel.analysisProvenance}>
             <div className="briefTextBlock">
               <h3>{viewModel.preMarketBrief.title}</h3>
               <p>{viewModel.preMarketBrief.body}</p>
             </div>
           </Panel>
 
-          <Panel eyebrow="AFTER-HOURS BRIEF" title="Post-close posture" subtitle="Nightly read" className="panelBriefing">
+          <Panel eyebrow="AFTER-HOURS BRIEF" title="Post-close posture" subtitle="Nightly read" className="panelBriefing" provenance={viewModel.analysisProvenance}>
             <div className="briefTextBlock">
               <h3>{viewModel.afterHoursBrief.title}</h3>
               <p>{viewModel.afterHoursBrief.body}</p>
             </div>
           </Panel>
 
-          <Panel eyebrow="TODAY'S ECONOMIC EVENTS" title="Catalysts to watch" subtitle="Global agenda" className="panelCalendarCompact">
+          <Panel eyebrow="TODAY'S ECONOMIC EVENTS" title="Catalysts to watch" subtitle="Global agenda" className="panelCalendarCompact" provenance={viewModel.provenance}>
             <div className="calendarList">
               {viewModel.economicEvents.map((event) => (
                 <div className="calendarRow" key={`${event.time}-${event.name}`}>
@@ -208,7 +196,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="MARKET MOVERS" title="Leadership & laggards" subtitle="Cross-market flow" className="panelMovers">
+          <Panel eyebrow="MARKET MOVERS" title="Leadership & laggards" subtitle="Cross-market flow" className="panelMovers" provenance={viewModel.provenance}>
             <div className="miniList">
               {viewModel.movers.map((mover) => (
                 <div key={mover.name} className="miniRow">
@@ -220,7 +208,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="TOP AI HEADLINES" title="What the desk is tracking" subtitle="Signal focus" className="panelHeadlines">
+          <Panel eyebrow="TOP AI HEADLINES" title="What the desk is tracking" subtitle="Signal focus" className="panelHeadlines" provenance={viewModel.provenance}>
             <div className="headlineList">
               {viewModel.headlines.map((headline) => (
                 <div key={headline.title}>
@@ -231,7 +219,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="MARKET SENTIMENT" title="Risk appetite" subtitle="Composite signal" className="panelSentiment">
+          <Panel eyebrow="MARKET SENTIMENT" title="Risk appetite" subtitle="Composite signal" className="panelSentiment" provenance={viewModel.analysisProvenance}>
             <div className="sentimentHero">
               <strong>{viewModel.sentiment.score}</strong>
               <span>{viewModel.sentiment.label}</span>
@@ -239,7 +227,7 @@ export default async function Terminal() {
             <p className="panelBody">{viewModel.sentiment.detail}</p>
           </Panel>
 
-          <Panel eyebrow="RISK RATING" title="Session risk" subtitle="1–10" className="panelRisk">
+          <Panel eyebrow="RISK RATING" title="Session risk" subtitle="1–10" className="panelRisk" provenance={viewModel.analysisProvenance}>
             <div className="riskHero">
               <strong>{viewModel.riskRating}</strong>
               <span>/ 10</span>
@@ -247,7 +235,7 @@ export default async function Terminal() {
             <p className="panelBody">{viewModel.riskRating >= 7 ? "Risk is elevated and execution discipline matters." : viewModel.riskRating >= 4 ? "Balanced risk, with clear decision points." : "Risk is relatively contained."}</p>
           </Panel>
 
-          <Panel eyebrow="PROBABILITIES" title="Bullish / neutral / bearish" subtitle="Session outlook" className="panelProbabilities">
+          <Panel eyebrow="PROBABILITIES" title="Bullish / neutral / bearish" subtitle="Session outlook" className="panelProbabilities" provenance={viewModel.analysisProvenance}>
             <div className="probabilityGrid">
               <div><span>BULLISH</span><strong>{viewModel.probabilities.bullish}%</strong></div>
               <div><span>NEUTRAL</span><strong>{viewModel.probabilities.neutral}%</strong></div>
@@ -255,26 +243,26 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="EXPECTED MOVE" title="Today's S&P 500 session" subtitle="Estimated range" className="panelExpectedMove">
+          <Panel eyebrow="EXPECTED MOVE" title="Today's S&P 500 session" subtitle="Estimated range" className="panelExpectedMove" provenance={viewModel.analysisProvenance}>
             <div className="expectedMoveHero">
               <strong>{viewModel.expectedMove}</strong>
               <span>Expected move</span>
             </div>
           </Panel>
 
-          <Panel eyebrow="RECOMMENDED FUTURES BIAS" title="Directional posture" subtitle="ES futures" className="panelBias">
+          <Panel eyebrow="RECOMMENDED FUTURES BIAS" title="Directional posture" subtitle="ES futures" className="panelBias" provenance={viewModel.analysisProvenance}>
             <div className="biasHero">
               <strong>{viewModel.futuresBias}</strong>
             </div>
           </Panel>
 
-          <Panel eyebrow="RECOMMENDED OPTIONS BIAS" title="Preferred structure" subtitle="Risk-managed" className="panelOptionsBias">
+          <Panel eyebrow="RECOMMENDED OPTIONS BIAS" title="Preferred structure" subtitle="Risk-managed" className="panelOptionsBias" provenance={viewModel.analysisProvenance}>
             <div className="biasHero">
               <strong>{viewModel.optionsBias}</strong>
             </div>
           </Panel>
 
-          <Panel eyebrow="KEY LEVELS" title="Support & resistance" subtitle="ES FUTURES" className="panelLevels">
+          <Panel eyebrow="KEY LEVELS" title="Support & resistance" subtitle="ES FUTURES" className="panelLevels" provenance={viewModel.provenance}>
             <div className="supportResistanceList">
               {viewModel.supportResistance.map((level) => (
                 <div className={`levelRow ${level.type}`} key={level.label}>
@@ -286,7 +274,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="VIX" title="Volatility pulse" subtitle="Risk barometer" className="panelVix">
+          <Panel eyebrow="VIX" title="Volatility pulse" subtitle="Risk barometer" className="panelVix" provenance={viewModel.provenance}>
             <div className="statHero">
               <span className="displayValue">{viewModel.vix.value}</span>
               <b>{viewModel.vix.change}</b>
@@ -294,7 +282,7 @@ export default async function Terminal() {
             <p className="panelBody">{viewModel.vix.note}</p>
           </Panel>
 
-          <Panel eyebrow="TREASURY YIELDS" title="Rates backdrop" subtitle="Macro context" className="panelTreasuries">
+          <Panel eyebrow="TREASURY YIELDS" title="Rates backdrop" subtitle="Macro context" className="panelTreasuries" provenance={viewModel.provenance}>
             <div className="miniList">
               {viewModel.treasuries.map((treasury) => (
                 <div key={treasury.label} className="miniRow">
@@ -306,7 +294,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="US DOLLAR INDEX" title="FX pressure" subtitle="Cross-asset lens" className="panelDollar">
+          <Panel eyebrow="US DOLLAR INDEX" title="FX pressure" subtitle="Cross-asset lens" className="panelDollar" provenance={viewModel.provenance}>
             <div className="statHero">
               <span className="displayValue">{viewModel.dollar.value}</span>
               <b>{viewModel.dollar.change}</b>
@@ -314,7 +302,7 @@ export default async function Terminal() {
             <p className="panelBody">{viewModel.dollar.note}</p>
           </Panel>
 
-          <Panel eyebrow="ECONOMIC CALENDAR" title="Next risk windows" subtitle="UK TIME" className="panelCalendar" id="calendar">
+          <Panel eyebrow="ECONOMIC CALENDAR" title="Next risk windows" subtitle="UK TIME" className="panelCalendar" id="calendar" provenance={viewModel.provenance}>
             <div className="calendarList">
               {viewModel.calendar.map((event) => (
                 <div className="calendarRow" key={`${event.time}-${event.name}`}>
@@ -328,7 +316,7 @@ export default async function Terminal() {
             </div>
           </Panel>
 
-          <Panel eyebrow="FEAR & GREED" title="Sentiment read" subtitle="Composite signal" className="panelFearGreed">
+          <Panel eyebrow="FEAR & GREED" title="Sentiment read" subtitle="Composite signal" className="panelFearGreed" provenance={viewModel.analysisProvenance}>
             <div className="sentimentHero">
               <strong>{viewModel.fearGreed.score}</strong>
               <span>{viewModel.fearGreed.label}</span>
@@ -336,7 +324,7 @@ export default async function Terminal() {
             <p className="panelBody">{viewModel.fearGreed.detail}</p>
           </Panel>
 
-          <Panel eyebrow="OPTIONS OVERVIEW" title="Risk & positioning" subtitle="Premiums" className="panelOptions" id="options">
+          <Panel eyebrow="OPTIONS OVERVIEW" title="Risk & positioning" subtitle="Premiums" className="panelOptions" id="options" provenance={viewModel.analysisProvenance}>
             <div className="optionsGrid">
               <div>
                 <span>PUT/CALL</span>
