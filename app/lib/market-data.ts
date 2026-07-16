@@ -202,6 +202,7 @@ function normalizeProviderPayload(payload: unknown): MarketSnapshot | null {
     : typeof dataSection.summary === "string" && dataSection.summary.trim().length > 0
       ? dataSection.summary
       : fallbackSnapshot.summary;
+  const evidence = candidate.evidence ?? dataSection.evidence;
 
   return {
     status,
@@ -213,8 +214,8 @@ function normalizeProviderPayload(payload: unknown): MarketSnapshot | null {
     bias,
     risk,
     summary,
-    evidence: isScoreRecord(candidate.evidence ?? dataSection.evidence)
-      ? candidate.evidence ?? dataSection.evidence
+    evidence: isScoreRecord(evidence)
+      ? evidence
       : fallbackSnapshot.evidence,
   };
 }

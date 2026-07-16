@@ -8,7 +8,7 @@ import { createCompositeMarketDataProvider, LiveMarketGateway, REQUIRED_MARKET_G
 
 test("builds a terminal dashboard view model from the market snapshot", () => {
   const snapshot = {
-    status: "PREVIEW",
+    status: "PREVIEW" as const,
     source: "NASH AI demonstration dataset",
     asOf: "2026-07-16T07:00:00.000Z",
     quotes: [
@@ -302,6 +302,7 @@ test("merges market slice adapters into a composite snapshot", async () => {
   ]);
 
   const snapshot = await provider.fetchSnapshot();
+  assert.ok(snapshot);
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,320.00");
   assert.equal(snapshot.events[0]?.name, "CPI print");
 });

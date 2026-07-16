@@ -121,7 +121,7 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
   const bullishProbability = clamp(bullseye.bullProbability + (snapshot.risk === "LOW" ? 4 : 0));
   const neutralProbability = clamp(100 - bullishProbability - bullseye.bearProbability);
   const bearishProbability = clamp(bullseye.bearProbability + (snapshot.risk === "HIGH" ? 4 : 0));
-  const expectedMove = `${Math.round(Number.parseFloat(esQuote?.value.replace(/[^0-9.]/g, "")) * 0.008)} pts`;
+  const expectedMove = `${Math.round(Number.parseFloat(esQuote?.value.replace(/[^0-9.]/g, "") ?? "") * 0.008)} pts`;
   const futuresBias = bullishProbability >= bearishProbability ? "Bullish bias" : "Bearish bias";
   const optionsBias = bullishProbability > bearishProbability ? "Call structure" : "Put structure";
   const confidenceScore = clamp(Math.round((bullseye.confidence + (bullishProbability - bearishProbability) / 2 + (fearGreedScore / 2)) / 1.5));
