@@ -17,6 +17,11 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
   const containerRef = useRef<HTMLDivElement>(null);
   const [timeframe, setTimeframe] = useState<TerminalTimeframe>(initialTimeframe);
   const state = chartDisplayState(data, loading, error);
+  const chartDescription = mode === "preview"
+    ? `${symbol} preview chart using fixed historical demonstration candles. It is not live market data.`
+    : state === "ready"
+      ? `${symbol} verified candlestick and volume chart on the ${timeframe} timeframe.`
+      : `${symbol} chart has no validated candle data to display.`;
 
   useEffect(() => {
     if (state !== "ready" || !containerRef.current) return;
@@ -52,11 +57,12 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
     <section className="marketChart" aria-label={`${symbol} candlestick chart`} data-chart-state={state}>
       <header className="marketChartHeader">
         <div><span>PRIMARY WORKSPACE</span><strong>{symbol} · Candles &amp; volume</strong>{mode === "preview" ? <em>PREVIEW FIXTURE · FIXED HISTORICAL DATA · NOT LIVE</em> : null}</div>
-        <div className="timeframeSelector" aria-label="Chart timeframe">
-          {TERMINAL_TIMEFRAMES.map((option) => <button key={option} type="button" aria-pressed={timeframe === option} onClick={() => setTimeframe(option)}>{option}</button>)}
+        <div className="timeframeSelector" role="group" aria-label="Chart timeframe">
+          {TERMINAL_TIMEFRAMES.map((option) => <button key={option} type="button" aria-pressed={timeframe === option} aria-label={`Show ${option} timeframe`} onClick={() => setTimeframe(option)}>{option}</button>)}
         </div>
       </header>
-      {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} /> : (
+      <p className="srOnly" id="market-chart-description">{chartDescription}</p>
+      {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-describedby="market-chart-description" /> : (
         <div className={`marketChartState marketChartState-${state}`} role={state === "error" ? "alert" : "status"}>
           {state === "loading" ? <><i className="chartLoader" /><strong>Loading chart data</strong><span>Waiting for verified OHLCV candles.</span></> : null}
           {state === "error" ? <><strong>Chart unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered."}</span></> : null}
