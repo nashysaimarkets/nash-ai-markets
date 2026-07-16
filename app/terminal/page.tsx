@@ -5,6 +5,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { runBullseyeEngine } from "../lib/bullseye-engine";
 import { formatSnapshotAge, formatUkTimestamp, getMarketSnapshot } from "../lib/market-data";
+import { createDashboardViewModel } from "./lib/dashboard-data";
+import { Panel } from "./components/Panel";
+import { MetricChip } from "./components/MetricChip";
+import { DecisionVerdict } from "./components/DecisionVerdict";
+import { EliteTradeSetup } from "./components/EliteTradeSetup";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +44,7 @@ export default async function Terminal() {
 
   const snapshot = await getMarketSnapshot();
   const bullseye = runBullseyeEngine(snapshot);
+  const viewModel = createDashboardViewModel(snapshot, bullseye);
   const asOf = formatUkTimestamp(snapshot.asOf);
   const snapshotAge = formatSnapshotAge(snapshot.asOf);
   const isVerified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
@@ -51,10 +57,10 @@ export default async function Terminal() {
         <Link href="/" className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b></span></Link>
         <nav aria-label="Member navigation">
           <a className="active" href="#overview">Mission Control</a>
-          <a href="#brief">Mission Brief</a>
-          <a href="#levels">Market Map</a>
-          <a href="#scenarios">Probability Engine</a>
-          <a href="#calendar">Economic Clock</a>
+          <a href="#brief">AI Briefing</a>
+          <a href="#futures">S&P 500 Futures</a>
+          <a href="#calendar">Economic Calendar</a>
+          <a href="#options">Options Overview</a>
         </nav>
         <div className="mcMemberCard">
           <span>MEMBER SERVICES</span><p>{user.email}</p><p>{membership.plan.toUpperCase()} MEMBER</p>
@@ -64,66 +70,274 @@ export default async function Terminal() {
 
       <section className="mcMain" id="overview">
         <header className="mcHeader">
-          <div><span className="kicker">MISSION CONTROL™ V3</span><h1>Good morning, trader.</h1>
-            <p>{snapshot.source} · As of {asOf} UK · {snapshotAge}</p></div>
-          <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}><span>DATA STATUS</span><strong><i /> {snapshot.status}</strong></div>
+          <div>
+            <span className="kicker">MISSION CONTROL™ V3</span>
+            <h1>Good morning, trader.</h1>
+            <p>{snapshot.source} · As of {asOf} UK · {snapshotAge}</p>
+          </div>
+          <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}>
+            <span>DATA STATUS</span>
+            <strong><i /> {snapshot.status}</strong>
+          </div>
         </header>
 
         <div className="mcPreviewNotice">{statusMessage(snapshot.status)}{!isVerified && " · NOT CURRENT MARKET DATA OR A TRADING SIGNAL"}</div>
 
         <section className="mcKpiStrip" aria-label="Market snapshot">
-          {snapshot.quotes.map((quote) => <article key={quote.symbol}><span>{quote.label}</span><strong>{quote.value}</strong><b className={quote.direction}>{quote.change}</b></article>)}
+          {viewModel.heroMetrics.map((metric) => (
+            <MetricChip key={metric.label} label={metric.label} value={metric.value} delta={metric.delta} tone={metric.tone} />
+          ))}
         </section>
 
-        <section className="mcHeroGrid">
-          <article className="mcPanel weatherPanel">
-            <div className="mcPanelHead"><div><span>MARKET WEATHER™</span><h2>{bullseye.weather}</h2></div>
-              <div className="weatherIcon" aria-hidden="true">{bullseye.weather === "STORMY" ? "⚡" : bullseye.weather === "CLEAR" ? "☀" : "◐"}</div></div>
-            <p className="weatherForecast">{snapshot.summary}</p>
-            <div className="weatherRows"><div><span>WORKING BIAS</span><strong>{bullseye.bias}</strong></div><div><span>SESSION RISK</span><strong>{bullseye.risk}</strong></div><div><span>CONFIDENCE</span><strong>{bullseye.confidence}%</strong></div><div><span>DATA STATE</span><strong>{snapshot.status}</strong></div></div>
-          </article>
+        <section className="terminalDashboardGrid" aria-label="Dashboard sections">
+          <Panel eyebrow="NASH AI DECISION ENGINE" title="Market verdict" subtitle="Synthesised recommendation" className="panelVerdict" id="verdict">
+            <DecisionVerdict
+              overallBias={viewModel.verdict.overallBias}
+              confidenceScore={viewModel.verdict.confidenceScore}
+              tradeRating={viewModel.verdict.tradeRating}
+              riskLevel={viewModel.verdict.riskLevel}
+              suggestedDirection={viewModel.verdict.suggestedDirection}
+              entryZone={viewModel.verdict.entryZone}
+              stopZone={viewModel.verdict.stopZone}
+              profitTarget1={viewModel.verdict.profitTarget1}
+              profitTarget2={viewModel.verdict.profitTarget2}
+              noTradeWarning={viewModel.verdict.noTradeWarning}
+            />
+          </Panel>
 
-          <article className="mcPanel scorePanel">
-            <div className="mcPanelHead"><div><span>BULLSEYE SCORE™</span><h2>Evidence alignment</h2></div><strong className="scoreValue">{bullseye.score}</strong></div>
-            <div className="confidenceLine"><span>DECISION CONFIDENCE</span><b>{bullseye.confidence}%</b></div>
-            <div className="scoreComponents">{Object.entries(snapshot.evidence).map(([label, score]) => <div key={label}><span>{label}</span><i><em style={{ width: `${score}%` }} /></i><b>{score}</b></div>)}</div>
-          </article>
+          <Panel eyebrow="ELITE TRADE SETUP" title="Trade of the day" subtitle="Premium execution view" className="panelEliteTrade" id="elite-trade">
+            <EliteTradeSetup
+              title={viewModel.eliteTradeSetup.title}
+              direction={viewModel.eliteTradeSetup.direction}
+              conviction={viewModel.eliteTradeSetup.conviction}
+              entryZone={viewModel.eliteTradeSetup.entryZone}
+              stopLoss={viewModel.eliteTradeSetup.stopLoss}
+              target1={viewModel.eliteTradeSetup.target1}
+              target2={viewModel.eliteTradeSetup.target2}
+              riskReward={viewModel.eliteTradeSetup.riskReward}
+              timeframe={viewModel.eliteTradeSetup.timeframe}
+              status={viewModel.eliteTradeSetup.status}
+              explanation={viewModel.eliteTradeSetup.explanation}
+            />
+          </Panel>
 
-          <article className="mcPanel dnaPanel">
-            <div className="mcPanelHead"><div><span>MARKET DNA™</span><h2>Current regime</h2></div><small>{bullseye.risk} RISK</small></div>
-            <ul>{bullseye.dna.map((item) => <li key={item}>{item}</li>)}</ul><div className="dnaTag">{bullseye.dna.join(" · ")}</div>
-          </article>
-        </section>
+          <Panel eyebrow="S&P 500 FUTURES" title="Futures snapshot" subtitle="ES / NQ / RTY" className="panelFutures" id="futures">
+            <div className="futuresHero">
+              <div>
+                <span className="displayValue">{viewModel.futures.value}</span>
+                <div className="futuresMeta">
+                  <b>{viewModel.futures.change}</b>
+                  <span>{viewModel.futures.status}</span>
+                </div>
+              </div>
+              <div className="futuresBias">
+                <span>BIAS</span>
+                <strong>{viewModel.futures.bias}</strong>
+              </div>
+            </div>
+            <p className="panelBody">{viewModel.futures.note}</p>
+            <div className="supportResistanceList">
+              {viewModel.futures.levels.map((level) => (
+                <div className={`levelRow ${level.type}`} key={level.label}>
+                  <span>{level.label}</span>
+                  <strong>{level.value}</strong>
+                  <small>{level.note}</small>
+                </div>
+              ))}
+            </div>
+          </Panel>
 
-        <section className="mcPanel missionBrief" id="brief">
-          <div className="mcPanelHead"><div><span>AI MISSION BRIEF</span><h2>What matters today</h2></div><small>VERIFY BEFORE ACTING</small></div>
-          <p>{bullseye.missionBrief}</p>
-          <div className="briefActions">
-            <div><span>RISK-WINDOW PREP</span><strong>{bullseye.riskWindowPrep}</strong></div>
-            <div><span>DEFINED-RISK APPROACH</span><strong>{bullseye.optionsApproach}</strong></div>
-            <div><span>STAND ASIDE IF</span><strong>{bullseye.standAside}</strong></div>
-          </div>
-        </section>
+          <Panel eyebrow="AI MARKET BRIEFING" title="What matters now" subtitle="Modelled context" className="panelBrief" id="brief">
+            <div className="briefingSummary">
+              <div className="briefingScore">
+                <strong>{viewModel.briefing.score}</strong>
+                <span>{viewModel.briefing.confidence}% confidence</span>
+              </div>
+              <p>{viewModel.briefing.summary}</p>
+            </div>
+            <div className="briefingList">
+              {viewModel.briefing.bullets.map((bullet) => (
+                <div key={bullet.title}>
+                  <h3>{bullet.title}</h3>
+                  <p>{bullet.body}</p>
+                </div>
+              ))}
+            </div>
+          </Panel>
 
-        <div className="mcTwoColumn">
-          <section className="mcPanel" id="levels">
-            <div className="mcPanelHead"><div><span>MARKET MAP</span><h2>Key levels</h2></div><small>ES FUTURES</small></div>
-            {snapshot.levels.map((level) => <div className={`mcLevel ${level.type}`} key={level.label}><span>{level.label}</span><strong>{level.value}</strong><p>{level.note}</p></div>)}
-          </section>
-          <section className="mcPanel economicClock" id="calendar">
-            <div className="mcPanelHead"><div><span>ECONOMIC CLOCK™</span><h2>Next risk windows</h2></div><small>UK TIME</small></div>
-            {snapshot.events.map((event) => <div className="clockEvent" key={`${event.time}-${event.name}`}><div><strong>{event.time}</strong><span>CHECK CALENDAR</span></div><p>{event.name}</p><b className={event.risk === "HIGH" ? "high" : "medium"}>{event.risk}</b></div>)}
-          </section>
-        </div>
+          <Panel eyebrow="PRE-MARKET BRIEF" title="Opening setup" subtitle="Session prep" className="panelBriefing">
+            <div className="briefTextBlock">
+              <h3>{viewModel.preMarketBrief.title}</h3>
+              <p>{viewModel.preMarketBrief.body}</p>
+            </div>
+          </Panel>
 
-        <section className="mcPanel scenariosPanel" id="scenarios">
-          <div className="mcPanelHead"><div><span>PROBABILITY ENGINE™</span><h2>Triggers and invalidations</h2></div><small>MODELLED · NOT CERTAINTY</small></div>
-          <div className="probabilityBar" aria-label="Scenario probabilities"><i style={{ width: `${bullseye.bullProbability}%` }} /><b style={{ width: `${bullseye.bearProbability}%` }} /><em style={{ width: `${bullseye.noTradeProbability}%` }} /></div>
-          <div className="scenarioCards">
-            <article className="bull"><b>BULL CASE · {bullseye.bullProbability}%</b><h3>{bullseye.bullTrigger}</h3><p>Invalidation: {bullseye.bullInvalidation}.</p></article>
-            <article className="bear"><b>BEAR CASE · {bullseye.bearProbability}%</b><h3>{bullseye.bearTrigger}</h3><p>Invalidation: {bullseye.bearInvalidation}.</p></article>
-            <article className="wait"><b>NO-TRADE · {bullseye.noTradeProbability}%</b><h3>Range and whipsaw</h3><p>{bullseye.standAside}</p></article>
-          </div>
+          <Panel eyebrow="AFTER-HOURS BRIEF" title="Post-close posture" subtitle="Nightly read" className="panelBriefing">
+            <div className="briefTextBlock">
+              <h3>{viewModel.afterHoursBrief.title}</h3>
+              <p>{viewModel.afterHoursBrief.body}</p>
+            </div>
+          </Panel>
+
+          <Panel eyebrow="TODAY'S ECONOMIC EVENTS" title="Catalysts to watch" subtitle="Global agenda" className="panelCalendarCompact">
+            <div className="calendarList">
+              {viewModel.economicEvents.map((event) => (
+                <div className="calendarRow" key={`${event.time}-${event.name}`}>
+                  <div>
+                    <strong>{event.time}</strong>
+                    <p>{event.name}</p>
+                  </div>
+                  <b className={event.risk === "HIGH" ? "high" : "medium"}>{event.risk}</b>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel eyebrow="MARKET MOVERS" title="Leadership & laggards" subtitle="Cross-market flow" className="panelMovers">
+            <div className="miniList">
+              {viewModel.movers.map((mover) => (
+                <div key={mover.name} className="miniRow">
+                  <span>{mover.name}</span>
+                  <strong>{mover.value}</strong>
+                  <b>{mover.change}</b>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel eyebrow="TOP AI HEADLINES" title="What the desk is tracking" subtitle="Signal focus" className="panelHeadlines">
+            <div className="headlineList">
+              {viewModel.headlines.map((headline) => (
+                <div key={headline.title}>
+                  <h3>{headline.title}</h3>
+                  <p>{headline.detail}</p>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel eyebrow="MARKET SENTIMENT" title="Risk appetite" subtitle="Composite signal" className="panelSentiment">
+            <div className="sentimentHero">
+              <strong>{viewModel.sentiment.score}</strong>
+              <span>{viewModel.sentiment.label}</span>
+            </div>
+            <p className="panelBody">{viewModel.sentiment.detail}</p>
+          </Panel>
+
+          <Panel eyebrow="RISK RATING" title="Session risk" subtitle="1–10" className="panelRisk">
+            <div className="riskHero">
+              <strong>{viewModel.riskRating}</strong>
+              <span>/ 10</span>
+            </div>
+            <p className="panelBody">{viewModel.riskRating >= 7 ? "Risk is elevated and execution discipline matters." : viewModel.riskRating >= 4 ? "Balanced risk, with clear decision points." : "Risk is relatively contained."}</p>
+          </Panel>
+
+          <Panel eyebrow="PROBABILITIES" title="Bullish / neutral / bearish" subtitle="Session outlook" className="panelProbabilities">
+            <div className="probabilityGrid">
+              <div><span>BULLISH</span><strong>{viewModel.probabilities.bullish}%</strong></div>
+              <div><span>NEUTRAL</span><strong>{viewModel.probabilities.neutral}%</strong></div>
+              <div><span>BEARISH</span><strong>{viewModel.probabilities.bearish}%</strong></div>
+            </div>
+          </Panel>
+
+          <Panel eyebrow="EXPECTED MOVE" title="Today's S&P 500 session" subtitle="Estimated range" className="panelExpectedMove">
+            <div className="expectedMoveHero">
+              <strong>{viewModel.expectedMove}</strong>
+              <span>Expected move</span>
+            </div>
+          </Panel>
+
+          <Panel eyebrow="RECOMMENDED FUTURES BIAS" title="Directional posture" subtitle="ES futures" className="panelBias">
+            <div className="biasHero">
+              <strong>{viewModel.futuresBias}</strong>
+            </div>
+          </Panel>
+
+          <Panel eyebrow="RECOMMENDED OPTIONS BIAS" title="Preferred structure" subtitle="Risk-managed" className="panelOptionsBias">
+            <div className="biasHero">
+              <strong>{viewModel.optionsBias}</strong>
+            </div>
+          </Panel>
+
+          <Panel eyebrow="KEY LEVELS" title="Support & resistance" subtitle="ES FUTURES" className="panelLevels">
+            <div className="supportResistanceList">
+              {viewModel.supportResistance.map((level) => (
+                <div className={`levelRow ${level.type}`} key={level.label}>
+                  <span>{level.label}</span>
+                  <strong>{level.value}</strong>
+                  <small>{level.note}</small>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel eyebrow="VIX" title="Volatility pulse" subtitle="Risk barometer" className="panelVix">
+            <div className="statHero">
+              <span className="displayValue">{viewModel.vix.value}</span>
+              <b>{viewModel.vix.change}</b>
+            </div>
+            <p className="panelBody">{viewModel.vix.note}</p>
+          </Panel>
+
+          <Panel eyebrow="TREASURY YIELDS" title="Rates backdrop" subtitle="Macro context" className="panelTreasuries">
+            <div className="miniList">
+              {viewModel.treasuries.map((treasury) => (
+                <div key={treasury.label} className="miniRow">
+                  <span>{treasury.label}</span>
+                  <strong>{treasury.value}</strong>
+                  <b>{treasury.delta}</b>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel eyebrow="US DOLLAR INDEX" title="FX pressure" subtitle="Cross-asset lens" className="panelDollar">
+            <div className="statHero">
+              <span className="displayValue">{viewModel.dollar.value}</span>
+              <b>{viewModel.dollar.change}</b>
+            </div>
+            <p className="panelBody">{viewModel.dollar.note}</p>
+          </Panel>
+
+          <Panel eyebrow="ECONOMIC CALENDAR" title="Next risk windows" subtitle="UK TIME" className="panelCalendar" id="calendar">
+            <div className="calendarList">
+              {viewModel.calendar.map((event) => (
+                <div className="calendarRow" key={`${event.time}-${event.name}`}>
+                  <div>
+                    <strong>{event.time}</strong>
+                    <p>{event.name}</p>
+                  </div>
+                  <b className={event.risk === "HIGH" ? "high" : "medium"}>{event.risk}</b>
+                </div>
+              ))}
+            </div>
+          </Panel>
+
+          <Panel eyebrow="FEAR & GREED" title="Sentiment read" subtitle="Composite signal" className="panelFearGreed">
+            <div className="sentimentHero">
+              <strong>{viewModel.fearGreed.score}</strong>
+              <span>{viewModel.fearGreed.label}</span>
+            </div>
+            <p className="panelBody">{viewModel.fearGreed.detail}</p>
+          </Panel>
+
+          <Panel eyebrow="OPTIONS OVERVIEW" title="Risk & positioning" subtitle="Premiums" className="panelOptions" id="options">
+            <div className="optionsGrid">
+              <div>
+                <span>PUT/CALL</span>
+                <strong>{viewModel.options.putCall}</strong>
+              </div>
+              <div>
+                <span>IV</span>
+                <strong>{viewModel.options.iv}</strong>
+              </div>
+              <div>
+                <span>SKEW</span>
+                <strong>{viewModel.options.skew}</strong>
+              </div>
+            </div>
+            <p className="panelBody">{viewModel.options.detail}</p>
+          </Panel>
         </section>
 
         <footer className="mcFooter">Educational market commentary only. Futures and options involve substantial risk. Model probabilities are decision-support estimates, not predictions. Verify the displayed status, timestamp, source and levels independently.<Link href="/">Back to NASH AI Markets</Link></footer>
