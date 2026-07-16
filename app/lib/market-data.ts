@@ -30,6 +30,17 @@ export type MarketSnapshot = {
   evidence: Record<string, number>;
 };
 
+export type MarketDataProvider = {
+  fetchSnapshot: () => Promise<MarketSnapshot | null>;
+};
+
+export type MarketDataProviderInput = MarketDataProvider | (() => Promise<MarketSnapshot | null>);
+
+export type GetMarketSnapshotOptions = {
+  provider?: MarketDataProviderInput;
+  now?: number;
+};
+
 const VALID_STATUSES = new Set<MarketDataStatus>(["LIVE", "DELAYED", "PREVIEW", "UNAVAILABLE"]);
 const MAX_LIVE_AGE_MS = 5 * 60 * 1000;
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
@@ -71,6 +82,125 @@ function isScoreRecord(value: unknown): value is Record<string, number> {
     );
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeDirection(value: unknown): MarketQuote["direction"] {
+  return value === "up" || value === "down" ? value : "flat";
+}
+
+function normalizeRisk(value: unknown): MarketSnapshot["risk"] {
+  return value === "LOW" || value === "MODERATE" || value === "ELEVATED" || value === "HIGH" ? value : "MODERATE";
+}
+
+function normalizeQuote(symbol: string, value: unknown): MarketQuote | null {
+  if (!isRecord(value)) return null;
+  const candidate = value as Partial<MarketQuote>;
+  return {
+    symbol,
+    label: typeof candidate.label === "string" ? candidate.label : symbol,
+    value: typeof candidate.value === "string" || typeof candidate.value === "number" ? String(candidate.value) : "—",
+    change: typeof candidate.change === "string" || typeof candidate.change === "number" ? String(candidate.change) : "flat",
+    direction: normalizeDirection(candidate.direction),
+  };
+}
+
+function normalizeLevel(value: unknown): MarketLevel | null {
+  if (!isRecord(value)) return null;
+  const candidate = value as Partial<MarketLevel>;
+  if (!candidate.label || !candidate.value || typeof candidate.note !== "string") return null;
+  return {
+    label: String(candidate.label),
+    value: String(candidate.value),
+    note: String(candidate.note),
+    type: candidate.type === "resistance" || candidate.type === "pivot" || candidate.type === "support" ? candidate.type : "support",
+  };
+}
+
+function normalizeEvent(value: unknown): MarketEvent | null {
+  if (!isRecord(value)) return null;
+  const candidate = value as Partial<MarketEvent>;
+  if (!candidate.time || !candidate.name) return null;
+  return {
+    time: String(candidate.time),
+    name: String(candidate.name),
+    risk: candidate.risk === "HIGH" ? "HIGH" : "MED",
+  };
+}
+
+function normalizeProviderPayload(payload: unknown): MarketSnapshot | null {
+  if (isMarketSnapshot(payload)) return payload;
+  if (!isRecord(payload)) return null;
+
+  const candidate = payload as Record<string, unknown>;
+  const dataSection = isRecord(candidate.data) ? candidate.data : candidate;
+  const rawQuotes = dataSection.quotes ?? candidate.quotes;
+  const rawLevels = dataSection.levels ?? candidate.levels;
+  const rawEvents = dataSection.events ?? candidate.events;
+  const fallbackSnapshot = createPreviewSnapshot();
+
+  const quotes = Array.isArray(rawQuotes)
+    ? rawQuotes.map((quote) => normalizeQuote("", quote)).filter((quote): quote is MarketQuote => Boolean(quote))
+    : isRecord(rawQuotes)
+      ? Object.entries(rawQuotes).map(([symbol, quote]) => normalizeQuote(symbol, quote)).filter((quote): quote is MarketQuote => Boolean(quote))
+      : fallbackSnapshot.quotes;
+
+  const levels = Array.isArray(rawLevels)
+    ? rawLevels.map((level) => normalizeLevel(level)).filter((level): level is MarketLevel => Boolean(level))
+    : fallbackSnapshot.levels;
+
+  const events = Array.isArray(rawEvents)
+    ? rawEvents.map((event) => normalizeEvent(event)).filter((event): event is MarketEvent => Boolean(event))
+    : fallbackSnapshot.events;
+
+  const status = typeof candidate.status === "string" && VALID_STATUSES.has(candidate.status as MarketDataStatus)
+    ? candidate.status as MarketDataStatus
+    : typeof dataSection.status === "string" && VALID_STATUSES.has(dataSection.status as MarketDataStatus)
+      ? dataSection.status as MarketDataStatus
+      : "PREVIEW";
+
+  const source = typeof candidate.source === "string" && candidate.source.trim().length > 0
+    ? candidate.source
+    : typeof dataSection.source === "string" && dataSection.source.trim().length > 0
+      ? dataSection.source
+      : "Live market data provider";
+
+  const asOf = typeof candidate.asOf === "string" && candidate.asOf.trim().length > 0
+    ? candidate.asOf
+    : typeof dataSection.asOf === "string" && dataSection.asOf.trim().length > 0
+      ? dataSection.asOf
+      : new Date().toISOString();
+
+  const bias = typeof candidate.bias === "string" && candidate.bias.trim().length > 0
+    ? candidate.bias
+    : typeof dataSection.bias === "string" && dataSection.bias.trim().length > 0
+      ? dataSection.bias
+      : fallbackSnapshot.bias;
+
+  const risk = normalizeRisk(candidate.risk ?? dataSection.risk);
+  const summary = typeof candidate.summary === "string" && candidate.summary.trim().length > 0
+    ? candidate.summary
+    : typeof dataSection.summary === "string" && dataSection.summary.trim().length > 0
+      ? dataSection.summary
+      : fallbackSnapshot.summary;
+
+  return {
+    status,
+    source,
+    asOf,
+    quotes,
+    levels,
+    events,
+    bias,
+    risk,
+    summary,
+    evidence: isScoreRecord(candidate.evidence ?? dataSection.evidence)
+      ? candidate.evidence ?? dataSection.evidence
+      : fallbackSnapshot.evidence,
+  };
+}
+
 function isMarketSnapshot(value: unknown): value is MarketSnapshot {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<MarketSnapshot>;
@@ -82,6 +212,15 @@ function isMarketSnapshot(value: unknown): value is MarketSnapshot {
     Array.isArray(candidate.events) && typeof candidate.bias === "string" &&
     typeof candidate.risk === "string" && typeof candidate.summary === "string" &&
     isScoreRecord(candidate.evidence);
+}
+
+function normalizeUnavailableSnapshot(snapshot: MarketSnapshot): MarketSnapshot {
+  return {
+    ...snapshot,
+    status: "UNAVAILABLE",
+    source: "Live feed unavailable — preview fallback",
+    summary: "The live feed could not be verified. Preview figures are shown only to demonstrate the terminal layout.",
+  };
 }
 
 export function normalizeSnapshotFreshness(snapshot: MarketSnapshot, now = Date.now()): MarketSnapshot {
@@ -100,28 +239,65 @@ export function normalizeSnapshotFreshness(snapshot: MarketSnapshot, now = Date.
   return snapshot;
 }
 
-export async function getMarketSnapshot(): Promise<MarketSnapshot> {
-  const url = process.env.MARKET_DATA_API_URL;
-  if (!url) return createPreviewSnapshot();
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 4_500);
-  try {
-    const response = await fetch(url, {
-      headers: process.env.MARKET_DATA_API_TOKEN ? { Authorization: `Bearer ${process.env.MARKET_DATA_API_TOKEN}` } : undefined,
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!response.ok) throw new Error(`Market data endpoint returned ${response.status}`);
-    const payload: unknown = await response.json();
-    if (!isMarketSnapshot(payload)) throw new Error("Market data endpoint returned an invalid payload");
-    return normalizeSnapshotFreshness(payload);
-  } catch (error) {
-    console.error("[bullseye:market-data] fetch failed", { error: error instanceof Error ? error.message : "Unknown error", urlConfigured: true });
-    return { ...createPreviewSnapshot(), status: "UNAVAILABLE", source: "Live feed unavailable — preview fallback", summary: "The live feed could not be verified. Preview figures are shown only to demonstrate the terminal layout." };
-  } finally {
-    clearTimeout(timeout);
+function resolveProvider(provider?: MarketDataProviderInput): MarketDataProvider | null {
+  if (!provider) return null;
+  if (typeof provider === "function") {
+    return { fetchSnapshot: provider };
   }
+  return provider;
+}
+
+export function createHttpMarketDataProvider(input?: { url?: string; token?: string; timeoutMs?: number }): MarketDataProvider {
+  return {
+    async fetchSnapshot() {
+      const url = input?.url ?? process.env.MARKET_DATA_API_URL;
+      if (!url) return null;
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), input?.timeoutMs ?? 4_500);
+      try {
+        const response = await fetch(url, {
+          headers: (input?.token ?? process.env.MARKET_DATA_API_TOKEN)
+            ? { Authorization: `Bearer ${input?.token ?? process.env.MARKET_DATA_API_TOKEN}` }
+            : undefined,
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`Market data endpoint returned ${response.status}`);
+        const payload: unknown = await response.json();
+        const normalized = normalizeProviderPayload(payload);
+        if (!normalized) throw new Error("Market data endpoint returned an invalid payload");
+        return normalized;
+      } catch (error) {
+        console.error("[bullseye:market-data] fetch failed", { error: error instanceof Error ? error.message : "Unknown error", urlConfigured: Boolean(url) });
+        return null;
+      } finally {
+        clearTimeout(timeout);
+      }
+    },
+  };
+}
+
+export async function getMarketSnapshot(options: GetMarketSnapshotOptions = {}): Promise<MarketSnapshot> {
+  const provider = resolveProvider(options.provider);
+  if (provider) {
+    try {
+      const snapshot = await provider.fetchSnapshot();
+      if (snapshot) return normalizeSnapshotFreshness(snapshot, options.now);
+    } catch (error) {
+      console.error("[bullseye:market-data] provider failed", { error: error instanceof Error ? error.message : "Unknown error" });
+    }
+  }
+
+  const httpProvider = createHttpMarketDataProvider();
+  const snapshot = await httpProvider.fetchSnapshot();
+  if (snapshot) return normalizeSnapshotFreshness(snapshot, options.now);
+
+  if (options.provider) {
+    return normalizeUnavailableSnapshot(createPreviewSnapshot());
+  }
+
+  return createPreviewSnapshot();
 }
 
 export function formatUkTimestamp(isoTimestamp: string): string {

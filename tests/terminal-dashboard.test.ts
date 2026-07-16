@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { getMarketSnapshot } from "../app/lib/market-data.ts";
 import { createDashboardViewModel } from "../app/terminal/lib/dashboard-data.ts";
 import { createDataProvenance } from "../app/terminal/lib/provenance.ts";
 
@@ -62,4 +63,35 @@ test("builds a terminal dashboard view model from the market snapshot", () => {
   assert.equal(provenance.source, "Demo feed");
   assert.equal(provenance.provider, "Demo Provider");
   assert.equal(provenance.badgeLabel, "Placeholder");
+});
+
+test("uses a custom provider when fetching the market snapshot", async () => {
+  const snapshot = await getMarketSnapshot({
+    now: Date.now(),
+    provider: async () => ({
+      status: "LIVE",
+      source: "Live provider",
+      asOf: new Date().toISOString(),
+      quotes: [
+        { symbol: "ES", label: "ES FUTURES", value: "6,325.50", change: "+0.75%", direction: "up" as const },
+        { symbol: "VIX", label: "VIX", value: "15.88", change: "-0.42", direction: "down" as const },
+        { symbol: "US10Y", label: "10Y YIELD", value: "4.38%", change: "+4 bps", direction: "up" as const },
+        { symbol: "DXY", label: "US DOLLAR", value: "98.12", change: "+0.16", direction: "up" as const },
+      ],
+      levels: [
+        { label: "R1", value: "6,330", note: "First resistance", type: "resistance" as const },
+        { label: "S1", value: "6,310", note: "First support", type: "support" as const },
+      ],
+      events: [{ time: "13:30 UK", name: "CPI print", risk: "HIGH" as const }],
+      bias: "BULLISH",
+      risk: "MODERATE" as const,
+      summary: "Live provider data",
+      evidence: { trend: 72, momentum: 70, volatility: 45, breadth: 68, macro: 66 },
+    }),
+  });
+
+  assert.equal(snapshot.status, "LIVE");
+  assert.equal(snapshot.source, "Live provider");
+  assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,325.50");
+  assert.equal(snapshot.events[0]?.name, "CPI print");
 });
