@@ -11,6 +11,8 @@ function snapshot(overrides: Partial<MarketSnapshot> = {}): MarketSnapshot {
     quotes: [
       { symbol: "ES", label: "ES FUTURES", value: "6,325.50", change: "+0.75%", direction: "up" },
       { symbol: "VIX", label: "VIX", value: "15.00", change: "-1.20%", direction: "down" },
+      { symbol: "US2Y", label: "2Y YIELD", value: "4.18%", change: "-2 bps", direction: "down" },
+      { symbol: "US10Y", label: "10Y YIELD", value: "4.42%", change: "-1 bps", direction: "down" },
       { symbol: "DXY", label: "US DOLLAR", value: "98.12", change: "-0.16%", direction: "down" },
     ],
     levels: [
@@ -34,7 +36,7 @@ test("returns a deterministic structured market-intelligence result", () => {
   const second = analyzeMarketSnapshot(input);
   assert.deepEqual(first, second);
   assert.deepEqual(JSON.parse(JSON.stringify(first)), first);
-  assert.equal(first.schemaVersion, "1.0");
+  assert.equal(first.schemaVersion, "1.1");
   assert.equal(first.source.provider, "Mock provider");
   assert.equal(first.actionable, true);
   assert.equal(first.scenarios.reduce((sum, scenario) => sum + scenario.probability, 0), 100);
@@ -56,6 +58,72 @@ test("produces bullish, neutral and bearish structured scenarios", () => {
   assert.deepEqual(result.scenarios[0].trigger, { kind: "ABOVE_RESISTANCE", level: "6,335" });
   assert.deepEqual(result.scenarios[0].invalidation, { kind: "BELOW_SUPPORT", level: "6,300" });
   assert.deepEqual(result.scenarios[2].trigger, { kind: "BELOW_SUPPORT", level: "6,300" });
+  result.scenarios.forEach((scenario) => {
+    assert.equal(scenario.evidence.length, 4);
+    scenario.evidence.forEach((item) => {
+      assert.ok(["SUPPORTS", "NEUTRAL", "OPPOSES"].includes(item.relation));
+      assert.ok(item.score >= 0 && item.score <= 100);
+    });
+  });
+});
+
+test("provides structured reasoning for every score", () => {
+  const result = analyzeMarketSnapshot(snapshot());
+  assert.equal(result.reasoning.overallConfidence.score, result.scores.bullseyeConfidence);
+  assert.equal(result.reasoning.overallConfidence.inputs.length, 4);
+  assert.ok(result.reasoning.riskDrivers.length > 0);
+  assert.ok(result.reasoning.sentimentDrivers.length > 0);
+  assert.ok(result.reasoning.trendDrivers.length > 0);
+  assert.ok(result.reasoning.volatilityDrivers.length > 0);
+  for (const drivers of [
+    result.reasoning.riskDrivers,
+    result.reasoning.sentimentDrivers,
+    result.reasoning.trendDrivers,
+    result.reasoning.volatilityDrivers,
+  ]) {
+    drivers.forEach((driver) => {
+      assert.equal(typeof driver.factor, "string");
+      assert.ok(driver.normalizedScore >= 0 && driver.normalizedScore <= 100);
+      assert.ok(driver.weight > 0 && driver.weight <= 1);
+      assert.equal(typeof driver.contribution, "number");
+    });
+  }
+});
+
+test("reports structured Treasury, dollar and VIX impacts", () => {
+  const result = analyzeMarketSnapshot(snapshot());
+  assert.equal(result.reasoning.treasuryImpact.availability, "AVAILABLE");
+  assert.deepEqual(result.reasoning.treasuryImpact.inputs.map((input) => input.factor), ["US2Y", "US10Y"]);
+  assert.equal(result.reasoning.dollarImpact.availability, "AVAILABLE");
+  assert.equal(result.reasoning.dollarImpact.inputs[0]?.factor, "DXY");
+  assert.equal(result.reasoning.vixImpact.availability, "AVAILABLE");
+  assert.equal(result.reasoning.vixImpact.inputs[0]?.value, 15);
+  assert.deepEqual(result.reasoning.missingDataWarnings, []);
+});
+
+test("emits deterministic missing-data warning codes", () => {
+  const result = analyzeMarketSnapshot(snapshot({
+    quotes: [{ symbol: "ES", label: "ES FUTURES", value: "6,325.50", change: "0", direction: "flat" }],
+    levels: [],
+    evidence: { trend: 50 },
+  }));
+  assert.equal(result.reasoning.treasuryImpact.availability, "MISSING");
+  assert.equal(result.reasoning.dollarImpact.availability, "MISSING");
+  assert.equal(result.reasoning.vixImpact.availability, "MISSING");
+  assert.equal(result.reasoning.riskDrivers.find((driver) => driver.factor === "MACRO_EVIDENCE")?.rawValue, null);
+  assert.equal(result.reasoning.volatilityDrivers.find((driver) => driver.factor === "VOLATILITY_EVIDENCE")?.rawValue, null);
+  assert.deepEqual(result.reasoning.missingDataWarnings, [
+    { code: "MISSING_QUOTE", field: "VIX" },
+    { code: "MISSING_QUOTE", field: "US2Y" },
+    { code: "MISSING_QUOTE", field: "US10Y" },
+    { code: "MISSING_QUOTE", field: "DXY" },
+    { code: "MISSING_EVIDENCE", field: "momentum" },
+    { code: "MISSING_EVIDENCE", field: "volatility" },
+    { code: "MISSING_EVIDENCE", field: "breadth" },
+    { code: "MISSING_EVIDENCE", field: "macro" },
+    { code: "MISSING_LEVEL", field: "support" },
+    { code: "MISSING_LEVEL", field: "resistance" },
+  ]);
 });
 
 test("moves toward bearish risk-off conditions when trend and volatility deteriorate", () => {
