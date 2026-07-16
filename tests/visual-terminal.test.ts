@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import type { MarketSnapshot } from "../app/lib/market-data.ts";
-import { TERMINAL_TIMEFRAMES, chartDisplayState, clampConfidence, terminalMarketState, verifiedQuote } from "../app/terminal/lib/visual-terminal.ts";
+import { TERMINAL_TIMEFRAMES, chartDisplayState, clampConfidence, isValidOhlcv, terminalMarketState, verifiedQuote } from "../app/terminal/lib/visual-terminal.ts";
 
 test("chart reports an honest empty state without candles", () => {
   assert.equal(chartDisplayState([]), "empty");
@@ -14,6 +14,8 @@ test("chart loading state takes precedence", () => {
 
 test("chart error state is explicit", () => {
   assert.equal(chartDisplayState([], false, "provider timeout"), "error");
+  assert.equal(chartDisplayState([{ time: 1, open: 2, high: 1, low: 0, close: 2, volume: 1 }]), "error");
+  assert.equal(isValidOhlcv([]), true);
 });
 
 test("chart exposes every required timeframe", () => {

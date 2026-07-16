@@ -9,11 +9,11 @@ import { formatMarketGatewayDataAge } from "../lib/live-market-gateway";
 import { formatSnapshotAge, formatUkTimestamp } from "../lib/market-data";
 import { TerminalControls } from "./components/TerminalControls";
 import { MarketChart } from "./components/MarketChart";
-import { DecisionSummary, IntelligenceSummary, PlannerSummary, WarningList } from "./components/EngineSummary";
+import { DecisionSummary, IntelligenceSummary, PlannerSummary, TerminalSummaryStrip, WarningList } from "./components/EngineSummary";
 import { TerminalBadge } from "./components/TerminalBadge";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { terminalStatusMessage } from "./lib/terminal-state";
-import { terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
+import { chartDataForStatus, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Bullseye Terminal | NASH AI Markets", description: "Professional deterministic market intelligence terminal." };
@@ -37,6 +37,8 @@ export default async function Terminal() {
   const state = terminalMarketState(snapshot.status, gatewayStatus.connectionStatus, gatewayStatus.fallbackActive);
   const isVerified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
   const quotes = ["ES", "VIX", "US2Y", "US10Y", "DXY"].map((symbol) => verifiedQuote(snapshot, symbol));
+  const chart = chartDataForStatus(snapshot.status);
+  const highImpactEvents = isVerified ? snapshot.events.filter((event) => event.risk === "HIGH") : [];
   const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
 
   return <main className="foxtrotTerminal" id="overview">
@@ -54,17 +56,19 @@ export default async function Terminal() {
     <section className="ftWorkspace">
       <div className={`ftSafetyBanner ftSafetyBanner-${state.toLowerCase()}`} role={!isVerified ? "alert" : "status"}><div><TerminalBadge label={snapshot.status === "PREVIEW" ? "PREVIEW / DEMO" : state} tone={toneForState(state)} /><strong>{terminalStatusMessage(snapshot.status, gatewayStatus.failureCount)}</strong></div>{!isVerified ? <Link href="/terminal">Retry provider</Link> : null}</div>
 
+      <TerminalSummaryStrip intelligence={intelligence} decision={decision} plan={plan} />
+
       <section className="ftQuoteStrip" aria-label="Market snapshot" id="markets">
         {quotes.map((quote, index) => <article key={quote?.symbol ?? index}><span>{quote?.label ?? ["ES FUTURES", "VIX", "US 2Y", "US 10Y", "US DOLLAR"][index]}</span><strong>{quote?.value ?? "—"}</strong><TerminalBadge label={quote?.change ?? "Unavailable"} tone={quoteTone(quote?.direction)} /></article>)}
       </section>
 
-      <section className="ftPrimaryGrid" id="chart"><MarketChart data={[]} symbol="ES" /><div className="ftDecisionStack"><DecisionSummary decision={decision} /><PlannerSummary plan={plan} /></div></section>
+      <section className="ftPrimaryGrid" id="chart"><MarketChart data={[...chart.data]} mode={chart.mode} symbol="ES" /><div className="ftDecisionStack"><DecisionSummary decision={decision} /><PlannerSummary plan={plan} /></div></section>
 
-      <section className="ftAnalysisGrid" id="intelligence"><IntelligenceSummary intelligence={intelligence} /><section className="ftCard ftRiskMonitor"><header><div><span>RISK MONITOR</span><h2>Warnings &amp; constraints</h2></div><TerminalBadge label={`${decision.dataQualityWarnings.length + plan.eventRiskWarnings.length} flags`} tone={decision.dataQualityWarnings.length ? "warning" : "positive"} /></header>{decision.dataQualityWarnings.length ? <WarningList title="Data-quality warnings" values={decision.dataQualityWarnings.map((warning) => `${warning.code}: ${warning.field}`)} /> : <p className="ftEmptyCopy">No engine data-quality warnings.</p>}{plan.eventRiskWarnings.length ? <WarningList title="Event-risk warnings" values={plan.eventRiskWarnings.map((warning) => warning.code)} /> : null}</section></section>
+      <section className="ftAnalysisGrid" id="intelligence"><IntelligenceSummary intelligence={intelligence} /><section className="ftCard ftRiskMonitor"><header><div><span>RISK MONITOR</span><h2>Warnings &amp; constraints</h2></div><TerminalBadge label={`${decision.dataQualityWarnings.length + plan.eventRiskWarnings.length + highImpactEvents.length} flags`} tone={decision.dataQualityWarnings.length || highImpactEvents.length ? "warning" : "positive"} /></header><p className="ftStateCopy">{terminalFallbackMessage(state, snapshot.status)}</p>{decision.dataQualityWarnings.length ? <WarningList title="Data-quality warnings" values={decision.dataQualityWarnings.map((warning) => `${warning.code}: ${warning.field}`)} /> : <p className="ftEmptyCopy">No engine data-quality warnings.</p>}{plan.eventRiskWarnings.length ? <WarningList title="Planner event-risk warnings" values={plan.eventRiskWarnings.map((warning) => warning.code)} /> : null}{highImpactEvents.length ? <WarningList title="High-impact provider events" values={highImpactEvents.map((event) => `${event.time}: ${event.name}`)} /> : null}</section></section>
 
       <section className="ftLowerGrid">
         <section className="ftCard ftEvents" id="events"><header><div><span>ECONOMIC EVENT WINDOW</span><h2>Upcoming catalysts</h2></div><TerminalBadge label={snapshot.events.length && isVerified ? "Provider data" : "Placeholder"} tone={snapshot.events.length && isVerified ? "info" : "neutral"} /></header>{snapshot.events.length && isVerified ? <div className="eventRows">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><TerminalBadge label={event.risk} tone={event.risk === "HIGH" ? "danger" : "warning"} /></article>)}</div> : <div className="ftUnavailable"><strong>No verified economic events</strong><span>The current provider has not supplied an economic calendar. No events have been inferred.</span></div>}</section>
-        <section className="ftCard ftProvider" id="provider"><header><div><span>MARKET GATEWAY</span><h2>Provider &amp; data quality</h2></div><TerminalBadge label={gatewayStatus.connectionStatus.replace("_", " ")} tone={toneForState(state)} /></header><dl><div><dt>Provider</dt><dd>{gatewayStatus.providerName}</dd></div><div><dt>Data age</dt><dd>{formatMarketGatewayDataAge(gatewayStatus.dataAgeMs)}</dd></div><div><dt>Last attempt</dt><dd>{gatewayStatus.lastAttempt ? formatUkTimestamp(gatewayStatus.lastAttempt) : "Not attempted"}</dd></div><div><dt>Last success</dt><dd>{gatewayStatus.lastSuccessfulUpdate ? formatUkTimestamp(gatewayStatus.lastSuccessfulUpdate) : "None"}</dd></div><div><dt>Failures</dt><dd>{gatewayStatus.failureCount}</dd></div><div><dt>Fallback</dt><dd>{gatewayStatus.fallbackActive ? "Active" : "Inactive"}</dd></div></dl></section>
+        <section className="ftCard ftProvider" id="provider"><header><div><span>MARKET GATEWAY</span><h2>Provider &amp; data quality</h2></div><TerminalBadge label={gatewayStatus.connectionStatus.replace("_", " ")} tone={toneForState(state)} /></header><dl><div><dt>Provider</dt><dd>{gatewayStatus.providerName}</dd></div><div><dt>Snapshot status</dt><dd>{snapshot.status}</dd></div><div><dt>Data age</dt><dd>{formatMarketGatewayDataAge(gatewayStatus.dataAgeMs)}</dd></div><div><dt>Last attempt</dt><dd>{gatewayStatus.lastAttempt ? formatUkTimestamp(gatewayStatus.lastAttempt) : "Not attempted"}</dd></div><div><dt>Last success</dt><dd>{gatewayStatus.lastSuccessfulUpdate ? formatUkTimestamp(gatewayStatus.lastSuccessfulUpdate) : "None"}</dd></div><div><dt>Failures</dt><dd>{gatewayStatus.failureCount}</dd></div><div><dt>Fallback</dt><dd>{gatewayStatus.fallbackActive ? "Active" : "Inactive"}</dd></div><div><dt>Warnings</dt><dd>{decision.dataQualityWarnings.length}</dd></div></dl></section>
       </section>
 
       <footer className="ftFooter"><span>Educational decision support only. Not personalised financial advice. Futures and options involve substantial risk. Verify source, status and timestamp independently.</span><Link href="/terms">Terms &amp; risk disclosure</Link></footer>

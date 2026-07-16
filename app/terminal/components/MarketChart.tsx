@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { UTCTimestamp } from "lightweight-charts";
-import { TERMINAL_TIMEFRAMES, chartDisplayState, type OhlcvPoint, type TerminalTimeframe } from "../lib/visual-terminal.ts";
+import { TERMINAL_TIMEFRAMES, chartDisplayState, type ChartDataMode, type OhlcvPoint, type TerminalTimeframe } from "../lib/visual-terminal.ts";
 
 type MarketChartProps = {
   data: OhlcvPoint[];
@@ -10,9 +10,10 @@ type MarketChartProps = {
   loading?: boolean;
   error?: string;
   initialTimeframe?: TerminalTimeframe;
+  mode?: ChartDataMode;
 };
 
-export function MarketChart({ data, symbol, loading = false, error, initialTimeframe = "15m" }: MarketChartProps) {
+export function MarketChart({ data, symbol, loading = false, error, initialTimeframe = "15m", mode = "verified" }: MarketChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [timeframe, setTimeframe] = useState<TerminalTimeframe>(initialTimeframe);
   const state = chartDisplayState(data, loading, error);
@@ -50,7 +51,7 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
   return (
     <section className="marketChart" aria-label={`${symbol} candlestick chart`} data-chart-state={state}>
       <header className="marketChartHeader">
-        <div><span>PRIMARY WORKSPACE</span><strong>{symbol} · Candles &amp; volume</strong></div>
+        <div><span>PRIMARY WORKSPACE</span><strong>{symbol} · Candles &amp; volume</strong>{mode === "preview" ? <em>PREVIEW FIXTURE · FIXED HISTORICAL DATA · NOT LIVE</em> : null}</div>
         <div className="timeframeSelector" aria-label="Chart timeframe">
           {TERMINAL_TIMEFRAMES.map((option) => <button key={option} type="button" aria-pressed={timeframe === option} onClick={() => setTimeframe(option)}>{option}</button>)}
         </div>
@@ -58,7 +59,7 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
       {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} /> : (
         <div className={`marketChartState marketChartState-${state}`} role={state === "error" ? "alert" : "status"}>
           {state === "loading" ? <><i className="chartLoader" /><strong>Loading chart data</strong><span>Waiting for verified OHLCV candles.</span></> : null}
-          {state === "error" ? <><strong>Chart unavailable</strong><span>{error}</span></> : null}
+          {state === "error" ? <><strong>Chart unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered."}</span></> : null}
           {state === "empty" ? <><strong>No verified candle data</strong><span>The current provider snapshot does not include OHLCV history. No candles have been invented.</span></> : null}
         </div>
       )}
