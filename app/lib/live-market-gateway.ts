@@ -1,35 +1,83 @@
-import { createPreviewSnapshot, type MarketDataProvider, type MarketSnapshot, normalizeSnapshotFreshness } from "./market-data.ts";
+import {
+  createUnavailableSnapshot,
+  type MarketDataProvider,
+  type MarketEvent,
+  type MarketQuote,
+  type MarketSnapshot,
+  normalizeSnapshotFreshness,
+} from "./market-data.ts";
+
+export const REQUIRED_MARKET_GATEWAY_COVERAGE = [
+  "sp500Futures",
+  "vix",
+  "us2YearYield",
+  "us10YearYield",
+  "usDollarIndex",
+  "economicCalendar",
+] as const;
+
+export type MarketGatewayCoverage = typeof REQUIRED_MARKET_GATEWAY_COVERAGE[number];
+
+export type LiveMarketProviderPayload = {
+  sp500Futures: MarketQuote;
+  vix: MarketQuote;
+  us2YearYield: MarketQuote;
+  us10YearYield: MarketQuote;
+  usDollarIndex: MarketQuote;
+  economicCalendar: MarketEvent[];
+  snapshot: Omit<MarketSnapshot, "quotes" | "events">;
+};
+
+/** Contract for a future licensed provider. No paid provider is connected in this build. */
+export interface LiveMarketProviderContract {
+  readonly name: string;
+  readonly coverage: Readonly<Record<MarketGatewayCoverage, true>>;
+  fetchMarketData(): Promise<LiveMarketProviderPayload | null>;
+}
 
 export type MarketSliceAdapter = {
   name: string;
   fetchSnapshot: () => Promise<MarketSnapshot | null>;
 };
 
-export type ProviderHealthStatus = "healthy" | "degraded" | "offline";
+export type MarketGatewayConnectionStatus = "connected" | "degraded" | "offline" | "not_configured";
 
-export type ProviderConnectionState = {
-  status: ProviderHealthStatus;
-  lastSuccessfulUpdate: string | null;
+export type MarketGatewayStatus = {
+  connectionStatus: MarketGatewayConnectionStatus;
+  providerName: string;
   lastAttempt: string | null;
-  consecutiveFailures: number;
-  lastError: string | null;
-  dataFreshness: "fresh" | "stale" | "unknown";
+  lastSuccessfulUpdate: string | null;
+  dataAgeMs: number | null;
+  failureCount: number;
+  fallbackActive: boolean;
 };
 
 export type LiveMarketGatewayOptions = {
   provider: MarketDataProvider;
-  fallbackSnapshot?: MarketSnapshot;
+  providerName: string;
   maxRetries?: number;
   retryDelayMs?: number;
   logger?: (message: string, details?: Record<string, unknown>) => void;
 };
 
-function createFallbackSnapshot(): MarketSnapshot {
+export function createProviderContractAdapter(contract: LiveMarketProviderContract): MarketDataProvider {
   return {
-    ...createPreviewSnapshot(),
-    status: "PREVIEW",
-    source: "Simulated market gateway fallback",
-    summary: "The live provider is unavailable. Simulated market data is being shown while the gateway retries.",
+    async fetchSnapshot() {
+      const payload = await contract.fetchMarketData();
+      if (!payload) return null;
+      return {
+        ...payload.snapshot,
+        source: payload.snapshot.source || contract.name,
+        quotes: [
+          payload.sp500Futures,
+          payload.vix,
+          payload.us2YearYield,
+          payload.us10YearYield,
+          payload.usDollarIndex,
+        ],
+        events: payload.economicCalendar,
+      };
+    },
   };
 }
 
@@ -43,11 +91,11 @@ export function createCompositeMarketDataProvider(slices: MarketSliceAdapter[]):
 
       if (snapshots.length === 0) return null;
 
-      return snapshots.reduce<MarketSnapshot>((accumulator, { snapshot }) => ({
+      return snapshots.slice(1).reduce<MarketSnapshot>((accumulator, { snapshot }) => ({
         ...accumulator,
         status: accumulator.status === "LIVE" && snapshot.status === "LIVE" ? "LIVE" : "DELAYED",
         source: `${accumulator.source}, ${snapshot.source}`,
-        asOf: snapshot.asOf,
+        asOf: new Date(accumulator.asOf).getTime() <= new Date(snapshot.asOf).getTime() ? accumulator.asOf : snapshot.asOf,
         quotes: [...accumulator.quotes, ...snapshot.quotes],
         levels: [...accumulator.levels, ...snapshot.levels],
         events: [...accumulator.events, ...snapshot.events],
@@ -55,61 +103,97 @@ export function createCompositeMarketDataProvider(slices: MarketSliceAdapter[]):
         risk: snapshot.risk || accumulator.risk,
         summary: snapshot.summary || accumulator.summary,
         evidence: { ...accumulator.evidence, ...snapshot.evidence },
-      }), snapshots[0]?.snapshot ?? createFallbackSnapshot());
+      }), snapshots[0]!.snapshot);
     },
   };
 }
 
+function dataAgeMs(asOf: string, now: number): number | null {
+  const timestamp = new Date(asOf).getTime();
+  return Number.isFinite(timestamp) ? Math.max(0, now - timestamp) : null;
+}
+
+export function createUnconfiguredMarketGatewayStatus(providerName = "Not configured"): MarketGatewayStatus {
+  return {
+    connectionStatus: "not_configured",
+    providerName,
+    lastAttempt: null,
+    lastSuccessfulUpdate: null,
+    dataAgeMs: null,
+    failureCount: 0,
+    fallbackActive: true,
+  };
+}
+
+export function formatMarketGatewayDataAge(dataAgeMs: number | null): string {
+  if (dataAgeMs === null) return "Unavailable";
+  const seconds = Math.floor(dataAgeMs / 1000);
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
 export class LiveMarketGateway {
   private provider: MarketDataProvider;
-  private fallbackSnapshot: MarketSnapshot;
   private maxRetries: number;
   private retryDelayMs: number;
   private logger: (message: string, details?: Record<string, unknown>) => void;
-  private state: ProviderConnectionState = {
-    status: "offline",
-    lastSuccessfulUpdate: null,
-    lastAttempt: null,
-    consecutiveFailures: 0,
-    lastError: null,
-    dataFreshness: "unknown",
-  };
+  private state: MarketGatewayStatus;
 
   constructor(options: LiveMarketGatewayOptions) {
     this.provider = options.provider;
-    this.fallbackSnapshot = options.fallbackSnapshot ?? createFallbackSnapshot();
     this.maxRetries = options.maxRetries ?? 2;
     this.retryDelayMs = options.retryDelayMs ?? 300;
     this.logger = options.logger ?? ((message, details) => console.info(`[${message}]`, details ?? {}));
+    this.state = {
+      connectionStatus: "offline",
+      providerName: options.providerName,
+      lastAttempt: null,
+      lastSuccessfulUpdate: null,
+      dataAgeMs: null,
+      failureCount: 0,
+      fallbackActive: false,
+    };
   }
 
-  getState(): ProviderConnectionState {
+  getStatus(): MarketGatewayStatus {
     return { ...this.state };
   }
 
+  /** Compatibility alias for existing callers. */
+  getState(): MarketGatewayStatus {
+    return this.getStatus();
+  }
+
   async fetchSnapshot(now = Date.now()): Promise<MarketSnapshot> {
-    const timestamp = new Date().toISOString();
-    this.state.lastAttempt = timestamp;
+    this.state.lastAttempt = new Date(now).toISOString();
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
       try {
         const snapshot = await this.provider.fetchSnapshot();
-        if (snapshot) {
-          const normalized = normalizeSnapshotFreshness(snapshot, now);
-          this.state.status = normalized.status === "LIVE" || normalized.status === "DELAYED" ? "healthy" : "degraded";
-          this.state.lastSuccessfulUpdate = timestamp;
-          this.state.consecutiveFailures = 0;
-          this.state.lastError = null;
-          this.state.dataFreshness = normalized.status === "LIVE" ? "fresh" : normalized.status === "DELAYED" ? "stale" : "unknown";
-          this.logger("market-provider:success", { status: normalized.status, source: normalized.source, attempt: attempt + 1 });
-          return normalized;
+        if (!snapshot) throw new Error("Provider returned no market snapshot");
+
+        const normalized = normalizeSnapshotFreshness(snapshot, now);
+        if (normalized.status !== "LIVE" && normalized.status !== "DELAYED") {
+          throw new Error(`Provider snapshot is ${normalized.status.toLowerCase()}`);
         }
+
+        this.state.connectionStatus = normalized.status === "LIVE" ? "connected" : "degraded";
+        this.state.lastSuccessfulUpdate = normalized.asOf;
+        this.state.dataAgeMs = dataAgeMs(normalized.asOf, now);
+        this.state.fallbackActive = false;
+        this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1 });
+        return normalized;
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown provider error";
-        this.state.consecutiveFailures += 1;
-        this.state.lastError = message;
-        this.state.status = this.state.consecutiveFailures >= 2 ? "offline" : "degraded";
-        this.logger("market-provider:error", { error: message, attempt: attempt + 1, consecutiveFailures: this.state.consecutiveFailures });
+        this.state.failureCount += 1;
+        this.state.connectionStatus = "offline";
+        this.logger("market-provider:error", {
+          error: error instanceof Error ? error.message : "Unknown provider error",
+          provider: this.state.providerName,
+          attempt: attempt + 1,
+          failureCount: this.state.failureCount,
+        });
       }
 
       if (attempt < this.maxRetries) {
@@ -117,10 +201,9 @@ export class LiveMarketGateway {
       }
     }
 
-    const fallback = normalizeSnapshotFreshness(this.fallbackSnapshot, now);
-    this.state.status = "offline";
-    this.state.dataFreshness = "stale";
-    this.logger("market-provider:fallback", { source: fallback.source, status: fallback.status });
-    return fallback;
+    this.state.fallbackActive = true;
+    this.state.dataAgeMs = this.state.lastSuccessfulUpdate ? dataAgeMs(this.state.lastSuccessfulUpdate, now) : null;
+    this.logger("market-provider:fallback", { provider: this.state.providerName });
+    return createUnavailableSnapshot(this.state.lastSuccessfulUpdate ?? this.state.lastAttempt ?? new Date(now).toISOString());
   }
 }

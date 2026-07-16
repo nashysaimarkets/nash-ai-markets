@@ -4,9 +4,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { runBullseyeEngine } from "../lib/bullseye-engine";
-import { formatSnapshotAge, formatUkTimestamp, getMarketSnapshot } from "../lib/market-data";
+import { formatMarketGatewayDataAge } from "../lib/live-market-gateway";
+import { formatSnapshotAge, formatUkTimestamp } from "../lib/market-data";
 import { createDashboardViewModel } from "./lib/dashboard-data";
-import { createTerminalMarketDataProvider } from "./lib/terminal-market-data-provider";
+import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { Panel } from "./components/Panel";
 import { MetricChip } from "./components/MetricChip";
 import { DecisionVerdict } from "./components/DecisionVerdict";
@@ -43,8 +44,7 @@ export default async function Terminal() {
 
   if (!membership) redirect("/?membership=required#membership");
 
-  const provider = createTerminalMarketDataProvider();
-  const snapshot = await getMarketSnapshot({ provider });
+  const { snapshot, gatewayStatus } = await getTerminalMarketData();
   const bullseye = runBullseyeEngine(snapshot);
   const viewModel = createDashboardViewModel(snapshot, bullseye);
   const asOf = formatUkTimestamp(snapshot.asOf);
@@ -75,7 +75,7 @@ export default async function Terminal() {
           <div>
             <span className="kicker">MISSION CONTROL™ V3</span>
             <h1>Good morning, trader.</h1>
-            <p>{snapshot.source} · As of {asOf} UK · {snapshotAge}</p>
+            <p>{snapshot.source} · {isVerified ? `As of ${asOf} UK · ${snapshotAge}` : "No verified market update available"}</p>
           </div>
           <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}>
             <span>DATA STATUS</span>
@@ -94,6 +94,15 @@ export default async function Terminal() {
         <section className="terminalDashboardGrid" aria-label="Dashboard sections">
           <Panel eyebrow="DATA PROVENANCE" title="Dashboard source status" subtitle="Fact vs analysis" className="panelProvenance" id="provenance" provenance={viewModel.provenance}>
             <p className="panelBody">The dashboard now records provenance metadata for each card so you can distinguish validated facts from AI-generated analysis at a glance.</p>
+            <dl className="marketGatewayStatus" aria-label="Market gateway status">
+              <div><dt>CONNECTION</dt><dd>{gatewayStatus.connectionStatus.replace("_", " ").toUpperCase()}</dd></div>
+              <div><dt>PROVIDER</dt><dd>{gatewayStatus.providerName}</dd></div>
+              <div><dt>LAST ATTEMPT</dt><dd>{gatewayStatus.lastAttempt ? formatUkTimestamp(gatewayStatus.lastAttempt) : "Not attempted"}</dd></div>
+              <div><dt>LAST SUCCESS</dt><dd>{gatewayStatus.lastSuccessfulUpdate ? formatUkTimestamp(gatewayStatus.lastSuccessfulUpdate) : "None"}</dd></div>
+              <div><dt>DATA AGE</dt><dd>{formatMarketGatewayDataAge(gatewayStatus.dataAgeMs)}</dd></div>
+              <div><dt>FAILURES</dt><dd>{gatewayStatus.failureCount}</dd></div>
+              <div><dt>FALLBACK</dt><dd>{gatewayStatus.fallbackActive ? "ACTIVE" : "INACTIVE"}</dd></div>
+            </dl>
           </Panel>
           <Panel eyebrow="NASH AI DECISION ENGINE" title="Market verdict" subtitle="Synthesised recommendation" className="panelVerdict" id="verdict" provenance={viewModel.analysisProvenance}>
             <DecisionVerdict

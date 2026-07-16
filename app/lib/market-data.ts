@@ -75,6 +75,21 @@ export function createPreviewSnapshot(): MarketSnapshot {
   };
 }
 
+export function createUnavailableSnapshot(asOf = new Date().toISOString()): MarketSnapshot {
+  return {
+    status: "UNAVAILABLE",
+    source: "No verified live market provider",
+    asOf,
+    quotes: [],
+    levels: [],
+    events: [],
+    bias: "UNAVAILABLE",
+    risk: "HIGH",
+    summary: "Verified market data is unavailable. No live values or directional guidance have been supplied by the market gateway.",
+    evidence: {},
+  };
+}
+
 function isScoreRecord(value: unknown): value is Record<string, number> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value) &&
     Object.values(value as Record<string, unknown>).every((score) =>

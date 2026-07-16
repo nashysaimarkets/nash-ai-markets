@@ -3,8 +3,8 @@ import test from "node:test";
 import { getMarketSnapshot } from "../app/lib/market-data.ts";
 import { createDashboardViewModel } from "../app/terminal/lib/dashboard-data.ts";
 import { createDataProvenance } from "../app/terminal/lib/provenance.ts";
-import { createTerminalMarketDataProvider } from "../app/terminal/lib/terminal-market-data-provider.ts";
-import { createCompositeMarketDataProvider, LiveMarketGateway } from "../app/lib/live-market-gateway.ts";
+import { createTerminalMarketDataProvider, getTerminalMarketData } from "../app/terminal/lib/terminal-market-data-provider.ts";
+import { createCompositeMarketDataProvider, LiveMarketGateway, REQUIRED_MARKET_GATEWAY_COVERAGE } from "../app/lib/live-market-gateway.ts";
 
 test("builds a terminal dashboard view model from the market snapshot", () => {
   const snapshot = {
@@ -98,9 +98,33 @@ test("uses a custom provider when fetching the market snapshot", async () => {
   assert.equal(snapshot.events[0]?.name, "CPI print");
 });
 
-test("builds the terminal provider with the default adapter", () => {
+test("does not create a live adapter when no provider is configured", () => {
   const provider = createTerminalMarketDataProvider();
-  assert.equal(typeof provider, "object");
+  assert.equal(provider, undefined);
+});
+
+test("exposes a reusable not-configured gateway status without live values", async () => {
+  const result = await getTerminalMarketData(undefined, Date.parse("2026-07-16T12:00:00.000Z"));
+  assert.equal(result.snapshot.status, "UNAVAILABLE");
+  assert.deepEqual(result.snapshot.quotes, []);
+  assert.deepEqual(result.snapshot.events, []);
+  assert.equal(result.gatewayStatus.connectionStatus, "not_configured");
+  assert.equal(result.gatewayStatus.lastAttempt, null);
+  assert.equal(result.gatewayStatus.lastSuccessfulUpdate, null);
+  assert.equal(result.gatewayStatus.dataAgeMs, null);
+  assert.equal(result.gatewayStatus.failureCount, 0);
+  assert.equal(result.gatewayStatus.fallbackActive, true);
+});
+
+test("defines all required future provider coverage", () => {
+  assert.deepEqual(REQUIRED_MARKET_GATEWAY_COVERAGE, [
+    "sp500Futures",
+    "vix",
+    "us2YearYield",
+    "us10YearYield",
+    "usDollarIndex",
+    "economicCalendar",
+  ]);
 });
 
 test("maps provider-backed market data into the terminal panels", async () => {
@@ -160,15 +184,87 @@ test("maps provider-backed market data into the terminal panels", async () => {
   assert.equal(viewModel.economicEvents[0]?.name, "CPI print");
 });
 
-test("falls back to simulated data when the gateway provider fails", async () => {
+test("falls back to an empty unavailable snapshot and records provider failures", async () => {
   const gateway = new LiveMarketGateway({
     provider: { fetchSnapshot: async () => { throw new Error("boom"); } },
+    providerName: "Test provider",
+    maxRetries: 1,
+    retryDelayMs: 0,
     logger: () => undefined,
   });
 
-  const snapshot = await gateway.fetchSnapshot(Date.now());
-  assert.equal(snapshot.status, "PREVIEW");
-  assert.equal(gateway.getState().status, "offline");
+  const now = Date.parse("2026-07-16T12:00:00.000Z");
+  const snapshot = await gateway.fetchSnapshot(now);
+  const status = gateway.getStatus();
+  assert.equal(snapshot.status, "UNAVAILABLE");
+  assert.deepEqual(snapshot.quotes, []);
+  assert.equal(status.connectionStatus, "offline");
+  assert.equal(status.providerName, "Test provider");
+  assert.equal(status.lastAttempt, new Date(now).toISOString());
+  assert.equal(status.lastSuccessfulUpdate, null);
+  assert.equal(status.dataAgeMs, null);
+  assert.equal(status.failureCount, 2);
+  assert.equal(status.fallbackActive, true);
+});
+
+test("records provider success, connection status and data age", async () => {
+  const now = Date.parse("2026-07-16T12:00:00.000Z");
+  const asOf = new Date(now - 2 * 60_000).toISOString();
+  const gateway = new LiveMarketGateway({
+    providerName: "Test provider",
+    maxRetries: 0,
+    logger: () => undefined,
+    provider: { fetchSnapshot: async () => ({
+      status: "LIVE",
+      source: "Test provider",
+      asOf,
+      quotes: [],
+      levels: [],
+      events: [],
+      bias: "NEUTRAL",
+      risk: "MODERATE",
+      summary: "Test data",
+      evidence: {},
+    }) },
+  });
+
+  const snapshot = await gateway.fetchSnapshot(now);
+  const status = gateway.getStatus();
+  assert.equal(snapshot.status, "LIVE");
+  assert.equal(status.connectionStatus, "connected");
+  assert.equal(status.lastSuccessfulUpdate, asOf);
+  assert.equal(status.dataAgeMs, 2 * 60_000);
+  assert.equal(status.failureCount, 0);
+  assert.equal(status.fallbackActive, false);
+});
+
+test("marks permitted delayed provider data as degraded without fallback", async () => {
+  const now = Date.parse("2026-07-16T12:00:00.000Z");
+  const asOf = new Date(now - 10 * 60_000).toISOString();
+  const gateway = new LiveMarketGateway({
+    providerName: "Delayed test provider",
+    maxRetries: 0,
+    logger: () => undefined,
+    provider: { fetchSnapshot: async () => ({
+      status: "DELAYED",
+      source: "Delayed test provider",
+      asOf,
+      quotes: [],
+      levels: [],
+      events: [],
+      bias: "NEUTRAL",
+      risk: "MODERATE",
+      summary: "Delayed test data",
+      evidence: {},
+    }) },
+  });
+
+  const snapshot = await gateway.fetchSnapshot(now);
+  const status = gateway.getStatus();
+  assert.equal(snapshot.status, "DELAYED");
+  assert.equal(status.connectionStatus, "degraded");
+  assert.equal(status.dataAgeMs, 10 * 60_000);
+  assert.equal(status.fallbackActive, false);
 });
 
 test("merges market slice adapters into a composite snapshot", async () => {
