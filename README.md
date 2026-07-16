@@ -112,7 +112,7 @@ The first live-provider adapter is enabled only when all required variables are 
 
 Optional operational and symbol settings are `FMP_REQUEST_TIMEOUT_MS`, `FMP_SP500_FUTURES_SYMBOL`, `FMP_VIX_SYMBOL`, and `FMP_US_DOLLAR_INDEX_SYMBOL`. Defaults are `ESUSD`, `^VIX`, and `DX-Y.NYB`; override them when the account's FMP symbol directory uses different identifiers.
 
-Credentials are sent in the `apikey` request header and must never be committed. If the provider selection, key, or base URL is absent, the terminal remains in its safe unconfigured fallback. FMP Treasury Rates are date-stamped rather than intraday; the gateway therefore rejects them once the existing delayed-data window has elapsed rather than presenting them as live.
+The adapter appends the credential as FMP's documented `apikey` query parameter at request time. Do not place a credential in `FMP_API_BASE_URL`, source code, or committed environment files. The deployment base URL should be FMP's Stable API base URL, while the credential remains exclusively in `FMP_API_KEY`. If the provider selection, key, or base URL is absent, the terminal remains in its safe unconfigured fallback. FMP Treasury Rates are date-stamped rather than intraday; the gateway therefore rejects them once the existing delayed-data window has elapsed rather than presenting them as live.
 
 ## Learn More
 

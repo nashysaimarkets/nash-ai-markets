@@ -98,9 +98,15 @@ function formatChange(quote: FmpQuote): string {
   return `${prefix}${quote.changesPercentage.toFixed(2)}%`;
 }
 
-function createUrl(baseUrl: string, pathname: string, symbol?: string): URL {
-  const url = new URL(pathname, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+function createUrl(baseUrl: string, pathname: string, apiKey: string, symbol?: string): URL {
+  const base = new URL(baseUrl);
+  const baseQuery = new URLSearchParams(base.search);
+  base.search = "";
+  if (!base.pathname.endsWith("/")) base.pathname = `${base.pathname}/`;
+  const url = new URL(pathname, base);
+  baseQuery.forEach((value, key) => url.searchParams.append(key, value));
   if (symbol) url.searchParams.set("symbol", symbol);
+  url.searchParams.set("apikey", apiKey);
   return url;
 }
 
@@ -119,8 +125,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       const request = async (pathname: string, symbol?: string): Promise<unknown> => {
-        const response = await fetchImpl(createUrl(options.baseUrl, pathname, symbol), {
-          headers: { apikey: options.apiKey },
+        const response = await fetchImpl(createUrl(options.baseUrl, pathname, options.apiKey, symbol), {
           cache: "no-store",
           signal: controller.signal,
         });

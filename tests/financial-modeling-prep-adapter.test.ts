@@ -7,8 +7,8 @@ import {
 } from "../app/lib/providers/financial-modeling-prep.ts";
 import { getTerminalMarketData } from "../app/terminal/lib/terminal-market-data-provider.ts";
 
-const TEST_BASE_URL = "https://provider.invalid/stable/";
-const TEST_API_KEY = "non-secret-test-value";
+const TEST_BASE_URL = "https://provider.invalid/stable/?region=us&format=json";
+const TEST_API_KEY = crypto.randomUUID();
 
 function jsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), { status, headers: { "content-type": "application/json" } });
@@ -18,8 +18,10 @@ function createMockFetch(asOf: string) {
   const timestamp = Date.parse(asOf) / 1000;
   return async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     const url = new URL(String(input));
-    assert.equal(url.searchParams.has("apikey"), false);
-    assert.equal(new Headers(init?.headers).get("apikey"), TEST_API_KEY);
+    assert.equal(url.searchParams.get("apikey") === TEST_API_KEY, true);
+    assert.equal(url.searchParams.get("region"), "us");
+    assert.equal(url.searchParams.get("format"), "json");
+    assert.equal(new Headers(init?.headers).has("apikey"), false);
     if (url.pathname.endsWith("/treasury-rates")) {
       return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
     }
@@ -47,6 +49,27 @@ test("maps a valid mocked FMP response into the generic market snapshot", async 
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,325.50");
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "US2Y")?.value, "4.18%");
   assert.deepEqual(snapshot.events, []);
+});
+
+test("appends query authentication without replacing existing query parameters", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const requestedQueries: Array<Record<string, string>> = [];
+  const mockFetch = createMockFetch(asOf);
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input, init) => {
+      const url = new URL(String(input));
+      requestedQueries.push(Object.fromEntries(url.searchParams));
+      return mockFetch(input, init);
+    },
+  });
+
+  await adapter.fetchSnapshot();
+  assert.equal(requestedQueries.length, 4);
+  assert.equal(requestedQueries.every((query) => query.apikey === TEST_API_KEY), true);
+  assert.equal(requestedQueries.every((query) => query.region === "us" && query.format === "json"), true);
+  assert.equal(requestedQueries.filter((query) => query.symbol).length, 3);
 });
 
 test("lets the gateway reject stale FMP data and activate fallback", async () => {
@@ -118,6 +141,7 @@ test("supports environment-provided symbol overrides without changing the generi
     symbols: { sp500Futures: "CUSTOM_ES" },
     fetchImpl: async (input) => {
       const url = new URL(String(input));
+      assert.equal(url.searchParams.get("apikey") === TEST_API_KEY, true);
       if (url.pathname.endsWith("/treasury-rates")) return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
       const symbol = url.searchParams.get("symbol")!;
       requestedSymbols.push(symbol);
