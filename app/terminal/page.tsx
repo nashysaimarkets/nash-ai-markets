@@ -45,6 +45,18 @@ export default async function Terminal() {
   const snapshot = await getMarketSnapshot();
   const bullseye = runBullseyeEngine(snapshot);
   const viewModel = createDashboardViewModel(snapshot, bullseye);
+  const factProvenance = {
+    ...viewModel.provenance,
+    kind: "fact" as const,
+    status: viewModel.provenance.status,
+    badgeLabel: viewModel.provenance.badgeLabel,
+  };
+  const analysisProvenance = {
+    ...viewModel.provenance,
+    kind: "analysis" as const,
+    status: viewModel.provenance.status === "UNAVAILABLE" ? "UNAVAILABLE" as const : "MODELLED" as const,
+    badgeLabel: viewModel.provenance.status === "UNAVAILABLE" ? "Unavailable" : "Modelled",
+  };
   const asOf = formatUkTimestamp(snapshot.asOf);
   const snapshotAge = formatSnapshotAge(snapshot.asOf);
   const isVerified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
@@ -90,6 +102,9 @@ export default async function Terminal() {
         </section>
 
         <section className="terminalDashboardGrid" aria-label="Dashboard sections">
+          <Panel eyebrow="DATA PROVENANCE" title="Dashboard source status" subtitle="Fact vs analysis" className="panelProvenance" id="provenance" provenance={factProvenance}>
+            <p className="panelBody">The dashboard now records provenance metadata for each card so you can distinguish validated facts from AI-generated analysis at a glance.</p>
+          </Panel>
           <Panel eyebrow="NASH AI DECISION ENGINE" title="Market verdict" subtitle="Synthesised recommendation" className="panelVerdict" id="verdict">
             <DecisionVerdict
               overallBias={viewModel.verdict.overallBias}
