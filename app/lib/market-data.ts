@@ -96,10 +96,13 @@ function normalizeRisk(value: unknown): MarketSnapshot["risk"] {
 
 function normalizeQuote(symbol: string, value: unknown): MarketQuote | null {
   if (!isRecord(value)) return null;
-  const candidate = value as Partial<MarketQuote>;
+  const candidate = value as Partial<MarketQuote> & Record<string, unknown>;
+  const resolvedSymbol = typeof candidate.symbol === "string" && candidate.symbol.trim().length > 0
+    ? candidate.symbol
+    : symbol;
   return {
-    symbol,
-    label: typeof candidate.label === "string" ? candidate.label : symbol,
+    symbol: resolvedSymbol,
+    label: typeof candidate.label === "string" ? candidate.label : resolvedSymbol,
     value: typeof candidate.value === "string" || typeof candidate.value === "number" ? String(candidate.value) : "—",
     change: typeof candidate.change === "string" || typeof candidate.change === "number" ? String(candidate.change) : "flat",
     direction: normalizeDirection(candidate.direction),
@@ -141,7 +144,7 @@ function normalizeProviderPayload(payload: unknown): MarketSnapshot | null {
   const fallbackSnapshot = createPreviewSnapshot();
 
   const quotes = Array.isArray(rawQuotes)
-    ? rawQuotes.map((quote) => normalizeQuote("", quote)).filter((quote): quote is MarketQuote => Boolean(quote))
+    ? rawQuotes.map((quote, index) => normalizeQuote(typeof (quote as Record<string, unknown>)?.symbol === "string" ? String((quote as Record<string, unknown>).symbol) : `Q${index + 1}`, quote)).filter((quote): quote is MarketQuote => Boolean(quote))
     : isRecord(rawQuotes)
       ? Object.entries(rawQuotes).map(([symbol, quote]) => normalizeQuote(symbol, quote)).filter((quote): quote is MarketQuote => Boolean(quote))
       : fallbackSnapshot.quotes;

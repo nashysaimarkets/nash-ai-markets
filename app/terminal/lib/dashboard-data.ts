@@ -84,7 +84,9 @@ function getQuote(snapshot: MarketSnapshot, symbol: string) {
 export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: BullseyeResult): DashboardViewModel {
   const esQuote = getQuote(snapshot, "ES");
   const vixQuote = getQuote(snapshot, "VIX");
+  const twoYearQuote = getQuote(snapshot, "US2Y");
   const tenYearQuote = getQuote(snapshot, "US10Y");
+  const thirtyYearQuote = getQuote(snapshot, "US30Y");
   const dollarQuote = getQuote(snapshot, "DXY");
 
   const heroMetrics: DashboardMetric[] = [
@@ -190,9 +192,9 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
       note: snapshot.risk === "HIGH" ? "Volatility remains elevated and risk is still being repriced." : "Volatility is relatively contained, which helps the current trend hold.",
     },
     treasuries: [
-      { label: "2Y", value: tenYearQuote?.value ? "4.62%" : "—", delta: "+4 bps" },
+      { label: "2Y", value: twoYearQuote?.value ?? "—", delta: twoYearQuote?.change ?? "flat" },
       { label: "10Y", value: tenYearQuote?.value ?? "—", delta: tenYearQuote?.change ?? "flat" },
-      { label: "30Y", value: "4.84%", delta: "+2 bps" },
+      { label: "30Y", value: thirtyYearQuote?.value ?? "—", delta: thirtyYearQuote?.change ?? "flat" },
     ],
     dollar: {
       value: dollarQuote?.value ?? "—",
