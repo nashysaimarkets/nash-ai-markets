@@ -41,6 +41,18 @@ type FmpTreasuryRates = {
 
 const MAX_FUTURE_SKEW_MS = 60_000;
 
+type SafeFailureCategory = "authentication_rejected" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
+
+class SafeProviderFailure extends Error {
+  readonly category: SafeFailureCategory;
+
+  constructor(category: SafeFailureCategory) {
+    super(category);
+    this.category = category;
+    this.name = "SafeProviderFailure";
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -125,12 +137,21 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       const request = async (pathname: string, symbol?: string): Promise<unknown> => {
-        const response = await fetchImpl(createUrl(options.baseUrl, pathname, options.apiKey, symbol), {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error(`FMP request failed with status ${response.status}`);
-        return response.json() as Promise<unknown>;
+        let response: Response;
+        try {
+          response = await fetchImpl(createUrl(options.baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
+        } catch (error) {
+          if (error instanceof Error && error.name === "AbortError") throw error;
+          throw new SafeProviderFailure("network_interruption");
+        }
+        if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
+        if (response.status === 429) throw new SafeProviderFailure("rate_limited");
+        if (!response.ok) throw new SafeProviderFailure("invalid_response");
+        try {
+          return await response.json() as unknown;
+        } catch {
+          throw new SafeProviderFailure("malformed_json");
+        }
       };
 
       try {
@@ -176,9 +197,13 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         };
         return snapshot;
       } catch (error) {
-        const category = error instanceof Error && error.name === "AbortError" ? "timeout" : "invalid_response";
+        const category: SafeFailureCategory = error instanceof Error && error.name === "AbortError"
+          ? "timeout"
+          : error instanceof SafeProviderFailure
+            ? error.category
+            : "invalid_response";
         logger("market-provider:failure", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME, category });
-        throw new Error(category === "timeout" ? "FMP request timed out" : "FMP market data request failed");
+        throw new Error(category === "timeout" ? "FMP request timed out" : `FMP provider failure: ${category}`);
       } finally {
         clearTimeout(timeout);
       }

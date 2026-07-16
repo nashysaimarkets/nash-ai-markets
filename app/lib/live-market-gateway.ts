@@ -50,6 +50,8 @@ export type MarketGatewayStatus = {
   dataAgeMs: number | null;
   failureCount: number;
   fallbackActive: boolean;
+  lastRefreshLatencyMs: number | null;
+  reconnectAttempts: number;
 };
 
 export type LiveMarketGatewayOptions = {
@@ -122,6 +124,8 @@ export function createUnconfiguredMarketGatewayStatus(providerName = "Not config
     dataAgeMs: null,
     failureCount: 0,
     fallbackActive: true,
+    lastRefreshLatencyMs: null,
+    reconnectAttempts: 0,
   };
 }
 
@@ -154,6 +158,8 @@ export class LiveMarketGateway {
       dataAgeMs: null,
       failureCount: 0,
       fallbackActive: false,
+      lastRefreshLatencyMs: null,
+      reconnectAttempts: 0,
     };
   }
 
@@ -167,9 +173,12 @@ export class LiveMarketGateway {
   }
 
   async fetchSnapshot(now = Date.now()): Promise<MarketSnapshot> {
+    const refreshStartedAt = Date.now();
     this.state.lastAttempt = new Date(now).toISOString();
+    this.state.reconnectAttempts = 0;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt += 1) {
+      this.state.reconnectAttempts = attempt;
       try {
         const snapshot = await this.provider.fetchSnapshot();
         if (!snapshot) throw new Error("Provider returned no market snapshot");
@@ -183,6 +192,7 @@ export class LiveMarketGateway {
         this.state.lastSuccessfulUpdate = normalized.asOf;
         this.state.dataAgeMs = dataAgeMs(normalized.asOf, now);
         this.state.fallbackActive = false;
+        this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
         this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1 });
         return normalized;
       } catch (error) {
@@ -203,6 +213,7 @@ export class LiveMarketGateway {
 
     this.state.fallbackActive = true;
     this.state.dataAgeMs = this.state.lastSuccessfulUpdate ? dataAgeMs(this.state.lastSuccessfulUpdate, now) : null;
+    this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
     this.logger("market-provider:fallback", { provider: this.state.providerName });
     return createUnavailableSnapshot(this.state.lastSuccessfulUpdate ?? this.state.lastAttempt ?? new Date(now).toISOString());
   }

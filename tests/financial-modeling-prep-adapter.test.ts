@@ -99,7 +99,7 @@ test("rejects malformed or incomplete FMP responses", async () => {
     fetchImpl: async () => jsonResponse([{ unexpected: true }]),
   });
 
-  await assert.rejects(adapter.fetchSnapshot(), /market data request failed/);
+  await assert.rejects(adapter.fetchSnapshot(), /invalid_response/);
 });
 
 test("rejects materially future-dated FMP responses", async () => {
@@ -109,7 +109,7 @@ test("rejects materially future-dated FMP responses", async () => {
     fetchImpl: createMockFetch(new Date(Date.now() + 2 * 60_000).toISOString()),
   });
 
-  await assert.rejects(adapter.fetchSnapshot(), /market data request failed/);
+  await assert.rejects(adapter.fetchSnapshot(), /invalid_response/);
 });
 
 test("times out FMP requests and logs only safe metadata", async () => {
@@ -129,6 +129,30 @@ test("times out FMP requests and logs only safe metadata", async () => {
   assert.equal(serializedLogs.includes(TEST_API_KEY), false);
   assert.equal(serializedLogs.includes(TEST_BASE_URL), false);
   assert.match(serializedLogs, /timeout/);
+});
+
+test("classifies authentication rejection without exposing credentials", async () => {
+  const logs: unknown[] = [];
+  const adapter = createFinancialModelingPrepAdapter({ apiKey: TEST_API_KEY, baseUrl: TEST_BASE_URL, logger: (message, details) => logs.push({ message, details }), fetchImpl: async () => jsonResponse({}, 401) });
+  await assert.rejects(adapter.fetchSnapshot(), /authentication_rejected/);
+  assert.equal(JSON.stringify(logs).includes(TEST_API_KEY), false);
+  assert.equal(JSON.stringify(logs).includes(TEST_BASE_URL), false);
+});
+
+test("classifies rate limiting as a retry-safe provider failure", async () => {
+  const adapter = createFinancialModelingPrepAdapter({ apiKey: TEST_API_KEY, baseUrl: TEST_BASE_URL, fetchImpl: async () => jsonResponse({}, 429) });
+  await assert.rejects(adapter.fetchSnapshot(), /rate_limited/);
+});
+
+test("rejects malformed JSON using a sanitized failure category", async () => {
+  const adapter = createFinancialModelingPrepAdapter({ apiKey: TEST_API_KEY, baseUrl: TEST_BASE_URL, fetchImpl: async () => new Response("not-json", { status: 200, headers: { "content-type": "application/json" } }) });
+  await assert.rejects(adapter.fetchSnapshot(), /malformed_json/);
+});
+
+test("classifies network interruption without leaking raw provider errors", async () => {
+  const rawMessage = `socket failed ${TEST_API_KEY}`;
+  const adapter = createFinancialModelingPrepAdapter({ apiKey: TEST_API_KEY, baseUrl: TEST_BASE_URL, fetchImpl: async () => { throw new Error(rawMessage); } });
+  await assert.rejects(adapter.fetchSnapshot(), (error: Error) => !error.message.includes(TEST_API_KEY) && /network_interruption/.test(error.message));
 });
 
 test("supports environment-provided symbol overrides without changing the generic snapshot", async () => {

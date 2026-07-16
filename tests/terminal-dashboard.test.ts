@@ -113,6 +113,8 @@ test("exposes a reusable not-configured gateway status without live values", asy
   assert.equal(result.gatewayStatus.lastAttempt, null);
   assert.equal(result.gatewayStatus.lastSuccessfulUpdate, null);
   assert.equal(result.gatewayStatus.dataAgeMs, null);
+  assert.equal(result.gatewayStatus.lastRefreshLatencyMs, null);
+  assert.equal(result.gatewayStatus.reconnectAttempts, 0);
   assert.equal(result.gatewayStatus.failureCount, 0);
   assert.equal(result.gatewayStatus.fallbackActive, true);
 });
@@ -205,6 +207,8 @@ test("falls back to an empty unavailable snapshot and records provider failures"
   assert.equal(status.lastSuccessfulUpdate, null);
   assert.equal(status.dataAgeMs, null);
   assert.equal(status.failureCount, 2);
+  assert.ok(status.lastRefreshLatencyMs !== null && status.lastRefreshLatencyMs >= 0);
+  assert.equal(status.reconnectAttempts, 1);
   assert.equal(status.fallbackActive, true);
 });
 
@@ -236,6 +240,8 @@ test("records provider success, connection status and data age", async () => {
   assert.equal(status.lastSuccessfulUpdate, asOf);
   assert.equal(status.dataAgeMs, 2 * 60_000);
   assert.equal(status.failureCount, 0);
+  assert.ok(status.lastRefreshLatencyMs !== null && status.lastRefreshLatencyMs >= 0);
+  assert.equal(status.reconnectAttempts, 0);
   assert.equal(status.fallbackActive, false);
 });
 
@@ -301,6 +307,7 @@ test("recovers on retry after a failed provider response", async () => {
   assert.equal(snapshot.quotes[0]?.symbol, "ES");
   assert.equal(status.connectionStatus, "connected");
   assert.equal(status.failureCount, 1);
+  assert.equal(status.reconnectAttempts, 1);
   assert.equal(status.fallbackActive, false);
 });
 

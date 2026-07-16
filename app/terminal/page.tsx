@@ -11,9 +11,11 @@ import { TerminalControls } from "./components/TerminalControls";
 import { MarketChart } from "./components/MarketChart";
 import { DecisionSummary, IntelligenceSummary, PlannerSummary, TerminalSummaryStrip, WarningList } from "./components/EngineSummary";
 import { TerminalBadge } from "./components/TerminalBadge";
+import { LaunchDiagnosticsPanel } from "./components/LaunchDiagnosticsPanel";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
+import { createLaunchDiagnostics } from "./lib/launch-diagnostics";
 import { terminalStatusMessage } from "./lib/terminal-state";
-import { chartDataForStatus, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
+import { chartDataForStatus, chartDisplayState, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Bullseye Terminal | NASH AI Markets", description: "Professional deterministic market intelligence terminal." };
@@ -39,6 +41,7 @@ export default async function Terminal() {
   const quotes = ["ES", "VIX", "US2Y", "US10Y", "DXY"].map((symbol) => verifiedQuote(snapshot, symbol));
   const chart = chartDataForStatus(snapshot.status);
   const highImpactEvents = isVerified ? snapshot.events.filter((event) => event.risk === "HIGH") : [];
+  const diagnostics = createLaunchDiagnostics({ snapshot, gatewayStatus, intelligence, decision, plan, chartState: chartDisplayState([...chart.data]), providerType: process.env.MARKET_DATA_PROVIDER, apiCredentialConfigured: Boolean(process.env.FMP_API_KEY), accessibilityContract: true });
   const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
 
   return <main className="foxtrotTerminal" id="overview">
@@ -70,6 +73,8 @@ export default async function Terminal() {
         <section className="ftCard ftEvents" id="events"><header><div><span>ECONOMIC EVENT WINDOW</span><h2>Upcoming catalysts</h2></div><TerminalBadge label={snapshot.events.length && isVerified ? "Provider data" : "Placeholder"} tone={snapshot.events.length && isVerified ? "info" : "neutral"} /></header>{snapshot.events.length && isVerified ? <div className="eventRows">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><TerminalBadge label={event.risk} tone={event.risk === "HIGH" ? "danger" : "warning"} /></article>)}</div> : <div className="ftUnavailable"><strong>No verified economic events</strong><span>The current provider has not supplied an economic calendar. No events have been inferred.</span></div>}</section>
         <section className="ftCard ftProvider" id="provider"><header><div><span>MARKET GATEWAY</span><h2>Provider &amp; data quality</h2></div><TerminalBadge label={gatewayStatus.connectionStatus.replace("_", " ")} tone={toneForState(state)} /></header><dl><div><dt>Provider</dt><dd>{gatewayStatus.providerName}</dd></div><div><dt>Snapshot status</dt><dd>{snapshot.status}</dd></div><div><dt>Data age</dt><dd>{formatMarketGatewayDataAge(gatewayStatus.dataAgeMs)}</dd></div><div><dt>Last attempt</dt><dd>{gatewayStatus.lastAttempt ? formatUkTimestamp(gatewayStatus.lastAttempt) : "Not attempted"}</dd></div><div><dt>Last success</dt><dd>{gatewayStatus.lastSuccessfulUpdate ? formatUkTimestamp(gatewayStatus.lastSuccessfulUpdate) : "None"}</dd></div><div><dt>Failures</dt><dd>{gatewayStatus.failureCount}</dd></div><div><dt>Fallback</dt><dd>{gatewayStatus.fallbackActive ? "Active" : "Inactive"}</dd></div><div><dt>Warnings</dt><dd>{decision.dataQualityWarnings.length}</dd></div></dl></section>
       </section>
+
+      <LaunchDiagnosticsPanel diagnostics={diagnostics} compact />
 
       <footer className="ftFooter"><span>Educational decision support only. Not personalised financial advice. Futures and options involve substantial risk. Verify source, status and timestamp independently.</span><Link href="/terms">Terms &amp; risk disclosure</Link></footer>
     </section>
