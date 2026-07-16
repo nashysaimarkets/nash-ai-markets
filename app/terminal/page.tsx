@@ -6,6 +6,7 @@ import { createClient } from "../../utils/supabase/server";
 import { runBullseyeEngine } from "../lib/bullseye-engine";
 import { formatSnapshotAge, formatUkTimestamp, getMarketSnapshot } from "../lib/market-data";
 import { createDashboardViewModel } from "./lib/dashboard-data";
+import { createTerminalMarketDataProvider } from "./lib/terminal-market-data-provider";
 import { Panel } from "./components/Panel";
 import { MetricChip } from "./components/MetricChip";
 import { DecisionVerdict } from "./components/DecisionVerdict";
@@ -42,7 +43,8 @@ export default async function Terminal() {
 
   if (!membership) redirect("/?membership=required#membership");
 
-  const snapshot = await getMarketSnapshot();
+  const provider = createTerminalMarketDataProvider();
+  const snapshot = await getMarketSnapshot({ provider });
   const bullseye = runBullseyeEngine(snapshot);
   const viewModel = createDashboardViewModel(snapshot, bullseye);
   const asOf = formatUkTimestamp(snapshot.asOf);

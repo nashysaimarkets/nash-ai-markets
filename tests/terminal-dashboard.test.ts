@@ -4,6 +4,7 @@ import { getMarketSnapshot } from "../app/lib/market-data.ts";
 import { createDashboardViewModel } from "../app/terminal/lib/dashboard-data.ts";
 import { createDataProvenance } from "../app/terminal/lib/provenance.ts";
 import { createTerminalMarketDataProvider } from "../app/terminal/lib/terminal-market-data-provider.ts";
+import { createCompositeMarketDataProvider, LiveMarketGateway } from "../app/lib/live-market-gateway.ts";
 
 test("builds a terminal dashboard view model from the market snapshot", () => {
   const snapshot = {
@@ -157,4 +158,54 @@ test("maps provider-backed market data into the terminal panels", async () => {
   assert.equal(viewModel.treasuries[2]?.value, "4.86%");
   assert.equal(viewModel.dollar.value, "98.12");
   assert.equal(viewModel.economicEvents[0]?.name, "CPI print");
+});
+
+test("falls back to simulated data when the gateway provider fails", async () => {
+  const gateway = new LiveMarketGateway({
+    provider: { fetchSnapshot: async () => { throw new Error("boom"); } },
+    logger: () => undefined,
+  });
+
+  const snapshot = await gateway.fetchSnapshot(Date.now());
+  assert.equal(snapshot.status, "PREVIEW");
+  assert.equal(gateway.getState().status, "offline");
+});
+
+test("merges market slice adapters into a composite snapshot", async () => {
+  const provider = createCompositeMarketDataProvider([
+    {
+      name: "futures",
+      fetchSnapshot: async () => ({
+        status: "LIVE",
+        source: "Futures slice",
+        asOf: new Date().toISOString(),
+        quotes: [{ symbol: "ES", label: "ES FUTURES", value: "6,320.00", change: "+0.40%", direction: "up" as const }],
+        levels: [{ label: "R1", value: "6,330", note: "Resistance", type: "resistance" as const }],
+        events: [],
+        bias: "BULLISH",
+        risk: "MODERATE" as const,
+        summary: "slice",
+        evidence: { trend: 60, momentum: 62, volatility: 50, breadth: 58, macro: 55 },
+      }),
+    },
+    {
+      name: "calendar",
+      fetchSnapshot: async () => ({
+        status: "LIVE",
+        source: "Calendar slice",
+        asOf: new Date().toISOString(),
+        quotes: [],
+        levels: [],
+        events: [{ time: "13:30 UK", name: "CPI print", risk: "HIGH" as const }],
+        bias: "BULLISH",
+        risk: "MODERATE" as const,
+        summary: "slice",
+        evidence: { trend: 60, momentum: 62, volatility: 50, breadth: 58, macro: 55 },
+      }),
+    },
+  ]);
+
+  const snapshot = await provider.fetchSnapshot();
+  assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,320.00");
+  assert.equal(snapshot.events[0]?.name, "CPI print");
 });

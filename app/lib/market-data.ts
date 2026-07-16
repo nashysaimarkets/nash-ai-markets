@@ -45,7 +45,7 @@ const VALID_STATUSES = new Set<MarketDataStatus>(["LIVE", "DELAYED", "PREVIEW", 
 const MAX_LIVE_AGE_MS = 5 * 60 * 1000;
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
-function createPreviewSnapshot(): MarketSnapshot {
+export function createPreviewSnapshot(): MarketSnapshot {
   return {
     status: "PREVIEW",
     source: "NASH AI demonstration dataset",
