@@ -1,4 +1,13 @@
 import type { MarketDataStatus } from "../../lib/market-data.ts";
+import type { DataStatus } from "./provenance.ts";
+
+export type PanelMarketStatus = "Live" | "Delayed" | "Cached" | "Offline";
+
+export const TERMINAL_SHORTCUTS = [
+  { key: "R", label: "Refresh terminal" },
+  { key: "F", label: "Toggle full screen" },
+  { key: "?", label: "Open keyboard help" },
+] as const;
 
 export const TERMINAL_SKELETON_PANELS = [
   { key: "provenance", className: "panelProvenance" },
@@ -40,4 +49,23 @@ export function panelUnavailableMessage(status: string): string | null {
   return status === "UNAVAILABLE"
     ? "This card has no verified current data. It will recover automatically after the next successful provider response."
     : null;
+}
+
+export function panelMarketStatus(status: DataStatus): PanelMarketStatus {
+  if (status === "LIVE") return "Live";
+  if (status === "DELAYED") return "Delayed";
+  if (status === "UNAVAILABLE") return "Offline";
+  return "Cached";
+}
+
+export function formatPanelTimestamp(timestamp: string): string {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "Update unavailable";
+  return `${new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date)} UK`;
 }

@@ -13,6 +13,7 @@ import { Panel } from "./components/Panel";
 import { MetricChip } from "./components/MetricChip";
 import { DecisionVerdict } from "./components/DecisionVerdict";
 import { EliteTradeSetup } from "./components/EliteTradeSetup";
+import { TerminalControls } from "./components/TerminalControls";
 
 export const dynamic = "force-dynamic";
 
@@ -71,9 +72,12 @@ export default async function Terminal() {
             <h1>Good morning, trader.</h1>
             <p>{snapshot.source} · {isVerified ? `As of ${asOf} UK · ${snapshotAge}` : "No verified market update available"}</p>
           </div>
-          <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}>
-            <span>DATA STATUS</span>
-            <strong><i /> {snapshot.status}</strong>
+          <div className="mcHeaderActions">
+            <TerminalControls />
+            <div className={`mcStatus status-${snapshot.status.toLowerCase()}`}>
+              <span>DATA STATUS</span>
+              <strong><i /> {snapshot.status}</strong>
+            </div>
           </div>
         </header>
 

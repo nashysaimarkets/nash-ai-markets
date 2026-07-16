@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { DataProvenance } from "../lib/provenance.ts";
 import { DataProvenanceBlock } from "./DataProvenanceBlock";
-import { panelUnavailableMessage } from "../lib/terminal-state.ts";
+import { formatPanelTimestamp, panelMarketStatus, panelUnavailableMessage } from "../lib/terminal-state.ts";
 
 type PanelProps = {
   eyebrow: string;
@@ -15,6 +15,7 @@ type PanelProps = {
 
 export function Panel({ eyebrow, title, subtitle, children, className, id, provenance }: PanelProps) {
   const unavailableMessage = panelUnavailableMessage(provenance?.status ?? "");
+  const marketStatus = provenance ? panelMarketStatus(provenance.status) : null;
   return (
     <section id={id} className={['terminalPanel', className].filter(Boolean).join(' ')}>
       <div className="terminalPanelHead">
@@ -22,7 +23,15 @@ export function Panel({ eyebrow, title, subtitle, children, className, id, prove
           <span className="terminalPanelEyebrow">{eyebrow}</span>
           <h2>{title}</h2>
         </div>
-        {subtitle ? <small>{subtitle}</small> : null}
+        <div className="terminalPanelMeta">
+          {subtitle ? <small>{subtitle}</small> : null}
+          {provenance && marketStatus ? (
+            <>
+              <span className="panelMarketStatus" data-market-status={marketStatus.toLowerCase()}><i />{marketStatus}</span>
+              <time dateTime={provenance.lastUpdated}>Updated {formatPanelTimestamp(provenance.lastUpdated)}</time>
+            </>
+          ) : null}
+        </div>
       </div>
       {unavailableMessage ? (
         <div className="panelUnavailableState" role="status">

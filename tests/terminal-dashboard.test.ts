@@ -5,7 +5,7 @@ import { createDashboardViewModel } from "../app/terminal/lib/dashboard-data.ts"
 import { createDataProvenance } from "../app/terminal/lib/provenance.ts";
 import { createTerminalMarketDataProvider, getTerminalMarketData } from "../app/terminal/lib/terminal-market-data-provider.ts";
 import { createCompositeMarketDataProvider, LiveMarketGateway, REQUIRED_MARKET_GATEWAY_COVERAGE } from "../app/lib/live-market-gateway.ts";
-import { panelUnavailableMessage, TERMINAL_SKELETON_PANELS, terminalStatusMessage } from "../app/terminal/lib/terminal-state.ts";
+import { formatPanelTimestamp, panelMarketStatus, panelUnavailableMessage, TERMINAL_SHORTCUTS, TERMINAL_SKELETON_PANELS, terminalStatusMessage } from "../app/terminal/lib/terminal-state.ts";
 
 test("builds a terminal dashboard view model from the market snapshot", () => {
   const snapshot = {
@@ -320,6 +320,20 @@ test("provides recovery-safe unavailable messaging", () => {
   assert.match(terminalStatusMessage("UNAVAILABLE", 2), /NO CURRENT MARKET SIGNALS/);
   assert.match(panelUnavailableMessage("UNAVAILABLE") ?? "", /recover automatically/);
   assert.equal(panelUnavailableMessage("LIVE"), null);
+});
+
+test("maps panel provenance to dashboard market status indicators", () => {
+  assert.equal(panelMarketStatus("LIVE"), "Live");
+  assert.equal(panelMarketStatus("DELAYED"), "Delayed");
+  assert.equal(panelMarketStatus("MODELLED"), "Cached");
+  assert.equal(panelMarketStatus("PLACEHOLDER"), "Cached");
+  assert.equal(panelMarketStatus("UNAVAILABLE"), "Offline");
+  assert.equal(formatPanelTimestamp("2026-07-16T12:34:56.000Z"), "13:34:56 UK");
+  assert.equal(formatPanelTimestamp("invalid"), "Update unavailable");
+});
+
+test("defines refresh, full-screen and help keyboard shortcuts", () => {
+  assert.deepEqual(TERMINAL_SHORTCUTS.map((shortcut) => shortcut.key), ["R", "F", "?"]);
 });
 
 test("merges market slice adapters into a composite snapshot", async () => {
