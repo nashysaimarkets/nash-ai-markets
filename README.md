@@ -102,6 +102,18 @@ Use build and validation commands for targeted diagnosis after a remote failure,
 
 The timeout defaults can be overridden for a controlled canary with `SITES_INSTALL_TIMEOUT`, `SITES_INSTALL_KILL_AFTER`, `SITES_BUILD_TIMEOUT`, and `SITES_BUILD_KILL_AFTER`. A timeout fails the command; the helpers never retry an unchanged install or build.
 
+## Financial Modeling Prep market adapter
+
+The first live-provider adapter is enabled only when all required variables are present:
+
+- `MARKET_DATA_PROVIDER=fmp`
+- `FMP_API_KEY` — an FMP account API key
+- `FMP_API_BASE_URL` — the FMP stable API base URL supplied for the account
+
+Optional operational and symbol settings are `FMP_REQUEST_TIMEOUT_MS`, `FMP_SP500_FUTURES_SYMBOL`, `FMP_VIX_SYMBOL`, and `FMP_US_DOLLAR_INDEX_SYMBOL`. Defaults are `ESUSD`, `^VIX`, and `DX-Y.NYB`; override them when the account's FMP symbol directory uses different identifiers.
+
+Credentials are sent in the `apikey` request header and must never be committed. If the provider selection, key, or base URL is absent, the terminal remains in its safe unconfigured fallback. FMP Treasury Rates are date-stamped rather than intraday; the gateway therefore rejects them once the existing delayed-data window has elapsed rather than presenting them as live.
+
 ## Learn More
 
 - [vinext Documentation](https://github.com/cloudflare/vinext)
