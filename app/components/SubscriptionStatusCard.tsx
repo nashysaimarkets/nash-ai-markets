@@ -13,6 +13,7 @@ type SubscriptionStatusCardProps = {
   compact?: boolean;
   verificationUnavailable?: boolean;
   foundingRecords?: readonly Founding100Record[];
+  billingInterval?: "month" | "year" | null;
 };
 
 function periodLabel(value: string | null): string {
@@ -31,6 +32,7 @@ export function SubscriptionStatusCard({
   compact = false,
   verificationUnavailable = false,
   foundingRecords = [],
+  billingInterval = null,
 }: SubscriptionStatusCardProps) {
   const hasPaidRecord = billingPlan === "pro" || billingPlan === "elite" || tier === "pro" || tier === "elite";
   const recordedStatus = status?.toLowerCase() ?? "unavailable";
@@ -51,10 +53,12 @@ export function SubscriptionStatusCard({
     <dl>
       <div><dt>Current access</dt><dd>{verificationUnavailable ? "Unable to verify" : tier.toUpperCase()}</dd></div>
       <div><dt>{hasPaidRecord ? "Recorded period ends" : "Billing period"}</dt><dd>{hasPaidRecord ? periodLabel(periodEnd) : "No paid subscription"}</dd></div>
+      <div><dt>Billing cadence</dt><dd>{hasPaidRecord ? billingInterval === "year" ? "Annual" : billingInterval === "month" ? "Monthly" : "Unavailable" : "Not applicable"}</dd></div>
     </dl>
     <div className="subscriptionStatusActions">
       <span data-healthy={healthy}>{healthy ? "Access verified" : "Review billing status"}</span>
       {hasPaidRecord ? <a href={portalUrl}>Manage in Stripe</a> : <Link href="/#membership">Compare memberships</Link>}
+      <Link href="/pricing">{tier === "elite" ? "Compare billing options" : "Upgrade options"}</Link>
     </div>
   </section>;
 }

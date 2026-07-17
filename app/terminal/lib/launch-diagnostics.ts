@@ -7,7 +7,7 @@ import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { ChartDisplayState } from "./visual-terminal.ts";
 
-export const VERIFIED_LAUNCH_TEST_TOTAL = 199;
+export const VERIFIED_LAUNCH_TEST_TOTAL = 208;
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
 export type LaunchCheck = {

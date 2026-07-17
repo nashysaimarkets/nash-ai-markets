@@ -12,6 +12,10 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Marketing, pricing, terms and privacy pages load.
 - [ ] Free CTA opens `/login`.
 - [ ] Pro and Elite checkout links open the intended production products.
+- [ ] Pro monthly (£14.99), Elite monthly (£29.99), Pro annual (£149) and Elite
+      annual (£299) each create the intended Stripe test-mode checkout.
+- [ ] Commercial administration matches registered Supabase accounts, active
+      Stripe subscriptions, cadence, MRR/ARR and Founding availability.
 - [ ] `/welcome` does not claim entitlement before verification.
 - [ ] Waiting-list registration accepts a valid email and returns a generic
       success response for a duplicate email.

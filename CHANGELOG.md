@@ -8,6 +8,9 @@
 - Added database-backed public Founding availability counts with neutral
   failure wording, exhausted-tier handling, accessible mobile styling and
   permanent-allocation regression coverage.
+- Added the commercial launch experience: approved monthly and annual pricing,
+  server-created Stripe checkout, comparison and FAQ content, commercial
+  dashboard reporting, billing cadence, lifecycle email templates and schema.
 
 All notable production changes to Project Bullseye will be documented here.
 The format follows Keep a Changelog and the project uses Semantic Versioning.

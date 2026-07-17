@@ -19,15 +19,18 @@ absent.
 |---|---|---|---|
 | `STRIPE_SECRET_KEY` | Secret, server only | Mandatory for paid beta | Stripe API access from the webhook |
 | `STRIPE_WEBHOOK_SECRET` | Secret, server only | Mandatory for paid beta | Webhook signature verification |
-| `STRIPE_PRO_PRICE_ID` | Server config | Mandatory for Pro | Maps a Stripe Price to Pro |
-| `STRIPE_ELITE_PRICE_ID` | Server config | Mandatory for Elite | Maps a Stripe Price to Elite |
-| `NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL` | Public | Mandatory for paid beta | Verified hosted checkout for the Pro product |
-| `NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL` | Public | Mandatory for paid beta | Verified hosted checkout for the Elite product |
+| `STRIPE_PRO_PRICE_ID` | Server config | Mandatory | Pro monthly (£14.99) Price ID; legacy variable retained for existing customers |
+| `STRIPE_ELITE_PRICE_ID` | Server config | Mandatory | Elite monthly (£29.99) Price ID; legacy variable retained for existing customers |
+| `STRIPE_PRO_ANNUAL_PRICE_ID` | Server config | Mandatory | Pro annual (£149) Price ID |
+| `STRIPE_ELITE_ANNUAL_PRICE_ID` | Server config | Mandatory | Elite annual (£299) Price ID |
+| `NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL` | Public | Legacy/optional | Previous hosted monthly checkout link |
+| `NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL` | Public | Legacy/optional | Previous hosted monthly checkout link |
 | `STRIPE_CUSTOMER_PORTAL_LINK` | Server-rendered config | Mandatory operationally | Member billing-management link; otherwise UI falls back to support email |
 
-If a checkout URL is absent, the homepage routes the corresponding call to
-action to the waiting list. Price IDs and checkout URLs must be verified as the
-same products before paid beta.
+The pricing page posts an enumerated offering to the server. The server selects
+the corresponding Price ID and creates Stripe Checkout; Price IDs and the
+secret key are never returned to browser code. Configure products and prices
+manually in Stripe test mode before production verification.
 
 ## OpenAI
 

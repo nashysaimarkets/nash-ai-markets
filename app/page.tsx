@@ -33,8 +33,6 @@ const included = [
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const proCheckout = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
-  const eliteCheckout = process.env.NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL?.trim();
   const foundingAvailability = await loadFounding100Availability();
   const proFounding = founding100AvailabilityLabel(foundingAvailability.proRemaining);
   const eliteFounding = founding100AvailabilityLabel(foundingAvailability.eliteRemaining);
@@ -419,7 +417,7 @@ export default async function Home() {
             <div className={`foundingOffer${proFounding.full ? " foundingOfferFull" : ""}`} aria-live="polite"><strong>FOUNDING 100 PRO</strong><b>{proFounding.label}</b><span>{proFounding.detail}</span></div>
             <div className="tierPrice">
               <span>£</span>
-              <strong>16.99</strong>
+              <strong>14.99</strong>
               <small>/ month</small>
             </div>
             <p className="tierCopy">
@@ -433,8 +431,8 @@ export default async function Home() {
                 </li>
               ))}
             </ul>
-            <a className="primary full" href={proCheckout || "/waitlist"}>
-              {proCheckout ? "Subscribe to Pro" : "Join the Pro waiting list"} <span>↗</span>
+            <a className="primary full" href="/pricing">
+              Compare Pro billing <span>↗</span>
             </a>
           </article>
 
@@ -443,7 +441,7 @@ export default async function Home() {
             <div className={`foundingOffer${eliteFounding.full ? " foundingOfferFull" : ""}`} aria-live="polite"><strong>FOUNDING 100 ELITE</strong><b>{eliteFounding.label}</b><span>{eliteFounding.detail}</span></div>
             <div className="tierPrice">
               <span>£</span>
-              <strong>39.99</strong>
+              <strong>29.99</strong>
               <small>/ month</small>
             </div>
             <p className="tierCopy">
@@ -463,8 +461,8 @@ export default async function Home() {
                 <span>✓</span>Priority product access
               </li>
             </ul>
-            <a className="tierButton" href={eliteCheckout || "/waitlist"}>
-              {eliteCheckout ? "Subscribe to Elite" : "Join the Elite waiting list"} <span>↗</span>
+            <a className="tierButton" href="/pricing">
+              Compare Elite billing <span>↗</span>
             </a>
           </article>
         </div>
@@ -553,9 +551,9 @@ export default async function Home() {
               Can I cancel at any time?<span>+</span>
             </summary>
             <p>
-              Yes. Paid memberships are flexible monthly subscriptions. The
-              separate Founding Member onboarding process does not change
-              billing or guarantee a designation.
+              Yes. Monthly and annual memberships are managed securely through
+              Stripe. Cancellation ends future renewal. A cancelled or lapsed
+              Founding subscription permanently loses its price lock.
             </p>
           </details>
         </div>

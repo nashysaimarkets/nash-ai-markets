@@ -84,6 +84,8 @@ future timestamp.
 | `/dashboard` | Authenticated daily member dashboard |
 | `/founding-member` | Authenticated Pro/Elite Founding Member onboarding |
 | `/admin/founding-100` | Server-authorized Founding 100 operations report |
+| `/admin/commercial` | Server-authorized membership and recurring-revenue report |
+| `/pricing` | Monthly/annual comparison and server-created Stripe checkout |
 | `/brief` | Authenticated, fail-safe AI-assisted market brief |
 | `/profile` | Authenticated member profile and subscription status |
 | `/terminal` | Authenticated market terminal |

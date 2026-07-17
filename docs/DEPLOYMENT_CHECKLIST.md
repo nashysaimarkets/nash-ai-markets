@@ -16,10 +16,14 @@ item complete from assumption.
 
 - [ ] Supabase backup/snapshot completed.
 - [ ] Required reviewed migrations already applied or scheduled separately.
+- [ ] Apply `202607170005_commercial_billing.sql` after the Founding migration;
+      verify existing membership rows are unchanged.
 - [ ] Production RLS and grants verified.
 - [ ] Supabase Site URL and callback allowlist verified.
 - [ ] Stripe mode, products, Price IDs, portal and webhook endpoint verified.
-- [ ] Public Pro/Elite checkout URLs match the configured Stripe Price IDs.
+- [ ] Monthly prices are exactly Pro £14.99 and Elite £29.99; annual prices are
+      exactly Pro £149 and Elite £299 in the intended Stripe currency/account.
+- [ ] Test all four server-created checkout offerings and portal plan changes.
 - [ ] Stripe endpoint health and pending deliveries checked.
 - [ ] OpenAI diagnostic status checked; deterministic fallback verified.
 - [ ] Launch email remains disabled unless provider, sender and dispatch

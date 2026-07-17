@@ -71,6 +71,9 @@ the DOM. The service-role key is used only in server modules.
 | `/dashboard` | Authenticated, `noindex` | Daily mission, event state, verified history and access |
 | `/founding-member` | Active Pro/Elite, `noindex` | Submit a reviewed Founding Member onboarding application |
 | `/admin/founding-100` | Authenticated allowlisted operators, `noindex` | Report permanent Founding 100 awards and remaining Pro/Elite capacity |
+| `/admin/commercial` | Authenticated allowlisted operators, `noindex` | Stored membership, cadence, recurring-revenue and conversion reporting |
+| `/pricing` | Public, dynamic | Server-backed Founding availability and secure monthly/annual checkout selection |
+| `/api/stripe/checkout` | Public same-origin POST | Creates Stripe Checkout for one of four server-configured offerings |
 | `/terminal` | Authenticated, `noindex` | Market terminal and entitled engine output |
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
 | `/brief` | Authenticated, `noindex` | Deterministic market brief with optional constrained AI evidence prioritisation |

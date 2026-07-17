@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "../../../../utils/supabase/admin";
+import { configuredOffering, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type Plan = "pro" | "elite";
 
 export function configuredPlan(
   priceId: string | undefined,
   environment: Record<string, string | undefined> = process.env,
 ): Plan | null {
-  if (!priceId) return null;
-  if (priceId === environment.STRIPE_PRO_PRICE_ID) return "pro";
-  if (priceId === environment.STRIPE_ELITE_PRICE_ID) return "elite";
-  return null;
+  return configuredOffering(priceId, environment)?.plan ?? null;
 }
 
 export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">) {
@@ -58,10 +54,14 @@ async function saveSubscription(
   eventCreated: number,
   fallbackEmail?: string | null,
 ) {
-  const matchedPlans = [...new Set(subscription.items.data
-    .map((item) => configuredPlan(item.price.id))
-    .filter((plan): plan is Plan => plan !== null))];
+  const offerings = subscription.items.data
+    .map((item) => ({ offering: configuredOffering(item.price.id), item }))
+    .filter((value): value is { offering: Offering; item: Stripe.SubscriptionItem } => value.offering !== null);
+  const matchedPlans = [...new Set(offerings.map(({ offering }) => offering.plan))];
   const plan = matchedPlans.length === 1 ? matchedPlans[0] : null;
+  const billingIntervals = [...new Set(offerings.map(({ offering }) => offering.billingInterval))];
+  const billingInterval = billingIntervals.length === 1 ? billingIntervals[0] : null;
+  const unitAmount = offerings.length === 1 ? offerings[0].item.price.unit_amount : null;
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
 
   const admin = createAdminClient();
@@ -90,6 +90,8 @@ async function saveSubscription(
     stripe_customer_id: customerId,
     stripe_subscription_id: subscription.id,
     current_period_end: subscriptionEnd(subscription),
+    billing_interval: billingInterval,
+    unit_amount: unitAmount,
     updated_at: new Date().toISOString(),
   }, { onConflict: "email" });
 

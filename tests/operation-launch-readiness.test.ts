@@ -51,13 +51,16 @@ test("Stripe webhook rejects metadata-only and ambiguous plan mapping", async ()
   assert.match(webhook, /current_period_end/);
 });
 
-test("homepage contains no fixed market prices and uses deployment-configured checkout links", async () => {
-  const home = await source("app/page.tsx");
+test("homepage contains no fixed market values and routes pricing through server checkout", async () => {
+  const [home, pricing, checkout] = await Promise.all([
+    source("app/page.tsx"),
+    source("app/pricing/PricingPlans.tsx"),
+    source("app/api/stripe/checkout/route.ts"),
+  ]);
   assert.doesNotMatch(home, /6,318\.25|6,350|6,332|6,310|6,288|16\.42|4\.31%|97\.84/);
   assert.match(home, /NO LIVE VALUE/);
-  assert.match(home, /NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL/);
-  assert.match(home, /NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL/);
-  assert.match(home, /proCheckout \|\| "\/waitlist"/);
+  assert.match(pricing, /\/api\/stripe\/checkout/);
+  assert.match(checkout, /checkout\.sessions\.create/);
   assert.doesNotMatch(home, /buy\.stripe\.com/);
 });
 

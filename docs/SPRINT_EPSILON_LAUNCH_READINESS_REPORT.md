@@ -7,7 +7,7 @@ deployment was performed.
 
 ## Executive assessment
 
-**Overall production launch readiness: 71%.**
+**Overall production launch readiness: 74%.**
 
 This percentage is a weighted engineering assessment, not a service guarantee.
 Application behavior, deterministic safety, build output and offline integration
@@ -40,6 +40,10 @@ backups, legal approval and real-device checks require external evidence.
 - Truthful server-rendered Founding availability counts fail neutral when the
   award register cannot be verified and keep standard subscriptions available
   after allocation exhaustion.
+- Commercial launch pricing, four server-mapped Stripe offerings, stored billing
+  cadence, lifecycle email templates and allowlisted commercial reporting are
+  complete locally. Stripe products and the commercial migration remain
+  external launch actions.
 - Passwordless Supabase authentication with safe callback redirects and
   protected member routes.
 - Free, Pro and Elite entitlements, expiry enforcement and progressive previews.
