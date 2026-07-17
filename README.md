@@ -93,8 +93,9 @@ future timestamp.
 - Lightweight Charts `5.2.0`
 - TypeScript `5.9.3`, ESLint and Node test runner
 
-The locked Linux install/build helpers require `flock`, `curl`, `sha256sum` and
-GNU `timeout`.
+The locked Linux dependency installer requires `flock`, `curl`, `sha256sum` and
+GNU `timeout`. The build helper uses GNU `timeout` when available and otherwise
+runs without an outer deadline, which keeps local macOS validation usable.
 
 ## Environment
 
@@ -129,21 +130,21 @@ after backup and review; application deployment never applies them.
 ```sh
 npm run dev
 npm run ops:validate
-node --test tests/*.test.ts
+npm test
 npm run typecheck
 npm run lint
 npm run build
 npm run validate:artifact
+npm run security:scan
 ```
 
 `npm run install:ci` performs the bounded lockfile installation used by the
 Linux build environment. The normal build also validates the generated Worker
 and hosting manifest.
 
-On macOS, GNU `timeout` is not installed by default. For local build diagnosis,
-run `node_modules/.bin/vinext build`, then run artifact validation with the
-project environment helper. The production Linux pipeline should use
-`npm run build`.
+On macOS, GNU `timeout` is not installed by default, so the build emits a
+warning and runs without an outer deadline. Production Linux builds remain
+bounded.
 
 ## Deployment
 

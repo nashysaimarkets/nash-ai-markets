@@ -35,11 +35,12 @@ item complete from assumption.
 ## Quality gates
 
 - [ ] `npm run ops:validate`
-- [ ] `node --test tests/*.test.ts`
+- [ ] `npm test`
 - [ ] `npm run typecheck`
 - [ ] `npm run lint`
 - [ ] `npm run build`
 - [ ] `npm run validate:artifact`
+- [ ] `npm run security:scan`
 - [ ] Dependency advisory report reviewed; accepted risks recorded.
 - [ ] Accessibility and mobile impact reviewed.
 - [ ] No preview/fallback/unavailable data can be represented as live.
@@ -62,4 +63,3 @@ item complete from assumption.
 - [ ] Check application, Supabase and provider error rates.
 - [ ] Observe at least one normal refresh interval.
 - [ ] Release owner declares success or initiates rollback.
-

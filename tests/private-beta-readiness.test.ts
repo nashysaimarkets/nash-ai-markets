@@ -51,3 +51,13 @@ test("environment template inventories billing, authentication and provider conf
   ]) assert.match(environment, new RegExp(`^${variable}=`, "m"));
   assert.doesNotMatch(environment, /sk_(live|test)_|whsec_[A-Za-z0-9]{8,}/);
 });
+
+test("default validation commands include the complete regression suite and a repository secret scan", async () => {
+  const packageJson = JSON.parse(await source("package.json")) as {
+    scripts: Record<string, string>;
+  };
+  assert.match(packageJson.scripts.test, /test:unit/);
+  assert.match(packageJson.scripts.test, /test:rendered/);
+  assert.equal(packageJson.scripts["test:unit"], "node --test tests/*.test.ts");
+  assert.equal(packageJson.scripts["security:scan"], "node scripts/check-secrets.mjs");
+});

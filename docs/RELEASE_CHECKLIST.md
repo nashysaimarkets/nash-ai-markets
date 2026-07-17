@@ -30,12 +30,12 @@
 ## Validate
 
 - [ ] `npm run ops:validate`
-- [ ] `node --test tests/*.test.ts`
+- [ ] `npm test`
 - [ ] `npm run typecheck`
 - [ ] `npm run lint`
 - [ ] `npm run build`
 - [ ] `npm run validate:artifact`
-- [ ] Rendered artifact test
+- [ ] `npm run security:scan`
 - [ ] Staging smoke tests for affected paths
 
 ## Release
@@ -57,4 +57,3 @@
 - [ ] Confirm Supabase and authentication health.
 - [ ] Declare success or execute rollback.
 - [ ] Record follow-ups and update runbooks from real findings.
-
