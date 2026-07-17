@@ -28,6 +28,12 @@ export default async function MemberDashboard() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
+  const { data: onboarding, error: onboardingError } = await supabase
+    .from("member_onboarding")
+    .select("completed_at")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!onboardingError && !onboarding?.completed_at) redirect("/onboarding");
 
   const { data: membership, error: membershipError } = await supabase.from("memberships")
     .select("plan, status, current_period_end")

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type MemberShellProps = {
-  active: "dashboard" | "brief" | "terminal" | "profile";
+  active: "dashboard" | "brief" | "terminal" | "profile" | "onboarding";
   children: ReactNode;
   className?: string;
 };
@@ -12,6 +12,7 @@ const links = [
   { href: "/brief", label: "Market brief", key: "brief" },
   { href: "/terminal", label: "Terminal", key: "terminal" },
   { href: "/profile", label: "Profile", key: "profile" },
+  { href: "/onboarding", label: "Preferences", key: "onboarding" },
 ] as const;
 
 export function MemberShell({ active, children, className = "" }: MemberShellProps) {

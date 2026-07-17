@@ -575,8 +575,12 @@ export default async function Home() {
             <a href="#membership">Membership</a>
             <a href="/waitlist">Private beta waiting list</a>
             <a href={portalUrl}>Manage subscription</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
+                <a href="/privacy">Privacy</a>
+                <a href="/terms">Terms</a>
+                <a href="/risk-disclaimer">Risk disclaimer</a>
+                <a href="/about">About</a>
+                <a href="/help">Help</a>
+                <a href="/contact">Contact</a>
             <a href="mailto:hello@nashaimarkets.com">
               hello@nashaimarkets.com
             </a>

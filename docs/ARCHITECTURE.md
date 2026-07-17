@@ -74,6 +74,8 @@ the DOM. The service-role key is used only in server modules.
 | `/admin/commercial` | Authenticated allowlisted operators, `noindex` | Stored membership, cadence, recurring-revenue and conversion reporting |
 | `/pricing` | Public, dynamic | Server-backed Founding availability and secure monthly/annual checkout selection |
 | `/api/stripe/checkout` | Public same-origin POST | Creates Stripe Checkout for one of four server-configured offerings |
+| `/onboarding` | Authenticated, `noindex` | First-run experience, interests and notification preferences |
+| `/api/onboarding` | Authenticated same-origin POST | Validates and stores user-owned onboarding preferences |
 | `/terminal` | Authenticated, `noindex` | Market terminal and entitled engine output |
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
 | `/brief` | Authenticated, `noindex` | Deterministic market brief with optional constrained AI evidence prioritisation |

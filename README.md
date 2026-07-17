@@ -86,6 +86,11 @@ future timestamp.
 | `/admin/founding-100` | Server-authorized Founding 100 operations report |
 | `/admin/commercial` | Server-authorized membership and recurring-revenue report |
 | `/pricing` | Monthly/annual comparison and server-created Stripe checkout |
+| `/onboarding` | Authenticated first-run preferences and completion flow |
+| `/about` | Product mission and operating principles |
+| `/risk-disclaimer` | Trading and educational-use risk disclosure |
+| `/contact` | Safe customer-support guidance |
+| `/help` | Initial member help centre |
 | `/brief` | Authenticated, fail-safe AI-assisted market brief |
 | `/profile` | Authenticated member profile and subscription status |
 | `/terminal` | Authenticated market terminal |

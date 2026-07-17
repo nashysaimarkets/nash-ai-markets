@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Prepared `1.0.0-rc.1` with authenticated first-run onboarding, substantive
+  trust and support pages, responsive member navigation, friendly recovery
+  states, RC validation coverage and a prioritised release-candidate report.
+
 - Added server-enforced Founding 100 Pro and Elite awards, permanent member
   badges, continuous-subscription price-lock rules, restricted administrator
   reporting, launch copy, tests, and production operations guidance.

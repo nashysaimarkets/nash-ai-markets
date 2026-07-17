@@ -18,6 +18,8 @@ item complete from assumption.
 - [ ] Required reviewed migrations already applied or scheduled separately.
 - [ ] Apply `202607170005_commercial_billing.sql` after the Founding migration;
       verify existing membership rows are unchanged.
+- [ ] Apply `202607170006_member_onboarding.sql`; verify authenticated members
+      can manage only their own preferences.
 - [ ] Production RLS and grants verified.
 - [ ] Supabase Site URL and callback allowlist verified.
 - [ ] Stripe mode, products, Price IDs, portal and webhook endpoint verified.
