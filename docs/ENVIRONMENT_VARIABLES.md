@@ -26,6 +26,15 @@ absent.
 The public Stripe checkout URLs are currently constants in `app/page.tsx`, not
 environment variables. Verify them separately against the production products.
 
+## OpenAI
+
+| Variable | Visibility | Requirement | Used for |
+|---|---|---|---|
+| `OPENAI_API_KEY` | Secret, server only | Mandatory for OpenAI health integration | Authenticates the official server-side OpenAI client used by `/api/openai/health` |
+
+The key is read only from `process.env`, is never returned by the health route,
+and must not use a `NEXT_PUBLIC_` or `VITE_` prefix.
+
 ## Market provider selection
 
 | Variable | Visibility | Requirement | Used for |
@@ -110,4 +119,3 @@ Rotate immediately after suspected exposure. For planned rotation:
 4. revoke the old credential;
 5. verify no webhook/provider/auth regression;
 6. record owner, time and secret version identifier only.
-

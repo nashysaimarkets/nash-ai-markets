@@ -46,6 +46,7 @@ the DOM. The service-role key is used only in server modules.
 | Authentication | `app/login`, `app/auth`, `utils/supabase` | Magic-link sign-in, session cookies, sign-out |
 | Membership | `membership-entitlement.ts`, preview API | Tier resolution, period expiry, progressive previews |
 | Billing | `app/api/stripe/webhook/route.ts` | Verify Stripe signatures and synchronize memberships |
+| OpenAI health | `app/api/openai/health/route.ts` | Authenticated, sanitized server-side API connectivity check |
 | Provider adapters | `app/lib/providers`, `market-data.ts` | Fetch, validate and normalize provider responses |
 | Gateway | `live-market-gateway.ts` | Retry, timeout state, health and safe fallback |
 | Analysis | intelligence, decision and planner modules | Deterministic JSON-serializable outputs |
@@ -66,6 +67,7 @@ the DOM. The service-role key is used only in server modules.
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
 | `/api/membership/preview` | Authenticated POST | Claim a tier preview for the current UTC period |
 | `/api/stripe/webhook` | Stripe-signed POST | Synchronize subscription state |
+| `/api/openai/health` | Authenticated GET | Verify server-side OpenAI connectivity without exposing credentials |
 | `/welcome` | Public, `noindex` | Checkout return instructions; not entitlement proof |
 | `/cancelled` | Public | Checkout cancellation result |
 | `/privacy`, `/terms` | Public | Current privacy and service terms |
@@ -97,6 +99,7 @@ Bullseye production data path.
 | Hosting/Cloudflare runtime | Application and assets | Application unavailable; roll back deployment |
 | Supabase | Auth, memberships, previews, outcomes | Auth/access may fail; no sensitive error disclosure |
 | Stripe | Checkout, billing, portal, webhooks | Existing access follows stored state; investigate/replay webhooks |
+| OpenAI | Server-side SDK connectivity | Authenticated health route returns only connected, unavailable or not configured |
 | Financial Modeling Prep | Initial live market adapter | Gateway retries then fails closed |
 | Generic HTTP provider | Optional alternative normalized snapshot | Gateway retries then fails closed |
 
@@ -111,6 +114,7 @@ provider supplies a complete future timestamp.
 - Vinext `0.0.50`, Vite `8.0.13`
 - Supabase JS/SSR
 - Stripe Node SDK
+- OpenAI Node SDK
 - Lightweight Charts `5.2.0`
 - TypeScript, ESLint and Node's test runner
 
@@ -142,4 +146,3 @@ The intended deployment pipeline is:
 7. record release, environment version and operator.
 
 Application deployment does not apply Supabase migrations.
-

@@ -41,6 +41,8 @@ For the full route, service, data-flow and security-boundary reference, see
 - **Supabase:** passwordless authentication, sessions, memberships, progressive
   preview claims and verified outcome history.
 - **Stripe:** hosted checkout/customer portal and signed subscription webhooks.
+- **OpenAI:** official server-side SDK with an authenticated, sanitized
+  connectivity health check.
 - **Financial Modeling Prep:** first live provider adapter for S&P 500 futures,
   VIX, US 2Y/10Y Treasury yields and the US Dollar Index.
 - **Generic HTTP provider:** optional alternative accepting the normalized
@@ -77,6 +79,7 @@ future timestamp.
 | `/terminal/diagnostics` | Effective-Elite launch diagnostics |
 | `/api/membership/preview` | Authenticated progressive preview claim |
 | `/api/stripe/webhook` | Stripe-signed subscription synchronization |
+| `/api/openai/health` | Authenticated server-side OpenAI connectivity check |
 | `/welcome`, `/cancelled` | Checkout return states |
 | `/privacy`, `/terms` | Public legal information |
 

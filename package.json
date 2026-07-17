@@ -22,6 +22,7 @@
     "drizzle-orm": "0.45.2",
     "lightweight-charts": "^5.2.0",
     "next": "16.2.6",
+    "openai": "6.48.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "stripe": "^18.5.0"
@@ -43,6 +44,9 @@
     "vinext": "0.0.50",
     "vite": "8.0.13",
     "wrangler": "4.92.0"
+  },
+  "overrides": {
+    "ws": "8.21.1"
   },
   "type": "module",
   "displayName": "NASH AI Markets — Project Bullseye"

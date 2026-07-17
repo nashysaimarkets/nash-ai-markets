@@ -23,6 +23,7 @@ require_https_url() {
 require_var NEXT_PUBLIC_SUPABASE_URL
 require_var NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 require_var SUPABASE_SERVICE_ROLE_KEY
+require_var OPENAI_API_KEY
 require_var STRIPE_SECRET_KEY
 require_var STRIPE_WEBHOOK_SECRET
 require_var STRIPE_PRO_PRICE_ID
@@ -74,4 +75,3 @@ fi
 
 echo "Production environment variable presence and safe formats validated."
 echo "Credential validity and external-service configuration still require smoke testing."
-
