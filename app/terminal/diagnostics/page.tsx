@@ -8,7 +8,8 @@ import { createStructuredTradePlan } from "../../lib/structured-trade-planner";
 import { LaunchDiagnosticsPanel } from "../components/LaunchDiagnosticsPanel";
 import { getTerminalMarketData } from "../lib/terminal-market-data-provider";
 import { createLaunchDiagnostics } from "../lib/launch-diagnostics";
-import { evaluateTerminalMembership, membershipRedirect } from "../lib/membership-entitlement";
+import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../lib/membership-entitlement";
+import { loadPreviewClaims } from "../lib/preview-access";
 import { chartDataForStatus, chartDisplayState } from "../lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +19,12 @@ export default async function TerminalDiagnosticsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
-  const { data: membership, error: membershipError } = await supabase.from("memberships").select("plan, status, current_period_end").ilike("email", user.email).in("plan", ["pro", "elite"]).maybeSingle();
-  const entitlement = evaluateTerminalMembership(membership, Boolean(membershipError));
-  if (entitlement.kind !== "entitled") redirect(membershipRedirect(entitlement.kind));
+  const { data: membership, error: membershipError } = await supabase.from("memberships").select("plan, status, current_period_end").ilike("email", user.email).in("plan", ["free", "pro", "elite"]).maybeSingle();
+  const tier = resolveMembershipTier(membership, Boolean(membershipError));
+  if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
+  const previewState = await loadPreviewClaims(user.id);
+  const access = createProgressiveAccess(tier, previewState.claims);
+  if (!access.features["launch-diagnostics"]) redirect("/terminal");
 
   const { snapshot, gatewayStatus } = await getTerminalMarketData();
   const intelligence = analyzeMarketSnapshot(snapshot);
