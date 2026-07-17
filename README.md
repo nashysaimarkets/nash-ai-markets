@@ -76,9 +76,11 @@ future timestamp.
 | `/login` | Passwordless registration and login |
 | `/dashboard` | Authenticated daily member dashboard |
 | `/brief` | Authenticated, fail-safe AI-assisted market brief |
+| `/profile` | Authenticated member profile and subscription status |
 | `/terminal` | Authenticated market terminal |
 | `/terminal/diagnostics` | Effective-Elite launch diagnostics |
 | `/api/membership/preview` | Authenticated progressive preview claim |
+| `/api/profile` | Authenticated same-origin display-name update |
 | `/api/stripe/webhook` | Stripe-signed subscription synchronization |
 | `/api/openai/health` | Authenticated server-side OpenAI connectivity check |
 | `/welcome`, `/cancelled` | Checkout return states |

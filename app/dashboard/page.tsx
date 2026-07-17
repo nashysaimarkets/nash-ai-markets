@@ -3,7 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell.tsx";
+import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
+import { createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
@@ -41,9 +43,20 @@ export default async function MemberDashboard() {
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const mission = buildDailyMission(market.snapshot, intelligence, decision, plan);
+  const morningBrief = createMorningBrief(mission.available ? {
+    source: "verified",
+    asOf: market.snapshot.asOf,
+    sessionLabel: "London market session",
+    marketCondition: mission.marketCondition,
+    confidence: mission.confidence,
+    directionalBias: mission.directionalBias,
+    keyRisk: mission.keyWarning,
+    nextAction: mission.nextAction,
+  } : MORNING_BRIEF_PLACEHOLDER_INPUT);
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
+  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
   const accessCopy = access.tier === "elite"
     ? "Every Bullseye intelligence, decision, planning and diagnostics feature is unlocked."
     : offer?.active
@@ -57,6 +70,23 @@ export default async function MemberDashboard() {
       <section className="memberWelcome">
         <div><span>DAILY MEMBER BRIEF</span><h1>Welcome back, {name}.</h1><p>{accessCopy}</p><div className="memberWelcomeActions"><Link href="/brief">Read today’s market brief</Link><Link href="/terminal">Open full terminal</Link></div></div>
         <div className="memberAccessStatus"><TerminalBadge label={`${access.tier} member`} tone={access.tier === "elite" ? "warning" : access.tier === "pro" ? "info" : "neutral"} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+      </section>
+
+      <section className="executiveKpiStrip" aria-label="Executive account and market summary">
+        <div><span>Market data</span><strong>{market.snapshot.status}</strong><small>{market.gatewayStatus.providerName}</small></div>
+        <div><span>Bullseye confidence</span><strong>{mission.confidence === null ? "—" : mission.confidence}</strong><small>{mission.available ? "Verified engine output" : "Unavailable"}</small></div>
+        <div><span>Current access</span><strong>{access.effectiveTier.toUpperCase()}</strong><small>{offer?.active ? "Preview active" : `${access.tier} membership`}</small></div>
+        <div><span>Trade permission</span><strong>{mission.available ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
+      </section>
+
+      <section className={`executiveMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
+        <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2></div><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /></header>
+        <div className="executiveMorningBriefBody">
+          <div className="morningBriefSignal"><span>Directional context</span><strong>{morningBrief.directionalBias ?? "Not available"}</strong><small>{morningBrief.confidence === null ? "No confidence score active" : `${morningBrief.confidence} / 100 confidence`}</small></div>
+          <div><h3>Executive priorities</h3><ol>{morningBrief.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
+          <div><h3>Session checklist</h3><ul>{morningBrief.checklist.map((item) => <li key={item}>{item}</li>)}</ul></div>
+        </div>
+        {morningBrief.warning ? <footer><strong>Preview safety:</strong> {morningBrief.warning}<span>Placeholder fixture timestamp: {morningBrief.asOf}</span></footer> : <footer>As of {morningBrief.asOf} · Refresh after material data or event changes.</footer>}
       </section>
 
       <section className="dailyDashboardGrid">
@@ -77,6 +107,8 @@ export default async function MemberDashboard() {
           <footer>Directional classification accuracy only. Not trading returns, profitability, or a guarantee of future results.</footer>
         </article>
       </section>
+
+      <SubscriptionStatusCard tier={access.tier} status={membership?.status ?? null} billingPlan={membership?.plan ?? null} periodEnd={membership?.current_period_end ?? null} portalUrl={portalUrl} compact />
 
       <section className="dashboardAccessArea" aria-label="Progressive membership access">
         <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>

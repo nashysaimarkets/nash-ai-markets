@@ -66,7 +66,9 @@ the DOM. The service-role key is used only in server modules.
 | `/terminal` | Authenticated, `noindex` | Market terminal and entitled engine output |
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
 | `/brief` | Authenticated, `noindex` | Deterministic market brief with optional constrained AI evidence prioritisation |
+| `/profile` | Authenticated, `noindex` | Member identity, subscription status and Stripe portal handoff |
 | `/api/membership/preview` | Authenticated POST | Claim a tier preview for the current UTC period |
+| `/api/profile` | Authenticated same-origin POST | Validate and update Supabase display-name metadata |
 | `/api/stripe/webhook` | Stripe-signed POST | Synchronize subscription state |
 | `/api/openai/health` | Authenticated GET | Verify server-side OpenAI connectivity without exposing credentials |
 | `/welcome` | Public, `noindex` | Checkout return instructions; not entitlement proof |

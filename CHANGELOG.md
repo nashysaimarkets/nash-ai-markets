@@ -7,6 +7,10 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Added
 
+- Sprint Gamma executive dashboard summary, reusable Morning Brief engine,
+  protected member profile and subscription-status surfaces.
+- Fixed historical placeholder Morning Brief input that is always labelled
+  preview and cannot produce confidence, bias or actionable output.
 - Sprint Beta AI Market Brief with constrained structured evidence
   prioritisation, deterministic fallback and fail-closed unavailable states.
 - Reusable member navigation, dashboard card and safe-state components.
@@ -19,6 +23,8 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Changed
 
+- Dashboard loading, account navigation and mobile layouts now cover the
+  executive summary, Morning Brief, membership status and profile workflow.
 - Member dashboard navigation, responsive layout and primary actions now form a
   consistent path through the dashboard, market brief and full terminal.
 - OpenAI brief configuration is optional; production remains usable through the

@@ -20,8 +20,9 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Magic link arrives and uses the production callback.
 - [ ] Link establishes a session and opens `/dashboard`.
 - [ ] Reusing an expired link fails safely.
-- [ ] Authenticated navigation between dashboard and terminal works.
+- [ ] Authenticated navigation between dashboard, brief, terminal and profile works.
 - [ ] Sign-out ends the session and protected routes return to login.
+- [ ] Display-name update validates input and persists without exposing errors.
 
 ## Free member
 
@@ -54,6 +55,8 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Unavailable state shows no confidence, bias, probability or trade output.
 - [ ] Missing economic-calendar data shows unavailable, not a placeholder.
 - [ ] Accuracy shows only verified stored outcomes or insufficient history.
+- [ ] Morning Brief placeholder uses its fixed historical timestamp, explicit
+      preview label and no confidence or directional guidance.
 - [ ] No fabricated candles, prices, levels, entries, stops or targets appear.
 - [ ] Risk and no-trade warnings remain prominent.
 - [ ] Provider status, attribution and last update are plausible.
@@ -69,6 +72,8 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Payment failure produces the intended non-entitled state.
 - [ ] Cancellation/deletion updates access after the current Stripe state.
 - [ ] Customer portal opens and belongs to the correct account.
+- [ ] Profile subscription status matches effective access, stored status and
+      period end without displaying Stripe identifiers.
 - [ ] Replayed duplicate webhook does not create duplicate membership rows.
 
 ## Failure and recovery
@@ -96,4 +101,3 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Hosting, application, Supabase, Stripe and provider monitors remain healthy.
 - [ ] No unexpected 4xx/5xx spike appears.
 - [ ] Rollback artifact and operator remain available through the observation window.
-
