@@ -1,3 +1,8 @@
+import {
+  founding100AvailabilityLabel,
+  loadFounding100Availability,
+} from "./lib/server/founding-100.ts";
+
 const features = [
   {
     n: "01",
@@ -6,8 +11,8 @@ const features = [
   },
   {
     n: "02",
-    title: "Levels with context",
-    copy: "Key support, resistance and expected move — plus what would invalidate each scenario.",
+    title: "Signals with context",
+    copy: "Verified cross-market drivers, conflicts and invalidation conditions without fabricated price levels.",
   },
   {
     n: "03",
@@ -17,20 +22,20 @@ const features = [
 ];
 
 const included = [
-  "Overnight futures & global market moves",
-  "Treasury yields, VIX and US dollar check",
-  "Today’s economic calendar and catalysts",
-  "Bullish, bearish and no-trade scenarios",
-  "Key levels and expected move",
-  "Clear daily risk rating",
+  "Provider-backed futures and cross-market status",
+  "Treasury yields, VIX and US dollar context",
+  "Deterministic market-intelligence scores",
+  "Bullish, neutral and bearish scenarios",
+  "Decision permission and conflict warnings",
+  "Clear data-quality and risk status",
 ];
 
-export default function Home() {
-  const proCheckout =
-    "https://buy.stripe.com/28E3co7035NO81VgPBdMI00";
+export const dynamic = "force-dynamic";
 
-  const eliteCheckout =
-    "https://buy.stripe.com/fZu8wI4RV2BC95ZczldMI01";
+export default async function Home() {
+  const foundingAvailability = await loadFounding100Availability();
+  const proFounding = founding100AvailabilityLabel(foundingAvailability.proRemaining);
+  const eliteFounding = founding100AvailabilityLabel(foundingAvailability.eliteRemaining);
 
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
@@ -54,6 +59,7 @@ export default function Home() {
           <a href="#membership">Membership</a>
           <a href="/terminal">Terminal</a>
           <a href="/login">Member login</a>
+          <a href="/waitlist">Waiting list</a>
           <a href="#faq">FAQ</a>
         </nav>
 
@@ -76,7 +82,7 @@ export default function Home() {
 
           <p className="lead">
             A focused daily S&amp;P 500 futures briefing that cuts through the
-            noise — with key levels, catalysts, scenarios and risk clearly
+            noise — with verified market context, scenarios and risk clearly
             mapped before the US session.
           </p>
 
@@ -132,70 +138,70 @@ export default function Home() {
             <div className="metricGrid">
               <div>
                 <small>ES FUTURES</small>
-                <strong>6,318.25</strong>
-                <em className="up">+0.34%</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
 
               <div>
                 <small>VIX</small>
-                <strong>16.42</strong>
-                <em className="down">−1.08%</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
 
               <div>
                 <small>10Y YIELD</small>
-                <strong>4.31%</strong>
-                <em className="up">+3 bps</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
 
               <div>
                 <small>US DOLLAR</small>
-                <strong>97.84</strong>
-                <em>FLAT</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
             </div>
 
             <div className="levels">
               <div className="levelsTitle">
-                <span>KEY LEVELS</span>
-                <small>ES FUTURES</small>
+                <span>SAFETY WORKFLOW</span>
+                <small>PRODUCT PREVIEW</small>
               </div>
 
               <div className="level">
-                <span>R2</span>
-                <b>6,350</b>
+                <span>01</span>
+                <b>VERIFY</b>
                 <i />
-                <em>Momentum breakout</em>
+                <em>Provider and timestamp</em>
               </div>
 
               <div className="level active">
-                <span>R1</span>
-                <b>6,332</b>
+                <span>02</span>
+                <b>ASSESS</b>
                 <i />
-                <em>First resistance</em>
+                <em>Aligned and conflicting drivers</em>
               </div>
 
               <div className="level">
-                <span>PV</span>
-                <b>6,310</b>
+                <span>03</span>
+                <b>DECIDE</b>
                 <i />
-                <em>Daily pivot</em>
+                <em>Actionable, caution or no-trade</em>
               </div>
 
               <div className="level">
-                <span>S1</span>
-                <b>6,288</b>
+                <span>04</span>
+                <b>REVIEW</b>
                 <i />
-                <em>First support</em>
+                <em>Warnings and invalidation</em>
               </div>
             </div>
 
             <div className="bias">
               <span>TODAY’S BIAS</span>
-              <b>NEUTRAL → BULLISH</b>
+              <b>AWAIT VERIFIED DATA</b>
               <p>
-                Above 6,310, buyers retain control. Acceptance below the pivot
-                shifts focus to 6,288.
+                This product preview contains no current market value,
+                directional signal or fabricated price level.
               </p>
             </div>
           </div>
@@ -321,9 +327,9 @@ export default function Home() {
               <em>mapped in minutes.</em>
             </h2>
             <p>
-              One concise briefing delivered before the US session. Read it
-              with your coffee, mark your chart, and know the conditions that
-              matter.
+              One concise dashboard available before the US session when
+              verified provider data is available. Review the conditions,
+              warnings and scenarios that matter.
             </p>
           </div>
 
@@ -339,12 +345,12 @@ export default function Home() {
             </article>
 
             <article>
-              <b>BEFORE US OPEN</b>
+              <b>MEMBER DASHBOARD</b>
               <span>02</span>
-              <h3>Your brief arrives</h3>
+              <h3>Your brief is ready</h3>
               <p>
-                A structured report lands in your inbox with the day’s levels,
-                scenarios and risk rating.
+                Sign in to review the current provider status, deterministic
+                scenarios, decision permission and risk warnings.
               </p>
             </article>
 
@@ -399,7 +405,7 @@ export default function Home() {
             </ul>
             <a
               className="tierButton"
-              href="mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Free%20access"
+              href="/login"
             >
               Start free <span>↗</span>
             </a>
@@ -408,9 +414,10 @@ export default function Home() {
           <article className="tierCard featured">
             <div className="tag">MOST POPULAR</div>
             <p>PRO</p>
+            <div className={`foundingOffer${proFounding.full ? " foundingOfferFull" : ""}`} aria-live="polite"><strong>FOUNDING 100 PRO</strong><b>{proFounding.label}</b><span>{proFounding.detail}</span></div>
             <div className="tierPrice">
               <span>£</span>
-              <strong>16.99</strong>
+              <strong>14.99</strong>
               <small>/ month</small>
             </div>
             <p className="tierCopy">
@@ -424,16 +431,17 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <a className="primary full" href={proCheckout}>
-              Subscribe to Pro <span>↗</span>
+            <a className="primary full" href="/pricing">
+              Compare Pro billing <span>↗</span>
             </a>
           </article>
 
           <article className="tierCard">
             <p>ELITE</p>
+            <div className={`foundingOffer${eliteFounding.full ? " foundingOfferFull" : ""}`} aria-live="polite"><strong>FOUNDING 100 ELITE</strong><b>{eliteFounding.label}</b><span>{eliteFounding.detail}</span></div>
             <div className="tierPrice">
               <span>£</span>
-              <strong>39.99</strong>
+              <strong>29.99</strong>
               <small>/ month</small>
             </div>
             <p className="tierCopy">
@@ -453,8 +461,8 @@ export default function Home() {
                 <span>✓</span>Priority product access
               </li>
             </ul>
-            <a className="tierButton" href={eliteCheckout}>
-              Subscribe to Elite <span>↗</span>
+            <a className="tierButton" href="/pricing">
+              Compare Elite billing <span>↗</span>
             </a>
           </article>
         </div>
@@ -463,6 +471,10 @@ export default function Home() {
           EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL
           ANYTIME
         </p>
+        <aside className="shell foundingTerms" aria-label="Founding 100 terms">
+          <strong>Founding 100 price protection</strong>
+          <p>Eligibility is awarded automatically after a successful subscription and is limited to 100 members in each paid tier. The checkout subscription price is locked for life while that same membership remains continuously active. If it is cancelled or lapses, the price lock is permanently lost and any future subscription uses the standard price available at that time.</p>
+        </aside>
       </section>
 
       <section className="about shell" id="about">
@@ -539,8 +551,9 @@ export default function Home() {
               Can I cancel at any time?<span>+</span>
             </summary>
             <p>
-              Yes. The founding membership is planned as a flexible monthly
-              subscription with no long-term contract.
+              Yes. Monthly and annual memberships are managed securely through
+              Stripe. Cancellation ends future renewal. A cancelled or lapsed
+              Founding subscription permanently loses its price lock.
             </p>
           </details>
         </div>
@@ -560,9 +573,14 @@ export default function Home() {
           <div className="footerLinks">
             <a href="#brief">The Brief</a>
             <a href="#membership">Membership</a>
+            <a href="/waitlist">Launch waiting list</a>
             <a href={portalUrl}>Manage subscription</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
+                <a href="/privacy">Privacy</a>
+                <a href="/terms">Terms</a>
+                <a href="/risk-disclaimer">Risk disclaimer</a>
+                <a href="/about">About</a>
+                <a href="/help">Help</a>
+                <a href="/contact">Contact</a>
             <a href="mailto:hello@nashaimarkets.com">
               hello@nashaimarkets.com
             </a>

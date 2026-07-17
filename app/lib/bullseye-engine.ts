@@ -23,13 +23,47 @@ export type BullseyeResult = {
 const clamp = (value: number, min = 0, max = 100) =>
   Math.min(max, Math.max(min, Math.round(value)));
 
-const firstLevel = (
+const primaryLevel = (
   levels: MarketLevel[],
   type: MarketLevel["type"],
   fallback: string,
-) => levels.find((level) => level.type === type)?.value ?? fallback;
+) => {
+  const candidates = levels.filter((level) => level.type === type);
+  const primaryLabel = type === "resistance" ? "R1" : type === "support" ? "S1" : "PV";
+  const explicit = candidates.find((level) => level.label.trim().toUpperCase() === primaryLabel);
+  if (explicit) return explicit.value;
+  const ordered = candidates.map((level) => ({
+    level,
+    numeric: Number.parseFloat(level.value.replaceAll(",", "")),
+  })).filter((entry) => Number.isFinite(entry.numeric)).sort((left, right) =>
+    type === "support" ? right.numeric - left.numeric : left.numeric - right.numeric,
+  );
+  return ordered[0]?.level.value ?? candidates[0]?.value ?? fallback;
+};
 
 export function runBullseyeEngine(snapshot: MarketSnapshot): BullseyeResult {
+  if (snapshot.status !== "LIVE" && snapshot.status !== "DELAYED") {
+    return {
+      score: 0,
+      confidence: 0,
+      weather: "STORMY",
+      bias: "UNAVAILABLE",
+      risk: "HIGH",
+      bullProbability: 0,
+      bearProbability: 0,
+      noTradeProbability: 100,
+      dna: ["VERIFIED DATA UNAVAILABLE", "NO-TRADE"],
+      bullTrigger: "Unavailable",
+      bearTrigger: "Unavailable",
+      bullInvalidation: "Unavailable",
+      bearInvalidation: "Unavailable",
+      standAside: "Stand aside until verified current market data is available.",
+      riskWindowPrep: "Scheduled event data is unavailable.",
+      optionsApproach: "No options posture is generated without verified current data.",
+      missionBrief: "Verified current market data is unavailable. No directional trading guidance has been generated.",
+    };
+  }
+
   const values = Object.values(snapshot.evidence).filter(Number.isFinite);
   const score = clamp(
     values.length
@@ -64,15 +98,14 @@ export function runBullseyeEngine(snapshot: MarketSnapshot): BullseyeResult {
   );
   const bearProbability = directionalProbability - bullProbability;
 
-  const resistance = firstLevel(snapshot.levels, "resistance", "mapped resistance");
-  const pivot = firstLevel(snapshot.levels, "pivot", "the session pivot");
-  const support = firstLevel(snapshot.levels, "support", "mapped support");
+  const resistance = primaryLevel(snapshot.levels, "resistance", "mapped resistance");
+  const pivot = primaryLevel(snapshot.levels, "pivot", "the session pivot");
+  const support = primaryLevel(snapshot.levels, "support", "mapped support");
   const primaryEvent = snapshot.events[0];
   const riskWindow = primaryEvent
-    ? `${primaryEvent.time} UK — ${primaryEvent.name}`
+    ? `${primaryEvent.time}${/\bUK$/i.test(primaryEvent.time.trim()) ? "" : " UK"} — ${primaryEvent.name}`
     : "No scheduled risk window supplied";
 
-  const verifiedData = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
   const leadingCase =
     bullProbability > bearProbability
       ? `Bull case leads ${bullProbability}% to ${bearProbability}%`
@@ -106,8 +139,6 @@ export function runBullseyeEngine(snapshot: MarketSnapshot): BullseyeResult {
       snapshot.risk === "HIGH" || snapshot.risk === "ELEVATED"
         ? "If trading options, favour defined-risk spreads; avoid uncovered short premium and chasing inflated volatility."
         : "If trading options, use defined risk, pre-set maximum loss and only act after the mapped trigger confirms.",
-    missionBrief: verifiedData
-      ? `${leadingCase}. ${snapshot.summary}`
-      : `${leadingCase}, but the feed is ${snapshot.status}. Treat all displayed levels as demonstration data until independently verified.`,
+    missionBrief: `${leadingCase}. ${snapshot.summary}`,
   };
 }
