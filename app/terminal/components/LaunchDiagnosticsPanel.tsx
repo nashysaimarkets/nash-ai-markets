@@ -15,6 +15,8 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>Refresh latency</dt><dd>{diagnostics.provider.refreshLatencyMs === null ? "Unavailable" : `${diagnostics.provider.refreshLatencyMs}ms`}</dd></div>
       <div><dt>Last success</dt><dd>{diagnostics.provider.lastSuccessfulUpdate ?? "None"}</dd></div>
       <div><dt>Fallback</dt><dd>{diagnostics.provider.fallbackActive ? "Active" : "Inactive"}</dd></div>
+      <div><dt>OpenAI health</dt><dd>{diagnostics.integrations.openAI.status.replaceAll("_", " ")}</dd></div>
+      <div><dt>Launch email</dt><dd>{diagnostics.integrations.launchEmail.ready ? "Ready" : "Not configured"}</dd></div>
     </dl>
     <div className="launchModeRow" aria-label="Detected market modes">
       <TerminalBadge label={diagnostics.modes.live ? "Live" : "Live inactive"} tone={diagnostics.modes.live ? "positive" : "neutral"} />

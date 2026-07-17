@@ -7,14 +7,17 @@ export const dynamic = "force-dynamic";
 
 type Plan = "pro" | "elite";
 
-function configuredPlan(priceId: string | undefined): Plan | null {
+export function configuredPlan(
+  priceId: string | undefined,
+  environment: Record<string, string | undefined> = process.env,
+): Plan | null {
   if (!priceId) return null;
-  if (priceId === process.env.STRIPE_PRO_PRICE_ID) return "pro";
-  if (priceId === process.env.STRIPE_ELITE_PRICE_ID) return "elite";
+  if (priceId === environment.STRIPE_PRO_PRICE_ID) return "pro";
+  if (priceId === environment.STRIPE_ELITE_PRICE_ID) return "elite";
   return null;
 }
 
-function subscriptionEnd(subscription: Stripe.Subscription) {
+export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">) {
   const seconds = subscription.items.data.reduce(
     (latest, item) => Math.max(latest, item.current_period_end ?? 0),
     0,
@@ -29,13 +32,14 @@ async function customerEmail(stripe: Stripe, customer: string | Stripe.Customer 
 }
 
 async function saveSubscription(stripe: Stripe, subscription: Stripe.Subscription, fallbackEmail?: string | null) {
-  const item = subscription.items.data[0];
-  const plan = configuredPlan(item?.price.id) ??
-    (subscription.metadata.plan === "elite" ? "elite" : subscription.metadata.plan === "pro" ? "pro" : null);
+  const matchedPlans = [...new Set(subscription.items.data
+    .map((item) => configuredPlan(item.price.id))
+    .filter((plan): plan is Plan => plan !== null))];
+  const plan = matchedPlans.length === 1 ? matchedPlans[0] : null;
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
 
   if (!email || !plan) {
-    throw new Error(`Cannot map Stripe subscription ${subscription.id} to a membership`);
+    throw new Error("Cannot safely map Stripe subscription to membership");
   }
 
   const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;

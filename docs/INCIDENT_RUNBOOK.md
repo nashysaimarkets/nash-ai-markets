@@ -162,3 +162,36 @@ Suggested severity:
 - no billing webhook backlog remains;
 - diagnostics show correct release and provider state.
 
+## OpenAI degradation
+
+### Detection
+
+- diagnostics report authentication rejected, rate limited, timeout or provider
+  unavailable;
+- AI Market Brief reports deterministic fallback active.
+
+### Response
+
+1. Confirm only that the key and approved model variables are present; never
+   print either value.
+2. Check the provider status page and account quota through approved operator
+   access.
+3. Do not retry aggressively or disable deterministic market safeguards.
+4. Preserve the deterministic brief and communicate that optional evidence
+   prioritisation is inactive.
+5. Rotate a credential only through the secret manager if exposure or
+   revocation is confirmed.
+
+### Recovery checks
+
+- diagnostics report connected without exposing model/account details;
+- AI-assisted selection uses only supplied deterministic evidence;
+- disabling OpenAI still produces the deterministic brief.
+
+## Launch email failure
+
+Email dispatch is not implemented in the current candidate. If introduced,
+failures must not affect waiting-list storage, authentication, billing or
+entitlement. Confirm provider status, verified sender, suppression state and
+idempotency without logging message bodies or recipient addresses. Do not claim
+that a confirmation was sent until the provider has accepted it.

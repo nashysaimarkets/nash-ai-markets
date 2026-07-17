@@ -25,7 +25,7 @@ export function WaitlistForm() {
         return;
       }
       setEmail("");
-      setMessage("Thank you. Your request has been recorded for launch updates.");
+      setMessage("Thank you. Your request has been recorded. Email confirmation is not sent until launch email delivery is configured.");
     } catch {
       setMessage("The waiting list is temporarily unavailable. Please try again.");
     } finally {

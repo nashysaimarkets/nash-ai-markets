@@ -9,7 +9,10 @@ test("OpenAI client remains unconfigured when the server key is absent", () => {
 });
 
 test("OpenAI health check reports not configured without making a request", async () => {
-  assert.deepEqual(await checkOpenAIConnection(null), { status: "not_configured" });
+  assert.deepEqual(await checkOpenAIConnection(null), {
+    status: "not_configured",
+    reason: "missing_api_key",
+  });
 });
 
 test("OpenAI health check confirms a successful sanitized connection", async () => {
@@ -23,7 +26,7 @@ test("OpenAI health check confirms a successful sanitized connection", async () 
     },
   });
   assert.equal(requested, true);
-  assert.deepEqual(result, { status: "connected" });
+  assert.deepEqual(result, { status: "connected", reason: null });
 });
 
 test("OpenAI health check sanitizes provider failures", async () => {
@@ -34,8 +37,24 @@ test("OpenAI health check sanitizes provider failures", async () => {
       },
     },
   });
-  assert.deepEqual(result, { status: "unavailable" });
+  assert.deepEqual(result, { status: "unavailable", reason: "provider_unavailable" });
   assert.doesNotMatch(JSON.stringify(result), /secret-bearing/);
+});
+
+test("OpenAI health check exposes only safe operational failure categories", async () => {
+  const authentication = await checkOpenAIConnection({
+    models: { async list() { throw { status: 401, message: "credential value" }; } },
+  });
+  const rateLimit = await checkOpenAIConnection({
+    models: { async list() { throw { status: 429, message: "account detail" }; } },
+  });
+  const timeout = await checkOpenAIConnection({
+    models: { async list() { throw { name: "AbortError", message: "request URL" }; } },
+  });
+  assert.deepEqual(authentication, { status: "unavailable", reason: "authentication_rejected" });
+  assert.deepEqual(rateLimit, { status: "unavailable", reason: "rate_limited" });
+  assert.deepEqual(timeout, { status: "unavailable", reason: "timeout" });
+  assert.doesNotMatch(JSON.stringify([authentication, rateLimit, timeout]), /credential|account detail|request URL/);
 });
 
 test("OpenAI health route requires authentication and never serializes credentials or raw errors", async () => {

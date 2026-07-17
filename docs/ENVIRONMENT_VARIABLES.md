@@ -21,10 +21,13 @@ absent.
 | `STRIPE_WEBHOOK_SECRET` | Secret, server only | Mandatory for paid beta | Webhook signature verification |
 | `STRIPE_PRO_PRICE_ID` | Server config | Mandatory for Pro | Maps a Stripe Price to Pro |
 | `STRIPE_ELITE_PRICE_ID` | Server config | Mandatory for Elite | Maps a Stripe Price to Elite |
+| `NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL` | Public | Mandatory for paid beta | Verified hosted checkout for the Pro product |
+| `NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL` | Public | Mandatory for paid beta | Verified hosted checkout for the Elite product |
 | `STRIPE_CUSTOMER_PORTAL_LINK` | Server-rendered config | Mandatory operationally | Member billing-management link; otherwise UI falls back to support email |
 
-The public Stripe checkout URLs are currently constants in `app/page.tsx`, not
-environment variables. Verify them separately against the production products.
+If a checkout URL is absent, the homepage routes the corresponding call to
+action to the waiting list. Price IDs and checkout URLs must be verified as the
+same products before paid beta.
 
 ## OpenAI
 
@@ -37,6 +40,25 @@ The key is read only from `process.env`, is never returned by the health route,
 and must not use a `NEXT_PUBLIC_` or `VITE_` prefix. When either credential or
 model access is unavailable, `/brief` retains its deterministic engine output
 and labels the AI enhancement as inactive.
+
+The internal Elite diagnostics page performs a sanitized connectivity check. It
+reports only safe categories and never returns a key, model list, raw exception,
+request URL or account detail.
+
+## Launch email readiness
+
+No email provider is connected by default. Provider-neutral waiting-list and
+accepted Founding Member templates are implemented, but the application does
+not dispatch them yet.
+
+| Variable | Visibility | Requirement | Used for |
+|---|---|---|---|
+| `LAUNCH_EMAIL_PROVIDER` | Server config | Optional until dispatch is implemented | Approved transactional provider identifier |
+| `LAUNCH_EMAIL_FROM` | Server config | Optional until dispatch is implemented | Verified sender identity |
+
+Both values make diagnostics report template/configuration readiness only; they
+do not enable sending. Provider credentials must be introduced as separately
+documented server-only variables when a provider is selected.
 
 ## Market provider selection
 

@@ -1,0 +1,79 @@
+# Operation Launch Readiness Checklist
+
+This checklist covers the final private-beta gate. Record evidence against the
+exact candidate commit. Do not paste credentials, authenticated URLs, member
+emails, payment details or raw provider errors into the release record.
+
+## Application and artifact
+
+- [ ] Working tree is clean and the approved branch/commit is recorded.
+- [ ] Tests, strict TypeScript, ESLint, production build, artifact validation,
+      operations validation and secret-pattern scan all pass.
+- [ ] Build metadata reports the expected version, timestamp, commit and test
+      total.
+- [ ] Homepage contains no current-looking demonstration prices and checkout
+      calls to action use verified deployment configuration.
+- [ ] Mobile keyboard, screen-reader, reduced-motion, loading, empty and
+      recoverable-error journeys have been checked on the deployed candidate.
+
+## Environment and integrations
+
+- [ ] `npm run ops:check-env` passes in the production build environment.
+- [ ] Supabase, Stripe, OpenAI, market-provider and email variables are stored
+      in the platform configuration with correct public/server visibility.
+- [ ] OpenAI diagnostics report a safe state: connected, not configured,
+      authentication rejected, rate limited, timeout or provider unavailable.
+- [ ] The deterministic market brief remains usable when OpenAI is disabled or
+      unavailable.
+- [ ] Launch email diagnostics remain **Not configured** until both an approved
+      transactional provider and sender identity are configured.
+
+## Supabase
+
+- [ ] A restorable backup or snapshot exists.
+- [ ] The canonical `memberships` schema has been reviewed and documented.
+- [ ] Migrations `202607170001`, `202607170002` and `202607170003` have been
+      reviewed and applied manually in the intended order.
+- [ ] RLS is enabled and anonymous/authenticated browser roles cannot read or
+      write server-managed preview, outcome, waiting-list or onboarding data.
+- [ ] Waiting-list duplicate submission is enumeration-safe.
+- [ ] Founding Member onboarding creates only a pending review record and never
+      changes membership or billing.
+
+## Stripe and entitlement
+
+- [ ] Checkout URLs point to the intended production Pro and Elite products.
+- [ ] Price IDs match the same products and billing intervals.
+- [ ] The webhook endpoint has the production signing secret and required event
+      subscriptions.
+- [ ] Unknown or ambiguous Price IDs fail closed and subscription metadata
+      cannot grant a tier.
+- [ ] Checkout, renewal, upgrade, failed payment, cancellation and signed replay
+      have been tested in Stripe test mode.
+- [ ] Stored status and `current_period_end` produce the expected Free, Pro and
+      Elite access.
+- [ ] Out-of-order webhook handling is implemented or explicitly risk-accepted
+      before inviting paid beta members.
+
+## Email and onboarding
+
+- [ ] A transactional email provider, verified sender, privacy terms,
+      suppression handling and delivery monitoring have been approved.
+- [ ] Waiting-list confirmation wording has been reviewed.
+- [ ] No confirmation is promised by the UI while delivery is unconfigured.
+- [ ] Founding Member welcome is sent only after an accepted review.
+- [ ] Email dispatch is idempotent and records provider message status without
+      storing secrets in application logs.
+
+## Deployment, rollback and monitoring
+
+- [ ] The immutable candidate artifact and previous known-good artifact exist.
+- [ ] Deployment and rollback operators are named.
+- [ ] Production smoke tests pass after deployment.
+- [ ] Uptime, application errors, Supabase, Stripe webhook failures, provider
+      freshness, OpenAI degradation and email delivery failures are monitored.
+- [ ] Alert owners, thresholds and escalation timing are recorded.
+- [ ] The rollback checklist has been rehearsed without destructive SQL.
+- [ ] The first invitation cohort, support hours and post-launch observation
+      window are recorded.
+

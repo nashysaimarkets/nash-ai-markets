@@ -46,6 +46,8 @@ test("environment template inventories billing, authentication and provider conf
     "STRIPE_WEBHOOK_SECRET",
     "STRIPE_PRO_PRICE_ID",
     "STRIPE_ELITE_PRICE_ID",
+    "NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL",
+    "NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL",
     "FMP_API_KEY",
     "FMP_API_BASE_URL",
   ]) assert.match(environment, new RegExp(`^${variable}=`, "m"));

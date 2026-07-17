@@ -1,11 +1,13 @@
 import type { MarketGatewayStatus } from "../../lib/live-market-gateway.ts";
 import type { MarketSnapshot } from "../../lib/market-data.ts";
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
+import type { LaunchEmailReadiness } from "../../lib/launch-email.ts";
+import type { OpenAIHealthStatus } from "../../lib/server/openai.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { ChartDisplayState } from "./visual-terminal.ts";
 
-export const VERIFIED_LAUNCH_TEST_TOTAL = 166;
+export const VERIFIED_LAUNCH_TEST_TOTAL = 173;
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
 export type LaunchCheck = {
@@ -30,6 +32,15 @@ export type LaunchDiagnostics = {
   };
   modes: { preview: boolean; delayed: boolean; offline: boolean; live: boolean };
   cacheStatus: "live" | "delayed" | "preview" | "fallback" | "offline";
+  integrations: {
+    openAI: {
+      configured: boolean;
+      modelConfigured: boolean;
+      status: OpenAIHealthStatus["status"];
+      reason: OpenAIHealthStatus["reason"];
+    };
+    launchEmail: LaunchEmailReadiness;
+  };
   environment: {
     mode: "production" | "development" | "test" | "unknown";
     applicationVersion: string;
@@ -52,6 +63,10 @@ export type LaunchDiagnosticsInput = {
   providerType?: string;
   apiCredentialConfigured?: boolean;
   accessibilityContract?: boolean;
+  openAIHealth?: OpenAIHealthStatus;
+  openAIConfigured?: boolean;
+  openAIModelConfigured?: boolean;
+  launchEmailReadiness?: LaunchEmailReadiness;
   environment?: Record<string, string | undefined>;
 };
 
@@ -104,6 +119,7 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
   ];
   const readiness = checks.some((check) => check.status === "FAIL") ? "NOT_READY" : checks.some((check) => check.status === "WARN") || offline || preview || delayed ? "DEGRADED" : "READY";
   const cacheStatus: LaunchDiagnostics["cacheStatus"] = gatewayStatus.fallbackActive ? "fallback" : preview ? "preview" : delayed ? "delayed" : live ? "live" : "offline";
+  const openAIHealth = input.openAIHealth ?? { status: "not_configured", reason: "missing_api_key" };
 
   return {
     schemaVersion: "1.0",
@@ -120,6 +136,19 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
     },
     modes: { preview, delayed, offline, live },
     cacheStatus,
+    integrations: {
+      openAI: {
+        configured: input.openAIConfigured ?? false,
+        modelConfigured: input.openAIModelConfigured ?? false,
+        status: openAIHealth.status,
+        reason: openAIHealth.reason,
+      },
+      launchEmail: input.launchEmailReadiness ?? {
+        providerConfigured: false,
+        senderConfigured: false,
+        ready: false,
+      },
+    },
     environment: safeEnvironment(input.environment ?? process.env),
     warnings: warningCodes,
     checks,

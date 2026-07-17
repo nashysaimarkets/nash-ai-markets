@@ -19,7 +19,11 @@ item complete from assumption.
 - [ ] Production RLS and grants verified.
 - [ ] Supabase Site URL and callback allowlist verified.
 - [ ] Stripe mode, products, Price IDs, portal and webhook endpoint verified.
+- [ ] Public Pro/Elite checkout URLs match the configured Stripe Price IDs.
 - [ ] Stripe endpoint health and pending deliveries checked.
+- [ ] OpenAI diagnostic status checked; deterministic fallback verified.
+- [ ] Launch email remains disabled unless provider, sender and dispatch
+      implementation are separately approved.
 - [ ] Market provider entitlement and current symbol mapping verified.
 - [ ] DNS/TLS changes documented with previous values.
 

@@ -54,21 +54,24 @@ Exit evidence: delivery screenshots with addresses redacted and route results.
 2. Confirm public checkout links point to those production products.
 3. Set `STRIPE_PRO_PRICE_ID` and `STRIPE_ELITE_PRICE_ID` to the matching Price
    IDs.
-4. Configure the production customer portal and
+4. Set the public Pro and Elite checkout URL variables to the hosted checkout
+   pages for those same products.
+5. Configure the production customer portal and
    `STRIPE_CUSTOMER_PORTAL_LINK`.
-5. Add `/api/stripe/webhook` as the production webhook endpoint.
-6. Subscribe to:
+6. Add `/api/stripe/webhook` as the production webhook endpoint.
+7. Subscribe to:
    - `checkout.session.completed`;
    - `customer.subscription.created`;
    - `customer.subscription.updated`;
    - `customer.subscription.deleted`;
    - `invoice.payment_failed`.
-7. Install the endpoint's production signing secret.
-8. Configure checkout success `/welcome` and cancellation `/cancelled`.
-9. Complete a controlled purchase, upgrade, failed-payment simulation,
+8. Install the endpoint's production signing secret.
+9. Configure checkout success `/welcome` and cancellation `/cancelled`.
+10. Complete a controlled purchase, upgrade, failed-payment simulation,
    cancellation and webhook replay.
-10. Verify membership email, plan, status, customer/subscription IDs and period
+11. Verify membership email, plan, status, customer/subscription IDs and period
     end after each transition.
+12. Verify an unknown Price ID and metadata-only plan both fail closed.
 
 Exit evidence: Stripe event IDs, sanitized database results and entitlement
 screenshots. Out-of-order webhook protection remains a known launch blocker
@@ -126,6 +129,7 @@ Exit evidence: restore result, monitor IDs and tested alert notifications.
 6. Complete keyboard, screen-reader and physical mobile checks.
 7. Obtain legal approval for the current terms, privacy and risk wording.
 8. Confirm the rollback owner and previous known-good artifact.
+9. Complete `LAUNCH_READINESS_CHECKLIST.md`.
 
 Exit evidence: signed deployment checklist and smoke-test record.
 

@@ -10,6 +10,8 @@ operating it afterwards.
   routes, dependencies and deployment shape.
 - [Launch playbook](LAUNCH_PLAYBOOK.md) — ordered path from the current state to
   private beta.
+- [Launch readiness checklist](LAUNCH_READINESS_CHECKLIST.md) — final
+  application, integration, data, billing, email and monitoring gates.
 - [Deployment checklist](DEPLOYMENT_CHECKLIST.md) — production deployment gate.
 - [Rollback checklist](ROLLBACK_CHECKLIST.md) — application, configuration,
   database and DNS rollback.
@@ -56,4 +58,3 @@ npm run ops:check-env
 The environment check requires the private-beta Supabase, Stripe, provider and
 build-provenance variables. It does not make network calls and does not prove
 that credentials are valid.
-

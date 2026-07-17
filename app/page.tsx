@@ -6,8 +6,8 @@ const features = [
   },
   {
     n: "02",
-    title: "Levels with context",
-    copy: "Key support, resistance and expected move — plus what would invalidate each scenario.",
+    title: "Signals with context",
+    copy: "Verified cross-market drivers, conflicts and invalidation conditions without fabricated price levels.",
   },
   {
     n: "03",
@@ -26,11 +26,8 @@ const included = [
 ];
 
 export default function Home() {
-  const proCheckout =
-    "https://buy.stripe.com/28E3co7035NO81VgPBdMI00";
-
-  const eliteCheckout =
-    "https://buy.stripe.com/fZu8wI4RV2BC95ZczldMI01";
+  const proCheckout = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
+  const eliteCheckout = process.env.NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL?.trim();
 
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
@@ -77,7 +74,7 @@ export default function Home() {
 
           <p className="lead">
             A focused daily S&amp;P 500 futures briefing that cuts through the
-            noise — with key levels, catalysts, scenarios and risk clearly
+            noise — with verified market context, scenarios and risk clearly
             mapped before the US session.
           </p>
 
@@ -133,70 +130,70 @@ export default function Home() {
             <div className="metricGrid">
               <div>
                 <small>ES FUTURES</small>
-                <strong>6,318.25</strong>
-                <em className="up">+0.34%</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
 
               <div>
                 <small>VIX</small>
-                <strong>16.42</strong>
-                <em className="down">−1.08%</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
 
               <div>
                 <small>10Y YIELD</small>
-                <strong>4.31%</strong>
-                <em className="up">+3 bps</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
 
               <div>
                 <small>US DOLLAR</small>
-                <strong>97.84</strong>
-                <em>FLAT</em>
+                <strong>PREVIEW</strong>
+                <em>NO LIVE VALUE</em>
               </div>
             </div>
 
             <div className="levels">
               <div className="levelsTitle">
-                <span>KEY LEVELS</span>
-                <small>ES FUTURES</small>
+                <span>SAFETY WORKFLOW</span>
+                <small>PRODUCT PREVIEW</small>
               </div>
 
               <div className="level">
-                <span>R2</span>
-                <b>6,350</b>
+                <span>01</span>
+                <b>VERIFY</b>
                 <i />
-                <em>Momentum breakout</em>
+                <em>Provider and timestamp</em>
               </div>
 
               <div className="level active">
-                <span>R1</span>
-                <b>6,332</b>
+                <span>02</span>
+                <b>ASSESS</b>
                 <i />
-                <em>First resistance</em>
+                <em>Aligned and conflicting drivers</em>
               </div>
 
               <div className="level">
-                <span>PV</span>
-                <b>6,310</b>
+                <span>03</span>
+                <b>DECIDE</b>
                 <i />
-                <em>Daily pivot</em>
+                <em>Actionable, caution or no-trade</em>
               </div>
 
               <div className="level">
-                <span>S1</span>
-                <b>6,288</b>
+                <span>04</span>
+                <b>REVIEW</b>
                 <i />
-                <em>First support</em>
+                <em>Warnings and invalidation</em>
               </div>
             </div>
 
             <div className="bias">
               <span>TODAY’S BIAS</span>
-              <b>NEUTRAL → BULLISH</b>
+              <b>AWAIT VERIFIED DATA</b>
               <p>
-                Above 6,310, buyers retain control. Acceptance below the pivot
-                shifts focus to 6,288.
+                This product preview contains no current market value,
+                directional signal or fabricated price level.
               </p>
             </div>
           </div>
@@ -425,8 +422,8 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <a className="primary full" href={proCheckout}>
-              Subscribe to Pro <span>↗</span>
+            <a className="primary full" href={proCheckout || "/waitlist"}>
+              {proCheckout ? "Subscribe to Pro" : "Join the Pro waiting list"} <span>↗</span>
             </a>
           </article>
 
@@ -454,8 +451,8 @@ export default function Home() {
                 <span>✓</span>Priority product access
               </li>
             </ul>
-            <a className="tierButton" href={eliteCheckout}>
-              Subscribe to Elite <span>↗</span>
+            <a className="tierButton" href={eliteCheckout || "/waitlist"}>
+              {eliteCheckout ? "Subscribe to Elite" : "Join the Elite waiting list"} <span>↗</span>
             </a>
           </article>
         </div>

@@ -7,6 +7,12 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Added
 
+- Safe OpenAI operational diagnostics with authentication, rate-limit, timeout
+  and provider-availability categories plus deterministic fallback.
+- Provider-neutral waiting-list confirmation and accepted Founding Member
+  welcome templates with fail-closed email readiness diagnostics.
+- Final Operation Launch readiness checklist spanning deployment, Supabase,
+  Stripe, OpenAI, email, rollback and post-launch monitoring.
 - Sprint Delta private-beta waiting-list flow with enumeration-safe duplicate
   handling and server-managed storage.
 - Reviewed Founding Member onboarding for active Pro and Elite members without
@@ -29,6 +35,11 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Changed
 
+- Stripe entitlement mapping now requires exactly one configured Price ID and
+  no longer trusts subscription metadata as a tier fallback.
+- Homepage market preview contains no fixed market prices, and paid calls to
+  action use deployment-configured checkout URLs or fall back to the waiting
+  list.
 - Dashboard loading, account navigation and mobile layouts now cover the
   executive summary, Morning Brief, membership status and profile workflow.
 - Member dashboard navigation, responsive layout and primary actions now form a

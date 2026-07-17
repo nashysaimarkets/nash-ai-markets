@@ -171,6 +171,7 @@ bounded.
    application errors.
 
 Use the full [launch playbook](docs/LAUNCH_PLAYBOOK.md),
+[launch-readiness checklist](docs/LAUNCH_READINESS_CHECKLIST.md),
 [deployment checklist](docs/DEPLOYMENT_CHECKLIST.md) and
 [release checklist](docs/RELEASE_CHECKLIST.md).
 
