@@ -1,5 +1,9 @@
 # NASH AI Markets — Project Bullseye
 
+RC1 deployment requires migrations `202607170001` through `202607170007` in
+order. Final launch gates and known issues are recorded in
+`docs/RC1_PRODUCTION_READINESS.md`.
+
 Project Bullseye is a private-beta trading-intelligence application for
 provider-backed S&P 500 futures context. It combines a fail-closed market-data
 gateway with deterministic intelligence, decision and structured planning

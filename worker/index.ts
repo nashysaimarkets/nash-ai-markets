@@ -46,6 +46,11 @@ const worker = {
     response.headers.set("referrer-policy", "strict-origin-when-cross-origin");
     response.headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
     response.headers.set("x-frame-options", "DENY");
+    response.headers.set("x-dns-prefetch-control", "off");
+    response.headers.set("cross-origin-opener-policy", "same-origin");
+    if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/_next/static/")) {
+      response.headers.set("cache-control", "public, max-age=31536000, immutable");
+    }
     if (url.protocol === "https:") {
       response.headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
     }

@@ -5,6 +5,9 @@
 - Prepared `1.0.0-rc.1` with authenticated first-run onboarding, substantive
   trust and support pages, responsive member navigation, friendly recovery
   states, RC validation coverage and a prioritised release-candidate report.
+- Hardened RC1 with atomic Stripe event ordering, private-route crawler rules,
+  install metadata, static-asset caching, additional response headers and final
+  production readiness documentation.
 
 - Added server-enforced Founding 100 Pro and Elite awards, permanent member
   badges, continuous-subscription price-lock rules, restricted administrator

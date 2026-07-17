@@ -66,13 +66,17 @@ async function saveSubscription(
 
   const admin = createAdminClient();
   if (!plan && !foundingSubscriptionActive(subscription.status)) {
-    const { error } = await admin.from("memberships")
-      .update({
-        status: subscription.status,
-        current_period_end: subscriptionEnd(subscription),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("stripe_subscription_id", subscription.id);
+    const { error } = await admin.rpc("sync_membership_from_stripe", {
+      p_email: email ?? "",
+      p_plan: null,
+      p_status: subscription.status,
+      p_stripe_customer_id: null,
+      p_stripe_subscription_id: subscription.id,
+      p_current_period_end: subscriptionEnd(subscription),
+      p_billing_interval: null,
+      p_unit_amount: null,
+      p_event_created_at: eventCreated,
+    });
     if (error) throw error;
     await syncFounding100(subscription, null, email, eventCreated);
     return;
@@ -83,17 +87,17 @@ async function saveSubscription(
   }
 
   const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-  const { error } = await admin.from("memberships").upsert({
-    email,
-    plan,
-    status: subscription.status,
-    stripe_customer_id: customerId,
-    stripe_subscription_id: subscription.id,
-    current_period_end: subscriptionEnd(subscription),
-    billing_interval: billingInterval,
-    unit_amount: unitAmount,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "email" });
+  const { error } = await admin.rpc("sync_membership_from_stripe", {
+    p_email: email,
+    p_plan: plan,
+    p_status: subscription.status,
+    p_stripe_customer_id: customerId,
+    p_stripe_subscription_id: subscription.id,
+    p_current_period_end: subscriptionEnd(subscription),
+    p_billing_interval: billingInterval,
+    p_unit_amount: unitAmount,
+    p_event_created_at: eventCreated,
+  });
 
   if (error) throw error;
   await syncFounding100(subscription, plan, email, eventCreated);
@@ -134,9 +138,17 @@ export async function POST(request: Request) {
         ? invoice.parent.subscription_details.subscription
         : invoice.parent?.subscription_details?.subscription?.id;
       if (subscriptionId) {
-        const { error } = await createAdminClient().from("memberships")
-          .update({ status: "past_due", updated_at: new Date().toISOString() })
-          .eq("stripe_subscription_id", subscriptionId);
+        const { error } = await createAdminClient().rpc("sync_membership_from_stripe", {
+          p_email: "",
+          p_plan: null,
+          p_status: "past_due",
+          p_stripe_customer_id: null,
+          p_stripe_subscription_id: subscriptionId,
+          p_current_period_end: null,
+          p_billing_interval: null,
+          p_unit_amount: null,
+          p_event_created_at: event.created,
+        });
         if (error) throw error;
         const { error: foundingError } = await createAdminClient().rpc("sync_founding_100", {
           p_email: "",

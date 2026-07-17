@@ -20,6 +20,8 @@ item complete from assumption.
       verify existing membership rows are unchanged.
 - [ ] Apply `202607170006_member_onboarding.sql`; verify authenticated members
       can manage only their own preferences.
+- [ ] Apply `202607170007_stripe_event_ordering.sql`; replay newer then older
+      Stripe events and confirm the older event cannot overwrite membership.
 - [ ] Production RLS and grants verified.
 - [ ] Supabase Site URL and callback allowlist verified.
 - [ ] Stripe mode, products, Price IDs, portal and webhook endpoint verified.

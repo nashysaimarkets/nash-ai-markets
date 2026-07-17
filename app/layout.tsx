@@ -24,9 +24,6 @@ export const metadata: Metadata = {
     description: "Provider-backed S&P 500 pre-market intelligence, built around deterministic scenarios and risk.",
     type: "website",
   },
-  other: {
-    "codex-preview": "development",
-  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
