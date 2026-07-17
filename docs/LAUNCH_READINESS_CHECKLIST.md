@@ -65,6 +65,9 @@ emails, payment details or raw provider errors into the release record.
       access `/admin/founding-100`.
 - [ ] Replay active, duplicate, cancellation, lapse and out-of-order Stripe
       test-mode events; confirm neither programme exceeds 100 positions.
+- [ ] Compare public Pro and Elite counts with the administrator register, test
+      neutral database-unavailable wording, and verify a full tier continues as
+      a standard subscription without Founding price protection.
 
 ## Email and onboarding
 

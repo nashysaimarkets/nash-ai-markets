@@ -12,6 +12,19 @@ status permanently forfeits the price lock. The earned badge and position remain
 in programme history, and a later subscription uses the then-current standard
 price. Forfeited positions are never reused.
 
+## Live availability
+
+The public pricing page reads only `programme` and `position` from the
+server-side award register. Active and forfeited records both consume their
+original position. Counts are therefore `100 - permanently allocated
+positions`, independently for Pro and Elite.
+
+No count is calculated in the browser or inferred from Stripe checkout
+activity. If the database query fails or returns invalid rows, the public page
+shows “Founding places available” without a number. At zero it shows “Founding
+allocation full”; the ordinary subscription remains available without the
+Founding lifetime price lock.
+
 ## Database migration
 
 Apply `supabase/migrations/202607170004_founding_100.sql` after migrations
@@ -25,6 +38,7 @@ Apply `supabase/migrations/202607170004_founding_100.sql` after migrations
 6. Verify only `service_role` can execute `sync_founding_100`.
 7. Send signed Stripe test-mode lifecycle events and confirm award, idempotent
    replay, lapse, and stale-event behaviour before enabling live mode.
+8. Compare both pricing-page counts with the restricted administrator register.
 
 The migration is repeatable for the table, indexes, and function. Existing
 constraints are created with the table and are not duplicated. It does not
@@ -55,3 +69,5 @@ member communication plan.
 - Administrator email allowlists require operational maintenance.
 - Concurrent awards are serialized per programme in PostgreSQL to prevent
   oversubscription.
+- Public counts are a point-in-time view, not a reservation. Only the atomic
+  webhook transaction awards a position.

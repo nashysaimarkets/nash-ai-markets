@@ -3,6 +3,11 @@ import { createAdminClient } from "../../../utils/supabase/admin.ts";
 export const FOUNDING_100_LIMIT = 100;
 export type Founding100Programme = "pro" | "elite";
 export type Founding100Status = "active" | "forfeited";
+export type Founding100Availability = {
+  status: "available" | "unavailable";
+  proRemaining: number | null;
+  eliteRemaining: number | null;
+};
 
 export type Founding100Record = {
   programme: Founding100Programme;
@@ -53,6 +58,30 @@ export function founding100Remaining(records: readonly Pick<Founding100Record, "
     .filter((record) => record.programme === programme)
     .map((record) => record.position));
   return Math.max(0, FOUNDING_100_LIMIT - awardedPositions.size);
+}
+
+export function founding100AvailabilityLabel(
+  remaining: number | null,
+): { label: string; detail: string; full: boolean } {
+  if (remaining === null || !Number.isInteger(remaining) || remaining < 0 || remaining > FOUNDING_100_LIMIT) {
+    return {
+      label: "Founding places available",
+      detail: "Live availability is temporarily unavailable. Eligibility is confirmed only after successful subscription.",
+      full: false,
+    };
+  }
+  if (remaining === 0) {
+    return {
+      label: "Founding allocation full",
+      detail: "The standard subscription remains available without the Founding lifetime price lock.",
+      full: true,
+    };
+  }
+  return {
+    label: `${remaining} of ${FOUNDING_100_LIMIT} founding places remaining`,
+    detail: "Availability is database-backed and confirmed only after successful subscription.",
+    full: false,
+  };
 }
 
 export function isFounding100Admin(
@@ -109,4 +138,33 @@ export async function loadFounding100Report() {
     eliteRemaining: founding100Remaining(result.records, "elite"),
     records: result.records,
   };
+}
+
+export async function loadFounding100Availability(): Promise<Founding100Availability> {
+  try {
+    const { data, error } = await createAdminClient()
+      .from("founding_100_members")
+      .select("programme, position");
+    if (error || !Array.isArray(data)) {
+      return { status: "unavailable", proRemaining: null, eliteRemaining: null };
+    }
+    const positions: Array<{ programme: Founding100Programme; position: number }> = [];
+    for (const row of data) {
+      if ((row.programme !== "pro" && row.programme !== "elite")
+        || typeof row.position !== "number"
+        || !Number.isInteger(row.position)
+        || row.position < 1
+        || row.position > FOUNDING_100_LIMIT) {
+        return { status: "unavailable", proRemaining: null, eliteRemaining: null };
+      }
+      positions.push({ programme: row.programme, position: row.position });
+    }
+    return {
+      status: "available",
+      proRemaining: founding100Remaining(positions, "pro"),
+      eliteRemaining: founding100Remaining(positions, "elite"),
+    };
+  } catch {
+    return { status: "unavailable", proRemaining: null, eliteRemaining: null };
+  }
 }

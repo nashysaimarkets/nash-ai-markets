@@ -1,3 +1,8 @@
+import {
+  founding100AvailabilityLabel,
+  loadFounding100Availability,
+} from "./lib/server/founding-100.ts";
+
 const features = [
   {
     n: "01",
@@ -25,9 +30,14 @@ const included = [
   "Clear data-quality and risk status",
 ];
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
   const proCheckout = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
   const eliteCheckout = process.env.NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL?.trim();
+  const foundingAvailability = await loadFounding100Availability();
+  const proFounding = founding100AvailabilityLabel(foundingAvailability.proRemaining);
+  const eliteFounding = founding100AvailabilityLabel(foundingAvailability.eliteRemaining);
 
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
@@ -406,7 +416,7 @@ export default function Home() {
           <article className="tierCard featured">
             <div className="tag">MOST POPULAR</div>
             <p>PRO</p>
-            <div className="foundingOffer"><strong>FOUNDING 100 PRO</strong><span>First 100 successful Pro subscribers only</span></div>
+            <div className={`foundingOffer${proFounding.full ? " foundingOfferFull" : ""}`} aria-live="polite"><strong>FOUNDING 100 PRO</strong><b>{proFounding.label}</b><span>{proFounding.detail}</span></div>
             <div className="tierPrice">
               <span>£</span>
               <strong>16.99</strong>
@@ -430,7 +440,7 @@ export default function Home() {
 
           <article className="tierCard">
             <p>ELITE</p>
-            <div className="foundingOffer"><strong>FOUNDING 100 ELITE</strong><span>First 100 successful Elite subscribers only</span></div>
+            <div className={`foundingOffer${eliteFounding.full ? " foundingOfferFull" : ""}`} aria-live="polite"><strong>FOUNDING 100 ELITE</strong><b>{eliteFounding.label}</b><span>{eliteFounding.detail}</span></div>
             <div className="tierPrice">
               <span>£</span>
               <strong>39.99</strong>

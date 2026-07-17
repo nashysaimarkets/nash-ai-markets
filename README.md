@@ -90,6 +90,10 @@ future timestamp.
 | `/terminal/diagnostics` | Effective-Elite launch diagnostics |
 | `/api/membership/preview` | Authenticated progressive preview claim |
 | `/api/waitlist` | Same-origin waiting-list registration |
+
+Founding 100 availability on the pricing page comes from the server-managed
+award register. It is never estimated: database failures use neutral wording,
+and exhausted programmes continue as standard subscriptions.
 | `/api/founding-member` | Authenticated paid-member onboarding submission |
 | `/api/profile` | Authenticated same-origin display-name update |
 | `/api/stripe/webhook` | Stripe-signed subscription synchronization |

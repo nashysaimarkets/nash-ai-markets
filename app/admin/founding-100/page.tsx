@@ -22,8 +22,8 @@ export default async function Founding100AdminPage() {
     <header><div><span>RESTRICTED OPERATIONS</span><h1>Founding 100 report</h1><p>Server-verified awards only. Positions include active and forfeited records and are never reused.</p></div><Link href="/dashboard">Return to dashboard</Link></header>
     {report.status === "unavailable" ? <section className="foundingAdminUnavailable" role="alert"><h2>Founding reporting unavailable</h2><p>The database could not be verified. No availability or member list is inferred.</p></section> : <>
       <section className="foundingAdminSummary" aria-label="Founding programme availability">
-        <article><span>FOUNDING 100 PRO</span><strong>{report.proRemaining}</strong><small>places remaining</small></article>
-        <article><span>FOUNDING 100 ELITE</span><strong>{report.eliteRemaining}</strong><small>places remaining</small></article>
+        <article><span>FOUNDING 100 PRO</span><strong>{report.proRemaining === 0 ? "FULL" : report.proRemaining}</strong><small>{report.proRemaining === 0 ? "100 of 100 permanently allocated" : "places remaining · awarded places never reopen"}</small></article>
+        <article><span>FOUNDING 100 ELITE</span><strong>{report.eliteRemaining === 0 ? "FULL" : report.eliteRemaining}</strong><small>{report.eliteRemaining === 0 ? "100 of 100 permanently allocated" : "places remaining · awarded places never reopen"}</small></article>
         <article><span>TOTAL AWARDED</span><strong>{report.records.length}</strong><small>positions permanently allocated</small></article>
       </section>
       <section className="foundingAdminTable" aria-labelledby="founding-members-title">

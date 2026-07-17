@@ -5,6 +5,9 @@
 - Added server-enforced Founding 100 Pro and Elite awards, permanent member
   badges, continuous-subscription price-lock rules, restricted administrator
   reporting, launch copy, tests, and production operations guidance.
+- Added database-backed public Founding availability counts with neutral
+  failure wording, exhausted-tier handling, accessible mobile styling and
+  permanent-allocation regression coverage.
 
 All notable production changes to Project Bullseye will be documented here.
 The format follows Keep a Changelog and the project uses Semantic Versioning.
