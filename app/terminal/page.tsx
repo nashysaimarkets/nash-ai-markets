@@ -14,6 +14,7 @@ import { TerminalBadge } from "./components/TerminalBadge";
 import { LaunchDiagnosticsPanel } from "./components/LaunchDiagnosticsPanel";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { createLaunchDiagnostics } from "./lib/launch-diagnostics";
+import { evaluateTerminalMembership, membershipRedirect } from "./lib/membership-entitlement";
 import { terminalStatusMessage } from "./lib/terminal-state";
 import { chartDataForStatus, chartDisplayState, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
 
@@ -29,8 +30,9 @@ export default async function Terminal() {
   if (!user) redirect("/login");
   if (!user.email) redirect("/?membership=required#membership");
 
-  const { data: membership } = await supabase.from("memberships").select("plan, status, current_period_end").ilike("email", user.email).in("status", ["active", "trialing"]).in("plan", ["pro", "elite"]).maybeSingle();
-  if (!membership) redirect("/?membership=required#membership");
+  const { data: membership, error: membershipError } = await supabase.from("memberships").select("plan, status, current_period_end").ilike("email", user.email).in("plan", ["pro", "elite"]).maybeSingle();
+  const entitlement = evaluateTerminalMembership(membership, Boolean(membershipError));
+  if (entitlement.kind !== "entitled") redirect(membershipRedirect(entitlement.kind));
 
   const { snapshot, gatewayStatus } = await getTerminalMarketData();
   const intelligence = analyzeMarketSnapshot(snapshot);

@@ -1,0 +1,13 @@
+.DS_Store
+.next/
+.sites-runtime/
+.wrangler/
+dist/
+node_modules/
+node_modules */
+*.tsbuildinfo
+*.log
+
+.env
+.env.*
+!.env.example
