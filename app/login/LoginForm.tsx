@@ -16,7 +16,7 @@ export default function LoginForm() {
         email: email.trim(),
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/terminal`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
       });
       setMessage(error ? "We could not send a sign-in link. Check the address and try again." : "Check your email for your secure sign-in link.");
