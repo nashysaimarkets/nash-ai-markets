@@ -10,26 +10,27 @@ export default function LoginForm() {
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setLoading(true); setMessage("");
-    const supabase = createClient();
-    const redirectOrigin = window.location.hostname === "localhost"
-      ? window.location.origin
-      : "https://www.nashaimarkets.com";
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-        emailRedirectTo: `${redirectOrigin}/auth/callback?next=/terminal`,
-      },
-    });
-    setMessage(error ? error.message : "Check your email for your secure sign-in link.");
-    setLoading(false);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/terminal`,
+        },
+      });
+      setMessage(error ? "We could not send a sign-in link. Check the address and try again." : "Check your email for your secure sign-in link.");
+    } catch {
+      setMessage("The sign-in service is temporarily unavailable. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return <form className="loginForm" onSubmit={submit}>
     <label htmlFor="email">MEMBERSHIP EMAIL</label>
-    <input id="email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="you@example.com" required />
+    <input id="email" name="email" type="email" autoComplete="email" inputMode="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="you@example.com" required />
     <button className="primary" type="submit" disabled={loading}>{loading ? "Sending…" : "Email me a secure login link"}<span>↗</span></button>
     {message && <p className="loginMessage" role="status">{message}</p>}
   </form>;
 }
-

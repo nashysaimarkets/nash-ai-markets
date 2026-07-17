@@ -195,11 +195,11 @@ export class LiveMarketGateway {
         this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
         this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1 });
         return normalized;
-      } catch (error) {
+      } catch {
         this.state.failureCount += 1;
         this.state.connectionStatus = "offline";
         this.logger("market-provider:error", {
-          error: error instanceof Error ? error.message : "Unknown provider error",
+          category: "provider_request_failed",
           provider: this.state.providerName,
           attempt: attempt + 1,
           failureCount: this.state.failureCount,
@@ -215,6 +215,6 @@ export class LiveMarketGateway {
     this.state.dataAgeMs = this.state.lastSuccessfulUpdate ? dataAgeMs(this.state.lastSuccessfulUpdate, now) : null;
     this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
     this.logger("market-provider:fallback", { provider: this.state.providerName });
-    return createUnavailableSnapshot(this.state.lastSuccessfulUpdate ?? this.state.lastAttempt ?? new Date(now).toISOString());
+    return createUnavailableSnapshot(this.state.lastSuccessfulUpdate ?? undefined);
   }
 }

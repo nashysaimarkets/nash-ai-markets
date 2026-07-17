@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
-  PREVIEW_OHLCV_FIXTURE,
   chartDataForStatus,
   isValidOhlcv,
   terminalFallbackMessage,
@@ -29,25 +28,25 @@ test("decision and planner fields render in their respective panels", async () =
 test("live delayed cached and offline states remain truthful", () => {
   assert.equal(terminalMarketState("LIVE", "connected", false), "Live");
   assert.equal(terminalMarketState("DELAYED", "degraded", false), "Delayed");
-  assert.equal(terminalMarketState("PREVIEW", "connected", false), "Cached");
+  assert.equal(terminalMarketState("PREVIEW", "connected", false), "Offline");
   assert.equal(terminalMarketState("LIVE", "connected", true), "Offline");
   assert.match(terminalFallbackMessage("Delayed", "DELAYED"), /delayed data/i);
   assert.match(terminalFallbackMessage("Offline", "UNAVAILABLE"), /fail closed/i);
 });
 
-test("preview charts use only the fixed labelled historical fixture", async () => {
+test("preview input never renders demonstration candles", async () => {
   const preview = chartDataForStatus("PREVIEW");
   const live = chartDataForStatus("LIVE");
   const chartSource = await readFile(new URL("../app/terminal/components/MarketChart.tsx", import.meta.url), "utf8");
-  assert.equal(preview.mode, "preview");
-  assert.deepEqual(preview.data, PREVIEW_OHLCV_FIXTURE);
+  assert.equal(preview.mode, "verified");
+  assert.deepEqual(preview.data, []);
   assert.equal(live.mode, "verified");
   assert.deepEqual(live.data, []);
-  assert.match(chartSource, /PREVIEW FIXTURE · FIXED HISTORICAL DATA · NOT LIVE/);
+  assert.doesNotMatch(chartSource, /PREVIEW FIXTURE|demonstration candles/);
 });
 
 test("OHLCV validation rejects malformed, unordered and impossible candles", () => {
-  assert.equal(isValidOhlcv(PREVIEW_OHLCV_FIXTURE), true);
+  assert.equal(isValidOhlcv([]), true);
   assert.equal(isValidOhlcv([{ time: 1, open: 10, high: 8, low: 9, close: 10, volume: 1 }]), false);
   assert.equal(isValidOhlcv([{ time: 2, open: 10, high: 11, low: 9, close: 10, volume: 1 }, { time: 1, open: 10, high: 11, low: 9, close: 10, volume: 1 }]), false);
 });

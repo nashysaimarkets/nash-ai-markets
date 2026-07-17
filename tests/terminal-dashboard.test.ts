@@ -56,10 +56,11 @@ test("builds a terminal dashboard view model from the market snapshot", () => {
   assert.equal(viewModel.futures.value, "6,318.25");
   assert.equal(viewModel.futures.bias, "NEUTRAL → BULLISH");
   assert.equal(viewModel.vix.value, "16.42");
-  assert.equal(viewModel.fearGreed.label, "GREED");
-  assert.equal(viewModel.options.putCall, "0.88x");
-  assert.equal(viewModel.eliteTradeSetup.direction, "Long");
-  assert.equal(viewModel.eliteTradeSetup.status, "Waiting");
+  assert.equal(viewModel.options.putCall, "Unavailable");
+  assert.equal(viewModel.eliteTradeSetup.direction, "None");
+  assert.equal(viewModel.eliteTradeSetup.status, "Unavailable");
+  assert.deepEqual(viewModel.movers, []);
+  assert.deepEqual(viewModel.headlines, []);
 
   const provenance = createDataProvenance({ source: "Demo feed", lastUpdated: "2026-07-16T07:00:00.000Z", status: "PLACEHOLDER", kind: "fact", provider: "Demo Provider" });
   assert.equal(provenance.status, "PLACEHOLDER");

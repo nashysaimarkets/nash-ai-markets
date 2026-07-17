@@ -22,8 +22,8 @@ test("chart exposes every required timeframe", () => {
   assert.deepEqual(TERMINAL_TIMEFRAMES, ["1m", "5m", "15m", "1h", "4h", "1D"]);
 });
 
-test("preview data is labelled cached and never live", () => {
-  assert.equal(terminalMarketState("PREVIEW", "not_configured", true), "Cached");
+test("preview data is disabled and never live", () => {
+  assert.equal(terminalMarketState("PREVIEW", "not_configured", true), "Offline");
   assert.notEqual(terminalMarketState("PREVIEW", "connected", false), "Live");
 });
 
@@ -37,7 +37,7 @@ test("confidence gauge values are bounded", () => {
 test("status badges map live, delayed, cached and offline states", () => {
   assert.equal(terminalMarketState("LIVE", "connected", false), "Live");
   assert.equal(terminalMarketState("DELAYED", "degraded", false), "Delayed");
-  assert.equal(terminalMarketState("PREVIEW", "not_configured", true), "Cached");
+  assert.equal(terminalMarketState("PREVIEW", "not_configured", true), "Offline");
   assert.equal(terminalMarketState("UNAVAILABLE", "offline", true), "Offline");
 });
 

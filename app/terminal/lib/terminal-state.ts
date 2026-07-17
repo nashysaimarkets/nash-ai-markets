@@ -42,7 +42,7 @@ export function terminalStatusMessage(status: MarketDataStatus, failureCount = 0
     const attempts = failureCount > 0 ? ` AFTER ${failureCount} FAILED ${failureCount === 1 ? "ATTEMPT" : "ATTEMPTS"}` : "";
     return `VERIFIED DATA IS TEMPORARILY UNAVAILABLE${attempts} — NO CURRENT MARKET SIGNALS ARE SHOWN`;
   }
-  return "PREVIEW DATA — FORMAT DEMONSTRATION ONLY";
+  return "PREVIEW INPUT IS DISABLED — NO MARKET VALUES OR TRADING OUTPUT ARE SHOWN";
 }
 
 export function panelUnavailableMessage(status: string): string | null {

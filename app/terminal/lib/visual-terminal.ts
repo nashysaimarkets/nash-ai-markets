@@ -15,15 +15,7 @@ export type OhlcvPoint = {
 
 export type ChartDisplayState = "ready" | "empty" | "loading" | "error";
 export type TerminalMarketState = "Live" | "Delayed" | "Cached" | "Offline";
-export type ChartDataMode = "verified" | "preview";
-
-export const PREVIEW_OHLCV_FIXTURE: readonly OhlcvPoint[] = [
-  { time: 1704196800, open: 4780, high: 4788, low: 4776, close: 4785, volume: 820 },
-  { time: 1704200400, open: 4785, high: 4792, low: 4781, close: 4788, volume: 940 },
-  { time: 1704204000, open: 4788, high: 4790, low: 4779, close: 4782, volume: 760 },
-  { time: 1704207600, open: 4782, high: 4794, low: 4780, close: 4791, volume: 1100 },
-  { time: 1704211200, open: 4791, high: 4798, low: 4787, close: 4796, volume: 980 },
-] as const;
+export type ChartDataMode = "verified";
 
 export function isValidOhlcv(data: readonly OhlcvPoint[]): boolean {
   return data.every((point, index) =>
@@ -36,9 +28,8 @@ export function isValidOhlcv(data: readonly OhlcvPoint[]): boolean {
 }
 
 export function chartDataForStatus(status: MarketDataStatus): { data: readonly OhlcvPoint[]; mode: ChartDataMode } {
-  return status === "PREVIEW"
-    ? { data: PREVIEW_OHLCV_FIXTURE, mode: "preview" }
-    : { data: [], mode: "verified" };
+  void status;
+  return { data: [], mode: "verified" };
 }
 
 export function chartDisplayState(data: OhlcvPoint[], loading = false, error?: string): ChartDisplayState {
@@ -54,7 +45,7 @@ export function clampConfidence(value: number): number {
 export function terminalMarketState(status: MarketDataStatus, providerStatus: MarketGatewayConnectionStatus, fallbackActive: boolean): TerminalMarketState {
   if (status === "LIVE" && providerStatus === "connected" && !fallbackActive) return "Live";
   if (status === "DELAYED" && providerStatus !== "offline" && !fallbackActive) return "Delayed";
-  if (status === "PREVIEW") return "Cached";
+  if (status === "PREVIEW") return "Offline";
   return "Offline";
 }
 
@@ -64,7 +55,7 @@ export function verifiedQuote(snapshot: MarketSnapshot, symbol: string) {
 }
 
 export function terminalFallbackMessage(state: TerminalMarketState, status: MarketDataStatus): string {
-  if (status === "PREVIEW") return "Preview mode uses a fixed historical chart fixture and never represents current market conditions.";
+  if (status === "PREVIEW") return "Preview market values are disabled. Connect a verified provider before using the terminal.";
   if (state === "Delayed") return "Verified delayed data is in use. Check the displayed age before relying on any analysis.";
   if (state === "Cached") return "Cached context is displayed for reference only and cannot produce an actionable plan.";
   if (state === "Offline") return "The provider is offline or unavailable. Market values are hidden and all engines remain fail closed.";

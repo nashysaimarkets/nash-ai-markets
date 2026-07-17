@@ -68,8 +68,8 @@ export async function getTerminalMarketData(
 
   if (!override && (previewOnly || !configured)) {
     return {
-      snapshot: createUnavailableSnapshot(new Date(now).toISOString()),
-      gatewayStatus: createUnconfiguredMarketGatewayStatus(previewOnly ? "Preview mode" : "Not configured"),
+      snapshot: createUnavailableSnapshot(),
+      gatewayStatus: createUnconfiguredMarketGatewayStatus(previewOnly ? "Preview disabled" : "Not configured"),
     };
   }
 
@@ -79,7 +79,12 @@ export async function getTerminalMarketData(
   const provider = override
     ? resolveOverride(override)
     : configured!.provider;
-  const gateway = new LiveMarketGateway({ provider, providerName });
+  const gateway = new LiveMarketGateway({
+    provider,
+    providerName,
+    maxRetries: positiveInteger(process.env.MARKET_DATA_MAX_RETRIES) ?? 1,
+    retryDelayMs: positiveInteger(process.env.MARKET_DATA_RETRY_DELAY_MS) ?? 250,
+  });
   const snapshot = await gateway.fetchSnapshot(now);
   return { snapshot, gatewayStatus: gateway.getStatus() };
 }

@@ -60,7 +60,7 @@ export type DashboardViewModel = {
   options: { putCall: string; iv: string; skew: string; detail: string };
   eliteTradeSetup: {
     title: string;
-    direction: "Long" | "Short";
+    direction: "Long" | "Short" | "None";
     conviction: number;
     entryZone: string;
     stopLoss: string;
@@ -68,7 +68,7 @@ export type DashboardViewModel = {
     target2: string;
     riskReward: string;
     timeframe: string;
-    status: "Waiting" | "Active" | "Closed";
+    status: "Waiting" | "Active" | "Closed" | "Unavailable";
     explanation: string;
   };
 };
@@ -121,7 +121,7 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
   const bullishProbability = clamp(bullseye.bullProbability + (snapshot.risk === "LOW" ? 4 : 0));
   const neutralProbability = clamp(100 - bullishProbability - bullseye.bearProbability);
   const bearishProbability = clamp(bullseye.bearProbability + (snapshot.risk === "HIGH" ? 4 : 0));
-  const expectedMove = `${Math.round(Number.parseFloat(esQuote?.value.replace(/[^0-9.]/g, "") ?? "") * 0.008)} pts`;
+  const expectedMove = "Unavailable";
   const futuresBias = bullishProbability >= bearishProbability ? "Bullish bias" : "Bearish bias";
   const optionsBias = bullishProbability > bearishProbability ? "Call structure" : "Put structure";
   const confidenceScore = clamp(Math.round((bullseye.confidence + (bullishProbability - bearishProbability) / 2 + (fearGreedScore / 2)) / 1.5));
@@ -137,7 +137,7 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
   const provenance = createDataProvenance({
     source: snapshot.source,
     lastUpdated: snapshot.asOf,
-    status: snapshot.status === "LIVE" ? "LIVE" : snapshot.status === "DELAYED" ? "DELAYED" : snapshot.status === "UNAVAILABLE" ? "UNAVAILABLE" : "PLACEHOLDER",
+    status: snapshot.status === "LIVE" ? "LIVE" : snapshot.status === "DELAYED" ? "DELAYED" : "UNAVAILABLE",
     kind: "fact",
     provider: snapshot.source,
   });
@@ -145,7 +145,7 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
   const analysisProvenance = createDataProvenance({
     source: snapshot.source,
     lastUpdated: snapshot.asOf,
-    status: snapshot.status === "LIVE" || snapshot.status === "DELAYED" ? "VERIFIED" : snapshot.status === "UNAVAILABLE" ? "UNAVAILABLE" : "MODELLED",
+    status: snapshot.status === "LIVE" || snapshot.status === "DELAYED" ? "VERIFIED" : "UNAVAILABLE",
     kind: "analysis",
     provider: "NASH AI Analysis",
   });
@@ -202,23 +202,16 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
       note: snapshot.risk === "LOW" ? "The dollar is stabilizing while growth expectations remain constructive." : "The dollar is acting as a risk barometer while capital rotates.",
     },
     preMarketBrief: {
-      title: "Pre-market setup",
-      body: "The overnight tape is providing a constructive but cautious opening range, with key levels still defining the session.",
+      title: "Pre-market data unavailable",
+      body: "No verified provider-backed pre-market briefing is available.",
     },
     afterHoursBrief: {
-      title: "After-hours posture",
-      body: "The post-close tape shows the market digesting risk rather than breaking decisively, which keeps the setup in a measured range.",
+      title: "After-hours data unavailable",
+      body: "No verified provider-backed after-hours briefing is available.",
     },
     economicEvents: snapshot.events,
-    movers: [
-      { name: "NVDA", value: "+1.42%", change: "Momentum" },
-      { name: "AMD", value: "-0.86%", change: "Rotation" },
-      { name: "SPY", value: "+0.54%", change: "Flow" },
-    ],
-    headlines: [
-      { title: "Macro data still anchors sentiment", detail: "Policy-sensitive assets remain the primary driver of the session." },
-      { title: "Volatility remains contained", detail: "The market is not yet pricing a structural breakout in either direction." },
-    ],
+    movers: [],
+    headlines: [],
     sentiment: {
       score: fearGreedScore,
       label: fearGreedLabel,
@@ -240,25 +233,23 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
       detail: fearGreedScore >= 60 ? "Sentiment is running hot, which can amplify trend continuation but also increase fragility." : "Risk appetite is constrained, and the market is still waiting for confirmation.",
     },
     options: {
-      putCall: bullseye.bearProbability > bullseye.bullProbability ? "1.35x" : "0.88x",
-      iv: snapshot.risk === "HIGH" || snapshot.risk === "ELEVATED" ? "Elevated" : "Balanced",
-      skew: bullseye.bullProbability > bullseye.bearProbability ? "Call skew" : "Put skew",
-      detail: snapshot.risk === "HIGH" || snapshot.risk === "ELEVATED"
-        ? "Premiums remain expensive and defined-risk structures are preferable."
-        : "Option demand is more selective, so execution quality matters more than raw conviction.",
+      putCall: "Unavailable",
+      iv: "Unavailable",
+      skew: "Unavailable",
+      detail: "No verified provider-backed options data is available.",
     },
     eliteTradeSetup: {
-      title: "Breakout continuation into resistance",
-      direction: overallBias === "Bullish" ? "Long" : overallBias === "Bearish" ? "Short" : "Long",
-      conviction: confidenceScore,
-      entryZone: overallBias === "Bullish" ? "Above 6,320 with confirmation" : overallBias === "Bearish" ? "Below 6,280 with confirmation" : "Between pivot and first resistance",
-      stopLoss: overallBias === "Bullish" ? "6,292" : overallBias === "Bearish" ? "6,332" : "6,300",
-      target1: overallBias === "Bullish" ? "6,350" : overallBias === "Bearish" ? "6,260" : "6,340",
-      target2: overallBias === "Bullish" ? "6,380" : overallBias === "Bearish" ? "6,230" : "6,370",
-      riskReward: overallBias === "Bullish" ? "2.4 : 1" : overallBias === "Bearish" ? "2.1 : 1" : "1.9 : 1",
-      timeframe: "Intraday to 3 sessions",
-      status: confidenceScore >= 75 ? "Waiting" : "Active",
-      explanation: `${bullseye.missionBrief} The setup is attractive because the market is preserving structure while momentum and macro context remain aligned, giving the trade a clear path to follow.`,
+      title: "No verified trade setup",
+      direction: "None",
+      conviction: 0,
+      entryZone: "Unavailable",
+      stopLoss: "Unavailable",
+      target1: "Unavailable",
+      target2: "Unavailable",
+      riskReward: "Unavailable",
+      timeframe: "Unavailable",
+      status: "Unavailable",
+      explanation: "No entry, stop, target, or position guidance is generated by this legacy view model.",
     },
   };
 }
