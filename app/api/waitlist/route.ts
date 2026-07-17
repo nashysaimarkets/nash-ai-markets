@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import { normalizeWaitlistSubmission } from "../../lib/launch-onboarding.ts";
+import { insertWaitlistSubmission } from "../../lib/server/waitlist.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,12 +24,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, code: "INVALID_REQUEST" }, { status: 400, headers: responseHeaders });
   }
 
-  try {
-    const { error } = await createAdminClient().from("launch_waitlist").insert(submission);
-    if (error && error.code !== "23505") {
-      return NextResponse.json({ ok: false, code: "WAITLIST_UNAVAILABLE" }, { status: 503, headers: responseHeaders });
-    }
-  } catch {
+  const insertResult = await insertWaitlistSubmission(submission);
+  if (insertResult === "unavailable") {
     return NextResponse.json({ ok: false, code: "WAITLIST_UNAVAILABLE" }, { status: 503, headers: responseHeaders });
   }
 

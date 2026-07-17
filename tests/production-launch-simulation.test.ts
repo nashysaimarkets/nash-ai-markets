@@ -58,13 +58,15 @@ test("production simulation: waiting-list storage is normalized, duplicate-safe,
     source: "launch-page",
     company: "",
   });
-  const [route, migration] = await Promise.all([
+  const [route, persistence, migration] = await Promise.all([
     source("app/api/waitlist/route.ts"),
+    source("app/lib/server/waitlist.ts"),
     source("supabase/migrations/202607170003_operation_launch.sql"),
   ]);
   assert.deepEqual(submission, { email: "beta.member@example.com", source: "launch-page" });
-  assert.match(route, /error\.code !== "23505"/);
-  assert.match(route, /createAdminClient/);
+  assert.match(route, /insertWaitlistSubmission/);
+  assert.match(persistence, /error\.code === "23505"/);
+  assert.match(persistence, /createAdminClient/);
   assert.match(migration, /email text not null unique/);
   assert.match(migration, /launch_waitlist enable row level security/);
   assert.doesNotMatch(migration, /create policy/i);
