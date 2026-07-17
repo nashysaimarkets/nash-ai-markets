@@ -18,6 +18,20 @@ afterwards.
   evidence, production simulation, blockers, deployment, rollback and
   monitoring recommendations.
 - [Deployment checklist](DEPLOYMENT_CHECKLIST.md) — production deployment gate.
+- [Staging deployment checklist](STAGING_DEPLOYMENT_CHECKLIST.md) — isolated
+  staging configuration, evidence and acceptance sequence.
+- [Production environment matrix](PRODUCTION_ENVIRONMENT_MATRIX.md) — exact
+  staging/production variable contract, sources and safe validation.
+- [Supabase migration runbook](SUPABASE_MIGRATION_RUNBOOK.md) — ordered
+  `202607170000`–`202607170007` backup, staging application and recovery.
+- [Stripe staging matrix](STRIPE_STAGING_TEST_MATRIX.md) — test-mode commercial,
+  lifecycle, replay and Founding concurrency verification.
+- [Authentication domain validation](AUTH_DOMAIN_VALIDATION.md) — Supabase Site
+  URL, callback, magic-link and environment-separation checks.
+- [PWA device checklist](PWA_DEVICE_TEST_CHECKLIST.md) — physical Apple,
+  Android, installation, session, update and accessibility validation.
+- [Launch gate status](LAUNCH_GATE_STATUS.md) — current classification and the
+  safest next operator action.
 - [Rollback checklist](ROLLBACK_CHECKLIST.md) — application, configuration,
   database and DNS rollback.
 - [Incident runbook](INCIDENT_RUNBOOK.md) — response procedures for Stripe,
