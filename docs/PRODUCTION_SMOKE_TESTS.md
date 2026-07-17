@@ -73,8 +73,9 @@ emails, event IDs and customer IDs from evidence.
       preview label and no confidence or directional guidance.
 - [ ] With verified Pro/Elite data, the Morning Brief reports AI-assisted only
       after a valid structured OpenAI response.
-- [ ] Missing OpenAI configuration, rate limiting, timeout and invalid output
-      retain the deterministic brief and expose no provider error details.
+- [ ] Missing OpenAI configuration, exhausted quota, rate limiting, model
+      denial, timeout and invalid output retain the deterministic brief and
+      expose no provider error details.
 - [ ] Free, preview and unavailable states do not make a Morning Brief OpenAI
       request.
 - [ ] No fabricated candles, prices, levels, entries, stops or targets appear.

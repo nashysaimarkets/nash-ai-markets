@@ -11,6 +11,7 @@
     "test": "npm run test:unit && npm run build && npm run test:rendered",
     "test:unit": "node --test tests/*.test.ts",
     "test:rendered": "node --test tests/rendered-html.test.mjs",
+    "simulate:production": "node --test tests/production-launch-simulation.test.ts",
     "typecheck": "tsc --noEmit --incremental false",
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "ops:validate": "bash scripts/validate-operations-docs.sh",

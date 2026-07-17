@@ -48,9 +48,10 @@ only deterministic Bullseye evidence, and rejects invented priorities, price
 levels, instructions, certainty and malformed responses. Missing credentials,
 rate limits, timeouts and provider failures retain the deterministic brief.
 
-The internal Elite diagnostics page performs a sanitized connectivity check. It
-reports only safe categories and never returns a key, model list, raw exception,
-request URL or account detail.
+The internal Elite diagnostics page performs a sanitized minimal Responses API
+generation check. It distinguishes authentication, exhausted quota, request
+rate, model access, permission, timeout and provider failures without returning
+a key, model output, raw exception, request URL or account detail.
 
 ## Launch email readiness
 

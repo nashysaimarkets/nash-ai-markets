@@ -85,6 +85,10 @@ test("rate limits, timeouts, and provider failures return safe fallback categori
     status: "rate_limited",
     content: null,
   });
+  assert.deepEqual(await generateAIMorningBrief(verifiedBrief, clientFor({ status: 429, code: "insufficient_quota" }), "test-model"), {
+    status: "quota_exhausted",
+    content: null,
+  });
   assert.deepEqual(await generateAIMorningBrief(verifiedBrief, clientFor({ name: "AbortError" }), "test-model"), {
     status: "timeout",
     content: null,

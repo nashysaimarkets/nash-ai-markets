@@ -13,7 +13,7 @@ export type MorningBrief = {
   schemaVersion: "1.1";
   mode: "verified" | "preview" | "unavailable";
   generation: "deterministic" | "ai-assisted";
-  aiStatus: "not_requested" | "generated" | "not_configured" | "rate_limited" | "timeout" | "unavailable" | "invalid_response";
+  aiStatus: "not_requested" | "generated" | "not_configured" | "quota_exhausted" | "rate_limited" | "timeout" | "unavailable" | "invalid_response";
   label: string;
   asOf: string | null;
   sessionLabel: string;

@@ -12,6 +12,9 @@ operating it afterwards.
   private beta.
 - [Launch readiness checklist](LAUNCH_READINESS_CHECKLIST.md) — final
   application, integration, data, billing, email and monitoring gates.
+- [Sprint Epsilon launch report](SPRINT_EPSILON_LAUNCH_READINESS_REPORT.md) —
+  evidence, production simulation, blockers, deployment, rollback and
+  monitoring recommendations.
 - [Deployment checklist](DEPLOYMENT_CHECKLIST.md) — production deployment gate.
 - [Rollback checklist](ROLLBACK_CHECKLIST.md) — application, configuration,
   database and DNS rollback.

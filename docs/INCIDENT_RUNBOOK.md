@@ -166,8 +166,8 @@ Suggested severity:
 
 ### Detection
 
-- diagnostics report authentication rejected, rate limited, timeout or provider
-  unavailable;
+- diagnostics report authentication rejected, quota exhausted, rate limited,
+  model unavailable, permission denied, timeout or provider unavailable;
 - AI Market Brief reports deterministic fallback active.
 - dashboard Morning Brief reports deterministic fallback active.
 
@@ -177,10 +177,12 @@ Suggested severity:
    print either value.
 2. Check the provider status page and account quota through approved operator
    access.
-3. Do not retry aggressively or disable deterministic market safeguards.
-4. Preserve the deterministic brief and communicate that optional evidence
+3. Treat `quota_exhausted` as an account billing/credit action, not a request
+   retry condition.
+4. Do not retry aggressively or disable deterministic market safeguards.
+5. Preserve the deterministic brief and communicate that optional evidence
    prioritisation is inactive.
-5. Rotate a credential only through the secret manager if exposure or
+6. Rotate a credential only through the secret manager if exposure or
    revocation is confirmed.
 
 ### Recovery checks

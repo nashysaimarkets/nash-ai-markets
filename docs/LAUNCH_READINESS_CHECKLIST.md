@@ -22,7 +22,8 @@ emails, payment details or raw provider errors into the release record.
 - [ ] Supabase, Stripe, OpenAI, market-provider and email variables are stored
       in the platform configuration with correct public/server visibility.
 - [ ] OpenAI diagnostics report a safe state: connected, not configured,
-      authentication rejected, rate limited, timeout or provider unavailable.
+      authentication rejected, quota exhausted, rate limited, model
+      unavailable, permission denied, timeout or provider unavailable.
 - [ ] The deterministic market brief remains usable when OpenAI is disabled or
       unavailable.
 - [ ] Verified Pro/Elite Morning Brief output is AI-assisted only after strict

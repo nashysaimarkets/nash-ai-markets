@@ -18,9 +18,10 @@ test("OpenAI health check reports not configured without making a request", asyn
 test("OpenAI health check confirms a successful sanitized connection", async () => {
   let requested = false;
   const result = await checkOpenAIConnection({
-    models: {
-      async list() {
+    responses: {
+      async create(body) {
         requested = true;
+        assert.equal(body.max_output_tokens, 16);
         return { data: [{ id: "test-model" }] };
       },
     },
@@ -31,8 +32,8 @@ test("OpenAI health check confirms a successful sanitized connection", async () 
 
 test("OpenAI health check sanitizes provider failures", async () => {
   const result = await checkOpenAIConnection({
-    models: {
-      async list() {
+    responses: {
+      async create() {
         throw new Error("secret-bearing provider failure");
       },
     },
@@ -43,18 +44,30 @@ test("OpenAI health check sanitizes provider failures", async () => {
 
 test("OpenAI health check exposes only safe operational failure categories", async () => {
   const authentication = await checkOpenAIConnection({
-    models: { async list() { throw { status: 401, message: "credential value" }; } },
+    responses: { async create() { throw { status: 401, message: "credential value" }; } },
   });
   const rateLimit = await checkOpenAIConnection({
-    models: { async list() { throw { status: 429, message: "account detail" }; } },
+    responses: { async create() { throw { status: 429, message: "account detail" }; } },
+  });
+  const quota = await checkOpenAIConnection({
+    responses: { async create() { throw { status: 429, code: "insufficient_quota", message: "billing detail" }; } },
   });
   const timeout = await checkOpenAIConnection({
-    models: { async list() { throw { name: "AbortError", message: "request URL" }; } },
+    responses: { async create() { throw { name: "AbortError", message: "request URL" }; } },
+  });
+  const permission = await checkOpenAIConnection({
+    responses: { async create() { throw { status: 403, message: "project detail" }; } },
+  });
+  const model = await checkOpenAIConnection({
+    responses: { async create() { throw { status: 404, code: "model_not_found", message: "model detail" }; } },
   });
   assert.deepEqual(authentication, { status: "unavailable", reason: "authentication_rejected" });
   assert.deepEqual(rateLimit, { status: "unavailable", reason: "rate_limited" });
+  assert.deepEqual(quota, { status: "unavailable", reason: "quota_exhausted" });
   assert.deepEqual(timeout, { status: "unavailable", reason: "timeout" });
-  assert.doesNotMatch(JSON.stringify([authentication, rateLimit, timeout]), /credential|account detail|request URL/);
+  assert.deepEqual(permission, { status: "unavailable", reason: "permission_denied" });
+  assert.deepEqual(model, { status: "unavailable", reason: "model_unavailable" });
+  assert.doesNotMatch(JSON.stringify([authentication, rateLimit, quota, timeout, permission, model]), /credential|account detail|billing detail|request URL|project detail|model detail/);
 });
 
 test("OpenAI health route requires authentication and never serializes credentials or raw errors", async () => {

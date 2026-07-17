@@ -1,8 +1,8 @@
 import type { MorningBrief } from "../morning-brief-engine.ts";
-import { createOpenAIClient } from "./openai.ts";
+import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "./openai.ts";
 
 const AI_MORNING_BRIEF_TIMEOUT_MS = 5_000;
-export const DEFAULT_MORNING_BRIEF_MODEL = "gpt-5-mini";
+export const DEFAULT_MORNING_BRIEF_MODEL = OPENAI_DEFAULT_MODEL;
 
 export type AIMorningBriefContent = {
   headline: string;
@@ -13,7 +13,7 @@ export type AIMorningBriefContent = {
 export type AIMorningBriefResult =
   | { status: "generated"; content: AIMorningBriefContent }
   | {
-    status: "not_configured" | "rate_limited" | "timeout" | "unavailable" | "invalid_response";
+    status: "not_configured" | "quota_exhausted" | "rate_limited" | "timeout" | "unavailable" | "invalid_response";
     content: null;
   };
 
@@ -29,7 +29,8 @@ type MorningBriefClient = {
 function safeFailureStatus(error: unknown): Exclude<AIMorningBriefResult["status"], "generated" | "not_configured" | "invalid_response"> {
   if (!error || typeof error !== "object") return "unavailable";
   const candidate = error as { status?: unknown; code?: unknown; name?: unknown };
-  if (candidate.status === 429 || candidate.code === "rate_limit_exceeded" || candidate.code === "insufficient_quota") {
+  if (candidate.code === "insufficient_quota") return "quota_exhausted";
+  if (candidate.status === 429 || candidate.code === "rate_limit_exceeded") {
     return "rate_limited";
   }
   if (candidate.name === "AbortError" || candidate.code === "ETIMEDOUT") return "timeout";

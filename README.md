@@ -174,6 +174,7 @@ bounded.
 
 Use the full [launch playbook](docs/LAUNCH_PLAYBOOK.md),
 [launch-readiness checklist](docs/LAUNCH_READINESS_CHECKLIST.md),
+[Sprint Epsilon launch report](docs/SPRINT_EPSILON_LAUNCH_READINESS_REPORT.md),
 [deployment checklist](docs/DEPLOYMENT_CHECKLIST.md) and
 [release checklist](docs/RELEASE_CHECKLIST.md).
 

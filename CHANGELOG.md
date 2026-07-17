@@ -7,6 +7,11 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Added
 
+- Sprint Epsilon offline production simulation covering authentication,
+  Morning Brief, waiting list, Founding Member access, Stripe, Supabase,
+  recoverable errors and responsive/performance safeguards.
+- Evidence-based final launch readiness report with deployment, rollback,
+  blocker and post-launch monitoring guidance.
 - Live OpenAI-powered Morning Brief summaries for verified Pro/Elite dashboard
   output using strict structured responses and deterministic evidence only.
 - Safe Morning Brief fallback categories for missing configuration, rate
@@ -39,6 +44,8 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Changed
 
+- OpenAI health diagnostics now validate the actual Responses generation path
+  and distinguish exhausted quota, request rate, model access and permissions.
 - Dashboard Morning Brief now distinguishes AI-assisted output from the
   deterministic fallback without changing confidence, direction, warnings or
   engine behavior.
