@@ -93,8 +93,8 @@ export async function POST(request: Request) {
         if (error) throw error;
       }
     }
-  } catch (error) {
-    console.error("Stripe membership sync failed", event.id, error);
+  } catch {
+    console.error("Stripe membership sync failed", { eventId: event.id, category: "membership_sync_failure" });
     return NextResponse.json({ error: "Membership sync failed" }, { status: 500 });
   }
 

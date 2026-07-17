@@ -17,12 +17,12 @@ const features = [
 ];
 
 const included = [
-  "Overnight futures & global market moves",
-  "Treasury yields, VIX and US dollar check",
-  "Today’s economic calendar and catalysts",
-  "Bullish, bearish and no-trade scenarios",
-  "Key levels and expected move",
-  "Clear daily risk rating",
+  "Provider-backed futures and cross-market status",
+  "Treasury yields, VIX and US dollar context",
+  "Deterministic market-intelligence scores",
+  "Bullish, neutral and bearish scenarios",
+  "Decision permission and conflict warnings",
+  "Clear data-quality and risk status",
 ];
 
 export default function Home() {
@@ -321,9 +321,9 @@ export default function Home() {
               <em>mapped in minutes.</em>
             </h2>
             <p>
-              One concise briefing delivered before the US session. Read it
-              with your coffee, mark your chart, and know the conditions that
-              matter.
+              One concise dashboard available before the US session when
+              verified provider data is available. Review the conditions,
+              warnings and scenarios that matter.
             </p>
           </div>
 
@@ -339,12 +339,12 @@ export default function Home() {
             </article>
 
             <article>
-              <b>BEFORE US OPEN</b>
+              <b>MEMBER DASHBOARD</b>
               <span>02</span>
-              <h3>Your brief arrives</h3>
+              <h3>Your brief is ready</h3>
               <p>
-                A structured report lands in your inbox with the day’s levels,
-                scenarios and risk rating.
+                Sign in to review the current provider status, deterministic
+                scenarios, decision permission and risk warnings.
               </p>
             </article>
 
@@ -399,7 +399,7 @@ export default function Home() {
             </ul>
             <a
               className="tierButton"
-              href="mailto:hello@nashaimarkets.com?subject=NASH%20AI%20Free%20access"
+              href="/login"
             >
               Start free <span>↗</span>
             </a>

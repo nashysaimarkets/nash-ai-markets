@@ -21,7 +21,7 @@ import { terminalStatusMessage } from "./lib/terminal-state";
 import { chartDataForStatus, chartDisplayState, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Bullseye Terminal | NASH AI Markets", description: "Professional deterministic market intelligence terminal." };
+export const metadata: Metadata = { title: "Bullseye Terminal | NASH AI Markets", description: "Professional deterministic market intelligence terminal.", robots: { index: false, follow: false } };
 
 const toneForState = (state: string) => state === "Live" ? "positive" : state === "Delayed" ? "warning" : state === "Cached" ? "info" : "danger";
 const quoteTone = (direction?: "up" | "down" | "flat") => direction === "up" ? "positive" : direction === "down" ? "danger" : "neutral";

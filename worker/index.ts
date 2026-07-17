@@ -40,7 +40,16 @@ const worker = {
       }, allowedWidths);
     }
 
-    return handler.fetch(request, env, ctx);
+    const appResponse = await handler.fetch(request, env, ctx);
+    const response = new Response(appResponse.body, appResponse);
+    response.headers.set("x-content-type-options", "nosniff");
+    response.headers.set("referrer-policy", "strict-origin-when-cross-origin");
+    response.headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
+    response.headers.set("x-frame-options", "DENY");
+    if (url.protocol === "https:") {
+      response.headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+    }
+    return response;
   },
 };
 

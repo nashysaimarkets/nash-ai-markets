@@ -15,7 +15,7 @@ import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNex
 import { loadAccuracySummary } from "./lib/performance-history.ts";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Member Dashboard", description: "Your daily Bullseye market mission and membership access." };
+export const metadata: Metadata = { title: "Member Dashboard", description: "Your daily Bullseye market mission and membership access.", robots: { index: false, follow: false } };
 
 export default async function MemberDashboard() {
   const now = currentServerTimestamp();

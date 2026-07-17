@@ -1,8 +1,9 @@
-# vinext-starter
+# NASH AI Markets — Project Bullseye
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+A private-beta trading-intelligence application running on
+[vinext](https://github.com/cloudflare/vinext), with Supabase authentication
+and membership storage, Stripe subscription synchronization, and a
+fail-closed market-data gateway.
 
 ## Prerequisites
 
@@ -113,6 +114,37 @@ The first live-provider adapter is enabled only when all required variables are 
 Optional operational and symbol settings are `FMP_REQUEST_TIMEOUT_MS`, `FMP_SP500_FUTURES_SYMBOL`, `FMP_VIX_SYMBOL`, and `FMP_US_DOLLAR_INDEX_SYMBOL`. Defaults are `ESUSD`, `^VIX`, and `DX-Y.NYB`; override them when the account's FMP symbol directory uses different identifiers.
 
 The adapter appends the credential as FMP's documented `apikey` query parameter at request time. Do not place a credential in `FMP_API_BASE_URL`, source code, or committed environment files. The deployment base URL should be FMP's Stable API base URL, while the credential remains exclusively in `FMP_API_KEY`. If the provider selection, key, or base URL is absent, the terminal remains in its safe unconfigured fallback. FMP Treasury Rates are date-stamped rather than intraday; the gateway therefore rejects them once the existing delayed-data window has elapsed rather than presenting them as live.
+
+## Private-beta production checklist
+
+Use `.env.example` as the complete variable inventory; never commit populated
+credentials. Before inviting beta members:
+
+1. Apply the Supabase schema used by `memberships`, then apply migrations
+   `202607170001_progressive_access_previews.sql` and
+   `202607170002_verified_outcomes.sql`.
+2. Confirm RLS is enabled and no browser role can read either server-managed
+   migration table.
+3. Configure the Supabase production site URL and allow only the deployed
+   `/auth/callback` redirect origin.
+4. Configure Stripe Pro and Elite Price IDs, the customer portal, and the
+   production webhook endpoint `/api/stripe/webhook`.
+5. Subscribe the webhook to checkout completion, subscription created,
+   updated and deleted, and invoice payment failure events.
+6. Configure the checkout success URL to `/welcome` and cancellation URL to
+   `/cancelled`, then complete one real low-value test purchase and
+   cancellation using a dedicated beta account.
+7. Configure the FMP variables and verify that diagnostics report fresh,
+   timestamped provider data. Missing credentials intentionally leave the
+   terminal offline and non-actionable.
+8. Set build provenance variables and run tests, strict TypeScript, ESLint,
+   the production build, and artifact validation against the exact commit to
+   be deployed.
+
+The repository does not send daily briefing emails. Supabase sends the
+passwordless authentication email and Stripe sends configured billing emails;
+any additional lifecycle or briefing email flow requires a separate,
+consent-aware delivery service.
 
 ## Learn More
 
