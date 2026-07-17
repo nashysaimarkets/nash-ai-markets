@@ -51,6 +51,11 @@ Initiate rollback for:
 - [ ] For verified-outcome rollback, `drop table
       public.bullseye_verified_outcomes` deletes all stored verification
       history.
+- [ ] For Operation Launch rollback, `drop table
+      public.founding_member_onboarding` deletes all onboarding submissions,
+      and `drop table public.launch_waitlist` deletes all waiting-list records.
+- [ ] Removing the Operation Launch tables does not revoke memberships, but the
+      corresponding application routes must be rolled back at the same time.
 - [ ] Never execute rollback SQL directly from this checklist; use a separately
       reviewed change record.
 
@@ -68,4 +73,3 @@ Initiate rollback for:
 - [ ] Notify affected beta members with verified facts only.
 - [ ] Record final status, recovery time and remaining data repairs.
 - [ ] Open a post-incident review and corrective actions.
-

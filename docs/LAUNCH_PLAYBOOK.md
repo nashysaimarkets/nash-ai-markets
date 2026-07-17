@@ -24,10 +24,13 @@ Exit evidence: named owners, release SHA, beta scope and rollback decision-maker
 4. Take a backup or restorable snapshot.
 5. Apply `202607170001_progressive_access_previews.sql` manually.
 6. Apply `202607170002_verified_outcomes.sql` manually.
-7. Verify constraints, indexes, foreign keys and RLS.
-8. Using anonymous and authenticated browser roles, prove that neither
+7. Apply `202607170003_operation_launch.sql` manually.
+8. Verify constraints, indexes, foreign keys and RLS.
+9. Using anonymous and authenticated browser roles, prove that no
    server-managed table is readable or writable.
-9. Verify the service role can perform only the required application actions.
+10. Verify the service role can perform only the required application actions.
+11. Submit a staging waiting-list record and eligible Founding Member
+    onboarding record, then confirm neither changes `memberships`.
 
 Exit evidence: migration log, schema export, RLS test results and backup ID.
 
@@ -134,4 +137,3 @@ Exit evidence: signed deployment checklist and smoke-test record.
 3. Expand only after the first cohort completes login and sees truthful access.
 4. Never bypass fail-closed market behavior to improve apparent availability.
 5. Hold a post-launch review within one business day.
-

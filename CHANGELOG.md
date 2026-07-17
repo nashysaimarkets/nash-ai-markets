@@ -7,6 +7,12 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Added
 
+- Sprint Delta private-beta waiting-list flow with enumeration-safe duplicate
+  handling and server-managed storage.
+- Reviewed Founding Member onboarding for active Pro and Elite members without
+  automatic entitlement or billing changes.
+- Additive Operation Launch Supabase migration, loading states, mobile layouts
+  and regression coverage for launch access controls.
 - Sprint Gamma executive dashboard summary, reusable Morning Brief engine,
   protected member profile and subscription-status surfaces.
 - Fixed historical placeholder Morning Brief input that is always labelled

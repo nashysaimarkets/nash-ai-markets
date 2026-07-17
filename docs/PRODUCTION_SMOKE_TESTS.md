@@ -13,6 +13,9 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Free CTA opens `/login`.
 - [ ] Pro and Elite checkout links open the intended production products.
 - [ ] `/welcome` does not claim entitlement before verification.
+- [ ] Waiting-list registration accepts a valid email and returns a generic
+      success response for a duplicate email.
+- [ ] Invalid waiting-list input fails without exposing database details.
 
 ## Registration and authentication
 
@@ -40,12 +43,23 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Elite planner output remains absent unless preview is active.
 - [ ] One Elite preview can be claimed per UTC day.
 - [ ] Expired or non-active Pro membership resolves to Free.
+- [ ] Founding Member onboarding is available and a valid submission remains
+      pending review without changing membership access.
 
 ## Elite member
 
 - [ ] Active, unexpired Elite membership resolves to Elite.
 - [ ] Intelligence, decision, planner and diagnostics are available.
 - [ ] Diagnostics reveal no keys, authenticated URLs or raw errors.
+- [ ] Founding Member onboarding is available without implying guaranteed
+      designation or additional entitlement.
+
+## Founding Member access controls
+
+- [ ] Signed-out and Free users cannot submit onboarding.
+- [ ] Expired Pro/Elite memberships cannot submit onboarding.
+- [ ] Malformed or cross-origin submissions fail safely.
+- [ ] Submission never updates `memberships`, Stripe state or preview claims.
 
 ## Dashboard and terminal truthfulness
 

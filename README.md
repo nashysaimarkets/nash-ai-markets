@@ -11,11 +11,13 @@ personalized financial advice.
 ```text
 Public site
   ├─ pricing and legal information
+  ├─ private-beta waiting list
   ├─ Stripe Checkout links
   └─ Supabase passwordless registration/login
 
 Authenticated application
   ├─ Supabase user, membership and preview access
+  ├─ reviewed Founding Member onboarding
   ├─ FMP or generic normalized market provider
   ├─ market gateway validation/retry/fallback
   ├─ deterministic intelligence and reasoning
@@ -63,6 +65,8 @@ future timestamp.
 - `app/terminal/lib/membership-entitlement.ts` — Free, Pro, Elite and preview
   access.
 - `app/dashboard/` — daily member experience.
+- `app/waitlist/` — public private-beta interest registration.
+- `app/founding-member/` — eligible paid-member onboarding application.
 - `app/terminal/` — integrated visual terminal and diagnostics.
 - `app/api/stripe/webhook/` — signed membership synchronization.
 - `utils/supabase/` — browser, server-session and service-role clients.
@@ -74,12 +78,16 @@ future timestamp.
 |---|---|
 | `/` | Public product, pricing and risk information |
 | `/login` | Passwordless registration and login |
+| `/waitlist` | Private-beta waiting-list registration |
 | `/dashboard` | Authenticated daily member dashboard |
+| `/founding-member` | Authenticated Pro/Elite Founding Member onboarding |
 | `/brief` | Authenticated, fail-safe AI-assisted market brief |
 | `/profile` | Authenticated member profile and subscription status |
 | `/terminal` | Authenticated market terminal |
 | `/terminal/diagnostics` | Effective-Elite launch diagnostics |
 | `/api/membership/preview` | Authenticated progressive preview claim |
+| `/api/waitlist` | Same-origin waiting-list registration |
+| `/api/founding-member` | Authenticated paid-member onboarding submission |
 | `/api/profile` | Authenticated same-origin display-name update |
 | `/api/stripe/webhook` | Stripe-signed subscription synchronization |
 | `/api/openai/health` | Authenticated server-side OpenAI connectivity check |
@@ -124,8 +132,9 @@ Repository migrations add:
 
 1. `202607170001_progressive_access_previews.sql`
 2. `202607170002_verified_outcomes.sql`
+3. `202607170003_operation_launch.sql`
 
-Both enable RLS and create no client policies. Apply migrations manually only
+All enable RLS and create no client policies. Apply migrations manually only
 after backup and review; application deployment never applies them.
 
 ## Local development and validation

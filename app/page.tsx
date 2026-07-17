@@ -54,6 +54,7 @@ export default function Home() {
           <a href="#membership">Membership</a>
           <a href="/terminal">Terminal</a>
           <a href="/login">Member login</a>
+          <a href="/waitlist">Waiting list</a>
           <a href="#faq">FAQ</a>
         </nav>
 
@@ -539,8 +540,9 @@ export default function Home() {
               Can I cancel at any time?<span>+</span>
             </summary>
             <p>
-              Yes. The founding membership is planned as a flexible monthly
-              subscription with no long-term contract.
+              Yes. Paid memberships are flexible monthly subscriptions. The
+              separate Founding Member onboarding process does not change
+              billing or guarantee a designation.
             </p>
           </details>
         </div>
@@ -560,6 +562,7 @@ export default function Home() {
           <div className="footerLinks">
             <a href="#brief">The Brief</a>
             <a href="#membership">Membership</a>
+            <a href="/waitlist">Private beta waiting list</a>
             <a href={portalUrl}>Manage subscription</a>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>

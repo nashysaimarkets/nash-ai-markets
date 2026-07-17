@@ -12,6 +12,8 @@ deployed as a Cloudflare Worker-style artifact. It provides:
 - a provider-backed market gateway;
 - deterministic intelligence, reasoning, decision and trade-planning engines;
 - authenticated dashboard, terminal and launch diagnostics.
+- public private-beta waiting-list registration;
+- reviewed Founding Member onboarding for active paid members.
 
 The application does not place trades, send daily briefing emails, generate
 personalized financial advice or fabricate unavailable market values.
@@ -20,10 +22,11 @@ personalized financial advice or fabricate unavailable market values.
 
 ```text
 Browser
-  ├─ public marketing/legal pages
+  ├─ public marketing/legal and waiting-list pages
   ├─ Supabase magic-link login
   └─ authenticated dashboard/terminal request
        ├─ Supabase: user, membership, preview claims, verified outcomes
+       ├─ Supabase: Founding Member onboarding submission
        ├─ Market gateway
        │    └─ FMP adapter or generic HTTP snapshot provider
        ├─ deterministic market intelligence
@@ -43,6 +46,7 @@ the DOM. The service-role key is used only in server modules.
 | Layer | Implementation | Responsibility |
 |---|---|---|
 | Public site | `app/page.tsx`, legal and outcome routes | Product information, pricing links, risk wording |
+| Launch access | `app/waitlist`, `app/founding-member`, matching API routes | Waiting-list capture and reviewed paid-member onboarding |
 | Authentication | `app/login`, `app/auth`, `utils/supabase` | Magic-link sign-in, session cookies, sign-out |
 | Membership | `membership-entitlement.ts`, preview API | Tier resolution, period expiry, progressive previews |
 | Billing | `app/api/stripe/webhook/route.ts` | Verify Stripe signatures and synchronize memberships |
@@ -60,14 +64,18 @@ the DOM. The service-role key is used only in server modules.
 |---|---|---|
 | `/` | Public | Marketing, pricing and legal risk summary |
 | `/login` | Public, `noindex` | Passwordless registration and login |
+| `/waitlist` | Public | Register interest in the private beta |
 | `/auth/callback` | Public callback | Exchange Supabase code for a session |
 | `/auth/signout` | Authenticated action | End the current session |
 | `/dashboard` | Authenticated, `noindex` | Daily mission, event state, verified history and access |
+| `/founding-member` | Active Pro/Elite, `noindex` | Submit a reviewed Founding Member onboarding application |
 | `/terminal` | Authenticated, `noindex` | Market terminal and entitled engine output |
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
 | `/brief` | Authenticated, `noindex` | Deterministic market brief with optional constrained AI evidence prioritisation |
 | `/profile` | Authenticated, `noindex` | Member identity, subscription status and Stripe portal handoff |
 | `/api/membership/preview` | Authenticated POST | Claim a tier preview for the current UTC period |
+| `/api/waitlist` | Same-origin POST | Validate and store a waiting-list registration |
+| `/api/founding-member` | Active Pro/Elite POST | Validate and store an onboarding submission |
 | `/api/profile` | Authenticated same-origin POST | Validate and update Supabase display-name metadata |
 | `/api/stripe/webhook` | Stripe-signed POST | Synchronize subscription state |
 | `/api/openai/health` | Authenticated GET | Verify server-side OpenAI connectivity without exposing credentials |
@@ -87,8 +95,12 @@ Repository migrations create:
   user/tier/period constraint and RLS enabled;
 - `bullseye_verified_outcomes`: server-managed verified directional outcomes
   with RLS enabled.
+- `launch_waitlist`: server-managed private-beta interest records with a
+  lowercase unique email constraint and RLS enabled;
+- `founding_member_onboarding`: one reviewed onboarding record per authenticated
+  user with constrained preference and status values and RLS enabled.
 
-No client policy is created for either table; access is through trusted
+No client policy is created for these tables; access is through trusted
 server-side service-role calls.
 
 The `.openai/hosting.json` manifest declares no D1 or R2 binding. The included
