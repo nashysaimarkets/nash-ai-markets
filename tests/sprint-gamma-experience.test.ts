@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  applyAIMorningBrief,
   createMorningBrief,
   MORNING_BRIEF_PLACEHOLDER_INPUT,
 } from "../app/lib/morning-brief-engine.ts";
@@ -21,9 +22,35 @@ test("verified Morning Brief output is deterministic, bounded, and reusable", ()
   const second = createMorningBrief(input);
   assert.deepEqual(first, second);
   assert.equal(first.mode, "verified");
+  assert.equal(first.generation, "deterministic");
   assert.equal(first.confidence, 75);
   assert.equal(first.actionable, true);
   assert.equal(JSON.stringify(first), JSON.stringify(second));
+});
+
+test("Morning Brief applies valid AI content without changing confidence or direction", () => {
+  const brief = createMorningBrief({
+    source: "verified",
+    asOf: "2026-07-17T07:30:00.000Z",
+    sessionLabel: "London market session",
+    marketCondition: "neutral conditions",
+    confidence: 65,
+    directionalBias: "neutral",
+    keyRisk: "event risk",
+    nextAction: "wait for confirmation",
+  });
+  const enhanced = applyAIMorningBrief(brief, {
+    status: "generated",
+    content: {
+      headline: "Uncertainty remains elevated",
+      summary: "Verified evidence remains mixed.",
+      priorities: [...brief.priorities].reverse(),
+    },
+  });
+  assert.equal(enhanced.generation, "ai-assisted");
+  assert.equal(enhanced.confidence, brief.confidence);
+  assert.equal(enhanced.directionalBias, brief.directionalBias);
+  assert.deepEqual(enhanced.checklist, brief.checklist);
 });
 
 test("Morning Brief placeholder is fixed, explicit, and non-actionable", () => {
@@ -59,7 +86,7 @@ test("executive dashboard integrates verified summary, preview safety, and subsc
   assert.match(dashboard, /executiveMorningBrief/);
   assert.match(dashboard, /<SubscriptionStatusCard/);
   assert.match(dashboard, /morningBrief\.directionalBias \?\? "Not available"/);
-  assert.match(dashboard, /Placeholder fixture timestamp/);
+  assert.match(dashboard, /Preview fixture timestamp/);
 });
 
 test("member profile is protected, noindex, and exposes no Stripe identifiers", async () => {

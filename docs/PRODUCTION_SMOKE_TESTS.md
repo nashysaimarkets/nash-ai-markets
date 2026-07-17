@@ -71,6 +71,12 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Accuracy shows only verified stored outcomes or insufficient history.
 - [ ] Morning Brief placeholder uses its fixed historical timestamp, explicit
       preview label and no confidence or directional guidance.
+- [ ] With verified Pro/Elite data, the Morning Brief reports AI-assisted only
+      after a valid structured OpenAI response.
+- [ ] Missing OpenAI configuration, rate limiting, timeout and invalid output
+      retain the deterministic brief and expose no provider error details.
+- [ ] Free, preview and unavailable states do not make a Morning Brief OpenAI
+      request.
 - [ ] No fabricated candles, prices, levels, entries, stops or targets appear.
 - [ ] Risk and no-trade warnings remain prominent.
 - [ ] Provider status, attribution and last update are plausible.

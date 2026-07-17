@@ -25,6 +25,10 @@ emails, payment details or raw provider errors into the release record.
       authentication rejected, rate limited, timeout or provider unavailable.
 - [ ] The deterministic market brief remains usable when OpenAI is disabled or
       unavailable.
+- [ ] Verified Pro/Elite Morning Brief output is AI-assisted only after strict
+      structured validation; Free and unavailable states make no AI request.
+- [ ] Rate-limit, timeout, malformed response and provider-error simulations
+      preserve the deterministic Morning Brief.
 - [ ] Launch email diagnostics remain **Not configured** until both an approved
       transactional provider and sender identity are configured.
 
@@ -76,4 +80,3 @@ emails, payment details or raw provider errors into the release record.
 - [ ] The rollback checklist has been rehearsed without destructive SQL.
 - [ ] The first invitation cohort, support hours and post-launch observation
       window are recorded.
-

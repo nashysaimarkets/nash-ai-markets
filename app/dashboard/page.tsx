@@ -5,7 +5,8 @@ import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell.tsx";
 import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
-import { createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
+import { applyAIMorningBrief, createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
+import { generateAIMorningBrief } from "../lib/server/ai-morning-brief.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
@@ -43,7 +44,7 @@ export default async function MemberDashboard() {
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const mission = buildDailyMission(market.snapshot, intelligence, decision, plan);
-  const morningBrief = createMorningBrief(mission.available ? {
+  const deterministicMorningBrief = createMorningBrief(mission.available ? {
     source: "verified",
     asOf: market.snapshot.asOf,
     sessionLabel: "London market session",
@@ -53,6 +54,10 @@ export default async function MemberDashboard() {
     keyRisk: mission.keyWarning,
     nextAction: mission.nextAction,
   } : MORNING_BRIEF_PLACEHOLDER_INPUT);
+  const aiMorningBrief = access.features.intelligence && deterministicMorningBrief.mode === "verified"
+    ? await generateAIMorningBrief(deterministicMorningBrief)
+    : { status: "not_requested" as const, content: null };
+  const morningBrief = applyAIMorningBrief(deterministicMorningBrief, aiMorningBrief);
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
@@ -80,13 +85,13 @@ export default async function MemberDashboard() {
       </section>
 
       <section className={`executiveMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
-        <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2></div><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /></header>
+        <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2>{morningBrief.summary ? <p>{morningBrief.summary}</p> : null}</div><div className="morningBriefBadges"><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /><TerminalBadge label={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"} tone={morningBrief.generation === "ai-assisted" ? "info" : "neutral"} /></div></header>
         <div className="executiveMorningBriefBody">
           <div className="morningBriefSignal"><span>Directional context</span><strong>{morningBrief.directionalBias ?? "Not available"}</strong><small>{morningBrief.confidence === null ? "No confidence score active" : `${morningBrief.confidence} / 100 confidence`}</small></div>
           <div><h3>Executive priorities</h3><ol>{morningBrief.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
           <div><h3>Session checklist</h3><ul>{morningBrief.checklist.map((item) => <li key={item}>{item}</li>)}</ul></div>
         </div>
-        {morningBrief.warning ? <footer><strong>Preview safety:</strong> {morningBrief.warning}<span>Placeholder fixture timestamp: {morningBrief.asOf}</span></footer> : <footer>As of {morningBrief.asOf} · Refresh after material data or event changes.</footer>}
+        {morningBrief.warning ? <footer><strong>Safety state:</strong> {morningBrief.warning}<span>Preview fixture timestamp: {morningBrief.asOf}</span></footer> : <footer><span>As of {morningBrief.asOf} · Refresh after material data or event changes.</span><span>{morningBrief.generation === "ai-assisted" ? "OpenAI summarized verified engine evidence only." : morningBrief.aiStatus === "not_requested" ? "Deterministic brief active for current access." : `Deterministic fallback active · ${morningBrief.aiStatus.replaceAll("_", " ")}.`}</span></footer>}
       </section>
 
       <section className="dailyDashboardGrid">

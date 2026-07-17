@@ -169,6 +169,7 @@ Suggested severity:
 - diagnostics report authentication rejected, rate limited, timeout or provider
   unavailable;
 - AI Market Brief reports deterministic fallback active.
+- dashboard Morning Brief reports deterministic fallback active.
 
 ### Response
 
@@ -186,6 +187,8 @@ Suggested severity:
 
 - diagnostics report connected without exposing model/account details;
 - AI-assisted selection uses only supplied deterministic evidence;
+- Morning Brief text contains no invented prices, levels, instructions or
+  priorities;
 - disabling OpenAI still produces the deterministic brief.
 
 ## Launch email failure

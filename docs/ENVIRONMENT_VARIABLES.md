@@ -35,11 +35,18 @@ same products before paid beta.
 |---|---|---|---|
 | `OPENAI_API_KEY` | Secret, server only | Optional; required when AI brief prioritisation is enabled | Authenticates the official server-side OpenAI client used by `/api/openai/health` and the market brief |
 | `OPENAI_BRIEF_MODEL` | Server only | Optional; requires `OPENAI_API_KEY` when set | Selects the deployment-approved Responses API model for constrained market-brief prioritisation |
+| `OPENAI_MORNING_BRIEF_MODEL` | Server only | Optional | Overrides the live dashboard Morning Brief model; falls back to `OPENAI_BRIEF_MODEL`, then the server default `gpt-5-mini` |
 
 The key is read only from `process.env`, is never returned by the health route,
 and must not use a `NEXT_PUBLIC_` or `VITE_` prefix. When either credential or
 model access is unavailable, `/brief` retains its deterministic engine output
 and labels the AI enhancement as inactive.
+
+The dashboard Morning Brief calls OpenAI only for a complete verified brief and
+an entitled Pro/Elite experience. It uses strict structured output, supplies
+only deterministic Bullseye evidence, and rejects invented priorities, price
+levels, instructions, certainty and malformed responses. Missing credentials,
+rate limits, timeouts and provider failures retain the deterministic brief.
 
 The internal Elite diagnostics page performs a sanitized connectivity check. It
 reports only safe categories and never returns a key, model list, raw exception,

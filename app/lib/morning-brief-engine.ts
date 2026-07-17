@@ -10,12 +10,15 @@ export type MorningBriefInput = {
 };
 
 export type MorningBrief = {
-  schemaVersion: "1.0";
+  schemaVersion: "1.1";
   mode: "verified" | "preview" | "unavailable";
+  generation: "deterministic" | "ai-assisted";
+  aiStatus: "not_requested" | "generated" | "not_configured" | "rate_limited" | "timeout" | "unavailable" | "invalid_response";
   label: string;
   asOf: string | null;
   sessionLabel: string;
   headline: string;
+  summary: string | null;
   confidence: number | null;
   directionalBias: string | null;
   priorities: string[];
@@ -44,12 +47,15 @@ function boundedConfidence(value: number | null | undefined): number | null {
 export function createMorningBrief(input: MorningBriefInput): MorningBrief {
   if (input.source === "placeholder") {
     return {
-      schemaVersion: "1.0",
+      schemaVersion: "1.1",
+      generation: "deterministic",
+      aiStatus: "not_requested",
       mode: "preview",
       label: "PREVIEW STRUCTURE · NOT CURRENT MARKET DATA",
       asOf: input.asOf,
       sessionLabel: input.sessionLabel,
       headline: "Your verified morning brief will appear here",
+      summary: null,
       confidence: null,
       directionalBias: null,
       priorities: [
@@ -75,12 +81,15 @@ export function createMorningBrief(input: MorningBriefInput): MorningBrief {
     && Boolean(input.marketCondition && input.directionalBias && input.keyRisk && input.nextAction);
   if (!complete) {
     return {
-      schemaVersion: "1.0",
+      schemaVersion: "1.1",
+      generation: "deterministic",
+      aiStatus: "not_requested",
       mode: "unavailable",
       label: "MORNING BRIEF UNAVAILABLE",
       asOf: null,
       sessionLabel: input.sessionLabel,
       headline: "Verified inputs are incomplete",
+      summary: null,
       confidence: null,
       directionalBias: null,
       priorities: [],
@@ -91,12 +100,15 @@ export function createMorningBrief(input: MorningBriefInput): MorningBrief {
   }
 
   return {
-    schemaVersion: "1.0",
+    schemaVersion: "1.1",
+    generation: "deterministic",
+    aiStatus: "not_requested",
     mode: "verified",
     label: "VERIFIED MORNING BRIEF",
     asOf: new Date(asOf).toISOString(),
     sessionLabel: input.sessionLabel,
     headline: input.marketCondition!,
+    summary: null,
     confidence,
     directionalBias: input.directionalBias!,
     priorities: [input.keyRisk!, input.nextAction!],
@@ -107,5 +119,29 @@ export function createMorningBrief(input: MorningBriefInput): MorningBrief {
     ],
     actionable: true,
     warning: null,
+  };
+}
+
+export function applyAIMorningBrief(
+  brief: MorningBrief,
+  result: {
+    status: MorningBrief["aiStatus"];
+    content: { headline: string; summary: string; priorities: string[] } | null;
+  },
+): MorningBrief {
+  if (brief.mode !== "verified" || result.status !== "generated" || !result.content) {
+    return {
+      ...brief,
+      generation: "deterministic",
+      aiStatus: result.status,
+    };
+  }
+  return {
+    ...brief,
+    generation: "ai-assisted",
+    aiStatus: "generated",
+    headline: result.content.headline,
+    summary: result.content.summary,
+    priorities: [...result.content.priorities],
   };
 }

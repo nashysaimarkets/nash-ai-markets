@@ -62,6 +62,8 @@ future timestamp.
 - `app/lib/market-intelligence-engine.ts` — deterministic scores and reasoning.
 - `app/lib/trading-decision-engine.ts` — deterministic decision output.
 - `app/lib/structured-trade-planner.ts` — non-executing planning output.
+- `app/lib/server/ai-morning-brief.ts` — structured OpenAI summary of verified
+  Morning Brief evidence with deterministic fallback.
 - `app/terminal/lib/membership-entitlement.ts` — Free, Pro, Elite and preview
   access.
 - `app/dashboard/` — daily member experience.

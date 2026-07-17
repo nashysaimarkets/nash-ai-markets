@@ -34,7 +34,7 @@ require_var APP_VERSION
 require_var BUILD_TIMESTAMP
 require_var BULLSEYE_TEST_TOTALS
 
-if [[ -n "${OPENAI_BRIEF_MODEL:-}" ]]; then
+if [[ -n "${OPENAI_BRIEF_MODEL:-}" || -n "${OPENAI_MORNING_BRIEF_MODEL:-}" ]]; then
   require_var OPENAI_API_KEY
 fi
 

@@ -51,6 +51,7 @@ the DOM. The service-role key is used only in server modules.
 | Membership | `membership-entitlement.ts`, preview API | Tier resolution, period expiry, progressive previews |
 | Billing | `app/api/stripe/webhook/route.ts` | Verify Stripe signatures and synchronize memberships |
 | OpenAI health | `app/api/openai/health/route.ts` | Authenticated, sanitized server-side API connectivity check |
+| AI Morning Brief | `app/lib/server/ai-morning-brief.ts` | Constrained structured summary of verified deterministic evidence with fail-safe fallback |
 | Provider adapters | `app/lib/providers`, `market-data.ts` | Fetch, validate and normalize provider responses |
 | Gateway | `live-market-gateway.ts` | Retry, timeout state, health and safe fallback |
 | Analysis | intelligence, decision and planner modules | Deterministic JSON-serializable outputs |
@@ -114,7 +115,7 @@ Bullseye production data path.
 | Hosting/Cloudflare runtime | Application and assets | Application unavailable; roll back deployment |
 | Supabase | Auth, memberships, previews, outcomes | Auth/access may fail; no sensitive error disclosure |
 | Stripe | Checkout, billing, portal, webhooks | Existing access follows stored state; investigate/replay webhooks |
-| OpenAI | Server-side SDK connectivity | Authenticated health route returns only connected, unavailable or not configured |
+| OpenAI | Server-side SDK connectivity and constrained Morning Brief summaries | Structured output is validated; any failure retains deterministic output |
 | Financial Modeling Prep | Initial live market adapter | Gateway retries then fails closed |
 | Generic HTTP provider | Optional alternative normalized snapshot | Gateway retries then fails closed |
 

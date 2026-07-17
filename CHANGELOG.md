@@ -7,6 +7,10 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Added
 
+- Live OpenAI-powered Morning Brief summaries for verified Pro/Elite dashboard
+  output using strict structured responses and deterministic evidence only.
+- Safe Morning Brief fallback categories for missing configuration, rate
+  limiting, timeout, provider failure and invalid model output.
 - Safe OpenAI operational diagnostics with authentication, rate-limit, timeout
   and provider-availability categories plus deterministic fallback.
 - Provider-neutral waiting-list confirmation and accepted Founding Member
@@ -35,6 +39,9 @@ The format follows Keep a Changelog and the project uses Semantic Versioning.
 
 ### Changed
 
+- Dashboard Morning Brief now distinguishes AI-assisted output from the
+  deterministic fallback without changing confidence, direction, warnings or
+  engine behavior.
 - Stripe entitlement mapping now requires exactly one configured Price ID and
   no longer trusts subscription metadata as a tier fallback.
 - Homepage market preview contains no fixed market prices, and paid calls to
