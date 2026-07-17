@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Prepared `1.0.0-rc.2` with the production PWA application shell, install
+  guidance, platform icons, iOS launch assets and explicit update lifecycle.
+- Added a reusable branded loading state across existing asynchronous routes,
+  removed stale pre-launch copy and refreshed release provenance without
+  changing market, entitlement, billing or authentication behavior.
 - Prepared `1.0.0-rc.1` with authenticated first-run onboarding, substantive
   trust and support pages, responsive member navigation, friendly recovery
   states, RC validation coverage and a prioritised release-candidate report.

@@ -56,6 +56,8 @@ item complete from assumption.
 - [ ] Dependency advisory report reviewed; accepted risks recorded.
 - [ ] Accessibility and mobile impact reviewed.
 - [ ] No preview/fallback/unavailable data can be represented as live.
+- [ ] PWA manifest, icons, iOS launch images, service-worker scope, update
+      prompt and fail-closed offline behavior pass `PRODUCTION_SMOKE_TESTS.md`.
 
 ## Deploy
 

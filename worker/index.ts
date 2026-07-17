@@ -49,8 +49,8 @@ const worker = {
     response.headers.set("x-dns-prefetch-control", "off");
     response.headers.set("cross-origin-opener-policy", "same-origin");
     if (url.pathname === "/sw.js") {
-      response.headers.delete("cache-control");
-      response.headers.set("cache-control", "no-cache");
+      response.headers.delete("Cache-Control");
+      response.headers.set("Cache-Control", "no-cache, max-age=0, must-revalidate");
       response.headers.set("service-worker-allowed", "/");
     } else if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/_next/static/")) {
       response.headers.set("cache-control", "public, max-age=31536000, immutable");

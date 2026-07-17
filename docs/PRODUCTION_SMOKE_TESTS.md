@@ -21,6 +21,23 @@ emails, event IDs and customer IDs from evidence.
       success response for a duplicate email.
 - [ ] Invalid waiting-list input fails without exposing database details.
 
+## Progressive Web App
+
+- [ ] The manifest returns `display: standalone`, the correct scope, 192 px and
+      512 px icons, and a maskable Android icon.
+- [ ] Desktop Chromium offers installation only when its platform criteria are
+      satisfied; dismissing the prompt does not block normal use.
+- [ ] Android Chrome installs with the Standard Precision Ring icon and launches
+      inside the declared application scope.
+- [ ] iPhone Safari Add to Home Screen uses the Apple touch icon, standalone
+      title and an appropriate static launch image.
+- [ ] A waiting service-worker update is applied only after the member chooses
+      Update; it never reloads a form automatically.
+- [ ] Offline navigation shows the fail-closed offline screen and never replays
+      account, market, billing or Morning Brief data as current.
+- [ ] Reconnect, update, uninstall and reinstall have been exercised on one
+      current physical iPhone and Android device.
+
 ## Registration and authentication
 
 - [ ] New email requests a magic link without exposing provider errors.

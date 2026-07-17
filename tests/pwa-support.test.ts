@@ -29,17 +29,27 @@ test("iOS configuration provides touch icon, standalone metadata and launch imag
 });
 
 test("service worker caches only the application shell and safe static assets", async () => {
-  const [worker, edgeWorker] = await Promise.all([read("public/sw.js"), read("worker/index.ts")]);
+  const [worker, edgeWorker, nextConfig] = await Promise.all([
+    read("public/sw.js"),
+    read("worker/index.ts"),
+    read("next.config.ts"),
+  ]);
   assert.match(worker, /PRIVATE_PREFIXES/);
   for (const path of ["/api/", "/auth/", "/dashboard", "/brief", "/terminal"]) assert.match(worker, new RegExp(path.replaceAll("/", "\\/")));
   assert.match(worker, /request\.mode === "navigate"/);
   assert.match(worker, /no-store\|private/);
   assert.match(worker, /set-cookie/);
+  const installHandler = worker.match(/self\.addEventListener\("install"[\s\S]*?\n\}\);/)?.[0] ?? "";
+  assert.doesNotMatch(installHandler, /self\.skipWaiting\(\)/);
+  assert.match(worker, /event\.data\?\.type === "SKIP_WAITING"/);
   assert.doesNotMatch(worker, /cache\.put\(request[\s\S]*isPrivatePath/);
   assert.match(edgeWorker, /url\.pathname === "\/sw\.js"/);
-  assert.match(edgeWorker, /headers\.delete\("cache-control"\)/);
-  assert.match(edgeWorker, /cache-control", "no-cache"/);
+  assert.match(edgeWorker, /headers\.delete\("Cache-Control"\)/);
+  assert.match(edgeWorker, /Cache-Control", "no-cache, max-age=0, must-revalidate"/);
   assert.match(edgeWorker, /service-worker-allowed", "\/"/);
+  assert.match(nextConfig, /source: "\/sw\.js"/);
+  assert.match(nextConfig, /no-cache, max-age=0, must-revalidate/);
+  assert.match(nextConfig, /Service-Worker-Allowed/);
 });
 
 test("offline state fails closed and install guidance is platform appropriate", async () => {

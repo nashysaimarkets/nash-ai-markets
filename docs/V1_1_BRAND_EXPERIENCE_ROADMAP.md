@@ -22,9 +22,9 @@ The recommended order is:
 
 | Capability | Current state | Version 1.1 treatment |
 |---|---|---|
-| Web app manifest | Exists with standalone display, theme colour and SVG favicon | Enhance for full installability |
-| Service worker and offline shell | Not present | New |
-| Platform-specific app icons | No complete PNG/maskable/Apple icon family | New |
+| Web app manifest | Production standalone manifest exists | Preserve and validate |
+| Service worker and offline shell | Secure application shell exists and excludes private/dynamic data | Preserve and validate |
+| Platform-specific app icons | Standard Precision Ring PNG, maskable and Apple icon family exists | Extend through the Founding Edition specification |
 | Dark terminal identity | Established across the terminal and member experience | Consolidate into tokens and guidelines |
 | Typography | Geist and Geist Mono are established; some legacy styles use other families | Standardise |
 | First-run preferences | Three-step onboarding already captures experience, interests and notifications | Evolve into an interactive walkthrough |
@@ -43,6 +43,7 @@ Effort is expressed in focused person-days and includes implementation, review, 
 | P0 | Brand tokens, typography and asset guidelines | 6–10 days | Before other visual production |
 | P0 | App icon family and splash assets | 5–8 days | Before PWA release |
 | P0 | PWA installability, safe caching and device validation | 10–16 days | Version 1.1 |
+| P1 | Founding Edition alternate-icon system | 8–13 design/entitlement days; native delivery included below | Native mobile release |
 | P1 | Welcome walkthrough and onboarding refinement | 8–13 days | Version 1.1 |
 | P1 | Achievement framework and profile enhancements | 10–16 days | Version 1.1 |
 | P1 | Marketing asset production | 10–18 days | Version 1.1 campaign |
@@ -82,6 +83,11 @@ Required outputs:
 - Platform icon exports, favicon set and social avatar.
 - Light/dark presentation sheets at 16, 24, 32, 48, 128, 192, 512 and 1024 px.
 - Legibility, colour-blindness and unintended-symbol review before approval.
+
+The **Precision Ring** is now the Standard production PWA direction. The proposed
+member-exclusive extension is defined in
+[Version 1.1 Founding Edition Icon System](./V1_1_FOUNDING_EDITION_ICON_SYSTEM.md).
+That specification is design-only until a native client exists.
 
 ### 4.2 Splash-screen animation
 
@@ -137,19 +143,20 @@ Create a concise brand manual containing:
 
 ### 5.1 PWA readiness assessment
 
-The application is **partially PWA-ready, but not currently a complete installable product**.
+The application now has a production PWA foundation. Physical-device release QA
+remains required, and installed PWA icons cannot be switched reliably per member.
 
 | Requirement | Assessment |
 |---|---|
 | Responsive web application | Strong foundation; final device QA still required |
 | Web manifest | Present |
 | Standalone display and theme | Present |
-| Complete 192/512 icon set | Missing |
-| Maskable Android icon | Missing |
-| Apple touch icon and iOS metadata | Missing/incomplete |
-| Service worker | Missing |
-| Offline navigation shell | Missing |
-| Install education and update UX | Missing |
+| Complete 192/512 icon set | Present |
+| Maskable Android icon | Present |
+| Apple touch icon and iOS metadata | Present |
+| Service worker | Present; application-shell only |
+| Offline navigation shell | Present; explicitly fail-closed |
+| Install education and update UX | Present |
 | Mobile install/device test matrix | Missing |
 
 ### 5.2 PWA implementation plan
@@ -375,4 +382,3 @@ Implementation should not begin until:
 4. Community consent, moderation and retention rules receive privacy review.
 5. Native billing and store-policy approach receives commercial/legal review.
 6. Marketing claims and captured data receive final truthfulness review.
-

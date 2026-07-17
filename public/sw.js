@@ -45,7 +45,6 @@ function canStore(response) {
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_ASSETS)));
-  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
