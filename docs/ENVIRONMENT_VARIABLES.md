@@ -30,10 +30,13 @@ environment variables. Verify them separately against the production products.
 
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
-| `OPENAI_API_KEY` | Secret, server only | Mandatory for OpenAI health integration | Authenticates the official server-side OpenAI client used by `/api/openai/health` |
+| `OPENAI_API_KEY` | Secret, server only | Optional; required when AI brief prioritisation is enabled | Authenticates the official server-side OpenAI client used by `/api/openai/health` and the market brief |
+| `OPENAI_BRIEF_MODEL` | Server only | Optional; requires `OPENAI_API_KEY` when set | Selects the deployment-approved Responses API model for constrained market-brief prioritisation |
 
 The key is read only from `process.env`, is never returned by the health route,
-and must not use a `NEXT_PUBLIC_` or `VITE_` prefix.
+and must not use a `NEXT_PUBLIC_` or `VITE_` prefix. When either credential or
+model access is unavailable, `/brief` retains its deterministic engine output
+and labels the AI enhancement as inactive.
 
 ## Market provider selection
 

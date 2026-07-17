@@ -23,7 +23,6 @@ require_https_url() {
 require_var NEXT_PUBLIC_SUPABASE_URL
 require_var NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 require_var SUPABASE_SERVICE_ROLE_KEY
-require_var OPENAI_API_KEY
 require_var STRIPE_SECRET_KEY
 require_var STRIPE_WEBHOOK_SECRET
 require_var STRIPE_PRO_PRICE_ID
@@ -32,6 +31,10 @@ require_https_url STRIPE_CUSTOMER_PORTAL_LINK
 require_var APP_VERSION
 require_var BUILD_TIMESTAMP
 require_var BULLSEYE_TEST_TOTALS
+
+if [[ -n "${OPENAI_BRIEF_MODEL:-}" ]]; then
+  require_var OPENAI_API_KEY
+fi
 
 if [[ -z "${GIT_COMMIT_SHA:-}" && -z "${VERCEL_GIT_COMMIT_SHA:-}" && -z "${CF_PAGES_COMMIT_SHA:-}" ]]; then
   missing+=("GIT_COMMIT_SHA (or supported platform commit SHA)")

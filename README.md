@@ -75,6 +75,7 @@ future timestamp.
 | `/` | Public product, pricing and risk information |
 | `/login` | Passwordless registration and login |
 | `/dashboard` | Authenticated daily member dashboard |
+| `/brief` | Authenticated, fail-safe AI-assisted market brief |
 | `/terminal` | Authenticated market terminal |
 | `/terminal/diagnostics` | Effective-Elite launch diagnostics |
 | `/api/membership/preview` | Authenticated progressive preview claim |

@@ -65,6 +65,7 @@ the DOM. The service-role key is used only in server modules.
 | `/dashboard` | Authenticated, `noindex` | Daily mission, event state, verified history and access |
 | `/terminal` | Authenticated, `noindex` | Market terminal and entitled engine output |
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
+| `/brief` | Authenticated, `noindex` | Deterministic market brief with optional constrained AI evidence prioritisation |
 | `/api/membership/preview` | Authenticated POST | Claim a tier preview for the current UTC period |
 | `/api/stripe/webhook` | Stripe-signed POST | Synchronize subscription state |
 | `/api/openai/health` | Authenticated GET | Verify server-side OpenAI connectivity without exposing credentials |
