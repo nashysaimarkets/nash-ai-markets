@@ -65,7 +65,7 @@ the DOM. The service-role key is used only in server modules.
 |---|---|---|
 | `/` | Public | Marketing, pricing and legal risk summary |
 | `/login` | Public, `noindex` | Passwordless registration and login |
-| `/waitlist` | Public | Register interest in the private beta |
+| `/waitlist` | Public | Register interest in launch access |
 | `/auth/callback` | Public callback | Exchange Supabase code for a session |
 | `/auth/signout` | Authenticated action | End the current session |
 | `/dashboard` | Authenticated, `noindex` | Daily mission, event state, verified history and access |
@@ -93,8 +93,9 @@ the DOM. The service-role key is used only in server modules.
 ## Data stores
 
 Supabase Auth owns users and sessions. Application code expects a
-`public.memberships` table, but its canonical creation migration is not present
-in this repository and must be established before reproducible launch.
+`public.memberships` table, created by the canonical
+`202607170000_memberships.sql` migration and restricted to verified-email
+member reads with server-only writes.
 
 Repository migrations create:
 
@@ -102,7 +103,7 @@ Repository migrations create:
   user/tier/period constraint and RLS enabled;
 - `bullseye_verified_outcomes`: server-managed verified directional outcomes
   with RLS enabled.
-- `launch_waitlist`: server-managed private-beta interest records with a
+- `launch_waitlist`: server-managed launch-interest records with a
   lowercase unique email constraint and RLS enabled;
 - `founding_member_onboarding`: one reviewed onboarding record per authenticated
   user with constrained preference and status values and RLS enabled.

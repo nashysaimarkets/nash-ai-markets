@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Added the canonical server-managed membership schema and verified-email RLS
+  baseline required for reproducible Supabase deployment.
+- Enforced exact same-origin checks consistently across public and
+  cookie-authenticated write endpoints.
+- Removed obsolete hosted-checkout URL requirements from production
+  environment validation; checkout remains server-created from verified Price
+  IDs.
+- Removed the stale hard-coded diagnostics test total; build provenance now
+  reports it only when supplied by the release pipeline.
+- Refreshed public-launch operations guidance and removed stale private-beta
+  and outstanding-event-ordering statements.
 - Prepared `1.0.0-rc.2` with the production PWA application shell, install
   guidance, platform icons, iOS launch assets and explicit update lifecycle.
 - Added a reusable branded loading state across existing asynchronous routes,

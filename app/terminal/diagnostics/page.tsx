@@ -48,5 +48,38 @@ export default async function TerminalDiagnosticsPage() {
     launchEmailReadiness: getLaunchEmailReadiness(),
   });
 
-  return <main className="diagnosticsPage"><header><div><span>INTERNAL · MEMBER ACCESS</span><h1>Bullseye launch diagnostics</h1><p>Safe operational metadata only. Credentials, provider URLs and raw errors are never displayed.</p></div><Link href="/terminal">← Return to terminal</Link></header><LaunchDiagnosticsPanel diagnostics={diagnostics} /><section className="ftCard buildDiagnostics"><header><div><span>BUILD PROVENANCE</span><h2>Candidate metadata</h2></div></header><dl><div><dt>Environment</dt><dd>{diagnostics.environment.mode}</dd></div><div><dt>Application version</dt><dd>{diagnostics.environment.applicationVersion}</dd></div><div><dt>Build timestamp</dt><dd>{diagnostics.environment.buildTimestamp}</dd></div><div><dt>Git commit</dt><dd>{diagnostics.environment.gitCommit}</dd></div><div><dt>Verified tests</dt><dd>{diagnostics.environment.testTotal}</dd></div><div><dt>Cache status</dt><dd>{diagnostics.cacheStatus}</dd></div><div><dt>Reconnect attempts</dt><dd>{diagnostics.provider.reconnectAttempts}</dd></div><div><dt>Warnings</dt><dd>{diagnostics.warnings.length}</dd></div><div><dt>OpenAI</dt><dd>{diagnostics.integrations.openAI.status.replaceAll("_", " ")}</dd></div><div><dt>AI brief model</dt><dd>{diagnostics.integrations.openAI.modelConfigured ? "Configured" : "Not configured"}</dd></div><div><dt>Launch email</dt><dd>{diagnostics.integrations.launchEmail.ready ? "Ready" : "Not configured"}</dd></div></dl></section></main>;
+  return (
+    <main className="diagnosticsPage">
+      <header>
+        <div>
+          <span>INTERNAL · MEMBER ACCESS</span>
+          <h1>Bullseye launch diagnostics</h1>
+          <p>Safe operational metadata only. Credentials, provider URLs and raw errors are never displayed.</p>
+        </div>
+        <Link href="/terminal">← Return to terminal</Link>
+      </header>
+      <LaunchDiagnosticsPanel diagnostics={diagnostics} />
+      <section className="ftCard buildDiagnostics">
+        <header>
+          <div>
+            <span>BUILD PROVENANCE</span>
+            <h2>Candidate metadata</h2>
+          </div>
+        </header>
+        <dl>
+          <div><dt>Environment</dt><dd>{diagnostics.environment.mode}</dd></div>
+          <div><dt>Application version</dt><dd>{diagnostics.environment.applicationVersion}</dd></div>
+          <div><dt>Build timestamp</dt><dd>{diagnostics.environment.buildTimestamp}</dd></div>
+          <div><dt>Git commit</dt><dd>{diagnostics.environment.gitCommit}</dd></div>
+          <div><dt>Verified tests</dt><dd>{diagnostics.environment.testTotal ?? "Unavailable"}</dd></div>
+          <div><dt>Cache status</dt><dd>{diagnostics.cacheStatus}</dd></div>
+          <div><dt>Reconnect attempts</dt><dd>{diagnostics.provider.reconnectAttempts}</dd></div>
+          <div><dt>Warnings</dt><dd>{diagnostics.warnings.length}</dd></div>
+          <div><dt>OpenAI</dt><dd>{diagnostics.integrations.openAI.status.replaceAll("_", " ")}</dd></div>
+          <div><dt>AI brief model</dt><dd>{diagnostics.integrations.openAI.modelConfigured ? "Configured" : "Not configured"}</dd></div>
+          <div><dt>Launch email</dt><dd>{diagnostics.integrations.launchEmail.ready ? "Ready" : "Not configured"}</dd></div>
+        </dl>
+      </section>
+    </main>
+  );
 }

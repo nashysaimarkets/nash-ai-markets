@@ -1,10 +1,10 @@
 # NASH AI Markets — Project Bullseye
 
-RC1 deployment requires migrations `202607170001` through `202607170007` in
+RC2 deployment requires migrations `202607170000` through `202607170007` in
 order. Final launch gates and known issues are recorded in
-`docs/RC1_PRODUCTION_READINESS.md`.
+`docs/RC2_FINAL_LAUNCH_REPORT.md`.
 
-Project Bullseye is a private-beta trading-intelligence application for
+Project Bullseye is a release-candidate trading-intelligence application for
 provider-backed S&P 500 futures context. It combines a fail-closed market-data
 gateway with deterministic intelligence, decision and structured planning
 engines. It does not place trades, fabricate unavailable values or provide
@@ -15,8 +15,8 @@ personalized financial advice.
 ```text
 Public site
   ├─ pricing and legal information
-  ├─ private-beta waiting list
-  ├─ Stripe Checkout links
+  ├─ launch waiting list
+  ├─ server-created Stripe Checkout Sessions
   └─ Supabase passwordless registration/login
 
 Authenticated application
@@ -143,17 +143,22 @@ validity.
 
 ## Supabase schema
 
-The application expects `public.memberships`. Its canonical creation migration
-is not yet present and remains a private-beta launch blocker.
+The canonical server-managed membership baseline and dependent migrations are:
 
-Repository migrations add:
+1. `202607170000_memberships.sql`
+2. `202607170001_progressive_access_previews.sql`
+3. `202607170002_verified_outcomes.sql`
+4. `202607170003_operation_launch.sql`
+5. `202607170004_founding_100.sql`
+6. `202607170005_commercial_billing.sql`
+7. `202607170006_member_onboarding.sql`
+8. `202607170007_stripe_event_ordering.sql`
 
-1. `202607170001_progressive_access_previews.sql`
-2. `202607170002_verified_outcomes.sql`
-3. `202607170003_operation_launch.sql`
-
-All enable RLS and create no client policies. Apply migrations manually only
-after backup and review; application deployment never applies them.
+Server-managed tables enable RLS. Membership rows are readable only by an
+authenticated user whose verified JWT email matches the normalized membership
+email; browser roles receive no write access. Apply migrations manually only
+after backup, duplicate-email preflight and review; application deployment
+never applies them.
 
 ## Local development and validation
 

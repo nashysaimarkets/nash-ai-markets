@@ -1,6 +1,6 @@
-# Operation Launch Readiness Checklist
+# Version 1.0 Public Launch Readiness Checklist
 
-This checklist covers the final private-beta gate. Record evidence against the
+This checklist covers the final public-launch gate. Record evidence against the
 exact candidate commit. Do not paste credentials, authenticated URLs, member
 emails, payment details or raw provider errors into the release record.
 
@@ -36,9 +36,10 @@ emails, payment details or raw provider errors into the release record.
 ## Supabase
 
 - [ ] A restorable backup or snapshot exists.
-- [ ] The canonical `memberships` schema has been reviewed and documented.
-- [ ] Migrations `202607170001`, `202607170002` and `202607170003` have been
-      reviewed and applied manually in the intended order.
+- [ ] `202607170000_memberships.sql` has been reviewed against the target
+      schema and duplicate normalized emails have been checked.
+- [ ] Migrations `202607170000` through `202607170007` have been reviewed and
+      applied manually in the intended order.
 - [ ] RLS is enabled and anonymous/authenticated browser roles cannot read or
       write server-managed preview, outcome, waiting-list or onboarding data.
 - [ ] Waiting-list duplicate submission is enumeration-safe.
@@ -47,8 +48,8 @@ emails, payment details or raw provider errors into the release record.
 
 ## Stripe and entitlement
 
-- [ ] Checkout URLs point to the intended production Pro and Elite products.
-- [ ] Price IDs match the same products and billing intervals.
+- [ ] All four Price IDs match the intended Pro/Elite products and monthly or
+      annual billing intervals; server-created checkout is the purchase path.
 - [ ] The webhook endpoint has the production signing secret and required event
       subscriptions.
 - [ ] Unknown or ambiguous Price IDs fail closed and subscription metadata
@@ -57,8 +58,8 @@ emails, payment details or raw provider errors into the release record.
       have been tested in Stripe test mode.
 - [ ] Stored status and `current_period_end` produce the expected Free, Pro and
       Elite access.
-- [ ] Out-of-order webhook handling is implemented or explicitly risk-accepted
-      before inviting paid beta members.
+- [ ] Newer then older signed webhook events have been replayed to verify the
+      implemented out-of-order event rejection.
 - [ ] Apply and verify `202607170004_founding_100.sql`; confirm RLS exposes no
       client policy and only the service role can execute award synchronization.
 - [ ] Configure `BULLSEYE_ADMIN_EMAILS`, then verify an ordinary member cannot

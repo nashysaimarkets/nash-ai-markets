@@ -1,7 +1,7 @@
-# Private Beta Launch Playbook
+# Version 1.0 Public Launch Playbook
 
-This playbook begins from the current `bullseye-sprint-alpha` state. Do not merge
-to `main` or expose beta users until every launch gate has an owner and evidence.
+This playbook begins from the approved release-candidate commit. Do not expose
+public users until every launch gate has an owner and evidence.
 
 ## Phase 1 — Establish ownership and release scope
 
@@ -9,25 +9,24 @@ to `main` or expose beta users until every launch gate has an owner and evidence
    contact.
 2. Select the exact release commit; record its full SHA.
 3. Freeze unrelated code and configuration changes.
-4. Confirm the private-beta audience, invitation count and support hours.
+4. Confirm the launch cohort, support hours and rollback observation window.
 5. Record the production hostname without adding it to documentation until it
    is actually assigned.
 
-Exit evidence: named owners, release SHA, beta scope and rollback decision-maker.
+Exit evidence: named owners, release SHA, launch scope and rollback decision-maker.
 
 ## Phase 2 — Make the database reproducible
 
 1. Export the current production Supabase schema.
-2. Compare it with application queries for `memberships`.
-3. Create and review a canonical migration for the `memberships` table. This is
-   currently outstanding and must not be inferred from application code alone.
-4. Take a backup or restorable snapshot.
-5. Apply `202607170001_progressive_access_previews.sql` manually.
-6. Apply `202607170002_verified_outcomes.sql` manually.
-7. Apply `202607170003_operation_launch.sql` manually.
+2. Compare it with `202607170000_memberships.sql` and check for duplicate
+   normalized membership emails.
+3. Take a backup or restorable snapshot.
+4. Apply `202607170000_memberships.sql` manually, then verify authenticated
+   users can select only the row matching their verified JWT email.
+5. Apply migrations `202607170001` through `202607170007` manually in order.
 8. Verify constraints, indexes, foreign keys and RLS.
-9. Using anonymous and authenticated browser roles, prove that no
-   server-managed table is readable or writable.
+9. Using anonymous and authenticated browser roles, prove that server-managed
+   tables are not writable and only the permitted own-membership read succeeds.
 10. Verify the service role can perform only the required application actions.
 11. Submit a staging waiting-list record and eligible Founding Member
     onboarding record, then confirm neither changes `memberships`.
@@ -51,11 +50,8 @@ Exit evidence: delivery screenshots with addresses redacted and route results.
 
 1. Confirm production Pro and Elite products, prices, currency and billing
    interval.
-2. Confirm public checkout links point to those production products.
-3. Set `STRIPE_PRO_PRICE_ID` and `STRIPE_ELITE_PRICE_ID` to the matching Price
-   IDs.
-4. Set the public Pro and Elite checkout URL variables to the hosted checkout
-   pages for those same products.
+2. Set the four monthly and annual Stripe Price ID variables to the matching
+   products; server-created checkout must remain the only purchase path.
 5. Configure the production customer portal and
    `STRIPE_CUSTOMER_PORTAL_LINK`.
 6. Add `/api/stripe/webhook` as the production webhook endpoint.
@@ -74,8 +70,7 @@ Exit evidence: delivery screenshots with addresses redacted and route results.
 12. Verify an unknown Price ID and metadata-only plan both fail closed.
 
 Exit evidence: Stripe event IDs, sanitized database results and entitlement
-screenshots. Out-of-order webhook protection remains a known launch blocker
-until implemented or explicitly risk-accepted.
+screenshots, including proof that an older event cannot overwrite newer state.
 
 ## Phase 5 — Configure market data
 
@@ -133,7 +128,7 @@ Exit evidence: restore result, monitor IDs and tested alert notifications.
 
 Exit evidence: signed deployment checklist and smoke-test record.
 
-## Phase 9 — Open private beta
+## Phase 9 — Open public launch
 
 1. Invite a small first cohort.
 2. Monitor authentication, provider freshness, errors and Stripe events during

@@ -16,6 +16,10 @@ item complete from assumption.
 
 - [ ] Supabase backup/snapshot completed.
 - [ ] Required reviewed migrations already applied or scheduled separately.
+- [ ] Inspect `public.memberships` for duplicate normalized emails before
+      applying `202607170000_memberships.sql`.
+- [ ] Apply `202607170000_memberships.sql` first; verify authenticated users can
+      select only their own membership row and cannot write membership data.
 - [ ] Apply `202607170005_commercial_billing.sql` after the Founding migration;
       verify existing membership rows are unchanged.
 - [ ] Apply `202607170006_member_onboarding.sql`; verify authenticated members
@@ -25,6 +29,8 @@ item complete from assumption.
 - [ ] Production RLS and grants verified.
 - [ ] Supabase Site URL and callback allowlist verified.
 - [ ] Stripe mode, products, Price IDs, portal and webhook endpoint verified.
+- [ ] Legacy public hosted-checkout URL variables are not treated as release
+      requirements; checkout is created server-side from the four Price IDs.
 - [ ] Monthly prices are exactly Pro £14.99 and Elite £29.99; annual prices are
       exactly Pro £149 and Elite £299 in the intended Stripe currency/account.
 - [ ] Test all four server-created checkout offerings and portal plan changes.

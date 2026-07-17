@@ -1,15 +1,17 @@
 # NASH AI Markets Production Operations Pack
 
 This directory is the operator source of truth for taking Project Bullseye from
-the current `bullseye-sprint-alpha` state into a controlled private beta and
-operating it afterwards.
+the approved release candidate into a controlled public launch and operating it
+afterwards.
 
 ## Documents
 
 - [Architecture](ARCHITECTURE.md) — application boundaries, services, data flow,
   routes, dependencies and deployment shape.
 - [Launch playbook](LAUNCH_PLAYBOOK.md) — ordered path from the current state to
-  private beta.
+  public launch.
+- [RC2 final launch report](RC2_FINAL_LAUNCH_REPORT.md) — current evidence,
+  remaining gates and the go/no-go recommendation.
 - [Launch readiness checklist](LAUNCH_READINESS_CHECKLIST.md) — final
   application, integration, data, billing, email and monitoring gates.
 - [Sprint Epsilon launch report](SPRINT_EPSILON_LAUNCH_READINESS_REPORT.md) —

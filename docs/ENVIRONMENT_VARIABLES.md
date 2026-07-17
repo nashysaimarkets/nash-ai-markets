@@ -75,7 +75,7 @@ documented server-only variables when a provider is selected.
 
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
-| `MARKET_DATA_PROVIDER` | Server config | Mandatory for actionable private beta | `fmp` selects FMP; `preview` forces safe unavailable mode; other/empty may use generic URL |
+| `MARKET_DATA_PROVIDER` | Server config | Mandatory for actionable production data | `fmp` selects FMP; `preview` forces safe unavailable mode; other/empty may use generic URL |
 | `MARKET_DATA_MAX_RETRIES` | Server config | Optional; default `1` | Gateway retry count |
 | `MARKET_DATA_RETRY_DELAY_MS` | Server config | Optional; default `250` | Delay between retries |
 

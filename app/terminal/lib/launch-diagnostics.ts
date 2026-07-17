@@ -7,7 +7,6 @@ import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { ChartDisplayState } from "./visual-terminal.ts";
 
-export const VERIFIED_LAUNCH_TEST_TOTAL = 226;
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
 export type LaunchCheck = {
@@ -46,7 +45,7 @@ export type LaunchDiagnostics = {
     applicationVersion: string;
     buildTimestamp: string;
     gitCommit: string;
-    testTotal: number;
+    testTotal: number | null;
   };
   warnings: string[];
   checks: LaunchCheck[];
@@ -78,7 +77,13 @@ function safeEnvironment(input: Record<string, string | undefined>) {
   const commitCandidate = input.GIT_COMMIT_SHA ?? input.VERCEL_GIT_COMMIT_SHA ?? input.CF_PAGES_COMMIT_SHA ?? "";
   const gitCommit = /^[a-f0-9]{7,40}$/i.test(commitCandidate) ? commitCandidate.slice(0, 12) : "Unavailable";
   const configuredTotal = Number.parseInt(input.BULLSEYE_TEST_TOTALS ?? "", 10);
-  return { mode, applicationVersion: version, buildTimestamp: timestamp, gitCommit, testTotal: configuredTotal > 0 ? configuredTotal : VERIFIED_LAUNCH_TEST_TOTAL };
+  return {
+    mode,
+    applicationVersion: version,
+    buildTimestamp: timestamp,
+    gitCommit,
+    testTotal: configuredTotal > 0 ? configuredTotal : null,
+  };
 }
 
 function authenticationStatus(input: LaunchDiagnosticsInput): LaunchDiagnostics["provider"]["apiAuthentication"] {

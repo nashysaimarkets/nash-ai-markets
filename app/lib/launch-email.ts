@@ -49,9 +49,9 @@ export function buildSubscriptionCancellationEmail(plan: PaidPlan, accessEnd: st
 export function buildWaitlistConfirmationEmail(): LaunchEmailTemplate {
   return {
     template: "waitlist-confirmation",
-    subject: "NASH AI Markets private beta request received",
+    subject: "NASH AI Markets launch request received",
     text: [
-      "Your request for NASH AI Markets private beta updates has been recorded.",
+      "Your request for NASH AI Markets launch updates has been recorded.",
       "Joining the waiting list does not guarantee an invitation and does not create a paid subscription.",
       "We will contact you only with relevant launch or account information.",
       "NASH AI Markets provides educational market commentary, not personalised financial advice.",
@@ -65,7 +65,7 @@ export function buildFoundingMemberWelcomeEmail(
   if (reviewStatus !== "accepted") return null;
   return {
     template: "founding-member-welcome",
-    subject: "Welcome to the NASH AI Markets private beta",
+    subject: "Welcome to NASH AI Markets",
     text: [
       "Your Founding Member onboarding review has been accepted.",
       "Your existing Stripe-backed membership remains the source of feature entitlement.",

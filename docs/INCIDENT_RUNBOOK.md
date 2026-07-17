@@ -42,8 +42,8 @@ Suggested severity:
    Stripe events from Stripe.
 6. Do not manually grant access without an auditable Stripe subscription and an
    approved support procedure.
-7. Watch for older webhook events overwriting newer state; out-of-order event
-   protection is currently outstanding.
+7. Confirm `last_stripe_event_created_at` rejected any older replay; do not
+   bypass the signed webhook synchronization function.
 
 ### Recovery checks
 

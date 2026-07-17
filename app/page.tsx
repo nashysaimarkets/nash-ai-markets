@@ -573,7 +573,7 @@ export default async function Home() {
           <div className="footerLinks">
             <a href="#brief">The Brief</a>
             <a href="#membership">Membership</a>
-            <a href="/waitlist">Private beta waiting list</a>
+            <a href="/waitlist">Launch waiting list</a>
             <a href={portalUrl}>Manage subscription</a>
                 <a href="/privacy">Privacy</a>
                 <a href="/terms">Terms</a>

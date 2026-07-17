@@ -12,7 +12,7 @@ import { loadPreviewClaims } from "../../../terminal/lib/preview-access.ts";
 export async function POST(request: Request) {
   const requestOrigin = new URL(request.url).origin;
   const suppliedOrigin = request.headers.get("origin");
-  if (suppliedOrigin && suppliedOrigin !== requestOrigin) {
+  if (suppliedOrigin !== requestOrigin) {
     return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403 });
   }
   const supabase = await createClient();
