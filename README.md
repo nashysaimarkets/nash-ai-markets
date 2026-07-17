@@ -83,6 +83,7 @@ future timestamp.
 | `/waitlist` | Private-beta waiting-list registration |
 | `/dashboard` | Authenticated daily member dashboard |
 | `/founding-member` | Authenticated Pro/Elite Founding Member onboarding |
+| `/admin/founding-100` | Server-authorized Founding 100 operations report |
 | `/brief` | Authenticated, fail-safe AI-assisted market brief |
 | `/profile` | Authenticated member profile and subscription status |
 | `/terminal` | Authenticated market terminal |

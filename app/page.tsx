@@ -406,6 +406,7 @@ export default function Home() {
           <article className="tierCard featured">
             <div className="tag">MOST POPULAR</div>
             <p>PRO</p>
+            <div className="foundingOffer"><strong>FOUNDING 100 PRO</strong><span>First 100 successful Pro subscribers only</span></div>
             <div className="tierPrice">
               <span>£</span>
               <strong>16.99</strong>
@@ -429,6 +430,7 @@ export default function Home() {
 
           <article className="tierCard">
             <p>ELITE</p>
+            <div className="foundingOffer"><strong>FOUNDING 100 ELITE</strong><span>First 100 successful Elite subscribers only</span></div>
             <div className="tierPrice">
               <span>£</span>
               <strong>39.99</strong>
@@ -461,6 +463,10 @@ export default function Home() {
           EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL
           ANYTIME
         </p>
+        <aside className="shell foundingTerms" aria-label="Founding 100 terms">
+          <strong>Founding 100 price protection</strong>
+          <p>Eligibility is awarded automatically after a successful subscription and is limited to 100 members in each paid tier. The checkout subscription price is locked for life while that same membership remains continuously active. If it is cancelled or lapses, the price lock is permanently lost and any future subscription uses the standard price available at that time.</p>
+        </aside>
       </section>
 
       <section className="about shell" id="about">

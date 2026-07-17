@@ -117,6 +117,7 @@ Do not embed a credential in `MARKET_DATA_API_URL`.
 | `VERCEL_GIT_COMMIT_SHA` | Build config | Platform alternative | Vercel-provided commit |
 | `CF_PAGES_COMMIT_SHA` | Build config | Platform alternative | Cloudflare-provided commit |
 | `BULLSEYE_TEST_TOTALS` | Build config | Recommended | Positive verified-test count displayed by diagnostics |
+| `BULLSEYE_ADMIN_EMAILS` | Server | Required for Founding reporting | Comma-separated authenticated operator emails permitted to open `/admin/founding-100`; never expose with `NEXT_PUBLIC_` |
 
 Diagnostics fall back safely when metadata is missing; that fallback is not
 sufficient for production release traceability.

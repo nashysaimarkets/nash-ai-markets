@@ -25,25 +25,65 @@ export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">
   return seconds ? new Date(seconds * 1000).toISOString() : null;
 }
 
+export function foundingSubscriptionActive(status: string): boolean {
+  return status === "active" || status === "trialing";
+}
+
 async function customerEmail(stripe: Stripe, customer: string | Stripe.Customer | Stripe.DeletedCustomer | null) {
   if (!customer) return null;
   const record = typeof customer === "string" ? await stripe.customers.retrieve(customer) : customer;
   return "deleted" in record && record.deleted ? null : record.email?.toLowerCase() ?? null;
 }
 
-async function saveSubscription(stripe: Stripe, subscription: Stripe.Subscription, fallbackEmail?: string | null) {
+async function syncFounding100(
+  subscription: Stripe.Subscription,
+  plan: Plan | null,
+  email: string | null,
+  eventCreated: number,
+) {
+  const active = foundingSubscriptionActive(subscription.status);
+  const { error } = await createAdminClient().rpc("sync_founding_100", {
+    p_email: email ?? "",
+    p_programme: active ? plan : null,
+    p_stripe_subscription_id: subscription.id,
+    p_subscription_active: active,
+    p_event_created_at: eventCreated,
+  });
+  if (error) throw new Error("Founding 100 synchronization failed");
+}
+
+async function saveSubscription(
+  stripe: Stripe,
+  subscription: Stripe.Subscription,
+  eventCreated: number,
+  fallbackEmail?: string | null,
+) {
   const matchedPlans = [...new Set(subscription.items.data
     .map((item) => configuredPlan(item.price.id))
     .filter((plan): plan is Plan => plan !== null))];
   const plan = matchedPlans.length === 1 ? matchedPlans[0] : null;
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
 
+  const admin = createAdminClient();
+  if (!plan && !foundingSubscriptionActive(subscription.status)) {
+    const { error } = await admin.from("memberships")
+      .update({
+        status: subscription.status,
+        current_period_end: subscriptionEnd(subscription),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("stripe_subscription_id", subscription.id);
+    if (error) throw error;
+    await syncFounding100(subscription, null, email, eventCreated);
+    return;
+  }
+
   if (!email || !plan) {
     throw new Error("Cannot safely map Stripe subscription to membership");
   }
 
   const customerId = typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
-  const { error } = await createAdminClient().from("memberships").upsert({
+  const { error } = await admin.from("memberships").upsert({
     email,
     plan,
     status: subscription.status,
@@ -54,6 +94,7 @@ async function saveSubscription(stripe: Stripe, subscription: Stripe.Subscriptio
   }, { onConflict: "email" });
 
   if (error) throw error;
+  await syncFounding100(subscription, plan, email, eventCreated);
 }
 
 export async function POST(request: Request) {
@@ -77,12 +118,12 @@ export async function POST(request: Request) {
       const session = event.data.object;
       if (session.mode === "subscription" && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(String(session.subscription));
-        await saveSubscription(stripe, subscription, session.customer_details?.email);
+        await saveSubscription(stripe, subscription, event.created, session.customer_details?.email);
       }
     }
 
     if (["customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted"].includes(event.type)) {
-      await saveSubscription(stripe, event.data.object as Stripe.Subscription);
+      await saveSubscription(stripe, event.data.object as Stripe.Subscription, event.created);
     }
 
     if (event.type === "invoice.payment_failed") {
@@ -95,6 +136,14 @@ export async function POST(request: Request) {
           .update({ status: "past_due", updated_at: new Date().toISOString() })
           .eq("stripe_subscription_id", subscriptionId);
         if (error) throw error;
+        const { error: foundingError } = await createAdminClient().rpc("sync_founding_100", {
+          p_email: "",
+          p_programme: null,
+          p_stripe_subscription_id: subscriptionId,
+          p_subscription_active: false,
+          p_event_created_at: event.created,
+        });
+        if (foundingError) throw new Error("Founding 100 synchronization failed");
       }
     }
   } catch {

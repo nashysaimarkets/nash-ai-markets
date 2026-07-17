@@ -70,6 +70,7 @@ the DOM. The service-role key is used only in server modules.
 | `/auth/signout` | Authenticated action | End the current session |
 | `/dashboard` | Authenticated, `noindex` | Daily mission, event state, verified history and access |
 | `/founding-member` | Active Pro/Elite, `noindex` | Submit a reviewed Founding Member onboarding application |
+| `/admin/founding-100` | Authenticated allowlisted operators, `noindex` | Report permanent Founding 100 awards and remaining Pro/Elite capacity |
 | `/terminal` | Authenticated, `noindex` | Market terminal and entitled engine output |
 | `/terminal/diagnostics` | Elite/effective Elite, `noindex` | Sanitized launch diagnostics |
 | `/brief` | Authenticated, `noindex` | Deterministic market brief with optional constrained AI evidence prioritisation |

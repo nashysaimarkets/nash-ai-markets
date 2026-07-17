@@ -7,6 +7,7 @@ import { SafeState } from "../components/SafeState.tsx";
 import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
 import { memberDisplayName } from "../dashboard/lib/daily-dashboard.ts";
 import { resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
+import { loadFounding100ForEmail } from "../lib/server/founding-100.ts";
 import { ProfileForm } from "./components/ProfileForm.tsx";
 
 export const dynamic = "force-dynamic";
@@ -21,12 +22,15 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("memberships")
-    .select("plan, status, current_period_end")
-    .ilike("email", user.email)
-    .in("plan", ["free", "pro", "elite"])
-    .maybeSingle();
+  const [{ data: membership, error: membershipError }, founding100] = await Promise.all([
+    supabase
+      .from("memberships")
+      .select("plan, status, current_period_end")
+      .ilike("email", user.email)
+      .in("plan", ["free", "pro", "elite"])
+      .maybeSingle(),
+    loadFounding100ForEmail(user.email),
+  ]);
   const resolved = resolveMembershipTier(membership, Boolean(membershipError));
   const tier = resolved === "temporarily_unavailable" ? "free" : resolved;
   const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK
@@ -56,6 +60,7 @@ export default async function ProfilePage() {
             periodEnd={membership?.current_period_end ?? null}
             portalUrl={portalUrl}
             verificationUnavailable={Boolean(membershipError)}
+            foundingRecords={founding100.records}
           />
         </DashboardCard>
 

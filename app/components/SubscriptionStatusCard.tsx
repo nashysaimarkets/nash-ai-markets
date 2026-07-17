@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { MembershipTier } from "../terminal/lib/membership-entitlement.ts";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
+import type { Founding100Record } from "../lib/server/founding-100.ts";
+import { Founding100Badge } from "./Founding100Badge.tsx";
 
 type SubscriptionStatusCardProps = {
   tier: MembershipTier;
@@ -10,6 +12,7 @@ type SubscriptionStatusCardProps = {
   portalUrl: string;
   compact?: boolean;
   verificationUnavailable?: boolean;
+  foundingRecords?: readonly Founding100Record[];
 };
 
 function periodLabel(value: string | null): string {
@@ -27,6 +30,7 @@ export function SubscriptionStatusCard({
   portalUrl,
   compact = false,
   verificationUnavailable = false,
+  foundingRecords = [],
 }: SubscriptionStatusCardProps) {
   const hasPaidRecord = billingPlan === "pro" || billingPlan === "elite" || tier === "pro" || tier === "elite";
   const recordedStatus = status?.toLowerCase() ?? "unavailable";
@@ -39,6 +43,7 @@ export function SubscriptionStatusCard({
         : "free";
   const healthy = normalizedStatus === "active" || normalizedStatus === "trialing" || normalizedStatus === "free";
   return <section className={`subscriptionStatus ${compact ? "subscriptionStatusCompact" : ""}`.trim()} aria-label="Subscription status">
+    {foundingRecords.map((record) => <Founding100Badge key={`${record.programme}-${record.position}`} record={record} compact={compact} />)}
     <div className="subscriptionStatusLead">
       <TerminalBadge label={`${tier} plan`} tone={tier === "elite" ? "warning" : tier === "pro" ? "info" : "neutral"} />
       <div><span>SUBSCRIPTION STATUS</span><strong>{normalizedStatus.replaceAll("_", " ")}</strong></div>

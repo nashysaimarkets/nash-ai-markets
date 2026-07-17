@@ -59,6 +59,12 @@ emails, payment details or raw provider errors into the release record.
       Elite access.
 - [ ] Out-of-order webhook handling is implemented or explicitly risk-accepted
       before inviting paid beta members.
+- [ ] Apply and verify `202607170004_founding_100.sql`; confirm RLS exposes no
+      client policy and only the service role can execute award synchronization.
+- [ ] Configure `BULLSEYE_ADMIN_EMAILS`, then verify an ordinary member cannot
+      access `/admin/founding-100`.
+- [ ] Replay active, duplicate, cancellation, lapse and out-of-order Stripe
+      test-mode events; confirm neither programme exceeds 100 positions.
 
 ## Email and onboarding
 

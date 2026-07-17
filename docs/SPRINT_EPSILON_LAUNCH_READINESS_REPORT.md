@@ -7,7 +7,7 @@ deployment was performed.
 
 ## Executive assessment
 
-**Overall production launch readiness: 68%.**
+**Overall production launch readiness: 70%.**
 
 This percentage is a weighted engineering assessment, not a service guarantee.
 Application behavior, deterministic safety, build output and offline integration
@@ -34,6 +34,9 @@ backups, legal approval and real-device checks require external evidence.
 
 ## Completed features
 
+- Founding 100 Pro and Elite with atomic server-side allocation, permanent award
+  history, continuous-subscription price-lock forfeiture, member badges and
+  allowlisted operational reporting.
 - Passwordless Supabase authentication with safe callback redirects and
   protected member routes.
 - Free, Pro and Elite entitlements, expiry enforcement and progressive previews.
@@ -182,4 +185,3 @@ production performance.
 - Deployed Web Vitals, client exceptions, mobile overflow and accessibility
   regressions.
 - Backup completion, retention and scheduled restore-drill evidence.
-
