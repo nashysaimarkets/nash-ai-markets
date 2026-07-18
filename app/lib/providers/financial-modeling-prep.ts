@@ -110,6 +110,12 @@ function formatChange(quote: FmpQuote): string {
   return `${prefix}${quote.changesPercentage.toFixed(2)}%`;
 }
 
+function sp500Presentation(providerSymbol: string): Pick<MarketQuote, "symbol" | "label"> {
+  return providerSymbol === DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.sp500Futures
+    ? { symbol: "ES", label: "ES FUTURES" }
+    : { symbol: "SPX", label: "S&P 500" };
+}
+
 function createUrl(baseUrl: string, pathname: string, apiKey: string, symbol?: string): URL {
   const base = new URL(baseUrl);
   const baseQuery = new URLSearchParams(base.search);
@@ -176,13 +182,14 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           throw new Error("FMP response contained a future timestamp");
         }
         const asOf = new Date(Math.min(...verifiedTimestamps)).toISOString();
+        const sp500 = sp500Presentation(symbols.sp500Futures);
 
         const snapshot: MarketSnapshot = {
           status: "LIVE",
           source: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
           asOf,
           quotes: [
-            { symbol: "ES", label: "ES FUTURES", value: formatPrice(es.price), change: formatChange(es), direction: direction(es.change) },
+            { ...sp500, value: formatPrice(es.price), change: formatChange(es), direction: direction(es.change) },
             { symbol: "VIX", label: "VIX", value: formatPrice(vix.price), change: formatChange(vix), direction: direction(vix.change) },
             { symbol: "US2Y", label: "2Y YIELD", value: `${treasury.year2.toFixed(2)}%`, change: "—", direction: "flat" },
             { symbol: "US10Y", label: "10Y YIELD", value: `${treasury.year10.toFixed(2)}%`, change: "—", direction: "flat" },
