@@ -6,10 +6,14 @@ import { createClient } from "../../utils/supabase/client";
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function submit(event: FormEvent) {
-    event.preventDefault(); setLoading(true); setMessage("");
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
+    setMessageTone(null);
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOtp({
@@ -19,18 +23,47 @@ export default function LoginForm() {
           emailRedirectTo: `${window.location.origin}/auth/implicit?next=/dashboard`,
         },
       });
-      setMessage(error ? "We could not send a sign-in link. Check the address and try again." : "Check your email for your secure sign-in link.");
+      setMessageTone(error ? "error" : "success");
+      setMessage(error ? "We could not send a sign-in link. Check the address and try again." : "Link sent. Check your inbox, then return here if you need to request another.");
     } catch {
+      setMessageTone("error");
       setMessage("The sign-in service is temporarily unavailable. Please try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  return <form className="loginForm" onSubmit={submit}>
-    <label htmlFor="email">MEMBERSHIP EMAIL</label>
-    <input id="email" name="email" type="email" autoComplete="email" inputMode="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="you@example.com" required />
-    <button className="primary" type="submit" disabled={loading}>{loading ? "Sending…" : "Email me a secure login link"}<span>↗</span></button>
-    {message && <p className="loginMessage" role="status">{message}</p>}
-  </form>;
+  return (
+    <form className="accessForm" onSubmit={submit}>
+      <label htmlFor="email">Membership email</label>
+      <div className="accessInputWrap">
+        <span aria-hidden="true">@</span>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="you@example.com"
+          aria-describedby="email-guidance"
+          maxLength={254}
+          required
+        />
+      </div>
+      <p id="email-guidance">Use the same address you used for your NASH AI membership.</p>
+      <button type="submit" disabled={loading} aria-busy={loading}>
+        <span>{loading ? "Sending secure link…" : "Email me a secure sign-in link"}</span>
+        <i aria-hidden="true">↗</i>
+      </button>
+      {message && (
+        <p className="accessMessage" data-tone={messageTone} role={messageTone === "error" ? "alert" : "status"}>
+          <i aria-hidden="true">{messageTone === "success" ? "✓" : "!"}</i>
+          {message}
+        </p>
+      )}
+      <small>For your security, sign-in links expire and can only be used once.</small>
+    </form>
+  );
 }
