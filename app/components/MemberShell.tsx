@@ -25,7 +25,7 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
       </Link>
       <nav aria-label="Member navigation">
         {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}</Link>)}
-        <Link href="/auth/signout">Sign out</Link>
+        <a href="/auth/signout">Sign out</a>
       </nav>
       <details className="memberMobileMenu">
         <summary aria-label="Open member navigation">
@@ -34,7 +34,7 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
         </summary>
         <nav aria-label="Mobile member navigation">
           {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}<span aria-hidden="true">↗</span></Link>)}
-          <Link href="/auth/signout">Sign out<span aria-hidden="true">↗</span></Link>
+          <a href="/auth/signout">Sign out<span aria-hidden="true">↗</span></a>
         </nav>
       </details>
     </header>
