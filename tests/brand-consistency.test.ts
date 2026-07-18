@@ -25,16 +25,26 @@ test("shared BrandLogo exposes consistent destinations, context, and mobile trea
   assert.match(source, /brandLogoMark/);
 });
 
-test("every rendered application page includes the shared brand or authenticated MemberShell", async () => {
+test("every rendered application page includes a shared branded shell", async () => {
   const pages = await collectPages(appRoot.pathname);
   const missing: string[] = [];
   for (const file of pages) {
     const source = await readFile(file, "utf8");
-    if (!source.includes("BrandLogo") && !source.includes("MemberShell")) {
+    if (!source.includes("BrandLogo") && !source.includes("MemberShell") && !source.includes("PublicPageHeader")) {
       missing.push(path.relative(appRoot.pathname, file));
     }
   }
   assert.deepEqual(missing, []);
+});
+
+test("public information pages share accessible navigation", async () => {
+  const source = await readFile(new URL("../app/components/PublicPageHeader.tsx", import.meta.url), "utf8");
+  assert.match(source, /BrandLogo/);
+  assert.match(source, /aria-label="Public navigation"/);
+  assert.match(source, /aria-current=/);
+  for (const destination of ["/pricing", "/about", "/help", "/contact", "/login"]) {
+    assert.ok(source.includes(`href="${destination}"`));
+  }
 });
 
 test("legacy page-level logo implementations are no longer rendered", async () => {

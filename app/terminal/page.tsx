@@ -22,7 +22,7 @@ import { terminalStatusMessage } from "./lib/terminal-state";
 import { chartDataForStatus, chartDisplayState, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Bullseye Terminal | NASH AI Markets", description: "Professional deterministic market intelligence terminal.", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Bullseye Terminal", description: "Professional deterministic market intelligence terminal.", robots: { index: false, follow: false } };
 
 const toneForState = (state: string) => state === "Live" ? "positive" : state === "Delayed" ? "warning" : state === "Cached" ? "info" : "danger";
 const quoteTone = (direction?: "up" | "down" | "flat") => direction === "up" ? "positive" : direction === "down" ? "danger" : "neutral";
@@ -53,6 +53,7 @@ export default async function Terminal() {
   const portalUrl = "/api/stripe/portal";
 
   return <main className="foxtrotTerminal" id="overview">
+    <h1 className="visuallyHidden">NASH AI Markets Bullseye Terminal</h1>
     <header className="ftTopbar">
       <BrandLogo audience="member" context="bullseye" compactOnMobile />
       <div className="ftMarketIdentity"><strong>S&amp;P 500 FUTURES</strong><span>{isVerified ? `${snapshot.source} · ${formatSnapshotAge(snapshot.asOf)}` : "Verified feed unavailable"}</span></div>

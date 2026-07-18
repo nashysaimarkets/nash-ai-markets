@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandLogo } from "../components/BrandLogo.tsx";
+
+export const metadata: Metadata = {
+  title: "Membership Required",
+  description: "Review membership access options for the NASH AI Markets terminal.",
+  robots: { index: false, follow: false },
+};
 
 const copy = {
   expired: {

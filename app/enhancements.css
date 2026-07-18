@@ -38,8 +38,9 @@
 .scenarioGrid li { margin:8px 0; }.scenarioGrid li:before { content:"—"; color:#4f5e57; margin-right:8px; }
 .sampleNote { text-align:right; color:#52605a; font:8px "Courier New"; letter-spacing:1px; margin-top:14px; }
 .legal { min-height:100vh; background:#07110f; color:#f7f7f2; padding:0 24px 100px; }
-.legal header { max-width:900px; margin:auto; height:86px; display:flex; align-items:center; border-bottom:1px solid #ffffff18; }
+.legal header { max-width:900px; margin:auto; min-height:86px; display:flex; align-items:center; border-bottom:1px solid #ffffff18; }
 .legal header a { color:var(--green); font-size:11px; letter-spacing:2px; text-decoration:none; }
+.publicPageHeader{justify-content:space-between;gap:28px}.publicPageHeader nav{display:flex;align-items:center;justify-content:flex-end;gap:6px}.publicPageHeader nav a{min-height:36px;display:inline-flex;align-items:center;padding:0 10px;color:#9aa6a1;letter-spacing:.08em}.publicPageHeader nav a:hover,.publicPageHeader nav a[aria-current=page]{color:#f7f7f2}.publicPageHeader nav a:focus-visible{outline:2px solid #69a9ff;outline-offset:2px}.publicPageHeader .publicPageSignIn{margin-left:4px;border:1px solid #38f28e55;color:#38f28e}
 .legal article { max-width:760px; margin:80px auto; }
 .legal article > span { color:var(--green); font-size:10px; letter-spacing:2px; }
 .legal h1 { font-size:58px; letter-spacing:-2.5px; margin:18px 0 8px; }
@@ -69,6 +70,7 @@
   .scenarioGrid article { border-right:0; border-bottom:1px solid #ffffff1c; }
   .scenarioGrid article:last-child { border-bottom:0; }
   .legal h1 { font-size:42px; }
+  .publicPageHeader{align-items:flex-start!important;flex-direction:column;height:auto!important;padding:18px 0 14px}.publicPageHeader nav{width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:3px;scrollbar-width:none}.publicPageHeader nav::-webkit-scrollbar{display:none}.publicPageHeader nav a{flex:0 0 auto;min-height:40px;padding:0 11px}.publicPageHeader nav a:first-child{padding-left:0}
   .outcomeCard { padding:38px 24px; }.outcome h1 { font-size:39px; }
 }
 
