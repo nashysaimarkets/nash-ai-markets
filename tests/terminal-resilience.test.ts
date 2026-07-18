@@ -54,18 +54,26 @@ test("legacy trade output selects primary levels and never duplicates the UK suf
 });
 
 test("login and callback paths sanitize errors and redirect destinations", async () => {
-  const [login, callback, confirmation] = await Promise.all([
+  const [login, browserClient, callback, confirmation, implicit] = await Promise.all([
     readFile(new URL("../app/login/LoginForm.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../utils/supabase/client.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/confirm/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/implicit/page.tsx", import.meta.url), "utf8"),
   ]);
   assert.equal(login.includes("setMessage(error ? error.message"), false);
   assert.ok(login.includes("window.location.origin"));
+  assert.ok(login.includes("/auth/implicit?next=/dashboard"));
+  assert.ok(browserClient.includes('flowType: "implicit"'));
   assert.ok(callback.includes('!requestedNext.startsWith("//")'));
   assert.ok(confirmation.includes("verifyOtp"));
   assert.ok(confirmation.includes('!requestedNext.startsWith("//")'));
   assert.ok(confirmation.includes("EMAIL_OTP_TYPES.has"));
   assert.equal(confirmation.includes("error.message"), false);
+  assert.ok(implicit.includes("window.location.hash.slice(1)"));
+  assert.ok(implicit.includes("setSession"));
+  assert.ok(implicit.includes('!value.startsWith("//")'));
+  assert.ok(implicit.includes("window.history.replaceState"));
 });
 
 test("mobile terminal controls retain touch targets and bounded chart height", async () => {
