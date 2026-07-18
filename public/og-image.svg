@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">NASH AI Markets</title>
+  <desc id="description">Pre-Market Mission Control — verified context, conditional scenarios and risk-aware preparation.</desc>
+  <defs>
+    <radialGradient id="glow" cx="72%" cy="40%" r="58%">
+      <stop offset="0" stop-color="#173e2e"/>
+      <stop offset=".56" stop-color="#09110e"/>
+      <stop offset="1" stop-color="#050807"/>
+    </radialGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#54eda1" stop-opacity=".27"/>
+      <stop offset="1" stop-color="#54eda1" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g opacity=".1" stroke="#fff">
+    <path d="M0 104.5h1200M0 209.5h1200M0 314.5h1200M0 419.5h1200M0 524.5h1200"/>
+    <path d="M200.5 0v630M400.5 0v630M600.5 0v630M800.5 0v630M1000.5 0v630"/>
+  </g>
+  <rect x="59.5" y="59.5" width="1081" height="511" rx="2" fill="none" stroke="#fff" stroke-opacity=".15"/>
+  <g transform="translate(94 90)">
+    <circle cx="19" cy="19" r="18.5" fill="none" stroke="#54eda1" stroke-opacity=".7"/>
+    <path d="M10 19h18M19 10v18" stroke="#54eda1"/>
+    <circle cx="19" cy="19" r="3.5" fill="none" stroke="#54eda1"/>
+    <text x="54" y="24" fill="#f1f4ef" font-family="Arial, sans-serif" font-size="19" font-weight="700" letter-spacing="4">NASH <tspan fill="#54eda1">AI</tspan> MARKETS</text>
+  </g>
+  <text x="94" y="251" fill="#54eda1" font-family="monospace" font-size="14" font-weight="700" letter-spacing="4">PRE-MARKET MISSION CONTROL</text>
+  <text x="89" y="334" fill="#f1f4ef" font-family="Arial, sans-serif" font-size="72" font-weight="600" letter-spacing="-4">Prepare with purpose.</text>
+  <text x="89" y="408" fill="#54eda1" font-family="Georgia, serif" font-size="70" font-style="italic" letter-spacing="-3">Decide with discipline.</text>
+  <text x="94" y="466" fill="#9ba7a1" font-family="Arial, sans-serif" font-size="20">Verified context  ·  Conditional scenarios  ·  Risk awareness</text>
+  <g transform="translate(735 121)">
+    <rect width="337" height="118" fill="#0b110f" stroke="#fff" stroke-opacity=".16"/>
+    <path d="M0 91C38 87 54 65 84 72s50-23 82-15 45-24 78-18 50-22 93-28v107H0z" fill="url(#fade)"/>
+    <path d="M0 91C38 87 54 65 84 72s50-23 82-15 45-24 78-18 50-22 93-28" fill="none" stroke="#54eda1" stroke-width="2"/>
+    <circle cx="244" cy="39" r="4" fill="#54eda1" filter="url(#softGlow)"/>
+  </g>
+  <text x="1068" y="540" text-anchor="end" fill="#65716b" font-family="monospace" font-size="11" letter-spacing="2">NASH AIMARKETS.COM</text>
+</svg>
