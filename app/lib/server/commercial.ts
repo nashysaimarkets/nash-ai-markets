@@ -73,12 +73,23 @@ async function loadCommercialRows() {
 }
 
 export async function loadCommercialMembership(email: string) {
-  const rows = await loadCommercialRows();
-  if (!rows) return { status: "unavailable" as const, membership: null };
-  return {
-    status: "available" as const,
-    membership: rows.find((row) => row.email.toLowerCase() === email.trim().toLowerCase()) ?? null,
-  };
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) return { status: "unavailable" as const, membership: null };
+  try {
+    const { data, error } = await createAdminClient()
+      .from("memberships")
+      .select("email, plan, status, billing_interval, unit_amount, current_period_end")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+    if (error) return { status: "unavailable" as const, membership: null };
+    if (!data) return { status: "available" as const, membership: null };
+    const membership = normalize(data as Record<string, unknown>);
+    return membership
+      ? { status: "available" as const, membership }
+      : { status: "unavailable" as const, membership: null };
+  } catch {
+    return { status: "unavailable" as const, membership: null };
+  }
 }
 
 export async function loadCommercialReport() {

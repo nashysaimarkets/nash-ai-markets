@@ -52,6 +52,14 @@ test("commercial metrics do not invent conversion or revenue without records", (
   assert.deepEqual(calculateCommercialMetrics([]), { free: 0, pro: 0, elite: 0, monthly: 0, annual: 0, mrrPence: 0, arrPence: 0, conversionPercent: null });
 });
 
+test("member account billing lookup queries only the normalized member email", async () => {
+  const server = await read("app/lib/server/commercial.ts");
+  assert.match(server, /const normalizedEmail = email\.trim\(\)\.toLowerCase\(\)/);
+  assert.match(server, /\.eq\("email", normalizedEmail\)/);
+  assert.match(server, /\.maybeSingle\(\)/);
+  assert.doesNotMatch(server, /loadCommercialMembership\(email: string\) \{\s*const rows = await loadCommercialRows/);
+});
+
 test("branded lifecycle email templates state billing and risk truthfully", () => {
   assert.match(buildMembershipWelcomeEmail("pro").text, /educational market commentary/);
   assert.match(buildPaymentSuccessfulEmail("elite", "1 August 2027").text, /confirmed by Stripe/);
