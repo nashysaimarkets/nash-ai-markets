@@ -9,12 +9,12 @@ Before any future coding session, read this file and `docs/PROJECT_BULLSEYE_STAT
 ## Launch-critical
 
 - [IN PROGRESS] Complete and merge the direct premium dashboard redesign after authenticated desktop, tablet and mobile approval.
-- [BACKLOG] Fix lower account/membership layout overlap, improve member-nav readability, improve Mission Tools readability, change hero greeting to “Welcome back”, and stop the PWA prompt obscuring content.
+- [DONE] Fix lower account/membership layout overlap, improve member-nav readability, improve Mission Tools readability, change hero greeting to “Welcome back”, and stop the PWA prompt obscuring content.
 - [BLOCKED] Verify Resend domain and complete passwordless sign-in delivery/callback testing.
 - [BLOCKED] Confirm FMP commercial-display licence, plan entitlement, Vercel variable presence and authoritative CME ES symbol before enabling production candles.
-- [BACKLOG] Complete authenticated review of Dashboard, Terminal, Ideas, Brief, Profile, onboarding/preferences, Elite badge, Founding 100 badge, chart/loading/offline/error states and Easter Hunt.
+- [BLOCKED] Complete authenticated review of Dashboard, Terminal, Ideas, Brief, Profile, onboarding/preferences, Elite badge, Founding 100 badge, chart/loading/offline/error states and Easter Hunt.
 - [DECISION REQUIRED] Decide whether Preferences remains embedded in onboarding/Profile or becomes a standalone protected route.
-- [BACKLOG] Complete one real end-to-end subscription, billing portal and cancellation test before public launch.
+- [BLOCKED] Complete one real end-to-end subscription, billing portal and cancellation test before public launch.
 
 ## Core product experience
 

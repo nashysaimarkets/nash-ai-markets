@@ -1,5 +1,53 @@
 # Project BULLSEYE status
 
+## Master delivery reconciliation — 18 July 2026
+
+- Branch: `bullseye-direct-dashboard-redesign`
+- Master Backlog source commit: `7104d226353c30c885b0be59867ce7ba815d4f84`
+- Phase: **1 — Launch and first paying subscribers**
+- Phase status: **BLOCKED on external evidence and business decisions**
+- Production deployment: **not authorized**
+
+### Completed in this reconciliation
+
+- Added `docs/PROJECT_BULLSEYE_IMPLEMENTATION_ROADMAP.md`.
+- Represented every approved Master Backlog item across seven sequential phases.
+- Permanently recorded the brokerage exclusions: no brokerage connections,
+  execution, automated trading, copy trading, deposits/withdrawals, custody, or
+  broker/intermediary services.
+- Reconciled the completed dashboard layout, navigation, Mission Tools,
+  greeting, Founding badge and PWA-session corrections.
+- Preserved Phase 2 and all later approved work without beginning it.
+
+### Phase 1 engineering state
+
+The repository already contains the premium dashboard candidate, passwordless
+authentication and safe callback handling, Stripe Checkout/portal/webhook
+flows, progressive entitlements, Founding 100 allocation, onboarding/profile
+preferences, public pricing and legal pages, SEO/PWA assets, error/loading/
+offline states, and release/incident/rollback documentation.
+
+These source-level implementations must not be presented as public-launch
+evidence until the external gates below are completed.
+
+### Blocking Phase 1 gates
+
+1. Verify the Resend sending domain and Supabase SMTP/Auth configuration, then
+   record real magic-link delivery, callback, session persistence and logout.
+2. Complete the Stripe test-mode checkout, upgrade, renewal, failure, portal,
+   cancellation, duplicate and out-of-order webhook lifecycle.
+3. Complete authenticated Elite/Founding desktop, tablet and mobile acceptance.
+4. Decide whether Preferences remains embedded in onboarding/Profile or becomes
+   a standalone protected route.
+5. Approve launch jurisdictions, legal/risk wording, vendor/processor register,
+   monitoring, support ownership, RPO/RTO and rollback ownership.
+6. Complete one end-to-end test subscription and monitored staging soak.
+
+### Exact next phase
+
+Remain in Phase 1. Begin with passwordless email delivery and callback evidence.
+Do not start Phase 2, merge, or deploy production without explicit approval.
+
 ## Verified ES candle-data audit — 18 July 2026
 
 - Branch: `premium-experience-easter-hunt`
