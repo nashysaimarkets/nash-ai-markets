@@ -10,6 +10,14 @@ export const metadata: Metadata = {
     title: "Market Intelligence Journal | NASH AI Markets",
     description: "Practical notes on verified market context, scenario planning and disciplined risk decisions.",
     url: "/blog",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "NASH AI Markets — Pre-Market Mission Control",
+      },
+    ],
   },
 };
 

@@ -16,6 +16,8 @@ test("public launch routes expose canonical metadata without inventing market co
   assert.match(home, /canonical: "\/"/);
   assert.match(about, /canonical: "\/about"/);
   assert.match(blog, /canonical: "\/blog"/);
+  assert.match(blog, /images: \[/);
+  assert.match(blog, /url: "\/og-image\.png"/);
   assert.match(contact, /canonical: "\/contact"/);
   assert.match(pricing, /canonical: "\/pricing"/);
   assert.match(membership, /redirect\("\/pricing"\)/);
