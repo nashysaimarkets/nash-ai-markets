@@ -66,12 +66,30 @@
 }
 
 @media (max-width: 700px) {
+  .bullseyeHero h1 em {
+    white-space: nowrap;
+  }
+
   .bullseyeAccount .subscriptionStatusCompact {
     grid-template-columns: 1fr;
   }
 
   .bullseyeAccount .subscriptionStatusCompact .subscriptionStatusActions {
     grid-column: auto;
+  }
+
+  .memberDashboard + .huntStatus {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 12px calc(12px + env(safe-area-inset-bottom));
+  }
+
+  .memberDashboard + .huntStatus .huntToast {
+    right: 12px;
+    bottom: calc(100% + 8px);
   }
 }
 

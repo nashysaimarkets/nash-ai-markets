@@ -132,6 +132,12 @@ test("lower dashboard Founding 100 number stays on one line", async () => {
   assert.match(styles, /white-space: nowrap/);
 });
 
+test("mobile dashboard keeps the member name together and moves the hunt control out of content", async () => {
+  const styles = await readFile(new URL("../app/dashboard/dashboard-corrections.css", import.meta.url), "utf8");
+  assert.match(styles, /@media \(max-width: 700px\)[\s\S]*\.bullseyeHero h1 em \{[\s\S]*white-space: nowrap/);
+  assert.match(styles, /\.memberDashboard \+ \.huntStatus \{[\s\S]*position: relative/);
+});
+
 test("verified outcome migration is server-only and rejects synthetic rows by schema", async () => {
   const migration = await readFile(new URL("../supabase/migrations/202607170002_verified_outcomes.sql", import.meta.url), "utf8");
   assert.match(migration, /enable row level security/);
