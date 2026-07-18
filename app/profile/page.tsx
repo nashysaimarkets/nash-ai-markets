@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ billing?: string }> }) {
+  const query = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
@@ -41,8 +42,7 @@ export default async function ProfilePage() {
   ]);
   const resolved = resolveMembershipTier(membership, Boolean(membershipError));
   const tier = resolved === "temporarily_unavailable" ? "free" : resolved;
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK
-    || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
+  const portalUrl = "/api/stripe/portal";
   const name = memberDisplayName(user.email, user.user_metadata);
   const preferenceLabels: Record<string, string> = {
     new: "New to structured analysis",
@@ -69,6 +69,7 @@ export default async function ProfilePage() {
       </section>
 
       {membershipError ? <SafeState title="Subscription verification is temporarily unavailable" tone="warning"><p>Your account remains signed in, but Bullseye cannot confirm current billing status. No database error details are displayed.</p></SafeState> : null}
+      {query.billing === "unavailable" ? <SafeState title="Stripe account management is temporarily unavailable" tone="warning"><p>No billing change was made. Please retry shortly or contact support if the issue continues.</p></SafeState> : null}
 
       <section className="profileOverview" aria-label="Account overview">
         <article><span>Account status</span><strong>{accountReady ? "Ready" : "Action needed"}</strong><small>{accountReady ? "Identity, preferences and access available" : "Complete the highlighted account step"}</small></article>

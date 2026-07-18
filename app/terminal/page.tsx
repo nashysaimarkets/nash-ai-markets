@@ -49,7 +49,7 @@ export default async function Terminal() {
   const chart = chartDataForStatus(snapshot.status);
   const highImpactEvents = isVerified ? snapshot.events.filter((event) => event.risk === "HIGH") : [];
   const diagnostics = createLaunchDiagnostics({ snapshot, gatewayStatus, intelligence, decision, plan, chartState: chartDisplayState([...chart.data]), providerType: process.env.MARKET_DATA_PROVIDER, apiCredentialConfigured: Boolean(process.env.FMP_API_KEY), accessibilityContract: true });
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
+  const portalUrl = "/api/stripe/portal";
 
   return <main className="foxtrotTerminal" id="overview">
     <header className="ftTopbar">

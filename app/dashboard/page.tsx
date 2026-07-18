@@ -71,7 +71,7 @@ export default async function MemberDashboard() {
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
+  const portalUrl = "/api/stripe/portal";
   const accessCopy = access.tier === "elite"
     ? "Every Bullseye intelligence, decision, planning and diagnostics feature is unlocked."
     : offer?.active

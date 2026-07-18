@@ -38,6 +38,24 @@ test("checkout accepts only enumerated server-side Price IDs", () => {
   assert.equal(checkoutPriceId(null, environment), null);
 });
 
+test("checkout binds signed-in members without exposing the session id in return URLs", async () => {
+  const checkout = await read("app/api/stripe/checkout/route.ts");
+  assert.match(checkout, /supabase\.auth\.getUser\(\)/);
+  assert.match(checkout, /customer_email: verifiedEmail/);
+  assert.match(checkout, /client_reference_id: user\?\.id/);
+  assert.ok(checkout.includes("success_url: `${origin}/welcome`"));
+  assert.doesNotMatch(checkout, /CHECKOUT_SESSION_ID/);
+});
+
+test("authenticated billing portal uses the member's stored Stripe customer", async () => {
+  const portal = await read("app/api/stripe/portal/route.ts");
+  assert.match(portal, /supabase\.auth\.getUser\(\)/);
+  assert.match(portal, /\.select\("stripe_customer_id"\)/);
+  assert.match(portal, /billingPortal\.sessions\.create/);
+  assert.ok(portal.includes("return_url: `${origin}/profile`"));
+  assert.doesNotMatch(portal, /STRIPE_CUSTOMER_PORTAL_LINK/);
+});
+
 test("commercial metrics use active stored subscriptions and normalize recurring revenue", () => {
   const metrics = calculateCommercialMetrics([
     { email: "free@example.com", plan: "free", status: "active", billingInterval: null, unitAmount: null, periodEnd: null },
