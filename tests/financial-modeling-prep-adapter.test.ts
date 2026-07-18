@@ -162,7 +162,7 @@ test("supports environment-provided S&P 500 symbol overrides with accurate prese
   const adapter = createFinancialModelingPrepAdapter({
     apiKey: TEST_API_KEY,
     baseUrl: TEST_BASE_URL,
-    symbols: { sp500Futures: "CUSTOM_ES" },
+    symbols: { sp500Futures: "SPY" },
     fetchImpl: async (input) => {
       const url = new URL(String(input));
       assert.equal(url.searchParams.get("apikey") === TEST_API_KEY, true);
@@ -175,9 +175,9 @@ test("supports environment-provided S&P 500 symbol overrides with accurate prese
 
   const snapshot = await adapter.fetchSnapshot();
   assert.ok(snapshot);
-  assert.ok(requestedSymbols.includes("CUSTOM_ES"));
-  assert.equal(snapshot.quotes[0]?.symbol, "SPX");
-  assert.equal(snapshot.quotes[0]?.label, "S&P 500");
+  assert.ok(requestedSymbols.includes("SPY"));
+  assert.equal(snapshot.quotes[0]?.symbol, "SPY");
+  assert.equal(snapshot.quotes[0]?.label, "S&P 500 ETF");
 });
 
 test("keeps the terminal fallback unconfigured when FMP credentials are absent", async () => {
