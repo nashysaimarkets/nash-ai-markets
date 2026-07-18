@@ -18,6 +18,8 @@ test("onboarding persistence is authenticated, same-origin and user-owned", asyn
   const [route, migration] = await Promise.all([read("app/api/onboarding/route.ts"), read("supabase/migrations/202607170006_member_onboarding.sql")]);
   assert.match(route, /request\.headers\.get\("origin"\) !== origin/);
   assert.match(route, /supabase\.auth\.getUser/);
+  assert.match(route, /createAdminClient\(\)\.from\("member_onboarding"\)/);
+  assert.match(route, /user_id: user\.id/);
   assert.match(migration, /enable row level security/);
   assert.match(migration, /auth\.uid\(\) = user_id/g);
 });

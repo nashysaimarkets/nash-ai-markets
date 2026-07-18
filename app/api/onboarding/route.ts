@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import { createClient } from "../../../utils/supabase/server.ts";
 import { normalizeOnboardingPreferences } from "../../lib/onboarding.ts";
 
@@ -19,7 +20,7 @@ export async function POST(request: Request) {
   }
   if (!preferences) return NextResponse.json({ ok: false, code: "INVALID_PREFERENCES" }, { status: 400 });
   try {
-    const { error } = await supabase.from("member_onboarding").upsert({
+    const { error } = await createAdminClient().from("member_onboarding").upsert({
       user_id: user.id,
       experience: preferences.experience,
       interests: preferences.interests,
