@@ -155,7 +155,7 @@ test("classifies network interruption without leaking raw provider errors", asyn
   await assert.rejects(adapter.fetchSnapshot(), (error: Error) => !error.message.includes(TEST_API_KEY) && /network_interruption/.test(error.message));
 });
 
-test("supports environment-provided symbol overrides without changing the generic snapshot", async () => {
+test("supports environment-provided S&P 500 symbol overrides with accurate presentation", async () => {
   const asOf = new Date(Date.now() - 60_000).toISOString();
   const timestamp = Date.parse(asOf) / 1000;
   const requestedSymbols: string[] = [];
@@ -176,7 +176,8 @@ test("supports environment-provided symbol overrides without changing the generi
   const snapshot = await adapter.fetchSnapshot();
   assert.ok(snapshot);
   assert.ok(requestedSymbols.includes("CUSTOM_ES"));
-  assert.equal(snapshot.quotes[0]?.symbol, "ES");
+  assert.equal(snapshot.quotes[0]?.symbol, "SPX");
+  assert.equal(snapshot.quotes[0]?.label, "S&P 500");
 });
 
 test("keeps the terminal fallback unconfigured when FMP credentials are absent", async () => {
