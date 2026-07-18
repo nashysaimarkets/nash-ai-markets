@@ -297,7 +297,9 @@ export default async function MemberDashboard() {
         <strong>{accuracy.status === "verified" ? `${accuracy.accuracyPercent}% directional accuracy` : "Performance verification building"}</strong>
         <small>{accuracy.status === "verified"
           ? `${accuracy.correct} correct classifications from ${accuracy.sampleSize} verified outcomes.`
-          : `${accuracy.sampleSize} of ${accuracy.required} required outcomes stored. No percentage is shown early.`}</small>
+          : accuracy.status === "insufficient"
+            ? `${accuracy.sampleSize} of ${accuracy.required} required outcomes stored. No percentage is shown early.`
+            : "Verified outcome history is temporarily unavailable."}</small>
       </section>
     </div>
   </MemberShell>;
