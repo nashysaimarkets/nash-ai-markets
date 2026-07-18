@@ -16,11 +16,13 @@ export default function LoginForm() {
     setMessageTone(null);
     try {
       const supabase = createClient();
+      const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+      const redirectOrigin = configuredSiteUrl || window.location.origin;
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          emailRedirectTo: `${redirectOrigin}/auth/callback?next=/dashboard`,
         },
       });
       setMessageTone(error ? "error" : "success");
