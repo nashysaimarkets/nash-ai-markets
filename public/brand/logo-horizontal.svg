@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 72" role="img" aria-labelledby="title desc">
+  <title id="title">NASH AI Markets</title><desc id="desc">NASH AI Markets emerald target mark and wordmark</desc>
+  <g fill="none" stroke="#38f28e"><circle cx="36" cy="36" r="25"/><circle cx="36" cy="36" r="8" opacity=".75"/><path d="M36 5v14M36 53v14M5 36h14M53 36h14"/></g>
+  <path fill="#d9ab52" d="m36 27 9 9-9 9-9-9z"/>
+  <text x="82" y="33" fill="#f4f3ec" font-family="Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="4">NASH <tspan fill="#38f28e">AI</tspan></text>
+  <text x="82" y="55" fill="#aeb8b3" font-family="Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="6">MARKETS</text>
+</svg>

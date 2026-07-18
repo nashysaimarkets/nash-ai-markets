@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import type { UTCTimestamp } from "lightweight-charts";
 import { TERMINAL_TIMEFRAMES, chartDisplayState, type ChartDataMode, type OhlcvPoint, type TerminalTimeframe } from "../lib/visual-terminal.ts";
 
@@ -62,8 +63,10 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
       <p className="srOnly" id="market-chart-description">{chartDescription}</p>
       {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-describedby="market-chart-description" /> : (
         <div className={`marketChartState marketChartState-${state}`} role={state === "error" ? "alert" : "status"}>
-          {state === "loading" ? <><i className="chartLoader" /><strong>Loading chart data</strong><span>Waiting for verified OHLCV candles.</span></> : null}
-          {state === "error" ? <><strong>Chart unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered."}</span></> : null}
+          <Image className="marketStateMark" src="/brand/logo-mark.svg" width={48} height={48} alt="" />
+          <span className="marketStateChart" aria-hidden="true" />
+          {state === "loading" ? <><i className="chartLoader" /><strong>Connecting to verified market data</strong><span>Waiting for validated OHLCV candles. No values are displayed until verification completes.</span></> : null}
+          {state === "error" ? <><strong>Market data provider unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered. Existing NO TRADE safeguards remain active."}</span></> : null}
           {state === "empty" ? <><strong>No verified candle data</strong><span>The current provider snapshot does not include OHLCV history. No candles have been invented, and this empty state is not live market data.</span></> : null}
         </div>
       )}

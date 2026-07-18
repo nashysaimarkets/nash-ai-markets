@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import LoginForm from "./LoginForm";
+import { BrandLogo } from "../components/BrandLogo";
 
 export const metadata: Metadata = {
   title: "Secure Member Access",
@@ -12,10 +13,7 @@ export default function Login() {
   return (
     <main className="accessPage">
       <header className="accessNav">
-        <Link href="/" className="mcBrand" aria-label="NASH AI Markets home">
-          <span className="mcBrandMark" aria-hidden="true"><i /></span>
-          <span>NASH <b>AI</b> MARKETS</span>
-        </Link>
+        <BrandLogo />
         <Link href="/">Back to overview</Link>
       </header>
 
