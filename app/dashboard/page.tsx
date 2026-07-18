@@ -22,6 +22,7 @@ import { EventCountdown } from "./components/EventCountdown.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
 import { loadAccuracySummary } from "./lib/performance-history.ts";
 import "./direct-dashboard.css";
+import "./dashboard-corrections.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -121,7 +122,7 @@ export default async function MemberDashboard() {
         <div className="bullseyeHeroCopy">
           <div>
             <span className="bullseyeEyebrow">Bullseye command centre</span>
-            <h1>Good {new Date(now).getUTCHours() < 12 ? "morning" : "session"}, <em>{name}.</em></h1>
+            <h1>Welcome back, <em>{name}.</em></h1>
             <p>
               Your daily decision workspace—verified market context, scenario discipline and risk controls,
               arranged around the one question that matters: what should you do next?

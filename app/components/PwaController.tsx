@@ -8,7 +8,6 @@ interface InstallPromptEvent extends Event {
 }
 
 const DISMISS_KEY = "nash-pwa-install-dismissed";
-const DISMISS_DAYS = 14;
 
 function isStandalone(): boolean {
   return window.matchMedia("(display-mode: standalone)").matches
@@ -23,13 +22,19 @@ function isIosSafari(): boolean {
   return ios && webkit && !alternateBrowser;
 }
 
-function recentlyDismissed(): boolean {
+function dismissedThisSession(): boolean {
   try {
-    const dismissedAt = Number(window.localStorage.getItem(DISMISS_KEY));
-    return Number.isFinite(dismissedAt)
-      && Date.now() - dismissedAt < DISMISS_DAYS * 24 * 60 * 60 * 1_000;
+    return window.sessionStorage.getItem(DISMISS_KEY) === "true";
   } catch {
     return false;
+  }
+}
+
+function rememberSessionDismissal(): void {
+  try {
+    window.sessionStorage.setItem(DISMISS_KEY, "true");
+  } catch {
+    // Storage can be unavailable in privacy modes; dismissal still works now.
   }
 }
 
@@ -86,7 +91,7 @@ export function PwaController() {
       setVisible(false);
       setStatus("NASH AI Markets is installed.");
     };
-    if (!isStandalone() && !recentlyDismissed()) {
+    if (!isStandalone() && !dismissedThisSession()) {
       if (isIosSafari()) {
         iosPromptTimer = window.setTimeout(() => {
           setShowIosHelp(true);
@@ -106,12 +111,13 @@ export function PwaController() {
     };
   }, []);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle("pwa-prompt-visible", visible);
+    return () => document.documentElement.classList.remove("pwa-prompt-visible");
+  }, [visible]);
+
   const dismiss = () => {
-    try {
-      window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
-    } catch {
-      // Storage can be unavailable in privacy modes; dismissal still works now.
-    }
+    rememberSessionDismissal();
     setVisible(false);
   };
 
@@ -121,6 +127,7 @@ export function PwaController() {
     const choice = await promptEvent.userChoice;
     setPromptEvent(null);
     setVisible(false);
+    if (choice.outcome === "dismissed") rememberSessionDismissal();
     setStatus(choice.outcome === "accepted" ? "Installation accepted." : "Installation dismissed.");
   };
 

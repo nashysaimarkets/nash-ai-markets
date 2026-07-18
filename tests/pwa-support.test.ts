@@ -65,5 +65,8 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.match(controller, /registration\.update\(\)/);
   assert.match(controller, /SKIP_WAITING/);
   assert.match(controller, /reloads only after you choose Update/);
+  assert.match(controller, /window\.sessionStorage\.getItem\(DISMISS_KEY\)/);
+  assert.match(controller, /window\.sessionStorage\.setItem\(DISMISS_KEY, "true"\)/);
+  assert.doesNotMatch(controller, /window\.localStorage/);
   assert.doesNotMatch(controller, /OPENAI_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE/);
 });
