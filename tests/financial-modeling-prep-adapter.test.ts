@@ -144,6 +144,31 @@ test("classifies rate limiting as a retry-safe provider failure", async () => {
   await assert.rejects(adapter.fetchSnapshot(), /rate_limited/);
 });
 
+test("identifies plan-restricted instruments without exposing symbols or credentials", async () => {
+  const messages: Array<{ message: string; details?: Record<string, unknown> }> = [];
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const mockFetch = createMockFetch(asOf);
+  const provider = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input, init) => {
+      const url = new URL(String(input));
+      if (url.searchParams.get("symbol") === "DX-Y.NYB") return new Response("restricted", { status: 402 });
+      return mockFetch(input, init);
+    },
+    logger(message, details) { messages.push({ message, details }); },
+  });
+
+  await assert.rejects(() => provider.fetchSnapshot(), /plan_restricted/);
+  assert.deepEqual(messages.find(({ details }) => details?.category === "plan_restricted")?.details, {
+    provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
+    category: "plan_restricted",
+    instrument: "us_dollar",
+  });
+  assert.doesNotMatch(JSON.stringify(messages), /DX-Y\.NYB/);
+  assert.equal(JSON.stringify(messages).includes(TEST_API_KEY), false);
+});
+
 test("rejects malformed JSON using a sanitized failure category", async () => {
   const adapter = createFinancialModelingPrepAdapter({ apiKey: TEST_API_KEY, baseUrl: TEST_BASE_URL, fetchImpl: async () => new Response("not-json", { status: 200, headers: { "content-type": "application/json" } }) });
   await assert.rejects(adapter.fetchSnapshot(), /malformed_json/);

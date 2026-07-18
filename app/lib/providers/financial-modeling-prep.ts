@@ -41,7 +41,7 @@ type FmpTreasuryRates = {
 
 const MAX_FUTURE_SKEW_MS = 60_000;
 
-type SafeFailureCategory = "authentication_rejected" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
+type SafeFailureCategory = "authentication_rejected" | "plan_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
 
 class SafeProviderFailure extends Error {
   readonly category: SafeFailureCategory;
@@ -145,7 +145,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     async fetchSnapshot() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
-      const request = async (pathname: string, symbol?: string): Promise<unknown> => {
+      const request = async (instrument: "sp500" | "vix" | "us_dollar" | "treasury", pathname: string, symbol?: string): Promise<unknown> => {
         let response: Response;
         try {
           response = await fetchImpl(createUrl(options.baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
@@ -154,6 +154,14 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           throw new SafeProviderFailure("network_interruption");
         }
         if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
+        if (response.status === 402) {
+          logger("market-provider:failure", {
+            provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
+            category: "plan_restricted",
+            instrument,
+          });
+          throw new SafeProviderFailure("plan_restricted");
+        }
         if (response.status === 429) throw new SafeProviderFailure("rate_limited");
         if (!response.ok) throw new SafeProviderFailure("invalid_response");
         try {
@@ -166,10 +174,10 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
         const [esPayload, vixPayload, dollarPayload, treasuryPayload] = await Promise.all([
-          request("quote", symbols.sp500Futures),
-          request("quote", symbols.vix),
-          request("quote", symbols.usDollarIndex),
-          request("treasury-rates"),
+          request("sp500", "quote", symbols.sp500Futures),
+          request("vix", "quote", symbols.vix),
+          request("us_dollar", "quote", symbols.usDollarIndex),
+          request("treasury", "treasury-rates"),
         ]);
         const es = parseQuote(esPayload, symbols.sp500Futures);
         const vix = parseQuote(vixPayload, symbols.vix);
