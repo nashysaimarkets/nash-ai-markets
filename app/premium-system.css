@@ -1,23 +1,25 @@
 :root{
-  --nash-ink:#020807;
-  --nash-midnight:#06111a;
-  --nash-panel:#091512;
-  --nash-panel-blue:#0a121b;
-  --nash-emerald:#38f28e;
-  --nash-emerald-soft:#8affbf;
-  --nash-forest:#0d3a2a;
-  --nash-gold:#d9ab52;
-  --nash-gold-soft:#f4dfa9;
-  --nash-steel:#91a29b;
-  --nash-white:#f5f6f1;
+  --nash-ink:#07100d;
+  --nash-midnight:#0b1d2a;
+  --nash-panel:#0f1715;
+  --nash-panel-blue:#0b1d2a;
+  --nash-emerald:#0f8f5f;
+  --nash-emerald-soft:#42d79a;
+  --nash-forest:#0f3d2e;
+  --nash-gold:#d4af37;
+  --nash-gold-soft:#f0c95a;
+  --nash-steel:#aeb6ba;
+  --nash-white:#f8f9fa;
   --nash-line:#ffffff18;
   --nash-line-strong:#38f28e38;
   --nash-shadow:0 28px 90px #0009;
   --nash-glow:0 0 48px #38f28e18;
   --nash-radius:10px;
 }
-body{background:var(--nash-ink);color:var(--nash-white)}
-::selection{background:#38f28e;color:#06100d}
+body{background:var(--nash-ink);color:var(--nash-white);font-family:Poppins,var(--font-geist-sans),Arial,sans-serif}
+::selection{background:#0f8f5f;color:#f8f9fa}
+.mcHome{--mc-bg:#07100d;--mc-panel:#0f1715;--mc-panel-2:#111b18;--mc-text:#f8f9fa;--mc-muted:#aeb6ba;--mc-green:#0f8f5f;--mc-gold:#d4af37}
+.foxtrotTerminal,.memberDashboard,.accessPage,.launchPage{--ft-bg:#07100d;--ft-surface:#0f1715;--ft-surface-2:#111b18;--ft-green:#0f8f5f;--ft-amber:#d4af37;--ft-text:#f8f9fa;--ft-muted:#aeb6ba}
 a,button{transition:border-color .2s,background-color .2s,color .2s,transform .2s,box-shadow .2s}
 a:hover,button:hover{border-color:#38f28e80}
 .mcHome{background-image:radial-gradient(circle at 75% 2%,#123f2c55,transparent 34%),linear-gradient(#020807e8,#020807f8),url("/brand/world-market-grid.svg")!important;background-size:auto,auto,1200px auto!important}

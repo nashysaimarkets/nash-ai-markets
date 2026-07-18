@@ -1,5 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-labelledby="title">
-  <title id="title">NASH AI Markets mark</title><rect width="72" height="72" rx="14" fill="#07110f"/>
-  <g fill="none" stroke="#38f28e"><circle cx="36" cy="36" r="25"/><circle cx="36" cy="36" r="8" opacity=".75"/><path d="M36 5v14M36 53v14M5 36h14M53 36h14"/></g>
-  <path fill="#d9ab52" d="m36 27 9 9-9 9-9-9z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title desc">
+  <title id="title">NASH AI Markets target and arrow mark</title>
+  <desc id="desc">Metallic gold bullseye with an emerald market arrow.</desc>
+  <defs>
+    <linearGradient id="gold" x1=".12" y1=".08" x2=".88" y2=".92">
+      <stop stop-color="#FFF0A8"/><stop offset=".23" stop-color="#D4AF37"/><stop offset=".5" stop-color="#8A5B13"/><stop offset=".72" stop-color="#F0C95A"/><stop offset="1" stop-color="#8B5A10"/>
+    </linearGradient>
+    <linearGradient id="emerald" x1=".1" y1=".9" x2=".9" y2=".1">
+      <stop stop-color="#06472F"/><stop offset=".48" stop-color="#0F8F5F"/><stop offset="1" stop-color="#42D79A"/>
+    </linearGradient>
+    <radialGradient id="field"><stop stop-color="#0F8F5F" stop-opacity=".22"/><stop offset=".65" stop-color="#0F3D2E" stop-opacity=".07"/><stop offset="1" stop-color="#07100D" stop-opacity="0"/></radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".7"/></filter>
+  </defs>
+  <rect width="120" height="120" rx="25" fill="#07100D"/>
+  <circle cx="58" cy="61" r="54" fill="url(#field)"/>
+  <g filter="url(#shadow)">
+    <path d="M58 19a42 42 0 1 0 39 26l-12 5a29 29 0 1 1-27-18Z" fill="url(#gold)"/>
+    <path d="M58 38a23 23 0 1 0 21 14l-12 5a10 10 0 1 1-9-6Z" fill="url(#gold)"/>
+    <circle cx="58" cy="61" r="6" fill="#F5D66B"/>
+    <path d="m57 61 29-29 4 4-29 29Z" fill="#D4AF37"/>
+    <path d="m80 36 7-20 18-10-7 19-18 11Z" fill="url(#emerald)" stroke="#B9FFE1" stroke-width="1"/>
+    <path d="m87 16 11 9" stroke="#D8FFF0" stroke-opacity=".65"/>
+  </g>
 </svg>

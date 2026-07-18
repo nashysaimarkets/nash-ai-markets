@@ -1,3 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 72" role="img" aria-labelledby="title">
-  <title id="title">NASH AI Markets monochrome logo</title><g fill="none" stroke="currentColor"><circle cx="36" cy="36" r="27"/><circle cx="36" cy="36" r="11"/><path d="M36 3v16M36 53v16M3 36h16M53 36h16M36 36 58 14"/></g><circle cx="36" cy="36" r="4" fill="currentColor"/><text x="82" y="34" fill="currentColor" font-family="Arial,sans-serif" font-size="24" font-weight="700" letter-spacing="5">NASH AI</text><text x="83" y="56" fill="currentColor" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="8">MARKETS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 92" role="img" aria-labelledby="title">
+  <title id="title">NASH AI Markets monochrome logo</title>
+  <g fill="currentColor">
+    <path d="M49 10a34 34 0 1 0 31 21l-10 4a23 23 0 1 1-21-14Z"/>
+    <path d="M49 26a18 18 0 1 0 17 11l-10 4a7 7 0 1 1-7-5Z"/>
+    <circle cx="49" cy="44" r="5"/><path d="m48 44 24-24 4 4-24 24Z"/><path d="m67 25 7-17L90 0l-6 16-17 9Z"/>
+  </g>
+  <text x="112" y="43" fill="currentColor" font-family="Poppins,Arial,sans-serif" font-size="32" font-weight="700" letter-spacing="7">NASH AI</text>
+  <text x="114" y="72" fill="currentColor" font-family="Poppins,Arial,sans-serif" font-size="14" font-weight="500" letter-spacing="13">MARKETS</text>
 </svg>

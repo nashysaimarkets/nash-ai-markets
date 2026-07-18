@@ -1,14 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 260" role="img" aria-labelledby="title">
-  <title id="title">Animated NASH AI Markets logo asset</title>
-  <rect width="800" height="260" fill="#020807"/>
-  <g transform="translate(84 130)">
-    <circle r="56" fill="none" stroke="#d9ab52" stroke-width="2" stroke-dasharray="352" stroke-dashoffset="352"><animate attributeName="stroke-dashoffset" from="352" to="0" dur=".8s" fill="freeze"/></circle>
-    <path d="M-78 0H78M0-78V78" stroke="#38f28e" stroke-opacity=".72" stroke-dasharray="156" stroke-dashoffset="156"><animate attributeName="stroke-dashoffset" from="156" to="0" dur=".65s" begin=".2s" fill="freeze"/></path>
-    <circle r="13" fill="#d9ab52" opacity="0"><animate attributeName="opacity" values="0;1;1" dur=".45s" begin=".65s" fill="freeze"/></circle>
-    <circle r="5" fill="#38f28e" opacity="0"><animate attributeName="opacity" values="0;1;0.7" dur=".7s" begin=".8s" fill="freeze"/></circle>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-labelledby="title desc">
+  <title id="title">Animated NASH AI Markets logo</title>
+  <desc id="desc">Launch-film logo animation using the approved gold target and emerald arrow identity.</desc>
+  <defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#FFF0A8"/><stop offset=".25" stop-color="#D4AF37"/><stop offset=".55" stop-color="#8A5B13"/><stop offset=".78" stop-color="#F0C95A"/><stop offset="1" stop-color="#8B5A10"/></linearGradient><linearGradient id="e" x2="1" y2="1"><stop stop-color="#42D79A"/><stop offset=".52" stop-color="#0F8F5F"/><stop offset="1" stop-color="#06472F"/></linearGradient><radialGradient id="a"><stop stop-color="#0F8F5F" stop-opacity=".25"/><stop offset="1" stop-color="#07100D" stop-opacity="0"/></radialGradient></defs>
+  <rect width="900" height="300" fill="#07100D"/><circle cx="145" cy="150" r="138" fill="url(#a)"/>
+  <g transform="translate(145 150)">
+    <g opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".2s" fill="freeze"/>
+      <path d="M0-80a80 80 0 1 0 74 49l-22 9A57 57 0 1 1 0-57Z" fill="none" stroke="url(#g)" stroke-width="22" stroke-dasharray="420" stroke-dashoffset="420"><animate attributeName="stroke-dashoffset" from="420" to="0" dur=".9s" fill="freeze"/></path>
+      <path d="M0-42a42 42 0 1 0 39 26L18-7A20 20 0 1 1 0-20Z" fill="none" stroke="url(#g)" stroke-width="18" stroke-dasharray="220" stroke-dashoffset="220"><animate attributeName="stroke-dashoffset" from="220" to="0" dur=".65s" begin=".18s" fill="freeze"/></path>
+    </g>
+    <circle r="9" fill="#F5D66B" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".2s" begin=".68s" fill="freeze"/></circle>
+    <g transform="translate(-85 85)" opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".15s" begin=".62s" fill="freeze"/><animateTransform attributeName="transform" type="translate" from="-85 85" to="0 0" dur=".5s" begin=".62s" fill="freeze"/>
+      <path d="m0 0 53-53 9 9L9 9Z" fill="#D4AF37"/><path d="m43-43 13-38 35-18-13 36-35 20Z" fill="url(#e)" stroke="#C6FFE8"/>
+    </g>
   </g>
-  <g opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".5s" begin=".7s" fill="freeze"/>
-    <text x="184" y="126" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="54" font-weight="700" letter-spacing="13">NASH <tspan fill="#38f28e">AI</tspan></text>
-    <text x="188" y="164" fill="#91a29b" font-family="monospace" font-size="16" letter-spacing="15">MARKETS</text>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".5s" begin=".8s" fill="freeze"/>
+    <text x="302" y="142" fill="url(#g)" font-family="Poppins,Arial,sans-serif" font-size="62" font-weight="700" letter-spacing="13">NASH <tspan fill="url(#e)">AI</tspan></text>
+    <text x="306" y="190" fill="#F8F9FA" font-family="Poppins,Arial,sans-serif" font-size="24" font-weight="500" letter-spacing="19">MARKETS</text>
   </g>
 </svg>

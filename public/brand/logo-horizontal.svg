@@ -1,7 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 72" role="img" aria-labelledby="title desc">
-  <title id="title">NASH AI Markets</title><desc id="desc">NASH AI Markets emerald target mark and wordmark</desc>
-  <g fill="none" stroke="#38f28e"><circle cx="36" cy="36" r="25"/><circle cx="36" cy="36" r="8" opacity=".75"/><path d="M36 5v14M36 53v14M5 36h14M53 36h14"/></g>
-  <path fill="#d9ab52" d="m36 27 9 9-9 9-9-9z"/>
-  <text x="82" y="33" fill="#f4f3ec" font-family="Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="4">NASH <tspan fill="#38f28e">AI</tspan></text>
-  <text x="82" y="55" fill="#aeb8b3" font-family="Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="6">MARKETS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 470 92" role="img" aria-labelledby="title desc">
+  <title id="title">NASH AI Markets</title>
+  <desc id="desc">Gold target and emerald arrow beside the NASH AI Markets wordmark.</desc>
+  <defs>
+    <linearGradient id="g" x2="1" y2="1"><stop stop-color="#FFF0A8"/><stop offset=".25" stop-color="#D4AF37"/><stop offset=".55" stop-color="#8A5B13"/><stop offset=".78" stop-color="#F0C95A"/><stop offset="1" stop-color="#8B5A10"/></linearGradient>
+    <linearGradient id="e" x2="1" y2="1"><stop stop-color="#42D79A"/><stop offset=".52" stop-color="#0F8F5F"/><stop offset="1" stop-color="#06472F"/></linearGradient>
+  </defs>
+  <g transform="translate(6 3)">
+    <path d="M43 10a34 34 0 1 0 31 21l-10 4a23 23 0 1 1-21-14Z" fill="url(#g)"/>
+    <path d="M43 26a18 18 0 1 0 17 11l-10 4a7 7 0 1 1-7-5Z" fill="url(#g)"/>
+    <circle cx="43" cy="44" r="5" fill="#F5D66B"/>
+    <path d="m42 44 24-24 4 4-24 24Z" fill="#D4AF37"/>
+    <path d="m61 25 7-17L84 0l-6 16-17 9Z" fill="url(#e)" stroke="#C6FFE8" stroke-width=".8"/>
+  </g>
+  <text x="106" y="43" fill="url(#g)" font-family="Poppins,Arial,sans-serif" font-size="32" font-weight="700" letter-spacing="7">NASH</text>
+  <text x="261" y="43" fill="url(#e)" font-family="Poppins,Arial,sans-serif" font-size="32" font-weight="700" letter-spacing="7">AI</text>
+  <text x="108" y="72" fill="#F8F9FA" font-family="Poppins,Arial,sans-serif" font-size="14" font-weight="500" letter-spacing="13">MARKETS</text>
 </svg>
