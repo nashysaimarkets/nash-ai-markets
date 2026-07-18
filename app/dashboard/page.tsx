@@ -71,7 +71,7 @@ export default async function MemberDashboard() {
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
+  const portalUrl = "/api/stripe/portal";
   const accessCopy = access.tier === "elite"
     ? "Every Bullseye intelligence, decision, planning and diagnostics feature is unlocked."
     : offer?.active
@@ -79,6 +79,13 @@ export default async function MemberDashboard() {
       : offer?.eligible
         ? `Your ${offer.cadence} ${offer.targetTier.toUpperCase()} preview is available.`
         : `Your ${offer?.cadence ?? ""} preview has been used and resets automatically.`;
+  const accessFeatures = [
+    { key: "market-overview" as const, label: "Market overview", tier: "Free", copy: "Provider status and cross-market snapshot" },
+    { key: "intelligence" as const, label: "Intelligence", tier: "Pro", copy: "Explainable drivers and scenario evidence" },
+    { key: "decision-engine" as const, label: "Decision engine", tier: "Pro", copy: "Bias, conflicts and trade permission" },
+    { key: "trade-planner" as const, label: "Trade planner", tier: "Elite", copy: "Participation, confirmations and review triggers" },
+    { key: "launch-diagnostics" as const, label: "Diagnostics", tier: "Elite", copy: "Provider health and engine synchronization" },
+  ];
 
   return <MemberShell active="dashboard">
     <div className="memberDashboardShell">
@@ -92,6 +99,28 @@ export default async function MemberDashboard() {
         <div><span>Bullseye confidence</span><strong>{mission.confidence === null ? "—" : mission.confidence}</strong><small>{mission.available ? "Verified engine output" : "Unavailable"}</small></div>
         <div><span>Current access</span><strong>{access.effectiveTier.toUpperCase()}</strong><small>{offer?.active ? "Preview active" : `${access.tier} membership`}</small></div>
         <div><span>Trade permission</span><strong>{mission.available ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
+      </section>
+
+      <section className="memberAccessMap" aria-labelledby="access-map-title">
+        <header>
+          <div><span>MEMBERSHIP ACCESS</span><h2 id="access-map-title">Your Bullseye workspace</h2></div>
+          <div><TerminalBadge label={`${access.effectiveTier} active`} tone={access.effectiveTier === "elite" ? "warning" : access.effectiveTier === "pro" ? "info" : "neutral"} /><Link href="/pricing">Compare plans</Link></div>
+        </header>
+        <div>
+          {accessFeatures.map((feature) => {
+            const unlocked = access.features[feature.key];
+            const previewUnlocked = unlocked && access.effectiveTier !== access.tier && feature.tier.toLowerCase() === access.effectiveTier;
+            return <article key={feature.key} data-unlocked={unlocked}>
+              <span aria-hidden="true">{unlocked ? "✓" : "◇"}</span>
+              <div><strong>{feature.label}</strong><small>{feature.copy}</small></div>
+              <b>{previewUnlocked ? "Preview" : unlocked ? "Included" : `${feature.tier} required`}</b>
+            </article>;
+          })}
+        </div>
+        <footer>
+          <span>{offer?.active ? `${offer.targetTier.toUpperCase()} preview capabilities are temporarily active.` : "Access is verified from your current membership on every request."}</span>
+          <Link href="/profile">Manage account <span>↗</span></Link>
+        </footer>
       </section>
 
       <section className={`executiveMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">

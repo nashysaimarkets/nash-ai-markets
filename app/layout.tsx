@@ -14,16 +14,53 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.nashaimarkets.com"),
   title: {
-    default: "NASH AI Markets | S&P 500 Pre-Market Intelligence",
+    default: "NASH AI Markets | Pre-Market Mission Control",
     template: "%s | NASH AI Markets",
   },
-  description: "A focused S&P 500 futures intelligence dashboard with provider status, deterministic scenarios, and clear risk controls.",
-  keywords: ["S&P 500 futures", "pre-market brief", "market analysis", "futures trading", "options trading"],
+  description: "Prepare for the S&P 500 session with verified market context, conditional scenarios, decision permissions and clear risk awareness.",
+  applicationName: "NASH AI Markets",
+  authors: [{ name: "NASH AI Markets", url: "https://www.nashaimarkets.com" }],
+  creator: "NASH AI Markets",
+  publisher: "NASH AI Markets",
+  category: "Finance",
+  keywords: ["S&P 500 futures", "pre-market planning", "market scenarios", "market analysis", "trading risk management"],
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
-    title: "NASH AI Markets — See the market. Plan the trade.",
-    description: "Provider-backed S&P 500 pre-market intelligence, built around deterministic scenarios and risk.",
+    title: "NASH AI Markets — Pre-Market Mission Control",
+    description: "Verified context. Conditional scenarios. Risk-aware preparation for the S&P 500 session.",
     type: "website",
+    url: "/",
+    siteName: "NASH AI Markets",
+    locale: "en_GB",
+    images: [
+      {
+        url: "/og-image.svg",
+        width: 1200,
+        height: 630,
+        alt: "NASH AI Markets — Pre-Market Mission Control",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NASH AI Markets — Pre-Market Mission Control",
+    description: "Verified context. Conditional scenarios. Risk-aware preparation.",
+    images: ["/og-image.svg"],
   },
   icons: {
     icon: [
@@ -40,6 +77,8 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+    address: false,
+    email: false,
   },
 };
 

@@ -17,6 +17,7 @@ const links = [
 
 export function MemberShell({ active, children, className = "" }: MemberShellProps) {
   return <main className={`memberDashboard ${className}`.trim()}>
+    <a className="memberSkipLink" href="#member-content">Skip to member content</a>
     <header className="memberDashboardNav">
       <Link href="/dashboard" className="ftBrand">
         <span className="ftReticle" aria-hidden="true" />
@@ -26,7 +27,17 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
         {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}</Link>)}
         <Link href="/auth/signout">Sign out</Link>
       </nav>
+      <details className="memberMobileMenu">
+        <summary aria-label="Open member navigation">
+          <span>Menu</span>
+          <i aria-hidden="true" />
+        </summary>
+        <nav aria-label="Mobile member navigation">
+          {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}<span aria-hidden="true">↗</span></Link>)}
+          <Link href="/auth/signout">Sign out<span aria-hidden="true">↗</span></Link>
+        </nav>
+      </details>
     </header>
-    {children}
+    <div id="member-content">{children}</div>
   </main>;
 }

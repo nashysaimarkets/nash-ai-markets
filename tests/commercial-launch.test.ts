@@ -38,6 +38,24 @@ test("checkout accepts only enumerated server-side Price IDs", () => {
   assert.equal(checkoutPriceId(null, environment), null);
 });
 
+test("checkout binds signed-in members without exposing the session id in return URLs", async () => {
+  const checkout = await read("app/api/stripe/checkout/route.ts");
+  assert.match(checkout, /supabase\.auth\.getUser\(\)/);
+  assert.match(checkout, /customer_email: verifiedEmail/);
+  assert.match(checkout, /client_reference_id: user\?\.id/);
+  assert.ok(checkout.includes("success_url: `${origin}/welcome`"));
+  assert.doesNotMatch(checkout, /CHECKOUT_SESSION_ID/);
+});
+
+test("authenticated billing portal uses the member's stored Stripe customer", async () => {
+  const portal = await read("app/api/stripe/portal/route.ts");
+  assert.match(portal, /supabase\.auth\.getUser\(\)/);
+  assert.match(portal, /\.select\("stripe_customer_id"\)/);
+  assert.match(portal, /billingPortal\.sessions\.create/);
+  assert.ok(portal.includes("return_url: `${origin}/profile`"));
+  assert.doesNotMatch(portal, /STRIPE_CUSTOMER_PORTAL_LINK/);
+});
+
 test("commercial metrics use active stored subscriptions and normalize recurring revenue", () => {
   const metrics = calculateCommercialMetrics([
     { email: "free@example.com", plan: "free", status: "active", billingInterval: null, unitAmount: null, periodEnd: null },
@@ -50,6 +68,14 @@ test("commercial metrics use active stored subscriptions and normalize recurring
 
 test("commercial metrics do not invent conversion or revenue without records", () => {
   assert.deepEqual(calculateCommercialMetrics([]), { free: 0, pro: 0, elite: 0, monthly: 0, annual: 0, mrrPence: 0, arrPence: 0, conversionPercent: null });
+});
+
+test("member account billing lookup queries only the normalized member email", async () => {
+  const server = await read("app/lib/server/commercial.ts");
+  assert.match(server, /const normalizedEmail = email\.trim\(\)\.toLowerCase\(\)/);
+  assert.match(server, /\.eq\("email", normalizedEmail\)/);
+  assert.match(server, /\.maybeSingle\(\)/);
+  assert.doesNotMatch(server, /loadCommercialMembership\(email: string\) \{\s*const rows = await loadCommercialRows/);
 });
 
 test("branded lifecycle email templates state billing and risk truthfully", () => {
