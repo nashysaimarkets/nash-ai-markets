@@ -31,5 +31,5 @@ test("renders production metadata without development artifacts", async () => {
   );
   const html = await response.text();
   assert.doesNotMatch(html, developmentPreviewMeta);
-  assert.match(html, /<link rel="manifest" href="\/manifest\.webmanifest"\/>/);
+  assert.match(html, /<link rel="manifest" href="(?:https:\/\/www\.nashaimarkets\.com)?\/manifest\.webmanifest"\/>/);
 });

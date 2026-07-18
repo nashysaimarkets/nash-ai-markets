@@ -12,6 +12,9 @@ afterwards.
   public launch.
 - [RC2 final launch report](RC2_FINAL_LAUNCH_REPORT.md) — current evidence,
   remaining gates and the go/no-go recommendation.
+- [Public beta launch readiness — 18 July 2026](PUBLIC_BETA_LAUNCH_READINESS_2026-07-18.md)
+  — current branch evidence, live-deployment mismatch and remaining external
+  gates.
 - [Launch readiness checklist](LAUNCH_READINESS_CHECKLIST.md) — final
   application, integration, data, billing, email and monitoring gates.
 - [Sprint Epsilon launch report](SPRINT_EPSILON_LAUNCH_READINESS_REPORT.md) —
