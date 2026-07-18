@@ -15,13 +15,20 @@ test("first-run preferences accept only complete enumerated choices", () => {
 });
 
 test("onboarding persistence is authenticated, same-origin and user-owned", async () => {
-  const [route, migration] = await Promise.all([read("app/api/onboarding/route.ts"), read("supabase/migrations/202607170006_member_onboarding.sql")]);
+  const [route, migration, rpcMigration] = await Promise.all([
+    read("app/api/onboarding/route.ts"),
+    read("supabase/migrations/202607170006_member_onboarding.sql"),
+    read("supabase/migrations/202607180008_member_onboarding_rpc.sql"),
+  ]);
   assert.match(route, /request\.headers\.get\("origin"\) !== origin/);
   assert.match(route, /supabase\.auth\.getUser/);
-  assert.match(route, /createAdminClient\(\)\.from\("member_onboarding"\)/);
-  assert.match(route, /user_id: user\.id/);
+  assert.match(route, /supabase\.rpc\("save_member_onboarding"/);
   assert.match(migration, /enable row level security/);
   assert.match(migration, /auth\.uid\(\) = user_id/g);
+  assert.match(rpcMigration, /security definer/);
+  assert.match(rpcMigration, /v_user_id uuid := auth\.uid\(\)/);
+  assert.match(rpcMigration, /grant execute .* to authenticated/);
+  assert.doesNotMatch(rpcMigration, /grant execute .* to anon/);
 });
 
 test("onboarding UI exposes progress, interests, notifications and recovery", async () => {
