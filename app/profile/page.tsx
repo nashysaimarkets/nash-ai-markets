@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ billing?: string }> }) {
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ billing?: string; preferences?: string }> }) {
   const query = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -70,6 +70,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
       {membershipError ? <SafeState title="Subscription verification is temporarily unavailable" tone="warning"><p>Your account remains signed in, but Bullseye cannot confirm current billing status. No database error details are displayed.</p></SafeState> : null}
       {query.billing === "unavailable" ? <SafeState title="Stripe account management is temporarily unavailable" tone="warning"><p>No billing change was made. Please retry shortly or contact support if the issue continues.</p></SafeState> : null}
+      {query.preferences === "updated" ? <SafeState title="Workspace preferences updated"><p>Your member workspace now uses the choices shown below.</p></SafeState> : null}
 
       <section className="profileOverview" aria-label="Account overview">
         <article><span>Account status</span><strong>{accountReady ? "Ready" : "Action needed"}</strong><small>{accountReady ? "Identity, preferences and access available" : "Complete the highlighted account step"}</small></article>

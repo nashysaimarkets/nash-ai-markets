@@ -23,11 +23,15 @@ test("onboarding persistence is authenticated, same-origin and user-owned", asyn
 });
 
 test("onboarding UI exposes progress, interests, notifications and recovery", async () => {
-  const [form, dashboard] = await Promise.all([read("app/onboarding/OnboardingForm.tsx"), read("app/dashboard/page.tsx")]);
+  const [form, page, dashboard] = await Promise.all([read("app/onboarding/OnboardingForm.tsx"), read("app/onboarding/page.tsx"), read("app/dashboard/page.tsx")]);
   assert.match(form, /of 3 steps complete/);
   assert.match(form, /Market interests/);
   assert.match(form, /Notification preferences/);
   assert.match(form, /Nothing was lost/);
+  assert.match(form, /initialPreferences\?\.experience/);
+  assert.match(form, /Save workspace preferences/);
+  assert.match(page, /\.select\("experience, interests, notifications, completed_at"\)/);
+  assert.match(page, /Refine your market workspace/);
   assert.match(dashboard, /redirect\("\/onboarding"\)/);
 });
 
