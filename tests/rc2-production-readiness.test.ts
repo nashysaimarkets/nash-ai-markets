@@ -49,6 +49,24 @@ test("production environment validation follows server-created Stripe checkout",
     "STRIPE_ELITE_PRICE_ID",
     "STRIPE_PRO_ANNUAL_PRICE_ID",
     "STRIPE_ELITE_ANNUAL_PRICE_ID",
+    "STRIPE_LEGACY_PRO_PRICE_ID",
+    "STRIPE_LEGACY_ELITE_PRICE_ID",
   ]) assert.match(validator, new RegExp(`require_var ${name}`));
   assert.doesNotMatch(validator, /require_https_url NEXT_PUBLIC_STRIPE_(?:PRO|ELITE)_CHECKOUT_URL/);
+});
+
+test("Vercel receives the Worker runtime baseline security headers", async () => {
+  const config = await read("next.config.ts");
+  for (const header of [
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "Permissions-Policy",
+    "X-Frame-Options",
+    "X-DNS-Prefetch-Control",
+    "Cross-Origin-Opener-Policy",
+  ]) {
+    assert.match(config, new RegExp(header));
+  }
+  assert.match(config, /source:\s*"\/:path\*"/);
+  assert.match(config, /poweredByHeader:\s*false/);
 });

@@ -18,17 +18,22 @@ const environment = {
   STRIPE_ELITE_PRICE_ID: "price_elite_month",
   STRIPE_PRO_ANNUAL_PRICE_ID: "price_pro_year",
   STRIPE_ELITE_ANNUAL_PRICE_ID: "price_elite_year",
+  STRIPE_LEGACY_PRO_PRICE_ID: "price_legacy_pro_month",
+  STRIPE_LEGACY_ELITE_PRICE_ID: "price_legacy_elite_month",
 };
 
 test("monthly and annual Stripe offerings map without changing legacy customers", () => {
   assert.deepEqual(configuredOffering("price_pro_month", environment), { plan: "pro", billingInterval: "month" });
   assert.deepEqual(configuredOffering("price_elite_year", environment), { plan: "elite", billingInterval: "year" });
+  assert.deepEqual(configuredOffering("price_legacy_pro_month", environment), { plan: "pro", billingInterval: "month" });
+  assert.deepEqual(configuredOffering("price_legacy_elite_month", environment), { plan: "elite", billingInterval: "month" });
   assert.equal(configuredOffering("unknown", environment), null);
 });
 
 test("checkout accepts only enumerated server-side Price IDs", () => {
   assert.equal(checkoutPriceId("pro_year", environment), "price_pro_year");
   assert.equal(checkoutPriceId("elite_month", environment), "price_elite_month");
+  assert.equal(checkoutPriceId("legacy_pro_month", environment), null);
   assert.equal(checkoutPriceId("price_attacker", environment), null);
   assert.equal(checkoutPriceId(null, environment), null);
 });
