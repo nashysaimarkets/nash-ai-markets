@@ -21,15 +21,21 @@ import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
 import { loadAccuracySummary } from "./lib/performance-history.ts";
+import "./direct-dashboard.css";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Member Dashboard", description: "Your daily Bullseye market mission and membership access.", robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: "Member Dashboard",
+  description: "Your daily Bullseye command centre.",
+  robots: { index: false, follow: false },
+};
 
 export default async function MemberDashboard() {
   const now = currentServerTimestamp();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
+
   const { data: onboarding, error: onboardingError } = await supabase
     .from("member_onboarding")
     .select("completed_at")
@@ -37,13 +43,16 @@ export default async function MemberDashboard() {
     .maybeSingle();
   if (!onboardingError && !onboarding?.completed_at) redirect("/onboarding");
 
-  const { data: membership, error: membershipError } = await supabase.from("memberships")
+  const { data: membership, error: membershipError } = await supabase
+    .from("memberships")
     .select("plan, status, current_period_end")
     .ilike("email", user.email)
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
+
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
+
   const [previewState, market, accuracy, founding100, commercial] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
@@ -51,10 +60,28 @@ export default async function MemberDashboard() {
     loadFounding100ForEmail(user.email),
     loadCommercialMembership(user.email),
   ]);
+
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
-  const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
-  const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const decision = createTradingDecision({
+    intelligence,
+    reasoning: intelligence.reasoning,
+    dataStatus: market.snapshot.status,
+    providerStatus: market.gatewayStatus.connectionStatus,
+    dataAgeMs: market.gatewayStatus.dataAgeMs,
+    fallbackActive: market.gatewayStatus.fallbackActive,
+    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+  });
+  const plan = createStructuredTradePlan({
+    decision,
+    intelligence,
+    dataStatus: market.snapshot.status,
+    providerStatus: market.gatewayStatus.connectionStatus,
+    dataAgeMs: market.gatewayStatus.dataAgeMs,
+    fallbackActive: market.gatewayStatus.fallbackActive,
+    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+  });
+
   const mission = buildDailyMission(market.snapshot, intelligence, decision, plan);
   const deterministicMorningBrief = createMorningBrief(mission.available ? {
     source: "verified",
@@ -66,112 +93,211 @@ export default async function MemberDashboard() {
     keyRisk: mission.keyWarning,
     nextAction: mission.nextAction,
   } : MORNING_BRIEF_PLACEHOLDER_INPUT);
+
   const aiMorningBrief = access.features.intelligence && deterministicMorningBrief.mode === "verified"
     ? await generateAIMorningBrief(deterministicMorningBrief)
     : { status: "not_requested" as const, content: null };
+
   const morningBrief = applyAIMorningBrief(deterministicMorningBrief, aiMorningBrief);
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
   const portalUrl = "/api/stripe/portal";
-  const accessCopy = access.tier === "elite"
-    ? "Every Bullseye intelligence, decision, planning and diagnostics feature is unlocked."
-    : offer?.active
-      ? `${offer.targetTier.toUpperCase()} preview active for the current ${offer.cadence} access period.`
-      : offer?.eligible
-        ? `Your ${offer.cadence} ${offer.targetTier.toUpperCase()} preview is available.`
-        : `Your ${offer?.cadence ?? ""} preview has been used and resets automatically.`;
-  const accessFeatures = [
-    { key: "market-overview" as const, label: "Market overview", tier: "Free", copy: "Provider status and cross-market snapshot" },
-    { key: "intelligence" as const, label: "Intelligence", tier: "Pro", copy: "Explainable drivers and scenario evidence" },
-    { key: "decision-engine" as const, label: "Decision engine", tier: "Pro", copy: "Bias, conflicts and trade permission" },
-    { key: "trade-planner" as const, label: "Trade planner", tier: "Elite", copy: "Participation, confirmations and review triggers" },
-    { key: "launch-diagnostics" as const, label: "Diagnostics", tier: "Elite", copy: "Provider health and engine synchronization" },
-  ];
+  const foundingRecord = founding100.records[0] ?? null;
+  const foundingRecords = foundingRecord ? [foundingRecord] : [];
+
+  const marketState = mission.available ? mission.marketCondition : "Awaiting verified data";
+  const bias = mission.available ? mission.directionalBias : "Stand aside";
+  const confidence = mission.confidence === null ? "—" : `${mission.confidence}`;
+  const permission = mission.available ? decision.tradePermission : "Protected";
+  const primaryPriority = morningBrief.priorities[0] ?? mission.nextAction;
+  const secondaryPriority = morningBrief.priorities[1] ?? mission.keyWarning;
+  const firstChecklist = morningBrief.checklist[0] ?? "Confirm verified provider freshness";
+  const secondChecklist = morningBrief.checklist[1] ?? "Review event risk before participation";
 
   return <MemberShell active="dashboard">
-    <div className="memberDashboardShell">
-      <section className="memberWelcome">
-        <div className="memberWelcomeCopy">
-          <Image className="memberWelcomeLogo" src="/brand/logo-horizontal.svg" width={420} height={72} alt="NASH AI Markets" priority />
-          <span>DAILY MEMBER MISSION</span><h1>Welcome back, <em>{name}.</em></h1><p>{accessCopy}</p>
-          <div className="memberWelcomeActions"><Link className="memberPrimaryAction" href="/terminal">Enter Bullseye Terminal <span>↗</span></Link><Link href="/brief">Read today’s market brief</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div>
+    <div className="bullseyeCommand">
+      <section className="bullseyeHero">
+        <div className="bullseyeHeroCopy">
+          <div>
+            <span className="bullseyeEyebrow">Bullseye command centre</span>
+            <h1>Good {new Date(now).getUTCHours() < 12 ? "morning" : "session"}, <em>{name}.</em></h1>
+            <p>
+              Your daily decision workspace—verified market context, scenario discipline and risk controls,
+              arranged around the one question that matters: what should you do next?
+            </p>
+          </div>
+          <div className="bullseyeHeroActions">
+            <Link href="/terminal">Open Bullseye Terminal <span>↗</span></Link>
+            <Link href="/brief">Read today&apos;s brief</Link>
+            <Link href="/ideas">Member ideas</Link>
+          </div>
         </div>
-        <div className="memberWelcomeVisual">
-          <div className="memberAccessStatus"><Image src={access.tier === "elite" ? "/brand/elite-member-badge.svg" : "/brand/logo-mark.svg"} width={300} height={72} alt={access.tier === "elite" ? "Elite membership" : ""} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
-          {founding100.records.map((record) => <Founding100Badge key={`${record.programme}-${record.position}`} record={record} compact />)}
-        </div>
+
+        <aside className="bullseyeIdentity" aria-label="Membership identity">
+          <Image
+            src={access.tier === "elite" ? "/brand/elite-member-badge.svg" : "/brand/logo-horizontal.svg"}
+            width={320}
+            height={80}
+            alt={access.tier === "elite" ? "Elite member" : "NASH AI Markets"}
+            priority
+          />
+          <div className="bullseyeIdentityMeta">
+            <span>CURRENT ACCESS</span>
+            <strong>{access.effectiveTier.toUpperCase()}</strong>
+            <small>{previewState.available ? "Entitlement verified" : "Base membership active"}</small>
+          </div>
+          {foundingRecord ? <div className="bullseyeFounder">
+            <Founding100Badge record={foundingRecord} compact />
+          </div> : null}
+        </aside>
       </section>
 
-      <section className="executiveKpiStrip" aria-label="Executive account and market summary">
-        <div><span>Market data</span><strong>{market.snapshot.status}</strong><small>{market.gatewayStatus.providerName}</small></div>
-        <div><span>Bullseye confidence</span><strong>{mission.confidence === null ? "—" : mission.confidence}</strong><small>{mission.available ? "Verified engine output" : "Unavailable"}</small></div>
-        <div><span>Current access</span><strong>{access.effectiveTier.toUpperCase()}</strong><small>{offer?.active ? "Preview active" : `${access.tier} membership`}</small></div>
-        <div><span>Trade permission</span><strong>{mission.available ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
+      <section className="bullseyeSignalBar" aria-label="Current command summary">
+        <article><span>Market state</span><strong>{marketState}</strong><small>{market.gatewayStatus.providerName}</small></article>
+        <article><span>Directional bias</span><strong>{bias}</strong><small>{mission.available ? "Verified engine output" : "Safety state active"}</small></article>
+        <article><span>Confidence</span><strong>{confidence}</strong><small>{mission.confidence === null ? "Pending verification" : "out of 100"}</small></article>
+        <article><span>Trade permission</span><strong>{permission}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Risk controls active"}</small></article>
+        <article><span>Next event</span><strong>{nextEvent ? nextEvent.name : "No verified event"}</strong><small>{nextEvent ? nextEvent.risk : "No timing inferred"}</small></article>
       </section>
 
-      <section className="memberAccessMap" aria-labelledby="access-map-title">
-        <header>
-          <div><span>MEMBERSHIP ACCESS</span><h2 id="access-map-title">Your Bullseye workspace</h2></div>
-          <div><TerminalBadge label={`${access.effectiveTier} active`} tone={access.effectiveTier === "elite" ? "warning" : access.effectiveTier === "pro" ? "info" : "neutral"} /><Link href="/pricing">Compare plans</Link></div>
+      <section className="bullseyeMainGrid">
+        <article className="bullseyePanel">
+          <header className="bullseyePanelHeader">
+            <div><span>TODAY&apos;S BULLSEYE</span><h2>Your decision plan</h2></div>
+            <TerminalBadge
+              label={mission.available ? market.snapshot.status : "protected"}
+              tone={mission.available ? "positive" : "warning"}
+            />
+          </header>
+
+          <div className="bullseyePlanState">
+            <div className="bullseyeBias">
+              <span>CURRENT POSTURE</span>
+              <strong>{bias}</strong>
+              <p>{mission.available ? mission.nextAction : "No directional conclusion is shown until the connected market data passes freshness and validation checks."}</p>
+            </div>
+            <div className="bullseyePlanDetails">
+              <div><span>Market condition</span><strong>{marketState}</strong></div>
+              <div><span>Key risk</span><strong>{mission.keyWarning}</strong></div>
+              <div><span>Priority</span><strong>{primaryPriority}</strong></div>
+              <div><span>Review trigger</span><strong>{secondaryPriority}</strong></div>
+            </div>
+          </div>
+
+          <div className="bullseyeScenarioGrid">
+            <section className="bullseyeScenario" data-tone="bull">
+              <span>01 / PARTICIPATION CASE</span>
+              <h3>Evidence required</h3>
+              <p>{firstChecklist}</p>
+            </section>
+            <section className="bullseyeScenario" data-tone="bear">
+              <span>02 / PROTECTION CASE</span>
+              <h3>Stand-aside trigger</h3>
+              <p>{secondChecklist}</p>
+            </section>
+          </div>
+        </article>
+
+        <article className="bullseyePanel">
+          <header className="bullseyePanelHeader">
+            <div><span>NEXT RISK WINDOW</span><h2>Economic event</h2></div>
+            <TerminalBadge
+              label={nextEvent?.risk ?? "protected"}
+              tone={nextEvent?.risk === "HIGH" ? "danger" : nextEvent ? "warning" : "neutral"}
+            />
+          </header>
+          {nextEvent ? <div className="bullseyeEventBody">
+            <EventCountdown startsAt={nextEvent.startsAt} initialNow={now} />
+            <strong>{nextEvent.name}</strong>
+            <time dateTime={nextEvent.startsAt}>
+              {new Intl.DateTimeFormat("en-GB", {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "Europe/London",
+              }).format(new Date(nextEvent.startsAt))} UK
+            </time>
+            <p>Timing is drawn from the verified provider event record and updates automatically.</p>
+          </div> : <div className="bullseyeEmpty">
+            <i aria-hidden="true" />
+            <strong>Event radar is clear</strong>
+            <p>No complete future event timestamp is currently verified. Nothing has been invented or estimated.</p>
+          </div>}
+        </article>
+      </section>
+
+      <section className="bullseyeTools" aria-labelledby="bullseye-tools-title">
+        <header className="bullseyeToolsHeader">
+          <div><span>MISSION TOOLS</span><h2 id="bullseye-tools-title">Go deeper when it matters</h2></div>
         </header>
-        <div>
-          {accessFeatures.map((feature) => {
-            const unlocked = access.features[feature.key];
-            const previewUnlocked = unlocked && access.effectiveTier !== access.tier && feature.tier.toLowerCase() === access.effectiveTier;
-            return <article key={feature.key} data-unlocked={unlocked}>
-              <span aria-hidden="true">{unlocked ? "✓" : "◇"}</span>
-              <div><strong>{feature.label}</strong><small>{feature.copy}</small></div>
-              <b>{previewUnlocked ? "Preview" : unlocked ? "Included" : `${feature.tier} required`}</b>
-            </article>;
-          })}
+        <div className="bullseyeToolGrid">
+          <Link href="/terminal"><b>01</b><em>↗</em><strong>Terminal</strong><small>Charts, intelligence and structured decisions.</small></Link>
+          <Link href="/brief"><b>02</b><em>↗</em><strong>Morning brief</strong><small>Your concise preparation checklist.</small></Link>
+          <Link href="/ideas"><b>03</b><em>↗</em><strong>Ideas hub</strong><small>Help shape the product roadmap.</small></Link>
+          <Link href="/profile"><b>04</b><em>↗</em><strong>Account</strong><small>Membership, profile and billing controls.</small></Link>
+          <Link href="/onboarding"><b>05</b><em>↗</em><strong>Preferences</strong><small>Keep the experience aligned to your workflow.</small></Link>
         </div>
-        <footer>
-          <span>{offer?.active ? `${offer.targetTier.toUpperCase()} preview capabilities are temporarily active.` : "Access is verified from your current membership on every request."}</span>
-          <Link href="/profile">Manage account <span>↗</span></Link>
-        </footer>
       </section>
 
-      {process.env.NEXT_PUBLIC_EASTER_HUNT_ENABLED === "true" ? <aside className="dashboardHuntClue" aria-labelledby="hunt-clue-title">
-        <Image src="/brand/logo-mark.svg" width={48} height={48} alt="" />
-        <div><span>SEASONAL SIGNAL</span><h2 id="hunt-clue-title">NASH Golden Egg Hunt</h2><p>Five small golden signals are hidden away from trading controls. Look where perspective, process, value, curiosity and identity live.</p></div>
-        <Link href="/about">Begin the hunt <span>↗</span></Link>
-      </aside> : null}
-
-      <section className={`executiveMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
-        <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2>{morningBrief.summary ? <p>{morningBrief.summary}</p> : null}</div><div className="morningBriefBadges"><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /><TerminalBadge label={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"} tone={morningBrief.generation === "ai-assisted" ? "info" : "neutral"} /></div></header>
-        <div className="executiveMorningBriefBody">
-          <div className="morningBriefSignal"><span>Directional context</span><strong>{morningBrief.directionalBias ?? "Not available"}</strong><small>{morningBrief.confidence === null ? "No confidence score active" : `${morningBrief.confidence} / 100 confidence`}</small></div>
-          <div><h3>Executive priorities</h3><ol>{morningBrief.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
-          <div><h3>Session checklist</h3><ul>{morningBrief.checklist.map((item) => <li key={item}>{item}</li>)}</ul></div>
-        </div>
-        {morningBrief.warning ? <footer><strong>Safety state:</strong> {morningBrief.warning}<span>Preview fixture timestamp: {morningBrief.asOf}</span></footer> : <footer><span>As of {morningBrief.asOf} · Refresh after material data or event changes.</span><span>{morningBrief.generation === "ai-assisted" ? "OpenAI summarized verified engine evidence only." : morningBrief.aiStatus === "not_requested" ? "Deterministic brief active for current access." : `Deterministic fallback active · ${morningBrief.aiStatus.replaceAll("_", " ")}.`}</span></footer>}
+      <section className="bullseyeService" aria-label="Service status">
+        <details>
+          <summary><span>●</span> System and data status <b>View diagnostics</b></summary>
+          <div className="bullseyeServiceGrid">
+            <div><span>Provider</span><strong>{market.gatewayStatus.providerName}</strong></div>
+            <div><span>Connection</span><strong>{market.gatewayStatus.connectionStatus}</strong></div>
+            <div><span>Data state</span><strong>{market.snapshot.status}</strong></div>
+          </div>
+        </details>
       </section>
 
-      <section className="dailyDashboardGrid">
-        <article className="dailyCard todayMission">
-          <header><div><span>TODAY’S MISSION</span><h2>What matters now</h2></div><TerminalBadge label={market.snapshot.status} tone={mission.available ? "positive" : "danger"} /></header>
-          <dl><div><dt>Current market condition</dt><dd>{mission.marketCondition}</dd></div><div><dt>Bullseye confidence</dt><dd>{mission.confidence === null ? "Unavailable" : `${mission.confidence} / 100`}</dd></div><div><dt>Directional bias</dt><dd>{mission.directionalBias}</dd></div><div><dt>Key risk / no-trade warning</dt><dd>{mission.keyWarning}</dd></div><div><dt>Next important action</dt><dd>{mission.nextAction}</dd></div></dl>
-          <Link href="/terminal">Continue into the full terminal →</Link>
-        </article>
+      {process.env.NEXT_PUBLIC_EASTER_HUNT_ENABLED === "true" ? <section className="bullseyeHunt">
+        <aside className="dashboardHuntClue" aria-labelledby="hunt-clue-title">
+          <Image src="/brand/logo-mark.svg" width={48} height={48} alt="" />
+          <div><span>SEASONAL SIGNAL</span><h2 id="hunt-clue-title">NASH Golden Egg Hunt</h2><p>Five golden signals are hidden away from trading controls.</p></div>
+          <Link href="/about">Begin the hunt <span>↗</span></Link>
+        </aside>
+      </section> : null}
 
-        <article className="dailyCard nextEventCard">
-          <header><div><span>NEXT MAJOR EVENT</span><h2>Economic risk window</h2></div>{nextEvent ? <TerminalBadge label={nextEvent.risk} tone={nextEvent.risk === "HIGH" ? "danger" : "warning"} /> : <TerminalBadge label="Unavailable" tone="neutral" />}</header>
-          {nextEvent ? <div className="eventCountdown"><EventCountdown startsAt={nextEvent.startsAt} initialNow={now} /><h3>{nextEvent.name}</h3><time dateTime={nextEvent.startsAt}>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(nextEvent.startsAt))} UK</time><p>Countdown is calculated from the verified provider timestamp and updates automatically.</p></div> : <div className="dashboardUnavailable"><strong>Reliable event timing unavailable</strong><p>The connected provider has not supplied a future event with a complete timestamp. No event or countdown has been inferred.</p></div>}
-        </article>
-
-        <article className="dailyCard accuracyCard">
-          <header><div><span>VERIFIED HISTORY</span><h2>Bullseye accuracy</h2></div><TerminalBadge label={accuracy.status} tone={accuracy.status === "verified" ? "positive" : "neutral"} /></header>
-          {accuracy.status === "verified" ? <div className="accuracyVerified"><strong>{accuracy.accuracyPercent}%</strong><p>{accuracy.correct} correct directional classifications from {accuracy.sampleSize} independently verified outcomes.</p><small>Latest verification: {accuracy.latestVerifiedAt}</small></div> : accuracy.status === "insufficient" ? <div className="dashboardUnavailable"><strong>Insufficient verified history</strong><p>{accuracy.sampleSize} of {accuracy.required} required verified outcomes are stored. No accuracy percentage is shown until the minimum sample is reached.</p></div> : <div className="dashboardUnavailable"><strong>Verified history unavailable</strong><p>The outcome store could not be verified. No performance result has been displayed.</p></div>}
-          <footer>Directional classification accuracy only. Not trading returns, profitability, or a guarantee of future results.</footer>
-        </article>
+      <section className="bullseyeAccount" aria-label="Membership and account">
+        <SubscriptionStatusCard
+          tier={access.tier}
+          status={membership?.status ?? null}
+          billingPlan={membership?.plan ?? null}
+          periodEnd={membership?.current_period_end ?? null}
+          portalUrl={portalUrl}
+          foundingRecords={foundingRecords}
+          billingInterval={commercial.membership?.billingInterval ?? null}
+          compact
+        />
+        <section className="dashboardAccessArea" aria-label="Progressive membership access">
+          <header><span>YOUR ACCESS</span><h2>Membership depth</h2><p>Account controls stay separate from today&apos;s market decision.</p></header>
+          {access.tier === "elite" ? <article className="dailyCard fullyUnlocked">
+            <TerminalBadge label="Elite unlocked" tone="warning" />
+            <h3>Full Bullseye workflow available</h3>
+            <p>Intelligence, decisions, structured planning and diagnostics are included.</p>
+            <Link href="/terminal">Open the Elite terminal →</Link>
+          </article> : <LockedPremiumCard
+            tier={offer!.targetTier}
+            title={offer!.targetTier === "pro" ? "Explore explainable decisions" : "Explore structured planning"}
+            value={offer!.targetTier === "pro"
+              ? "See how Bullseye turns verified inputs into confidence, bias and trade permission."
+              : "See how Elite converts a decision into disciplined participation and review triggers."}
+            benefits={offer!.targetTier === "pro"
+              ? ["Explainable scores", "Decision permission", "Conflict warnings"]
+              : ["Structured planner", "Event-risk controls", "Launch diagnostics"]}
+            previewEligible={offer!.eligible}
+            previewAvailable={previewState.available}
+            previewCadence={offer!.cadence}
+          />}
+        </section>
       </section>
 
-      <SubscriptionStatusCard tier={access.tier} status={membership?.status ?? null} billingPlan={membership?.plan ?? null} periodEnd={membership?.current_period_end ?? null} portalUrl={portalUrl} foundingRecords={founding100.records} billingInterval={commercial.membership?.billingInterval ?? null} compact />
-
-      <section className="dashboardAccessArea" aria-label="Progressive membership access">
-        <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>
-        {access.tier === "elite" ? <article className="dailyCard fullyUnlocked"><TerminalBadge label="Elite unlocked" tone="warning" /><h3>Full decision workflow available</h3><p>Intelligence, decisions, structured planning and launch diagnostics are included in your current membership.</p><Link href="/terminal">Open the Elite terminal →</Link></article> : <LockedPremiumCard tier={offer!.targetTier} title={offer!.targetTier === "pro" ? "Explore the explainable decision workflow" : "Explore structured planning and diagnostics"} value={offer!.targetTier === "pro" ? "See how Bullseye turns verified market inputs into explainable confidence, bias and trade permission." : "See how Elite converts a deterministic decision into disciplined participation, confirmations and review triggers."} benefits={offer!.targetTier === "pro" ? ["Explainable scores", "Decision permission", "Conflict warnings"] : ["Structured planner", "Event-risk controls", "Launch diagnostics"]} previewEligible={offer!.eligible} previewAvailable={previewState.available} previewCadence={offer!.cadence} />}
+      <section className="bullseyeAccuracy" aria-label="Verified performance status">
+        <span>VERIFIED HISTORY</span>
+        <strong>{accuracy.status === "verified" ? `${accuracy.accuracyPercent}% directional accuracy` : "Performance verification building"}</strong>
+        <small>{accuracy.status === "verified"
+          ? `${accuracy.correct} correct classifications from ${accuracy.sampleSize} verified outcomes.`
+          : `${accuracy.sampleSize} of ${accuracy.required} required outcomes stored. No percentage is shown early.`}</small>
       </section>
     </div>
   </MemberShell>;

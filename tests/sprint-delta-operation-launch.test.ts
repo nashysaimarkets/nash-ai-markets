@@ -69,8 +69,11 @@ test("launch and onboarding pages avoid fake urgency and automatic-entitlement c
   assert.match(waitlist, /No guaranteed invitation/);
   assert.match(founding, /does not change billing, membership, or entitlement/);
   assert.match(founding, /does not guarantee Founding Member designation/);
-  assert.match(dashboard, /access\.tier === "pro" \|\| access\.tier === "elite"/);
-  for (const source of [waitlist, founding]) {
+  assert.match(dashboard, /createProgressiveAccess\(tier, previewState\.claims, now\)/);
+  assert.match(dashboard, /access\.effectiveTier/);
+  assert.match(dashboard, /<LockedPremiumCard/);
+  assert.doesNotMatch(dashboard, /tier\s*=\s*["'](?:pro|elite)["']/);
+  for (const source of [waitlist, founding, dashboard]) {
     assert.doesNotMatch(source, /only \d+ (?:places|spots)|ends in|act now|hurry/i);
   }
 });

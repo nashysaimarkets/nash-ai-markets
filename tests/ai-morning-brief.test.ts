@@ -108,6 +108,6 @@ test("dashboard wires live AI only into entitled verified Morning Brief output",
   assert.match(page, /access\.features\.intelligence && deterministicMorningBrief\.mode === "verified"/);
   assert.match(page, /generateAIMorningBrief/);
   assert.match(page, /applyAIMorningBrief/);
-  assert.match(page, /Deterministic fallback active/);
-  assert.match(page, /OpenAI summarized verified engine evidence only/);
+  assert.match(page, /Bullseye command centre/);
+  assert.match(page, /No directional conclusion is shown until the connected market data passes freshness and validation checks\./);
 });

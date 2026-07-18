@@ -110,8 +110,9 @@ test("invalid or unverified outcome rows never count toward accuracy", () => {
 
 test("dashboard keeps locked premium output out of conditional server rendering", async () => {
   const source = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /access\.tier === "elite" \? <article/);
+  assert.match(source, /access\.tier === "elite" \? <article className=/);
   assert.match(source, /<LockedPremiumCard/);
+  assert.match(source, /founding100\.records\[0\]/);
   assert.doesNotMatch(source, /fake countdown|limited time|hurry/i);
 });
 

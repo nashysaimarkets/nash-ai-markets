@@ -82,11 +82,12 @@ test("executive dashboard integrates verified summary, preview safety, and subsc
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
   assert.match(dashboard, /createMorningBrief/);
   assert.match(dashboard, /MORNING_BRIEF_PLACEHOLDER_INPUT/);
-  assert.match(dashboard, /executiveKpiStrip/);
-  assert.match(dashboard, /executiveMorningBrief/);
+  assert.match(dashboard, /bullseyeCommand/);
+  assert.match(dashboard, /bullseyeSignalBar/);
+  assert.match(dashboard, /bullseyeMainGrid/);
+  assert.match(dashboard, /bullseyeToolGrid/);
+  assert.match(dashboard, /bullseyeService/);
   assert.match(dashboard, /<SubscriptionStatusCard/);
-  assert.match(dashboard, /morningBrief\.directionalBias \?\? "Not available"/);
-  assert.match(dashboard, /Preview fixture timestamp/);
 });
 
 test("member profile is protected, noindex, and exposes no Stripe identifiers", async () => {
