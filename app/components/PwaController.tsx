@@ -84,6 +84,7 @@ export function PwaController() {
 
     const handleInstallPrompt = (event: Event) => {
       event.preventDefault();
+      if (dismissedThisSession()) return;
       setPromptEvent(event as InstallPromptEvent);
       setVisible(true);
     };
@@ -94,6 +95,7 @@ export function PwaController() {
     if (!isStandalone() && !dismissedThisSession()) {
       if (isIosSafari()) {
         iosPromptTimer = window.setTimeout(() => {
+          if (dismissedThisSession()) return;
           setShowIosHelp(true);
           setVisible(true);
         }, 0);

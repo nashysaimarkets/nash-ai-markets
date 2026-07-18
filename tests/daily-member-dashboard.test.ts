@@ -126,6 +126,12 @@ test("dashboard includes recoverable loading and error states", async () => {
   assert.match(error, /onClick=\{reset\}/);
 });
 
+test("lower dashboard Founding 100 number stays on one line", async () => {
+  const styles = await readFile(new URL("../app/dashboard/dashboard-corrections.css", import.meta.url), "utf8");
+  assert.match(styles, /\.bullseyeAccount \.subscriptionStatusCompact \.founding100Badge > span/);
+  assert.match(styles, /white-space: nowrap/);
+});
+
 test("verified outcome migration is server-only and rejects synthetic rows by schema", async () => {
   const migration = await readFile(new URL("../supabase/migrations/202607170002_verified_outcomes.sql", import.meta.url), "utf8");
   assert.match(migration, /enable row level security/);

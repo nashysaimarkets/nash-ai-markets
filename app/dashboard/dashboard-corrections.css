@@ -45,6 +45,11 @@
   width: 100%;
 }
 
+.bullseyeAccount .subscriptionStatusCompact .founding100Badge > span {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .pwaInstallPrompt {
   max-height: calc(100dvh - 40px - env(safe-area-inset-bottom));
   overflow: auto;
