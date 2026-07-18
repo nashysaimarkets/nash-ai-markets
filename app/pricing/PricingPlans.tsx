@@ -27,8 +27,8 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
       <article className="commercialPopular"><b>MOST POPULAR</b><span>PRO</span><h2>{annual ? "£149/year" : "£14.99/month"}</h2><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Choose Pro securely</button></form></article>
       <article className="commercialElite">
         <div className="commercialPlanBadges">
-          <Image src="/brand/badge-elite.svg" width={220} height={56} alt="Elite membership" />
-          <Image src="/brand/badge-founding-100.svg" width={270} height={56} alt="Founding 100 member programme" />
+          <Image src="/brand/elite-member-badge.svg" width={300} height={72} alt="Elite membership" />
+          <Image src="/brand/founding-100-badge.svg" width={330} height={72} alt="Founding 100 member programme" />
         </div>
         <h2>{annual ? "£299/year" : "£29.99/month"}</h2>
         <p>Full intelligence, planning and diagnostic access for the complete workflow.</p>

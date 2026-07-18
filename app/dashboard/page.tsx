@@ -98,7 +98,7 @@ export default async function MemberDashboard() {
           <div className="memberWelcomeActions"><Link className="memberPrimaryAction" href="/terminal">Enter Bullseye Terminal <span>↗</span></Link><Link href="/brief">Read today’s market brief</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div>
         </div>
         <div className="memberWelcomeVisual">
-          <div className="memberAccessStatus"><Image src={access.tier === "elite" ? "/brand/badge-elite.svg" : "/brand/logo-mark.svg"} width={220} height={56} alt={access.tier === "elite" ? "Elite membership" : ""} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+          <div className="memberAccessStatus"><Image src={access.tier === "elite" ? "/brand/elite-member-badge.svg" : "/brand/logo-mark.svg"} width={300} height={72} alt={access.tier === "elite" ? "Elite membership" : ""} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
           {founding100.records.map((record) => <Founding100Badge key={`${record.programme}-${record.position}`} record={record} compact />)}
         </div>
       </section>
