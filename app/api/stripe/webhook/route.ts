@@ -25,6 +25,15 @@ export function foundingSubscriptionActive(status: string): boolean {
   return status === "active" || status === "trialing";
 }
 
+function logSupabaseFailure(stage: "membership_rpc" | "founding_rpc", error: { code?: string; message?: string }) {
+  console.error("Stripe membership database call failed", {
+    category: "membership_sync_failure",
+    stage,
+    code: error.code ?? "unknown",
+    message: error.message ?? "unknown",
+  });
+}
+
 async function customerEmail(stripe: Stripe, customer: string | Stripe.Customer | Stripe.DeletedCustomer | null) {
   if (!customer) return null;
   const record = typeof customer === "string" ? await stripe.customers.retrieve(customer) : customer;
@@ -45,7 +54,10 @@ async function syncFounding100(
     p_subscription_active: active,
     p_event_created_at: eventCreated,
   });
-  if (error) throw new Error("Founding 100 synchronization failed");
+  if (error) {
+    logSupabaseFailure("founding_rpc", error);
+    throw new Error("Founding 100 synchronization failed");
+  }
 }
 
 async function saveSubscription(
@@ -77,7 +89,10 @@ async function saveSubscription(
       p_unit_amount: null,
       p_event_created_at: eventCreated,
     });
-    if (error) throw error;
+    if (error) {
+      logSupabaseFailure("membership_rpc", error);
+      throw error;
+    }
     await syncFounding100(subscription, null, email, eventCreated);
     return;
   }
@@ -99,7 +114,10 @@ async function saveSubscription(
     p_event_created_at: eventCreated,
   });
 
-  if (error) throw error;
+  if (error) {
+    logSupabaseFailure("membership_rpc", error);
+    throw error;
+  }
   await syncFounding100(subscription, plan, email, eventCreated);
 }
 
@@ -149,7 +167,10 @@ export async function POST(request: Request) {
           p_unit_amount: null,
           p_event_created_at: event.created,
         });
-        if (error) throw error;
+        if (error) {
+          logSupabaseFailure("membership_rpc", error);
+          throw error;
+        }
         const { error: foundingError } = await createAdminClient().rpc("sync_founding_100", {
           p_email: "",
           p_programme: null,
@@ -157,7 +178,10 @@ export async function POST(request: Request) {
           p_subscription_active: false,
           p_event_created_at: event.created,
         });
-        if (foundingError) throw new Error("Founding 100 synchronization failed");
+        if (foundingError) {
+          logSupabaseFailure("founding_rpc", foundingError);
+          throw new Error("Founding 100 synchronization failed");
+        }
       }
     }
   } catch {
