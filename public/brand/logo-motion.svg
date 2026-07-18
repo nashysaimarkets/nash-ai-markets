@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 260" role="img" aria-labelledby="title">
+  <title id="title">Animated NASH AI Markets logo asset</title>
+  <rect width="800" height="260" fill="#020807"/>
+  <g transform="translate(84 130)">
+    <circle r="56" fill="none" stroke="#d9ab52" stroke-width="2" stroke-dasharray="352" stroke-dashoffset="352"><animate attributeName="stroke-dashoffset" from="352" to="0" dur=".8s" fill="freeze"/></circle>
+    <path d="M-78 0H78M0-78V78" stroke="#38f28e" stroke-opacity=".72" stroke-dasharray="156" stroke-dashoffset="156"><animate attributeName="stroke-dashoffset" from="156" to="0" dur=".65s" begin=".2s" fill="freeze"/></path>
+    <circle r="13" fill="#d9ab52" opacity="0"><animate attributeName="opacity" values="0;1;1" dur=".45s" begin=".65s" fill="freeze"/></circle>
+    <circle r="5" fill="#38f28e" opacity="0"><animate attributeName="opacity" values="0;1;0.7" dur=".7s" begin=".8s" fill="freeze"/></circle>
+  </g>
+  <g opacity="0"><animate attributeName="opacity" from="0" to="1" dur=".5s" begin=".7s" fill="freeze"/>
+    <text x="184" y="126" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="54" font-weight="700" letter-spacing="13">NASH <tspan fill="#38f28e">AI</tspan></text>
+    <text x="188" y="164" fill="#91a29b" font-family="monospace" font-size="16" letter-spacing="15">MARKETS</text>
+  </g>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" role="img" aria-labelledby="title">
+  <title id="title">NASH AI Markets animated launch background</title>
+  <defs><radialGradient id="a"><stop stop-color="#174c35" stop-opacity=".7"/><stop offset="1" stop-color="#020807" stop-opacity="0"/></radialGradient><pattern id="p" width="80" height="80" patternUnits="userSpaceOnUse"><path d="M80 0H0V80" fill="none" stroke="#91a29b" stroke-opacity=".06"/></pattern></defs>
+  <rect width="1920" height="1080" fill="#020807"/><rect width="1920" height="1080" fill="url(#p)"/>
+  <circle cx="1480" cy="150" r="700" fill="url(#a)"><animate attributeName="opacity" values=".45;.72;.45" dur="8s" repeatCount="indefinite"/></circle>
+  <path d="M-100 830C180 790 270 650 510 700S830 540 1080 610s380-220 950-180" fill="none" stroke="#38f28e" stroke-opacity=".4" stroke-width="3" stroke-dasharray="2100" stroke-dashoffset="2100"><animate attributeName="stroke-dashoffset" from="2100" to="0" dur="5s" fill="freeze"/></path>
+  <path d="M-100 870C170 820 330 760 570 770s330-90 590-40 420-120 870-80" fill="none" stroke="#d9ab52" stroke-opacity=".16" stroke-width="2"/>
+  <g fill="#d9ab52" opacity=".5"><circle cx="510" cy="700" r="5"/><circle cx="1080" cy="610" r="5"/><circle cx="1580" cy="462" r="5"/></g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">NASH AI Markets responsive device composition</title>
+  <desc id="desc">Reusable laptop and phone mockups displaying illustrative NASH AI Markets interfaces.</desc>
+  <defs><radialGradient id="g"><stop stop-color="#153f2d"/><stop offset="1" stop-color="#020807"/></radialGradient><linearGradient id="s" x2="1" y2="1"><stop stop-color="#0b1713"/><stop offset="1" stop-color="#040a08"/></linearGradient></defs>
+  <rect width="1600" height="1000" fill="url(#g)"/>
+  <ellipse cx="820" cy="850" rx="680" ry="76" fill="#000" opacity=".55"/>
+  <g transform="translate(150 170)">
+    <rect width="1110" height="650" rx="28" fill="#0b0f0d" stroke="#d9ab52" stroke-opacity=".42" stroke-width="3"/>
+    <rect x="26" y="26" width="1058" height="598" rx="9" fill="#030908"/>
+    <rect x="26" y="26" width="1058" height="65" fill="#07110e"/>
+    <circle cx="68" cy="58" r="17" fill="none" stroke="#d9ab52"/><circle cx="68" cy="58" r="5" fill="#38f28e"/>
+    <text x="100" y="64" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="4">NASH AI MARKETS</text>
+    <text x="70" y="146" fill="#38f28e" font-family="monospace" font-size="9" letter-spacing="2">PRE-MARKET MISSION CONTROL</text>
+    <text x="70" y="205" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="42" font-weight="600">See the market differently.</text>
+    <rect x="70" y="260" width="650" height="275" fill="url(#s)" stroke="#91a29b" stroke-opacity=".18"/>
+    <path d="M96 472c110-20 125-96 240-72s156-85 260-54 105-64 100-58" fill="none" stroke="#38f28e" stroke-width="4"/>
+    <rect x="748" y="260" width="290" height="130" fill="#09130f" stroke="#d9ab52" stroke-opacity=".35"/>
+    <text x="776" y="296" fill="#91a29b" font-family="monospace" font-size="9">DECISION PERMISSION</text>
+    <text x="776" y="350" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="32" font-weight="700">ASSESS</text>
+    <rect x="748" y="410" width="290" height="125" fill="#09130f" stroke="#91a29b" stroke-opacity=".16"/>
+    <text x="776" y="446" fill="#91a29b" font-family="monospace" font-size="9">RISK CONTROL</text>
+    <text x="776" y="500" fill="#d9ab52" font-family="Arial,sans-serif" font-size="25" font-weight="700">VISIBLE</text>
+    <path d="M-70 650h1250l-85 68H25Z" fill="#121815" stroke="#91a29b" stroke-opacity=".24"/>
+  </g>
+  <g transform="translate(1190 328)">
+    <rect width="270" height="520" rx="44" fill="#0b0f0d" stroke="#d9ab52" stroke-opacity=".7" stroke-width="3"/>
+    <rect x="13" y="13" width="244" height="494" rx="33" fill="#030908"/>
+    <rect x="91" y="25" width="88" height="16" rx="8" fill="#151b18"/>
+    <circle cx="51" cy="78" r="16" fill="none" stroke="#d9ab52"/><circle cx="51" cy="78" r="4" fill="#38f28e"/>
+    <text x="78" y="75" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="10" font-weight="700" letter-spacing="2">NASH AI</text>
+    <text x="32" y="136" fill="#38f28e" font-family="monospace" font-size="7" letter-spacing="1">MEMBER DASHBOARD</text>
+    <text x="32" y="176" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="27" font-weight="600">Precision.</text>
+    <rect x="32" y="213" width="206" height="92" fill="#09130f" stroke="#91a29b" stroke-opacity=".18"/>
+    <text x="50" y="242" fill="#91a29b" font-family="monospace" font-size="7">MARKET STATUS</text><text x="50" y="280" fill="#d9ab52" font-family="Arial,sans-serif" font-size="20" font-weight="700">VERIFY</text>
+    <rect x="32" y="320" width="206" height="62" fill="#38f28e"/>
+    <text x="135" y="357" fill="#031009" font-family="monospace" font-size="9" font-weight="700" text-anchor="middle">OPEN TERMINAL</text>
+    <path d="M32 448c40 0 55-35 94-28s65-33 112-46" fill="none" stroke="#38f28e" stroke-width="3"/>
+  </g>
+  <text x="80" y="940" fill="#91a29b" font-family="monospace" font-size="10" letter-spacing="3">NASH AI MARKETS · RESPONSIVE PRODUCT COMPOSITION · ILLUSTRATIVE</text>
+</svg>

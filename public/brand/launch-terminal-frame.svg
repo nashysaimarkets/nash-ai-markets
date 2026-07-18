@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">NASH AI Markets terminal launch frame</title>
+  <desc id="desc">A reusable, clearly illustrative terminal composition for launch media.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#020807"/><stop offset=".55" stop-color="#071410"/><stop offset="1" stop-color="#020706"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#38f28e" stop-opacity="0"/><stop offset=".3" stop-color="#38f28e"/><stop offset="1" stop-color="#8affbf"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#38f28e" stop-opacity=".18"/><stop offset="1" stop-color="#38f28e" stop-opacity="0"/></radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="24"/></filter>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse"><path d="M64 0H0V64" fill="none" stroke="#91a29b" stroke-opacity=".08"/></pattern>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <circle cx="1230" cy="180" r="360" fill="url(#glow)" filter="url(#soft)"/>
+  <rect x="80" y="72" width="1440" height="856" rx="20" fill="#050b09" stroke="#d9ab52" stroke-opacity=".45"/>
+  <rect x="80" y="72" width="1440" height="84" rx="20" fill="#08110e"/>
+  <path d="M80 156h1440" stroke="#d9ab52" stroke-opacity=".28"/>
+  <g transform="translate(120 98)">
+    <circle cx="24" cy="18" r="17" fill="none" stroke="#d9ab52"/><path d="M24-6v48M0 18h48" stroke="#38f28e" stroke-opacity=".7"/><circle cx="24" cy="18" r="5" fill="#d9ab52"/>
+    <text x="62" y="16" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="5">NASH AI</text>
+    <text x="62" y="34" fill="#91a29b" font-family="monospace" font-size="8" letter-spacing="4">MARKETS / MISSION CONTROL</text>
+  </g>
+  <text x="1444" y="118" fill="#d9ab52" font-family="monospace" font-size="10" text-anchor="end" letter-spacing="2">ILLUSTRATIVE PRODUCT FRAME</text>
+  <rect x="120" y="198" width="990" height="586" fill="url(#grid)" stroke="#91a29b" stroke-opacity=".14"/>
+  <text x="160" y="245" fill="#91a29b" font-family="monospace" font-size="10" letter-spacing="2">SESSION STRUCTURE</text>
+  <text x="160" y="286" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="30" font-weight="600">Scenario map</text>
+  <path d="M160 670 C270 640 326 574 426 588 S590 480 702 515 S820 408 940 438 S1025 360 1070 348" fill="none" stroke="url(#line)" stroke-width="5"/>
+  <path d="M160 670 C270 640 326 574 426 588 S590 480 702 515 S820 408 940 438 S1025 360 1070 348 L1070 744H160Z" fill="url(#glow)" opacity=".48"/>
+  <g fill="#07110e" stroke="#38f28e" stroke-opacity=".5"><rect x="330" y="546" width="138" height="34"/><rect x="770" y="405" width="138" height="34"/></g>
+  <g fill="#8affbf" font-family="monospace" font-size="9" letter-spacing="1"><text x="399" y="568" text-anchor="middle">DECISION ZONE</text><text x="839" y="427" text-anchor="middle">VERIFIED INPUT</text></g>
+  <rect x="1140" y="198" width="340" height="586" fill="#07100e" stroke="#91a29b" stroke-opacity=".14"/>
+  <text x="1180" y="245" fill="#91a29b" font-family="monospace" font-size="10" letter-spacing="2">DECISION PERMISSION</text>
+  <circle cx="1310" cy="398" r="94" fill="none" stroke="#26352f" stroke-width="16"/>
+  <path d="M1310 304a94 94 0 1 1-88 127" fill="none" stroke="#38f28e" stroke-width="16"/>
+  <text x="1310" y="405" fill="#f5f6f1" font-family="Arial,sans-serif" font-size="54" font-weight="700" text-anchor="middle">72</text>
+  <text x="1310" y="432" fill="#91a29b" font-family="monospace" font-size="9" text-anchor="middle" letter-spacing="2">CONTEXT SCORE</text>
+  <g font-family="monospace" font-size="10"><text x="1180" y="560" fill="#91a29b">MODE</text><text x="1438" y="560" fill="#d9ab52" text-anchor="end">ASSESS</text><text x="1180" y="608" fill="#91a29b">SOURCE</text><text x="1438" y="608" fill="#f5f6f1" text-anchor="end">VERIFIED</text><text x="1180" y="656" fill="#91a29b">RISK</text><text x="1438" y="656" fill="#f5f6f1" text-anchor="end">VISIBLE</text></g>
+  <g transform="translate(120 822)" font-family="monospace"><text fill="#38f28e" font-size="9" letter-spacing="2">01 CONTEXT</text><text x="320" fill="#38f28e" font-size="9" letter-spacing="2">02 SCENARIOS</text><text x="640" fill="#38f28e" font-size="9" letter-spacing="2">03 INVALIDATION</text><text x="960" fill="#38f28e" font-size="9" letter-spacing="2">04 RISK</text></g>
+  <text x="120" y="886" fill="#66756e" font-family="monospace" font-size="9" letter-spacing="2">NO LIVE VALUE · LAUNCH FILM / WEBSITE / PRESS USE</text>
+</svg>
