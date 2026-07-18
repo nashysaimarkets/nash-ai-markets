@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell.tsx";
+import { FoundingMemberBadge } from "../components/FoundingMemberBadge.tsx";
 import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
 import { applyAIMorningBrief, createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
@@ -71,6 +72,8 @@ export default async function MemberDashboard() {
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
+  const foundingRecord = founding100.records.find((record) => record.status === "active" && record.priceLockActive)
+    ?? founding100.records[0];
   const portalUrl = "/api/stripe/portal";
   const accessCopy = access.tier === "elite"
     ? "Every Bullseye intelligence, decision, planning and diagnostics feature is unlocked."
@@ -91,7 +94,12 @@ export default async function MemberDashboard() {
     <div className="memberDashboardShell">
       <section className="memberWelcome">
         <div><span>DAILY MEMBER BRIEF</span><h1>Welcome back, {name}.</h1><p>{accessCopy}</p><div className="memberWelcomeActions"><Link href="/brief">Read today’s market brief</Link><Link href="/terminal">Open full terminal</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div></div>
-        <div className="memberAccessStatus"><TerminalBadge label={`${access.tier} member`} tone={access.tier === "elite" ? "warning" : access.tier === "pro" ? "info" : "neutral"} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+        <div className="memberAccessStatus">
+          <TerminalBadge label={`${access.tier} member`} tone={access.tier === "elite" ? "warning" : access.tier === "pro" ? "info" : "neutral"} />
+          <strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong>
+          <small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small>
+          {access.tier === "pro" || access.tier === "elite" ? <FoundingMemberBadge programme={foundingRecord?.programme ?? access.tier} position={foundingRecord?.position} /> : null}
+        </div>
       </section>
 
       <section className="executiveKpiStrip" aria-label="Executive account and market summary">

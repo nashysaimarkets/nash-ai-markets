@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { DashboardBrand } from "../dashboard/components/DashboardBrand.tsx";
 
 type MemberShellProps = {
   active: "dashboard" | "brief" | "terminal" | "profile" | "onboarding";
@@ -19,10 +20,10 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
   return <main className={`memberDashboard ${className}`.trim()}>
     <a className="memberSkipLink" href="#member-content">Skip to member content</a>
     <header className="memberDashboardNav">
-      <Link href="/dashboard" className="ftBrand">
+      {active === "dashboard" ? <DashboardBrand /> : <Link href="/dashboard" className="ftBrand">
         <span className="ftReticle" aria-hidden="true" />
         <span>NASH <b>AI</b> / BULLSEYE</span>
-      </Link>
+      </Link>}
       <nav aria-label="Member navigation">
         {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}</Link>)}
         <Link href="/auth/signout">Sign out</Link>
