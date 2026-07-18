@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../utils/supabase/server.ts";
 import { isFounding100Admin, loadFounding100Report } from "../../lib/server/founding-100.ts";
 import { TerminalBadge } from "../../terminal/components/TerminalBadge.tsx";
+import { BrandLogo } from "../../components/BrandLogo.tsx";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -19,6 +20,7 @@ export default async function Founding100AdminPage() {
 
   const report = await loadFounding100Report();
   return <main className="foundingAdminPage">
+    <BrandLogo audience="member" context="bullseye" />
     <header><div><span>RESTRICTED OPERATIONS</span><h1>Founding 100 report</h1><p>Server-verified awards only. Positions include active and forfeited records and are never reused.</p></div><Link href="/dashboard">Return to dashboard</Link></header>
     {report.status === "unavailable" ? <section className="foundingAdminUnavailable" role="alert"><h2>Founding reporting unavailable</h2><p>The database could not be verified. No availability or member list is inferred.</p></section> : <>
       <section className="foundingAdminSummary" aria-label="Founding programme availability">

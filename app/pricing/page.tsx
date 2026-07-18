@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 import { loadFounding100Availability } from "../lib/server/founding-100.ts";
 import { PricingPlans } from "./PricingPlans.tsx";
 
@@ -7,6 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Pricing",
   description: "Compare Free, Pro and Elite NASH AI Markets memberships.",
+  alternates: { canonical: "/pricing" },
 };
 
 const faqs = [
@@ -21,7 +23,7 @@ const faqs = [
 export default async function PricingPage({ searchParams }: { searchParams: Promise<{ checkout?: string }> }) {
   const [availability, query] = await Promise.all([loadFounding100Availability(), searchParams]);
   return <main className="commercialPage">
-    <header className="commercialNav"><Link href="/">NASH <b>AI</b> MARKETS</Link><Link href="/login">Member login</Link></header>
+    <header className="commercialNav"><BrandLogo compactOnMobile /><Link href="/login">Member login</Link></header>
     <section className="commercialHero"><span>MEMBERSHIP</span><h1>Choose the intelligence<br />that fits your process.</h1><p>Transparent monthly and annual access. No invented scarcity, no guaranteed outcomes, and secure Stripe billing.</p>{query.checkout === "unavailable" ? <div className="commercialError" role="alert">Secure checkout is temporarily unavailable. No payment was taken. Please retry later.</div> : null}</section>
     <PricingPlans availability={availability} />
     <section className="commercialFaq"><span>QUESTIONS, ANSWERED</span><h2>Frequently asked questions</h2><div>{faqs.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>

@@ -57,3 +57,77 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 @media(max-width:900px){.launchHero{grid-template-columns:1fr;gap:36px;padding:42px 0}.launchFormCard{width:min(620px,100%)}.foundingGrid{grid-template-columns:1fr}}
 @media(max-width:640px){.launchPage{padding:0 12px}.launchPageNav{height:60px}.launchPageNav .ftBrand{font-size:8px}.launchHero{min-height:auto;padding:34px 0}.launchHeroCopy h1{font-size:46px}.launchHeroCopy p{font-size:12px}.launchHeroCopy ul{display:grid}.launchFormCard{padding:20px 14px}.waitlistForm>div{grid-template-columns:1fr}.waitlistForm button{min-height:50px}.launchFooter{justify-content:flex-start;flex-wrap:wrap;height:auto;padding:20px 0}.foundingHero{align-items:flex-start;flex-direction:column;padding:20px 15px}.foundingHero>a{min-height:44px;display:inline-flex;align-items:center}.foundingGrid{gap:8px}.foundingForm{padding:14px}.foundingForm fieldset{grid-template-columns:1fr}.foundingForm fieldset label,.foundingSelect select,.foundingForm>button{min-height:48px}}
 @media(prefers-reduced-motion:reduce){.memberWelcome,.executiveKpiStrip,.executiveMorningBrief,.dailyDashboardGrid>.dailyCard,.subscriptionStatusCompact{animation:none}}
+
+/* Sprint Bravo: authenticated dashboard refinement */
+.memberDashboard{background:
+  radial-gradient(circle at 16% -8%,#183128 0,transparent 29%),
+  radial-gradient(circle at 88% 12%,#111d2d 0,transparent 25%),
+  var(--ft-bg)}
+.memberDashboardNav{position:sticky;top:0;box-shadow:0 10px 35px #0003}
+.memberDashboardNav>nav a,.memberWelcomeActions a,.dailyCard,.memberAccessMap article{
+  transition:border-color .2s ease,background-color .2s ease,box-shadow .2s ease,transform .2s ease,color .2s ease
+}
+.memberDashboardNav>nav a:hover{border-color:#ffffff2d;background:#ffffff08;color:#dce5e0}
+.memberDashboardShell{padding-top:clamp(18px,2.5vw,34px)}
+.memberWelcome{position:relative;overflow:hidden;padding:clamp(22px,3vw,34px);border-color:#ffffff1c;background:
+  linear-gradient(112deg,#122019f2 0,#0d141af5 58%,#0a0e14 100%);
+  box-shadow:0 24px 70px #0006,inset 0 1px #ffffff0a
+}
+.memberWelcome:after{content:"";position:absolute;right:-90px;top:-150px;width:320px;height:320px;border:1px solid #35d89b12;border-radius:50%;box-shadow:0 0 90px #35d89b0a;pointer-events:none}
+.memberWelcome h1{max-width:760px;font-weight:560;line-height:1.02;letter-spacing:-.045em}
+.memberWelcome p{max-width:760px;font-size:12px;line-height:1.7}
+.memberWelcomeActions a:hover{transform:translateY(-2px);border-color:#35d89b99;background:#35d89b13;box-shadow:0 10px 28px #0005}
+.memberAccessStatus{position:relative;z-index:1;min-width:230px}
+.executiveKpiStrip,.memberAccessMap,.executiveMorningBrief,.dailyCard,.subscriptionStatusCompact{
+  border-color:#ffffff1c;box-shadow:0 18px 48px #0004,inset 0 1px #ffffff06
+}
+.executiveKpiStrip>div{padding:16px 18px}
+.executiveKpiStrip strong{font-size:15px;letter-spacing:-.02em}
+.memberAccessMap article:hover,.dailyCard:hover{border-color:#35d89b2b;background:#0d141a;box-shadow:0 22px 58px #0005;transform:translateY(-2px)}
+.dailyDashboardGrid{gap:14px}.dailyCard>header{padding:14px 16px}.todayMission dl{margin:16px}.todayMission dl div{padding:14px}
+.executiveMorningBrief>header{padding:19px 21px}.executiveMorningBriefBody>div{padding:20px}
+.executiveMorningBriefBody li,.todayMission dd{font-size:10px}
+.foundingMemberWelcomeBadge{width:min(290px,100%);display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:11px 12px;border:1px solid #e8b74f42;border-radius:5px;background:linear-gradient(125deg,#e8b74f0d,#0b101500);text-align:left}
+.foundingMemberWelcomeBadge>span{display:grid;place-items:center;width:27px;height:27px;border:1px solid #e8b74f55;border-radius:50%;color:var(--ft-amber);font:700 10px var(--font-geist-mono),monospace}
+.foundingMemberWelcomeBadge small,.foundingMemberWelcomeBadge strong,.foundingMemberWelcomeBadge p{display:block;margin:0}
+.foundingMemberWelcomeBadge small{color:var(--ft-amber);font:700 6px var(--font-geist-mono),monospace;letter-spacing:.1em}
+.foundingMemberWelcomeBadge strong{margin-top:4px;color:#ece8d8;font:700 10px var(--font-geist-mono),monospace}
+.foundingMemberWelcomeBadge p{margin-top:4px;color:#847e69;font-size:7px;line-height:1.4}
+.foundingMemberWelcomeBadge[data-confirmed=true]{border-color:#e8b74f70;box-shadow:0 9px 28px #e8b74f0a}
+.dashboardBrand{position:relative;user-select:none}
+.dashboardBrandSmile{position:absolute;left:calc(100% + 8px);top:50%;opacity:0;transform:translate(-4px,-50%) scale(.72);filter:grayscale(.3);font-size:13px;pointer-events:none;transition:opacity .22s ease,transform .28s cubic-bezier(.2,.8,.2,1)}
+.dashboardBrandSmile[data-visible=true]{opacity:.68;transform:translate(0,-50%) scale(1)}
+.bullseyeDiscoveryBackdrop{position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:20px;background:#020504e8;animation:bravoFadeIn .2s ease both}
+.bullseyeDiscovery{width:min(420px,100%);padding:28px;border:1px solid #35d89b47;border-radius:8px;background:radial-gradient(circle at 50% 0,#173127 0,transparent 48%),#090e0c;box-shadow:0 34px 100px #000b,0 0 80px #35d89b0b;text-align:center;animation:bravoDialogIn .3s cubic-bezier(.2,.8,.2,1) both}
+.bullseyeDiscovery>span{display:grid;place-items:center;width:36px;height:36px;margin:0 auto 15px;border:1px solid #35d89b66;border-radius:50%;color:var(--ft-green)}
+.bullseyeDiscovery h2{margin:0;color:#e8eee9;font-size:22px;letter-spacing:-.03em}
+.bullseyeDiscovery blockquote{margin:18px auto;color:#a7b4ad;font:400 14px/1.7 Georgia,serif}
+.bullseyeDiscovery>div{font-size:20px}.bullseyeDiscovery button{min-height:36px;margin-top:20px;padding:8px 14px;border:1px solid #ffffff20;border-radius:4px;background:#ffffff05;color:#849189;font:700 8px var(--font-geist-mono),monospace;cursor:pointer}
+.bullseyeDiscovery button:hover{border-color:#35d89b55;color:var(--ft-green)}.bullseyeDiscovery button:focus-visible{outline:2px solid var(--ft-blue);outline-offset:3px}
+.dashboardAccessMapSkeleton{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;min-height:96px;background:var(--ft-border-soft)}
+.dashboardAccessMapSkeleton>div{display:grid;align-content:center;gap:11px;padding:16px;background:var(--ft-surface)}
+.dashboardAccessMapSkeleton .terminalSkeletonLine:first-child{width:58%}.dashboardAccessMapSkeleton .terminalSkeletonLine:last-child{width:86%}
+@keyframes bravoFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bravoDialogIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:900px){
+  .memberWelcome{gap:22px}
+  .memberAccessStatus{width:100%;min-width:0}
+  .foundingMemberWelcomeBadge{width:min(360px,100%)}
+  .dashboardAccessMapSkeleton{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:640px){
+  .memberDashboardShell{padding-bottom:28px}
+  .memberWelcome{padding:21px 16px}
+  .memberWelcome p{font-size:11px}
+  .executiveKpiStrip>div{padding:13px 11px}
+  .dailyDashboardGrid{gap:9px}
+  .dailyCard:hover,.memberAccessMap article:hover{transform:none}
+  .dashboardBrandSmile{left:calc(100% + 5px);font-size:11px}
+  .dashboardAccessMapSkeleton{grid-template-columns:1fr;min-height:220px}
+  .dashboardAccessMapSkeleton>div:nth-child(n+4){display:none}
+  .bullseyeDiscovery{padding:24px 18px}
+}
+@media(prefers-reduced-motion:reduce){
+  .memberDashboardNav>nav a,.memberWelcomeActions a,.dailyCard,.memberAccessMap article,.dashboardBrandSmile,.bullseyeDiscoveryBackdrop,.bullseyeDiscovery{animation:none;transition:none}
+}
+.launchFooter a{min-height:44px;display:inline-flex;align-items:center}

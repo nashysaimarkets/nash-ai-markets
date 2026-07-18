@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandLogo } from "../components/BrandLogo.tsx";
+
+export const metadata: Metadata = {
+  title: "Membership Required",
+  description: "Review membership access options for the NASH AI Markets terminal.",
+  robots: { index: false, follow: false },
+};
 
 const copy = {
   expired: {
@@ -22,7 +30,7 @@ export default async function MembershipRequired({ searchParams }: { searchParam
   const reason = (await searchParams).reason;
   const state = reason === "expired" ? copy.expired : reason === "temporary" ? copy.temporary : copy.missing;
   return <main className="legalPage">
-    <Link href="/" className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b> MARKETS</span></Link>
+    <BrandLogo />
     <section className="legalCard">
       <span className="kicker">{state.kicker}</span>
       <h1>{state.title}</h1>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = {
@@ -12,10 +13,7 @@ export default function Login() {
   return (
     <main className="accessPage">
       <header className="accessNav">
-        <Link href="/" className="mcBrand" aria-label="NASH AI Markets home">
-          <span className="mcBrandMark" aria-hidden="true"><i /></span>
-          <span>NASH <b>AI</b> MARKETS</span>
-        </Link>
+        <BrandLogo compactOnMobile />
         <Link href="/">Back to overview</Link>
       </header>
 

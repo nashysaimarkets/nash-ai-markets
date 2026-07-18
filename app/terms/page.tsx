@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { PublicPageHeader } from "../components/PublicPageHeader.tsx";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
   description: "Terms of use for NASH AI Markets.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function Terms() {
-  return <main className="legal"><header><Link href="/">← NASH AI MARKETS</Link></header><article>
+  return <main className="legal"><PublicPageHeader /><article>
     <span>LEGAL</span><h1>Terms of Use</h1><p className="updated">Last updated: 17 July 2026</p>
     <h2>Educational information only</h2><p>NASH AI Markets provides general educational commentary. Nothing on this site or in a briefing is personal financial advice, a recommendation, an offer, or a solicitation to buy or sell any financial instrument.</p>
     <h2>Trading risk</h2><p>Futures and options can produce substantial and rapid losses, including losses greater than an initial investment. You are solely responsible for your decisions, position sizing and risk management. Past performance does not predict future results.</p>

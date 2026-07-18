@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
@@ -21,7 +22,7 @@ import { terminalStatusMessage } from "./lib/terminal-state";
 import { chartDataForStatus, chartDisplayState, terminalFallbackMessage, terminalMarketState, verifiedQuote } from "./lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Bullseye Terminal | NASH AI Markets", description: "Professional deterministic market intelligence terminal.", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Bullseye Terminal", description: "Professional deterministic market intelligence terminal.", robots: { index: false, follow: false } };
 
 const toneForState = (state: string) => state === "Live" ? "positive" : state === "Delayed" ? "warning" : state === "Cached" ? "info" : "danger";
 const quoteTone = (direction?: "up" | "down" | "flat") => direction === "up" ? "positive" : direction === "down" ? "danger" : "neutral";
@@ -52,8 +53,9 @@ export default async function Terminal() {
   const portalUrl = "/api/stripe/portal";
 
   return <main className="foxtrotTerminal" id="overview">
+    <h1 className="visuallyHidden">NASH AI Markets Bullseye Terminal</h1>
     <header className="ftTopbar">
-      <Link href="/" className="ftBrand" aria-label="NASH AI Markets home"><span className="ftReticle" aria-hidden="true" /><span>NASH <b>AI</b> / BULLSEYE</span></Link>
+      <BrandLogo audience="member" context="bullseye" compactOnMobile />
       <div className="ftMarketIdentity"><strong>S&amp;P 500 FUTURES</strong><span>{isVerified ? `${snapshot.source} · ${formatSnapshotAge(snapshot.asOf)}` : "Verified feed unavailable"}</span></div>
       <div className="ftTopActions"><TerminalBadge label={state} tone={toneForState(state)} pulse={state === "Live"} /><time dateTime={snapshot.asOf}>{isVerified ? `${formatUkTimestamp(snapshot.asOf)} UK` : "Last update unavailable"}</time><TerminalControls /></div>
     </header>
@@ -86,7 +88,7 @@ export default async function Terminal() {
 
       {access.features["launch-diagnostics"] ? <LaunchDiagnosticsPanel diagnostics={diagnostics} compact /> : <LockedPremiumCard tier="elite" title="Validate the full launch-quality data path" value="Elite diagnostics show provider health, freshness, latency, fallback state and engine synchronization." benefits={["Provider health", "Readiness checks", "Safe build provenance"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
-      <footer className="ftFooter"><span>Educational decision support only. Not personalised financial advice. Futures and options involve substantial risk. Verify source, status and timestamp independently.</span><Link href="/terms">Terms &amp; risk disclosure</Link></footer>
+      <footer className="ftFooter"><BrandLogo audience="member" context="markets" compactOnMobile /><span>Educational decision support only. Not personalised financial advice. Futures and options involve substantial risk. Verify source, status and timestamp independently.</span><Link href="/terms">Terms &amp; risk disclosure</Link></footer>
     </section>
   </main>;
 }
