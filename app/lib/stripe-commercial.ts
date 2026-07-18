@@ -9,6 +9,11 @@ const offeringVariables = {
   elite_year: "STRIPE_ELITE_ANNUAL_PRICE_ID",
 } as const;
 
+const legacyOfferingVariables = {
+  pro_month: "STRIPE_LEGACY_PRO_PRICE_ID",
+  elite_month: "STRIPE_LEGACY_ELITE_PRICE_ID",
+} as const;
+
 export function checkoutPriceId(
   offering: string | null,
   environment: Record<string, string | undefined> = process.env,
@@ -22,7 +27,10 @@ export function configuredOffering(
   environment: Record<string, string | undefined> = process.env,
 ): StripeOffering | null {
   if (!priceId) return null;
-  for (const [offering, variable] of Object.entries(offeringVariables)) {
+  for (const [offering, variable] of [
+    ...Object.entries(offeringVariables),
+    ...Object.entries(legacyOfferingVariables),
+  ]) {
     if (priceId !== environment[variable]) continue;
     const [plan, interval] = offering.split("_");
     return { plan: plan as CommercialPlan, billingInterval: interval as BillingInterval };
