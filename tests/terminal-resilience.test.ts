@@ -63,8 +63,8 @@ test("login and callback paths sanitize errors and redirect destinations", async
   ]);
   assert.equal(login.includes("setMessage(error ? error.message"), false);
   assert.ok(login.includes("window.location.origin"));
-  assert.ok(login.includes("/auth/implicit?next=/dashboard"));
-  assert.ok(browserClient.includes('flowType: "implicit"'));
+  assert.ok(login.includes("/auth/callback?next=/dashboard"));
+  assert.ok(browserClient.includes('flowType: "pkce"'));
   assert.ok(callback.includes('!requestedNext.startsWith("//")'));
   assert.ok(confirmation.includes("verifyOtp"));
   assert.ok(confirmation.includes('!requestedNext.startsWith("//")'));

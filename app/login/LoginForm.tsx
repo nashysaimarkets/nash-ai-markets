@@ -20,7 +20,7 @@ export default function LoginForm() {
         email: email.trim(),
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/auth/implicit?next=/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
       });
       setMessageTone(error ? "error" : "success");
