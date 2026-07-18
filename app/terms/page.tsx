@@ -4,6 +4,7 @@ import { PublicPageHeader } from "../components/PublicPageHeader.tsx";
 export const metadata: Metadata = {
   title: "Terms of Use",
   description: "Terms of use for NASH AI Markets.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function Terms() {

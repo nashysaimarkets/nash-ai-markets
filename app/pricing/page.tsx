@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Pricing",
   description: "Compare Free, Pro and Elite NASH AI Markets memberships.",
+  alternates: { canonical: "/pricing" },
 };
 
 const faqs = [

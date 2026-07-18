@@ -6,6 +6,7 @@ import { WaitlistForm } from "./WaitlistForm.tsx";
 export const metadata: Metadata = {
   title: "Launch Waiting List",
   description: "Request launch and access updates for NASH AI Markets.",
+  alternates: { canonical: "/waitlist" },
 };
 
 export default function WaitlistPage() {

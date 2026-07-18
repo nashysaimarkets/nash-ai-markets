@@ -130,3 +130,4 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 @media(prefers-reduced-motion:reduce){
   .memberDashboardNav>nav a,.memberWelcomeActions a,.dailyCard,.memberAccessMap article,.dashboardBrandSmile,.bullseyeDiscoveryBackdrop,.bullseyeDiscovery{animation:none;transition:none}
 }
+.launchFooter a{min-height:44px;display:inline-flex;align-items:center}
