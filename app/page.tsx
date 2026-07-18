@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { BrandLogo } from "./components/BrandLogo.tsx";
 import {
   founding100AvailabilityLabel,
   loadFounding100Availability,
@@ -90,10 +91,7 @@ export default async function Home() {
       <a className="mcSkip" href="#main-content">Skip to content</a>
 
       <header className="mcNav">
-        <a href="#top" className="mcBrand" aria-label="NASH AI Markets home">
-          <span className="mcBrandMark" aria-hidden="true"><i /></span>
-          <span>NASH <b>AI</b> MARKETS</span>
-        </a>
+        <BrandLogo compactOnMobile />
         <nav aria-label="Main navigation">
           <a href="#platform">Platform</a>
           <a href="#workflow">Method</a>
@@ -310,7 +308,7 @@ export default async function Home() {
 
       <footer className="mcFooter">
         <div className="mcFooterTop">
-          <a href="#top" className="mcBrand" aria-label="Back to top"><span className="mcBrandMark" aria-hidden="true"><i /></span><span>NASH <b>AI</b> MARKETS</span></a>
+          <BrandLogo />
           <p>Structured market preparation for traders who value evidence, scenarios and risk awareness.</p>
           <div><a href="/terminal">Terminal</a><a href="/pricing">Pricing</a><a href="/waitlist">Launch waiting list</a><a href="/about">About</a><a href="/help">Help</a><a href="/contact">Contact</a></div>
           <div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/risk-disclaimer">Risk disclaimer</a><a href={portalUrl}>Manage subscription</a></div>

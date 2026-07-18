@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BrandLogo } from "../../components/BrandLogo.tsx";
 
 const DISCOVERY_WINDOW_MS = 3_000;
 const DISCOVERY_CLICK_COUNT = 5;
@@ -36,7 +36,7 @@ export function DashboardBrand() {
     if (smileTimer.current) clearTimeout(smileTimer.current);
   }, []);
 
-  const handleActivation = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleActivation = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.preventDefault();
     const now = Date.now();
     clickTimes.current = [...clickTimes.current.filter((time) => now - time <= DISCOVERY_WINDOW_MS), now];
@@ -47,17 +47,14 @@ export function DashboardBrand() {
   };
 
   return <>
-    <Link
-      href="/dashboard"
-      className="ftBrand dashboardBrand"
+    <span
+      className="dashboardBrand"
       onClick={handleActivation}
       onPointerEnter={revealSmile}
-      aria-label="NASH AI Markets Bullseye dashboard"
     >
-      <span className="ftReticle" aria-hidden="true" />
-      <span>NASH <b>AI</b> / BULLSEYE</span>
+      <BrandLogo audience="member" context="bullseye" compactOnMobile />
       <span className="dashboardBrandSmile" data-visible={showSmile} aria-hidden="true">😃</span>
-    </Link>
+    </span>
     {showMessage ? <div className="bullseyeDiscoveryBackdrop" role="presentation" onMouseDown={(event) => {
       if (event.currentTarget === event.target) closeMessage();
     }}>

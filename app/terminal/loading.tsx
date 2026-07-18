@@ -1,4 +1,5 @@
 import { BrandLoader } from "../components/BrandLoader.tsx";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 
 function SkeletonLine({ width = "100%" }: { width?: string }) {
   return <span className="terminalSkeletonLine" style={{ width }} />;
@@ -11,7 +12,7 @@ function SkeletonCard({ className = "" }: { className?: string }) {
 export default function TerminalLoading() {
   return <main className="foxtrotTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Bullseye terminal">
     <BrandLoader label="Loading Bullseye terminal" />
-    <header className="ftTopbar terminalLoadingTopbar"><SkeletonLine width="190px" /><SkeletonLine width="280px" /><SkeletonLine width="120px" /></header>
+    <header className="ftTopbar terminalLoadingTopbar"><BrandLogo audience="member" context="bullseye" compactOnMobile /><SkeletonLine width="280px" /><SkeletonLine width="120px" /></header>
     <aside className="ftRail terminalLoadingRail" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <SkeletonLine key={index} width="28px" />)}</aside>
     <section className="ftWorkspace">
       <div className="ftSafetyBanner"><SkeletonLine width="58%" /></div>

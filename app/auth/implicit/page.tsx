@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BrandLogo } from "../../components/BrandLogo";
 import { createClient } from "../../../utils/supabase/client";
 
 function safeNext(value: string | null) {
@@ -45,5 +46,5 @@ export default function CompleteEmailSignIn() {
     return () => { active = false; };
   }, []);
 
-  return <main className="outcome loginPage"><div className="outcomeCard loginCard"><p className="kicker">SECURE ACCESS</p><h1>Signing you in.</h1><p role="status">{message}</p></div></main>;
+  return <main className="outcome loginPage"><div className="outcomeCard loginCard"><BrandLogo /><p className="kicker">SECURE ACCESS</p><h1>Signing you in.</h1><p role="status">{message}</p></div></main>;
 }

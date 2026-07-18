@@ -13,6 +13,7 @@ import { createLaunchDiagnostics } from "../lib/launch-diagnostics";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../lib/membership-entitlement";
 import { loadPreviewClaims } from "../lib/preview-access";
 import { chartDataForStatus, chartDisplayState } from "../lib/visual-terminal";
+import { BrandLogo } from "../../components/BrandLogo.tsx";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Launch Diagnostics | Bullseye", robots: { index: false, follow: false } };
@@ -50,6 +51,7 @@ export default async function TerminalDiagnosticsPage() {
 
   return (
     <main className="diagnosticsPage">
+      <BrandLogo audience="member" context="bullseye" />
       <header>
         <div>
           <span>INTERNAL · MEMBER ACCESS</span>

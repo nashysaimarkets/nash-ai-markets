@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandLogo } from "../components/BrandLogo.tsx";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
@@ -53,7 +54,7 @@ export default async function Terminal() {
 
   return <main className="foxtrotTerminal" id="overview">
     <header className="ftTopbar">
-      <Link href="/" className="ftBrand" aria-label="NASH AI Markets home"><span className="ftReticle" aria-hidden="true" /><span>NASH <b>AI</b> / BULLSEYE</span></Link>
+      <BrandLogo audience="member" context="bullseye" compactOnMobile />
       <div className="ftMarketIdentity"><strong>S&amp;P 500 FUTURES</strong><span>{isVerified ? `${snapshot.source} · ${formatSnapshotAge(snapshot.asOf)}` : "Verified feed unavailable"}</span></div>
       <div className="ftTopActions"><TerminalBadge label={state} tone={toneForState(state)} pulse={state === "Live"} /><time dateTime={snapshot.asOf}>{isVerified ? `${formatUkTimestamp(snapshot.asOf)} UK` : "Last update unavailable"}</time><TerminalControls /></div>
     </header>
@@ -86,7 +87,7 @@ export default async function Terminal() {
 
       {access.features["launch-diagnostics"] ? <LaunchDiagnosticsPanel diagnostics={diagnostics} compact /> : <LockedPremiumCard tier="elite" title="Validate the full launch-quality data path" value="Elite diagnostics show provider health, freshness, latency, fallback state and engine synchronization." benefits={["Provider health", "Readiness checks", "Safe build provenance"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
-      <footer className="ftFooter"><span>Educational decision support only. Not personalised financial advice. Futures and options involve substantial risk. Verify source, status and timestamp independently.</span><Link href="/terms">Terms &amp; risk disclosure</Link></footer>
+      <footer className="ftFooter"><BrandLogo audience="member" context="markets" compactOnMobile /><span>Educational decision support only. Not personalised financial advice. Futures and options involve substantial risk. Verify source, status and timestamp independently.</span><Link href="/terms">Terms &amp; risk disclosure</Link></footer>
     </section>
   </main>;
 }
