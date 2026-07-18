@@ -111,8 +111,11 @@ function formatChange(quote: FmpQuote): string {
 }
 
 function sp500Presentation(providerSymbol: string): Pick<MarketQuote, "symbol" | "label"> {
-  return providerSymbol === DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.sp500Futures
-    ? { symbol: "ES", label: "ES FUTURES" }
+  if (providerSymbol === DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.sp500Futures) {
+    return { symbol: "ES", label: "ES FUTURES" };
+  }
+  return providerSymbol === "SPY"
+    ? { symbol: "SPY", label: "S&P 500 ETF" }
     : { symbol: "SPX", label: "S&P 500" };
 }
 
