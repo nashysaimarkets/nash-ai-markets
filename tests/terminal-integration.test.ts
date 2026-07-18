@@ -51,6 +51,19 @@ test("OHLCV validation rejects malformed, unordered and impossible candles", () 
   assert.equal(isValidOhlcv([{ time: 2, open: 10, high: 11, low: 9, close: 10, volume: 1 }, { time: 1, open: 10, high: 11, low: 9, close: 10, volume: 1 }]), false);
 });
 
+test("chart visual fixture is valid, test-only and visibly labelled", async () => {
+  const [{ TERMINAL_CHART_TEST_FIXTURE }, route, chart] = await Promise.all([
+    import("../app/terminal/chart-test/fixture.ts"),
+    readFile(new URL("../app/terminal/chart-test/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/components/MarketChart.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.equal(isValidOhlcv(TERMINAL_CHART_TEST_FIXTURE), true);
+  assert.match(route, /process\.env\.NODE_ENV === "production"/);
+  assert.match(route, /process\.env\.BULLSEYE_CHART_TEST !== "1"/);
+  assert.match(route, /DEMO \/ TEST DATA/);
+  assert.match(chart, /mode === "test"/);
+});
+
 test("critical warnings and high-impact provider events remain visible", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
   assert.match(page, /Data-quality warnings/);

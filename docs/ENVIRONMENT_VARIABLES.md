@@ -113,6 +113,8 @@ Do not embed a credential in `MARKET_DATA_API_URL`.
 
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | Public build config | Mandatory | Canonical public origin and authentication redirect base; production remains `https://www.nashaimarkets.com`, previews use their Vercel origin |
+| `NEXT_PUBLIC_EASTER_HUNT_ENABLED` | Public feature flag | Optional; disabled by default | Makes the feature-flagged Golden Egg Hunt available without changing saved progress or entitlement rules |
 | `NODE_ENV` | Runtime config | Set by platform | Production/development/test label |
 | `APP_VERSION` | Build config | Mandatory for traceability | SemVer application version |
 | `BUILD_TIMESTAMP` | Build config | Mandatory for traceability | ISO-8601 build timestamp |
@@ -121,6 +123,7 @@ Do not embed a credential in `MARKET_DATA_API_URL`.
 | `CF_PAGES_COMMIT_SHA` | Build config | Platform alternative | Cloudflare-provided commit |
 | `BULLSEYE_TEST_TOTALS` | Build config | Recommended | Positive verified-test count displayed by diagnostics |
 | `BULLSEYE_ADMIN_EMAILS` | Server | Required for Founding reporting | Comma-separated authenticated operator emails permitted to open `/admin/founding-100`; never expose with `NEXT_PUBLIC_` |
+| `BULLSEYE_CHART_TEST` | Server, test only | Optional; never enable in production | Enables the deterministic, visibly labelled chart fixture on the isolated chart-test route |
 
 Diagnostics fall back safely when metadata is missing; that fallback is not
 sufficient for production release traceability.

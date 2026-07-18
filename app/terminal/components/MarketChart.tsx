@@ -14,7 +14,7 @@ type MarketChartProps = {
   mode?: ChartDataMode;
 };
 
-export function MarketChart({ data, symbol, loading = false, error, initialTimeframe = "15m" }: MarketChartProps) {
+export function MarketChart({ data, symbol, loading = false, error, initialTimeframe = "15m", mode = "verified" }: MarketChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [timeframe, setTimeframe] = useState<TerminalTimeframe>(initialTimeframe);
   const state = chartDisplayState(data, loading, error);
@@ -53,9 +53,9 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
   }, [data, state, timeframe]);
 
   return (
-    <section className="marketChart" aria-label={`${symbol} candlestick chart`} data-chart-state={state}>
+    <section className="marketChart" aria-label={`${symbol} candlestick chart`} data-chart-state={state} data-chart-mode={mode}>
       <header className="marketChartHeader">
-        <div><span>PRIMARY WORKSPACE</span><strong>{symbol} · Candles &amp; volume</strong></div>
+        <div><span>PRIMARY WORKSPACE</span><strong>{symbol} · Candles &amp; volume</strong>{mode === "test" && state === "ready" ? <em className="marketChartTestLabel">DEMO / TEST DATA</em> : null}</div>
         <div className="timeframeSelector" role="group" aria-label="Chart timeframe">
           {TERMINAL_TIMEFRAMES.map((option) => <button key={option} type="button" aria-pressed={timeframe === option} aria-label={`Show ${option} timeframe`} onClick={() => setTimeframe(option)}>{option}</button>)}
         </div>
@@ -64,6 +64,7 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
       {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-describedby="market-chart-description" /> : (
         <div className={`marketChartState marketChartState-${state}`} role={state === "error" ? "alert" : "status"}>
           <Image className="marketStateArtwork" src={state === "error" ? "/brand/provider-offline-state.svg" : state === "loading" ? "/brand/loading-mark.svg" : "/brand/premium-empty-state.svg"} width={360} height={220} alt="" />
+          <span className="marketStateGrid" aria-hidden="true" />
           <span className="marketStateChart" aria-hidden="true" />
           {state === "loading" ? <><i className="chartLoader" /><strong>Connecting to verified market data</strong><span>Waiting for validated OHLCV candles. No values are displayed until verification completes.</span></> : null}
           {state === "error" ? <><strong>Market data provider unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered. Existing NO TRADE safeguards remain active."}</span></> : null}

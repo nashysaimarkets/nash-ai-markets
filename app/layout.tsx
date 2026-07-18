@@ -27,9 +27,6 @@ export const metadata: Metadata = {
   publisher: "NASH AI Markets",
   category: "Finance",
   keywords: ["S&P 500 futures", "pre-market planning", "market scenarios", "market analysis", "trading risk management"],
-  alternates: {
-    canonical: "/",
-  },
   robots: {
     index: true,
     follow: true,
@@ -50,7 +47,7 @@ export const metadata: Metadata = {
     locale: "en_GB",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "NASH AI Markets — Pre-Market Mission Control",
@@ -61,7 +58,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "NASH AI Markets — Pre-Market Mission Control",
     description: "Verified context. Conditional scenarios. Risk-aware preparation.",
-    images: ["/og-image.svg"],
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [
@@ -88,9 +85,41 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.nashaimarkets.com/#organization",
+        name: "NASH AI Markets",
+        url: "https://www.nashaimarkets.com",
+        logo: "https://www.nashaimarkets.com/icons/app-icon-512.png",
+        email: "hello@nashaimarkets.com",
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.nashaimarkets.com/#website",
+        url: "https://www.nashaimarkets.com",
+        name: "NASH AI Markets",
+        publisher: { "@id": "https://www.nashaimarkets.com/#organization" },
+        inLanguage: "en-GB",
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "NASH AI Markets",
+        applicationCategory: "FinanceApplication",
+        operatingSystem: "Web",
+        url: "https://www.nashaimarkets.com",
+        description: "Provider-backed market intelligence with deterministic risk controls.",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "GBP", category: "Free membership" },
+      },
+    ],
+  };
+
   return (
     <html lang="en-GB">
       <head>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-startup-image" href="/splash/apple-splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" />
         <link rel="apple-touch-startup-image" href="/splash/apple-splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" />

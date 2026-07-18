@@ -15,7 +15,7 @@ export type OhlcvPoint = {
 
 export type ChartDisplayState = "ready" | "empty" | "loading" | "error";
 export type TerminalMarketState = "Live" | "Delayed" | "Cached" | "Offline";
-export type ChartDataMode = "verified";
+export type ChartDataMode = "verified" | "test";
 
 export function isValidOhlcv(data: readonly OhlcvPoint[]): boolean {
   return data.every((point, index) =>

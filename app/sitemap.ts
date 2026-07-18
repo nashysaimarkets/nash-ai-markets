@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 const publicRoutes = [
   "",
   "/about",
+  "/blog",
   "/contact",
   "/help",
   "/pricing",

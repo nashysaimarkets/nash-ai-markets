@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import {
   founding100AvailabilityLabel,
@@ -82,6 +83,7 @@ const plans = [
 ];
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home() {
   const foundingAvailability = await loadFounding100Availability();

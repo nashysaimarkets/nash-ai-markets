@@ -1,5 +1,7 @@
 .DS_Store
 .next/
+.vinext/
+next-env.d.ts
 .sites-runtime/
 .wrangler/
 dist/
