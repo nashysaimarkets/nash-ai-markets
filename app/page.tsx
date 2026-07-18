@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import Image from "next/image";
 import {
   founding100AvailabilityLabel,
   loadFounding100Availability,
@@ -7,21 +8,27 @@ import {
 const intelligenceLayers = [
   {
     number: "01",
-    label: "Context",
-    title: "Start with the whole session",
+    label: "Precision",
+    title: "Verify the full session",
     copy: "Overnight markets, scheduled catalysts and cross-asset conditions are organised into one calm pre-market view.",
   },
   {
     number: "02",
-    label: "Scenarios",
-    title: "Prepare for more than one outcome",
+    label: "Clarity",
+    title: "Prepare more than one path",
     copy: "Bull, bear and stand-aside cases make the conditions, conflicts and invalidation logic visible before a decision.",
   },
   {
     number: "03",
-    label: "Risk",
+    label: "Confidence",
     title: "Know when not to act",
     copy: "Data quality, event risk and decision permission remain prominent, especially when the evidence is incomplete.",
+  },
+  {
+    number: "04",
+    label: "Performance",
+    title: "Review a repeatable process",
+    copy: "Structured evidence and verified history help members review decision quality without inventing returns or promising outcomes.",
   },
 ];
 
@@ -91,8 +98,7 @@ export default async function Home() {
 
       <header className="mcNav">
         <a href="#top" className="mcBrand" aria-label="NASH AI Markets home">
-          <span className="mcBrandMark" aria-hidden="true"><i /></span>
-          <span>NASH <b>AI</b> MARKETS</span>
+          <Image src="/brand/logo-horizontal.svg" width={420} height={72} alt="NASH AI Markets" priority />
         </a>
         <nav aria-label="Main navigation">
           <a href="#platform">Platform</a>
@@ -111,8 +117,9 @@ export default async function Home() {
           <div className="mcHeroAtmosphere" aria-hidden="true" />
           <div className="mcHeroGrid">
             <div className="mcHeroCopy">
+              <Image className="mcHeroBrand" src="/brand/logo-horizontal.svg" width={420} height={72} alt="NASH AI Markets" priority />
               <p className="mcEyebrow"><span /> Pre-market mission control</p>
-              <h1>Trade preparation,<br /><em>with a clear head.</em></h1>
+              <h1>See the market<br /><em>differently.</em></h1>
               <p className="mcLead">
                 NASH AI Markets turns verified market context into conditional
                 scenarios, decision permissions and risk-aware plans for the
@@ -310,7 +317,7 @@ export default async function Home() {
 
       <footer className="mcFooter">
         <div className="mcFooterTop">
-          <a href="#top" className="mcBrand" aria-label="Back to top"><span className="mcBrandMark" aria-hidden="true"><i /></span><span>NASH <b>AI</b> MARKETS</span></a>
+          <a href="#top" className="mcBrand" aria-label="Back to top"><Image src="/brand/logo-horizontal.svg" width={420} height={72} alt="NASH AI Markets" /></a>
           <p>Structured market preparation for traders who value evidence, scenarios and risk awareness.</p>
           <div><a href="/terminal">Terminal</a><a href="/pricing">Pricing</a><a href="/waitlist">Launch waiting list</a><a href="/about">About</a><a href="/help">Help</a><a href="/contact">Contact</a></div>
           <div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/risk-disclaimer">Risk disclaimer</a><a href={portalUrl}>Manage subscription</a></div>

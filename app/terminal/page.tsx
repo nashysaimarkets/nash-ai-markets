@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
@@ -53,7 +54,7 @@ export default async function Terminal() {
 
   return <main className="foxtrotTerminal" id="overview">
     <header className="ftTopbar">
-      <Link href="/" className="ftBrand" aria-label="NASH AI Markets home"><span className="ftReticle" aria-hidden="true" /><span>NASH <b>AI</b> / BULLSEYE</span></Link>
+      <Link href="/" className="ftBrand" aria-label="NASH AI Markets home"><Image src="/brand/logo-mark.svg" width={38} height={38} alt="" /><span>NASH <b>AI</b> / BULLSEYE</span></Link>
       <div className="ftMarketIdentity"><strong>S&amp;P 500 FUTURES</strong><span>{isVerified ? `${snapshot.source} · ${formatSnapshotAge(snapshot.asOf)}` : "Verified feed unavailable"}</span></div>
       <div className="ftTopActions"><TerminalBadge label={state} tone={toneForState(state)} pulse={state === "Live"} /><time dateTime={snapshot.asOf}>{isVerified ? `${formatUkTimestamp(snapshot.asOf)} UK` : "Last update unavailable"}</time><TerminalControls /></div>
     </header>

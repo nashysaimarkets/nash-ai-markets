@@ -63,7 +63,7 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
       <p className="srOnly" id="market-chart-description">{chartDescription}</p>
       {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-describedby="market-chart-description" /> : (
         <div className={`marketChartState marketChartState-${state}`} role={state === "error" ? "alert" : "status"}>
-          <Image className="marketStateMark" src="/brand/logo-mark.svg" width={48} height={48} alt="" />
+          <Image className="marketStateArtwork" src={state === "error" ? "/brand/provider-offline-state.svg" : state === "loading" ? "/brand/loading-mark.svg" : "/brand/premium-empty-state.svg"} width={360} height={220} alt="" />
           <span className="marketStateChart" aria-hidden="true" />
           {state === "loading" ? <><i className="chartLoader" /><strong>Connecting to verified market data</strong><span>Waiting for validated OHLCV candles. No values are displayed until verification completes.</span></> : null}
           {state === "error" ? <><strong>Market data provider unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered. Existing NO TRADE safeguards remain active."}</span></> : null}

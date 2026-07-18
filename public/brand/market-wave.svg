@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Abstract emerald market wave</title>
+  <defs>
+    <linearGradient id="line" x1="0" y1="0" x2="1440" y2="0"><stop stop-color="#38f28e" stop-opacity="0"/><stop offset=".18" stop-color="#38f28e"/><stop offset=".72" stop-color="#79ffbb"/><stop offset="1" stop-color="#38f28e" stop-opacity="0"/></linearGradient>
+    <linearGradient id="fill" x1="720" y1="40" x2="720" y2="320"><stop stop-color="#38f28e" stop-opacity=".22"/><stop offset="1" stop-color="#38f28e" stop-opacity="0"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <path d="M0 255C120 247 161 202 260 218s129 43 229-9 156-114 258-90 124 74 228 29 139-105 230-77 124 77 235 13v236H0z" fill="url(#fill)"/>
+  <path d="M0 255C120 247 161 202 260 218s129 43 229-9 156-114 258-90 124 74 228 29 139-105 230-77 124 77 235 13" stroke="url(#line)" stroke-width="3" filter="url(#glow)"/>
+</svg>

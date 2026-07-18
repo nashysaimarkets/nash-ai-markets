@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Abstract world-market connection grid</title>
+  <defs><radialGradient id="fade"><stop stop-color="#153f31" stop-opacity=".48"/><stop offset="1" stop-color="#06100d" stop-opacity="0"/></radialGradient><pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0v48" stroke="#94a8a0" stroke-opacity=".08"/></pattern></defs>
+  <rect width="1200" height="640" fill="url(#fade)"/><rect width="1200" height="640" fill="url(#grid)"/>
+  <g stroke="#38f28e" stroke-opacity=".22"><path d="M105 345C260 190 405 209 550 315s305 99 540-112"/><path d="M92 420c209-34 307-186 503-172s278 142 508 97"/><ellipse cx="600" cy="320" rx="520" ry="210"/><ellipse cx="600" cy="320" rx="350" ry="210"/></g>
+  <g fill="#d9ab52"><circle cx="215" cy="287" r="4"/><circle cx="548" cy="313" r="4"/><circle cx="797" cy="330" r="4"/><circle cx="1032" cy="236" r="4"/></g>
+</svg>

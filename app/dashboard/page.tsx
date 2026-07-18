@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell.tsx";
+import { Founding100Badge } from "../components/Founding100Badge.tsx";
 import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
 import { applyAIMorningBrief, createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
@@ -90,8 +92,15 @@ export default async function MemberDashboard() {
   return <MemberShell active="dashboard">
     <div className="memberDashboardShell">
       <section className="memberWelcome">
-        <div><span>DAILY MEMBER BRIEF</span><h1>Welcome back, {name}.</h1><p>{accessCopy}</p><div className="memberWelcomeActions"><Link href="/brief">Read today’s market brief</Link><Link href="/terminal">Open full terminal</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div></div>
-        <div className="memberAccessStatus"><TerminalBadge label={`${access.tier} member`} tone={access.tier === "elite" ? "warning" : access.tier === "pro" ? "info" : "neutral"} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+        <div className="memberWelcomeCopy">
+          <Image className="memberWelcomeLogo" src="/brand/logo-horizontal.svg" width={420} height={72} alt="NASH AI Markets" priority />
+          <span>DAILY MEMBER MISSION</span><h1>Welcome back, <em>{name}.</em></h1><p>{accessCopy}</p>
+          <div className="memberWelcomeActions"><Link className="memberPrimaryAction" href="/terminal">Enter Bullseye Terminal <span>↗</span></Link><Link href="/brief">Read today’s market brief</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div>
+        </div>
+        <div className="memberWelcomeVisual">
+          <div className="memberAccessStatus"><Image src={access.tier === "elite" ? "/brand/badge-elite.svg" : "/brand/logo-mark.svg"} width={220} height={56} alt={access.tier === "elite" ? "Elite membership" : ""} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+          {founding100.records.map((record) => <Founding100Badge key={`${record.programme}-${record.position}`} record={record} compact />)}
+        </div>
       </section>
 
       <section className="executiveKpiStrip" aria-label="Executive account and market summary">
@@ -122,6 +131,12 @@ export default async function MemberDashboard() {
           <Link href="/profile">Manage account <span>↗</span></Link>
         </footer>
       </section>
+
+      {process.env.NEXT_PUBLIC_EASTER_HUNT_ENABLED === "true" ? <aside className="dashboardHuntClue" aria-labelledby="hunt-clue-title">
+        <Image src="/brand/logo-mark.svg" width={48} height={48} alt="" />
+        <div><span>SEASONAL SIGNAL</span><h2 id="hunt-clue-title">NASH Golden Egg Hunt</h2><p>Five small golden signals are hidden away from trading controls. Look where perspective, process, value, curiosity and identity live.</p></div>
+        <Link href="/about">Begin the hunt <span>↗</span></Link>
+      </aside> : null}
 
       <section className={`executiveMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
         <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2>{morningBrief.summary ? <p>{morningBrief.summary}</p> : null}</div><div className="morningBriefBadges"><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /><TerminalBadge label={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"} tone={morningBrief.generation === "ai-assisted" ? "info" : "neutral"} /></div></header>
