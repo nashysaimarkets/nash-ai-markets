@@ -60,6 +60,8 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.match(offline, /VERIFIED DATA UNAVAILABLE/);
   assert.match(offline, /No trading guidance is available/);
   assert.match(controller, /beforeinstallprompt/);
+  assert.match(controller, /MEMBER_INSTALL_PATHS/);
+  assert.match(controller, /installSurface/);
   assert.match(controller, /Add to Home Screen/);
   assert.match(controller, /window\.isSecureContext/);
   assert.match(controller, /registration\.update\(\)/);

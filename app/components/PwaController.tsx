@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface InstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -9,6 +10,11 @@ interface InstallPromptEvent extends Event {
 
 const DISMISS_KEY = "nash-pwa-install-dismissed";
 const DISMISS_DAYS = 14;
+const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding"];
+
+function isMemberInstallPath(pathname: string): boolean {
+  return MEMBER_INSTALL_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
 
 function isStandalone(): boolean {
   return window.matchMedia("(display-mode: standalone)").matches
@@ -34,6 +40,8 @@ function recentlyDismissed(): boolean {
 }
 
 export function PwaController() {
+  const pathname = usePathname();
+  const installSurface = isMemberInstallPath(pathname);
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
   const [showIosHelp, setShowIosHelp] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -49,7 +57,7 @@ export function PwaController() {
     if ("serviceWorker" in navigator && window.isSecureContext) {
       const offerUpdate = (worker: ServiceWorker) => {
         setWaitingWorker(worker);
-        setVisible(true);
+        if (installSurface) setVisible(true);
       };
       const register = async () => {
         try {
@@ -80,13 +88,13 @@ export function PwaController() {
     const handleInstallPrompt = (event: Event) => {
       event.preventDefault();
       setPromptEvent(event as InstallPromptEvent);
-      setVisible(true);
+      if (installSurface) setVisible(true);
     };
     const handleInstalled = () => {
       setVisible(false);
       setStatus("NASH AI Markets is installed.");
     };
-    if (!isStandalone() && !recentlyDismissed()) {
+    if (installSurface && !isStandalone() && !recentlyDismissed()) {
       if (isIosSafari()) {
         iosPromptTimer = window.setTimeout(() => {
           setShowIosHelp(true);
@@ -104,7 +112,7 @@ export function PwaController() {
       window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
       window.removeEventListener("appinstalled", handleInstalled);
     };
-  }, []);
+  }, [installSurface]);
 
   const dismiss = () => {
     try {

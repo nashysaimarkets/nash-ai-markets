@@ -110,9 +110,6 @@ export default async function Home() {
           <div className="mcHeroAtmosphere" aria-hidden="true" />
           <div className="mcHeroGrid">
             <div className="mcHeroCopy">
-              <div className="mcHeroBrand" aria-hidden="true">
-                <Image src="/brand/logo-horizontal.svg" width={336} height={58} alt="" priority />
-              </div>
               <p className="mcEyebrow"><span /> Professional pre-market intelligence</p>
               <h1>Prepare Smarter.<br /><em>Trade Better.</em></h1>
               <p className="mcLead">

@@ -6,7 +6,7 @@
 }
 
 .mcNav {
-  height: 104px;
+  height: 86px;
   border-bottom-color: #d4af3729;
 }
 
@@ -16,21 +16,29 @@
   height: auto;
 }
 
+.mcNav nav a,
+.mcNavActions > a:first-child {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  padding-inline: 4px;
+  color: #c4cdc8;
+  font-size: 12px;
+}
+
+.mcNavActions {
+  gap: 18px;
+}
+
+.mcNav .mcButtonSmall {
+  min-height: 42px;
+  padding-inline: 17px;
+  font-size: 9px;
+}
+
 .mcHero {
-  padding-top: 90px;
-}
-
-.mcHeroBrand {
-  width: min(336px, 74vw);
-  margin-bottom: 38px;
-  padding-bottom: 23px;
-  border-bottom: 1px solid #d4af373d;
-}
-
-.mcHeroBrand img {
-  display: block;
-  width: 100%;
-  height: auto;
+  min-height: 660px;
+  padding: 54px 0 66px;
 }
 
 .mcHeroCopy .mcEyebrow {
@@ -39,8 +47,8 @@
 }
 
 .mcHero h1 {
-  margin-top: 27px;
-  font-size: clamp(58px, 6.25vw, 94px);
+  margin: 20px 0;
+  font-size: clamp(54px, 5.65vw, 82px);
   line-height: 0.94;
 }
 
@@ -51,8 +59,8 @@
 
 .mcLead {
   color: #d0d5d1;
-  font-size: 18px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.62;
 }
 
 .mcButton {
@@ -75,12 +83,25 @@
 
 .mcValueLine {
   max-width: 650px;
-  margin: 22px 0 0;
+  margin: 17px 0 0;
   padding-left: 17px;
   border-left: 2px solid #d8b87580;
   color: #c8cfcb;
   font-size: 12px;
-  line-height: 1.75;
+  line-height: 1.6;
+}
+
+.mcHeroActions {
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.mcHeroActions .mcTextLink {
+  white-space: nowrap;
+}
+
+.mcTrust {
+  margin-top: 22px;
 }
 
 .mcMissionPreview {
@@ -227,7 +248,7 @@
 .mcMissionScenarios p {
   margin: 9px 0 0;
   color: #8e9a94;
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.55;
 }
 
@@ -273,7 +294,7 @@
 .mcMissionLocked p {
   margin: 0;
   color: #909b95;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.55;
 }
 
@@ -281,7 +302,7 @@
   display: block;
   margin-bottom: 4px;
   color: #e8ede9;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .mcMissionLocked a {
@@ -327,8 +348,10 @@
 .mcMembership {
   position: relative;
   background:
-    radial-gradient(circle at 80% 20%, #0f8f5720, transparent 28%),
-    #e9ece6;
+    radial-gradient(circle at 80% 20%, #0f8f5728, transparent 28%),
+    radial-gradient(circle at 15% 82%, #d4af3710, transparent 24%),
+    #050a08;
+  color: #f1f4ef;
 }
 
 .mcMembership::before {
@@ -340,27 +363,96 @@
 }
 
 .mcPlanGrid > article {
+  border-color: #ffffff1f;
   border-radius: 9px;
-  box-shadow: 0 22px 45px #07110e12;
+  background: linear-gradient(145deg, #0c1411, #070b09);
+  color: #eef2ee;
+  box-shadow: 0 22px 45px #0007;
 }
 
 .mcPlanGrid .mcPlanFeatured {
-  border-color: #d4af3780;
+  border: 1px solid #d4af3785;
   background:
     radial-gradient(circle at 100% 0, #d4af3719, transparent 35%),
     #07110d;
-  box-shadow: 12px 12px 0 #d4af37, 0 26px 55px #07110e2b;
+  box-shadow: 0 24px 58px #0009, 0 0 34px #d4af3710, inset 0 1px #d4af3720;
+  transform: translateY(-4px);
 }
 
 .mcPlanGrid > article > header > b {
-  background: linear-gradient(135deg, #f2cf6b, #b68119);
-  color: #0a0d0b;
+  border: 1px solid #d4af3768;
+  background: #d4af3714;
+  color: #efd780;
+  font-size: 8px;
 }
 
 .mcFounding {
   border-color: #b48b38;
   border-radius: 6px;
-  background: linear-gradient(120deg, #d8b8751e, #ffffff08);
+  background: linear-gradient(120deg, #d8b87518, #ffffff05);
+}
+
+.mcMembership .mcEyebrow {
+  color: #d9b85e;
+}
+
+.mcMembership .mcSectionHead > p {
+  color: #aeb8b3;
+  font-size: 14px;
+}
+
+.mcMembership h2 em {
+  color: #38f28e;
+}
+
+.mcFounding strong {
+  color: #e5c86f;
+  font-size: 9px;
+}
+
+.mcFounding span {
+  color: #f0e4ba;
+  font-size: 12px;
+}
+
+.mcFounding small {
+  color: #aab4af;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.mcPrice > span {
+  color: #a6b0aa;
+  font-size: 11px;
+}
+
+.mcPlanGrid article > p,
+.mcPlanFeatured > p {
+  color: #aeb8b3 !important;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.mcPlanGrid ul {
+  border-top-color: #ffffff18;
+}
+
+.mcPlanGrid li {
+  color: #d7ddd9;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.mcPlanButton {
+  border-color: #ffffff38;
+  color: #f0f3ef !important;
+  font-size: 10px;
+}
+
+.mcPlanSafety {
+  color: #98a39d;
+  font-size: 9px;
+  line-height: 1.6;
 }
 
 .mcFoundingTerms {
@@ -370,16 +462,43 @@
     #07110e;
 }
 
+.mcFoundingTerms p {
+  font-size: 11px;
+  line-height: 1.7;
+}
+
 .mcMissionPreview > footer span {
   color: #56635d;
   white-space: nowrap;
 }
 
+@media (max-width: 1180px) and (min-width: 761px) {
+  .mcHeroGrid {
+    gap: 38px;
+  }
+
+  .mcHero h1 {
+    font-size: 58px;
+  }
+
+  .mcLead {
+    font-size: 15px;
+  }
+
+  .mcMissionHeader {
+    padding: 22px;
+  }
+
+  .mcMissionSummary > div {
+    min-height: 88px;
+  }
+}
+
 @media (max-width: 760px) {
   .mcNav { height: 78px; }
   .mcNav .mcBrand img { width: 184px; }
-  .mcHero { padding-top: 64px; }
-  .mcHeroBrand { width: 230px; margin-bottom: 30px; padding-bottom: 18px; }
+  .mcNavActions > a:first-child { display: none; }
+  .mcHero { padding: 50px 0 64px; }
   .mcHero h1 { font-size: clamp(48px, 14vw, 68px); }
   .mcLead { font-size: 16px; }
   .mcValueLine { font-size: 11px; }
@@ -397,6 +516,7 @@
   .mcMissionPreview > footer { display: block; padding: 13px 19px; line-height: 1.65; }
   .mcMissionPreview > footer span { display: none; }
   .mcLayerGrid article:hover { transform: none; }
+  .mcPlanGrid .mcPlanFeatured { box-shadow: 0 20px 46px #0008, 0 0 26px #d4af3710; }
 }
 
 @media (prefers-reduced-motion: reduce) {
