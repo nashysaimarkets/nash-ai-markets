@@ -57,6 +57,13 @@ history exists. A journal requires an explicit content and publishing decision.
   on the shared shell without changing their service logic.
 - Added shared site-wide visual tokens and premium treatments for outcome,
   gated-access, 404, member navigation and document states.
+- Refined the authenticated member shell, Dashboard, Market Brief, Profile,
+  Ideas Hub, onboarding and Founding Member surfaces with clearer hierarchy,
+  larger readable typography, calmer service states and deliberate mobile
+  reflow. Product logic and truthful unavailable-data handling are unchanged.
+- Upgraded shared loading and error presentation, the membership-required
+  recovery screen and branded 404 while preserving their existing destinations
+  and recovery behaviour.
 - Added explicit reduced-motion handling, visible keyboard focus, mobile tap
   targets and overflow safeguards.
 
@@ -67,9 +74,15 @@ history exists. A journal requires an explicit content and publishing decision.
 - Unit tests: 239 passed
 - Production build: passed
 - Rendered HTML check: passed
+- Production simulations: 8 passed
+- Deployment artifact validation: passed
 - Secret-pattern scan: passed
 - Responsive browser checks: 30 public-route/viewport combinations, no
   document-level horizontal overflow
 
-Protected authenticated visual acceptance still requires a preview with the
-production-equivalent authentication configuration and a real member session.
+The final member-surface refinements were completed after browser access became
+unavailable. Protected authenticated visual acceptance still requires a preview
+with a real member session, plus desktop, tablet and mobile checks of Dashboard,
+Brief, Terminal, Ideas, Profile, onboarding and Founding Member pages. The
+membership-required, 404, loading and error states should be included in that
+final browser pass.
