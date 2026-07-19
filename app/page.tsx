@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   founding100AvailabilityLabel,
   loadFounding100Availability,
@@ -90,8 +91,7 @@ export default async function Home() {
 
       <header className="mcNav">
         <a href="#top" className="mcBrand" aria-label="NASH AI Markets home">
-          <span className="mcBrandMark" aria-hidden="true"><i /></span>
-          <span>NASH <b>AI</b> MARKETS</span>
+          <Image src="/brand/logo-horizontal.svg" width={252} height={44} alt="NASH AI Markets" priority />
         </a>
         <nav aria-label="Main navigation">
           <a href="#platform">Platform</a>
@@ -110,6 +110,9 @@ export default async function Home() {
           <div className="mcHeroAtmosphere" aria-hidden="true" />
           <div className="mcHeroGrid">
             <div className="mcHeroCopy">
+              <div className="mcHeroBrand" aria-hidden="true">
+                <Image src="/brand/logo-horizontal.svg" width={336} height={58} alt="" priority />
+              </div>
               <p className="mcEyebrow"><span /> Professional pre-market intelligence</p>
               <h1>Prepare Smarter.<br /><em>Trade Better.</em></h1>
               <p className="mcLead">
@@ -139,7 +142,7 @@ export default async function Home() {
                     <span className="mcMissionKicker">Illustrative member briefing</span>
                     <h2 id="sample-mission-title">Today&apos;s Sample Mission</h2>
                   </div>
-                  <span className="mcMissionMark" aria-hidden="true">B</span>
+                  <Image className="mcMissionMark" src="/brand/logo-mark.svg" width={48} height={48} alt="" />
                 </header>
                 <div className="mcMissionSummary">
                   <div className="mcMissionStance">

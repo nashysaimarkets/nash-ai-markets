@@ -23,9 +23,10 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   const [availability, query] = await Promise.all([loadFounding100Availability(), searchParams]);
   return <main className="commercialPage">
     <header className="commercialNav"><BrandLogo /><Link href="/login">Member login</Link></header>
-    <section className="commercialHero"><span>MEMBERSHIP</span><h1>Choose the intelligence<br />that fits your process.</h1><p>Transparent monthly and annual access. No invented scarcity, no guaranteed outcomes, and secure Stripe billing.</p>{query.checkout === "unavailable" ? <div className="commercialError" role="alert">Secure checkout is temporarily unavailable. No payment was taken. Please retry later.</div> : null}</section>
+    <section className="commercialHero"><span>MEMBERSHIP · PROFESSIONAL MARKET INTELLIGENCE</span><h1>Choose the intelligence<br />that fits <em>your process.</em></h1><p>Transparent monthly and annual access to a calmer, more structured pre-market workflow. No invented scarcity, no guaranteed outcomes, and secure Stripe billing.</p><div className="commercialHeroTrust" aria-label="Membership principles"><span>Verified context</span><span>Conditional scenarios</span><span>Visible risk</span></div>{query.checkout === "unavailable" ? <div className="commercialError" role="alert">Secure checkout is temporarily unavailable. No payment was taken. Please retry later.</div> : null}</section>
     <PricingPlans availability={availability} />
     <section className="commercialFaq"><span>QUESTIONS, ANSWERED</span><h2>Frequently asked questions</h2><div>{faqs.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
     <p className="commercialRisk"><strong>Risk notice:</strong> Trading futures and options can result in substantial losses. Membership provides educational information only.</p>
+    <footer className="commercialFooter"><BrandLogo /><div><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/risk-disclaimer">Risk disclaimer</Link></div></footer>
   </main>;
 }

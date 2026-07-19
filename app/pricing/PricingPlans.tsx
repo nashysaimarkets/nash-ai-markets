@@ -23,8 +23,8 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
       <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Annual</button>
     </div>
     <section className="commercialPlans" aria-label="Membership plans">
-      <article><span>FREE</span><h2>£0</h2><p>Core market overview with a measured path into premium intelligence.</p><a href="/login">Start free</a></article>
-      <article className="commercialPopular"><b>MOST POPULAR</b><span>PRO</span><h2>{annual ? "£149/year" : "£14.99/month"}</h2><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start Pro Membership</button></form></article>
+      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><p>Core market overview with a measured path into premium intelligence.</p><a href="/login">Start free</a></article>
+      <article className="commercialPopular"><b>MOST POPULAR</b><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>PRO</span></div><h2>{annual ? "£149/year" : "£14.99/month"}</h2><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start Pro Membership</button></form></article>
       <article className="commercialElite">
         <div className="commercialPlanBadges">
           <Image src="/brand/badge-elite.svg" width={220} height={56} alt="Elite membership" />

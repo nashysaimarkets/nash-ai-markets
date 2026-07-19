@@ -1,3 +1,78 @@
+.mcHome {
+  background:
+    radial-gradient(circle at 78% 8%, #063f2a40, transparent 26%),
+    radial-gradient(circle at 10% 22%, #d4af3710, transparent 19%),
+    #030706;
+}
+
+.mcNav {
+  height: 104px;
+  border-bottom-color: #d4af3729;
+}
+
+.mcNav .mcBrand img {
+  display: block;
+  width: 252px;
+  height: auto;
+}
+
+.mcHero {
+  padding-top: 90px;
+}
+
+.mcHeroBrand {
+  width: min(336px, 74vw);
+  margin-bottom: 38px;
+  padding-bottom: 23px;
+  border-bottom: 1px solid #d4af373d;
+}
+
+.mcHeroBrand img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mcHeroCopy .mcEyebrow {
+  color: #d9b85e;
+  font-size: 9px;
+}
+
+.mcHero h1 {
+  margin-top: 27px;
+  font-size: clamp(58px, 6.25vw, 94px);
+  line-height: 0.94;
+}
+
+.mcHero h1 em {
+  color: #28d886;
+  text-shadow: 0 0 42px #0f8f5738;
+}
+
+.mcLead {
+  color: #d0d5d1;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.mcButton {
+  border-color: #d4af37;
+  background: linear-gradient(135deg, #f2cf6b, #b68119);
+  color: #090b09 !important;
+  box-shadow: 0 12px 38px #d4af3725, inset 0 1px #fff3b9;
+}
+
+.mcButton:hover {
+  background: linear-gradient(135deg, #ffe393, #c39023);
+  box-shadow: 0 18px 55px #d4af3738;
+}
+
+.mcPreviewGlow {
+  inset: 6%;
+  background: #0fb66e32;
+  filter: blur(90px);
+}
+
 .mcValueLine {
   max-width: 650px;
   margin: 22px 0 0;
@@ -11,10 +86,10 @@
 .mcMissionPreview {
   position: relative;
   overflow: hidden;
-  border: 1px solid #ffffff24;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #0d1512f7, #070b09f7);
-  box-shadow: -20px 35px 100px #000c, 0 0 0 1px #000;
+  border: 1px solid #d4af374f;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #0b1712f7, #030706f7);
+  box-shadow: -20px 35px 100px #000d, 0 0 0 1px #000, inset 0 1px #ffffff0d;
   animation: mcTerminalIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -32,8 +107,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 25px 27px;
-  border-bottom: 1px solid var(--mc-line);
+  padding: 28px 30px;
+  border-bottom: 1px solid #d4af3724;
 }
 
 .mcMissionKicker,
@@ -47,21 +122,17 @@
 
 .mcMissionHeader h2 {
   margin: 8px 0 0;
-  font-size: 25px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.035em;
 }
 
 .mcMissionMark {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
+  width: 48px;
+  height: 48px;
   border: 1px solid #d8b87580;
-  border-radius: 50%;
-  color: var(--mc-gold);
-  font: 700 14px Georgia, serif;
-  box-shadow: 0 0 25px #d8b87518;
+  border-radius: 12px;
+  box-shadow: 0 0 28px #15c67825;
 }
 
 .mcMissionSummary {
@@ -170,7 +241,7 @@
   margin: 0 27px 22px;
   padding: 18px;
   border: 1px solid #d8b87545;
-  background: #d8b8750a;
+  background: linear-gradient(100deg, #d8b87512, #0d1a14);
 }
 
 .mcMissionLocked > div {
@@ -215,8 +286,9 @@
 
 .mcMissionLocked a {
   padding: 10px 12px;
-  border: 1px solid var(--mc-gold);
-  color: var(--mc-gold);
+  border: 1px solid #d4af37;
+  background: #d4af3714;
+  color: #efd780;
   font: 750 7px var(--font-geist-mono), monospace;
   text-decoration: none;
   text-transform: uppercase;
@@ -235,12 +307,81 @@
   text-transform: uppercase;
 }
 
+.mcLayerGrid article,
+.mcScenarioGrid article {
+  border-top: 1px solid #d4af3726;
+  background: linear-gradient(145deg, #0b1310, #050806);
+}
+
+.mcLayerGrid article {
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.mcLayerGrid article:hover {
+  z-index: 1;
+  border-color: #38f28e47;
+  background: linear-gradient(145deg, #0e1b16, #070b09);
+  transform: translateY(-5px);
+}
+
+.mcMembership {
+  position: relative;
+  background:
+    radial-gradient(circle at 80% 20%, #0f8f5720, transparent 28%),
+    #e9ece6;
+}
+
+.mcMembership::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #d4af37 28%, #38f28e 72%, transparent);
+  content: "";
+}
+
+.mcPlanGrid > article {
+  border-radius: 9px;
+  box-shadow: 0 22px 45px #07110e12;
+}
+
+.mcPlanGrid .mcPlanFeatured {
+  border-color: #d4af3780;
+  background:
+    radial-gradient(circle at 100% 0, #d4af3719, transparent 35%),
+    #07110d;
+  box-shadow: 12px 12px 0 #d4af37, 0 26px 55px #07110e2b;
+}
+
+.mcPlanGrid > article > header > b {
+  background: linear-gradient(135deg, #f2cf6b, #b68119);
+  color: #0a0d0b;
+}
+
+.mcFounding {
+  border-color: #b48b38;
+  border-radius: 6px;
+  background: linear-gradient(120deg, #d8b8751e, #ffffff08);
+}
+
+.mcFoundingTerms {
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 95% 0, #d4af371c, transparent 30%),
+    #07110e;
+}
+
 .mcMissionPreview > footer span {
   color: #56635d;
   white-space: nowrap;
 }
 
 @media (max-width: 760px) {
+  .mcNav { height: 78px; }
+  .mcNav .mcBrand img { width: 184px; }
+  .mcHero { padding-top: 64px; }
+  .mcHeroBrand { width: 230px; margin-bottom: 30px; padding-bottom: 18px; }
+  .mcHero h1 { font-size: clamp(48px, 14vw, 68px); }
+  .mcLead { font-size: 16px; }
   .mcValueLine { font-size: 11px; }
   .mcMissionHeader { padding: 21px 19px; }
   .mcMissionHeader h2 { font-size: 22px; }
@@ -255,6 +396,7 @@
   .mcMissionLocked a { width: max-content; }
   .mcMissionPreview > footer { display: block; padding: 13px 19px; line-height: 1.65; }
   .mcMissionPreview > footer span { display: none; }
+  .mcLayerGrid article:hover { transform: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

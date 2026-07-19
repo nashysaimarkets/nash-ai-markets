@@ -1,0 +1,385 @@
+.commercialPage {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 0;
+  background:
+    radial-gradient(circle at 78% 3%, #08704635, transparent 24%),
+    radial-gradient(circle at 15% 25%, #d4af3710, transparent 18%),
+    #030706;
+}
+
+.commercialPage::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    linear-gradient(#ffffff06 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(to bottom, #0008, transparent 58%);
+  content: "";
+  pointer-events: none;
+}
+
+.commercialPage > * {
+  position: relative;
+  z-index: 1;
+}
+
+.commercialNav {
+  height: 104px;
+  border-bottom-color: #d4af372b;
+}
+
+.commercialNav .brandLogo img {
+  width: 252px;
+  height: auto;
+}
+
+.commercialNav > a:last-child {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid #d4af3766;
+  color: #efd780;
+  font-size: 10px;
+  line-height: 38px;
+  text-transform: uppercase;
+}
+
+.commercialHero {
+  max-width: 900px;
+  padding: 102px 0 62px;
+}
+
+.commercialHero > span {
+  color: #d9b85e;
+  font-size: 9px;
+}
+
+.commercialHero h1 {
+  max-width: 850px;
+  margin: 22px 0;
+  font-size: clamp(50px, 7vw, 82px);
+  font-weight: 540;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.commercialHero h1 em {
+  color: #38f28e;
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+
+.commercialHero > p {
+  max-width: 700px;
+  color: #c0c8c3;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.commercialHeroTrust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.commercialHeroTrust span {
+  padding: 9px 12px;
+  border: 1px solid #38f28e35;
+  background: #38f28e0a;
+  color: #a9b8b0;
+  font: 700 8px "Courier New", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.commercialToggle {
+  margin-bottom: 36px;
+  padding: 5px;
+  border-color: #d4af3744;
+  border-radius: 28px;
+  background: #070c0a;
+}
+
+.commercialToggle button {
+  min-width: 136px;
+  border-radius: 22px;
+  color: #bac3be;
+  font-size: 11px;
+}
+
+.commercialToggle button[aria-pressed="true"] {
+  background: linear-gradient(135deg, #f2cf6b, #b68119);
+  color: #080b09;
+  box-shadow: inset 0 1px #fff3b9;
+}
+
+.commercialPlans {
+  gap: 18px;
+  align-items: stretch;
+}
+
+.commercialPlans article {
+  display: flex;
+  min-height: 480px;
+  flex-direction: column;
+  padding: 32px;
+  border-color: #ffffff20;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #0b1310, #050806);
+  box-shadow: 0 24px 60px #0008;
+}
+
+.commercialPlans article > span,
+.commercialPlanIdentity > span {
+  color: #d9b85e;
+  font: 700 9px "Courier New", monospace;
+  letter-spacing: 0.15em;
+}
+
+.commercialPlanIdentity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 54px;
+}
+
+.commercialPlanIdentity img {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #d4af3748;
+  border-radius: 11px;
+  box-shadow: 0 0 25px #0f8f5728;
+}
+
+.commercialPlans h2 {
+  margin: 26px 0 16px;
+  font-size: 36px;
+  letter-spacing: -0.04em;
+}
+
+.commercialPlans p {
+  min-height: 66px;
+  color: #aeb8b3;
+  font-size: 13px;
+}
+
+.commercialPlans article > a,
+.commercialPlans form button {
+  min-height: 50px;
+  margin-top: auto;
+  border-color: #d4af37;
+  border-radius: 3px;
+  color: #efd780;
+  font-size: 11px;
+}
+
+.commercialPopular {
+  border-color: #38f28e78 !important;
+  background:
+    radial-gradient(circle at 100% 0, #38f28e18, transparent 34%),
+    linear-gradient(145deg, #0c1813, #050806) !important;
+  box-shadow: 0 28px 80px #000a, inset 0 1px #38f28e18;
+  transform: translateY(-12px);
+}
+
+.commercialPopular > b {
+  top: 22px;
+  right: 22px;
+  padding: 7px 9px;
+  border: 1px solid #38f28e66;
+  background: #38f28e12;
+  font-size: 7px;
+}
+
+.commercialPopular form button,
+.commercialElite form button {
+  background: linear-gradient(135deg, #f2cf6b, #b68119);
+  color: #090b09;
+  box-shadow: inset 0 1px #fff3b9;
+}
+
+.commercialElite {
+  border-color: #d4af3775 !important;
+  background:
+    radial-gradient(circle at 100% 0, #d4af371c, transparent 35%),
+    linear-gradient(145deg, #151208, #080d0a 52%) !important;
+}
+
+.commercialPlanBadges {
+  min-height: 54px;
+}
+
+.commercialPlanBadges img:first-child {
+  height: 42px;
+}
+
+.commercialPlanBadges img:last-child {
+  height: 36px;
+}
+
+.commercialFounding {
+  min-height: 112px;
+  margin: 4px 0 24px;
+  padding: 15px;
+  border-color: #d4af3775;
+  border-radius: 7px;
+  background: linear-gradient(120deg, #d4af3718, #ffffff05);
+}
+
+.commercialFounding strong {
+  color: #e9ca70;
+  font-size: 8px;
+}
+
+.commercialFounding span {
+  color: #f1e4ba;
+  font-size: 13px;
+}
+
+.commercialComparison {
+  border: 1px solid #d4af3726;
+  background: #070d0a;
+}
+
+.commercialComparison caption {
+  color: #f4f3ec;
+  font-size: 30px;
+}
+
+.commercialComparison thead th {
+  color: #d9b85e;
+}
+
+.commercialComparison th,
+.commercialComparison td {
+  padding: 18px;
+}
+
+.commercialFaq {
+  padding-top: 110px;
+}
+
+.commercialFaq > span {
+  color: #d9b85e;
+  font-size: 9px;
+}
+
+.commercialFaq h2 {
+  font-size: 44px;
+}
+
+.commercialFaq details {
+  border-color: #ffffff20;
+}
+
+.commercialFaq summary {
+  padding: 22px 4px;
+  font-size: 15px;
+}
+
+.commercialRisk {
+  border-color: #d4af3748;
+  border-radius: 6px;
+  background: #d4af3708;
+  font-size: 11px;
+}
+
+.commercialFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  margin-top: 70px;
+  padding: 42px 0;
+  border-top: 1px solid #d4af372b;
+}
+
+.commercialFooter div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.commercialFooter div a {
+  color: #909c96;
+  font-size: 10px;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .commercialPlans {
+    grid-template-columns: 1fr;
+  }
+
+  .commercialPopular {
+    transform: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .commercialNav {
+    height: 78px;
+  }
+
+  .commercialNav .brandLogo img {
+    width: 184px;
+  }
+
+  .commercialNav > a:last-child {
+    padding: 0 11px;
+    font-size: 8px;
+  }
+
+  .commercialHero {
+    padding: 64px 0 48px;
+  }
+
+  .commercialHero h1 {
+    font-size: clamp(44px, 13vw, 62px);
+  }
+
+  .commercialHero > p {
+    font-size: 14px;
+  }
+
+  .commercialToggle button {
+    min-width: 0;
+  }
+
+  .commercialPlans article {
+    min-height: 0;
+    padding: 25px 22px;
+  }
+
+  .commercialPlans p {
+    min-height: 0;
+  }
+
+  .commercialPlans article > a,
+  .commercialPlans form button {
+    margin-top: 24px;
+  }
+
+  .commercialFaq {
+    padding-top: 78px;
+  }
+
+  .commercialFaq h2 {
+    font-size: 36px;
+  }
+
+  .commercialFooter {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: 50px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commercialPopular {
+    transform: none;
+  }
+}
