@@ -18,6 +18,7 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
   const containerRef = useRef<HTMLDivElement>(null);
   const [timeframe, setTimeframe] = useState<TerminalTimeframe>(initialTimeframe);
   const state = chartDisplayState(data, loading, error);
+  const timeframesAvailable = state === "ready";
   const chartDescription = state === "ready"
       ? `${symbol} verified candlestick and volume chart on the ${timeframe} timeframe.`
       : `${symbol} chart has no validated candle data to display.`;
@@ -57,7 +58,20 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
       <header className="marketChartHeader">
         <div className="marketChartInstrument"><span>PRIMARY WORKSPACE · VERIFIED OHLCV ONLY</span><strong>{symbol} <i>FUTURES</i></strong><small>{state === "ready" ? `${timeframe} verified candles & volume` : "SESSION STANDBY"}</small></div>
         <div className="timeframeSelector" role="group" aria-label="Chart timeframe">
-          {TERMINAL_TIMEFRAMES.map((option) => <button key={option} type="button" aria-pressed={timeframe === option} aria-label={`Show ${option} timeframe`} onClick={() => setTimeframe(option)}>{option}</button>)}
+          {TERMINAL_TIMEFRAMES.map((option) => (
+            <button
+              key={option}
+              type="button"
+              disabled={!timeframesAvailable}
+              aria-pressed={timeframesAvailable && timeframe === option}
+              aria-label={timeframesAvailable ? `Show ${option} timeframe` : `${option} timeframe unavailable — licensed candle data required`}
+              title={timeframesAvailable ? `Show ${option} timeframe` : "Unavailable until a verified, commercially licensed candle source is connected"}
+              onClick={() => setTimeframe(option)}
+            >
+              {option}
+            </button>
+          ))}
+          {!timeframesAvailable ? <span className="timeframeNotice">Licensed OHLCV required</span> : null}
         </div>
       </header>
       <p className="srOnly" id="market-chart-description">{chartDescription}</p>

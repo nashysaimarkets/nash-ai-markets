@@ -27,7 +27,9 @@ test("terminal controls provide names, state and modal focus management", async 
 test("chart workspace is keyboard discoverable and described", async () => {
   const source = await read("../app/terminal/components/MarketChart.tsx");
   assert.match(source, /role="group" aria-label="Chart timeframe"/);
-  assert.match(source, /aria-label=\{`Show \$\{option\} timeframe`\}/);
+  assert.match(source, /disabled=\{!timeframesAvailable\}/);
+  assert.match(source, /licensed candle data required/);
+  assert.match(source, /Licensed OHLCV required/);
   assert.match(source, /role="img" tabIndex=\{0\}/);
   assert.match(source, /aria-describedby="market-chart-description"/);
   assert.match(source, /not live market data/);

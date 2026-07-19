@@ -66,12 +66,19 @@ history exists. A journal requires an explicit content and publishing decision.
   and recovery behaviour.
 - Added explicit reduced-motion handling, visible keyboard focus, mobile tap
   targets and overflow safeguards.
+- Preserved the Terminal's verified standby chart after the controlled FMP
+  entitlement audit. All timeframe controls remain visible but are disabled
+  and clearly labelled whenever verified, commercially licensed OHLCV is not
+  available. Validated test-only candle data retains interactive controls.
+- No FMP end-of-day or intraday candles were connected. The current FMP account
+  returned HTTP 402 for 1-minute, 5-minute and 1-hour ESUSD history, and
+  commercial display rights remain unverified.
 
 ## Validation
 
 - TypeScript: passed
 - ESLint: passed
-- Unit tests: 239 passed
+- Unit tests: 240 passed
 - Production build: passed
 - Rendered HTML check: passed
 - Production simulations: 8 passed
@@ -86,3 +93,8 @@ with a real member session, plus desktop, tablet and mobile checks of Dashboard,
 Brief, Terminal, Ideas, Profile, onboarding and Founding Member pages. The
 membership-required, 404, loading and error states should be included in that
 final browser pass.
+
+Production candles remain blocked pending a properly entitled futures-data
+source, authoritative contract/roll semantics, genuine-volume provenance and
+written commercial display rights. The truthful standby state is the approved
+release behaviour until those requirements are met.
