@@ -28,8 +28,8 @@ const intelligenceLayers = [
 const workflow = [
   ["Verify", "Provider, timestamp and data quality"],
   ["Assess", "Aligned drivers and active conflicts"],
-  ["Plan", "Conditional scenarios and invalidation"],
   ["Decide", "Act, reduce risk or stand aside"],
+  ["Review", "Reassess invalidation and new evidence"],
 ];
 
 const included = [
