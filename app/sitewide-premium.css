@@ -468,6 +468,7 @@ body {
   .publicDocumentFooter { align-items: flex-start; flex-direction: column; padding: 34px 0; }
   .publicDocumentFooter nav { justify-content: flex-start; gap: 16px 24px; }
   .memberDashboardNav { height: 66px; }
+  .memberMobileMenu summary { min-height: 44px; }
   .memberDashboardShell { width: min(100% - 28px,1360px); padding-block: 24px 48px; }
   .memberWelcome { min-height: 0; align-items: flex-start; padding: 28px 24px; }
   .memberWelcome h1 { font-size: clamp(34px,10vw,48px); }
@@ -479,6 +480,11 @@ body {
   .executiveMorningBriefBody { grid-template-columns: 1fr; }
   .dailyDashboardGrid { grid-template-columns: 1fr; }
   .todayMission { grid-row: auto; }
+  .memberAccessMap > header a,.memberAccessMap > footer a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
   .briefHero,.profileHero,.ideasHero,.foundingHero { padding: 28px 22px; }
   .membershipGateActions { align-items: stretch; flex-direction: column; }
   .membershipGateActions .primary { justify-content: center; }
