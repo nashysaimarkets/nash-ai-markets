@@ -82,7 +82,9 @@ test("executive dashboard integrates verified summary, preview safety, and subsc
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
   assert.match(dashboard, /createMorningBrief/);
   assert.match(dashboard, /MORNING_BRIEF_PLACEHOLDER_INPUT/);
-  assert.match(dashboard, /executiveKpiStrip/);
+  assert.match(dashboard, /sessionPulse/);
+  assert.match(dashboard, /No active conclusion/);
+  assert.match(dashboard, /No score inferred/);
   assert.match(dashboard, /executiveMorningBrief/);
   assert.match(dashboard, /<SubscriptionStatusCard/);
   assert.match(dashboard, /morningBrief\.directionalBias \?\? "Not available"/);
@@ -123,10 +125,14 @@ test("Gamma loading, error, navigation, and mobile states remain accessible", as
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
   assert.match(dashboardLoading, /aria-busy="true"/);
-  assert.match(dashboardLoading, /executiveKpiStrip/);
+  assert.match(dashboardLoading, /sessionPulse/);
   assert.match(profileLoading, /aria-live="polite"/);
   assert.match(profileError, /No account, billing, or provider error details have been exposed/);
   assert.match(shell, /href: "\/profile"/);
   assert.match(css, /\.profileForm input,.profileForm button\{min-height:48px\}/);
   assert.match(css, /\.executiveMorningBriefBody\{grid-template-columns:1fr\}/);
+  assert.match(css, /\.sessionPulse\{position:relative;display:grid/);
+  assert.match(css, /@media\(max-width:480px\)/);
+  assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(css, /\.memberDashboardNav a:focus-visible/);
 });
