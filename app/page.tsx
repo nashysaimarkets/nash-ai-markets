@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import Image from "next/image";
 import {
   founding100AvailabilityLabel,
   loadFounding100Availability,
@@ -55,7 +55,7 @@ const plans = [
     price: "14.99",
     copy: "The complete pre-market planning workspace for active traders.",
     features: included,
-    action: "Compare Pro billing",
+    action: "Start Pro Membership",
     href: "/pricing",
     featured: true,
   },
@@ -69,7 +69,7 @@ const plans = [
       "Expanded volatility context",
       "Priority product access",
     ],
-    action: "Compare Elite billing",
+    action: "Unlock Elite",
     href: "/pricing",
   },
 ];
@@ -91,8 +91,7 @@ export default async function Home() {
 
       <header className="mcNav">
         <a href="#top" className="mcBrand" aria-label="NASH AI Markets home">
-          <span className="mcBrandMark" aria-hidden="true"><i /></span>
-          <span>NASH <b>AI</b> MARKETS</span>
+          <Image src="/brand/logo-horizontal.svg" width={252} height={44} alt="NASH AI Markets" priority />
         </a>
         <nav aria-label="Main navigation">
           <a href="#platform">Platform</a>
@@ -111,16 +110,19 @@ export default async function Home() {
           <div className="mcHeroAtmosphere" aria-hidden="true" />
           <div className="mcHeroGrid">
             <div className="mcHeroCopy">
-              <p className="mcEyebrow"><span /> Pre-market mission control</p>
-              <h1>Trade preparation,<br /><em>with a clear head.</em></h1>
+              <p className="mcEyebrow"><span /> Professional pre-market intelligence</p>
+              <h1>Prepare Smarter.<br /><em>Trade Better.</em></h1>
               <p className="mcLead">
-                NASH AI Markets turns verified market context into conditional
-                scenarios, decision permissions and risk-aware plans for the
-                S&amp;P 500 session.
+                Professional S&amp;P 500 futures and options intelligence—organised
+                into one calm daily plan before the US session.
+              </p>
+              <p className="mcValueLine">
+                Verified market context · Bullish, bearish and stand-aside scenarios ·
+                Key levels and event risk · Clear uncertainty and risk warnings
               </p>
               <div className="mcHeroActions">
-                <a className="mcButton" href="/login">Start free <span>↗</span></a>
-                <a className="mcTextLink" href="#platform">Explore the platform <span>↓</span></a>
+                <a className="mcButton" href="#membership">Start Your Membership <span>↗</span></a>
+                <a className="mcTextLink" href="/terminal">View the platform <span>↗</span></a>
               </div>
               <ul className="mcTrust" aria-label="Platform principles">
                 <li><i /> Evidence before opinion</li>
@@ -131,58 +133,45 @@ export default async function Home() {
 
             <div className="mcPreviewFrame">
               <div className="mcPreviewGlow" aria-hidden="true" />
-              <article className="mcTerminal" aria-label="Illustrative NASH AI Mission Control dashboard preview">
-                <header className="mcTerminalTop">
-                  <div className="mcTerminalIdentity">
-                    <span className="mcReticle" aria-hidden="true" />
-                    <div><b>MISSION CONTROL</b><small>S&amp;P 500 / PRE-MARKET</small></div>
+              <article className="mcMissionPreview" aria-labelledby="sample-mission-title">
+                <header className="mcMissionHeader">
+                  <div>
+                    <span className="mcMissionKicker">Illustrative member briefing</span>
+                    <h2 id="sample-mission-title">Today&apos;s Sample Mission</h2>
                   </div>
-                  <span className="mcPreviewBadge">PRODUCT PREVIEW</span>
+                  <Image className="mcMissionMark" src="/brand/logo-mark.svg" width={48} height={48} alt="" />
                 </header>
-                <div className="mcStatusBar">
-                  <span><i /> SYSTEM READY</span>
-                  <span>ILLUSTRATIVE · NO LIVE VALUE</span>
+                <div className="mcMissionSummary">
+                  <div className="mcMissionStance">
+                    <small>Market stance</small>
+                    <strong>WAIT FOR CONFIRMATION</strong>
+                  </div>
+                  <div className="mcReadiness">
+                    <small>Readiness Score</small>
+                    <strong>72 <span>/ 100</span></strong>
+                  </div>
                 </div>
-                <div className="mcTerminalBody">
-                  <section className="mcChartPanel">
-                    <header><div><small>SESSION STRUCTURE</small><strong>Scenario map</strong></div><span>PRE-MARKET</span></header>
-                    <div className="mcChart" aria-hidden="true">
-                      <div className="mcChartGrid" />
-                      <svg viewBox="0 0 640 260" role="presentation" focusable="false">
-                        <defs>
-                          <linearGradient id="chartFade" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#62f6ad" stopOpacity=".24" />
-                            <stop offset="100%" stopColor="#62f6ad" stopOpacity="0" />
-                          </linearGradient>
-                        </defs>
-                        <path className="mcArea" d="M0 228 C55 220 72 178 116 185 S180 142 224 157 S299 105 344 121 S420 75 464 96 S540 42 640 57 L640 260 L0 260 Z" />
-                        <path className="mcLine" pathLength="1" d="M0 228 C55 220 72 178 116 185 S180 142 224 157 S299 105 344 121 S420 75 464 96 S540 42 640 57" />
-                      </svg>
-                      <div className="mcChartTag mcChartTagRisk">EVENT RISK</div>
-                      <div className="mcChartTag mcChartTagPivot">DECISION ZONE</div>
-                    </div>
-                    <footer><span>Data state</span><b>Await verified session</b></footer>
-                  </section>
-                  <aside className="mcDecisionPanel">
-                    <header><small>DECISION PERMISSION</small><span className="mcPulse">ASSESS</span></header>
-                    <div className="mcGauge" style={{ "--gauge": "72%" } as CSSProperties}>
-                      <div><strong>72</strong><span>CONTEXT SCORE</span></div>
-                    </div>
-                    <dl>
-                      <div><dt>Trend</dt><dd>Conditional</dd></div>
-                      <div><dt>Volatility</dt><dd>Monitor</dd></div>
-                      <div><dt>Conflict</dt><dd>Visible</dd></div>
-                    </dl>
-                    <p>No directional output is presented until source data and conditions are verified.</p>
-                  </aside>
+                <dl className="mcMissionFacts">
+                  <div><dt>Key level</dt><dd>Decision zone</dd></div>
+                  <div><dt>Main risk</dt><dd>Scheduled event volatility</dd></div>
+                </dl>
+                <p className="mcMissionExplanation">
+                  Bullseye combines verified context, market structure, volatility,
+                  event risk and conflicting evidence before allowing a directional
+                  conclusion.
+                </p>
+                <div className="mcMissionScenarios" aria-label="Illustrative scenarios">
+                  <article data-tone="positive"><span>Bull case</span><p>Wait for upside acceptance and confirming evidence.</p></article>
+                  <article data-tone="negative"><span>Bear case</span><p>Wait for rejection and a verified loss of structure.</p></article>
+                  <article data-tone="neutral"><span>Stand aside</span><p>Protect capital while evidence remains conflicted.</p></article>
                 </div>
-                <footer className="mcTerminalFooter">
-                  {["Context", "Scenarios", "Invalidation", "Risk"].map((item, index) => (
-                    <span key={item}><b>0{index + 1}</b>{item}</span>
-                  ))}
-                </footer>
+                <div className="mcMissionLocked">
+                  <div aria-hidden="true"><span /><span /><span /></div>
+                  <p><strong>Member intelligence continues</strong>Unlock the full plan, invalidation framework and risk checklist.</p>
+                  <a href="#membership">Start membership <span>↗</span></a>
+                </div>
+                <footer>Illustrative example · Not live market data · Not a recommendation <span>NO LIVE VALUE</span></footer>
               </article>
-              <p className="mcPreviewNote">Interface preview · Illustrative values and states only</p>
             </div>
           </div>
         </section>
@@ -281,7 +270,7 @@ export default async function Home() {
             <p className="mcPlanSafety">EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL ANYTIME</p>
             <aside className="mcFoundingTerms" aria-label="Founding 100 terms">
               <strong>Founding 100 price protection</strong>
-              <p>Eligibility is awarded automatically after a successful subscription and is limited to 100 members in each paid tier. The checkout subscription price is locked for life while that same membership remains continuously active. If it is cancelled or lapses, the price lock is permanently lost and any future subscription uses the standard price available at that time.</p>
+              <p>Limited to the first 100 continuously active subscribers in each paid tier. The checkout price remains locked for life while that same membership remains continuously active. If it is cancelled or lapses, the price lock is permanently lost, that price protection ends and any future subscription uses the standard price available at that time.</p>
             </aside>
           </div>
         </section>
