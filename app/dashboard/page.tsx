@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell.tsx";
 import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
+import { formatMarketGatewayDataAge } from "../lib/live-market-gateway.ts";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
 import { applyAIMorningBrief, createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
 import { generateAIMorningBrief } from "../lib/server/ai-morning-brief.ts";
@@ -69,6 +70,17 @@ export default async function MemberDashboard() {
     : { status: "not_requested" as const, content: null };
   const morningBrief = applyAIMorningBrief(deterministicMorningBrief, aiMorningBrief);
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
+  const pulseState = mission.available
+    ? decision.tradePermission === "no-trade" ? "no-trade" : "live"
+    : market.gatewayStatus.connectionStatus === "offline" || market.gatewayStatus.fallbackActive ? "awaiting" : "inactive";
+  const pulseWaitingFor = mission.available
+    ? "The next verified material change"
+    : market.gatewayStatus.fallbackActive
+      ? "A validated provider snapshot"
+      : "Fresh, complete market evidence";
+  const pulseSafeAction = mission.available
+    ? mission.nextAction
+    : "Remain in standby. Refresh only when the provider connection is available.";
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
   const portalUrl = "/api/stripe/portal";
@@ -92,6 +104,36 @@ export default async function MemberDashboard() {
       <section className="memberWelcome">
         <div><span>DAILY MEMBER BRIEF</span><h1>Welcome back, {name}.</h1><p>{accessCopy}</p><div className="memberWelcomeActions"><Link href="/brief">Read today’s market brief</Link><Link href="/terminal">Open full terminal</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div></div>
         <div className="memberAccessStatus"><TerminalBadge label={`${access.tier} member`} tone={access.tier === "elite" ? "warning" : access.tier === "pro" ? "info" : "neutral"} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+      </section>
+
+      <section className="sessionPulse" data-pulse-state={pulseState} aria-labelledby="session-pulse-title">
+        <div className="sessionPulseVisual" aria-hidden="true">
+          <span className="sessionPulseOrbit sessionPulseOrbitOuter" />
+          <span className="sessionPulseOrbit sessionPulseOrbitMiddle" />
+          <span className="sessionPulseOrbit sessionPulseOrbitInner" />
+          <span className="sessionPulseCrosshair" />
+          <i />
+          <b>{mission.confidence === null ? "—" : mission.confidence}</b>
+          <small>{mission.confidence === null ? "STANDBY" : "CONFIDENCE"}</small>
+        </div>
+        <div className="sessionPulseBody">
+          <header>
+            <div><span>SESSION PULSE · VERIFIED CONTROL LAYER</span><h2 id="session-pulse-title">{mission.available ? "Market evidence is synchronized" : "Bullseye is holding a safe standby"}</h2></div>
+            <TerminalBadge label={pulseState.replace("-", " ")} tone={pulseState === "live" ? "positive" : pulseState === "no-trade" ? "danger" : "warning"} />
+          </header>
+          <div className="sessionPulseBand">
+            <article data-state={mission.available ? "live" : "inactive"}><span>Session status</span><strong>{market.snapshot.status}</strong><small>{mission.available ? "Verified market context" : "No active conclusion"}</small></article>
+            <article data-state={market.gatewayStatus.fallbackActive ? "awaiting" : "live"}><span>Provider freshness</span><strong>{formatMarketGatewayDataAge(market.gatewayStatus.dataAgeMs)}</strong><small>{market.gatewayStatus.providerName}</small></article>
+            <article data-state={mission.available ? "live" : "inactive"}><span>Market posture</span><strong>{mission.available ? plan.directionalPosture : "STAND ASIDE"}</strong><small>{mission.available ? mission.marketCondition : "Awaiting verified evidence"}</small></article>
+            <article data-state={decision.tradePermission === "no-trade" ? "no-trade" : "live"}><span>Trade permission</span><strong>{mission.available ? decision.tradePermission : "NO TRADE"}</strong><small>Fail-closed safety active</small></article>
+            <article data-state={mission.confidence === null ? "history" : "live"}><span>Confidence</span><strong>{mission.confidence === null ? "NOT AVAILABLE" : `${mission.confidence} / 100`}</strong><small>{mission.confidence === null ? "No score inferred" : "Verified engine output"}</small></article>
+            <article data-state={nextEvent ? "live" : "awaiting"}><span>Next risk event</span><strong>{nextEvent?.name ?? "NOT VERIFIED"}</strong><div className="sessionPulseEvent">{nextEvent ? <EventCountdown startsAt={nextEvent.startsAt} initialNow={now} /> : "No event time inferred"}</div></article>
+          </div>
+          <footer>
+            <div><span>WAITING FOR</span><strong>{pulseWaitingFor}</strong></div>
+            <div><span>NEXT SAFE ACTION</span><strong>{pulseSafeAction}</strong></div>
+          </footer>
+        </div>
       </section>
 
       <section className="executiveKpiStrip" aria-label="Executive account and market summary">

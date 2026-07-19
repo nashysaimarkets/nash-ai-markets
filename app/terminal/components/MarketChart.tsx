@@ -55,7 +55,7 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
   return (
     <section className="marketChart" aria-label={`${symbol} candlestick chart`} data-chart-state={state}>
       <header className="marketChartHeader">
-        <div><span>PRIMARY WORKSPACE</span><strong>{symbol} · Candles &amp; volume</strong></div>
+        <div className="marketChartInstrument"><span>PRIMARY WORKSPACE · VERIFIED OHLCV ONLY</span><strong>{symbol} <i>FUTURES</i></strong><small>{state === "ready" ? `${timeframe} verified candles & volume` : "SESSION STANDBY"}</small></div>
         <div className="timeframeSelector" role="group" aria-label="Chart timeframe">
           {TERMINAL_TIMEFRAMES.map((option) => <button key={option} type="button" aria-pressed={timeframe === option} aria-label={`Show ${option} timeframe`} onClick={() => setTimeframe(option)}>{option}</button>)}
         </div>
@@ -63,11 +63,12 @@ export function MarketChart({ data, symbol, loading = false, error, initialTimef
       <p className="srOnly" id="market-chart-description">{chartDescription}</p>
       {state === "ready" ? <div className="marketChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-describedby="market-chart-description" /> : (
         <div className={`marketChartState marketChartState-${state}`} role={state === "error" ? "alert" : "status"}>
+          <div className="marketStandbyLabel"><i /><span>{state === "error" ? "PROVIDER ERROR" : state === "loading" ? "CONNECTING" : "AWAITING VERIFIED HISTORY"}</span></div>
           <Image className="marketStateMark" src="/brand/logo-mark.svg" width={48} height={48} alt="" />
           <span className="marketStateChart" aria-hidden="true" />
           {state === "loading" ? <><i className="chartLoader" /><strong>Connecting to verified market data</strong><span>Waiting for validated OHLCV candles. No values are displayed until verification completes.</span></> : null}
           {state === "error" ? <><strong>Market data provider unavailable</strong><span>{error ?? "OHLCV data failed validation and has not been rendered. Existing NO TRADE safeguards remain active."}</span></> : null}
-          {state === "empty" ? <><strong>No verified candle data</strong><span>The current provider snapshot does not include OHLCV history. No candles have been invented, and this empty state is not live market data.</span></> : null}
+          {state === "empty" ? <><strong>No verified candle data</strong><span>The chart is in controlled standby until validated OHLCV history is received. This is not live market data; no candles, prices or signals have been invented.</span><div className="marketStandbySteps"><span><b>01</b> Waiting for provider history</span><span><b>02</b> Validate timestamp and OHLCV</span><span><b>03</b> Render only after verification</span></div><small>Safe action: remain NO TRADE and retry the provider when available.</small></> : null}
         </div>
       )}
       <footer>Charts by <a href="https://www.tradingview.com/" target="_blank" rel="noreferrer">TradingView</a> · Display only · No order execution</footer>
