@@ -138,7 +138,7 @@ export default async function MemberDashboard() {
 
       <section className="executiveKpiStrip" aria-label="Executive account and market summary">
         <div><span>Market data</span><strong>{market.snapshot.status}</strong><small>{market.gatewayStatus.providerName}</small></div>
-        <div><span>Bullseye confidence</span><strong>{mission.confidence === null ? "—" : mission.confidence}</strong><small>{mission.available ? "Verified engine output" : "Unavailable"}</small></div>
+        <div><span>Bullseye confidence</span><strong>{mission.confidence === null ? "NOT AVAILABLE" : mission.confidence}</strong><small>{mission.available ? "Verified engine output" : "No current score inferred"}</small></div>
         <div><span>Current access</span><strong>{access.effectiveTier.toUpperCase()}</strong><small>{offer?.active ? "Preview active" : `${access.tier} membership`}</small></div>
         <div><span>Trade permission</span><strong>{mission.available ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
       </section>

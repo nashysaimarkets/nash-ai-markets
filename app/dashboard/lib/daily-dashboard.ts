@@ -37,7 +37,7 @@ export function buildDailyMission(
       available: false,
       marketCondition: "Verified market condition unavailable",
       confidence: null,
-      directionalBias: "Neutral / stand aside",
+      directionalBias: "Not verified · stand aside",
       keyWarning: "Current provider data is unavailable. No directional output is active.",
       nextAction: "Wait for a verified provider update, then refresh the dashboard.",
     };

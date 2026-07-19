@@ -51,6 +51,19 @@ test("OHLCV validation rejects malformed, unordered and impossible candles", () 
   assert.equal(isValidOhlcv([{ time: 2, open: 10, high: 11, low: 9, close: 10, volume: 1 }, { time: 1, open: 10, high: 11, low: 9, close: 10, volume: 1 }]), false);
 });
 
+test("unavailable terminal presentation never exposes fallback scores as current conclusions", async () => {
+  const [page, summary] = await Promise.all([
+    readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/components/EngineSummary.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /verified=\{isVerified && intelligence\.actionable\}/);
+  for (const safeState of ["NOT AVAILABLE", "NOT VERIFIED", "AWAITING DATA", "STANDBY", "NO VERIFIED SCORES", "SUPPORTING DRIVERS NOT AVAILABLE"]) {
+    assert.match(summary, new RegExp(safeState));
+  }
+  assert.match(summary, /intelligence\.actionable \?/);
+  assert.match(summary, /verified \? pretty\(decision\.marketBias\) : "NOT VERIFIED"/);
+});
+
 test("critical warnings and high-impact provider events remain visible", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
   assert.match(page, /Data-quality warnings/);

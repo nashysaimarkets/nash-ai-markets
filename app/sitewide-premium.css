@@ -854,3 +854,9 @@ body {
   html { scroll-behavior: auto; }
   *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+@media (max-width: 640px) {
+  .memberWelcome p,.memberWelcome small,.sessionPulseBand article small,.sessionPulseEvent,.sessionPulseBody > footer strong,.executiveKpiStrip small,.memberAccessMap article small,.memberAccessMap > footer,.executiveMorningBrief > header p,.executiveMorningBriefBody li,.morningBriefSignal > small,.executiveMorningBrief > footer,.dailyCard p,.dailyCard small,.dashboardUnavailable p { color: #aeb8c1 !important; }
+  .memberWelcome p,.executiveMorningBrief > header p,.dailyCard p,.dashboardUnavailable p { font-size: 11px !important; line-height: 1.65; }
+  .sessionPulseBand article small,.sessionPulseEvent,.executiveKpiStrip small,.memberAccessMap article small,.morningBriefSignal > small,.executiveMorningBrief > footer,.dailyCard small { font-size: 9px !important; line-height: 1.55; }
+  .memberAccessMap > footer { font-size: 9px; }
+}
