@@ -17,6 +17,8 @@ import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } fr
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
+import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
+import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
 import { loadAccuracySummary } from "./lib/performance-history.ts";
 
@@ -68,6 +70,7 @@ export default async function MemberDashboard() {
     ? await generateAIMorningBrief(deterministicMorningBrief)
     : { status: "not_requested" as const, content: null };
   const morningBrief = applyAIMorningBrief(deterministicMorningBrief, aiMorningBrief);
+  const directionalContext = morningBrief.directionalBias ?? "Not available";
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
@@ -79,48 +82,93 @@ export default async function MemberDashboard() {
       : offer?.eligible
         ? `Your ${offer.cadence} ${offer.targetTier.toUpperCase()} preview is available.`
         : `Your ${offer?.cadence ?? ""} preview has been used and resets automatically.`;
+  const bullishScenario = intelligence.scenarios.find((scenario) => scenario.type === "BULLISH")!;
+  const bearishScenario = intelligence.scenarios.find((scenario) => scenario.type === "BEARISH")!;
+  const verifiedMarket = market.snapshot.status === "LIVE" || market.snapshot.status === "DELAYED";
+  const marketTimestamp = Number.isFinite(Date.parse(market.snapshot.asOf))
+    ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(market.snapshot.asOf))
+    : "Not timestamped";
+  const expectedMove = "Not supplied";
 
   return <MemberShell active="dashboard">
-    <div className="memberDashboardShell">
-      <section className="memberWelcome">
-        <div><span>DAILY MEMBER BRIEF</span><h1>Welcome back, {name}.</h1><p>{accessCopy}</p><div className="memberWelcomeActions"><Link href="/brief">Read today’s market brief</Link><Link href="/terminal">Open full terminal</Link>{access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member">Founding Member onboarding</Link> : null}</div></div>
-        <div className="memberAccessStatus"><TerminalBadge label={`${access.tier} member`} tone={access.tier === "elite" ? "warning" : access.tier === "pro" ? "info" : "neutral"} /><strong>{access.effectiveTier.toUpperCase()} ACCESS ACTIVE</strong><small>{previewState.available ? "Preview entitlement verified" : "Preview service unavailable · base access unaffected"}</small></div>
+    <div className="memberDashboardShell eliteDashboard">
+      <section className="eliteCommandHeader">
+        <BullseyeSignature />
+        <div className="eliteCommandIntro">
+          <span className="eliteEyebrow">NASH AI MARKETS <i /> BULLSEYE INTELLIGENCE</span>
+          <h1>Your market edge,<br /><em>distilled.</em></h1>
+          <p><strong>Good {new Date(now).getUTCHours() < 12 ? "morning" : new Date(now).getUTCHours() < 18 ? "afternoon" : "evening"}, {name}.</strong> {accessCopy}</p>
+        </div>
+        <div className="eliteHeaderMeta">
+          <div className={`eliteFeedState is${market.snapshot.status}`}><i /><span>{market.snapshot.status}</span><strong>{market.gatewayStatus.providerName}</strong></div>
+          <div><span>AS OF</span><strong>{marketTimestamp} UK</strong></div>
+          <div><span>ACCESS</span><strong>{access.effectiveTier.toUpperCase()}</strong></div>
+        </div>
+        <div className="eliteCommandActions">
+          <Link href="/terminal" className="elitePrimaryAction"><span><small>FULL WORKSPACE</small>Open terminal</span><b aria-hidden="true">→</b></Link>
+          <Link href="/brief" className="eliteSecondaryAction"><span><small>DAILY READ</small>Morning brief</span><b aria-hidden="true">↗</b></Link>
+          {access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member" className="eliteTertiaryAction">Founding onboarding <span aria-hidden="true">→</span></Link> : null}
+        </div>
       </section>
 
-      <section className="executiveKpiStrip" aria-label="Executive account and market summary">
-        <div><span>Market data</span><strong>{market.snapshot.status}</strong><small>{market.gatewayStatus.providerName}</small></div>
-        <div><span>Bullseye confidence</span><strong>{mission.confidence === null ? "—" : mission.confidence}</strong><small>{mission.available ? "Verified engine output" : "Unavailable"}</small></div>
-        <div><span>Current access</span><strong>{access.effectiveTier.toUpperCase()}</strong><small>{offer?.active ? "Preview active" : `${access.tier} membership`}</small></div>
-        <div><span>Trade permission</span><strong>{mission.available ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
+      <section className="eliteStatusDeck executiveKpiStrip" aria-label="Market status and decision summary">
+        <article className="elitePrimaryStatus">
+          <div><span className="eliteEyebrow">MARKET REGIME</span><strong>{verifiedMarket ? decision.volatilityRegime : "Awaiting verified intelligence"}</strong><small>{verifiedMarket ? `${decision.marketBias} bias · ${decision.recommendedPosture}` : "Provider validation is active; no market state has been inferred"}</small></div>
+          <div className={`elitePermission is${decision.tradePermission.replace("-", "")}`}><span>TRADE PERMISSION</span><strong>{verifiedMarket ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
+        </article>
+        <article className="eliteMetricCard">
+          <span>RISK RATING</span><strong>{verifiedMarket ? decision.riskRating : "—"}</strong><div className="eliteRiskScale" data-value={verifiedMarket ? decision.riskRating : "none"}><i /><i /><i /><i /></div><small>{verifiedMarket ? `${market.snapshot.risk.toLowerCase()} provider risk` : "Not rated"}</small>
+        </article>
+        <article className="eliteMetricCard">
+          <span>EXPECTED MOVE</span><strong>{expectedMove}</strong><small>Shown only with a verified provider input</small>
+        </article>
+        <article className="eliteMetricCard eliteConfidenceCard">
+          <span>BULLSEYE CONFIDENCE</span><strong>{mission.confidence === null ? "Decision engine initialising" : mission.confidence}<em>{mission.confidence === null ? "" : "/100"}</em></strong><div className="eliteConfidenceTrack"><i style={{ width: `${mission.confidence ?? 0}%` }} /></div><small>{mission.available ? "Verified engine output" : "Activates after provider verification"}</small>
+        </article>
       </section>
 
-      <section className={`executiveMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
+      <MarketStructureVisual levels={market.snapshot.levels} scores={intelligence.scores} status={market.snapshot.status} directionalBias={decision.marketBias} confidence={mission.confidence} />
+
+      <section className="eliteScenarioGrid" aria-label="Bullish and bearish scenarios">
+        <article className="eliteScenario isBullish">
+          <header><div><span>BULLISH CASE</span><h2>Upside scenario</h2></div><strong>{verifiedMarket ? `${bullishScenario.probability}%` : "—"}</strong></header>
+          <div className="eliteScenarioMeter"><i style={{ width: `${verifiedMarket ? bullishScenario.probability : 0}%` }} /></div>
+          <dl><div><dt>Trigger</dt><dd>{verifiedMarket ? bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase() : "Waiting for verified provider input"}</dd></div><div><dt>Level</dt><dd>{verifiedMarket ? bullishScenario.trigger.level ?? "Range confirmation" : "—"}</dd></div><div><dt>Invalidation</dt><dd>{verifiedMarket ? bullishScenario.invalidation.level ?? bullishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase() : "—"}</dd></div></dl>
+        </article>
+        <article className="eliteScenario isBearish">
+          <header><div><span>BEARISH CASE</span><h2>Downside scenario</h2></div><strong>{verifiedMarket ? `${bearishScenario.probability}%` : "—"}</strong></header>
+          <div className="eliteScenarioMeter"><i style={{ width: `${verifiedMarket ? bearishScenario.probability : 0}%` }} /></div>
+          <dl><div><dt>Trigger</dt><dd>{verifiedMarket ? bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase() : "Waiting for verified provider input"}</dd></div><div><dt>Level</dt><dd>{verifiedMarket ? bearishScenario.trigger.level ?? "Range confirmation" : "—"}</dd></div><div><dt>Invalidation</dt><dd>{verifiedMarket ? bearishScenario.invalidation.level ?? bearishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase() : "—"}</dd></div></dl>
+        </article>
+      </section>
+
+      <section className={`executiveMorningBrief eliteMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
         <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2>{morningBrief.summary ? <p>{morningBrief.summary}</p> : null}</div><div className="morningBriefBadges"><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /><TerminalBadge label={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"} tone={morningBrief.generation === "ai-assisted" ? "info" : "neutral"} /></div></header>
         <div className="executiveMorningBriefBody">
-          <div className="morningBriefSignal"><span>Directional context</span><strong>{morningBrief.directionalBias ?? "Not available"}</strong><small>{morningBrief.confidence === null ? "No confidence score active" : `${morningBrief.confidence} / 100 confidence`}</small></div>
+          <div className="morningBriefSignal"><span>Directional context</span><strong>{directionalContext === "Not available" ? "Verification in progress" : directionalContext}</strong><small>{morningBrief.confidence === null ? "Decision score activates after provider verification" : `${morningBrief.confidence} / 100 confidence`}</small></div>
           <div><h3>Executive priorities</h3><ol>{morningBrief.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
           <div><h3>Session checklist</h3><ul>{morningBrief.checklist.map((item) => <li key={item}>{item}</li>)}</ul></div>
         </div>
         {morningBrief.warning ? <footer><strong>Safety state:</strong> {morningBrief.warning}<span>Preview fixture timestamp: {morningBrief.asOf}</span></footer> : <footer><span>As of {morningBrief.asOf} · Refresh after material data or event changes.</span><span>{morningBrief.generation === "ai-assisted" ? "OpenAI summarized verified engine evidence only." : morningBrief.aiStatus === "not_requested" ? "Deterministic brief active for current access." : `Deterministic fallback active · ${morningBrief.aiStatus.replaceAll("_", " ")}.`}</span></footer>}
       </section>
 
-      <section className="dailyDashboardGrid">
-        <article className="dailyCard todayMission">
-          <header><div><span>TODAY’S MISSION</span><h2>What matters now</h2></div><TerminalBadge label={market.snapshot.status} tone={mission.available ? "positive" : "danger"} /></header>
-          <dl><div><dt>Current market condition</dt><dd>{mission.marketCondition}</dd></div><div><dt>Bullseye confidence</dt><dd>{mission.confidence === null ? "Unavailable" : `${mission.confidence} / 100`}</dd></div><div><dt>Directional bias</dt><dd>{mission.directionalBias}</dd></div><div><dt>Key risk / no-trade warning</dt><dd>{mission.keyWarning}</dd></div><div><dt>Next important action</dt><dd>{mission.nextAction}</dd></div></dl>
-          <Link href="/terminal">Continue into the full terminal →</Link>
+      <section className="eliteOperationsGrid">
+        <article className="dailyCard todayMission eliteMissionCard">
+          <header><div><span>TODAY’S MISSION</span><h2>Decision protocol</h2></div><TerminalBadge label={market.snapshot.status} tone={mission.available ? "positive" : "danger"} /></header>
+          <dl><div><dt>Market condition</dt><dd>{mission.marketCondition}</dd></div><div><dt>Directional posture</dt><dd>{mission.directionalBias}</dd></div><div><dt>Principal risk</dt><dd>{mission.keyWarning}</dd></div><div><dt>Next action</dt><dd>{mission.nextAction}</dd></div></dl>
+          <Link href="/terminal">Continue into the full terminal <span>→</span></Link>
         </article>
-
-        <article className="dailyCard nextEventCard">
-          <header><div><span>NEXT MAJOR EVENT</span><h2>Economic risk window</h2></div>{nextEvent ? <TerminalBadge label={nextEvent.risk} tone={nextEvent.risk === "HIGH" ? "danger" : "warning"} /> : <TerminalBadge label="Unavailable" tone="neutral" />}</header>
-          {nextEvent ? <div className="eventCountdown"><EventCountdown startsAt={nextEvent.startsAt} initialNow={now} /><h3>{nextEvent.name}</h3><time dateTime={nextEvent.startsAt}>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(nextEvent.startsAt))} UK</time><p>Countdown is calculated from the verified provider timestamp and updates automatically.</p></div> : <div className="dashboardUnavailable"><strong>Reliable event timing unavailable</strong><p>The connected provider has not supplied a future event with a complete timestamp. No event or countdown has been inferred.</p></div>}
-        </article>
-
-        <article className="dailyCard accuracyCard">
-          <header><div><span>VERIFIED HISTORY</span><h2>Bullseye accuracy</h2></div><TerminalBadge label={accuracy.status} tone={accuracy.status === "verified" ? "positive" : "neutral"} /></header>
-          {accuracy.status === "verified" ? <div className="accuracyVerified"><strong>{accuracy.accuracyPercent}%</strong><p>{accuracy.correct} correct directional classifications from {accuracy.sampleSize} independently verified outcomes.</p><small>Latest verification: {accuracy.latestVerifiedAt}</small></div> : accuracy.status === "insufficient" ? <div className="dashboardUnavailable"><strong>Insufficient verified history</strong><p>{accuracy.sampleSize} of {accuracy.required} required verified outcomes are stored. No accuracy percentage is shown until the minimum sample is reached.</p></div> : <div className="dashboardUnavailable"><strong>Verified history unavailable</strong><p>The outcome store could not be verified. No performance result has been displayed.</p></div>}
-          <footer>Directional classification accuracy only. Not trading returns, profitability, or a guarantee of future results.</footer>
-        </article>
+        <div className="eliteSideStack">
+          <article className="dailyCard nextEventCard eliteEventCard">
+            <header><div><span>EVENT RISK</span><h2>Next economic event</h2></div>{nextEvent ? <TerminalBadge label={nextEvent.risk} tone={nextEvent.risk === "HIGH" ? "danger" : "warning"} /> : <TerminalBadge label="No schedule" tone="neutral" />}</header>
+            {nextEvent ? <div className="eventCountdown"><span>NEXT WINDOW IN</span><EventCountdown startsAt={nextEvent.startsAt} initialNow={now} /><h3>{nextEvent.name}</h3><time dateTime={nextEvent.startsAt}>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(nextEvent.startsAt))} UK</time><p>Calculated from the verified provider timestamp.</p></div> : <div className="dashboardUnavailable"><i aria-hidden="true">◷</i><strong>Awaiting verified event intelligence</strong><p>The next risk window will appear when the provider supplies a complete future timestamp.</p></div>}
+          </article>
+          <article className="dailyCard accuracyCard elitePerformanceCard">
+            <header><div><span>VERIFIED HISTORY</span><h2>Classification record</h2></div><TerminalBadge label={accuracy.status} tone={accuracy.status === "verified" ? "positive" : "neutral"} /></header>
+            {accuracy.status === "verified" ? <div className="accuracyVerified"><div className="eliteAccuracyRing" style={{ "--accuracy": `${accuracy.accuracyPercent * 3.6}deg` } as React.CSSProperties}><strong>{accuracy.accuracyPercent}%</strong></div><div><p>{accuracy.correct} correct directional classifications from {accuracy.sampleSize} independently verified outcomes.</p><small>Latest verification: {accuracy.latestVerifiedAt}</small></div></div> : accuracy.status === "insufficient" ? <div className="dashboardUnavailable"><i aria-hidden="true">i</i><strong>Building a verified record</strong><p>{accuracy.sampleSize} of {accuracy.required} independently verified outcomes stored. Accuracy remains hidden until the threshold is met.</p></div> : <div className="dashboardUnavailable"><i aria-hidden="true">↻</i><strong>Verified history synchronising</strong><p>No performance result is shown until the outcome store can be verified.</p></div>}
+            <footer>Directional classification accuracy only—not returns, profitability, or a guarantee.</footer>
+          </article>
+        </div>
       </section>
 
       <SubscriptionStatusCard tier={access.tier} status={membership?.status ?? null} billingPlan={membership?.plan ?? null} periodEnd={membership?.current_period_end ?? null} portalUrl={portalUrl} foundingRecords={founding100.records} billingInterval={commercial.membership?.billingInterval ?? null} compact />
