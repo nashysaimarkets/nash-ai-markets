@@ -272,10 +272,44 @@ test("times out FMP requests and logs only safe metadata", async () => {
 
 test("classifies authentication rejection without exposing credentials", async () => {
   const logs: unknown[] = [];
-  const adapter = createFinancialModelingPrepAdapter({ apiKey: TEST_API_KEY, baseUrl: TEST_BASE_URL, logger: (message, details) => logs.push({ message, details }), fetchImpl: async () => jsonResponse({}, 401) });
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    logger: (message, details) => logs.push({ message, details }),
+    fetchImpl: async () => jsonResponse({ "Error Message": "credential value must remain private" }, 401),
+  });
   await assert.rejects(adapter.fetchSnapshot(), /authentication_rejected/);
-  assert.equal(JSON.stringify(logs).includes(TEST_API_KEY), false);
-  assert.equal(JSON.stringify(logs).includes(TEST_BASE_URL), false);
+  const serializedLogs = JSON.stringify(logs);
+  assert.equal(serializedLogs.includes(TEST_API_KEY), false);
+  assert.equal(serializedLogs.includes(TEST_BASE_URL), false);
+  assert.equal(serializedLogs.includes("credential value must remain private"), false);
+  const responseLogs = logs.filter((entry): entry is {
+    message: string;
+    details: Record<string, unknown>;
+  } => (
+    typeof entry === "object" &&
+    entry !== null &&
+    "message" in entry &&
+    entry.message === "market-provider:response" &&
+    "details" in entry &&
+    typeof entry.details === "object" &&
+    entry.details !== null
+  ));
+  assert.equal(responseLogs.length, 4);
+  assert.deepEqual(responseLogs.map(({ details }) => details.endpointName), [
+    "ES futures",
+    "VIX",
+    "US Dollar Index",
+    "Treasury rates",
+  ]);
+  assert.deepEqual(responseLogs[0]?.details, {
+    endpointName: "ES futures",
+    httpStatus: 401,
+    payloadType: "object",
+    recordCount: 1,
+    topLevelFieldNames: ["Error Message"],
+    schemaMismatch: "expected quote array",
+  });
 });
 
 test("classifies rate limiting as a retry-safe provider failure", async () => {
