@@ -97,9 +97,10 @@ export default async function MemberDashboard() {
   const verifiedMarket = (
     market.snapshot.status === "LIVE" || market.snapshot.status === "DELAYED"
   ) && intelligence.actionable && intelligence.reasoning.missingDataWarnings.length === 0;
-  const marketTimestamp = Number.isFinite(Date.parse(market.snapshot.asOf))
+  const marketTimestamp = (market.snapshot.status === "LIVE" || market.snapshot.status === "DELAYED")
+    && Number.isFinite(Date.parse(market.snapshot.asOf))
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(market.snapshot.asOf))
-    : "Not timestamped";
+    : "No verified timestamp";
   const expectedMove = "Not supplied";
   const session = marketSessionState(now);
   const centreState = commandCentreState(market.snapshot, market.gatewayStatus, session.label);
