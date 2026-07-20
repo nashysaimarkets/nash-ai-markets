@@ -53,7 +53,7 @@ const MAX_TREASURY_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 type SafeFailureCategory = "authentication_rejected" | "access_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
 type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury";
 type FmpEndpointName = "ES futures" | "VIX" | "US Dollar Index" | "Treasury rates";
-type FmpResponseKind = "quote" | "treasury";
+type FmpResponseKind = "quote" | "dollar_quote" | "treasury";
 
 class SafeProviderFailure extends Error {
   readonly category: SafeFailureCategory;
@@ -79,9 +79,9 @@ function finiteNumber(value: unknown): number | null {
 function recordsFromPayload(payload: unknown, kind: FmpResponseKind, depth = 0): Record<string, unknown>[] {
   if (Array.isArray(payload)) return payload.filter(isRecord);
   if (!isRecord(payload) || depth > 2) return [];
-  const keys = kind === "quote"
-    ? ["data", "quotes", "quote", "results", "result"]
-    : ["data", "rates", "treasuryRates", "results", "result"];
+  const keys = kind === "treasury"
+    ? ["data", "rates", "treasuryRates", "results", "result"]
+    : ["data", "quotes", "quote", "results", "result"];
   for (const key of keys) {
     const nested = payload[key];
     if (Array.isArray(nested)) return nested.filter(isRecord);
@@ -134,6 +134,18 @@ function parseQuote(payload: unknown, expectedSymbol: string): FmpQuote | null {
   return { symbol: expectedSymbol, price, change, changesPercentage, timestampMs: parsedTimestamp };
 }
 
+function parseDollarIndexQuote(payload: unknown, expectedSymbol: string): FmpQuote | null {
+  const exactRecord = recordsFromPayload(payload, "dollar_quote")
+    .find((record) => typeof record.symbol === "string" && normalizedSymbol(record.symbol) === normalizedSymbol(expectedSymbol));
+  if (!exactRecord) return null;
+
+  const name = typeof exactRecord.name === "string" ? exactRecord.name.trim().toUpperCase() : "";
+  const exchange = typeof exactRecord.exchange === "string" ? exactRecord.exchange.trim().toUpperCase() : "";
+  if (name !== "US DOLLAR INDEX" || exchange !== "INDEX") return null;
+
+  return parseQuote([exactRecord], expectedSymbol);
+}
+
 function parseTreasuryRates(payload: unknown): FmpTreasuryRates | null {
   const rows = recordsFromPayload(payload, "treasury").map((candidate) => ({
     date: typeof candidate.date === "string" ? candidate.date : "",
@@ -174,9 +186,12 @@ function responseShape(payload: unknown): {
 }
 
 function schemaMismatch(payload: unknown, kind: FmpResponseKind, expectedSymbol?: string): string {
-  if (kind === "quote") {
+  if (kind === "quote" || kind === "dollar_quote") {
     if (recordsFromPayload(payload, kind).length === 0) return "no quote records found";
-    if (!expectedSymbol || !parseQuote(payload, expectedSymbol)) {
+    const parsed = expectedSymbol && (kind === "dollar_quote"
+      ? parseDollarIndexQuote(payload, expectedSymbol)
+      : parseQuote(payload, expectedSymbol));
+    if (!parsed) {
       return "quote fields or requested symbol did not match";
     }
     return "none";
@@ -364,7 +379,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         const [esResult, vixResult, dollarResult, treasuryResult] = await Promise.allSettled([
           request("sp500Futures", "ES futures", "quote", "quote", symbols.sp500Futures),
           request("vix", "VIX", "quote", "quote", symbols.vix),
-          request("usDollarIndex", "US Dollar Index", "quote", "quote", symbols.usDollarIndex),
+          request("usDollarIndex", "US Dollar Index", "quote", "dollar_quote", symbols.usDollarIndex),
           request("treasuryYields", "Treasury rates", "treasury-rates", "treasury"),
         ]);
         if (esResult.status === "rejected") throw esResult.reason;
@@ -392,7 +407,9 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             secondaryFailure(instrument, category);
             return null;
           }
-          const quote = parseQuote(result.value, expectedSymbol);
+          const quote = instrument === "us_dollar"
+            ? parseDollarIndexQuote(result.value, expectedSymbol)
+            : parseQuote(result.value, expectedSymbol);
           const timestamp = quote ? quoteTimestampMs(quote) : null;
           if (!quote || timestamp === null || timestamp > now + MAX_FUTURE_SKEW_MS) {
             secondaryFailure(instrument, "invalid_response");

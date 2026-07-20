@@ -108,6 +108,13 @@ requested continuous-contract or index alias in a single-record quote response;
 the adapter accepts that canonical alias only when the response contains
 exactly one structurally valid record from the symbol-scoped request.
 
+FMP's authenticated Stable index catalogue identifies `DX-Y.NYB` as the
+`US Dollar Index`. Bullseye additionally requires the returned quote to use
+that exact provider symbol, the name `US Dollar Index`, exchange classification
+`INDEX`, a finite price, and a valid provider timestamp. `USDXUSD` is not an
+index alias: FMP identifies it as the unrelated `USDX [Lighthouse] USD` crypto
+asset, so it must not be configured as the Dollar Index.
+
 HTTP 402 responses remain fail closed and are reported as `access_restricted`.
 That status does not, by itself, prove that a particular paid plan will resolve
 the request. The account owner must confirm the endpoint, instrument, account
