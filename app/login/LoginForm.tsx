@@ -24,7 +24,7 @@ export default function LoginForm() {
         },
       });
       setMessageTone(error ? "error" : "success");
-      setMessage(error ? "We could not send a sign-in link. Check the address and try again." : "Link sent. Check your inbox, then return here if you need to request another.");
+      setMessage(error ? "We could not request a sign-in link. Check the address and try again." : "Request accepted. Check your inbox and junk folder; delivery may take a few minutes.");
     } catch {
       setMessageTone("error");
       setMessage("The sign-in service is temporarily unavailable. Please try again.");
