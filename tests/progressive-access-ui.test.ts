@@ -12,11 +12,12 @@ test("locked premium cards use decorative blur without embedding premium output"
 
 test("terminal gates Pro and Elite panels through feature entitlements", async () => {
   const source = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
-  for (const feature of ["decision-engine", "trade-planner", "launch-diagnostics"]) {
+  for (const feature of ["decision-engine", "trade-planner"]) {
     assert.match(source, new RegExp(`features\\[\"${feature}\"\\]`));
   }
   assert.match(source, /features\.intelligence/);
-  assert.match(source, /Progressive access/);
+  assert.match(source, /LockedPremiumCard/);
+  assert.doesNotMatch(source, /launch-diagnostics/);
 });
 
 test("preview endpoint validates tier progression and persists a unique claim", async () => {

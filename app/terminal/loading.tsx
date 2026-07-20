@@ -1,24 +1,23 @@
 import { BrandLoader } from "../components/BrandLoader.tsx";
 
-function SkeletonLine({ width = "100%" }: { width?: string }) {
+function Line({ width = "100%" }: { width?: string }) {
   return <span className="terminalSkeletonLine" style={{ width }} />;
 }
 
-function SkeletonCard({ className = "" }: { className?: string }) {
-  return <section className={`ftCard terminalSkeletonCard ${className}`}><div><SkeletonLine width="38%" /><SkeletonLine width="64%" /></div><SkeletonLine width="88%" /><SkeletonLine /><SkeletonLine width="72%" /></section>;
+function Panel({ rows = 3 }: { rows?: number }) {
+  return <section className="ctPanel terminalSkeletonCard"><div><Line width="32%" /><Line width="58%" /></div>{Array.from({ length: rows }, (_, index) => <Line key={index} width={`${92 - index * 12}%`} />)}</section>;
 }
 
 export default function TerminalLoading() {
-  return <main className="foxtrotTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Bullseye terminal">
-    <BrandLoader label="Loading Bullseye terminal" />
-    <header className="ftTopbar terminalLoadingTopbar"><SkeletonLine width="190px" /><SkeletonLine width="280px" /><SkeletonLine width="120px" /></header>
-    <aside className="ftRail terminalLoadingRail" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <SkeletonLine key={index} width="28px" />)}</aside>
-    <section className="ftWorkspace">
-      <div className="ftSafetyBanner"><SkeletonLine width="58%" /></div>
-      <section className="ftEngineStrip" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <article key={index}><SkeletonLine width="70%" /><SkeletonLine width="84%" /></article>)}</section>
-      <section className="ftQuoteStrip" aria-hidden="true">{Array.from({ length: 5 }, (_, index) => <article key={index}><SkeletonLine width="65%" /><SkeletonLine width="82%" /></article>)}</section>
-      <section className="ftPrimaryGrid" aria-hidden="true"><section className="marketChart terminalSkeletonChart"><div className="marketChartHeader"><SkeletonLine width="180px" /><SkeletonLine width="220px" /></div><div><SkeletonLine width="72%" /><SkeletonLine width="88%" /><SkeletonLine width="58%" /></div></section><div className="ftDecisionStack"><SkeletonCard /><SkeletonCard /></div></section>
-      <section className="ftAnalysisGrid" aria-hidden="true"><SkeletonCard /><SkeletonCard /></section>
+  return <main className="customerTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Elite Market Command">
+    <BrandLoader label="Loading verified market intelligence" />
+    <header className="ctTopbar"><Line width="190px" /><Line width="280px" /><Line width="90px" /></header>
+    <section className="ctWorkspace" aria-hidden="true">
+      <section className="ctHero"><div><Line width="36%" /><Line width="70%" /><Line width="88%" /></div><div><Line /><Line /><Line /></div></section>
+      <div className="ctStatus"><Line width="72%" /></div>
+      <Panel rows={4} />
+      <section className="ctPanel"><div className="ctAssetGrid">{Array.from({ length: 5 }, (_, index) => <article key={index}><Line width="54%" /><Line width="76%" /><Line width="88%" /></article>)}</div></section>
+      <section className="ctTwoColumn"><Panel rows={4} /><Panel rows={4} /></section>
     </section>
   </main>;
 }
