@@ -18,6 +18,7 @@ import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-prov
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
+import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
 import { loadAccuracySummary } from "./lib/performance-history.ts";
@@ -133,6 +134,20 @@ export default async function MemberDashboard() {
           <span>BULLSEYE CONFIDENCE</span><strong>{mission.confidence === null ? "Decision engine initialising" : mission.confidence}<em>{mission.confidence === null ? "" : "/100"}</em></strong><div className="eliteConfidenceTrack"><i style={{ width: `${mission.confidence ?? 0}%` }} /></div><small>{mission.available ? "Verified engine output" : "Activates after provider verification"}</small>
         </article>
       </section>
+
+      <BullseyeMissionControl
+        verified={verifiedMarket}
+        confidence={mission.confidence}
+        marketCondition={mission.marketCondition}
+        directionalBias={mission.directionalBias}
+        keyRisk={mission.keyWarning}
+        nextAction={mission.nextAction}
+        tradePermission={decision.tradePermission}
+        riskRating={decision.riskRating}
+        volatilityRegime={decision.volatilityRegime}
+        providerName={market.gatewayStatus.providerName}
+        fallbackActive={market.gatewayStatus.fallbackActive}
+      />
 
       <section className="memberAccessMap" aria-labelledby="access-map-title">
         <header>
