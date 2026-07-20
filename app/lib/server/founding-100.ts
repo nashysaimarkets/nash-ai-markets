@@ -114,12 +114,22 @@ async function loadRows(): Promise<{ status: "available"; records: Founding100Re
 }
 
 export async function loadFounding100ForEmail(email: string) {
-  const result = await loadRows();
-  if (result.status === "unavailable") return result;
-  return {
-    status: "available" as const,
-    records: result.records.filter((record) => record.email === email.trim().toLowerCase()),
-  };
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) return { status: "available" as const, records: [] };
+  try {
+    const { data, error } = await createAdminClient()
+      .from("founding_100_members")
+      .select("programme, position, email, status, price_lock_active, earned_at, forfeited_at")
+      .eq("email", normalizedEmail)
+      .order("programme")
+      .order("position");
+    if (error || !Array.isArray(data)) return { status: "unavailable" as const, records: [] };
+    const records = data.map((row) => normalizeRow(row as Founding100Row));
+    if (records.some((record) => record === null)) return { status: "unavailable" as const, records: [] };
+    return { status: "available" as const, records: records as Founding100Record[] };
+  } catch {
+    return { status: "unavailable" as const, records: [] };
+  }
 }
 
 export async function loadFounding100Report() {

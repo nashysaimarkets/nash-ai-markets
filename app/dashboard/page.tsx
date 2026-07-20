@@ -8,7 +8,6 @@ import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
 import { applyAIMorningBrief, createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
 import { generateAIMorningBrief } from "../lib/server/ai-morning-brief.ts";
 import { loadFounding100ForEmail } from "../lib/server/founding-100.ts";
-import { loadCommercialMembership } from "../lib/server/commercial.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
@@ -45,18 +44,17 @@ export default async function MemberDashboard() {
   if (!onboardingError && !onboarding?.completed_at) redirect("/onboarding");
 
   const { data: membership, error: membershipError } = await supabase.from("memberships")
-    .select("plan, status, current_period_end")
+    .select("plan, status, current_period_end, billing_interval")
     .ilike("email", user.email)
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
-  const [previewState, market, accuracy, founding100, commercial] = await Promise.all([
+  const [previewState, market, accuracy, founding100] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
     loadAccuracySummary(),
     loadFounding100ForEmail(user.email),
-    loadCommercialMembership(user.email),
   ]);
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
@@ -256,7 +254,7 @@ export default async function MemberDashboard() {
         </div>
       </section>
 
-      <SubscriptionStatusCard tier={access.tier} status={membership?.status ?? null} billingPlan={membership?.plan ?? null} periodEnd={membership?.current_period_end ?? null} portalUrl={portalUrl} foundingRecords={founding100.records} billingInterval={commercial.membership?.billingInterval ?? null} compact />
+      <SubscriptionStatusCard tier={access.tier} status={membership?.status ?? null} billingPlan={membership?.plan ?? null} periodEnd={membership?.current_period_end ?? null} portalUrl={portalUrl} foundingRecords={founding100.records} billingInterval={membership?.billing_interval ?? null} compact />
 
       <section className="dashboardAccessArea" aria-label="Progressive membership access">
         <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>

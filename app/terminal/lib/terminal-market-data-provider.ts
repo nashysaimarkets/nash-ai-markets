@@ -15,11 +15,17 @@ import {
   DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL,
   FINANCIAL_MODELING_PREP_PROVIDER_NAME,
 } from "../../lib/providers/financial-modeling-prep.ts";
+import { createAsyncTtlCache } from "../../lib/server/async-ttl-cache.ts";
 
 export type TerminalMarketGatewayResult = {
   snapshot: MarketSnapshot;
   gatewayStatus: MarketGatewayStatus;
 };
+
+const configuredMarketDataCache = createAsyncTtlCache<TerminalMarketGatewayResult>({
+  ttlMs: 15_000,
+  isFailure: ({ snapshot }) => snapshot.status !== "LIVE" && snapshot.status !== "DELAYED",
+});
 
 function positiveInteger(value: string | undefined): number | undefined {
   if (!value) return undefined;
@@ -89,20 +95,26 @@ export async function getTerminalMarketData(
     };
   }
 
-  const providerName = override
-    ? "Terminal provider override"
-    : configured!.name;
-  const provider = override
-    ? resolveOverride(override)
-    : configured!.provider;
-  const gateway = new LiveMarketGateway({
-    provider,
-    providerName,
-    maxRetries: positiveInteger(process.env.MARKET_DATA_MAX_RETRIES) ?? 1,
-    retryDelayMs: positiveInteger(process.env.MARKET_DATA_RETRY_DELAY_MS) ?? 250,
-  });
-  const snapshot = await gateway.fetchSnapshot(now);
-  return { snapshot, gatewayStatus: gateway.getStatus() };
+  const load = async () => {
+    const providerName = override
+      ? "Terminal provider override"
+      : configured!.name;
+    const provider = override
+      ? resolveOverride(override)
+      : configured!.provider;
+    const gateway = new LiveMarketGateway({
+      provider,
+      providerName,
+      maxRetries: positiveInteger(process.env.MARKET_DATA_MAX_RETRIES) ?? 1,
+      retryDelayMs: positiveInteger(process.env.MARKET_DATA_RETRY_DELAY_MS) ?? 250,
+    });
+    const snapshot = await gateway.fetchSnapshot(now);
+    return { snapshot, gatewayStatus: gateway.getStatus() };
+  };
+
+  // Test/provider overrides remain uncached. Production callers share one
+  // short-lived verified snapshot per server instance.
+  return override ? load() : configuredMarketDataCache.get(load);
 }
 
 /** Retained for callers that only need the configured low-level adapter. */
