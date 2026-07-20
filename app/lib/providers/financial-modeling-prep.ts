@@ -45,6 +45,8 @@ const MAX_TREASURY_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 type SafeFailureCategory = "authentication_rejected" | "plan_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
 type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury";
+type FmpEndpointName = "ES futures" | "VIX" | "US Dollar Index" | "Treasury rates";
+type FmpResponseKind = "quote" | "treasury";
 
 class SafeProviderFailure extends Error {
   readonly category: SafeFailureCategory;
@@ -88,6 +90,49 @@ function parseTreasuryRates(payload: unknown): FmpTreasuryRates | null {
   ));
   rows.sort((left, right) => Date.parse(right.date) - Date.parse(left.date));
   return rows[0] ?? null;
+}
+
+function responseShape(payload: unknown): {
+  payloadType: "array" | "object" | "null" | "primitive";
+  recordCount: number;
+  topLevelFieldNames: string[];
+} {
+  if (Array.isArray(payload)) {
+    const firstRecord = payload.find(isRecord);
+    return {
+      payloadType: "array",
+      recordCount: payload.length,
+      topLevelFieldNames: firstRecord ? Object.keys(firstRecord).sort() : [],
+    };
+  }
+  if (isRecord(payload)) {
+    return {
+      payloadType: "object",
+      recordCount: 1,
+      topLevelFieldNames: Object.keys(payload).sort(),
+    };
+  }
+  return {
+    payloadType: payload === null ? "null" : "primitive",
+    recordCount: 0,
+    topLevelFieldNames: [],
+  };
+}
+
+function schemaMismatch(payload: unknown, kind: FmpResponseKind, expectedSymbol?: string): string {
+  if (kind === "quote") {
+    if (!Array.isArray(payload)) return "expected quote array";
+    if (payload.length !== 1) return "expected exactly one quote record";
+    if (!expectedSymbol || !parseQuote(payload, expectedSymbol)) {
+      return "quote fields or requested symbol did not match";
+    }
+    return "none";
+  }
+  return parseTreasuryRates(payload)
+    ? "none"
+    : Array.isArray(payload)
+      ? "no record matched date, year2 and year10"
+      : "expected treasury array";
 }
 
 function quoteTimestampMs(quote: FmpQuote): number | null {
@@ -149,32 +194,65 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     async fetchSnapshot() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
-      const request = async (pathname: string, symbol?: string): Promise<unknown> => {
+      const request = async (
+        endpointName: FmpEndpointName,
+        pathname: string,
+        kind: FmpResponseKind,
+        symbol?: string,
+      ): Promise<unknown> => {
         let response: Response;
         try {
           response = await fetchImpl(createUrl(baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
         } catch (error) {
+          logger("market-provider:response", {
+            endpointName,
+            httpStatus: null,
+            payloadType: "request_failure",
+            recordCount: 0,
+            topLevelFieldNames: [],
+            schemaMismatch: "request failed before an HTTP response",
+          });
           if (error instanceof Error && error.name === "AbortError") throw error;
           throw new SafeProviderFailure("network_interruption");
         }
+        let payload: unknown;
+        try {
+          payload = await response.json() as unknown;
+        } catch {
+          logger("market-provider:response", {
+            endpointName,
+            httpStatus: response.status,
+            payloadType: "non_json",
+            recordCount: 0,
+            topLevelFieldNames: [],
+            schemaMismatch: "response was not valid JSON",
+          });
+          if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
+          if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
+          if (response.status === 429) throw new SafeProviderFailure("rate_limited");
+          if (!response.ok) throw new SafeProviderFailure("invalid_response");
+          throw new SafeProviderFailure("malformed_json");
+        }
+        logger("market-provider:response", {
+          endpointName,
+          httpStatus: response.status,
+          ...responseShape(payload),
+          schemaMismatch: schemaMismatch(payload, kind, symbol),
+        });
         if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
         if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
         if (response.status === 429) throw new SafeProviderFailure("rate_limited");
         if (!response.ok) throw new SafeProviderFailure("invalid_response");
-        try {
-          return await response.json() as unknown;
-        } catch {
-          throw new SafeProviderFailure("malformed_json");
-        }
+        return payload;
       };
 
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
         const [esResult, vixResult, dollarResult, treasuryResult] = await Promise.allSettled([
-          request("quote", symbols.sp500Futures),
-          request("quote", symbols.vix),
-          request("quote", symbols.usDollarIndex),
-          request("treasury-rates"),
+          request("ES futures", "quote", "quote", symbols.sp500Futures),
+          request("VIX", "quote", "quote", symbols.vix),
+          request("US Dollar Index", "quote", "quote", symbols.usDollarIndex),
+          request("Treasury rates", "treasury-rates", "treasury"),
         ]);
         if (esResult.status === "rejected") throw esResult.reason;
         const es = parseQuote(esResult.value, symbols.sp500Futures);
