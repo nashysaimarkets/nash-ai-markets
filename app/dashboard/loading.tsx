@@ -18,6 +18,7 @@ export default function DashboardLoading() {
       <section className="bullseyeMissionControl terminalSkeletonCard eliteLoadingMission" aria-hidden="true"><span className="terminalSkeletonLine skeletonShort" /><span className="terminalSkeletonLine skeletonTitle" /><div>{Array.from({ length: 3 }, (_, index) => <span className="terminalSkeletonLine" key={index} />)}</div></section>
       <section className="eliteStructurePanel terminalSkeletonCard" aria-hidden="true"><span className="terminalSkeletonLine" /><span className="terminalSkeletonLine" /></section>
       <section className="eliteScenarioGrid" aria-hidden="true">{Array.from({ length: 2 }, (_, index) => <article className="eliteScenario terminalSkeletonCard" key={index}><span className="terminalSkeletonLine" /><span className="terminalSkeletonLine" /></article>)}</section>
+      <section className="marketCatalystBriefing terminalSkeletonCard eliteLoadingMission" aria-hidden="true"><span className="terminalSkeletonLine skeletonShort" /><span className="terminalSkeletonLine skeletonTitle" /><div>{Array.from({ length: 3 }, (_, index) => <span className="terminalSkeletonLine" key={index} />)}</div></section>
     </div>
   </MemberShell>;
 }

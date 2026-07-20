@@ -22,6 +22,7 @@ import { EliteOnboardingChecklist } from "./components/EliteOnboardingChecklist.
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
 import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
+import { MarketCatalystBriefing } from "./components/MarketCatalystBriefing.tsx";
 import { MorningBriefPanel, MorningBriefSkeleton } from "./components/MorningBriefPanel.tsx";
 import { TodaysBullseyePlan } from "./components/TodaysBullseyePlan.tsx";
 import { TodaysEdge } from "./components/TodaysEdge.tsx";
@@ -219,6 +220,14 @@ export default async function MemberDashboard() {
         <EliteScenarioCard tone="bullish" verified={verifiedMarket} probability={bullishScenario.probability} trigger={bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bullishScenario.trigger.level ?? "Range confirmation"} invalidation={bullishScenario.invalidation.level ?? bullishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
         <EliteScenarioCard tone="bearish" verified={verifiedMarket} probability={bearishScenario.probability} trigger={bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bearishScenario.trigger.level ?? "Range confirmation"} invalidation={bearishScenario.invalidation.level ?? bearishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
       </section>
+
+      <MarketCatalystBriefing
+        verified={verifiedMarket}
+        events={market.snapshot.events}
+        riskDrivers={intelligence.reasoning.riskDrivers}
+        keyRisk={mission.keyWarning}
+        noTradeConditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined}
+      />
 
       <Suspense fallback={<MorningBriefSkeleton />}>
         <MorningBriefPanel brief={deterministicMorningBrief} aiEligible={access.features.intelligence} />

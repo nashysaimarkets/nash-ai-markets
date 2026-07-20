@@ -40,3 +40,20 @@ test("dashboard includes the premium plan and customer trust labels", async () =
   assert.match(styles, /subscriptionStatusCompact dl div:last-child\{grid-column:1\/-1\}/);
   assert.match(styles, /eliteHeaderMeta strong\{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere\}/);
 });
+
+test("dashboard exposes verified catalysts and readable risk controls without additional requests", async () => {
+  const [dashboard, component, styles] = await Promise.all([
+    readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/components/MarketCatalystBriefing.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard-elite.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(dashboard, /MarketCatalystBriefing/);
+  assert.match(component, /What could change the plan/);
+  assert.match(component, /events\.slice\(0, 3\)/);
+  assert.match(component, /rawValue !== null/);
+  assert.match(component, /Plan-change signals remain withheld/);
+  assert.doesNotMatch(component, /fetch\(|useEffect|setInterval/);
+  assert.match(styles, /\.catalystBriefingGrid\{display:grid/);
+  assert.match(styles, /@media\(max-width:700px\)[\s\S]*\.catalystBriefingGrid\{grid-template-columns:1fr\}/);
+  assert.match(styles, /prefers-reduced-motion:reduce/);
+});
