@@ -8,7 +8,7 @@ import { checkOpenAIConnection } from "../../lib/server/openai";
 import { createTradingDecision } from "../../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../../lib/structured-trade-planner";
 import { LaunchDiagnosticsPanel } from "../components/LaunchDiagnosticsPanel";
-import { getTerminalMarketData } from "../lib/terminal-market-data-provider";
+import { getFmpEnvironmentDiagnostics, getTerminalMarketData } from "../lib/terminal-market-data-provider";
 import { createLaunchDiagnostics } from "../lib/launch-diagnostics";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../lib/membership-entitlement";
 import { loadPreviewClaims } from "../lib/preview-access";
@@ -41,6 +41,7 @@ export default async function TerminalDiagnosticsPage() {
     chartState: chartDisplayState([...chart.data]),
     providerType: process.env.MARKET_DATA_PROVIDER,
     apiCredentialConfigured: Boolean(process.env.FMP_API_KEY),
+    providerEnvironment: getFmpEnvironmentDiagnostics(),
     accessibilityContract: true,
     openAIHealth,
     openAIConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),

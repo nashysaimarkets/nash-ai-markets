@@ -41,6 +41,15 @@ export type MarketSliceAdapter = {
 };
 
 export type MarketGatewayConnectionStatus = "connected" | "degraded" | "offline" | "not_configured";
+export type MarketProviderFailureCategory =
+  | "authentication_rejected"
+  | "plan_restricted"
+  | "rate_limited"
+  | "malformed_json"
+  | "timeout"
+  | "invalid_response"
+  | "network_interruption"
+  | "provider_request_failed";
 
 export type MarketGatewayStatus = {
   connectionStatus: MarketGatewayConnectionStatus;
@@ -52,6 +61,7 @@ export type MarketGatewayStatus = {
   fallbackActive: boolean;
   lastRefreshLatencyMs: number | null;
   reconnectAttempts: number;
+  lastFailureCategory?: MarketProviderFailureCategory | null;
 };
 
 export type LiveMarketGatewayOptions = {
@@ -126,6 +136,7 @@ export function createUnconfiguredMarketGatewayStatus(providerName = "Not config
     fallbackActive: true,
     lastRefreshLatencyMs: null,
     reconnectAttempts: 0,
+    lastFailureCategory: null,
   };
 }
 
@@ -136,6 +147,20 @@ export function formatMarketGatewayDataAge(dataAgeMs: number | null): string {
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m`;
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
+function safeFailureCategory(error: unknown): MarketProviderFailureCategory {
+  const message = error instanceof Error ? error.message : "";
+  const categories: MarketProviderFailureCategory[] = [
+    "authentication_rejected",
+    "plan_restricted",
+    "rate_limited",
+    "malformed_json",
+    "timeout",
+    "invalid_response",
+    "network_interruption",
+  ];
+  return categories.find((category) => message.includes(category)) ?? (message.includes("timed out") ? "timeout" : "provider_request_failed");
 }
 
 export class LiveMarketGateway {
@@ -160,6 +185,7 @@ export class LiveMarketGateway {
       fallbackActive: false,
       lastRefreshLatencyMs: null,
       reconnectAttempts: 0,
+      lastFailureCategory: null,
     };
   }
 
@@ -193,13 +219,16 @@ export class LiveMarketGateway {
         this.state.dataAgeMs = dataAgeMs(normalized.asOf, now);
         this.state.fallbackActive = false;
         this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
+        this.state.lastFailureCategory = null;
         this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1 });
         return normalized;
-      } catch {
+      } catch (error) {
+        const category = safeFailureCategory(error);
         this.state.failureCount += 1;
         this.state.connectionStatus = "offline";
+        this.state.lastFailureCategory = category;
         this.logger("market-provider:error", {
-          category: "provider_request_failed",
+          category,
           provider: this.state.providerName,
           attempt: attempt + 1,
           failureCount: this.state.failureCount,

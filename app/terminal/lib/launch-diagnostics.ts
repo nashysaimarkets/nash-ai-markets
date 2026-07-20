@@ -6,6 +6,7 @@ import type { OpenAIHealthStatus } from "../../lib/server/openai.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { ChartDisplayState } from "./visual-terminal.ts";
+import type { FmpEnvironmentDiagnostics } from "./terminal-market-data-provider.ts";
 
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
@@ -28,6 +29,8 @@ export type LaunchDiagnostics = {
     staleDetected: boolean;
     fallbackActive: boolean;
     reconnectAttempts: number;
+    lastFailureCategory: MarketGatewayStatus["lastFailureCategory"];
+    configuration: FmpEnvironmentDiagnostics & { defaultBaseUrlActive: boolean };
   };
   modes: { preview: boolean; delayed: boolean; offline: boolean; live: boolean };
   cacheStatus: "live" | "delayed" | "preview" | "fallback" | "offline";
@@ -61,6 +64,7 @@ export type LaunchDiagnosticsInput = {
   chartState: ChartDisplayState;
   providerType?: string;
   apiCredentialConfigured?: boolean;
+  providerEnvironment?: FmpEnvironmentDiagnostics;
   accessibilityContract?: boolean;
   openAIHealth?: OpenAIHealthStatus;
   openAIConfigured?: boolean;
@@ -125,6 +129,11 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
   const readiness = checks.some((check) => check.status === "FAIL") ? "NOT_READY" : checks.some((check) => check.status === "WARN") || offline || preview || delayed ? "DEGRADED" : "READY";
   const cacheStatus: LaunchDiagnostics["cacheStatus"] = gatewayStatus.fallbackActive ? "fallback" : preview ? "preview" : delayed ? "delayed" : live ? "live" : "offline";
   const openAIHealth = input.openAIHealth ?? { status: "not_configured", reason: "missing_api_key" };
+  const providerEnvironment = input.providerEnvironment ?? {
+    marketDataProviderConfigured: Boolean(input.providerType?.trim()),
+    fmpApiKeyConfigured: Boolean(input.apiCredentialConfigured),
+    fmpApiBaseUrlConfigured: false,
+  };
 
   return {
     schemaVersion: "1.0",
@@ -138,6 +147,11 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
       staleDetected,
       fallbackActive: gatewayStatus.fallbackActive,
       reconnectAttempts: gatewayStatus.reconnectAttempts,
+      lastFailureCategory: gatewayStatus.lastFailureCategory ?? null,
+      configuration: {
+        ...providerEnvironment,
+        defaultBaseUrlActive: input.providerType?.trim().toLowerCase() === "fmp" && !providerEnvironment.fmpApiBaseUrlConfigured,
+      },
     },
     modes: { preview, delayed, offline, live },
     cacheStatus,

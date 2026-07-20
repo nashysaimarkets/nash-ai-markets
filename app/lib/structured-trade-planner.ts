@@ -71,7 +71,7 @@ function uniqueWarnings(values: MissingDataWarning[]): MissingDataWarning[] {
 
 function criticalMissing(warnings: MissingDataWarning[]): boolean {
   return warnings.some((warning) =>
-    (warning.code === "MISSING_QUOTE" && ["ES", "VIX"].includes(warning.field)) ||
+    (warning.code === "MISSING_QUOTE" && ["ES", "VIX", "US2Y", "US10Y", "DXY"].includes(warning.field)) ||
     (warning.code === "MISSING_EVIDENCE" && ["trend", "volatility"].includes(warning.field)) ||
     warning.code === "MISSING_LEVEL",
   );

@@ -3,9 +3,12 @@ import test from "node:test";
 import { LiveMarketGateway } from "../app/lib/live-market-gateway.ts";
 import {
   createFinancialModelingPrepAdapter,
+  DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL,
   FINANCIAL_MODELING_PREP_PROVIDER_NAME,
 } from "../app/lib/providers/financial-modeling-prep.ts";
-import { getTerminalMarketData } from "../app/terminal/lib/terminal-market-data-provider.ts";
+import { analyzeMarketSnapshot } from "../app/lib/market-intelligence-engine.ts";
+import { createTradingDecision } from "../app/lib/trading-decision-engine.ts";
+import { createTerminalMarketDataProvider, getTerminalMarketData } from "../app/terminal/lib/terminal-market-data-provider.ts";
 
 const TEST_BASE_URL = "https://provider.invalid/stable/?region=us&format=json";
 const TEST_API_KEY = crypto.randomUUID();
@@ -72,6 +75,51 @@ test("appends query authentication without replacing existing query parameters",
   assert.equal(requestedQueries.filter((query) => query.symbol).length, 3);
 });
 
+test("defaults the FMP base URL when FMP_API_BASE_URL is missing", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const requestedUrls: URL[] = [];
+  const timestamp = Date.parse(asOf) / 1000;
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      requestedUrls.push(url);
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.equal(snapshot?.status, "LIVE");
+  assert.equal(requestedUrls.length, 4);
+  assert.equal(requestedUrls.every((url) => url.origin === new URL(DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL).origin), true);
+  assert.equal(requestedUrls.every((url) => url.pathname.startsWith("/stable/")), true);
+});
+
+test("configures the terminal FMP provider when only the optional base URL is absent", () => {
+  const previous = {
+    provider: process.env.MARKET_DATA_PROVIDER,
+    apiKey: process.env.FMP_API_KEY,
+    baseUrl: process.env.FMP_API_BASE_URL,
+  };
+  process.env.MARKET_DATA_PROVIDER = "fmp";
+  process.env.FMP_API_KEY = TEST_API_KEY;
+  delete process.env.FMP_API_BASE_URL;
+  try {
+    assert.ok(createTerminalMarketDataProvider());
+  } finally {
+    if (previous.provider === undefined) delete process.env.MARKET_DATA_PROVIDER;
+    else process.env.MARKET_DATA_PROVIDER = previous.provider;
+    if (previous.apiKey === undefined) delete process.env.FMP_API_KEY;
+    else process.env.FMP_API_KEY = previous.apiKey;
+    if (previous.baseUrl === undefined) delete process.env.FMP_API_BASE_URL;
+    else process.env.FMP_API_BASE_URL = previous.baseUrl;
+  }
+});
+
 test("lets the gateway reject stale FMP data and activate fallback", async () => {
   const now = Date.now();
   const adapter = createFinancialModelingPrepAdapter({
@@ -90,6 +138,97 @@ test("lets the gateway reject stale FMP data and activate fallback", async () =>
   assert.equal(snapshot.status, "UNAVAILABLE");
   assert.deepEqual(snapshot.quotes, []);
   assert.equal(gateway.getStatus().fallbackActive, true);
+});
+
+test("does not let a current date-only Treasury observation stale intraday quotes", async () => {
+  const now = new Date();
+  const quoteAsOf = new Date(now.getTime() - 60_000).toISOString();
+  const treasuryDate = now.toISOString().slice(0, 10);
+  const quoteTimestamp = Date.parse(quoteAsOf) / 1000;
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: treasuryDate, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp: quoteTimestamp }]);
+    },
+  });
+  const gateway = new LiveMarketGateway({
+    provider: adapter,
+    providerName: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
+    maxRetries: 0,
+    logger: () => undefined,
+  });
+
+  const snapshot = await gateway.fetchSnapshot(now.getTime());
+  assert.equal(snapshot.status, "LIVE");
+  assert.equal(snapshot.asOf, quoteAsOf);
+  assert.equal(gateway.getStatus().fallbackActive, false);
+});
+
+test("marks excessively old Treasury observations unavailable while preserving a current S&P quote", async () => {
+  const quoteAsOf = new Date(Date.now() - 60_000).toISOString();
+  const quoteTimestamp = Date.parse(quoteAsOf) / 1000;
+  const staleTreasuryDate = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: staleTreasuryDate, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp: quoteTimestamp }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.equal(snapshot?.status, "LIVE");
+  assert.ok(snapshot?.quotes.some((quote) => quote.symbol === "ES"));
+  assert.equal(snapshot?.quotes.some((quote) => quote.symbol === "US2Y"), false);
+  assert.equal(snapshot?.quotes.some((quote) => quote.symbol === "US10Y"), false);
+});
+
+test("keeps a valid S&P quote when secondary FMP responses are unavailable and fails trading conclusions closed", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const timestamp = Date.parse(asOf) / 1000;
+  const messages: Array<{ message: string; details?: Record<string, unknown> }> = [];
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    logger: (message, details) => messages.push({ message, details }),
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.searchParams.get("symbol") === "ESUSD") {
+        return jsonResponse([{ symbol: "ESUSD", price: 6325.5, change: 1, changesPercentage: 0.25, timestamp }]);
+      }
+      return jsonResponse([{ unavailable: true }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.equal(snapshot.status, "LIVE");
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES"]);
+  assert.equal(messages.filter(({ details }) => details?.category === "invalid_response").length, 3);
+
+  const intelligence = analyzeMarketSnapshot(snapshot);
+  const decision = createTradingDecision({
+    intelligence,
+    reasoning: intelligence.reasoning,
+    dataStatus: snapshot.status,
+    providerStatus: "connected",
+    dataAgeMs: 60_000,
+    fallbackActive: false,
+    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+  });
+  assert.equal(decision.tradePermission, "no-trade");
+  assert.ok(decision.dataQualityWarnings.some((warning) => warning.code === "MISSING_QUOTE" && warning.field === "VIX"));
 });
 
 test("rejects malformed or incomplete FMP responses", async () => {
@@ -144,7 +283,7 @@ test("classifies rate limiting as a retry-safe provider failure", async () => {
   await assert.rejects(adapter.fetchSnapshot(), /rate_limited/);
 });
 
-test("identifies plan-restricted instruments without exposing symbols or credentials", async () => {
+test("isolates plan-restricted secondary instruments without exposing symbols or credentials", async () => {
   const messages: Array<{ message: string; details?: Record<string, unknown> }> = [];
   const asOf = new Date(Date.now() - 60_000).toISOString();
   const mockFetch = createMockFetch(asOf);
@@ -159,7 +298,11 @@ test("identifies plan-restricted instruments without exposing symbols or credent
     logger(message, details) { messages.push({ message, details }); },
   });
 
-  await assert.rejects(() => provider.fetchSnapshot(), /plan_restricted/);
+  const snapshot = await provider.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.equal(snapshot.status, "LIVE");
+  assert.ok(snapshot.quotes.some((quote) => quote.symbol === "ES"));
+  assert.equal(snapshot.quotes.some((quote) => quote.symbol === "DXY"), false);
   assert.deepEqual(messages.find(({ details }) => details?.category === "plan_restricted")?.details, {
     provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
     category: "plan_restricted",
