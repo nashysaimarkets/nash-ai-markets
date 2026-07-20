@@ -1,3 +1,6 @@
+import type { MarketDataStatus } from "../../lib/market-data.ts";
+import type { IntelligenceScores } from "../../lib/market-intelligence-engine.ts";
+
 type RadarTone = "positive" | "warning" | "danger" | "neutral";
 
 type BullseyeMissionControlProps = {
@@ -12,6 +15,8 @@ type BullseyeMissionControlProps = {
   volatilityRegime: string;
   providerName: string;
   fallbackActive: boolean;
+  dataStatus: MarketDataStatus;
+  scores: IntelligenceScores;
 };
 
 function clampScore(value: number) {
@@ -50,21 +55,18 @@ export function BullseyeMissionControl({
   volatilityRegime,
   providerName,
   fallbackActive,
+  dataStatus,
+  scores,
 }: BullseyeMissionControlProps) {
   const confidenceScore = clampScore(confidence ?? 0);
-  const trendScore = verified ? clampScore(confidenceScore + (directionalBias.toLowerCase().includes("neutral") ? -18 : 4)) : 0;
-  const momentumScore = verified ? clampScore(confidenceScore - 8) : 0;
-  const volatilityScore = verified ? clampScore(riskRating.toLowerCase().includes("extreme") ? 92 : riskRating.toLowerCase().includes("high") ? 76 : riskRating.toLowerCase().includes("medium") ? 52 : 28) : 0;
-  const newsRiskScore = fallbackActive ? 80 : verified ? 46 : 0;
-  const liquidityScore = verified ? clampScore(100 - Math.round(volatilityScore * 0.42)) : 0;
+  const volatilityScore = verified ? clampScore(scores.volatility) : 0;
   const weather = weatherForRisk(riskRating, verified);
   const radar = [
-    { label: "Trend strength", score: trendScore, tone: toneForScore(trendScore) },
-    { label: "Momentum", score: momentumScore, tone: toneForScore(momentumScore) },
+    { label: "Trend", score: verified ? clampScore(scores.trend) : 0, tone: toneForScore(scores.trend) },
+    { label: "Market sentiment", score: verified ? clampScore(scores.marketSentiment) : 0, tone: toneForScore(scores.marketSentiment) },
     { label: "Volatility risk", score: volatilityScore, tone: toneForScore(volatilityScore, true) },
-    { label: "News risk", score: newsRiskScore, tone: toneForScore(newsRiskScore, true) },
-    { label: "Liquidity", score: liquidityScore, tone: toneForScore(liquidityScore) },
-    { label: "AI confidence", score: confidenceScore, tone: toneForScore(confidenceScore) },
+    { label: "Risk-on / risk-off", score: verified ? clampScore(scores.riskOnRiskOff) : 0, tone: toneForScore(scores.riskOnRiskOff) },
+    { label: "Engine confidence", score: confidenceScore, tone: toneForScore(confidenceScore) },
   ];
 
   return (
@@ -73,12 +75,12 @@ export function BullseyeMissionControl({
         <div>
           <span className="eliteEyebrow">AI COMMAND CENTRE</span>
           <h2 id="mission-control-title">Bullseye Mission Control</h2>
-          <p>One-glance decision support built from verified engine evidence.</p>
+          <p>One-glance decision support built from verified, derived engine analytics.</p>
         </div>
         <div className={`missionControlState ${verified ? "isVerified" : "isScanning"}`}>
           <i aria-hidden="true" />
-          <span>{verified ? "INTELLIGENCE VERIFIED" : "VERIFICATION IN PROGRESS"}</span>
-          <small>{providerName}</small>
+          <span>{verified ? `${dataStatus} INTELLIGENCE VERIFIED` : "VERIFICATION IN PROGRESS"}</span>
+          <small>{fallbackActive ? `${providerName} · fallback active` : providerName}</small>
         </div>
       </header>
 
@@ -103,7 +105,7 @@ export function BullseyeMissionControl({
         </article>
 
         <article className="bullseyeRadarCard">
-          <header><div><span>BULLSEYE RADAR™</span><h3>Session readiness</h3></div><b>{verified ? `${confidenceScore}%` : "SCAN"}</b></header>
+          <header><div><span>BULLSEYE RADAR™ · DERIVED</span><h3>Engine analytics</h3></div><b>{verified ? `${confidenceScore}%` : "SCAN"}</b></header>
           <div className="bullseyeRadarList">
             {radar.map((item) => <div key={item.label} className={`radarMetric is-${item.tone}`}>
               <div><span>{item.label}</span><strong>{verified ? item.score : "—"}</strong></div>
@@ -113,7 +115,7 @@ export function BullseyeMissionControl({
         </article>
 
         <article className="marketWeatherCard">
-          <header><span>MARKET WEATHER™</span><small>{verified ? riskRating : "UNRATED"}</small></header>
+          <header><span>MARKET WEATHER™ · DERIVED</span><small>{verified ? riskRating : "UNRATED"}</small></header>
           <div className="marketWeatherVisual" aria-hidden="true"><b>{weather.icon}</b><i /><i /><i /></div>
           <h3>{weather.label}</h3>
           <p>{weather.copy}</p>
@@ -121,15 +123,12 @@ export function BullseyeMissionControl({
         </article>
 
         <article className="nashCopilotCard">
-          <header><div><span>NASH AI COPILOT</span><h3>Ask the right question first</h3></div><b>AI</b></header>
+          <header><div><span>NASH AI COPILOT</span><h3>Verified intelligence summary</h3></div><b>AI</b></header>
           <div className="copilotAnswer">
             <span>WHAT MATTERS MOST NOW?</span>
             <p>{verified ? keyRisk : "Do not infer direction from incomplete data. Wait for the provider safety checks to clear."}</p>
           </div>
-          <div className="copilotPrompts" aria-label="Suggested Copilot prompts">
-            <span>Biggest risk?</span><span>Patient at the open?</span><span>What is AI watching?</span>
-          </div>
-          <footer>{verified ? "Copilot summary uses current deterministic engine outputs." : "Copilot remains fail-closed until evidence is verified."}</footer>
+          <footer>{verified ? "Summary uses current deterministic engine outputs only." : "Summary remains fail-closed until evidence is verified."}</footer>
         </article>
       </div>
     </section>

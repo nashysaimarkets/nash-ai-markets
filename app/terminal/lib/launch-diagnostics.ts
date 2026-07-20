@@ -30,6 +30,15 @@ export type LaunchDiagnostics = {
     fallbackActive: boolean;
     reconnectAttempts: number;
     lastFailureCategory: MarketGatewayStatus["lastFailureCategory"];
+    resultCategory: string;
+    responseReceived: boolean;
+    schemaRecognized: boolean;
+    quoteCount: number;
+    requiredInstrumentsFound: string[];
+    requiredInstrumentsMissing: string[];
+    providerTimestamp: string | null;
+    classification: MarketGatewayStatus["dataClassification"];
+    failureReason: string | null;
     configuration: FmpEnvironmentDiagnostics & { defaultBaseUrlActive: boolean };
   };
   modes: { preview: boolean; delayed: boolean; offline: boolean; live: boolean };
@@ -148,6 +157,15 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
       fallbackActive: gatewayStatus.fallbackActive,
       reconnectAttempts: gatewayStatus.reconnectAttempts,
       lastFailureCategory: gatewayStatus.lastFailureCategory ?? null,
+      resultCategory: gatewayStatus.providerAttempt.resultCategory,
+      responseReceived: gatewayStatus.providerAttempt.responseReceived,
+      schemaRecognized: gatewayStatus.providerAttempt.schemaRecognized,
+      quoteCount: gatewayStatus.providerAttempt.quoteCount,
+      requiredInstrumentsFound: [...gatewayStatus.providerAttempt.requiredInstrumentsFound],
+      requiredInstrumentsMissing: [...gatewayStatus.providerAttempt.requiredInstrumentsMissing],
+      providerTimestamp: gatewayStatus.providerAttempt.providerTimestamp,
+      classification: gatewayStatus.dataClassification,
+      failureReason: gatewayStatus.providerAttempt.failureReason,
       configuration: {
         ...providerEnvironment,
         defaultBaseUrlActive: input.providerType?.trim().toLowerCase() === "fmp" && !providerEnvironment.fmpApiBaseUrlConfigured,

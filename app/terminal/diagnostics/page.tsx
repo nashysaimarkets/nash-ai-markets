@@ -55,7 +55,7 @@ export default async function TerminalDiagnosticsPage() {
         <div>
           <span>INTERNAL · MEMBER ACCESS</span>
           <h1>Bullseye launch diagnostics</h1>
-          <p>Safe operational metadata only. Credentials, provider URLs and raw errors are never displayed.</p>
+          <p>Safe operational metadata only. Credentials, provider URLs, raw responses and raw errors are never displayed.</p>
         </div>
         <Link href="/terminal">← Return to terminal</Link>
       </header>

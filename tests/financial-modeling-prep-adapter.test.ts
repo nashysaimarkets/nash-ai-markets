@@ -54,6 +54,89 @@ test("maps a valid mocked FMP response into the generic market snapshot", async 
   assert.deepEqual(snapshot.events, []);
 });
 
+test("normalizes numeric strings, nested quote data, and ISO provider timestamps", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse({ data: [{ date: asOf, year2: "4.18", year10: "4.42" }] });
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse({
+        data: {
+          quotes: [{
+            symbol,
+            price: "6,325.50",
+            change: "1.25",
+            changePercentage: "0.25",
+            lastUpdated: asOf,
+          }],
+        },
+      });
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.equal(snapshot.status, "LIVE");
+  assert.equal(snapshot.asOf, asOf);
+  assert.equal(snapshot.quotes[0]?.value, "6,325.50");
+  assert.equal(snapshot.quotes[0]?.change, "+0.25%");
+  assert.deepEqual(adapter.getDiagnostics?.().requiredInstrumentsMissing, []);
+});
+
+test("lets the gateway classify a valid older provider response as delayed", async () => {
+  const now = Date.now();
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: createMockFetch(new Date(now - 10 * 60_000).toISOString()),
+  });
+  const gateway = new LiveMarketGateway({
+    provider: adapter,
+    providerName: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
+    maxRetries: 0,
+    logger: () => undefined,
+  });
+
+  const snapshot = await gateway.fetchSnapshot(now);
+  assert.equal(snapshot.status, "DELAYED");
+  assert.equal(gateway.getStatus().connectionStatus, "degraded");
+  assert.equal(gateway.getStatus().dataClassification, "delayed");
+});
+
+test("rejects an empty provider quote response without fabricating values", async () => {
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async () => jsonResponse({ data: { quotes: [] } }),
+  });
+
+  await assert.rejects(adapter.fetchSnapshot(), /invalid_response/);
+  assert.equal(adapter.getDiagnostics?.().quoteCount, 0);
+  assert.equal(adapter.getDiagnostics?.().schemaRecognized, false);
+});
+
+test("rejects a malformed provider timestamp", async () => {
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: new Date().toISOString(), year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp: "not-a-time" }]);
+    },
+  });
+
+  await assert.rejects(adapter.fetchSnapshot(), /invalid_response/);
+});
+
 test("appends query authentication without replacing existing query parameters", async () => {
   const asOf = new Date(Date.now() - 60_000).toISOString();
   const requestedQueries: Array<Record<string, string>> = [];
@@ -308,7 +391,7 @@ test("classifies authentication rejection without exposing credentials", async (
     payloadType: "object",
     recordCount: 1,
     topLevelFieldNames: ["Error Message"],
-    schemaMismatch: "expected quote array",
+    schemaMismatch: "no quote records found",
   });
 });
 

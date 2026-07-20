@@ -1,6 +1,7 @@
 import {
   createUnavailableSnapshot,
   type MarketDataProvider,
+  type MarketProviderAttemptDiagnostics,
   type MarketEvent,
   type MarketQuote,
   type MarketSnapshot,
@@ -62,6 +63,8 @@ export type MarketGatewayStatus = {
   lastRefreshLatencyMs: number | null;
   reconnectAttempts: number;
   lastFailureCategory?: MarketProviderFailureCategory | null;
+  providerAttempt: MarketProviderAttemptDiagnostics;
+  dataClassification: "live" | "delayed" | "stale" | "unavailable";
 };
 
 export type LiveMarketGatewayOptions = {
@@ -137,6 +140,17 @@ export function createUnconfiguredMarketGatewayStatus(providerName = "Not config
     lastRefreshLatencyMs: null,
     reconnectAttempts: 0,
     lastFailureCategory: null,
+    providerAttempt: {
+      resultCategory: "not_configured",
+      responseReceived: false,
+      schemaRecognized: false,
+      quoteCount: 0,
+      requiredInstrumentsFound: [],
+      requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+      providerTimestamp: null,
+      failureReason: "Provider configuration is unavailable.",
+    },
+    dataClassification: "unavailable",
   };
 }
 
@@ -186,6 +200,17 @@ export class LiveMarketGateway {
       lastRefreshLatencyMs: null,
       reconnectAttempts: 0,
       lastFailureCategory: null,
+      providerAttempt: {
+        resultCategory: "not_attempted",
+        responseReceived: false,
+        schemaRecognized: false,
+        quoteCount: 0,
+        requiredInstrumentsFound: [],
+        requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+        providerTimestamp: null,
+        failureReason: null,
+      },
+      dataClassification: "unavailable",
     };
   }
 
@@ -220,6 +245,17 @@ export class LiveMarketGateway {
         this.state.fallbackActive = false;
         this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
         this.state.lastFailureCategory = null;
+        this.state.providerAttempt = this.provider.getDiagnostics?.() ?? {
+          resultCategory: "success",
+          responseReceived: true,
+          schemaRecognized: true,
+          quoteCount: normalized.quotes.length,
+          requiredInstrumentsFound: normalized.quotes.map((quote) => quote.symbol),
+          requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"].filter((symbol) => !normalized.quotes.some((quote) => quote.symbol === symbol)),
+          providerTimestamp: normalized.asOf,
+          failureReason: null,
+        };
+        this.state.dataClassification = normalized.status === "LIVE" ? "live" : "delayed";
         this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1 });
         return normalized;
       } catch (error) {
@@ -227,6 +263,11 @@ export class LiveMarketGateway {
         this.state.failureCount += 1;
         this.state.connectionStatus = "offline";
         this.state.lastFailureCategory = category;
+        this.state.providerAttempt = this.provider.getDiagnostics?.() ?? {
+          ...this.state.providerAttempt,
+          resultCategory: category,
+          failureReason: category.replaceAll("_", " "),
+        };
         this.logger("market-provider:error", {
           category,
           provider: this.state.providerName,
@@ -243,6 +284,7 @@ export class LiveMarketGateway {
     this.state.fallbackActive = true;
     this.state.dataAgeMs = this.state.lastSuccessfulUpdate ? dataAgeMs(this.state.lastSuccessfulUpdate, now) : null;
     this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
+    this.state.dataClassification = this.state.lastSuccessfulUpdate ? "stale" : "unavailable";
     this.logger("market-provider:fallback", { provider: this.state.providerName });
     return createUnavailableSnapshot(this.state.lastSuccessfulUpdate ?? undefined);
   }

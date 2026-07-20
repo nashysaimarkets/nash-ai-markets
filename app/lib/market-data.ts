@@ -32,9 +32,21 @@ export type MarketSnapshot = {
 
 export type MarketDataProvider = {
   fetchSnapshot: () => Promise<MarketSnapshot | null>;
+  getDiagnostics?: () => MarketProviderAttemptDiagnostics;
 };
 
 export type MarketDataProviderInput = MarketDataProvider | (() => Promise<MarketSnapshot | null>);
+
+export type MarketProviderAttemptDiagnostics = {
+  resultCategory: string;
+  responseReceived: boolean;
+  schemaRecognized: boolean;
+  quoteCount: number;
+  requiredInstrumentsFound: string[];
+  requiredInstrumentsMissing: string[];
+  providerTimestamp: string | null;
+  failureReason: string | null;
+};
 
 export type GetMarketSnapshotOptions = {
   provider?: MarketDataProviderInput;

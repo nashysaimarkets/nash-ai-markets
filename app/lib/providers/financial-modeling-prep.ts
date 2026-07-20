@@ -1,4 +1,4 @@
-import type { MarketDataProvider, MarketQuote, MarketSnapshot } from "../market-data.ts";
+import type { MarketDataProvider, MarketProviderAttemptDiagnostics, MarketQuote, MarketSnapshot } from "../market-data.ts";
 
 export const FINANCIAL_MODELING_PREP_PROVIDER_NAME = "Financial Modeling Prep";
 export const DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL = "https://financialmodelingprep.com/stable/";
@@ -31,7 +31,7 @@ type FmpQuote = {
   price: number;
   change: number;
   changesPercentage: number;
-  timestamp: number;
+  timestampMs: number;
 };
 
 type FmpTreasuryRates = {
@@ -63,25 +63,63 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function finiteNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string" || !value.trim()) return null;
+  const parsed = Number(value.replaceAll(",", "").trim());
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function recordsFromPayload(payload: unknown, kind: FmpResponseKind, depth = 0): Record<string, unknown>[] {
+  if (Array.isArray(payload)) return payload.filter(isRecord);
+  if (!isRecord(payload) || depth > 2) return [];
+  const keys = kind === "quote"
+    ? ["data", "quotes", "quote", "results", "result"]
+    : ["data", "rates", "treasuryRates", "results", "result"];
+  for (const key of keys) {
+    const nested = payload[key];
+    if (Array.isArray(nested)) return nested.filter(isRecord);
+    if (isRecord(nested)) {
+      const deeper = recordsFromPayload(nested, kind, depth + 1);
+      return deeper.length > 0 ? deeper : [nested];
+    }
+  }
+  return [];
+}
+
+function normalizedSymbol(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+function timestampMs(candidate: Record<string, unknown>): number | null {
+  const numeric = finiteNumber(candidate.timestamp ?? candidate.time);
+  if (numeric !== null) {
+    const milliseconds = numeric >= 1_000_000_000_000 ? numeric : numeric * 1000;
+    return Number.isFinite(milliseconds) ? milliseconds : null;
+  }
+  for (const value of [candidate.date, candidate.datetime, candidate.lastUpdated, candidate.lastUpdatedAt]) {
+    if (typeof value !== "string") continue;
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
 }
 
 function parseQuote(payload: unknown, expectedSymbol: string): FmpQuote | null {
-  if (!Array.isArray(payload) || payload.length !== 1 || !isRecord(payload[0])) return null;
-  const candidate = payload[0];
+  const candidate = recordsFromPayload(payload, "quote")
+    .find((record) => typeof record.symbol === "string" && normalizedSymbol(record.symbol) === normalizedSymbol(expectedSymbol));
+  if (!candidate) return null;
   const price = finiteNumber(candidate.price);
   const change = finiteNumber(candidate.change);
-  const changesPercentage = finiteNumber(candidate.changesPercentage);
-  const timestamp = finiteNumber(candidate.timestamp);
-  if (candidate.symbol !== expectedSymbol || price === null || change === null || changesPercentage === null || timestamp === null) {
+  const changesPercentage = finiteNumber(candidate.changesPercentage ?? candidate.changePercentage ?? candidate.percentChange);
+  const parsedTimestamp = timestampMs(candidate);
+  if (price === null || change === null || changesPercentage === null || parsedTimestamp === null) {
     return null;
   }
-  return { symbol: expectedSymbol, price, change, changesPercentage, timestamp };
+  return { symbol: expectedSymbol, price, change, changesPercentage, timestampMs: parsedTimestamp };
 }
 
 function parseTreasuryRates(payload: unknown): FmpTreasuryRates | null {
-  if (!Array.isArray(payload)) return null;
-  const rows = payload.filter(isRecord).map((candidate) => ({
+  const rows = recordsFromPayload(payload, "treasury").map((candidate) => ({
     date: typeof candidate.date === "string" ? candidate.date : "",
     year2: finiteNumber(candidate.year2),
     year10: finiteNumber(candidate.year10),
@@ -121,8 +159,7 @@ function responseShape(payload: unknown): {
 
 function schemaMismatch(payload: unknown, kind: FmpResponseKind, expectedSymbol?: string): string {
   if (kind === "quote") {
-    if (!Array.isArray(payload)) return "expected quote array";
-    if (payload.length !== 1) return "expected exactly one quote record";
+    if (recordsFromPayload(payload, kind).length === 0) return "no quote records found";
     if (!expectedSymbol || !parseQuote(payload, expectedSymbol)) {
       return "quote fields or requested symbol did not match";
     }
@@ -130,14 +167,11 @@ function schemaMismatch(payload: unknown, kind: FmpResponseKind, expectedSymbol?
   }
   return parseTreasuryRates(payload)
     ? "none"
-    : Array.isArray(payload)
-      ? "no record matched date, year2 and year10"
-      : "expected treasury array";
+    : "no record matched date, year2 and year10";
 }
 
 function quoteTimestampMs(quote: FmpQuote): number | null {
-  const timestamp = quote.timestamp * 1000;
-  return Number.isFinite(timestamp) ? timestamp : null;
+  return Number.isFinite(quote.timestampMs) ? quote.timestampMs : null;
 }
 
 function treasuryTimestampMs(rates: FmpTreasuryRates): number | null {
@@ -189,9 +223,34 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     usDollarIndex: options.symbols?.usDollarIndex || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.usDollarIndex,
   };
   const logger = options.logger ?? (() => undefined);
+  let diagnostics: MarketProviderAttemptDiagnostics = {
+    resultCategory: "not_attempted",
+    responseReceived: false,
+    schemaRecognized: false,
+    quoteCount: 0,
+    requiredInstrumentsFound: [],
+    requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+    providerTimestamp: null,
+    failureReason: null,
+  };
 
   return {
+    getDiagnostics: () => ({
+      ...diagnostics,
+      requiredInstrumentsFound: [...diagnostics.requiredInstrumentsFound],
+      requiredInstrumentsMissing: [...diagnostics.requiredInstrumentsMissing],
+    }),
     async fetchSnapshot() {
+      diagnostics = {
+        resultCategory: "request_started",
+        responseReceived: false,
+        schemaRecognized: false,
+        quoteCount: 0,
+        requiredInstrumentsFound: [],
+        requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+        providerTimestamp: null,
+        failureReason: null,
+      };
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       const request = async (
@@ -203,6 +262,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         let response: Response;
         try {
           response = await fetchImpl(createUrl(baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
+          diagnostics.responseReceived = true;
         } catch (error) {
           logger("market-provider:response", {
             endpointName,
@@ -339,6 +399,17 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             : "Verified S&P observation supplied by Financial Modeling Prep. One or more secondary instruments are unavailable; trading conclusions remain fail-closed.",
           evidence: {},
         };
+        const found = quotes.map((quote) => quote.symbol);
+        diagnostics = {
+          resultCategory: secondaryAvailable ? "success" : "partial_success",
+          responseReceived: true,
+          schemaRecognized: true,
+          quoteCount: quotes.length,
+          requiredInstrumentsFound: found,
+          requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"].filter((symbol) => !found.includes(symbol)),
+          providerTimestamp: asOf,
+          failureReason: secondaryAvailable ? null : "One or more secondary instruments were unavailable.",
+        };
         return snapshot;
       } catch (error) {
         const category: SafeFailureCategory = error instanceof Error && error.name === "AbortError"
@@ -347,6 +418,12 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             ? error.category
             : "invalid_response";
         logger("market-provider:failure", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME, category });
+        diagnostics = {
+          ...diagnostics,
+          resultCategory: category,
+          schemaRecognized: false,
+          failureReason: category.replaceAll("_", " "),
+        };
         throw new Error(category === "timeout" ? "FMP request timed out" : `FMP provider failure: ${category}`);
       } finally {
         clearTimeout(timeout);

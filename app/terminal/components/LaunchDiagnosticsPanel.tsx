@@ -7,9 +7,18 @@ const tone = (status: "PASS" | "WARN" | "FAIL") => status === "PASS" ? "positive
 
 export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagnostics: LaunchDiagnostics; compact?: boolean }) {
   return <section className={`ftCard launchDiagnostics${compact ? " launchDiagnosticsCompact" : ""}`} aria-labelledby="launch-diagnostics-title">
-    <header><div><span>LAUNCH VALIDATION</span><h2 id="launch-diagnostics-title">Launch candidate diagnostics</h2></div><TerminalBadge label={diagnostics.readiness.replace("_", " ")} tone={diagnostics.readiness === "READY" ? "positive" : diagnostics.readiness === "DEGRADED" ? "warning" : "danger"} /></header>
+    <header><div><span>SAFE PROVIDER TELEMETRY</span><h2 id="launch-diagnostics-title">Bullseye provider diagnostics</h2></div><TerminalBadge label={diagnostics.readiness.replace("_", " ")} tone={diagnostics.readiness === "READY" ? "positive" : diagnostics.readiness === "DEGRADED" ? "warning" : "danger"} /></header>
     <dl className="launchHealthGrid">
+      <div><dt>Provider</dt><dd>{diagnostics.provider.name}</dd></div>
       <div><dt>Connection</dt><dd>{diagnostics.provider.connection.replace("_", " ")}</dd></div>
+      <div><dt>Result category</dt><dd>{diagnostics.provider.resultCategory.replaceAll("_", " ")}</dd></div>
+      <div><dt>Response received</dt><dd>{diagnostics.provider.responseReceived ? "Yes" : "No"}</dd></div>
+      <div><dt>Schema recognised</dt><dd>{diagnostics.provider.schemaRecognized ? "Yes" : "No"}</dd></div>
+      <div><dt>Verified quote count</dt><dd>{diagnostics.provider.quoteCount}</dd></div>
+      <div><dt>Required instruments found</dt><dd>{diagnostics.provider.requiredInstrumentsFound.join(", ") || "None"}</dd></div>
+      <div><dt>Required instruments missing</dt><dd>{diagnostics.provider.requiredInstrumentsMissing.join(", ") || "None"}</dd></div>
+      <div><dt>Provider timestamp</dt><dd>{diagnostics.provider.providerTimestamp ?? "Unavailable"}</dd></div>
+      <div><dt>Classification</dt><dd>{diagnostics.provider.classification}</dd></div>
       <div><dt>API authentication</dt><dd>{diagnostics.provider.apiAuthentication.replaceAll("_", " ")}</dd></div>
       <div><dt>Data freshness</dt><dd>{formatMarketGatewayDataAge(diagnostics.provider.dataAgeMs)}</dd></div>
       <div><dt>Refresh latency</dt><dd>{diagnostics.provider.refreshLatencyMs === null ? "Unavailable" : `${diagnostics.provider.refreshLatencyMs}ms`}</dd></div>
@@ -19,6 +28,7 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>FMP_API_KEY</dt><dd>{diagnostics.provider.configuration.fmpApiKeyConfigured ? "Present" : "Missing"}</dd></div>
       <div><dt>FMP_API_BASE_URL</dt><dd>{diagnostics.provider.configuration.fmpApiBaseUrlConfigured ? "Present" : diagnostics.provider.configuration.defaultBaseUrlActive ? "Default active" : "Missing"}</dd></div>
       <div><dt>Provider failure</dt><dd>{diagnostics.provider.lastFailureCategory?.replaceAll("_", " ") ?? "None"}</dd></div>
+      <div><dt>Safe failure reason</dt><dd>{diagnostics.provider.failureReason ?? "None"}</dd></div>
       <div><dt>OpenAI health</dt><dd>{diagnostics.integrations.openAI.status.replaceAll("_", " ")}</dd></div>
       <div><dt>Launch email</dt><dd>{diagnostics.integrations.launchEmail.ready ? "Ready" : "Not configured"}</dd></div>
     </dl>

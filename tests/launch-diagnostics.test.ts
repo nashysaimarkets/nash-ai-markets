@@ -16,7 +16,30 @@ function snapshot(status: MarketSnapshot["status"] = "LIVE"): MarketSnapshot {
 }
 
 function status(overrides: Partial<MarketGatewayStatus> = {}): MarketGatewayStatus {
-  return { connectionStatus: "connected", providerName: "Financial Modeling Prep", lastAttempt: "2026-07-16T12:01:00.000Z", lastSuccessfulUpdate: "2026-07-16T12:00:00.000Z", dataAgeMs: 60_000, failureCount: 0, fallbackActive: false, lastRefreshLatencyMs: 142, reconnectAttempts: 0, ...overrides };
+  return {
+    connectionStatus: "connected",
+    providerName: "Financial Modeling Prep",
+    lastAttempt: "2026-07-16T12:01:00.000Z",
+    lastSuccessfulUpdate: "2026-07-16T12:00:00.000Z",
+    dataAgeMs: 60_000,
+    failureCount: 0,
+    fallbackActive: false,
+    lastRefreshLatencyMs: 142,
+    reconnectAttempts: 0,
+    lastFailureCategory: null,
+    providerAttempt: {
+      resultCategory: "success",
+      responseReceived: true,
+      schemaRecognized: true,
+      quoteCount: 5,
+      requiredInstrumentsFound: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+      requiredInstrumentsMissing: [],
+      providerTimestamp: "2026-07-16T12:00:00.000Z",
+      failureReason: null,
+    },
+    dataClassification: "live",
+    ...overrides,
+  };
 }
 
 function diagnostics(current = snapshot(), gateway = status(), environment: Record<string, string | undefined> = {}) {
@@ -27,6 +50,16 @@ function diagnostics(current = snapshot(), gateway = status(), environment: Reco
 }
 
 test("reports a healthy connected live launch candidate", () => { const result = diagnostics(); assert.equal(result.readiness, "READY"); assert.equal(result.provider.apiAuthentication, "accepted"); assert.equal(result.provider.refreshLatencyMs, 142); assert.equal(result.modes.live, true); assert.equal(result.provider.staleDetected, false); });
+test("reports safe provider schema and instrument metadata", () => {
+  const result = diagnostics();
+  assert.equal(result.provider.resultCategory, "success");
+  assert.equal(result.provider.responseReceived, true);
+  assert.equal(result.provider.schemaRecognized, true);
+  assert.equal(result.provider.quoteCount, 5);
+  assert.deepEqual(result.provider.requiredInstrumentsMissing, []);
+  assert.equal(result.provider.providerTimestamp, "2026-07-16T12:00:00.000Z");
+  assert.equal(result.provider.classification, "live");
+});
 test("detects delayed mode without presenting it as live", () => { const result = diagnostics(snapshot("DELAYED"), status({ connectionStatus: "degraded", dataAgeMs: 10 * 60_000 })); assert.equal(result.readiness, "DEGRADED"); assert.equal(result.modes.delayed, true); assert.equal(result.modes.live, false); assert.equal(result.cacheStatus, "delayed"); });
 test("detects preview mode and preserves fail-closed warnings", () => { const result = diagnostics(snapshot("PREVIEW"), status({ connectionStatus: "not_configured", dataAgeMs: null, fallbackActive: true })); assert.equal(result.modes.preview, true); assert.equal(result.modes.offline, true); assert.equal(result.cacheStatus, "fallback"); assert.ok(result.warnings.length > 0); });
 test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "plan_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "plan_restricted"); assert.notEqual(result.readiness, "READY"); });

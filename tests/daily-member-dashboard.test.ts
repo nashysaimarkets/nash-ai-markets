@@ -55,6 +55,17 @@ test("Today’s Mission fails closed when current market data is unavailable", (
   });
 });
 
+test("Today’s Mission fails closed when a live snapshot is incomplete", () => {
+  const result = mission(snapshot({
+    quotes: [{ symbol: "ES", label: "ES", value: "6300", change: "+1", direction: "up" }],
+    levels: [],
+    evidence: {},
+  }));
+  assert.equal(result.available, false);
+  assert.equal(result.confidence, null);
+  assert.equal(result.directionalBias, "Neutral / stand aside");
+});
+
 test("event countdown rounds up and formats minutes, hours and days", () => {
   assert.equal(formatEventCountdown("2026-07-17T12:00:01.000Z", NOW), "1m");
   assert.equal(formatEventCountdown("2026-07-17T14:05:00.000Z", NOW), "2h 5m");

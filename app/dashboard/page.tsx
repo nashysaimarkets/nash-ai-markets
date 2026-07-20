@@ -92,7 +92,9 @@ export default async function MemberDashboard() {
   ];
   const bullishScenario = intelligence.scenarios.find((scenario) => scenario.type === "BULLISH")!;
   const bearishScenario = intelligence.scenarios.find((scenario) => scenario.type === "BEARISH")!;
-  const verifiedMarket = market.snapshot.status === "LIVE" || market.snapshot.status === "DELAYED";
+  const verifiedMarket = (
+    market.snapshot.status === "LIVE" || market.snapshot.status === "DELAYED"
+  ) && intelligence.actionable && intelligence.reasoning.missingDataWarnings.length === 0;
   const marketTimestamp = Number.isFinite(Date.parse(market.snapshot.asOf))
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(market.snapshot.asOf))
     : "Not timestamped";
@@ -147,6 +149,8 @@ export default async function MemberDashboard() {
         volatilityRegime={decision.volatilityRegime}
         providerName={market.gatewayStatus.providerName}
         fallbackActive={market.gatewayStatus.fallbackActive}
+        dataStatus={market.snapshot.status}
+        scores={intelligence.scores}
       />
 
       <section className="memberAccessMap" aria-labelledby="access-map-title">

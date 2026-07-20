@@ -31,7 +31,9 @@ export function buildDailyMission(
   decision: TradingDecision,
   plan: TradePlan,
 ): DailyMission {
-  const verified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
+  const verified = (
+    snapshot.status === "LIVE" || snapshot.status === "DELAYED"
+  ) && intelligence.actionable && intelligence.reasoning.missingDataWarnings.length === 0;
   if (!verified) {
     return {
       available: false,
