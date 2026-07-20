@@ -29,7 +29,7 @@ export type LiveMarketProviderPayload = {
   snapshot: Omit<MarketSnapshot, "quotes" | "events">;
 };
 
-/** Contract for a future licensed provider. No paid provider is connected in this build. */
+/** Provider-agnostic contract for configured, licensed live market data. */
 export interface LiveMarketProviderContract {
   readonly name: string;
   readonly coverage: Readonly<Record<MarketGatewayCoverage, true>>;
