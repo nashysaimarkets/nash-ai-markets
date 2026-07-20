@@ -105,3 +105,4 @@
 
 /* Preserve layout while deferring expensive below-fold dashboard paint. */
 .bullseyeMissionControl,.memberAccessMap,.eliteStructurePanel,.eliteScenarioGrid,.eliteMorningBrief,.eliteOperationsGrid,.dashboardAccessArea,.commandMethodology{content-visibility:auto;contain-intrinsic-size:auto 520px}
+.morningBriefStreaming{min-height:270px}.morningBriefStreaming .executiveMorningBriefBody>div{display:grid;align-content:center;gap:14px;min-height:126px}.morningBriefStreaming .terminalSkeletonLine{margin:0}

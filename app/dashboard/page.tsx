@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell.tsx";
 import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
-import { applyAIMorningBrief, createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
-import { generateAIMorningBrief } from "../lib/server/ai-morning-brief.ts";
+import { createMorningBrief, MORNING_BRIEF_PLACEHOLDER_INPUT } from "../lib/morning-brief-engine.ts";
 import { loadFounding100ForEmail } from "../lib/server/founding-100.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
@@ -22,6 +22,7 @@ import { EliteOnboardingChecklist } from "./components/EliteOnboardingChecklist.
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
 import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
+import { MorningBriefPanel, MorningBriefSkeleton } from "./components/MorningBriefPanel.tsx";
 import { TodaysBullseyePlan } from "./components/TodaysBullseyePlan.tsx";
 import { TodaysEdge } from "./components/TodaysEdge.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
@@ -71,11 +72,6 @@ export default async function MemberDashboard() {
     keyRisk: mission.keyWarning,
     nextAction: mission.nextAction,
   } : MORNING_BRIEF_PLACEHOLDER_INPUT);
-  const aiMorningBrief = access.features.intelligence && deterministicMorningBrief.mode === "verified"
-    ? await generateAIMorningBrief(deterministicMorningBrief)
-    : { status: "not_requested" as const, content: null };
-  const morningBrief = applyAIMorningBrief(deterministicMorningBrief, aiMorningBrief);
-  const directionalContext = morningBrief.directionalBias ?? "Not available";
   const nextEvent = selectNextEconomicEvent(market.snapshot.events, now);
   const name = memberDisplayName(user.email, user.user_metadata);
   const offer = access.previewOffer;
@@ -155,7 +151,7 @@ export default async function MemberDashboard() {
         dataLabel={statusPresentation.label}
         lastUpdated={marketTimestamp === "No verified timestamp" ? marketTimestamp : `${marketTimestamp} UK`}
         confidence={mission.confidence}
-        analysisMode={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"}
+        analysisMode="Deterministic"
       />
 
       {access.tier === "elite" ? <EliteOnboardingChecklist /> : null}
@@ -225,15 +221,9 @@ export default async function MemberDashboard() {
         <EliteScenarioCard tone="bearish" verified={verifiedMarket} probability={bearishScenario.probability} trigger={bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bearishScenario.trigger.level ?? "Range confirmation"} invalidation={bearishScenario.invalidation.level ?? bearishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
       </section>
 
-      <section className={`executiveMorningBrief eliteMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
-        <header><div><span>{morningBrief.label}</span><h2 id="morning-brief-title">{morningBrief.headline}</h2>{morningBrief.summary ? <p>{morningBrief.summary}</p> : null}</div><div className="morningBriefBadges"><TerminalBadge label={morningBrief.mode} tone={morningBrief.mode === "verified" ? "positive" : morningBrief.mode === "preview" ? "warning" : "danger"} /><TerminalBadge label={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"} tone={morningBrief.generation === "ai-assisted" ? "info" : "neutral"} /></div></header>
-        <div className="executiveMorningBriefBody">
-          <div className="morningBriefSignal"><span>Directional context</span><strong>{directionalContext === "Not available" ? "Verification in progress" : directionalContext}</strong><small>{morningBrief.confidence === null ? "Decision score activates after provider verification" : `${morningBrief.confidence} / 100 confidence`}</small></div>
-          <div><h3>Executive priorities</h3><ol>{morningBrief.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
-          <div><h3>Session checklist</h3><ul>{morningBrief.checklist.map((item) => <li key={item}>{item}</li>)}</ul></div>
-        </div>
-        {morningBrief.warning ? <footer><strong>Safety state:</strong> {morningBrief.warning}<span>Preview fixture timestamp: {morningBrief.asOf}</span></footer> : <footer><span>As of {morningBrief.asOf} · Refresh after material data or event changes.</span><span>{morningBrief.generation === "ai-assisted" ? "OpenAI summarized verified engine evidence only." : morningBrief.aiStatus === "not_requested" ? "Deterministic brief active for current access." : `Deterministic fallback active · ${morningBrief.aiStatus.replaceAll("_", " ")}.`}</span></footer>}
-      </section>
+      <Suspense fallback={<MorningBriefSkeleton />}>
+        <MorningBriefPanel brief={deterministicMorningBrief} aiEligible={access.features.intelligence} />
+      </Suspense>
 
       <section className="eliteOperationsGrid">
         <article className="dailyCard todayMission eliteMissionCard">
