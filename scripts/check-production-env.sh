@@ -49,7 +49,9 @@ provider="${MARKET_DATA_PROVIDER:-}"
 require_var MARKET_DATA_PROVIDER
 if [[ "${provider}" == "fmp" ]]; then
   require_var FMP_API_KEY
-  require_https_url FMP_API_BASE_URL
+  if [[ -n "${FMP_API_BASE_URL:-}" && "${FMP_API_BASE_URL}" != https://* ]]; then
+    invalid+=("FMP_API_BASE_URL: must use https")
+  fi
   if [[ "${FMP_API_BASE_URL:-}" == *"apikey="* ]]; then
     invalid+=("FMP_API_BASE_URL: must not contain credentials")
   fi

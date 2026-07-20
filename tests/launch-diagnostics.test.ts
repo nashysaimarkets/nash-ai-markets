@@ -29,7 +29,39 @@ function diagnostics(current = snapshot(), gateway = status(), environment: Reco
 test("reports a healthy connected live launch candidate", () => { const result = diagnostics(); assert.equal(result.readiness, "READY"); assert.equal(result.provider.apiAuthentication, "accepted"); assert.equal(result.provider.refreshLatencyMs, 142); assert.equal(result.modes.live, true); assert.equal(result.provider.staleDetected, false); });
 test("detects delayed mode without presenting it as live", () => { const result = diagnostics(snapshot("DELAYED"), status({ connectionStatus: "degraded", dataAgeMs: 10 * 60_000 })); assert.equal(result.readiness, "DEGRADED"); assert.equal(result.modes.delayed, true); assert.equal(result.modes.live, false); assert.equal(result.cacheStatus, "delayed"); });
 test("detects preview mode and preserves fail-closed warnings", () => { const result = diagnostics(snapshot("PREVIEW"), status({ connectionStatus: "not_configured", dataAgeMs: null, fallbackActive: true })); assert.equal(result.modes.preview, true); assert.equal(result.modes.offline, true); assert.equal(result.cacheStatus, "fallback"); assert.ok(result.warnings.length > 0); });
-test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2 })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.notEqual(result.readiness, "READY"); });
+test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "plan_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "plan_restricted"); assert.notEqual(result.readiness, "READY"); });
+test("reports only sanitized provider-variable presence", () => {
+  const secret = "must-never-appear";
+  const current = snapshot("UNAVAILABLE");
+  const gateway = status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, lastFailureCategory: "authentication_rejected" });
+  const intelligence = analyzeMarketSnapshot(current);
+  const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: current.status, providerStatus: gateway.connectionStatus, dataAgeMs: gateway.dataAgeMs, fallbackActive: gateway.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: current.status, providerStatus: gateway.connectionStatus, dataAgeMs: gateway.dataAgeMs, fallbackActive: gateway.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const result = createLaunchDiagnostics({
+    snapshot: current,
+    gatewayStatus: gateway,
+    intelligence,
+    decision,
+    plan,
+    chartState: "empty",
+    providerType: "fmp",
+    apiCredentialConfigured: true,
+    providerEnvironment: {
+      marketDataProviderConfigured: true,
+      fmpApiKeyConfigured: true,
+      fmpApiBaseUrlConfigured: false,
+    },
+    environment: { FMP_API_KEY: secret, FMP_API_BASE_URL: secret },
+  });
+  assert.deepEqual(result.provider.configuration, {
+    marketDataProviderConfigured: true,
+    fmpApiKeyConfigured: true,
+    fmpApiBaseUrlConfigured: false,
+    defaultBaseUrlActive: true,
+  });
+  assert.equal(result.provider.lastFailureCategory, "authentication_rejected");
+  assert.equal(JSON.stringify(result).includes(secret), false);
+});
 test("validates engine synchronization and no-trade planner alignment", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true })); assert.equal(result.checks.find((item) => item.id === "engines")?.status, "PASS"); assert.equal(result.checks.find((item) => item.id === "planner")?.status, "PASS"); });
 test("fails readiness when unavailable data is falsely marked live", () => { const result = diagnostics(snapshot("LIVE"), status({ connectionStatus: "offline", fallbackActive: true })); assert.equal(result.checks.find((item) => item.id === "truth")?.status, "FAIL"); assert.equal(result.readiness, "NOT_READY"); });
 test("sanitizes all production metadata before display", () => { const result = diagnostics(snapshot(), status(), { NODE_ENV: "production", APP_VERSION: "2.1.0-beta.1", BUILD_TIMESTAMP: "2026-07-16T12:00:00Z", GIT_COMMIT_SHA: "abcdef1234567890", BULLSEYE_TEST_TOTALS: "92" }); assert.deepEqual(result.environment, { mode: "production", applicationVersion: "2.1.0-beta.1", buildTimestamp: "2026-07-16T12:00:00.000Z", gitCommit: "abcdef123456", testTotal: 92 }); });

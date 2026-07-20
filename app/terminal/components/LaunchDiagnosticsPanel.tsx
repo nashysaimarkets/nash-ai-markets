@@ -15,6 +15,10 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>Refresh latency</dt><dd>{diagnostics.provider.refreshLatencyMs === null ? "Unavailable" : `${diagnostics.provider.refreshLatencyMs}ms`}</dd></div>
       <div><dt>Last success</dt><dd>{diagnostics.provider.lastSuccessfulUpdate ?? "None"}</dd></div>
       <div><dt>Fallback</dt><dd>{diagnostics.provider.fallbackActive ? "Active" : "Inactive"}</dd></div>
+      <div><dt>MARKET_DATA_PROVIDER</dt><dd>{diagnostics.provider.configuration.marketDataProviderConfigured ? "Present" : "Missing"}</dd></div>
+      <div><dt>FMP_API_KEY</dt><dd>{diagnostics.provider.configuration.fmpApiKeyConfigured ? "Present" : "Missing"}</dd></div>
+      <div><dt>FMP_API_BASE_URL</dt><dd>{diagnostics.provider.configuration.fmpApiBaseUrlConfigured ? "Present" : diagnostics.provider.configuration.defaultBaseUrlActive ? "Default active" : "Missing"}</dd></div>
+      <div><dt>Provider failure</dt><dd>{diagnostics.provider.lastFailureCategory?.replaceAll("_", " ") ?? "None"}</dd></div>
       <div><dt>OpenAI health</dt><dd>{diagnostics.integrations.openAI.status.replaceAll("_", " ")}</dd></div>
       <div><dt>Launch email</dt><dd>{diagnostics.integrations.launchEmail.ready ? "Ready" : "Not configured"}</dd></div>
     </dl>

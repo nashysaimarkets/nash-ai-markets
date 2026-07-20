@@ -1,6 +1,7 @@
 import type { MarketDataProvider, MarketQuote, MarketSnapshot } from "../market-data.ts";
 
 export const FINANCIAL_MODELING_PREP_PROVIDER_NAME = "Financial Modeling Prep";
+export const DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL = "https://financialmodelingprep.com/stable/";
 
 export type FinancialModelingPrepSymbolMap = {
   sp500Futures: string;
@@ -18,7 +19,7 @@ type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<
 
 export type FinancialModelingPrepAdapterOptions = {
   apiKey: string;
-  baseUrl: string;
+  baseUrl?: string;
   timeoutMs?: number;
   symbols?: Partial<FinancialModelingPrepSymbolMap>;
   fetchImpl?: FetchLike;
@@ -40,8 +41,10 @@ type FmpTreasuryRates = {
 };
 
 const MAX_FUTURE_SKEW_MS = 60_000;
+const MAX_TREASURY_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 type SafeFailureCategory = "authentication_rejected" | "plan_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
+type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury";
 
 class SafeProviderFailure extends Error {
   readonly category: SafeFailureCategory;
@@ -134,6 +137,7 @@ function createUrl(baseUrl: string, pathname: string, apiKey: string, symbol?: s
 export function createFinancialModelingPrepAdapter(options: FinancialModelingPrepAdapterOptions): MarketDataProvider {
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? 4_500;
+  const baseUrl = options.baseUrl?.trim() || DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL;
   const symbols: FinancialModelingPrepSymbolMap = {
     sp500Futures: options.symbols?.sp500Futures || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.sp500Futures,
     vix: options.symbols?.vix || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.vix,
@@ -145,23 +149,16 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     async fetchSnapshot() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
-      const request = async (instrument: "sp500" | "vix" | "us_dollar" | "treasury", pathname: string, symbol?: string): Promise<unknown> => {
+      const request = async (pathname: string, symbol?: string): Promise<unknown> => {
         let response: Response;
         try {
-          response = await fetchImpl(createUrl(options.baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
+          response = await fetchImpl(createUrl(baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
         } catch (error) {
           if (error instanceof Error && error.name === "AbortError") throw error;
           throw new SafeProviderFailure("network_interruption");
         }
         if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
-        if (response.status === 402) {
-          logger("market-provider:failure", {
-            provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
-            category: "plan_restricted",
-            instrument,
-          });
-          throw new SafeProviderFailure("plan_restricted");
-        }
+        if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
         if (response.status === 429) throw new SafeProviderFailure("rate_limited");
         if (!response.ok) throw new SafeProviderFailure("invalid_response");
         try {
@@ -173,44 +170,95 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
 
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
-        const [esPayload, vixPayload, dollarPayload, treasuryPayload] = await Promise.all([
-          request("sp500", "quote", symbols.sp500Futures),
-          request("vix", "quote", symbols.vix),
-          request("us_dollar", "quote", symbols.usDollarIndex),
-          request("treasury", "treasury-rates"),
+        const [esResult, vixResult, dollarResult, treasuryResult] = await Promise.allSettled([
+          request("quote", symbols.sp500Futures),
+          request("quote", symbols.vix),
+          request("quote", symbols.usDollarIndex),
+          request("treasury-rates"),
         ]);
-        const es = parseQuote(esPayload, symbols.sp500Futures);
-        const vix = parseQuote(vixPayload, symbols.vix);
-        const dollar = parseQuote(dollarPayload, symbols.usDollarIndex);
-        const treasury = parseTreasuryRates(treasuryPayload);
-        if (!es || !vix || !dollar || !treasury) throw new Error("FMP response failed schema validation");
-
-        const timestamps = [quoteTimestampMs(es), quoteTimestampMs(vix), quoteTimestampMs(dollar), treasuryTimestampMs(treasury)];
-        if (timestamps.some((timestamp) => timestamp === null)) throw new Error("FMP response contained an invalid timestamp");
-        const verifiedTimestamps = timestamps as number[];
+        if (esResult.status === "rejected") throw esResult.reason;
+        const es = parseQuote(esResult.value, symbols.sp500Futures);
+        if (!es) throw new SafeProviderFailure("invalid_response");
+        const esTimestamp = quoteTimestampMs(es);
+        if (esTimestamp === null) throw new SafeProviderFailure("invalid_response");
         const now = Date.now();
-        if (verifiedTimestamps.some((timestamp) => timestamp > now + MAX_FUTURE_SKEW_MS)) {
-          throw new Error("FMP response contained a future timestamp");
+        if (esTimestamp > now + MAX_FUTURE_SKEW_MS) throw new SafeProviderFailure("invalid_response");
+
+        const secondaryFailure = (instrument: Exclude<FmpInstrument, "sp500">, category: SafeFailureCategory) => {
+          logger("market-provider:failure", {
+            provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
+            category,
+            instrument,
+          });
+        };
+        const optionalQuote = (
+          instrument: "vix" | "us_dollar",
+          result: PromiseSettledResult<unknown>,
+          expectedSymbol: string,
+        ): FmpQuote | null => {
+          if (result.status === "rejected") {
+            const category = result.reason instanceof SafeProviderFailure ? result.reason.category : "invalid_response";
+            secondaryFailure(instrument, category);
+            return null;
+          }
+          const quote = parseQuote(result.value, expectedSymbol);
+          const timestamp = quote ? quoteTimestampMs(quote) : null;
+          if (!quote || timestamp === null || timestamp > now + MAX_FUTURE_SKEW_MS) {
+            secondaryFailure(instrument, "invalid_response");
+            return null;
+          }
+          return quote;
+        };
+
+        const vix = optionalQuote("vix", vixResult, symbols.vix);
+        const dollar = optionalQuote("us_dollar", dollarResult, symbols.usDollarIndex);
+        let treasury: FmpTreasuryRates | null = null;
+        if (treasuryResult.status === "rejected") {
+          const category = treasuryResult.reason instanceof SafeProviderFailure ? treasuryResult.reason.category : "invalid_response";
+          secondaryFailure("treasury", category);
+        } else {
+          treasury = parseTreasuryRates(treasuryResult.value);
+          const treasuryTimestamp = treasury ? treasuryTimestampMs(treasury) : null;
+          if (
+            !treasury ||
+            treasuryTimestamp === null ||
+            treasuryTimestamp > now + MAX_FUTURE_SKEW_MS ||
+            now - treasuryTimestamp > MAX_TREASURY_AGE_MS
+          ) {
+            secondaryFailure("treasury", "invalid_response");
+            treasury = null;
+          }
         }
-        const asOf = new Date(Math.min(...verifiedTimestamps)).toISOString();
+
+        // The S&P observation is the primary dashboard clock. Secondary
+        // instruments can be daily or unavailable and must not stale or erase it.
+        const asOf = new Date(esTimestamp).toISOString();
         const sp500 = sp500Presentation(symbols.sp500Futures);
+        const quotes: MarketQuote[] = [
+          { ...sp500, value: formatPrice(es.price), change: formatChange(es), direction: direction(es.change) },
+        ];
+        if (vix) quotes.push({ symbol: "VIX", label: "VIX", value: formatPrice(vix.price), change: formatChange(vix), direction: direction(vix.change) });
+        if (treasury) {
+          quotes.push(
+            { symbol: "US2Y", label: "2Y YIELD", value: `${treasury.year2.toFixed(2)}%`, change: "—", direction: "flat" },
+            { symbol: "US10Y", label: "10Y YIELD", value: `${treasury.year10.toFixed(2)}%`, change: "—", direction: "flat" },
+          );
+        }
+        if (dollar) quotes.push({ symbol: "DXY", label: "US DOLLAR", value: formatPrice(dollar.price), change: formatChange(dollar), direction: direction(dollar.change) });
+        const secondaryAvailable = Boolean(vix && treasury && dollar);
 
         const snapshot: MarketSnapshot = {
           status: "LIVE",
           source: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
           asOf,
-          quotes: [
-            { ...sp500, value: formatPrice(es.price), change: formatChange(es), direction: direction(es.change) },
-            { symbol: "VIX", label: "VIX", value: formatPrice(vix.price), change: formatChange(vix), direction: direction(vix.change) },
-            { symbol: "US2Y", label: "2Y YIELD", value: `${treasury.year2.toFixed(2)}%`, change: "—", direction: "flat" },
-            { symbol: "US10Y", label: "10Y YIELD", value: `${treasury.year10.toFixed(2)}%`, change: "—", direction: "flat" },
-            { symbol: "DXY", label: "US DOLLAR", value: formatPrice(dollar.price), change: formatChange(dollar), direction: direction(dollar.change) },
-          ],
+          quotes,
           levels: [],
           events: [],
           bias: "UNAVAILABLE",
           risk: "MODERATE",
-          summary: "Verified market observations supplied by Financial Modeling Prep. Economic calendar data is not connected.",
+          summary: secondaryAvailable
+            ? "Verified market observations supplied by Financial Modeling Prep. Economic calendar data is not connected."
+            : "Verified S&P observation supplied by Financial Modeling Prep. One or more secondary instruments are unavailable; trading conclusions remain fail-closed.",
           evidence: {},
         };
         return snapshot;

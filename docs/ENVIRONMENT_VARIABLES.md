@@ -81,12 +81,13 @@ documented server-only variables when a provider is selected.
 
 ## Financial Modeling Prep
 
-Required together when `MARKET_DATA_PROVIDER=fmp`.
+`MARKET_DATA_PROVIDER=fmp` and `FMP_API_KEY` are required together. The base URL
+is optional and defaults to the official FMP Stable endpoint.
 
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
 | `FMP_API_KEY` | Secret, server only | Conditional mandatory | FMP `apikey` query authentication |
-| `FMP_API_BASE_URL` | Server config | Conditional mandatory | FMP Stable API base URL; must not contain the key |
+| `FMP_API_BASE_URL` | Server config | Optional; defaults to `https://financialmodelingprep.com/stable/` | FMP Stable API base URL override; must use HTTPS and must not contain the key |
 | `FMP_REQUEST_TIMEOUT_MS` | Server config | Optional | Per-request timeout |
 | `FMP_SP500_FUTURES_SYMBOL` | Server config | Optional | Override ES futures symbol |
 | `FMP_VIX_SYMBOL` | Server config | Optional | Override VIX symbol |

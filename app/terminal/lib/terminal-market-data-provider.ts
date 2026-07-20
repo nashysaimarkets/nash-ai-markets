@@ -12,6 +12,7 @@ import {
 } from "../../lib/market-data.ts";
 import {
   createFinancialModelingPrepAdapter,
+  DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL,
   FINANCIAL_MODELING_PREP_PROVIDER_NAME,
 } from "../../lib/providers/financial-modeling-prep.ts";
 
@@ -26,23 +27,37 @@ function positiveInteger(value: string | undefined): number | undefined {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
 
+export type FmpEnvironmentDiagnostics = {
+  marketDataProviderConfigured: boolean;
+  fmpApiKeyConfigured: boolean;
+  fmpApiBaseUrlConfigured: boolean;
+};
+
+export function getFmpEnvironmentDiagnostics(): FmpEnvironmentDiagnostics {
+  return {
+    marketDataProviderConfigured: Boolean(process.env.MARKET_DATA_PROVIDER?.trim()),
+    fmpApiKeyConfigured: Boolean(process.env.FMP_API_KEY?.trim()),
+    fmpApiBaseUrlConfigured: Boolean(process.env.FMP_API_BASE_URL?.trim()),
+  };
+}
+
 function createConfiguredProvider(): { provider: MarketDataProvider; name: string } | null {
   const providerType = process.env.MARKET_DATA_PROVIDER?.trim().toLowerCase();
   if (providerType === "fmp") {
-    const apiKey = process.env.FMP_API_KEY;
-    const baseUrl = process.env.FMP_API_BASE_URL;
-    if (!apiKey || !baseUrl) return null;
+    const apiKey = process.env.FMP_API_KEY?.trim();
+    if (!apiKey) return null;
     return {
       name: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
       provider: createFinancialModelingPrepAdapter({
         apiKey,
-        baseUrl,
+        baseUrl: process.env.FMP_API_BASE_URL?.trim() || DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL,
         timeoutMs: positiveInteger(process.env.FMP_REQUEST_TIMEOUT_MS),
         symbols: {
           sp500Futures: process.env.FMP_SP500_FUTURES_SYMBOL,
           vix: process.env.FMP_VIX_SYMBOL,
           usDollarIndex: process.env.FMP_US_DOLLAR_INDEX_SYMBOL,
         },
+        logger: (message, details) => console.info(`[${message}]`, details ?? {}),
       }),
     };
   }
@@ -64,6 +79,7 @@ export async function getTerminalMarketData(
   now = Date.now(),
 ): Promise<TerminalMarketGatewayResult> {
   const previewOnly = process.env.MARKET_DATA_PROVIDER === "preview";
+  console.info("[bullseye:market-data] configuration", getFmpEnvironmentDiagnostics());
   const configured = override ? null : createConfiguredProvider();
 
   if (!override && (previewOnly || !configured)) {
