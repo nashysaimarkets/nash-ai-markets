@@ -18,10 +18,13 @@ import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-prov
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
 import { EliteScenarioCard } from "./components/EliteScenarioCard.tsx";
+import { EliteConversionPreview } from "./components/EliteConversionPreview.tsx";
+import { EliteOnboardingChecklist } from "./components/EliteOnboardingChecklist.tsx";
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
 import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
 import { TodaysBullseyePlan } from "./components/TodaysBullseyePlan.tsx";
+import { TodaysEdge } from "./components/TodaysEdge.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
 import { commandCentreState, marketSessionState, primaryLevel } from "./lib/command-centre.ts";
 import { loadAccuracySummary } from "./lib/performance-history.ts";
@@ -145,6 +148,20 @@ export default async function MemberDashboard() {
         {access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Data diagnostics <span aria-hidden="true">→</span></Link> : null}
       </section>
 
+      <TodaysEdge
+        verified={verifiedMarket}
+        marketCondition={mission.marketCondition}
+        directionalBias={mission.directionalBias}
+        keyRisk={mission.keyWarning}
+        nextAction={mission.nextAction}
+        dataLabel={statusPresentation.label}
+        lastUpdated={marketTimestamp === "No verified timestamp" ? marketTimestamp : `${marketTimestamp} UK`}
+        confidence={mission.confidence}
+        analysisMode={morningBrief.generation === "ai-assisted" ? "AI assisted" : "Deterministic"}
+      />
+
+      {access.tier === "elite" ? <EliteOnboardingChecklist /> : null}
+
       <section className="eliteStatusDeck executiveKpiStrip" aria-label="Market status and decision summary">
         <article className="elitePrimaryStatus">
           <div><span className="eliteEyebrow">MARKET REGIME</span><strong>{verifiedMarket ? decision.volatilityRegime : "Awaiting verified intelligence"}</strong><small>{verifiedMarket ? `${decision.marketBias} bias · ${decision.recommendedPosture}` : "Provider validation is active; no market state has been inferred"}</small></div>
@@ -162,6 +179,8 @@ export default async function MemberDashboard() {
       </section>
 
       <TodaysBullseyePlan verified={verifiedMarket} dataStatus={market.snapshot.status} stateLabel={session.label} confidence={mission.confidence} bias={decision.marketBias} risk={decision.riskRating} expectedMove={expectedMove} support={support} resistance={resistance} bullishTrigger={bullishScenario.trigger.level ? `${bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} at ${bullishScenario.trigger.level}` : bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} bearishTrigger={bearishScenario.trigger.level ? `${bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} at ${bearishScenario.trigger.level}` : bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} invalidation={decision.invalidationConditions[0]?.level ?? decision.invalidationConditions[0]?.kind.replaceAll("_", " ").toLowerCase() ?? "Awaiting verified input"} noTradeConditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined} summary={market.snapshot.summary} />
+
+      {access.tier !== "elite" ? <EliteConversionPreview /> : null}
 
       <BullseyeMissionControl
         verified={verifiedMarket}
