@@ -32,9 +32,42 @@ export type MarketSnapshot = {
 
 export type MarketDataProvider = {
   fetchSnapshot: () => Promise<MarketSnapshot | null>;
+  getDiagnostics?: () => MarketProviderAttemptDiagnostics;
 };
 
 export type MarketDataProviderInput = MarketDataProvider | (() => Promise<MarketSnapshot | null>);
+
+export type MarketProviderAttemptDiagnostics = {
+  resultCategory: string;
+  httpStatusCategory: MarketProviderHttpStatusCategory;
+  endpointStatusCategories: MarketProviderEndpointStatusCategories;
+  responseReceived: boolean;
+  schemaRecognized: boolean;
+  quoteCount: number;
+  requiredInstrumentsFound: string[];
+  requiredInstrumentsMissing: string[];
+  providerTimestamp: string | null;
+  failureReason: string | null;
+};
+
+export type MarketProviderHttpStatusCategory =
+  | "not_attempted"
+  | "success"
+  | "authentication_error"
+  | "access_restricted"
+  | "rate_limited"
+  | "client_error"
+  | "server_error"
+  | "network_error"
+  | "timeout"
+  | "mixed";
+
+export type MarketProviderEndpointStatusCategories = {
+  sp500Futures: MarketProviderHttpStatusCategory;
+  vix: MarketProviderHttpStatusCategory;
+  treasuryYields: MarketProviderHttpStatusCategory;
+  usDollarIndex: MarketProviderHttpStatusCategory;
+};
 
 export type GetMarketSnapshotOptions = {
   provider?: MarketDataProviderInput;
@@ -46,6 +79,12 @@ const MAX_LIVE_AGE_MS = 5 * 60 * 1000;
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 60 * 1000;
 export const UNAVAILABLE_SNAPSHOT_TIMESTAMP = "1970-01-01T00:00:00.000Z";
+
+export function isVerifiedMarketTimestamp(value: string | null | undefined): value is string {
+  if (!value) return false;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) && timestamp > 0;
+}
 
 export function createUnavailableSnapshot(asOf = UNAVAILABLE_SNAPSHOT_TIMESTAMP): MarketSnapshot {
   return {
@@ -286,7 +325,7 @@ export async function getMarketSnapshot(options: GetMarketSnapshotOptions = {}):
 
 export function formatUkTimestamp(isoTimestamp: string): string {
   const date = new Date(isoTimestamp);
-  if (Number.isNaN(date.getTime())) return "Timestamp unavailable";
+  if (!isVerifiedMarketTimestamp(isoTimestamp)) return "Timestamp unavailable";
   return new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/London", weekday: "short", day: "2-digit", month: "short",
     hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
@@ -295,7 +334,7 @@ export function formatUkTimestamp(isoTimestamp: string): string {
 
 export function formatSnapshotAge(isoTimestamp: string, now = Date.now()): string {
   const timestamp = new Date(isoTimestamp).getTime();
-  if (Number.isNaN(timestamp)) return "age unavailable";
+  if (!isVerifiedMarketTimestamp(isoTimestamp)) return "age unavailable";
   const seconds = Math.max(0, Math.floor((now - timestamp) / 1000));
   if (seconds < 60) return `${seconds}s old`;
   const minutes = Math.floor(seconds / 60);

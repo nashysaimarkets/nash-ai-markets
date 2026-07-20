@@ -6,7 +6,7 @@ import type { OpenAIHealthStatus } from "../../lib/server/openai.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { ChartDisplayState } from "./visual-terminal.ts";
-import type { FmpEnvironmentDiagnostics } from "./terminal-market-data-provider.ts";
+import type { FmpEnvironmentDiagnostics, MarketDataCacheDiagnostics } from "./terminal-market-data-provider.ts";
 
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
@@ -30,10 +30,22 @@ export type LaunchDiagnostics = {
     fallbackActive: boolean;
     reconnectAttempts: number;
     lastFailureCategory: MarketGatewayStatus["lastFailureCategory"];
+    resultCategory: string;
+    httpStatusCategory: MarketGatewayStatus["providerAttempt"]["httpStatusCategory"];
+    endpointStatusCategories: MarketGatewayStatus["providerAttempt"]["endpointStatusCategories"];
+    responseReceived: boolean;
+    schemaRecognized: boolean;
+    quoteCount: number;
+    requiredInstrumentsFound: string[];
+    requiredInstrumentsMissing: string[];
+    providerTimestamp: string | null;
+    classification: MarketGatewayStatus["dataClassification"];
+    failureReason: string | null;
     configuration: FmpEnvironmentDiagnostics & { defaultBaseUrlActive: boolean };
   };
   modes: { preview: boolean; delayed: boolean; offline: boolean; live: boolean };
   cacheStatus: "live" | "delayed" | "preview" | "fallback" | "offline";
+  requestCache: MarketDataCacheDiagnostics & { estimatedUpstreamRequestsAvoided: number };
   integrations: {
     openAI: {
       configured: boolean;
@@ -65,6 +77,7 @@ export type LaunchDiagnosticsInput = {
   providerType?: string;
   apiCredentialConfigured?: boolean;
   providerEnvironment?: FmpEnvironmentDiagnostics;
+  requestCache?: MarketDataCacheDiagnostics;
   accessibilityContract?: boolean;
   openAIHealth?: OpenAIHealthStatus;
   openAIConfigured?: boolean;
@@ -116,10 +129,12 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
   const plannerMatchesDecision = decision.tradePermission !== "no-trade" ||
     (plan.executionReadiness === "not-ready" && plan.participationLevel === "none" && plan.directionalPosture === "stand-aside");
   const unavailableNeverLive = !offline || (!live && snapshot.status !== "LIVE");
+  const missingRequiredInstruments = gatewayStatus.providerAttempt.requiredInstrumentsMissing;
 
   const checks: LaunchCheck[] = [
     { id: "dashboard", label: "Dashboard render", status: "PASS", detail: "Terminal view model created." },
     { id: "chart", label: "Chart state", status: input.chartState === "error" ? "FAIL" : input.chartState === "empty" ? "WARN" : "PASS", detail: input.chartState === "empty" ? "Safe empty state active; no OHLCV data supplied." : `Chart state: ${input.chartState}.` },
+    { id: "provider-coverage", label: "Required provider coverage", status: missingRequiredInstruments.length > 0 ? "WARN" : "PASS", detail: missingRequiredInstruments.length > 0 ? `Missing required instruments: ${missingRequiredInstruments.join(", ")}.` : "All required instruments are present." },
     { id: "engines", label: "Engine synchronization", status: enginesSynchronized ? "PASS" : "FAIL", detail: enginesSynchronized ? "Snapshot, intelligence, decision and planner provenance agree." : "Engine provenance or confidence cap mismatch." },
     { id: "planner", label: "Planner alignment", status: plannerMatchesDecision ? "PASS" : "FAIL", detail: plannerMatchesDecision ? "Planner respects Decision Engine permission." : "No-trade decision is not fail closed in planner output." },
     { id: "warnings", label: "Warning preservation", status: "PASS", detail: `${warningCodes.length} unique warnings available to the terminal.` },
@@ -133,7 +148,29 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
     marketDataProviderConfigured: Boolean(input.providerType?.trim()),
     fmpApiKeyConfigured: Boolean(input.apiCredentialConfigured),
     fmpApiBaseUrlConfigured: false,
+    fmpSp500FuturesSymbolConfigured: false,
+    fmpVixSymbolConfigured: false,
+    fmpUsDollarIndexSymbolConfigured: false,
+    fmpRequestTimeoutConfigured: false,
+    marketDataMaxRetriesConfigured: false,
+    marketDataRetryDelayConfigured: false,
+    supabaseUrlConfigured: false,
+    supabasePublishableKeyConfigured: false,
+    supabaseServiceRoleKeyConfigured: false,
+    openAIApiKeyConfigured: Boolean(input.openAIConfigured),
+    openAIBriefModelConfigured: Boolean(input.openAIModelConfigured),
+    openAIMorningBriefModelConfigured: false,
   };
+  const requestCache = input.requestCache ?? {
+    status: "disabled",
+    ttlMs: 0,
+    hits: 0,
+    misses: 0,
+    coalesced: 0,
+    providerLoads: 0,
+    estimatedProviderLoadsAvoided: 0,
+  };
+  const upstreamRequestsPerLoad = input.providerType?.trim().toLowerCase() === "fmp" ? 4 : 1;
 
   return {
     schemaVersion: "1.0",
@@ -148,6 +185,17 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
       fallbackActive: gatewayStatus.fallbackActive,
       reconnectAttempts: gatewayStatus.reconnectAttempts,
       lastFailureCategory: gatewayStatus.lastFailureCategory ?? null,
+      resultCategory: gatewayStatus.providerAttempt.resultCategory,
+      httpStatusCategory: gatewayStatus.providerAttempt.httpStatusCategory,
+      endpointStatusCategories: { ...gatewayStatus.providerAttempt.endpointStatusCategories },
+      responseReceived: gatewayStatus.providerAttempt.responseReceived,
+      schemaRecognized: gatewayStatus.providerAttempt.schemaRecognized,
+      quoteCount: gatewayStatus.providerAttempt.quoteCount,
+      requiredInstrumentsFound: [...gatewayStatus.providerAttempt.requiredInstrumentsFound],
+      requiredInstrumentsMissing: [...gatewayStatus.providerAttempt.requiredInstrumentsMissing],
+      providerTimestamp: gatewayStatus.providerAttempt.providerTimestamp,
+      classification: gatewayStatus.dataClassification,
+      failureReason: gatewayStatus.providerAttempt.failureReason,
       configuration: {
         ...providerEnvironment,
         defaultBaseUrlActive: input.providerType?.trim().toLowerCase() === "fmp" && !providerEnvironment.fmpApiBaseUrlConfigured,
@@ -155,6 +203,10 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
     },
     modes: { preview, delayed, offline, live },
     cacheStatus,
+    requestCache: {
+      ...requestCache,
+      estimatedUpstreamRequestsAvoided: requestCache.estimatedProviderLoadsAvoided * upstreamRequestsPerLoad,
+    },
     integrations: {
       openAI: {
         configured: input.openAIConfigured ?? false,

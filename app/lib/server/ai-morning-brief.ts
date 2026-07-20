@@ -1,4 +1,5 @@
 import type { MorningBrief } from "../morning-brief-engine.ts";
+import { createAsyncKeyedTtlCache } from "./async-ttl-cache.ts";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "./openai.ts";
 
 const AI_MORNING_BRIEF_TIMEOUT_MS = 5_000;
@@ -25,6 +26,12 @@ type MorningBriefClient = {
     ) => Promise<{ output_text: string }>;
   };
 };
+
+const aiMorningBriefCache = createAsyncKeyedTtlCache<AIMorningBriefResult>({
+  ttlMs: 10 * 60_000,
+  maxEntries: 12,
+  isFailure: (result) => result.status !== "generated",
+});
 
 function safeFailureStatus(error: unknown): Exclude<AIMorningBriefResult["status"], "generated" | "not_configured" | "invalid_response"> {
   if (!error || typeof error !== "object") return "unavailable";
@@ -58,19 +65,23 @@ function isValidContent(value: unknown, brief: MorningBrief): value is AIMorning
 
 export async function generateAIMorningBrief(
   brief: MorningBrief,
-  client: MorningBriefClient | null = createOpenAIClient() as MorningBriefClient | null,
+  client?: MorningBriefClient | null,
   model = process.env.OPENAI_MORNING_BRIEF_MODEL?.trim()
     || process.env.OPENAI_BRIEF_MODEL?.trim()
     || DEFAULT_MORNING_BRIEF_MODEL,
 ): Promise<AIMorningBriefResult> {
-  if (brief.mode !== "verified" || !brief.actionable || !client || !model) {
+  const configuredClient = client === undefined
+    ? createOpenAIClient() as MorningBriefClient | null
+    : client;
+  if (brief.mode !== "verified" || !brief.actionable || !configuredClient || !model) {
     return { status: "not_configured", content: null };
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), AI_MORNING_BRIEF_TIMEOUT_MS);
-  try {
-    const response = await client.responses.create({
+  const generate = async (): Promise<AIMorningBriefResult> => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), AI_MORNING_BRIEF_TIMEOUT_MS);
+    try {
+      const response = await configuredClient.responses.create({
       model,
       instructions: [
         "Write a concise executive morning market summary using only the supplied verified Bullseye fields.",
@@ -109,27 +120,31 @@ export async function generateAIMorningBrief(
           },
         },
       },
-    }, { signal: controller.signal });
+      }, { signal: controller.signal });
 
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(response.output_text);
-    } catch {
-      return { status: "invalid_response", content: null };
-    }
-    return isValidContent(parsed, brief)
-      ? {
-        status: "generated",
-        content: {
-          headline: parsed.headline.trim(),
-          summary: parsed.summary.trim(),
-          priorities: parsed.priorities,
-        },
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(response.output_text);
+      } catch {
+        return { status: "invalid_response", content: null };
       }
-      : { status: "invalid_response", content: null };
-  } catch (error) {
-    return { status: safeFailureStatus(error), content: null };
-  } finally {
-    clearTimeout(timeout);
-  }
+      return isValidContent(parsed, brief)
+        ? {
+          status: "generated",
+          content: {
+            headline: parsed.headline.trim(),
+            summary: parsed.summary.trim(),
+            priorities: parsed.priorities,
+          },
+        }
+        : { status: "invalid_response", content: null };
+    } catch (error) {
+      return { status: safeFailureStatus(error), content: null };
+    } finally {
+      clearTimeout(timeout);
+    }
+  };
+
+  if (client !== undefined) return generate();
+  return aiMorningBriefCache.get(JSON.stringify({ model, brief }), generate);
 }

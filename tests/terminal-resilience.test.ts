@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { runBullseyeEngine } from "../app/lib/bullseye-engine.ts";
-import { getMarketSnapshot, normalizeSnapshotFreshness, UNAVAILABLE_SNAPSHOT_TIMESTAMP, type MarketSnapshot } from "../app/lib/market-data.ts";
+import { formatSnapshotAge, formatUkTimestamp, getMarketSnapshot, normalizeSnapshotFreshness, UNAVAILABLE_SNAPSHOT_TIMESTAMP, type MarketSnapshot } from "../app/lib/market-data.ts";
 import { chartDataForStatus } from "../app/terminal/lib/visual-terminal.ts";
 
 function liveSnapshot(overrides: Partial<MarketSnapshot> = {}): MarketSnapshot {
@@ -21,6 +21,8 @@ test("provider failure returns an empty unavailable snapshot with a fixed timest
   assert.deepEqual(snapshot.quotes, []);
   assert.deepEqual(snapshot.levels, []);
   assert.deepEqual(snapshot.events, []);
+  assert.equal(formatUkTimestamp(snapshot.asOf), "Timestamp unavailable");
+  assert.equal(formatSnapshotAge(snapshot.asOf), "age unavailable");
 });
 
 test("generic freshness validation rejects materially future timestamps", () => {

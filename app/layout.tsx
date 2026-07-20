@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { PwaController } from "./components/PwaController";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -80,6 +79,9 @@ export const metadata: Metadata = {
     address: false,
     email: false,
   },
+  other: {
+    "theme-color": "#050807",
+  },
 };
 
 export default function RootLayout({
@@ -102,7 +104,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <PwaController />
       </body>
     </html>
   );

@@ -31,7 +31,15 @@ function createMockFetch(asOf: string) {
     const symbol = url.searchParams.get("symbol");
     const prices: Record<string, number> = { ESUSD: 6325.5, "^VIX": 15.88, "DX-Y.NYB": 98.12 };
     const price = symbol ? prices[symbol] : undefined;
-    return jsonResponse([{ symbol, price, change: 1, changesPercentage: 0.25, timestamp }]);
+    return jsonResponse([{
+      symbol,
+      name: symbol === "DX-Y.NYB" ? "US Dollar Index" : undefined,
+      exchange: symbol === "DX-Y.NYB" ? "INDEX" : undefined,
+      price,
+      change: 1,
+      changesPercentage: 0.25,
+      timestamp,
+    }]);
   };
 }
 
@@ -52,6 +60,209 @@ test("maps a valid mocked FMP response into the generic market snapshot", async 
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,325.50");
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "US2Y")?.value, "4.18%");
   assert.deepEqual(snapshot.events, []);
+});
+
+test("normalizes numeric strings, nested quote data, and ISO provider timestamps", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse({ data: [{ date: asOf, year2: "4.18", year10: "4.42" }] });
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse({
+        data: {
+          quotes: [{
+            symbol,
+            name: symbol === "DX-Y.NYB" ? "US Dollar Index" : undefined,
+            exchange: symbol === "DX-Y.NYB" ? "INDEX" : undefined,
+            price: "6,325.50",
+            change: "1.25",
+            changePercentage: "0.25",
+            lastUpdated: asOf,
+          }],
+        },
+      });
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.equal(snapshot.status, "LIVE");
+  assert.equal(snapshot.asOf, asOf);
+  assert.equal(snapshot.quotes[0]?.value, "6,325.50");
+  assert.equal(snapshot.quotes[0]?.change, "+0.25%");
+  assert.deepEqual(adapter.getDiagnostics?.().requiredInstrumentsMissing, []);
+});
+
+test("accepts a canonical provider alias only for a single scoped quote record", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const timestamp = Date.parse(asOf) / 1000;
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const requested = url.searchParams.get("symbol");
+      return jsonResponse([{
+        symbol: requested === "DX-Y.NYB" ? requested : `CANONICAL:${requested}`,
+        name: requested === "DX-Y.NYB" ? "US Dollar Index" : undefined,
+        exchange: requested === "DX-Y.NYB" ? "INDEX" : undefined,
+        price: 100,
+        change: 1,
+        changePercentage: 0.25,
+        timestamp,
+      }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY"]);
+  assert.equal(adapter.getDiagnostics?.().schemaRecognized, true);
+  assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "success");
+});
+
+test("accepts the authenticated FMP US Dollar Index schema and rejects the unrelated USDXUSD crypto asset", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const timestamp = Date.parse(asOf) / 1000;
+  const quote = {
+    symbol: "DX-Y.NYB",
+    name: "US Dollar Index",
+    price: 100.825,
+    change: 0.06,
+    changesPercentage: 0.05954448,
+    timestamp,
+    exchange: "INDEX",
+  };
+  const validAdapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      if (symbol === "DX-Y.NYB") return jsonResponse([quote]);
+      return jsonResponse([{ symbol, price: 100, change: 1, changesPercentage: 0.25, timestamp }]);
+    },
+  });
+
+  const validSnapshot = await validAdapter.fetchSnapshot();
+  assert.ok(validSnapshot);
+  assert.equal(validSnapshot.quotes.find(({ symbol }) => symbol === "DXY")?.value, "100.83");
+
+  const cryptoAdapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    symbols: { usDollarIndex: "USDXUSD" },
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      if (symbol === "USDXUSD") {
+        return jsonResponse([{
+          symbol,
+          name: "USDX [Lighthouse] USD",
+          price: 0.65831,
+          change: 0,
+          changesPercentage: 0,
+          timestamp,
+          exchange: "CRYPTO",
+        }]);
+      }
+      return jsonResponse([{ symbol, price: 100, change: 1, changesPercentage: 0.25, timestamp }]);
+    },
+  });
+
+  const cryptoSnapshot = await cryptoAdapter.fetchSnapshot();
+  assert.ok(cryptoSnapshot);
+  assert.equal(cryptoSnapshot.quotes.some(({ symbol }) => symbol === "DXY"), false);
+  assert.equal(cryptoAdapter.getDiagnostics?.().requiredInstrumentsMissing.includes("DXY"), true);
+});
+
+test("keeps endpoint HTTP categories sanitized when secondary access is restricted", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const timestamp = Date.parse(asOf) / 1000;
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      if (symbol === "DX-Y.NYB") return new Response(null, { status: 402 });
+      return jsonResponse([{ symbol: `ALIAS:${symbol}`, price: 100, change: 1, changePercentage: 0.25, timestamp }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y"]);
+  assert.equal(adapter.getDiagnostics?.().resultCategory, "partial_success");
+  assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "mixed");
+  assert.equal(adapter.getDiagnostics?.().endpointStatusCategories.usDollarIndex, "access_restricted");
+  assert.equal(JSON.stringify(adapter.getDiagnostics?.()).includes(TEST_API_KEY), false);
+});
+
+test("lets the gateway classify a valid older provider response as delayed", async () => {
+  const now = Date.now();
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: createMockFetch(new Date(now - 10 * 60_000).toISOString()),
+  });
+  const gateway = new LiveMarketGateway({
+    provider: adapter,
+    providerName: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
+    maxRetries: 0,
+    logger: () => undefined,
+  });
+
+  const snapshot = await gateway.fetchSnapshot(now);
+  assert.equal(snapshot.status, "DELAYED");
+  assert.equal(gateway.getStatus().connectionStatus, "degraded");
+  assert.equal(gateway.getStatus().dataClassification, "delayed");
+});
+
+test("rejects an empty provider quote response without fabricating values", async () => {
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async () => jsonResponse({ data: { quotes: [] } }),
+  });
+
+  await assert.rejects(adapter.fetchSnapshot(), /invalid_response/);
+  assert.equal(adapter.getDiagnostics?.().quoteCount, 0);
+  assert.equal(adapter.getDiagnostics?.().schemaRecognized, false);
+});
+
+test("rejects a malformed provider timestamp", async () => {
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: new Date().toISOString(), year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp: "not-a-time" }]);
+    },
+  });
+
+  await assert.rejects(adapter.fetchSnapshot(), /invalid_response/);
 });
 
 test("appends query authentication without replacing existing query parameters", async () => {
@@ -308,7 +519,7 @@ test("classifies authentication rejection without exposing credentials", async (
     payloadType: "object",
     recordCount: 1,
     topLevelFieldNames: ["Error Message"],
-    schemaMismatch: "expected quote array",
+    schemaMismatch: "no quote records found",
   });
 });
 
@@ -317,7 +528,7 @@ test("classifies rate limiting as a retry-safe provider failure", async () => {
   await assert.rejects(adapter.fetchSnapshot(), /rate_limited/);
 });
 
-test("isolates plan-restricted secondary instruments without exposing symbols or credentials", async () => {
+test("isolates access-restricted secondary instruments without exposing symbols or credentials", async () => {
   const messages: Array<{ message: string; details?: Record<string, unknown> }> = [];
   const asOf = new Date(Date.now() - 60_000).toISOString();
   const mockFetch = createMockFetch(asOf);
@@ -337,9 +548,9 @@ test("isolates plan-restricted secondary instruments without exposing symbols or
   assert.equal(snapshot.status, "LIVE");
   assert.ok(snapshot.quotes.some((quote) => quote.symbol === "ES"));
   assert.equal(snapshot.quotes.some((quote) => quote.symbol === "DXY"), false);
-  assert.deepEqual(messages.find(({ details }) => details?.category === "plan_restricted")?.details, {
+  assert.deepEqual(messages.find(({ details }) => details?.category === "access_restricted")?.details, {
     provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
-    category: "plan_restricted",
+    category: "access_restricted",
     instrument: "us_dollar",
   });
   assert.doesNotMatch(JSON.stringify(messages), /DX-Y\.NYB/);
@@ -397,6 +608,8 @@ test("keeps the terminal fallback unconfigured when FMP credentials are absent",
     assert.deepEqual(result.snapshot.quotes, []);
     assert.equal(result.gatewayStatus.connectionStatus, "not_configured");
     assert.equal(result.gatewayStatus.fallbackActive, true);
+    assert.equal(result.cache.status, "disabled");
+    assert.equal(result.cache.providerLoads, 0);
   } finally {
     if (previous.provider === undefined) delete process.env.MARKET_DATA_PROVIDER;
     else process.env.MARKET_DATA_PROVIDER = previous.provider;

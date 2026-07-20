@@ -81,7 +81,7 @@ export function MarketStructureVisual({ levels, scores, status, directionalBias,
             <text x="664" y="278" textAnchor="end" className="eliteAxisLabel">100 · CONSTRUCTIVE</text>
           </svg> : <div className="eliteSignalEmpty" role="status">
             <span aria-hidden="true"><i /><i /><i /></span>
-            <div><strong>Awaiting verified intelligence</strong><p>The Bullseye context map will resolve directional structure, confidence and key levels after provider validation.</p></div>
+            <div><strong>Awaiting verified intelligence</strong><p>The Bullseye context map will resolve directional structure, confidence and key levels after provider validation.</p><ul><li>Direction remains withheld</li><li>Confidence remains unscored</li><li>Stand aside until evidence verifies</li></ul></div>
           </div>}
         </div>
         <aside className="eliteLevelRail" aria-label="Verified support and resistance">
@@ -90,7 +90,7 @@ export function MarketStructureVisual({ levels, scores, status, directionalBias,
             <div className="eliteLevelGroup isResistance"><span>RESISTANCE</span>{resistance.length ? resistance.map((level) => <div key={`${level.label}-${level.value}`}><small>{level.label}</small><strong>{level.value}</strong><em>{level.note}</em></div>) : <p>Not supplied</p>}</div>
             <div className="eliteLevelMid"><span>DECISION RANGE</span><i /></div>
             <div className="eliteLevelGroup isSupport"><span>SUPPORT</span>{support.length ? support.map((level) => <div key={`${level.label}-${level.value}`}><small>{level.label}</small><strong>{level.value}</strong><em>{level.note}</em></div>) : <p>Not supplied</p>}</div>
-          </> : <div className="eliteLevelEmpty"><span aria-hidden="true">⌁</span><strong>Level intelligence awaiting verification</strong><p>Support and resistance appear only when supplied by the active market provider.</p></div>}
+          </> : <div className="eliteLevelEmpty"><span aria-hidden="true">⌁</span><strong>Level intelligence awaiting verification</strong><p>Support and resistance appear only when supplied by the active market provider.</p><small>No level has been estimated or carried forward.</small></div>}
         </aside>
       </div>
     </section>

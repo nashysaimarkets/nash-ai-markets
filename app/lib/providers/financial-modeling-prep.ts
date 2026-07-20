@@ -1,4 +1,11 @@
-import type { MarketDataProvider, MarketQuote, MarketSnapshot } from "../market-data.ts";
+import type {
+  MarketDataProvider,
+  MarketProviderAttemptDiagnostics,
+  MarketProviderEndpointStatusCategories,
+  MarketProviderHttpStatusCategory,
+  MarketQuote,
+  MarketSnapshot,
+} from "../market-data.ts";
 
 export const FINANCIAL_MODELING_PREP_PROVIDER_NAME = "Financial Modeling Prep";
 export const DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL = "https://financialmodelingprep.com/stable/";
@@ -31,7 +38,7 @@ type FmpQuote = {
   price: number;
   change: number;
   changesPercentage: number;
-  timestamp: number;
+  timestampMs: number;
 };
 
 type FmpTreasuryRates = {
@@ -43,10 +50,10 @@ type FmpTreasuryRates = {
 const MAX_FUTURE_SKEW_MS = 60_000;
 const MAX_TREASURY_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-type SafeFailureCategory = "authentication_rejected" | "plan_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
+type SafeFailureCategory = "authentication_rejected" | "access_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
 type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury";
 type FmpEndpointName = "ES futures" | "VIX" | "US Dollar Index" | "Treasury rates";
-type FmpResponseKind = "quote" | "treasury";
+type FmpResponseKind = "quote" | "dollar_quote" | "treasury";
 
 class SafeProviderFailure extends Error {
   readonly category: SafeFailureCategory;
@@ -63,25 +70,84 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function finiteNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string" || !value.trim()) return null;
+  const parsed = Number(value.replaceAll(",", "").trim());
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function recordsFromPayload(payload: unknown, kind: FmpResponseKind, depth = 0): Record<string, unknown>[] {
+  if (Array.isArray(payload)) return payload.filter(isRecord);
+  if (!isRecord(payload) || depth > 2) return [];
+  const keys = kind === "treasury"
+    ? ["data", "rates", "treasuryRates", "results", "result"]
+    : ["data", "quotes", "quote", "results", "result"];
+  for (const key of keys) {
+    const nested = payload[key];
+    if (Array.isArray(nested)) return nested.filter(isRecord);
+    if (isRecord(nested)) {
+      const deeper = recordsFromPayload(nested, kind, depth + 1);
+      return deeper.length > 0 ? deeper : [nested];
+    }
+  }
+  return [];
+}
+
+function normalizedSymbol(value: string): string {
+  return value.trim().toUpperCase();
+}
+
+function timestampMs(candidate: Record<string, unknown>): number | null {
+  const numeric = finiteNumber(candidate.timestamp ?? candidate.time);
+  if (numeric !== null) {
+    const milliseconds = numeric >= 1_000_000_000_000 ? numeric : numeric * 1000;
+    return Number.isFinite(milliseconds) ? milliseconds : null;
+  }
+  for (const value of [candidate.date, candidate.datetime, candidate.lastUpdated, candidate.lastUpdatedAt]) {
+    if (typeof value !== "string") continue;
+    const parsed = Date.parse(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
 }
 
 function parseQuote(payload: unknown, expectedSymbol: string): FmpQuote | null {
-  if (!Array.isArray(payload) || payload.length !== 1 || !isRecord(payload[0])) return null;
-  const candidate = payload[0];
+  const records = recordsFromPayload(payload, "quote");
+  const exactMatch = records
+    .find((record) => typeof record.symbol === "string" && normalizedSymbol(record.symbol) === normalizedSymbol(expectedSymbol));
+  // FMP can canonicalize a requested continuous-contract/index alias in its
+  // single-record quote response. The request remains scoped to one symbol, so
+  // a single structurally valid record is safe to map to the requested
+  // instrument without exposing or trusting an arbitrary multi-record result.
+  const singleCanonicalAlias = records.length === 1 && typeof records[0]?.symbol === "string" && records[0].symbol.trim()
+    ? records[0]
+    : undefined;
+  const candidate = exactMatch ?? singleCanonicalAlias;
+  if (!candidate) return null;
   const price = finiteNumber(candidate.price);
   const change = finiteNumber(candidate.change);
-  const changesPercentage = finiteNumber(candidate.changesPercentage);
-  const timestamp = finiteNumber(candidate.timestamp);
-  if (candidate.symbol !== expectedSymbol || price === null || change === null || changesPercentage === null || timestamp === null) {
+  const changesPercentage = finiteNumber(candidate.changesPercentage ?? candidate.changePercentage ?? candidate.percentChange);
+  const parsedTimestamp = timestampMs(candidate);
+  if (price === null || change === null || changesPercentage === null || parsedTimestamp === null) {
     return null;
   }
-  return { symbol: expectedSymbol, price, change, changesPercentage, timestamp };
+  return { symbol: expectedSymbol, price, change, changesPercentage, timestampMs: parsedTimestamp };
+}
+
+function parseDollarIndexQuote(payload: unknown, expectedSymbol: string): FmpQuote | null {
+  const exactRecord = recordsFromPayload(payload, "dollar_quote")
+    .find((record) => typeof record.symbol === "string" && normalizedSymbol(record.symbol) === normalizedSymbol(expectedSymbol));
+  if (!exactRecord) return null;
+
+  const name = typeof exactRecord.name === "string" ? exactRecord.name.trim().toUpperCase() : "";
+  const exchange = typeof exactRecord.exchange === "string" ? exactRecord.exchange.trim().toUpperCase() : "";
+  if (name !== "US DOLLAR INDEX" || exchange !== "INDEX") return null;
+
+  return parseQuote([exactRecord], expectedSymbol);
 }
 
 function parseTreasuryRates(payload: unknown): FmpTreasuryRates | null {
-  if (!Array.isArray(payload)) return null;
-  const rows = payload.filter(isRecord).map((candidate) => ({
+  const rows = recordsFromPayload(payload, "treasury").map((candidate) => ({
     date: typeof candidate.date === "string" ? candidate.date : "",
     year2: finiteNumber(candidate.year2),
     year10: finiteNumber(candidate.year10),
@@ -120,24 +186,23 @@ function responseShape(payload: unknown): {
 }
 
 function schemaMismatch(payload: unknown, kind: FmpResponseKind, expectedSymbol?: string): string {
-  if (kind === "quote") {
-    if (!Array.isArray(payload)) return "expected quote array";
-    if (payload.length !== 1) return "expected exactly one quote record";
-    if (!expectedSymbol || !parseQuote(payload, expectedSymbol)) {
+  if (kind === "quote" || kind === "dollar_quote") {
+    if (recordsFromPayload(payload, kind).length === 0) return "no quote records found";
+    const parsed = expectedSymbol && (kind === "dollar_quote"
+      ? parseDollarIndexQuote(payload, expectedSymbol)
+      : parseQuote(payload, expectedSymbol));
+    if (!parsed) {
       return "quote fields or requested symbol did not match";
     }
     return "none";
   }
   return parseTreasuryRates(payload)
     ? "none"
-    : Array.isArray(payload)
-      ? "no record matched date, year2 and year10"
-      : "expected treasury array";
+    : "no record matched date, year2 and year10";
 }
 
 function quoteTimestampMs(quote: FmpQuote): number | null {
-  const timestamp = quote.timestamp * 1000;
-  return Number.isFinite(timestamp) ? timestamp : null;
+  return Number.isFinite(quote.timestampMs) ? quote.timestampMs : null;
 }
 
 function treasuryTimestampMs(rates: FmpTreasuryRates): number | null {
@@ -179,6 +244,32 @@ function createUrl(baseUrl: string, pathname: string, apiKey: string, symbol?: s
   return url;
 }
 
+function emptyEndpointStatusCategories(): MarketProviderEndpointStatusCategories {
+  return {
+    sp500Futures: "not_attempted",
+    vix: "not_attempted",
+    treasuryYields: "not_attempted",
+    usDollarIndex: "not_attempted",
+  };
+}
+
+function statusCategory(status: number): MarketProviderHttpStatusCategory {
+  if (status >= 200 && status < 300) return "success";
+  if (status === 401 || status === 403) return "authentication_error";
+  if (status === 402) return "access_restricted";
+  if (status === 429) return "rate_limited";
+  if (status >= 500) return "server_error";
+  return "client_error";
+}
+
+function aggregateStatusCategory(
+  endpointStatuses: MarketProviderEndpointStatusCategories,
+): MarketProviderHttpStatusCategory {
+  const attempted = Object.values(endpointStatuses).filter((status) => status !== "not_attempted");
+  if (attempted.length === 0) return "not_attempted";
+  return new Set(attempted).size === 1 ? attempted[0]! : "mixed";
+}
+
 export function createFinancialModelingPrepAdapter(options: FinancialModelingPrepAdapterOptions): MarketDataProvider {
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? 4_500;
@@ -189,12 +280,44 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     usDollarIndex: options.symbols?.usDollarIndex || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.usDollarIndex,
   };
   const logger = options.logger ?? (() => undefined);
+  let endpointStatusCategories = emptyEndpointStatusCategories();
+  let diagnostics: MarketProviderAttemptDiagnostics = {
+    resultCategory: "not_attempted",
+    httpStatusCategory: "not_attempted",
+    endpointStatusCategories: { ...endpointStatusCategories },
+    responseReceived: false,
+    schemaRecognized: false,
+    quoteCount: 0,
+    requiredInstrumentsFound: [],
+    requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+    providerTimestamp: null,
+    failureReason: null,
+  };
 
   return {
+    getDiagnostics: () => ({
+      ...diagnostics,
+      requiredInstrumentsFound: [...diagnostics.requiredInstrumentsFound],
+      requiredInstrumentsMissing: [...diagnostics.requiredInstrumentsMissing],
+    }),
     async fetchSnapshot() {
+      diagnostics = {
+        resultCategory: "request_started",
+        httpStatusCategory: "not_attempted",
+        endpointStatusCategories: { ...emptyEndpointStatusCategories() },
+        responseReceived: false,
+        schemaRecognized: false,
+        quoteCount: 0,
+        requiredInstrumentsFound: [],
+        requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+        providerTimestamp: null,
+        failureReason: null,
+      };
+      endpointStatusCategories = emptyEndpointStatusCategories();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       const request = async (
+        endpointKey: keyof MarketProviderEndpointStatusCategories,
         endpointName: FmpEndpointName,
         pathname: string,
         kind: FmpResponseKind,
@@ -203,7 +326,12 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         let response: Response;
         try {
           response = await fetchImpl(createUrl(baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
+          diagnostics.responseReceived = true;
+          endpointStatusCategories[endpointKey] = statusCategory(response.status);
         } catch (error) {
+          endpointStatusCategories[endpointKey] = error instanceof Error && error.name === "AbortError"
+            ? "timeout"
+            : "network_error";
           logger("market-provider:response", {
             endpointName,
             httpStatus: null,
@@ -228,7 +356,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             schemaMismatch: "response was not valid JSON",
           });
           if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
-          if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
+          if (response.status === 402) throw new SafeProviderFailure("access_restricted");
           if (response.status === 429) throw new SafeProviderFailure("rate_limited");
           if (!response.ok) throw new SafeProviderFailure("invalid_response");
           throw new SafeProviderFailure("malformed_json");
@@ -240,7 +368,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           schemaMismatch: schemaMismatch(payload, kind, symbol),
         });
         if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
-        if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
+        if (response.status === 402) throw new SafeProviderFailure("access_restricted");
         if (response.status === 429) throw new SafeProviderFailure("rate_limited");
         if (!response.ok) throw new SafeProviderFailure("invalid_response");
         return payload;
@@ -249,10 +377,10 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
         const [esResult, vixResult, dollarResult, treasuryResult] = await Promise.allSettled([
-          request("ES futures", "quote", "quote", symbols.sp500Futures),
-          request("VIX", "quote", "quote", symbols.vix),
-          request("US Dollar Index", "quote", "quote", symbols.usDollarIndex),
-          request("Treasury rates", "treasury-rates", "treasury"),
+          request("sp500Futures", "ES futures", "quote", "quote", symbols.sp500Futures),
+          request("vix", "VIX", "quote", "quote", symbols.vix),
+          request("usDollarIndex", "US Dollar Index", "quote", "dollar_quote", symbols.usDollarIndex),
+          request("treasuryYields", "Treasury rates", "treasury-rates", "treasury"),
         ]);
         if (esResult.status === "rejected") throw esResult.reason;
         const es = parseQuote(esResult.value, symbols.sp500Futures);
@@ -279,7 +407,9 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             secondaryFailure(instrument, category);
             return null;
           }
-          const quote = parseQuote(result.value, expectedSymbol);
+          const quote = instrument === "us_dollar"
+            ? parseDollarIndexQuote(result.value, expectedSymbol)
+            : parseQuote(result.value, expectedSymbol);
           const timestamp = quote ? quoteTimestampMs(quote) : null;
           if (!quote || timestamp === null || timestamp > now + MAX_FUTURE_SKEW_MS) {
             secondaryFailure(instrument, "invalid_response");
@@ -339,6 +469,19 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             : "Verified S&P observation supplied by Financial Modeling Prep. One or more secondary instruments are unavailable; trading conclusions remain fail-closed.",
           evidence: {},
         };
+        const found = quotes.map((quote) => quote.symbol);
+        diagnostics = {
+          resultCategory: secondaryAvailable ? "success" : "partial_success",
+          httpStatusCategory: aggregateStatusCategory(endpointStatusCategories),
+          endpointStatusCategories: { ...endpointStatusCategories },
+          responseReceived: true,
+          schemaRecognized: true,
+          quoteCount: quotes.length,
+          requiredInstrumentsFound: found,
+          requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"].filter((symbol) => !found.includes(symbol)),
+          providerTimestamp: asOf,
+          failureReason: secondaryAvailable ? null : "One or more secondary instruments were unavailable.",
+        };
         return snapshot;
       } catch (error) {
         const category: SafeFailureCategory = error instanceof Error && error.name === "AbortError"
@@ -347,6 +490,14 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             ? error.category
             : "invalid_response";
         logger("market-provider:failure", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME, category });
+        diagnostics = {
+          ...diagnostics,
+          resultCategory: category,
+          httpStatusCategory: aggregateStatusCategory(endpointStatusCategories),
+          endpointStatusCategories: { ...endpointStatusCategories },
+          schemaRecognized: false,
+          failureReason: category.replaceAll("_", " "),
+        };
         throw new Error(category === "timeout" ? "FMP request timed out" : `FMP provider failure: ${category}`);
       } finally {
         clearTimeout(timeout);

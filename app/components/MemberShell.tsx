@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { PwaController } from "./PwaController";
 
 type MemberShellProps = {
   active: "dashboard" | "brief" | "terminal" | "ideas" | "profile" | "onboarding";
@@ -38,5 +39,6 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
       </details>
     </header>
     <div id="member-content">{children}</div>
+    <PwaController />
   </main>;
 }

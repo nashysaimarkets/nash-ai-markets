@@ -79,6 +79,14 @@ documented server-only variables when a provider is selected.
 | `MARKET_DATA_MAX_RETRIES` | Server config | Optional; default `1` | Gateway retry count |
 | `MARKET_DATA_RETRY_DELAY_MS` | Server config | Optional; default `250` | Delay between retries |
 
+Verified live/delayed snapshots use a fixed 15-second, per-instance in-memory
+cache. Concurrent requests share one provider load; unavailable results are not
+retained. This is intentionally not an environment variable: operators cannot
+silently widen the freshness window. Elite diagnostics report cache hits,
+coalesced requests, provider loads and an estimate of upstream calls avoided.
+Counters reset on instance restart and are operational indicators, not billing
+records.
+
 ## Financial Modeling Prep
 
 `MARKET_DATA_PROVIDER=fmp` and `FMP_API_KEY` are required together. The base URL
@@ -95,7 +103,23 @@ is optional and defaults to the official FMP Stable endpoint.
 
 The FMP adapter obtains US 2Y and 10Y Treasury rates from its Treasury endpoint;
 there are no Treasury symbol variables. The current adapter does not implement
-an economic calendar.
+an economic calendar or historical OHLCV candles. FMP may canonicalize a
+requested continuous-contract or index alias in a single-record quote response;
+the adapter accepts that canonical alias only when the response contains
+exactly one structurally valid record from the symbol-scoped request.
+
+FMP's authenticated Stable index catalogue identifies `DX-Y.NYB` as the
+`US Dollar Index`. Bullseye additionally requires the returned quote to use
+that exact provider symbol, the name `US Dollar Index`, exchange classification
+`INDEX`, a finite price, and a valid provider timestamp. `USDXUSD` is not an
+index alias: FMP identifies it as the unrelated `USDX [Lighthouse] USD` crypto
+asset, so it must not be configured as the Dollar Index.
+
+HTTP 402 responses remain fail closed and are reported as `access_restricted`.
+That status does not, by itself, prove that a particular paid plan will resolve
+the request. The account owner must confirm the endpoint, instrument, account
+entitlement, and any display or redistribution licence with the provider before
+changing the symbol or subscription.
 
 ## Generic HTTP provider
 

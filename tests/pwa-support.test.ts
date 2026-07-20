@@ -53,9 +53,11 @@ test("service worker caches only the application shell and safe static assets", 
 });
 
 test("offline state fails closed and install guidance is platform appropriate", async () => {
-  const [offline, controller] = await Promise.all([
+  const [offline, controller, layout, memberShell] = await Promise.all([
     read("public/offline.html"),
     read("app/components/PwaController.tsx"),
+    read("app/layout.tsx"),
+    read("app/components/MemberShell.tsx"),
   ]);
   assert.match(offline, /VERIFIED DATA UNAVAILABLE/);
   assert.match(offline, /No trading guidance is available/);
@@ -68,4 +70,6 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.match(controller, /SKIP_WAITING/);
   assert.match(controller, /reloads only after you choose Update/);
   assert.doesNotMatch(controller, /OPENAI_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE/);
+  assert.doesNotMatch(layout, /PwaController/);
+  assert.match(memberShell, /<PwaController \/>/);
 });

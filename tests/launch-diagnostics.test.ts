@@ -16,7 +16,37 @@ function snapshot(status: MarketSnapshot["status"] = "LIVE"): MarketSnapshot {
 }
 
 function status(overrides: Partial<MarketGatewayStatus> = {}): MarketGatewayStatus {
-  return { connectionStatus: "connected", providerName: "Financial Modeling Prep", lastAttempt: "2026-07-16T12:01:00.000Z", lastSuccessfulUpdate: "2026-07-16T12:00:00.000Z", dataAgeMs: 60_000, failureCount: 0, fallbackActive: false, lastRefreshLatencyMs: 142, reconnectAttempts: 0, ...overrides };
+  return {
+    connectionStatus: "connected",
+    providerName: "Financial Modeling Prep",
+    lastAttempt: "2026-07-16T12:01:00.000Z",
+    lastSuccessfulUpdate: "2026-07-16T12:00:00.000Z",
+    dataAgeMs: 60_000,
+    failureCount: 0,
+    fallbackActive: false,
+    lastRefreshLatencyMs: 142,
+    reconnectAttempts: 0,
+    lastFailureCategory: null,
+    providerAttempt: {
+      resultCategory: "success",
+      httpStatusCategory: "success",
+      endpointStatusCategories: {
+        sp500Futures: "success",
+        vix: "success",
+        treasuryYields: "success",
+        usDollarIndex: "success",
+      },
+      responseReceived: true,
+      schemaRecognized: true,
+      quoteCount: 5,
+      requiredInstrumentsFound: ["ES", "VIX", "US2Y", "US10Y", "DXY"],
+      requiredInstrumentsMissing: [],
+      providerTimestamp: "2026-07-16T12:00:00.000Z",
+      failureReason: null,
+    },
+    dataClassification: "live",
+    ...overrides,
+  };
 }
 
 function diagnostics(current = snapshot(), gateway = status(), environment: Record<string, string | undefined> = {}) {
@@ -27,9 +57,66 @@ function diagnostics(current = snapshot(), gateway = status(), environment: Reco
 }
 
 test("reports a healthy connected live launch candidate", () => { const result = diagnostics(); assert.equal(result.readiness, "READY"); assert.equal(result.provider.apiAuthentication, "accepted"); assert.equal(result.provider.refreshLatencyMs, 142); assert.equal(result.modes.live, true); assert.equal(result.provider.staleDetected, false); });
+test("reports safe provider schema and instrument metadata", () => {
+  const result = diagnostics();
+  assert.equal(result.provider.resultCategory, "success");
+  assert.equal(result.provider.responseReceived, true);
+  assert.equal(result.provider.schemaRecognized, true);
+  assert.equal(result.provider.quoteCount, 5);
+  assert.deepEqual(result.provider.requiredInstrumentsMissing, []);
+  assert.equal(result.provider.providerTimestamp, "2026-07-16T12:00:00.000Z");
+  assert.equal(result.provider.classification, "live");
+});
+test("keeps partial provider coverage out of ready state", () => {
+  const gateway = status({
+    providerAttempt: {
+      ...status().providerAttempt,
+      resultCategory: "partial_success",
+      httpStatusCategory: "mixed",
+      endpointStatusCategories: {
+        ...status().providerAttempt.endpointStatusCategories,
+        usDollarIndex: "access_restricted",
+      },
+      quoteCount: 4,
+      requiredInstrumentsFound: ["ES", "VIX", "US2Y", "US10Y"],
+      requiredInstrumentsMissing: ["DXY"],
+    },
+  });
+  const result = diagnostics(snapshot(), gateway);
+  assert.equal(result.checks.find((item) => item.id === "provider-coverage")?.status, "WARN");
+  assert.equal(result.readiness, "DEGRADED");
+});
+test("reports cache reuse and estimates FMP upstream calls avoided", () => {
+  const current = snapshot();
+  const gateway = status();
+  const intelligence = analyzeMarketSnapshot(current);
+  const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: current.status, providerStatus: gateway.connectionStatus, dataAgeMs: gateway.dataAgeMs, fallbackActive: gateway.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: current.status, providerStatus: gateway.connectionStatus, dataAgeMs: gateway.dataAgeMs, fallbackActive: gateway.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const result = createLaunchDiagnostics({
+    snapshot: current,
+    gatewayStatus: gateway,
+    intelligence,
+    decision,
+    plan,
+    chartState: "ready",
+    providerType: "fmp",
+    requestCache: {
+      status: "hit",
+      ttlMs: 15_000,
+      hits: 3,
+      misses: 1,
+      coalesced: 2,
+      providerLoads: 1,
+      estimatedProviderLoadsAvoided: 5,
+    },
+  });
+  assert.equal(result.requestCache.status, "hit");
+  assert.equal(result.requestCache.providerLoads, 1);
+  assert.equal(result.requestCache.estimatedUpstreamRequestsAvoided, 20);
+});
 test("detects delayed mode without presenting it as live", () => { const result = diagnostics(snapshot("DELAYED"), status({ connectionStatus: "degraded", dataAgeMs: 10 * 60_000 })); assert.equal(result.readiness, "DEGRADED"); assert.equal(result.modes.delayed, true); assert.equal(result.modes.live, false); assert.equal(result.cacheStatus, "delayed"); });
 test("detects preview mode and preserves fail-closed warnings", () => { const result = diagnostics(snapshot("PREVIEW"), status({ connectionStatus: "not_configured", dataAgeMs: null, fallbackActive: true })); assert.equal(result.modes.preview, true); assert.equal(result.modes.offline, true); assert.equal(result.cacheStatus, "fallback"); assert.ok(result.warnings.length > 0); });
-test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "plan_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "plan_restricted"); assert.notEqual(result.readiness, "READY"); });
+test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "access_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "access_restricted"); assert.notEqual(result.readiness, "READY"); });
 test("reports only sanitized provider-variable presence", () => {
   const secret = "must-never-appear";
   const current = snapshot("UNAVAILABLE");
@@ -50,6 +137,18 @@ test("reports only sanitized provider-variable presence", () => {
       marketDataProviderConfigured: true,
       fmpApiKeyConfigured: true,
       fmpApiBaseUrlConfigured: false,
+      fmpSp500FuturesSymbolConfigured: true,
+      fmpVixSymbolConfigured: false,
+      fmpUsDollarIndexSymbolConfigured: false,
+      fmpRequestTimeoutConfigured: false,
+      marketDataMaxRetriesConfigured: false,
+      marketDataRetryDelayConfigured: false,
+      supabaseUrlConfigured: true,
+      supabasePublishableKeyConfigured: true,
+      supabaseServiceRoleKeyConfigured: true,
+      openAIApiKeyConfigured: false,
+      openAIBriefModelConfigured: false,
+      openAIMorningBriefModelConfigured: false,
     },
     environment: { FMP_API_KEY: secret, FMP_API_BASE_URL: secret },
   });
@@ -57,6 +156,18 @@ test("reports only sanitized provider-variable presence", () => {
     marketDataProviderConfigured: true,
     fmpApiKeyConfigured: true,
     fmpApiBaseUrlConfigured: false,
+    fmpSp500FuturesSymbolConfigured: true,
+    fmpVixSymbolConfigured: false,
+    fmpUsDollarIndexSymbolConfigured: false,
+    fmpRequestTimeoutConfigured: false,
+    marketDataMaxRetriesConfigured: false,
+    marketDataRetryDelayConfigured: false,
+    supabaseUrlConfigured: true,
+    supabasePublishableKeyConfigured: true,
+    supabaseServiceRoleKeyConfigured: true,
+    openAIApiKeyConfigured: false,
+    openAIBriefModelConfigured: false,
+    openAIMorningBriefModelConfigured: false,
     defaultBaseUrlActive: true,
   });
   assert.equal(result.provider.lastFailureCategory, "authentication_rejected");

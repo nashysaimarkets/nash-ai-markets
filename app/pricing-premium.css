@@ -390,3 +390,169 @@
     transform: none;
   }
 }
+
+.commercialSkip {
+  position: fixed;
+  z-index: 20;
+  top: -70px;
+  left: 16px;
+  padding: 12px 16px;
+  background: #38f28e;
+  color: #03100a;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.commercialSkip:focus {
+  top: 16px;
+}
+
+.commercialPage a:focus-visible,
+.commercialPage button:focus-visible,
+.commercialPage summary:focus-visible {
+  outline: 2px solid #8abaff;
+  outline-offset: 4px;
+}
+
+.commercialPlanGuide {
+  width: min(760px, calc(100% - 40px));
+  margin: 0 auto 26px;
+  color: #9ea9a3;
+  font-size: 12px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.commercialPlanGuide strong {
+  color: #e6ebe7;
+}
+
+.commercialPlanFit {
+  display: block;
+  min-height: 32px;
+  margin: -8px 0 9px;
+  color: #d9b85e;
+  font: 700 8px var(--font-geist-mono), monospace;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.commercialPlans article {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.commercialPlans article:hover {
+  border-color: #d4af375e;
+  box-shadow: 0 34px 78px #000a;
+  transform: translateY(-5px);
+}
+
+.commercialPlans .commercialPopular:hover {
+  transform: translateY(-17px);
+}
+
+.commercialPlans form button {
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.commercialPlans form button:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+}
+
+.commercialAssurance {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 70px;
+  max-width: 1180px;
+  margin: 100px auto 0;
+  padding: 48px;
+  border: 1px solid #d4af3733;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0b1511, #050806);
+}
+
+.commercialAssurance > div > span {
+  color: #d9b85e;
+  font: 700 9px var(--font-geist-mono), monospace;
+  letter-spacing: 0.14em;
+}
+
+.commercialAssurance h2 {
+  margin: 15px 0 0;
+  color: #eff2ef;
+  font-size: clamp(30px, 3.4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.commercialAssurance ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.commercialAssurance li {
+  display: grid;
+  grid-template-columns: 0.65fr 1fr;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #ffffff12;
+}
+
+.commercialAssurance li:last-child {
+  border: 0;
+}
+
+.commercialAssurance strong {
+  color: #dce3df;
+  font-size: 12px;
+}
+
+.commercialAssurance li span {
+  color: #8f9b95;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .commercialPlans article:hover,
+  .commercialPlans .commercialPopular:hover {
+    transform: none;
+  }
+
+  .commercialAssurance {
+    grid-template-columns: 1fr;
+    gap: 34px;
+    margin-top: 72px;
+  }
+}
+
+@media (max-width: 760px) {
+  .commercialPlanGuide {
+    text-align: left;
+  }
+
+  .commercialAssurance {
+    margin: 64px 16px 0;
+    padding: 30px 22px;
+  }
+
+  .commercialAssurance li {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commercialSkip,
+  .commercialPlans article,
+  .commercialPlans form button {
+    transition: none;
+  }
+}

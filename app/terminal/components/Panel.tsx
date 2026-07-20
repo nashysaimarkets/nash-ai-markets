@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { DataProvenance } from "../lib/provenance.ts";
 import { DataProvenanceBlock } from "./DataProvenanceBlock";
 import { formatPanelTimestamp, panelMarketStatus, panelUnavailableMessage } from "../lib/terminal-state.ts";
+import { isVerifiedMarketTimestamp } from "../../lib/market-data.ts";
 
 type PanelProps = {
   eyebrow: string;
@@ -28,7 +29,9 @@ export function Panel({ eyebrow, title, subtitle, children, className, id, prove
           {provenance && marketStatus ? (
             <>
               <span className="panelMarketStatus" data-market-status={marketStatus.toLowerCase()}><i />{marketStatus}</span>
-              <time dateTime={provenance.lastUpdated}>Updated {formatPanelTimestamp(provenance.lastUpdated)}</time>
+              {isVerifiedMarketTimestamp(provenance.lastUpdated)
+                ? <time dateTime={provenance.lastUpdated}>Updated {formatPanelTimestamp(provenance.lastUpdated)}</time>
+                : <span>Awaiting first verified update</span>}
             </>
           ) : null}
         </div>

@@ -1,8 +1,17 @@
 import Image from "next/image";
+import type { Metadata } from "next";
+import { ConversionMetrics } from "./components/ConversionMetrics.tsx";
 import {
   founding100AvailabilityLabel,
   loadFounding100Availability,
 } from "./lib/server/founding-100.ts";
+
+export const metadata: Metadata = {
+  title: "S&P 500 Pre-Market Intelligence",
+  description:
+    "Build a calmer S&P 500 pre-market routine with verified context, conditional scenarios, visible event risk and clear decision permissions.",
+  alternates: { canonical: "/" },
+};
 
 const intelligenceLayers = [
   {
@@ -31,6 +40,43 @@ const workflow = [
   ["Plan", "Conditional scenarios and invalidation"],
   ["Decide", "Act, reduce risk or stand aside"],
 ];
+
+const trustStandards = [
+  ["Provider visibility", "Every member view keeps source status, freshness and unavailable states visible."],
+  ["Fail-closed decisions", "Incomplete evidence never becomes a fabricated signal, score or market level."],
+  ["Secure membership", "Checkout and subscription management are handled through Stripe-hosted billing."],
+  ["Risk-first language", "Scenarios remain conditional and educational, with no promise of trading outcomes."],
+] as const;
+
+const feedbackThemes = [
+  {
+    quote: "I want one repeatable place to review context, catalysts and invalidation before the session.",
+    role: "Active index trader",
+  },
+  {
+    quote: "The most useful decision is sometimes a clear reason to wait rather than force a setup.",
+    role: "Risk-focused futures trader",
+  },
+  {
+    quote: "Show me what is verified, what conflicts and what would change the plan.",
+    role: "Process-led options trader",
+  },
+] as const;
+
+const eliteReasons = [
+  ["01", "One decision hierarchy", "Move from provider state to scenarios, risk and next action without stitching together disconnected tools."],
+  ["02", "Full planning depth", "Review confirmations, invalidation and no-trade conditions alongside the evidence that produced them."],
+  ["03", "Provider transparency", "Keep freshness, availability and incomplete-input warnings visible throughout the workflow."],
+  ["04", "Diagnostic confidence", "Inspect sanitised provider health and engine synchronisation without exposing credentials or secrets."],
+  ["05", "Conditional thinking", "Prepare for competing market paths instead of treating one directional view as certainty."],
+  ["06", "Risk-aware restraint", "Preserve stand-aside as a valid outcome when evidence, volatility or event risk conflicts."],
+] as const;
+
+const trustBadges = [
+  ["Secure Payments", "Stripe-hosted checkout"],
+  ["Live Data Labels", "Freshness stays visible"],
+  ["Professional Analysis", "Evidence-led scenarios"],
+] as const;
 
 const included = [
   "Provider-backed futures and cross-market status",
@@ -84,9 +130,28 @@ export default async function Home() {
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
     "mailto:hello@nashaimarkets.com?subject=Manage%20my%20NASH%20AI%20subscription";
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "NASH AI Markets",
+    applicationCategory: "FinanceApplication",
+    operatingSystem: "Web",
+    url: "https://www.nashaimarkets.com/",
+    description:
+      "Pre-market planning software for verified context, conditional scenarios and visible trading risk.",
+    offers: [
+      { "@type": "Offer", name: "Free", price: "0", priceCurrency: "GBP" },
+      { "@type": "Offer", name: "Pro", price: "14.99", priceCurrency: "GBP" },
+      { "@type": "Offer", name: "Elite", price: "29.99", priceCurrency: "GBP" },
+    ],
+  };
 
   return (
     <main className="mcHome">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replaceAll("<", "\\u003c") }}
+      />
       <a className="mcSkip" href="#main-content">Skip to content</a>
 
       <header className="mcNav">
@@ -184,6 +249,27 @@ export default async function Home() {
           </div>
         </section>
 
+        <section className="mcProof" aria-labelledby="trust-title">
+          <header>
+            <p className="mcEyebrow">Trust is a product feature</p>
+            <h2 id="trust-title">Professional intelligence should show its limits.</h2>
+            <p>Credibility starts with transparent inputs, explicit uncertainty and a safe response when verified data is not available.</p>
+          </header>
+          <div className="mcProofGrid">
+            {trustStandards.map(([title, copy], index) => (
+              <article key={title}>
+                <span>0{index + 1}</span>
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mcTrustBadges" aria-label="Platform trust indicators">
+          {trustBadges.map(([title, copy], index) => <article key={title}><i aria-hidden="true">{index === 0 ? "S" : index === 1 ? "L" : "P"}</i><div><strong>{title}</strong><span>{copy}</span></div><b aria-hidden="true">✓</b></article>)}
+        </section>
+
         <section className="mcSection mcPlatform" id="platform">
           <header className="mcSectionHead">
             <div><p className="mcEyebrow">A better pre-market routine</p><h2>From market noise<br />to <em>decision clarity.</em></h2></div>
@@ -220,6 +306,13 @@ export default async function Home() {
             </ol>
           </div>
         </section>
+
+        <section className="mcEliteReasons" aria-labelledby="elite-reasons-title">
+          <header><div><p className="mcEyebrow">Why traders choose Elite</p><h2 id="elite-reasons-title">More depth where<br /><em>discipline matters.</em></h2></div><p>Elite extends the daily dashboard into a complete evidence, planning and diagnostic workflow. It does not promise outcomes or remove market risk.</p></header>
+          <div>{eliteReasons.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p><a href="/pricing" aria-label={`Compare Elite membership for ${title}`}>Explore Elite <b aria-hidden="true">→</b></a></article>)}</div>
+        </section>
+
+        <ConversionMetrics />
 
         <section className="mcSection mcScenarios" id="brief">
           <header className="mcSectionHead">
@@ -281,6 +374,24 @@ export default async function Home() {
           <p>NASH AI Markets supports preparation and risk awareness. It does not provide personal financial advice or promise trading outcomes.</p>
         </section>
 
+        <section className="mcVoices" aria-labelledby="feedback-title">
+          <header>
+            <p className="mcEyebrow">Member stories</p>
+            <h2 id="feedback-title">Trust earned before testimonials are published.</h2>
+            <p>These premium story slots remain placeholders until feedback, attribution and publication permission are verified. No endorsement has been invented.</p>
+          </header>
+          <div>
+            {feedbackThemes.map((item) => (
+              <figure key={item.role} className="mcTestimonialPlaceholder">
+                <div className="mcPlaceholderIdentity" aria-hidden="true"><i /><span><b /><b /></span></div>
+                <blockquote aria-label="Verified testimonial placeholder">“Verified member story reserved.”</blockquote>
+                <p>{item.quote}</p>
+                <figcaption>{item.role}<span>Research theme · not an endorsement</span></figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
         <section className="mcFaq" id="faq">
           <div><p className="mcEyebrow">Clear answers</p><h2>Before you begin.</h2><p>Futures and options are complex, high-risk products. Understanding the limits of any analysis is part of a sound process.</p></div>
           <div>
@@ -296,6 +407,8 @@ export default async function Home() {
           <a className="mcButton" href="/login">Enter Mission Control <span>↗</span></a>
         </section>
       </div>
+
+      <aside className="mcStickyCta" aria-label="Membership call to action"><div><strong>Build a calmer pre-market routine</strong><span>Free, Pro and Elite access available</span></div><a href="#membership">Compare plans <span aria-hidden="true">→</span></a></aside>
 
       <footer className="mcFooter">
         <div className="mcFooterTop">
