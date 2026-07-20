@@ -88,6 +88,61 @@ test("normalizes numeric strings, nested quote data, and ISO provider timestamps
   assert.deepEqual(adapter.getDiagnostics?.().requiredInstrumentsMissing, []);
 });
 
+test("accepts a canonical provider alias only for a single scoped quote record", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const timestamp = Date.parse(asOf) / 1000;
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const requested = url.searchParams.get("symbol");
+      return jsonResponse([{
+        symbol: `CANONICAL:${requested}`,
+        price: 100,
+        change: 1,
+        changePercentage: 0.25,
+        timestamp,
+      }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY"]);
+  assert.equal(adapter.getDiagnostics?.().schemaRecognized, true);
+  assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "success");
+});
+
+test("keeps endpoint HTTP categories sanitized when a secondary plan blocks access", async () => {
+  const asOf = new Date(Date.now() - 60_000).toISOString();
+  const timestamp = Date.parse(asOf) / 1000;
+  const adapter = createFinancialModelingPrepAdapter({
+    apiKey: TEST_API_KEY,
+    baseUrl: TEST_BASE_URL,
+    fetchImpl: async (input) => {
+      const url = new URL(String(input));
+      if (url.pathname.endsWith("/treasury-rates")) {
+        return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      }
+      const symbol = url.searchParams.get("symbol");
+      if (symbol === "DX-Y.NYB") return new Response(null, { status: 402 });
+      return jsonResponse([{ symbol: `ALIAS:${symbol}`, price: 100, change: 1, changePercentage: 0.25, timestamp }]);
+    },
+  });
+
+  const snapshot = await adapter.fetchSnapshot();
+  assert.ok(snapshot);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y"]);
+  assert.equal(adapter.getDiagnostics?.().resultCategory, "partial_success");
+  assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "mixed");
+  assert.equal(adapter.getDiagnostics?.().endpointStatusCategories.usDollarIndex, "plan_restricted");
+  assert.equal(JSON.stringify(adapter.getDiagnostics?.()).includes(TEST_API_KEY), false);
+});
+
 test("lets the gateway classify a valid older provider response as delayed", async () => {
   const now = Date.now();
   const adapter = createFinancialModelingPrepAdapter({

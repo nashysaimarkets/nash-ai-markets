@@ -12,6 +12,11 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>Provider</dt><dd>{diagnostics.provider.name}</dd></div>
       <div><dt>Connection</dt><dd>{diagnostics.provider.connection.replace("_", " ")}</dd></div>
       <div><dt>Result category</dt><dd>{diagnostics.provider.resultCategory.replaceAll("_", " ")}</dd></div>
+      <div><dt>HTTP status category</dt><dd>{diagnostics.provider.httpStatusCategory.replaceAll("_", " ")}</dd></div>
+      <div><dt>ES futures HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.sp500Futures.replaceAll("_", " ")}</dd></div>
+      <div><dt>VIX HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.vix.replaceAll("_", " ")}</dd></div>
+      <div><dt>Treasury HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.treasuryYields.replaceAll("_", " ")}</dd></div>
+      <div><dt>US Dollar HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.usDollarIndex.replaceAll("_", " ")}</dd></div>
       <div><dt>Response received</dt><dd>{diagnostics.provider.responseReceived ? "Yes" : "No"}</dd></div>
       <div><dt>Schema recognised</dt><dd>{diagnostics.provider.schemaRecognized ? "Yes" : "No"}</dd></div>
       <div><dt>Verified quote count</dt><dd>{diagnostics.provider.quoteCount}</dd></div>
@@ -33,6 +38,18 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>MARKET_DATA_PROVIDER</dt><dd>{diagnostics.provider.configuration.marketDataProviderConfigured ? "Present" : "Missing"}</dd></div>
       <div><dt>FMP_API_KEY</dt><dd>{diagnostics.provider.configuration.fmpApiKeyConfigured ? "Present" : "Missing"}</dd></div>
       <div><dt>FMP_API_BASE_URL</dt><dd>{diagnostics.provider.configuration.fmpApiBaseUrlConfigured ? "Present" : diagnostics.provider.configuration.defaultBaseUrlActive ? "Default active" : "Missing"}</dd></div>
+      <div><dt>FMP_SP500_FUTURES_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpSp500FuturesSymbolConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>FMP_VIX_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpVixSymbolConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>FMP_US_DOLLAR_INDEX_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpUsDollarIndexSymbolConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>FMP_REQUEST_TIMEOUT_MS</dt><dd>{diagnostics.provider.configuration.fmpRequestTimeoutConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>MARKET_DATA_MAX_RETRIES</dt><dd>{diagnostics.provider.configuration.marketDataMaxRetriesConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>MARKET_DATA_RETRY_DELAY_MS</dt><dd>{diagnostics.provider.configuration.marketDataRetryDelayConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>NEXT_PUBLIC_SUPABASE_URL</dt><dd>{diagnostics.provider.configuration.supabaseUrlConfigured ? "Present" : "Missing"}</dd></div>
+      <div><dt>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</dt><dd>{diagnostics.provider.configuration.supabasePublishableKeyConfigured ? "Present" : "Missing"}</dd></div>
+      <div><dt>SUPABASE_SERVICE_ROLE_KEY</dt><dd>{diagnostics.provider.configuration.supabaseServiceRoleKeyConfigured ? "Present" : "Missing"}</dd></div>
+      <div><dt>OPENAI_API_KEY</dt><dd>{diagnostics.provider.configuration.openAIApiKeyConfigured ? "Present" : "Missing"}</dd></div>
+      <div><dt>OPENAI_BRIEF_MODEL</dt><dd>{diagnostics.provider.configuration.openAIBriefModelConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>OPENAI_MORNING_BRIEF_MODEL</dt><dd>{diagnostics.provider.configuration.openAIMorningBriefModelConfigured ? "Present" : "Brief model/default active"}</dd></div>
       <div><dt>Provider failure</dt><dd>{diagnostics.provider.lastFailureCategory?.replaceAll("_", " ") ?? "None"}</dd></div>
       <div><dt>Safe failure reason</dt><dd>{diagnostics.provider.failureReason ?? "None"}</dd></div>
       <div><dt>OpenAI health</dt><dd>{diagnostics.integrations.openAI.status.replaceAll("_", " ")}</dd></div>

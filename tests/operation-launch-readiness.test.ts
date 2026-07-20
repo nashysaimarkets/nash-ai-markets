@@ -74,6 +74,7 @@ test("launch diagnostics cover OpenAI and email readiness without exposing secre
   assert.match(page, /getLaunchEmailReadiness/);
   assert.match(panel, /OpenAI health/);
   assert.match(panel, /Launch email/);
+  assert.match(panel, /OPENAI_API_KEY/);
   assert.match(diagnostics, /integrations:/);
-  assert.doesNotMatch(panel, /OPENAI_API_KEY|LAUNCH_EMAIL_FROM|error\.message/);
+  assert.doesNotMatch(panel, /process\.env|LAUNCH_EMAIL_FROM|error\.message/);
 });

@@ -28,7 +28,7 @@ release metadata.
 | `MARKET_DATA_PROVIDER` | Selects `fmp`, `preview` or generic provider | No | Deployment decision | Both | Diagnostics report expected provider; `preview` must remain non-actionable |
 | `FMP_API_KEY` | FMP Stable API query authentication | Yes | Licensed FMP account | Both when provider is `fmp` | Diagnostics report accepted/fresh data or sanitized failure; inspect no URL/log for `apikey` |
 | `FMP_API_BASE_URL` | Optional FMP Stable API base URL override; defaults to `https://financialmodelingprep.com/stable/` | No | Official FMP deployment configuration | Both when overriding the default | `npm run ops:check-env`; confirm HTTPS and no `apikey=` in value |
-| `FMP_REQUEST_TIMEOUT_MS` | Per-request timeout | No | Operations policy; default is 5000 | Both optional | Simulated timeout fails closed within expected window |
+| `FMP_REQUEST_TIMEOUT_MS` | Per-request timeout | No | Operations policy; default is 4500 | Both optional | Simulated timeout fails closed within expected window |
 | `FMP_SP500_FUTURES_SYMBOL` | Optional ES futures symbol override | No | Verified provider symbol catalogue | Both optional | Provider attribution and returned instrument match; do not guess a symbol |
 | `FMP_VIX_SYMBOL` | Optional VIX symbol override | No | Verified provider symbol catalogue | Both optional | Returned instrument/timestamp validates |
 | `FMP_US_DOLLAR_INDEX_SYMBOL` | Optional dollar-index override | No | Verified provider symbol catalogue | Both optional | Returned instrument/timestamp validates |
@@ -49,6 +49,13 @@ release metadata.
 `NEXT_PUBLIC_STRIPE_ELITE_CHECKOUT_URL` are legacy optional names and are not
 read by the current application. Do not configure them for the server-created
 Checkout flow.
+
+There is currently no environment variable for ES historical candles. The FMP
+adapter supplies quote snapshots only; `chartDataForStatus` deliberately
+returns an empty verified-candle state. Production OHLCV is therefore a release
+gate requiring an approved provider endpoint, subscription entitlement, schema,
+timeframe policy and regression tests. Do not point an undocumented URL at the
+chart or infer candles from quote snapshots.
 
 ## Build/tool variables
 

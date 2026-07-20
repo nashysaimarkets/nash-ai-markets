@@ -103,7 +103,15 @@ is optional and defaults to the official FMP Stable endpoint.
 
 The FMP adapter obtains US 2Y and 10Y Treasury rates from its Treasury endpoint;
 there are no Treasury symbol variables. The current adapter does not implement
-an economic calendar.
+an economic calendar or historical OHLCV candles. FMP may canonicalize a
+requested continuous-contract or index alias in a single-record quote response;
+the adapter accepts that canonical alias only when the response contains
+exactly one structurally valid record from the symbol-scoped request.
+
+Provider-plan HTTP 402 responses remain fail closed and are reported as
+`plan_restricted`. Resolving one requires the account owner to confirm endpoint
+entitlement or approve a correctly labelled alternative instrument; changing a
+symbol merely to avoid the plan restriction is not an acceptable workaround.
 
 ## Generic HTTP provider
 

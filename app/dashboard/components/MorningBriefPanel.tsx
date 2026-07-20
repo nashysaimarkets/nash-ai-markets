@@ -24,7 +24,9 @@ export async function MorningBriefPanel({
         <div><h3>Executive priorities</h3><ol>{morningBrief.priorities.map((priority) => <li key={priority}>{priority}</li>)}</ol></div>
         <div><h3>Session checklist</h3><ul>{morningBrief.checklist.map((item) => <li key={item}>{item}</li>)}</ul></div>
       </div>
-      {morningBrief.warning ? <footer><strong>Safety state:</strong> {morningBrief.warning}<span>Preview fixture timestamp: {morningBrief.asOf}</span></footer> : <footer><span>As of {morningBrief.asOf} · Refresh after material data or event changes.</span><span>{morningBrief.generation === "ai-assisted" ? "OpenAI summarized verified engine evidence only." : morningBrief.aiStatus === "not_requested" ? "Deterministic brief active for current access." : `Deterministic fallback active · ${morningBrief.aiStatus.replaceAll("_", " ")}.`}</span></footer>}
+      {morningBrief.warning
+        ? <footer><strong>Safety state:</strong> {morningBrief.warning}<span>{morningBrief.mode === "preview" ? `Preview fixture timestamp: ${morningBrief.asOf}` : "Awaiting first verified update."}</span></footer>
+        : <footer><span>As of {morningBrief.asOf} · Refresh after material data or event changes.</span><span>{morningBrief.generation === "ai-assisted" ? "OpenAI summarized verified engine evidence only." : morningBrief.aiStatus === "not_requested" ? "Deterministic brief active for current access." : `Deterministic fallback active · ${morningBrief.aiStatus.replaceAll("_", " ")}.`}</span></footer>}
     </section>
   );
 }

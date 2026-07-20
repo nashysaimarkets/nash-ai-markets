@@ -64,6 +64,18 @@ export type FmpEnvironmentDiagnostics = {
   marketDataProviderConfigured: boolean;
   fmpApiKeyConfigured: boolean;
   fmpApiBaseUrlConfigured: boolean;
+  fmpSp500FuturesSymbolConfigured: boolean;
+  fmpVixSymbolConfigured: boolean;
+  fmpUsDollarIndexSymbolConfigured: boolean;
+  fmpRequestTimeoutConfigured: boolean;
+  marketDataMaxRetriesConfigured: boolean;
+  marketDataRetryDelayConfigured: boolean;
+  supabaseUrlConfigured: boolean;
+  supabasePublishableKeyConfigured: boolean;
+  supabaseServiceRoleKeyConfigured: boolean;
+  openAIApiKeyConfigured: boolean;
+  openAIBriefModelConfigured: boolean;
+  openAIMorningBriefModelConfigured: boolean;
 };
 
 export function getFmpEnvironmentDiagnostics(): FmpEnvironmentDiagnostics {
@@ -71,6 +83,18 @@ export function getFmpEnvironmentDiagnostics(): FmpEnvironmentDiagnostics {
     marketDataProviderConfigured: Boolean(process.env.MARKET_DATA_PROVIDER?.trim()),
     fmpApiKeyConfigured: Boolean(process.env.FMP_API_KEY?.trim()),
     fmpApiBaseUrlConfigured: Boolean(process.env.FMP_API_BASE_URL?.trim()),
+    fmpSp500FuturesSymbolConfigured: Boolean(process.env.FMP_SP500_FUTURES_SYMBOL?.trim()),
+    fmpVixSymbolConfigured: Boolean(process.env.FMP_VIX_SYMBOL?.trim()),
+    fmpUsDollarIndexSymbolConfigured: Boolean(process.env.FMP_US_DOLLAR_INDEX_SYMBOL?.trim()),
+    fmpRequestTimeoutConfigured: Boolean(process.env.FMP_REQUEST_TIMEOUT_MS?.trim()),
+    marketDataMaxRetriesConfigured: Boolean(process.env.MARKET_DATA_MAX_RETRIES?.trim()),
+    marketDataRetryDelayConfigured: Boolean(process.env.MARKET_DATA_RETRY_DELAY_MS?.trim()),
+    supabaseUrlConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
+    supabasePublishableKeyConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim()),
+    supabaseServiceRoleKeyConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()),
+    openAIApiKeyConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),
+    openAIBriefModelConfigured: Boolean(process.env.OPENAI_BRIEF_MODEL?.trim()),
+    openAIMorningBriefModelConfigured: Boolean(process.env.OPENAI_MORNING_BRIEF_MODEL?.trim()),
   };
 }
 

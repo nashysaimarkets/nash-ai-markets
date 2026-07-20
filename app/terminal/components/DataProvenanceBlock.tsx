@@ -1,5 +1,6 @@
 import type { DataProvenance } from "../lib/provenance.ts";
 import { DataProvenanceBadge } from "./DataProvenanceBadge";
+import { isVerifiedMarketTimestamp } from "../../lib/market-data.ts";
 
 type DataProvenanceBlockProps = {
   provenance: DataProvenance;
@@ -18,7 +19,7 @@ export function DataProvenanceBlock({ provenance }: DataProvenanceBlockProps) {
       </div>
       <div className="dataProvenanceBlockMeta">
         <span>Last updated</span>
-        <strong>{provenance.lastUpdated}</strong>
+        <strong>{isVerifiedMarketTimestamp(provenance.lastUpdated) ? provenance.lastUpdated : "Unavailable"}</strong>
       </div>
       <div className="dataProvenanceBlockMeta dataProvenanceBlockMetaStatus">
         <span>Data status</span>

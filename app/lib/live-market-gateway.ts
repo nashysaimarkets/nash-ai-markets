@@ -142,6 +142,13 @@ export function createUnconfiguredMarketGatewayStatus(providerName = "Not config
     lastFailureCategory: null,
     providerAttempt: {
       resultCategory: "not_configured",
+      httpStatusCategory: "not_attempted",
+      endpointStatusCategories: {
+        sp500Futures: "not_attempted",
+        vix: "not_attempted",
+        treasuryYields: "not_attempted",
+        usDollarIndex: "not_attempted",
+      },
       responseReceived: false,
       schemaRecognized: false,
       quoteCount: 0,
@@ -202,6 +209,13 @@ export class LiveMarketGateway {
       lastFailureCategory: null,
       providerAttempt: {
         resultCategory: "not_attempted",
+        httpStatusCategory: "not_attempted",
+        endpointStatusCategories: {
+          sp500Futures: "not_attempted",
+          vix: "not_attempted",
+          treasuryYields: "not_attempted",
+          usDollarIndex: "not_attempted",
+        },
         responseReceived: false,
         schemaRecognized: false,
         quoteCount: 0,
@@ -247,6 +261,13 @@ export class LiveMarketGateway {
         this.state.lastFailureCategory = null;
         this.state.providerAttempt = this.provider.getDiagnostics?.() ?? {
           resultCategory: "success",
+          httpStatusCategory: "success",
+          endpointStatusCategories: {
+            sp500Futures: "success",
+            vix: "success",
+            treasuryYields: "success",
+            usDollarIndex: "success",
+          },
           responseReceived: true,
           schemaRecognized: true,
           quoteCount: normalized.quotes.length,

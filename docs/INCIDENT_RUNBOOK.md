@@ -98,6 +98,8 @@ Suggested severity:
    | Authentication rejected or plan restricted | Credential/account entitlement | Provider console, key status and subscribed endpoint access |
    | No response, timeout, rate limit or network interruption | Provider/transport | Provider status, quota, latency and approved egress |
    | Response received, schema unrecognised | Provider schema drift | Redacted response shape against adapter contract |
+   | HTTP 200, one quote, requested symbol differs | Provider canonical alias | Confirm the request was symbol-scoped; the adapter accepts only a single structurally valid alias |
+   | HTTP 402 for one instrument | Provider plan restriction | Confirm subscribed endpoint/instrument access; do not substitute a proxy without product approval |
    | Schema recognised, instruments missing | Symbols/plan/partial response | Required instrument list and configured symbol mappings |
    | Valid timestamp but stale/future | Provider clock/feed freshness | Provider timestamp, UTC conversion and market-hours context |
    | Provider healthy, cache status hit/coalesced | Normal request reuse | Wait for the 15-second window; do not trigger refresh storms |
@@ -119,6 +121,8 @@ Suggested severity:
 - authentication accepted;
 - timestamp valid, not future-dated and within the freshness window;
 - all five required quotes validate;
+- OHLCV remains empty unless a separately validated candle provider is
+  implemented; quote success does not satisfy the candle release gate;
 - fallback inactive and diagnostics match the snapshot;
 - a cache miss performs one provider load and subsequent requests inside the
   15-second window report hit or coalesced without changing the snapshot;

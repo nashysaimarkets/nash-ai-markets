@@ -1,4 +1,11 @@
-import type { MarketDataProvider, MarketProviderAttemptDiagnostics, MarketQuote, MarketSnapshot } from "../market-data.ts";
+import type {
+  MarketDataProvider,
+  MarketProviderAttemptDiagnostics,
+  MarketProviderEndpointStatusCategories,
+  MarketProviderHttpStatusCategory,
+  MarketQuote,
+  MarketSnapshot,
+} from "../market-data.ts";
 
 export const FINANCIAL_MODELING_PREP_PROVIDER_NAME = "Financial Modeling Prep";
 export const DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL = "https://financialmodelingprep.com/stable/";
@@ -105,8 +112,17 @@ function timestampMs(candidate: Record<string, unknown>): number | null {
 }
 
 function parseQuote(payload: unknown, expectedSymbol: string): FmpQuote | null {
-  const candidate = recordsFromPayload(payload, "quote")
+  const records = recordsFromPayload(payload, "quote");
+  const exactMatch = records
     .find((record) => typeof record.symbol === "string" && normalizedSymbol(record.symbol) === normalizedSymbol(expectedSymbol));
+  // FMP can canonicalize a requested continuous-contract/index alias in its
+  // single-record quote response. The request remains scoped to one symbol, so
+  // a single structurally valid record is safe to map to the requested
+  // instrument without exposing or trusting an arbitrary multi-record result.
+  const singleCanonicalAlias = records.length === 1 && typeof records[0]?.symbol === "string" && records[0].symbol.trim()
+    ? records[0]
+    : undefined;
+  const candidate = exactMatch ?? singleCanonicalAlias;
   if (!candidate) return null;
   const price = finiteNumber(candidate.price);
   const change = finiteNumber(candidate.change);
@@ -213,6 +229,32 @@ function createUrl(baseUrl: string, pathname: string, apiKey: string, symbol?: s
   return url;
 }
 
+function emptyEndpointStatusCategories(): MarketProviderEndpointStatusCategories {
+  return {
+    sp500Futures: "not_attempted",
+    vix: "not_attempted",
+    treasuryYields: "not_attempted",
+    usDollarIndex: "not_attempted",
+  };
+}
+
+function statusCategory(status: number): MarketProviderHttpStatusCategory {
+  if (status >= 200 && status < 300) return "success";
+  if (status === 401 || status === 403) return "authentication_error";
+  if (status === 402) return "plan_restricted";
+  if (status === 429) return "rate_limited";
+  if (status >= 500) return "server_error";
+  return "client_error";
+}
+
+function aggregateStatusCategory(
+  endpointStatuses: MarketProviderEndpointStatusCategories,
+): MarketProviderHttpStatusCategory {
+  const attempted = Object.values(endpointStatuses).filter((status) => status !== "not_attempted");
+  if (attempted.length === 0) return "not_attempted";
+  return new Set(attempted).size === 1 ? attempted[0]! : "mixed";
+}
+
 export function createFinancialModelingPrepAdapter(options: FinancialModelingPrepAdapterOptions): MarketDataProvider {
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? 4_500;
@@ -223,8 +265,11 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     usDollarIndex: options.symbols?.usDollarIndex || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.usDollarIndex,
   };
   const logger = options.logger ?? (() => undefined);
+  let endpointStatusCategories = emptyEndpointStatusCategories();
   let diagnostics: MarketProviderAttemptDiagnostics = {
     resultCategory: "not_attempted",
+    httpStatusCategory: "not_attempted",
+    endpointStatusCategories: { ...endpointStatusCategories },
     responseReceived: false,
     schemaRecognized: false,
     quoteCount: 0,
@@ -243,6 +288,8 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     async fetchSnapshot() {
       diagnostics = {
         resultCategory: "request_started",
+        httpStatusCategory: "not_attempted",
+        endpointStatusCategories: { ...emptyEndpointStatusCategories() },
         responseReceived: false,
         schemaRecognized: false,
         quoteCount: 0,
@@ -251,9 +298,11 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         providerTimestamp: null,
         failureReason: null,
       };
+      endpointStatusCategories = emptyEndpointStatusCategories();
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
       const request = async (
+        endpointKey: keyof MarketProviderEndpointStatusCategories,
         endpointName: FmpEndpointName,
         pathname: string,
         kind: FmpResponseKind,
@@ -263,7 +312,11 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         try {
           response = await fetchImpl(createUrl(baseUrl, pathname, options.apiKey, symbol), { cache: "no-store", signal: controller.signal });
           diagnostics.responseReceived = true;
+          endpointStatusCategories[endpointKey] = statusCategory(response.status);
         } catch (error) {
+          endpointStatusCategories[endpointKey] = error instanceof Error && error.name === "AbortError"
+            ? "timeout"
+            : "network_error";
           logger("market-provider:response", {
             endpointName,
             httpStatus: null,
@@ -309,10 +362,10 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
         const [esResult, vixResult, dollarResult, treasuryResult] = await Promise.allSettled([
-          request("ES futures", "quote", "quote", symbols.sp500Futures),
-          request("VIX", "quote", "quote", symbols.vix),
-          request("US Dollar Index", "quote", "quote", symbols.usDollarIndex),
-          request("Treasury rates", "treasury-rates", "treasury"),
+          request("sp500Futures", "ES futures", "quote", "quote", symbols.sp500Futures),
+          request("vix", "VIX", "quote", "quote", symbols.vix),
+          request("usDollarIndex", "US Dollar Index", "quote", "quote", symbols.usDollarIndex),
+          request("treasuryYields", "Treasury rates", "treasury-rates", "treasury"),
         ]);
         if (esResult.status === "rejected") throw esResult.reason;
         const es = parseQuote(esResult.value, symbols.sp500Futures);
@@ -402,6 +455,8 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         const found = quotes.map((quote) => quote.symbol);
         diagnostics = {
           resultCategory: secondaryAvailable ? "success" : "partial_success",
+          httpStatusCategory: aggregateStatusCategory(endpointStatusCategories),
+          endpointStatusCategories: { ...endpointStatusCategories },
           responseReceived: true,
           schemaRecognized: true,
           quoteCount: quotes.length,
@@ -421,6 +476,8 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         diagnostics = {
           ...diagnostics,
           resultCategory: category,
+          httpStatusCategory: aggregateStatusCategory(endpointStatusCategories),
+          endpointStatusCategories: { ...endpointStatusCategories },
           schemaRecognized: false,
           failureReason: category.replaceAll("_", " "),
         };

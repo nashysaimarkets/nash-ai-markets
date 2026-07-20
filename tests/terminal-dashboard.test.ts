@@ -339,7 +339,8 @@ test("maps panel provenance to dashboard market status indicators", () => {
   assert.equal(panelMarketStatus("PLACEHOLDER"), "Cached");
   assert.equal(panelMarketStatus("UNAVAILABLE"), "Offline");
   assert.equal(formatPanelTimestamp("2026-07-16T12:34:56.000Z"), "13:34:56 UK");
-  assert.equal(formatPanelTimestamp("invalid"), "Update unavailable");
+  assert.equal(formatPanelTimestamp("invalid"), "Awaiting first verified update");
+  assert.equal(formatPanelTimestamp("1970-01-01T00:00:00.000Z"), "Awaiting first verified update");
 });
 
 test("defines refresh, full-screen and help keyboard shortcuts", () => {

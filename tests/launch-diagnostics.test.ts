@@ -29,6 +29,13 @@ function status(overrides: Partial<MarketGatewayStatus> = {}): MarketGatewayStat
     lastFailureCategory: null,
     providerAttempt: {
       resultCategory: "success",
+      httpStatusCategory: "success",
+      endpointStatusCategories: {
+        sp500Futures: "success",
+        vix: "success",
+        treasuryYields: "success",
+        usDollarIndex: "success",
+      },
       responseReceived: true,
       schemaRecognized: true,
       quoteCount: 5,
@@ -59,6 +66,25 @@ test("reports safe provider schema and instrument metadata", () => {
   assert.deepEqual(result.provider.requiredInstrumentsMissing, []);
   assert.equal(result.provider.providerTimestamp, "2026-07-16T12:00:00.000Z");
   assert.equal(result.provider.classification, "live");
+});
+test("keeps partial provider coverage out of ready state", () => {
+  const gateway = status({
+    providerAttempt: {
+      ...status().providerAttempt,
+      resultCategory: "partial_success",
+      httpStatusCategory: "mixed",
+      endpointStatusCategories: {
+        ...status().providerAttempt.endpointStatusCategories,
+        usDollarIndex: "plan_restricted",
+      },
+      quoteCount: 4,
+      requiredInstrumentsFound: ["ES", "VIX", "US2Y", "US10Y"],
+      requiredInstrumentsMissing: ["DXY"],
+    },
+  });
+  const result = diagnostics(snapshot(), gateway);
+  assert.equal(result.checks.find((item) => item.id === "provider-coverage")?.status, "WARN");
+  assert.equal(result.readiness, "DEGRADED");
 });
 test("reports cache reuse and estimates FMP upstream calls avoided", () => {
   const current = snapshot();
@@ -111,6 +137,18 @@ test("reports only sanitized provider-variable presence", () => {
       marketDataProviderConfigured: true,
       fmpApiKeyConfigured: true,
       fmpApiBaseUrlConfigured: false,
+      fmpSp500FuturesSymbolConfigured: true,
+      fmpVixSymbolConfigured: false,
+      fmpUsDollarIndexSymbolConfigured: false,
+      fmpRequestTimeoutConfigured: false,
+      marketDataMaxRetriesConfigured: false,
+      marketDataRetryDelayConfigured: false,
+      supabaseUrlConfigured: true,
+      supabasePublishableKeyConfigured: true,
+      supabaseServiceRoleKeyConfigured: true,
+      openAIApiKeyConfigured: false,
+      openAIBriefModelConfigured: false,
+      openAIMorningBriefModelConfigured: false,
     },
     environment: { FMP_API_KEY: secret, FMP_API_BASE_URL: secret },
   });
@@ -118,6 +156,18 @@ test("reports only sanitized provider-variable presence", () => {
     marketDataProviderConfigured: true,
     fmpApiKeyConfigured: true,
     fmpApiBaseUrlConfigured: false,
+    fmpSp500FuturesSymbolConfigured: true,
+    fmpVixSymbolConfigured: false,
+    fmpUsDollarIndexSymbolConfigured: false,
+    fmpRequestTimeoutConfigured: false,
+    marketDataMaxRetriesConfigured: false,
+    marketDataRetryDelayConfigured: false,
+    supabaseUrlConfigured: true,
+    supabasePublishableKeyConfigured: true,
+    supabaseServiceRoleKeyConfigured: true,
+    openAIApiKeyConfigured: false,
+    openAIBriefModelConfigured: false,
+    openAIMorningBriefModelConfigured: false,
     defaultBaseUrlActive: true,
   });
   assert.equal(result.provider.lastFailureCategory, "authentication_rejected");

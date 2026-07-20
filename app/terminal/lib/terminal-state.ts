@@ -1,4 +1,4 @@
-import type { MarketDataStatus } from "../../lib/market-data.ts";
+import { isVerifiedMarketTimestamp, type MarketDataStatus } from "../../lib/market-data.ts";
 import type { DataStatus } from "./provenance.ts";
 
 export type PanelMarketStatus = "Live" | "Delayed" | "Cached" | "Offline";
@@ -59,8 +59,8 @@ export function panelMarketStatus(status: DataStatus): PanelMarketStatus {
 }
 
 export function formatPanelTimestamp(timestamp: string): string {
+  if (!isVerifiedMarketTimestamp(timestamp)) return "Awaiting first verified update";
   const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return "Update unavailable";
   return `${new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/London",
     hour: "2-digit",
