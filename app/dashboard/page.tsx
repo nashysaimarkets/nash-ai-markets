@@ -20,11 +20,13 @@ import { EventCountdown } from "./components/EventCountdown.tsx";
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
 import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
+import { TodaysBullseyePlan } from "./components/TodaysBullseyePlan.tsx";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
+import { commandCentreState, marketSessionState, primaryLevel } from "./lib/command-centre.ts";
 import { loadAccuracySummary } from "./lib/performance-history.ts";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Member Dashboard", description: "Your daily Bullseye market mission and membership access.", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "BULLSEYE Command Centre", description: "Authenticated market intelligence, scenario analysis and verified data status.", robots: { index: false, follow: false } };
 
 export default async function MemberDashboard() {
   const now = currentServerTimestamp();
@@ -99,20 +101,26 @@ export default async function MemberDashboard() {
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(market.snapshot.asOf))
     : "Not timestamped";
   const expectedMove = "Not supplied";
+  const session = marketSessionState(now);
+  const centreState = commandCentreState(market.snapshot, market.gatewayStatus, session.label);
+  const support = primaryLevel(market.snapshot, "support");
+  const resistance = primaryLevel(market.snapshot, "resistance");
+  const stateCopy = { live: "Verified current inputs are available.", delayed: "Verified inputs are delayed; check the timestamp before use.", stale: "The last snapshot is too old for current analytics.", unavailable: "The provider is unavailable; current analytics are withheld.", partial: "Some required instruments or levels are missing.", closed: "The major session is closed; the last verified context remains labelled." }[centreState];
 
   return <MemberShell active="dashboard">
     <div className="memberDashboardShell eliteDashboard">
       <section className="eliteCommandHeader">
         <BullseyeSignature />
         <div className="eliteCommandIntro">
-          <span className="eliteEyebrow">NASH AI MARKETS <i /> BULLSEYE INTELLIGENCE</span>
-          <h1>Your market edge,<br /><em>distilled.</em></h1>
+          <span className="eliteEyebrow">NASH AI MARKETS <i /> ELITE INTELLIGENCE</span>
+          <h1>BULLSEYE<br /><em>Command Centre.</em></h1>
           <p><strong>Good {new Date(now).getUTCHours() < 12 ? "morning" : new Date(now).getUTCHours() < 18 ? "afternoon" : "evening"}, {name}.</strong> {accessCopy}</p>
+          <span className="eliteAdviceLabel">Market intelligence, not financial advice</span>
         </div>
         <div className="eliteHeaderMeta">
           <div className={`eliteFeedState is${market.snapshot.status}`}><i /><span>{market.snapshot.status}</span><strong>{market.gatewayStatus.providerName}</strong></div>
           <div><span>AS OF</span><strong>{marketTimestamp} UK</strong></div>
-          <div><span>ACCESS</span><strong>{access.effectiveTier.toUpperCase()}</strong></div>
+          <div><span>SESSION</span><strong>{session.label}</strong><small>{session.detail}</small></div>
         </div>
         <div className="eliteCommandActions">
           <Link href="/terminal" className="elitePrimaryAction"><span><small>FULL WORKSPACE</small>Open terminal</span><b aria-hidden="true">→</b></Link>
@@ -120,6 +128,8 @@ export default async function MemberDashboard() {
           {access.tier === "pro" || access.tier === "elite" ? <Link href="/founding-member" className="eliteTertiaryAction">Founding onboarding <span aria-hidden="true">→</span></Link> : null}
         </div>
       </section>
+
+      <section className={`commandDataNotice is-${centreState}`} aria-live="polite"><div><strong>{centreState.toUpperCase()} DATA STATE</strong><span>{stateCopy}</span></div><div><span>Last verified update</span><strong>{marketTimestamp} UK</strong></div>{access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Data diagnostics →</Link> : null}</section>
 
       <section className="eliteStatusDeck executiveKpiStrip" aria-label="Market status and decision summary">
         <article className="elitePrimaryStatus">
@@ -136,6 +146,8 @@ export default async function MemberDashboard() {
           <span>BULLSEYE CONFIDENCE</span><strong>{mission.confidence === null ? "Decision engine initialising" : mission.confidence}<em>{mission.confidence === null ? "" : "/100"}</em></strong><div className="eliteConfidenceTrack"><i style={{ width: `${mission.confidence ?? 0}%` }} /></div><small>{mission.available ? "Verified engine output" : "Activates after provider verification"}</small>
         </article>
       </section>
+
+      <TodaysBullseyePlan verified={verifiedMarket} dataStatus={market.snapshot.status} stateLabel={session.label} confidence={mission.confidence} bias={decision.marketBias} risk={decision.riskRating} expectedMove={expectedMove} support={support} resistance={resistance} bullishTrigger={bullishScenario.trigger.level ? `${bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} at ${bullishScenario.trigger.level}` : bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} bearishTrigger={bearishScenario.trigger.level ? `${bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} at ${bearishScenario.trigger.level}` : bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} invalidation={decision.invalidationConditions[0]?.level ?? decision.invalidationConditions[0]?.kind.replaceAll("_", " ").toLowerCase() ?? "Awaiting verified input"} noTradeConditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined} summary={market.snapshot.summary} />
 
       <BullseyeMissionControl
         verified={verifiedMarket}
@@ -225,6 +237,7 @@ export default async function MemberDashboard() {
         <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>
         {access.tier === "elite" ? <article className="dailyCard fullyUnlocked"><TerminalBadge label="Elite unlocked" tone="warning" /><h3>Full decision workflow available</h3><p>Intelligence, decisions, structured planning and launch diagnostics are included in your current membership.</p><Link href="/terminal">Open the Elite terminal →</Link></article> : <LockedPremiumCard tier={offer!.targetTier} title={offer!.targetTier === "pro" ? "Explore the explainable decision workflow" : "Explore structured planning and diagnostics"} value={offer!.targetTier === "pro" ? "See how Bullseye turns verified market inputs into explainable confidence, bias and trade permission." : "See how Elite converts a deterministic decision into disciplined participation, confirmations and review triggers."} benefits={offer!.targetTier === "pro" ? ["Explainable scores", "Decision permission", "Conflict warnings"] : ["Structured planner", "Event-risk controls", "Launch diagnostics"]} previewEligible={offer!.eligible} previewAvailable={previewState.available} previewCadence={offer!.cadence} />}
       </section>
+      <details className="commandMethodology"><summary><span>Methodology &amp; data labels</span><small>How BULLSEYE turns verified observations into derived intelligence</small></summary><div><p><strong>Observed</strong> values come from the current provider snapshot. <strong>Derived</strong> scores, scenarios and risk classifications are deterministic analytics calculated from those inputs.</p><p>Delayed, stale, partial or unavailable inputs keep directional output visibly restricted. BULLSEYE is educational market intelligence, not personalised financial advice.</p><nav><Link href="/risk-disclaimer">Risk disclosure</Link><Link href="/help">Help</Link>{access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Sanitized diagnostics</Link> : null}</nav></div></details>
     </div>
   </MemberShell>;
 }

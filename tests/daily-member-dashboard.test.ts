@@ -7,6 +7,7 @@ import { createStructuredTradePlan } from "../app/lib/structured-trade-planner.t
 import { createTradingDecision } from "../app/lib/trading-decision-engine.ts";
 import { buildDailyMission, formatEventCountdown, memberDisplayName, selectNextEconomicEvent } from "../app/dashboard/lib/daily-dashboard.ts";
 import { summarizeVerifiedOutcomes, type VerifiedOutcome } from "../app/dashboard/lib/performance-history.ts";
+import { commandCentreState, marketSessionState, primaryLevel } from "../app/dashboard/lib/command-centre.ts";
 
 const NOW = Date.parse("2026-07-17T12:00:00.000Z");
 
@@ -86,6 +87,22 @@ test("next event selects only the nearest future event with a complete timestamp
 test("event area returns unavailable rather than inventing an event", () => {
   assert.equal(selectNextEconomicEvent([], NOW), null);
   assert.equal(selectNextEconomicEvent([{ time: "13:30 UK", name: "No date", risk: "HIGH" }], NOW), null);
+});
+
+test("command centre classifies live, delayed, stale, unavailable and partial inputs", () => {
+  const gateway = { providerName: "Verified provider", connectionStatus: "connected" as const, lastSuccessfulUpdate: null, lastAttemptAt: null, dataAgeMs: 60_000, refreshLatencyMs: null, fallbackActive: false, reconnectAttempts: 0, lastFailureCategory: null, responseReceived: true, schemaRecognized: true, quoteCount: 5, requiredInstrumentsFound: ["ES", "VIX", "US2Y", "US10Y", "DXY"], requiredInstrumentsMissing: [], providerTimestamp: null, lastResultCategory: "success" as const, lastFailureReason: null };
+  assert.equal(commandCentreState(snapshot(), gateway, "London session"), "live");
+  assert.equal(commandCentreState(snapshot({ status: "DELAYED" }), gateway, "London session"), "delayed");
+  assert.equal(commandCentreState(snapshot(), { ...gateway, dataAgeMs: 31 * 60_000 }, "London session"), "stale");
+  assert.equal(commandCentreState(snapshot({ status: "UNAVAILABLE" }), { ...gateway, connectionStatus: "offline" }, "London session"), "unavailable");
+  assert.equal(commandCentreState(snapshot({ quotes: snapshot().quotes.slice(0, 2) }), gateway, "London session"), "partial");
+});
+
+test("session and primary levels use only deterministic time and supplied levels", () => {
+  assert.equal(marketSessionState(Date.parse("2026-07-20T09:00:00Z")).label, "London session");
+  assert.equal(marketSessionState(Date.parse("2026-07-19T09:00:00Z")).label, "Weekend closed");
+  assert.equal(primaryLevel(snapshot(), "support")?.value, "6280");
+  assert.equal(primaryLevel(snapshot({ levels: [] }), "support"), null);
 });
 
 test("member welcome prefers verified profile name and safely falls back to email", () => {

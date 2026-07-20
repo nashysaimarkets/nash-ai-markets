@@ -73,7 +73,7 @@ export function BullseyeMissionControl({
     <section className="bullseyeMissionControl" aria-labelledby="mission-control-title">
       <header className="bullseyeMissionControlHeader">
         <div>
-          <span className="eliteEyebrow">AI COMMAND CENTRE</span>
+          <span className="eliteEyebrow">DECISION-SUPPORT HIERARCHY</span>
           <h2 id="mission-control-title">Bullseye Mission Control</h2>
           <p>One-glance decision support built from verified, derived engine analytics.</p>
         </div>
@@ -88,19 +88,19 @@ export function BullseyeMissionControl({
         <article className="missionControlLead">
           <div className="missionControlLeadTop">
             <div>
-              <span>TODAY&apos;S COMMAND</span>
-              <strong>{verified ? nextAction : "Stand by for verified inputs"}</strong>
-              <p>{verified ? marketCondition : "Bullseye is validating the provider before publishing a market stance."}</p>
+              <span>PRIMARY BIAS</span>
+              <strong>{verified ? directionalBias : "Stand by for verified inputs"}</strong>
+              <p>{verified ? `${marketCondition}. ${nextAction}` : "Bullseye is validating the provider before publishing a market stance."}</p>
             </div>
             <div className="missionConfidenceDial" style={{ "--mission-confidence": `${confidenceScore * 3.6}deg` } as React.CSSProperties}>
               <div><strong>{confidence === null ? "—" : confidenceScore}</strong><span>CONFIDENCE</span></div>
             </div>
           </div>
           <dl className="missionControlFacts">
-            <div><dt>Directional context</dt><dd>{verified ? directionalBias : "Not inferred"}</dd></div>
+            <div><dt>Engine strength</dt><dd>{verified ? `${confidenceScore} / 100` : "Unavailable"}</dd></div>
             <div><dt>Trade permission</dt><dd>{verified ? tradePermission : "NO-TRADE"}</dd></div>
             <div><dt>Volatility regime</dt><dd>{verified ? volatilityRegime : "Unverified"}</dd></div>
-            <div><dt>Principal risk</dt><dd>{verified ? keyRisk : "Provider validation"}</dd></div>
+            <div><dt>Data quality</dt><dd>{verified ? `${dataStatus.toLowerCase()} · verified` : "Fail-closed"}</dd></div>
           </dl>
         </article>
 

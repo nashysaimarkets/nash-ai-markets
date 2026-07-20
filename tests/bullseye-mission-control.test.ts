@@ -25,3 +25,14 @@ test("Mission Control renders an intentional fail-closed unavailable state", asy
   assert.match(component, /Do not infer direction from incomplete data/);
   assert.match(component, /verified \? item\.score : "—"/);
 });
+
+test("dashboard includes the premium plan, trust labels and protected diagnostics entry", async () => {
+  const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
+  const plan = await readFile(new URL("../app/dashboard/components/TodaysBullseyePlan.tsx", import.meta.url), "utf8");
+  assert.match(dashboard, /BULLSEYE Command Centre/);
+  assert.match(dashboard, /Market intelligence, not financial advice/);
+  assert.match(dashboard, /access\.features\["launch-diagnostics"\]/);
+  assert.match(plan, /OBSERVED LEVELS/);
+  assert.match(plan, /DERIVED SCENARIOS/);
+  assert.match(plan, /Awaiting verified input/);
+});
