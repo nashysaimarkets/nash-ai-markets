@@ -17,6 +17,7 @@ import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } fr
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
+import { EliteScenarioCard } from "./components/EliteScenarioCard.tsx";
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
 import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
@@ -107,6 +108,14 @@ export default async function MemberDashboard() {
   const support = primaryLevel(market.snapshot, "support");
   const resistance = primaryLevel(market.snapshot, "resistance");
   const stateCopy = { live: "Verified current inputs are available.", delayed: "Verified inputs are delayed; check the timestamp before use.", stale: "The last snapshot is too old for current analytics.", unavailable: "The provider is unavailable; current analytics are withheld.", partial: "Some required instruments or levels are missing.", closed: "The major session is closed; the last verified context remains labelled." }[centreState];
+  const statusPresentation = {
+    live: { label: "Live verified", symbol: "✓", detail: "Current provider inputs cleared" },
+    delayed: { label: "Delayed", symbol: "D", detail: "Timestamp review required" },
+    stale: { label: "Stale", symbol: "!", detail: "Current analytics withheld" },
+    unavailable: { label: "Unavailable", symbol: "×", detail: "Provider safety state active" },
+    partial: { label: "Partial", symbol: "P", detail: "Required inputs incomplete" },
+    closed: { label: "Market closed", symbol: "C", detail: "Last context remains labelled" },
+  }[centreState];
 
   return <MemberShell active="dashboard">
     <div className="memberDashboardShell eliteDashboard">
@@ -119,8 +128,8 @@ export default async function MemberDashboard() {
           <span className="eliteAdviceLabel">Market intelligence, not financial advice</span>
         </div>
         <div className="eliteHeaderMeta">
-          <div className={`eliteFeedState is${market.snapshot.status}`}><i /><span>{market.snapshot.status}</span><strong>{market.gatewayStatus.providerName}</strong></div>
-          <div><span>AS OF</span><strong>{marketTimestamp} UK</strong></div>
+          <div className={`eliteFeedState is${market.snapshot.status}`}><i aria-hidden="true" /><span>DATA FEED</span><strong>{statusPresentation.label}</strong><small>{market.gatewayStatus.providerName}</small></div>
+          <div><span>LAST VERIFIED</span><strong>{marketTimestamp} UK</strong><small>{statusPresentation.detail}</small></div>
           <div><span>SESSION</span><strong>{session.label}</strong><small>{session.detail}</small></div>
         </div>
         <div className="eliteCommandActions">
@@ -130,7 +139,11 @@ export default async function MemberDashboard() {
         </div>
       </section>
 
-      <section className={`commandDataNotice is-${centreState}`} aria-live="polite"><div><strong>{centreState.toUpperCase()} DATA STATE</strong><span>{stateCopy}</span></div><div><span>Last verified update</span><strong>{marketTimestamp} UK</strong></div>{access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Data diagnostics →</Link> : null}</section>
+      <section className={`commandDataNotice is-${centreState}`} aria-live="polite" aria-label={`${statusPresentation.label} market data state`}>
+        <div className="commandStateIdentity"><i aria-hidden="true">{statusPresentation.symbol}</i><div><strong>{statusPresentation.label}</strong><span>{stateCopy}</span></div></div>
+        <div><span>Last verified update</span><strong>{marketTimestamp} UK</strong></div>
+        {access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Data diagnostics <span aria-hidden="true">→</span></Link> : null}
+      </section>
 
       <section className="eliteStatusDeck executiveKpiStrip" aria-label="Market status and decision summary">
         <article className="elitePrimaryStatus">
@@ -138,13 +151,13 @@ export default async function MemberDashboard() {
           <div className={`elitePermission is${decision.tradePermission.replace("-", "")}`}><span>TRADE PERMISSION</span><strong>{verifiedMarket ? decision.tradePermission : "NO-TRADE"}</strong><small>{market.gatewayStatus.fallbackActive ? "Fallback active" : "Fail-closed controls active"}</small></div>
         </article>
         <article className="eliteMetricCard">
-          <span>RISK RATING</span><strong>{verifiedMarket ? decision.riskRating : "—"}</strong><div className="eliteRiskScale" data-value={verifiedMarket ? decision.riskRating : "none"}><i /><i /><i /><i /></div><small>{verifiedMarket ? `${market.snapshot.risk.toLowerCase()} provider risk` : "Not rated"}</small>
+          <span><i aria-hidden="true">R</i> RISK RATING</span><strong>{verifiedMarket ? decision.riskRating : "Unrated"}</strong><div className="eliteRiskScale" data-value={verifiedMarket ? decision.riskRating : "none"}><i /><i /><i /><i /></div><small>{verifiedMarket ? `${market.snapshot.risk.toLowerCase()} provider risk` : "Activates after required inputs verify"}</small>
         </article>
         <article className="eliteMetricCard">
-          <span>EXPECTED MOVE</span><strong>{expectedMove}</strong><small>Shown only with a verified provider input</small>
+          <span><i aria-hidden="true">E</i> EXPECTED MOVE</span><strong>{expectedMove}</strong><small>Intentionally withheld without a provider-supplied field</small>
         </article>
         <article className="eliteMetricCard eliteConfidenceCard">
-          <span>BULLSEYE CONFIDENCE</span><strong>{mission.confidence === null ? "Decision engine initialising" : mission.confidence}<em>{mission.confidence === null ? "" : "/100"}</em></strong><div className="eliteConfidenceTrack"><i style={{ width: `${mission.confidence ?? 0}%` }} /></div><small>{mission.available ? "Verified engine output" : "Activates after provider verification"}</small>
+          <span><i aria-hidden="true">C</i> BULLSEYE CONFIDENCE</span><strong>{mission.confidence === null ? "Verification pending" : mission.confidence}<em>{mission.confidence === null ? "" : "/100"}</em></strong><div className="eliteConfidenceTrack"><i style={{ width: `${mission.confidence ?? 0}%` }} /></div><small>{mission.available ? "Verified deterministic output" : "No confidence inferred from incomplete evidence"}</small>
         </article>
       </section>
 
@@ -190,17 +203,9 @@ export default async function MemberDashboard() {
 
       <MarketStructureVisual levels={market.snapshot.levels} scores={intelligence.scores} status={market.snapshot.status} directionalBias={decision.marketBias} confidence={mission.confidence} />
 
-      <section className="eliteScenarioGrid" aria-label="Bullish and bearish scenarios">
-        <article className="eliteScenario isBullish">
-          <header><div><span>BULLISH CASE</span><h2>Upside scenario</h2></div><strong>{verifiedMarket ? `${bullishScenario.probability}%` : "—"}</strong></header>
-          <div className="eliteScenarioMeter"><i style={{ width: `${verifiedMarket ? bullishScenario.probability : 0}%` }} /></div>
-          <dl><div><dt>Trigger</dt><dd>{verifiedMarket ? bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase() : "Waiting for verified provider input"}</dd></div><div><dt>Level</dt><dd>{verifiedMarket ? bullishScenario.trigger.level ?? "Range confirmation" : "—"}</dd></div><div><dt>Invalidation</dt><dd>{verifiedMarket ? bullishScenario.invalidation.level ?? bullishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase() : "—"}</dd></div></dl>
-        </article>
-        <article className="eliteScenario isBearish">
-          <header><div><span>BEARISH CASE</span><h2>Downside scenario</h2></div><strong>{verifiedMarket ? `${bearishScenario.probability}%` : "—"}</strong></header>
-          <div className="eliteScenarioMeter"><i style={{ width: `${verifiedMarket ? bearishScenario.probability : 0}%` }} /></div>
-          <dl><div><dt>Trigger</dt><dd>{verifiedMarket ? bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase() : "Waiting for verified provider input"}</dd></div><div><dt>Level</dt><dd>{verifiedMarket ? bearishScenario.trigger.level ?? "Range confirmation" : "—"}</dd></div><div><dt>Invalidation</dt><dd>{verifiedMarket ? bearishScenario.invalidation.level ?? bearishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase() : "—"}</dd></div></dl>
-        </article>
+      <section className="eliteScenarioGrid" aria-label="Conditional bullish and bearish scenarios">
+        <EliteScenarioCard tone="bullish" verified={verifiedMarket} probability={bullishScenario.probability} trigger={bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bullishScenario.trigger.level ?? "Range confirmation"} invalidation={bullishScenario.invalidation.level ?? bullishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
+        <EliteScenarioCard tone="bearish" verified={verifiedMarket} probability={bearishScenario.probability} trigger={bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bearishScenario.trigger.level ?? "Range confirmation"} invalidation={bearishScenario.invalidation.level ?? bearishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
       </section>
 
       <section className={`executiveMorningBrief eliteMorningBrief executiveMorningBrief-${morningBrief.mode}`} aria-labelledby="morning-brief-title">
