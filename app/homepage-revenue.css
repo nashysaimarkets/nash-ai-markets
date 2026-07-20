@@ -522,3 +522,197 @@
 @media (prefers-reduced-motion: reduce) {
   .mcMissionPreview { animation: none; }
 }
+
+.mcProof,
+.mcVoices {
+  width: min(1240px, calc(100% - 64px));
+  margin: auto;
+  padding: 118px 0;
+}
+
+.mcProof {
+  display: grid;
+  grid-template-columns: 0.75fr 1.25fr;
+  gap: clamp(56px, 8vw, 110px);
+  border-bottom: 1px solid var(--mc-line);
+}
+
+.mcProof > header h2,
+.mcVoices > header h2 {
+  margin: 18px 0 20px;
+  font-size: clamp(38px, 4.4vw, 58px);
+  font-weight: 520;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.mcProof > header > p:last-child,
+.mcVoices > header > p:last-child {
+  max-width: 620px;
+  color: var(--mc-muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.mcProofGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--mc-line);
+}
+
+.mcProofGrid article {
+  min-height: 210px;
+  padding: 28px;
+  background: linear-gradient(145deg, #0b1310, #060907);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.mcProofGrid article:hover {
+  z-index: 1;
+  background: linear-gradient(145deg, #102019, #070b09);
+  transform: translateY(-3px);
+}
+
+.mcProofGrid article > span {
+  color: var(--mc-gold);
+  font: 700 8px var(--font-geist-mono), monospace;
+}
+
+.mcProofGrid h3 {
+  margin: 40px 0 10px;
+  font-size: 17px;
+}
+
+.mcProofGrid p {
+  margin: 0;
+  color: var(--mc-muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.mcVoices > header {
+  display: grid;
+  grid-template-columns: 0.55fr 1fr;
+  column-gap: 60px;
+  align-items: end;
+}
+
+.mcVoices > header .mcEyebrow {
+  grid-column: 1 / -1;
+}
+
+.mcVoices > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 55px;
+}
+
+.mcVoices figure {
+  position: relative;
+  min-height: 270px;
+  margin: 0;
+  padding: 34px 30px;
+  border: 1px solid var(--mc-line);
+  background: linear-gradient(150deg, #0d1512, #060907);
+  box-shadow: 0 22px 55px #0005;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.mcVoices figure::before {
+  content: "“";
+  color: #d8b87555;
+  font: 400 64px Georgia, serif;
+  line-height: 0.8;
+}
+
+.mcVoices figure:hover {
+  border-color: #d8b87555;
+  transform: translateY(-5px);
+}
+
+.mcVoices blockquote {
+  margin: 26px 0 38px;
+  color: #dfe5e1;
+  font-size: 17px;
+  line-height: 1.55;
+  letter-spacing: -0.015em;
+}
+
+.mcVoices figcaption {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  left: 30px;
+  color: var(--mc-green);
+  font: 700 9px var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+
+.mcVoices figcaption span {
+  display: block;
+  margin-top: 6px;
+  color: var(--mc-dim);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 900px) {
+  .mcProof {
+    grid-template-columns: 1fr;
+  }
+
+  .mcVoices > div {
+    grid-template-columns: 1fr;
+  }
+
+  .mcVoices figure {
+    min-height: 230px;
+  }
+}
+
+@media (max-width: 760px) {
+  .mcProof,
+  .mcVoices {
+    width: calc(100% - 32px);
+    padding: 86px 0;
+  }
+
+  .mcProof {
+    gap: 38px;
+  }
+
+  .mcProofGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .mcProofGrid article {
+    min-height: 170px;
+    padding: 23px;
+  }
+
+  .mcProofGrid h3 {
+    margin-top: 28px;
+  }
+
+  .mcVoices > header {
+    display: block;
+  }
+
+  .mcVoices > div {
+    margin-top: 38px;
+  }
+
+  .mcProofGrid article:hover,
+  .mcVoices figure:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mcProofGrid article,
+  .mcVoices figure {
+    transition: none;
+  }
+}

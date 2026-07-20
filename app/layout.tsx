@@ -80,6 +80,9 @@ export const metadata: Metadata = {
     address: false,
     email: false,
   },
+  other: {
+    "theme-color": "#050807",
+  },
 };
 
 export default function RootLayout({

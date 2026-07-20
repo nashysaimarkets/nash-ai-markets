@@ -18,19 +18,21 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
   const pro = founding100AvailabilityLabel(availability.proRemaining);
   const elite = founding100AvailabilityLabel(availability.eliteRemaining);
   return <>
+    <p className="commercialPlanGuide"><strong>Not sure where to start?</strong> Free explores the workflow, Pro unlocks the complete daily intelligence layer, and Elite adds the full planning and diagnostics workspace.</p>
     <div className="commercialToggle" role="group" aria-label="Billing interval">
       <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>Monthly</button>
       <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Annual</button>
     </div>
     <section className="commercialPlans" aria-label="Membership plans">
-      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><p>Core market overview with a measured path into premium intelligence.</p><a href="/login">Start free</a></article>
-      <article className="commercialPopular"><b>MOST POPULAR</b><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>PRO</span></div><h2>{annual ? "£149/year" : "£14.99/month"}</h2><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start Pro Membership</button></form></article>
+      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><small className="commercialPlanFit">For exploring the Bullseye method</small><p>Core market overview with a measured path into premium intelligence.</p><a href="/login">Start free</a></article>
+      <article className="commercialPopular"><b>MOST POPULAR</b><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>PRO</span></div><h2>{annual ? "£149/year" : "£14.99/month"}</h2><small className="commercialPlanFit">For a complete daily pre-market routine</small><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start Pro Membership</button></form></article>
       <article className="commercialElite">
         <div className="commercialPlanBadges">
           <Image src="/brand/badge-elite.svg" width={220} height={56} alt="Elite membership" />
           <Image src="/brand/badge-founding-100.svg" width={270} height={56} alt="Founding 100 member programme" />
         </div>
         <h2>{annual ? "£299/year" : "£29.99/month"}</h2>
+        <small className="commercialPlanFit">For advanced planning and diagnostics</small>
         <p>Full intelligence, planning and diagnostic access for the complete workflow.</p>
         <div className={`commercialFounding${elite.full ? " isFull" : ""}`}><strong>FOUNDING 100 ELITE</strong><span>{elite.label}</span><small>{elite.detail}</small></div>
         <form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "elite_year" : "elite_month"} /><button type="submit">Unlock Elite</button></form>

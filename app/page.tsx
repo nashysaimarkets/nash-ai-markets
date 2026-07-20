@@ -1,8 +1,16 @@
 import Image from "next/image";
+import type { Metadata } from "next";
 import {
   founding100AvailabilityLabel,
   loadFounding100Availability,
 } from "./lib/server/founding-100.ts";
+
+export const metadata: Metadata = {
+  title: "S&P 500 Pre-Market Intelligence",
+  description:
+    "Build a calmer S&P 500 pre-market routine with verified context, conditional scenarios, visible event risk and clear decision permissions.",
+  alternates: { canonical: "/" },
+};
 
 const intelligenceLayers = [
   {
@@ -31,6 +39,28 @@ const workflow = [
   ["Plan", "Conditional scenarios and invalidation"],
   ["Decide", "Act, reduce risk or stand aside"],
 ];
+
+const trustStandards = [
+  ["Provider visibility", "Every member view keeps source status, freshness and unavailable states visible."],
+  ["Fail-closed decisions", "Incomplete evidence never becomes a fabricated signal, score or market level."],
+  ["Secure membership", "Checkout and subscription management are handled through Stripe-hosted billing."],
+  ["Risk-first language", "Scenarios remain conditional and educational, with no promise of trading outcomes."],
+] as const;
+
+const feedbackThemes = [
+  {
+    quote: "I want one repeatable place to review context, catalysts and invalidation before the session.",
+    role: "Active index trader",
+  },
+  {
+    quote: "The most useful decision is sometimes a clear reason to wait rather than force a setup.",
+    role: "Risk-focused futures trader",
+  },
+  {
+    quote: "Show me what is verified, what conflicts and what would change the plan.",
+    role: "Process-led options trader",
+  },
+] as const;
 
 const included = [
   "Provider-backed futures and cross-market status",
@@ -84,9 +114,28 @@ export default async function Home() {
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
     "mailto:hello@nashaimarkets.com?subject=Manage%20my%20NASH%20AI%20subscription";
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "NASH AI Markets",
+    applicationCategory: "FinanceApplication",
+    operatingSystem: "Web",
+    url: "https://www.nashaimarkets.com/",
+    description:
+      "Pre-market planning software for verified context, conditional scenarios and visible trading risk.",
+    offers: [
+      { "@type": "Offer", name: "Free", price: "0", priceCurrency: "GBP" },
+      { "@type": "Offer", name: "Pro", price: "14.99", priceCurrency: "GBP" },
+      { "@type": "Offer", name: "Elite", price: "29.99", priceCurrency: "GBP" },
+    ],
+  };
 
   return (
     <main className="mcHome">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replaceAll("<", "\\u003c") }}
+      />
       <a className="mcSkip" href="#main-content">Skip to content</a>
 
       <header className="mcNav">
@@ -180,6 +229,23 @@ export default async function Home() {
           <div>
             {["Verify the data", "Map the scenarios", "Define invalidation", "Respect event risk", "Protect capital", "Know when to wait"].map((item) => (
               <span key={item}>{item}<i>◆</i></span>
+            ))}
+          </div>
+        </section>
+
+        <section className="mcProof" aria-labelledby="trust-title">
+          <header>
+            <p className="mcEyebrow">Trust is a product feature</p>
+            <h2 id="trust-title">Professional intelligence should show its limits.</h2>
+            <p>Credibility starts with transparent inputs, explicit uncertainty and a safe response when verified data is not available.</p>
+          </header>
+          <div className="mcProofGrid">
+            {trustStandards.map(([title, copy], index) => (
+              <article key={title}>
+                <span>0{index + 1}</span>
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </article>
             ))}
           </div>
         </section>
@@ -279,6 +345,22 @@ export default async function Home() {
           <p className="mcEyebrow">Our operating principle</p>
           <blockquote>“The objective is not to predict every move. It is to arrive prepared for the moves that matter.”</blockquote>
           <p>NASH AI Markets supports preparation and risk awareness. It does not provide personal financial advice or promise trading outcomes.</p>
+        </section>
+
+        <section className="mcVoices" aria-labelledby="feedback-title">
+          <header>
+            <p className="mcEyebrow">Built around disciplined workflows</p>
+            <h2 id="feedback-title">What serious traders ask their tools to do.</h2>
+            <p>Composite feedback themes used in product design. These are not verified customer endorsements or performance claims.</p>
+          </header>
+          <div>
+            {feedbackThemes.map((item) => (
+              <figure key={item.role}>
+                <blockquote>“{item.quote}”</blockquote>
+                <figcaption>{item.role}<span>Composite research theme</span></figcaption>
+              </figure>
+            ))}
+          </div>
         </section>
 
         <section className="mcFaq" id="faq">
