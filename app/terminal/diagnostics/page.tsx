@@ -28,7 +28,7 @@ export default async function TerminalDiagnosticsPage() {
   const access = createProgressiveAccess(tier, previewState.claims);
   if (!access.features["launch-diagnostics"]) redirect("/terminal");
 
-  const [{ snapshot, gatewayStatus }, openAIHealth] = await Promise.all([
+  const [{ snapshot, gatewayStatus, cache }, openAIHealth] = await Promise.all([
     getTerminalMarketData(),
     checkOpenAIConnection(),
   ]);
@@ -42,6 +42,7 @@ export default async function TerminalDiagnosticsPage() {
     providerType: process.env.MARKET_DATA_PROVIDER,
     apiCredentialConfigured: Boolean(process.env.FMP_API_KEY),
     providerEnvironment: getFmpEnvironmentDiagnostics(),
+    requestCache: cache,
     accessibilityContract: true,
     openAIHealth,
     openAIConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),

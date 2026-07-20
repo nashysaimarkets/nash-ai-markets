@@ -60,6 +60,34 @@ test("reports safe provider schema and instrument metadata", () => {
   assert.equal(result.provider.providerTimestamp, "2026-07-16T12:00:00.000Z");
   assert.equal(result.provider.classification, "live");
 });
+test("reports cache reuse and estimates FMP upstream calls avoided", () => {
+  const current = snapshot();
+  const gateway = status();
+  const intelligence = analyzeMarketSnapshot(current);
+  const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: current.status, providerStatus: gateway.connectionStatus, dataAgeMs: gateway.dataAgeMs, fallbackActive: gateway.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: current.status, providerStatus: gateway.connectionStatus, dataAgeMs: gateway.dataAgeMs, fallbackActive: gateway.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const result = createLaunchDiagnostics({
+    snapshot: current,
+    gatewayStatus: gateway,
+    intelligence,
+    decision,
+    plan,
+    chartState: "ready",
+    providerType: "fmp",
+    requestCache: {
+      status: "hit",
+      ttlMs: 15_000,
+      hits: 3,
+      misses: 1,
+      coalesced: 2,
+      providerLoads: 1,
+      estimatedProviderLoadsAvoided: 5,
+    },
+  });
+  assert.equal(result.requestCache.status, "hit");
+  assert.equal(result.requestCache.providerLoads, 1);
+  assert.equal(result.requestCache.estimatedUpstreamRequestsAvoided, 20);
+});
 test("detects delayed mode without presenting it as live", () => { const result = diagnostics(snapshot("DELAYED"), status({ connectionStatus: "degraded", dataAgeMs: 10 * 60_000 })); assert.equal(result.readiness, "DEGRADED"); assert.equal(result.modes.delayed, true); assert.equal(result.modes.live, false); assert.equal(result.cacheStatus, "delayed"); });
 test("detects preview mode and preserves fail-closed warnings", () => { const result = diagnostics(snapshot("PREVIEW"), status({ connectionStatus: "not_configured", dataAgeMs: null, fallbackActive: true })); assert.equal(result.modes.preview, true); assert.equal(result.modes.offline, true); assert.equal(result.cacheStatus, "fallback"); assert.ok(result.warnings.length > 0); });
 test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "plan_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "plan_restricted"); assert.notEqual(result.readiness, "READY"); });

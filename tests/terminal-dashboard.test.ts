@@ -118,6 +118,8 @@ test("exposes a reusable not-configured gateway status without live values", asy
   assert.equal(result.gatewayStatus.reconnectAttempts, 0);
   assert.equal(result.gatewayStatus.failureCount, 0);
   assert.equal(result.gatewayStatus.fallbackActive, true);
+  assert.equal(result.cache.status, "disabled");
+  assert.equal(result.cache.providerLoads, 0);
 });
 
 test("defines all required future provider coverage", () => {

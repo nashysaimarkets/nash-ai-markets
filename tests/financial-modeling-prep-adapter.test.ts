@@ -480,6 +480,8 @@ test("keeps the terminal fallback unconfigured when FMP credentials are absent",
     assert.deepEqual(result.snapshot.quotes, []);
     assert.equal(result.gatewayStatus.connectionStatus, "not_configured");
     assert.equal(result.gatewayStatus.fallbackActive, true);
+    assert.equal(result.cache.status, "disabled");
+    assert.equal(result.cache.providerLoads, 0);
   } finally {
     if (previous.provider === undefined) delete process.env.MARKET_DATA_PROVIDER;
     else process.env.MARKET_DATA_PROVIDER = previous.provider;

@@ -6,7 +6,7 @@ import type { OpenAIHealthStatus } from "../../lib/server/openai.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { ChartDisplayState } from "./visual-terminal.ts";
-import type { FmpEnvironmentDiagnostics } from "./terminal-market-data-provider.ts";
+import type { FmpEnvironmentDiagnostics, MarketDataCacheDiagnostics } from "./terminal-market-data-provider.ts";
 
 const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
 
@@ -43,6 +43,7 @@ export type LaunchDiagnostics = {
   };
   modes: { preview: boolean; delayed: boolean; offline: boolean; live: boolean };
   cacheStatus: "live" | "delayed" | "preview" | "fallback" | "offline";
+  requestCache: MarketDataCacheDiagnostics & { estimatedUpstreamRequestsAvoided: number };
   integrations: {
     openAI: {
       configured: boolean;
@@ -74,6 +75,7 @@ export type LaunchDiagnosticsInput = {
   providerType?: string;
   apiCredentialConfigured?: boolean;
   providerEnvironment?: FmpEnvironmentDiagnostics;
+  requestCache?: MarketDataCacheDiagnostics;
   accessibilityContract?: boolean;
   openAIHealth?: OpenAIHealthStatus;
   openAIConfigured?: boolean;
@@ -143,6 +145,16 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
     fmpApiKeyConfigured: Boolean(input.apiCredentialConfigured),
     fmpApiBaseUrlConfigured: false,
   };
+  const requestCache = input.requestCache ?? {
+    status: "disabled",
+    ttlMs: 0,
+    hits: 0,
+    misses: 0,
+    coalesced: 0,
+    providerLoads: 0,
+    estimatedProviderLoadsAvoided: 0,
+  };
+  const upstreamRequestsPerLoad = input.providerType?.trim().toLowerCase() === "fmp" ? 4 : 1;
 
   return {
     schemaVersion: "1.0",
@@ -173,6 +185,10 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
     },
     modes: { preview, delayed, offline, live },
     cacheStatus,
+    requestCache: {
+      ...requestCache,
+      estimatedUpstreamRequestsAvoided: requestCache.estimatedProviderLoadsAvoided * upstreamRequestsPerLoad,
+    },
     integrations: {
       openAI: {
         configured: input.openAIConfigured ?? false,

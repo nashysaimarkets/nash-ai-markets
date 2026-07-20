@@ -88,14 +88,30 @@ Suggested severity:
 
 ### Response
 
-1. Verify provider status, account entitlement and rate-limit state.
-2. Confirm key presence without logging it and confirm the base URL contains no
+1. Open `/terminal/diagnostics` as an entitled Elite operator and record only
+   sanitized status fields.
+2. Use this fault-isolation order:
+
+   | Signal | Likely fault | Safe next check |
+   |---|---|---|
+   | Provider/key configuration missing | Deployment configuration | Compare variable names and target environment; never print values |
+   | Authentication rejected or plan restricted | Credential/account entitlement | Provider console, key status and subscribed endpoint access |
+   | No response, timeout, rate limit or network interruption | Provider/transport | Provider status, quota, latency and approved egress |
+   | Response received, schema unrecognised | Provider schema drift | Redacted response shape against adapter contract |
+   | Schema recognised, instruments missing | Symbols/plan/partial response | Required instrument list and configured symbol mappings |
+   | Valid timestamp but stale/future | Provider clock/feed freshness | Provider timestamp, UTC conversion and market-hours context |
+   | Provider healthy, cache status hit/coalesced | Normal request reuse | Wait for the 15-second window; do not trigger refresh storms |
+   | Server diagnostics healthy, UI unavailable | Rendering/deployment mismatch | Deployed commit, browser console and server-rendered response |
+
+3. Verify provider status, account entitlement and rate-limit state.
+4. Confirm key presence without logging it and confirm the base URL contains no
    credential.
-3. Inspect sanitized failure category and last successful timestamp.
-4. Do not relabel preview, cached, stale or fallback data as live.
-5. Do not invent prices, candles, events, levels or guidance.
-6. Allow configured retry/backoff; avoid manual refresh storms.
-7. Communicate that market intelligence is unavailable and trading output is
+5. Inspect sanitized failure category, last successful timestamp and cache
+   counters. Counters are per warm server instance and reset on restart.
+6. Do not relabel preview, cached, stale or fallback data as live.
+7. Do not invent prices, candles, events, levels or guidance.
+8. Allow configured retry/backoff; avoid manual refresh storms.
+9. Communicate that market intelligence is unavailable and trading output is
    intentionally disabled.
 
 ### Recovery checks
@@ -104,6 +120,8 @@ Suggested severity:
 - timestamp valid, not future-dated and within the freshness window;
 - all five required quotes validate;
 - fallback inactive and diagnostics match the snapshot;
+- a cache miss performs one provider load and subsequent requests inside the
+  15-second window report hit or coalesced without changing the snapshot;
 - engines recalculate from the recovered snapshot.
 
 ## Authentication failures

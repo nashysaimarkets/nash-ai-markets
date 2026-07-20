@@ -79,6 +79,14 @@ documented server-only variables when a provider is selected.
 | `MARKET_DATA_MAX_RETRIES` | Server config | Optional; default `1` | Gateway retry count |
 | `MARKET_DATA_RETRY_DELAY_MS` | Server config | Optional; default `250` | Delay between retries |
 
+Verified live/delayed snapshots use a fixed 15-second, per-instance in-memory
+cache. Concurrent requests share one provider load; unavailable results are not
+retained. This is intentionally not an environment variable: operators cannot
+silently widen the freshness window. Elite diagnostics report cache hits,
+coalesced requests, provider loads and an estimate of upstream calls avoided.
+Counters reset on instance restart and are operational indicators, not billing
+records.
+
 ## Financial Modeling Prep
 
 `MARKET_DATA_PROVIDER=fmp` and `FMP_API_KEY` are required together. The base URL

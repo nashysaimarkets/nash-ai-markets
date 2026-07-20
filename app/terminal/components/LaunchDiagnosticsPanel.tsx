@@ -24,6 +24,12 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>Refresh latency</dt><dd>{diagnostics.provider.refreshLatencyMs === null ? "Unavailable" : `${diagnostics.provider.refreshLatencyMs}ms`}</dd></div>
       <div><dt>Last success</dt><dd>{diagnostics.provider.lastSuccessfulUpdate ?? "None"}</dd></div>
       <div><dt>Fallback</dt><dd>{diagnostics.provider.fallbackActive ? "Active" : "Inactive"}</dd></div>
+      <div><dt>Request cache</dt><dd>{diagnostics.requestCache.status}</dd></div>
+      <div><dt>Cache window</dt><dd>{diagnostics.requestCache.ttlMs > 0 ? `${diagnostics.requestCache.ttlMs / 1000}s` : "Disabled"}</dd></div>
+      <div><dt>Cache hits</dt><dd>{diagnostics.requestCache.hits}</dd></div>
+      <div><dt>Concurrent requests shared</dt><dd>{diagnostics.requestCache.coalesced}</dd></div>
+      <div><dt>Provider loads</dt><dd>{diagnostics.requestCache.providerLoads}</dd></div>
+      <div><dt>Estimated upstream calls avoided</dt><dd>{diagnostics.requestCache.estimatedUpstreamRequestsAvoided}</dd></div>
       <div><dt>MARKET_DATA_PROVIDER</dt><dd>{diagnostics.provider.configuration.marketDataProviderConfigured ? "Present" : "Missing"}</dd></div>
       <div><dt>FMP_API_KEY</dt><dd>{diagnostics.provider.configuration.fmpApiKeyConfigured ? "Present" : "Missing"}</dd></div>
       <div><dt>FMP_API_BASE_URL</dt><dd>{diagnostics.provider.configuration.fmpApiBaseUrlConfigured ? "Present" : diagnostics.provider.configuration.defaultBaseUrlActive ? "Default active" : "Missing"}</dd></div>

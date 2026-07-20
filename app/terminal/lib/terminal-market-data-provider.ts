@@ -20,12 +20,39 @@ import { createAsyncTtlCache } from "../../lib/server/async-ttl-cache.ts";
 export type TerminalMarketGatewayResult = {
   snapshot: MarketSnapshot;
   gatewayStatus: MarketGatewayStatus;
+  cache: MarketDataCacheDiagnostics;
 };
 
-const configuredMarketDataCache = createAsyncTtlCache<TerminalMarketGatewayResult>({
-  ttlMs: 15_000,
+export type MarketDataCacheDiagnostics = {
+  status: "hit" | "miss" | "coalesced" | "bypass" | "disabled";
+  ttlMs: number;
+  hits: number;
+  misses: number;
+  coalesced: number;
+  providerLoads: number;
+  estimatedProviderLoadsAvoided: number;
+};
+
+type CachedMarketGatewayResult = Omit<TerminalMarketGatewayResult, "cache">;
+
+const MARKET_DATA_CACHE_TTL_MS = 15_000;
+const configuredMarketDataCache = createAsyncTtlCache<CachedMarketGatewayResult>({
+  ttlMs: MARKET_DATA_CACHE_TTL_MS,
   isFailure: ({ snapshot }) => snapshot.status !== "LIVE" && snapshot.status !== "DELAYED",
 });
+
+function cacheDiagnostics(status: MarketDataCacheDiagnostics["status"]): MarketDataCacheDiagnostics {
+  const stats = configuredMarketDataCache.getStats();
+  return {
+    status,
+    ttlMs: MARKET_DATA_CACHE_TTL_MS,
+    hits: stats.hits,
+    misses: stats.misses,
+    coalesced: stats.coalesced,
+    providerLoads: stats.loads,
+    estimatedProviderLoadsAvoided: stats.hits + stats.coalesced,
+  };
+}
 
 function positiveInteger(value: string | undefined): number | undefined {
   if (!value) return undefined;
@@ -92,6 +119,7 @@ export async function getTerminalMarketData(
     return {
       snapshot: createUnavailableSnapshot(),
       gatewayStatus: createUnconfiguredMarketGatewayStatus(previewOnly ? "Preview disabled" : "Not configured"),
+      cache: cacheDiagnostics("disabled"),
     };
   }
 
@@ -114,7 +142,9 @@ export async function getTerminalMarketData(
 
   // Test/provider overrides remain uncached. Production callers share one
   // short-lived verified snapshot per server instance.
-  return override ? load() : configuredMarketDataCache.get(load);
+  if (override) return { ...await load(), cache: cacheDiagnostics("bypass") };
+  const result = await configuredMarketDataCache.getWithStatus(load);
+  return { ...result.value, cache: cacheDiagnostics(result.status) };
 }
 
 /** Retained for callers that only need the configured low-level adapter. */

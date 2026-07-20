@@ -58,6 +58,22 @@ The FMP adapter does not currently supply an economic calendar. The UI shows an
 explicit unavailable state unless a reliable provider supplies a complete
 future timestamp.
 
+### Live-feed triage
+
+For an entitled Elite operator, `/terminal/diagnostics` is the quickest safe
+way to isolate a feed fault. Check configuration presence, authentication,
+result category, schema recognition, required instruments, provider timestamp,
+freshness and request-cache disposition in that order. A missing response
+usually indicates transport, timeout, authentication or provider availability;
+a received but unrecognised response indicates schema drift; recognised data
+with missing instruments indicates entitlement, symbol or partial-provider
+coverage. Cache counters are per warm server instance and reset when an
+instance restarts.
+
+The dashboard and terminal deliberately remain unavailable/no-trade when data
+cannot be verified. See [docs/INCIDENT_RUNBOOK.md](docs/INCIDENT_RUNBOOK.md) for
+the operator recovery sequence.
+
 ## Application layers
 
 - `app/lib/market-data.ts` — snapshot schema, normalization and freshness.

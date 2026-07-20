@@ -19,6 +19,14 @@ test("coalesces concurrent server reads and reuses a value until expiry", async 
   now += 101;
   assert.equal(await cache.get(loader), 2);
   assert.equal(loads, 2);
+  assert.deepEqual(cache.getStats(), {
+    hits: 1,
+    misses: 2,
+    coalesced: 2,
+    loads: 2,
+    stores: 2,
+    failureResults: 0,
+  });
 });
 
 test("does not retain failures unless a short failure TTL is configured", async () => {
@@ -35,6 +43,14 @@ test("does not retain failures unless a short failure TTL is configured", async 
   await uncachedFailure.get(loader);
   await uncachedFailure.get(loader);
   assert.equal(loads, 2);
+  assert.deepEqual(uncachedFailure.getStats(), {
+    hits: 0,
+    misses: 2,
+    coalesced: 0,
+    loads: 2,
+    stores: 0,
+    failureResults: 2,
+  });
 });
 
 test("coalesces keyed reads without sharing values between distinct inputs", async () => {
@@ -46,4 +62,28 @@ test("coalesces keyed reads without sharing values between distinct inputs", asy
   assert.equal(await cache.get("brief-b", load), 2);
   assert.equal(await cache.get("brief-a", load), 1);
   assert.equal(loads, 2);
+  assert.deepEqual(cache.getStats(), {
+    hits: 1,
+    misses: 2,
+    coalesced: 1,
+    loads: 2,
+    stores: 2,
+    failureResults: 0,
+    entries: 2,
+  });
+});
+
+test("reports the disposition of each unkeyed request without exposing cached values", async () => {
+  let resolveLoad: ((value: string) => void) | undefined;
+  const cache = createAsyncTtlCache<string>({ ttlMs: 100 });
+  const loader = () => new Promise<string>((resolve) => {
+    resolveLoad = resolve;
+  });
+
+  const miss = cache.getWithStatus(loader);
+  const coalesced = cache.getWithStatus(loader);
+  resolveLoad?.("verified");
+  assert.deepEqual(await miss, { value: "verified", status: "miss" });
+  assert.deepEqual(await coalesced, { value: "verified", status: "coalesced" });
+  assert.deepEqual(await cache.getWithStatus(loader), { value: "verified", status: "hit" });
 });

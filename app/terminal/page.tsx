@@ -39,7 +39,7 @@ export default async function Terminal() {
   const access = createProgressiveAccess(tier, previewState.claims);
   const previewOffer = access.previewOffer;
 
-  const { snapshot, gatewayStatus } = await getTerminalMarketData();
+  const { snapshot, gatewayStatus, cache } = await getTerminalMarketData();
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
@@ -48,7 +48,7 @@ export default async function Terminal() {
   const quotes = ["ES", "VIX", "US2Y", "US10Y", "DXY"].map((symbol) => verifiedQuote(snapshot, symbol));
   const chart = chartDataForStatus(snapshot.status);
   const highImpactEvents = isVerified ? snapshot.events.filter((event) => event.risk === "HIGH") : [];
-  const diagnostics = createLaunchDiagnostics({ snapshot, gatewayStatus, intelligence, decision, plan, chartState: chartDisplayState([...chart.data]), providerType: process.env.MARKET_DATA_PROVIDER, apiCredentialConfigured: Boolean(process.env.FMP_API_KEY), accessibilityContract: true });
+  const diagnostics = createLaunchDiagnostics({ snapshot, gatewayStatus, intelligence, decision, plan, chartState: chartDisplayState([...chart.data]), providerType: process.env.MARKET_DATA_PROVIDER, apiCredentialConfigured: Boolean(process.env.FMP_API_KEY), requestCache: cache, accessibilityContract: true });
   const portalUrl = "/api/stripe/portal";
 
   return <main className="foxtrotTerminal" id="overview">
