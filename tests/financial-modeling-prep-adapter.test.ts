@@ -117,7 +117,7 @@ test("accepts a canonical provider alias only for a single scoped quote record",
   assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "success");
 });
 
-test("keeps endpoint HTTP categories sanitized when a secondary plan blocks access", async () => {
+test("keeps endpoint HTTP categories sanitized when secondary access is restricted", async () => {
   const asOf = new Date(Date.now() - 60_000).toISOString();
   const timestamp = Date.parse(asOf) / 1000;
   const adapter = createFinancialModelingPrepAdapter({
@@ -139,7 +139,7 @@ test("keeps endpoint HTTP categories sanitized when a secondary plan blocks acce
   assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y"]);
   assert.equal(adapter.getDiagnostics?.().resultCategory, "partial_success");
   assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "mixed");
-  assert.equal(adapter.getDiagnostics?.().endpointStatusCategories.usDollarIndex, "plan_restricted");
+  assert.equal(adapter.getDiagnostics?.().endpointStatusCategories.usDollarIndex, "access_restricted");
   assert.equal(JSON.stringify(adapter.getDiagnostics?.()).includes(TEST_API_KEY), false);
 });
 
@@ -455,7 +455,7 @@ test("classifies rate limiting as a retry-safe provider failure", async () => {
   await assert.rejects(adapter.fetchSnapshot(), /rate_limited/);
 });
 
-test("isolates plan-restricted secondary instruments without exposing symbols or credentials", async () => {
+test("isolates access-restricted secondary instruments without exposing symbols or credentials", async () => {
   const messages: Array<{ message: string; details?: Record<string, unknown> }> = [];
   const asOf = new Date(Date.now() - 60_000).toISOString();
   const mockFetch = createMockFetch(asOf);
@@ -475,9 +475,9 @@ test("isolates plan-restricted secondary instruments without exposing symbols or
   assert.equal(snapshot.status, "LIVE");
   assert.ok(snapshot.quotes.some((quote) => quote.symbol === "ES"));
   assert.equal(snapshot.quotes.some((quote) => quote.symbol === "DXY"), false);
-  assert.deepEqual(messages.find(({ details }) => details?.category === "plan_restricted")?.details, {
+  assert.deepEqual(messages.find(({ details }) => details?.category === "access_restricted")?.details, {
     provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME,
-    category: "plan_restricted",
+    category: "access_restricted",
     instrument: "us_dollar",
   });
   assert.doesNotMatch(JSON.stringify(messages), /DX-Y\.NYB/);

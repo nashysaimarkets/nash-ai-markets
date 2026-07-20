@@ -44,7 +44,7 @@ export type MarketSliceAdapter = {
 export type MarketGatewayConnectionStatus = "connected" | "degraded" | "offline" | "not_configured";
 export type MarketProviderFailureCategory =
   | "authentication_rejected"
-  | "plan_restricted"
+  | "access_restricted"
   | "rate_limited"
   | "malformed_json"
   | "timeout"
@@ -174,7 +174,7 @@ function safeFailureCategory(error: unknown): MarketProviderFailureCategory {
   const message = error instanceof Error ? error.message : "";
   const categories: MarketProviderFailureCategory[] = [
     "authentication_rejected",
-    "plan_restricted",
+    "access_restricted",
     "rate_limited",
     "malformed_json",
     "timeout",

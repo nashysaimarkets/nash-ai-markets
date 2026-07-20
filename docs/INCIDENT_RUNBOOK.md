@@ -99,7 +99,7 @@ Suggested severity:
    | No response, timeout, rate limit or network interruption | Provider/transport | Provider status, quota, latency and approved egress |
    | Response received, schema unrecognised | Provider schema drift | Redacted response shape against adapter contract |
    | HTTP 200, one quote, requested symbol differs | Provider canonical alias | Confirm the request was symbol-scoped; the adapter accepts only a single structurally valid alias |
-   | HTTP 402 for one instrument | Provider plan restriction | Confirm subscribed endpoint/instrument access; do not substitute a proxy without product approval |
+   | HTTP 402 for one instrument | Provider access restriction | Confirm the endpoint, symbol, account entitlement, and applicable display licence with the provider; 402 alone does not identify a required plan |
    | Schema recognised, instruments missing | Symbols/plan/partial response | Required instrument list and configured symbol mappings |
    | Valid timestamp but stale/future | Provider clock/feed freshness | Provider timestamp, UTC conversion and market-hours context |
    | Provider healthy, cache status hit/coalesced | Normal request reuse | Wait for the 15-second window; do not trigger refresh storms |

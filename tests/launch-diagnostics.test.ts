@@ -75,7 +75,7 @@ test("keeps partial provider coverage out of ready state", () => {
       httpStatusCategory: "mixed",
       endpointStatusCategories: {
         ...status().providerAttempt.endpointStatusCategories,
-        usDollarIndex: "plan_restricted",
+        usDollarIndex: "access_restricted",
       },
       quoteCount: 4,
       requiredInstrumentsFound: ["ES", "VIX", "US2Y", "US10Y"],
@@ -116,7 +116,7 @@ test("reports cache reuse and estimates FMP upstream calls avoided", () => {
 });
 test("detects delayed mode without presenting it as live", () => { const result = diagnostics(snapshot("DELAYED"), status({ connectionStatus: "degraded", dataAgeMs: 10 * 60_000 })); assert.equal(result.readiness, "DEGRADED"); assert.equal(result.modes.delayed, true); assert.equal(result.modes.live, false); assert.equal(result.cacheStatus, "delayed"); });
 test("detects preview mode and preserves fail-closed warnings", () => { const result = diagnostics(snapshot("PREVIEW"), status({ connectionStatus: "not_configured", dataAgeMs: null, fallbackActive: true })); assert.equal(result.modes.preview, true); assert.equal(result.modes.offline, true); assert.equal(result.cacheStatus, "fallback"); assert.ok(result.warnings.length > 0); });
-test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "plan_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "plan_restricted"); assert.notEqual(result.readiness, "READY"); });
+test("reports offline fallback, staleness and reconnect attempts", () => { const result = diagnostics(snapshot("UNAVAILABLE"), status({ connectionStatus: "offline", dataAgeMs: null, fallbackActive: true, reconnectAttempts: 2, lastFailureCategory: "access_restricted" })); assert.equal(result.modes.offline, true); assert.equal(result.provider.staleDetected, true); assert.equal(result.provider.reconnectAttempts, 2); assert.equal(result.provider.lastFailureCategory, "access_restricted"); assert.notEqual(result.readiness, "READY"); });
 test("reports only sanitized provider-variable presence", () => {
   const secret = "must-never-appear";
   const current = snapshot("UNAVAILABLE");

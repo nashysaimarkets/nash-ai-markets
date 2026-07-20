@@ -54,7 +54,7 @@ export type MarketProviderHttpStatusCategory =
   | "not_attempted"
   | "success"
   | "authentication_error"
-  | "plan_restricted"
+  | "access_restricted"
   | "rate_limited"
   | "client_error"
   | "server_error"

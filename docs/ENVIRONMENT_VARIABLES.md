@@ -108,10 +108,11 @@ requested continuous-contract or index alias in a single-record quote response;
 the adapter accepts that canonical alias only when the response contains
 exactly one structurally valid record from the symbol-scoped request.
 
-Provider-plan HTTP 402 responses remain fail closed and are reported as
-`plan_restricted`. Resolving one requires the account owner to confirm endpoint
-entitlement or approve a correctly labelled alternative instrument; changing a
-symbol merely to avoid the plan restriction is not an acceptable workaround.
+HTTP 402 responses remain fail closed and are reported as `access_restricted`.
+That status does not, by itself, prove that a particular paid plan will resolve
+the request. The account owner must confirm the endpoint, instrument, account
+entitlement, and any display or redistribution licence with the provider before
+changing the symbol or subscription.
 
 ## Generic HTTP provider
 

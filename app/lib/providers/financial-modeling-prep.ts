@@ -50,7 +50,7 @@ type FmpTreasuryRates = {
 const MAX_FUTURE_SKEW_MS = 60_000;
 const MAX_TREASURY_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-type SafeFailureCategory = "authentication_rejected" | "plan_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
+type SafeFailureCategory = "authentication_rejected" | "access_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
 type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury";
 type FmpEndpointName = "ES futures" | "VIX" | "US Dollar Index" | "Treasury rates";
 type FmpResponseKind = "quote" | "treasury";
@@ -241,7 +241,7 @@ function emptyEndpointStatusCategories(): MarketProviderEndpointStatusCategories
 function statusCategory(status: number): MarketProviderHttpStatusCategory {
   if (status >= 200 && status < 300) return "success";
   if (status === 401 || status === 403) return "authentication_error";
-  if (status === 402) return "plan_restricted";
+  if (status === 402) return "access_restricted";
   if (status === 429) return "rate_limited";
   if (status >= 500) return "server_error";
   return "client_error";
@@ -341,7 +341,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             schemaMismatch: "response was not valid JSON",
           });
           if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
-          if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
+          if (response.status === 402) throw new SafeProviderFailure("access_restricted");
           if (response.status === 429) throw new SafeProviderFailure("rate_limited");
           if (!response.ok) throw new SafeProviderFailure("invalid_response");
           throw new SafeProviderFailure("malformed_json");
@@ -353,7 +353,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           schemaMismatch: schemaMismatch(payload, kind, symbol),
         });
         if (response.status === 401 || response.status === 403) throw new SafeProviderFailure("authentication_rejected");
-        if (response.status === 402) throw new SafeProviderFailure("plan_restricted");
+        if (response.status === 402) throw new SafeProviderFailure("access_restricted");
         if (response.status === 429) throw new SafeProviderFailure("rate_limited");
         if (!response.ok) throw new SafeProviderFailure("invalid_response");
         return payload;
