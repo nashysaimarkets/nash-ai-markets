@@ -1,4 +1,5 @@
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
+import { createAsyncTtlCache } from "./async-ttl-cache.ts";
 
 export const FOUNDING_100_LIMIT = 100;
 export type Founding100Programme = "pro" | "elite";
@@ -18,6 +19,12 @@ export type Founding100Record = {
   earnedAt: string;
   forfeitedAt: string | null;
 };
+
+const foundingAvailabilityCache = createAsyncTtlCache<Founding100Availability>({
+  ttlMs: 60_000,
+  failureTtlMs: 10_000,
+  isFailure: (availability) => availability.status === "unavailable",
+});
 
 type Founding100Row = {
   programme: unknown;
@@ -151,30 +158,32 @@ export async function loadFounding100Report() {
 }
 
 export async function loadFounding100Availability(): Promise<Founding100Availability> {
-  try {
-    const { data, error } = await createAdminClient()
-      .from("founding_100_members")
-      .select("programme, position");
-    if (error || !Array.isArray(data)) {
-      return { status: "unavailable", proRemaining: null, eliteRemaining: null };
-    }
-    const positions: Array<{ programme: Founding100Programme; position: number }> = [];
-    for (const row of data) {
-      if ((row.programme !== "pro" && row.programme !== "elite")
-        || typeof row.position !== "number"
-        || !Number.isInteger(row.position)
-        || row.position < 1
-        || row.position > FOUNDING_100_LIMIT) {
+  return foundingAvailabilityCache.get(async () => {
+    try {
+      const { data, error } = await createAdminClient()
+        .from("founding_100_members")
+        .select("programme, position");
+      if (error || !Array.isArray(data)) {
         return { status: "unavailable", proRemaining: null, eliteRemaining: null };
       }
-      positions.push({ programme: row.programme, position: row.position });
+      const positions: Array<{ programme: Founding100Programme; position: number }> = [];
+      for (const row of data) {
+        if ((row.programme !== "pro" && row.programme !== "elite")
+          || typeof row.position !== "number"
+          || !Number.isInteger(row.position)
+          || row.position < 1
+          || row.position > FOUNDING_100_LIMIT) {
+          return { status: "unavailable", proRemaining: null, eliteRemaining: null };
+        }
+        positions.push({ programme: row.programme, position: row.position });
+      }
+      return {
+        status: "available",
+        proRemaining: founding100Remaining(positions, "pro"),
+        eliteRemaining: founding100Remaining(positions, "elite"),
+      };
+    } catch {
+      return { status: "unavailable", proRemaining: null, eliteRemaining: null };
     }
-    return {
-      status: "available",
-      proRemaining: founding100Remaining(positions, "pro"),
-      eliteRemaining: founding100Remaining(positions, "elite"),
-    };
-  } catch {
-    return { status: "unavailable", proRemaining: null, eliteRemaining: null };
-  }
+  });
 }

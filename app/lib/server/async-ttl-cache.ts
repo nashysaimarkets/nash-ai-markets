@@ -44,3 +44,44 @@ export function createAsyncTtlCache<Value>({
     },
   };
 }
+
+export function createAsyncKeyedTtlCache<Value>({
+  ttlMs,
+  maxEntries = 20,
+  isFailure = () => false,
+  now = Date.now,
+}: AsyncTtlCacheOptions<Value> & { maxEntries?: number }) {
+  const cached = new Map<string, CacheEntry<Value>>();
+  const inFlight = new Map<string, Promise<Value>>();
+
+  return {
+    async get(key: string, loader: () => Promise<Value>): Promise<Value> {
+      const currentTime = now();
+      const existing = cached.get(key);
+      if (existing && existing.expiresAt > currentTime) return existing.value;
+      cached.delete(key);
+      const pending = inFlight.get(key);
+      if (pending) return pending;
+
+      const request = loader().then((value) => {
+        if (!isFailure(value)) {
+          cached.set(key, { value, expiresAt: now() + ttlMs });
+          while (cached.size > maxEntries) {
+            const oldestKey = cached.keys().next().value as string | undefined;
+            if (oldestKey === undefined) break;
+            cached.delete(oldestKey);
+          }
+        }
+        return value;
+      }).finally(() => {
+        inFlight.delete(key);
+      });
+      inFlight.set(key, request);
+      return request;
+    },
+    clear() {
+      cached.clear();
+      inFlight.clear();
+    },
+  };
+}
