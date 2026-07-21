@@ -156,10 +156,13 @@ async function loadFixtureCandles(symbol: string, timeframe: CandleTimeframe, no
 
 export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "5m", now = Date.now()): Promise<VerifiedCandleSeries> {
   const symbol = process.env.FMP_SP500_FUTURES_SYMBOL?.trim() || "ESUSD";
-  const fixture = await loadFixtureCandles(symbol, timeframe, now);
-  if (fixture) return fixture;
   const apiKey = configuredApiKey();
-  if (!apiKey) return empty(symbol, timeframe, "not_configured");
+  // Fixture is a non-production fallback only — never preferred over a real key, never in production.
+  if (!apiKey) {
+    const fixture = await loadFixtureCandles(symbol, timeframe, now);
+    if (fixture) return fixture;
+    return empty(symbol, timeframe, "not_configured");
+  }
   const key = `${symbol}:${timeframe}:${new Date(now).toISOString().slice(0, 10)}`;
   const before = cache.getStats();
   const value = await cache.get(key, () => loadFmpCandles({ apiKey, symbol, timeframe, baseUrl: process.env.FMP_API_BASE_URL?.trim(), now }));

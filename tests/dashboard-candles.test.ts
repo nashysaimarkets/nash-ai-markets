@@ -146,3 +146,16 @@ test("layout candle fixture normalizes into a delayed series outside production"
   assert.match(series.instrumentDetail, /layout fixture|not live market data/i);
   delete process.env.BULLSEYE_CANDLE_FIXTURE_PATH;
 });
+
+test("layout candle fixture never overrides a configured FMP key outside production", async () => {
+  process.env.BULLSEYE_CANDLE_FIXTURE_PATH = new URL("../fixtures/candles-esusd-5m.json", import.meta.url).pathname;
+  process.env.FMP_API_KEY = "test-live-key-not-a-placeholder";
+  process.env.FMP_API_BASE_URL = "http://127.0.0.1:9/";
+  const { getConfiguredFmpCandles } = await import("../app/lib/providers/financial-modeling-prep-candles.ts?" + Date.now());
+  const series = await getConfiguredFmpCandles("5m");
+  assert.doesNotMatch(series.instrumentDetail, /layout fixture|not live market data/i);
+  assert.equal(series.failureCategory, "provider");
+  delete process.env.BULLSEYE_CANDLE_FIXTURE_PATH;
+  delete process.env.FMP_API_KEY;
+  delete process.env.FMP_API_BASE_URL;
+});
