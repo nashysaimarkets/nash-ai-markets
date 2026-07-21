@@ -4,6 +4,7 @@ import test from "node:test";
 import { analyzeMarketSnapshot } from "../app/lib/market-intelligence-engine.ts";
 import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
 import { createCustomerSignals, instrumentInterpretation, scoreStance } from "../app/terminal/lib/customer-terminal.ts";
+import { formatCustomerParticipationWarnings } from "../app/terminal/lib/customer-warnings.ts";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -45,4 +46,27 @@ test("customer terminal places the verified chart ahead of secondary panels", as
   assert.ok(chartAt > 0 && boardAt > chartAt);
   assert.doesNotMatch(terminal, /Previous comparison unavailable|<WhatChanged/);
   assert.doesNotMatch(terminal, /Bullseye provider diagnostics|LaunchDiagnosticsPanel/);
+  assert.match(terminal, /formatCustomerParticipationWarnings/);
+});
+
+test("customer participation warnings hide internal schema field names", () => {
+  const warnings = formatCustomerParticipationWarnings(
+    ["CRITICAL_INPUT_MISSING"],
+    [
+      { code: "AGED_DATA", field: "dataAgeMs" },
+      { code: "DELAYED_DATA", field: "dataStatus" },
+      { code: "PROVIDER_DEGRADED", field: "providerStatus" },
+      { code: "MISSING_EVIDENCE", field: "trend" },
+    ],
+    ["EVENT_NEAR"],
+  );
+  assert.deepEqual(warnings, [
+    "Required market inputs are incomplete",
+    "Market data is delayed beyond the live window",
+    "Market data is delayed",
+    "The market data connection is degraded",
+    "Missing evidence: trend",
+    "A high-impact event is nearby",
+  ]);
+  assert.ok(warnings.every((item) => !/dataAgeMs|dataStatus|providerStatus/.test(item)));
 });

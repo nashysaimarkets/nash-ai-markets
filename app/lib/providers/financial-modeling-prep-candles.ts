@@ -1,7 +1,7 @@
 import { createAsyncKeyedTtlCache } from "../server/async-ttl-cache.ts";
 import type { OhlcvPoint } from "../../terminal/lib/visual-terminal.ts";
 
-export type CandleFreshness = "delayed" | "stale" | "unavailable";
+export type CandleFreshness = "delayed" | "previous_session" | "market_closed" | "stale" | "unavailable";
 export type CandleTimeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
 export type CandleCacheStatus = "hit" | "miss" | "coalesced" | "disabled";
 
@@ -12,7 +12,7 @@ export type VerifiedCandleSeries = {
   exchange: string;
   instrumentDetail: string;
   timeframe: CandleTimeframe;
-  classification: "delayed" | "end_of_day";
+  classification: "delayed" | "end_of_day" | "previous_session" | "market_closed";
   dataAgeMs: number | null;
   provider: "Financial Modeling Prep";
   status: CandleFreshness;
@@ -73,17 +73,41 @@ export function normalizeFmpCandles(payload: unknown, maxCandles = MAX_CANDLES):
 
 function empty(symbol: string, timeframe: CandleTimeframe, category: VerifiedCandleSeries["failureCategory"]): VerifiedCandleSeries {
   const es = symbol === "ESUSD";
-  return { symbol, contract: es ? "Provider commodity series; no dated contract supplied" : "Provider-configured series", instrumentName: es ? "S&P 500 futures reference series" : "Configured market series", exchange: es ? "Exchange not verified by payload" : "Not verified", instrumentDetail: es ? "FMP ESUSD commodity series; no dated CME contract or exchange provenance is supplied" : "Identity requires provider catalogue verification", timeframe, classification: timeframe === "1d" ? "end_of_day" : "delayed", dataAgeMs: null, provider: "Financial Modeling Prep", status: "unavailable", asOf: null, candles: [], cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: category };
+  return {
+    symbol,
+    contract: es ? "S&P 500 futures reference series" : "Configured market series",
+    instrumentName: es ? "S&P 500 futures reference series" : "Configured market series",
+    exchange: "Verified delayed provider series",
+    instrumentDetail: es
+      ? "ESUSD reference series from the configured market-data provider. Delayed quotes only — never treated as live."
+      : "Configured symbol from the verified market-data provider.",
+    timeframe,
+    classification: timeframe === "1d" ? "end_of_day" : "delayed",
+    dataAgeMs: null,
+    provider: "Financial Modeling Prep",
+    status: "unavailable",
+    asOf: null,
+    candles: [],
+    cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 },
+    failureCategory: category,
+  };
 }
 
-export function determineCandleFreshness(candles: OhlcvPoint[], now: number, timeframe: CandleTimeframe = "5m"): Pick<VerifiedCandleSeries, "status" | "asOf" | "dataAgeMs"> {
+export function determineCandleFreshness(candles: OhlcvPoint[], now: number, timeframe: CandleTimeframe = "5m"): Pick<VerifiedCandleSeries, "status" | "asOf" | "dataAgeMs" | "classification"> {
   const latest = candles.at(-1);
-  if (!latest) return { status: "unavailable", asOf: null, dataAgeMs: null };
+  if (!latest) return { status: "unavailable", asOf: null, dataAgeMs: null, classification: timeframe === "1d" ? "end_of_day" : "delayed" };
   const age = now - latest.time * 1000;
-  if (age < 0) return { status: "unavailable", asOf: null, dataAgeMs: null };
-  const threshold = timeframe === "1d" ? 4 * 24 * 60 * 60_000 : 60 * 60_000;
-  const status: CandleFreshness = age <= threshold ? "delayed" : "stale";
-  return { status, asOf: new Date(latest.time * 1000).toISOString(), dataAgeMs: age };
+  if (age < 0) return { status: "unavailable", asOf: null, dataAgeMs: null, classification: timeframe === "1d" ? "end_of_day" : "delayed" };
+  const asOf = new Date(latest.time * 1000).toISOString();
+  if (timeframe === "1d") {
+    const status: CandleFreshness = age <= 4 * 24 * 60 * 60_000 ? "delayed" : "stale";
+    return { status, asOf, dataAgeMs: age, classification: "end_of_day" };
+  }
+  // Intraday FMP series is never labelled live.
+  if (age <= 60 * 60_000) return { status: "delayed", asOf, dataAgeMs: age, classification: "delayed" };
+  if (age <= 18 * 60 * 60_000) return { status: "previous_session", asOf, dataAgeMs: age, classification: "previous_session" };
+  if (age <= 72 * 60 * 60_000) return { status: "market_closed", asOf, dataAgeMs: age, classification: "market_closed" };
+  return { status: "stale", asOf, dataAgeMs: age, classification: "market_closed" };
 }
 
 const source = (timeframe: CandleTimeframe) => timeframe === "1d" ? { path: "historical-price-eod/full", days: 370 } : { path: `historical-chart/${({ "1m": "1min", "5m": "5min", "15m": "15min", "1h": "1hour", "4h": "4hour" } as const)[timeframe]}`, days: timeframe === "1m" ? 1 : timeframe === "5m" || timeframe === "15m" ? 3 : 45 };

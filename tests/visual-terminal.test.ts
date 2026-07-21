@@ -53,8 +53,9 @@ test("visual terminal preserves no-trade warnings and responsive safeguards", as
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
   assert.match(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
-  assert.match(components, /decision\.noTradeReasons/);
-  assert.match(components, /Conditions limiting participation/);
+  assert.match(page, /formatCustomerParticipationWarnings/);
+  assert.match(page, /Conditions limiting participation/);
+  assert.match(components, /hasDisplayableQuotes|isDecisionReadySnapshot/);
   assert.match(styles, /overflow-x:hidden/);
   assert.match(styles, /@media\(max-width:640px\)/);
   assert.match(styles, /marketChartCanvas,.marketChartState\{height:300px\}/);

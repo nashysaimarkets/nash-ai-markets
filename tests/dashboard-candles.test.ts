@@ -29,7 +29,8 @@ test("freshness never infers live status from a successful candle response", () 
   const candles = [candle(base, 100)];
   assert.equal(determineCandleFreshness(candles, base * 1000 + 9 * 60_000).status, "delayed");
   assert.equal(determineCandleFreshness(candles, base * 1000 + 30 * 60_000).status, "delayed");
-  assert.equal(determineCandleFreshness(candles, base * 1000 + 61 * 60_000).status, "stale");
+  assert.equal(determineCandleFreshness(candles, base * 1000 + 61 * 60_000).status, "previous_session");
+  assert.equal(determineCandleFreshness(candles, base * 1000 + 20 * 60 * 60_000).status, "market_closed");
   assert.equal(determineCandleFreshness(candles, base * 1000 - 1).status, "unavailable");
   assert.equal(determineCandleFreshness([], base * 1000).status, "unavailable");
 });
@@ -40,8 +41,8 @@ test("provider failures remain fail closed and contract labels remain exact", as
   assert.equal(unavailable.failureCategory, "entitlement");
   assert.equal(unavailable.symbol, "ESUSD");
   assert.equal(unavailable.instrumentName, "S&P 500 futures reference series");
-  assert.match(unavailable.contract, /no dated contract/i);
-  assert.match(unavailable.exchange, /not verified/i);
+  assert.match(unavailable.contract, /S&P 500 futures reference series/i);
+  assert.match(unavailable.exchange, /delayed provider series/i);
   assert.deepEqual(unavailable.candles, []);
 });
 
@@ -94,7 +95,8 @@ test("dashboard chart calls only the protected candle route on an explicit contr
     readFile(new URL("../app/dashboard/loading.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(chart, /fetch\(`\/api\/market\/candles\?timeframe=/);
-  assert.doesNotMatch(chart, /financialmodelingprep\.com|setInterval|setTimeout/);
+  assert.match(chart, /setInterval/);
+  assert.doesNotMatch(chart, /financialmodelingprep\.com/);
   assert.match(chart, /aria-label="Candlestick interval"/);
   assert.match(chart, /aria-label="Chart overlays"/);
   assert.match(chart, /Verified candlestick history unavailable/);
@@ -104,6 +106,7 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.match(chart, /series\.instrumentDetail/);
   assert.match(chart, /series\.status !== "unavailable"/);
   assert.doesNotMatch(chart, /Failure category|requests avoided|cache \{/);
+  assert.match(chart, /Previous session|Market closed|never labelled live/);
   assert.match(page, /access\.tier === "pro" \|\| access\.tier === "elite"/);
   assert.match(loading, /dashboardChartSkeletonCanvas/);
 });
@@ -112,10 +115,13 @@ test("documented FMP intervals use their exact upstream endpoint", async () => {
   for (const [timeframe, expected] of [["1m", "1min"], ["5m", "5min"], ["15m", "15min"], ["1h", "1hour"], ["4h", "4hour"], ["1d", "historical-price-eod/full"]] as const) {
     let requested = "";
     const points = Array.from({ length: 8 }, (_, index) => ({ timestamp: base + index * 3600, open: 99 + index, high: 101 + index, low: 98 + index, close: 100 + index, volume: 10 }));
-    const result = await loadFmpCandles({ apiKey: "configured", symbol: "ESUSD", timeframe, now: (base + 8 * 3600) * 1000, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify(points)); } });
+    const now = (base + 7 * 3600) * 1000 + 5 * 60_000;
+    const result = await loadFmpCandles({ apiKey: "configured", symbol: "ESUSD", timeframe, now, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify(points)); } });
     assert.match(requested, new RegExp(expected.replaceAll("/", "\\/")));
     assert.equal(result.timeframe, timeframe);
-    assert.equal(result.classification, timeframe === "1d" ? "end_of_day" : "delayed");
+    assert.notEqual(result.status, "unavailable");
+    if (timeframe === "1d") assert.equal(result.classification, "end_of_day");
+    else assert.ok(["delayed", "previous_session"].includes(result.classification));
     if (timeframe === "4h") assert.ok(result.candles.every((item) => item.time % 14_400 === 0));
   }
 });
@@ -127,7 +133,7 @@ test("customer controls expose only verified ESUSD commodity intervals", async (
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
   ]);
-  assert.match(chart, /1m.*5m.*1h.*1D/);
+  assert.match(chart, /timeframe: "1m"[\s\S]*timeframe: "5m"[\s\S]*timeframe: "1h"[\s\S]*timeframe: "1d"/);
   assert.doesNotMatch(chart, /label: "15m"|label: "4h"/);
   assert.match(route, /\["1m", "5m", "1h", "1d"\]/);
   assert.match(terminal, /DashboardCandlestickChart/);

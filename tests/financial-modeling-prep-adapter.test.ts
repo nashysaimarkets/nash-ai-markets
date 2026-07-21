@@ -331,7 +331,7 @@ test("configures the terminal FMP provider when only the optional base URL is ab
   }
 });
 
-test("lets the gateway reject stale FMP data and activate fallback", async () => {
+test("lets the gateway keep aged FMP quotes visible while closing the decision window", async () => {
   const now = Date.now();
   const adapter = createFinancialModelingPrepAdapter({
     apiKey: TEST_API_KEY,
@@ -347,8 +347,10 @@ test("lets the gateway reject stale FMP data and activate fallback", async () =>
 
   const snapshot = await gateway.fetchSnapshot(now);
   assert.equal(snapshot.status, "UNAVAILABLE");
-  assert.deepEqual(snapshot.quotes, []);
-  assert.equal(gateway.getStatus().fallbackActive, true);
+  assert.ok(snapshot.quotes.length > 0);
+  assert.match(snapshot.source, /previous session/i);
+  assert.equal(gateway.getStatus().fallbackActive, false);
+  assert.equal(gateway.getStatus().dataClassification, "stale");
 });
 
 test("does not let a current date-only Treasury observation stale intraday quotes", async () => {

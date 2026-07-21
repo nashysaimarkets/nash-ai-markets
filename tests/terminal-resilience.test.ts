@@ -28,7 +28,19 @@ test("provider failure returns an empty unavailable snapshot with a fixed timest
 test("generic freshness validation rejects materially future timestamps", () => {
   const result = normalizeSnapshotFreshness(liveSnapshot({ asOf: "2026-07-17T12:02:00.000Z" }), Date.parse("2026-07-17T12:00:00.000Z"));
   assert.equal(result.status, "UNAVAILABLE");
+  assert.deepEqual(result.quotes, []);
   assert.match(result.summary, /ahead of server time/);
+});
+
+test("aged verified quotes remain visible after the decision window closes", () => {
+  const result = normalizeSnapshotFreshness(
+    liveSnapshot({ asOf: "2026-07-17T11:00:00.000Z" }),
+    Date.parse("2026-07-17T12:00:00.000Z"),
+  );
+  assert.equal(result.status, "UNAVAILABLE");
+  assert.equal(result.quotes.length, 1);
+  assert.equal(result.quotes[0]?.value, "6300");
+  assert.match(result.source, /previous session/i);
 });
 
 test("preview status produces no chart data or trade guidance", () => {

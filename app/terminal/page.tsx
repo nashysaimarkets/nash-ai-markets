@@ -14,6 +14,7 @@ import { getConfiguredFmpCandles } from "../lib/providers/financial-modeling-pre
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
+import { formatCustomerParticipationWarnings } from "./lib/customer-warnings";
 import { terminalStatusMessage } from "./lib/terminal-state";
 import { terminalMarketState } from "./lib/visual-terminal";
 
@@ -47,12 +48,12 @@ export default async function Terminal() {
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const state = terminalMarketState(snapshot.status, gatewayStatus.connectionStatus, gatewayStatus.fallbackActive);
   const verified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
-  const timestamp = verified ? formatUkTimestamp(snapshot.asOf) : "Unavailable";
-  const customerWarnings = [
-    ...decision.noTradeReasons,
-    ...decision.dataQualityWarnings.map((warning) => `${warning.code}: ${warning.field}`),
-    ...plan.eventRiskWarnings.map((warning) => warning.code),
-  ];
+  const timestamp = snapshot.quotes.length > 0 ? formatUkTimestamp(snapshot.asOf) : "Unavailable";
+  const customerWarnings = formatCustomerParticipationWarnings(
+    decision.noTradeReasons,
+    decision.dataQualityWarnings,
+    plan.eventRiskWarnings.map((warning) => warning.code),
+  );
   const showCatalysts = verified && snapshot.events.length > 0;
 
   return <main className="foxtrotTerminal customerTerminal" id="overview">
