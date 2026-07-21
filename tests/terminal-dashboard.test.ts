@@ -326,8 +326,9 @@ test("defines loading placeholders for every terminal market panel", () => {
 });
 
 test("provides recovery-safe unavailable messaging", () => {
-  assert.match(terminalStatusMessage("UNAVAILABLE", 2), /2 FAILED ATTEMPTS/);
+  assert.match(terminalStatusMessage("UNAVAILABLE", 2), /TEMPORARILY UNAVAILABLE/);
   assert.match(terminalStatusMessage("UNAVAILABLE", 2), /NO CURRENT MARKET SIGNALS/);
+  assert.doesNotMatch(terminalStatusMessage("UNAVAILABLE", 2), /FAILED ATTEMPT/);
   assert.match(panelUnavailableMessage("UNAVAILABLE") ?? "", /recover automatically/);
   assert.equal(panelUnavailableMessage("LIVE"), null);
 });

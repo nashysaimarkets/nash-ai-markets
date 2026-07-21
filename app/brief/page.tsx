@@ -127,10 +127,22 @@ export default async function AIMarketBriefPage() {
               <div><dt>Market bias</dt><dd>{brief.marketBias}</dd></div>
               <div><dt>Confidence</dt><dd>{brief.confidence === null ? "Unavailable" : `${brief.confidence} / 100`}</dd></div>
               <div><dt>Trade permission</dt><dd>{brief.tradePermission}</dd></div>
+              <div><dt>Risk rating</dt><dd>{brief.riskRating ?? "Unavailable"}</dd></div>
+              <div><dt>Volatility</dt><dd>{brief.volatilityRegime ?? "Unavailable"}</dd></div>
+              <div><dt>Execution readiness</dt><dd>{brief.executionReadiness ?? "Unavailable"}</dd></div>
               <div><dt>As of</dt><dd>{brief.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(brief.asOf)) : "Unavailable"}</dd></div>
             </dl>
           </div>
         </DashboardCard>
+
+        {brief.crossAssetNotes.length ? <DashboardCard eyebrow="OVERNIGHT CONTEXT" title="Verified cross-asset readings" className="briefEvidence">
+          <ul>{brief.crossAssetNotes.map((note) => <li key={note}>{note}</li>)}</ul>
+        </DashboardCard> : null}
+
+        {brief.scenarios.length ? <DashboardCard eyebrow="SCENARIOS" title="Bullish and bearish paths" className="briefEvidence">
+          <ul>{brief.scenarios.map((note) => <li key={note}>{note}</li>)}</ul>
+          <p>Scenario levels appear only when the provider supplies verified support or resistance. Missing levels stay withheld.</p>
+        </DashboardCard> : null}
 
         <DashboardCard eyebrow="WHAT MATTERS" title="Priority evidence" className="briefEvidence">
           {brief.focusDrivers.length ? <ol>{brief.focusDrivers.map((driver) => <li key={driver}>{driver}</li>)}</ol> : <SafeState title="Evidence unavailable"><p>No verified evidence has been selected.</p></SafeState>}

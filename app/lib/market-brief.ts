@@ -20,10 +20,15 @@ export type MarketBrief = {
   confidence: number | null;
   marketBias: TradingDecision["marketBias"];
   tradePermission: TradingDecision["tradePermission"];
+  riskRating: TradingDecision["riskRating"] | null;
+  volatilityRegime: TradingDecision["volatilityRegime"] | null;
+  executionReadiness: TradePlan["executionReadiness"] | null;
   focusDrivers: string[];
   riskFlags: string[];
   nextActions: string[];
   dataWarnings: string[];
+  crossAssetNotes: string[];
+  scenarios: string[];
   sourceLabel: string;
 };
 
@@ -75,6 +80,31 @@ function validSelection(
   return { ...selection, focusDrivers, primaryRisk };
 }
 
+function crossAssetNotes(snapshot: MarketSnapshot): string[] {
+  const labels: Record<string, string> = {
+    ES: "ES futures",
+    VIX: "VIX",
+    US2Y: "2-year Treasury yield",
+    US10Y: "10-year Treasury yield",
+    DXY: "US dollar index",
+  };
+  return snapshot.quotes.flatMap((quote) => {
+    const label = labels[quote.symbol];
+    if (!label) return [];
+    return [`${label}: ${quote.value} (${quote.change})`];
+  });
+}
+
+function scenarioNotes(intelligence: MarketIntelligence): string[] {
+  return intelligence.scenarios
+    .filter((scenario) => scenario.type !== "NEUTRAL")
+    .map((scenario) => {
+      const confirm = humanize(scenario.trigger.kind) + (scenario.trigger.level ? ` near ${scenario.trigger.level}` : "");
+      const invalidate = humanize(scenario.invalidation.kind) + (scenario.invalidation.level ? ` near ${scenario.invalidation.level}` : "");
+      return `${humanize(scenario.type)} ${scenario.probability}% · confirm ${confirm} · invalidate ${invalidate}`;
+    });
+}
+
 export function buildMarketBrief(
   snapshot: MarketSnapshot,
   intelligence: MarketIntelligence,
@@ -92,16 +122,21 @@ export function buildMarketBrief(
     return {
       schemaVersion: "1.0",
       mode: "unavailable",
-      asOf: null,
+      asOf: snapshot.asOf,
       headline: "Verified current market data is unavailable",
       summary: "Bullseye has paused the market brief rather than infer a directional view from preview, stale, fallback, or incomplete inputs.",
       confidence: null,
       marketBias: "neutral",
       tradePermission: "no-trade",
+      riskRating: null,
+      volatilityRegime: null,
+      executionReadiness: null,
       focusDrivers: [],
       riskFlags: ["Current provider data is not verified for trading guidance."],
       nextActions: ["Wait for a verified provider update and refresh the brief."],
       dataWarnings,
+      crossAssetNotes: crossAssetNotes(snapshot),
+      scenarios: [],
       sourceLabel: "Unavailable · fail-closed",
     };
   }
@@ -136,6 +171,9 @@ export function buildMarketBrief(
     confidence: Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence),
     marketBias: decision.marketBias,
     tradePermission: decision.tradePermission,
+    riskRating: decision.riskRating,
+    volatilityRegime: decision.volatilityRegime,
+    executionReadiness: plan.executionReadiness,
     focusDrivers: selectedDrivers.map(humanize),
     riskFlags: unique([primaryRisk, ...risks]).slice(0, 4).map(humanize),
     nextActions: unique([
@@ -144,6 +182,8 @@ export function buildMarketBrief(
       ...plan.reviewTrigger.conditions,
     ]).slice(0, 4).map(humanize),
     dataWarnings,
+    crossAssetNotes: crossAssetNotes(snapshot),
+    scenarios: scenarioNotes(intelligence),
     sourceLabel: accepted
       ? `AI-assisted prioritisation · ${snapshot.status.toLowerCase()} provider data`
       : `Deterministic engine brief · ${snapshot.status.toLowerCase()} provider data`,

@@ -42,13 +42,20 @@ export function MarketCommandHeader({ snapshot, state, timestamp }: { snapshot: 
 export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: MarketSnapshot; decision: TradingDecision; plan: TradePlan }) {
   const decisionReady = isDecisionReadySnapshot(snapshot);
   const tone = decision.tradePermission === "actionable" ? "positive" : decision.tradePermission === "caution" ? "warning" : "danger";
+  const biasLabel = (() => {
+    if (!decisionReady) return "Not inferred";
+    if (decision.marketBias === "neutral" && decision.conflictingDrivers.length > 0) return "Mixed";
+    return pretty(decision.marketBias);
+  })();
   return <section className="ctPlan ctPanel" aria-labelledby="market-plan-title">
     <header><div><span>Today&apos;s market plan</span><h2 id="market-plan-title">{decisionReady ? pretty(plan.directionalPosture) : "Stand aside until data is current"}</h2></div><TerminalBadge label={pretty(decision.tradePermission)} tone={tone} /></header>
     <div className="ctPlanGrid">
       <div className="ctPrimaryMetric"><span>Decision confidence</span><strong>{decisionReady ? `${decision.confidenceScore}%` : "Withheld"}</strong><small>{decisionReady ? confidenceCopy(decision.confidenceScore) : "No score is presented without current verified inputs."}</small></div>
       <dl>
-        <div><dt>Market bias</dt><dd>{decisionReady ? pretty(decision.marketBias) : "Not inferred"}</dd></div>
+        <div><dt>Market bias</dt><dd>{biasLabel}</dd></div>
         <div><dt>Risk level</dt><dd>{decisionReady ? pretty(decision.riskRating) : "Unrated"}</dd></div>
+        <div><dt>Volatility</dt><dd>{decisionReady ? pretty(decision.volatilityRegime) : "Unrated"}</dd></div>
+        <div><dt>Execution readiness</dt><dd>{decisionReady ? pretty(plan.executionReadiness) : "Not ready"}</dd></div>
         <div><dt>Preferred approach</dt><dd>{decisionReady ? pretty(plan.preferredSetupType) : "Wait for a current update"}</dd></div>
         <div><dt>Participation</dt><dd>{decisionReady ? pretty(plan.participationLevel) : "None"}</dd></div>
       </dl>
@@ -100,8 +107,93 @@ export function DecisionEnginePanel({ snapshot, decision, plan }: { snapshot: Ma
     <div className="ctDecisionColumns">
       <div><h3>Supporting factors</h3>{supporting.length ? <ul>{supporting.map((item) => <li key={item.factor}>{pretty(item.factor)} <span>{item.score}/100</span></li>)}</ul> : <p>No material supporting factor is dominant.</p>}</div>
       <div><h3>Conflicting factors</h3>{conflicts.length ? <ul>{conflicts.map((item) => <li key={item.factor}>{pretty(item.factor)} <span>{item.score}/100</span></li>)}</ul> : <p>No material conflict identified in current inputs.</p>}</div>
-      <div><h3>Required confirmation</h3>{plan.requiredConfirmations.length ? <ul>{plan.requiredConfirmations.slice(0, 4).map((item) => <li key={item}>{pretty(item)}</li>)}</ul> : <p>Recalculate after the next verified provider update.</p>}</div>
+      <div><h3>Required confirmation</h3>{plan.requiredConfirmations.length ? <ul>{plan.requiredConfirmations.slice(0, 4).map((item) => <li key={item}>{pretty(item)}</li>)}</ul> : <p>Wait for the next verified market update before acting.</p>}</div>
     </div>
+  </section>;
+}
+
+function trendCopy(score: number) {
+  if (score >= 60) return { label: "Constructive", detail: "Trend evidence leans higher across the current verified inputs." };
+  if (score <= 40) return { label: "Pressured", detail: "Trend evidence leans lower across the current verified inputs." };
+  return { label: "Balanced", detail: "Trend evidence is not strongly directional in the current verified inputs." };
+}
+
+function momentumCopy(score: number | null) {
+  if (score === null) return null;
+  if (score >= 60) return { label: "Expanding", detail: "Momentum evidence is supportive in the latest verified reading." };
+  if (score <= 40) return { label: "Fading", detail: "Momentum evidence is restrictive in the latest verified reading." };
+  return { label: "Steady", detail: "Momentum evidence is balanced in the latest verified reading." };
+}
+
+function scenarioCondition(kind: string, level: string | null) {
+  const action = pretty(kind);
+  return level ? `${action} near ${level}` : action;
+}
+
+export function DecisionIntelligencePanel({
+  snapshot,
+  intelligence,
+  decision,
+}: {
+  snapshot: MarketSnapshot;
+  intelligence: MarketIntelligence;
+  decision: TradingDecision;
+}) {
+  if (!isDecisionReadySnapshot(snapshot)) return null;
+  const trend = trendCopy(intelligence.scores.trend);
+  const momentumRaw = typeof snapshot.evidence.momentum === "number" && Number.isFinite(snapshot.evidence.momentum)
+    ? snapshot.evidence.momentum
+    : null;
+  const momentum = momentumCopy(momentumRaw);
+  const bullish = intelligence.scenarios.find((scenario) => scenario.type === "BULLISH");
+  const bearish = intelligence.scenarios.find((scenario) => scenario.type === "BEARISH");
+  return <section className="ctPanel ctIntelligence" aria-labelledby="decision-intelligence-title">
+    <header>
+      <div><span>Decision intelligence</span><h2 id="decision-intelligence-title">Why the current stance was reached</h2></div>
+      <small>Evidence-based · {formatSnapshotAge(snapshot.asOf)}</small>
+    </header>
+    <div className="ctIntelStrip">
+      <article><span>Trend</span><strong>{trend.label}</strong><p>{trend.detail}</p></article>
+      {momentum ? <article><span>Momentum</span><strong>{momentum.label}</strong><p>{momentum.detail}</p></article> : null}
+      <article><span>Volatility regime</span><strong>{pretty(decision.volatilityRegime)}</strong><p>Derived from verified volatility inputs and held closed when those inputs are incomplete.</p></article>
+      <article><span>Risk rating</span><strong>{pretty(decision.riskRating)}</strong><p>Overall participation risk from the current verified cross-asset set.</p></article>
+    </div>
+    <div className="ctScenarioPair">
+      {bullish ? <article>
+        <span>Bullish scenario</span>
+        <strong>{bullish.probability}% alignment</strong>
+        <p><b>Confirmation</b> {scenarioCondition(bullish.trigger.kind, bullish.trigger.level)}</p>
+        <p><b>Invalidation</b> {scenarioCondition(bullish.invalidation.kind, bullish.invalidation.level)}</p>
+      </article> : null}
+      {bearish ? <article>
+        <span>Bearish scenario</span>
+        <strong>{bearish.probability}% alignment</strong>
+        <p><b>Confirmation</b> {scenarioCondition(bearish.trigger.kind, bearish.trigger.level)}</p>
+        <p><b>Invalidation</b> {scenarioCondition(bearish.invalidation.kind, bearish.invalidation.level)}</p>
+      </article> : null}
+    </div>
+  </section>;
+}
+
+export function StructureLevelsPanel({
+  levels,
+  recentRange,
+}: {
+  levels: Array<{ label: string; value: number; source: string }>;
+  recentRange: number | null;
+}) {
+  if (!levels.length && recentRange === null) return null;
+  return <section className="ctPanel ctStructure" aria-labelledby="structure-levels-title">
+    <header>
+      <div><span>Verified structure</span><h2 id="structure-levels-title">Support, resistance and recent range</h2></div>
+      <small>Derived from verified candlesticks · not a forecast</small>
+    </header>
+    {levels.length ? <div className="ctLevelGrid">{levels.map((level) => <article key={level.label}>
+      <span>{level.label}</span>
+      <strong>{level.value.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+      <p>{level.source}</p>
+    </article>)}</div> : null}
+    {recentRange !== null ? <p className="ctRangeNote"><strong>Recent verified candle range</strong> Average high-to-low across the latest verified candles: {recentRange.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}. This describes observed movement only; it is not an expected-move forecast.</p> : null}
   </section>;
 }
 
