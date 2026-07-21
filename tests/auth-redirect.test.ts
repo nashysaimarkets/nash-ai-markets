@@ -132,6 +132,20 @@ test("explicit /terminal is never replaced by /dashboard", () => {
   assert.doesNotMatch(buildPostAuthRedirect(PREVIEW, "/terminal"), /dashboard/);
 });
 
+test("production login stays on the production origin", () => {
+  const redirectTo = buildEmailRedirectTo(PRODUCTION, "/terminal");
+  assert.match(redirectTo, /^https:\/\/www\.nashaimarkets\.com\/auth\/callback\?next=%2Fterminal$/);
+  assert.equal(buildPostAuthRedirect(PRODUCTION, "/terminal"), `${PRODUCTION}/terminal`);
+  assert.doesNotMatch(redirectTo, /vercel\.app/);
+});
+
+test("preview login never rewrites to production www", () => {
+  const redirectTo = buildEmailRedirectTo(PREVIEW, "/terminal");
+  assert.ok(redirectTo.startsWith(`${PREVIEW}/`));
+  assert.equal(redirectTo.includes("www.nashaimarkets.com"), false);
+  assert.equal(buildPostAuthRedirect(PREVIEW, "/terminal"), `${PREVIEW}/terminal`);
+});
+
 test("redirect chain keeps preview origin through callback to /terminal", () => {
   const chain = describeAuthRedirectChain(PREVIEW);
   assert.equal(chain.emailRedirectTo, `${PREVIEW}/auth/callback?next=%2Fterminal`);

@@ -79,11 +79,8 @@ export function resolveAuthRequestOrigin(request: Request): string {
 /**
  * Default landing after auth is always /terminal.
  * Callers may still pass an explicit allowlisted `next` (including /dashboard).
- */
-/**
- * Default landing after auth is always /terminal.
- * Callers may still pass an explicit allowlisted `next` (including /dashboard).
- * Origin is accepted for call-site clarity; it does not change the default.
+ * Origin is accepted for call-site clarity; it does not change the default path,
+ * and never rewrites production ↔ preview hosts.
  */
 export function defaultPostAuthPath(origin?: string): string {
   void origin;
