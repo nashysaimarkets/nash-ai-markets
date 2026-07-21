@@ -21,7 +21,8 @@ test("production simulation: passwordless authentication is fail-safe and redire
   assert.match(callback, /token_hash/);
   assert.match(callback, /verifyOtp/);
   assert.match(callback, /data\.session/);
-  assert.match(callback, /!requestedNext\.startsWith\("\/\/"\)/);
+  assert.match(callback, /safeAuthNextPath/);
+  assert.match(callback, /buildPostAuthRedirect/);
   assert.match(callback, /login\?error=signin/);
   assert.match(dashboard, /redirect\("\/login"\)/);
 });

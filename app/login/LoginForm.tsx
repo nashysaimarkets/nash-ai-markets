@@ -2,6 +2,11 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
+import {
+  buildEmailRedirectTo,
+  defaultPostAuthPath,
+  safeAuthNextPath,
+} from "../lib/auth/safe-auth-redirect";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -24,11 +29,14 @@ export default function LoginForm() {
     setMessageTone(null);
     try {
       const supabase = createClient();
+      const origin = window.location.origin;
+      const requestedNext = new URLSearchParams(window.location.search).get("next");
+      const next = safeAuthNextPath(requestedNext, defaultPostAuthPath(origin));
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          emailRedirectTo: buildEmailRedirectTo(origin, next),
         },
       });
       setMessageTone(error ? "error" : "success");

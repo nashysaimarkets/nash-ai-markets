@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "../../../utils/supabase/client";
-
-function safeNext(value: string | null) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
-}
+import { defaultPostAuthPath, safeAuthNextPath } from "../../lib/auth/safe-auth-redirect";
 
 export default function CompleteEmailSignIn() {
   const [message, setMessage] = useState("Completing your secure sign-in…");
@@ -14,7 +11,11 @@ export default function CompleteEmailSignIn() {
     let active = true;
 
     async function complete() {
-      const next = safeNext(new URLSearchParams(window.location.search).get("next"));
+      const origin = window.location.origin;
+      const next = safeAuthNextPath(
+        new URLSearchParams(window.location.search).get("next"),
+        defaultPostAuthPath(origin),
+      );
       const fragment = new URLSearchParams(window.location.hash.slice(1));
       const accessToken = fragment.get("access_token");
       const refreshToken = fragment.get("refresh_token");
