@@ -5,6 +5,7 @@ import {
   buildPostAuthRedirect,
   defaultPostAuthPath,
   normalizeHttpOrigin,
+  resolveAuthRequestOrigin,
   safeAuthNextPath,
 } from "../../lib/auth/safe-auth-redirect";
 
@@ -18,12 +19,16 @@ const EMAIL_OTP_TYPES = new Set<EmailOtpType>([
 ]);
 
 function signInFailureRedirect(origin: string) {
-  const trusted = normalizeHttpOrigin(origin) ?? "https://www.nashaimarkets.com";
+  const trusted = normalizeHttpOrigin(origin);
+  if (!trusted) {
+    return NextResponse.redirect("https://www.nashaimarkets.com/login?error=signin");
+  }
   return NextResponse.redirect(`${trusted}/login?error=signin`);
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const origin = resolveAuthRequestOrigin(request);
+  const { searchParams } = new URL(request.url);
   const tokenHash = searchParams.get("token_hash");
   const requestedType = searchParams.get("type");
   const next = safeAuthNextPath(searchParams.get("next"), defaultPostAuthPath(origin));

@@ -3,8 +3,9 @@ import {
   authCallbackAllowlistUrl,
   buildEmailRedirectTo,
   defaultPostAuthPath,
+  describeAuthRedirectChain,
   isVercelPreviewOrigin,
-  normalizeHttpOrigin,
+  resolveAuthRequestOrigin,
   safeAuthNextPath,
 } from "../../../lib/auth/safe-auth-redirect";
 
@@ -15,13 +16,11 @@ export const dynamic = "force-dynamic";
  * No auth, no email, no secrets — used to verify preview vs production redirect wiring.
  */
 export async function GET(request: Request) {
+  const origin = resolveAuthRequestOrigin(request);
   const url = new URL(request.url);
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
-  const host = forwardedHost || request.headers.get("host") || url.host;
-  const origin = normalizeHttpOrigin(`${forwardedProto}://${host}`) || url.origin;
   const next = safeAuthNextPath(url.searchParams.get("next"), defaultPostAuthPath(origin));
   const emailRedirectTo = buildEmailRedirectTo(origin, next);
+  const chain = describeAuthRedirectChain(origin, next);
 
   return NextResponse.json(
     {
@@ -31,6 +30,9 @@ export async function GET(request: Request) {
       callbackAllowlistUrl: authCallbackAllowlistUrl(origin),
       isVercelPreview: isVercelPreviewOrigin(origin),
       usesWwwProductionHost: /nashaimarkets\.com$/i.test(new URL(emailRedirectTo).host),
+      beginsWithPreviewOrigin:
+        isVercelPreviewOrigin(origin) && emailRedirectTo.startsWith(`${origin}/`),
+      redirectChain: chain,
       deployment: {
         vercelEnv: process.env.VERCEL_ENV ?? null,
         vercelUrl: process.env.VERCEL_URL ?? null,

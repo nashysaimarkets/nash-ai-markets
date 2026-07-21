@@ -53,9 +53,35 @@ export function isAllowedAuthOrigin(origin: string): boolean {
   return false;
 }
 
-/** Default landing after auth: terminal on Vercel preview, dashboard in production. */
-export function defaultPostAuthPath(origin: string): string {
-  return isVercelPreviewOrigin(origin) ? "/terminal" : "/dashboard";
+/**
+ * Resolve the public request origin from forwarded headers first.
+ * Never invent www.nashaimarkets.com when the request already has a host.
+ */
+export function resolveAuthRequestOrigin(request: Request): string {
+  const url = new URL(request.url);
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const forwardedProto =
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ||
+    url.protocol.replace(":", "") ||
+    "https";
+  if (forwardedHost) {
+    const fromForwarded = normalizeHttpOrigin(`${forwardedProto}://${forwardedHost}`);
+    if (fromForwarded) return fromForwarded;
+  }
+  const host = request.headers.get("host")?.split(",")[0]?.trim();
+  if (host) {
+    const fromHost = normalizeHttpOrigin(`${forwardedProto}://${host}`);
+    if (fromHost) return fromHost;
+  }
+  return normalizeHttpOrigin(url.origin) ?? url.origin;
+}
+
+/**
+ * Default landing after auth is always /terminal.
+ * Callers may still pass an explicit allowlisted `next` (including /dashboard).
+ */
+export function defaultPostAuthPath(_origin?: string): string {
+  return "/terminal";
 }
 
 /**
@@ -64,7 +90,7 @@ export function defaultPostAuthPath(origin: string): string {
  */
 export function safeAuthNextPath(
   requested: string | null | undefined,
-  fallback = "/dashboard",
+  fallback: string = defaultPostAuthPath(),
 ): string {
   if (!requested) return fallback;
   const trimmed = requested.trim();
@@ -83,31 +109,28 @@ export function safeAuthNextPath(
 
 /**
  * Build Supabase `emailRedirectTo` from the **current** browser/request origin.
- * Never rewrites a valid https origin to www — that previously forced preview
- * sessions onto production when allowlisting/Supabase wildcards disagreed.
- *
- * Path-only callbacks (no `?next=`) are preferred when the destination matches
- * the host default. Supabase Redirect URL globs match more reliably without
- * query strings; the callback route then applies `defaultPostAuthPath`.
+ * Never rewrites a valid https origin to www.
+ * Always includes `next` so the callback destination is explicit (/terminal by default).
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
   if (!trustedOrigin) {
     throw new Error("Refusing to build auth redirect from a non-http(s) origin");
   }
-  const fallback = defaultPostAuthPath(trustedOrigin);
-  const path = safeAuthNextPath(next, fallback);
+  const path = safeAuthNextPath(next, defaultPostAuthPath(trustedOrigin));
   const url = new URL("/auth/callback", trustedOrigin);
-  if (path !== fallback) {
-    url.searchParams.set("next", path);
-  }
+  url.searchParams.set("next", path);
   return url.toString();
 }
 
 /** Resolve the absolute post-auth location on the request’s own origin. */
 export function buildPostAuthRedirect(requestOrigin: string, next?: string | null): string {
   const origin = normalizeHttpOrigin(requestOrigin);
-  if (!origin) return "https://www.nashaimarkets.com/dashboard";
+  if (!origin) {
+    // Last-resort absolute URL only when the request origin is unusable.
+    // Prefer /terminal — never invent a /dashboard landing here.
+    return "https://www.nashaimarkets.com/terminal";
+  }
   const path = safeAuthNextPath(next, defaultPostAuthPath(origin));
   return `${origin}${path}`;
 }
@@ -117,4 +140,40 @@ export function authCallbackAllowlistUrl(origin: string): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
   if (!trustedOrigin) throw new Error("Invalid origin for callback allowlist URL");
   return `${trustedOrigin}/auth/callback`;
+}
+
+/** Expected post-OTP hops when the allowlist accepts the preview callback. */
+export function describeAuthRedirectChain(origin: string, next?: string | null) {
+  const trustedOrigin = normalizeHttpOrigin(origin);
+  if (!trustedOrigin) {
+    throw new Error("Invalid origin for redirect chain");
+  }
+  const path = safeAuthNextPath(next, defaultPostAuthPath(trustedOrigin));
+  const emailRedirectTo = buildEmailRedirectTo(trustedOrigin, path);
+  return {
+    emailRedirectTo,
+    expectedHops: [
+      {
+        step: 1,
+        name: "supabase_otp_redirect_to",
+        url: emailRedirectTo,
+      },
+      {
+        step: 2,
+        name: "app_auth_callback",
+        url: emailRedirectTo,
+        note: "Supabase redirects here with ?code=… (PKCE) or token_hash",
+      },
+      {
+        step: 3,
+        name: "post_auth_destination",
+        url: `${trustedOrigin}${path}`,
+      },
+    ],
+    failureModeIfAllowlistRejects: {
+      note: "Supabase substitutes Site URL; callback then runs on that host",
+      siteUrlFallbackExample: "https://www.nashaimarkets.com/auth/callback",
+      appThenRedirectsTo: "https://www.nashaimarkets.com/terminal",
+    },
+  };
 }

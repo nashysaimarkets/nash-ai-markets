@@ -41,7 +41,7 @@ export default function Login() {
           <div className="accessCardBody">
             <p className="accessStep">SIGN-IN LINK</p>
             <h2>Continue by email</h2>
-            <p>Enter the email connected to your membership. We’ll send one link that returns you to your dashboard.</p>
+            <p>Enter the email connected to your membership. We’ll send one link that returns you to the terminal.</p>
             <LoginForm />
           </div>
           <footer>
