@@ -64,7 +64,7 @@ export default async function MemberDashboard() {
     getTerminalMarketData(undefined, now),
     loadAccuracySummary(),
     loadFounding100ForEmail(user.email),
-    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("15m", now) : Promise.resolve(null),
+    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("5m", now) : Promise.resolve(null),
   ]);
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
@@ -86,18 +86,18 @@ export default async function MemberDashboard() {
   const offer = access.previewOffer;
   const portalUrl = "/api/stripe/portal";
   const accessCopy = access.tier === "elite"
-    ? "Every Bullseye intelligence, decision, planning and diagnostics feature is unlocked."
+    ? "Every Bullseye intelligence, decision, planning and data-safeguard feature is unlocked."
     : offer?.active
       ? `${offer.targetTier.toUpperCase()} preview active for the current ${offer.cadence} access period.`
       : offer?.eligible
         ? `Your ${offer.cadence} ${offer.targetTier.toUpperCase()} preview is available.`
         : `Your ${offer?.cadence ?? ""} preview has been used and resets automatically.`;
   const accessFeatures = [
-    { key: "market-overview" as const, label: "Market overview", tier: "Free", copy: "Provider status and cross-market snapshot" },
+    { key: "market-overview" as const, label: "Market overview", tier: "Free", copy: "Verified cross-market snapshot" },
     { key: "intelligence" as const, label: "Intelligence", tier: "Pro", copy: "Explainable drivers and scenario evidence" },
     { key: "decision-engine" as const, label: "Decision engine", tier: "Pro", copy: "Bias, conflicts and trade permission" },
     { key: "trade-planner" as const, label: "Trade planner", tier: "Elite", copy: "Participation, confirmations and review triggers" },
-    { key: "launch-diagnostics" as const, label: "Diagnostics", tier: "Elite", copy: "Provider health and engine synchronization" },
+    { key: "launch-diagnostics" as const, label: "Data safeguards", tier: "Elite", copy: "Additional verification and data-quality controls" },
   ];
   const bullishScenario = intelligence.scenarios.find((scenario) => scenario.type === "BULLISH")!;
   const bearishScenario = intelligence.scenarios.find((scenario) => scenario.type === "BEARISH")!;
@@ -277,9 +277,8 @@ export default async function MemberDashboard() {
 
       <section className="dashboardAccessArea" aria-label="Progressive membership access">
         <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>
-        {access.tier === "elite" ? <article className="dailyCard fullyUnlocked"><TerminalBadge label="Elite unlocked" tone="warning" /><h3>Full decision workflow available</h3><p>Intelligence, decisions, structured planning and launch diagnostics are included in your current membership.</p><Link href="/terminal">Open the Elite terminal →</Link></article> : <LockedPremiumCard tier={offer!.targetTier} title={offer!.targetTier === "pro" ? "Explore the explainable decision workflow" : "Explore structured planning and diagnostics"} value={offer!.targetTier === "pro" ? "See how Bullseye turns verified market inputs into explainable confidence, bias and trade permission." : "See how Elite converts a deterministic decision into disciplined participation, confirmations and review triggers."} benefits={offer!.targetTier === "pro" ? ["Explainable scores", "Decision permission", "Conflict warnings"] : ["Structured planner", "Event-risk controls", "Launch diagnostics"]} previewEligible={offer!.eligible} previewAvailable={previewState.available} previewCadence={offer!.cadence} />}
+        {access.tier === "elite" ? <article className="dailyCard fullyUnlocked"><TerminalBadge label="Elite unlocked" tone="warning" /><h3>Full decision workflow available</h3><p>Intelligence, decisions, structured planning and additional data safeguards are included in your current membership.</p><Link href="/terminal">Open the Elite terminal →</Link></article> : <LockedPremiumCard tier={offer!.targetTier} title={offer!.targetTier === "pro" ? "Explore the explainable decision workflow" : "Explore structured planning and safeguards"} value={offer!.targetTier === "pro" ? "See how Bullseye turns verified market inputs into explainable confidence, bias and trade permission." : "See how Elite converts a deterministic decision into disciplined participation, confirmations and review triggers."} benefits={offer!.targetTier === "pro" ? ["Explainable scores", "Decision permission", "Conflict warnings"] : ["Structured planner", "Event-risk controls", "Data safeguards"]} previewEligible={offer!.eligible} previewAvailable={previewState.available} previewCadence={offer!.cadence} />}
       </section>
-      <details className="commandMethodology"><summary><span>Advanced diagnostics</span><small>Provider health, candle availability and data-label definitions</small></summary><div><p><strong>Provider:</strong> {market.gatewayStatus.providerName}. <strong>Connection:</strong> {market.gatewayStatus.connectionStatus.replaceAll("_", " ").toLowerCase()}. <strong>Last successful update:</strong> {marketTimestamp}. <strong>Candles:</strong> {candleSeries?.status ?? "not included for this membership"}.</p><p><strong>Observed</strong> values come from verified provider payloads. <strong>Calculated</strong> scores, EMA overlays, UTC candle aggregation and rolling 24-hour values use only those observations. A rolling 24-hour high, low or first available close is not an official exchange-session statistic.</p><p>Delayed, stale, partial or unavailable inputs keep directional output visibly restricted. No API keys, tokens or server configuration values are rendered here.</p><nav><Link href="/risk-disclaimer">Risk disclosure</Link><Link href="/help">Help</Link></nav></div></details>
     </div>
   </MemberShell>;
 }

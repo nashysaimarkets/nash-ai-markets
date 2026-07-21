@@ -10,6 +10,8 @@ import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, MarketCommandHeader, MarketPressureMap, TodaysMarketPlan, WhatChanged } from "./components/CustomerTerminal";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
+import { getConfiguredFmpCandles } from "../lib/providers/financial-modeling-prep-candles";
+import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
 import { terminalStatusMessage } from "./lib/terminal-state";
@@ -35,7 +37,7 @@ export default async function Terminal() {
   const access = createProgressiveAccess(tier, previewState.claims);
   const previewOffer = access.previewOffer;
 
-  const { snapshot, gatewayStatus } = await getTerminalMarketData();
+  const [{ snapshot, gatewayStatus }, candleSeries] = await Promise.all([getTerminalMarketData(), access.tier === "pro" || access.tier === "elite" ? getConfiguredFmpCandles("5m") : Promise.resolve(null)]);
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
@@ -65,10 +67,8 @@ export default async function Terminal() {
         {access.features["decision-engine"] ? <DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="pro" title="Turn evidence into disciplined decisions" value="Pro identifies supporting evidence, conflicts and the confirmations required before conditions become actionable." benefits={["Conflict detection", "Invalidation awareness", "No-trade protection"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
       </section>
 
-      <section className="ctTwoColumn ctLower">
-        <WhatChanged />
-        <section className="ctPanel ctCompactPanel" aria-labelledby="history-title"><header><div><span>Market history</span><h2 id="history-title">Verified intraday chart unavailable</h2></div></header><p>The current snapshot does not include reliable OHLCV history. Bullseye will not draw or interpolate a chart from quote-only data.</p></section>
-      </section>
+      {candleSeries ? <DashboardCandlestickChart series={candleSeries} /> : null}
+      <WhatChanged />
 
       <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
         <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">{verified && snapshot.events.length ? "Verified event window" : "Economic calendar unavailable"}</h2></div></header>

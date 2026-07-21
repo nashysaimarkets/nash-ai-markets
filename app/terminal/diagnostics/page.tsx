@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Launch Diagnostics | Bullseye", robots: { index: false, follow: false } };
 
 export default async function TerminalDiagnosticsPage() {
+  if (process.env.NODE_ENV === "production") redirect("/terminal");
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");

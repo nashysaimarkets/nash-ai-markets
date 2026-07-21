@@ -3,7 +3,7 @@ import { createClient } from "../../../../utils/supabase/server.ts";
 import { resolveMembershipTier } from "../../../terminal/lib/membership-entitlement.ts";
 import { getConfiguredFmpCandles, type CandleTimeframe } from "../../../lib/providers/financial-modeling-prep-candles.ts";
 
-const TIMEFRAMES = new Set<CandleTimeframe>(["1m", "5m", "15m", "1h", "4h", "1d"]);
+const TIMEFRAMES = new Set<CandleTimeframe>(["1m", "5m", "1h", "1d"]);
 
 export async function GET(request: Request) {
   const supabase = await createClient();

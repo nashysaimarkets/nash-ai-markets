@@ -15,7 +15,7 @@ test("complete terminal render wires every deterministic output panel", async ()
     "CrossAssetBoard snapshot={snapshot}",
     "MarketPressureMap snapshot={snapshot} intelligence={intelligence}",
     "DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan}",
-    "Verified intraday chart unavailable",
+    "DashboardCandlestickChart",
   ]) assert.match(page, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
 

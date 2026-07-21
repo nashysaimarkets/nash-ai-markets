@@ -38,8 +38,22 @@ function finite(value: unknown): number | null {
 function timestamp(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return Math.round(value >= 1e12 ? value / 1000 : value);
   if (typeof value !== "string" || !value.trim()) return null;
-  if (!/(?:Z|[+-]\d\d:?\d\d)$/.test(value.trim())) return null;
-  const parsed = Date.parse(value.replace(" ", "T"));
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return Math.round(Date.parse(`${trimmed}T00:00:00Z`) / 1000);
+  if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+    const [date, clock] = trimmed.split(" ");
+    const [year, month, day] = date!.split("-").map(Number); const [hour, minute, second] = clock!.split(":").map(Number);
+    const intendedUtc = Date.UTC(year!, month! - 1, day!, hour!, minute!, second!);
+    let candidate = intendedUtc;
+    const formatter = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const parts = Object.fromEntries(formatter.formatToParts(candidate).filter((part) => part.type !== "literal").map((part) => [part.type, Number(part.value)]));
+      candidate += intendedUtc - Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+    }
+    return Math.round(candidate / 1000);
+  }
+  if (!/(?:Z|[+-]\d\d:?\d\d)$/.test(trimmed)) return null;
+  const parsed = Date.parse(trimmed.replace(" ", "T"));
   return Number.isFinite(parsed) ? Math.round(parsed / 1000) : null;
 }
 
@@ -72,7 +86,7 @@ export function determineCandleFreshness(candles: OhlcvPoint[], now: number, tim
   return { status, asOf: new Date(latest.time * 1000).toISOString(), dataAgeMs: age };
 }
 
-const source = (timeframe: CandleTimeframe) => timeframe === "1d" ? { path: "historical-price-eod/full", days: 370 } : { path: `historical-chart/${({ "1m": "1min", "5m": "5min", "15m": "15min", "1h": "1hour", "4h": "1hour" } as const)[timeframe]}`, days: timeframe === "1m" ? 1 : timeframe === "5m" || timeframe === "15m" ? 3 : 45 };
+const source = (timeframe: CandleTimeframe) => timeframe === "1d" ? { path: "historical-price-eod/full", days: 370 } : { path: `historical-chart/${({ "1m": "1min", "5m": "5min", "15m": "15min", "1h": "1hour", "4h": "4hour" } as const)[timeframe]}`, days: timeframe === "1m" ? 1 : timeframe === "5m" || timeframe === "15m" ? 3 : 45 };
 
 function aggregateFourHour(candles: OhlcvPoint[]) {
   const groups = new Map<number, OhlcvPoint[]>();
@@ -104,7 +118,7 @@ export async function loadFmpCandles({ apiKey, symbol, timeframe = "15m", baseUr
   return { ...empty(symbol, timeframe, null), ...determineCandleFreshness(candles, now, timeframe), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
 }
 
-export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "15m", now = Date.now()): Promise<VerifiedCandleSeries> {
+export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "5m", now = Date.now()): Promise<VerifiedCandleSeries> {
   const apiKey = process.env.FMP_API_KEY?.trim();
   const symbol = process.env.FMP_SP500_FUTURES_SYMBOL?.trim() || "ESUSD";
   if (!apiKey) return empty(symbol, timeframe, "not_configured");

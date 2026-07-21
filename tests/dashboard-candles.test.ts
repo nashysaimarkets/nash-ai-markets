@@ -47,10 +47,10 @@ test("provider failures remain fail closed and contract labels remain exact", as
 
 test("provider response returns verified schema without exposing its credential", async () => {
   let requested = "";
-  const result = await loadFmpCandles({ apiKey: "do-not-expose", symbol: "ESUSD", now: (base + 300) * 1000, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify([{ timestamp: base, open: 99, high: 101, low: 98, close: 100, volume: 10 }]), { status: 200 }); } });
+  const result = await loadFmpCandles({ apiKey: "do-not-expose", symbol: "ESUSD", timeframe: "5m", now: (base + 300) * 1000, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify([{ timestamp: base, open: 99, high: 101, low: 98, close: 100, volume: 10 }]), { status: 200 }); } });
   assert.equal(result.symbol, "ESUSD");
   assert.equal(result.status, "delayed");
-  assert.match(requested, /historical-chart\/15min/);
+  assert.match(requested, /historical-chart\/5min/);
   assert.equal(JSON.stringify(result).includes("do-not-expose"), false);
 });
 
@@ -80,9 +80,10 @@ test("EMA, VWAP and rolling 24-hour labels use deduplicated chronological candle
   assert.deepEqual(candleReferenceLevels(candles).map((level) => level.label), ["24h high", "24h low", "First available close"]);
 });
 
-test("timezone-less provider date strings fail closed instead of being assumed UTC", () => {
+test("FMP market-time strings are converted from New York time with DST, never host-local time", () => {
   const payload = [{ date: "2026-07-21 10:00:00", open: 99, high: 101, low: 98, close: 100, volume: 10 }];
-  assert.deepEqual(normalizeFmpCandles(payload), []);
+  assert.equal(normalizeFmpCandles(payload)[0]?.time, Date.parse("2026-07-21T14:00:00Z") / 1000);
+  assert.equal(normalizeFmpCandles([{ ...payload[0], date: "2026-01-21 10:00:00" }])[0]?.time, Date.parse("2026-01-21T15:00:00Z") / 1000);
   assert.equal(normalizeFmpCandles([{ ...payload[0], date: "2026-07-21T10:00:00Z" }]).length, 1);
 });
 
@@ -107,8 +108,8 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.match(loading, /dashboardChartSkeletonCanvas/);
 });
 
-test("documented FMP intervals use one upstream series and 4-hour is aggregated locally", async () => {
-  for (const [timeframe, expected] of [["1m", "1min"], ["5m", "5min"], ["15m", "15min"], ["1h", "1hour"], ["4h", "1hour"], ["1d", "historical-price-eod/full"]] as const) {
+test("documented FMP intervals use their exact upstream endpoint", async () => {
+  for (const [timeframe, expected] of [["1m", "1min"], ["5m", "5min"], ["15m", "15min"], ["1h", "1hour"], ["4h", "4hour"], ["1d", "historical-price-eod/full"]] as const) {
     let requested = "";
     const points = Array.from({ length: 8 }, (_, index) => ({ timestamp: base + index * 3600, open: 99 + index, high: 101 + index, low: 98 + index, close: 100 + index, volume: 10 }));
     const result = await loadFmpCandles({ apiKey: "configured", symbol: "ESUSD", timeframe, now: (base + 8 * 3600) * 1000, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify(points)); } });
@@ -117,4 +118,19 @@ test("documented FMP intervals use one upstream series and 4-hour is aggregated 
     assert.equal(result.classification, timeframe === "1d" ? "end_of_day" : "delayed");
     if (timeframe === "4h") assert.ok(result.candles.every((item) => item.time % 14_400 === 0));
   }
+});
+
+test("customer controls expose only verified ESUSD commodity intervals", async () => {
+  const [chart, route, terminal, dashboard] = await Promise.all([
+    readFile(new URL("../app/dashboard/components/DashboardCandlestickChart.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/market/candles/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(chart, /1m.*5m.*1h.*1D/);
+  assert.doesNotMatch(chart, /label: "15m"|label: "4h"/);
+  assert.match(route, /\["1m", "5m", "1h", "1d"\]/);
+  assert.match(terminal, /DashboardCandlestickChart/);
+  assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics/);
+  assert.doesNotMatch(dashboard, /Advanced diagnostics|FMP_API_KEY|provider diagnostics/i);
 });
