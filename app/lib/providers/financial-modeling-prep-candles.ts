@@ -118,9 +118,47 @@ export async function loadFmpCandles({ apiKey, symbol, timeframe = "15m", baseUr
   return { ...empty(symbol, timeframe, null), ...determineCandleFreshness(candles, now, timeframe), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
 }
 
+function configuredApiKey(): string | null {
+  const apiKey = process.env.FMP_API_KEY?.trim() ?? "";
+  if (!apiKey) return null;
+  // Reject documented placeholders so customer charts fail closed instead of calling FMP with junk credentials.
+  if (/^replace|your-|example|changeme|todo|xxx/i.test(apiKey)) return null;
+  return apiKey;
+}
+
+async function loadFixtureCandles(symbol: string, timeframe: CandleTimeframe, now: number): Promise<VerifiedCandleSeries | null> {
+  if (process.env.NODE_ENV === "production") return null;
+  const configured = process.env.BULLSEYE_CANDLE_FIXTURE_PATH?.trim();
+  const { access, readFile } = await import("node:fs/promises");
+  const { resolve } = await import("node:path");
+  const candidates = [configured, resolve(process.cwd(), "fixtures/candles-esusd-5m.json")].filter((value): value is string => Boolean(value?.trim()));
+  for (const fixturePath of candidates) {
+    try {
+      await access(fixturePath);
+      const payload = JSON.parse(await readFile(fixturePath, "utf8")) as unknown;
+      const normalized = normalizeFmpCandles(payload, timeframe === "4h" ? MAX_CANDLES * 4 : MAX_CANDLES);
+      const candles = (timeframe === "4h" ? aggregateFourHour(normalized) : normalized).slice(-MAX_CANDLES);
+      if (!candles.length) return empty(symbol, timeframe, "schema");
+      return {
+        ...empty(symbol, timeframe, null),
+        ...determineCandleFreshness(candles, now, timeframe),
+        candles,
+        instrumentDetail: "Non-production layout fixture · not live market data",
+        cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 },
+        failureCategory: null,
+      };
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "5m", now = Date.now()): Promise<VerifiedCandleSeries> {
-  const apiKey = process.env.FMP_API_KEY?.trim();
   const symbol = process.env.FMP_SP500_FUTURES_SYMBOL?.trim() || "ESUSD";
+  const fixture = await loadFixtureCandles(symbol, timeframe, now);
+  if (fixture) return fixture;
+  const apiKey = configuredApiKey();
   if (!apiKey) return empty(symbol, timeframe, "not_configured");
   const key = `${symbol}:${timeframe}:${new Date(now).toISOString().slice(0, 10)}`;
   const before = cache.getStats();

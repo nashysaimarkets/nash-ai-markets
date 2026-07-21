@@ -131,6 +131,18 @@ test("customer controls expose only verified ESUSD commodity intervals", async (
   assert.doesNotMatch(chart, /label: "15m"|label: "4h"/);
   assert.match(route, /\["1m", "5m", "1h", "1d"\]/);
   assert.match(terminal, /DashboardCandlestickChart/);
-  assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics/);
+  assert.match(terminal, /ctChartPrimary/);
+  assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics|WhatChanged/);
   assert.doesNotMatch(dashboard, /Advanced diagnostics|FMP_API_KEY|provider diagnostics/i);
+});
+
+test("layout candle fixture normalizes into a delayed series outside production", async () => {
+  process.env.BULLSEYE_CANDLE_FIXTURE_PATH = new URL("../fixtures/candles-esusd-5m.json", import.meta.url).pathname;
+  delete process.env.FMP_API_KEY;
+  const { getConfiguredFmpCandles } = await import("../app/lib/providers/financial-modeling-prep-candles.ts?" + Date.now());
+  const series = await getConfiguredFmpCandles("5m");
+  assert.ok(series.candles.length > 20);
+  assert.notEqual(series.status, "unavailable");
+  assert.match(series.instrumentDetail, /layout fixture|not live market data/i);
+  delete process.env.BULLSEYE_CANDLE_FIXTURE_PATH;
 });

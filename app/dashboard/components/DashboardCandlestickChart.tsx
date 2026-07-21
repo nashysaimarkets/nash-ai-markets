@@ -21,6 +21,22 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: V
   const stats = useMemo(() => candleSessionStats(series.candles), [series.candles]);
   const levels = useMemo(() => candleReferenceLevels(series.candles), [series.candles]);
   const available = series.status !== "unavailable" && series.candles.length > 0;
+  const unavailableCopy = (() => {
+    switch (series.failureCategory) {
+      case "authentication":
+        return { title: "Verified candle history unavailable", detail: "The market-data provider rejected authentication. No candles are shown." };
+      case "entitlement":
+        return { title: "Verified candle history unavailable", detail: "The configured provider entitlement does not include this series. No candles are shown." };
+      case "rate_limit":
+        return { title: "Verified candle history unavailable", detail: "The provider rate limit was reached. Retry shortly. No candles have been invented." };
+      case "not_configured":
+        return { title: "Verified candle history unavailable", detail: "Candle provider credentials are not configured for this environment." };
+      case "schema":
+        return { title: "Verified candle history unavailable", detail: "No structurally valid OHLCV series was returned for this interval." };
+      default:
+        return { title: "Verified candlestick history unavailable", detail: "No structurally valid OHLCV series was returned for this interval. No quote-derived, synthetic or carried-forward candles are displayed." };
+    }
+  })();
 
   async function load(next: CandleTimeframe) {
     setLoading(true); setRequestError(null);
@@ -58,7 +74,7 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: V
     {stats ? <><div className="chartMarketStrip" aria-label="Verified rolling 24-hour statistics"><div><span>Latest verified close</span><strong>{number(stats.latest)}</strong></div><div><span>24h change</span><strong>{stats.change >= 0 ? "+" : ""}{number(stats.change)} ({number(stats.percentageChange)}%)</strong></div><div><span>24h high</span><strong>{number(stats.high)}</strong></div><div><span>24h low</span><strong>{number(stats.low)}</strong></div><div><span>First available close</span><strong>{number(stats.firstAvailableClose)}</strong></div><div><span>Average candle range · 14</span><strong>{number(stats.averageCandleRange)}</strong></div></div><div className="chartRange"><span>Rolling 24h position</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div></> : null}
     <div className="chartControlBar"><div className="dashboardTimeframes" role="group" aria-label="Candlestick interval">{OPTIONS.map((option) => <button key={option.timeframe} type="button" aria-pressed={option.timeframe === timeframe} disabled={loading} onClick={() => option.timeframe !== timeframe && void load(option.timeframe)}>{option.label}</button>)}</div><div className="dashboardOverlays" role="group" aria-label="Chart overlays">{([['volume','Volume'],['ema20','20 EMA'],['ema50','50 EMA']] as const).map(([key, label]) => <button key={key} type="button" aria-pressed={overlays[key]} onClick={() => setOverlays((current) => ({ ...current, [key]: !current[key] }))}>{label}</button>)}<button type="button" disabled={loading} onClick={() => void load(timeframe)}>{loading ? "Loading…" : "Refresh"}</button></div></div>
     {requestError ? <div className="chartRequestError" role="alert">{requestError} Your existing chart remains visible. You can retry safely.</div> : null}
-    {loading ? <div className="dashboardChartLoading" role="status">Loading verified {timeframe} candles…</div> : available ? <><div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart`} /><div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div></> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>Verified candlestick history unavailable</strong><p>No structurally valid OHLCV series was returned for this interval. No quote-derived, synthetic or carried-forward candles are displayed.</p><small>Choose another interval or retry later.</small></div></div>}
+    {loading ? <div className="dashboardChartLoading" role="status">Loading verified {timeframe} candles…</div> : available ? <><div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart`} /><div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div></> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>{unavailableCopy.title}</strong><p>{unavailableCopy.detail}</p><small>Choose another interval or retry later.</small></div></div>}
     <footer><span>{series.classification === "end_of_day" ? "End-of-day" : "Delayed"} verified provider series</span><span>Interactive intelligence only · no order execution</span></footer>
   </section>;
 }

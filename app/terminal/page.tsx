@@ -8,7 +8,7 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner";
 import { formatSnapshotAge, formatUkTimestamp } from "../lib/market-data";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
-import { CrossAssetBoard, DecisionEnginePanel, MarketCommandHeader, MarketPressureMap, TodaysMarketPlan, WhatChanged } from "./components/CustomerTerminal";
+import { CrossAssetBoard, DecisionEnginePanel, MarketCommandHeader, MarketPressureMap, TodaysMarketPlan } from "./components/CustomerTerminal";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { getConfiguredFmpCandles } from "../lib/providers/financial-modeling-prep-candles";
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
@@ -36,14 +36,24 @@ export default async function Terminal() {
   const previewState = await loadPreviewClaims(user.id);
   const access = createProgressiveAccess(tier, previewState.claims);
   const previewOffer = access.previewOffer;
+  const paid = access.tier === "pro" || access.tier === "elite";
 
-  const [{ snapshot, gatewayStatus }, candleSeries] = await Promise.all([getTerminalMarketData(), access.tier === "pro" || access.tier === "elite" ? getConfiguredFmpCandles("5m") : Promise.resolve(null)]);
+  const [{ snapshot, gatewayStatus }, candleSeries] = await Promise.all([
+    getTerminalMarketData(),
+    paid ? getConfiguredFmpCandles("5m") : Promise.resolve(null),
+  ]);
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const state = terminalMarketState(snapshot.status, gatewayStatus.connectionStatus, gatewayStatus.fallbackActive);
   const verified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
   const timestamp = verified ? formatUkTimestamp(snapshot.asOf) : "Unavailable";
+  const customerWarnings = [
+    ...decision.noTradeReasons,
+    ...decision.dataQualityWarnings.map((warning) => `${warning.code}: ${warning.field}`),
+    ...plan.eventRiskWarnings.map((warning) => warning.code),
+  ];
+  const showCatalysts = verified && snapshot.events.length > 0;
 
   return <main className="foxtrotTerminal customerTerminal" id="overview">
     <header className="ctTopbar">
@@ -59,7 +69,12 @@ export default async function Terminal() {
         {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
       </section>
 
+      {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} /></section> : null}
+      {!paid ? <LockedPremiumCard tier="pro" title="Unlock the verified market chart" value="Pro and Elite members receive the verified candlestick workspace with interval controls and fail-closed empty states." benefits={["Verified OHLCV history", "Interval controls", "No invented candles"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} /> : null}
+
       {access.features["trade-planner"] ? <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="elite" title="Unlock today’s complete market plan" value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework." benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
+
+      {customerWarnings.length ? <section className="ctPanel ctConstraintsPanel" aria-labelledby="customer-warnings-title"><header><div><span>Participation limits</span><h2 id="customer-warnings-title">Delay and no-trade conditions</h2></div></header><div className="ctConstraints"><strong>Conditions limiting participation</strong><ul>{customerWarnings.map((item) => <li key={item}>{item.replaceAll("_", " ").replaceAll("-", " ")}</li>)}</ul></div></section> : null}
 
       <CrossAssetBoard snapshot={snapshot} />
       <section className="ctTwoColumn">
@@ -67,13 +82,10 @@ export default async function Terminal() {
         {access.features["decision-engine"] ? <DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="pro" title="Turn evidence into disciplined decisions" value="Pro identifies supporting evidence, conflicts and the confirmations required before conditions become actionable." benefits={["Conflict detection", "Invalidation awareness", "No-trade protection"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
       </section>
 
-      {candleSeries ? <DashboardCandlestickChart series={candleSeries} /> : null}
-      <WhatChanged />
-
-      <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
-        <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">{verified && snapshot.events.length ? "Verified event window" : "Economic calendar unavailable"}</h2></div></header>
-        {verified && snapshot.events.length ? <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div> : <p>The current provider snapshot contains no verified calendar events. Check a dedicated calendar before planning around scheduled releases.</p>}
-      </section>
+      {showCatalysts ? <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
+        <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
+        <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
+      </section> : null}
 
       <footer className="ctFooter"><span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span><Link href="/risk-disclaimer">Read the risk disclosure</Link></footer>
     </section>

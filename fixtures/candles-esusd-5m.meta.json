@@ -1,0 +1,8 @@
+{
+  "purpose": "Layout and component fixture only — schema-valid OHLCV for non-production chart rendering tests",
+  "notLiveMarketData": true,
+  "symbol": "ESUSD",
+  "timeframe": "5m",
+  "source": "Derived from repository candle-schema unit vectors; timestamps aligned to capture window for delayed freshness",
+  "note": "Never treat as live CME/FMP market data. Production must use getConfiguredFmpCandles against a licensed FMP key."
+}

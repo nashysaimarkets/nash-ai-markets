@@ -87,10 +87,11 @@ export function DecisionEnginePanel({ snapshot, decision, plan }: { snapshot: Ma
       <div><h3>Supporting factors</h3>{supporting.length ? <ul>{supporting.map((item) => <li key={item.factor}>{pretty(item.factor)} <span>{item.score}/100</span></li>)}</ul> : <p>No material supporting factor is dominant.</p>}</div>
       <div><h3>Conflicting factors</h3>{conflicts.length ? <ul>{conflicts.map((item) => <li key={item.factor}>{pretty(item.factor)} <span>{item.score}/100</span></li>)}</ul> : <p>No material conflict identified in current inputs.</p>}</div>
       <div><h3>Required confirmation</h3>{plan.requiredConfirmations.length ? <ul>{plan.requiredConfirmations.slice(0, 4).map((item) => <li key={item}>{pretty(item)}</li>)}</ul> : <p>Recalculate after the next verified provider update.</p>}</div>
-    </div>{decision.noTradeReasons.length || decision.dataQualityWarnings.length || plan.eventRiskWarnings.length ? <div className="ctConstraints"><strong>Conditions limiting participation</strong><ul>{[...decision.noTradeReasons, ...decision.dataQualityWarnings.map((warning) => `${warning.code}: ${warning.field}`), ...plan.eventRiskWarnings.map((warning) => warning.code)].map((item) => <li key={item}>{pretty(item)}</li>)}</ul></div> : null}</> : <div className="ctHonestEmpty"><strong>Decision evidence is unavailable</strong><p>Once every critical input is verified and current, Bullseye will show supporting factors, conflicts and confirmation conditions here.</p></div>}
+    </div></> : <div className="ctHonestEmpty"><strong>Decision evidence is unavailable</strong><p>Once every critical input is verified and current, Bullseye will show supporting factors, conflicts and confirmation conditions here.</p></div>}
   </section>;
 }
 
 export function WhatChanged() {
-  return <section className="ctPanel ctCompactPanel" aria-labelledby="what-changed-title"><header><div><span>What changed</span><h2 id="what-changed-title">Previous comparison unavailable</h2></div></header><p>Bullseye has not retained a verified prior snapshot for this session. No change narrative has been inferred.</p></section>;
+  // Empty prior-snapshot cards are omitted from the customer terminal to keep the chart dominant.
+  return null;
 }
