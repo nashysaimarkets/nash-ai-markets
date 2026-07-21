@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../utils/supabase/server.ts";
 import { resolveMembershipTier } from "../../../terminal/lib/membership-entitlement.ts";
-import { getConfiguredFmpCandles, type CandleTimeframe } from "../../../lib/providers/financial-modeling-prep-candles.ts";
+import { getConfiguredFmpCandles, toCustomerCandleSeries, type CandleTimeframe } from "../../../lib/providers/financial-modeling-prep-candles.ts";
 
 const TIMEFRAMES = new Set<CandleTimeframe>(["1m", "5m", "1h", "1d"]);
 
@@ -14,5 +14,6 @@ export async function GET(request: Request) {
   if (tier !== "pro" && tier !== "elite") return NextResponse.json({ error: "A Pro or Elite membership is required" }, { status: 403 });
   const requested = new URL(request.url).searchParams.get("timeframe") as CandleTimeframe | null;
   if (!requested || !TIMEFRAMES.has(requested)) return NextResponse.json({ error: "Unsupported candle interval" }, { status: 400 });
-  return NextResponse.json(await getConfiguredFmpCandles(requested), { headers: { "Cache-Control": "private, no-store" } });
+  const series = await getConfiguredFmpCandles(requested);
+  return NextResponse.json(toCustomerCandleSeries(series), { headers: { "Cache-Control": "private, no-store" } });
 }

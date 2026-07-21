@@ -151,7 +151,8 @@ function configuredApiKey(): string | null {
 }
 
 async function loadFixtureCandles(symbol: string, timeframe: CandleTimeframe, now: number): Promise<VerifiedCandleSeries | null> {
-  if (process.env.NODE_ENV === "production") return null;
+  // Never serve fixtures on Vercel preview/production or any production Node build.
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL) return null;
   const configured = process.env.BULLSEYE_CANDLE_FIXTURE_PATH?.trim();
   const { access, readFile } = await import("node:fs/promises");
   const { resolve } = await import("node:path");
@@ -176,6 +177,15 @@ async function loadFixtureCandles(symbol: string, timeframe: CandleTimeframe, no
     }
   }
   return null;
+}
+
+/** Customer-safe candle payload: strips cache internals before browser/API delivery. */
+export type CustomerCandleSeries = Omit<VerifiedCandleSeries, "cache">;
+
+export function toCustomerCandleSeries(series: VerifiedCandleSeries): CustomerCandleSeries {
+  const { cache, ...customer } = series;
+  void cache;
+  return customer;
 }
 
 export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "5m", now = Date.now()): Promise<VerifiedCandleSeries> {

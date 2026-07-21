@@ -136,7 +136,6 @@ export async function getTerminalMarketData(
   now = Date.now(),
 ): Promise<TerminalMarketGatewayResult> {
   const previewOnly = process.env.MARKET_DATA_PROVIDER === "preview";
-  console.info("[bullseye:market-data] configuration", getFmpEnvironmentDiagnostics());
   const configured = override ? null : createConfiguredProvider();
 
   if (!override && (previewOnly || !configured)) {

@@ -14,7 +14,7 @@ import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx"
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
-import { getConfiguredFmpCandles } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
 import { EliteScenarioCard } from "./components/EliteScenarioCard.tsx";
@@ -59,13 +59,14 @@ export default async function MemberDashboard() {
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
-  const [previewState, market, accuracy, founding100, candleSeries] = await Promise.all([
+  const [previewState, market, accuracy, founding100, candleSeriesRaw] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
     loadAccuracySummary(),
     loadFounding100ForEmail(user.email),
     tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("5m", now) : Promise.resolve(null),
   ]);
+  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: market.snapshot.status, providerStatus: market.gatewayStatus.connectionStatus, dataAgeMs: market.gatewayStatus.dataAgeMs, fallbackActive: market.gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });

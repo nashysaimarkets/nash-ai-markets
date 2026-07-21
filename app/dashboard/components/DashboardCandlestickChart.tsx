@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { UTCTimestamp } from "lightweight-charts";
-import type { CandleTimeframe, VerifiedCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
+import type { IChartApi, UTCTimestamp } from "lightweight-charts";
+import type { CandleTimeframe, CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { candleReferenceLevels, candleSessionStats, exponentialMovingAverage } from "../lib/candle-analysis.ts";
 
 type Overlay = "volume" | "ema20" | "ema50";
@@ -12,11 +12,11 @@ const OPTIONS: Array<{ label: string; timeframe: CandleTimeframe }> = [
   { label: "1h", timeframe: "1h" },
   { label: "1D", timeframe: "1d" },
 ];
-const REFRESH_MS = 60_000;
+const REFRESH_MS = 90_000;
 const number = (value: number | null, digits = 2) => value === null ? "Unavailable" : value.toLocaleString("en-GB", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const age = (ms: number | null) => ms === null ? "Age unavailable" : ms < 60_000 ? "Under 1 minute old" : ms < 3_600_000 ? `${Math.floor(ms / 60_000)} minutes old` : ms < 86_400_000 ? `${Math.floor(ms / 3_600_000)} hours old` : `${Math.floor(ms / 86_400_000)} days old`;
 
-function customerStatusLabel(series: VerifiedCandleSeries): string {
+function customerStatusLabel(series: CustomerCandleSeries): string {
   if (series.status === "unavailable") return "Unavailable";
   if (series.classification === "end_of_day") return "End-of-day";
   if (series.status === "previous_session" || series.classification === "previous_session") return "Previous session";
@@ -25,9 +25,10 @@ function customerStatusLabel(series: VerifiedCandleSeries): string {
   return "Delayed";
 }
 
-export function DashboardCandlestickChart({ series: initialSeries }: { series: VerifiedCandleSeries }) {
+export function DashboardCandlestickChart({ series: initialSeries }: { series: CustomerCandleSeries }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
   const [series, setSeries] = useState(initialSeries);
   const [timeframe, setTimeframe] = useState<CandleTimeframe>(initialSeries.timeframe);
   const [loading, setLoading] = useState(false);
@@ -64,7 +65,7 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: V
     try {
       const response = await fetch(`/api/market/candles?timeframe=${next}`, { cache: "no-store" });
       if (!response.ok) throw new Error(response.status === 403 ? "Your membership could not be verified for candle history." : "Verified candle history could not be loaded.");
-      const result = await response.json() as VerifiedCandleSeries;
+      const result = await response.json() as CustomerCandleSeries;
       setSeries(result); setTimeframe(next);
     } catch (error) {
       if (!opts?.silent) setRequestError(error instanceof Error ? error.message : "Verified candle history could not be loaded.");
@@ -79,26 +80,83 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: V
   }, [timeframe]);
 
   useEffect(() => {
-    if (!available || !containerRef.current) return;
-    let disposed = false; let remove = () => {};
-    void import("lightweight-charts").then(({ CandlestickSeries, ColorType, HistogramSeries, LineSeries, createChart }) => {
-      if (disposed || !containerRef.current) return;
-      const chart = createChart(containerRef.current, { autoSize: true, height: 520, layout: { background: { type: ColorType.Solid, color: "#091014" }, textColor: "#9aa7ad", attributionLogo: true }, grid: { vertLines: { color: "#19252b" }, horzLines: { color: "#19252b" } }, crosshair: { vertLine: { color: "#63777f", labelBackgroundColor: "#26373e" }, horzLine: { color: "#63777f", labelBackgroundColor: "#26373e" } }, rightPriceScale: { borderColor: "#2a3940", autoScale: true }, timeScale: { borderColor: "#2a3940", timeVisible: timeframe !== "1d", secondsVisible: false, rightOffset: 4, barSpacing: 8 }, handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }, handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false } });
-      const candles = chart.addSeries(CandlestickSeries, { upColor: "#68d7b4", downColor: "#e77f86", borderVisible: false, wickUpColor: "#68d7b4", wickDownColor: "#e77f86", priceLineVisible: true, lastValueVisible: true });
-      candles.setData(series.candles.map(({ time, open, high, low, close }) => ({ time: time as UTCTimestamp, open, high, low, close })));
-      if (overlays.volume && volumeVerified) {
-        const volume = chart.addSeries(HistogramSeries, { priceFormat: { type: "volume" }, priceScaleId: "volume", lastValueVisible: false, priceLineVisible: false });
-        volume.priceScale().applyOptions({ scaleMargins: { top: .78, bottom: 0 } });
-        volume.setData(series.candles.map((point) => ({ time: point.time as UTCTimestamp, value: point.volume, color: point.close >= point.open ? "#68d7b455" : "#e77f8655" })));
-      }
-      const addLine = (data: Array<{ time: number; value: number }>, color: string, title: string) => { const line = chart.addSeries(LineSeries, { color, lineWidth: 2, title, priceLineVisible: false, lastValueVisible: true }); line.setData(data.map((point) => ({ time: point.time as UTCTimestamp, value: point.value }))); };
-      if (overlays.ema20) addLine(exponentialMovingAverage(series.candles, 20), "#71b7e6", "EMA 20");
-      if (overlays.ema50) addLine(exponentialMovingAverage(series.candles, 50), "#bb91e8", "EMA 50");
-      for (const level of levels) candles.createPriceLine({ price: level.value, color: "#8fa2a866", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: level.label });
-      chart.subscribeCrosshairMove((param) => { const value = param.seriesData.get(candles); if (tooltipRef.current && value && "open" in value) tooltipRef.current.textContent = `O ${number(value.open)} · H ${number(value.high)} · L ${number(value.low)} · C ${number(value.close)}`; });
-      chart.timeScale().fitContent(); remove = () => chart.remove();
-    });
-    return () => { disposed = true; remove(); };
+    if (!available) {
+      chartRef.current?.remove();
+      chartRef.current = null;
+      return;
+    }
+    const host = containerRef.current;
+    if (!host) return;
+    let disposed = false;
+    let painted = false;
+    let resizeObserver: ResizeObserver | null = null;
+
+    const paint = () => {
+      if (disposed || painted || !containerRef.current || containerRef.current.clientWidth < 40) return;
+      painted = true;
+      void import("lightweight-charts").then(({ CandlestickSeries, ColorType, HistogramSeries, LineSeries, createChart }) => {
+        if (disposed || !containerRef.current) return;
+        chartRef.current?.remove();
+        chartRef.current = null;
+        containerRef.current.replaceChildren();
+        const chart = createChart(containerRef.current, {
+          autoSize: true,
+          height: Math.max(containerRef.current.clientHeight, 360),
+          layout: { background: { type: ColorType.Solid, color: "#091014" }, textColor: "#9aa7ad", attributionLogo: true },
+          grid: { vertLines: { color: "#19252b" }, horzLines: { color: "#19252b" } },
+          crosshair: { vertLine: { color: "#63777f", labelBackgroundColor: "#26373e" }, horzLine: { color: "#63777f", labelBackgroundColor: "#26373e" } },
+          rightPriceScale: { borderColor: "#2a3940", autoScale: true },
+          timeScale: { borderColor: "#2a3940", timeVisible: timeframe !== "1d", secondsVisible: false, rightOffset: 6, barSpacing: 7 },
+          handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
+          handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
+        });
+        chartRef.current = chart;
+        const candles = chart.addSeries(CandlestickSeries, {
+          upColor: "#68d7b4",
+          downColor: "#e77f86",
+          borderVisible: false,
+          wickUpColor: "#68d7b4",
+          wickDownColor: "#e77f86",
+          priceLineVisible: true,
+          lastValueVisible: true,
+        });
+        const points = series.candles.map(({ time, open, high, low, close }) => ({ time: time as UTCTimestamp, open, high, low, close }));
+        candles.setData(points);
+        if (overlays.volume && volumeVerified) {
+          const volume = chart.addSeries(HistogramSeries, { priceFormat: { type: "volume" }, priceScaleId: "volume", lastValueVisible: false, priceLineVisible: false });
+          volume.priceScale().applyOptions({ scaleMargins: { top: 0.78, bottom: 0 } });
+          volume.setData(series.candles.map((point) => ({ time: point.time as UTCTimestamp, value: point.volume, color: point.close >= point.open ? "#68d7b455" : "#e77f8655" })));
+        }
+        const addLine = (data: Array<{ time: number; value: number }>, color: string, title: string) => {
+          const line = chart.addSeries(LineSeries, { color, lineWidth: 2, title, priceLineVisible: false, lastValueVisible: true });
+          line.setData(data.map((point) => ({ time: point.time as UTCTimestamp, value: point.value })));
+        };
+        if (overlays.ema20) addLine(exponentialMovingAverage(series.candles, 20), "#71b7e6", "EMA 20");
+        if (overlays.ema50) addLine(exponentialMovingAverage(series.candles, 50), "#bb91e8", "EMA 50");
+        for (const level of levels) candles.createPriceLine({ price: level.value, color: "#8fa2a866", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: level.label });
+        chart.subscribeCrosshairMove((param) => {
+          const value = param.seriesData.get(candles);
+          if (tooltipRef.current && value && "open" in value) {
+            tooltipRef.current.textContent = `O ${number(value.open)} · H ${number(value.high)} · L ${number(value.low)} · C ${number(value.close)}`;
+          }
+        });
+        requestAnimationFrame(() => {
+          if (!disposed) chart.timeScale().fitContent();
+        });
+      }).catch(() => {
+        painted = false;
+      });
+    };
+
+    paint();
+    resizeObserver = new ResizeObserver(() => { if (!painted) paint(); });
+    resizeObserver.observe(host);
+    return () => {
+      disposed = true;
+      resizeObserver?.disconnect();
+      chartRef.current?.remove();
+      chartRef.current = null;
+    };
   }, [available, levels, overlays, series.candles, timeframe, volumeVerified]);
 
   const updated = series.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(series.asOf)) : "Awaiting first verified candle";
@@ -127,17 +185,18 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: V
         {OPTIONS.map((option) => <button key={option.timeframe} type="button" aria-pressed={option.timeframe === timeframe} disabled={loading} onClick={() => option.timeframe !== timeframe && void load(option.timeframe)}>{option.label}</button>)}
       </div>
       <div className="dashboardOverlays" role="group" aria-label="Chart overlays">
-        {([['volume','Volume'],['ema20','20 EMA'],['ema50','50 EMA']] as const).map(([key, label]) => (
+        {([["volume", "Volume"], ["ema20", "20 EMA"], ["ema50", "50 EMA"]] as const).map(([key, label]) => (
           <button key={key} type="button" aria-pressed={overlays[key]} disabled={key === "volume" && !volumeVerified} onClick={() => setOverlays((current) => ({ ...current, [key]: !current[key] }))}>{label}</button>
         ))}
-        <button type="button" disabled={loading} onClick={() => void load(timeframe)}>{loading ? "Loading…" : "Refresh"}</button>
+        <button type="button" disabled={loading} onClick={() => void load(timeframe)}>{loading ? "Refreshing…" : "Refresh"}</button>
       </div>
     </div>
     {requestError ? <div className="chartRequestError" role="alert">{requestError} Your existing chart remains visible. You can retry safely.</div> : null}
-    {loading ? <div className="dashboardChartLoading" role="status">Loading verified {timeframe} candles…</div> : available ? <>
+    {available ? <div className="dashboardChartFrame">
+      {loading ? <div className="dashboardChartLoading" role="status">Refreshing verified {timeframe} candles…</div> : null}
       <div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart`} />
       <div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div>
-    </> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>{unavailableCopy.title}</strong><p>{unavailableCopy.detail}</p><small>Choose another interval or retry later.</small></div></div>}
+    </div> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>{unavailableCopy.title}</strong><p>{unavailableCopy.detail}</p><small>Choose another interval or retry later.</small></div></div>}
     <footer>
       <span>{statusLabel} verified provider series · never labelled live</span>
       <span>Interactive intelligence only · no order execution</span>

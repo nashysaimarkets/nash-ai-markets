@@ -52,11 +52,14 @@ test("OHLCV validation rejects malformed, unordered and impossible candles", () 
 });
 
 test("critical warnings and high-impact provider events remain visible", async () => {
-  const component = await readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8");
-  assert.match(component, /decision\.dataQualityWarnings/);
-  assert.match(component, /plan\.eventRiskWarnings/);
-  assert.match(component, /decision\.noTradeReasons/);
-  assert.match(component, /Conditions limiting participation/);
+  const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
+  const warnings = await readFile(new URL("../app/terminal/lib/customer-warnings.ts", import.meta.url), "utf8");
+  assert.match(page, /formatCustomerParticipationWarnings/);
+  assert.match(page, /decision\.noTradeReasons/);
+  assert.match(page, /decision\.dataQualityWarnings/);
+  assert.match(page, /plan\.eventRiskWarnings/);
+  assert.match(page, /Conditions limiting participation/);
+  assert.match(warnings, /formatCustomerParticipationWarnings/);
 });
 
 test("responsive integration keeps the chart and decisions usable", async () => {

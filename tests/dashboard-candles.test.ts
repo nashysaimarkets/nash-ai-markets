@@ -108,6 +108,7 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.doesNotMatch(chart, /Failure category|requests avoided|cache \{/);
   assert.match(chart, /Previous session|Market closed|never labelled live/);
   assert.match(page, /access\.tier === "pro" \|\| access\.tier === "elite"/);
+  assert.match(page, /toCustomerCandleSeries/);
   assert.match(loading, /dashboardChartSkeletonCanvas/);
 });
 
@@ -164,4 +165,48 @@ test("layout candle fixture never overrides a configured FMP key outside product
   delete process.env.BULLSEYE_CANDLE_FIXTURE_PATH;
   delete process.env.FMP_API_KEY;
   delete process.env.FMP_API_BASE_URL;
+});
+
+test("layout candle fixture is blocked on Vercel preview and production Node", async () => {
+  process.env.BULLSEYE_CANDLE_FIXTURE_PATH = new URL("../fixtures/candles-esusd-5m.json", import.meta.url).pathname;
+  delete process.env.FMP_API_KEY;
+  process.env.VERCEL = "1";
+  const { getConfiguredFmpCandles } = await import("../app/lib/providers/financial-modeling-prep-candles.ts?" + Date.now());
+  const series = await getConfiguredFmpCandles("5m");
+  assert.equal(series.status, "unavailable");
+  assert.equal(series.failureCategory, "not_configured");
+  assert.deepEqual(series.candles, []);
+  delete process.env.VERCEL;
+  delete process.env.BULLSEYE_CANDLE_FIXTURE_PATH;
+});
+
+test("customer candle payloads strip cache internals before browser delivery", async () => {
+  const { toCustomerCandleSeries } = await import("../app/lib/providers/financial-modeling-prep-candles.ts");
+  const customer = toCustomerCandleSeries({
+    status: "delayed",
+    asOf: "2026-07-21T12:00:00.000Z",
+    dataAgeMs: 60_000,
+    classification: "delayed",
+    symbol: "ESUSD",
+    instrumentName: "S&P 500 futures reference series",
+    instrumentDetail: "Verified delayed series",
+    contract: "S&P 500 futures reference series",
+    exchange: "delayed provider series",
+    provider: "Financial Modeling Prep",
+    timeframe: "5m",
+    candles: [candle(base, 100)],
+    cache: { status: "hit", ttlMs: 60_000, requestsAvoided: 3 },
+    failureCategory: null,
+  });
+  assert.equal("cache" in customer, false);
+  assert.equal(customer.candles.length, 1);
+});
+
+test("candlestick chart keeps the canvas mounted while refreshing", async () => {
+  const chart = await readFile(new URL("../app/dashboard/components/DashboardCandlestickChart.tsx", import.meta.url), "utf8");
+  assert.match(chart, /dashboardChartCanvas/);
+  assert.match(chart, /ResizeObserver/);
+  assert.match(chart, /fitContent/);
+  assert.match(chart, /dashboardChartLoading/);
+  assert.doesNotMatch(chart, /loading \? <div className="dashboardChartUnavailable"/);
 });

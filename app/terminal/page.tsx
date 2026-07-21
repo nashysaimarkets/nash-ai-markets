@@ -10,7 +10,7 @@ import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, MarketCommandHeader, MarketPressureMap, TodaysMarketPlan } from "./components/CustomerTerminal";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
-import { getConfiguredFmpCandles } from "../lib/providers/financial-modeling-prep-candles";
+import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
@@ -39,10 +39,11 @@ export default async function Terminal() {
   const previewOffer = access.previewOffer;
   const paid = access.tier === "pro" || access.tier === "elite";
 
-  const [{ snapshot, gatewayStatus }, candleSeries] = await Promise.all([
+  const [{ snapshot, gatewayStatus }, candleSeriesRaw] = await Promise.all([
     getTerminalMarketData(),
     paid ? getConfiguredFmpCandles("5m") : Promise.resolve(null),
   ]);
+  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
