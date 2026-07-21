@@ -21,7 +21,7 @@ test("production login returns to production dashboard by default", () => {
   assert.equal(defaultPostAuthPath(PRODUCTION), "/dashboard");
   assert.equal(
     buildEmailRedirectTo(PRODUCTION),
-    `${PRODUCTION}/auth/callback?next=%2Fdashboard`,
+    `${PRODUCTION}/auth/callback`,
   );
   assert.equal(buildPostAuthRedirect(PRODUCTION), `${PRODUCTION}/dashboard`);
 });
@@ -32,15 +32,16 @@ test("preview login returns to the originating preview terminal by default", () 
   assert.equal(defaultPostAuthPath(PREVIEW), "/terminal");
   assert.equal(
     buildEmailRedirectTo(PREVIEW),
-    `${PREVIEW}/auth/callback?next=%2Fterminal`,
+    `${PREVIEW}/auth/callback`,
   );
   assert.equal(buildPostAuthRedirect(PREVIEW), `${PREVIEW}/terminal`);
   assert.equal(buildPostAuthRedirect(UNIQUE_PREVIEW, "/terminal"), `${UNIQUE_PREVIEW}/terminal`);
   assert.equal(
     buildEmailRedirectTo(UNIQUE_PREVIEW),
-    `${UNIQUE_PREVIEW}/auth/callback?next=%2Fterminal`,
+    `${UNIQUE_PREVIEW}/auth/callback`,
   );
   assert.doesNotMatch(buildEmailRedirectTo(PREVIEW), /nashaimarkets\.com/);
+  assert.doesNotMatch(buildEmailRedirectTo(PREVIEW), /\?/);
   assert.equal(authCallbackAllowlistUrl(PREVIEW), `${PREVIEW}/auth/callback`);
 });
 
@@ -53,7 +54,7 @@ test("unsafe external redirect URLs are rejected", () => {
   assert.equal(isAllowedAuthOrigin("https://nash-ai-markets-other.vercel.app"), false);
   assert.equal(
     buildEmailRedirectTo(PREVIEW, "https://evil.example/phish"),
-    `${PREVIEW}/auth/callback?next=%2Fterminal`,
+    `${PREVIEW}/auth/callback`,
   );
   assert.equal(
     buildPostAuthRedirect(PREVIEW, "//evil.example"),
@@ -64,7 +65,7 @@ test("unsafe external redirect URLs are rejected", () => {
 test("valid https origin is never rewritten to www for emailRedirectTo", () => {
   const oddPreview = "https://nash-ai-markets-bljrecjyb-nash-ai-markets.vercel.app";
   const redirectTo = buildEmailRedirectTo(oddPreview);
-  assert.match(redirectTo, /^https:\/\/nash-ai-markets-bljrecjyb-nash-ai-markets\.vercel\.app\/auth\/callback\?next=%2Fterminal$/);
+  assert.match(redirectTo, /^https:\/\/nash-ai-markets-bljrecjyb-nash-ai-markets\.vercel\.app\/auth\/callback$/);
   assert.equal(redirectTo.includes("www.nashaimarkets.com"), false);
 });
 
@@ -80,4 +81,12 @@ test("safe next paths remain available for production and preview", () => {
     buildEmailRedirectTo(PREVIEW, "/dashboard"),
     `${PREVIEW}/auth/callback?next=%2Fdashboard`,
   );
+});
+
+test("missing next on preview defaults to /terminal not /dashboard", () => {
+  assert.equal(safeAuthNextPath(null, defaultPostAuthPath(PREVIEW)), "/terminal");
+  assert.equal(safeAuthNextPath(undefined, defaultPostAuthPath(UNIQUE_PREVIEW)), "/terminal");
+  assert.equal(safeAuthNextPath(null, defaultPostAuthPath(PRODUCTION)), "/dashboard");
+  assert.equal(buildPostAuthRedirect(PREVIEW, null), `${PREVIEW}/terminal`);
+  assert.equal(buildPostAuthRedirect(PRODUCTION, null), `${PRODUCTION}/dashboard`);
 });

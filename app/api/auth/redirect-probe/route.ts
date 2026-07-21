@@ -31,6 +31,13 @@ export async function GET(request: Request) {
       callbackAllowlistUrl: authCallbackAllowlistUrl(origin),
       isVercelPreview: isVercelPreviewOrigin(origin),
       usesWwwProductionHost: /nashaimarkets\.com$/i.test(new URL(emailRedirectTo).host),
+      deployment: {
+        vercelEnv: process.env.VERCEL_ENV ?? null,
+        vercelUrl: process.env.VERCEL_URL ?? null,
+        gitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
+        gitCommitShaShort: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
+        gitBranch: process.env.VERCEL_GIT_COMMIT_REF ?? null,
+      },
     },
     { headers: { "Cache-Control": "no-store" } },
   );

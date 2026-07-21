@@ -85,15 +85,22 @@ export function safeAuthNextPath(
  * Build Supabase `emailRedirectTo` from the **current** browser/request origin.
  * Never rewrites a valid https origin to www — that previously forced preview
  * sessions onto production when allowlisting/Supabase wildcards disagreed.
+ *
+ * Path-only callbacks (no `?next=`) are preferred when the destination matches
+ * the host default. Supabase Redirect URL globs match more reliably without
+ * query strings; the callback route then applies `defaultPostAuthPath`.
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
   if (!trustedOrigin) {
     throw new Error("Refusing to build auth redirect from a non-http(s) origin");
   }
-  const path = safeAuthNextPath(next, defaultPostAuthPath(trustedOrigin));
+  const fallback = defaultPostAuthPath(trustedOrigin);
+  const path = safeAuthNextPath(next, fallback);
   const url = new URL("/auth/callback", trustedOrigin);
-  url.searchParams.set("next", path);
+  if (path !== fallback) {
+    url.searchParams.set("next", path);
+  }
   return url.toString();
 }
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "../../../utils/supabase/server";
 import {
   buildPostAuthRedirect,
+  defaultPostAuthPath,
   normalizeHttpOrigin,
   safeAuthNextPath,
 } from "../../lib/auth/safe-auth-redirect";
@@ -26,7 +27,8 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const requestedType = searchParams.get("type");
-  const next = safeAuthNextPath(searchParams.get("next"));
+  // Preserve preview → /terminal when Supabase drops `next` (allowlist miss → Site URL).
+  const next = safeAuthNextPath(searchParams.get("next"), defaultPostAuthPath(origin));
 
   if (code) {
     const supabase = await createClient();
