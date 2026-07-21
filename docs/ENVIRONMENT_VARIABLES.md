@@ -101,9 +101,17 @@ is optional and defaults to the official FMP Stable endpoint.
 | `FMP_VIX_SYMBOL` | Server config | Optional | Override VIX symbol |
 | `FMP_US_DOLLAR_INDEX_SYMBOL` | Server config | Optional | Override dollar-index symbol |
 
+The default candle symbol `ESUSD` is FMP's commodity-series identifier named
+`E-Mini S&P 500`, with currency `USD` and exchange classification `CME`. It is
+not a dated contract code, and the candle response does not establish the exact
+underlying contract, rollover method, exchange-native provenance or real-time
+entitlement. Bullseye therefore displays the provider symbol and classification
+and labels fresh candles as delayed unless stronger provider metadata is added.
+
 The FMP adapter obtains US 2Y and 10Y Treasury rates from its Treasury endpoint;
-there are no Treasury symbol variables. The current adapter does not implement
-an economic calendar or historical OHLCV candles. FMP may canonicalize a
+there are no Treasury symbol variables. The primary quote adapter does not
+implement an economic calendar; the separate dashboard candle path loads
+verified 5-minute OHLCV history. FMP may canonicalize a
 requested continuous-contract or index alias in a single-record quote response;
 the adapter accepts that canonical alias only when the response contains
 exactly one structurally valid record from the symbol-scoped request.

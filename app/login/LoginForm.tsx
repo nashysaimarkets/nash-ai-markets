@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 
 export default function LoginForm() {
@@ -8,9 +8,17 @@ export default function LoginForm() {
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = window.setTimeout(() => setCooldown(cooldown - 1), 1_000);
+    return () => window.clearTimeout(timer);
+  }, [cooldown]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (loading || cooldown > 0) return;
     setLoading(true);
     setMessage("");
     setMessageTone(null);
@@ -24,11 +32,12 @@ export default function LoginForm() {
         },
       });
       setMessageTone(error ? "error" : "success");
-      setMessage(error ? "We could not request a sign-in link. Check the address and try again." : "Request accepted. Check your inbox and junk folder; delivery may take a few minutes.");
+      setMessage(error ? "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again." : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then retry safely when the timer ends if nothing arrives.");
     } catch {
       setMessageTone("error");
-      setMessage("The sign-in service is temporarily unavailable. Please try again.");
+      setMessage("The sign-in service is temporarily unavailable. Wait for the retry timer, then try again.");
     } finally {
+      setCooldown(60);
       setLoading(false);
     }
   }
@@ -53,8 +62,8 @@ export default function LoginForm() {
         />
       </div>
       <p id="email-guidance">Use the same address you used for your NASH AI membership.</p>
-      <button type="submit" disabled={loading} aria-busy={loading}>
-        <span>{loading ? "Sending secure link…" : "Email me a secure sign-in link"}</span>
+      <button type="submit" disabled={loading || cooldown > 0} aria-busy={loading}>
+        <span>{loading ? "Requesting secure link…" : cooldown > 0 ? `Retry available in ${cooldown}s` : "Email me a secure sign-in link"}</span>
         <i aria-hidden="true">↗</i>
       </button>
       {message && (

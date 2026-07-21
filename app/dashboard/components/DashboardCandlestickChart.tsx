@@ -7,7 +7,7 @@ import { aggregateCandles, candleReferenceLevels, candleSessionStats, exponentia
 
 type Overlay = "vwap" | "ema20" | "ema50";
 const OPTIONS: Array<{ label: string; timeframe: DashboardChartTimeframe | null; reason?: string }> = [
-  { label: "1m", timeframe: null, reason: "Disabled to avoid a second high-frequency provider request" },
+  { label: "1m", timeframe: null, reason: "Not available from the current verified history" },
   { label: "5m", timeframe: "5m" },
   { label: "15m", timeframe: "15m" },
   { label: "1h", timeframe: "1h" },
@@ -24,7 +24,7 @@ export function DashboardCandlestickChart({ series }: { series: VerifiedCandleSe
   const stats = useMemo(() => candleSessionStats(series.candles), [series.candles]);
   const levels = useMemo(() => candleReferenceLevels(series.candles), [series.candles]);
   const chartCandles = useMemo(() => aggregateCandles(stats?.visibleCandles ?? [], timeframe), [stats, timeframe]);
-  const available = chartCandles.length > 0;
+  const available = series.status !== "unavailable" && chartCandles.length > 0;
 
   useEffect(() => {
     if (!available || !containerRef.current) return;
@@ -66,17 +66,17 @@ export function DashboardCandlestickChart({ series }: { series: VerifiedCandleSe
   const updated = series.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(series.asOf)) : "Awaiting first verified candle";
   return <section className="dashboardMarketChart" aria-labelledby="dashboard-market-chart-title" data-status={series.status}>
     <header>
-      <div><span className="eliteEyebrow">PRIMARY MARKET WORKSPACE</span><h2 id="dashboard-market-chart-title">{series.symbol} futures · {series.contract}</h2><p>Verified {series.timeframe} candles from {series.provider}. Local aggregation and indicators create no additional provider requests.</p></div>
+      <div><span className="eliteEyebrow">PRIMARY MARKET WORKSPACE</span><h2 id="dashboard-market-chart-title">{series.instrumentName} · {series.symbol}</h2><p>{series.exchange} · {series.provider} · {series.instrumentDetail}. Verified {series.timeframe} candles are aggregated locally without additional provider requests.</p></div>
       <div className="chartStatus"><i aria-hidden="true" /><strong>{series.status}</strong><small>{updated} UK</small></div>
     </header>
-    {stats ? <div className="chartMarketStrip" aria-label="Verified futures session statistics">
-      <div><span>Latest</span><strong>{number(stats.latest)}</strong></div><div><span>Point change</span><strong>{stats.change >= 0 ? "+" : ""}{number(stats.change)}</strong></div><div><span>Percent</span><strong>{stats.percentageChange >= 0 ? "+" : ""}{number(stats.percentageChange)}%</strong></div><div><span>Session high</span><strong>{number(stats.high)}</strong></div><div><span>Session low</span><strong>{number(stats.low)}</strong></div><div><span>Previous close</span><strong>{number(stats.previousClose)}</strong></div>
+    {stats ? <div className="chartMarketStrip" aria-label="Verified rolling 24-hour statistics">
+      <div><span>Latest verified close</span><strong>{number(stats.latest)}</strong></div><div><span>24h change</span><strong>{stats.change >= 0 ? "+" : ""}{number(stats.change)}</strong></div><div><span>24h percent</span><strong>{stats.percentageChange >= 0 ? "+" : ""}{number(stats.percentageChange)}%</strong></div><div><span>24h high</span><strong>{number(stats.high)}</strong></div><div><span>24h low</span><strong>{number(stats.low)}</strong></div><div><span>First available close</span><strong>{number(stats.firstAvailableClose)}</strong></div>
     </div> : null}
     <div className="chartControlBar">
       <div className="dashboardTimeframes" role="group" aria-label="Candlestick interval">{OPTIONS.map((option) => <button key={option.label} type="button" disabled={!option.timeframe} title={option.reason} aria-pressed={option.timeframe === timeframe} onClick={() => option.timeframe && setTimeframe(option.timeframe)}>{option.label}</button>)}</div>
       <div className="dashboardOverlays" role="group" aria-label="Chart overlays">{([['vwap','VWAP'],['ema20','20 EMA'],['ema50','50 EMA']] as const).map(([key, label]) => <button key={key} type="button" aria-pressed={overlays[key]} onClick={() => setOverlays((current) => ({ ...current, [key]: !current[key] }))}>{label}</button>)}</div>
     </div>
-    {available ? <><div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart. Use mouse, trackpad or touch to pan and zoom.`} /><div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div></> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>Verified candlestick history unavailable</strong><p>The chart remains empty because FMP did not return a current, structurally valid OHLC series. No fixture, synthetic or carried-forward candles are displayed.</p><small>Failure category: {series.failureCategory?.replaceAll("_", " ") ?? "provider unavailable"}</small></div></div>}
-    <footer><span>Cache: {series.cache.status} · {Math.round(series.cache.ttlMs / 1000)}s · {series.cache.requestsAvoided} provider loads avoided</span><span>Interactive display only · no order execution</span></footer>
+    {available ? <><div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart. Use mouse, trackpad or touch to pan and zoom.`} /><div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div></> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>Verified candlestick history unavailable</strong><p>The chart remains empty because FMP did not return a current, structurally valid OHLC series. No fixture, synthetic or carried-forward candles are displayed.</p><small>Try again later; no chart data has been substituted.</small></div></div>}
+    <footer><span>Provider status: {series.status} · locally aggregated from verified history</span><span>Interactive display only · no order execution</span></footer>
   </section>;
 }

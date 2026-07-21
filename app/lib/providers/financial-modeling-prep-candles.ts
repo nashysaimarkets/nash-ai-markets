@@ -1,12 +1,15 @@
 import { createAsyncKeyedTtlCache } from "../server/async-ttl-cache.ts";
 import type { OhlcvPoint } from "../../terminal/lib/visual-terminal.ts";
 
-export type CandleFreshness = "live" | "delayed" | "stale" | "unavailable";
+export type CandleFreshness = "delayed" | "stale" | "unavailable";
 export type CandleCacheStatus = "hit" | "miss" | "coalesced" | "disabled";
 
 export type VerifiedCandleSeries = {
   symbol: string;
   contract: string;
+  instrumentName: string;
+  exchange: string;
+  instrumentDetail: string;
   timeframe: "5m";
   provider: "Financial Modeling Prep";
   status: CandleFreshness;
@@ -31,8 +34,8 @@ function finite(value: unknown): number | null {
 function timestamp(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return Math.round(value >= 1e12 ? value / 1000 : value);
   if (typeof value !== "string" || !value.trim()) return null;
-  const normalized = /(?:Z|[+-]\d\d:?\d\d)$/.test(value) ? value : `${value.replace(" ", "T")}Z`;
-  const parsed = Date.parse(normalized);
+  if (!/(?:Z|[+-]\d\d:?\d\d)$/.test(value.trim())) return null;
+  const parsed = Date.parse(value.replace(" ", "T"));
   return Number.isFinite(parsed) ? Math.round(parsed / 1000) : null;
 }
 
@@ -51,14 +54,16 @@ export function normalizeFmpCandles(payload: unknown, maxCandles = MAX_CANDLES):
 }
 
 function empty(symbol: string, category: VerifiedCandleSeries["failureCategory"]): VerifiedCandleSeries {
-  return { symbol: "ES", contract: symbol, timeframe: "5m", provider: "Financial Modeling Prep", status: "unavailable", asOf: null, candles: [], cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: category };
+  const es = symbol === "ESUSD";
+  return { symbol, contract: es ? "Provider commodity series; no dated contract supplied" : "Provider-configured series", instrumentName: es ? "E-Mini S&P 500" : "Configured market series", exchange: es ? "CME (provider classification)" : "Not verified", instrumentDetail: es ? "FMP series; exact dated contract and real-time exchange provenance are not supplied" : "Identity requires provider catalogue verification", timeframe: "5m", provider: "Financial Modeling Prep", status: "unavailable", asOf: null, candles: [], cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: category };
 }
 
 export function determineCandleFreshness(candles: OhlcvPoint[], now: number): Pick<VerifiedCandleSeries, "status" | "asOf"> {
   const latest = candles.at(-1);
   if (!latest) return { status: "unavailable", asOf: null };
   const age = now - latest.time * 1000;
-  const status: CandleFreshness = age <= 10 * 60_000 ? "live" : age <= 60 * 60_000 ? "delayed" : "stale";
+  if (age < 0) return { status: "unavailable", asOf: null };
+  const status: CandleFreshness = age <= 60 * 60_000 ? "delayed" : "stale";
   return { status, asOf: new Date(latest.time * 1000).toISOString() };
 }
 
@@ -81,7 +86,7 @@ export async function loadFmpCandles({ apiKey, symbol, baseUrl = "https://financ
   const payload = await response.json().catch(() => null) as unknown;
   const candles = normalizeFmpCandles(payload, maxCandles);
   if (!candles.length) return empty(symbol, "schema");
-  return { symbol: "ES", contract: symbol, timeframe: "5m", provider: "Financial Modeling Prep", ...determineCandleFreshness(candles, now), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
+  return { ...empty(symbol, null), ...determineCandleFreshness(candles, now), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
 }
 
 export async function getConfiguredFmpCandles(now = Date.now()): Promise<VerifiedCandleSeries> {
