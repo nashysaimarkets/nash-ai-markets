@@ -116,6 +116,22 @@ test("resolveAuthRequestOrigin prefers forwarded host over request URL host", ()
   );
 });
 
+test("unsafe external origins are rejected by buildEmailRedirectTo", () => {
+  assert.throws(() => buildEmailRedirectTo("https://evil.example"), /untrusted origin/i);
+  assert.throws(() => buildEmailRedirectTo("https://nash-ai-markets-other.vercel.app"), /untrusted origin/i);
+  assert.doesNotThrow(() => buildEmailRedirectTo(PREVIEW, "/terminal"));
+});
+
+test("explicit /terminal is never replaced by /dashboard", () => {
+  assert.equal(
+    buildEmailRedirectTo(PREVIEW, "/terminal"),
+    `${PREVIEW}/auth/callback?next=%2Fterminal`,
+  );
+  assert.equal(buildPostAuthRedirect(PREVIEW, "/terminal"), `${PREVIEW}/terminal`);
+  assert.doesNotMatch(buildEmailRedirectTo(PREVIEW, "/terminal"), /dashboard/);
+  assert.doesNotMatch(buildPostAuthRedirect(PREVIEW, "/terminal"), /dashboard/);
+});
+
 test("redirect chain keeps preview origin through callback to /terminal", () => {
   const chain = describeAuthRedirectChain(PREVIEW);
   assert.equal(chain.emailRedirectTo, `${PREVIEW}/auth/callback?next=%2Fterminal`);

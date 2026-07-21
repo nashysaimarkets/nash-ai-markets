@@ -1,12 +1,23 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 import {
   buildEmailRedirectTo,
   defaultPostAuthPath,
+  isAllowedAuthOrigin,
   safeAuthNextPath,
 } from "../lib/auth/safe-auth-redirect";
+
+function resolveLoginRedirectTo(origin: string, search: string): string {
+  if (!isAllowedAuthOrigin(origin)) {
+    throw new Error("Untrusted login origin");
+  }
+  const requestedNext = new URLSearchParams(search).get("next");
+  // Defaults to /terminal; never fall back to /dashboard unless explicitly requested.
+  const next = safeAuthNextPath(requestedNext, defaultPostAuthPath(origin));
+  return buildEmailRedirectTo(origin, next);
+}
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,12 +25,35 @@ export default function LoginForm() {
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = window.setTimeout(() => setCooldown(cooldown - 1), 1_000);
     return () => window.clearTimeout(timer);
   }, [cooldown]);
+
+  // Publish the planned emailRedirectTo on the form for deployment inspection (no submit).
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    try {
+      const emailRedirectTo = resolveLoginRedirectTo(window.location.origin, window.location.search);
+      form.setAttribute("data-email-redirect-to", emailRedirectTo);
+      form.setAttribute("data-auth-redirect-ready", "true");
+      form.setAttribute(
+        "data-auth-uses-www",
+        /nashaimarkets\.com/i.test(emailRedirectTo) ? "true" : "false",
+      );
+      form.setAttribute(
+        "data-auth-next-terminal",
+        emailRedirectTo.includes("next=%2Fterminal") ? "true" : "false",
+      );
+    } catch {
+      form.setAttribute("data-auth-redirect-ready", "false");
+      form.removeAttribute("data-email-redirect-to");
+    }
+  }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -28,15 +62,20 @@ export default function LoginForm() {
     setMessage("");
     setMessageTone(null);
     try {
-      const supabase = createClient();
       const origin = window.location.origin;
-      const requestedNext = new URLSearchParams(window.location.search).get("next");
-      const next = safeAuthNextPath(requestedNext, defaultPostAuthPath(origin));
+      if (!isAllowedAuthOrigin(origin)) {
+        setMessageTone("error");
+        setMessage("This host is not authorized for member sign-in.");
+        return;
+      }
+      const emailRedirectTo = resolveLoginRedirectTo(origin, window.location.search);
+      formRef.current?.setAttribute("data-email-redirect-to", emailRedirectTo);
+      const supabase = createClient();
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: buildEmailRedirectTo(origin, next),
+          emailRedirectTo,
         },
       });
       setMessageTone(error ? "error" : "success");
@@ -51,7 +90,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form className="accessForm" onSubmit={submit}>
+    <form ref={formRef} className="accessForm" onSubmit={submit} data-auth-redirect-ready="false">
       <label htmlFor="email">Membership email</label>
       <div className="accessInputWrap">
         <span aria-hidden="true">@</span>

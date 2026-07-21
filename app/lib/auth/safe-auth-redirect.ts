@@ -80,7 +80,13 @@ export function resolveAuthRequestOrigin(request: Request): string {
  * Default landing after auth is always /terminal.
  * Callers may still pass an explicit allowlisted `next` (including /dashboard).
  */
-export function defaultPostAuthPath(_origin?: string): string {
+/**
+ * Default landing after auth is always /terminal.
+ * Callers may still pass an explicit allowlisted `next` (including /dashboard).
+ * Origin is accepted for call-site clarity; it does not change the default.
+ */
+export function defaultPostAuthPath(origin?: string): string {
+  void origin;
   return "/terminal";
 }
 
@@ -108,14 +114,14 @@ export function safeAuthNextPath(
 }
 
 /**
- * Build Supabase `emailRedirectTo` from the **current** browser/request origin.
- * Never rewrites a valid https origin to www.
- * Always includes `next` so the callback destination is explicit (/terminal by default).
+ * Build Supabase `emailRedirectTo` from the **current** trusted browser/request origin.
+ * Rejects unsafe external origins. Never rewrites a trusted origin to www.
+ * Always includes `next` (default `/terminal`) so the callback destination is explicit.
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
-  if (!trustedOrigin) {
-    throw new Error("Refusing to build auth redirect from a non-http(s) origin");
+  if (!trustedOrigin || !isAllowedAuthOrigin(trustedOrigin)) {
+    throw new Error("Refusing to build auth redirect from an untrusted origin");
   }
   const path = safeAuthNextPath(next, defaultPostAuthPath(trustedOrigin));
   const url = new URL("/auth/callback", trustedOrigin);
@@ -126,8 +132,8 @@ export function buildEmailRedirectTo(origin: string, next?: string | null): stri
 /** Resolve the absolute post-auth location on the request’s own origin. */
 export function buildPostAuthRedirect(requestOrigin: string, next?: string | null): string {
   const origin = normalizeHttpOrigin(requestOrigin);
-  if (!origin) {
-    // Last-resort absolute URL only when the request origin is unusable.
+  if (!origin || !isAllowedAuthOrigin(origin)) {
+    // Last-resort absolute URL only when the request origin is unusable/untrusted.
     // Prefer /terminal — never invent a /dashboard landing here.
     return "https://www.nashaimarkets.com/terminal";
   }
