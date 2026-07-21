@@ -66,6 +66,12 @@ test("login and callback paths sanitize errors and redirect destinations", async
   assert.equal(login.includes("setMessage(error ? error.message"), false);
   assert.ok(login.includes("window.location.origin"));
   assert.ok(login.includes("/auth/callback?next=/dashboard"));
+  assert.ok(login.includes("Request accepted."));
+  assert.ok(login.includes("setCooldown(60)"));
+  assert.ok(login.includes("Retry available in"));
+  assert.ok(login.includes("disabled={loading || cooldown > 0}"));
+  assert.ok(login.includes("Delivery may take a few minutes"));
+  assert.equal(login.includes("Link sent."), false);
   assert.ok(browserClient.includes('flowType: "pkce"'));
   assert.ok(callback.includes('!requestedNext.startsWith("//")'));
   assert.ok(confirmation.includes("verifyOtp"));

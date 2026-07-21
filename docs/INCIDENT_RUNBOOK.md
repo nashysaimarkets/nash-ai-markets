@@ -156,6 +156,18 @@ Suggested severity:
 - session persists across dashboard/terminal;
 - sign-out ends access.
 
+### Microsoft/Outlook SMTP deferral
+
+The observed `451 4.7.500 AS761` response is an external Microsoft/Outlook
+temporary delivery deferral, not evidence of a broken callback or a completed
+delivery. The repository cannot clear it. In Supabase Dashboard, an authorized
+owner must open **Authentication → SMTP Settings**, verify the approved custom
+SMTP host, port, sender address and sender name, then verify SPF, DKIM and DMARC
+for that sender domain in the mail-provider dashboard. Review the provider's
+delivery log and Microsoft suppression/reputation guidance, send one controlled
+test, and keep the launch gate blocked until delivery is evidenced. Do not paste
+SMTP credentials, API keys or a live magic link into tickets or chat.
+
 ## High error rates
 
 ### Detection

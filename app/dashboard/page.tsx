@@ -14,6 +14,7 @@ import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx"
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
+import { getConfiguredFmpCandles } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { EventCountdown } from "./components/EventCountdown.tsx";
 import { EliteScenarioCard } from "./components/EliteScenarioCard.tsx";
@@ -22,6 +23,13 @@ import { EliteOnboardingChecklist } from "./components/EliteOnboardingChecklist.
 import { BullseyeSignature } from "./components/BullseyeSignature.tsx";
 import { BullseyeMissionControl } from "./components/BullseyeMissionControl.tsx";
 import { MarketStructureVisual } from "./components/MarketStructureVisual.tsx";
+import { MarketCatalystBriefing } from "./components/MarketCatalystBriefing.tsx";
+import { DashboardCandlestickChart } from "./components/DashboardCandlestickChart.tsx";
+import { LiveMarketSummary } from "./components/LiveMarketSummary.tsx";
+import { NoTradeScenarioCard } from "./components/NoTradeScenarioCard.tsx";
+import { TradePlanChecklist } from "./components/TradePlanChecklist.tsx";
+import { TradeSetupOfTheDay } from "./components/TradeSetupOfTheDay.tsx";
+import { candleReferenceLevels, candleSessionStats } from "./lib/candle-analysis.ts";
 import { MorningBriefPanel, MorningBriefSkeleton } from "./components/MorningBriefPanel.tsx";
 import { TodaysBullseyePlan } from "./components/TodaysBullseyePlan.tsx";
 import { TodaysEdge } from "./components/TodaysEdge.tsx";
@@ -51,11 +59,12 @@ export default async function MemberDashboard() {
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
-  const [previewState, market, accuracy, founding100] = await Promise.all([
+  const [previewState, market, accuracy, founding100, candleSeries] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
     loadAccuracySummary(),
     loadFounding100ForEmail(user.email),
+    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles(now) : Promise.resolve(null),
   ]);
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
@@ -104,6 +113,10 @@ export default async function MemberDashboard() {
   const centreState = commandCentreState(market.snapshot, market.gatewayStatus, session.label);
   const support = primaryLevel(market.snapshot, "support");
   const resistance = primaryLevel(market.snapshot, "resistance");
+  const candleStats = candleSeries ? candleSessionStats(candleSeries.candles) : null;
+  const candleLevels = candleSeries ? candleReferenceLevels(candleSeries.candles) : [];
+  const rollingHigh = candleLevels.find((level) => level.label === "24h high");
+  const rollingLow = candleLevels.find((level) => level.label === "24h low");
   const stateCopy = { live: "Verified current inputs are available.", delayed: "Verified inputs are delayed; check the timestamp before use.", stale: "The last snapshot is too old for current analytics.", unavailable: "The provider is unavailable; current analytics are withheld.", partial: "Some required instruments or levels are missing.", closed: "The major session is closed; the last verified context remains labelled." }[centreState];
   const statusPresentation = {
     live: { label: "Live verified", symbol: "✓", detail: "Current provider inputs cleared" },
@@ -139,7 +152,6 @@ export default async function MemberDashboard() {
       <section className={`commandDataNotice is-${centreState}`} aria-live="polite" aria-label={`${statusPresentation.label} market data state`}>
         <div className="commandStateIdentity"><i aria-hidden="true">{statusPresentation.symbol}</i><div><strong>{statusPresentation.label}</strong><span>{stateCopy}</span></div></div>
         <div><span>Last verified update</span><strong>{marketTimestamp} UK</strong></div>
-        {access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Data diagnostics <span aria-hidden="true">→</span></Link> : null}
       </section>
 
       <TodaysEdge
@@ -153,6 +165,10 @@ export default async function MemberDashboard() {
         confidence={mission.confidence}
         analysisMode="Deterministic"
       />
+
+      <LiveMarketSummary verified={verifiedMarket} regime={decision.volatilityRegime} bias={decision.marketBias} confidence={mission.confidence} risk={decision.riskRating} quotes={market.snapshot.quotes} stats={candleStats} provider={market.gatewayStatus.providerName} dataStatus={statusPresentation.label} lastUpdated={marketTimestamp === "No verified timestamp" ? marketTimestamp : `${marketTimestamp} UK`} />
+
+      {candleSeries ? <DashboardCandlestickChart series={candleSeries} /> : <section className="dashboardChartLocked" aria-label="Premium candlestick chart"><span>PRO OR ELITE MARKET WORKSPACE</span><h2>Verified provider candlesticks</h2><p>Intraday chart history is available to paid members after entitlement verification.</p><Link href="/pricing">Compare membership plans →</Link></section>}
 
       {access.tier === "elite" ? <EliteOnboardingChecklist /> : null}
 
@@ -173,6 +189,8 @@ export default async function MemberDashboard() {
       </section>
 
       <TodaysBullseyePlan verified={verifiedMarket} dataStatus={market.snapshot.status} stateLabel={session.label} confidence={mission.confidence} bias={decision.marketBias} risk={decision.riskRating} expectedMove={expectedMove} support={support} resistance={resistance} bullishTrigger={bullishScenario.trigger.level ? `${bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} at ${bullishScenario.trigger.level}` : bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} bearishTrigger={bearishScenario.trigger.level ? `${bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} at ${bearishScenario.trigger.level}` : bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} invalidation={decision.invalidationConditions[0]?.level ?? decision.invalidationConditions[0]?.kind.replaceAll("_", " ").toLowerCase() ?? "Awaiting verified input"} noTradeConditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined} summary={market.snapshot.summary} />
+
+      <TradeSetupOfTheDay verified={verifiedMarket} bias={decision.marketBias} posture={plan.directionalPosture} setupType={plan.preferredSetupType} readiness={plan.executionReadiness} confirmation={decision.marketBias === "bearish" ? (bearishScenario.trigger.level ?? rollingLow?.value.toFixed(2) ?? "Verified downside confirmation") : (bullishScenario.trigger.level ?? rollingHigh?.value.toFixed(2) ?? "Verified upside confirmation")} invalidation={decision.invalidationConditions[0]?.level ?? decision.invalidationConditions[0]?.kind.replaceAll("_", " ").toLowerCase() ?? "Data-quality failure"} firstTarget={decision.marketBias === "bearish" ? (rollingLow?.value.toFixed(2) ?? "Not justified") : (rollingHigh?.value.toFixed(2) ?? "Not justified")} secondTarget="Not justified by current verified inputs" risk={decision.riskRating} confidence={plan.planConfidence} noTradeConditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined} asOf={verifiedMarket ? market.snapshot.asOf : "Unavailable"} />
 
       {access.tier !== "elite" ? <EliteConversionPreview /> : null}
 
@@ -219,7 +237,18 @@ export default async function MemberDashboard() {
       <section className="eliteScenarioGrid" aria-label="Conditional bullish and bearish scenarios">
         <EliteScenarioCard tone="bullish" verified={verifiedMarket} probability={bullishScenario.probability} trigger={bullishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bullishScenario.trigger.level ?? "Range confirmation"} invalidation={bullishScenario.invalidation.level ?? bullishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
         <EliteScenarioCard tone="bearish" verified={verifiedMarket} probability={bearishScenario.probability} trigger={bearishScenario.trigger.kind.replaceAll("_", " ").toLowerCase()} level={bearishScenario.trigger.level ?? "Range confirmation"} invalidation={bearishScenario.invalidation.level ?? bearishScenario.invalidation.kind.replaceAll("_", " ").toLowerCase()} />
+        <NoTradeScenarioCard verified={verifiedMarket} conditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined} nextAction={mission.nextAction} dataStatus={market.snapshot.status} />
       </section>
+
+      <MarketCatalystBriefing
+        verified={verifiedMarket}
+        events={market.snapshot.events}
+        riskDrivers={intelligence.reasoning.riskDrivers}
+        keyRisk={mission.keyWarning}
+        noTradeConditions={decision.noTradeReasons.length ? decision.noTradeReasons : plan.reasonsToRemainSidelined}
+      />
+
+      <TradePlanChecklist />
 
       <Suspense fallback={<MorningBriefSkeleton />}>
         <MorningBriefPanel brief={deterministicMorningBrief} aiEligible={access.features.intelligence} />
@@ -250,7 +279,7 @@ export default async function MemberDashboard() {
         <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>
         {access.tier === "elite" ? <article className="dailyCard fullyUnlocked"><TerminalBadge label="Elite unlocked" tone="warning" /><h3>Full decision workflow available</h3><p>Intelligence, decisions, structured planning and launch diagnostics are included in your current membership.</p><Link href="/terminal">Open the Elite terminal →</Link></article> : <LockedPremiumCard tier={offer!.targetTier} title={offer!.targetTier === "pro" ? "Explore the explainable decision workflow" : "Explore structured planning and diagnostics"} value={offer!.targetTier === "pro" ? "See how Bullseye turns verified market inputs into explainable confidence, bias and trade permission." : "See how Elite converts a deterministic decision into disciplined participation, confirmations and review triggers."} benefits={offer!.targetTier === "pro" ? ["Explainable scores", "Decision permission", "Conflict warnings"] : ["Structured planner", "Event-risk controls", "Launch diagnostics"]} previewEligible={offer!.eligible} previewAvailable={previewState.available} previewCadence={offer!.cadence} />}
       </section>
-      <details className="commandMethodology"><summary><span>Methodology &amp; data labels</span><small>How BULLSEYE turns verified observations into derived intelligence</small></summary><div><p><strong>Observed</strong> values come from the current provider snapshot. <strong>Derived</strong> scores, scenarios and risk classifications are deterministic analytics calculated from those inputs.</p><p>Delayed, stale, partial or unavailable inputs keep directional output visibly restricted. BULLSEYE is educational market intelligence, not personalised financial advice.</p><nav><Link href="/risk-disclaimer">Risk disclosure</Link><Link href="/help">Help</Link>{access.features["launch-diagnostics"] ? <Link href="/terminal/diagnostics">Sanitized diagnostics</Link> : null}</nav></div></details>
+      <details className="commandMethodology"><summary><span>Methodology &amp; data labels</span><small>How BULLSEYE turns verified observations into derived intelligence</small></summary><div><p><strong>Observed</strong> values come from the current provider snapshot. <strong>Derived</strong> scores, scenarios and risk classifications are deterministic analytics calculated from those inputs.</p><p>Delayed, stale, partial or unavailable inputs keep directional output visibly restricted. BULLSEYE is educational market intelligence, not personalised financial advice.</p><nav><Link href="/risk-disclaimer">Risk disclosure</Link><Link href="/help">Help</Link></nav></div></details>
     </div>
   </MemberShell>;
 }

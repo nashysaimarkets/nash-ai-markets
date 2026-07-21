@@ -6,7 +6,7 @@ const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("loading route mirrors the integrated terminal hierarchy", async () => {
   const source = await read("../app/terminal/loading.tsx");
-  for (const className of ["foxtrotTerminal", "ftTopbar", "ftRail", "ftEngineStrip", "ftQuoteStrip", "ftPrimaryGrid", "marketChart", "ftDecisionStack", "ftAnalysisGrid"]) {
+  for (const className of ["customerTerminal", "ctTopbar", "ctWorkspace", "ctHero", "ctStatus", "ctPanel", "ctAssetGrid", "ctTwoColumn"]) {
     assert.match(source, new RegExp(className));
   }
   assert.match(source, /aria-busy="true"/);
@@ -47,6 +47,6 @@ test("polish remains restrained and safety content stays intact", async () => {
   const [styles, page] = await Promise.all([read("../app/mission-control.css"), read("../app/terminal/page.tsx")]);
   assert.doesNotMatch(styles, /backdrop-filter/);
   assert.match(page, /terminalStatusMessage/);
-  assert.match(page, /Data-quality warnings/);
-  assert.match(page, /Reasons to remain sidelined|PlannerSummary/);
+  assert.match(page, /No live values or directional guidance are being inferred/);
+  assert.match(page, /DecisionEnginePanel/);
 });

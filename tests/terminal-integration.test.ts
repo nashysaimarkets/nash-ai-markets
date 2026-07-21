@@ -11,11 +11,11 @@ import {
 test("complete terminal render wires every deterministic output panel", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
   for (const expected of [
-    "TerminalSummaryStrip intelligence={intelligence} decision={decision} plan={plan}",
-    "IntelligenceSummary intelligence={intelligence}",
-    "DecisionSummary decision={decision}",
-    "PlannerSummary plan={plan}",
-    "MarketChart data={[...chart.data]}",
+    "TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan}",
+    "CrossAssetBoard snapshot={snapshot}",
+    "MarketPressureMap snapshot={snapshot} intelligence={intelligence}",
+    "DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan}",
+    "Verified intraday chart unavailable",
   ]) assert.match(page, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 });
 
@@ -52,11 +52,11 @@ test("OHLCV validation rejects malformed, unordered and impossible candles", () 
 });
 
 test("critical warnings and high-impact provider events remain visible", async () => {
-  const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
-  assert.match(page, /Data-quality warnings/);
-  assert.match(page, /Planner event-risk warnings/);
-  assert.match(page, /High-impact provider events/);
-  assert.match(page, /event\.risk === "HIGH"/);
+  const component = await readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8");
+  assert.match(component, /decision\.dataQualityWarnings/);
+  assert.match(component, /plan\.eventRiskWarnings/);
+  assert.match(component, /decision\.noTradeReasons/);
+  assert.match(component, /Conditions limiting participation/);
 });
 
 test("responsive integration keeps the chart and decisions usable", async () => {

@@ -49,12 +49,12 @@ test("unavailable snapshots hide values instead of inventing them", () => {
 test("visual terminal preserves no-trade warnings and responsive safeguards", async () => {
   const [page, components, styles] = await Promise.all([
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/terminal/components/EngineSummary.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /DecisionSummary decision=\{decision\}/);
+  assert.match(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
   assert.match(components, /decision\.noTradeReasons/);
-  assert.match(components, /Reasons to remain sidelined/);
+  assert.match(components, /Conditions limiting participation/);
   assert.match(styles, /overflow-x:hidden/);
   assert.match(styles, /@media\(max-width:640px\)/);
   assert.match(styles, /marketChartCanvas,.marketChartState\{height:300px\}/);
