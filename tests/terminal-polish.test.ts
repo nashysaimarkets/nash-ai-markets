@@ -6,7 +6,7 @@ const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("loading route mirrors the integrated terminal hierarchy", async () => {
   const source = await read("../app/terminal/loading.tsx");
-  for (const className of ["customerTerminal", "ctTopbar", "ctWorkspace", "ctHero", "ctStatus", "ctPanel", "ctAssetGrid", "ctTwoColumn"]) {
+  for (const className of ["customerTerminal", "ctTopbar", "ctWorkspace", "ctHero", "ctStatus", "ctChartPrimary", "ctPanel", "ctAssetGrid", "ctTwoColumn"]) {
     assert.match(source, new RegExp(className));
   }
   assert.match(source, /aria-busy="true"/);
