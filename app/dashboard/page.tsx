@@ -64,7 +64,7 @@ export default async function MemberDashboard() {
     getTerminalMarketData(undefined, now),
     loadAccuracySummary(),
     loadFounding100ForEmail(user.email),
-    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles(now) : Promise.resolve(null),
+    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("15m", now) : Promise.resolve(null),
   ]);
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
@@ -154,6 +154,10 @@ export default async function MemberDashboard() {
         <div><span>Last verified update</span><strong>{marketTimestamp} UK</strong></div>
       </section>
 
+      <LiveMarketSummary verified={verifiedMarket} regime={decision.volatilityRegime} bias={decision.marketBias} confidence={mission.confidence} risk={decision.riskRating} quotes={market.snapshot.quotes} stats={candleStats} provider={market.gatewayStatus.providerName} dataStatus={statusPresentation.label} lastUpdated={marketTimestamp === "No verified timestamp" ? marketTimestamp : `${marketTimestamp} UK`} />
+
+      {candleSeries ? <DashboardCandlestickChart series={candleSeries} /> : <section className="dashboardChartLocked" aria-label="Premium candlestick chart"><span>PRO OR ELITE MARKET WORKSPACE</span><h2>Verified provider candlesticks</h2><p>Intraday chart history is available to paid members after entitlement verification.</p><Link href="/pricing">Compare membership plans →</Link></section>}
+
       <TodaysEdge
         verified={verifiedMarket}
         marketCondition={mission.marketCondition}
@@ -165,10 +169,6 @@ export default async function MemberDashboard() {
         confidence={mission.confidence}
         analysisMode="Deterministic"
       />
-
-      <LiveMarketSummary verified={verifiedMarket} regime={decision.volatilityRegime} bias={decision.marketBias} confidence={mission.confidence} risk={decision.riskRating} quotes={market.snapshot.quotes} stats={candleStats} provider={market.gatewayStatus.providerName} dataStatus={statusPresentation.label} lastUpdated={marketTimestamp === "No verified timestamp" ? marketTimestamp : `${marketTimestamp} UK`} />
-
-      {candleSeries ? <DashboardCandlestickChart series={candleSeries} /> : <section className="dashboardChartLocked" aria-label="Premium candlestick chart"><span>PRO OR ELITE MARKET WORKSPACE</span><h2>Verified provider candlesticks</h2><p>Intraday chart history is available to paid members after entitlement verification.</p><Link href="/pricing">Compare membership plans →</Link></section>}
 
       {access.tier === "elite" ? <EliteOnboardingChecklist /> : null}
 
@@ -279,7 +279,7 @@ export default async function MemberDashboard() {
         <header><span>YOUR ACCESS PATH</span><h2>Use more depth when it adds value</h2><p>No artificial deadlines. Preview availability resets on the published UTC cadence.</p></header>
         {access.tier === "elite" ? <article className="dailyCard fullyUnlocked"><TerminalBadge label="Elite unlocked" tone="warning" /><h3>Full decision workflow available</h3><p>Intelligence, decisions, structured planning and launch diagnostics are included in your current membership.</p><Link href="/terminal">Open the Elite terminal →</Link></article> : <LockedPremiumCard tier={offer!.targetTier} title={offer!.targetTier === "pro" ? "Explore the explainable decision workflow" : "Explore structured planning and diagnostics"} value={offer!.targetTier === "pro" ? "See how Bullseye turns verified market inputs into explainable confidence, bias and trade permission." : "See how Elite converts a deterministic decision into disciplined participation, confirmations and review triggers."} benefits={offer!.targetTier === "pro" ? ["Explainable scores", "Decision permission", "Conflict warnings"] : ["Structured planner", "Event-risk controls", "Launch diagnostics"]} previewEligible={offer!.eligible} previewAvailable={previewState.available} previewCadence={offer!.cadence} />}
       </section>
-      <details className="commandMethodology"><summary><span>Methodology &amp; data labels</span><small>How BULLSEYE turns verified observations into derived intelligence</small></summary><div><p><strong>Observed</strong> values come from the current provider snapshot. <strong>Derived</strong> scores, scenarios and risk classifications are deterministic analytics calculated from those inputs.</p><p>Delayed, stale, partial or unavailable inputs keep directional output visibly restricted. BULLSEYE is educational market intelligence, not personalised financial advice.</p><nav><Link href="/risk-disclaimer">Risk disclosure</Link><Link href="/help">Help</Link></nav></div></details>
+      <details className="commandMethodology"><summary><span>Advanced diagnostics</span><small>Provider health, candle availability and data-label definitions</small></summary><div><p><strong>Provider:</strong> {market.gatewayStatus.providerName}. <strong>Connection:</strong> {market.gatewayStatus.connectionStatus.replaceAll("_", " ").toLowerCase()}. <strong>Last successful update:</strong> {marketTimestamp}. <strong>Candles:</strong> {candleSeries?.status ?? "not included for this membership"}.</p><p><strong>Observed</strong> values come from verified provider payloads. <strong>Calculated</strong> scores, EMA overlays, UTC candle aggregation and rolling 24-hour values use only those observations. A rolling 24-hour high, low or first available close is not an official exchange-session statistic.</p><p>Delayed, stale, partial or unavailable inputs keep directional output visibly restricted. No API keys, tokens or server configuration values are rendered here.</p><nav><Link href="/risk-disclaimer">Risk disclosure</Link><Link href="/help">Help</Link></nav></div></details>
     </div>
   </MemberShell>;
 }

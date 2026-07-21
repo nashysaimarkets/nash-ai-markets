@@ -39,9 +39,9 @@ test("provider failures remain fail closed and contract labels remain exact", as
   assert.equal(unavailable.status, "unavailable");
   assert.equal(unavailable.failureCategory, "entitlement");
   assert.equal(unavailable.symbol, "ESUSD");
-  assert.equal(unavailable.instrumentName, "E-Mini S&P 500");
+  assert.equal(unavailable.instrumentName, "S&P 500 futures reference series");
   assert.match(unavailable.contract, /no dated contract/i);
-  assert.match(unavailable.exchange, /CME/);
+  assert.match(unavailable.exchange, /not verified/i);
   assert.deepEqual(unavailable.candles, []);
 });
 
@@ -50,7 +50,7 @@ test("provider response returns verified schema without exposing its credential"
   const result = await loadFmpCandles({ apiKey: "do-not-expose", symbol: "ESUSD", now: (base + 300) * 1000, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify([{ timestamp: base, open: 99, high: 101, low: 98, close: 100, volume: 10 }]), { status: 200 }); } });
   assert.equal(result.symbol, "ESUSD");
   assert.equal(result.status, "delayed");
-  assert.match(requested, /historical-chart\/5min/);
+  assert.match(requested, /historical-chart\/15min/);
   assert.equal(JSON.stringify(result).includes("do-not-expose"), false);
 });
 
@@ -86,21 +86,35 @@ test("timezone-less provider date strings fail closed instead of being assumed U
   assert.equal(normalizeFmpCandles([{ ...payload[0], date: "2026-07-21T10:00:00Z" }]).length, 1);
 });
 
-test("dashboard chart makes no browser provider call and exposes accessible controls", async () => {
+test("dashboard chart calls only the protected candle route on an explicit control action", async () => {
   const [chart, page, loading] = await Promise.all([
     readFile(new URL("../app/dashboard/components/DashboardCandlestickChart.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/loading.tsx", import.meta.url), "utf8"),
   ]);
-  assert.doesNotMatch(chart, /fetch\(|setInterval|setTimeout/);
+  assert.match(chart, /fetch\(`\/api\/market\/candles\?timeframe=/);
+  assert.doesNotMatch(chart, /financialmodelingprep\.com|setInterval|setTimeout/);
   assert.match(chart, /aria-label="Candlestick interval"/);
   assert.match(chart, /aria-label="Chart overlays"/);
   assert.match(chart, /Verified candlestick history unavailable/);
-  assert.match(chart, /disabled=\{!option\.timeframe\}/);
+  assert.match(chart, /HistogramSeries/);
+  assert.match(chart, /option\.timeframe !== timeframe/);
   assert.doesNotMatch(chart, /Session high|Session low|Previous close/);
   assert.match(chart, /series\.instrumentDetail/);
   assert.match(chart, /series\.status !== "unavailable"/);
   assert.doesNotMatch(chart, /Failure category|requests avoided|cache \{/);
   assert.match(page, /access\.tier === "pro" \|\| access\.tier === "elite"/);
   assert.match(loading, /dashboardChartSkeletonCanvas/);
+});
+
+test("documented FMP intervals use one upstream series and 4-hour is aggregated locally", async () => {
+  for (const [timeframe, expected] of [["1m", "1min"], ["5m", "5min"], ["15m", "15min"], ["1h", "1hour"], ["4h", "1hour"], ["1d", "historical-price-eod/full"]] as const) {
+    let requested = "";
+    const points = Array.from({ length: 8 }, (_, index) => ({ timestamp: base + index * 3600, open: 99 + index, high: 101 + index, low: 98 + index, close: 100 + index, volume: 10 }));
+    const result = await loadFmpCandles({ apiKey: "configured", symbol: "ESUSD", timeframe, now: (base + 8 * 3600) * 1000, fetchImpl: async (input) => { requested = String(input); return new Response(JSON.stringify(points)); } });
+    assert.match(requested, new RegExp(expected.replaceAll("/", "\\/")));
+    assert.equal(result.timeframe, timeframe);
+    assert.equal(result.classification, timeframe === "1d" ? "end_of_day" : "delayed");
+    if (timeframe === "4h") assert.ok(result.candles.every((item) => item.time % 14_400 === 0));
+  }
 });

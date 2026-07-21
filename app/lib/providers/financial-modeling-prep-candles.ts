@@ -2,6 +2,7 @@ import { createAsyncKeyedTtlCache } from "../server/async-ttl-cache.ts";
 import type { OhlcvPoint } from "../../terminal/lib/visual-terminal.ts";
 
 export type CandleFreshness = "delayed" | "stale" | "unavailable";
+export type CandleTimeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
 export type CandleCacheStatus = "hit" | "miss" | "coalesced" | "disabled";
 
 export type VerifiedCandleSeries = {
@@ -10,7 +11,9 @@ export type VerifiedCandleSeries = {
   instrumentName: string;
   exchange: string;
   instrumentDetail: string;
-  timeframe: "5m";
+  timeframe: CandleTimeframe;
+  classification: "delayed" | "end_of_day";
+  dataAgeMs: number | null;
   provider: "Financial Modeling Prep";
   status: CandleFreshness;
   asOf: string | null;
@@ -20,10 +23,11 @@ export type VerifiedCandleSeries = {
 };
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
-type LoadOptions = { apiKey: string; symbol: string; baseUrl?: string; now?: number; fetchImpl?: FetchLike; maxCandles?: number };
+type LoadOptions = { apiKey: string; symbol: string; timeframe?: CandleTimeframe; baseUrl?: string; now?: number; fetchImpl?: FetchLike; maxCandles?: number };
 
 const CACHE_TTL_MS = 60_000;
-const MAX_CANDLES = 500;
+const MAX_CANDLES = 200;
+const MAX_SOURCE_CANDLES = 800;
 const cache = createAsyncKeyedTtlCache<VerifiedCandleSeries>({ ttlMs: CACHE_TTL_MS, maxEntries: 12, isFailure: (value) => value.status === "unavailable" });
 
 function finite(value: unknown): number | null {
@@ -40,7 +44,7 @@ function timestamp(value: unknown): number | null {
 }
 
 export function normalizeFmpCandles(payload: unknown, maxCandles = MAX_CANDLES): OhlcvPoint[] {
-  const records = Array.isArray(payload) ? payload : payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown }).data) ? (payload as { data: unknown[] }).data : [];
+  const records = Array.isArray(payload) ? payload : payload && typeof payload === "object" && Array.isArray((payload as { data?: unknown }).data) ? (payload as { data: unknown[] }).data : payload && typeof payload === "object" && Array.isArray((payload as { historical?: unknown }).historical) ? (payload as { historical: unknown[] }).historical : [];
   const unique = new Map<number, OhlcvPoint>();
   for (const item of records) {
     if (!item || typeof item !== "object") continue;
@@ -50,52 +54,63 @@ export function normalizeFmpCandles(payload: unknown, maxCandles = MAX_CANDLES):
     if (time === null || open === null || high === null || low === null || close === null || volume < 0 || low > Math.min(open, close) || high < Math.max(open, close)) continue;
     unique.set(time, { time, open, high, low, close, volume });
   }
-  return [...unique.values()].sort((left, right) => left.time - right.time).slice(-Math.max(1, Math.min(MAX_CANDLES, maxCandles)));
+  return [...unique.values()].sort((left, right) => left.time - right.time).slice(-Math.max(1, Math.min(MAX_SOURCE_CANDLES, maxCandles)));
 }
 
-function empty(symbol: string, category: VerifiedCandleSeries["failureCategory"]): VerifiedCandleSeries {
+function empty(symbol: string, timeframe: CandleTimeframe, category: VerifiedCandleSeries["failureCategory"]): VerifiedCandleSeries {
   const es = symbol === "ESUSD";
-  return { symbol, contract: es ? "Provider commodity series; no dated contract supplied" : "Provider-configured series", instrumentName: es ? "E-Mini S&P 500" : "Configured market series", exchange: es ? "CME (provider classification)" : "Not verified", instrumentDetail: es ? "FMP series; exact dated contract and real-time exchange provenance are not supplied" : "Identity requires provider catalogue verification", timeframe: "5m", provider: "Financial Modeling Prep", status: "unavailable", asOf: null, candles: [], cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: category };
+  return { symbol, contract: es ? "Provider commodity series; no dated contract supplied" : "Provider-configured series", instrumentName: es ? "S&P 500 futures reference series" : "Configured market series", exchange: es ? "Exchange not verified by payload" : "Not verified", instrumentDetail: es ? "FMP ESUSD commodity series; no dated CME contract or exchange provenance is supplied" : "Identity requires provider catalogue verification", timeframe, classification: timeframe === "1d" ? "end_of_day" : "delayed", dataAgeMs: null, provider: "Financial Modeling Prep", status: "unavailable", asOf: null, candles: [], cache: { status: "disabled", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: category };
 }
 
-export function determineCandleFreshness(candles: OhlcvPoint[], now: number): Pick<VerifiedCandleSeries, "status" | "asOf"> {
+export function determineCandleFreshness(candles: OhlcvPoint[], now: number, timeframe: CandleTimeframe = "5m"): Pick<VerifiedCandleSeries, "status" | "asOf" | "dataAgeMs"> {
   const latest = candles.at(-1);
-  if (!latest) return { status: "unavailable", asOf: null };
+  if (!latest) return { status: "unavailable", asOf: null, dataAgeMs: null };
   const age = now - latest.time * 1000;
-  if (age < 0) return { status: "unavailable", asOf: null };
-  const status: CandleFreshness = age <= 60 * 60_000 ? "delayed" : "stale";
-  return { status, asOf: new Date(latest.time * 1000).toISOString() };
+  if (age < 0) return { status: "unavailable", asOf: null, dataAgeMs: null };
+  const threshold = timeframe === "1d" ? 4 * 24 * 60 * 60_000 : 60 * 60_000;
+  const status: CandleFreshness = age <= threshold ? "delayed" : "stale";
+  return { status, asOf: new Date(latest.time * 1000).toISOString(), dataAgeMs: age };
 }
 
-export async function loadFmpCandles({ apiKey, symbol, baseUrl = "https://financialmodelingprep.com/stable/", now = Date.now(), fetchImpl = fetch, maxCandles = MAX_CANDLES }: LoadOptions): Promise<VerifiedCandleSeries> {
-  if (!apiKey.trim() || !symbol.trim()) return empty(symbol, "not_configured");
-  const from = new Date(now - 2 * 24 * 60 * 60_000).toISOString().slice(0, 10);
+const source = (timeframe: CandleTimeframe) => timeframe === "1d" ? { path: "historical-price-eod/full", days: 370 } : { path: `historical-chart/${({ "1m": "1min", "5m": "5min", "15m": "15min", "1h": "1hour", "4h": "1hour" } as const)[timeframe]}`, days: timeframe === "1m" ? 1 : timeframe === "5m" || timeframe === "15m" ? 3 : 45 };
+
+function aggregateFourHour(candles: OhlcvPoint[]) {
+  const groups = new Map<number, OhlcvPoint[]>();
+  for (const candle of candles) { const bucket = Math.floor(candle.time / 14_400) * 14_400; groups.set(bucket, [...(groups.get(bucket) ?? []), candle]); }
+  return [...groups.entries()].sort(([a], [b]) => a - b).map(([time, values]) => ({ time, open: values[0]!.open, high: Math.max(...values.map((v) => v.high)), low: Math.min(...values.map((v) => v.low)), close: values.at(-1)!.close, volume: values.reduce((sum, v) => sum + v.volume, 0) }));
+}
+
+export async function loadFmpCandles({ apiKey, symbol, timeframe = "15m", baseUrl = "https://financialmodelingprep.com/stable/", now = Date.now(), fetchImpl = fetch, maxCandles = MAX_CANDLES }: LoadOptions): Promise<VerifiedCandleSeries> {
+  if (!apiKey.trim() || !symbol.trim()) return empty(symbol, timeframe, "not_configured");
+  const endpoint = source(timeframe);
+  const from = new Date(now - endpoint.days * 24 * 60 * 60_000).toISOString().slice(0, 10);
   const to = new Date(now).toISOString().slice(0, 10);
-  const url = new URL("historical-chart/5min", baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+  const url = new URL(endpoint.path, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
   url.searchParams.set("symbol", symbol);
   url.searchParams.set("from", from);
   url.searchParams.set("to", to);
   url.searchParams.set("apikey", apiKey);
   let response: Response;
   try { response = await fetchImpl(url, { cache: "no-store", signal: AbortSignal.timeout(5_000) }); }
-  catch { return empty(symbol, "provider"); }
-  if (response.status === 401 || response.status === 403) return empty(symbol, "authentication");
-  if (response.status === 402) return empty(symbol, "entitlement");
-  if (response.status === 429) return empty(symbol, "rate_limit");
-  if (!response.ok) return empty(symbol, "provider");
+  catch { return empty(symbol, timeframe, "provider"); }
+  if (response.status === 401 || response.status === 403) return empty(symbol, timeframe, "authentication");
+  if (response.status === 402) return empty(symbol, timeframe, "entitlement");
+  if (response.status === 429) return empty(symbol, timeframe, "rate_limit");
+  if (!response.ok) return empty(symbol, timeframe, "provider");
   const payload = await response.json().catch(() => null) as unknown;
-  const candles = normalizeFmpCandles(payload, maxCandles);
-  if (!candles.length) return empty(symbol, "schema");
-  return { ...empty(symbol, null), ...determineCandleFreshness(candles, now), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
+  const normalized = normalizeFmpCandles(payload, timeframe === "4h" ? maxCandles * 4 : maxCandles);
+  const candles = (timeframe === "4h" ? aggregateFourHour(normalized) : normalized).slice(-maxCandles);
+  if (!candles.length) return empty(symbol, timeframe, "schema");
+  return { ...empty(symbol, timeframe, null), ...determineCandleFreshness(candles, now, timeframe), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
 }
 
-export async function getConfiguredFmpCandles(now = Date.now()): Promise<VerifiedCandleSeries> {
+export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "15m", now = Date.now()): Promise<VerifiedCandleSeries> {
   const apiKey = process.env.FMP_API_KEY?.trim();
   const symbol = process.env.FMP_SP500_FUTURES_SYMBOL?.trim() || "ESUSD";
-  if (!apiKey) return empty(symbol, "not_configured");
-  const key = `${symbol}:5m:${new Date(now).toISOString().slice(0, 10)}`;
+  if (!apiKey) return empty(symbol, timeframe, "not_configured");
+  const key = `${symbol}:${timeframe}:${new Date(now).toISOString().slice(0, 10)}`;
   const before = cache.getStats();
-  const value = await cache.get(key, () => loadFmpCandles({ apiKey, symbol, baseUrl: process.env.FMP_API_BASE_URL?.trim(), now }));
+  const value = await cache.get(key, () => loadFmpCandles({ apiKey, symbol, timeframe, baseUrl: process.env.FMP_API_BASE_URL?.trim(), now }));
   const after = cache.getStats();
   const status: CandleCacheStatus = after.loads > before.loads ? "miss" : after.coalesced > before.coalesced ? "coalesced" : "hit";
   return { ...value, cache: { status, ttlMs: CACHE_TTL_MS, requestsAvoided: after.hits + after.coalesced } };
