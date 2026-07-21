@@ -5,7 +5,7 @@ import { createClient } from "../../utils/supabase/server";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import { createTradingDecision } from "../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner";
-import { formatSnapshotAge, formatUkTimestamp } from "../lib/market-data";
+import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes } from "../lib/market-data";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, MarketCommandHeader, MarketPressureMap, TodaysMarketPlan } from "./components/CustomerTerminal";
@@ -66,7 +66,7 @@ export default async function Terminal() {
     <section className="ctWorkspace">
       <MarketCommandHeader snapshot={snapshot} state={state} timestamp={timestamp} />
       <section className={`ctStatus is-${state.toLowerCase()}`} role={verified ? "status" : "alert"}>
-        <div><strong>{terminalStatusMessage(snapshot.status, gatewayStatus.failureCount)}</strong><span>{verified ? `Verified ${formatSnapshotAge(snapshot.asOf)}.` : "No live values or directional guidance are being inferred."}</span></div>
+        <div><strong>{terminalStatusMessage(snapshot.status, gatewayStatus.failureCount, hasDisplayableQuotes(snapshot))}</strong><span>{verified ? `Verified ${formatSnapshotAge(snapshot.asOf)}.` : hasDisplayableQuotes(snapshot) ? `Last verified ${formatSnapshotAge(snapshot.asOf)}. Directional guidance stays closed.` : "No live values or directional guidance are being inferred."}</span></div>
         {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
       </section>
 

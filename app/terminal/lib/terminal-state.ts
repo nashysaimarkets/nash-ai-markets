@@ -35,9 +35,12 @@ export const TERMINAL_SKELETON_PANELS = [
   { key: "options", className: "panelOptions" },
 ] as const;
 
-export function terminalStatusMessage(status: MarketDataStatus, failureCount = 0): string {
+export function terminalStatusMessage(status: MarketDataStatus, failureCount = 0, hasRetainedQuotes = false): string {
   if (status === "LIVE") return "VERIFIED LIVE DATA";
   if (status === "DELAYED") return "VERIFIED DELAYED DATA — CHECK THE DISPLAYED AGE BEFORE USING IT";
+  if (status === "UNAVAILABLE" && hasRetainedQuotes) {
+    return "PREVIOUS SESSION OBSERVATION — VALUES REMAIN VISIBLE WITH THEIR AGE; NO LIVE PLAN IS PUBLISHED";
+  }
   if (status === "UNAVAILABLE") {
     const attempts = failureCount > 0 ? ` AFTER ${failureCount} FAILED ${failureCount === 1 ? "ATTEMPT" : "ATTEMPTS"}` : "";
     return `VERIFIED DATA IS TEMPORARILY UNAVAILABLE${attempts} — NO CURRENT MARKET SIGNALS ARE SHOWN`;
