@@ -1,6 +1,7 @@
 /**
  * Safe post-auth redirect helpers for passwordless magic links.
- * Origins are allowlisted; `next` must be a same-app relative path.
+ * The browser/request origin is preserved (never rewritten to www).
+ * Only the `next` path is validated against an allowlist.
  */
 
 const PRODUCTION_ORIGINS = new Set([
@@ -26,24 +27,30 @@ const ALLOWED_NEXT_PREFIXES = [
   "/membership-required",
 ] as const;
 
-export function isVercelPreviewOrigin(origin: string): boolean {
+/** Normalize an http(s) origin; reject credentials and non-http(s) schemes. */
+export function normalizeHttpOrigin(origin: string): string | null {
   try {
-    return VERCEL_PREVIEW_ORIGIN.test(new URL(origin).origin);
+    const url = new URL(origin);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    if (url.username || url.password) return null;
+    return url.origin;
   } catch {
-    return false;
+    return null;
   }
 }
 
+export function isVercelPreviewOrigin(origin: string): boolean {
+  const normalized = normalizeHttpOrigin(origin);
+  return Boolean(normalized && VERCEL_PREVIEW_ORIGIN.test(normalized));
+}
+
 export function isAllowedAuthOrigin(origin: string): boolean {
-  try {
-    const normalized = new URL(origin).origin;
-    if (PRODUCTION_ORIGINS.has(normalized)) return true;
-    if (LOCAL_ORIGIN.test(normalized)) return true;
-    if (VERCEL_PREVIEW_ORIGIN.test(normalized)) return true;
-    return false;
-  } catch {
-    return false;
-  }
+  const normalized = normalizeHttpOrigin(origin);
+  if (!normalized) return false;
+  if (PRODUCTION_ORIGINS.has(normalized)) return true;
+  if (LOCAL_ORIGIN.test(normalized)) return true;
+  if (VERCEL_PREVIEW_ORIGIN.test(normalized)) return true;
+  return false;
 }
 
 /** Default landing after auth: terminal on Vercel preview, dashboard in production. */
@@ -75,13 +82,16 @@ export function safeAuthNextPath(
 }
 
 /**
- * Build the Supabase `emailRedirectTo` URL from a trusted browser/request origin.
- * Unknown origins fail closed to production so misconfigured hosts cannot mint redirects.
+ * Build Supabase `emailRedirectTo` from the **current** browser/request origin.
+ * Never rewrites a valid https origin to www — that previously forced preview
+ * sessions onto production when allowlisting/Supabase wildcards disagreed.
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
-  const allowed = isAllowedAuthOrigin(origin);
-  const trustedOrigin = allowed ? new URL(origin).origin : "https://www.nashaimarkets.com";
-  const path = safeAuthNextPath(allowed ? next : null, defaultPostAuthPath(trustedOrigin));
+  const trustedOrigin = normalizeHttpOrigin(origin);
+  if (!trustedOrigin) {
+    throw new Error("Refusing to build auth redirect from a non-http(s) origin");
+  }
+  const path = safeAuthNextPath(next, defaultPostAuthPath(trustedOrigin));
   const url = new URL("/auth/callback", trustedOrigin);
   url.searchParams.set("next", path);
   return url.toString();
@@ -89,8 +99,15 @@ export function buildEmailRedirectTo(origin: string, next?: string | null): stri
 
 /** Resolve the absolute post-auth location on the request’s own origin. */
 export function buildPostAuthRedirect(requestOrigin: string, next?: string | null): string {
-  const allowed = isAllowedAuthOrigin(requestOrigin);
-  const origin = allowed ? new URL(requestOrigin).origin : "https://www.nashaimarkets.com";
-  const path = safeAuthNextPath(allowed ? next : null, defaultPostAuthPath(origin));
+  const origin = normalizeHttpOrigin(requestOrigin);
+  if (!origin) return "https://www.nashaimarkets.com/dashboard";
+  const path = safeAuthNextPath(next, defaultPostAuthPath(origin));
   return `${origin}${path}`;
+}
+
+/** Exact callback URL that must be allowlisted in Supabase for a given origin. */
+export function authCallbackAllowlistUrl(origin: string): string {
+  const trustedOrigin = normalizeHttpOrigin(origin);
+  if (!trustedOrigin) throw new Error("Invalid origin for callback allowlist URL");
+  return `${trustedOrigin}/auth/callback`;
 }

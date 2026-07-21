@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  authCallbackAllowlistUrl,
   buildEmailRedirectTo,
   buildPostAuthRedirect,
   defaultPostAuthPath,
@@ -12,7 +13,7 @@ import {
 const PRODUCTION = "https://www.nashaimarkets.com";
 const PREVIEW =
   "https://nash-ai-markets-git-bullseye-customer-te-69ca60-nash-ai-markets.vercel.app";
-const UNIQUE_PREVIEW = "https://nash-ai-markets-kki912d62-nash-ai-markets.vercel.app";
+const UNIQUE_PREVIEW = "https://nash-ai-markets-bljrecjyb-nash-ai-markets.vercel.app";
 
 test("production login returns to production dashboard by default", () => {
   assert.equal(isAllowedAuthOrigin(PRODUCTION), true);
@@ -35,6 +36,12 @@ test("preview login returns to the originating preview terminal by default", () 
   );
   assert.equal(buildPostAuthRedirect(PREVIEW), `${PREVIEW}/terminal`);
   assert.equal(buildPostAuthRedirect(UNIQUE_PREVIEW, "/terminal"), `${UNIQUE_PREVIEW}/terminal`);
+  assert.equal(
+    buildEmailRedirectTo(UNIQUE_PREVIEW),
+    `${UNIQUE_PREVIEW}/auth/callback?next=%2Fterminal`,
+  );
+  assert.doesNotMatch(buildEmailRedirectTo(PREVIEW), /nashaimarkets\.com/);
+  assert.equal(authCallbackAllowlistUrl(PREVIEW), `${PREVIEW}/auth/callback`);
 });
 
 test("unsafe external redirect URLs are rejected", () => {
@@ -45,13 +52,20 @@ test("unsafe external redirect URLs are rejected", () => {
   assert.equal(isAllowedAuthOrigin("https://evil.example"), false);
   assert.equal(isAllowedAuthOrigin("https://nash-ai-markets-other.vercel.app"), false);
   assert.equal(
-    buildEmailRedirectTo("https://evil.example", "/terminal"),
-    `${PRODUCTION}/auth/callback?next=%2Fdashboard`,
+    buildEmailRedirectTo(PREVIEW, "https://evil.example/phish"),
+    `${PREVIEW}/auth/callback?next=%2Fterminal`,
   );
   assert.equal(
-    buildPostAuthRedirect("https://evil.example", "https://evil.example"),
-    `${PRODUCTION}/dashboard`,
+    buildPostAuthRedirect(PREVIEW, "//evil.example"),
+    `${PREVIEW}/terminal`,
   );
+});
+
+test("valid https origin is never rewritten to www for emailRedirectTo", () => {
+  const oddPreview = "https://nash-ai-markets-bljrecjyb-nash-ai-markets.vercel.app";
+  const redirectTo = buildEmailRedirectTo(oddPreview);
+  assert.match(redirectTo, /^https:\/\/nash-ai-markets-bljrecjyb-nash-ai-markets\.vercel\.app\/auth\/callback\?next=%2Fterminal$/);
+  assert.equal(redirectTo.includes("www.nashaimarkets.com"), false);
 });
 
 test("safe next paths remain available for production and preview", () => {
