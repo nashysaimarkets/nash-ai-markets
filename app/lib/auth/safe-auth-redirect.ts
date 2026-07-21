@@ -27,6 +27,9 @@ const ALLOWED_NEXT_PREFIXES = [
   "/membership-required",
 ] as const;
 
+/** Cookie used to carry post-auth `next` without putting it in emailRedirectTo. */
+export const AUTH_NEXT_COOKIE = "nam_auth_next";
+
 /** Normalize an http(s) origin; reject credentials and non-http(s) schemes. */
 export function normalizeHttpOrigin(origin: string): string | null {
   try {
@@ -113,17 +116,19 @@ export function safeAuthNextPath(
 /**
  * Build Supabase `emailRedirectTo` from the **current** trusted browser/request origin.
  * Rejects unsafe external origins. Never rewrites a trusted origin to www.
- * Always includes `next` (default `/terminal`) so the callback destination is explicit.
+ *
+ * Path-only `/auth/callback` (no `?next=`) so Redirect URL allowlists like
+ * `https://<preview-host>/**` match reliably. Post-auth destination is resolved
+ * on the callback host via cookie/`next` query/`defaultPostAuthPath` (/terminal).
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
   if (!trustedOrigin || !isAllowedAuthOrigin(trustedOrigin)) {
     throw new Error("Refusing to build auth redirect from an untrusted origin");
   }
-  const path = safeAuthNextPath(next, defaultPostAuthPath(trustedOrigin));
-  const url = new URL("/auth/callback", trustedOrigin);
-  url.searchParams.set("next", path);
-  return url.toString();
+  // Keep `next` out of the allowlisted URL; callers persist it via AUTH_NEXT_COOKIE.
+  void next;
+  return new URL("/auth/callback", trustedOrigin).toString();
 }
 
 /** Resolve the absolute post-auth location on the request’s own origin. */
@@ -145,6 +150,20 @@ export function authCallbackAllowlistUrl(origin: string): string {
   return `${trustedOrigin}/auth/callback`;
 }
 
+/** Compare a redirect_to value against the stable preview allowlist pattern. */
+export function matchesStablePreviewAllowlist(redirectTo: string): boolean {
+  try {
+    const url = new URL(redirectTo);
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "nash-ai-markets-git-bullseye-customer-te-69ca60-nash-ai-markets.vercel.app" &&
+      (url.pathname === "/auth/callback" || url.pathname.startsWith("/auth/callback/"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 /** Expected post-OTP hops when the allowlist accepts the preview callback. */
 export function describeAuthRedirectChain(origin: string, next?: string | null) {
   const trustedOrigin = normalizeHttpOrigin(origin);
@@ -155,16 +174,19 @@ export function describeAuthRedirectChain(origin: string, next?: string | null) 
   const emailRedirectTo = buildEmailRedirectTo(trustedOrigin, path);
   return {
     emailRedirectTo,
+    allowlistEntryRecommended: `${trustedOrigin}/**`,
+    matchesStablePreviewAllowlist: matchesStablePreviewAllowlist(emailRedirectTo),
     expectedHops: [
       {
         step: 1,
         name: "supabase_otp_redirect_to",
         url: emailRedirectTo,
+        note: "Path-only callback — no ?next= query (allowlist-safe)",
       },
       {
         step: 2,
         name: "app_auth_callback",
-        url: emailRedirectTo,
+        url: `${emailRedirectTo}?code=…`,
         note: "Supabase redirects here with ?code=… (PKCE) or token_hash",
       },
       {

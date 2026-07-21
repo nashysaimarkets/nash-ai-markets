@@ -1,7 +1,9 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "../../../utils/supabase/server";
 import {
+  AUTH_NEXT_COOKIE,
   buildPostAuthRedirect,
   defaultPostAuthPath,
   normalizeHttpOrigin,
@@ -31,7 +33,14 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const tokenHash = searchParams.get("token_hash");
   const requestedType = searchParams.get("type");
-  const next = safeAuthNextPath(searchParams.get("next"), defaultPostAuthPath(origin));
+  const cookieStore = await cookies();
+  const fromQuery = searchParams.get("next");
+  const fromCookie = cookieStore.get(AUTH_NEXT_COOKIE)?.value;
+  const next = safeAuthNextPath(
+    fromQuery ?? (fromCookie ? decodeURIComponent(fromCookie) : null),
+    defaultPostAuthPath(origin),
+  );
+  cookieStore.delete(AUTH_NEXT_COOKIE);
 
   if (tokenHash && requestedType && EMAIL_OTP_TYPES.has(requestedType as EmailOtpType)) {
     const supabase = await createClient();

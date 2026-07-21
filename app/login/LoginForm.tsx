@@ -3,20 +3,25 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createClient } from "../../utils/supabase/client";
 import {
+  AUTH_NEXT_COOKIE,
   buildEmailRedirectTo,
   defaultPostAuthPath,
   isAllowedAuthOrigin,
   safeAuthNextPath,
 } from "../lib/auth/safe-auth-redirect";
 
-function resolveLoginRedirectTo(origin: string, search: string): string {
+function resolveLoginRedirectTo(origin: string, search: string): { emailRedirectTo: string; next: string } {
   if (!isAllowedAuthOrigin(origin)) {
     throw new Error("Untrusted login origin");
   }
   const requestedNext = new URLSearchParams(search).get("next");
-  // Defaults to /terminal; never fall back to /dashboard unless explicitly requested.
   const next = safeAuthNextPath(requestedNext, defaultPostAuthPath(origin));
-  return buildEmailRedirectTo(origin, next);
+  return { emailRedirectTo: buildEmailRedirectTo(origin, next), next };
+}
+
+function persistAuthNextCookie(next: string) {
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `${AUTH_NEXT_COOKIE}=${encodeURIComponent(next)}; Path=/; Max-Age=900; SameSite=Lax${secure}`;
 }
 
 export default function LoginForm() {
@@ -38,16 +43,24 @@ export default function LoginForm() {
     const form = formRef.current;
     if (!form) return;
     try {
-      const emailRedirectTo = resolveLoginRedirectTo(window.location.origin, window.location.search);
+      const { emailRedirectTo, next } = resolveLoginRedirectTo(
+        window.location.origin,
+        window.location.search,
+      );
       form.setAttribute("data-email-redirect-to", emailRedirectTo);
+      form.setAttribute("data-auth-next", next);
       form.setAttribute("data-auth-redirect-ready", "true");
       form.setAttribute(
         "data-auth-uses-www",
         /nashaimarkets\.com/i.test(emailRedirectTo) ? "true" : "false",
       );
       form.setAttribute(
+        "data-auth-path-only",
+        emailRedirectTo.includes("?") ? "false" : "true",
+      );
+      form.setAttribute(
         "data-auth-next-terminal",
-        emailRedirectTo.includes("next=%2Fterminal") ? "true" : "false",
+        next === "/terminal" ? "true" : "false",
       );
     } catch {
       form.setAttribute("data-auth-redirect-ready", "false");
@@ -68,8 +81,10 @@ export default function LoginForm() {
         setMessage("This host is not authorized for member sign-in.");
         return;
       }
-      const emailRedirectTo = resolveLoginRedirectTo(origin, window.location.search);
+      const { emailRedirectTo, next } = resolveLoginRedirectTo(origin, window.location.search);
+      persistAuthNextCookie(next);
       formRef.current?.setAttribute("data-email-redirect-to", emailRedirectTo);
+      formRef.current?.setAttribute("data-auth-next", next);
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),

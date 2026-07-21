@@ -2,7 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "../../../utils/supabase/client";
-import { defaultPostAuthPath, safeAuthNextPath } from "../../lib/auth/safe-auth-redirect";
+import {
+  AUTH_NEXT_COOKIE,
+  defaultPostAuthPath,
+  safeAuthNextPath,
+} from "../../lib/auth/safe-auth-redirect";
+
+function readAuthNextCookie(): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${AUTH_NEXT_COOKIE}=([^;]*)`));
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
 
 export default function CompleteEmailSignIn() {
   const [message, setMessage] = useState("Completing your secure sign-in…");
@@ -13,9 +22,10 @@ export default function CompleteEmailSignIn() {
     async function complete() {
       const origin = window.location.origin;
       const next = safeAuthNextPath(
-        new URLSearchParams(window.location.search).get("next"),
+        new URLSearchParams(window.location.search).get("next") ?? readAuthNextCookie(),
         defaultPostAuthPath(origin),
       );
+      document.cookie = `${AUTH_NEXT_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
       const fragment = new URLSearchParams(window.location.hash.slice(1));
       const accessToken = fragment.get("access_token");
       const refreshToken = fragment.get("refresh_token");
