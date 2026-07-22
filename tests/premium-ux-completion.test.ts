@@ -84,6 +84,9 @@ test("premium UX surfaces are wired without auth churn", async () => {
   assert.match(options, /Watching:/);
   assert.match(options, /optionsProviderPanel/);
   assert.match(motion, /prefers-reduced-motion:reduce/);
+  assert.match(motion, /pmShimmerSweep/);
+  assert.match(motion, /pmLogoFloat/);
+  assert.match(motion, /pmHeadingIn/);
   assert.match(motion, /data-presentation/);
   assert.match(mission, /AskBullseye/);
   assert.match(mission, /mcActionTile/);
