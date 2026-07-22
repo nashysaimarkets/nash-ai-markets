@@ -49,7 +49,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     developing: "Developing a consistent process",
     experienced: "Experienced workflow",
     futures: "Index futures",
-    options: "Options",
+    equities: "Equities and ETFs",
     macro: "Macro and rates",
     volatility: "Volatility",
     essential: "Essential notices",

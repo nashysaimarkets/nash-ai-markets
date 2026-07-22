@@ -15,12 +15,18 @@ export type FinancialModelingPrepSymbolMap = {
   sp500Futures: string;
   vix: string;
   usDollarIndex: string;
+  oil: string;
+  qqq: string;
+  nasdaq: string;
 };
 
 export const DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS: FinancialModelingPrepSymbolMap = {
   sp500Futures: "ESUSD",
   vix: "^VIX",
   usDollarIndex: "DX-Y.NYB",
+  oil: "USO",
+  qqq: "QQQ",
+  nasdaq: "^IXIC",
 };
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -52,8 +58,8 @@ const MAX_FUTURE_SKEW_MS = 60_000;
 const MAX_TREASURY_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 type SafeFailureCategory = "authentication_rejected" | "access_restricted" | "rate_limited" | "malformed_json" | "timeout" | "invalid_response" | "network_interruption";
-type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury";
-type FmpEndpointName = "ES futures" | "VIX" | "US Dollar Index" | "Treasury rates";
+type FmpInstrument = "sp500" | "vix" | "us_dollar" | "treasury" | "oil" | "qqq" | "nasdaq";
+type FmpEndpointName = "ES futures" | "VIX" | "US Dollar Index" | "Treasury rates" | "Oil" | "QQQ" | "Nasdaq";
 type FmpResponseKind = "quote" | "dollar_quote" | "treasury";
 
 class SafeProviderFailure extends Error {
@@ -251,6 +257,9 @@ function emptyEndpointStatusCategories(): MarketProviderEndpointStatusCategories
     vix: "not_attempted",
     treasuryYields: "not_attempted",
     usDollarIndex: "not_attempted",
+    oil: "not_attempted",
+    qqq: "not_attempted",
+    nasdaq: "not_attempted",
   };
 }
 
@@ -279,6 +288,9 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
     sp500Futures: options.symbols?.sp500Futures || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.sp500Futures,
     vix: options.symbols?.vix || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.vix,
     usDollarIndex: options.symbols?.usDollarIndex || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.usDollarIndex,
+    oil: options.symbols?.oil || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.oil,
+    qqq: options.symbols?.qqq || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.qqq,
+    nasdaq: options.symbols?.nasdaq || DEFAULT_FINANCIAL_MODELING_PREP_SYMBOLS.nasdaq,
   };
   const logger = options.logger ?? (() => undefined);
   let endpointStatusCategories = emptyEndpointStatusCategories();
@@ -377,7 +389,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
 
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
-        const [esResult, vixResult, dollarResult, treasuryResult, calendarEvents] = await Promise.all([
+        const [esResult, vixResult, dollarResult, treasuryResult, oilResult, qqqResult, nasdaqResult, calendarEvents] = await Promise.all([
           request("sp500Futures", "ES futures", "quote", "quote", symbols.sp500Futures).then(
             (value) => ({ status: "fulfilled" as const, value }),
             (reason) => ({ status: "rejected" as const, reason }),
@@ -394,12 +406,25 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             (value) => ({ status: "fulfilled" as const, value }),
             (reason) => ({ status: "rejected" as const, reason }),
           ),
+          request("oil", "Oil", "quote", "quote", symbols.oil).then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
+          request("qqq", "QQQ", "quote", "quote", symbols.qqq).then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
+          request("nasdaq", "Nasdaq", "quote", "quote", symbols.nasdaq).then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
           loadFmpEconomicCalendar({
             apiKey: options.apiKey,
             baseUrl,
             now: Date.now(),
             timeoutMs,
             fetchImpl,
+            signal: controller.signal,
           }),
         ]);
         if (esResult.status === "rejected") throw esResult.reason;
@@ -418,7 +443,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           });
         };
         const optionalQuote = (
-          instrument: "vix" | "us_dollar",
+          instrument: Exclude<FmpInstrument, "sp500" | "treasury">,
           result: PromiseSettledResult<unknown>,
           expectedSymbol: string,
         ): FmpQuote | null => {
@@ -440,6 +465,9 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
 
         const vix = optionalQuote("vix", vixResult, symbols.vix);
         const dollar = optionalQuote("us_dollar", dollarResult, symbols.usDollarIndex);
+        const oil = optionalQuote("oil", oilResult, symbols.oil);
+        const qqq = optionalQuote("qqq", qqqResult, symbols.qqq);
+        const nasdaq = optionalQuote("nasdaq", nasdaqResult, symbols.nasdaq);
         let treasury: FmpTreasuryRates | null = null;
         if (treasuryResult.status === "rejected") {
           const category = treasuryResult.reason instanceof SafeProviderFailure ? treasuryResult.reason.category : "invalid_response";
@@ -473,6 +501,9 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           );
         }
         if (dollar) quotes.push({ symbol: "DXY", label: "US DOLLAR", value: formatPrice(dollar.price), change: formatChange(dollar), direction: direction(dollar.change) });
+        if (oil) quotes.push({ symbol: "OIL", label: "OIL (USO)", value: formatPrice(oil.price), change: formatChange(oil), direction: direction(oil.change) });
+        if (qqq) quotes.push({ symbol: "QQQ", label: "QQQ", value: formatPrice(qqq.price), change: formatChange(qqq), direction: direction(qqq.change) });
+        if (nasdaq) quotes.push({ symbol: "NQ", label: "NASDAQ", value: formatPrice(nasdaq.price), change: formatChange(nasdaq), direction: direction(nasdaq.change) });
         const secondaryAvailable = Boolean(vix && treasury && dollar);
 
         const snapshot: MarketSnapshot = {

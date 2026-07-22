@@ -11,7 +11,7 @@ import { MemberShell } from "../components/MemberShell";
 import { AskBullseye } from "../components/AskBullseye";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
-import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketDeskSignalsPanel, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
+import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketDeskSignalsPanel, MarketDirectionalGaugesPanel, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
 import { KeyMarketInformation } from "../components/mini-visuals/KeyMarketInformation";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
@@ -20,6 +20,8 @@ import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery";
 import { candleReferenceLevels, candleSessionStats } from "../dashboard/lib/candle-analysis";
 import { rangeLaneFromCandles, scenarioLaneMarkers, sparklineFromCandles, parsePriceLevel } from "../components/mini-visuals/mini-visual-data";
 import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals";
+import { createMarketDirectionalGauges } from "../lib/market-directional-gauges";
+import { createMarketStructureLevels } from "../lib/market-structure-levels";
 import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
@@ -58,6 +60,9 @@ export default async function Terminal() {
       ES: toCustomerCandleSeries(candleBundleRaw.ES),
       VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
       DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+      OIL: toCustomerCandleSeries(candleBundleRaw.OIL),
+      QQQ: toCustomerCandleSeries(candleBundleRaw.QQQ),
+      NQ: toCustomerCandleSeries(candleBundleRaw.NQ),
     }
     : null;
   const candleSeries = candleSeriesByInstrument?.ES ?? null;
@@ -71,15 +76,41 @@ export default async function Terminal() {
   const dxySparkline = candleSeriesByInstrument?.DXY?.candles.length
     ? sparklineFromCandles(candleSeriesByInstrument.DXY.candles)
     : null;
+  const oilSparkline = candleSeriesByInstrument?.OIL?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.OIL.candles)
+    : null;
+  const qqqSparkline = candleSeriesByInstrument?.QQQ?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.QQQ.candles)
+    : null;
+  const nqSparkline = candleSeriesByInstrument?.NQ?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.NQ.candles)
+    : null;
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
+  const deskCandle = deskCandleContextFromRange(rangeLane);
   const deskSignals = createMarketDeskSignals({
     snapshot,
     intelligence,
     decision,
     plan,
-    candle: deskCandleContextFromRange(rangeLane),
+    candle: deskCandle,
+  });
+  const directionalGauges = createMarketDirectionalGauges({
+    snapshot,
+    deskSignals,
+    candle: deskCandle,
+  });
+  const structureLevels = createMarketStructureLevels({
+    snapshot,
+    candlesBySymbol: {
+      ES: candleSeriesByInstrument?.ES?.candles,
+      VIX: candleSeriesByInstrument?.VIX?.candles,
+      DXY: candleSeriesByInstrument?.DXY?.candles,
+      OIL: candleSeriesByInstrument?.OIL?.candles,
+      QQQ: candleSeriesByInstrument?.QQQ?.candles,
+      NQ: candleSeriesByInstrument?.NQ?.candles,
+    },
   });
   const bullish = intelligence.scenarios.find((scenario) => scenario.type === "BULLISH");
   const bearish = intelligence.scenarios.find((scenario) => scenario.type === "BEARISH");
@@ -194,6 +225,8 @@ export default async function Terminal() {
 
         {access.features.intelligence ? <MarketDeskSignalsPanel signals={deskSignals} snapshotAge={snapshotAge} /> : <LockedPremiumCard tier="pro" title="Unlock buying and selling desk signals" value="Pro surfaces interpretive buying and selling leans from verified ES, VIX, Treasuries and dollar inputs — educational only, never executable orders." benefits={["Buying and selling leans", "Verified cross-asset drivers", "Fail-closed when data is thin"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
+        {access.features.intelligence ? <MarketDirectionalGaugesPanel gauges={directionalGauges} structure={structureLevels} snapshotAge={snapshotAge} /> : null}
+
         <AskBullseye
           compact
           context={{
@@ -220,7 +253,7 @@ export default async function Terminal() {
         <details className="ctPanel ctCompactPanel briefTech" open={false}>
           <summary><span>Deeper evidence</span><strong>Cross-asset board and methodology detail</strong></summary>
           <div className="ctDeepEvidence">
-            <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
+            <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline, OIL: oilSparkline, QQQ: qqqSparkline, NQ: nqSparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
             {paid && candleSeries ? <StructureLevelsPanel levels={candleLevels} recentRange={candleStats?.averageCandleRange ?? null} rangeLane={rangeLane} /> : null}
             <section className="ctTwoColumn">
               {access.features.intelligence ? <MarketPressureMap snapshot={snapshot} intelligence={intelligence} /> : <LockedPremiumCard tier="pro" title="See what is driving risk appetite" value="Pro explains the verified volatility, Treasury, dollar and equity pressures behind the market view." benefits={["Cross-asset context", "Explainable signals", "Fail-closed analysis"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}

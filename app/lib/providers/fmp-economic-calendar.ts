@@ -86,22 +86,27 @@ export async function loadFmpEconomicCalendar(input: {
   now?: number;
   timeoutMs?: number;
   fetchImpl?: FetchLike;
+  signal?: AbortSignal;
 }): Promise<MarketEvent[]> {
   const apiKey = input.apiKey.trim();
   if (!apiKey) return [];
   const now = input.now ?? Date.now();
   const timeoutMs = Math.max(1, input.timeoutMs ?? 5_000);
-  const base = (input.baseUrl?.trim() || "https://financialmodelingprep.com/stable/").replace(/\/?$/, "/");
+  const base = new URL((input.baseUrl?.trim() || "https://financialmodelingprep.com/stable/"));
+  const baseQuery = new URLSearchParams(base.search);
+  base.search = "";
+  if (!base.pathname.endsWith("/")) base.pathname = `${base.pathname}/`;
   const from = new Date(now).toISOString().slice(0, 10);
   const to = new Date(now + 7 * 24 * 60 * 60_000).toISOString().slice(0, 10);
   const url = new URL("economic-calendar", base);
+  baseQuery.forEach((value, key) => url.searchParams.append(key, value));
   url.searchParams.set("from", from);
   url.searchParams.set("to", to);
   url.searchParams.set("apikey", apiKey);
   try {
     const response = await (input.fetchImpl ?? fetch)(url, {
       cache: "no-store",
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: input.signal ?? AbortSignal.timeout(timeoutMs),
     });
     if (!response.ok) return [];
     const payload = await response.json().catch(() => null);

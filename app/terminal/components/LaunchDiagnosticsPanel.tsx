@@ -17,6 +17,9 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>VIX HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.vix.replaceAll("_", " ")}</dd></div>
       <div><dt>Treasury HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.treasuryYields.replaceAll("_", " ")}</dd></div>
       <div><dt>US Dollar HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.usDollarIndex.replaceAll("_", " ")}</dd></div>
+      <div><dt>Oil HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.oil.replaceAll("_", " ")}</dd></div>
+      <div><dt>QQQ HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.qqq.replaceAll("_", " ")}</dd></div>
+      <div><dt>Nasdaq HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.nasdaq.replaceAll("_", " ")}</dd></div>
       <div><dt>Response received</dt><dd>{diagnostics.provider.responseReceived ? "Yes" : "No"}</dd></div>
       <div><dt>Schema recognised</dt><dd>{diagnostics.provider.schemaRecognized ? "Yes" : "No"}</dd></div>
       <div><dt>Verified quote count</dt><dd>{diagnostics.provider.quoteCount}</dd></div>

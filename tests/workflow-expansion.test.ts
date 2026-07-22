@@ -1,9 +1,8 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
-import { readFile } from "node:fs/promises";
+import { readFile, access } from "node:fs/promises";
 import { buildAnalysisSnapshot, diffSnapshots, METHODOLOGY_VERSION } from "../app/lib/market-analysis-snapshot.ts";
-import { buildOptionsFramework } from "../app/lib/options-framework.ts";
 import { journalPerformance } from "../app/lib/journal-performance.ts";
 import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
 import type { MarketGatewayStatus } from "../app/lib/live-market-gateway.ts";
@@ -31,7 +30,10 @@ function mockGateway(): MarketGatewayStatus {
         vix: "not_attempted",
         treasuryYields: "not_attempted",
         usDollarIndex: "not_attempted",
-      },
+          oil: "not_attempted",
+          qqq: "not_attempted",
+          nasdaq: "not_attempted",
+        },
       responseReceived: false,
       schemaRecognized: false,
       quoteCount: 0,
@@ -93,41 +95,17 @@ test("analysis snapshots are versioned, hashed and never invent quotes", () => {
   assert.equal(changed.hasPrevious, false);
 });
 
-test("options framework never fabricates strikes premiums or greeks", () => {
-  const snapshot = createUnavailableSnapshot();
-  const intelligence = analyzeMarketSnapshot(snapshot);
-  const decision = createTradingDecision({
-    intelligence,
-    reasoning: intelligence.reasoning,
-    dataStatus: snapshot.status,
-    providerStatus: "offline",
-    dataAgeMs: 0,
-    fallbackActive: true,
-    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
-  });
-  const plan = createStructuredTradePlan({
-    decision,
-    intelligence,
-    dataStatus: snapshot.status,
-    providerStatus: "offline",
-    dataAgeMs: 0,
-    fallbackActive: true,
-    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
-  });
-  const framework = buildOptionsFramework({ snapshot, decision, plan, decisionReady: false });
-  assert.equal(framework.providerState, "unavailable");
-  assert.equal(framework.expectedMove, "unavailable");
-  assert.equal(framework.label, "Underlying-based framework");
-  const blob = JSON.stringify(framework);
-  assert.doesNotMatch(blob, /strike price|option premium|delta|gamma|theta|vega|implied volatility curve/i);
-  assert.ok(framework.ideas.every((idea) => idea.evidenceQuality === "framework-only"));
-  assert.ok(framework.ideas.every((idea) => !/\d{3,}\s*call|\d{3,}\s*put/i.test(idea.strikeSelectionLogic)));
+test("options trading surfaces are removed", async () => {
+  await assert.rejects(() => access(new URL("../app/options/page.tsx", import.meta.url)));
+  await assert.rejects(() => access(new URL("../app/lib/options-framework.ts", import.meta.url)));
+  const shell = await readFile(new URL("../app/components/MemberShell.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(shell, /href="\/options"/);
 });
 
 test("journal performance withholds percentages until sample size is honest", () => {
   const thin = journalPerformance([
     { pnl: 10, direction: "long", instrument_class: "futures", followed_plan: true, traded_at: "2026-07-01", vix_regime: null, bullseye_score: null },
-    { pnl: -5, direction: "short", instrument_class: "options", followed_plan: false, traded_at: "2026-07-02", vix_regime: null, bullseye_score: null },
+    { pnl: -5, direction: "short", instrument_class: "futures", followed_plan: false, traded_at: "2026-07-02", vix_regime: null, bullseye_score: null },
   ]);
   assert.equal(thin.sufficient, false);
   assert.match(thin.message, /Insufficient sample/);
@@ -137,7 +115,6 @@ test("workflow routes and migration exist without placeholder-only pages", async
   const files = [
     "../app/review/page.tsx",
     "../app/archive/page.tsx",
-    "../app/options/page.tsx",
     "../app/journal/page.tsx",
     "../app/performance/page.tsx",
     "../app/results/page.tsx",

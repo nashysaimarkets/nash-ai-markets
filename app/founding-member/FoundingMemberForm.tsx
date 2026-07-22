@@ -39,7 +39,7 @@ export function FoundingMemberForm() {
   }
 
   return <form className="foundingForm" onSubmit={submit}>
-    <fieldset><legend>Primary workflow goal</legend><label><input type="radio" name="primaryGoal" value="market-structure" required /> Market structure</label><label><input type="radio" name="primaryGoal" value="risk-discipline" /> Risk discipline</label><label><input type="radio" name="primaryGoal" value="options-context" /> Options context</label></fieldset>
+    <fieldset><legend>Primary workflow goal</legend><label><input type="radio" name="primaryGoal" value="market-structure" required /> Market structure</label><label><input type="radio" name="primaryGoal" value="risk-discipline" /> Risk discipline</label><label><input type="radio" name="primaryGoal" value="cross-asset-context" /> Cross-asset context</label></fieldset>
     <fieldset><legend>Experience level</legend><label><input type="radio" name="experienceLevel" value="developing" required /> Developing</label><label><input type="radio" name="experienceLevel" value="experienced" /> Experienced</label><label><input type="radio" name="experienceLevel" value="professional" /> Professional</label></fieldset>
     <label className="foundingSelect">Preferred session<select name="preferredSession" defaultValue="" required><option value="" disabled>Select a session</option><option value="london">London</option><option value="new-york">New York</option><option value="both">Both</option></select></label>
     <label className="foundingRisk"><input type="checkbox" name="riskAcknowledged" required /> I understand that NASH AI Markets provides educational decision support, not personalised financial advice, and that losses remain possible.</label>

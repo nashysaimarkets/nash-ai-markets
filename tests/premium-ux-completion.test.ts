@@ -98,22 +98,19 @@ test("Ask Bullseye answers only from provided verified context", () => {
 });
 
 test("premium UX surfaces are wired without auth churn", async () => {
-  const [shell, terminal, options, motion, mission, dashboard] = await Promise.all([
+  const [shell, terminal, motion, mission, dashboard] = await Promise.all([
     read("../app/components/MemberShell.tsx"),
     read("../app/terminal/page.tsx"),
-    read("../app/options/page.tsx"),
     read("../app/premium-motion.css"),
     read("../app/components/mission-control/MissionControl.tsx"),
     read("../app/globals.css"),
   ]);
   assert.match(shell, /PresentationModeToggle/);
   assert.match(shell, /Market brief/);
+  assert.doesNotMatch(shell, /href="\/options"/);
   assert.match(terminal, /MemberShell/);
   assert.match(terminal, /active="terminal"/);
   assert.doesNotMatch(terminal, /<Link href="\/dashboard">Dashboard<\/Link><Link href="\/brief">Brief<\/Link>/);
-  assert.match(options, /optionsScenarioGrid/);
-  assert.match(options, /Watching:/);
-  assert.match(options, /optionsProviderPanel/);
   assert.match(motion, /prefers-reduced-motion:reduce/);
   assert.match(motion, /pmShimmerSweep/);
   assert.match(motion, /pmLogoFloat/);
@@ -122,6 +119,7 @@ test("premium UX surfaces are wired without auth churn", async () => {
   assert.match(mission, /AskBullseye/);
   assert.match(mission, /mcActionTile/);
   assert.match(mission, /deskSignals/);
+  assert.doesNotMatch(mission, /Open Options Corner|href="\/options"/);
   assert.match(dashboard, /premium-motion\.css/);
 });
 

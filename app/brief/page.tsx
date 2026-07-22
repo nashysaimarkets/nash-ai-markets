@@ -20,8 +20,8 @@ import { formatSnapshotAge, isDecisionReadySnapshot } from "../lib/market-data.t
 import { BullseyeGauge } from "../components/mini-visuals/BullseyeGauge.tsx";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery.tsx";
-import { parsePriceLevel, sparklineFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
-import { CrossAssetBoard } from "../terminal/components/CustomerTerminal.tsx";
+import { parsePriceLevel, sparklineFromCandles, rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
+import { CrossAssetBoard, MarketDirectionalGaugesPanel } from "../terminal/components/CustomerTerminal.tsx";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import {
@@ -31,6 +31,9 @@ import {
 } from "../terminal/lib/membership-entitlement.ts";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
+import { createMarketDirectionalGauges } from "../lib/market-directional-gauges.ts";
+import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals.ts";
+import { createMarketStructureLevels } from "../lib/market-structure-levels.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -65,6 +68,9 @@ export default async function AIMarketBriefPage() {
       ES: toCustomerCandleSeries(candleBundleRaw.ES),
       VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
       DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+      OIL: toCustomerCandleSeries(candleBundleRaw.OIL),
+      QQQ: toCustomerCandleSeries(candleBundleRaw.QQQ),
+      NQ: toCustomerCandleSeries(candleBundleRaw.NQ),
     }
     : null;
   const candleSeries = candleSeriesByInstrument?.ES ?? null;
@@ -74,6 +80,15 @@ export default async function AIMarketBriefPage() {
     : null;
   const dxySparkline = candleSeriesByInstrument?.DXY?.candles.length
     ? sparklineFromCandles(candleSeriesByInstrument.DXY.candles)
+    : null;
+  const oilSparkline = candleSeriesByInstrument?.OIL?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.OIL.candles)
+    : null;
+  const qqqSparkline = candleSeriesByInstrument?.QQQ?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.QQQ.candles)
+    : null;
+  const nqSparkline = candleSeriesByInstrument?.NQ?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.NQ.candles)
     : null;
   const decisionReady = isDecisionReadySnapshot(market.snapshot);
   const delayed = market.snapshot.status === "DELAYED" || !decisionReady;
@@ -96,6 +111,30 @@ export default async function AIMarketBriefPage() {
     dataAgeMs: engineInput.dataAgeMs,
     fallbackActive: engineInput.fallbackActive,
     missingDataWarnings: engineInput.missingDataWarnings,
+  });
+  const briefRangeLane = candleSeries?.candles.length ? rangeLaneFromCandles(candleSeries.candles) : null;
+  const briefDeskSignals = createMarketDeskSignals({
+    snapshot: market.snapshot,
+    intelligence,
+    decision,
+    plan,
+    candle: deskCandleContextFromRange(briefRangeLane),
+  });
+  const directionalGauges = createMarketDirectionalGauges({
+    snapshot: market.snapshot,
+    deskSignals: briefDeskSignals,
+    candle: deskCandleContextFromRange(briefRangeLane),
+  });
+  const structureLevels = createMarketStructureLevels({
+    snapshot: market.snapshot,
+    candlesBySymbol: {
+      ES: candleSeriesByInstrument?.ES?.candles,
+      VIX: candleSeriesByInstrument?.VIX?.candles,
+      DXY: candleSeriesByInstrument?.DXY?.candles,
+      OIL: candleSeriesByInstrument?.OIL?.candles,
+      QQQ: candleSeriesByInstrument?.QQQ?.candles,
+      NQ: candleSeriesByInstrument?.NQ?.candles,
+    },
   });
   const baseline = buildMarketBrief(market.snapshot, intelligence, decision, plan);
   const canUseAI = access.features.intelligence && baseline.mode !== "unavailable";
@@ -148,11 +187,17 @@ export default async function AIMarketBriefPage() {
         const ten = parsePriceLevel(find("US10Y")?.value);
         const dxy = find("DXY");
         const spread = two != null && ten != null ? ten - two : null;
+        const oil = find("OIL");
+        const qqq = find("QQQ");
+        const nq = find("NQ");
         return <section className="briefKeyRibbon" aria-label="Key market information">
           <article><span>ES</span><strong>{es?.value ?? "—"}</strong><small>{es?.change ?? "Unavailable"}</small></article>
           <article><span>VIX</span><strong>{vix?.value ?? "—"}</strong><small>{decisionReady ? decision.volatilityRegime : "Not rated"}</small></article>
           <article><span>Rates spread</span><strong>{spread != null ? `${spread >= 0 ? "+" : ""}${spread.toFixed(2)} pp` : "—"}</strong><small>10Y − 2Y</small></article>
           <article><span>DXY</span><strong>{dxy?.value ?? "—"}</strong><small>{dxy?.change ?? "Unavailable"}</small></article>
+          <article><span>Oil</span><strong>{oil?.value ?? "—"}</strong><small>{oil?.change ?? "Unavailable"}</small></article>
+          <article><span>QQQ</span><strong>{qqq?.value ?? "—"}</strong><small>{qqq?.change ?? "Unavailable"}</small></article>
+          <article><span>Nasdaq</span><strong>{nq?.value ?? "—"}</strong><small>{nq?.change ?? "Unavailable"}</small></article>
           <article><span>Next event</span><strong>{market.snapshot.events[0]?.name ?? "Awaiting schedule"}</strong><small>{market.snapshot.events[0]?.time ?? "Unverified excluded"}</small></article>
           <article><span>Bullseye posture</span><strong>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Stand aside"}</strong><small>Snapshot age {formatSnapshotAge(market.snapshot.asOf)}</small></article>
         </section>;
@@ -196,11 +241,19 @@ export default async function AIMarketBriefPage() {
       <div className="briefCrossAsset">
         <CrossAssetBoard
           snapshot={market.snapshot}
-          sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline }}
+          sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline, OIL: oilSparkline, QQQ: qqqSparkline, NQ: nqSparkline }}
           volatilityRegime={decisionReady ? decision.volatilityRegime : null}
           compact
         />
       </div>
+
+      {access.features.intelligence ? (
+        <MarketDirectionalGaugesPanel
+          gauges={directionalGauges}
+          structure={structureLevels}
+          snapshotAge={formatSnapshotAge(market.snapshot.asOf)}
+        />
+      ) : null}
 
       {candleSeriesByInstrument ? (
         <CrossAssetCandleGallery

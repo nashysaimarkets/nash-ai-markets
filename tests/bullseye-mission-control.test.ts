@@ -15,7 +15,7 @@ test("Mission Control includes workflow actions and path cards", async () => {
   const component = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
   assert.match(component, /Open Terminal/);
   assert.match(component, /Read Market Brief/);
-  assert.match(component, /Open Options Corner/);
+  assert.doesNotMatch(component, /Open Options Corner|href="\/options"/);
   assert.match(component, /Review Previous Session/);
   assert.match(component, /mcPaths/);
   assert.match(component, /No-trade/);

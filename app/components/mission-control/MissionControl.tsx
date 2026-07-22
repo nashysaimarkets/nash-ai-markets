@@ -36,7 +36,6 @@ type Props = {
 const ACTIONS = [
   { href: "/terminal", title: "Open Terminal", description: "Candles, paths and confirmations", icon: "◎" },
   { href: "/brief", title: "Read Market Brief", description: "Plain-English decision summary", icon: "☰" },
-  { href: "/options", title: "Open Options Corner", description: "Educational structure framework", icon: "◈" },
   { href: "/review", title: "Review Previous Session", description: "Compare what changed overnight", icon: "↺" },
   { href: "/journal", title: "Trade Journal", description: "Capture disciplined notes", icon: "✎" },
   { href: "/archive", title: "Archive", description: "Immutable daily snapshots", icon: "▣" },

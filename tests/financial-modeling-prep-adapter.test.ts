@@ -32,7 +32,7 @@ function createMockFetch(asOf: string) {
       return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
     }
     const symbol = url.searchParams.get("symbol");
-    const prices: Record<string, number> = { ESUSD: 6325.5, "^VIX": 15.88, "DX-Y.NYB": 98.12 };
+    const prices: Record<string, number> = { ESUSD: 6325.5, "^VIX": 15.88, "DX-Y.NYB": 98.12, USO: 72.4, QQQ: 485.2, "^IXIC": 17850.3 };
     const price = symbol ? prices[symbol] : undefined;
     return jsonResponse([{
       symbol,
@@ -59,7 +59,7 @@ test("maps a valid mocked FMP response into the generic market snapshot", async 
   assert.equal(snapshot.status, "LIVE");
   assert.equal(snapshot.source, FINANCIAL_MODELING_PREP_PROVIDER_NAME);
   assert.equal(snapshot.asOf, asOf);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY", "OIL", "QQQ", "NQ"]);
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,325.50");
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "US2Y")?.value, "4.18%");
   assert.deepEqual(snapshot.events, []);
@@ -127,7 +127,7 @@ test("accepts a canonical provider alias only for a single scoped quote record",
 
   const snapshot = await adapter.fetchSnapshot();
   assert.ok(snapshot);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY", "OIL", "QQQ", "NQ"]);
   assert.equal(adapter.getDiagnostics?.().schemaRecognized, true);
   assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "success");
 });
@@ -212,7 +212,7 @@ test("keeps endpoint HTTP categories sanitized when secondary access is restrict
 
   const snapshot = await adapter.fetchSnapshot();
   assert.ok(snapshot);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "OIL", "QQQ", "NQ"]);
   assert.equal(adapter.getDiagnostics?.().resultCategory, "partial_success");
   assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "mixed");
   assert.equal(adapter.getDiagnostics?.().endpointStatusCategories.usDollarIndex, "access_restricted");
@@ -283,10 +283,10 @@ test("appends query authentication without replacing existing query parameters",
   });
 
   await adapter.fetchSnapshot();
-  assert.equal(requestedQueries.length, 5);
+  assert.equal(requestedQueries.length, 8);
   assert.equal(requestedQueries.every((query) => query.apikey === TEST_API_KEY), true);
-  assert.equal(requestedQueries.filter((query) => query.region === "us" && query.format === "json").length, 4);
-  assert.equal(requestedQueries.filter((query) => query.symbol).length, 3);
+  assert.equal(requestedQueries.every((query) => query.region === "us" && query.format === "json"), true);
+  assert.equal(requestedQueries.filter((query) => query.symbol).length, 6);
   assert.equal(requestedQueries.some((query) => query.from && query.to), true);
 });
 
@@ -312,7 +312,7 @@ test("defaults the FMP base URL when FMP_API_BASE_URL is missing", async () => {
 
   const snapshot = await adapter.fetchSnapshot();
   assert.equal(snapshot?.status, "LIVE");
-  assert.equal(requestedUrls.length, 5);
+  assert.equal(requestedUrls.length, 8);
   assert.equal(requestedUrls.every((url) => url.origin === new URL(DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL).origin), true);
   assert.equal(requestedUrls.every((url) => url.pathname.startsWith("/stable/")), true);
 });
@@ -435,7 +435,7 @@ test("keeps a valid S&P quote when secondary FMP responses are unavailable and f
   assert.ok(snapshot);
   assert.equal(snapshot.status, "LIVE");
   assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES"]);
-  assert.equal(messages.filter(({ details }) => details?.category === "invalid_response").length, 3);
+  assert.equal(messages.filter(({ details }) => details?.category === "invalid_response").length, 6);
 
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({
@@ -515,12 +515,15 @@ test("classifies authentication rejection without exposing credentials", async (
     typeof entry.details === "object" &&
     entry.details !== null
   ));
-  assert.equal(responseLogs.length, 4);
+  assert.equal(responseLogs.length, 7);
   assert.deepEqual(responseLogs.map(({ details }) => details.endpointName), [
     "ES futures",
     "VIX",
     "US Dollar Index",
     "Treasury rates",
+    "Oil",
+    "QQQ",
+    "Nasdaq",
   ]);
   assert.deepEqual(responseLogs[0]?.details, {
     endpointName: "ES futures",

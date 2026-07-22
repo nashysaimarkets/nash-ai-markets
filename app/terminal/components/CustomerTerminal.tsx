@@ -1,6 +1,9 @@
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
 import { formatSnapshotAge, hasDisplayableQuotes, isDecisionReadySnapshot, type MarketSnapshot } from "../../lib/market-data.ts";
 import type { MarketDeskSignals } from "../../lib/market-desk-signals.ts";
+import type { MarketDirectionalGauges, InstrumentDirectionalGauge } from "../../lib/market-directional-gauges.ts";
+import type { MarketStructureLevels, InstrumentStructureLevels } from "../../lib/market-structure-levels.ts";
+import { MARKET_BOARD_LABELS, MARKET_BOARD_SYMBOLS, type MarketBoardSymbol } from "../../lib/market-board-instruments.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import { formatScoreDisplay } from "../../dashboard/lib/score-display.ts";
@@ -18,8 +21,8 @@ import { TerminalBadge } from "./TerminalBadge";
 import { createCustomerSignals, instrumentInterpretation } from "../lib/customer-terminal";
 
 const pretty = (value: string) => value.replaceAll("_", " ").replaceAll("-", " ");
-const instrumentLabels = ["ES futures", "VIX", "US 2-year", "US 10-year", "US Dollar Index"];
-const symbols = ["ES", "VIX", "US2Y", "US10Y", "DXY"] as const;
+const symbols = MARKET_BOARD_SYMBOLS;
+const instrumentLabels = MARKET_BOARD_SYMBOLS.map((symbol) => MARKET_BOARD_LABELS[symbol]);
 
 export function MarketCommandHeader({
   snapshot,
@@ -114,7 +117,7 @@ export function CrossAssetBoard({
   compact = false,
 }: {
   snapshot: MarketSnapshot;
-  sparklines?: Partial<Record<(typeof symbols)[number], number[] | null>>;
+  sparklines?: Partial<Record<MarketBoardSymbol, number[] | null>>;
   volatilityRegime?: string | null;
   compact?: boolean;
 }) {
@@ -123,14 +126,14 @@ export function CrossAssetBoard({
       <header><div><span>Cross-asset board</span><h2 id="cross-asset-title">What the major inputs are saying</h2></div></header>
       <div className="ctHonestEmpty">
         <strong>Verified cross-asset readings unavailable</strong>
-        <p>ES futures, VIX, Treasury yields and the US dollar index stay hidden until the provider returns a verified observation. Missing readings are never shown as zero.</p>
+        <p>ES futures, VIX, Treasuries, the dollar, oil, QQQ and Nasdaq stay hidden until the provider returns a verified observation. Missing readings are never shown as zero.</p>
       </div>
     </section>;
   }
   const decisionReady = isDecisionReadySnapshot(snapshot);
   const age = formatSnapshotAge(snapshot.asOf);
   const statusLabel = decisionReady ? "Verified" : "Previous session";
-  const find = (symbol: (typeof symbols)[number]) => snapshot.quotes.find((item) => item.symbol === symbol);
+  const find = (symbol: MarketBoardSymbol) => snapshot.quotes.find((item) => item.symbol === symbol);
   const vix = find("VIX");
   const two = find("US2Y");
   const ten = find("US10Y");
@@ -251,6 +254,117 @@ export function MarketDeskSignalsPanel({
     ) : null}
     <p className="ctCaution">{signals.disclosure}</p>
   </section>;
+}
+
+function gaugeDirectionLabel(direction: InstrumentDirectionalGauge["direction"]) {
+  if (direction === "buy") return "Buy lean";
+  if (direction === "sell") return "Sell lean";
+  if (direction === "neutral") return "Neutral";
+  return "Insufficient";
+}
+
+function gaugeTone(direction: InstrumentDirectionalGauge["direction"]): "positive" | "warning" | "danger" | "info" {
+  if (direction === "buy") return "positive";
+  if (direction === "sell") return "danger";
+  if (direction === "neutral") return "info";
+  return "warning";
+}
+
+export function MarketDirectionalGaugesPanel({
+  gauges,
+  structure = null,
+  snapshotAge,
+}: {
+  gauges: MarketDirectionalGauges;
+  structure?: MarketStructureLevels | null;
+  snapshotAge: string;
+}) {
+  const structureBySymbol = new Map(
+    (structure?.instruments ?? []).map((item) => [item.symbol, item] as const),
+  );
+  return <section className="ctPanel ctDirectionalGauges" aria-labelledby="directional-gauges-title">
+    <header>
+      <div>
+        <span>Market directional confidence</span>
+        <h2 id="directional-gauges-title">Per-instrument gauges and desk levels</h2>
+      </div>
+      <small>Educational · {snapshotAge}</small>
+    </header>
+    <div className="ctGaugeGrid">
+      {gauges.gauges.map((gauge) => {
+        const ready = gauge.direction !== "insufficient" && gauge.confidencePct != null;
+        const arc = ready ? Math.max(0, Math.min(100, gauge.confidencePct!)) : 0;
+        const levels = structureBySymbol.get(gauge.symbol) ?? null;
+        return (
+          <article key={gauge.symbol} className={`ctDirGauge is-${gauge.direction} is-${gauge.confidenceTier}`}>
+            <div className="ctDirGaugeHead">
+              <span>{gauge.label}</span>
+              <TerminalBadge label={gaugeDirectionLabel(gauge.direction)} tone={gaugeTone(gauge.direction)} />
+            </div>
+            <div
+              className="ctDirGaugeMeter"
+              role="meter"
+              aria-label={`${gauge.label} directional confidence`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={ready ? arc : undefined}
+            >
+              <i style={{ width: `${arc}%` }} />
+            </div>
+            <strong>{ready ? `${arc}% confidence` : "Not calculated"}</strong>
+            <p>{gauge.summary}</p>
+            {gauge.scalarOnly ? <em className="ctDirGaugeScalar">Scalar feed · limited directional confidence</em> : null}
+            <ul>{gauge.drivers.map((driver) => <li key={driver}>{driver}</li>)}</ul>
+            <InstrumentStructureBox levels={levels} />
+          </article>
+        );
+      })}
+    </div>
+    <p className="ctCaution">{gauges.disclosure}</p>
+    {structure ? <p className="ctCaution">{structure.disclosure}</p> : null}
+  </section>;
+}
+
+function InstrumentStructureBox({ levels }: { levels: InstrumentStructureLevels | null }) {
+  if (!levels) {
+    return (
+      <div className="ctSrBox is-insufficient" role="status">
+        <span>Support / Resistance</span>
+        <strong>Insufficient data</strong>
+        <p>Verified candle range unavailable for desk levels.</p>
+      </div>
+    );
+  }
+  if (levels.status !== "ready" || !levels.support || !levels.resistance) {
+    return (
+      <div className={`ctSrBox is-insufficient${levels.scalarOnly ? " is-scalar" : ""}`} role="status">
+        <span>Support / Resistance</span>
+        <strong>Insufficient data</strong>
+        <p>{levels.summary}</p>
+      </div>
+    );
+  }
+  return (
+    <div className="ctSrBox is-ready" aria-label={`${levels.label} support and resistance`}>
+      <span>Support / Resistance</span>
+      <dl>
+        <div>
+          <dt>Support</dt>
+          <dd>{levels.support.display}</dd>
+        </div>
+        <div>
+          <dt>Resistance</dt>
+          <dd>{levels.resistance.display}</dd>
+        </div>
+      </dl>
+      <p>{levels.summary}</p>
+      <ul>
+        {levels.references.slice(0, 3).map((ref) => (
+          <li key={ref.kind}><b>{ref.label}</b> {ref.display}</li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export function DecisionEnginePanel({ snapshot, decision, plan }: { snapshot: MarketSnapshot; decision: TradingDecision; plan: TradePlan }) {

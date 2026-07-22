@@ -11,7 +11,6 @@ This matrix mirrors `FEATURE_TIER` in `app/terminal/lib/membership-entitlement.t
 | Launch diagnostics | `launch-diagnostics` | — | — | Yes | Operator diagnostics |
 | Yesterday’s Review | `yesterday-review` | — | Yes | Yes | Stored previous-day snapshot only |
 | Historical archive | `archive` | — | Yes | Yes | List + day detail from snapshots |
-| Options Corner | `options-corner` | — | Yes | Yes | Underlying framework; chain withheld without provider |
 | Trade journal | `journal` | — | Yes | Yes | Private entries; migration-pending empty state |
 | Journal performance | `performance` | — | Yes | Yes | Requires ≥5 closed P&L rows before percentages |
 | Results Centre | `results-centre` | — | — | Yes | Snapshot aggregates only; no fabricated accuracy |

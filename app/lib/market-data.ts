@@ -67,6 +67,9 @@ export type MarketProviderEndpointStatusCategories = {
   vix: MarketProviderHttpStatusCategory;
   treasuryYields: MarketProviderHttpStatusCategory;
   usDollarIndex: MarketProviderHttpStatusCategory;
+  oil: MarketProviderHttpStatusCategory;
+  qqq: MarketProviderHttpStatusCategory;
+  nasdaq: MarketProviderHttpStatusCategory;
 };
 
 export type GetMarketSnapshotOptions = {

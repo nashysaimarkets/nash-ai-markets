@@ -1,7 +1,7 @@
 import type { CandleTimeframe, VerifiedCandleSeries } from "./financial-modeling-prep-candles.ts";
 
 /** Instruments that can request verified OHLCV candles (never invents series). */
-export const CANDLE_INSTRUMENTS = ["ES", "VIX", "DXY"] as const;
+export const CANDLE_INSTRUMENTS = ["ES", "VIX", "DXY", "OIL", "QQQ", "NQ"] as const;
 export type CandleInstrument = (typeof CANDLE_INSTRUMENTS)[number];
 
 export function isCandleInstrument(value: string | null | undefined): value is CandleInstrument {
@@ -36,6 +36,33 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         instrumentName: "US Dollar Index",
         exchange: "Verified delayed index series",
         instrumentDetail: "US Dollar Index reference series from the configured market-data provider. Delayed quotes only — never treated as live.",
+      };
+    case "OIL":
+      return {
+        envSymbol: process.env.FMP_OIL_SYMBOL?.trim(),
+        fallbackSymbol: "USO",
+        contract: "United States Oil Fund (USO)",
+        instrumentName: "Oil (USO)",
+        exchange: "Verified delayed ETF series",
+        instrumentDetail: "USO equity ETF proxy for crude oil exposure from the configured market-data provider. Delayed quotes only — never treated as live futures prints.",
+      };
+    case "QQQ":
+      return {
+        envSymbol: process.env.FMP_QQQ_SYMBOL?.trim(),
+        fallbackSymbol: "QQQ",
+        contract: "Invesco QQQ Trust",
+        instrumentName: "QQQ",
+        exchange: "Verified delayed ETF series",
+        instrumentDetail: "QQQ equity ETF reference series from the configured market-data provider. Delayed quotes only — never treated as live.",
+      };
+    case "NQ":
+      return {
+        envSymbol: process.env.FMP_NASDAQ_SYMBOL?.trim(),
+        fallbackSymbol: "^IXIC",
+        contract: "NASDAQ Composite",
+        instrumentName: "Nasdaq Composite",
+        exchange: "Verified delayed index series",
+        instrumentDetail: "Nasdaq Composite (^IXIC) reference series from the configured market-data provider. Delayed quotes only — never treated as live Nasdaq futures.",
       };
     case "ES":
     default:
@@ -78,6 +105,12 @@ export function candleInstrumentLabel(instrument: CandleInstrument): string {
       return "VIX";
     case "DXY":
       return "US Dollar Index";
+    case "OIL":
+      return "Oil (USO)";
+    case "QQQ":
+      return "QQQ";
+    case "NQ":
+      return "Nasdaq";
     case "ES":
     default:
       return "ES futures";

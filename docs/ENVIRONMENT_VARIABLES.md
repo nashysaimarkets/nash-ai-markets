@@ -103,6 +103,9 @@ is optional and defaults to the official FMP Stable endpoint.
 | `FMP_SP500_FUTURES_SYMBOL` | Server config | Optional | Override ES futures symbol |
 | `FMP_VIX_SYMBOL` | Server config | Optional | Override VIX symbol |
 | `FMP_US_DOLLAR_INDEX_SYMBOL` | Server config | Optional | Override dollar-index symbol |
+| `FMP_OIL_SYMBOL` | Server config | Optional | Override oil proxy symbol (default `USO`) |
+| `FMP_QQQ_SYMBOL` | Server config | Optional | Override QQQ symbol (default `QQQ`) |
+| `FMP_NASDAQ_SYMBOL` | Server config | Optional | Override Nasdaq index symbol (default `^IXIC`) |
 
 The default candle symbol `ESUSD` is FMP's commodity-series identifier named
 `E-Mini S&P 500`, with currency `USD` and exchange classification `CME`. It is

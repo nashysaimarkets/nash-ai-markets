@@ -8,7 +8,7 @@ import { METHODOLOGY_VERSION } from "../lib/market-analysis-snapshot.ts";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Bullseye Methodology | NASH AI Markets",
-  description: "How Bullseye scores, no-trade rules, options framing, archive and results work — including hard limits.",
+  description: "How Bullseye scores, no-trade rules, archive and results work — including hard limits.",
   robots: { index: false, follow: false },
 };
 
@@ -43,11 +43,6 @@ export default async function MethodologyPage() {
         <DashboardCard eyebrow="CONFIRM / INVALIDATE" title="Confirmation and invalidation" className="methodologyCard">
           <p>Plans list required confirmations before participation and invalidation conditions that would close the case.</p>
           <p>These are process gates derived from the engines, not guarantees that price will respect them.</p>
-        </DashboardCard>
-
-        <DashboardCard eyebrow="OPTIONS" title="Options methodology limits" className="methodologyCard">
-          <p>Options Corner is an underlying-based framework. Without a verified options-chain provider, strikes, premiums, Greeks and expected-move figures are withheld.</p>
-          <p>Idea cards describe structure logic only. They are educational and must not be treated as executable option tickets.</p>
         </DashboardCard>
 
         <DashboardCard eyebrow="HISTORY" title="Historical-record limitations" className="methodologyCard">

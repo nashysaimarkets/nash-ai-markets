@@ -12,6 +12,7 @@ import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } fr
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery.tsx";
+import { MarketDirectionalGaugesPanel } from "../terminal/components/CustomerTerminal.tsx";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { candleReferenceLevels } from "./lib/candle-analysis.ts";
 import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard.ts";
@@ -19,6 +20,8 @@ import { rangeLaneFromCandles, sparklineFromCandles } from "../components/mini-v
 import { formatCustomerParticipationWarnings } from "../terminal/lib/customer-warnings.ts";
 import { getPriorSnapshot, persistAnalysisSnapshot } from "../lib/server/market-snapshots.ts";
 import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals.ts";
+import { createMarketDirectionalGauges } from "../lib/market-directional-gauges.ts";
+import { createMarketStructureLevels } from "../lib/market-structure-levels.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -58,6 +61,9 @@ export default async function MemberDashboard() {
       ES: toCustomerCandleSeries(candleBundleRaw.ES),
       VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
       DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+      OIL: toCustomerCandleSeries(candleBundleRaw.OIL),
+      QQQ: toCustomerCandleSeries(candleBundleRaw.QQQ),
+      NQ: toCustomerCandleSeries(candleBundleRaw.NQ),
     }
     : null;
   const candleSeries = candleSeriesByInstrument?.ES ?? null;
@@ -111,6 +117,30 @@ export default async function MemberDashboard() {
     ?? "Any unverified, stale or incomplete input.";
   const score = decisionReady ? Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence) : null;
   const delayed = market.snapshot.status === "DELAYED" || (!decisionReady && observable);
+  const deskCandle = deskCandleContextFromRange(rangeLane);
+  const deskSignals = createMarketDeskSignals({
+    snapshot: market.snapshot,
+    intelligence,
+    decision,
+    plan,
+    candle: deskCandle,
+  });
+  const directionalGauges = createMarketDirectionalGauges({
+    snapshot: market.snapshot,
+    deskSignals,
+    candle: deskCandle,
+  });
+  const structureLevels = createMarketStructureLevels({
+    snapshot: market.snapshot,
+    candlesBySymbol: {
+      ES: candleSeriesByInstrument?.ES?.candles,
+      VIX: candleSeriesByInstrument?.VIX?.candles,
+      DXY: candleSeriesByInstrument?.DXY?.candles,
+      OIL: candleSeriesByInstrument?.OIL?.candles,
+      QQQ: candleSeriesByInstrument?.QQQ?.candles,
+      NQ: candleSeriesByInstrument?.NQ?.candles,
+    },
+  });
   const candleRefs = rangeLane
     ? {
       rangeHigh: rangeLane.high,
@@ -166,6 +196,13 @@ export default async function MemberDashboard() {
           seriesByInstrument={candleSeriesByInstrument}
           title="Verified candlesticks across live feeds"
           eyebrow="MISSION CONTROL CHARTS"
+        />
+      ) : null}
+      {access.features.intelligence ? (
+        <MarketDirectionalGaugesPanel
+          gauges={directionalGauges}
+          structure={structureLevels}
+          snapshotAge={observable ? formatSnapshotAge(market.snapshot.asOf) : "Age unavailable"}
         />
       ) : null}
       {!access.features.intelligence ? <p className="dashAccountHint"><Link href="/profile">Manage membership</Link> · <Link href="/pricing">Compare plans</Link> · <Link href="/methodology">Methodology</Link></p> : null}

@@ -4,7 +4,7 @@ export type WaitlistSubmission = {
 };
 
 export type FoundingOnboardingSubmission = {
-  primaryGoal: "market-structure" | "risk-discipline" | "options-context";
+  primaryGoal: "market-structure" | "risk-discipline" | "cross-asset-context";
   experienceLevel: "developing" | "experienced" | "professional";
   preferredSession: "london" | "new-york" | "both";
   riskAcknowledged: true;
@@ -31,7 +31,7 @@ export function normalizeFoundingOnboarding(value: unknown): FoundingOnboardingS
   if (
     primaryGoal !== "market-structure"
     && primaryGoal !== "risk-discipline"
-    && primaryGoal !== "options-context"
+    && primaryGoal !== "cross-asset-context"
   ) return null;
   if (
     experienceLevel !== "developing"

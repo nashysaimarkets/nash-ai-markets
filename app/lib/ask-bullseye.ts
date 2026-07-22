@@ -187,7 +187,7 @@ export function answerAskBullseye(
         questionId,
         title: "Verified range levels",
         body: es
-          ? `ES reference ${es.value}. Levels below are verified references from the current snapshot — not invented options strikes.`
+          ? `ES reference ${es.value}. Levels below are verified references from the current snapshot — not invented price targets.`
           : "ES reference unavailable. Range levels stay withheld.",
         bullets: [
           support ? `Support reference: ${support.value}${support.note ? ` (${support.note})` : ""}` : "Support reference unavailable",
@@ -218,7 +218,7 @@ export function answerAskBullseye(
       return {
         questionId: "watch-next",
         title: "What to watch next",
-        body: "Watch the next confirmation path, invalidation, and the next verified catalyst — not unverified options premiums.",
+        body: "Watch the next confirmation path, invalidation, and the next verified catalyst — not unverified premium levels.",
         bullets: [
           `Bullish confirmation: ${ctx.bullishConfirm}`,
           `Bearish confirmation: ${ctx.bearishConfirm}`,

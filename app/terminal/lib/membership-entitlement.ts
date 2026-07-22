@@ -23,7 +23,6 @@ export type TerminalFeature =
   | "launch-diagnostics"
   | "archive"
   | "yesterday-review"
-  | "options-corner"
   | "journal"
   | "performance"
   | "results-centre"
@@ -60,7 +59,6 @@ const FEATURE_TIER: Record<TerminalFeature, MembershipTier> = {
   "launch-diagnostics": "elite",
   archive: "pro",
   "yesterday-review": "pro",
-  "options-corner": "pro",
   journal: "pro",
   performance: "pro",
   "results-centre": "elite",

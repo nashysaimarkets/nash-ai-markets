@@ -13,7 +13,6 @@ export type MemberShellActive =
   | "onboarding"
   | "review"
   | "archive"
-  | "options"
   | "journal"
   | "performance"
   | "results"
@@ -39,7 +38,6 @@ const links = [
 const moreLinks = [
   { href: "/review", label: "Review", key: "review" },
   { href: "/archive", label: "Archive", key: "archive" },
-  { href: "/options", label: "Options", key: "options" },
   { href: "/journal", label: "Journal", key: "journal" },
   { href: "/performance", label: "Performance", key: "performance" },
   { href: "/results", label: "Results", key: "results" },

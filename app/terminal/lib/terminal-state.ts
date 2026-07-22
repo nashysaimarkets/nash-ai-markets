@@ -25,14 +25,12 @@ export const TERMINAL_SKELETON_PANELS = [
   { key: "probabilities", className: "panelProbabilities" },
   { key: "expected-move", className: "panelExpectedMove" },
   { key: "futures-bias", className: "panelBias" },
-  { key: "options-bias", className: "panelOptionsBias" },
   { key: "levels", className: "panelLevels" },
   { key: "vix", className: "panelVix" },
   { key: "treasuries", className: "panelTreasuries" },
   { key: "dollar", className: "panelDollar" },
   { key: "calendar", className: "panelCalendar" },
   { key: "fear-greed", className: "panelFearGreed" },
-  { key: "options", className: "panelOptions" },
 ] as const;
 
 export function terminalStatusMessage(status: MarketDataStatus, failureCount = 0, hasRetainedQuotes = false): string {

@@ -139,22 +139,28 @@ test("desk candle helper never invents range when inputs are invalid", () => {
   });
 });
 
-test("terminal and options surfaces wire desk signals with educational framing", async () => {
-  const [terminal, options, styles, component] = await Promise.all([
+test("terminal surfaces wire desk signals and directional gauges with educational framing", async () => {
+  const [terminal, styles, component] = await Promise.all([
     read("../app/terminal/page.tsx"),
-    read("../app/options/page.tsx"),
     read("../app/mission-control.css"),
     read("../app/terminal/components/CustomerTerminal.tsx"),
   ]);
   assert.match(terminal, /createMarketDeskSignals/);
   assert.match(terminal, /MarketDeskSignalsPanel/);
-  assert.match(options, /MarketDeskSignalsPanel/);
+  assert.match(terminal, /createMarketDirectionalGauges/);
+  assert.match(terminal, /MarketDirectionalGaugesPanel/);
+  assert.doesNotMatch(terminal, /\/options/);
   assert.match(component, /Market buying &amp; selling signals|Market buying & selling signals/);
   assert.match(component, /Interpretive desk leans/);
   assert.match(component, /ctDeskStrength/);
   assert.match(component, /is-strength-\$\{card\.strength\}/);
+  assert.match(component, /Per-instrument gauges and desk levels|Per-instrument interpretive gauges/);
+  assert.match(component, /Support \/ Resistance/);
   assert.match(styles, /\.ctDeskSignalPair/);
   assert.match(styles, /\.ctDeskSignalCard\.is-buying/);
   assert.match(styles, /\.ctDeskSignalCard\.is-selling/);
   assert.match(styles, /\.ctDeskStrength/);
+  assert.match(styles, /\.ctDirectionalGauges/);
+  assert.match(styles, /\.ctGaugeGrid/);
+  assert.match(styles, /\.ctSrBox/);
 });

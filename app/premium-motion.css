@@ -55,7 +55,7 @@
 @media(prefers-reduced-motion:no-preference){
   .memberDashboardShell>.missionControl,
   .memberDashboardShell>.ctWorkspace,
-  .memberDashboardShell>.optionsShell,
+  .memberDashboardShell>
   .memberDashboardShell>.briefJourney{
     animation:pmFade var(--pm-med) var(--pm-ease) both;
   }
@@ -66,8 +66,8 @@
   .mcChanged,
   .mcActions,
   .askBullseye,
-  .optionsSummary,
-  .optionsScenarioGrid,
+  
+  
   .briefCommand,
   .briefKeyRibbon,
   .ctKeyMarket,
@@ -95,7 +95,7 @@
 
   .mcActions a,
   .askBullseyeChips button,
-  .optionsScenarioCard,
+  
   .memberDashboardNav nav a,
   .ctToolbar button{
     transition:border-color var(--pm-fast) ease,background-color var(--pm-fast) ease,transform var(--pm-fast) ease,box-shadow var(--pm-fast) ease,color var(--pm-fast) ease;
@@ -242,7 +242,7 @@
 @media(prefers-reduced-motion:reduce){
   .memberDashboardShell>.missionControl,
   .memberDashboardShell>.ctWorkspace,
-  .memberDashboardShell>.optionsShell,
+  .memberDashboardShell>
   .memberDashboardShell>.briefJourney,
   .pmEnter,
   .mcHero,
@@ -251,8 +251,8 @@
   .mcChanged,
   .mcActions,
   .askBullseye,
-  .optionsSummary,
-  .optionsScenarioGrid,
+  
+  
   .briefCommand,
   .briefKeyRibbon,
   .ctKeyMarket,
@@ -314,7 +314,7 @@
   }
   .mcActions a,
   .askBullseyeChips button,
-  .optionsScenarioCard,
+  
   .memberDashboardNav nav a,
   .ctToolbar button,
   .bullseyeGaugeDial,
