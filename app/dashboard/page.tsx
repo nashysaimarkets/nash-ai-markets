@@ -151,13 +151,6 @@ export default async function MemberDashboard() {
       latest: rangeLane.current,
     }
     : null;
-  const deskSignals = createMarketDeskSignals({
-    snapshot: market.snapshot,
-    intelligence,
-    decision,
-    plan,
-    candle: deskCandleContextFromRange(rangeLane),
-  });
 
   void persistAnalysisSnapshot({
     snapshot: market.snapshot,
