@@ -115,3 +115,13 @@ test("legacy anon JWT keeps Authorization Bearer fallback behavior", async () =>
   assert.ok(seen);
   assert.equal(seen.get("Authorization"), `Bearer ${key}`);
 });
+
+test("default public config reads use direct process.env member access for bundlers", async () => {
+  const source = await import("node:fs/promises").then((fs) =>
+    fs.readFile(new URL("../utils/supabase/config.ts", import.meta.url), "utf8"),
+  );
+  assert.match(source, /NEXT_PUBLIC_SUPABASE_URL: process\.env\.NEXT_PUBLIC_SUPABASE_URL/);
+  assert.match(source, /NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process\.env\.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY/);
+  assert.match(source, /NEXT_PUBLIC_SUPABASE_ANON_KEY: process\.env\.NEXT_PUBLIC_SUPABASE_ANON_KEY/);
+  assert.doesNotMatch(source, /env:\s*Record<[^>]+>\s*=\s*process\.env/);
+});

@@ -71,13 +71,22 @@ function hostnameFromUrl(url: string): string | null {
 /**
  * Resolve browser/server public credentials.
  * Prefers NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY; falls back to NEXT_PUBLIC_SUPABASE_ANON_KEY.
+ *
+ * Important: default env reads must use direct `process.env.NEXT_PUBLIC_*` member
+ * access so Vite/Next can inline values into the browser bundle. Do not pass
+ * `process.env` as a whole object from client code.
  */
 export function resolveSupabasePublicConfig(
-  env: Record<string, string | undefined> = process.env,
+  env?: Record<string, string | undefined>,
 ): SupabasePublicConfig {
-  const urlResult = sanitizeEnvCredential(env.NEXT_PUBLIC_SUPABASE_URL);
-  const publishable = sanitizeEnvCredential(env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
-  const anon = sanitizeEnvCredential(env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const source = env ?? {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  };
+  const urlResult = sanitizeEnvCredential(source.NEXT_PUBLIC_SUPABASE_URL);
+  const publishable = sanitizeEnvCredential(source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+  const anon = sanitizeEnvCredential(source.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
   const usePublishable = Boolean(publishable.value);
   const key = usePublishable ? publishable.value : anon.value;
@@ -102,9 +111,12 @@ export function resolveSupabasePublicConfig(
 }
 
 export function resolveSupabaseServiceRoleKey(
-  env: Record<string, string | undefined> = process.env,
+  env?: Record<string, string | undefined>,
 ): { value: string; configured: boolean; keyKind: SupabaseKeyKind } {
-  const result = sanitizeEnvCredential(env.SUPABASE_SERVICE_ROLE_KEY);
+  const source = env ?? {
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+  const result = sanitizeEnvCredential(source.SUPABASE_SERVICE_ROLE_KEY);
   return {
     value: result.value,
     configured: Boolean(result.value),
@@ -113,9 +125,15 @@ export function resolveSupabaseServiceRoleKey(
 }
 
 /** Safe diagnostics payload — never includes key material. */
-export function supabaseConfigDiagnostics(env: Record<string, string | undefined> = process.env) {
-  const publicConfig = resolveSupabasePublicConfig(env);
-  const service = resolveSupabaseServiceRoleKey(env);
+export function supabaseConfigDiagnostics(env?: Record<string, string | undefined>) {
+  const source = env ?? {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+  const publicConfig = resolveSupabasePublicConfig(source);
+  const service = resolveSupabaseServiceRoleKey(source);
   return {
     urlConfigured: publicConfig.urlConfigured,
     keyConfigured: publicConfig.keyConfigured,
@@ -126,7 +144,7 @@ export function supabaseConfigDiagnostics(env: Record<string, string | undefined
     sanitizedQuotes: publicConfig.sanitizedQuotes,
     serviceRoleConfigured: service.configured,
     serviceRoleKeyKind: service.keyKind,
-    publishableVarPresent: Boolean(sanitizeEnvCredential(env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).value),
-    anonVarPresent: Boolean(sanitizeEnvCredential(env.NEXT_PUBLIC_SUPABASE_ANON_KEY).value),
+    publishableVarPresent: Boolean(sanitizeEnvCredential(source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).value),
+    anonVarPresent: Boolean(sanitizeEnvCredential(source.NEXT_PUBLIC_SUPABASE_ANON_KEY).value),
   };
 }
