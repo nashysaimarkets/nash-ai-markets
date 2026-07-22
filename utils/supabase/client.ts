@@ -1,16 +1,22 @@
 import { createBrowserClient } from "@supabase/ssr";
+import { createAuthCompatibleFetch } from "./auth-compatible-fetch.ts";
+import { resolveSupabasePublicConfig } from "./config.ts";
 
 export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      auth: {
-        flowType: "pkce",
-        detectSessionInUrl: true,
-        persistSession: true,
-        autoRefreshToken: true,
-      },
+  const { url, key } = resolveSupabasePublicConfig();
+  if (!url || !key) {
+    throw new Error("Supabase browser credentials are not configured");
+  }
+
+  return createBrowserClient(url, key, {
+    global: {
+      fetch: createAuthCompatibleFetch(key),
     },
-  );
+    auth: {
+      flowType: "pkce",
+      detectSessionInUrl: true,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
 }

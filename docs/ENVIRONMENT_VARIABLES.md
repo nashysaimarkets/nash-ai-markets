@@ -10,8 +10,11 @@ absent.
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Mandatory | Browser/server Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Mandatory | Browser/server Supabase publishable access |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Mandatory (preferred) | Browser/server publishable key (`sb_publishable_…`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Temporary fallback only | Legacy JWT `anon` key if publishable is unset; resolved centrally in `utils/supabase/config.ts` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret, server only | Mandatory | Membership preview and verified-outcome server operations; Stripe membership synchronization |
+
+Public clients prefer `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, then fall back to `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Values are trimmed and wrapping quotes stripped. New-format keys are sent on the `apikey` header and are not duplicated into `Authorization: Bearer` (which causes Auth `401` for non-JWT keys).
 
 ## Stripe
 

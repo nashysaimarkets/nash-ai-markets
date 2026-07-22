@@ -90,7 +90,10 @@ export function getFmpEnvironmentDiagnostics(): FmpEnvironmentDiagnostics {
     marketDataMaxRetriesConfigured: Boolean(process.env.MARKET_DATA_MAX_RETRIES?.trim()),
     marketDataRetryDelayConfigured: Boolean(process.env.MARKET_DATA_RETRY_DELAY_MS?.trim()),
     supabaseUrlConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
-    supabasePublishableKeyConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim()),
+    supabasePublishableKeyConfigured: Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim()
+      || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim(),
+    ),
     supabaseServiceRoleKeyConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()),
     openAIApiKeyConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),
     openAIBriefModelConfigured: Boolean(process.env.OPENAI_BRIEF_MODEL?.trim()),
