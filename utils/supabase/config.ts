@@ -56,6 +56,32 @@ export function classifySupabaseKey(key: string): SupabaseKeyKind {
   return "unknown";
 }
 
+/** Extract project ref from a legacy Supabase JWT payload without verifying the signature. */
+export function extractLegacyJwtProjectRef(key: string): string | null {
+  if (!key.startsWith("eyJ")) return null;
+  const parts = key.split(".");
+  if (parts.length < 2) return null;
+  try {
+    const normalized = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const json = typeof atob === "function"
+      ? atob(padded)
+      : Buffer.from(padded, "base64").toString("utf8");
+    const payload = JSON.parse(json) as { ref?: unknown };
+    return typeof payload.ref === "string" && /^[a-z0-9]{10,40}$/.test(payload.ref)
+      ? payload.ref
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function projectRefFromSupabaseHostname(hostname: string | null): string | null {
+  if (!hostname) return null;
+  const match = hostname.match(/^([a-z0-9]+)\.supabase\.co$/i);
+  return match?.[1] ?? null;
+}
+
 export function isNewFormatApiKey(key: string): boolean {
   return key.startsWith("sb_publishable_") || key.startsWith("sb_secret_");
 }
@@ -134,12 +160,21 @@ export function supabaseConfigDiagnostics(env?: Record<string, string | undefine
   };
   const publicConfig = resolveSupabasePublicConfig(source);
   const service = resolveSupabaseServiceRoleKey(source);
+  const urlProjectRef = projectRefFromSupabaseHostname(publicConfig.hostname);
+  const serviceRoleJwtRef = extractLegacyJwtProjectRef(service.value);
   return {
     urlConfigured: publicConfig.urlConfigured,
     keyConfigured: publicConfig.keyConfigured,
     keySource: publicConfig.keySource,
     keyKind: publicConfig.keyKind,
     hostname: publicConfig.hostname,
+    urlProjectRef,
+    serviceRoleJwtRef,
+    projectRefsMatch: Boolean(
+      urlProjectRef
+      && serviceRoleJwtRef
+      && urlProjectRef === serviceRoleJwtRef,
+    ),
     sanitizedWhitespace: publicConfig.sanitizedWhitespace,
     sanitizedQuotes: publicConfig.sanitizedQuotes,
     serviceRoleConfigured: service.configured,

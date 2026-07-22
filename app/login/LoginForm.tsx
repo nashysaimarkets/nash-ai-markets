@@ -96,18 +96,34 @@ export default function LoginForm() {
       // Persist only non-sensitive Auth status metadata for support diagnostics.
       const form = formRef.current;
       if (form) {
+        const statusCode = error && typeof error.status === "number" ? error.status : null;
+        const networkFailure = statusCode === 0 || error?.message?.toLowerCase().includes("failed to fetch");
         form.setAttribute("data-otp-status", error ? "error" : "ok");
-        form.setAttribute(
-          "data-otp-error-status",
-          error && typeof error.status === "number" ? String(error.status) : "",
-        );
+        form.setAttribute("data-otp-error-status", statusCode != null ? String(statusCode) : "");
         form.setAttribute(
           "data-otp-error-code",
-          error?.code ? String(error.code).slice(0, 64) : "",
+          networkFailure
+            ? "network_unreachable"
+            : error?.code
+              ? String(error.code).slice(0, 64)
+              : "",
         );
       }
       setMessageTone(error ? "error" : "success");
-      setMessage(error ? "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again." : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then retry safely when the timer ends if nothing arrives.");
+      const networkFailure = Boolean(
+        error
+        && (
+          error.status === 0
+          || error.message?.toLowerCase().includes("failed to fetch")
+        ),
+      );
+      setMessage(
+        error
+          ? networkFailure
+            ? "We could not reach the sign-in service. The Auth host may be misconfigured; wait for the retry timer, then try again."
+            : "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again."
+          : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then retry safely when the timer ends if nothing arrives.",
+      );
     } catch {
       formRef.current?.setAttribute("data-otp-status", "unavailable");
       setMessageTone("error");

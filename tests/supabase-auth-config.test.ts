@@ -3,6 +3,8 @@ import test from "node:test";
 import { createAuthCompatibleFetch } from "../utils/supabase/auth-compatible-fetch.ts";
 import {
   classifySupabaseKey,
+  extractLegacyJwtProjectRef,
+  projectRefFromSupabaseHostname,
   resolveSupabasePublicConfig,
   sanitizeEnvCredential,
   supabaseConfigDiagnostics,
@@ -23,17 +25,17 @@ test("sanitizeEnvCredential trims whitespace and wrapping quotes", () => {
 
 test("resolveSupabasePublicConfig prefers publishable over anon fallback", () => {
   const preferred = resolveSupabasePublicConfig({
-    NEXT_PUBLIC_SUPABASE_URL: "https://opmgzchnmcgnsfwpmyc.supabase.co",
+    NEXT_PUBLIC_SUPABASE_URL: "https://exampleproject.supabase.co",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_primary",
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fallback",
   });
   assert.equal(preferred.key, "sb_publishable_primary");
   assert.equal(preferred.keySource, "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
   assert.equal(preferred.keyKind, "publishable");
-  assert.equal(preferred.hostname, "opmgzchnmcgnsfwpmyc.supabase.co");
+  assert.equal(preferred.hostname, "exampleproject.supabase.co");
 
   const fallback = resolveSupabasePublicConfig({
-    NEXT_PUBLIC_SUPABASE_URL: "https://opmgzchnmcgnsfwpmyc.supabase.co",
+    NEXT_PUBLIC_SUPABASE_URL: "https://exampleproject.supabase.co",
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.fallback",
   });
   assert.equal(fallback.keySource, "NEXT_PUBLIC_SUPABASE_ANON_KEY");
@@ -49,10 +51,10 @@ test("missing or invalid Supabase configuration is reported without key material
   assert.equal(JSON.stringify(missing).includes("sb_"), false);
 
   const quoted = resolveSupabasePublicConfig({
-    NEXT_PUBLIC_SUPABASE_URL: " https://opmgzchnmcgnsfwpmyc.supabase.co\n",
+    NEXT_PUBLIC_SUPABASE_URL: " https://exampleproject.supabase.co\n",
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "'sb_publishable_demo'",
   });
-  assert.equal(quoted.url, "https://opmgzchnmcgnsfwpmyc.supabase.co");
+  assert.equal(quoted.url, "https://exampleproject.supabase.co");
   assert.equal(quoted.key, "sb_publishable_demo");
   assert.equal(quoted.sanitizedWhitespace, true);
   assert.equal(quoted.sanitizedQuotes, true);
@@ -68,7 +70,7 @@ test("auth-compatible fetch keeps apikey and strips publishable Authorization Be
     return new Response("{}", { status: 200 });
   };
   const wrapped = createAuthCompatibleFetch(key, base);
-  await wrapped("https://opmgzchnmcgnsfwpmyc.supabase.co/auth/v1/otp", {
+  await wrapped("https://exampleproject.supabase.co/auth/v1/otp", {
     method: "POST",
     headers: {
       apikey: key,
@@ -114,6 +116,24 @@ test("legacy anon JWT keeps Authorization Bearer fallback behavior", async () =>
   });
   assert.ok(seen);
   assert.equal(seen.get("Authorization"), `Bearer ${key}`);
+});
+
+test("legacy JWT project ref extraction never returns key material", () => {
+  // Header.payload.sig — payload {"ref":"abcderefproject1","role":"service_role"}
+  const payload = Buffer.from(JSON.stringify({ ref: "abcderefproject1", role: "service_role" })).toString("base64url");
+  const token = `eyJhbGciOiJIUzI1NiJ9.${payload}.sig`;
+  assert.equal(extractLegacyJwtProjectRef(token), "abcderefproject1");
+  assert.equal(projectRefFromSupabaseHostname("abcderefproject1.supabase.co"), "abcderefproject1");
+  assert.equal(extractLegacyJwtProjectRef("sb_publishable_x"), null);
+  const diag = supabaseConfigDiagnostics({
+    NEXT_PUBLIC_SUPABASE_URL: "https://wronghost.supabase.co",
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_x",
+    SUPABASE_SERVICE_ROLE_KEY: token,
+  });
+  assert.equal(diag.urlProjectRef, "wronghost");
+  assert.equal(diag.serviceRoleJwtRef, "abcderefproject1");
+  assert.equal(diag.projectRefsMatch, false);
+  assert.equal(JSON.stringify(diag).includes(token), false);
 });
 
 test("default public config reads use direct process.env member access for bundlers", async () => {

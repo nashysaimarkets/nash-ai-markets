@@ -9,6 +9,42 @@ import {
 
 export const dynamic = "force-dynamic";
 
+function redactAuthErrorText(value: string): string {
+  return value
+    .replace(/sb_[a-z]+_[A-Za-z0-9]+/g, "[redacted]")
+    .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9._-]+/g, "[redacted]")
+    .slice(0, 160);
+}
+
+async function classifyHostname(hostname: string | null): Promise<{
+  dnsStatus: "ok" | "nxdomain" | "servfail" | "timeout" | "skipped" | "unknown";
+  detail: string | null;
+}> {
+  if (!hostname) return { dnsStatus: "skipped", detail: "missing_hostname" };
+  try {
+    const dns = await import("node:dns/promises");
+    await dns.lookup(hostname);
+    return { dnsStatus: "ok", detail: null };
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error
+      ? String((error as { code?: string }).code)
+      : null;
+    if (code === "ENOTFOUND" || code === "ENODATA") {
+      return { dnsStatus: "nxdomain", detail: code };
+    }
+    if (code === "ETIMEOUT" || code === "EAI_AGAIN") {
+      return { dnsStatus: "timeout", detail: code };
+    }
+    if (code === "ESERVFAIL") {
+      return { dnsStatus: "servfail", detail: code };
+    }
+    return {
+      dnsStatus: "unknown",
+      detail: code || (error instanceof Error ? error.name : "lookup_failed"),
+    };
+  }
+}
+
 /**
  * Secure auth configuration probe.
  * Reports presence / hostname / key kind only — never key material.
@@ -18,6 +54,7 @@ export async function GET(request: Request) {
   const diagnostics = supabaseConfigDiagnostics();
   const url = new URL(request.url);
   const probe = url.searchParams.get("probe") === "1";
+  const hostnameCheck = await classifyHostname(diagnostics.hostname);
 
   const authSettingsProbe: {
     attempted: boolean;
@@ -58,15 +95,20 @@ export async function GET(request: Request) {
           }
           const raw = body.error_code || body.error || body.msg || body.message || `http_${response.status}`;
           authSettingsProbe.errorCode = typeof raw === "string" ? raw.slice(0, 80) : "unknown";
-          // Never echo tokens / keys if somehow present.
-          const message = typeof body.message === "string" ? body.message : typeof body.msg === "string" ? body.msg : null;
-          authSettingsProbe.errorMessageSafe = message
-            ? message.replace(/sb_[a-z]+_[A-Za-z0-9]+/g, "[redacted]").replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[redacted]").slice(0, 120)
-            : null;
+          const message = typeof body.message === "string"
+            ? body.message
+            : typeof body.msg === "string"
+              ? body.msg
+              : null;
+          authSettingsProbe.errorMessageSafe = message ? redactAuthErrorText(message) : null;
         }
       } catch (error) {
-        authSettingsProbe.errorCode = "fetch_failed";
-        authSettingsProbe.errorMessageSafe = error instanceof Error ? error.name : "unknown";
+        authSettingsProbe.errorCode = hostnameCheck.dnsStatus === "nxdomain"
+          ? "host_nxdomain"
+          : "fetch_failed";
+        authSettingsProbe.errorMessageSafe = error instanceof Error
+          ? redactAuthErrorText(`${error.name}:${error.message}`)
+          : "unknown";
       }
     }
   }
@@ -81,6 +123,11 @@ export async function GET(request: Request) {
         resolvedKeySource: diagnostics.keySource,
       },
       supabaseHostname: diagnostics.hostname,
+      urlProjectRef: diagnostics.urlProjectRef,
+      serviceRoleJwtRef: diagnostics.serviceRoleJwtRef,
+      projectRefsMatch: diagnostics.projectRefsMatch ? "yes" : "no",
+      hostnameDnsStatus: hostnameCheck.dnsStatus,
+      hostnameDnsDetail: hostnameCheck.detail,
       keyTypePrefix: diagnostics.keyKind,
       sanitizedWhitespace: diagnostics.sanitizedWhitespace,
       sanitizedQuotes: diagnostics.sanitizedQuotes,
