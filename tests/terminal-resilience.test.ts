@@ -71,7 +71,7 @@ test("login and callback paths sanitize errors and redirect destinations", async
   const [login, browserClient, callback, confirmation, implicit] = await Promise.all([
     readFile(new URL("../app/login/LoginForm.tsx", import.meta.url), "utf8"),
     readFile(new URL("../utils/supabase/client.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/callback/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/confirm/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/implicit/page.tsx", import.meta.url), "utf8"),
   ]);
@@ -84,10 +84,13 @@ test("login and callback paths sanitize errors and redirect destinations", async
   assert.ok(login.includes("Retry available in"));
   assert.ok(login.includes("disabled={loading || cooldown > 0}"));
   assert.ok(login.includes("Delivery may take a few minutes"));
+  assert.ok(login.includes('searchParams.get("error")'));
+  assert.ok(login.includes("messageForSignInError"));
   assert.equal(login.includes("Link sent."), false);
   assert.ok(browserClient.includes('flowType: "pkce"'));
   assert.ok(callback.includes("safeAuthNextPath"));
-  assert.ok(callback.includes("buildPostAuthRedirect"));
+  assert.ok(callback.includes("exchangeCodeForSession"));
+  assert.ok(callback.includes("login?error=signin"));
   assert.ok(confirmation.includes("verifyOtp"));
   assert.ok(confirmation.includes("safeAuthNextPath"));
   assert.ok(confirmation.includes("EMAIL_OTP_TYPES.has"));

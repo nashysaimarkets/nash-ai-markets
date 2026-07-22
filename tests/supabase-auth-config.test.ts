@@ -62,7 +62,7 @@ test("missing or invalid Supabase configuration is reported without key material
   assert.equal(classifySupabaseKey("not-a-key"), "unknown");
 });
 
-test("auth-compatible fetch keeps apikey and strips publishable Authorization Bearer", async () => {
+test("auth-compatible fetch keeps matching Authorization on Auth routes", async () => {
   const key = "sb_publishable_testkey";
   let seen: Headers | undefined;
   const base: typeof fetch = async (_input, init) => {
@@ -70,12 +70,30 @@ test("auth-compatible fetch keeps apikey and strips publishable Authorization Be
     return new Response("{}", { status: 200 });
   };
   const wrapped = createAuthCompatibleFetch(key, base);
-  await wrapped("https://exampleproject.supabase.co/auth/v1/otp", {
+  await wrapped("https://exampleproject.supabase.co/auth/v1/token?grant_type=pkce", {
     method: "POST",
     headers: {
       apikey: key,
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
+    },
+  });
+  assert.ok(seen);
+  assert.equal(seen.get("apikey"), key);
+  assert.equal(seen.get("Authorization"), `Bearer ${key}`);
+});
+
+test("auth-compatible fetch strips publishable Authorization on Edge Function routes", async () => {
+  const key = "sb_publishable_testkey";
+  let seen: Headers | undefined;
+  const base: typeof fetch = async (_input, init) => {
+    seen = new Headers(init?.headers);
+    return new Response("{}", { status: 200 });
+  };
+  await createAuthCompatibleFetch(key, base)("https://exampleproject.supabase.co/functions/v1/demo", {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
     },
   });
   assert.ok(seen);

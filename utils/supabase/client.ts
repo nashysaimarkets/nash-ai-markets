@@ -14,7 +14,8 @@ export function createClient() {
     },
     auth: {
       flowType: "pkce",
-      detectSessionInUrl: true,
+      // Callback page completes PKCE/OTP explicitly; avoid racing a second exchange.
+      detectSessionInUrl: false,
       persistSession: true,
       autoRefreshToken: true,
     },

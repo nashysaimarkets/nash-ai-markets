@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "../../utils/supabase/client";
 import {
   AUTH_NEXT_COOKIE,
@@ -24,7 +25,26 @@ function persistAuthNextCookie(next: string) {
   document.cookie = `${AUTH_NEXT_COOKIE}=${encodeURIComponent(next)}; Path=/; Max-Age=900; SameSite=Lax${secure}`;
 }
 
+function messageForSignInError(reason: string | null): string {
+  switch (reason) {
+    case "expired":
+      return "That sign-in link has expired. Request a new secure link below.";
+    case "verifier":
+      return "Open the sign-in link in the same browser where you requested it, then try again.";
+    case "missing":
+      return "That sign-in link was incomplete. Request a new secure link below.";
+    case "exchange":
+    case "verify":
+    case "session":
+    case "unavailable":
+    case "signin":
+    default:
+      return "Sign-in could not be completed. Request a new secure link below and open it in this browser.";
+  }
+}
+
 export default function LoginForm() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"success" | "error" | null>(null);
@@ -37,6 +57,13 @@ export default function LoginForm() {
     const timer = window.setTimeout(() => setCooldown(cooldown - 1), 1_000);
     return () => window.clearTimeout(timer);
   }, [cooldown]);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error !== "signin") return;
+    setMessageTone("error");
+    setMessage(messageForSignInError(searchParams.get("reason")));
+  }, [searchParams]);
 
   // Publish the planned emailRedirectTo on the form for deployment inspection (no submit).
   useEffect(() => {
@@ -122,7 +149,7 @@ export default function LoginForm() {
           ? networkFailure
             ? "We could not reach the sign-in service. The Auth host may be misconfigured; wait for the retry timer, then try again."
             : "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again."
-          : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then retry safely when the timer ends if nothing arrives.",
+          : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then open the link in this same browser.",
       );
     } catch {
       formRef.current?.setAttribute("data-otp-status", "unavailable");
@@ -164,7 +191,7 @@ export default function LoginForm() {
           {message}
         </p>
       )}
-      <small>For your security, sign-in links expire and can only be used once.</small>
+      <small>For your security, sign-in links expire and can only be used once. Open the link in the same browser that requested it.</small>
     </form>
   );
 }

@@ -2,13 +2,20 @@ import { isNewFormatApiKey } from "./config.ts";
 
 type FetchFn = typeof fetch;
 
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
 /**
  * New-format keys (`sb_publishable_` / `sb_secret_`) are not JWTs.
- * supabase-js still sets `Authorization: Bearer <api-key>` on Auth requests when
- * there is no user session; Kong rejects that with 401 Invalid JWT.
  *
- * Keep `apikey` required; strip Authorization only when it is the API key itself.
- * Real user JWTs (eyJ…) are left untouched.
+ * - Always send them on `apikey`.
+ * - Auth (`/auth/v1/*`) keeps a matching `Authorization: Bearer <api-key>` pair —
+ *   required for PKCE token exchange after magic-link redirects.
+ * - Edge Functions reject non-JWT Bearer API keys, so strip only there.
+ * - Real user JWTs (eyJ…) are never stripped.
  */
 export function createAuthCompatibleFetch(
   supabaseKey: string,
@@ -23,7 +30,11 @@ export function createAuthCompatibleFetch(
 
     if (isNewFormatApiKey(supabaseKey)) {
       const authorization = headers.get("Authorization");
-      if (authorization === `Bearer ${supabaseKey}`) {
+      const url = requestUrl(input);
+      if (
+        authorization === `Bearer ${supabaseKey}`
+        && url.includes("/functions/v1/")
+      ) {
         headers.delete("Authorization");
       }
     }
