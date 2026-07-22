@@ -68,7 +68,13 @@ export default async function Terminal() {
     </header>
 
     <section className="ctWorkspace">
-      <MarketCommandHeader snapshot={snapshot} state={state} timestamp={timestamp} />
+      <MarketCommandHeader
+        snapshot={snapshot}
+        state={state}
+        timestamp={timestamp}
+        bullseyeScore={verified ? Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence) : null}
+        posture={verified ? plan.directionalPosture : null}
+      />
       <section className={`ctStatus is-${state.toLowerCase()}`} role={verified ? "status" : "alert"}>
         <div><strong>{terminalStatusMessage(snapshot.status, 0, hasDisplayableQuotes(snapshot))}</strong><span>{verified ? `Verified ${formatSnapshotAge(snapshot.asOf)}.` : hasDisplayableQuotes(snapshot) ? `Last verified ${formatSnapshotAge(snapshot.asOf)}. Directional guidance stays closed.` : "No live values or directional guidance are being inferred."}</span></div>
         {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
@@ -92,7 +98,10 @@ export default async function Terminal() {
       {showCatalysts ? <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
         <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
         <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
-      </section> : null}
+      </section> : <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
+        <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
+        <p>Economic calendar events appear only when the provider supplies a verified schedule. No unverified or invented catalysts are listed.</p>
+      </section>}
 
       <footer className="ctFooter"><span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span><Link href="/risk-disclaimer">Read the risk disclosure</Link></footer>
     </section>

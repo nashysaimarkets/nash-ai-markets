@@ -9,7 +9,9 @@ type Overlay = "volume" | "ema20" | "ema50";
 const OPTIONS: Array<{ label: string; timeframe: CandleTimeframe }> = [
   { label: "1m", timeframe: "1m" },
   { label: "5m", timeframe: "5m" },
+  { label: "15m", timeframe: "15m" },
   { label: "1h", timeframe: "1h" },
+  { label: "4h", timeframe: "4h" },
   { label: "1D", timeframe: "1d" },
 ];
 const REFRESH_MS = 90_000;
@@ -25,52 +27,75 @@ function customerStatusLabel(series: CustomerCandleSeries): string {
   return "Delayed";
 }
 
+function unavailableCopy(series: CustomerCandleSeries) {
+  const interval = series.timeframe === "1d" ? "daily" : series.timeframe;
+  const metric = `Verified ${interval} candlestick history for ${series.symbol}`;
+  switch (series.failureCategory) {
+    case "authentication":
+      return { title: metric, detail: "Unavailable because the market-data provider rejected authentication for this environment. No candles are shown." };
+    case "entitlement":
+      return { title: metric, detail: "Unavailable because the configured provider plan does not include this interval. No synthetic candles are generated." };
+    case "rate_limit":
+      return { title: metric, detail: "Unavailable because the provider rate limit was reached. Retry shortly. No candles have been invented." };
+    case "not_configured":
+      return { title: metric, detail: "Unavailable because candle provider credentials are not configured for this environment." };
+    case "schema":
+      return { title: metric, detail: "Unavailable because the provider returned no structurally valid OHLCV observations for this interval." };
+    case "provider":
+      return { title: metric, detail: "Unavailable because the provider request failed. Existing analysis is not back-filled with invented prices." };
+    default:
+      return { title: metric, detail: "Unavailable while verified OHLCV observations are missing. No quote-derived, synthetic or carried-forward candles are displayed." };
+  }
+}
+
 export function DashboardCandlestickChart({ series: initialSeries }: { series: CustomerCandleSeries }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const requestIdRef = useRef(0);
   const [series, setSeries] = useState(initialSeries);
   const [timeframe, setTimeframe] = useState<CandleTimeframe>(initialSeries.timeframe);
+  const [pendingTimeframe, setPendingTimeframe] = useState<CandleTimeframe | null>(null);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [overlays, setOverlays] = useState<Record<Overlay, boolean>>({ volume: true, ema20: true, ema50: false });
-  const stats = useMemo(() => candleSessionStats(series.candles), [series.candles]);
-  const levels = useMemo(() => candleReferenceLevels(series.candles), [series.candles]);
-  const available = series.status !== "unavailable" && series.candles.length > 0;
+  const displayTimeframe = pendingTimeframe ?? timeframe;
+  const intervalMismatch = pendingTimeframe !== null && pendingTimeframe !== series.timeframe;
+  const stats = useMemo(() => (intervalMismatch ? null : candleSessionStats(series.candles)), [intervalMismatch, series.candles]);
+  const levels = useMemo(() => (intervalMismatch ? [] : candleReferenceLevels(series.candles)), [intervalMismatch, series.candles]);
+  const available = !intervalMismatch && series.status !== "unavailable" && series.candles.length > 0;
   const volumeVerified = series.candles.some((candle) => candle.volume > 0);
-  const newest = series.candles.at(-1) ?? null;
+  const newest = !intervalMismatch ? series.candles.at(-1) ?? null : null;
   const newestLabel = newest
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(newest.time * 1000))
     : null;
-  const statusLabel = customerStatusLabel(series);
-  const unavailableCopy = (() => {
-    switch (series.failureCategory) {
-      case "authentication":
-        return { title: "Verified candle history unavailable", detail: "The market-data provider rejected authentication. No candles are shown." };
-      case "entitlement":
-        return { title: "Verified candle history unavailable", detail: "The configured provider plan does not include this series. No candles are shown." };
-      case "rate_limit":
-        return { title: "Verified candle history unavailable", detail: "The provider rate limit was reached. Retry shortly. No candles have been invented." };
-      case "not_configured":
-        return { title: "Verified candle history unavailable", detail: "Candle provider credentials are not configured for this environment." };
-      case "schema":
-        return { title: "Verified candle history unavailable", detail: "No structurally valid OHLCV series was returned for this interval." };
-      default:
-        return { title: "Verified candlestick history unavailable", detail: "No structurally valid OHLCV series was returned for this interval. No quote-derived, synthetic or carried-forward candles are displayed." };
-    }
-  })();
+  const statusLabel = intervalMismatch ? `Loading ${pendingTimeframe}` : customerStatusLabel(series);
+  const empty = unavailableCopy(series);
 
   async function load(next: CandleTimeframe, opts?: { silent?: boolean }) {
-    if (!opts?.silent) { setLoading(true); setRequestError(null); }
+    const requestId = ++requestIdRef.current;
+    if (!opts?.silent) {
+      setLoading(true);
+      setPendingTimeframe(next);
+      setRequestError(null);
+    }
     try {
       const response = await fetch(`/api/market/candles?timeframe=${next}`, { cache: "no-store" });
       if (!response.ok) throw new Error(response.status === 403 ? "Your membership could not be verified for candle history." : "Verified candle history could not be loaded.");
       const result = await response.json() as CustomerCandleSeries;
-      setSeries(result); setTimeframe(next);
+      if (requestId !== requestIdRef.current) return;
+      if (result.timeframe !== next) throw new Error("Verified candle history did not match the requested interval.");
+      setSeries(result);
+      setTimeframe(next);
     } catch (error) {
+      if (requestId !== requestIdRef.current) return;
       if (!opts?.silent) setRequestError(error instanceof Error ? error.message : "Verified candle history could not be loaded.");
     } finally {
-      if (!opts?.silent) setLoading(false);
+      if (requestId !== requestIdRef.current) return;
+      if (!opts?.silent) {
+        setLoading(false);
+        setPendingTimeframe(null);
+      }
     }
   }
 
@@ -159,15 +184,20 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
     };
   }, [available, levels, overlays, series.candles, timeframe, volumeVerified]);
 
-  const updated = series.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(series.asOf)) : "Awaiting first verified candle";
-  return <section className="dashboardMarketChart" aria-labelledby="dashboard-market-chart-title" data-status={series.status}>
+  const updated = series.asOf && !intervalMismatch
+    ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(series.asOf))
+    : intervalMismatch
+      ? `Loading verified ${pendingTimeframe} series`
+      : "Awaiting first verified candle";
+
+  return <section className="dashboardMarketChart" aria-labelledby="dashboard-market-chart-title" data-status={intervalMismatch ? "loading" : series.status} data-timeframe={displayTimeframe}>
     <header>
       <div>
         <span className="eliteEyebrow">PRIMARY MARKET WORKSPACE</span>
         <h2 id="dashboard-market-chart-title">{series.instrumentName} · {series.symbol}</h2>
         <p>{series.instrumentDetail}</p>
       </div>
-      <div className="chartStatus"><i aria-hidden="true" /><strong>{statusLabel}</strong><small>{updated} UK · {age(series.dataAgeMs)}</small></div>
+      <div className="chartStatus"><i aria-hidden="true" /><strong>{statusLabel}</strong><small>{updated}{intervalMismatch ? "" : ` UK · ${age(series.dataAgeMs)}`}</small></div>
     </header>
     {stats ? <>
       <div className="chartMarketStrip" aria-label="Verified rolling 24-hour statistics">
@@ -179,10 +209,10 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
         <div><span>Data age</span><strong>{age(series.dataAgeMs)}</strong></div>
       </div>
       <div className="chartRange"><span>Rolling 24h position</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div>
-    </> : null}
+    </> : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}
     <div className="chartControlBar">
       <div className="dashboardTimeframes" role="group" aria-label="Candlestick interval">
-        {OPTIONS.map((option) => <button key={option.timeframe} type="button" aria-pressed={option.timeframe === timeframe} disabled={loading} onClick={() => option.timeframe !== timeframe && void load(option.timeframe)}>{option.label}</button>)}
+        {OPTIONS.map((option) => <button key={option.timeframe} type="button" aria-pressed={option.timeframe === displayTimeframe} disabled={loading} onClick={() => option.timeframe !== displayTimeframe && void load(option.timeframe)}>{option.label}</button>)}
       </div>
       <div className="dashboardOverlays" role="group" aria-label="Chart overlays">
         {([["volume", "Volume"], ["ema20", "20 EMA"], ["ema50", "50 EMA"]] as const).map(([key, label]) => (
@@ -191,14 +221,15 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
         <button type="button" disabled={loading} onClick={() => void load(timeframe)}>{loading ? "Refreshing…" : "Refresh"}</button>
       </div>
     </div>
-    {requestError ? <div className="chartRequestError" role="alert">{requestError} Your existing chart remains visible. You can retry safely.</div> : null}
+    {requestError ? <div className="chartRequestError" role="alert">{requestError} You can retry safely without inventing candles.</div> : null}
     {available ? <div className="dashboardChartFrame">
-      {loading ? <div className="dashboardChartLoading" role="status">Refreshing verified {timeframe} candles…</div> : null}
+      {loading ? <div className="dashboardChartLoading" role="status">Refreshing verified {displayTimeframe} candles…</div> : null}
       <div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart`} />
       <div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div>
-    </div> : <div className="dashboardChartUnavailable" role="status"><span aria-hidden="true">⌁</span><div><strong>{unavailableCopy.title}</strong><p>{unavailableCopy.detail}</p><small>Choose another interval or retry later.</small></div></div>}
+    </div> : intervalMismatch || loading ? <div className="dashboardChartUnavailable" role="status" data-state="loading"><span aria-hidden="true">⟳</span><div><strong>Loading verified {displayTimeframe} candles</strong><p>Waiting for the provider response for this interval. The previous interval stays hidden so it cannot be mistaken for the new selection.</p></div></div>
+      : <div className="dashboardChartUnavailable" role="status" data-state={series.status}><span aria-hidden="true">⌁</span><div><strong>{empty.title}</strong><p>{empty.detail}</p><small>Choose another interval or retry later.</small></div></div>}
     <footer>
-      <span>{statusLabel} verified provider series · never labelled live</span>
+      <span>{statusLabel} verified series · never labelled live</span>
       <span>Interactive intelligence only · no order execution</span>
     </footer>
   </section>;

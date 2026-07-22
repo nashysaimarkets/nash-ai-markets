@@ -30,6 +30,24 @@ const MAX_CANDLES = 200;
 const MAX_SOURCE_CANDLES = 800;
 const cache = createAsyncKeyedTtlCache<VerifiedCandleSeries>({ ttlMs: CACHE_TTL_MS, maxEntries: 12, isFailure: (value) => value.status === "unavailable" });
 
+/** Sanitized provider endpoint outcomes for diagnostics — never includes secrets or raw bodies. */
+export type CandleEndpointOutcome = {
+  endpoint: string;
+  timeframe: CandleTimeframe;
+  category: "available" | "authentication" | "entitlement" | "rate_limit" | "provider" | "schema" | "not_configured";
+  observedAt: string;
+};
+
+const endpointOutcomes = new Map<string, CandleEndpointOutcome>();
+
+export function getCandleEndpointOutcomes(): CandleEndpointOutcome[] {
+  return [...endpointOutcomes.values()].sort((left, right) => left.endpoint.localeCompare(right.endpoint));
+}
+
+function recordEndpointOutcome(endpoint: string, timeframe: CandleTimeframe, category: CandleEndpointOutcome["category"], now: number) {
+  endpointOutcomes.set(endpoint, { endpoint, timeframe, category, observedAt: new Date(now).toISOString() });
+}
+
 function finite(value: unknown): number | null {
   const number = typeof value === "number" ? value : typeof value === "string" ? Number(value.replaceAll(",", "")) : Number.NaN;
   return Number.isFinite(number) ? number : null;
@@ -110,16 +128,47 @@ export function determineCandleFreshness(candles: OhlcvPoint[], now: number, tim
   return { status: "stale", asOf, dataAgeMs: age, classification: "market_closed" };
 }
 
-const source = (timeframe: CandleTimeframe) => timeframe === "1d" ? { path: "historical-price-eod/full", days: 370 } : { path: `historical-chart/${({ "1m": "1min", "5m": "5min", "15m": "15min", "1h": "1hour", "4h": "4hour" } as const)[timeframe]}`, days: timeframe === "1m" ? 1 : timeframe === "5m" || timeframe === "15m" ? 3 : 45 };
+/** Native FMP paths for entitlement checks. 4h is derived from verified 1-hour candles (UTC buckets). */
+export const CANDLE_PROVIDER_ENDPOINTS = {
+  "1m": "historical-chart/1min",
+  "5m": "historical-chart/5min",
+  "15m": "historical-chart/15min",
+  "1h": "historical-chart/1hour",
+  "4h": "historical-chart/1hour",
+  "1d": "historical-price-eod/full",
+} as const satisfies Record<CandleTimeframe, string>;
 
-function aggregateFourHour(candles: OhlcvPoint[]) {
+function source(timeframe: CandleTimeframe) {
+  if (timeframe === "1d") return { path: CANDLE_PROVIDER_ENDPOINTS["1d"], days: 370, derive: null as null | "4h" };
+  if (timeframe === "4h") return { path: CANDLE_PROVIDER_ENDPOINTS["4h"], days: 45, derive: "4h" as const };
+  const days = timeframe === "1m" ? 1 : timeframe === "5m" || timeframe === "15m" ? 3 : 45;
+  return { path: CANDLE_PROVIDER_ENDPOINTS[timeframe], days, derive: null as null | "4h" };
+}
+
+/** Aggregate verified source candles into UTC 4-hour buckets (epoch-aligned). */
+export function aggregateFourHour(candles: OhlcvPoint[]) {
   const groups = new Map<number, OhlcvPoint[]>();
-  for (const candle of candles) { const bucket = Math.floor(candle.time / 14_400) * 14_400; groups.set(bucket, [...(groups.get(bucket) ?? []), candle]); }
-  return [...groups.entries()].sort(([a], [b]) => a - b).map(([time, values]) => ({ time, open: values[0]!.open, high: Math.max(...values.map((v) => v.high)), low: Math.min(...values.map((v) => v.low)), close: values.at(-1)!.close, volume: values.reduce((sum, v) => sum + v.volume, 0) }));
+  for (const candle of candles) {
+    const bucket = Math.floor(candle.time / 14_400) * 14_400;
+    groups.set(bucket, [...(groups.get(bucket) ?? []), candle]);
+  }
+  return [...groups.entries()].sort(([a], [b]) => a - b).map(([time, values]) => ({
+    time,
+    open: values[0]!.open,
+    high: Math.max(...values.map((v) => v.high)),
+    low: Math.min(...values.map((v) => v.low)),
+    close: values.at(-1)!.close,
+    volume: values.reduce((sum, v) => sum + v.volume, 0),
+  }));
+}
+
+function fail(symbol: string, timeframe: CandleTimeframe, category: VerifiedCandleSeries["failureCategory"], endpoint: string, now: number): VerifiedCandleSeries {
+  if (category) recordEndpointOutcome(endpoint, timeframe, category === "not_configured" ? "not_configured" : category, now);
+  return empty(symbol, timeframe, category);
 }
 
 export async function loadFmpCandles({ apiKey, symbol, timeframe = "15m", baseUrl = "https://financialmodelingprep.com/stable/", now = Date.now(), fetchImpl = fetch, maxCandles = MAX_CANDLES }: LoadOptions): Promise<VerifiedCandleSeries> {
-  if (!apiKey.trim() || !symbol.trim()) return empty(symbol, timeframe, "not_configured");
+  if (!apiKey.trim() || !symbol.trim()) return fail(symbol, timeframe, "not_configured", CANDLE_PROVIDER_ENDPOINTS[timeframe], now);
   const endpoint = source(timeframe);
   const from = new Date(now - endpoint.days * 24 * 60 * 60_000).toISOString().slice(0, 10);
   const to = new Date(now).toISOString().slice(0, 10);
@@ -130,16 +179,21 @@ export async function loadFmpCandles({ apiKey, symbol, timeframe = "15m", baseUr
   url.searchParams.set("apikey", apiKey);
   let response: Response;
   try { response = await fetchImpl(url, { cache: "no-store", signal: AbortSignal.timeout(5_000) }); }
-  catch { return empty(symbol, timeframe, "provider"); }
-  if (response.status === 401 || response.status === 403) return empty(symbol, timeframe, "authentication");
-  if (response.status === 402) return empty(symbol, timeframe, "entitlement");
-  if (response.status === 429) return empty(symbol, timeframe, "rate_limit");
-  if (!response.ok) return empty(symbol, timeframe, "provider");
+  catch { return fail(symbol, timeframe, "provider", endpoint.path, now); }
+  if (response.status === 401 || response.status === 403) return fail(symbol, timeframe, "authentication", endpoint.path, now);
+  if (response.status === 402) return fail(symbol, timeframe, "entitlement", endpoint.path, now);
+  if (response.status === 429) return fail(symbol, timeframe, "rate_limit", endpoint.path, now);
+  if (!response.ok) return fail(symbol, timeframe, "provider", endpoint.path, now);
   const payload = await response.json().catch(() => null) as unknown;
-  const normalized = normalizeFmpCandles(payload, timeframe === "4h" ? maxCandles * 4 : maxCandles);
-  const candles = (timeframe === "4h" ? aggregateFourHour(normalized) : normalized).slice(-maxCandles);
-  if (!candles.length) return empty(symbol, timeframe, "schema");
-  return { ...empty(symbol, timeframe, null), ...determineCandleFreshness(candles, now, timeframe), candles, cache: { status: "miss", ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
+  const normalized = normalizeFmpCandles(payload, endpoint.derive === "4h" ? maxCandles * 4 : maxCandles);
+  const candles = (endpoint.derive === "4h" ? aggregateFourHour(normalized) : normalized).slice(-maxCandles);
+  if (!candles.length) return fail(symbol, timeframe, "schema", endpoint.path, now);
+  recordEndpointOutcome(endpoint.path, timeframe, "available", now);
+  const series = { ...empty(symbol, timeframe, null), ...determineCandleFreshness(candles, now, timeframe), candles, cache: { status: "miss" as const, ttlMs: CACHE_TTL_MS, requestsAvoided: 0 }, failureCategory: null };
+  if (endpoint.derive === "4h") {
+    series.instrumentDetail = `${series.instrumentDetail} Four-hour bars are aggregated from verified 1-hour candles on UTC boundaries.`;
+  }
+  return series;
 }
 
 function configuredApiKey(): string | null {

@@ -15,14 +15,19 @@ function confidenceCopy(score: number) {
   return "Limited alignment";
 }
 
-function observationLabel(snapshot: MarketSnapshot) {
-  if (snapshot.status === "LIVE") return "Live observation";
-  if (snapshot.status === "DELAYED") return "Delayed observation";
-  if (hasDisplayableQuotes(snapshot)) return "Previous session";
-  return "Unavailable";
-}
-
-export function MarketCommandHeader({ snapshot, state, timestamp }: { snapshot: MarketSnapshot; state: string; timestamp: string }) {
+export function MarketCommandHeader({
+  snapshot,
+  state,
+  timestamp,
+  bullseyeScore,
+  posture,
+}: {
+  snapshot: MarketSnapshot;
+  state: string;
+  timestamp: string;
+  bullseyeScore: number | null;
+  posture: string | null;
+}) {
   const decisionReady = isDecisionReadySnapshot(snapshot);
   const observable = hasDisplayableQuotes(snapshot);
   return <section className="ctHero" aria-labelledby="terminal-title">
@@ -34,7 +39,8 @@ export function MarketCommandHeader({ snapshot, state, timestamp }: { snapshot: 
     <dl className="ctHeroMeta">
       <div><dt>Market data</dt><dd><TerminalBadge label={observable && !decisionReady ? "Previous session" : state} tone={state === "Live" ? "positive" : state === "Delayed" || (observable && !decisionReady) ? "warning" : "danger"} pulse={state === "Live"} /></dd></div>
       <div><dt>Last verified</dt><dd>{observable ? `${timestamp} UK · ${formatSnapshotAge(snapshot.asOf)}` : "Awaiting first verified update"}</dd></div>
-      <div><dt>Source</dt><dd>{observable ? observationLabel(snapshot) : "Verified feed unavailable"}</dd></div>
+      <div><dt>Bullseye Score</dt><dd>{decisionReady && bullseyeScore !== null ? `${bullseyeScore} / 100` : "Withheld until data is current"}</dd></div>
+      <div><dt>Posture</dt><dd>{decisionReady && posture ? pretty(posture) : "Stand aside"}</dd></div>
     </dl>
   </section>;
 }
@@ -50,7 +56,7 @@ export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: Marke
   return <section className="ctPlan ctPanel" aria-labelledby="market-plan-title">
     <header><div><span>Today&apos;s market plan</span><h2 id="market-plan-title">{decisionReady ? pretty(plan.directionalPosture) : "Stand aside until data is current"}</h2></div><TerminalBadge label={pretty(decision.tradePermission)} tone={tone} /></header>
     <div className="ctPlanGrid">
-      <div className="ctPrimaryMetric"><span>Decision confidence</span><strong>{decisionReady ? `${decision.confidenceScore}%` : "Withheld"}</strong><small>{decisionReady ? confidenceCopy(decision.confidenceScore) : "No score is presented without current verified inputs."}</small></div>
+      <div className="ctPrimaryMetric"><span>Bullseye Score</span><strong>{decisionReady ? `${decision.confidenceScore}%` : "Withheld"}</strong><small>{decisionReady ? confidenceCopy(decision.confidenceScore) : "No score is presented without current verified inputs."}</small></div>
       <dl>
         <div><dt>Market bias</dt><dd>{biasLabel}</dd></div>
         <div><dt>Risk level</dt><dd>{decisionReady ? pretty(decision.riskRating) : "Unrated"}</dd></div>
@@ -65,7 +71,15 @@ export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: Marke
 }
 
 export function CrossAssetBoard({ snapshot }: { snapshot: MarketSnapshot }) {
-  if (!hasDisplayableQuotes(snapshot)) return null;
+  if (!hasDisplayableQuotes(snapshot)) {
+    return <section className="ctPanel" aria-labelledby="cross-asset-title">
+      <header><div><span>Cross-asset board</span><h2 id="cross-asset-title">What the major inputs are saying</h2></div></header>
+      <div className="ctHonestEmpty">
+        <strong>Verified cross-asset readings unavailable</strong>
+        <p>ES futures, VIX, Treasury yields and the US dollar index stay hidden until the provider returns a verified observation. Missing readings are never shown as zero.</p>
+      </div>
+    </section>;
+  }
   const decisionReady = isDecisionReadySnapshot(snapshot);
   return <section className="ctPanel" aria-labelledby="cross-asset-title">
     <header>
@@ -76,9 +90,9 @@ export function CrossAssetBoard({ snapshot }: { snapshot: MarketSnapshot }) {
       const quote = snapshot.quotes.find((item) => item.symbol === symbol);
       return <article key={symbol}>
         <div><span>{instrumentLabels[index]}</span><small>{symbol}</small></div>
-        <strong>{quote?.value ?? "Temporarily unavailable"}</strong>
+        <strong>{quote?.value ?? "Unavailable"}</strong>
         <span className={`ctMove is-${quote?.direction ?? "missing"}`}>{quote?.change ?? "No verified reading"}</span>
-        <p>{quote ? instrumentInterpretation(quote) : "This instrument did not return a verified reading in the latest update."}</p>
+        <p>{quote ? instrumentInterpretation(quote) : `${instrumentLabels[index]} had no verified reading in the latest update. The value is withheld rather than guessed.`}</p>
       </article>;
     })}</div>
   </section>;

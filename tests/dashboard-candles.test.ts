@@ -99,9 +99,9 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.doesNotMatch(chart, /financialmodelingprep\.com/);
   assert.match(chart, /aria-label="Candlestick interval"/);
   assert.match(chart, /aria-label="Chart overlays"/);
-  assert.match(chart, /Verified candlestick history unavailable/);
+  assert.match(chart, /Verified .*candlestick history|structurally valid OHLCV/);
   assert.match(chart, /HistogramSeries/);
-  assert.match(chart, /option\.timeframe !== timeframe/);
+  assert.match(chart, /option\.timeframe !== displayTimeframe|option\.timeframe !== timeframe/);
   assert.doesNotMatch(chart, /Session high|Session low|Previous close/);
   assert.match(chart, /series\.instrumentDetail/);
   assert.match(chart, /series\.status !== "unavailable"/);
@@ -113,7 +113,7 @@ test("dashboard chart calls only the protected candle route on an explicit contr
 });
 
 test("documented FMP intervals use their exact upstream endpoint", async () => {
-  for (const [timeframe, expected] of [["1m", "1min"], ["5m", "5min"], ["15m", "15min"], ["1h", "1hour"], ["4h", "4hour"], ["1d", "historical-price-eod/full"]] as const) {
+  for (const [timeframe, expected] of [["1m", "1min"], ["5m", "5min"], ["15m", "15min"], ["1h", "1hour"], ["4h", "1hour"], ["1d", "historical-price-eod/full"]] as const) {
     let requested = "";
     const points = Array.from({ length: 8 }, (_, index) => ({ timestamp: base + index * 3600, open: 99 + index, high: 101 + index, low: 98 + index, close: 100 + index, volume: 10 }));
     const now = (base + 7 * 3600) * 1000 + 5 * 60_000;
@@ -123,22 +123,29 @@ test("documented FMP intervals use their exact upstream endpoint", async () => {
     assert.notEqual(result.status, "unavailable");
     if (timeframe === "1d") assert.equal(result.classification, "end_of_day");
     else assert.ok(["delayed", "previous_session"].includes(result.classification));
-    if (timeframe === "4h") assert.ok(result.candles.every((item) => item.time % 14_400 === 0));
+    if (timeframe === "4h") {
+      assert.ok(result.candles.every((item) => item.time % 14_400 === 0));
+      assert.match(result.instrumentDetail, /aggregated from verified 1-hour|UTC/i);
+    }
   }
 });
 
-test("customer controls expose only verified ESUSD commodity intervals", async () => {
-  const [chart, route, terminal, dashboard] = await Promise.all([
+test("customer controls expose verified multi-timeframe candle intervals", async () => {
+  const [chart, route, terminal, customer, dashboard] = await Promise.all([
     readFile(new URL("../app/dashboard/components/DashboardCandlestickChart.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/api/market/candles/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
   ]);
-  assert.match(chart, /timeframe: "1m"[\s\S]*timeframe: "5m"[\s\S]*timeframe: "1h"[\s\S]*timeframe: "1d"/);
-  assert.doesNotMatch(chart, /label: "15m"|label: "4h"/);
-  assert.match(route, /\["1m", "5m", "1h", "1d"\]/);
+  assert.match(chart, /timeframe: "1m"[\s\S]*timeframe: "5m"[\s\S]*timeframe: "15m"[\s\S]*timeframe: "1h"[\s\S]*timeframe: "4h"[\s\S]*timeframe: "1d"/);
+  assert.match(chart, /pendingTimeframe/);
+  assert.match(chart, /previous interval is not shown|previous interval stays hidden/i);
+  assert.match(route, /\["1m", "5m", "15m", "1h", "4h", "1d"\]/);
   assert.match(terminal, /DashboardCandlestickChart/);
   assert.match(terminal, /ctChartPrimary/);
+  assert.match(terminal, /bullseyeScore/);
+  assert.match(customer, /Bullseye Score/);
   assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics|WhatChanged/);
   assert.doesNotMatch(dashboard, /Advanced diagnostics|FMP_API_KEY|provider diagnostics/i);
 });
@@ -208,5 +215,23 @@ test("candlestick chart keeps the canvas mounted while refreshing", async () => 
   assert.match(chart, /ResizeObserver/);
   assert.match(chart, /fitContent/);
   assert.match(chart, /dashboardChartLoading/);
-  assert.doesNotMatch(chart, /loading \? <div className="dashboardChartUnavailable"/);
+  assert.match(chart, /pendingTimeframe/);
+  assert.match(chart, /intervalMismatch/);
+});
+
+test("four-hour aggregation uses UTC epoch boundaries from verified source candles", async () => {
+  const { aggregateFourHour } = await import("../app/lib/providers/financial-modeling-prep-candles.ts");
+  const source = [
+    candle(base, 100),
+    candle(base + 3600, 101),
+    candle(base + 7200, 102),
+    candle(base + 10_800, 103),
+    candle(base + 14_400, 104),
+  ];
+  const aggregated = aggregateFourHour(source);
+  assert.deepEqual(aggregated.map((item) => item.time), [base, base + 14_400]);
+  assert.equal(aggregated[0]?.open, 99);
+  assert.equal(aggregated[0]?.close, 103);
+  assert.equal(aggregated[0]?.high, 104);
+  assert.equal(aggregated[0]?.low, 98);
 });
