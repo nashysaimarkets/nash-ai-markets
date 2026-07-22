@@ -18,6 +18,27 @@
   0%,100%{background-position:50% 42%}
   50%{background-position:52% 48%}
 }
+@keyframes pmShimmerSweep{
+  0%{background-position:0% 40%,100% 60%,0 0}
+  50%{background-position:60% 55%,40% 35%,0 0}
+  100%{background-position:100% 48%,0% 52%,0 0}
+}
+@keyframes pmLogoFloat{
+  0%,100%{transform:translateY(0);filter:drop-shadow(0 0 0 transparent)}
+  50%{transform:translateY(-2px);filter:drop-shadow(0 0 10px #38f28e33)}
+}
+@keyframes pmLogoMarkPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.035)}
+}
+@keyframes pmHeadingIn{
+  from{opacity:0;transform:translateY(10px);letter-spacing:.02em}
+  to{opacity:1;transform:none;letter-spacing:normal}
+}
+@keyframes pmHeadingSheen{
+  0%,100%{text-shadow:0 0 0 transparent}
+  50%{text-shadow:0 0 18px #38f28e22}
+}
 @keyframes pmGlow{
   0%,100%{box-shadow:0 0 0 0 transparent}
   50%{box-shadow:0 0 0 1px #35d89b33,0 0 18px #35d89b14}
@@ -101,9 +122,107 @@
     animation:pmBar .55s var(--pm-ease) both;
   }
   .memberDashboard{
-    background-size:auto,108%;
-    animation:pmAmbient 48s ease-in-out infinite;
+    position:relative;
+    isolation:isolate;
+    background-size:auto,112%;
+    animation:pmAmbient 42s ease-in-out infinite;
   }
+  .memberDashboard::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 55% 40% at 18% 12%,#38f28e22,transparent 62%),
+      radial-gradient(ellipse 45% 35% at 82% 78%,#d9ab5218,transparent 60%),
+      linear-gradient(115deg,transparent 30%,#38f28e0d 48%,transparent 66%);
+    background-size:140% 140%,140% 140%,220% 220%;
+    animation:pmShimmerSweep 18s ease-in-out infinite;
+    opacity:.85;
+  }
+  .memberDashboard > *{position:relative;z-index:1}
+
+  .accessPage,
+  .foxtrotTerminal,
+  body{
+    position:relative;
+  }
+  .accessPage::before,
+  .foxtrotTerminal::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 50% 35% at 70% 8%,#38f28e1a,transparent 58%),
+      linear-gradient(120deg,transparent 35%,#38f28e0a 50%,transparent 65%);
+    background-size:130% 130%,200% 200%;
+    animation:pmShimmerSweep 22s ease-in-out infinite;
+  }
+  .accessPage > *,
+  .foxtrotTerminal > *{position:relative;z-index:1}
+
+  .brandLogo{
+    animation:pmLogoFloat 5.5s ease-in-out infinite;
+  }
+  .brandLogo img,
+  .brandLogoCompact img{
+    animation:pmLogoMarkPulse 4.8s ease-in-out infinite;
+    transform-origin:center center;
+  }
+  .brandLogo:hover,
+  .brandLogo:focus-visible{
+    animation-play-state:paused;
+  }
+  .brandLogo:hover img,
+  .brandLogo:focus-visible img{
+    animation-play-state:paused;
+    filter:drop-shadow(0 0 12px #38f28e44);
+  }
+
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .accessPage h1,
+  .foxtrotTerminal h1,
+  .ctHero h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .profileHero h1,
+  .reviewHero h1,
+  .archiveHero h1,
+  .journalHero h1,
+  .resultsHero h1,
+  .replayHero h1,
+  .methodologyHero h1{
+    animation:pmHeadingIn .55s var(--pm-ease) both;
+  }
+  .memberDashboard h2,
+  .memberDashboardShell h2,
+  .accessPage h2,
+  .foxtrotTerminal h2,
+  .mcChanged > header h2,
+  .mcChartStrip h2,
+  .askBullseye > header h2,
+  .optionsCalendarPanel > header h2,
+  .optionsNewsPanel > header h2,
+  .crossAssetCandleGalleryHeader h2,
+  .briefCommandCopy h2,
+  .ctPanel > header h2,
+  .dailyCard > header h2{
+    animation:pmHeadingIn .5s var(--pm-ease) .06s both;
+  }
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .ctHero h1{
+    animation:pmHeadingIn .55s var(--pm-ease) both,pmHeadingSheen 8s ease-in-out 1s infinite;
+  }
+
   .ctStatus.is-live,
   .ctStatus.is-delayed,
   .ctStatus.is-offline,
@@ -144,8 +263,54 @@
   .pmValueUpdate,
   .ctEvidenceCheck li i,
   .optionsProgress>i,
-  .memberDashboard{
+  .memberDashboard,
+  .memberDashboard::before,
+  .accessPage::before,
+  .foxtrotTerminal::before,
+  .brandLogo,
+  .brandLogo img,
+  .brandLogoCompact img,
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .memberDashboard h2,
+  .memberDashboardShell h2,
+  .accessPage h1,
+  .accessPage h2,
+  .foxtrotTerminal h1,
+  .foxtrotTerminal h2,
+  .ctHero h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .profileHero h1,
+  .reviewHero h1,
+  .archiveHero h1,
+  .journalHero h1,
+  .resultsHero h1,
+  .replayHero h1,
+  .methodologyHero h1,
+  .mcChanged > header h2,
+  .mcChartStrip h2,
+  .askBullseye > header h2,
+  .optionsCalendarPanel > header h2,
+  .optionsNewsPanel > header h2,
+  .crossAssetCandleGalleryHeader h2,
+  .briefCommandCopy h2,
+  .ctPanel > header h2,
+  .dailyCard > header h2{
     animation:none!important;
+  }
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .ctHero h1{
+    text-shadow:none;
+  }
+  .brandLogo:hover img,
+  .brandLogo:focus-visible img{
+    filter:none;
   }
   .mcActions a,
   .askBullseyeChips button,
