@@ -16,6 +16,11 @@ import {
 import { generateAIMarketBriefSelection } from "../lib/server/ai-market-brief.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
+import { BullseyeGauge } from "../components/mini-visuals/BullseyeGauge.tsx";
+import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { sparklineFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
+import { isDecisionReadySnapshot } from "../lib/market-data.ts";
+import { CrossAssetBoard } from "../terminal/components/CustomerTerminal.tsx";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import {
@@ -48,11 +53,16 @@ export default async function AIMarketBriefPage() {
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
 
-  const [previewState, market] = await Promise.all([
+  const [previewState, market, candleSeriesRaw] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
+    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("5m", now) : Promise.resolve(null),
   ]);
   const access = createProgressiveAccess(tier, previewState.claims, now);
+  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
+  const esSparkline = candleSeries?.candles.length ? sparklineFromCandles(candleSeries.candles) : null;
+  const decisionReady = isDecisionReadySnapshot(market.snapshot);
+  const delayed = market.snapshot.status === "DELAYED" || !decisionReady;
   const intelligence = analyzeMarketSnapshot(market.snapshot);
   const engineInput = {
     intelligence,
@@ -116,22 +126,40 @@ export default async function AIMarketBriefPage() {
 
       {brief.mode === "unavailable" ? <SafeState title={brief.headline} tone="danger"><p>{brief.summary}</p><Link href="/brief">Refresh brief</Link></SafeState> : null}
 
-      <section className="briefGrid">
-        <DashboardCard eyebrow="WHAT HAPPENED" title={brief.headline} className="briefExecutive" badge={<TerminalBadge label={market.snapshot.status} tone={market.snapshot.status === "LIVE" ? "positive" : market.snapshot.status === "DELAYED" ? "warning" : "danger"} />}>
-          <div className="briefExecutiveBody">
-            <p>{brief.whatHappened}</p>
-            <p>{brief.whatMatters}</p>
-            <dl>
-              <div><dt>Market bias</dt><dd>{brief.mode === "unavailable" ? "Not inferred" : brief.marketBias}</dd></div>
-              <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(brief.confidence, scoreReady)}</dd></div>
-              <div><dt>Trade permission</dt><dd>{brief.tradePermission}</dd></div>
-              <div><dt>Risk rating</dt><dd>{brief.riskRating ?? "Not rated"}</dd></div>
-              <div><dt>Information age</dt><dd>{brief.informationAge}</dd></div>
-              <div><dt>As of</dt><dd>{brief.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(brief.asOf)) : "Unavailable"}</dd></div>
-            </dl>
-          </div>
-        </DashboardCard>
+      <section className="briefCommand" aria-label="Brief decision summary">
+        <div className="briefCommandGauge">
+          <BullseyeGauge
+            score={brief.confidence}
+            ready={scoreReady}
+            posture={plan.directionalPosture}
+            delayed={delayed}
+          />
+        </div>
+        <div className="briefCommandCopy">
+          <span>WHAT HAPPENED</span>
+          <h2>{brief.headline}</h2>
+          <p>{brief.whatHappened}</p>
+          <p>{brief.whatMatters}</p>
+          <dl>
+            <div><dt>Market bias</dt><dd>{brief.mode === "unavailable" ? "Not inferred" : brief.marketBias}</dd></div>
+            <div><dt>Trade permission</dt><dd>{brief.tradePermission}</dd></div>
+            <div><dt>Risk rating</dt><dd>{brief.riskRating ?? "Not rated"}</dd></div>
+            <div><dt>Information age</dt><dd>{brief.informationAge}</dd></div>
+            <div><dt>As of</dt><dd>{brief.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(brief.asOf)) : "Unavailable"}</dd></div>
+            <div><dt>Score</dt><dd>{formatScoreDisplay(brief.confidence, scoreReady)}</dd></div>
+          </dl>
+        </div>
+      </section>
 
+      <div className="briefCrossAsset">
+        <CrossAssetBoard
+          snapshot={market.snapshot}
+          sparklines={{ ES: esSparkline }}
+          volatilityRegime={decisionReady ? decision.volatilityRegime : null}
+        />
+      </div>
+
+      <section className="briefGrid">
         <DashboardCard eyebrow="SUPPORT VERSUS CONSTRAINT" title="What is helping or blocking risk appetite" className="briefEvidence">
           <p>{brief.supporting}</p>
           <p>{brief.constraining}</p>
@@ -154,10 +182,6 @@ export default async function AIMarketBriefPage() {
           <p>{brief.nextEvent}</p>
           {brief.nextActions.length ? <ol>{brief.nextActions.map((action) => <li key={action}>{action}</li>)}</ol> : null}
         </DashboardCard>
-
-        {brief.crossAssetNotes.length ? <DashboardCard eyebrow="VERIFIED READINGS" title="Cross-asset snapshot" className="briefEvidence">
-          <ul>{brief.crossAssetNotes.map((note) => <li key={note}>{note}</li>)}</ul>
-        </DashboardCard> : null}
       </section>
 
       {access.features.intelligence ? <section className="briefIntegrity" aria-label="Brief integrity">

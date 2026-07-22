@@ -64,7 +64,12 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   return <MemberShell active="profile" className="profilePage">
     <div className="memberDashboardShell">
       <section className="profileHero">
-        <div><span>ACCOUNT MISSION CONTROL</span><h1>Your account</h1><p>Manage identity, workspace preferences and subscription access from one secure member hub.</p></div>
+        <div>
+          <span>ACCOUNT MISSION CONTROL</span>
+          <h1>Your account</h1>
+          <p>Manage identity, workspace preferences and subscription access from one secure member hub.</p>
+          <strong className="profileMembershipBadge" data-tier={tier}>{membershipError ? "Membership unverified" : `${tier.toUpperCase()} membership`}</strong>
+        </div>
         <div className="profileHeroActions"><Link href="/terminal">Open terminal</Link><a href="/auth/signout">Sign out securely</a></div>
       </section>
 

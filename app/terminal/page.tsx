@@ -5,7 +5,7 @@ import { createClient } from "../../utils/supabase/server";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import { createTradingDecision } from "../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner";
-import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes } from "../lib/market-data";
+import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes, isDecisionReadySnapshot } from "../lib/market-data";
 import { BrandLogo } from "../components/BrandLogo";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
@@ -15,6 +15,7 @@ import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/provider
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
 import { candleReferenceLevels, candleSessionStats } from "../dashboard/lib/candle-analysis";
 import { rangeLaneFromCandles, scenarioLaneMarkers, sparklineFromCandles, parsePriceLevel } from "../components/mini-visuals/mini-visual-data";
+import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
 import { formatCustomerParticipationWarnings } from "./lib/customer-warnings";
@@ -83,6 +84,7 @@ export default async function Terminal() {
     plan.eventRiskWarnings.map((warning) => warning.code),
   );
   const showCatalysts = verified && snapshot.events.length > 0;
+  const decisionReady = isDecisionReadySnapshot(snapshot);
 
   return <main className="foxtrotTerminal customerTerminal premiumTerminal" id="overview">
     <header className="ctTopbar">
@@ -111,7 +113,7 @@ export default async function Terminal() {
 
       {customerWarnings.length ? <section className="ctPanel ctConstraintsPanel" aria-labelledby="customer-warnings-title"><header><div><span>Participation limits</span><h2 id="customer-warnings-title">Delay and no-trade conditions</h2></div></header><div className="ctConstraints"><strong>Conditions limiting participation</strong><ul>{customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div></section> : null}
 
-      <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline }} />
+      <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
       {paid && candleSeries ? <StructureLevelsPanel levels={candleLevels} recentRange={candleStats?.averageCandleRange ?? null} rangeLane={rangeLane} /> : null}
       <section className="ctTwoColumn">
         {access.features.intelligence ? <MarketPressureMap snapshot={snapshot} intelligence={intelligence} /> : <LockedPremiumCard tier="pro" title="See what is driving risk appetite" value="Pro explains the verified volatility, Treasury, dollar and equity pressures behind the market view." benefits={["Cross-asset context", "Explainable signals", "Fail-closed analysis"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
@@ -122,10 +124,11 @@ export default async function Terminal() {
       {showCatalysts ? <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
         <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
         <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
-      </section> : <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
-        <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
-        <p>Economic calendar events appear only when the provider supplies a verified schedule. No unverified or invented catalysts are listed.</p>
-      </section>}
+      </section> : <EventWindowEmpty
+        providerStatus={gatewayStatus.connectionStatus}
+        asOfLabel={hasDisplayableQuotes(snapshot) ? `${formatUkTimestamp(snapshot.asOf)} UK · ${formatSnapshotAge(snapshot.asOf)}` : null}
+        delayed={snapshot.status === "DELAYED" || !decisionReady}
+      />}
 
       <footer className="ctFooter"><span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span><Link href="/risk-disclaimer">Read the risk disclosure</Link></footer>
     </section>

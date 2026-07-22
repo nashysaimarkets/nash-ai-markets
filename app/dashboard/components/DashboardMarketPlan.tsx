@@ -1,7 +1,7 @@
 import { formatScoreDisplay, scoreIsDisplayable } from "../lib/score-display.ts";
+import { BullseyeGauge } from "../../components/mini-visuals/BullseyeGauge.tsx";
 import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane.tsx";
 import { ScenarioPositionLane } from "../../components/mini-visuals/ScenarioPositionLane.tsx";
-import { EvidenceMeter } from "../../components/mini-visuals/EvidenceMeter.tsx";
 import type { RangeLaneMarkers, ScenarioLaneMarkers } from "../../components/mini-visuals/mini-visual-data.ts";
 
 type Props = {
@@ -41,20 +41,17 @@ export function DashboardMarketPlan(props: Props) {
       </div>
     </header>
 
-    <dl className="dashPlanMeta">
-      <div><dt>Market bias</dt><dd>{props.decisionReady ? pretty(props.bias) : "Not inferred"}</dd></div>
-      <div><dt>Volatility</dt><dd>{props.decisionReady && props.volatility ? pretty(props.volatility) : "Not rated"}</dd></div>
-      <div><dt>Execution readiness</dt><dd>{props.decisionReady && props.readiness ? pretty(props.readiness) : "Not ready"}</dd></div>
-      <div><dt>Preferred approach</dt><dd>{props.decisionReady && props.approach ? pretty(props.approach) : "Wait for a current update"}</dd></div>
-      <div>
-        <dt>Bullseye Score</dt>
-        <dd>
-          {formatScoreDisplay(props.score, scoreReady)}
-          <EvidenceMeter label="Evidence" value={props.score} ready={scoreReady} />
-        </dd>
-      </div>
-      <div><dt>Review trigger</dt><dd>{props.reviewTrigger}</dd></div>
-    </dl>
+    <div className="dashPlanVisual">
+      <BullseyeGauge score={props.score} ready={scoreReady} posture={props.posture} />
+      <dl className="dashPlanMeta">
+        <div><dt>Market bias</dt><dd>{props.decisionReady ? pretty(props.bias) : "Not inferred"}</dd></div>
+        <div><dt>Volatility</dt><dd>{props.decisionReady && props.volatility ? pretty(props.volatility) : "Not rated"}</dd></div>
+        <div><dt>Execution readiness</dt><dd>{props.decisionReady && props.readiness ? pretty(props.readiness) : "Not ready"}</dd></div>
+        <div><dt>Preferred approach</dt><dd>{props.decisionReady && props.approach ? pretty(props.approach) : "Wait for a current update"}</dd></div>
+        <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(props.score, scoreReady)}</dd></div>
+        <div><dt>Review trigger</dt><dd>{props.reviewTrigger}</dd></div>
+      </dl>
+    </div>
 
     <div className="dashReferenceLevels" aria-label="Verified rolling range and reference levels">
       <h3>Verified rolling range and reference levels</h3>

@@ -66,4 +66,6 @@ test("dashboard and terminal wire mini visuals without inventing cross-asset his
   assert.match(plan, /ScenarioPositionLane/);
   assert.match(customer, /EvidenceMeter/);
   assert.match(customer, /RangePositionLane/);
+  assert.match(customer, /BullseyeGauge/);
+  assert.match(customer, /UnavailableHistory/);
 });

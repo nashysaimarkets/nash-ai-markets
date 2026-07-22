@@ -2,11 +2,16 @@ import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts
 import { formatSnapshotAge, hasDisplayableQuotes, isDecisionReadySnapshot, type MarketSnapshot } from "../../lib/market-data.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
-import { formatScoreDisplay, scoreIsDisplayable } from "../../dashboard/lib/score-display.ts";
+import { formatScoreDisplay } from "../../dashboard/lib/score-display.ts";
 import { Sparkline } from "../../components/mini-visuals/Sparkline.tsx";
+import { UnavailableHistory } from "../../components/mini-visuals/UnavailableHistory.tsx";
 import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane.tsx";
 import { ScenarioPositionLane } from "../../components/mini-visuals/ScenarioPositionLane.tsx";
 import { EvidenceMeter } from "../../components/mini-visuals/EvidenceMeter.tsx";
+import { BullseyeGauge } from "../../components/mini-visuals/BullseyeGauge.tsx";
+import { VolatilityGauge } from "../../components/mini-visuals/VolatilityGauge.tsx";
+import { YieldSpreadVisual } from "../../components/mini-visuals/YieldSpreadVisual.tsx";
+import { DxyPressureVisual } from "../../components/mini-visuals/DxyPressureVisual.tsx";
 import type { RangeLaneMarkers, ScenarioLaneMarkers } from "../../components/mini-visuals/mini-visual-data.ts";
 import { TerminalBadge } from "./TerminalBadge";
 import { createCustomerSignals, instrumentInterpretation } from "../lib/customer-terminal";
@@ -14,12 +19,6 @@ import { createCustomerSignals, instrumentInterpretation } from "../lib/customer
 const pretty = (value: string) => value.replaceAll("_", " ").replaceAll("-", " ");
 const instrumentLabels = ["ES futures", "VIX", "US 2-year", "US 10-year", "US Dollar Index"];
 const symbols = ["ES", "VIX", "US2Y", "US10Y", "DXY"] as const;
-
-function confidenceCopy(score: number) {
-  if (score >= 70) return "Higher evidence agreement";
-  if (score >= 45) return "Mixed evidence agreement";
-  return "Limited evidence agreement";
-}
 
 export function MarketCommandHeader({
   snapshot,
@@ -36,37 +35,51 @@ export function MarketCommandHeader({
 }) {
   const decisionReady = isDecisionReadySnapshot(snapshot);
   const observable = hasDisplayableQuotes(snapshot);
+  const delayed = snapshot.status === "DELAYED" || (!decisionReady && observable);
   return <section className="ctHero" aria-labelledby="terminal-title">
     <div>
       <span className="ctEyebrow">NASH AI MARKETS · TERMINAL</span>
       <h1 id="terminal-title">Terminal</h1>
       <p>Verified cross-asset conditions, decision constraints and scenario readiness.</p>
     </div>
-    <dl className="ctHeroMeta">
-      <div><dt>Market data</dt><dd><TerminalBadge label={observable && !decisionReady ? "Previous session" : state} tone={state === "Live" ? "positive" : state === "Delayed" || (observable && !decisionReady) ? "warning" : "danger"} pulse={state === "Live"} /></dd></div>
-      <div><dt>Last verified</dt><dd>{observable ? `${timestamp} UK · ${formatSnapshotAge(snapshot.asOf)}` : "Awaiting first verified update"}</dd></div>
-      <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(bullseyeScore, decisionReady && scoreIsDisplayable(bullseyeScore, decisionReady))}</dd></div>
-      <div><dt>Posture</dt><dd>{decisionReady && posture ? pretty(posture) : "Stand aside"}</dd></div>
-    </dl>
+    <div className="ctHeroMeta ctHeroMetaVisual">
+      <BullseyeGauge score={bullseyeScore} ready={decisionReady} posture={posture} delayed={delayed} compact />
+      <dl>
+        <div><dt>Market data</dt><dd><TerminalBadge label={observable && !decisionReady ? "Previous session" : state} tone={state === "Live" ? "positive" : state === "Delayed" || (observable && !decisionReady) ? "warning" : "danger"} pulse={state === "Live"} /></dd></div>
+        <div><dt>Last verified</dt><dd>{observable ? `${timestamp} UK · ${formatSnapshotAge(snapshot.asOf)}` : "Awaiting first verified update"}</dd></div>
+        <div><dt>Posture</dt><dd>{decisionReady && posture ? pretty(posture) : "Stand aside"}</dd></div>
+      </dl>
+    </div>
   </section>;
 }
 
 export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: MarketSnapshot; decision: TradingDecision; plan: TradePlan }) {
   const decisionReady = isDecisionReadySnapshot(snapshot);
+  const delayed = snapshot.status === "DELAYED" || (!decisionReady && hasDisplayableQuotes(snapshot));
   const tone = decision.tradePermission === "actionable" ? "positive" : decision.tradePermission === "caution" ? "warning" : "danger";
   const biasLabel = (() => {
     if (!decisionReady) return "Not inferred";
     if (decision.marketBias === "neutral" && decision.conflictingDrivers.length > 0) return "Mixed";
     return pretty(decision.marketBias);
   })();
-  return <section className="ctPlan ctPanel" aria-labelledby="market-plan-title">
-    <header><div><span>Today&apos;s market plan</span><h2 id="market-plan-title">{decisionReady ? pretty(plan.directionalPosture) : "Stand aside until data is current"}</h2></div><TerminalBadge label={pretty(decision.tradePermission)} tone={tone} /></header>
-    <div className="ctPlanGrid">
+  const standAside = !decisionReady || decision.tradePermission === "no-trade";
+  return <section className={`ctPlan ctPanel${standAside ? " is-standAside" : ""}`} aria-labelledby="market-plan-title">
+    <header>
+      <div>
+        <span>Today&apos;s market plan</span>
+        <h2 id="market-plan-title">{decisionReady ? pretty(plan.directionalPosture) : "Stand aside until data is current"}</h2>
+      </div>
+      <TerminalBadge label={pretty(decision.tradePermission)} tone={tone} />
+    </header>
+    <div className="ctPlanGrid ctPlanGridVisual">
       <div className="ctPrimaryMetric">
-        <span>Bullseye Score</span>
-        <strong>{formatScoreDisplay(decision.confidenceScore, decisionReady)}</strong>
-        <EvidenceMeter label="Evidence" value={decision.confidenceScore} ready={decisionReady} />
-        <small>{decisionReady ? confidenceCopy(decision.confidenceScore) : "No score is presented without current verified inputs. A missing score is not a bearish signal."}</small>
+        <BullseyeGauge
+          score={decision.confidenceScore}
+          ready={decisionReady}
+          posture={plan.directionalPosture}
+          delayed={delayed}
+        />
+        {standAside ? <div className="ctShield" aria-label="Capital protection"><strong>Capital protection</strong><span>Stand-aside posture keeps directional participation closed until verified conditions improve.</span></div> : null}
       </div>
       <dl>
         <div><dt>Market bias</dt><dd>{biasLabel}</dd></div>
@@ -75,6 +88,8 @@ export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: Marke
         <div><dt>Execution readiness</dt><dd>{decisionReady ? pretty(plan.executionReadiness) : "Not ready"}</dd></div>
         <div><dt>Preferred approach</dt><dd>{decisionReady ? pretty(plan.preferredSetupType) : "Wait for a current update"}</dd></div>
         <div><dt>Participation</dt><dd>{decisionReady ? pretty(plan.participationLevel) : "None"}</dd></div>
+        <div><dt>Data age</dt><dd>{formatSnapshotAge(snapshot.asOf)}</dd></div>
+        <div><dt>Confidence</dt><dd>{decisionReady ? formatScoreDisplay(decision.confidenceScore, true) : "Not calculated"}</dd></div>
       </dl>
     </div>
     <p className="ctCaution">{decisionReady ? "This is deterministic educational analysis. Confirm conditions independently before acting." : `Last verified observation: ${formatSnapshotAge(snapshot.asOf)}. Directional planning stays closed until data is inside the current decision window.`}</p>
@@ -84,9 +99,11 @@ export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: Marke
 export function CrossAssetBoard({
   snapshot,
   sparklines,
+  volatilityRegime = null,
 }: {
   snapshot: MarketSnapshot;
   sparklines?: Partial<Record<(typeof symbols)[number], number[] | null>>;
+  volatilityRegime?: string | null;
 }) {
   if (!hasDisplayableQuotes(snapshot)) {
     return <section className="ctPanel" aria-labelledby="cross-asset-title">
@@ -100,13 +117,18 @@ export function CrossAssetBoard({
   const decisionReady = isDecisionReadySnapshot(snapshot);
   const age = formatSnapshotAge(snapshot.asOf);
   const statusLabel = decisionReady ? "Verified" : "Previous session";
+  const find = (symbol: (typeof symbols)[number]) => snapshot.quotes.find((item) => item.symbol === symbol);
+  const vix = find("VIX");
+  const two = find("US2Y");
+  const ten = find("US10Y");
+  const dxy = find("DXY");
   return <section className="ctPanel ctInstrumentBoard" aria-labelledby="cross-asset-title">
     <header>
       <div><span>Cross-asset board</span><h2 id="cross-asset-title">What the major inputs are saying</h2></div>
       <small>{statusLabel} · {age}</small>
     </header>
     <div className="ctAssetGrid">{symbols.map((symbol, index) => {
-      const quote = snapshot.quotes.find((item) => item.symbol === symbol);
+      const quote = find(symbol);
       const series = sparklines?.[symbol] ?? null;
       return <article key={symbol} className="ctInstrumentCard">
         <div className="ctInstrumentHead">
@@ -116,7 +138,12 @@ export function CrossAssetBoard({
         <strong>{quote?.value ?? "Unavailable"}</strong>
         <span className={`ctMove is-${quote?.direction ?? "missing"}`}>{quote?.change ?? "No verified reading"}</span>
         <span className={`ctInstrumentAge is-${decisionReady ? "ready" : "aged"}`}>{statusLabel} · {age}</span>
-        <Sparkline values={series} tone={quote?.direction ?? "neutral"} filled label={`${instrumentLabels[index]} verified recent closes`} height={36} width={160} />
+        {series
+          ? <Sparkline values={series} tone={quote?.direction ?? "neutral"} filled label={`${instrumentLabels[index]} verified recent closes`} height={36} width={160} />
+          : <UnavailableHistory label={instrumentLabels[index]!} reason="Verified candle history is currently wired for ES only. This reading stays a verified scalar, not an invented series." />}
+        {symbol === "VIX" ? <VolatilityGauge regime={volatilityRegime} ready={decisionReady} vixValue={vix?.value ?? null} /> : null}
+        {symbol === "US10Y" ? <YieldSpreadVisual twoYear={two?.value} tenYear={ten?.value} ready={Boolean(two && ten)} /> : null}
+        {symbol === "DXY" ? <DxyPressureVisual direction={dxy?.direction} change={dxy?.change} ready={Boolean(dxy)} /> : null}
         <p>{quote ? instrumentInterpretation(quote) : `${instrumentLabels[index]} had no verified reading in the latest update. The value is withheld rather than guessed.`}</p>
       </article>;
     })}</div>
@@ -195,7 +222,7 @@ export function DecisionIntelligencePanel({
       <div><span>Decision intelligence</span><h2 id="decision-intelligence-title">Why the current stance was reached</h2></div>
       <small>Evidence-based · {formatSnapshotAge(snapshot.asOf)}</small>
     </header>
-    <div className="ctIntelStrip">
+    <div className={`ctIntelStrip ctIntelStripAuto${momentum ? " has-momentum" : ""}`}>
       <article>
         <span>Trend</span>
         <strong>{trend.label}</strong>

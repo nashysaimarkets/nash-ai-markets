@@ -17,5 +17,5 @@ export default async function OnboardingPage() {
     .maybeSingle();
   const initialPreferences = normalizeOnboardingPreferences(data);
   const updating = Boolean(data?.completed_at && initialPreferences);
-  return <MemberShell active="onboarding"><div className="onboardingPage"><span>{updating ? "WORKSPACE PREFERENCES" : "WELCOME TO NASH AI MARKETS"}</span><h1>{updating ? "Refine your market workspace." : "Set up your market workspace."}</h1><p>{updating ? "Review and update how Bullseye presents your member experience. Your current choices are shown below." : "Three short choices help us present the product clearly. You can update them later."}</p><OnboardingForm initialPreferences={initialPreferences} updating={updating} /></div></MemberShell>;
+  return <MemberShell active="onboarding"><div className="onboardingPage preferencesPage"><span>{updating ? "WORKSPACE PREFERENCES" : "WELCOME TO NASH AI MARKETS"}</span><h1>{updating ? "Refine your market workspace." : "Set up your market workspace."}</h1><p>{updating ? "Review and update how Bullseye presents your member experience. Your current choices are shown below." : "Three short choices help us present the product clearly. You can update them later."}</p><OnboardingForm initialPreferences={initialPreferences} updating={updating} /></div></MemberShell>;
 }

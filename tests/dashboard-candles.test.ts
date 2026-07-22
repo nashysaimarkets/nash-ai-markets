@@ -145,7 +145,8 @@ test("customer controls expose verified multi-timeframe candle intervals", async
   assert.match(terminal, /DashboardCandlestickChart/);
   assert.match(terminal, /ctChartPrimary/);
   assert.match(terminal, /bullseyeScore/);
-  assert.match(customer, /Bullseye Score/);
+  assert.match(customer, /BullseyeGauge/);
+  assert.match(customer, /UnavailableHistory/);
   assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics|WhatChanged/);
   assert.doesNotMatch(dashboard, /Advanced diagnostics|FMP_API_KEY|provider diagnostics/i);
 });
