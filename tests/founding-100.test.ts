@@ -98,13 +98,11 @@ test("Stripe lifecycle synchronizes awards from signed server events only", asyn
 });
 
 test("Founding awards appear on member surfaces and reporting remains server restricted", async () => {
-  const [dashboard, profile, badge, admin] = await Promise.all([
-    read("app/dashboard/page.tsx"),
+  const [profile, badge, admin] = await Promise.all([
     read("app/profile/page.tsx"),
     read("app/components/Founding100Badge.tsx"),
     read("app/admin/founding-100/page.tsx"),
   ]);
-  assert.match(dashboard, /loadFounding100ForEmail/);
   assert.match(profile, /loadFounding100ForEmail/);
   assert.match(badge, /price lock active while this subscription remains continuously active/i);
   assert.match(badge, /price lock forfeited/i);

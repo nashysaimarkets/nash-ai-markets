@@ -2,6 +2,7 @@ import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts
 import { formatSnapshotAge, hasDisplayableQuotes, isDecisionReadySnapshot, type MarketSnapshot } from "../../lib/market-data.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
+import { formatScoreDisplay, scoreIsDisplayable } from "../../dashboard/lib/score-display.ts";
 import { TerminalBadge } from "./TerminalBadge";
 import { createCustomerSignals, instrumentInterpretation } from "../lib/customer-terminal";
 
@@ -10,9 +11,9 @@ const instrumentLabels = ["ES futures", "VIX", "US 2-year", "US 10-year", "US Do
 const symbols = ["ES", "VIX", "US2Y", "US10Y", "DXY"] as const;
 
 function confidenceCopy(score: number) {
-  if (score >= 70) return "Higher alignment";
-  if (score >= 45) return "Mixed alignment";
-  return "Limited alignment";
+  if (score >= 70) return "Higher evidence agreement";
+  if (score >= 45) return "Mixed evidence agreement";
+  return "Limited evidence agreement";
 }
 
 export function MarketCommandHeader({
@@ -32,14 +33,14 @@ export function MarketCommandHeader({
   const observable = hasDisplayableQuotes(snapshot);
   return <section className="ctHero" aria-labelledby="terminal-title">
     <div>
-      <span className="ctEyebrow">NASH AI MARKETS · ELITE INTELLIGENCE</span>
-      <h1 id="terminal-title">Market Command</h1>
-      <p>A focused view of today&apos;s verified cross-asset conditions, decision constraints and scenario readiness.</p>
+      <span className="ctEyebrow">NASH AI MARKETS · TERMINAL</span>
+      <h1 id="terminal-title">Terminal</h1>
+      <p>Verified cross-asset conditions, decision constraints and scenario readiness.</p>
     </div>
     <dl className="ctHeroMeta">
       <div><dt>Market data</dt><dd><TerminalBadge label={observable && !decisionReady ? "Previous session" : state} tone={state === "Live" ? "positive" : state === "Delayed" || (observable && !decisionReady) ? "warning" : "danger"} pulse={state === "Live"} /></dd></div>
       <div><dt>Last verified</dt><dd>{observable ? `${timestamp} UK · ${formatSnapshotAge(snapshot.asOf)}` : "Awaiting first verified update"}</dd></div>
-      <div><dt>Bullseye Score</dt><dd>{decisionReady && bullseyeScore !== null ? `${bullseyeScore} / 100` : "Withheld until data is current"}</dd></div>
+      <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(bullseyeScore, decisionReady && scoreIsDisplayable(bullseyeScore, decisionReady))}</dd></div>
       <div><dt>Posture</dt><dd>{decisionReady && posture ? pretty(posture) : "Stand aside"}</dd></div>
     </dl>
   </section>;
@@ -56,7 +57,7 @@ export function TodaysMarketPlan({ snapshot, decision, plan }: { snapshot: Marke
   return <section className="ctPlan ctPanel" aria-labelledby="market-plan-title">
     <header><div><span>Today&apos;s market plan</span><h2 id="market-plan-title">{decisionReady ? pretty(plan.directionalPosture) : "Stand aside until data is current"}</h2></div><TerminalBadge label={pretty(decision.tradePermission)} tone={tone} /></header>
     <div className="ctPlanGrid">
-      <div className="ctPrimaryMetric"><span>Bullseye Score</span><strong>{decisionReady ? `${decision.confidenceScore}%` : "Withheld"}</strong><small>{decisionReady ? confidenceCopy(decision.confidenceScore) : "No score is presented without current verified inputs."}</small></div>
+      <div className="ctPrimaryMetric"><span>Bullseye Score</span><strong>{formatScoreDisplay(decision.confidenceScore, decisionReady)}</strong><small>{decisionReady ? confidenceCopy(decision.confidenceScore) : "No score is presented without current verified inputs. A missing score is not a bearish signal."}</small></div>
       <dl>
         <div><dt>Market bias</dt><dd>{biasLabel}</dd></div>
         <div><dt>Risk level</dt><dd>{decisionReady ? pretty(decision.riskRating) : "Unrated"}</dd></div>
@@ -175,13 +176,13 @@ export function DecisionIntelligencePanel({
     <div className="ctScenarioPair">
       {bullish ? <article>
         <span>Bullish scenario</span>
-        <strong>{bullish.probability}% alignment</strong>
+        <strong>Confirmation path</strong>
         <p><b>Confirmation</b> {scenarioCondition(bullish.trigger.kind, bullish.trigger.level)}</p>
         <p><b>Invalidation</b> {scenarioCondition(bullish.invalidation.kind, bullish.invalidation.level)}</p>
       </article> : null}
       {bearish ? <article>
         <span>Bearish scenario</span>
-        <strong>{bearish.probability}% alignment</strong>
+        <strong>Confirmation path</strong>
         <p><b>Confirmation</b> {scenarioCondition(bearish.trigger.kind, bearish.trigger.level)}</p>
         <p><b>Invalidation</b> {scenarioCondition(bearish.invalidation.kind, bearish.invalidation.level)}</p>
       </article> : null}
@@ -199,8 +200,8 @@ export function StructureLevelsPanel({
   if (!levels.length && recentRange === null) return null;
   return <section className="ctPanel ctStructure" aria-labelledby="structure-levels-title">
     <header>
-      <div><span>Verified structure</span><h2 id="structure-levels-title">Support, resistance and recent range</h2></div>
-      <small>Derived from verified candlesticks · not a forecast</small>
+      <div><span>Verified rolling range</span><h2 id="structure-levels-title">Verified rolling range and reference levels</h2></div>
+      <small>Rolling 24-hour candle observations · not labelled exchange support/resistance</small>
     </header>
     {levels.length ? <div className="ctLevelGrid">{levels.map((level) => <article key={level.label}>
       <span>{level.label}</span>

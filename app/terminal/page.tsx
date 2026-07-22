@@ -21,7 +21,7 @@ import { terminalMarketState } from "./lib/visual-terminal";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Elite Market Command | NASH AI Markets",
+  title: "Terminal | NASH AI Markets",
   description: "Verified cross-asset market intelligence, decision constraints and scenario readiness.",
   robots: { index: false, follow: false },
 };

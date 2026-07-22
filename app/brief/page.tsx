@@ -6,6 +6,7 @@ import { DashboardCard } from "../components/DashboardCard.tsx";
 import { MemberShell } from "../components/MemberShell.tsx";
 import { SafeState } from "../components/SafeState.tsx";
 import { currentServerTimestamp } from "../dashboard/lib/daily-dashboard.ts";
+import { formatScoreDisplay, scoreIsDisplayable } from "../dashboard/lib/score-display.ts";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
 import {
   availableBriefDrivers,
@@ -27,8 +28,8 @@ import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-prov
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "AI Market Brief",
-  description: "A grounded market brief built from verified Bullseye engine evidence.",
+  title: "Market Brief | NASH AI Markets",
+  description: "A plain-English daily briefing from verified Bullseye engine evidence.",
   robots: { index: false, follow: false },
 };
 
@@ -91,6 +92,7 @@ export default async function AIMarketBriefPage() {
     plan,
     aiResult.selection,
   );
+  const scoreReady = brief.mode !== "unavailable" && scoreIsDisplayable(brief.confidence, true);
   const statusTone = brief.mode === "ai-assisted"
     ? "positive"
     : brief.mode === "unavailable"
@@ -101,12 +103,12 @@ export default async function AIMarketBriefPage() {
     <div className="memberDashboardShell">
       <section className="briefHero">
         <div>
-          <span>SPRINT BETA · DAILY INTELLIGENCE</span>
-          <h1>AI Market Brief</h1>
-          <p>A concise, evidence-grounded view of current conditions. AI may prioritize verified engine signals, but it cannot invent prices, levels, forecasts, or trade instructions.</p>
+          <span>DAILY MARKET BRIEF</span>
+          <h1>Market Brief</h1>
+          <p>Plain-English answers first. Technical evidence underneath. Deterministic wording even when AI prioritisation is active.</p>
         </div>
         <div className="briefHeroStatus">
-          <TerminalBadge label={brief.mode} tone={statusTone} />
+          <TerminalBadge label={brief.mode === "ai-assisted" ? "Deterministic + AI prioritisation" : brief.mode} tone={statusTone} />
           <strong>{access.effectiveTier.toUpperCase()} ACCESS</strong>
           <small>{brief.sourceLabel}</small>
         </div>
@@ -115,51 +117,52 @@ export default async function AIMarketBriefPage() {
       {brief.mode === "unavailable" ? <SafeState title={brief.headline} tone="danger"><p>{brief.summary}</p><Link href="/brief">Refresh brief</Link></SafeState> : null}
 
       <section className="briefGrid">
-        <DashboardCard
-          eyebrow="EXECUTIVE BRIEF"
-          title={brief.headline}
-          className="briefExecutive"
-          badge={<TerminalBadge label={market.snapshot.status} tone={market.snapshot.status === "LIVE" ? "positive" : market.snapshot.status === "DELAYED" ? "warning" : "danger"} />}
-        >
+        <DashboardCard eyebrow="WHAT HAPPENED" title={brief.headline} className="briefExecutive" badge={<TerminalBadge label={market.snapshot.status} tone={market.snapshot.status === "LIVE" ? "positive" : market.snapshot.status === "DELAYED" ? "warning" : "danger"} />}>
           <div className="briefExecutiveBody">
-            <p>{brief.summary}</p>
+            <p>{brief.whatHappened}</p>
+            <p>{brief.whatMatters}</p>
             <dl>
-              <div><dt>Market bias</dt><dd>{brief.marketBias}</dd></div>
-              <div><dt>Confidence</dt><dd>{brief.confidence === null ? "Unavailable" : `${brief.confidence} / 100`}</dd></div>
+              <div><dt>Market bias</dt><dd>{brief.mode === "unavailable" ? "Not inferred" : brief.marketBias}</dd></div>
+              <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(brief.confidence, scoreReady)}</dd></div>
               <div><dt>Trade permission</dt><dd>{brief.tradePermission}</dd></div>
-              <div><dt>Risk rating</dt><dd>{brief.riskRating ?? "Unavailable"}</dd></div>
-              <div><dt>Volatility</dt><dd>{brief.volatilityRegime ?? "Unavailable"}</dd></div>
-              <div><dt>Execution readiness</dt><dd>{brief.executionReadiness ?? "Unavailable"}</dd></div>
+              <div><dt>Risk rating</dt><dd>{brief.riskRating ?? "Not rated"}</dd></div>
+              <div><dt>Information age</dt><dd>{brief.informationAge}</dd></div>
               <div><dt>As of</dt><dd>{brief.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(brief.asOf)) : "Unavailable"}</dd></div>
             </dl>
           </div>
         </DashboardCard>
 
-        {brief.crossAssetNotes.length ? <DashboardCard eyebrow="OVERNIGHT CONTEXT" title="Verified cross-asset readings" className="briefEvidence">
+        <DashboardCard eyebrow="SUPPORT VERSUS CONSTRAINT" title="What is helping or blocking risk appetite" className="briefEvidence">
+          <p>{brief.supporting}</p>
+          <p>{brief.constraining}</p>
+          {brief.focusDrivers.length ? <ol>{brief.focusDrivers.map((driver) => <li key={driver}>{driver}</li>)}</ol> : null}
+        </DashboardCard>
+
+        <DashboardCard eyebrow="LEVELS AND PATHS" title="What would change the case" className="briefEvidence">
+          <p>{brief.levelsMatter}</p>
+          <p>{brief.bullishImprove}</p>
+          <p>{brief.bearishImprove}</p>
+          {brief.scenarios.length ? <ul>{brief.scenarios.map((note) => <li key={note}>{note}</li>)}</ul> : <p>No unsupported directional probabilities are shown.</p>}
+        </DashboardCard>
+
+        <DashboardCard eyebrow="RISK CONTROL" title="When to avoid trading" className="briefRisk">
+          <p>{brief.avoidWhen}</p>
+          {brief.riskFlags.length ? <ul>{brief.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul> : null}
+        </DashboardCard>
+
+        <DashboardCard eyebrow="NEXT EVENT" title="Verified catalyst window" className="briefActions">
+          <p>{brief.nextEvent}</p>
+          {brief.nextActions.length ? <ol>{brief.nextActions.map((action) => <li key={action}>{action}</li>)}</ol> : null}
+        </DashboardCard>
+
+        {brief.crossAssetNotes.length ? <DashboardCard eyebrow="VERIFIED READINGS" title="Cross-asset snapshot" className="briefEvidence">
           <ul>{brief.crossAssetNotes.map((note) => <li key={note}>{note}</li>)}</ul>
         </DashboardCard> : null}
-
-        {brief.scenarios.length ? <DashboardCard eyebrow="SCENARIOS" title="Bullish and bearish paths" className="briefEvidence">
-          <ul>{brief.scenarios.map((note) => <li key={note}>{note}</li>)}</ul>
-          <p>Scenario levels appear only when the provider supplies verified support or resistance. Missing levels stay withheld.</p>
-        </DashboardCard> : null}
-
-        <DashboardCard eyebrow="WHAT MATTERS" title="Priority evidence" className="briefEvidence">
-          {brief.focusDrivers.length ? <ol>{brief.focusDrivers.map((driver) => <li key={driver}>{driver}</li>)}</ol> : <SafeState title="Evidence unavailable"><p>No verified evidence has been selected.</p></SafeState>}
-        </DashboardCard>
-
-        <DashboardCard eyebrow="RISK CONTROL" title="Reasons to slow down" className="briefRisk">
-          {brief.riskFlags.length ? <ul>{brief.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul> : <SafeState title="No critical engine warning"><p>Continue to respect the deterministic invalidation and data-quality checks.</p></SafeState>}
-        </DashboardCard>
-
-        <DashboardCard eyebrow="NEXT REVIEW" title="Before conditions change" className="briefActions">
-          {brief.nextActions.length ? <ol>{brief.nextActions.map((action) => <li key={action}>{action}</li>)}</ol> : <SafeState title="Wait for verified data"><p>The brief will provide review conditions after the provider recovers.</p></SafeState>}
-        </DashboardCard>
       </section>
 
-      {access.features.intelligence ? <section className="briefIntegrity" aria-label="AI brief integrity">
-        <div><span>AI STATUS</span><strong>{brief.mode === "ai-assisted" ? "Grounded prioritisation active" : "Deterministic fallback active"}</strong></div>
-        <p>{brief.mode === "ai-assisted" ? "The model selected only from engine-provided evidence codes. All displayed language is deterministic." : "OpenAI is unavailable or not configured. The same verified engines produced this brief without an external AI dependency."}</p>
+      {access.features.intelligence ? <section className="briefIntegrity" aria-label="Brief integrity">
+        <div><span>OUTPUT MODE</span><strong>{brief.mode === "ai-assisted" ? "Deterministic wording with AI evidence prioritisation" : "Deterministic engine brief"}</strong></div>
+        <p>{brief.mode === "ai-assisted" ? "AI may only reorder engine-provided evidence codes. It cannot invent prices, levels, probabilities or trade instructions." : "OpenAI is unavailable or unused. The verified engines produced this brief without an external AI dependency."}</p>
       </section> : <LockedPremiumCard
         tier="pro"
         title="Add AI-assisted evidence prioritisation"

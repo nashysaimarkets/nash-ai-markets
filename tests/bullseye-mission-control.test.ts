@@ -29,31 +29,28 @@ test("Mission Control renders an intentional fail-closed unavailable state", asy
 test("dashboard includes the premium plan and customer trust labels", async () => {
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/dashboard-elite.css", import.meta.url), "utf8");
-  const plan = await readFile(new URL("../app/dashboard/components/TodaysBullseyePlan.tsx", import.meta.url), "utf8");
-  assert.match(dashboard, /BULLSEYE Command Centre/);
-  assert.match(dashboard, /Market intelligence, not financial advice/);
+  const plan = await readFile(new URL("../app/dashboard/components/DashboardMarketPlan.tsx", import.meta.url), "utf8");
+  assert.match(dashboard, /title: "Dashboard \| NASH AI Markets"/);
+  assert.match(dashboard, /DashboardMarketStatus/);
   assert.doesNotMatch(dashboard, /href="\/terminal\/diagnostics"/);
-  assert.match(plan, /OBSERVED LEVELS/);
-  assert.match(plan, /DERIVED SCENARIOS/);
-  assert.match(plan, /Awaiting verified input/);
+  assert.match(plan, /Verified rolling range and reference levels/);
+  assert.match(plan, /Bullish confirmation/);
   assert.match(dashboard, /No verified timestamp/);
-  assert.match(styles, /subscriptionStatusCompact dl div:last-child\{grid-column:1\/-1\}/);
+  assert.match(styles, /\.dashCompact\{/);
   assert.match(styles, /eliteHeaderMeta strong\{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere\}/);
 });
 
 test("dashboard exposes verified catalysts and readable risk controls without additional requests", async () => {
-  const [dashboard, component, styles] = await Promise.all([
+  const [dashboard, review, styles] = await Promise.all([
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/dashboard/components/MarketCatalystBriefing.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/components/DashboardReviewPanel.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard-elite.css", import.meta.url), "utf8"),
   ]);
-  assert.match(dashboard, /MarketCatalystBriefing/);
-  assert.match(component, /What could change the plan/);
-  assert.match(component, /events\.slice\(0, 3\)/);
-  assert.match(component, /rawValue !== null/);
-  assert.match(component, /Plan-change signals remain withheld/);
-  assert.doesNotMatch(component, /fetch\(|useEffect|setInterval/);
-  assert.match(styles, /\.catalystBriefingGrid\{display:grid/);
-  assert.match(styles, /@media\(max-width:700px\)[\s\S]*\.catalystBriefingGrid\{grid-template-columns:1fr\}/);
+  assert.match(dashboard, /DashboardReviewPanel/);
+  assert.match(review, /Events, review conditions and checklist/);
+  assert.match(review, /Next verified event/);
+  assert.match(review, /TradePlanChecklist/);
+  assert.doesNotMatch(review, /fetch\(|useEffect|setInterval/);
+  assert.match(styles, /\.dashReviewGrid\{/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
 });

@@ -9,7 +9,7 @@ function Panel({ rows = 3 }: { rows?: number }) {
 }
 
 export default function TerminalLoading() {
-  return <main className="customerTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Elite Market Command">
+  return <main className="customerTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Terminal">
     <BrandLoader label="Loading verified market intelligence" />
     <header className="ctTopbar"><Line width="190px" /><Line width="280px" /><Line width="90px" /></header>
     <section className="ctWorkspace" aria-hidden="true">

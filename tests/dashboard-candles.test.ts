@@ -107,7 +107,7 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.match(chart, /series\.status !== "unavailable"/);
   assert.doesNotMatch(chart, /Failure category|requests avoided|cache \{/);
   assert.match(chart, /Previous session|Market closed|never labelled live/);
-  assert.match(page, /access\.tier === "pro" \|\| access\.tier === "elite"/);
+  assert.match(page, /tier === "pro" \|\| tier === "elite"/);
   assert.match(page, /toCustomerCandleSeries/);
   assert.match(loading, /dashboardChartSkeletonCanvas/);
 });

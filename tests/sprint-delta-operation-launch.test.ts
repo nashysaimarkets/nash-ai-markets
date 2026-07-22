@@ -69,7 +69,7 @@ test("launch and onboarding pages avoid fake urgency and automatic-entitlement c
   assert.match(waitlist, /No guaranteed invitation/);
   assert.match(founding, /does not change billing, membership, or entitlement/);
   assert.match(founding, /does not guarantee Founding Member designation/);
-  assert.match(dashboard, /access\.tier === "pro" \|\| access\.tier === "elite"/);
+  assert.match(dashboard, /tier === "pro" \|\| tier === "elite"/);
   for (const source of [waitlist, founding]) {
     assert.doesNotMatch(source, /only \d+ (?:places|spots)|ends in|act now|hurry/i);
   }
