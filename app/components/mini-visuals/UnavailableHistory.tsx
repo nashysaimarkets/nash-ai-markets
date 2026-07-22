@@ -2,9 +2,13 @@
 export function UnavailableHistory({
   label,
   reason = "Verified scalar only",
+  availableNow = "Current verified reading remains available as a scalar value.",
+  nextStep = "A compact history sparkline appears once the provider supplies verified history.",
 }: {
   label: string;
   reason?: string;
+  availableNow?: string;
+  nextStep?: string;
 }) {
   return (
     <div className="miniHistoryUnavailable" role="img" aria-label={`${label}: historical series unavailable`} title={reason}>
@@ -12,8 +16,9 @@ export function UnavailableHistory({
         <rect x="4" y="8" width="152" height="32" rx="6" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 4" opacity=".4" />
         <path d="M18 30 C36 30 42 16 58 20 S90 34 108 18 S132 14 146 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 4" opacity=".55" />
       </svg>
-      <span>History unavailable</span>
-      <small>Verified scalar only</small>
+      <span>History waiting</span>
+      <small>{availableNow}</small>
+      <em>{nextStep}</em>
     </div>
   );
 }

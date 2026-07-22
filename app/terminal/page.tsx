@@ -6,7 +6,9 @@ import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import { createTradingDecision } from "../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner";
 import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes, isDecisionReadySnapshot } from "../lib/market-data";
-import { BrandLogo } from "../components/BrandLogo";
+import { formatFreshnessLabel } from "../lib/freshness-labels";
+import { MemberShell } from "../components/MemberShell";
+import { AskBullseye } from "../components/AskBullseye";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
@@ -59,12 +61,21 @@ export default async function Terminal() {
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const bullish = intelligence.scenarios.find((scenario) => scenario.type === "BULLISH");
   const bearish = intelligence.scenarios.find((scenario) => scenario.type === "BEARISH");
+  const bullishConfirm = bullish?.trigger.level
+    ? `Bullish confirmation above ${bullish.trigger.level}`
+    : "Awaiting verified upside confirmation";
+  const bearishConfirm = bearish?.trigger.level
+    ? `Bearish confirmation below ${bearish.trigger.level}`
+    : "Awaiting verified downside confirmation";
+  const invalidation = bullish?.invalidation.level
+    ?? bearish?.invalidation.level
+    ?? "Stand aside if verified references fail or data ages out";
   const bullishLane = rangeLane
     ? scenarioLaneMarkers({
       low: rangeLane.low,
       high: rangeLane.high,
       current: rangeLane.current,
-      confirmation: rangeLane.high,
+      confirmation: parsePriceLevel(bullish?.trigger.level) ?? rangeLane.high,
       invalidation: parsePriceLevel(bullish?.invalidation.level) ?? rangeLane.low,
     })
     : null;
@@ -73,13 +84,15 @@ export default async function Terminal() {
       low: rangeLane.low,
       high: rangeLane.high,
       current: rangeLane.current,
-      confirmation: rangeLane.low,
+      confirmation: parsePriceLevel(bearish?.trigger.level) ?? rangeLane.low,
       invalidation: parsePriceLevel(bearish?.invalidation.level) ?? rangeLane.high,
     })
     : null;
   const state = terminalMarketState(snapshot.status, gatewayStatus.connectionStatus, gatewayStatus.fallbackActive);
   const verified = snapshot.status === "LIVE" || snapshot.status === "DELAYED";
   const timestamp = snapshot.quotes.length > 0 ? formatUkTimestamp(snapshot.asOf) : "Unavailable";
+  const snapshotAge = formatSnapshotAge(snapshot.asOf);
+  const candleAge = candleSeries ? formatFreshnessLabel("candle", candleSeries.dataAgeMs) : null;
   const customerWarnings = formatCustomerParticipationWarnings(
     decision.noTradeReasons,
     decision.dataQualityWarnings,
@@ -107,63 +120,94 @@ export default async function Terminal() {
       : null,
   });
 
-  return <main className="foxtrotTerminal customerTerminal premiumTerminal" id="overview">
-    <header className="ctTopbar">
-      <BrandLogo authenticated className="ctBrandLogo" />
-      <nav aria-label="Member navigation"><Link href="/dashboard">Dashboard</Link><Link href="/brief">Brief</Link><Link href="/profile">Account</Link></nav>
-      <TerminalControls />
-    </header>
+  return (
+    <MemberShell
+      active="terminal"
+      className="customerTerminal premiumTerminal terminalMemberPage"
+      toolbar={<div className="ctToolbar ctTopbar"><TerminalControls /></div>}
+    >
+      <div className="memberDashboardShell ctWorkspace" id="overview">
+        <MarketCommandHeader
+          snapshot={snapshot}
+          state={state}
+          timestamp={timestamp}
+          bullseyeScore={verified ? Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence) : null}
+          posture={verified ? plan.directionalPosture : null}
+        />
+        <section className={`ctStatus is-${state.toLowerCase()}`} role={verified ? "status" : "alert"}>
+          <div>
+            <strong>{terminalStatusMessage(snapshot.status, 0, hasDisplayableQuotes(snapshot))}</strong>
+            <span>
+              {verified
+                ? `Verified delayed data when aged. Snapshot age: ${snapshotAge}.${candleAge ? ` ${candleAge}.` : ""}`
+                : hasDisplayableQuotes(snapshot)
+                  ? `Last verified snapshot age: ${snapshotAge}. Directional guidance stays closed.`
+                  : "No live values or directional guidance are being inferred."}
+            </span>
+          </div>
+          {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
+        </section>
 
-    <section className="ctWorkspace">
-      <MarketCommandHeader
-        snapshot={snapshot}
-        state={state}
-        timestamp={timestamp}
-        bullseyeScore={verified ? Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence) : null}
-        posture={verified ? plan.directionalPosture : null}
-      />
-      <section className={`ctStatus is-${state.toLowerCase()}`} role={verified ? "status" : "alert"}>
-        <div><strong>{terminalStatusMessage(snapshot.status, 0, hasDisplayableQuotes(snapshot))}</strong><span>{verified ? `Verified ${formatSnapshotAge(snapshot.asOf)}.` : hasDisplayableQuotes(snapshot) ? `Last verified ${formatSnapshotAge(snapshot.asOf)}. Directional guidance stays closed.` : "No live values or directional guidance are being inferred."}</span></div>
-        {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
-      </section>
+        <KeyMarketInformation
+          snapshot={snapshot}
+          intelligence={intelligence}
+          decision={decision}
+          gatewayStatus={gatewayStatus}
+          esSparkline={esSparkline}
+          rangeLane={rangeLane}
+        />
 
-      <KeyMarketInformation
-        snapshot={snapshot}
-        intelligence={intelligence}
-        decision={decision}
-        gatewayStatus={gatewayStatus}
-        esSparkline={esSparkline}
-        rangeLane={rangeLane}
-      />
+        {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} /></section> : null}
+        {!paid ? <LockedPremiumCard tier="pro" title="Unlock the verified market chart" value="Pro and Elite members receive the verified candlestick workspace with interval controls and fail-closed empty states." benefits={["Verified OHLCV history", "Interval controls", "No invented candles"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} /> : null}
 
-      {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} /></section> : null}
-      {!paid ? <LockedPremiumCard tier="pro" title="Unlock the verified market chart" value="Pro and Elite members receive the verified candlestick workspace with interval controls and fail-closed empty states." benefits={["Verified OHLCV history", "Interval controls", "No invented candles"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} /> : null}
+        {access.features["trade-planner"] ? <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="elite" title="Unlock today’s complete market plan" value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework." benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
-      {access.features["trade-planner"] ? <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="elite" title="Unlock today’s complete market plan" value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework." benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
+        <AskBullseye
+          compact
+          context={{
+            snapshot,
+            intelligence,
+            decision,
+            plan,
+            gateway: gatewayStatus,
+            decisionReady,
+            bullishConfirm,
+            bearishConfirm,
+            invalidation,
+            noTrade: decision.noTradeReasons,
+            dataAge: snapshotAge,
+          }}
+        />
 
-      {customerWarnings.length ? <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" aria-labelledby="customer-warnings-title">
-        <summary id="customer-warnings-title"><span>Participation limits</span><strong>Delay and no-trade conditions</strong><small>{customerWarnings.length} items</small></summary>
-        <div className="ctConstraints"><ul>{customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
-      </details> : null}
+        {customerWarnings.length ? <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" aria-labelledby="customer-warnings-title">
+          <summary id="customer-warnings-title"><span>Participation limits</span><strong>Delay and no-trade conditions</strong><small>{customerWarnings.length} items</small></summary>
+          <div className="ctConstraints"><ul>{customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
+        </details> : null}
 
-      <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
-      {paid && candleSeries ? <StructureLevelsPanel levels={candleLevels} recentRange={candleStats?.averageCandleRange ?? null} rangeLane={rangeLane} /> : null}
-      <section className="ctTwoColumn">
-        {access.features.intelligence ? <MarketPressureMap snapshot={snapshot} intelligence={intelligence} /> : <LockedPremiumCard tier="pro" title="See what is driving risk appetite" value="Pro explains the verified volatility, Treasury, dollar and equity pressures behind the market view." benefits={["Cross-asset context", "Explainable signals", "Fail-closed analysis"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
-        {access.features["decision-engine"] ? <DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="pro" title="Turn evidence into disciplined decisions" value="Pro identifies supporting evidence, conflicts and the confirmations required before conditions become actionable." benefits={["Conflict detection", "Invalidation awareness", "No-trade protection"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
-      </section>
-      {access.features["decision-engine"] ? <DecisionIntelligencePanel snapshot={snapshot} intelligence={intelligence} decision={decision} bullishLane={bullishLane} bearishLane={bearishLane} /> : null}
+        <details className="ctPanel ctCompactPanel briefTech" open={false}>
+          <summary><span>Deeper evidence</span><strong>Cross-asset board and methodology detail</strong></summary>
+          <div className="ctDeepEvidence">
+            <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
+            {paid && candleSeries ? <StructureLevelsPanel levels={candleLevels} recentRange={candleStats?.averageCandleRange ?? null} rangeLane={rangeLane} /> : null}
+            <section className="ctTwoColumn">
+              {access.features.intelligence ? <MarketPressureMap snapshot={snapshot} intelligence={intelligence} /> : <LockedPremiumCard tier="pro" title="See what is driving risk appetite" value="Pro explains the verified volatility, Treasury, dollar and equity pressures behind the market view." benefits={["Cross-asset context", "Explainable signals", "Fail-closed analysis"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
+              {access.features["decision-engine"] ? <DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="pro" title="Turn evidence into disciplined decisions" value="Pro identifies supporting evidence, conflicts and the confirmations required before conditions become actionable." benefits={["Conflict detection", "Invalidation awareness", "No-trade protection"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
+            </section>
+            {access.features["decision-engine"] ? <DecisionIntelligencePanel snapshot={snapshot} intelligence={intelligence} decision={decision} bullishLane={bullishLane} bearishLane={bearishLane} /> : null}
+          </div>
+        </details>
 
-      {showCatalysts ? <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
-        <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
-        <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
-      </section> : <EventWindowEmpty
-        providerStatus={gatewayStatus.connectionStatus}
-        asOfLabel={hasDisplayableQuotes(snapshot) ? `${formatUkTimestamp(snapshot.asOf)} UK · ${formatSnapshotAge(snapshot.asOf)}` : null}
-        delayed={snapshot.status === "DELAYED" || !decisionReady}
-      />}
+        {showCatalysts ? <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
+          <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
+          <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
+        </section> : <EventWindowEmpty
+          providerStatus={gatewayStatus.connectionStatus}
+          asOfLabel={hasDisplayableQuotes(snapshot) ? `${formatUkTimestamp(snapshot.asOf)} UK · Snapshot age ${snapshotAge}` : null}
+          delayed={snapshot.status === "DELAYED" || !decisionReady}
+        />}
 
-      <footer className="ctFooter"><span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span><Link href="/risk-disclaimer">Read the risk disclosure</Link></footer>
-    </section>
-  </main>;
+        <footer className="ctFooter"><span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span><Link href="/risk-disclaimer">Read the risk disclosure</Link></footer>
+      </div>
+    </MemberShell>
+  );
 }

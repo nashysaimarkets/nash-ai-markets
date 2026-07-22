@@ -46,6 +46,13 @@ function dollarImplication(direction: "up" | "down" | "flat" | undefined): strin
   return "Neutral dollar pressure on equities";
 }
 
+function groupLabel(state: EvidenceState): string {
+  if (state === "available") return "available";
+  if (state === "degraded") return "degraded";
+  if (state === "incomplete") return "incomplete";
+  return "unavailable";
+}
+
 export function KeyMarketInformation({
   snapshot,
   intelligence,
@@ -93,9 +100,13 @@ export function KeyMarketInformation({
     { label: "Support", state: snapshot.levels.some((level) => level.type === "support") ? "available" : "unavailable", tip: "Verified support reference" },
     { label: "Resistance", state: snapshot.levels.some((level) => level.type === "resistance") ? "available" : "unavailable", tip: "Verified resistance reference" },
     { label: "Events", state: snapshot.events.length ? "available" : "unavailable", tip: "Verified economic calendar" },
-    { label: "Freshness", state: freshness, tip: `Data age ${age}` },
+    { label: "Freshness", state: freshness, tip: `Snapshot age ${age}` },
     { label: "Provider", state: provider, tip: gatewayStatus.connectionStatus },
   ];
+  const available = checklist.filter((item) => item.state === "available");
+  const degraded = checklist.filter((item) => item.state === "degraded");
+  const missing = checklist.filter((item) => item.state === "incomplete" || item.state === "unavailable");
+  const permissionClosed = !ready || decision.tradePermission === "no-trade";
 
   return (
     <section className="ctKeyMarket" aria-labelledby="key-market-title">
@@ -104,13 +115,13 @@ export function KeyMarketInformation({
           <span>Today&apos;s key market information</span>
           <h2 id="key-market-title">The conditions that matter most before participation.</h2>
         </div>
-        <small>{observable ? `${ready ? "Verified" : "Previous session"} · ${age}` : "Awaiting verified inputs"}</small>
+        <small>{observable ? `${ready ? "Verified" : "Waiting for fresh data"} · Snapshot age ${age}` : "Awaiting verified inputs"}</small>
       </header>
       <div className="ctKeyGrid">
         <article className="ctKeyModule is-market">
           <span>Market state</span>
           <div className="ctKeyModuleHead">
-            <strong>{es?.value ?? "Unavailable"}</strong>
+            <strong className="pmValueUpdate">{es?.value ?? "Unavailable"}</strong>
             <em className={`ctMove is-${es?.direction ?? "missing"}`}>{es?.change ?? "—"}</em>
           </div>
           {esSparkline ? <Sparkline values={esSparkline} tone={es?.direction ?? "neutral"} filled label="ES verified closes" height={40} width={180} /> : <p className="ctKeyHint">ES history unlocks with Pro chart access.</p>}
@@ -119,7 +130,7 @@ export function KeyMarketInformation({
             <div><dt>To 24h high</dt><dd>{toHigh != null ? toHigh.toFixed(2) : "—"}</dd></div>
             <div><dt>To 24h low</dt><dd>{toLow != null ? toLow.toFixed(2) : "—"}</dd></div>
             <div><dt>EMA 20</dt><dd>{emaState}</dd></div>
-            <div><dt>Data age</dt><dd>{age}</dd></div>
+            <div><dt>Snapshot age</dt><dd>{age}</dd></div>
           </dl>
           {rangeLane ? (
             <div className="ctKeyRange" aria-hidden="true">
@@ -161,16 +172,52 @@ export function KeyMarketInformation({
 
         <article className="ctKeyModule is-ready">
           <span>Decision readiness</span>
-          <p className="ctKeyHint">Why Bullseye stays closed or opens — evidence checklist only.</p>
-          <ul className="ctEvidenceCheck">
-            {checklist.map((item) => (
-              <li key={item.label} className={`is-${item.state}`} title={item.tip}>
-                <i aria-hidden="true" />
-                <strong>{item.label}</strong>
-                <span>{item.state}</span>
-              </li>
-            ))}
-          </ul>
+          <p className="ctReadinessState">{permissionClosed ? "No trade permitted" : "Evidence supports continued monitoring"}</p>
+          <div className="ctReadinessGroups">
+            <div>
+              <h3>Available</h3>
+              <ul className="ctEvidenceCheck">
+                {available.map((item) => (
+                  <li key={item.label} className={`is-${item.state}`} title={item.tip}>
+                    <i aria-hidden="true" />
+                    <strong>{item.label}</strong>
+                    <span>{groupLabel(item.state)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3>Degraded</h3>
+              <ul className="ctEvidenceCheck">
+                {degraded.length
+                  ? degraded.map((item) => (
+                    <li key={item.label} className={`is-${item.state}`} title={item.tip}>
+                      <i aria-hidden="true" />
+                      <strong>{item.label}</strong>
+                      <span>{groupLabel(item.state)}</span>
+                    </li>
+                  ))
+                  : <li className="is-available"><i aria-hidden="true" /><strong>None</strong><span>clear</span></li>}
+              </ul>
+            </div>
+            <div>
+              <h3>Missing</h3>
+              <ul className="ctEvidenceCheck">
+                {missing.map((item) => (
+                  <li key={item.label} className={`is-${item.state}`} title={item.tip}>
+                    <i aria-hidden="true" />
+                    <strong>{item.label}</strong>
+                    <span>{groupLabel(item.state)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p className="ctKeyHint">
+            {permissionClosed
+              ? "Permission remains closed until freshness, provider health and confirmation evidence align."
+              : "Continue monitoring confirmations and invalidation before acting."}
+          </p>
         </article>
       </div>
     </section>

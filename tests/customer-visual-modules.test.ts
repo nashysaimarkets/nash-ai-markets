@@ -37,7 +37,7 @@ test("truthful history empty states exist as real components", async () => {
     read("../app/components/mini-visuals/EventWindowEmpty.tsx"),
     read("../app/components/mini-visuals/BullseyeGauge.tsx"),
   ]);
-  assert.match(unavailable, /History unavailable/);
+  assert.match(unavailable, /History waiting/);
   assert.match(eventEmpty, /Awaiting verified schedule/);
   assert.match(eventEmpty, /Unverified or invented catalysts are excluded/);
   assert.match(gauge, /not calculated/);

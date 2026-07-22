@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "./BrandLogo";
+import { PresentationModeToggle } from "./PresentationModeToggle";
 import { PwaController } from "./PwaController";
 
 export type MemberShellActive =
@@ -23,6 +24,7 @@ type MemberShellProps = {
   active: MemberShellActive;
   children: ReactNode;
   className?: string;
+  toolbar?: ReactNode;
 };
 
 const links = [
@@ -47,7 +49,7 @@ const moreLinks = [
 
 const moreActive = new Set<MemberShellActive>(moreLinks.map((link) => link.key));
 
-export function MemberShell({ active, children, className = "" }: MemberShellProps) {
+export function MemberShell({ active, children, className = "", toolbar }: MemberShellProps) {
   const moreOpen = moreActive.has(active);
 
   return <main className={`memberDashboard ${className}`.trim()}>
@@ -63,6 +65,7 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
             {moreLinks.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}</Link>)}
           </div>
         </details>
+        <PresentationModeToggle />
         <a href="/auth/signout">Sign out</a>
       </nav>
       <details className="memberMobileMenu">
@@ -74,10 +77,12 @@ export function MemberShell({ active, children, className = "" }: MemberShellPro
           {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}<span aria-hidden="true">↗</span></Link>)}
           <span className="memberMoreLabel">Workspace</span>
           {moreLinks.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}<span aria-hidden="true">↗</span></Link>)}
+          <PresentationModeToggle />
           <a href="/auth/signout">Sign out<span aria-hidden="true">↗</span></a>
         </nav>
       </details>
     </header>
+    {toolbar ? <div className="memberToolbar" role="toolbar" aria-label="Page tools">{toolbar}</div> : null}
     <div id="member-content">{children}</div>
     <PwaController />
   </main>;

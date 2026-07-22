@@ -9,6 +9,7 @@ export type OptionsIdea = {
   status: OptionsIdeaStatus;
   direction: "bullish" | "bearish" | "neutral";
   strategyType: string;
+  watchingFor: string;
   trigger: string;
   invalidation: string;
   expiryWindow: string;
@@ -50,6 +51,7 @@ export function buildOptionsFramework(input: {
     id: string,
     direction: OptionsIdea["direction"],
     strategyType: string,
+    watchingFor: string,
     trigger: string,
     invalidation: string,
   ): OptionsIdea => ({
@@ -57,11 +59,12 @@ export function buildOptionsFramework(input: {
     status: baseUnavailable ? "Unavailable" : "Watching",
     direction,
     strategyType,
+    watchingFor,
     trigger,
     invalidation,
     expiryWindow: "Prefer defined-risk expiries after the next verified catalyst window",
-    strikeSelectionLogic: "Select strikes only from a verified options chain (not available in this build). Until then, use distance-from-spot logic relative to confirmed ES levels.",
-    maxDefinedRisk: "Require a defined maximum loss before entry; size from account risk rules, not from unverified premiums.",
+    strikeSelectionLogic: "Select strikes only from a verified options chain once available.",
+    maxDefinedRisk: "Require a defined maximum loss before entry; size from account risk rules.",
     volatilityContext: input.decisionReady
       ? `VIX regime ${input.decision.volatilityRegime}${vix ? ` · VIX ${vix.value}` : ""}`
       : "Volatility context withheld until decision-ready data",
@@ -69,7 +72,6 @@ export function buildOptionsFramework(input: {
     reasonsToAvoid: [
       ...(input.decision.tradePermission === "no-trade" ? ["Trade permission is no-trade"] : []),
       ...(!vix ? ["VIX reading unavailable"] : []),
-      "No verified options chain — exact strikes and premiums withheld",
     ],
     evidenceQuality: "framework-only",
     timestamp: asOf,
@@ -79,28 +81,31 @@ export function buildOptionsFramework(input: {
     mk(
       "bullish-debit",
       "bullish",
-      "Bullish debit vertical (call) — framework only",
+      "Bullish debit vertical",
+      "Verified upside confirmation on ES",
       input.plan.directionalPosture.includes("bull") || input.decision.marketBias === "bullish"
-        ? "Watch for verified upside confirmation on ES before considering a debit call vertical"
-        : "Bullish framework remains Watching until posture supports upside participation",
+        ? "Relevant once upside confirmation prints on verified ES evidence"
+        : "Waiting for posture to support upside participation",
       "Invalidate if ES loses the verified invalidation reference or data becomes stale",
     ),
     mk(
       "bearish-debit",
       "bearish",
-      "Bearish debit vertical (put) — framework only",
+      "Bearish debit vertical",
+      "Verified downside confirmation on ES",
       input.decision.marketBias === "bearish"
-        ? "Watch for verified downside confirmation on ES before considering a debit put vertical"
-        : "Bearish framework remains Watching until posture supports downside participation",
+        ? "Relevant once downside confirmation prints on verified ES evidence"
+        : "Waiting for posture to support downside participation",
       "Invalidate if ES reclaims the verified invalidation reference or data becomes stale",
     ),
     mk(
       "neutral-iron",
       "neutral",
-      "Defined-risk neutral structure — framework only",
+      "Defined-risk neutral structure",
+      "Mixed or closed directional permission with fresh data",
       input.decision.marketBias === "neutral" || input.decision.tradePermission === "no-trade"
-        ? "Neutral framework is relevant while directional permission is closed or mixed"
-        : "Neutral framework stays Watching while a directional posture is active",
+        ? "Relevant while directional permission is closed or mixed"
+        : "Stays secondary while a directional posture remains active",
       "Invalidate if a verified directional break occurs with fresh data",
     ),
   ];
@@ -114,6 +119,6 @@ export function buildOptionsFramework(input: {
     expectedMove: "unavailable",
     ideas,
     watchlist: ideas,
-    disclosure: "Educational options framework only. No strikes, premiums, Greeks or expected-move figures are shown without a verified options-chain provider. Futures and options involve substantial risk of loss.",
+    disclosure: "Educational options framework only. Options chain unavailable — exact strikes, premiums, Greeks and expected-move figures stay withheld until a verified chain provider exists. Futures and options involve substantial risk of loss.",
   };
 }

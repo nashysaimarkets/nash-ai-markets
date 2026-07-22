@@ -110,12 +110,12 @@ export default async function AIMarketBriefPage() {
       : "info";
 
   return <MemberShell active="brief" className="marketBriefPage">
-    <div className="memberDashboardShell">
+    <div className="memberDashboardShell briefJourney">
       <section className="briefHero">
         <div>
           <span>DAILY MARKET BRIEF</span>
           <h1>Market Brief</h1>
-          <p>Plain-English answers first. Technical evidence underneath. Deterministic wording even when AI prioritisation is active.</p>
+          <p>Executive conclusion first. Observation, interpretation and action constraints stay clearly separated.</p>
         </div>
         <div className="briefHeroStatus">
           <TerminalBadge label={brief.mode === "ai-assisted" ? "Deterministic + AI prioritisation" : brief.mode} tone={statusTone} />
@@ -140,7 +140,7 @@ export default async function AIMarketBriefPage() {
           <article><span>Rates spread</span><strong>{spread != null ? `${spread >= 0 ? "+" : ""}${spread.toFixed(2)} pp` : "—"}</strong><small>10Y − 2Y</small></article>
           <article><span>DXY</span><strong>{dxy?.value ?? "—"}</strong><small>{dxy?.change ?? "Unavailable"}</small></article>
           <article><span>Next event</span><strong>{market.snapshot.events[0]?.name ?? "Awaiting schedule"}</strong><small>{market.snapshot.events[0]?.time ?? "Unverified excluded"}</small></article>
-          <article><span>Bullseye posture</span><strong>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Stand aside"}</strong><small>{formatSnapshotAge(market.snapshot.asOf)}</small></article>
+          <article><span>Bullseye posture</span><strong>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Stand aside"}</strong><small>Snapshot age {formatSnapshotAge(market.snapshot.asOf)}</small></article>
         </section>;
       })()}
 
@@ -155,19 +155,28 @@ export default async function AIMarketBriefPage() {
           />
         </div>
         <div className="briefCommandCopy">
-          <span>WHAT HAPPENED</span>
+          <span>EXECUTIVE CONCLUSION</span>
           <h2>{brief.headline}</h2>
-          <p>{brief.whatHappened}</p>
-          <p>{brief.whatMatters}</p>
+          <div className="briefJourneySteps">
+            <article><span>What happened</span><p>{brief.whatHappened}</p></article>
+            <article><span>Why it matters</span><p>{brief.whatMatters}</p></article>
+          </div>
           <dl>
             <div><dt>Market bias</dt><dd>{brief.mode === "unavailable" ? "Not inferred" : brief.marketBias}</dd></div>
-            <div><dt>Trade permission</dt><dd>{brief.tradePermission}</dd></div>
+            <div><dt>Trade permission</dt><dd>{brief.tradePermission === "no-trade" ? "No trade permitted" : brief.tradePermission}</dd></div>
             <div><dt>Risk rating</dt><dd>{brief.riskRating ?? "Not rated"}</dd></div>
-            <div><dt>Information age</dt><dd>{brief.informationAge}</dd></div>
+            <div><dt>Snapshot age</dt><dd>{brief.informationAge}</dd></div>
             <div><dt>As of</dt><dd>{brief.asOf ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(brief.asOf)) : "Unavailable"}</dd></div>
             <div><dt>Score</dt><dd>{formatScoreDisplay(brief.confidence, scoreReady)}</dd></div>
           </dl>
         </div>
+      </section>
+
+      <section className="briefPathStrip" aria-label="Bullish and bearish paths">
+        <article className="is-bull"><span>Bullish path</span><p>{brief.bullishImprove}</p></article>
+        <article className="is-bear"><span>Bearish path</span><p>{brief.bearishImprove}</p></article>
+        <article className="is-risk"><span>Risk / no-trade</span><p>{brief.avoidWhen}</p></article>
+        <article className="is-next"><span>Next verified catalyst</span><p>{brief.nextEvent}</p></article>
       </section>
 
       <div className="briefCrossAsset">
@@ -179,30 +188,33 @@ export default async function AIMarketBriefPage() {
         />
       </div>
 
-      <section className="briefGrid">
-        <DashboardCard eyebrow="SUPPORT VERSUS CONSTRAINT" title="What is helping or blocking risk appetite" className="briefEvidence">
-          <p>{brief.supporting}</p>
-          <p>{brief.constraining}</p>
-          {brief.focusDrivers.length ? <ol>{brief.focusDrivers.map((driver) => <li key={driver}>{driver}</li>)}</ol> : null}
-        </DashboardCard>
+      <details className="briefTech dailyCard" open>
+        <summary>
+          <span>Technical evidence</span>
+          <strong>Market inputs, evidence quality and detail</strong>
+        </summary>
+        <section className="briefGrid">
+          <DashboardCard eyebrow="OBSERVATION" title="What is helping or blocking risk appetite" className="briefEvidence">
+            <p>{brief.supporting}</p>
+            <p>{brief.constraining}</p>
+            {brief.focusDrivers.length ? <ol>{brief.focusDrivers.map((driver) => <li key={driver}>{driver}</li>)}</ol> : null}
+          </DashboardCard>
 
-        <DashboardCard eyebrow="LEVELS AND PATHS" title="What would change the case" className="briefEvidence">
-          <p>{brief.levelsMatter}</p>
-          <p>{brief.bullishImprove}</p>
-          <p>{brief.bearishImprove}</p>
-          {brief.scenarios.length ? <ul>{brief.scenarios.map((note) => <li key={note}>{note}</li>)}</ul> : <p>No unsupported directional probabilities are shown.</p>}
-        </DashboardCard>
+          <DashboardCard eyebrow="INTERPRETATION" title="Levels and path rules" className="briefEvidence">
+            <p>{brief.levelsMatter}</p>
+            {brief.scenarios.length ? <ul>{brief.scenarios.map((note) => <li key={note}>{note}</li>)}</ul> : <p>No unsupported directional probabilities are shown.</p>}
+          </DashboardCard>
 
-        <DashboardCard eyebrow="RISK CONTROL" title="When to avoid trading" className="briefRisk">
-          <p>{brief.avoidWhen}</p>
-          {brief.riskFlags.length ? <ul>{brief.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul> : null}
-        </DashboardCard>
+          <DashboardCard eyebrow="ACTION CONSTRAINTS" title="When to stand aside" className="briefRisk">
+            {brief.riskFlags.length ? <ul>{brief.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul> : <p>{brief.avoidWhen}</p>}
+          </DashboardCard>
 
-        <DashboardCard eyebrow="NEXT EVENT" title="Verified catalyst window" className="briefActions">
-          <p>{brief.nextEvent}</p>
-          {brief.nextActions.length ? <ol>{brief.nextActions.map((action) => <li key={action}>{action}</li>)}</ol> : null}
-        </DashboardCard>
-      </section>
+          <DashboardCard eyebrow="EVIDENCE QUALITY" title="Data age and next actions" className="briefActions">
+            <p>Snapshot age: {brief.informationAge}. Provider status remains fail-closed when degraded.</p>
+            {brief.nextActions.length ? <ol>{brief.nextActions.map((action) => <li key={action}>{action}</li>)}</ol> : null}
+          </DashboardCard>
+        </section>
+      </details>
 
       {access.features.intelligence ? <section className="briefIntegrity" aria-label="Brief integrity">
         <div><span>OUTPUT MODE</span><strong>{brief.mode === "ai-assisted" ? "Deterministic wording with AI evidence prioritisation" : "Deterministic engine brief"}</strong></div>

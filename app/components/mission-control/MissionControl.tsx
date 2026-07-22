@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AskBullseye } from "../AskBullseye.tsx";
 import { BullseyeGauge } from "../mini-visuals/BullseyeGauge.tsx";
 import { KeyMarketInformation } from "../mini-visuals/KeyMarketInformation.tsx";
 import { Sparkline } from "../mini-visuals/Sparkline.tsx";
@@ -29,6 +30,15 @@ type Props = {
   invalidation: string;
   noTrade: string[];
 };
+
+const ACTIONS = [
+  { href: "/terminal", title: "Open Terminal", description: "Candles, paths and confirmations", icon: "◎" },
+  { href: "/brief", title: "Read Market Brief", description: "Plain-English decision summary", icon: "☰" },
+  { href: "/options", title: "Open Options Corner", description: "Educational structure framework", icon: "◈" },
+  { href: "/review", title: "Review Previous Session", description: "Compare what changed overnight", icon: "↺" },
+  { href: "/journal", title: "Trade Journal", description: "Capture disciplined notes", icon: "✎" },
+  { href: "/archive", title: "Archive", description: "Immutable daily snapshots", icon: "▣" },
+] as const;
 
 export function MissionControl({
   name,
@@ -93,8 +103,29 @@ export function MissionControl({
     generationMode: "deterministic",
   });
 
+  const askContext = {
+    snapshot,
+    intelligence,
+    decision,
+    plan,
+    gateway,
+    decisionReady,
+    bullishConfirm,
+    bearishConfirm,
+    invalidation,
+    noTrade,
+    dataAge,
+  };
+
   return (
     <div className="missionControl">
+      {delayed ? (
+        <p className="mcFreshnessBanner" role="status">
+          <strong>Verified delayed data</strong>
+          <span>Snapshot age: {dataAge}. Readings remain educational and fail-closed until fresher confirmation arrives.</span>
+        </p>
+      ) : null}
+
       <section className="mcHero" aria-labelledby="mission-control-title">
         <img className="mcHeroWatermark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
         <div className="mcHeroCopy">
@@ -104,8 +135,8 @@ export function MissionControl({
           <dl className="mcHeroMeta">
             <div><dt>Posture</dt><dd>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Stand aside"}</dd></div>
             <div><dt>Risk</dt><dd>{decisionReady ? decision.riskRating : "Unrated"}</dd></div>
-            <div><dt>Permission</dt><dd>{decisionReady ? decision.tradePermission.replaceAll("-", " ") : "No trade"}</dd></div>
-            <div><dt>Data age</dt><dd>{dataAge}</dd></div>
+            <div><dt>Permission</dt><dd>{decisionReady ? decision.tradePermission.replaceAll("-", " ") : "No trade permitted"}</dd></div>
+            <div><dt>Snapshot age</dt><dd className="pmValueUpdate">{dataAge}</dd></div>
           </dl>
         </div>
         <BullseyeGauge score={score} ready={decisionReady} posture={plan.directionalPosture} delayed={delayed} />
@@ -130,11 +161,13 @@ export function MissionControl({
       </section>
 
       <section className="mcPaths" aria-label="Main decision paths">
-        <article className="is-bull"><span>Bullish path</span><strong>Trigger</strong><p>{bullishConfirm}</p></article>
-        <article className="is-bear"><span>Bearish path</span><strong>Trigger</strong><p>{bearishConfirm}</p></article>
+        <article className="is-bull"><span>Bullish path</span><strong>Bullish confirmation above…</strong><p>{bullishConfirm}</p></article>
+        <article className="is-bear"><span>Bearish path</span><strong>Bearish confirmation below…</strong><p>{bearishConfirm}</p></article>
         <article className="is-invalidate"><span>Invalidation</span><strong>Stand aside if</strong><p>{invalidation}</p></article>
-        <article className="is-notrade"><span>No-trade</span><strong>Conditions</strong>{noTrade.length ? <ul>{noTrade.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional codes beyond posture.</p>}</article>
+        <article className="is-notrade"><span>No-trade</span><strong>No trade permitted when</strong>{noTrade.length ? <ul>{noTrade.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional codes beyond posture.</p>}</article>
       </section>
+
+      <AskBullseye context={askContext} />
 
       <section className="mcChanged" aria-label="What changed since last snapshot">
         <header>
@@ -146,7 +179,7 @@ export function MissionControl({
         ) : (
           <div className="mcChangedGrid">
             {changed.quotes.filter((q) => q.changed).map((q) => (
-              <article key={q.symbol}><span>{q.symbol}</span><strong>{q.to}</strong><small>{q.from} → {q.to}</small></article>
+              <article key={q.symbol}><span>{q.symbol}</span><strong className="pmValueUpdate">{q.to}</strong><small>{q.from} → {q.to}</small></article>
             ))}
             <article><span>Score</span><strong>{changed.score.to ?? "—"}</strong><small>{changed.score.from ?? "—"} → {changed.score.to ?? "—"}</small></article>
             <article><span>Posture</span><strong>{String(changed.posture.to ?? "—").replaceAll("_", " ")}</strong><small>{String(changed.posture.from ?? "—").replaceAll("_", " ")}</small></article>
@@ -157,12 +190,13 @@ export function MissionControl({
       </section>
 
       <nav className="mcActions" aria-label="Primary workflow actions">
-        <Link href="/terminal">Open Terminal</Link>
-        <Link href="/brief">Read Market Brief</Link>
-        <Link href="/options">Open Options Corner</Link>
-        <Link href="/review">Review Yesterday</Link>
-        <Link href="/journal">Trade Journal</Link>
-        <Link href="/archive">Archive</Link>
+        {ACTIONS.map((action) => (
+          <Link key={action.href} href={action.href} className="mcActionTile">
+            <span aria-hidden="true">{action.icon}</span>
+            <strong>{action.title}</strong>
+            <small>{action.description}</small>
+          </Link>
+        ))}
       </nav>
     </div>
   );

@@ -9,10 +9,11 @@ function Panel({ rows = 3 }: { rows?: number }) {
 }
 
 export default function TerminalLoading() {
-  return <main className="customerTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Terminal">
+  return <main className="memberDashboard customerTerminal terminalLoading terminalMemberPage" aria-busy="true" aria-live="polite" aria-label="Loading Terminal">
     <BrandLoader label="Loading verified market intelligence" />
-    <header className="ctTopbar"><Line width="190px" /><Line width="280px" /><Line width="90px" /></header>
-    <section className="ctWorkspace" aria-hidden="true">
+    <header className="memberDashboardNav"><Line width="190px" /><Line width="420px" /></header>
+    <div className="memberToolbar ctTopbar ctToolbar"><Line width="120px" /></div>
+    <section className="memberDashboardShell ctWorkspace" aria-hidden="true">
       <section className="ctHero"><div><Line width="36%" /><Line width="70%" /><Line width="88%" /></div><div><Line /><Line /><Line /></div></section>
       <div className="ctStatus"><Line width="72%" /></div>
       <section className="ctChartPrimary ctPanel terminalSkeletonCard" aria-label="Loading primary chart"><Line width="42%" /><Line width="68%" /><div className="dashboardChartSkeletonCanvas" style={{ height: 360, marginTop: 18 }} /><Line width="55%" /></section>
