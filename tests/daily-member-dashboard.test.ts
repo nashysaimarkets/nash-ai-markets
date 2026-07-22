@@ -137,7 +137,7 @@ test("invalid or unverified outcome rows never count toward accuracy", () => {
 
 test("dashboard keeps locked premium output out of conditional server rendering", async () => {
   const source = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /DashboardMarketPlan|Compare membership plans|View access in Profile/);
+  assert.match(source, /MissionControl|Compare plans|Manage membership/);
   assert.doesNotMatch(source, /fake countdown|limited time|hurry/i);
 });
 

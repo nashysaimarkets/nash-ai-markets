@@ -22,6 +22,7 @@ import { loadPreviewClaims } from "./lib/preview-access";
 import { formatCustomerParticipationWarnings } from "./lib/customer-warnings";
 import { terminalStatusMessage } from "./lib/terminal-state";
 import { terminalMarketState } from "./lib/visual-terminal";
+import { persistAnalysisSnapshot } from "../lib/server/market-snapshots";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -86,6 +87,25 @@ export default async function Terminal() {
   );
   const showCatalysts = verified && snapshot.events.length > 0;
   const decisionReady = isDecisionReadySnapshot(snapshot);
+
+  void persistAnalysisSnapshot({
+    snapshot,
+    intelligence,
+    decision,
+    plan,
+    gateway: gatewayStatus,
+    kind: "refresh",
+    candleRefs: rangeLane
+      ? {
+        rangeHigh: rangeLane.high,
+        rangeLow: rangeLane.low,
+        firstClose: rangeLane.firstClose,
+        ema20: rangeLane.ema20,
+        ema50: rangeLane.ema50,
+        latest: rangeLane.current,
+      }
+      : null,
+  });
 
   return <main className="foxtrotTerminal customerTerminal premiumTerminal" id="overview">
     <header className="ctTopbar">

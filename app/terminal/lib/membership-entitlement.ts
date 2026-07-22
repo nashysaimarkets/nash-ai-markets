@@ -20,7 +20,14 @@ export type TerminalFeature =
   | "intelligence"
   | "decision-engine"
   | "trade-planner"
-  | "launch-diagnostics";
+  | "launch-diagnostics"
+  | "archive"
+  | "yesterday-review"
+  | "options-corner"
+  | "journal"
+  | "performance"
+  | "results-centre"
+  | "replay";
 
 export type PreviewClaim = {
   target_tier: PremiumTier;
@@ -51,6 +58,13 @@ const FEATURE_TIER: Record<TerminalFeature, MembershipTier> = {
   "decision-engine": "pro",
   "trade-planner": "elite",
   "launch-diagnostics": "elite",
+  archive: "pro",
+  "yesterday-review": "pro",
+  "options-corner": "pro",
+  journal: "pro",
+  performance: "pro",
+  "results-centre": "elite",
+  replay: "elite",
 };
 
 function startOfUtcDay(now: number): number {

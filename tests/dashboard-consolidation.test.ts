@@ -46,14 +46,11 @@ test("cross-market interpretation is plain English and marks mixed evidence", ()
 
 test("consolidated dashboard removes overlapping command sections and keeps four major blocks", async () => {
   const page = await read("../app/dashboard/page.tsx");
-  const plan = await read("../app/dashboard/components/DashboardMarketPlan.tsx");
-  assert.match(page, /DashboardMarketStatus/);
-  assert.match(page, /dashWorkspace|VERIFIED MARKET WORKSPACE/);
-  assert.match(page, /DashboardMarketPlan/);
-  assert.match(page, /DashboardReviewPanel/);
+  assert.match(page, /MissionControl/);
+  assert.match(page, /persistAnalysisSnapshot/);
+  assert.match(page, /missionControlPage/);
   assert.doesNotMatch(page, /BullseyeMissionControl|TodaysBullseyePlan|TradeSetupOfTheDay|TodaysEdge|MorningBriefPanel|EliteScenarioCard|MarketStructureVisual|executiveKpiStrip|memberAccessMap|Classification Record/);
-  assert.doesNotMatch(page, /BULLSEYE Command Centre|Mission Control/);
-  assert.match(plan, /Verified rolling range and reference levels/);
+  assert.doesNotMatch(page, /BULLSEYE Command Centre/);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {
