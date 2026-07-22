@@ -12,6 +12,7 @@ test("complete terminal render wires every deterministic output panel", async ()
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
   for (const expected of [
     "TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan}",
+    "MarketDeskSignalsPanel signals={deskSignals}",
     "CrossAssetBoard snapshot={snapshot}",
     "MarketPressureMap snapshot={snapshot} intelligence={intelligence}",
     "DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan}",

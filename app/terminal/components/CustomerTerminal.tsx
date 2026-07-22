@@ -1,5 +1,6 @@
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
 import { formatSnapshotAge, hasDisplayableQuotes, isDecisionReadySnapshot, type MarketSnapshot } from "../../lib/market-data.ts";
+import type { MarketDeskSignals } from "../../lib/market-desk-signals.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import { formatScoreDisplay } from "../../dashboard/lib/score-display.ts";
@@ -190,6 +191,62 @@ export function MarketPressureMap({ snapshot, intelligence }: { snapshot: Market
       <div className="ctSignalTrack" role="meter" aria-label={`${signal.label}: ${signal.stance}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={signal.stance === "unavailable" ? undefined : signal.score}><i style={{ width: `${signal.score}%` }} /></div>
       <p>{signal.stance === "unavailable" ? "Verified input unavailable; no directional conclusion is shown." : signal.explanation}</p>
     </article>)}</div>
+  </section>;
+}
+
+function deskLeanLabel(lean: MarketDeskSignals["overallLean"]) {
+  if (lean === "buying") return "Buying lean";
+  if (lean === "selling") return "Selling lean";
+  if (lean === "mixed") return "Mixed lean";
+  if (lean === "neutral") return "Neutral";
+  return "Insufficient data";
+}
+
+function deskLeanTone(lean: MarketDeskSignals["overallLean"]): "positive" | "warning" | "danger" | "info" {
+  if (lean === "buying") return "positive";
+  if (lean === "selling") return "danger";
+  if (lean === "mixed") return "warning";
+  if (lean === "neutral") return "info";
+  return "warning";
+}
+
+export function MarketDeskSignalsPanel({
+  signals,
+  snapshotAge,
+}: {
+  signals: MarketDeskSignals;
+  snapshotAge: string;
+}) {
+  const cards = [signals.buying, signals.selling];
+  return <section className="ctPanel ctDeskSignals" aria-labelledby="desk-signals-title">
+    <header>
+      <div>
+        <span>Market buying &amp; selling signals</span>
+        <h2 id="desk-signals-title">Interpretive desk leans from verified inputs</h2>
+      </div>
+      <div className="ctDeskSignalsMeta">
+        <TerminalBadge label={deskLeanLabel(signals.overallLean)} tone={deskLeanTone(signals.overallLean)} />
+        <small>Educational · {snapshotAge}</small>
+      </div>
+    </header>
+    <div className="ctDeskSignalPair">
+      {cards.map((card) => (
+        <article key={card.side} className={`ctDeskSignalCard is-${card.side} is-${card.status}`}>
+          <div className="ctDeskSignalHead">
+            <span>{card.side === "buying" ? "Buying signal" : "Selling signal"}</span>
+            <em>{card.status}</em>
+          </div>
+          <strong>{card.headline}</strong>
+          <p>{card.summary}</p>
+          <ul>{card.drivers.map((driver) => <li key={driver}>{driver}</li>)}</ul>
+          <p className="ctDeskWatch"><b>Watching</b> {card.watchingFor}</p>
+        </article>
+      ))}
+    </div>
+    {signals.contextNotes.length ? (
+      <ul className="ctDeskContext">{signals.contextNotes.map((note) => <li key={note}>{note}</li>)}</ul>
+    ) : null}
+    <p className="ctCaution">{signals.disclosure}</p>
   </section>;
 }
 

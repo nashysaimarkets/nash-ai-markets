@@ -5,15 +5,18 @@ import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty.ts
 import { buildOptionsFramework } from "../lib/options-framework.ts";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
 import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes, isDecisionReadySnapshot } from "../lib/market-data.ts";
+import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { requireMemberPage } from "../lib/server/member-page-access.ts";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
+import { MarketDeskSignalsPanel } from "../terminal/components/CustomerTerminal.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
 import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { getConfiguredSp500News } from "../lib/providers/fmp-market-news.ts";
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart.tsx";
+import { rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -93,6 +96,14 @@ export default async function OptionsCornerPage() {
     plan,
     decisionReady,
     intelligence,
+  });
+  const rangeLane = candleSeries?.candles.length ? rangeLaneFromCandles(candleSeries.candles) : null;
+  const deskSignals = createMarketDeskSignals({
+    snapshot: market.snapshot,
+    intelligence,
+    decision,
+    plan,
+    candle: deskCandleContextFromRange(rangeLane),
   });
   const snapshotAge = formatSnapshotAge(market.snapshot.asOf);
   const find = (symbol: string) => market.snapshot.quotes.find((quote) => quote.symbol === symbol);
@@ -220,6 +231,8 @@ export default async function OptionsCornerPage() {
         <i />
         <div className="is-bear"><span>3</span><strong>Bearish</strong><small>{framework.bearishConfirm}</small></div>
       </section>
+
+      <MarketDeskSignalsPanel signals={deskSignals} snapshotAge={snapshotAge} />
 
       <section className="optionsScenarioGrid" aria-label="Current options trading ideas">
         {framework.ideas.map((idea) => (
