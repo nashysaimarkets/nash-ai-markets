@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-labelledby="title">
+  <title id="title">NASH AI Markets  Candle pulse mark concept</title>
+  <rect width="80" height="80" rx="18" fill="#07110f"/>
+  <g stroke="#38f28e" stroke-width="2" stroke-linecap="round">
+    <path d="M22 18v10M22 52v10"/>
+    <path d="M40 12v8M40 58v10"/>
+    <path d="M58 22v8M58 48v10"/>
+  </g>
+  <rect x="16" y="28" width="12" height="24" rx="2" fill="#68d7b4"/>
+  <rect x="34" y="20" width="12" height="36" rx="2" fill="#e77f86"/>
+  <rect x="52" y="30" width="12" height="18" rx="2" fill="#68d7b4"/>
+  <circle cx="40" cy="40" r="5" fill="none" stroke="#d9ab52" stroke-width="1.5"/>
+</svg>

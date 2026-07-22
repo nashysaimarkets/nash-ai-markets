@@ -156,9 +156,14 @@ export function CrossAssetBoard({
           </div>
           {series
             ? <Sparkline values={series} tone={quote?.direction ?? "neutral"} filled label={`${instrumentLabels[index]} verified recent closes`} height={compact ? 28 : 36} width={160} />
-            : !isRatesPair || symbol === "US2Y"
-              ? <UnavailableHistory label={instrumentLabels[index]!} />
-              : null}
+            : (
+              <UnavailableHistory
+                label={instrumentLabels[index]!}
+                reason={isRatesPair
+                  ? "Treasury yields arrive as verified scalars. OHLC candles are not available for this feed."
+                  : "Verified scalar only until OHLCV history is available"}
+              />
+            )}
           {symbol === "VIX" ? <VolatilityGauge regime={volatilityRegime} ready={decisionReady} vixValue={vix?.value ?? null} compact /> : null}
           {symbol === "US10Y" ? <YieldSpreadVisual twoYear={two?.value} tenYear={ten?.value} ready={Boolean(two && ten)} compact /> : null}
           {symbol === "DXY" ? <DxyPressureVisual direction={dxy?.direction} change={dxy?.change} ready={Boolean(dxy)} compact /> : null}

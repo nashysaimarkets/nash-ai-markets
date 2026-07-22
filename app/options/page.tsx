@@ -10,6 +10,8 @@ import { requireMemberPage } from "../lib/server/member-page-access.ts";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
+import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart.tsx";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -44,7 +46,12 @@ export default async function OptionsCornerPage() {
     </MemberShell>;
   }
 
-  const market = await getTerminalMarketData(undefined, now);
+  const paid = access.tier === "pro" || access.tier === "elite";
+  const [market, candleSeriesRaw] = await Promise.all([
+    getTerminalMarketData(undefined, now),
+    paid ? getConfiguredFmpCandles("5m", now, "ES") : Promise.resolve(null),
+  ]);
+  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
   const decisionReady = isDecisionReadySnapshot(market.snapshot);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
   const engineInput = {
@@ -105,6 +112,12 @@ export default async function OptionsCornerPage() {
           <div><dt>Expected move</dt><dd>Withheld</dd></div>
         </dl>
       </section>
+
+      {candleSeries ? (
+        <section className="optionsUnderlyingChart" aria-label="Underlying verified candlesticks">
+          <DashboardCandlestickChart series={candleSeries} instrument="ES" compact />
+        </section>
+      ) : null}
 
       <section className="optionsPathway" aria-hidden="true">
         <div className="is-bull"><span>1</span><strong>Bullish</strong><small>Confirmation above</small></div>

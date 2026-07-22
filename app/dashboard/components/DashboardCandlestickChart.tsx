@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { IChartApi, UTCTimestamp } from "lightweight-charts";
+import type { CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CandleTimeframe, CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { candleReferenceLevels, candleSessionStats, exponentialMovingAverage } from "../lib/candle-analysis.ts";
 
@@ -48,7 +49,15 @@ function unavailableCopy(series: CustomerCandleSeries) {
   }
 }
 
-export function DashboardCandlestickChart({ series: initialSeries }: { series: CustomerCandleSeries }) {
+export function DashboardCandlestickChart({
+  series: initialSeries,
+  instrument = "ES",
+  compact = false,
+}: {
+  series: CustomerCandleSeries;
+  instrument?: CandleInstrument;
+  compact?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -58,7 +67,7 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
   const [pendingTimeframe, setPendingTimeframe] = useState<CandleTimeframe | null>(null);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
-  const [overlays, setOverlays] = useState<Record<Overlay, boolean>>({ volume: true, ema20: true, ema50: false });
+  const [overlays, setOverlays] = useState<Record<Overlay, boolean>>({ volume: !compact, ema20: true, ema50: false });
   const displayTimeframe = pendingTimeframe ?? timeframe;
   const intervalMismatch = pendingTimeframe !== null && pendingTimeframe !== series.timeframe;
   const stats = useMemo(() => (intervalMismatch ? null : candleSessionStats(series.candles)), [intervalMismatch, series.candles]);
@@ -71,6 +80,7 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
     : null;
   const statusLabel = intervalMismatch ? `Loading ${pendingTimeframe}` : customerStatusLabel(series);
   const empty = unavailableCopy(series);
+  const chartHeight = compact ? 220 : 360;
 
   async function load(next: CandleTimeframe, opts?: { silent?: boolean }) {
     const requestId = ++requestIdRef.current;
@@ -80,7 +90,7 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
       setRequestError(null);
     }
     try {
-      const response = await fetch(`/api/market/candles?timeframe=${next}`, { cache: "no-store" });
+      const response = await fetch(`/api/market/candles?timeframe=${next}&instrument=${encodeURIComponent(instrument)}`, { cache: "no-store" });
       if (!response.ok) throw new Error(response.status === 403 ? "Your membership could not be verified for candle history." : "Verified candle history could not be loaded.");
       const result = await response.json() as CustomerCandleSeries;
       if (requestId !== requestIdRef.current) return;
@@ -102,7 +112,12 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
   useEffect(() => {
     const timer = window.setInterval(() => { void load(timeframe, { silent: true }); }, REFRESH_MS);
     return () => window.clearInterval(timer);
-  }, [timeframe]);
+  }, [timeframe, instrument]);
+
+  useEffect(() => {
+    setSeries(initialSeries);
+    setTimeframe(initialSeries.timeframe);
+  }, [initialSeries]);
 
   useEffect(() => {
     if (!available) {
@@ -126,12 +141,12 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
         containerRef.current.replaceChildren();
         const chart = createChart(containerRef.current, {
           autoSize: true,
-          height: Math.max(containerRef.current.clientHeight, 360),
+          height: Math.max(containerRef.current.clientHeight, chartHeight),
           layout: { background: { type: ColorType.Solid, color: "#091014" }, textColor: "#9aa7ad", attributionLogo: true },
           grid: { vertLines: { color: "#19252b" }, horzLines: { color: "#19252b" } },
           crosshair: { vertLine: { color: "#63777f", labelBackgroundColor: "#26373e" }, horzLine: { color: "#63777f", labelBackgroundColor: "#26373e" } },
           rightPriceScale: { borderColor: "#2a3940", autoScale: true },
-          timeScale: { borderColor: "#2a3940", timeVisible: timeframe !== "1d", secondsVisible: false, rightOffset: 6, barSpacing: 7 },
+          timeScale: { borderColor: "#2a3940", timeVisible: timeframe !== "1d", secondsVisible: false, rightOffset: 6, barSpacing: compact ? 5 : 7 },
           handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
           handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false },
         });
@@ -158,7 +173,9 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
         };
         if (overlays.ema20) addLine(exponentialMovingAverage(series.candles, 20), "#71b7e6", "EMA 20");
         if (overlays.ema50) addLine(exponentialMovingAverage(series.candles, 50), "#bb91e8", "EMA 50");
-        for (const level of levels) candles.createPriceLine({ price: level.value, color: "#8fa2a866", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: level.label });
+        if (!compact) {
+          for (const level of levels) candles.createPriceLine({ price: level.value, color: "#8fa2a866", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: level.label });
+        }
         chart.subscribeCrosshairMove((param) => {
           const value = param.seriesData.get(candles);
           if (tooltipRef.current && value && "open" in value) {
@@ -182,7 +199,7 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
       chartRef.current?.remove();
       chartRef.current = null;
     };
-  }, [available, levels, overlays, series.candles, timeframe, volumeVerified]);
+  }, [available, chartHeight, compact, levels, overlays, series.candles, timeframe, volumeVerified]);
 
   const updated = series.asOf && !intervalMismatch
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(series.asOf))
@@ -190,41 +207,50 @@ export function DashboardCandlestickChart({ series: initialSeries }: { series: C
       ? `Loading verified ${pendingTimeframe} series`
       : "Awaiting first verified candle";
 
-  return <section className="dashboardMarketChart" aria-labelledby="dashboard-market-chart-title" data-status={intervalMismatch ? "loading" : series.status} data-timeframe={displayTimeframe}>
+  return <section className={`dashboardMarketChart${compact ? " is-compact" : ""}`} aria-labelledby={`dashboard-market-chart-title-${instrument}`} data-status={intervalMismatch ? "loading" : series.status} data-timeframe={displayTimeframe} data-instrument={instrument}>
     <header>
       <div>
-        <span className="eliteEyebrow">PRIMARY MARKET WORKSPACE</span>
-        <h2 id="dashboard-market-chart-title">{series.instrumentName} · {series.symbol}</h2>
-        <p>{series.instrumentDetail}</p>
+        <span className="eliteEyebrow">{compact ? "VERIFIED CANDLES" : "PRIMARY MARKET WORKSPACE"}</span>
+        <h2 id={`dashboard-market-chart-title-${instrument}`}>{series.instrumentName} · {series.symbol}</h2>
+        {!compact ? <p>{series.instrumentDetail}</p> : null}
       </div>
       <div className="chartStatus"><i aria-hidden="true" /><strong>{statusLabel}</strong><small>{updated}{intervalMismatch ? "" : ` UK · ${age(series.dataAgeMs)}`}</small></div>
     </header>
-    {stats ? <>
+    {stats && !compact ? <>
       <div className="chartMarketStrip" aria-label="Verified rolling 24-hour statistics">
         <div><span>Latest verified close</span><strong>{number(stats.latest)}</strong></div>
         <div><span>Net / % change</span><strong>{stats.change >= 0 ? "+" : ""}{number(stats.change)} ({number(stats.percentageChange)}%)</strong></div>
         <div><span>24h high</span><strong>{number(stats.high)}</strong></div>
         <div><span>24h low</span><strong>{number(stats.low)}</strong></div>
         <div><span>Newest candle</span><strong>{newestLabel ?? "Unavailable"}</strong></div>
-        <div><span>Data age</span><strong>{age(series.dataAgeMs)}</strong></div>
+        <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
       </div>
       <div className="chartRange"><span>Rolling 24h position</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div>
-    </> : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}
+    </> : stats && compact ? (
+      <div className="chartMarketStrip is-compact" aria-label="Verified candle summary">
+        <div><span>Latest close</span><strong>{number(stats.latest)}</strong></div>
+        <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
+      </div>
+    ) : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}
     <div className="chartControlBar">
       <div className="dashboardTimeframes" role="group" aria-label="Candlestick interval">
-        {OPTIONS.map((option) => <button key={option.timeframe} type="button" aria-pressed={option.timeframe === displayTimeframe} disabled={loading} onClick={() => option.timeframe !== displayTimeframe && void load(option.timeframe)}>{option.label}</button>)}
+        {(compact ? OPTIONS.filter((option) => option.timeframe !== "1m" && option.timeframe !== "4h") : OPTIONS).map((option) => <button key={option.timeframe} type="button" aria-pressed={option.timeframe === displayTimeframe} disabled={loading} onClick={() => option.timeframe !== displayTimeframe && void load(option.timeframe)}>{option.label}</button>)}
       </div>
-      <div className="dashboardOverlays" role="group" aria-label="Chart overlays">
-        {([["volume", "Volume"], ["ema20", "20 EMA"], ["ema50", "50 EMA"]] as const).map(([key, label]) => (
-          <button key={key} type="button" aria-pressed={overlays[key]} disabled={key === "volume" && !volumeVerified} onClick={() => setOverlays((current) => ({ ...current, [key]: !current[key] }))}>{label}</button>
-        ))}
+      {!compact ? (
+        <div className="dashboardOverlays" role="group" aria-label="Chart overlays">
+          {([["volume", "Volume"], ["ema20", "20 EMA"], ["ema50", "50 EMA"]] as const).map(([key, label]) => (
+            <button key={key} type="button" aria-pressed={overlays[key]} disabled={key === "volume" && !volumeVerified} onClick={() => setOverlays((current) => ({ ...current, [key]: !current[key] }))}>{label}</button>
+          ))}
+          <button type="button" disabled={loading} onClick={() => void load(timeframe)}>{loading ? "Refreshing…" : "Refresh"}</button>
+        </div>
+      ) : (
         <button type="button" disabled={loading} onClick={() => void load(timeframe)}>{loading ? "Refreshing…" : "Refresh"}</button>
-      </div>
+      )}
     </div>
     {requestError ? <div className="chartRequestError" role="alert">{requestError} You can retry safely without inventing candles.</div> : null}
-    {available ? <div className="dashboardChartFrame">
+    {available ? <div className="dashboardChartFrame" style={compact ? { minHeight: chartHeight } : undefined}>
       {loading ? <div className="dashboardChartLoading" role="status">Refreshing verified {displayTimeframe} candles…</div> : null}
-      <div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart`} />
+      <div className="dashboardChartCanvas" ref={containerRef} role="img" tabIndex={0} aria-label={`${series.symbol} ${timeframe} interactive candlestick chart`} style={compact ? { minHeight: chartHeight } : undefined} />
       <div className="dashboardChartTooltip" ref={tooltipRef} aria-live="polite">Move the crosshair over a candle for OHLC values</div>
     </div> : intervalMismatch || loading ? <div className="dashboardChartUnavailable" role="status" data-state="loading"><span aria-hidden="true">⟳</span><div><strong>Loading verified {displayTimeframe} candles</strong><p>Waiting for the provider response for this interval. The previous interval stays hidden so it cannot be mistaken for the new selection.</p></div></div>
       : <div className="dashboardChartUnavailable" role="status" data-state={series.status}><span aria-hidden="true">⌁</span><div><strong>{empty.title}</strong><p>{empty.detail}</p><small>Choose another interval or retry later.</small></div></div>}

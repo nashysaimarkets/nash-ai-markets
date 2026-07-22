@@ -10,7 +10,8 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
-import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery.tsx";
 import { loadPreviewClaims } from "../terminal/lib/preview-access.ts";
 import { candleReferenceLevels } from "./lib/candle-analysis.ts";
 import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard.ts";
@@ -45,13 +46,20 @@ export default async function MemberDashboard() {
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
 
-  const [previewState, market, candleSeriesRaw, prior] = await Promise.all([
+  const [previewState, market, candleBundleRaw, prior] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
-    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("5m", now) : Promise.resolve(null),
+    tier === "pro" || tier === "elite" ? getConfiguredFmpCandlesForInstruments("5m", now) : Promise.resolve(null),
     getPriorSnapshot(new Date(now).toISOString()),
   ]);
-  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
+  const candleSeriesByInstrument = candleBundleRaw
+    ? {
+      ES: toCustomerCandleSeries(candleBundleRaw.ES),
+      VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
+      DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+    }
+    : null;
+  const candleSeries = candleSeriesByInstrument?.ES ?? null;
   const access = createProgressiveAccess(tier, previewState.claims, now);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
   const decision = createTradingDecision({
@@ -144,6 +152,13 @@ export default async function MemberDashboard() {
         invalidation={String(invalidation)}
         noTrade={noTrade}
       />
+      {candleSeriesByInstrument ? (
+        <CrossAssetCandleGallery
+          seriesByInstrument={candleSeriesByInstrument}
+          title="Verified candlesticks across live feeds"
+          eyebrow="MISSION CONTROL CHARTS"
+        />
+      ) : null}
       {!access.features.intelligence ? <p className="dashAccountHint"><Link href="/profile">Manage membership</Link> · <Link href="/pricing">Compare plans</Link> · <Link href="/methodology">Methodology</Link></p> : null}
     </div>
   </MemberShell>;

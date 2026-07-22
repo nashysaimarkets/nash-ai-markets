@@ -1,5 +1,10 @@
 import { createAsyncKeyedTtlCache } from "../server/async-ttl-cache.ts";
 import type { OhlcvPoint } from "../../terminal/lib/visual-terminal.ts";
+import {
+  applyInstrumentIdentity,
+  providerSymbolForInstrument,
+  type CandleInstrument,
+} from "./candle-instruments.ts";
 
 export type CandleFreshness = "delayed" | "previous_session" | "market_closed" | "stale" | "unavailable";
 export type CandleTimeframe = "1m" | "5m" | "15m" | "1h" | "4h" | "1d";
@@ -28,7 +33,7 @@ type LoadOptions = { apiKey: string; symbol: string; timeframe?: CandleTimeframe
 const CACHE_TTL_MS = 60_000;
 const MAX_CANDLES = 200;
 const MAX_SOURCE_CANDLES = 800;
-const cache = createAsyncKeyedTtlCache<VerifiedCandleSeries>({ ttlMs: CACHE_TTL_MS, maxEntries: 12, isFailure: (value) => value.status === "unavailable" });
+const cache = createAsyncKeyedTtlCache<VerifiedCandleSeries>({ ttlMs: CACHE_TTL_MS, maxEntries: 36, isFailure: (value) => value.status === "unavailable" });
 
 /** Sanitized provider endpoint outcomes for diagnostics — never includes secrets or raw bodies. */
 export type CandleEndpointOutcome = {
@@ -242,21 +247,43 @@ export function toCustomerCandleSeries(series: VerifiedCandleSeries): CustomerCa
   return customer;
 }
 
-export async function getConfiguredFmpCandles(timeframe: CandleTimeframe = "5m", now = Date.now()): Promise<VerifiedCandleSeries> {
-  const symbol = process.env.FMP_SP500_FUTURES_SYMBOL?.trim() || "ESUSD";
+export async function getConfiguredFmpCandles(
+  timeframe: CandleTimeframe = "5m",
+  now = Date.now(),
+  instrument: CandleInstrument = "ES",
+): Promise<VerifiedCandleSeries> {
+  const symbol = providerSymbolForInstrument(instrument);
   const apiKey = configuredApiKey();
   // Fixture is a non-production fallback only — never preferred over a real key, never in production.
+  // Fixtures are ES-only so non-ES instruments fail closed without a live key.
   if (!apiKey) {
-    const fixture = await loadFixtureCandles(symbol, timeframe, now);
-    if (fixture) return fixture;
-    return empty(symbol, timeframe, "not_configured");
+    if (instrument === "ES") {
+      const fixture = await loadFixtureCandles(symbol, timeframe, now);
+      if (fixture) return applyInstrumentIdentity(fixture, instrument);
+    }
+    return applyInstrumentIdentity(empty(symbol, timeframe, "not_configured"), instrument);
   }
-  const key = `${symbol}:${timeframe}:${new Date(now).toISOString().slice(0, 10)}`;
+  const key = `${instrument}:${symbol}:${timeframe}:${new Date(now).toISOString().slice(0, 10)}`;
   const before = cache.getStats();
   const value = await cache.get(key, () => loadFmpCandles({ apiKey, symbol, timeframe, baseUrl: process.env.FMP_API_BASE_URL?.trim(), now }));
   const after = cache.getStats();
   const status: CandleCacheStatus = after.loads > before.loads ? "miss" : after.coalesced > before.coalesced ? "coalesced" : "hit";
-  return { ...value, cache: { status, ttlMs: CACHE_TTL_MS, requestsAvoided: after.hits + after.coalesced } };
+  return applyInstrumentIdentity(
+    { ...value, cache: { status, ttlMs: CACHE_TTL_MS, requestsAvoided: after.hits + after.coalesced } },
+    instrument,
+  );
+}
+
+/** Load verified candles for every instrument that supports OHLCV — fail closed per feed. */
+export async function getConfiguredFmpCandlesForInstruments(
+  timeframe: CandleTimeframe = "5m",
+  now = Date.now(),
+  instruments: CandleInstrument[] = ["ES", "VIX", "DXY"],
+): Promise<Record<CandleInstrument, VerifiedCandleSeries>> {
+  const entries = await Promise.all(
+    instruments.map(async (instrument) => [instrument, await getConfiguredFmpCandles(timeframe, now, instrument)] as const),
+  );
+  return Object.fromEntries(entries) as Record<CandleInstrument, VerifiedCandleSeries>;
 }
 
 export function getCandleCacheDiagnostics() { return cache.getStats(); }

@@ -457,3 +457,21 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 @media(max-width:1100px){.mcHero{grid-template-columns:1fr}.mcHeroMeta,.mcPaths,.mcChangedGrid{grid-template-columns:1fr 1fr}.mcHeroWatermark{opacity:.05}.optionsScenarioGrid,.optionsWatchStrip ul,.optionsPathway{grid-template-columns:1fr}.optionsPathway>i{display:none}.optionsProviderPanel{grid-template-columns:1fr}.ctReadinessGroups{grid-template-columns:1fr}}
 @media(max-width:900px){.memberToolbar{width:min(100% - 24px,1280px)}.briefJourneySteps,.briefPathStrip{grid-template-columns:1fr}.optionsSummary{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.mcHeroMeta,.mcPaths,.mcChangedGrid,.mcChartStrip,.mcActions{grid-template-columns:1fr;display:grid}.mcActionTile{max-height:none}}
+
+/* Cross-asset candlestick gallery */
+.crossAssetCandleGallery{margin:18px 0 28px;padding:18px;border:1px solid #24322c;border-radius:16px;background:linear-gradient(160deg,#0c1412,#091014);min-width:0}
+.crossAssetCandleGalleryHeader{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px}
+.crossAssetCandleGalleryHeader span{display:block;color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.12em}
+.crossAssetCandleGalleryHeader h2{margin:8px 0 6px;font-size:clamp(22px,3vw,30px)}
+.crossAssetCandleGalleryHeader p{margin:0;max-width:58ch;color:#8f9c96;font-size:13px;line-height:1.5}
+.crossAssetCandleTabs{display:flex;flex-wrap:wrap;gap:8px}
+.crossAssetCandleTabs button{min-height:40px;padding:8px 14px;border:1px solid #2a3a34;border-radius:999px;background:#0a100e;color:#b4c0c8;font:650 12px var(--font-geist-mono),monospace;cursor:pointer}
+.crossAssetCandleTabs button[aria-selected="true"]{border-color:#35d89b66;background:#35d89b14;color:#62e6b1;box-shadow:0 0 0 1px #35d89b33}
+.crossAssetCandleTabs button[data-ready="false"]{opacity:.72}
+.crossAssetCandleEmpty{padding:28px;border:1px dashed #2a3a34;border-radius:12px;color:#8f9c96}
+.crossAssetCandleEmpty strong{display:block;margin-bottom:8px;color:#e8eef1}
+.dashboardMarketChart.is-compact{margin:0;border-radius:12px}
+.dashboardMarketChart.is-compact .dashboardChartCanvas{min-height:220px}
+.dashboardMarketChart.is-compact .chartMarketStrip.is-compact{grid-template-columns:1fr 1fr}
+.optionsUnderlyingChart{margin:16px 0 22px;min-width:0}
+@media(max-width:700px){.crossAssetCandleGalleryHeader{align-items:flex-start;flex-direction:column}.crossAssetCandleTabs{width:100%}.crossAssetCandleTabs button{flex:1}}

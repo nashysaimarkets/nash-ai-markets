@@ -14,8 +14,9 @@ import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
 import { KeyMarketInformation } from "../components/mini-visuals/KeyMarketInformation";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
-import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
+import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
+import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery";
 import { candleReferenceLevels, candleSessionStats } from "../dashboard/lib/candle-analysis";
 import { rangeLaneFromCandles, scenarioLaneMarkers, sparklineFromCandles, parsePriceLevel } from "../components/mini-visuals/mini-visual-data";
 import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty";
@@ -47,15 +48,28 @@ export default async function Terminal() {
   const previewOffer = access.previewOffer;
   const paid = access.tier === "pro" || access.tier === "elite";
 
-  const [{ snapshot, gatewayStatus }, candleSeriesRaw] = await Promise.all([
+  const [{ snapshot, gatewayStatus }, candleBundleRaw] = await Promise.all([
     getTerminalMarketData(),
-    paid ? getConfiguredFmpCandles("5m") : Promise.resolve(null),
+    paid ? getConfiguredFmpCandlesForInstruments("5m") : Promise.resolve(null),
   ]);
-  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
+  const candleSeriesByInstrument = candleBundleRaw
+    ? {
+      ES: toCustomerCandleSeries(candleBundleRaw.ES),
+      VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
+      DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+    }
+    : null;
+  const candleSeries = candleSeriesByInstrument?.ES ?? null;
   const candleLevels = candleSeries?.candles.length ? candleReferenceLevels(candleSeries.candles) : [];
   const candleStats = candleSeries?.candles.length ? candleSessionStats(candleSeries.candles) : null;
   const rangeLane = candleSeries?.candles.length ? rangeLaneFromCandles(candleSeries.candles) : null;
   const esSparkline = candleSeries?.candles.length ? sparklineFromCandles(candleSeries.candles) : null;
+  const vixSparkline = candleSeriesByInstrument?.VIX?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.VIX.candles)
+    : null;
+  const dxySparkline = candleSeriesByInstrument?.DXY?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.DXY.candles)
+    : null;
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
@@ -157,8 +171,16 @@ export default async function Terminal() {
           rangeLane={rangeLane}
         />
 
-        {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} /></section> : null}
+        {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} instrument="ES" /></section> : null}
         {!paid ? <LockedPremiumCard tier="pro" title="Unlock the verified market chart" value="Pro and Elite members receive the verified candlestick workspace with interval controls and fail-closed empty states." benefits={["Verified OHLCV history", "Interval controls", "No invented candles"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} /> : null}
+
+        {paid && candleSeriesByInstrument ? (
+          <CrossAssetCandleGallery
+            seriesByInstrument={candleSeriesByInstrument}
+            title="Every live feed with verified candles"
+            eyebrow="CROSS-ASSET CANDLESTICKS"
+          />
+        ) : null}
 
         {access.features["trade-planner"] ? <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="elite" title="Unlock today’s complete market plan" value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework." benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
@@ -187,7 +209,7 @@ export default async function Terminal() {
         <details className="ctPanel ctCompactPanel briefTech" open={false}>
           <summary><span>Deeper evidence</span><strong>Cross-asset board and methodology detail</strong></summary>
           <div className="ctDeepEvidence">
-            <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
+            <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
             {paid && candleSeries ? <StructureLevelsPanel levels={candleLevels} recentRange={candleStats?.averageCandleRange ?? null} rangeLane={rangeLane} /> : null}
             <section className="ctTwoColumn">
               {access.features.intelligence ? <MarketPressureMap snapshot={snapshot} intelligence={intelligence} /> : <LockedPremiumCard tier="pro" title="See what is driving risk appetite" value="Pro explains the verified volatility, Treasury, dollar and equity pressures behind the market view." benefits={["Cross-asset context", "Explainable signals", "Fail-closed analysis"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}

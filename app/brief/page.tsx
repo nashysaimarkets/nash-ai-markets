@@ -18,7 +18,8 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { formatSnapshotAge, isDecisionReadySnapshot } from "../lib/market-data.ts";
 import { BullseyeGauge } from "../components/mini-visuals/BullseyeGauge.tsx";
-import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
+import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery.tsx";
 import { parsePriceLevel, sparklineFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
 import { CrossAssetBoard } from "../terminal/components/CustomerTerminal.tsx";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
@@ -53,14 +54,27 @@ export default async function AIMarketBriefPage() {
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
 
-  const [previewState, market, candleSeriesRaw] = await Promise.all([
+  const [previewState, market, candleBundleRaw] = await Promise.all([
     loadPreviewClaims(user.id),
     getTerminalMarketData(undefined, now),
-    tier === "pro" || tier === "elite" ? getConfiguredFmpCandles("5m", now) : Promise.resolve(null),
+    tier === "pro" || tier === "elite" ? getConfiguredFmpCandlesForInstruments("5m", now) : Promise.resolve(null),
   ]);
   const access = createProgressiveAccess(tier, previewState.claims, now);
-  const candleSeries = candleSeriesRaw ? toCustomerCandleSeries(candleSeriesRaw) : null;
+  const candleSeriesByInstrument = candleBundleRaw
+    ? {
+      ES: toCustomerCandleSeries(candleBundleRaw.ES),
+      VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
+      DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+    }
+    : null;
+  const candleSeries = candleSeriesByInstrument?.ES ?? null;
   const esSparkline = candleSeries?.candles.length ? sparklineFromCandles(candleSeries.candles) : null;
+  const vixSparkline = candleSeriesByInstrument?.VIX?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.VIX.candles)
+    : null;
+  const dxySparkline = candleSeriesByInstrument?.DXY?.candles.length
+    ? sparklineFromCandles(candleSeriesByInstrument.DXY.candles)
+    : null;
   const decisionReady = isDecisionReadySnapshot(market.snapshot);
   const delayed = market.snapshot.status === "DELAYED" || !decisionReady;
   const intelligence = analyzeMarketSnapshot(market.snapshot);
@@ -182,11 +196,19 @@ export default async function AIMarketBriefPage() {
       <div className="briefCrossAsset">
         <CrossAssetBoard
           snapshot={market.snapshot}
-          sparklines={{ ES: esSparkline }}
+          sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline }}
           volatilityRegime={decisionReady ? decision.volatilityRegime : null}
           compact
         />
       </div>
+
+      {candleSeriesByInstrument ? (
+        <CrossAssetCandleGallery
+          seriesByInstrument={candleSeriesByInstrument}
+          title="Brief candlestick context"
+          eyebrow="VERIFIED PRICE PATHS"
+        />
+      ) : null}
 
       <details className="briefTech dailyCard" open>
         <summary>
