@@ -6,6 +6,7 @@ import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import { createTradingDecision } from "../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner";
 import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes } from "../lib/market-data";
+import { BrandLogo } from "../components/BrandLogo";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
@@ -83,9 +84,9 @@ export default async function Terminal() {
   );
   const showCatalysts = verified && snapshot.events.length > 0;
 
-  return <main className="foxtrotTerminal customerTerminal" id="overview">
+  return <main className="foxtrotTerminal customerTerminal premiumTerminal" id="overview">
     <header className="ctTopbar">
-      <Link href="/" className="ftBrand" aria-label="NASH AI Markets home"><span className="ftReticle" aria-hidden="true" /><span>NASH <b>AI</b> / BULLSEYE</span></Link>
+      <BrandLogo authenticated className="ctBrandLogo" />
       <nav aria-label="Member navigation"><Link href="/dashboard">Dashboard</Link><Link href="/brief">Brief</Link><Link href="/profile">Account</Link></nav>
       <TerminalControls />
     </header>

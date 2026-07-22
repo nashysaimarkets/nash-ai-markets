@@ -80,7 +80,7 @@ export function DashboardMarketStatus(props: Props) {
           <span>{item.label}</span>
           <strong>{item.value}</strong>
           <small>{item.change}</small>
-          <Sparkline values={item.sparkline} tone={item.direction ?? "neutral"} label={`${item.label} recent verified closes`} />
+          <Sparkline values={item.sparkline} tone={item.direction ?? "neutral"} filled label={`${item.label} recent verified closes`} height={32} width={140} />
         </article>
       ))}
     </div>

@@ -98,19 +98,25 @@ export function CrossAssetBoard({
     </section>;
   }
   const decisionReady = isDecisionReadySnapshot(snapshot);
-  return <section className="ctPanel" aria-labelledby="cross-asset-title">
+  const age = formatSnapshotAge(snapshot.asOf);
+  const statusLabel = decisionReady ? "Verified" : "Previous session";
+  return <section className="ctPanel ctInstrumentBoard" aria-labelledby="cross-asset-title">
     <header>
       <div><span>Cross-asset board</span><h2 id="cross-asset-title">What the major inputs are saying</h2></div>
-      <small>{decisionReady ? "Verified observation" : `Previous session · ${formatSnapshotAge(snapshot.asOf)}`}</small>
+      <small>{statusLabel} · {age}</small>
     </header>
     <div className="ctAssetGrid">{symbols.map((symbol, index) => {
       const quote = snapshot.quotes.find((item) => item.symbol === symbol);
       const series = sparklines?.[symbol] ?? null;
-      return <article key={symbol}>
-        <div><span>{instrumentLabels[index]}</span><small>{symbol}</small></div>
+      return <article key={symbol} className="ctInstrumentCard">
+        <div className="ctInstrumentHead">
+          <span>{instrumentLabels[index]}</span>
+          <small>{symbol}</small>
+        </div>
         <strong>{quote?.value ?? "Unavailable"}</strong>
         <span className={`ctMove is-${quote?.direction ?? "missing"}`}>{quote?.change ?? "No verified reading"}</span>
-        <Sparkline values={series} tone={quote?.direction ?? "neutral"} label={`${instrumentLabels[index]} verified recent closes`} />
+        <span className={`ctInstrumentAge is-${decisionReady ? "ready" : "aged"}`}>{statusLabel} · {age}</span>
+        <Sparkline values={series} tone={quote?.direction ?? "neutral"} filled label={`${instrumentLabels[index]} verified recent closes`} height={36} width={160} />
         <p>{quote ? instrumentInterpretation(quote) : `${instrumentLabels[index]} had no verified reading in the latest update. The value is withheld rather than guessed.`}</p>
       </article>;
     })}</div>

@@ -82,6 +82,68 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .dashboardMarketChart[data-status=loading] .chartStatus strong{color:#d8ba7b}.dashboardChartUnavailable[data-state=loading]{background:radial-gradient(circle at 50% 40%,#17252a,#091014 62%)}@media(prefers-reduced-motion:reduce){.ctHero,.ctPanel{animation:none}.ctPanel:hover{transform:none}}
 @media(prefers-contrast:more){.ctPanel,.ctHero,.ctStatus{border-color:#69737d}.customerTerminal{--ft-muted:#aab3bc}}
 
+/* Premium terminal presentation — collage visual language in live components */
+.premiumTerminal{background:
+  radial-gradient(circle at 78% -8%,#163a2ccc 0,transparent 34%),
+  radial-gradient(circle at 8% 40%,#0d1c2888 0,transparent 30%),
+  linear-gradient(#050807ee,#050807f6),
+  url("/brand/world-market-grid.svg") center/cover fixed,#050807}
+.premiumTerminal .ctTopbar{min-height:88px;padding:14px clamp(16px,4vw,48px);border-bottom-color:#24322c;background:#070b0af5;box-shadow:0 12px 40px #0006}
+.premiumTerminal .ctTopbar nav a{font-size:15px;letter-spacing:.02em}.premiumTerminal .ctBrandLogo{margin-right:8px}
+.premiumTerminal .ctHero{
+  position:relative;overflow:hidden;border-color:#2c4038;border-radius:18px;
+  background:linear-gradient(145deg,#101a17f0,#0a100ee8 55%,#0c1418f2);
+  box-shadow:0 34px 90px #000a,0 0 0 1px #38f28e14,inset 0 1px 0 #ffffff0a
+}
+.premiumTerminal .ctHero:before{
+  content:"";position:absolute;inset:auto -8% -40% 35%;height:70%;pointer-events:none;
+  background:url("/brand/market-wave.svg") center/cover no-repeat;opacity:.35
+}
+.premiumTerminal .ctHero>*{position:relative;z-index:1}
+.premiumTerminal .ctEyebrow{color:#62e6b1;letter-spacing:.16em}
+.premiumTerminal .ctHero h1{font-size:clamp(44px,6.4vw,64px);letter-spacing:-.05em}
+.premiumTerminal .ctPanel{
+  border-color:#24332e;border-radius:16px;
+  background:linear-gradient(160deg,#0e1614f2,#090e0cf5);
+  box-shadow:0 22px 60px #0007,inset 0 1px 0 #ffffff08;
+  
+}
+.premiumTerminal .ctPanel:hover{border-color:#3a554c;box-shadow:0 28px 70px #0008,0 0 0 1px #38f28e18}
+.premiumTerminal .ctInstrumentBoard .ctAssetGrid{gap:12px;padding:16px;background:transparent}
+.premiumTerminal .ctInstrumentCard{
+  position:relative;padding:22px 20px 20px;border:1px solid #2a3a34;border-radius:14px;
+  background:linear-gradient(165deg,#101816ee,#0a100ef5);box-shadow:0 16px 40px #0005;overflow:hidden
+}
+.premiumTerminal .ctInstrumentCard:before{
+  content:"";position:absolute;inset:0 auto auto 0;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,#38f28e66,#d9ab5244,transparent)
+}
+.premiumTerminal .ctInstrumentHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.premiumTerminal .ctInstrumentHead span{color:#dce6e1;font-size:14px;font-weight:650}
+.premiumTerminal .ctInstrumentHead small{color:#6f7f78;font:12px var(--font-geist-mono),monospace}
+.premiumTerminal .ctInstrumentCard>strong{display:block;margin:14px 0 6px;font:650 clamp(28px,2.6vw,38px)/1 var(--font-geist-mono),monospace;letter-spacing:-.02em}
+.premiumTerminal .ctInstrumentAge{display:block;margin-top:8px;color:#8a7960;font:650 11px var(--font-geist-mono),monospace;letter-spacing:.04em}
+.premiumTerminal .ctInstrumentAge.is-ready{color:#6f9e8c}
+.premiumTerminal .ctInstrumentCard .miniSparkline{margin-top:14px;max-width:100%;height:36px;opacity:.9}
+.premiumTerminal .ctInstrumentCard p{margin-top:12px;color:#8f9c96;font-size:13px;line-height:1.5}
+.premiumTerminal .ctStatus{border-radius:12px;background:#0b1210f0;}
+.premiumTerminal .ctChartPrimary .dashboardMarketChart{
+  border-color:#2c4038;border-radius:16px;
+  box-shadow:0 36px 100px #000a,0 0 0 1px #38f28e12
+}
+.dashCompact.eliteDashboard{background:transparent}
+.dashSection{
+  border-color:#24332e!important;border-radius:16px!important;
+  background:linear-gradient(160deg,#0e1614f2,#090e0cf5)!important;
+  box-shadow:0 22px 60px #0006,inset 0 1px 0 #ffffff07
+}
+.memberDashboardNav{min-height:84px!important;height:auto!important;padding-block:10px;background:#070b0af5!important;border-color:#24322c!important}
+.dashQuoteStrip article{position:relative}
+.dashQuoteStrip .miniSparkline{opacity:.85}
+
 /* Terminal mini visuals (shared class names with dashboard-elite.css) */
 .customerTerminal .miniSparkline{display:block;width:100%;max-width:160px;height:28px;margin-top:12px;opacity:.8}.customerTerminal .miniSparkline.is-up{color:var(--ft-green)}.customerTerminal .miniSparkline.is-down{color:var(--ft-red)}.customerTerminal .miniSparkline.is-flat,.customerTerminal .miniSparkline.is-neutral{color:#7f9ea8}
 .customerTerminal .miniRangeLane,.customerTerminal .miniScenarioLane{margin:0;padding:18px 22px;border-bottom:1px solid #1e252c}.customerTerminal .ctScenarioPair .miniScenarioLane{padding:12px 0 4px;border:0}.customerTerminal .miniRangeTrack,.customerTerminal .miniScenarioTrack{position:relative;height:10px;border-radius:999px;background:#1c2a31}.customerTerminal .miniRangeFill,.customerTerminal .miniScenarioFill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#34545a,#68d7b4)}.customerTerminal .miniScenarioLane.is-bearish .miniScenarioFill{background:linear-gradient(90deg,#5a3438,#ef7777)}.customerTerminal .miniRangeMark,.customerTerminal .miniScenarioMark{position:absolute;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;border:1px solid #0b1015;background:#c9d5da}.customerTerminal .miniRangeMark.is-current,.customerTerminal .miniScenarioMark.is-current{width:12px;height:12px;margin:-6px 0 0 -6px;background:#edf2f4}.customerTerminal .miniRangeMark.is-ema{background:#76cfd8}.customerTerminal .miniRangeMark.is-ref{background:#d8b36a}.customerTerminal .miniScenarioMark.is-confirm{background:#62e6b1}.customerTerminal .miniScenarioMark.is-invalidate{background:#ef7777}.customerTerminal .miniRangeLegend,.customerTerminal .miniScenarioLegend{display:flex;flex-wrap:wrap;gap:8px 14px;margin:12px 0 0;padding:0;list-style:none}.customerTerminal .miniRangeLegend span,.customerTerminal .miniScenarioLegend span{color:#819097;font-size:11px;text-transform:uppercase}.customerTerminal .miniRangeLegend strong,.customerTerminal .miniScenarioLegend strong{color:#dce4e8;font:650 12px var(--font-geist-mono),monospace}.customerTerminal .miniEvidenceMeter{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin-top:12px}.customerTerminal .miniEvidenceTrack{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;height:6px}.customerTerminal .miniEvidenceTrack i{display:block;height:100%;border-radius:2px;background:#223039}.customerTerminal .miniEvidenceTrack i.is-on{background:#68d7b4}.customerTerminal .miniEvidenceMeter.is-restrictive .miniEvidenceTrack i.is-on{background:#ef7777}.customerTerminal .miniEvidenceMeter.is-balanced .miniEvidenceTrack i.is-on{background:#d8b36a}.customerTerminal .miniEvidenceMeter.is-empty .miniEvidenceTrack i{opacity:.35}.customerTerminal .miniEvidenceLabel{color:#7f8d93;font-size:11px;text-transform:uppercase}.customerTerminal .miniEvidenceMeter strong{color:#d7e0e4;font:650 12px var(--font-geist-mono),monospace}.customerTerminal .miniEvidenceMeter strong em{color:#7f8d93;font-style:normal}
+@media(max-width:960px){.premiumTerminal .ctInstrumentBoard .ctAssetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.premiumTerminal .ctInstrumentCard:last-child{grid-column:1/-1}}
+@media(max-width:600px){.premiumTerminal .ctTopbar{min-height:72px}.premiumTerminal .ctInstrumentBoard .ctAssetGrid{grid-template-columns:1fr}.premiumTerminal .ctInstrumentCard:last-child{grid-column:auto}.premiumTerminal .ctHero h1{font-size:clamp(34px,11vw,44px)}}
+@media(prefers-reduced-motion:reduce){.premiumTerminal .ctPanel:hover{transform:none}}
