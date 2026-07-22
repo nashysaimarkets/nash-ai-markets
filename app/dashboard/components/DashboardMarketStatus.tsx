@@ -1,7 +1,16 @@
 import type { MarketQuote } from "../../lib/market-data.ts";
 import { formatScoreDisplay, formatConfidenceLabel, scoreIsDisplayable } from "../lib/score-display.ts";
+import { Sparkline } from "../../components/mini-visuals/Sparkline.tsx";
+import { EvidenceMeter } from "../../components/mini-visuals/EvidenceMeter.tsx";
 
-type QuoteStrip = { label: string; value: string; change: string };
+type QuoteStrip = {
+  label: string;
+  value: string;
+  change: string;
+  direction?: "up" | "down" | "flat";
+  sparkline?: number[] | null;
+};
+
 type Props = {
   name: string;
   posture: string;
@@ -51,7 +60,14 @@ export function DashboardMarketStatus(props: Props) {
         <p className="dashReviewTrigger"><strong>Review trigger</strong> {props.reviewTrigger}</p>
       </div>
       <dl>
-        <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(props.bullseyeScore, props.decisionReady && scoreIsDisplayable(props.bullseyeScore, props.decisionReady))}<small>{formatConfidenceLabel(props.decisionReady)}</small></dd></div>
+        <div>
+          <dt>Bullseye Score</dt>
+          <dd>
+            {formatScoreDisplay(props.bullseyeScore, props.decisionReady && scoreIsDisplayable(props.bullseyeScore, props.decisionReady))}
+            <EvidenceMeter label="Evidence" value={props.bullseyeScore} ready={props.decisionReady && scoreIsDisplayable(props.bullseyeScore, props.decisionReady)} />
+            <small>{formatConfidenceLabel(props.decisionReady)}</small>
+          </dd>
+        </div>
         <div><dt>Risk rating</dt><dd>{props.riskRating ?? "Not rated"}<small>{props.riskRating ? "Derived from verified inputs" : "Withheld without sufficient verified evidence"}</small></dd></div>
         <div><dt>Session</dt><dd>{props.sessionLabel}<small>{props.sessionDetail}</small></dd></div>
         <div><dt>Next event</dt><dd>{props.nextEvent ? props.nextEvent.name : "No verified schedule"}<small>{props.nextEvent ? `${props.nextEvent.when} · ${props.nextEvent.risk} impact` : "Events appear only from the provider calendar"}</small></dd></div>
@@ -59,20 +75,37 @@ export function DashboardMarketStatus(props: Props) {
     </article>
 
     <div className="dashQuoteStrip" aria-label="Verified cross-market readings">
-      {props.quotes.map((item) => <article key={item.label}><span>{item.label}</span><strong>{item.value}</strong><small>{item.change}</small></article>)}
+      {props.quotes.map((item) => (
+        <article key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.value}</strong>
+          <small>{item.change}</small>
+          <Sparkline values={item.sparkline} tone={item.direction ?? "neutral"} label={`${item.label} recent verified closes`} />
+        </article>
+      ))}
     </div>
   </section>;
 }
 
-export function quoteStripFromSnapshot(quotes: MarketQuote[], stats: { latest: number; percentageChange: number } | null, esChange?: string | null): Array<{ label: string; value: string; change: string }> {
+export function quoteStripFromSnapshot(
+  quotes: MarketQuote[],
+  stats: { latest: number; percentageChange: number } | null,
+  options?: { esSparkline?: number[] | null; esChange?: string | null },
+): QuoteStrip[] {
   const find = (symbol: string) => quotes.find((item) => item.symbol === symbol);
   const price = (value: number | null | undefined) => value == null ? "Unavailable" : value.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const vix = find("VIX"); const two = find("US2Y"); const ten = find("US10Y"); const dxy = find("DXY"); const es = find("ES");
   return [
-    { label: "ES reference", value: stats ? price(stats.latest) : (es?.value ?? "Unavailable"), change: stats ? `${stats.percentageChange >= 0 ? "+" : ""}${stats.percentageChange.toFixed(2)}% / 24h` : (esChange ?? es?.change ?? "Change unavailable") },
-    { label: "VIX", value: vix?.value ?? "Unavailable", change: vix?.change ?? "No verified reading" },
-    { label: "US 2-year", value: two?.value ?? "Unavailable", change: two?.change ?? "No verified reading" },
-    { label: "US 10-year", value: ten?.value ?? "Unavailable", change: ten?.change ?? "No verified reading" },
-    { label: "DXY", value: dxy?.value ?? "Unavailable", change: dxy?.change ?? "No verified reading" },
+    {
+      label: "ES reference",
+      value: stats ? price(stats.latest) : (es?.value ?? "Unavailable"),
+      change: stats ? `${stats.percentageChange >= 0 ? "+" : ""}${stats.percentageChange.toFixed(2)}% / 24h` : (options?.esChange ?? es?.change ?? "Change unavailable"),
+      direction: stats ? (stats.percentageChange > 0 ? "up" : stats.percentageChange < 0 ? "down" : "flat") : es?.direction,
+      sparkline: options?.esSparkline ?? null,
+    },
+    { label: "VIX", value: vix?.value ?? "Unavailable", change: vix?.change ?? "No verified reading", direction: vix?.direction, sparkline: null },
+    { label: "US 2-year", value: two?.value ?? "Unavailable", change: two?.change ?? "No verified reading", direction: two?.direction, sparkline: null },
+    { label: "US 10-year", value: ten?.value ?? "Unavailable", change: ten?.change ?? "No verified reading", direction: ten?.direction, sparkline: null },
+    { label: "DXY", value: dxy?.value ?? "Unavailable", change: dxy?.change ?? "No verified reading", direction: dxy?.direction, sparkline: null },
   ];
 }

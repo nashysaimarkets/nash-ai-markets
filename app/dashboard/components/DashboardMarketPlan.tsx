@@ -1,4 +1,8 @@
 import { formatScoreDisplay, scoreIsDisplayable } from "../lib/score-display.ts";
+import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane.tsx";
+import { ScenarioPositionLane } from "../../components/mini-visuals/ScenarioPositionLane.tsx";
+import { EvidenceMeter } from "../../components/mini-visuals/EvidenceMeter.tsx";
+import type { RangeLaneMarkers, ScenarioLaneMarkers } from "../../components/mini-visuals/mini-visual-data.ts";
 
 type Props = {
   decisionReady: boolean;
@@ -17,6 +21,9 @@ type Props = {
   noTrade: string[];
   reviewTrigger: string;
   interpretation: string;
+  rangeLane?: RangeLaneMarkers | null;
+  bullishLane?: ScenarioLaneMarkers | null;
+  bearishLane?: ScenarioLaneMarkers | null;
 };
 
 function pretty(value: string) {
@@ -39,13 +46,20 @@ export function DashboardMarketPlan(props: Props) {
       <div><dt>Volatility</dt><dd>{props.decisionReady && props.volatility ? pretty(props.volatility) : "Not rated"}</dd></div>
       <div><dt>Execution readiness</dt><dd>{props.decisionReady && props.readiness ? pretty(props.readiness) : "Not ready"}</dd></div>
       <div><dt>Preferred approach</dt><dd>{props.decisionReady && props.approach ? pretty(props.approach) : "Wait for a current update"}</dd></div>
-      <div><dt>Bullseye Score</dt><dd>{formatScoreDisplay(props.score, scoreReady)}</dd></div>
+      <div>
+        <dt>Bullseye Score</dt>
+        <dd>
+          {formatScoreDisplay(props.score, scoreReady)}
+          <EvidenceMeter label="Evidence" value={props.score} ready={scoreReady} />
+        </dd>
+      </div>
       <div><dt>Review trigger</dt><dd>{props.reviewTrigger}</dd></div>
     </dl>
 
     <div className="dashReferenceLevels" aria-label="Verified rolling range and reference levels">
       <h3>Verified rolling range and reference levels</h3>
       <p>These are rolling 24-hour candle observations, not labelled exchange support or resistance unless a deterministic structure rule applies.</p>
+      <RangePositionLane markers={props.rangeLane} />
       <ul>
         <li><span>Verified rolling range high</span><strong>{props.rangeHigh ?? "Unavailable"}</strong></li>
         <li><span>Verified rolling range low</span><strong>{props.rangeLow ?? "Unavailable"}</strong></li>
@@ -56,10 +70,12 @@ export function DashboardMarketPlan(props: Props) {
     <div className="dashPlanColumns">
       <article>
         <h3>Bullish confirmation</h3>
+        <ScenarioPositionLane markers={props.decisionReady ? props.bullishLane : null} tone="bullish" />
         <p>{props.decisionReady ? props.bullishConfirm : "Withheld until verified inputs support a directional case."}</p>
       </article>
       <article>
         <h3>Bearish confirmation</h3>
+        <ScenarioPositionLane markers={props.decisionReady ? props.bearishLane : null} tone="bearish" />
         <p>{props.decisionReady ? props.bearishConfirm : "Withheld until verified inputs support a directional case."}</p>
       </article>
       <article>

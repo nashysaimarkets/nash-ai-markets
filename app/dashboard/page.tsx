@@ -18,6 +18,7 @@ import { DashboardReviewPanel } from "./components/DashboardReviewPanel.tsx";
 import { candleReferenceLevels, candleSessionStats } from "./lib/candle-analysis.ts";
 import { interpretCrossMarket } from "./lib/cross-market-interpretation.ts";
 import { buildPostureExplanation } from "./lib/posture-summary.ts";
+import { rangeLaneFromCandles, scenarioLaneMarkers, sparklineFromCandles, parsePriceLevel } from "../components/mini-visuals/mini-visual-data.ts";
 import { buildDailyMission, currentServerTimestamp, memberDisplayName, selectNextEconomicEvent } from "./lib/daily-dashboard.ts";
 import { commandCentreState, marketSessionState } from "./lib/command-centre.ts";
 import { formatCustomerParticipationWarnings } from "../terminal/lib/customer-warnings.ts";
@@ -85,6 +86,8 @@ export default async function MemberDashboard() {
   const rollingHigh = candleLevels.find((level) => level.label === "24h high");
   const rollingLow = candleLevels.find((level) => level.label === "24h low");
   const firstClose = candleLevels.find((level) => level.label === "First available close");
+  const esSparkline = candleSeries?.candles.length ? sparklineFromCandles(candleSeries.candles) : null;
+  const rangeLane = candleSeries?.candles.length ? rangeLaneFromCandles(candleSeries.candles) : null;
   const interpretation = observable ? interpretCrossMarket(market.snapshot) : "Verified cross-market readings are unavailable.";
   const posture = buildPostureExplanation({
     decisionReady,
@@ -130,6 +133,24 @@ export default async function MemberDashboard() {
     ?? decision.invalidationConditions[0]?.kind.replaceAll("_", " ").toLowerCase()
     ?? "Any unverified, stale or incomplete input.";
   const score = decisionReady ? Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence) : null;
+  const bullishLane = rangeLane
+    ? scenarioLaneMarkers({
+      low: rangeLane.low,
+      high: rangeLane.high,
+      current: rangeLane.current,
+      confirmation: rollingHigh?.value ?? parsePriceLevel(bullish?.trigger.level) ?? rangeLane.high,
+      invalidation: rollingLow?.value ?? parsePriceLevel(bullish?.invalidation.level) ?? rangeLane.low,
+    })
+    : null;
+  const bearishLane = rangeLane
+    ? scenarioLaneMarkers({
+      low: rangeLane.low,
+      high: rangeLane.high,
+      current: rangeLane.current,
+      confirmation: rollingLow?.value ?? parsePriceLevel(bearish?.trigger.level) ?? rangeLane.low,
+      invalidation: rollingHigh?.value ?? parsePriceLevel(bearish?.invalidation.level) ?? rangeLane.high,
+    })
+    : null;
 
   return <MemberShell active="dashboard">
     <div className="memberDashboardShell eliteDashboard dashCompact">
@@ -144,7 +165,7 @@ export default async function MemberDashboard() {
         lastVerified={`${marketTimestamp} UK`}
         sessionLabel={session.label}
         sessionDetail={session.detail}
-        quotes={quoteStripFromSnapshot(market.snapshot.quotes, candleStats)}
+        quotes={quoteStripFromSnapshot(market.snapshot.quotes, candleStats, { esSparkline })}
         nextEvent={nextEvent ? {
           name: nextEvent.name,
           risk: nextEvent.risk,
@@ -191,6 +212,9 @@ export default async function MemberDashboard() {
         noTrade={noTrade}
         reviewTrigger={posture.reviewTrigger}
         interpretation={interpretation}
+        rangeLane={rangeLane}
+        bullishLane={bullishLane}
+        bearishLane={bearishLane}
       /> : <section className="dashSection"><p className="dashAccountHint">Today&apos;s market plan unlocks with Pro or Elite. <Link href="/profile">View access in Profile</Link>.</p></section>}
 
       <DashboardReviewPanel
