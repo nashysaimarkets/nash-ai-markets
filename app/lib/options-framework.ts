@@ -1,4 +1,5 @@
 import type { MarketSnapshot } from "./market-data.ts";
+import type { MarketIntelligence } from "./market-intelligence-engine.ts";
 import type { TradingDecision } from "./trading-decision-engine.ts";
 import type { TradePlan } from "./structured-trade-planner.ts";
 
@@ -28,6 +29,7 @@ export function buildOptionsFramework(input: {
   decision: TradingDecision;
   plan: TradePlan;
   decisionReady: boolean;
+  intelligence?: MarketIntelligence;
 }): {
   providerState: "unavailable";
   label: "Underlying-based framework";
@@ -38,14 +40,28 @@ export function buildOptionsFramework(input: {
   ideas: OptionsIdea[];
   watchlist: OptionsIdea[];
   disclosure: string;
+  bullishConfirm: string;
+  bearishConfirm: string;
+  invalidation: string;
 } {
   const es = input.snapshot.quotes.find((q) => q.symbol === "ES");
   const vix = input.snapshot.quotes.find((q) => q.symbol === "VIX");
   const asOf = input.snapshot.asOf || new Date().toISOString();
   const eventRisk = input.snapshot.events.length
-    ? `${input.snapshot.events.length} verified catalyst(s) in window`
-    : "No verified catalyst schedule";
+    ? `${input.snapshot.events.length} verified US catalyst(s) in the next week`
+    : "No verified US medium/high-impact catalysts in window";
   const baseUnavailable = !input.decisionReady || !es;
+  const bullish = input.intelligence?.scenarios.find((scenario) => scenario.type === "BULLISH");
+  const bearish = input.intelligence?.scenarios.find((scenario) => scenario.type === "BEARISH");
+  const bullishConfirm = bullish?.trigger.level
+    ? `Bullish confirmation above ${bullish.trigger.level}`
+    : "Await verified upside confirmation on ES";
+  const bearishConfirm = bearish?.trigger.level
+    ? `Bearish confirmation below ${bearish.trigger.level}`
+    : "Await verified downside confirmation on ES";
+  const invalidation = bullish?.invalidation.level
+    ?? bearish?.invalidation.level
+    ?? "Stand aside if verified references fail or data ages out";
 
   const mk = (
     id: string,
@@ -53,7 +69,7 @@ export function buildOptionsFramework(input: {
     strategyType: string,
     watchingFor: string,
     trigger: string,
-    invalidation: string,
+    ideaInvalidation: string,
   ): OptionsIdea => ({
     id,
     status: baseUnavailable ? "Unavailable" : "Watching",
@@ -61,8 +77,10 @@ export function buildOptionsFramework(input: {
     strategyType,
     watchingFor,
     trigger,
-    invalidation,
-    expiryWindow: "Prefer defined-risk expiries after the next verified catalyst window",
+    invalidation: ideaInvalidation,
+    expiryWindow: input.snapshot.events[0]
+      ? `Prefer defined-risk expiries after ${input.snapshot.events[0].name}`
+      : "Prefer defined-risk expiries after the next verified catalyst window",
     strikeSelectionLogic: "Select strikes only from a verified options chain once available.",
     maxDefinedRisk: "Require a defined maximum loss before entry; size from account risk rules.",
     volatilityContext: input.decisionReady
@@ -72,6 +90,9 @@ export function buildOptionsFramework(input: {
     reasonsToAvoid: [
       ...(input.decision.tradePermission === "no-trade" ? ["Trade permission is no-trade"] : []),
       ...(!vix ? ["VIX reading unavailable"] : []),
+      ...(input.snapshot.events.some((event) => event.risk === "HIGH")
+        ? ["High-impact US catalyst is scheduled — size and timing matter"]
+        : []),
     ],
     evidenceQuality: "framework-only",
     timestamp: asOf,
@@ -82,21 +103,21 @@ export function buildOptionsFramework(input: {
       "bullish-debit",
       "bullish",
       "Bullish debit vertical",
-      "Verified upside confirmation on ES",
+      bullishConfirm,
       input.plan.directionalPosture.includes("bull") || input.decision.marketBias === "bullish"
-        ? "Relevant once upside confirmation prints on verified ES evidence"
+        ? `Relevant once ${bullishConfirm.toLowerCase()} prints on verified ES evidence`
         : "Waiting for posture to support upside participation",
-      "Invalidate if ES loses the verified invalidation reference or data becomes stale",
+      `Invalidate if ${invalidation}`,
     ),
     mk(
       "bearish-debit",
       "bearish",
       "Bearish debit vertical",
-      "Verified downside confirmation on ES",
+      bearishConfirm,
       input.decision.marketBias === "bearish"
-        ? "Relevant once downside confirmation prints on verified ES evidence"
+        ? `Relevant once ${bearishConfirm.toLowerCase()} prints on verified ES evidence`
         : "Waiting for posture to support downside participation",
-      "Invalidate if ES reclaims the verified invalidation reference or data becomes stale",
+      `Invalidate if ${invalidation}`,
     ),
     mk(
       "neutral-iron",
@@ -120,5 +141,8 @@ export function buildOptionsFramework(input: {
     ideas,
     watchlist: ideas,
     disclosure: "Educational options framework only. Options chain unavailable — exact strikes, premiums, Greeks and expected-move figures stay withheld until a verified chain provider exists. Futures and options involve substantial risk of loss.",
+    bullishConfirm,
+    bearishConfirm,
+    invalidation,
   };
 }

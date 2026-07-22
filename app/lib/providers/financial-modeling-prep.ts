@@ -6,6 +6,7 @@ import type {
   MarketQuote,
   MarketSnapshot,
 } from "../market-data.ts";
+import { loadFmpEconomicCalendar } from "./fmp-economic-calendar.ts";
 
 export const FINANCIAL_MODELING_PREP_PROVIDER_NAME = "Financial Modeling Prep";
 export const DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL = "https://financialmodelingprep.com/stable/";
@@ -376,11 +377,29 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
 
       try {
         logger("market-provider:request", { provider: FINANCIAL_MODELING_PREP_PROVIDER_NAME });
-        const [esResult, vixResult, dollarResult, treasuryResult] = await Promise.allSettled([
-          request("sp500Futures", "ES futures", "quote", "quote", symbols.sp500Futures),
-          request("vix", "VIX", "quote", "quote", symbols.vix),
-          request("usDollarIndex", "US Dollar Index", "quote", "dollar_quote", symbols.usDollarIndex),
-          request("treasuryYields", "Treasury rates", "treasury-rates", "treasury"),
+        const [esResult, vixResult, dollarResult, treasuryResult, calendarEvents] = await Promise.all([
+          request("sp500Futures", "ES futures", "quote", "quote", symbols.sp500Futures).then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
+          request("vix", "VIX", "quote", "quote", symbols.vix).then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
+          request("usDollarIndex", "US Dollar Index", "quote", "dollar_quote", symbols.usDollarIndex).then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
+          request("treasuryYields", "Treasury rates", "treasury-rates", "treasury").then(
+            (value) => ({ status: "fulfilled" as const, value }),
+            (reason) => ({ status: "rejected" as const, reason }),
+          ),
+          loadFmpEconomicCalendar({
+            apiKey: options.apiKey,
+            baseUrl,
+            now: Date.now(),
+            fetchImpl,
+          }),
         ]);
         if (esResult.status === "rejected") throw esResult.reason;
         const es = parseQuote(esResult.value, symbols.sp500Futures);
@@ -461,11 +480,13 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
           asOf,
           quotes,
           levels: [],
-          events: [],
+          events: calendarEvents,
           bias: "UNAVAILABLE",
           risk: "MODERATE",
           summary: secondaryAvailable
-            ? "Verified market observations supplied by Financial Modeling Prep. Economic calendar data is not connected."
+            ? calendarEvents.length
+              ? "Verified market observations and US economic calendar supplied by Financial Modeling Prep."
+              : "Verified market observations supplied by Financial Modeling Prep. No US medium/high-impact calendar rows were returned for the next week."
             : "Verified S&P observation supplied by Financial Modeling Prep. One or more secondary instruments are unavailable; trading conclusions remain fail-closed.",
           evidence: {},
         };
