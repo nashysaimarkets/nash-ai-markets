@@ -10,6 +10,7 @@ import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { MarketGatewayStatus } from "../../lib/live-market-gateway.ts";
 import type { RangeLaneMarkers } from "../mini-visuals/mini-visual-data.ts";
 import { diffSnapshots, METHODOLOGY_VERSION, type AnalysisSnapshotPayload } from "../../lib/market-analysis-snapshot.ts";
+import type { MarketDeskSignals } from "../../lib/market-desk-signals.ts";
 
 type Props = {
   name: string;
@@ -29,6 +30,7 @@ type Props = {
   bearishConfirm: string;
   invalidation: string;
   noTrade: string[];
+  deskSignals?: MarketDeskSignals | null;
 };
 
 const ACTIONS = [
@@ -58,6 +60,7 @@ export function MissionControl({
   bearishConfirm,
   invalidation,
   noTrade,
+  deskSignals = null,
 }: Props) {
   const changed = diffSnapshots(previousPayload, {
     version: METHODOLOGY_VERSION,
@@ -115,6 +118,7 @@ export function MissionControl({
     invalidation,
     noTrade,
     dataAge,
+    deskSignals,
   };
 
   return (

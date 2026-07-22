@@ -398,6 +398,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
             apiKey: options.apiKey,
             baseUrl,
             now: Date.now(),
+            timeoutMs,
             fetchImpl,
           }),
         ]);

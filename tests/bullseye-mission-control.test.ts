@@ -16,7 +16,7 @@ test("Mission Control includes workflow actions and path cards", async () => {
   assert.match(component, /Open Terminal/);
   assert.match(component, /Read Market Brief/);
   assert.match(component, /Open Options Corner/);
-  assert.match(component, /Review Yesterday/);
+  assert.match(component, /Review Previous Session/);
   assert.match(component, /mcPaths/);
   assert.match(component, /No-trade/);
 });
@@ -29,7 +29,7 @@ test("dashboard includes the premium plan and customer trust labels", async () =
   assert.match(dashboard, /MissionControl/);
   assert.doesNotMatch(dashboard, /href="\/terminal\/diagnostics"/);
   assert.match(mission, /Open Terminal/);
-  assert.match(mission, /Review Yesterday/);
+  assert.match(mission, /Review Previous Session/);
   assert.match(styles, /\.mcHero\{/);
 });
 

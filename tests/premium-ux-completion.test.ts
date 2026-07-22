@@ -64,6 +64,37 @@ test("Ask Bullseye answers only from provided verified context", () => {
   assert.match(answer.body, /closed|Stand aside|Permission/i);
   assert.match(answer.disclaimer, /Deterministic educational/);
   assert.doesNotMatch(answer.body, /buy calls|sell puts|delta|premium \$/i);
+
+  const lean = answerAskBullseye("desk-lean", {
+    ...ctx,
+    deskSignals: {
+      schemaVersion: "1.0",
+      overallLean: "buying",
+      buying: {
+        side: "buying",
+        strength: "moderate",
+        status: "active",
+        headline: "Moderate buying lean",
+        summary: "Verified cross-asset inputs currently lean toward an educational buying interpretation.",
+        drivers: ["ES futures latest move is higher (+1.2%)."],
+        watchingFor: "Watching bullish confirmation above 6365 on verified ES evidence.",
+      },
+      selling: {
+        side: "selling",
+        strength: "none",
+        status: "inactive",
+        headline: "Selling lean inactive",
+        summary: "Verified inputs do not currently support an educational selling lean.",
+        drivers: ["No verified inputs currently align with a selling lean."],
+        watchingFor: "Watching for verified downside confirmation on ES before treating selling lean as active.",
+      },
+      contextNotes: [],
+      disclosure: "Interpretive educational desk signals derived from verified market snapshot inputs. Not trade advice, not broker execution signals, and not executable orders.",
+    },
+  });
+  assert.match(lean.body, /Moderate buying lean/i);
+  assert.match(lean.bullets.join(" "), /ES futures|educational desk signals/i);
+  assert.doesNotMatch(lean.body, /strike|greek|premium \$/i);
 });
 
 test("premium UX surfaces are wired without auth churn", async () => {
@@ -90,7 +121,17 @@ test("premium UX surfaces are wired without auth churn", async () => {
   assert.match(motion, /data-presentation/);
   assert.match(mission, /AskBullseye/);
   assert.match(mission, /mcActionTile/);
+  assert.match(mission, /deskSignals/);
   assert.match(dashboard, /premium-motion\.css/);
+});
+
+test("logo concept review harness stays non-production", async () => {
+  const page = await read("../app/dev/logo-concepts/page.tsx");
+  assert.match(page, /NODE_ENV === "production"/);
+  assert.match(page, /logo-mark-command\.svg/);
+  assert.match(page, /logo-mark-candle\.svg/);
+  assert.match(page, /logo-horizontal-command\.svg/);
+  assert.match(page, /Logo concept review/);
 });
 
 test("mission control overflow root cause is cleared", async () => {

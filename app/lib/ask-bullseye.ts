@@ -3,6 +3,7 @@ import type { MarketIntelligence } from "./market-intelligence-engine.ts";
 import type { TradingDecision } from "./trading-decision-engine.ts";
 import type { TradePlan } from "./structured-trade-planner.ts";
 import type { MarketGatewayStatus } from "./live-market-gateway.ts";
+import type { MarketDeskSignals } from "./market-desk-signals.ts";
 import { formatAgeFromMs } from "./freshness-labels.ts";
 
 export type AskBullseyeContext = {
@@ -17,6 +18,7 @@ export type AskBullseyeContext = {
   invalidation: string;
   noTrade: string[];
   dataAge: string;
+  deskSignals?: MarketDeskSignals | null;
 };
 
 export type AskBullseyeQuestion = {
@@ -26,6 +28,7 @@ export type AskBullseyeQuestion = {
 
 export const ASK_BULLSEYE_QUESTIONS: AskBullseyeQuestion[] = [
   { id: "matters-most", label: "What matters most right now?" },
+  { id: "desk-lean", label: "Is the desk leaning buy or sell?" },
   { id: "stand-aside", label: "Why is Bullseye standing aside?" },
   { id: "bullish", label: "What would make the outlook bullish?" },
   { id: "bearish", label: "What would make the outlook bearish?" },
@@ -97,6 +100,39 @@ export function answerAskBullseye(
         ],
         disclaimer: DISCLAIMER,
       };
+    case "desk-lean": {
+      const desk = ctx.deskSignals;
+      if (!desk || desk.overallLean === "insufficient") {
+        return {
+          questionId,
+          title: "Desk buying and selling lean",
+          body: "Interpretive desk signals are unavailable until verified snapshot inputs are complete. No buying or selling lean is inferred from empty evidence.",
+          bullets: [
+            "Educational desk leans require verified ES and cross-asset quotes.",
+            `Snapshot age: ${ctx.dataAge}`,
+            desk?.disclosure ?? "Desk signals stay educational and never become executable orders.",
+          ],
+          disclaimer: DISCLAIMER,
+        };
+      }
+      const active = desk.overallLean === "buying" ? desk.buying : desk.overallLean === "selling" ? desk.selling : null;
+      return {
+        questionId,
+        title: "Desk buying and selling lean",
+        body: active
+          ? `${active.headline}. ${active.summary}`
+          : `Overall desk lean is ${desk.overallLean}. Buying is ${desk.buying.status}; selling is ${desk.selling.status}.`,
+        bullets: [
+          ...(active?.drivers.slice(0, 3) ?? [
+            `Buying: ${desk.buying.headline}`,
+            `Selling: ${desk.selling.headline}`,
+          ]),
+          active ? `Watching: ${active.watchingFor}` : `Buying watch: ${desk.buying.watchingFor}`,
+          desk.disclosure,
+        ],
+        disclaimer: DISCLAIMER,
+      };
+    }
     case "stand-aside":
       return {
         questionId,

@@ -18,6 +18,7 @@ import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard
 import { rangeLaneFromCandles, sparklineFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
 import { formatCustomerParticipationWarnings } from "../terminal/lib/customer-warnings.ts";
 import { getPriorSnapshot, persistAnalysisSnapshot } from "../lib/server/market-snapshots.ts";
+import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -120,6 +121,13 @@ export default async function MemberDashboard() {
       latest: rangeLane.current,
     }
     : null;
+  const deskSignals = createMarketDeskSignals({
+    snapshot: market.snapshot,
+    intelligence,
+    decision,
+    plan,
+    candle: deskCandleContextFromRange(rangeLane),
+  });
 
   void persistAnalysisSnapshot({
     snapshot: market.snapshot,
@@ -151,6 +159,7 @@ export default async function MemberDashboard() {
         bearishConfirm={bearishConfirm}
         invalidation={String(invalidation)}
         noTrade={noTrade}
+        deskSignals={deskSignals}
       />
       {candleSeriesByInstrument ? (
         <CrossAssetCandleGallery

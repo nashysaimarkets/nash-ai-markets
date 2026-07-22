@@ -84,11 +84,13 @@ export async function loadFmpEconomicCalendar(input: {
   apiKey: string;
   baseUrl?: string;
   now?: number;
+  timeoutMs?: number;
   fetchImpl?: FetchLike;
 }): Promise<MarketEvent[]> {
   const apiKey = input.apiKey.trim();
   if (!apiKey) return [];
   const now = input.now ?? Date.now();
+  const timeoutMs = Math.max(1, input.timeoutMs ?? 5_000);
   const base = (input.baseUrl?.trim() || "https://financialmodelingprep.com/stable/").replace(/\/?$/, "/");
   const from = new Date(now).toISOString().slice(0, 10);
   const to = new Date(now + 7 * 24 * 60 * 60_000).toISOString().slice(0, 10);
@@ -99,7 +101,7 @@ export async function loadFmpEconomicCalendar(input: {
   try {
     const response = await (input.fetchImpl ?? fetch)(url, {
       cache: "no-store",
-      signal: AbortSignal.timeout(5_000),
+      signal: AbortSignal.timeout(timeoutMs),
     });
     if (!response.ok) return [];
     const payload = await response.json().catch(() => null);

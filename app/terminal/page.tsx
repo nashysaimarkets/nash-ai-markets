@@ -208,6 +208,7 @@ export default async function Terminal() {
             invalidation,
             noTrade: decision.noTradeReasons,
             dataAge: snapshotAge,
+            deskSignals,
           }}
         />
 

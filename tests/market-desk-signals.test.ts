@@ -151,7 +151,10 @@ test("terminal and options surfaces wire desk signals with educational framing",
   assert.match(options, /MarketDeskSignalsPanel/);
   assert.match(component, /Market buying &amp; selling signals|Market buying & selling signals/);
   assert.match(component, /Interpretive desk leans/);
+  assert.match(component, /ctDeskStrength/);
+  assert.match(component, /is-strength-\$\{card\.strength\}/);
   assert.match(styles, /\.ctDeskSignalPair/);
   assert.match(styles, /\.ctDeskSignalCard\.is-buying/);
   assert.match(styles, /\.ctDeskSignalCard\.is-selling/);
+  assert.match(styles, /\.ctDeskStrength/);
 });

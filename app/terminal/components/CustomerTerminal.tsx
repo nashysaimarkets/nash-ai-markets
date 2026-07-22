@@ -231,10 +231,13 @@ export function MarketDeskSignalsPanel({
     </header>
     <div className="ctDeskSignalPair">
       {cards.map((card) => (
-        <article key={card.side} className={`ctDeskSignalCard is-${card.side} is-${card.status}`}>
+        <article key={card.side} className={`ctDeskSignalCard is-${card.side} is-${card.status}${card.strength !== "none" ? ` is-strength-${card.strength}` : ""}`}>
           <div className="ctDeskSignalHead">
             <span>{card.side === "buying" ? "Buying signal" : "Selling signal"}</span>
-            <em>{card.status}</em>
+            <div className="ctDeskSignalTags">
+              {card.strength !== "none" ? <em className="ctDeskStrength">{card.strength}</em> : null}
+              <em>{card.status}</em>
+            </div>
           </div>
           <strong>{card.headline}</strong>
           <p>{card.summary}</p>

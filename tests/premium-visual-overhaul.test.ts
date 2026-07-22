@@ -16,7 +16,7 @@ test("BrandLogo is enlarged and shared across member and terminal surfaces", asy
   assert.match(logo, /Project BULLSEYE/);
   assert.match(logo, /data-project="bullseye"/);
   assert.match(globals, /height:56px/);
-  assert.match(terminal, /BrandLogo authenticated/);
+  assert.match(terminal, /MemberShell/);
   assert.doesNotMatch(terminal, /ftBrand|NASH <b>AI<\/b> \/ BULLSEYE/);
   assert.match(shell, /BrandLogo authenticated/);
 });

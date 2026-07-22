@@ -59,7 +59,7 @@ test("dashboard and terminal wire mini visuals without inventing cross-asset his
   ]);
   assert.match(dashboard, /sparklineFromCandles/);
   assert.match(dashboard, /rangeLaneFromCandles/);
-  assert.match(terminal, /sparklines=\{\{ ES: esSparkline \}\}/);
+  assert.match(terminal, /sparklines=\{\{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline \}\}/);
   assert.match(status, /Sparkline/);
   assert.match(status, /sparkline: null/);
   assert.match(plan, /RangePositionLane/);

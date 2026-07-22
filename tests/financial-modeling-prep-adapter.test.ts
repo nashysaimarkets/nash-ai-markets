@@ -22,6 +22,9 @@ function createMockFetch(asOf: string) {
   return async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     const url = new URL(String(input));
     assert.equal(url.searchParams.get("apikey") === TEST_API_KEY, true);
+    if (url.pathname.endsWith("/economic-calendar")) {
+      return jsonResponse([]);
+    }
     assert.equal(url.searchParams.get("region"), "us");
     assert.equal(url.searchParams.get("format"), "json");
     assert.equal(new Headers(init?.headers).has("apikey"), false);
@@ -280,10 +283,11 @@ test("appends query authentication without replacing existing query parameters",
   });
 
   await adapter.fetchSnapshot();
-  assert.equal(requestedQueries.length, 4);
+  assert.equal(requestedQueries.length, 5);
   assert.equal(requestedQueries.every((query) => query.apikey === TEST_API_KEY), true);
-  assert.equal(requestedQueries.every((query) => query.region === "us" && query.format === "json"), true);
+  assert.equal(requestedQueries.filter((query) => query.region === "us" && query.format === "json").length, 4);
   assert.equal(requestedQueries.filter((query) => query.symbol).length, 3);
+  assert.equal(requestedQueries.some((query) => query.from && query.to), true);
 });
 
 test("defaults the FMP base URL when FMP_API_BASE_URL is missing", async () => {
@@ -298,6 +302,9 @@ test("defaults the FMP base URL when FMP_API_BASE_URL is missing", async () => {
       if (url.pathname.endsWith("/treasury-rates")) {
         return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
       }
+      if (url.pathname.endsWith("/economic-calendar")) {
+        return jsonResponse([]);
+      }
       const symbol = url.searchParams.get("symbol");
       return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp }]);
     },
@@ -305,7 +312,7 @@ test("defaults the FMP base URL when FMP_API_BASE_URL is missing", async () => {
 
   const snapshot = await adapter.fetchSnapshot();
   assert.equal(snapshot?.status, "LIVE");
-  assert.equal(requestedUrls.length, 4);
+  assert.equal(requestedUrls.length, 5);
   assert.equal(requestedUrls.every((url) => url.origin === new URL(DEFAULT_FINANCIAL_MODELING_PREP_BASE_URL).origin), true);
   assert.equal(requestedUrls.every((url) => url.pathname.startsWith("/stable/")), true);
 });
@@ -582,6 +589,7 @@ test("supports environment-provided S&P 500 symbol overrides with accurate prese
       const url = new URL(String(input));
       assert.equal(url.searchParams.get("apikey") === TEST_API_KEY, true);
       if (url.pathname.endsWith("/treasury-rates")) return jsonResponse([{ date: asOf, year2: 4.18, year10: 4.42 }]);
+      if (url.pathname.endsWith("/economic-calendar")) return jsonResponse([]);
       const symbol = url.searchParams.get("symbol")!;
       requestedSymbols.push(symbol);
       return jsonResponse([{ symbol, price: 100, change: 0, changesPercentage: 0, timestamp }]);
