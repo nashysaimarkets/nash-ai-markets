@@ -10,6 +10,7 @@ import { BrandLogo } from "../components/BrandLogo";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
 import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
+import { KeyMarketInformation } from "../components/mini-visuals/KeyMarketInformation";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
@@ -106,12 +107,24 @@ export default async function Terminal() {
         {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
       </section>
 
+      <KeyMarketInformation
+        snapshot={snapshot}
+        intelligence={intelligence}
+        decision={decision}
+        gatewayStatus={gatewayStatus}
+        esSparkline={esSparkline}
+        rangeLane={rangeLane}
+      />
+
       {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} /></section> : null}
       {!paid ? <LockedPremiumCard tier="pro" title="Unlock the verified market chart" value="Pro and Elite members receive the verified candlestick workspace with interval controls and fail-closed empty states." benefits={["Verified OHLCV history", "Interval controls", "No invented candles"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} /> : null}
 
       {access.features["trade-planner"] ? <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="elite" title="Unlock today’s complete market plan" value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework." benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
-      {customerWarnings.length ? <section className="ctPanel ctConstraintsPanel" aria-labelledby="customer-warnings-title"><header><div><span>Participation limits</span><h2 id="customer-warnings-title">Delay and no-trade conditions</h2></div></header><div className="ctConstraints"><strong>Conditions limiting participation</strong><ul>{customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div></section> : null}
+      {customerWarnings.length ? <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" aria-labelledby="customer-warnings-title">
+        <summary id="customer-warnings-title"><span>Participation limits</span><strong>Delay and no-trade conditions</strong><small>{customerWarnings.length} items</small></summary>
+        <div className="ctConstraints"><ul>{customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
+      </details> : null}
 
       <CrossAssetBoard snapshot={snapshot} sparklines={{ ES: esSparkline }} volatilityRegime={decisionReady ? decision.volatilityRegime : null} />
       {paid && candleSeries ? <StructureLevelsPanel levels={candleLevels} recentRange={candleStats?.averageCandleRange ?? null} rangeLane={rangeLane} /> : null}

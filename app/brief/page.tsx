@@ -16,10 +16,10 @@ import {
 import { generateAIMarketBriefSelection } from "../lib/server/ai-market-brief.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
+import { formatSnapshotAge, isDecisionReadySnapshot } from "../lib/market-data.ts";
 import { BullseyeGauge } from "../components/mini-visuals/BullseyeGauge.tsx";
 import { getConfiguredFmpCandles, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
-import { sparklineFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
-import { isDecisionReadySnapshot } from "../lib/market-data.ts";
+import { parsePriceLevel, sparklineFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
 import { CrossAssetBoard } from "../terminal/components/CustomerTerminal.tsx";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
@@ -126,6 +126,24 @@ export default async function AIMarketBriefPage() {
 
       {brief.mode === "unavailable" ? <SafeState title={brief.headline} tone="danger"><p>{brief.summary}</p><Link href="/brief">Refresh brief</Link></SafeState> : null}
 
+      {(() => {
+        const find = (symbol: string) => market.snapshot.quotes.find((item) => item.symbol === symbol);
+        const es = find("ES");
+        const vix = find("VIX");
+        const two = parsePriceLevel(find("US2Y")?.value);
+        const ten = parsePriceLevel(find("US10Y")?.value);
+        const dxy = find("DXY");
+        const spread = two != null && ten != null ? ten - two : null;
+        return <section className="briefKeyRibbon" aria-label="Key market information">
+          <article><span>ES</span><strong>{es?.value ?? "—"}</strong><small>{es?.change ?? "Unavailable"}</small></article>
+          <article><span>VIX</span><strong>{vix?.value ?? "—"}</strong><small>{decisionReady ? decision.volatilityRegime : "Not rated"}</small></article>
+          <article><span>Rates spread</span><strong>{spread != null ? `${spread >= 0 ? "+" : ""}${spread.toFixed(2)} pp` : "—"}</strong><small>10Y − 2Y</small></article>
+          <article><span>DXY</span><strong>{dxy?.value ?? "—"}</strong><small>{dxy?.change ?? "Unavailable"}</small></article>
+          <article><span>Next event</span><strong>{market.snapshot.events[0]?.name ?? "Awaiting schedule"}</strong><small>{market.snapshot.events[0]?.time ?? "Unverified excluded"}</small></article>
+          <article><span>Bullseye posture</span><strong>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Stand aside"}</strong><small>{formatSnapshotAge(market.snapshot.asOf)}</small></article>
+        </section>;
+      })()}
+
       <section className="briefCommand" aria-label="Brief decision summary">
         <div className="briefCommandGauge">
           <BullseyeGauge
@@ -133,6 +151,7 @@ export default async function AIMarketBriefPage() {
             ready={scoreReady}
             posture={plan.directionalPosture}
             delayed={delayed}
+            compact
           />
         </div>
         <div className="briefCommandCopy">
@@ -156,6 +175,7 @@ export default async function AIMarketBriefPage() {
           snapshot={market.snapshot}
           sparklines={{ ES: esSparkline }}
           volatilityRegime={decisionReady ? decision.volatilityRegime : null}
+          compact
         />
       </div>
 

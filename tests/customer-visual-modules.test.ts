@@ -37,9 +37,25 @@ test("truthful history empty states exist as real components", async () => {
     read("../app/components/mini-visuals/EventWindowEmpty.tsx"),
     read("../app/components/mini-visuals/BullseyeGauge.tsx"),
   ]);
-  assert.match(unavailable, /Historical series unavailable/);
+  assert.match(unavailable, /History unavailable/);
   assert.match(eventEmpty, /Awaiting verified schedule/);
   assert.match(eventEmpty, /Unverified or invented catalysts are excluded/);
-  assert.match(gauge, /Awaiting verified inputs/);
+  assert.match(gauge, /not calculated/);
   assert.match(gauge, /Not calculated/);
+});
+
+test("terminal wires key market information and safe hero classes", async () => {
+  const [terminal, customer, styles] = await Promise.all([
+    read("../app/terminal/page.tsx"),
+    read("../app/terminal/components/CustomerTerminal.tsx"),
+    read("../app/mission-control.css"),
+  ]);
+  assert.match(terminal, /KeyMarketInformation/);
+  assert.match(customer, /ctHeroSummary/);
+  assert.match(customer, /ctHeroWatermark/);
+  assert.match(customer, /ctInstrumentMeta/);
+  assert.match(styles, /\.ctHeroMeta>div\{/);
+  assert.doesNotMatch(styles, /\.ctHeroMeta div\{/);
+  assert.match(styles, /overflow-wrap:normal/);
+  assert.match(styles, /\.ctKeyMarket\{/);
 });

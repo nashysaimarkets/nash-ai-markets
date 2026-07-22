@@ -54,7 +54,8 @@ test("visual terminal preserves no-trade warnings and responsive safeguards", as
   ]);
   assert.match(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
   assert.match(page, /formatCustomerParticipationWarnings/);
-  assert.match(page, /Conditions limiting participation/);
+  assert.match(page, /Delay and no-trade conditions/);
+  assert.match(page, /ctConstraintsCompact/);
   assert.match(components, /hasDisplayableQuotes|isDecisionReadySnapshot/);
   assert.match(styles, /overflow-x:hidden/);
   assert.match(styles, /@media\(max-width:640px\)/);

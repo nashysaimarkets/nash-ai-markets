@@ -58,7 +58,8 @@ test("critical warnings and high-impact provider events remain visible", async (
   assert.match(page, /decision\.noTradeReasons/);
   assert.match(page, /decision\.dataQualityWarnings/);
   assert.match(page, /plan\.eventRiskWarnings/);
-  assert.match(page, /Conditions limiting participation/);
+  assert.match(page, /Delay and no-trade conditions/);
+  assert.match(page, /ctConstraintsCompact/);
   assert.match(warnings, /formatCustomerParticipationWarnings/);
 });
 

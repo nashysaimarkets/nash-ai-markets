@@ -37,17 +37,27 @@ export function MarketCommandHeader({
   const observable = hasDisplayableQuotes(snapshot);
   const delayed = snapshot.status === "DELAYED" || (!decisionReady && observable);
   return <section className="ctHero" aria-labelledby="terminal-title">
-    <div>
+    <img className="ctHeroWatermark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
+    <div className="ctHeroIntro">
       <span className="ctEyebrow">NASH AI MARKETS · TERMINAL</span>
       <h1 id="terminal-title">Terminal</h1>
       <p>Verified cross-asset conditions, decision constraints and scenario readiness.</p>
     </div>
-    <div className="ctHeroMeta ctHeroMetaVisual">
+    <div className="ctHeroSummary">
       <BullseyeGauge score={bullseyeScore} ready={decisionReady} posture={posture} delayed={delayed} compact />
-      <dl>
-        <div><dt>Market data</dt><dd><TerminalBadge label={observable && !decisionReady ? "Previous session" : state} tone={state === "Live" ? "positive" : state === "Delayed" || (observable && !decisionReady) ? "warning" : "danger"} pulse={state === "Live"} /></dd></div>
-        <div><dt>Last verified</dt><dd>{observable ? `${timestamp} UK · ${formatSnapshotAge(snapshot.asOf)}` : "Awaiting first verified update"}</dd></div>
-        <div><dt>Posture</dt><dd>{decisionReady && posture ? pretty(posture) : "Stand aside"}</dd></div>
+      <dl className="ctHeroStats">
+        <div>
+          <dt>Market data</dt>
+          <dd><TerminalBadge label={observable && !decisionReady ? "Previous session" : state} tone={state === "Live" ? "positive" : state === "Delayed" || (observable && !decisionReady) ? "warning" : "danger"} pulse={state === "Live"} /></dd>
+        </div>
+        <div>
+          <dt>Last verified</dt>
+          <dd className="ctHeroTimestamp">{observable ? <><span>{timestamp} UK</span><span>{formatSnapshotAge(snapshot.asOf)}</span></> : "Awaiting first verified update"}</dd>
+        </div>
+        <div>
+          <dt>Posture</dt>
+          <dd className="ctHeroPosture">{decisionReady && posture ? pretty(posture) : "Stand aside"}</dd>
+        </div>
       </dl>
     </div>
   </section>;
@@ -100,10 +110,12 @@ export function CrossAssetBoard({
   snapshot,
   sparklines,
   volatilityRegime = null,
+  compact = false,
 }: {
   snapshot: MarketSnapshot;
   sparklines?: Partial<Record<(typeof symbols)[number], number[] | null>>;
   volatilityRegime?: string | null;
+  compact?: boolean;
 }) {
   if (!hasDisplayableQuotes(snapshot)) {
     return <section className="ctPanel" aria-labelledby="cross-asset-title">
@@ -122,31 +134,43 @@ export function CrossAssetBoard({
   const two = find("US2Y");
   const ten = find("US10Y");
   const dxy = find("DXY");
-  return <section className="ctPanel ctInstrumentBoard" aria-labelledby="cross-asset-title">
+  return <section className={`ctPanel ctInstrumentBoard${compact ? " is-compact" : ""}`} aria-labelledby="cross-asset-title">
     <header>
       <div><span>Cross-asset board</span><h2 id="cross-asset-title">What the major inputs are saying</h2></div>
       <small>{statusLabel} · {age}</small>
     </header>
-    <div className="ctAssetGrid">{symbols.map((symbol, index) => {
-      const quote = find(symbol);
-      const series = sparklines?.[symbol] ?? null;
-      return <article key={symbol} className="ctInstrumentCard">
-        <div className="ctInstrumentHead">
-          <span>{instrumentLabels[index]}</span>
-          <small>{symbol}</small>
-        </div>
-        <strong>{quote?.value ?? "Unavailable"}</strong>
-        <span className={`ctMove is-${quote?.direction ?? "missing"}`}>{quote?.change ?? "No verified reading"}</span>
-        <span className={`ctInstrumentAge is-${decisionReady ? "ready" : "aged"}`}>{statusLabel} · {age}</span>
-        {series
-          ? <Sparkline values={series} tone={quote?.direction ?? "neutral"} filled label={`${instrumentLabels[index]} verified recent closes`} height={36} width={160} />
-          : <UnavailableHistory label={instrumentLabels[index]!} reason="Verified candle history is currently wired for ES only. This reading stays a verified scalar, not an invented series." />}
-        {symbol === "VIX" ? <VolatilityGauge regime={volatilityRegime} ready={decisionReady} vixValue={vix?.value ?? null} /> : null}
-        {symbol === "US10Y" ? <YieldSpreadVisual twoYear={two?.value} tenYear={ten?.value} ready={Boolean(two && ten)} /> : null}
-        {symbol === "DXY" ? <DxyPressureVisual direction={dxy?.direction} change={dxy?.change} ready={Boolean(dxy)} /> : null}
-        <p>{quote ? instrumentInterpretation(quote) : `${instrumentLabels[index]} had no verified reading in the latest update. The value is withheld rather than guessed.`}</p>
-      </article>;
-    })}</div>
+    <div className="ctAssetGrid">
+      {symbols.map((symbol, index) => {
+        const quote = find(symbol);
+        const series = sparklines?.[symbol] ?? null;
+        const isRatesPair = symbol === "US2Y" || symbol === "US10Y";
+        return <article key={symbol} className={`ctInstrumentCard is-${symbol.toLowerCase()}`}>
+          <div className="ctInstrumentHead">
+            <span>{instrumentLabels[index]}</span>
+            <small>{symbol}</small>
+          </div>
+          <strong>{quote?.value ?? "Unavailable"}</strong>
+          <div className="ctInstrumentMeta">
+            <span className={`ctMove is-${quote?.direction ?? "missing"}`}>{quote?.change ?? "No verified reading"}</span>
+            <span className={`ctInstrumentAge is-${decisionReady ? "ready" : "aged"}`}>{statusLabel} · {age}</span>
+          </div>
+          {series
+            ? <Sparkline values={series} tone={quote?.direction ?? "neutral"} filled label={`${instrumentLabels[index]} verified recent closes`} height={compact ? 28 : 36} width={160} />
+            : !isRatesPair || symbol === "US2Y"
+              ? <UnavailableHistory label={instrumentLabels[index]!} />
+              : null}
+          {symbol === "VIX" ? <VolatilityGauge regime={volatilityRegime} ready={decisionReady} vixValue={vix?.value ?? null} compact /> : null}
+          {symbol === "US10Y" ? <YieldSpreadVisual twoYear={two?.value} tenYear={ten?.value} ready={Boolean(two && ten)} compact /> : null}
+          {symbol === "DXY" ? <DxyPressureVisual direction={dxy?.direction} change={dxy?.change} ready={Boolean(dxy)} compact /> : null}
+          {!compact ? (
+            <details className="ctInstrumentNote">
+              <summary>Reading note</summary>
+              <p>{quote ? instrumentInterpretation(quote) : `${instrumentLabels[index]} had no verified reading in the latest update.`}</p>
+            </details>
+          ) : null}
+        </article>;
+      })}
+    </div>
   </section>;
 }
 
