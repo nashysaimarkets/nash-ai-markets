@@ -48,5 +48,5 @@ test("polish remains restrained and safety content stays intact", async () => {
   assert.doesNotMatch(styles, /backdrop-filter/);
   assert.match(page, /terminalStatusMessage/);
   assert.match(page, /No live values or directional guidance are being inferred/);
-  assert.match(page, /DecisionEnginePanel/);
+  assert.doesNotMatch(page, /DecisionEnginePanel/);
 });

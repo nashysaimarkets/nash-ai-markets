@@ -17,7 +17,6 @@ import { generateAIMarketBriefSelection } from "../lib/server/ai-market-brief.ts
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { formatSnapshotAge, isDecisionReadySnapshot } from "../lib/market-data.ts";
-import { BullseyeGauge } from "../components/mini-visuals/BullseyeGauge.tsx";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery.tsx";
 import { parsePriceLevel, sparklineFromCandles, rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
@@ -91,7 +90,6 @@ export default async function AIMarketBriefPage() {
     ? sparklineFromCandles(candleSeriesByInstrument.NQ.candles)
     : null;
   const decisionReady = isDecisionReadySnapshot(market.snapshot);
-  const delayed = market.snapshot.status === "DELAYED" || !decisionReady;
   const intelligence = analyzeMarketSnapshot(market.snapshot);
   const engineInput = {
     intelligence,
@@ -203,16 +201,7 @@ export default async function AIMarketBriefPage() {
         </section>;
       })()}
 
-      <section className="briefCommand" aria-label="Brief decision summary">
-        <div className="briefCommandGauge">
-          <BullseyeGauge
-            score={brief.confidence}
-            ready={scoreReady}
-            posture={plan.directionalPosture}
-            delayed={delayed}
-            compact
-          />
-        </div>
+      <section className="briefCommand is-copyOnly" aria-label="Brief decision summary">
         <div className="briefCommandCopy">
           <span>EXECUTIVE CONCLUSION</span>
           <h2>{brief.headline}</h2>
@@ -269,19 +258,9 @@ export default async function AIMarketBriefPage() {
           <strong>Market inputs, evidence quality and detail</strong>
         </summary>
         <section className="briefGrid">
-          <DashboardCard eyebrow="OBSERVATION" title="What is helping or blocking risk appetite" className="briefEvidence">
-            <p>{brief.supporting}</p>
-            <p>{brief.constraining}</p>
-            {brief.focusDrivers.length ? <ol>{brief.focusDrivers.map((driver) => <li key={driver}>{driver}</li>)}</ol> : null}
-          </DashboardCard>
-
           <DashboardCard eyebrow="INTERPRETATION" title="Levels and path rules" className="briefEvidence">
             <p>{brief.levelsMatter}</p>
             {brief.scenarios.length ? <ul>{brief.scenarios.map((note) => <li key={note}>{note}</li>)}</ul> : <p>No unsupported directional probabilities are shown.</p>}
-          </DashboardCard>
-
-          <DashboardCard eyebrow="ACTION CONSTRAINTS" title="When to stand aside" className="briefRisk">
-            {brief.riskFlags.length ? <ul>{brief.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul> : <p>{brief.avoidWhen}</p>}
           </DashboardCard>
 
           <DashboardCard eyebrow="EVIDENCE QUALITY" title="Data age and next actions" className="briefActions">

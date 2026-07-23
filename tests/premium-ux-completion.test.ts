@@ -116,7 +116,7 @@ test("premium UX surfaces are wired without auth churn", async () => {
   assert.match(motion, /pmLogoFloat/);
   assert.match(motion, /pmHeadingIn/);
   assert.match(motion, /data-presentation/);
-  assert.match(mission, /AskBullseye/);
+  assert.doesNotMatch(mission, /AskBullseye/);
   assert.match(mission, /mcActionTile/);
   assert.match(mission, /deskSignals/);
   assert.doesNotMatch(mission, /Open Options Corner|href="\/options"/);
@@ -138,5 +138,6 @@ test("mission control overflow root cause is cleared", async () => {
   assert.match(css, /\.missionControl\{display:grid;gap:18px/);
   assert.doesNotMatch(css, /\.missionControl\{min-height:100vh;background:var\(--ft-bg\);color:var\(--ft-text\);display:grid;grid-template-columns:58px 1fr\}/);
   assert.match(css, /mcActionTile/);
-  assert.match(css, /ctReadinessGroups/);
+  assert.match(css, /ctInstrumentBoard\.is-compact/);
+  assert.doesNotMatch(css, /ctReadinessGroups/);
 });

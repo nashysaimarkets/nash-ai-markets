@@ -52,7 +52,8 @@ test("visual terminal preserves no-trade warnings and responsive safeguards", as
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
+  assert.match(page, /MarketDirectionalGaugesPanel/);
+  assert.doesNotMatch(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
   assert.match(page, /formatCustomerParticipationWarnings/);
   assert.match(page, /Delay and no-trade conditions/);
   assert.match(page, /ctConstraintsCompact/);

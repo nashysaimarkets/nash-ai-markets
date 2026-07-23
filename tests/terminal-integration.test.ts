@@ -12,12 +12,11 @@ test("complete terminal render wires every deterministic output panel", async ()
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
   for (const expected of [
     "TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan}",
-    "MarketDeskSignalsPanel signals={deskSignals}",
-    "CrossAssetBoard snapshot={snapshot}",
-    "MarketPressureMap snapshot={snapshot} intelligence={intelligence}",
-    "DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan}",
+    "CrossAssetBoard",
+    "MarketDirectionalGaugesPanel",
     "DashboardCandlestickChart",
   ]) assert.match(page, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.doesNotMatch(page, /MarketDeskSignalsPanel|AskBullseye|MarketPressureMap|DecisionEnginePanel|DecisionIntelligencePanel|StructureLevelsPanel/);
 });
 
 test("decision and planner fields render in their respective panels", async () => {

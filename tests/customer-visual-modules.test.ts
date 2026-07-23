@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("customer terminal routes render Bullseye gauge and instrument modules", async () => {
+test("customer terminal routes render instrument modules without confidence gauge chrome", async () => {
   const [customer, terminal, brief, plan, styles] = await Promise.all([
     read("../app/terminal/components/CustomerTerminal.tsx"),
     read("../app/terminal/page.tsx"),
@@ -12,16 +12,15 @@ test("customer terminal routes render Bullseye gauge and instrument modules", as
     read("../app/dashboard/components/DashboardMarketPlan.tsx"),
     read("../app/mission-control.css"),
   ]);
-  assert.match(customer, /BullseyeGauge/);
+  assert.doesNotMatch(customer, /BullseyeGauge|ctShield/);
   assert.match(customer, /UnavailableHistory/);
   assert.match(customer, /VolatilityGauge/);
   assert.match(customer, /YieldSpreadVisual/);
   assert.match(customer, /DxyPressureVisual/);
-  assert.match(customer, /ctIntelStripAuto/);
-  assert.match(customer, /ctShield/);
+  assert.doesNotMatch(customer, /ctIntelStripAuto/);
   assert.match(terminal, /EventWindowEmpty/);
   assert.match(terminal, /volatilityRegime=\{decisionReady \? decision\.volatilityRegime : null\}/);
-  assert.match(brief, /BullseyeGauge/);
+  assert.doesNotMatch(brief, /BullseyeGauge/);
   assert.match(brief, /CrossAssetBoard/);
   assert.match(plan, /BullseyeGauge/);
   assert.match(styles, /\.bullseyeGauge\{/);

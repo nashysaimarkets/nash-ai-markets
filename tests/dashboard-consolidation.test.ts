@@ -95,5 +95,5 @@ test("terminal scenarios do not advertise unsupported probability percentages", 
   const terminal = await read("../app/terminal/components/CustomerTerminal.tsx");
   assert.doesNotMatch(terminal, /probability}% alignment/);
   assert.match(terminal, /formatScoreDisplay/);
-  assert.match(terminal, /Verified rolling range and reference levels/);
+  assert.doesNotMatch(terminal, /Verified rolling range and reference levels/);
 });

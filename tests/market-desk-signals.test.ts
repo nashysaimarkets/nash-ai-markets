@@ -146,20 +146,13 @@ test("terminal surfaces wire desk signals and directional gauges with educationa
     read("../app/terminal/components/CustomerTerminal.tsx"),
   ]);
   assert.match(terminal, /createMarketDeskSignals/);
-  assert.match(terminal, /MarketDeskSignalsPanel/);
+  assert.doesNotMatch(terminal, /MarketDeskSignalsPanel/);
   assert.match(terminal, /createMarketDirectionalGauges/);
   assert.match(terminal, /MarketDirectionalGaugesPanel/);
   assert.doesNotMatch(terminal, /\/options/);
-  assert.match(component, /Market buying &amp; selling signals|Market buying & selling signals/);
-  assert.match(component, /Interpretive desk leans/);
-  assert.match(component, /ctDeskStrength/);
-  assert.match(component, /is-strength-\$\{card\.strength\}/);
-  assert.match(component, /Per-instrument gauges and desk levels|Per-instrument interpretive gauges/);
-  assert.match(component, /Support \/ Resistance/);
-  assert.match(styles, /\.ctDeskSignalPair/);
-  assert.match(styles, /\.ctDeskSignalCard\.is-buying/);
-  assert.match(styles, /\.ctDeskSignalCard\.is-selling/);
-  assert.match(styles, /\.ctDeskStrength/);
+  assert.doesNotMatch(component, /Interpretive desk leans/);
+  assert.match(component, /Verified candle range levels by instrument|Per-instrument gauges and desk levels/);
+  assert.match(component, /S \/ R|Support \/ Resistance/);
   assert.match(styles, /\.ctDirectionalGauges/);
   assert.match(styles, /\.ctGaugeGrid/);
   assert.match(styles, /\.ctSrBox/);

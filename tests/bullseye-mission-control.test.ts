@@ -5,7 +5,7 @@ import test from "node:test";
 test("Mission Control command centre uses verified live inputs without inventing history", async () => {
   const component = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
   assert.match(component, /KeyMarketInformation/);
-  assert.match(component, /BullseyeGauge/);
+  assert.doesNotMatch(component, /BullseyeGauge|AskBullseye|Stand aside if/);
   assert.match(component, /What changed/);
   assert.match(component, /never reconstructed history/);
   assert.doesNotMatch(component, /Suggested Copilot prompts|fake strike|guaranteed/);

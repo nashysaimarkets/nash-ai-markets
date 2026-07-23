@@ -144,8 +144,8 @@ test("customer controls expose verified multi-timeframe candle intervals", async
   assert.match(route, /\["1m", "5m", "15m", "1h", "4h", "1d"\]/);
   assert.match(terminal, /DashboardCandlestickChart/);
   assert.match(terminal, /ctChartPrimary/);
-  assert.match(terminal, /bullseyeScore/);
-  assert.match(customer, /BullseyeGauge/);
+  assert.doesNotMatch(terminal, /bullseyeScore/);
+  assert.doesNotMatch(customer, /BullseyeGauge/);
   assert.match(customer, /UnavailableHistory/);
   assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics|WhatChanged/);
   assert.doesNotMatch(dashboard, /Advanced diagnostics|FMP_API_KEY|provider diagnostics/i);

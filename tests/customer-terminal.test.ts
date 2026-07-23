@@ -47,8 +47,8 @@ test("customer terminal places the verified chart ahead of secondary panels", as
   assert.doesNotMatch(terminal, /Previous comparison unavailable|<WhatChanged/);
   assert.doesNotMatch(terminal, /Bullseye provider diagnostics|LaunchDiagnosticsPanel/);
   assert.match(terminal, /formatCustomerParticipationWarnings/);
-  assert.match(terminal, /DecisionIntelligencePanel/);
-  assert.match(terminal, /StructureLevelsPanel/);
+  assert.doesNotMatch(terminal, /DecisionIntelligencePanel|StructureLevelsPanel|AskBullseye|MarketDeskSignalsPanel/);
+  assert.match(terminal, /MarketDirectionalGaugesPanel/);
   assert.doesNotMatch(terminal, /FAILED ATTEMPT|failureCount/);
 });
 

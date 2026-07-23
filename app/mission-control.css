@@ -177,6 +177,29 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 
 /* === Regression fix: hero summary, gauge, key market, cards === */
 .ctHeroSummary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;min-width:0}
+.ctHeroSummary.is-statsOnly{grid-template-columns:minmax(0,1fr)}
+.ctPlanGridCompact{grid-template-columns:1fr!important}
+.ctPlanGridCompact dl{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.ctPlanGridCompact dl div{padding:14px 16px!important}
+.premiumTerminal .ctInstrumentBoard.is-compact .ctAssetGrid{gap:8px;padding:10px 12px}
+.premiumTerminal .ctInstrumentBoard.is-compact .ctInstrumentCard{padding:12px 14px;border-radius:10px 12px 12px 8px;box-shadow:0 10px 24px #0004}
+.premiumTerminal .ctInstrumentBoard.is-compact .ctInstrumentCard>strong{margin:8px 0 4px;font:650 clamp(18px,1.8vw,24px)/1 var(--font-geist-mono),monospace}
+.premiumTerminal .ctInstrumentBoard.is-compact .ctInstrumentCard .miniSparkline{margin-top:8px;height:22px}
+.premiumTerminal .ctInstrumentBoard.is-compact .ctInstrumentCard:nth-child(2),
+.premiumTerminal .ctInstrumentBoard.is-compact .ctInstrumentCard:nth-child(4){transform:none}
+.ctInstrumentBoard.is-compact .volGauge,.ctInstrumentBoard.is-compact .yieldSpread,.ctInstrumentBoard.is-compact .dxyPressure{margin-top:6px;padding:6px 8px}
+.ctInstrumentBoard.is-compact .miniHistoryUnavailable{min-height:36px;max-height:48px;margin-top:6px}
+.ctDirGauge.is-compact{padding:12px 12px}
+.ctDirGauge.is-compact .ctDirGaugeMeter{height:5px;margin:0 0 6px}
+.ctDirGauge.is-compact strong{margin:0 0 4px;font-size:13px}
+.ctDirGauge.is-compact .ctDirGaugeHead{margin-bottom:6px}
+.ctSrBox.is-compact{margin-top:8px;padding-top:8px}
+.ctSrBox.is-compact>span{margin:0 0 4px;font-size:9px}
+.ctSrBox.is-compact dl{gap:6px;margin:0 0 4px}
+.ctSrBox.is-compact dd{font-size:13px}
+.ctSrBox.is-compact li{font-size:10px}
+.ctSrBox.is-compact.is-insufficient strong{margin:0;font-size:12px}
+.briefCommand.is-copyOnly{grid-template-columns:1fr}
 .ctHeroStats{display:grid;gap:10px;margin:0;min-width:0}
 .ctHeroStats>div{display:grid;grid-template-columns:minmax(108px,120px) minmax(0,1fr);gap:12px;align-items:start;min-width:0}
 .ctHeroStats dt{color:#87919b;font-size:13px;white-space:nowrap}
@@ -225,7 +248,8 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .ctKeyMarket>header span{color:#62e6b1;font:700 12px var(--font-geist-mono),monospace;letter-spacing:.12em;text-transform:uppercase}
 .ctKeyMarket>header h2{margin:8px 0 0;font-size:clamp(22px,2.6vw,32px);letter-spacing:-.03em;line-height:1.2}
 .ctKeyMarket>header small{color:#8f9c96;font:650 12px var(--font-geist-mono),monospace;white-space:nowrap}
-.ctKeyGrid{display:grid;grid-template-columns:1.35fr 1fr 1.1fr 1fr 1.15fr;gap:12px;padding:16px;align-items:stretch}
+.ctKeyGrid{display:grid;grid-template-columns:1.35fr 1fr 1.1fr 1fr;gap:12px;padding:16px;align-items:stretch}
+.ctKeyGrid.is-four{grid-template-columns:repeat(4,minmax(0,1fr))}
 .ctKeyModule{position:relative;min-width:0;padding:18px;border-radius:14px;background:#0b1210ee;border:1px solid #24322c;overflow:hidden}
 .ctKeyModule>span{display:block;color:#7f8d93;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
 .ctKeyModuleHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:10px 0 8px}
@@ -242,7 +266,6 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .ctKeyModule.is-vol{transform:translateY(6px)}
 .ctKeyModule.is-rates{background:linear-gradient(165deg,#0f1a20e8,#0b1210f2)}
 .ctKeyModule.is-dollar{transform:translateY(10px)}
-.ctKeyModule.is-ready{grid-row:span 1;background:linear-gradient(165deg,#17140ee8,#0b1210f2)}
 .ctEvidenceCheck{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 0;padding:0;list-style:none}
 .ctEvidenceCheck li{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:center;min-height:28px;padding:6px 8px;border-radius:8px;background:#0a100e;border:1px solid #24322c}
 .ctEvidenceCheck i{width:8px;height:8px;border-radius:50%;background:#7f8d93}
@@ -266,8 +289,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 
 @media(max-width:1280px){
   .ctHero{grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:28px}
-  .ctKeyGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .ctKeyModule.is-ready{grid-column:1/-1}
+  .ctKeyGrid,.ctKeyGrid.is-four{grid-template-columns:repeat(2,minmax(0,1fr))}
   .briefKeyRibbon{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:1100px){
@@ -285,10 +307,9 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
   .briefKeyRibbon{grid-template-columns:1fr 1fr}
 }
 @media(max-width:700px){
-  .ctHeroSummary,.ctKeyGrid,.ctEvidenceCheck,.briefKeyRibbon{grid-template-columns:1fr}
+  .ctHeroSummary,.ctKeyGrid,.ctKeyGrid.is-four,.ctEvidenceCheck,.briefKeyRibbon{grid-template-columns:1fr}
   .ctHeroStats>div{grid-template-columns:100px minmax(0,1fr)}
   .ctHeroTimestamp span,.ctHeroPosture{white-space:normal}
-  .ctKeyModule.is-ready{grid-column:auto}
 }
 @media(prefers-reduced-motion:reduce){.ctKeyModule.is-vol,.ctKeyModule.is-dollar{transform:none}}
 
@@ -336,7 +357,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .mcFreshnessBanner{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin:0;padding:12px 16px;border:1px solid #d8b36a55;border-radius:12px;background:#d8b36a12;color:#e8d7a8}
 .mcFreshnessBanner strong{font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase;color:#d8b36a}
 .mcFreshnessBanner span{color:#c9b98a;font-size:13px;line-height:1.45}
-.mcHero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(140px,auto);gap:28px;align-items:center;padding:32px;border:1px solid #2a3a34;border-radius:20px;background:linear-gradient(145deg,#101a17f2,#0a100ef0 60%,#0c1418f5);box-shadow:0 28px 80px #0008;min-width:0}
+.mcHero{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr;gap:28px;align-items:center;padding:32px;border:1px solid #2a3a34;border-radius:20px;background:linear-gradient(145deg,#101a17f2,#0a100ef0 60%,#0c1418f5);box-shadow:0 28px 80px #0008;min-width:0}
 .mcHeroWatermark{position:absolute;right:-2%;top:50%;width:min(320px,36%);transform:translateY(-45%);opacity:.08;pointer-events:none}
 .mcHeroCopy{position:relative;z-index:1;min-width:0}
 .mcHeroCopy>span{color:#62e6b1;font:700 12px var(--font-geist-mono),monospace;letter-spacing:.14em;text-transform:uppercase}
@@ -350,7 +371,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .mcChartStrip h2{margin:6px 0 0;font-size:22px}
 .mcChartStrip a{color:#62e6b1;font:650 13px var(--font-geist-mono),monospace}
 .mcEmpty{margin:0;color:#8f9c96;font-size:14px;line-height:1.5}
-.mcPaths{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.mcPaths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .mcPaths article{min-width:0;padding:18px;border-radius:14px;border:1px solid #24322c;background:#0b1210}
 .mcPaths span{display:block;color:#7f8d93;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
 .mcPaths strong{display:block;margin:8px 0;font-size:18px}
@@ -381,10 +402,6 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .terminalMemberPage .ctToolbar.ctTopbar{display:flex;justify-content:flex-end;align-items:center;min-height:0;height:auto;padding:0;border:0;background:transparent;box-shadow:none;grid-template-columns:none}
 .ctDeepEvidence{display:grid;gap:14px;padding:8px 0 4px}
 .ctReadinessState{margin:8px 0 0;color:#e8eef1;font:650 15px var(--font-geist-mono),monospace}
-.ctReadinessGroups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
-.ctReadinessGroups h3{margin:0 0 6px;color:#7f8d93;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
-.ctReadinessGroups .ctEvidenceCheck{grid-template-columns:1fr}
-.ctKeyModule.is-ready{overflow:visible}
 .ctKeyModule dd,.bullseyeGauge dd,.mcHeroMeta dd{white-space:normal}
 .ctKeyModule.is-vol,.ctKeyModule.is-dollar{transform:none}
 .miniHistoryUnavailable{display:grid;justify-items:start;gap:3px;margin-top:10px;min-height:0;max-height:none;color:#6f7f78}

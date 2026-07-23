@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { AskBullseye } from "../AskBullseye.tsx";
-import { BullseyeGauge } from "../mini-visuals/BullseyeGauge.tsx";
 import { KeyMarketInformation } from "../mini-visuals/KeyMarketInformation.tsx";
 import { Sparkline } from "../mini-visuals/Sparkline.tsx";
 import type { MarketSnapshot } from "../../lib/market-data.ts";
@@ -49,7 +47,7 @@ export function MissionControl({
   plan,
   gateway,
   decisionReady,
-  score,
+  score: _score,
   delayed,
   dataAge,
   esSparkline = null,
@@ -57,9 +55,9 @@ export function MissionControl({
   previousPayload = null,
   bullishConfirm,
   bearishConfirm,
-  invalidation,
+  invalidation: _invalidation,
   noTrade,
-  deskSignals = null,
+  deskSignals: _deskSignals = null,
 }: Props) {
   const changed = diffSnapshots(previousPayload, {
     version: METHODOLOGY_VERSION,
@@ -105,21 +103,6 @@ export function MissionControl({
     generationMode: "deterministic",
   });
 
-  const askContext = {
-    snapshot,
-    intelligence,
-    decision,
-    plan,
-    gateway,
-    decisionReady,
-    bullishConfirm,
-    bearishConfirm,
-    invalidation,
-    noTrade,
-    dataAge,
-    deskSignals,
-  };
-
   return (
     <div className="missionControl">
       {delayed ? (
@@ -136,13 +119,12 @@ export function MissionControl({
           <h1 id="mission-control-title">Good trading day, {name}.</h1>
           <p>Prepare → Plan → Monitor → Review. Verified conditions only — never reconstructed history.</p>
           <dl className="mcHeroMeta">
-            <div><dt>Posture</dt><dd>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Stand aside"}</dd></div>
+            <div><dt>Posture</dt><dd>{decisionReady ? plan.directionalPosture.replaceAll("_", " ") : "Awaiting current data"}</dd></div>
             <div><dt>Risk</dt><dd>{decisionReady ? decision.riskRating : "Unrated"}</dd></div>
             <div><dt>Permission</dt><dd>{decisionReady ? decision.tradePermission.replaceAll("-", " ") : "No trade permitted"}</dd></div>
             <div><dt>Snapshot age</dt><dd className="pmValueUpdate">{dataAge}</dd></div>
           </dl>
         </div>
-        <BullseyeGauge score={score} ready={decisionReady} posture={plan.directionalPosture} delayed={delayed} />
       </section>
 
       <KeyMarketInformation
@@ -166,11 +148,8 @@ export function MissionControl({
       <section className="mcPaths" aria-label="Main decision paths">
         <article className="is-bull"><span>Bullish path</span><strong>Bullish confirmation above…</strong><p>{bullishConfirm}</p></article>
         <article className="is-bear"><span>Bearish path</span><strong>Bearish confirmation below…</strong><p>{bearishConfirm}</p></article>
-        <article className="is-invalidate"><span>Invalidation</span><strong>Stand aside if</strong><p>{invalidation}</p></article>
         <article className="is-notrade"><span>No-trade</span><strong>No trade permitted when</strong>{noTrade.length ? <ul>{noTrade.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional codes beyond posture.</p>}</article>
       </section>
-
-      <AskBullseye context={askContext} />
 
       <section className="mcChanged" aria-label="What changed since last snapshot">
         <header>

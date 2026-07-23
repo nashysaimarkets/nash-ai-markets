@@ -8,8 +8,6 @@ import { YieldSpreadVisual } from "./YieldSpreadVisual.tsx";
 import { DxyPressureVisual } from "./DxyPressureVisual.tsx";
 import { positionPercent, type RangeLaneMarkers } from "./mini-visual-data.ts";
 
-type EvidenceState = "available" | "incomplete" | "unavailable" | "degraded";
-
 type Props = {
   snapshot: MarketSnapshot;
   intelligence: MarketIntelligence;
@@ -18,12 +16,6 @@ type Props = {
   esSparkline?: number[] | null;
   rangeLane?: RangeLaneMarkers | null;
 };
-
-function evidenceState(value: number | null | undefined, ready: boolean): EvidenceState {
-  if (!ready) return "incomplete";
-  if (value == null || !Number.isFinite(value)) return "unavailable";
-  return "available";
-}
 
 function volImplication(regime: string | null, ready: boolean): string {
   if (!ready || !regime) return "Implication withheld";
@@ -46,18 +38,11 @@ function dollarImplication(direction: "up" | "down" | "flat" | undefined): strin
   return "Neutral dollar pressure on equities";
 }
 
-function groupLabel(state: EvidenceState): string {
-  if (state === "available") return "available";
-  if (state === "degraded") return "degraded";
-  if (state === "incomplete") return "incomplete";
-  return "unavailable";
-}
-
 export function KeyMarketInformation({
   snapshot,
-  intelligence,
+  intelligence: _intelligence,
   decision,
-  gatewayStatus,
+  gatewayStatus: _gatewayStatus,
   esSparkline = null,
   rangeLane = null,
 }: Props) {
@@ -79,34 +64,6 @@ export function KeyMarketInformation({
   const emaState = rangeLane?.ema20 != null
     ? rangeLane.current >= rangeLane.ema20 ? "Above EMA 20" : "Below EMA 20"
     : "EMA 20 unavailable";
-  const freshness: EvidenceState = !observable
-    ? "unavailable"
-    : snapshot.status === "LIVE"
-      ? "available"
-      : snapshot.status === "DELAYED"
-        ? "degraded"
-        : "incomplete";
-  const provider: EvidenceState = gatewayStatus.connectionStatus === "connected"
-    ? "available"
-    : gatewayStatus.connectionStatus === "degraded"
-      ? "degraded"
-      : "unavailable";
-  const checklist: Array<{ label: string; state: EvidenceState; tip: string }> = [
-    { label: "Trend", state: evidenceState(intelligence.scores.trend, ready), tip: "Verified trend evidence" },
-    { label: "Momentum", state: evidenceState(typeof snapshot.evidence.momentum === "number" ? snapshot.evidence.momentum : null, ready), tip: "Verified momentum evidence" },
-    { label: "Volatility", state: evidenceState(intelligence.scores.volatility, ready), tip: "Verified volatility regime" },
-    { label: "Breadth", state: evidenceState(typeof snapshot.evidence.breadth === "number" ? snapshot.evidence.breadth : null, ready), tip: "Verified breadth evidence" },
-    { label: "Macro", state: evidenceState(typeof snapshot.evidence.macro === "number" ? snapshot.evidence.macro : null, ready), tip: "Verified macro evidence" },
-    { label: "Support", state: snapshot.levels.some((level) => level.type === "support") ? "available" : "unavailable", tip: "Verified support reference" },
-    { label: "Resistance", state: snapshot.levels.some((level) => level.type === "resistance") ? "available" : "unavailable", tip: "Verified resistance reference" },
-    { label: "Events", state: snapshot.events.length ? "available" : "unavailable", tip: "Verified economic calendar" },
-    { label: "Freshness", state: freshness, tip: `Snapshot age ${age}` },
-    { label: "Provider", state: provider, tip: gatewayStatus.connectionStatus },
-  ];
-  const available = checklist.filter((item) => item.state === "available");
-  const degraded = checklist.filter((item) => item.state === "degraded");
-  const missing = checklist.filter((item) => item.state === "incomplete" || item.state === "unavailable");
-  const permissionClosed = !ready || decision.tradePermission === "no-trade";
 
   return (
     <section className="ctKeyMarket" aria-labelledby="key-market-title">
@@ -117,7 +74,7 @@ export function KeyMarketInformation({
         </div>
         <small>{observable ? `${ready ? "Verified" : "Waiting for fresh data"} · Snapshot age ${age}` : "Awaiting verified inputs"}</small>
       </header>
-      <div className="ctKeyGrid">
+      <div className="ctKeyGrid is-four">
         <article className="ctKeyModule is-market">
           <span>Market state</span>
           <div className="ctKeyModuleHead">
@@ -168,56 +125,6 @@ export function KeyMarketInformation({
           </div>
           <DxyPressureVisual direction={dxy?.direction} change={dxy?.change} ready={Boolean(dxy)} compact />
           <p>{dollarImplication(dxy?.direction)}</p>
-        </article>
-
-        <article className="ctKeyModule is-ready">
-          <span>Decision readiness</span>
-          <p className="ctReadinessState">{permissionClosed ? "No trade permitted" : "Evidence supports continued monitoring"}</p>
-          <div className="ctReadinessGroups">
-            <div>
-              <h3>Available</h3>
-              <ul className="ctEvidenceCheck">
-                {available.map((item) => (
-                  <li key={item.label} className={`is-${item.state}`} title={item.tip}>
-                    <i aria-hidden="true" />
-                    <strong>{item.label}</strong>
-                    <span>{groupLabel(item.state)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3>Degraded</h3>
-              <ul className="ctEvidenceCheck">
-                {degraded.length
-                  ? degraded.map((item) => (
-                    <li key={item.label} className={`is-${item.state}`} title={item.tip}>
-                      <i aria-hidden="true" />
-                      <strong>{item.label}</strong>
-                      <span>{groupLabel(item.state)}</span>
-                    </li>
-                  ))
-                  : <li className="is-available"><i aria-hidden="true" /><strong>None</strong><span>clear</span></li>}
-              </ul>
-            </div>
-            <div>
-              <h3>Missing</h3>
-              <ul className="ctEvidenceCheck">
-                {missing.map((item) => (
-                  <li key={item.label} className={`is-${item.state}`} title={item.tip}>
-                    <i aria-hidden="true" />
-                    <strong>{item.label}</strong>
-                    <span>{groupLabel(item.state)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <p className="ctKeyHint">
-            {permissionClosed
-              ? "Permission remains closed until freshness, provider health and confirmation evidence align."
-              : "Continue monitoring confirmations and invalidation before acting."}
-          </p>
         </article>
       </div>
     </section>
