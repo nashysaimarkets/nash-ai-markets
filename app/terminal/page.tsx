@@ -11,8 +11,11 @@ import { MemberShell } from "../components/MemberShell";
 import { AskBullseye } from "../components/AskBullseye";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
-import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketDeskSignalsPanel, MarketPressureMap, StructureLevelsPanel } from "./components/CustomerTerminal";
+import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketDeskSignalsPanel, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
 import { MarketStructureBoardPanel } from "./components/MarketStructureBoardPanel";
+import { KeyMarketInformation } from "../components/mini-visuals/KeyMarketInformation";
+import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty";
+import { terminalStatusMessage } from "./lib/terminal-state";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
 import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery";
@@ -249,6 +252,27 @@ export default async function Terminal() {
 
   const deeperEvidence = (
     <div className="pwDeepStack">
+      <KeyMarketInformation
+        snapshot={snapshot}
+        intelligence={intelligence}
+        decision={decision}
+        gatewayStatus={gatewayStatus}
+        esSparkline={esSparkline}
+        rangeLane={rangeLane}
+      />
+      {access.features["trade-planner"] ? (
+        <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} />
+      ) : (
+        <LockedPremiumCard
+          tier="elite"
+          title="Unlock today’s complete market plan"
+          value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework."
+          benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]}
+          previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible}
+          previewAvailable={previewState.available}
+          previewCadence={previewOffer?.cadence}
+        />
+      )}
       {access.features.intelligence ? (
         <MarketStructureBoardPanel
           structure={structureLevels}
@@ -276,6 +300,18 @@ export default async function Terminal() {
           ) : null}
         </div>
       </details>
+      {verified && snapshot.events.length > 0 ? (
+        <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
+          <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
+          <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
+        </section>
+      ) : (
+        <EventWindowEmpty
+          providerStatus={gatewayStatus.connectionStatus}
+          asOfLabel={hasDisplayableQuotes(snapshot) ? `${formatUkTimestamp(snapshot.asOf)} UK · Snapshot age ${snapshotAge}` : null}
+          delayed={snapshot.status === "DELAYED" || !decisionReady}
+        />
+      )}
       {customerWarnings.length ? (
         <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" aria-labelledby="customer-warnings-title">
           <summary id="customer-warnings-title"><span>Participation limits</span><strong>Delay and no-trade conditions</strong><small>{customerWarnings.length} items</small></summary>
@@ -283,6 +319,8 @@ export default async function Terminal() {
         </details>
       ) : null}
       <p className="pwFreshnessNote">
+        <strong>{terminalStatusMessage(snapshot.status, 0, hasDisplayableQuotes(snapshot))}</strong>
+        {" "}
         {verified
           ? `Verified delayed data when aged. Snapshot age: ${snapshotAge}.${candleAge ? ` ${candleAge}.` : ""}`
           : hasDisplayableQuotes(snapshot)
