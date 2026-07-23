@@ -139,28 +139,31 @@ test("desk candle helper never invents range when inputs are invalid", () => {
   });
 });
 
-test("terminal surfaces wire desk signals and directional gauges with educational framing", async () => {
-  const [terminal, styles, component] = await Promise.all([
+test("terminal surfaces wire desk signals and structure board with educational framing", async () => {
+  const [terminal, styles, component, board] = await Promise.all([
     read("../app/terminal/page.tsx"),
     read("../app/mission-control.css"),
     read("../app/terminal/components/CustomerTerminal.tsx"),
+    read("../app/terminal/components/MarketStructureBoardPanel.tsx"),
   ]);
   assert.match(terminal, /createMarketDeskSignals/);
   assert.match(terminal, /MarketDeskSignalsPanel/);
-  assert.match(terminal, /createMarketDirectionalGauges/);
-  assert.match(terminal, /MarketDirectionalGaugesPanel/);
+  assert.match(terminal, /MarketStructureBoardPanel/);
+  assert.match(terminal, /seriesByInstrument=\{candleSeriesByInstrument\}/);
   assert.doesNotMatch(terminal, /\/options/);
   assert.match(component, /Market buying &amp; selling signals|Market buying & selling signals/);
   assert.match(component, /Interpretive desk leans/);
   assert.match(component, /ctDeskStrength/);
   assert.match(component, /is-strength-\$\{card\.strength\}/);
-  assert.match(component, /Per-instrument gauges and desk levels|Per-instrument interpretive gauges/);
-  assert.match(component, /Support \/ Resistance/);
+  assert.match(board, /Desk support/);
+  assert.match(board, /DashboardCandlestickChart/);
+  assert.match(board, /aria-pressed/);
+  assert.match(board, /No OHLC \/ candles unavailable/);
   assert.match(styles, /\.ctDeskSignalPair/);
   assert.match(styles, /\.ctDeskSignalCard\.is-buying/);
   assert.match(styles, /\.ctDeskSignalCard\.is-selling/);
   assert.match(styles, /\.ctDeskStrength/);
-  assert.match(styles, /\.ctDirectionalGauges/);
-  assert.match(styles, /\.ctGaugeGrid/);
-  assert.match(styles, /\.ctSrBox/);
+  assert.match(styles, /\.ctStructureBoardGrid/);
+  assert.match(styles, /\.ctStructureBoardChart/);
+  assert.match(styles, /\.ctStructureBoardCard\.is-selected/);
 });

@@ -11,7 +11,8 @@ import { MemberShell } from "../components/MemberShell";
 import { AskBullseye } from "../components/AskBullseye";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
-import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketDeskSignalsPanel, MarketDirectionalGaugesPanel, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
+import { CrossAssetBoard, DecisionEnginePanel, DecisionIntelligencePanel, MarketCommandHeader, MarketDeskSignalsPanel, MarketPressureMap, StructureLevelsPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
+import { MarketStructureBoardPanel } from "./components/MarketStructureBoardPanel";
 import { KeyMarketInformation } from "../components/mini-visuals/KeyMarketInformation";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
@@ -20,7 +21,6 @@ import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery";
 import { candleReferenceLevels, candleSessionStats } from "../dashboard/lib/candle-analysis";
 import { rangeLaneFromCandles, scenarioLaneMarkers, sparklineFromCandles, parsePriceLevel } from "../components/mini-visuals/mini-visual-data";
 import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals";
-import { createMarketDirectionalGauges } from "../lib/market-directional-gauges";
 import { createMarketStructureLevels } from "../lib/market-structure-levels";
 import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
@@ -94,11 +94,6 @@ export default async function Terminal() {
     intelligence,
     decision,
     plan,
-    candle: deskCandle,
-  });
-  const directionalGauges = createMarketDirectionalGauges({
-    snapshot,
-    deskSignals,
     candle: deskCandle,
   });
   const structureLevels = createMarketStructureLevels({
@@ -225,10 +220,17 @@ export default async function Terminal() {
 
         {access.features.intelligence ? <MarketDeskSignalsPanel signals={deskSignals} snapshotAge={snapshotAge} /> : <LockedPremiumCard tier="pro" title="Unlock buying and selling desk signals" value="Pro surfaces interpretive buying and selling leans from verified ES, VIX, Treasuries and dollar inputs — educational only, never executable orders." benefits={["Buying and selling leans", "Verified cross-asset drivers", "Fail-closed when data is thin"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
 
-        {access.features.intelligence ? <MarketDirectionalGaugesPanel gauges={directionalGauges} structure={structureLevels} snapshotAge={snapshotAge} /> : null}
+        {access.features.intelligence ? (
+          <MarketStructureBoardPanel
+            structure={structureLevels}
+            snapshotAge={snapshotAge}
+            seriesByInstrument={candleSeriesByInstrument}
+          />
+        ) : null}
 
         <AskBullseye
           compact
+          interactive={access.features.intelligence}
           context={{
             snapshot,
             intelligence,
@@ -242,6 +244,7 @@ export default async function Terminal() {
             noTrade: decision.noTradeReasons,
             dataAge: snapshotAge,
             deskSignals,
+            structure: structureLevels,
           }}
         />
 

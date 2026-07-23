@@ -11,6 +11,7 @@ import type { MarketGatewayStatus } from "../../lib/live-market-gateway.ts";
 import type { RangeLaneMarkers } from "../mini-visuals/mini-visual-data.ts";
 import { diffSnapshots, METHODOLOGY_VERSION, type AnalysisSnapshotPayload } from "../../lib/market-analysis-snapshot.ts";
 import type { MarketDeskSignals } from "../../lib/market-desk-signals.ts";
+import type { MarketStructureLevels } from "../../lib/market-structure-levels.ts";
 
 type Props = {
   name: string;
@@ -31,6 +32,8 @@ type Props = {
   invalidation: string;
   noTrade: string[];
   deskSignals?: MarketDeskSignals | null;
+  structure?: MarketStructureLevels | null;
+  askInteractive?: boolean;
 };
 
 const ACTIONS = [
@@ -60,6 +63,8 @@ export function MissionControl({
   invalidation,
   noTrade,
   deskSignals = null,
+  structure = null,
+  askInteractive = false,
 }: Props) {
   const changed = diffSnapshots(previousPayload, {
     version: METHODOLOGY_VERSION,
@@ -118,6 +123,7 @@ export function MissionControl({
     noTrade,
     dataAge,
     deskSignals,
+    structure,
   };
 
   return (
@@ -170,7 +176,7 @@ export function MissionControl({
         <article className="is-notrade"><span>No-trade</span><strong>No trade permitted when</strong>{noTrade.length ? <ul>{noTrade.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul> : <p>No additional codes beyond posture.</p>}</article>
       </section>
 
-      <AskBullseye context={askContext} />
+      <AskBullseye context={askContext} interactive={askInteractive} />
 
       <section className="mcChanged" aria-label="What changed since last snapshot">
         <header>

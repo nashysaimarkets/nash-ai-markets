@@ -183,6 +183,8 @@ export default async function MemberDashboard() {
         invalidation={String(invalidation)}
         noTrade={noTrade}
         deskSignals={deskSignals}
+        structure={structureLevels}
+        askInteractive={access.features.intelligence}
       />
       {candleSeriesByInstrument ? (
         <CrossAssetCandleGallery

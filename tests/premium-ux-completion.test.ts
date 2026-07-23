@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { answerAskBullseye, ASK_BULLSEYE_QUESTIONS } from "../app/lib/ask-bullseye.ts";
+import { answerAskBullseye, answerAskBullseyeQuery, ASK_BULLSEYE_QUESTIONS, parseAskBullseyeQuery } from "../app/lib/ask-bullseye.ts";
 import { formatAgeFromMs, formatFreshnessLabel, formatRelativeAge } from "../app/lib/freshness-labels.ts";
 import type { AskBullseyeContext } from "../app/lib/ask-bullseye.ts";
 
@@ -21,7 +21,11 @@ test("Ask Bullseye answers only from provided verified context", () => {
       status: "DELAYED",
       asOf: "2026-07-22T11:50:00.000Z",
       source: "test",
-      quotes: [{ symbol: "ES", value: "6350.25", change: "+1.2", direction: "up" }],
+      quotes: [
+        { symbol: "ES", label: "ES futures", value: "6350.25", change: "+1.2", direction: "up" },
+        { symbol: "OIL", label: "Oil (USO)", value: "78.40", change: "-0.5", direction: "down" },
+        { symbol: "US10Y", label: "US 10-year", value: "4.25", change: "+0.02", direction: "up" },
+      ],
       levels: [{ label: "S1", value: "6320", type: "support", note: "primary" }],
       events: [{ time: "13:30 UK", name: "US data", risk: "HIGH" }],
       evidence: {},
@@ -57,6 +61,32 @@ test("Ask Bullseye answers only from provided verified context", () => {
     invalidation: "Stand aside if data ages out",
     noTrade: ["Evidence incomplete"],
     dataAge: "10m old",
+    structure: {
+      schemaVersion: "1.0",
+      instruments: [
+        {
+          symbol: "ES",
+          label: "ES futures",
+          status: "ready",
+          support: { kind: "support", label: "Support", value: 6320, display: "6,320.00", source: "24h low" },
+          resistance: { kind: "resistance", label: "Resistance", value: 6380, display: "6,380.00", source: "24h high" },
+          references: [{ kind: "midpoint", label: "Range midpoint", value: 6350, display: "6,350.00", source: "mid" }],
+          summary: "ES futures desk levels use the verified 24-hour candle range.",
+          scalarOnly: false,
+        },
+        {
+          symbol: "US10Y",
+          label: "US 10-year",
+          status: "insufficient",
+          support: null,
+          resistance: null,
+          references: [],
+          summary: "US 10-year is a verified scalar yield (4.25). OHLC support/resistance is unavailable for this feed.",
+          scalarOnly: true,
+        },
+      ],
+      disclosure: "Interpretive educational desk levels.",
+    },
   } as unknown as AskBullseyeContext;
 
   assert.equal(ASK_BULLSEYE_QUESTIONS.length >= 6, true);
@@ -95,6 +125,23 @@ test("Ask Bullseye answers only from provided verified context", () => {
   assert.match(lean.body, /Moderate buying lean/i);
   assert.match(lean.bullets.join(" "), /ES futures|educational desk signals/i);
   assert.doesNotMatch(lean.body, /strike|greek|premium \$/i);
+
+  const oil = answerAskBullseyeQuery("What is oil last?", ctx);
+  assert.match(oil.body, /78\.40/);
+  assert.match(oil.body, /Oil/);
+  assert.doesNotMatch(oil.body, /forecast|will rise|target price/i);
+
+  const treasury = answerAskBullseyeQuery("US10Y support and resistance", ctx);
+  assert.match(treasury.body, /scalar|OHLC|unavailable/i);
+  assert.doesNotMatch(treasury.body, /support:\s*4\.|resistance:\s*4\./i);
+
+  const esRange = answerAskBullseyeQuery("ES support resistance", ctx);
+  assert.match(esRange.body, /24-hour candle range|desk levels/i);
+  assert.match(esRange.bullets.join(" "), /6,320\.00|6,380\.00/);
+
+  const parsed = parseAskBullseyeQuery("How old is the VIX data?");
+  assert.equal(parsed.questionId, "age");
+  assert.equal(parsed.symbol, "VIX");
 });
 
 test("premium UX surfaces are wired without auth churn", async () => {
@@ -117,10 +164,14 @@ test("premium UX surfaces are wired without auth churn", async () => {
   assert.match(motion, /pmHeadingIn/);
   assert.match(motion, /data-presentation/);
   assert.match(mission, /AskBullseye/);
+  assert.match(mission, /askInteractive/);
   assert.match(mission, /mcActionTile/);
   assert.match(mission, /deskSignals/);
   assert.doesNotMatch(mission, /Open Options Corner|href="\/options"/);
   assert.match(dashboard, /premium-motion\.css/);
+  assert.match(await read("../app/components/AskBullseye.tsx"), /askBullseyeForm/);
+  assert.match(await read("../app/components/AskBullseye.tsx"), /interactive/);
+  assert.match(await read("../app/terminal/page.tsx"), /interactive=\{access\.features\.intelligence\}/);
 });
 
 test("logo concept review harness stays non-production", async () => {

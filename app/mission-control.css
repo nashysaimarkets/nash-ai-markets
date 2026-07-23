@@ -461,3 +461,31 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .ctSrBox.is-scalar strong{color:#d9ab52}
 @media(max-width:1100px){.ctGaugeGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.ctGaugeGrid{grid-template-columns:1fr}}
+
+.ctStructureBoard{margin:0 0 18px}
+.ctStructureBoardGrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:#202830;border-top:1px solid #202830}
+.ctStructureBoardCard{appearance:none;-webkit-appearance:none;margin:0;padding:16px;border:0;border-top:2px solid transparent;background:#0b1015;display:grid;gap:10px;min-width:0;text-align:left;color:inherit;cursor:pointer;transition:background .18s ease,border-color .18s ease,box-shadow .18s ease}
+.ctStructureBoardCard:hover{background:#0e151b}
+.ctStructureBoardCard:focus-visible{outline:2px solid #69a9ff;outline-offset:-2px;z-index:1}
+.ctStructureBoardCard.is-selected{border-top-color:#62e6b1;background:#0f1a16;box-shadow:inset 0 0 0 1px #35d89b33}
+.ctStructureBoardCard.is-scalar.is-selected{border-top-color:#d9ab52;box-shadow:inset 0 0 0 1px #d9ab5233}
+.ctStructureBoardHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.ctStructureBoardHead span{color:#c8d0d6;font-size:14px;font-weight:650}
+.ctStructureBoardHead small{color:#67727d;font:12px var(--font-geist-mono),monospace}
+.ctStructureBoardCard .ctSrBox{margin-top:0;padding-top:0;border-top:0}
+.ctStructureBoardChart{grid-column:5 / span 2;grid-row:1 / span 2;min-width:0;padding:14px;background:linear-gradient(165deg,#0d1512,#0a1014);display:flex;flex-direction:column;gap:10px;border-top:2px solid #62e6b133}
+.ctStructureBoardChartHead{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 12px}
+.ctStructureBoardChartHead span{color:#62e6b1;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.ctStructureBoardChartHead strong{color:#e8eee9;font:650 18px var(--font-geist-sans),Arial,sans-serif}
+.ctStructureBoardChartHead small{color:#7f8d93;font:12px var(--font-geist-mono),monospace}
+.ctStructureBoardChart .dashboardMarketChart.is-compact{border:1px solid #24322c;background:#080d0b}
+.ctStructureBoardChart .dashboardMarketChart.is-compact .dashboardChartCanvas{min-height:240px}
+.ctStructureBoardEmpty{flex:1;display:grid;align-content:center;gap:8px;min-height:240px;padding:22px;border:1px dashed #2a3a34;border-radius:12px;background:#080d0b}
+.ctStructureBoardEmpty strong{color:#e8eef1;font:650 16px var(--font-geist-mono),monospace}
+.ctStructureBoardEmpty p{margin:0;color:#9aa4ad;font-size:13px;line-height:1.5;max-width:42ch}
+.ctStructureBoardEmpty small{color:#7f8d93;font-size:12px;line-height:1.45}
+@media(max-width:1100px){
+  .ctStructureBoardGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ctStructureBoardChart{grid-column:1 / -1;grid-row:auto;min-height:320px}
+}
+@media(max-width:700px){.ctStructureBoardGrid{grid-template-columns:1fr}}
