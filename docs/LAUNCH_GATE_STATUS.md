@@ -49,6 +49,9 @@ widget registry and cookie/DB prefs fallback. Preview deploy only. Migration
 must not be applied to production automatically. Auth, Stripe, and production
 hosting config are unchanged.
 
+Draft PR: https://github.com/nashysaimarkets/nash-ai-markets/pull/27
+Preview: https://nash-ai-markets-hjsnzausc-nash-ai-markets.vercel.app
+
 ## Safest next manual action for Chris
 
 Identify an isolated staging Supabase project before entering any credentials
