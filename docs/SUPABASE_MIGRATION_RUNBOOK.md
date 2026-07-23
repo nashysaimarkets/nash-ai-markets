@@ -15,6 +15,7 @@ them manually to an isolated staging project first.
 | 6 | `202607170005_commercial_billing.sql` | Adds nullable billing interval/amount columns and reporting index | Additive. Removing populated columns loses billing/reporting history. |
 | 7 | `202607170006_member_onboarding.sql` | Creates member preferences and own-user RLS policy | Dropping loses preferences. Policy replacement changes browser access. |
 | 8 | `202607170007_stripe_event_ordering.sql` | Adds event timestamp and server-only membership sync function | Additive schema, but the function performs production entitlement updates. Removing ordering protection risks stale webhook overwrite. |
+| 9+ | Later additive migrations (`202607180008` … `202607230011`) | Member onboarding RPC, ideas hub, snapshots/journal, **member_workspace_prefs** | Workspace prefs are additive own-row RLS. **Do not apply `202607230011_member_workspace_prefs.sql` to production automatically** — staging first. App degrades to default desk if missing. |
 
 The SQL contains no `drop table`, `truncate`, mass `delete` or destructive
 column conversion. `drop policy if exists` is deliberate policy replacement.

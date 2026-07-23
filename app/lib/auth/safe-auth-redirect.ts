@@ -18,6 +18,7 @@ const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 const ALLOWED_NEXT_PREFIXES = [
   "/dashboard",
   "/terminal",
+  "/markets",
   "/brief",
   "/profile",
   "/onboarding",
