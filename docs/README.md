@@ -8,6 +8,9 @@ afterwards.
 
 - [Architecture](ARCHITECTURE.md) — application boundaries, services, data flow,
   routes, dependencies and deployment shape.
+- [Personal trading workspace (BULLSEYE)](BULLSEYE_PERSONAL_TRADING_WORKSPACE.md) —
+  market selection → personal desk architecture, prefs migration, widget registry
+  and release gate (preview only; no production auto-deploy).
 - [Launch playbook](LAUNCH_PLAYBOOK.md) — ordered path from the current state to
   public launch.
 - [RC2 final launch report](RC2_FINAL_LAUNCH_REPORT.md) — current evidence,

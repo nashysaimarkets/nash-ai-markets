@@ -8,7 +8,7 @@ sanitized staging evidence; never mark a gate Cleared from assumption.
 | Repository tests, typecheck, lint and build | Cleared | RC2 validation: 230 tests, production build, rendered output and simulation passed |
 | Deployment artifact and operations validation | Cleared | Artifact, documentation and secret-pattern checks passed |
 | Target staging hosting account/project | Requires external configuration | Account/project owner, staging hostname and environment scope recorded |
-| Canonical Supabase migration chain documented | Cleared | `202607170000`–`202607170007` and migration runbook exist |
+| Canonical Supabase migration chain documented | Cleared | `202607170000`–`202607170007` plus additive follow-ons through `202607230011_member_workspace_prefs` documented; workspace prefs **not** auto-applied to production |
 | Identify or create isolated staging Supabase project | Ready for user action | Staging project reference and owner recorded |
 | Staging backup/restore evidence | Requires external configuration | Backup identifier and successful disposable restore |
 | Apply and verify migrations in staging | Requires staging evidence | Migration log, RLS/grant checks and schema verification |
@@ -40,6 +40,14 @@ sanitized staging evidence; never mark a gate Cleared from assumption.
 **NO-GO for public deployment.** The repository is ready for staging
 configuration. No production deployment, migration or live billing is
 authorized by this status.
+
+### Personal trading workspace (branch `bullseye-personal-trading-workspace`)
+
+Additive member journey: `/markets` selection → `/terminal` personal desk with
+widget registry and cookie/DB prefs fallback. Preview deploy only. Migration
+`202607230011_member_workspace_prefs.sql` must follow the staging runbook and
+must not be applied to production automatically. Auth, Stripe, and production
+hosting config are unchanged.
 
 ## Safest next manual action for Chris
 

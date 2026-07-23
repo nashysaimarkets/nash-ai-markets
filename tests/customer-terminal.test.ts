@@ -40,15 +40,23 @@ test("customer terminal provides readable responsive presentation contracts", as
 });
 
 test("customer terminal places the verified chart ahead of secondary panels", async () => {
-  const terminal = await read("../app/terminal/page.tsx");
-  const chartAt = terminal.indexOf('className="ctChartPrimary"');
-  const boardAt = terminal.indexOf("<CrossAssetBoard");
-  assert.ok(chartAt > 0 && boardAt > chartAt);
+  const [terminal, workspace] = await Promise.all([
+    read("../app/terminal/page.tsx"),
+    read("../app/terminal/components/PersonalTradingWorkspace.tsx"),
+  ]);
+  const returnAt = terminal.lastIndexOf("return (");
+  const workspaceAt = terminal.indexOf("<PersonalTradingWorkspace", returnAt);
+  assert.ok(workspaceAt > returnAt);
+  assert.match(workspace, /id === "primary_chart"/);
+  assert.match(workspace, /DashboardCandlestickChart/);
+  assert.ok(workspace.indexOf('id === "primary_chart"') < workspace.indexOf('id === "market_review"'));
+  assert.ok(workspace.indexOf('id === "primary_chart"') < workspace.indexOf('id === "watchlist"'));
   assert.doesNotMatch(terminal, /Previous comparison unavailable|<WhatChanged/);
   assert.doesNotMatch(terminal, /Bullseye provider diagnostics|LaunchDiagnosticsPanel/);
   assert.match(terminal, /formatCustomerParticipationWarnings/);
   assert.match(terminal, /DecisionIntelligencePanel/);
   assert.match(terminal, /StructureLevelsPanel/);
+  assert.match(terminal, /CrossAssetBoard/);
   assert.doesNotMatch(terminal, /FAILED ATTEMPT|failureCount/);
 });
 

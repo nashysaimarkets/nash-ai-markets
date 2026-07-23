@@ -131,10 +131,11 @@ test("documented FMP intervals use their exact upstream endpoint", async () => {
 });
 
 test("customer controls expose verified multi-timeframe candle intervals", async () => {
-  const [chart, route, terminal, customer, dashboard] = await Promise.all([
+  const [chart, route, terminal, workspace, customer, dashboard] = await Promise.all([
     readFile(new URL("../app/dashboard/components/DashboardCandlestickChart.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/api/market/candles/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/components/PersonalTradingWorkspace.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
   ]);
@@ -142,9 +143,9 @@ test("customer controls expose verified multi-timeframe candle intervals", async
   assert.match(chart, /pendingTimeframe/);
   assert.match(chart, /previous interval is not shown|previous interval stays hidden/i);
   assert.match(route, /\["1m", "5m", "15m", "1h", "4h", "1d"\]/);
-  assert.match(terminal, /DashboardCandlestickChart/);
-  assert.match(terminal, /ctChartPrimary/);
-  assert.match(terminal, /bullseyeScore/);
+  assert.match(terminal, /PersonalTradingWorkspace/);
+  assert.match(workspace, /DashboardCandlestickChart/);
+  assert.match(workspace, /primary_chart/);
   assert.match(customer, /BullseyeGauge/);
   assert.match(customer, /UnavailableHistory/);
   assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics|WhatChanged/);
