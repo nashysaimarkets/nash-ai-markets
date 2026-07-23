@@ -70,8 +70,8 @@ Registry in `app/lib/workspace/widgets.ts`. Layout is JSON order/size, not hard-
 5. Vercel **Preview** only — no production deploy
 6. Migration applied only via runbook on staging before any production consideration
 
-Draft PR: https://github.com/nashysaimarkets/nash-ai-markets/pull/27  
-Preview (Vercel): https://nash-ai-markets-hjsnzausc-nash-ai-markets.vercel.app  
+Draft PR: https://github.com/nashysaimarkets/nash-ai-markets/pull/27
+Preview (Vercel): https://nash-ai-markets-hjsnzausc-nash-ai-markets.vercel.app
 
 ## Related docs
 
