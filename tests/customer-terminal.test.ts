@@ -32,24 +32,23 @@ test("customer terminal keeps diagnostics out of normal customer navigation", as
 test("customer terminal provides readable responsive presentation contracts", async () => {
   const styles = await read("../app/mission-control.css");
   assert.match(styles, /\.customerTerminal\{[^}]*font-size:18px/);
-  assert.match(styles, /\.ctHero h1\{[^}]*clamp\(40px,6vw,56px\)/);
-  assert.match(styles, /\.ctChartPrimary/);
+  assert.match(styles, /\.terminalEmptyCanvas/);
+  assert.match(styles, /\.terminalCanvasLogo/);
   assert.match(styles, /@media\(max-width:600px\)/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(styles, /prefers-contrast:more/);
 });
 
-test("customer terminal places the verified chart ahead of secondary panels", async () => {
+test("customer terminal is a cleared brand canvas for rebuild", async () => {
   const terminal = await read("../app/terminal/page.tsx");
-  const chartAt = terminal.indexOf('className="ctChartPrimary"');
-  const gaugesAt = terminal.indexOf("<MarketDirectionalGaugesPanel");
-  assert.ok(chartAt > 0 && gaugesAt > chartAt);
-  assert.doesNotMatch(terminal, /Previous comparison unavailable|<WhatChanged/);
-  assert.doesNotMatch(terminal, /Bullseye provider diagnostics|LaunchDiagnosticsPanel/);
-  assert.match(terminal, /formatCustomerParticipationWarnings/);
+  assert.match(terminal, /MemberShell/);
+  assert.match(terminal, /BrandLogo/);
+  assert.match(terminal, /terminalCanvasLogo/);
+  assert.match(terminal, /resolveMembershipTier/);
+  assert.match(terminal, /createProgressiveAccess/);
+  assert.match(terminal, /loadPreviewClaims/);
+  assert.doesNotMatch(terminal, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery|LockedPremiumCard|TerminalControls/);
   assert.doesNotMatch(terminal, /DecisionIntelligencePanel|StructureLevelsPanel|AskBullseye|MarketDeskSignalsPanel/);
-  assert.match(terminal, /MarketDirectionalGaugesPanel/);
-  assert.doesNotMatch(terminal, /FAILED ATTEMPT|failureCount/);
   assert.doesNotMatch(terminal, /CrossAssetBoard|TodaysMarketPlan|Upcoming catalysts|EventWindowEmpty|KeyMarketInformation/);
 });
 

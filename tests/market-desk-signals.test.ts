@@ -139,21 +139,24 @@ test("desk candle helper never invents range when inputs are invalid", () => {
   });
 });
 
-test("terminal surfaces wire desk signals and directional gauges with educational framing", async () => {
-  const [terminal, styles, component] = await Promise.all([
+test("terminal surfaces keep desk signal libs while the page canvas is cleared", async () => {
+  const [terminal, styles, component, deskLib, gaugesLib] = await Promise.all([
     read("../app/terminal/page.tsx"),
     read("../app/mission-control.css"),
     read("../app/terminal/components/CustomerTerminal.tsx"),
+    read("../app/lib/market-desk-signals.ts"),
+    read("../app/lib/market-directional-gauges.ts"),
   ]);
-  assert.match(terminal, /createMarketDeskSignals/);
-  assert.doesNotMatch(terminal, /MarketDeskSignalsPanel/);
-  assert.match(terminal, /createMarketDirectionalGauges/);
-  assert.match(terminal, /MarketDirectionalGaugesPanel/);
+  assert.doesNotMatch(terminal, /createMarketDeskSignals|MarketDeskSignalsPanel|createMarketDirectionalGauges|MarketDirectionalGaugesPanel/);
+  assert.match(terminal, /BrandLogo/);
   assert.doesNotMatch(terminal, /\/options/);
   assert.doesNotMatch(component, /Interpretive desk leans/);
   assert.match(component, /Verified candle range levels by instrument|Per-instrument gauges and desk levels/);
   assert.match(component, /S \/ R|Support \/ Resistance/);
+  assert.match(deskLib, /createMarketDeskSignals/);
+  assert.match(gaugesLib, /createMarketDirectionalGauges/);
   assert.match(styles, /\.ctDirectionalGauges/);
   assert.match(styles, /\.ctGaugeGrid/);
   assert.match(styles, /\.ctSrBox/);
+  assert.match(styles, /\.terminalEmptyCanvas/);
 });

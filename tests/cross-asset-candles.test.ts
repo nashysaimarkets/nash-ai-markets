@@ -37,7 +37,7 @@ test("terminal and dashboard mount cross-asset candle gallery", async () => {
     readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/CrossAssetCandleGallery.tsx", import.meta.url), "utf8"),
   ]);
-  assert.match(terminal, /CrossAssetCandleGallery/);
+  assert.doesNotMatch(terminal, /CrossAssetCandleGallery/);
   assert.match(dashboard, /CrossAssetCandleGallery/);
   assert.match(brief, /CrossAssetCandleGallery/);
   assert.match(gallery, /instrument=\{active\}/);

@@ -18,7 +18,8 @@ test("customer terminal routes render instrument modules without confidence gaug
   assert.doesNotMatch(customer, /CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation/);
   assert.doesNotMatch(customer, /ctIntelStripAuto/);
   assert.doesNotMatch(terminal, /EventWindowEmpty|Upcoming catalysts|CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation/);
-  assert.match(terminal, /MarketDirectionalGaugesPanel/);
+  assert.match(terminal, /BrandLogo/);
+  assert.match(terminal, /terminalEmptyCanvas|terminalCanvasLogo/);
   assert.doesNotMatch(brief, /BullseyeGauge|CrossAssetBoard/);
   assert.match(volGauge, /export function VolatilityGauge/);
   assert.match(yieldVisual, /export function YieldSpreadVisual/);
@@ -46,10 +47,12 @@ test("terminal keeps safe hero classes without removed panels", async () => {
     read("../app/mission-control.css"),
   ]);
   assert.doesNotMatch(terminal, /KeyMarketInformation|TodaysMarketPlan|CrossAssetBoard|Upcoming catalysts|EventWindowEmpty/);
+  assert.match(terminal, /BrandLogo/);
   assert.match(customer, /ctHeroSummary/);
   assert.match(customer, /ctHeroWatermark/);
   assert.match(styles, /\.ctHeroMeta>div\{/);
   assert.doesNotMatch(styles, /\.ctHeroMeta div\{/);
   assert.match(styles, /overflow-wrap:normal/);
   assert.doesNotMatch(styles, /\.ctKeyMarket\{/);
+  assert.match(styles, /\.terminalEmptyCanvas/);
 });

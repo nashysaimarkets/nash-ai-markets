@@ -4,13 +4,14 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("loading route mirrors the integrated terminal hierarchy", async () => {
+test("loading route mirrors the cleared terminal canvas", async () => {
   const source = await read("../app/terminal/loading.tsx");
-  for (const className of ["customerTerminal", "ctTopbar", "ctWorkspace", "ctHero", "ctStatus", "ctChartPrimary", "ctPanel", "ctAssetGrid", "ctTwoColumn"]) {
+  for (const className of ["customerTerminal", "ctWorkspace", "terminalEmptyCanvas"]) {
     assert.match(source, new RegExp(className));
   }
   assert.match(source, /aria-busy="true"/);
   assert.match(source, /aria-live="polite"/);
+  assert.doesNotMatch(source, /ctChartPrimary|ctHero|ctAssetGrid|ctTwoColumn/);
 });
 
 test("terminal controls provide names, state and modal focus management", async () => {
@@ -43,10 +44,10 @@ test("premium polish supports MacBook, mobile, reduced motion and high contrast"
   assert.match(styles, /focus-visible/);
 });
 
-test("polish remains restrained and safety content stays intact", async () => {
+test("polish remains restrained and the terminal canvas stays clear", async () => {
   const [styles, page] = await Promise.all([read("../app/mission-control.css"), read("../app/terminal/page.tsx")]);
   assert.doesNotMatch(styles, /backdrop-filter/);
-  assert.match(page, /terminalStatusMessage/);
-  assert.match(page, /No live values or directional guidance are being inferred/);
-  assert.doesNotMatch(page, /DecisionEnginePanel/);
+  assert.match(page, /BrandLogo/);
+  assert.match(page, /terminalEmptyCanvas|terminalCanvasLogo/);
+  assert.doesNotMatch(page, /DecisionEnginePanel|MarketDirectionalGaugesPanel|DashboardCandlestickChart/);
 });
