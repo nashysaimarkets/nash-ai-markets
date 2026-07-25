@@ -5,22 +5,20 @@ import { createClient } from "../../utils/supabase/server";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import { createTradingDecision } from "../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner";
-import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes, isDecisionReadySnapshot } from "../lib/market-data";
+import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes } from "../lib/market-data";
 import { formatFreshnessLabel } from "../lib/freshness-labels";
 import { MemberShell } from "../components/MemberShell";
 import { TerminalControls } from "./components/TerminalControls";
 import { LockedPremiumCard } from "./components/LockedPremiumCard";
-import { CrossAssetBoard, MarketCommandHeader, MarketDirectionalGaugesPanel, TodaysMarketPlan } from "./components/CustomerTerminal";
-import { KeyMarketInformation } from "../components/mini-visuals/KeyMarketInformation";
+import { MarketCommandHeader, MarketDirectionalGaugesPanel } from "./components/CustomerTerminal";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
 import { DashboardCandlestickChart } from "../dashboard/components/DashboardCandlestickChart";
 import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery";
-import { rangeLaneFromCandles, sparklineFromCandles } from "../components/mini-visuals/mini-visual-data";
+import { rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data";
 import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals";
 import { createMarketDirectionalGauges } from "../lib/market-directional-gauges";
 import { createMarketStructureLevels } from "../lib/market-structure-levels";
-import { EventWindowEmpty } from "../components/mini-visuals/EventWindowEmpty";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
 import { formatCustomerParticipationWarnings } from "./lib/customer-warnings";
@@ -65,22 +63,6 @@ export default async function Terminal() {
     : null;
   const candleSeries = candleSeriesByInstrument?.ES ?? null;
   const rangeLane = candleSeries?.candles.length ? rangeLaneFromCandles(candleSeries.candles) : null;
-  const esSparkline = candleSeries?.candles.length ? sparklineFromCandles(candleSeries.candles) : null;
-  const vixSparkline = candleSeriesByInstrument?.VIX?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.VIX.candles)
-    : null;
-  const dxySparkline = candleSeriesByInstrument?.DXY?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.DXY.candles)
-    : null;
-  const oilSparkline = candleSeriesByInstrument?.OIL?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.OIL.candles)
-    : null;
-  const qqqSparkline = candleSeriesByInstrument?.QQQ?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.QQQ.candles)
-    : null;
-  const nqSparkline = candleSeriesByInstrument?.NQ?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.NQ.candles)
-    : null;
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
   const plan = createStructuredTradePlan({ decision, intelligence, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
@@ -118,8 +100,6 @@ export default async function Terminal() {
     decision.dataQualityWarnings,
     plan.eventRiskWarnings.map((warning) => warning.code),
   );
-  const showCatalysts = verified && snapshot.events.length > 0;
-  const decisionReady = isDecisionReadySnapshot(snapshot);
 
   void persistAnalysisSnapshot({
     snapshot,
@@ -166,15 +146,6 @@ export default async function Terminal() {
           {!verified ? <Link href="/terminal">Retry market feed</Link> : null}
         </section>
 
-        <KeyMarketInformation
-          snapshot={snapshot}
-          intelligence={intelligence}
-          decision={decision}
-          gatewayStatus={gatewayStatus}
-          esSparkline={esSparkline}
-          rangeLane={rangeLane}
-        />
-
         {paid && candleSeries ? <section className="ctChartPrimary" aria-label="Primary verified market chart"><DashboardCandlestickChart series={candleSeries} instrument="ES" /></section> : null}
         {!paid ? <LockedPremiumCard tier="pro" title="Unlock the verified market chart" value="Pro and Elite members receive the verified candlestick workspace with interval controls and fail-closed empty states." benefits={["Verified OHLCV history", "Interval controls", "No invented candles"]} previewEligible={previewOffer?.targetTier === "pro" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} /> : null}
 
@@ -186,30 +157,12 @@ export default async function Terminal() {
           />
         ) : null}
 
-        {access.features["trade-planner"] ? <TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan} /> : <LockedPremiumCard tier="elite" title="Unlock today’s complete market plan" value="Elite connects verified cross-asset conditions to a disciplined decision and participation framework." benefits={["Decision confidence", "Participation guidance", "Confirmation checklist"]} previewEligible={previewOffer?.targetTier === "elite" && previewOffer.eligible} previewAvailable={previewState.available} previewCadence={previewOffer?.cadence} />}
-
         {access.features.intelligence ? <MarketDirectionalGaugesPanel gauges={directionalGauges} structure={structureLevels} snapshotAge={snapshotAge} /> : null}
-
-        <CrossAssetBoard
-          snapshot={snapshot}
-          sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline, OIL: oilSparkline, QQQ: qqqSparkline, NQ: nqSparkline }}
-          volatilityRegime={decisionReady ? decision.volatilityRegime : null}
-          compact
-        />
 
         {customerWarnings.length ? <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" aria-labelledby="customer-warnings-title">
           <summary id="customer-warnings-title"><span>Participation limits</span><strong>Delay and no-trade conditions</strong><small>{customerWarnings.length} items</small></summary>
           <div className="ctConstraints"><ul>{customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
         </details> : null}
-
-        {showCatalysts ? <section className="ctPanel ctCompactPanel" aria-labelledby="catalysts-title">
-          <header><div><span>Upcoming catalysts</span><h2 id="catalysts-title">Verified event window</h2></div></header>
-          <div className="ctEvents">{snapshot.events.map((event) => <article key={`${event.time}-${event.name}`}><time>{event.time}</time><strong>{event.name}</strong><span>{event.risk} impact</span></article>)}</div>
-        </section> : <EventWindowEmpty
-          providerStatus={gatewayStatus.connectionStatus}
-          asOfLabel={hasDisplayableQuotes(snapshot) ? `${formatUkTimestamp(snapshot.asOf)} UK · Snapshot age ${snapshotAge}` : null}
-          delayed={snapshot.status === "DELAYED" || !decisionReady}
-        />}
 
         <footer className="ctFooter"><span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span><Link href="/risk-disclaimer">Read the risk disclosure</Link></footer>
       </div>

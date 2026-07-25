@@ -19,8 +19,8 @@ import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { formatSnapshotAge, isDecisionReadySnapshot } from "../lib/market-data.ts";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles.ts";
 import { CrossAssetCandleGallery } from "../components/CrossAssetCandleGallery.tsx";
-import { parsePriceLevel, sparklineFromCandles, rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
-import { CrossAssetBoard, MarketDirectionalGaugesPanel } from "../terminal/components/CustomerTerminal.tsx";
+import { parsePriceLevel, rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data.ts";
+import { MarketDirectionalGaugesPanel } from "../terminal/components/CustomerTerminal.tsx";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import {
@@ -73,22 +73,6 @@ export default async function AIMarketBriefPage() {
     }
     : null;
   const candleSeries = candleSeriesByInstrument?.ES ?? null;
-  const esSparkline = candleSeries?.candles.length ? sparklineFromCandles(candleSeries.candles) : null;
-  const vixSparkline = candleSeriesByInstrument?.VIX?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.VIX.candles)
-    : null;
-  const dxySparkline = candleSeriesByInstrument?.DXY?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.DXY.candles)
-    : null;
-  const oilSparkline = candleSeriesByInstrument?.OIL?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.OIL.candles)
-    : null;
-  const qqqSparkline = candleSeriesByInstrument?.QQQ?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.QQQ.candles)
-    : null;
-  const nqSparkline = candleSeriesByInstrument?.NQ?.candles.length
-    ? sparklineFromCandles(candleSeriesByInstrument.NQ.candles)
-    : null;
   const decisionReady = isDecisionReadySnapshot(market.snapshot);
   const intelligence = analyzeMarketSnapshot(market.snapshot);
   const engineInput = {
@@ -226,15 +210,6 @@ export default async function AIMarketBriefPage() {
         <article className="is-risk"><span>Risk / no-trade</span><p>{brief.avoidWhen}</p></article>
         <article className="is-next"><span>Next verified catalyst</span><p>{brief.nextEvent}</p></article>
       </section>
-
-      <div className="briefCrossAsset">
-        <CrossAssetBoard
-          snapshot={market.snapshot}
-          sparklines={{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline, OIL: oilSparkline, QQQ: qqqSparkline, NQ: nqSparkline }}
-          volatilityRegime={decisionReady ? decision.volatilityRegime : null}
-          compact
-        />
-      </div>
 
       {access.features.intelligence ? (
         <MarketDirectionalGaugesPanel

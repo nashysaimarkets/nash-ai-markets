@@ -50,20 +50,21 @@ test("scenario lanes omit themselves when range is invalid", () => {
 });
 
 test("dashboard and terminal wire mini visuals without inventing cross-asset history", async () => {
-  const [dashboard, terminal, status, plan, customer] = await Promise.all([
+  const [dashboard, terminal, status, rangeLane, scenarioLane, customer] = await Promise.all([
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/components/DashboardMarketStatus.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/dashboard/components/DashboardMarketPlan.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/mini-visuals/RangePositionLane.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/mini-visuals/ScenarioPositionLane.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(dashboard, /sparklineFromCandles/);
   assert.match(dashboard, /rangeLaneFromCandles/);
-  assert.match(terminal, /sparklines=\{\{ ES: esSparkline, VIX: vixSparkline, DXY: dxySparkline, OIL: oilSparkline, QQQ: qqqSparkline, NQ: nqSparkline \}\}/);
+  assert.match(terminal, /rangeLaneFromCandles/);
+  assert.doesNotMatch(terminal, /sparklines=\{\{/);
   assert.match(status, /Sparkline/);
   assert.match(status, /sparkline: null/);
-  assert.match(plan, /RangePositionLane/);
-  assert.match(plan, /ScenarioPositionLane/);
-  assert.doesNotMatch(customer, /EvidenceMeter|RangePositionLane|BullseyeGauge/);
-  assert.match(customer, /UnavailableHistory/);
+  assert.match(rangeLane, /export function RangePositionLane/);
+  assert.match(scenarioLane, /export function ScenarioPositionLane/);
+  assert.doesNotMatch(customer, /EvidenceMeter|RangePositionLane|BullseyeGauge|UnavailableHistory/);
 });

@@ -70,7 +70,6 @@
   
   .briefCommand,
   .briefKeyRibbon,
-  .ctKeyMarket,
   .ctChartPrimary,
   .ctStatus{
     animation:pmRise var(--pm-slow) var(--pm-ease) both;
@@ -116,7 +115,6 @@
   .confidenceGaugeDial{
     transition:background var(--pm-med) var(--pm-ease),filter var(--pm-med) ease;
   }
-  .ctEvidenceCheck li i,
   .optionsProgress>i{
     transform-origin:left center;
     animation:pmBar .55s var(--pm-ease) both;
@@ -255,13 +253,11 @@
   
   .briefCommand,
   .briefKeyRibbon,
-  .ctKeyMarket,
   .ctChartPrimary,
   .ctStatus,
   .memberDashboardNav nav a[aria-current="page"],
   .askBullseyeChips button.is-active,
   .pmValueUpdate,
-  .ctEvidenceCheck li i,
   .optionsProgress>i,
   .memberDashboard,
   .memberDashboard::before,

@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { KeyMarketInformation } from "../mini-visuals/KeyMarketInformation.tsx";
 import { Sparkline } from "../mini-visuals/Sparkline.tsx";
 import type { MarketSnapshot } from "../../lib/market-data.ts";
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { MarketGatewayStatus } from "../../lib/live-market-gateway.ts";
-import type { RangeLaneMarkers } from "../mini-visuals/mini-visual-data.ts";
 import { diffSnapshots, METHODOLOGY_VERSION, type AnalysisSnapshotPayload } from "../../lib/market-analysis-snapshot.ts";
 import type { MarketDeskSignals } from "../../lib/market-desk-signals.ts";
 
@@ -22,7 +20,6 @@ type Props = {
   delayed: boolean;
   dataAge: string;
   esSparkline?: number[] | null;
-  rangeLane?: RangeLaneMarkers | null;
   previousPayload?: AnalysisSnapshotPayload | null;
   bullishConfirm: string;
   bearishConfirm: string;
@@ -51,7 +48,6 @@ export function MissionControl({
   delayed,
   dataAge,
   esSparkline = null,
-  rangeLane = null,
   previousPayload = null,
   bullishConfirm,
   bearishConfirm,
@@ -126,15 +122,6 @@ export function MissionControl({
           </dl>
         </div>
       </section>
-
-      <KeyMarketInformation
-        snapshot={snapshot}
-        intelligence={intelligence}
-        decision={decision}
-        gatewayStatus={gateway}
-        esSparkline={esSparkline}
-        rangeLane={rangeLane}
-      />
 
       <section className="mcChartStrip" aria-label="Compact verified ES context">
         <div>

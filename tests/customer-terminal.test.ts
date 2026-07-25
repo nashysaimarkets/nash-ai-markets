@@ -42,14 +42,15 @@ test("customer terminal provides readable responsive presentation contracts", as
 test("customer terminal places the verified chart ahead of secondary panels", async () => {
   const terminal = await read("../app/terminal/page.tsx");
   const chartAt = terminal.indexOf('className="ctChartPrimary"');
-  const boardAt = terminal.indexOf("<CrossAssetBoard");
-  assert.ok(chartAt > 0 && boardAt > chartAt);
+  const gaugesAt = terminal.indexOf("<MarketDirectionalGaugesPanel");
+  assert.ok(chartAt > 0 && gaugesAt > chartAt);
   assert.doesNotMatch(terminal, /Previous comparison unavailable|<WhatChanged/);
   assert.doesNotMatch(terminal, /Bullseye provider diagnostics|LaunchDiagnosticsPanel/);
   assert.match(terminal, /formatCustomerParticipationWarnings/);
   assert.doesNotMatch(terminal, /DecisionIntelligencePanel|StructureLevelsPanel|AskBullseye|MarketDeskSignalsPanel/);
   assert.match(terminal, /MarketDirectionalGaugesPanel/);
   assert.doesNotMatch(terminal, /FAILED ATTEMPT|failureCount/);
+  assert.doesNotMatch(terminal, /CrossAssetBoard|TodaysMarketPlan|Upcoming catalysts|EventWindowEmpty|KeyMarketInformation/);
 });
 
 test("customer participation warnings hide internal schema field names", () => {

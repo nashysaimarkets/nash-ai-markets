@@ -176,7 +176,6 @@ export default async function MemberDashboard() {
         delayed={delayed}
         dataAge={observable ? formatSnapshotAge(market.snapshot.asOf) : "Age unavailable"}
         esSparkline={esSparkline}
-        rangeLane={rangeLane}
         previousPayload={prior?.payload ?? null}
         bullishConfirm={bullishConfirm}
         bearishConfirm={bearishConfirm}

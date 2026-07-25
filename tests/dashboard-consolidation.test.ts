@@ -81,19 +81,16 @@ test("market brief omits unsupported probability percentages and withholds unava
   assert.match(brief.whatHappened, /unavailable|Cross-market/i);
 });
 
-test("market plan component uses truthful reference-level wording", async () => {
-  const source = await read("../app/dashboard/components/DashboardMarketPlan.tsx");
-  assert.match(source, /Verified rolling range and reference levels/);
-  assert.match(source, /not labelled exchange support/);
-  assert.match(source, /Bullish confirmation/);
-  assert.match(source, /Bearish confirmation/);
-  assert.match(source, /No-trade/);
-  assert.match(source, /formatScoreDisplay/);
+test("support and resistance copy stays truthful on directional gauges", async () => {
+  const source = await read("../app/terminal/components/CustomerTerminal.tsx");
+  assert.match(source, /Desk support/);
+  assert.match(source, /Insufficient data/);
+  assert.doesNotMatch(source, /probability}% alignment/);
+  assert.doesNotMatch(source, /TodaysMarketPlan|formatScoreDisplay|Verified rolling range and reference levels/);
 });
 
 test("terminal scenarios do not advertise unsupported probability percentages", async () => {
   const terminal = await read("../app/terminal/components/CustomerTerminal.tsx");
   assert.doesNotMatch(terminal, /probability}% alignment/);
-  assert.match(terminal, /formatScoreDisplay/);
   assert.doesNotMatch(terminal, /Verified rolling range and reference levels/);
 });
