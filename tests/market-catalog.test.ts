@@ -49,19 +49,21 @@ test("market catalog is generously populated per group with honest coverage", ()
   assert.equal(coverageLabel("awaiting"), "Awaiting coverage");
 });
 
-test("Markets catalog and browser remain available while terminal page stays logo-only", async () => {
-  const [page, browser, styles, catalog] = await Promise.all([
+test("Markets catalog powers the Trading Desk with honest coverage labels", async () => {
+  const [page, browser, styles, catalog, desk] = await Promise.all([
     read("../app/terminal/page.tsx"),
     read("../app/terminal/components/MarketsBrowser.tsx"),
     read("../app/mission-control.css"),
     read("../app/lib/markets/market-catalog.ts"),
+    read("../app/terminal/components/TradingDeskOS.tsx"),
   ]);
 
-  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /TradingDeskOS/);
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);
-  assert.doesNotMatch(page, /MarketsBrowser/);
-  assert.doesNotMatch(page, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery/);
+  assert.match(page, /DashboardCandlestickChart|getConfiguredFmpCandlesForInstruments/);
+  assert.match(desk, /MARKET_CATALOG/);
+  assert.match(desk, /preferred-platform|Preferred platform|resolvePlatformLaunch/);
 
   assert.match(browser, /Markets/);
   assert.match(browser, /MARKET_CATALOG/);
@@ -69,8 +71,8 @@ test("Markets catalog and browser remain available while terminal page stays log
   assert.match(browser, /No live quote or chart is shown/);
   assert.doesNotMatch(browser, /Math\.random|fakePrice|mockQuote|demoCandle/i);
 
-  assert.match(styles, /\.tmMarketsSidebar/);
-  assert.match(styles, /\.tmMarketsRootToggle/);
+  assert.match(styles, /\.deskMarkets|\.tmMarketsSidebar/);
+  assert.match(styles, /\.deskHero|\.tmMarketsRootToggle/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(catalog, /coverage: 'live'|"live"|'live'|"proxy"|"awaiting"/);
 });

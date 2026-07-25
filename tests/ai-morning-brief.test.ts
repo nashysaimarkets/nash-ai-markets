@@ -106,7 +106,7 @@ test("Morning Brief model has a server-side default and supports environment ove
 test("dashboard wires live AI only into entitled verified Morning Brief output", async () => {
   const brief = await readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8");
   const panel = await readFile(new URL("../app/dashboard/components/MorningBriefPanel.tsx", import.meta.url), "utf8");
-  assert.match(brief, /MemberEmptyCanvas/);
+  assert.match(brief, /redirect\("\/terminal"\)/);
   assert.match(brief, /createProgressiveAccess/);
   assert.doesNotMatch(brief, /generateAIMarketBriefSelection/);
   assert.match(panel, /generateAIMorningBrief/);

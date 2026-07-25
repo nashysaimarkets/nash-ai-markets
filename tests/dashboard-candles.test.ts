@@ -107,7 +107,7 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.match(chart, /series\.status !== "unavailable"/);
   assert.doesNotMatch(chart, /Failure category|requests avoided|cache \{/);
   assert.match(chart, /Previous session|Market closed|never labelled live/);
-  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /redirect\("\/terminal"\)/);
   assert.doesNotMatch(page, /toCustomerCandleSeries/);
   assert.match(loading, /aria-busy="true"/);
 });
@@ -143,7 +143,7 @@ test("customer controls expose verified multi-timeframe candle intervals", async
   assert.match(chart, /previous interval is not shown|previous interval stays hidden/i);
   assert.match(route, /\["1m", "5m", "15m", "1h", "4h", "1d"\]/);
   assert.doesNotMatch(terminal, /DashboardCandlestickChart|ctChartPrimary/);
-  assert.match(terminal, /MemberEmptyCanvas|BrandLogo/);
+  assert.match(terminal, /TradingDeskOS|DashboardCandlestickChart/);
   assert.doesNotMatch(terminal, /bullseyeScore/);
   assert.doesNotMatch(customer, /BullseyeGauge/);
   assert.doesNotMatch(terminal, /Verified intraday chart unavailable|Bullseye provider diagnostics|WhatChanged/);

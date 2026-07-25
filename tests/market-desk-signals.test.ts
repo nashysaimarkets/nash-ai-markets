@@ -139,7 +139,7 @@ test("desk candle helper never invents range when inputs are invalid", () => {
   });
 });
 
-test("terminal surfaces keep desk signal libs while the page canvas is cleared", async () => {
+test("terminal surfaces desk signals through Trading Desk OS", async () => {
   const [terminal, canvas, styles, component, deskLib, gaugesLib] = await Promise.all([
     read("../app/terminal/page.tsx"),
     read("../app/components/MemberEmptyCanvas.tsx"),
@@ -148,8 +148,9 @@ test("terminal surfaces keep desk signal libs while the page canvas is cleared",
     read("../app/lib/market-desk-signals.ts"),
     read("../app/lib/market-directional-gauges.ts"),
   ]);
-  assert.doesNotMatch(terminal, /createMarketDeskSignals|MarketDeskSignalsPanel|createMarketDirectionalGauges|MarketDirectionalGaugesPanel|MarketsBrowser/);
-  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(terminal, /TradingDeskOS/);
+  assert.match(terminal, /createMarketDeskSignals/);
+  assert.doesNotMatch(terminal, /MarketDeskSignalsPanel|MarketDirectionalGaugesPanel/);
   assert.match(canvas, /BrandLogo/);
   assert.doesNotMatch(terminal, /\/options/);
   assert.doesNotMatch(component, /Interpretive desk leans/);
@@ -160,5 +161,5 @@ test("terminal surfaces keep desk signal libs while the page canvas is cleared",
   assert.match(styles, /\.ctDirectionalGauges/);
   assert.match(styles, /\.ctGaugeGrid/);
   assert.match(styles, /\.ctSrBox/);
-  assert.match(styles, /\.terminalEmptyCanvas/);
+  assert.match(styles, /\.tradingDeskOS|\.terminalEmptyCanvas/);
 });

@@ -19,7 +19,7 @@ test("terminal keeps membership entitlement gates while the canvas is cleared", 
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);
   assert.match(page, /loadPreviewClaims/);
-  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /TradingDeskOS/);
   assert.doesNotMatch(page, /launch-diagnostics|MarketsBrowser/);
   assert.match(entitlement, /decision-engine/);
   assert.match(entitlement, /trade-planner/);

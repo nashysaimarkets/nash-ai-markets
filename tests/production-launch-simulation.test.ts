@@ -157,7 +157,7 @@ test("production simulation: mobile, accessibility, performance, and deployment 
   ]);
   assert.match(css, /@media\(max-width:640px\)/);
   assert.match(css, /prefers-reduced-motion:reduce/);
-  assert.match(dashboard, /MemberEmptyCanvas/);
+  assert.match(dashboard, /redirect\("\/terminal"\)/);
   assert.match(dashboard, /resolveMembershipTier/);
   assert.match(fmp, /timeoutMs = options\.timeoutMs \?\? 4_500/);
   assert.match(ai, /AI_MORNING_BRIEF_TIMEOUT_MS/);

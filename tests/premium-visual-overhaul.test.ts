@@ -18,7 +18,7 @@ test("BrandLogo is enlarged and shared across member and terminal surfaces", asy
   assert.match(logo, /Project BULLSEYE/);
   assert.match(logo, /data-project="bullseye"/);
   assert.match(globals, /height:56px/);
-  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(terminal, /TradingDeskOS/);
   assert.match(canvas, /BrandLogo/);
   assert.match(canvas, /terminalCanvasLogo/);
   assert.match(styles, /\.terminalCanvasLogo img\{height:72px/);

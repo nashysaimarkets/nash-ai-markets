@@ -147,7 +147,7 @@ test("AI market brief route is protected, responsive, and preserves entitlement 
   ]);
   assert.match(page, /redirect\("\/login"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
-  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /redirect\("\/terminal"\)/);
   assert.match(page, /createProgressiveAccess/);
   assert.doesNotMatch(page, /LockedPremiumCard|buildMarketBrief/);
   assert.match(loading, /aria-busy="true"/);

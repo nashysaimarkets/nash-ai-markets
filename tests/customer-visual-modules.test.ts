@@ -18,9 +18,9 @@ test("customer terminal routes render instrument modules without confidence gaug
   assert.doesNotMatch(customer, /CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation/);
   assert.doesNotMatch(customer, /ctIntelStripAuto/);
   assert.doesNotMatch(terminal, /EventWindowEmpty|Upcoming catalysts|CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation|MarketsBrowser/);
-  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(terminal, /TradingDeskOS/);
   assert.doesNotMatch(brief, /BullseyeGauge|CrossAssetBoard/);
-  assert.match(brief, /MemberEmptyCanvas/);
+  assert.match(brief, /redirect\("\/terminal"\)/);
   assert.match(volGauge, /export function VolatilityGauge/);
   assert.match(yieldVisual, /export function YieldSpreadVisual/);
   assert.match(dxyVisual, /export function DxyPressureVisual/);
@@ -47,8 +47,8 @@ test("terminal keeps safe hero classes without removed panels", async () => {
     read("../app/terminal/components/CustomerTerminal.tsx"),
     read("../app/mission-control.css"),
   ]);
-  assert.doesNotMatch(terminal, /KeyMarketInformation|TodaysMarketPlan|CrossAssetBoard|Upcoming catalysts|EventWindowEmpty|MarketsBrowser/);
-  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.doesNotMatch(terminal, /KeyMarketInformation|TodaysMarketPlan|CrossAssetBoard|Upcoming catalysts|EventWindowEmpty/);
+  assert.match(terminal, /TradingDeskOS/);
   assert.match(canvas, /BrandLogo/);
   assert.match(canvas, /terminalEmptyCanvas/);
   assert.match(customer, /ctHeroSummary/);
@@ -57,5 +57,5 @@ test("terminal keeps safe hero classes without removed panels", async () => {
   assert.doesNotMatch(styles, /\.ctHeroMeta div\{/);
   assert.match(styles, /overflow-wrap:normal/);
   assert.doesNotMatch(styles, /\.ctKeyMarket\{/);
-  assert.match(styles, /\.terminalEmptyCanvas/);
+  assert.match(styles, /\.tradingDeskOS|\.terminalEmptyCanvas/);
 });

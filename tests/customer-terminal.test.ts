@@ -32,25 +32,25 @@ test("customer terminal keeps diagnostics out of normal customer navigation", as
 test("customer terminal provides readable responsive presentation contracts", async () => {
   const styles = await read("../app/mission-control.css");
   assert.match(styles, /\.customerTerminal\{[^}]*font-size:18px/);
-  assert.match(styles, /\.terminalMarketsCanvas|\.terminalEmptyCanvas/);
-  assert.match(styles, /\.terminalCanvasLogo/);
-  assert.match(styles, /\.tmMarketsSidebar/);
-  assert.match(styles, /@media\(max-width:600px\)/);
+  assert.match(styles, /\.tradingDeskOS|\.terminalEmptyCanvas/);
+  assert.match(styles, /\.deskHero|\.terminalCanvasLogo/);
+  assert.match(styles, /\.deskMarkets|\.tmMarketsSidebar/);
+  assert.match(styles, /@media\(max-width:600px\)|@media\(max-width:720px\)/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(styles, /prefers-contrast:more/);
 });
 
-test("customer terminal keeps brand canvas with membership gates", async () => {
+test("customer terminal ships Trading Desk OS with membership gates", async () => {
   const terminal = await read("../app/terminal/page.tsx");
-  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(terminal, /TradingDeskOS/);
   assert.match(terminal, /active="terminal"/);
   assert.match(terminal, /resolveMembershipTier/);
   assert.match(terminal, /createProgressiveAccess/);
   assert.match(terminal, /loadPreviewClaims/);
-  assert.doesNotMatch(terminal, /MarketsBrowser/);
-  assert.doesNotMatch(terminal, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery|LockedPremiumCard|TerminalControls/);
-  assert.doesNotMatch(terminal, /DecisionIntelligencePanel|StructureLevelsPanel|AskBullseye|MarketDeskSignalsPanel/);
-  assert.doesNotMatch(terminal, /CrossAssetBoard|TodaysMarketPlan|Upcoming catalysts|EventWindowEmpty|KeyMarketInformation/);
+  assert.match(terminal, /DashboardCandlestickChart|getConfiguredFmpCandlesForInstruments/);
+  assert.match(terminal, /LockedPremiumCard|paid/);
+  assert.doesNotMatch(terminal, /LaunchDiagnosticsPanel|createLaunchDiagnostics/);
+  assert.doesNotMatch(terminal, /DecisionIntelligencePanel|AskBullseye/);
 });
 
 test("customer participation warnings hide internal schema field names", () => {

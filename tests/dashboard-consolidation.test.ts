@@ -44,10 +44,9 @@ test("cross-market interpretation is plain English and marks mixed evidence", ()
   assert.doesNotMatch(copy, /guarantee|will rise|buy|sell/i);
 });
 
-test("consolidated dashboard removes overlapping command sections and keeps four major blocks", async () => {
+test("consolidated dashboard redirects into the Trading Desk", async () => {
   const page = await read("../app/dashboard/page.tsx");
-  assert.match(page, /MemberEmptyCanvas/);
-  assert.match(page, /missionControlPage/);
+  assert.match(page, /redirect\("\/terminal"\)/);
   assert.match(page, /resolveMembershipTier/);
   assert.doesNotMatch(page, /MissionControl|persistAnalysisSnapshot/);
   assert.doesNotMatch(page, /BullseyeMissionControl|TodaysBullseyePlan|TradeSetupOfTheDay|TodaysEdge|MorningBriefPanel|EliteScenarioCard|MarketStructureVisual|executiveKpiStrip|memberAccessMap|Classification Record/);
