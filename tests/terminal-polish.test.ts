@@ -4,9 +4,9 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("loading route mirrors the cleared terminal canvas", async () => {
+test("loading route mirrors the Markets terminal canvas", async () => {
   const source = await read("../app/terminal/loading.tsx");
-  for (const className of ["customerTerminal", "ctWorkspace", "terminalEmptyCanvas"]) {
+  for (const className of ["customerTerminal", "ctWorkspace", "terminalMarketsCanvas", "tmMarketsSidebar"]) {
     assert.match(source, new RegExp(className));
   }
   assert.match(source, /aria-busy="true"/);

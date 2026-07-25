@@ -32,18 +32,20 @@ test("customer terminal keeps diagnostics out of normal customer navigation", as
 test("customer terminal provides readable responsive presentation contracts", async () => {
   const styles = await read("../app/mission-control.css");
   assert.match(styles, /\.customerTerminal\{[^}]*font-size:18px/);
-  assert.match(styles, /\.terminalEmptyCanvas/);
+  assert.match(styles, /\.terminalMarketsCanvas|\.terminalEmptyCanvas/);
   assert.match(styles, /\.terminalCanvasLogo/);
+  assert.match(styles, /\.tmMarketsSidebar/);
   assert.match(styles, /@media\(max-width:600px\)/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(styles, /prefers-contrast:more/);
 });
 
-test("customer terminal is a cleared brand canvas for rebuild", async () => {
+test("customer terminal keeps brand canvas with Markets browser", async () => {
   const terminal = await read("../app/terminal/page.tsx");
   assert.match(terminal, /MemberShell/);
   assert.match(terminal, /BrandLogo/);
   assert.match(terminal, /terminalCanvasLogo/);
+  assert.match(terminal, /MarketsBrowser/);
   assert.match(terminal, /resolveMembershipTier/);
   assert.match(terminal, /createProgressiveAccess/);
   assert.match(terminal, /loadPreviewClaims/);

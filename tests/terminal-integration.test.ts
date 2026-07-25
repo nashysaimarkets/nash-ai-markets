@@ -8,11 +8,12 @@ import {
   terminalMarketState,
 } from "../app/terminal/lib/visual-terminal.ts";
 
-test("terminal page is a cleared brand canvas with auth gates intact", async () => {
+test("terminal page is a brand canvas with Markets browser and auth gates intact", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
   assert.match(page, /MemberShell/);
   assert.match(page, /BrandLogo/);
-  assert.match(page, /terminalEmptyCanvas|terminalCanvasLogo/);
+  assert.match(page, /terminalMarketsCanvas|terminalCanvasLogo/);
+  assert.match(page, /MarketsBrowser/);
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);
   assert.doesNotMatch(page, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery|LockedPremiumCard/);
@@ -62,5 +63,6 @@ test("responsive integration keeps chart primitives usable", async () => {
   assert.match(styles, /ftEngineStrip\{grid-template-columns:1fr 1fr\}/);
   assert.match(styles, /ftPrimaryGrid\{display:flex;flex-direction:column\}/);
   assert.match(styles, /marketChartCanvas,.marketChartState\{height:300px\}/);
-  assert.match(styles, /\.terminalEmptyCanvas/);
+  assert.match(styles, /\.terminalMarketsCanvas|\.terminalEmptyCanvas/);
+  assert.match(styles, /\.tmMarketsSidebar/);
 });
