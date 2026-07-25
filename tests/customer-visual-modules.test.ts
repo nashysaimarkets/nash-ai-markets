@@ -17,10 +17,10 @@ test("customer terminal routes render instrument modules without confidence gaug
   assert.doesNotMatch(customer, /BullseyeGauge|ctShield/);
   assert.doesNotMatch(customer, /CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation/);
   assert.doesNotMatch(customer, /ctIntelStripAuto/);
-  assert.doesNotMatch(terminal, /EventWindowEmpty|Upcoming catalysts|CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation/);
-  assert.match(terminal, /BrandLogo/);
-  assert.match(terminal, /terminalEmptyCanvas|terminalCanvasLogo/);
+  assert.doesNotMatch(terminal, /EventWindowEmpty|Upcoming catalysts|CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation|MarketsBrowser/);
+  assert.match(terminal, /MemberEmptyCanvas/);
   assert.doesNotMatch(brief, /BullseyeGauge|CrossAssetBoard/);
+  assert.match(brief, /MemberEmptyCanvas/);
   assert.match(volGauge, /export function VolatilityGauge/);
   assert.match(yieldVisual, /export function YieldSpreadVisual/);
   assert.match(dxyVisual, /export function DxyPressureVisual/);
@@ -41,13 +41,16 @@ test("truthful history empty states exist as real components", async () => {
 });
 
 test("terminal keeps safe hero classes without removed panels", async () => {
-  const [terminal, customer, styles] = await Promise.all([
+  const [terminal, canvas, customer, styles] = await Promise.all([
     read("../app/terminal/page.tsx"),
+    read("../app/components/MemberEmptyCanvas.tsx"),
     read("../app/terminal/components/CustomerTerminal.tsx"),
     read("../app/mission-control.css"),
   ]);
-  assert.doesNotMatch(terminal, /KeyMarketInformation|TodaysMarketPlan|CrossAssetBoard|Upcoming catalysts|EventWindowEmpty/);
-  assert.match(terminal, /BrandLogo/);
+  assert.doesNotMatch(terminal, /KeyMarketInformation|TodaysMarketPlan|CrossAssetBoard|Upcoming catalysts|EventWindowEmpty|MarketsBrowser/);
+  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(canvas, /BrandLogo/);
+  assert.match(canvas, /terminalEmptyCanvas/);
   assert.match(customer, /ctHeroSummary/);
   assert.match(customer, /ctHeroWatermark/);
   assert.match(styles, /\.ctHeroMeta>div\{/);

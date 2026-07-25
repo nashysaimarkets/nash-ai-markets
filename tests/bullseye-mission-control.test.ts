@@ -26,8 +26,9 @@ test("dashboard includes the premium plan and customer trust labels", async () =
   const mission = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/mission-control.css", import.meta.url), "utf8");
   assert.match(dashboard, /title: "Mission Control \| NASH AI Markets"/);
-  assert.match(dashboard, /MissionControl/);
-  assert.doesNotMatch(dashboard, /href="\/terminal\/diagnostics"/);
+  assert.match(dashboard, /MemberEmptyCanvas/);
+  assert.match(dashboard, /resolveMembershipTier/);
+  assert.doesNotMatch(dashboard, /MissionControl|href="\/terminal\/diagnostics"/);
   assert.match(mission, /Open Terminal/);
   assert.match(mission, /Review Previous Session/);
   assert.match(styles, /\.mcHero\{/);
@@ -39,7 +40,8 @@ test("dashboard exposes verified catalysts and readable risk controls without ad
     readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
-  assert.match(dashboard, /MissionControl/);
+  assert.match(dashboard, /MemberEmptyCanvas/);
+  assert.doesNotMatch(dashboard, /MissionControl/);
   assert.match(mission, /mcPaths/);
   assert.match(mission, /No-trade/);
   assert.doesNotMatch(mission, /fetch\(|useEffect|setInterval/);

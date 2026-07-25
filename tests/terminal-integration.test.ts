@@ -8,14 +8,13 @@ import {
   terminalMarketState,
 } from "../app/terminal/lib/visual-terminal.ts";
 
-test("terminal page is a brand canvas with Markets browser and auth gates intact", async () => {
+test("terminal page is a brand canvas with auth gates intact", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
-  assert.match(page, /MemberShell/);
-  assert.match(page, /BrandLogo/);
-  assert.match(page, /terminalMarketsCanvas|terminalCanvasLogo/);
-  assert.match(page, /MarketsBrowser/);
+  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /active="terminal"/);
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);
+  assert.doesNotMatch(page, /MarketsBrowser/);
   assert.doesNotMatch(page, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery|LockedPremiumCard/);
   assert.doesNotMatch(page, /TodaysMarketPlan|CrossAssetBoard|KeyMarketInformation|Upcoming catalysts|EventWindowEmpty/);
   assert.doesNotMatch(page, /MarketDeskSignalsPanel|AskBullseye|MarketPressureMap|DecisionEnginePanel|DecisionIntelligencePanel|StructureLevelsPanel/);

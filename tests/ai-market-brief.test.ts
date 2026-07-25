@@ -147,9 +147,9 @@ test("AI market brief route is protected, responsive, and preserves entitlement 
   ]);
   assert.match(page, /redirect\("\/login"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
-  assert.match(page, /access\.features\.intelligence/);
-  assert.match(page, /<LockedPremiumCard/);
-  assert.match(page, /cannot invent prices, levels, probabilities or trade instructions/);
+  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /createProgressiveAccess/);
+  assert.doesNotMatch(page, /LockedPremiumCard|buildMarketBrief/);
   assert.match(loading, /aria-busy="true"/);
   assert.match(error, /No market view has been inferred from the failure/);
   assert.match(css, /@media\(max-width:640px\)/);

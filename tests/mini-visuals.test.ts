@@ -58,8 +58,8 @@ test("dashboard and terminal wire mini visuals without inventing cross-asset his
     readFile(new URL("../app/components/mini-visuals/ScenarioPositionLane.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
   ]);
-  assert.match(dashboard, /sparklineFromCandles/);
-  assert.match(dashboard, /rangeLaneFromCandles/);
+  assert.match(dashboard, /MemberEmptyCanvas/);
+  assert.doesNotMatch(dashboard, /sparklineFromCandles|rangeLaneFromCandles/);
   assert.doesNotMatch(terminal, /rangeLaneFromCandles/);
   assert.doesNotMatch(terminal, /sparklines=\{\{/);
   assert.match(status, /Sparkline/);

@@ -47,15 +47,17 @@ test("unavailable snapshots hide values instead of inventing them", () => {
 });
 
 test("visual terminal preserves responsive safeguards while the page canvas is cleared", async () => {
-  const [page, components, styles, warnings] = await Promise.all([
+  const [page, canvas, components, styles, warnings] = await Promise.all([
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/MemberEmptyCanvas.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/lib/customer-warnings.ts", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /BrandLogo/);
-  assert.match(page, /terminalEmptyCanvas|terminalCanvasLogo/);
-  assert.doesNotMatch(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
+  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(canvas, /BrandLogo/);
+  assert.match(canvas, /terminalEmptyCanvas|terminalCanvasLogo/);
+  assert.doesNotMatch(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}|MarketsBrowser/);
   assert.match(warnings, /formatCustomerParticipationWarnings/);
   assert.match(components, /hasDisplayableQuotes|isDecisionReadySnapshot/);
   assert.match(styles, /overflow-x:hidden/);

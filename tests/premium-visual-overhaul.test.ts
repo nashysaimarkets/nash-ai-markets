@@ -5,10 +5,11 @@ import test from "node:test";
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("BrandLogo is enlarged and shared across member and terminal surfaces", async () => {
-  const [logo, globals, terminal, shell, styles] = await Promise.all([
+  const [logo, globals, terminal, canvas, shell, styles] = await Promise.all([
     read("../app/components/BrandLogo.tsx"),
     read("../app/globals.css"),
     read("../app/terminal/page.tsx"),
+    read("../app/components/MemberEmptyCanvas.tsx"),
     read("../app/components/MemberShell.tsx"),
     read("../app/mission-control.css"),
   ]);
@@ -17,11 +18,11 @@ test("BrandLogo is enlarged and shared across member and terminal surfaces", asy
   assert.match(logo, /Project BULLSEYE/);
   assert.match(logo, /data-project="bullseye"/);
   assert.match(globals, /height:56px/);
-  assert.match(terminal, /MemberShell/);
-  assert.match(terminal, /BrandLogo/);
-  assert.match(terminal, /terminalCanvasLogo/);
+  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(canvas, /BrandLogo/);
+  assert.match(canvas, /terminalCanvasLogo/);
   assert.match(styles, /\.terminalCanvasLogo img\{height:72px/);
-  assert.doesNotMatch(terminal, /ftBrand|NASH <b>AI<\/b> \/ BULLSEYE/);
+  assert.doesNotMatch(terminal, /ftBrand|NASH <b>AI<\/b> \/ BULLSEYE|MarketsBrowser/);
   assert.match(shell, /BrandLogo authenticated/);
 });
 

@@ -40,15 +40,14 @@ test("customer terminal provides readable responsive presentation contracts", as
   assert.match(styles, /prefers-contrast:more/);
 });
 
-test("customer terminal keeps brand canvas with Markets browser", async () => {
+test("customer terminal keeps brand canvas with membership gates", async () => {
   const terminal = await read("../app/terminal/page.tsx");
-  assert.match(terminal, /MemberShell/);
-  assert.match(terminal, /BrandLogo/);
-  assert.match(terminal, /terminalCanvasLogo/);
-  assert.match(terminal, /MarketsBrowser/);
+  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(terminal, /active="terminal"/);
   assert.match(terminal, /resolveMembershipTier/);
   assert.match(terminal, /createProgressiveAccess/);
   assert.match(terminal, /loadPreviewClaims/);
+  assert.doesNotMatch(terminal, /MarketsBrowser/);
   assert.doesNotMatch(terminal, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery|LockedPremiumCard|TerminalControls/);
   assert.doesNotMatch(terminal, /DecisionIntelligencePanel|StructureLevelsPanel|AskBullseye|MarketDeskSignalsPanel/);
   assert.doesNotMatch(terminal, /CrossAssetBoard|TodaysMarketPlan|Upcoming catalysts|EventWindowEmpty|KeyMarketInformation/);

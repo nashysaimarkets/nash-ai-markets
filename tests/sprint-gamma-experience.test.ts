@@ -82,13 +82,13 @@ test("executive dashboard integrates verified summary, preview safety, and subsc
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
   const brief = await readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8");
   const profile = await readFile(new URL("../app/profile/page.tsx", import.meta.url), "utf8");
-  assert.match(dashboard, /MissionControl/);
-  assert.match(dashboard, /persistAnalysisSnapshot/);
-  assert.match(dashboard, /href="\/profile"/);
-  assert.doesNotMatch(dashboard, /<SubscriptionStatusCard/);
+  assert.match(dashboard, /MemberEmptyCanvas/);
+  assert.match(dashboard, /resolveMembershipTier/);
+  assert.doesNotMatch(dashboard, /MissionControl|persistAnalysisSnapshot|<SubscriptionStatusCard/);
   assert.match(profile, /<SubscriptionStatusCard/);
-  assert.match(brief, /buildMarketBrief/);
-  assert.match(brief, /LockedPremiumCard|access\.features\.intelligence/);
+  assert.match(brief, /MemberEmptyCanvas/);
+  assert.match(brief, /createProgressiveAccess/);
+  assert.doesNotMatch(brief, /buildMarketBrief|LockedPremiumCard/);
 });
 
 test("member profile is protected, noindex, and exposes no Stripe identifiers", async () => {
@@ -125,7 +125,7 @@ test("Gamma loading, error, navigation, and mobile states remain accessible", as
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
   assert.match(dashboardLoading, /aria-busy="true"/);
-  assert.match(dashboardLoading, /dashCompact|Market status|aria-busy/);
+  assert.match(dashboardLoading, /MemberEmptyCanvas|aria-busy/);
   assert.match(profileLoading, /aria-live="polite"/);
   assert.match(profileError, /No account, billing, or provider error details have been exposed/);
   assert.match(shell, /href: "\/profile"/);

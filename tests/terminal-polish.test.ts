@@ -4,14 +4,14 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("loading route mirrors the Markets terminal canvas", async () => {
+test("loading route mirrors the empty terminal canvas", async () => {
   const source = await read("../app/terminal/loading.tsx");
-  for (const className of ["customerTerminal", "ctWorkspace", "terminalMarketsCanvas", "tmMarketsSidebar"]) {
+  for (const className of ["customerTerminal", "ctWorkspace", "terminalEmptyCanvas"]) {
     assert.match(source, new RegExp(className));
   }
   assert.match(source, /aria-busy="true"/);
   assert.match(source, /aria-live="polite"/);
-  assert.doesNotMatch(source, /ctChartPrimary|ctHero|ctAssetGrid|ctTwoColumn/);
+  assert.doesNotMatch(source, /tmMarketsSidebar|ctChartPrimary|ctHero|ctAssetGrid|ctTwoColumn/);
 });
 
 test("terminal controls provide names, state and modal focus management", async () => {
@@ -45,9 +45,15 @@ test("premium polish supports MacBook, mobile, reduced motion and high contrast"
 });
 
 test("polish remains restrained and the terminal canvas stays clear", async () => {
-  const [styles, page] = await Promise.all([read("../app/mission-control.css"), read("../app/terminal/page.tsx")]);
+  const [styles, page, canvas] = await Promise.all([
+    read("../app/mission-control.css"),
+    read("../app/terminal/page.tsx"),
+    read("../app/components/MemberEmptyCanvas.tsx"),
+  ]);
   assert.doesNotMatch(styles, /backdrop-filter/);
-  assert.match(page, /BrandLogo/);
-  assert.match(page, /terminalEmptyCanvas|terminalCanvasLogo/);
-  assert.doesNotMatch(page, /DecisionEnginePanel|MarketDirectionalGaugesPanel|DashboardCandlestickChart/);
+  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(canvas, /BrandLogo/);
+  assert.match(canvas, /terminalEmptyCanvas/);
+  assert.match(canvas, /terminalCanvasLogo/);
+  assert.doesNotMatch(page, /DecisionEnginePanel|MarketDirectionalGaugesPanel|DashboardCandlestickChart|MarketsBrowser/);
 });

@@ -49,7 +49,7 @@ test("market catalog is generously populated per group with honest coverage", ()
   assert.equal(coverageLabel("awaiting"), "Awaiting coverage");
 });
 
-test("terminal renders Markets dropdown browser without fabricating quotes", async () => {
+test("Markets catalog and browser remain available while terminal page stays logo-only", async () => {
   const [page, browser, styles, catalog] = await Promise.all([
     read("../app/terminal/page.tsx"),
     read("../app/terminal/components/MarketsBrowser.tsx"),
@@ -57,12 +57,10 @@ test("terminal renders Markets dropdown browser without fabricating quotes", asy
     read("../app/lib/markets/market-catalog.ts"),
   ]);
 
-  assert.match(page, /MemberShell/);
-  assert.match(page, /BrandLogo/);
-  assert.match(page, /terminalCanvasLogo/);
-  assert.match(page, /MarketsBrowser/);
+  assert.match(page, /MemberEmptyCanvas/);
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);
+  assert.doesNotMatch(page, /MarketsBrowser/);
   assert.doesNotMatch(page, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery/);
 
   assert.match(browser, /Markets/);

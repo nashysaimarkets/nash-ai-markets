@@ -140,15 +140,17 @@ test("desk candle helper never invents range when inputs are invalid", () => {
 });
 
 test("terminal surfaces keep desk signal libs while the page canvas is cleared", async () => {
-  const [terminal, styles, component, deskLib, gaugesLib] = await Promise.all([
+  const [terminal, canvas, styles, component, deskLib, gaugesLib] = await Promise.all([
     read("../app/terminal/page.tsx"),
+    read("../app/components/MemberEmptyCanvas.tsx"),
     read("../app/mission-control.css"),
     read("../app/terminal/components/CustomerTerminal.tsx"),
     read("../app/lib/market-desk-signals.ts"),
     read("../app/lib/market-directional-gauges.ts"),
   ]);
-  assert.doesNotMatch(terminal, /createMarketDeskSignals|MarketDeskSignalsPanel|createMarketDirectionalGauges|MarketDirectionalGaugesPanel/);
-  assert.match(terminal, /BrandLogo/);
+  assert.doesNotMatch(terminal, /createMarketDeskSignals|MarketDeskSignalsPanel|createMarketDirectionalGauges|MarketDirectionalGaugesPanel|MarketsBrowser/);
+  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(canvas, /BrandLogo/);
   assert.doesNotMatch(terminal, /\/options/);
   assert.doesNotMatch(component, /Interpretive desk leans/);
   assert.match(component, /Verified candle range levels by instrument|Per-instrument gauges and desk levels/);

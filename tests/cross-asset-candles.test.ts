@@ -38,8 +38,11 @@ test("terminal and dashboard mount cross-asset candle gallery", async () => {
     readFile(new URL("../app/components/CrossAssetCandleGallery.tsx", import.meta.url), "utf8"),
   ]);
   assert.doesNotMatch(terminal, /CrossAssetCandleGallery/);
-  assert.match(dashboard, /CrossAssetCandleGallery/);
-  assert.match(brief, /CrossAssetCandleGallery/);
+  assert.doesNotMatch(dashboard, /CrossAssetCandleGallery/);
+  assert.doesNotMatch(brief, /CrossAssetCandleGallery/);
+  assert.match(terminal, /MemberEmptyCanvas/);
+  assert.match(dashboard, /MemberEmptyCanvas/);
+  assert.match(brief, /MemberEmptyCanvas/);
   assert.match(gallery, /instrument=\{active\}/);
   assert.match(gallery, /Treasury yields remain scalar-only/);
 });

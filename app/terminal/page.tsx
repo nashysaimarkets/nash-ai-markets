@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
-import { BrandLogo } from "../components/BrandLogo";
-import { MemberShell } from "../components/MemberShell";
-import { MarketsBrowser } from "./components/MarketsBrowser";
+import { MemberEmptyCanvas } from "../components/MemberEmptyCanvas";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
 
@@ -26,17 +24,5 @@ export default async function Terminal() {
   const previewState = await loadPreviewClaims(user.id);
   createProgressiveAccess(tier, previewState.claims);
 
-  return (
-    <MemberShell
-      active="terminal"
-      className="customerTerminal premiumTerminal terminalMemberPage terminalCanvasPage"
-    >
-      <div className="memberDashboardShell ctWorkspace terminalMarketsCanvas" id="overview">
-        <div className="terminalCanvasHeader">
-          <BrandLogo authenticated className="terminalCanvasLogo" />
-        </div>
-        <MarketsBrowser />
-      </div>
-    </MemberShell>
-  );
+  return <MemberEmptyCanvas active="terminal" />;
 }
