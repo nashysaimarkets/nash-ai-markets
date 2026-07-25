@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
-import { MemberEmptyCanvas } from "../components/MemberEmptyCanvas.tsx";
 import { currentServerTimestamp } from "../dashboard/lib/daily-dashboard.ts";
 import {
   createProgressiveAccess,
@@ -17,6 +16,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** Market Brief entry opens the Trading Desk with Edge Brief on stage. */
 export default async function AIMarketBriefPage() {
   const now = currentServerTimestamp();
   const supabase = await createClient();
@@ -35,5 +35,5 @@ export default async function AIMarketBriefPage() {
   const previewState = await loadPreviewClaims(user.id);
   createProgressiveAccess(tier, previewState.claims, now);
 
-  return <MemberEmptyCanvas active="brief" className="marketBriefPage" />;
+  redirect("/terminal");
 }

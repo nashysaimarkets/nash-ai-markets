@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
-import { MemberEmptyCanvas } from "../components/MemberEmptyCanvas.tsx";
 import { currentServerTimestamp } from "./lib/daily-dashboard.ts";
 import { membershipRedirect, resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
 
@@ -12,6 +11,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** Dashboard entry redirects into the Trading Desk workspace. */
 export default async function MemberDashboard() {
   const now = currentServerTimestamp();
   const supabase = await createClient();
@@ -32,5 +32,5 @@ export default async function MemberDashboard() {
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
 
-  return <MemberEmptyCanvas active="dashboard" className="missionControlPage" />;
+  redirect("/terminal");
 }
