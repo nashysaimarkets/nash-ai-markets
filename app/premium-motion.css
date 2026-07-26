@@ -54,8 +54,7 @@
 
 @media(prefers-reduced-motion:no-preference){
   .memberDashboardShell>.missionControl,
-  .memberDashboardShell>.ctWorkspace,
-  .memberDashboardShell>
+  .memberDashboardShell.ctWorkspace,
   .memberDashboardShell>.briefJourney{
     animation:pmFade var(--pm-med) var(--pm-ease) both;
   }
@@ -239,8 +238,7 @@
 
 @media(prefers-reduced-motion:reduce){
   .memberDashboardShell>.missionControl,
-  .memberDashboardShell>.ctWorkspace,
-  .memberDashboardShell>
+  .memberDashboardShell.ctWorkspace,
   .memberDashboardShell>.briefJourney,
   .pmEnter,
   .mcHero,

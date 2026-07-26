@@ -492,7 +492,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 
 /* ── Trading Desk OS ─────────────────────────────────────────── */
 .tradingDeskPage .deskWorkspaceShell{width:min(1540px,100%);padding:clamp(18px,3vw,36px) clamp(12px,2.5vw,28px) 56px}
-.tradingDeskOS{display:flex;flex-direction:column;gap:18px;animation:deskRise .55s ease both}
+.tradingDeskOS{display:flex;flex-direction:column;gap:18px;opacity:1;animation:deskRise .55s ease}
 .deskHero{position:relative;display:grid;grid-template-columns:minmax(0,1.4fr) auto;gap:24px;align-items:end;padding:clamp(28px,4vw,48px);border:1px solid #24322c;border-radius:18px;overflow:hidden;background:
   linear-gradient(135deg,#0f1a16f0 0%,#0a100ef8 42%,#0c1418f5 100%),
   radial-gradient(circle at 88% 18%,#1a3d2e66,transparent 42%);
@@ -537,7 +537,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskMainColumn.is-focus{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,0.7fr);gap:16px;align-items:start}
 .deskStageStack,.deskFocusRail{display:flex;flex-direction:column;gap:16px;min-width:0}
 .deskFocusRail{position:sticky;top:96px;max-height:calc(100vh - 120px);overflow:auto;padding-right:4px}
-.deskWidget{border:1px solid #24322c;border-radius:14px;background:linear-gradient(155deg,#0d1411e8,#090d12f0);box-shadow:0 18px 48px #0005;overflow:hidden;animation:deskRise .45s ease both}
+.deskWidget{border:1px solid #24322c;border-radius:14px;background:linear-gradient(155deg,#0d1411e8,#090d12f0);box-shadow:0 18px 48px #0005;overflow:hidden;opacity:1;animation:deskRise .45s ease}
 .deskWidget>header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:18px 20px;border-bottom:1px solid #1e2a26}
 .deskWidget>header span{display:block;color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.12em;text-transform:uppercase}
 .deskWidget>header h2,.deskWidget>header strong{margin:6px 0 0;font-size:clamp(20px,2.2vw,28px);letter-spacing:-.03em;color:#f0f3f1;line-height:1.15}

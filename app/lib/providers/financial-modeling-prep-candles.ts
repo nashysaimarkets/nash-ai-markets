@@ -157,14 +157,17 @@ export function aggregateFourHour(candles: OhlcvPoint[]) {
     const bucket = Math.floor(candle.time / 14_400) * 14_400;
     groups.set(bucket, [...(groups.get(bucket) ?? []), candle]);
   }
-  return [...groups.entries()].sort(([a], [b]) => a - b).map(([time, values]) => ({
-    time,
-    open: values[0]!.open,
-    high: Math.max(...values.map((v) => v.high)),
-    low: Math.min(...values.map((v) => v.low)),
-    close: values.at(-1)!.close,
-    volume: values.reduce((sum, v) => sum + v.volume, 0),
-  }));
+  return [...groups.entries()].sort(([a], [b]) => a - b).flatMap(([time, values]) => {
+    if (!values.length) return [];
+    return [{
+      time,
+      open: values[0]!.open,
+      high: Math.max(...values.map((v) => v.high)),
+      low: Math.min(...values.map((v) => v.low)),
+      close: values.at(-1)!.close,
+      volume: values.reduce((sum, v) => sum + v.volume, 0),
+    }];
+  });
 }
 
 function fail(symbol: string, timeframe: CandleTimeframe, category: VerifiedCandleSeries["failureCategory"], endpoint: string, now: number): VerifiedCandleSeries {

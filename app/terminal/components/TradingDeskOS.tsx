@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { startTransition, useEffect, useEffectEvent, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import {
   MARKET_CATALOG,
   coverageDetail,
@@ -73,10 +73,6 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   const [journal, setJournal] = useState<JournalEntry | null>(null);
   const [embedAllowed, setEmbedAllowed] = useState(false);
 
-  const onPersist = useEffectEvent((next: DeskWorkspaceState) => {
-    persistWorkspaceToBrowser(next);
-  });
-
   useEffect(() => {
     const stored = readWorkspaceFromBrowser();
     startTransition(() => {
@@ -87,7 +83,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    onPersist(workspace);
+    persistWorkspaceToBrowser(workspace);
   }, [workspace, hydrated]);
 
   useEffect(() => {
@@ -163,10 +159,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
 
   const visibleWidgets = workspace.widgets.filter((id) => !workspace.hidden.includes(id));
   const stageWidgets = workspace.focusMode
-    ? visibleWidgets.filter((id) => DESK_WIDGET_REGISTRY[id].stage)
+    ? visibleWidgets.filter((id) => DESK_WIDGET_REGISTRY[id]?.stage)
     : visibleWidgets;
   const railWidgets = workspace.focusMode
-    ? visibleWidgets.filter((id) => !DESK_WIDGET_REGISTRY[id].stage)
+    ? visibleWidgets.filter((id) => DESK_WIDGET_REGISTRY[id] && !DESK_WIDGET_REGISTRY[id].stage)
     : [];
   const stackedWidgets = workspace.focusMode ? stageWidgets : visibleWidgets;
 
@@ -778,6 +774,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           <ul className="deskBuilderList">
             {workspace.widgets.map((id, index) => {
               const meta = DESK_WIDGET_REGISTRY[id];
+              if (!meta) return null;
               const hidden = workspace.hidden.includes(id);
               return (
                 <li key={id} className={hidden ? "is-hidden" : undefined}>
