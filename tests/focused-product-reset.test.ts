@@ -2,15 +2,22 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("homepage presents one focused daily decision-brief promise", async () => {
+test("homepage launches the Bullseye Decision Instrument as one focused promise", async () => {
   const homepage = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 
-  assert.match(homepage, /Daily S&amp;P 500 decision brief/);
-  assert.match(homepage, /Know your conditions/);
-  assert.match(homepage, /Bullish path/);
-  assert.match(homepage, /Bearish path/);
-  assert.match(homepage, /Stand aside/);
-  assert.match(homepage, /Scenarios, not predictions/);
+  assert.match(homepage, /Public launch · Bullseye BDI-01/);
+  assert.match(homepage, /See the market/);
+  assert.match(homepage, /See what changes the plan/);
+  assert.match(homepage, /Bullseye Decision Instrument/);
+  assert.match(homepage, /Five separate readings/);
+  assert.match(homepage, /No hidden score/);
+  assert.match(homepage, /Stand aside is valid/);
+  assert.match(homepage, /Bullish confirmation/);
+  assert.match(homepage, /Bearish confirmation/);
+  assert.match(homepage, /Risk veto/);
+  assert.match(homepage, /Prior-brief delta/);
+  assert.match(homepage, /NO LIVE MARKET VALUES/);
+  assert.match(homepage, /scenarios, not predictions/);
   assert.doesNotMatch(homepage, /const plans|Founding 100|Free[\s\S]*Pro[\s\S]*Elite/);
 });
 

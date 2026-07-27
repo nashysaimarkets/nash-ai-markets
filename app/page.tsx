@@ -4,140 +4,148 @@ import Link from "next/link";
 import { BrandLogo } from "./components/BrandLogo";
 
 export const metadata: Metadata = {
-  title: "Daily S&P 500 Decision Brief",
+  title: "The Market Decision Instrument",
   description:
-    "Turn verified S&P 500 market context, event risk and structure into bullish, bearish and stand-aside plans before the US session.",
+    "See the market, see what would change the plan, and preserve the decision from pre-market preparation through the closing review.",
   alternates: { canonical: "/" },
 };
 
-const questions = [
-  ["01", "Can the data be trusted?", "Provider status, timestamps and missing evidence stay visible before any conclusion."],
-  ["02", "What defines the session?", "Regime, structure, catalysts and active conflicts are reduced to the facts that matter."],
-  ["03", "What confirms each path?", "Bullish and bearish scenarios state what must happen before the idea becomes actionable."],
-  ["04", "When should I stay out?", "No-trade conditions and invalidation receive the same prominence as opportunity."],
+const readings = [
+  ["01", "Trust", "Can the underlying information be used? Live, delayed and unavailable states remain visible."],
+  ["02", "Structure", "Where does price sit between verified support, resistance and the rolling range?"],
+  ["03", "Evidence", "Which independent market dimensions are present, missing or in conflict?"],
+  ["04", "Catalyst", "What scheduled risk could alter the session before the next decision point?"],
+  ["05", "Permission", "Do the conditions support bullish preparation, bearish preparation or standing aside?"],
 ] as const;
 
-const method = [
-  ["Trust", "Verified inputs first", "Live, delayed and unavailable states are labelled. Missing data never becomes a fabricated level or signal."],
-  ["Prepare", "Three conditional paths", "Review the bullish path, bearish path and stand-aside case before volatility forces a decision."],
-  ["Review", "A process you can inspect", "Save the pre-session brief, record the outcome and evaluate the quality of the process over time."],
+const ritual = [
+  ["07:30 UK", "Prepare", "Open the verified pre-market brief and inspect what changed."],
+  ["Before action", "Confirm", "Require the stated price and evidence conditions before changing posture."],
+  ["During session", "Protect", "Keep invalidation, event risk and the stand-aside path visible."],
+  ["21:30 UK", "Review", "Compare the preserved plan with the session without rewriting history."],
 ] as const;
 
 const membership = [
-  "Daily S&P 500 Session Brief",
+  "Daily S&P 500 decision brief",
+  "Bullseye Decision Instrument",
+  "Cross-market level matrix",
   "Bullish, bearish and stand-aside paths",
-  "Confirmation and invalidation",
-  "Verified evidence and source status",
-  "Brief archive and trading journal",
-  "Account and billing controls",
+  "Confirmation, invalidation and risk veto",
+  "Pre-market and closing-review broadcasts",
+  "Immutable brief archive and private journal",
 ] as const;
 
 export const dynamic = "force-dynamic";
 
 export default function Home() {
   return (
-    <main className="resetHome">
+    <main className="resetHome launchHome">
       <a className="resetSkip" href="#main-content">Skip to content</a>
 
-      <header className="resetNav">
+      <header className="resetNav launchNav">
         <BrandLogo className="resetBrand" />
         <nav aria-label="Main navigation">
-          <a href="#method">How it works</a>
-          <a href="#membership">Membership</a>
+          <a href="#instrument">The instrument</a>
+          <a href="#ritual">Daily ritual</a>
           <Link href="/methodology">Methodology</Link>
         </nav>
         <div className="resetNavActions">
           <Link href="/login">Sign in</Link>
           <Link className="resetButton resetButtonSmall" href="/login">
-            See today&apos;s framework <span aria-hidden="true">↗</span>
+            Open today&apos;s brief <span aria-hidden="true">↗</span>
           </Link>
         </div>
       </header>
 
       <div id="main-content">
-        <section className="resetHero" aria-labelledby="reset-hero-title">
-          <div className="resetHeroCopy">
-            <p className="resetEyebrow"><span /> Daily S&amp;P 500 decision brief</p>
-            <h1 id="reset-hero-title">Know your conditions <em>before the market opens.</em></h1>
-            <p className="resetLead">
-              NASH AI Markets turns verified market context, event risk and structure
-              into bullish, bearish and stand-aside plans—with confirmation and
-              invalidation clear before the US session.
+        <section className="launchHero" aria-labelledby="launch-hero-title">
+          <div className="launchHeroAtmosphere" aria-hidden="true" />
+          <div className="launchHeroCopy">
+            <p className="resetEyebrow"><span /> Public launch · Bullseye BDI-01</p>
+            <h1 id="launch-hero-title">See the market.<em>See what changes the plan.</em></h1>
+            <p className="launchLead">
+              NASH AI Markets is a decision layer for the S&amp;P 500 session.
+              It turns verified structure, evidence and event risk into conditional
+              paths—then preserves the plan for review after the close.
             </p>
             <div className="resetHeroActions">
-              <Link className="resetButton" href="/login">See today&apos;s framework <span aria-hidden="true">↗</span></Link>
-              <a className="resetTextLink" href="#method">How it works</a>
+              <Link className="resetButton" href="/login">Open today&apos;s brief <span aria-hidden="true">↗</span></Link>
+              <a className="resetTextLink" href="#instrument">Explore BDI-01</a>
             </div>
             <ul className="resetPrinciples" aria-label="Product principles">
-              <li>Verified inputs</li>
-              <li>Conditional paths</li>
-              <li>Risk before action</li>
+              <li>Auditable readings</li>
+              <li>No hidden score</li>
+              <li>Stand aside is valid</li>
             </ul>
           </div>
 
-          <article className="resetBrief" aria-label="Illustrative daily decision brief">
-            <header className="resetBriefHeader">
+          <article className="launchInstrument" aria-label="Illustrative Bullseye Decision Instrument">
+            <header>
               <div>
-                <span>Illustrative framework</span>
-                <h2>Today&apos;s decision brief</h2>
+                <span>NASH original instrument</span>
+                <strong>BDI-01</strong>
               </div>
-              <span className="resetTrustState"><i /> Evidence check</span>
+              <em>Illustrative framework</em>
             </header>
-
-            <section className="resetPosture">
-              <span>Session posture</span>
-              <strong>Wait for confirmation</strong>
-              <p>No directional path becomes active until price and supporting evidence agree.</p>
-            </section>
-
-            <div className="resetPaths">
-              <section>
-                <span>Bullish path</span>
-                <strong>Acceptance first</strong>
-                <p>Require a verified hold above the decision zone with supporting context.</p>
-              </section>
-              <section>
-                <span>Bearish path</span>
-                <strong>Rejection first</strong>
-                <p>Require a verified loss of structure and failed recovery before acting.</p>
-              </section>
-              <section>
-                <span>Stand aside</span>
-                <strong>Conflict remains</strong>
-                <p>Protect capital when data, catalysts or market structure do not agree.</p>
-              </section>
+            <div className="launchInstrumentStage">
+              <div className="launchInstrumentOrbit" aria-hidden="true"><i /><i /><i /></div>
+              <div className="launchInstrumentNeedle" aria-hidden="true"><i /></div>
+              <div className="launchInstrumentCore">
+                <span>Decision posture</span>
+                <strong>Wait for confirmation</strong>
+                <small>Permission remains conditional</small>
+              </div>
+              <span className="launchPole isSupport">Support</span>
+              <span className="launchPole isResistance">Resistance</span>
             </div>
-
+            <div className="launchReadout">
+              {["Trust", "Structure", "Evidence", "Catalyst", "Permission"].map((label, index) => (
+                <span key={label}><i data-tone={index === 3 ? "warning" : "ready"} />{label}</span>
+              ))}
+            </div>
             <footer>
-              <span>Illustrative only · NO LIVE MARKET VALUES</span>
-              <strong>Scenarios, not predictions</strong>
+              <span>NO LIVE MARKET VALUES</span>
+              <strong>Five readings · zero mystery score</strong>
             </footer>
           </article>
         </section>
 
-        <section className="resetQuestionBand" aria-label="Questions answered by the daily brief">
-          {questions.map(([number, title, detail]) => (
-            <article key={number}>
-              <span>{number}</span>
-              <h2>{title}</h2>
-              <p>{detail}</p>
-            </article>
-          ))}
+        <div className="launchMarquee" aria-label="NASH AI Markets principles">
+          <div>
+            <span>TRUST BEFORE INTERPRETATION</span><i>•</i>
+            <span>CONDITIONS BEFORE CONVICTION</span><i>•</i>
+            <span>INVALIDATION BEFORE ACTION</span><i>•</i>
+            <span>PROCESS BEFORE HINDSIGHT</span><i>•</i>
+            <span>TRUST BEFORE INTERPRETATION</span><i>•</i>
+            <span>CONDITIONS BEFORE CONVICTION</span><i>•</i>
+          </div>
+        </div>
+
+        <section className="launchManifesto" aria-labelledby="launch-manifesto-title">
+          <p className="resetEyebrow">A different category of market tool</p>
+          <h2 id="launch-manifesto-title">Your broker shows the price.<br />Your charts show the past.<br /><em>NASH shows the decision.</em></h2>
+          <p>
+            More information is not the same as better preparation. The Bullseye
+            system makes the evidence chain visible: what is trusted, what matters,
+            what confirms, what vetoes and what would change the plan.
+          </p>
         </section>
 
-        <section className="resetMethod" id="method" aria-labelledby="reset-method-title">
+        <section className="launchReadings" id="instrument" aria-labelledby="launch-readings-title">
           <header>
-            <p className="resetEyebrow">One repeatable daily process</p>
-            <h2 id="reset-method-title">Less noise.<br /><em>Better preparation.</em></h2>
+            <div>
+              <p className="resetEyebrow">Bullseye Decision Instrument · BDI-01</p>
+              <h2 id="launch-readings-title">One decision.<br /><em>Five separate readings.</em></h2>
+            </div>
             <p>
-              Your charts and broker already show prices. NASH AI Markets is the
-              decision layer between raw information and action.
+              The instrument refuses to compress uncertainty into a seductive
+              confidence percentage. Every reading keeps its own source and meaning.
             </p>
           </header>
-          <div className="resetMethodSteps">
-            {method.map(([label, title, detail], index) => (
-              <article key={label}>
-                <span>0{index + 1} / {label}</span>
+          <div>
+            {readings.map(([number, title, detail]) => (
+              <article key={number}>
+                <span>{number}</span>
                 <h3>{title}</h3>
                 <p>{detail}</p>
               </article>
@@ -145,31 +153,60 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="resetProof" aria-labelledby="reset-proof-title">
+        <section className="launchDelta" aria-labelledby="launch-delta-title">
           <div>
-            <p className="resetEyebrow">Built for restraint</p>
-            <h2 id="reset-proof-title">The answer can be <em>do nothing.</em></h2>
+            <p className="resetEyebrow">The question most platforms leave unanswered</p>
+            <h2 id="launch-delta-title">What would have to happen<br /><em>for the plan to change?</em></h2>
           </div>
-          <div>
+          <div className="launchDeltaMap">
+            <article data-tone="positive"><span>01 · Bullish confirmation</span><strong>Acceptance + supporting evidence</strong><p>The path stays inactive until its own verified conditions clear.</p></article>
+            <article data-tone="negative"><span>02 · Bearish confirmation</span><strong>Rejection + failed recovery</strong><p>The opposite path has a separate evidence test and invalidation.</p></article>
+            <article data-tone="warning"><span>03 · Risk veto</span><strong>Freshness, catalyst or conflict</strong><p>Capital protection overrides direction when the evidence chain breaks.</p></article>
+            <article data-tone="neutral"><span>04 · Prior-brief delta</span><strong>What actually changed?</strong><p>The current plan is compared with an earlier immutable record.</p></article>
+          </div>
+          <small>Illustrative framework only · scenarios, not predictions</small>
+        </section>
+
+        <section className="launchRitual" id="ritual" aria-labelledby="launch-ritual-title">
+          <header>
+            <p className="resetEyebrow">From preparation to accountability</p>
+            <h2 id="launch-ritual-title">A daily ritual that<br /><em>closes the loop.</em></h2>
+          </header>
+          <ol>
+            {ritual.map(([time, title, detail], index) => (
+              <li key={title}>
+                <span>0{index + 1}</span>
+                <time>{time}</time>
+                <div><h3>{title}</h3><p>{detail}</p></div>
+                <i aria-hidden="true">→</i>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="launchBroadcast" aria-labelledby="launch-broadcast-title">
+          <div className="launchBroadcastCopy">
+            <p className="resetEyebrow">The market, explained twice</p>
+            <h2 id="launch-broadcast-title">Prepare before.<br /><em>Review after.</em></h2>
             <p>
-              Most tools compete to produce another signal. This one is designed to
-              withhold a conclusion when evidence is stale, incomplete or conflicted.
+              Human-reviewed AI briefings are scheduled for 07:30 and 21:30 UK
+              on weekdays. A prior episode is never presented as today&apos;s.
             </p>
-            <dl>
-              <div><dt>Unavailable evidence</dt><dd>No invented output</dd></div>
-              <div><dt>Conflicting conditions</dt><dd>Stand aside remains valid</dd></div>
-              <div><dt>Changing conditions</dt><dd>Invalidation stays visible</dd></div>
-            </dl>
+          </div>
+          <div className="launchBroadcastTimeline">
+            <article><span>07:30</span><strong>Pre-market briefing</strong><p>Conditions, paths, catalysts and risk.</p></article>
+            <i aria-hidden="true" />
+            <article><span>21:30</span><strong>Closing review</strong><p>What changed, what held and what the process revealed.</p></article>
           </div>
         </section>
 
-        <section className="resetMembership" id="membership" aria-labelledby="reset-membership-title">
+        <section className="resetMembership launchMembership" id="membership" aria-labelledby="reset-membership-title">
           <div className="resetMembershipCopy">
-            <p className="resetEyebrow">One focused membership</p>
-            <h2 id="reset-membership-title">Everything required for the daily decision.</h2>
+            <p className="resetEyebrow">The complete decision layer</p>
+            <h2 id="reset-membership-title">Do not buy another prediction.<br />Build a better process.</h2>
             <p>
-              One clear workspace for preparation, evidence and review. Existing
-              memberships remain supported while the simplified offer is introduced.
+              The protected member workspace connects preparation, verified
+              evidence, conditional paths, decision capture and review.
             </p>
           </div>
           <article className="resetMembershipCard">
@@ -188,8 +225,9 @@ export default function Home() {
 
       <footer className="resetFooter">
         <BrandLogo className="resetBrand" />
-        <p>Prepare the conditions. Respect the invalidation. Protect the decision.</p>
+        <p>See the market. See what changes the plan.</p>
         <nav aria-label="Legal and support">
+          <Link href="/methodology">Methodology</Link>
           <Link href="/risk-disclaimer">Risk</Link>
           <Link href="/privacy">Privacy</Link>
           <Link href="/terms">Terms</Link>
