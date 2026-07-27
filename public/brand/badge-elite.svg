@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 56" role="img" aria-labelledby="title">
+  <title id="title">Elite member badge</title><rect x="1" y="1" width="218" height="54" rx="28" fill="#151208" stroke="#d9ab52"/>
+  <path fill="#d9ab52" d="m28 14 4 9 10 1-8 7 2 10-8-5-9 5 2-10-7-7 10-1z"/>
+  <text x="54" y="35" fill="#f4dfaa" font-family="Arial,sans-serif" font-size="17" font-weight="700" letter-spacing="3">ELITE</text>
+</svg>

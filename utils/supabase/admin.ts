@@ -1,2 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
-export function createAdminClient(){const url=process.env.NEXT_PUBLIC_SUPABASE_URL;const secret=process.env.SUPABASE_SECRET_KEY;if(!url||!secret)throw new Error("Supabase admin environment is not configured");return createClient(url,secret,{auth:{autoRefreshToken:false,persistSession:false}})}
+import { createAuthCompatibleFetch } from "./auth-compatible-fetch.ts";
+import { resolveSupabasePublicConfig, resolveSupabaseServiceRoleKey } from "./config.ts";
+
+export function createAdminClient() {
+  const { url } = resolveSupabasePublicConfig();
+  const service = resolveSupabaseServiceRoleKey();
+
+  if (!url || !service.value) {
+    throw new Error("Supabase server credentials are not configured");
+  }
+
+  return createClient(url, service.value, {
+    global: {
+      fetch: createAuthCompatibleFetch(service.value),
+    },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}

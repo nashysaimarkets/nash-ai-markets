@@ -40,7 +40,25 @@ const worker = {
       }, allowedWidths);
     }
 
-    return handler.fetch(request, env, ctx);
+    const appResponse = await handler.fetch(request, env, ctx);
+    const response = new Response(appResponse.body, appResponse);
+    response.headers.set("x-content-type-options", "nosniff");
+    response.headers.set("referrer-policy", "strict-origin-when-cross-origin");
+    response.headers.set("permissions-policy", "camera=(), microphone=(), geolocation=()");
+    response.headers.set("x-frame-options", "DENY");
+    response.headers.set("x-dns-prefetch-control", "off");
+    response.headers.set("cross-origin-opener-policy", "same-origin");
+    if (url.pathname === "/sw.js") {
+      response.headers.delete("Cache-Control");
+      response.headers.set("Cache-Control", "no-cache, max-age=0, must-revalidate");
+      response.headers.set("service-worker-allowed", "/");
+    } else if (url.pathname.startsWith("/assets/") || url.pathname.startsWith("/_next/static/")) {
+      response.headers.set("cache-control", "public, max-age=31536000, immutable");
+    }
+    if (url.protocol === "https:") {
+      response.headers.set("strict-transport-security", "max-age=31536000; includeSubDomains");
+    }
+    return response;
   },
 };
 

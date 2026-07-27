@@ -1,10 +1,63 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
 import LoginForm from "./LoginForm";
+import { BrandLogo } from "../components/BrandLogo";
 
-export const metadata: Metadata = { title: "Member Login", description: "Secure member access to the NASH AI Terminal™." };
+export const metadata: Metadata = {
+  title: "Secure Member Access",
+  description: "Secure passwordless member access to NASH AI Mission Control.",
+  robots: { index: false, follow: false },
+};
 
 export default function Login() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "";
-  return <main className="outcome loginPage"><div className="outcomeCard loginCard"><span className="outcomeMark">↗</span><p className="kicker">MEMBER ACCESS</p><h1>Enter the<br/><em>NASH AI Terminal™.</em></h1><p>Sign in with the email address and password connected to your active membership. Access is provisioned after payment verification.</p><LoginForm supabaseUrl={supabaseUrl} supabaseKey={supabaseKey}/><small>Not a member yet? <a href="/#membership">Compare plans</a> · Access problem? <a href="mailto:hello@nashaimarkets.com?subject=Member%20login%20help">Get help</a></small></div></main>;
+  return (
+    <main className="accessPage">
+      <header className="accessNav">
+        <BrandLogo />
+        <Link href="/">Back to overview</Link>
+      </header>
+
+      <section className="accessLayout">
+        <div className="accessIntro">
+          <p className="mcEyebrow"><span /> Secure member access</p>
+          <h1>Your market preparation<br /><em>starts here.</em></h1>
+          <p>
+            Open Free access or continue to your Pro or Elite workspace with a
+            secure, passwordless email link.
+          </p>
+          <ul>
+            <li><i /> No password to remember or store</li>
+            <li><i /> Membership access verified after sign-in</li>
+            <li><i /> Market data remains fail-closed when unavailable</li>
+          </ul>
+        </div>
+
+        <article className="accessCard">
+          <header>
+            <span className="mcReticle" aria-hidden="true" />
+            <div><small>MISSION CONTROL</small><strong>Request secure access</strong></div>
+            <span>01 / 02</span>
+          </header>
+          <div className="accessCardBody">
+            <p className="accessStep">SIGN-IN LINK</p>
+            <h2>Continue by email</h2>
+            <p>Enter the email connected to your membership. We’ll send one link that returns you to the terminal.</p>
+            <Suspense fallback={<p className="accessMessage" role="status">Preparing secure sign-in…</p>}>
+              <LoginForm />
+            </Suspense>
+          </div>
+          <footer>
+            <span>Protected by Supabase authentication</span>
+            <Link href="/help">Need help?</Link>
+          </footer>
+        </article>
+      </section>
+
+      <footer className="accessFooter">
+        <p>Educational market commentary only. Trading futures and options involves substantial risk.</p>
+        <div><Link href="/#membership">Compare plans</Link><Link href="/privacy">Privacy</Link><a href="mailto:hello@nashaimarkets.com">Contact support</a></div>
+      </footer>
+    </main>
+  );
 }

@@ -1,45 +1,352 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
+import { MemberShell } from "../components/MemberShell";
+import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
+import { createTradingDecision } from "../lib/trading-decision-engine";
+import { createStructuredTradePlan } from "../lib/structured-trade-planner";
+import { buildAnalysisSnapshot } from "../lib/market-analysis-snapshot";
+import { summarizeBriefChanges } from "../lib/brief-change-summary";
+import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes, createUnavailableSnapshot } from "../lib/market-data";
+import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals";
+import { createMarketStructureLevels } from "../lib/market-structure-levels";
+import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
+import { getMarketInstrument, type MarketInstrument } from "../lib/markets/market-catalog";
+import { isCandleInstrument } from "../lib/providers/candle-instruments";
+import { rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data";
+import { listAnalysisSnapshots, persistAnalysisSnapshot } from "../lib/server/market-snapshots";
+import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway";
+import { TodayDecisionBrief } from "./components/TodayDecisionBrief";
+import { DeskErrorBoundary } from "./components/DeskErrorBoundary";
+import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
+import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
+import { loadPreviewClaims } from "./lib/preview-access";
+import { formatCustomerParticipationWarnings } from "./lib/customer-warnings";
+import { terminalMarketState } from "./lib/visual-terminal";
+import { readSessionClock } from "./lib/session-clock";
+import { createEdgeBrief } from "./lib/edge-brief";
+import { createCatalystRadar } from "./lib/catalyst-radar";
+import {
+  DESK_WORKSPACE_COOKIE,
+  createDefaultWorkspace,
+  normalizeWorkspace,
+  parseWorkspaceCookie,
+} from "./lib/desk-workspace";
+import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } from "./lib/desk-payload";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "NASH AI Terminal™",
-  description: "Preview the NASH AI Markets daily S&P 500 futures intelligence terminal.",
+  title: "Today",
+  description: "Today’s verified S&P 500 decision brief, conditional paths and visible risk.",
+  robots: { index: false, follow: false },
 };
 
-const events = [
-  ["13:30 UK", "US CPI / inflation data", "HIGH"],
-  ["14:30 UK", "US cash session opens", "HIGH"],
-  ["19:00 UK", "Federal Reserve speaker", "MED"],
-];
+/** Flight/RSC rejects NaN/Infinity — replace before crossing the client boundary. */
+function sanitizeForClient<T>(value: T): T {
+  return JSON.parse(
+    JSON.stringify(value, (_key, current) => {
+      if (typeof current === "number" && !Number.isFinite(current)) return null;
+      return current;
+    }),
+  ) as T;
+}
 
 export default async function Terminal() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
-  const { data: membership } = await supabase.from("memberships").select("plan,status").eq("email", user.email!).maybeSingle();
-  if (!membership || !["active", "trialing"].includes(membership.status)) redirect("/account-pending");
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_LINK || "mailto:hello@nashaimarkets.com?subject=Manage%20my%20subscription";
-  return <main className="dashboard">
-    <aside className="dashSide">
-      <a href="/" className="brand"><span className="mark"><i /></span><span>NASH <b>AI</b></span></a>
-      <nav><a className="active" href="#overview">Overview</a><a href="#levels">Key levels</a><a href="#scenarios">Scenarios</a><a href="#options">Options desk</a><a href="#calendar">Calendar</a></nav>
-      <div className="sidePlan"><span>{membership.plan.toUpperCase()} MEMBER</span><p>{user.email}<br/>Update your card, invoices or cancellation through Stripe.</p><a href={portalUrl}>Manage subscription ↗</a><a href="/auth/signout">Sign out ↗</a></div>
-    </aside>
-    <div className="dashMain" id="overview">
-      <header className="dashTop"><div><span className="kicker">NASH AI TERMINAL™</span><h1>Good morning, trader.</h1><p>Monday · Pre-market briefing · Illustrative preview</p></div><div className="sessionBadge"><span>SESSION RISK</span><b>● ELEVATED</b></div></header>
-      <div className="previewNotice">PREVIEW DATA — FORMAT DEMONSTRATION ONLY, NOT A LIVE SIGNAL</div>
-      <section className="dashMetrics"><article><span>ES FUTURES</span><strong>6,318.25</strong><em className="positive">+0.34%</em></article><article><span>VIX</span><strong>16.42</strong><em className="negative">−1.08%</em></article><article><span>10Y YIELD</span><strong>4.31%</strong><em className="positive">+3 bps</em></article><article><span>US DOLLAR</span><strong>97.84</strong><em>FLAT</em></article></section>
-      <div className="dashColumns">
-        <section className="dashPanel" id="levels"><div className="panelHead"><div><span>MARKET MAP</span><h2>Key levels</h2></div><small>ES FUTURES</small></div><div className="dashLevel resistance"><span>R2</span><strong>6,350</strong><p>Momentum breakout</p></div><div className="dashLevel resistance"><span>R1</span><strong>6,332</strong><p>First resistance</p></div><div className="dashLevel pivot"><span>PV</span><strong>6,310</strong><p>Daily pivot</p></div><div className="dashLevel support"><span>S1</span><strong>6,288</strong><p>First support</p></div><div className="dashLevel support"><span>S2</span><strong>6,264</strong><p>Range low</p></div></section>
-        <section className="dashPanel biasPanel"><div className="panelHead"><div><span>BASE CASE</span><h2>Neutral → bullish</h2></div><b>64%</b></div><p>Buyers retain control while price accepts above the daily pivot. A clean rejection at R1 would reduce conviction and bring the lower range back into focus.</p><div className="condition"><span>CONFIRMATION</span><strong>Hold above 6,310</strong></div><div className="condition"><span>INVALIDATION</span><strong>Acceptance below 6,288</strong></div></section>
-      </div>
-      <section className="dashPanel scenarios" id="scenarios"><div className="panelHead"><div><span>DECISION FRAMEWORK</span><h2>Session scenarios</h2></div><small>WAIT FOR CONFIRMATION</small></div><div className="dashScenario bull"><b>BULL CASE</b><h3>Acceptance above R1</h3><p>Momentum improves above 6,332 with breadth confirmation. Avoid chasing the opening spike.</p></div><div className="dashScenario bear"><b>BEAR CASE</b><h3>Pivot failure</h3><p>Loss of 6,310 shifts focus toward 6,288. Avoid shorting directly into established support.</p></div><div className="dashScenario wait"><b>NO-TRADE</b><h3>Range and whipsaw</h3><p>Repeated pivot crosses without volume confirmation favour patience and reduced exposure.</p></div></section>
-      <div className="dashColumns lower">
-        <section className="dashPanel" id="options"><div className="panelHead"><div><span>ELITE PREVIEW</span><h2>Options desk</h2></div><small>VOLATILITY FIRST</small></div><p className="deskCopy">Elevated event risk favours defined-risk structures and patience around the opening repricing. Review implied volatility before selecting any strike or expiry.</p><div className="locked"><span>ELITE</span><b>Daily setup details unlock with Elite membership</b><a href="/#membership">Compare plans ↗</a></div></section>
-        <section className="dashPanel" id="calendar"><div className="panelHead"><div><span>TODAY</span><h2>Event calendar</h2></div></div>{events.map(([time,name,risk])=><div className="event" key={name}><strong>{time}</strong><p>{name}</p><span className={risk === "HIGH" ? "high" : "medium"}>{risk}</span></div>)}</section>
-      </div>
-      <footer className="dashFooter">Educational market commentary only. Futures and options involve substantial risk. Preview values are illustrative and are not current market data.<a href="/">Back to NASH AI Markets</a></footer>
-    </div>
-  </main>;
+  if (!user.email) redirect("/?membership=required#membership");
+
+  const { data: membership, error: membershipError } = await supabase
+    .from("memberships")
+    .select("plan, status, current_period_end")
+    .ilike("email", user.email)
+    .in("plan", ["free", "pro", "elite"])
+    .maybeSingle();
+  const tier = resolveMembershipTier(membership, Boolean(membershipError));
+  if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
+  const previewState = await loadPreviewClaims(user.id);
+  const access = createProgressiveAccess(tier, previewState.claims);
+  const previewOffer = access.previewOffer;
+  const paid = access.tier === "pro" || access.tier === "elite";
+
+  const cookieStore = await cookies();
+  const initialWorkspace = normalizeWorkspace(
+    parseWorkspaceCookie(cookieStore.get(DESK_WORKSPACE_COOKIE)?.value) ?? createDefaultWorkspace(),
+  );
+
+  let payload: TradingDeskPayload;
+  try {
+    const [{ snapshot, gatewayStatus }, candleBundleRaw, storedSnapshots] = await Promise.all([
+      getTerminalMarketData(),
+      paid
+        ? getConfiguredFmpCandlesForInstruments("5m").catch(() => null)
+        : Promise.resolve(null),
+      access.features.intelligence
+        ? listAnalysisSnapshots(40).catch(() => ({ rows: [], available: false as const }))
+        : Promise.resolve({ rows: [], available: false as const }),
+    ]);
+
+    const candleSeriesByInstrument = candleBundleRaw
+      ? {
+          ES: toCustomerCandleSeries(candleBundleRaw.ES),
+          VIX: toCustomerCandleSeries(candleBundleRaw.VIX),
+          DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
+          OIL: toCustomerCandleSeries(candleBundleRaw.OIL),
+          QQQ: toCustomerCandleSeries(candleBundleRaw.QQQ),
+          NQ: toCustomerCandleSeries(candleBundleRaw.NQ),
+        }
+      : null;
+
+    const candleSeries = candleSeriesByInstrument?.ES ?? null;
+    const rangeLane = candleSeries?.candles.length ? rangeLaneFromCandles(candleSeries.candles) : null;
+    const intelligence = analyzeMarketSnapshot(snapshot);
+    const decision = createTradingDecision({
+      intelligence,
+      reasoning: intelligence.reasoning,
+      dataStatus: snapshot.status,
+      providerStatus: gatewayStatus.connectionStatus,
+      dataAgeMs: gatewayStatus.dataAgeMs,
+      fallbackActive: gatewayStatus.fallbackActive,
+      missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+    });
+    const plan = createStructuredTradePlan({
+      decision,
+      intelligence,
+      dataStatus: snapshot.status,
+      providerStatus: gatewayStatus.connectionStatus,
+      dataAgeMs: gatewayStatus.dataAgeMs,
+      fallbackActive: gatewayStatus.fallbackActive,
+      missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+    });
+    const currentAnalysis = buildAnalysisSnapshot({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      gateway: gatewayStatus,
+      kind: "refresh",
+    });
+    const previousSession = storedSnapshots.available
+      ? storedSnapshots.rows.find((row) => row.session_date < currentAnalysis.payload.sessionDate) ?? null
+      : null;
+    const briefChange = access.features.intelligence
+      ? summarizeBriefChanges(previousSession, currentAnalysis.payload)
+      : null;
+    const deskCandle = deskCandleContextFromRange(rangeLane);
+    const deskSignals = access.features.intelligence
+      ? createMarketDeskSignals({
+          snapshot,
+          intelligence,
+          decision,
+          plan,
+          candle: deskCandle,
+        })
+      : null;
+    const structureLevels = createMarketStructureLevels({
+      snapshot,
+      candlesBySymbol: {
+        ES: candleSeriesByInstrument?.ES?.candles,
+        VIX: candleSeriesByInstrument?.VIX?.candles,
+        DXY: candleSeriesByInstrument?.DXY?.candles,
+        OIL: candleSeriesByInstrument?.OIL?.candles,
+        QQQ: candleSeriesByInstrument?.QQQ?.candles,
+        NQ: candleSeriesByInstrument?.NQ?.candles,
+      },
+    });
+
+    const state = terminalMarketState(snapshot.status, gatewayStatus.connectionStatus, gatewayStatus.fallbackActive);
+    const timestamp = snapshot.quotes.length > 0 ? formatUkTimestamp(snapshot.asOf) : "Unavailable";
+    const snapshotAge = formatSnapshotAge(snapshot.asOf);
+    const session = readSessionClock(new Date());
+    const customerWarnings = formatCustomerParticipationWarnings(
+      decision.noTradeReasons,
+      decision.dataQualityWarnings,
+      plan.eventRiskWarnings.map((warning) => warning.code),
+    );
+
+    const freshnessFeeds: DeskFreshnessFeed[] = [
+      {
+        id: "snapshot",
+        label: "Market snapshot",
+        status:
+          snapshot.status === "LIVE"
+            ? "LIVE"
+            : snapshot.status === "DELAYED"
+              ? "DELAYED"
+              : hasDisplayableQuotes(snapshot)
+                ? "STALE"
+                : "UNAVAILABLE",
+        ageLabel: snapshotAge,
+        detail: snapshot.source || "Verified provider snapshot",
+      },
+      mapCandleFreshness(candleSeriesByInstrument?.ES, "ES candles"),
+      mapCandleFreshness(candleSeriesByInstrument?.NQ, "NQ candles"),
+      mapCandleFreshness(candleSeriesByInstrument?.QQQ, "QQQ candles"),
+      mapCandleFreshness(candleSeriesByInstrument?.VIX, "VIX candles"),
+      mapCandleFreshness(candleSeriesByInstrument?.DXY, "DXY candles"),
+      mapCandleFreshness(candleSeriesByInstrument?.OIL, "OIL candles"),
+      {
+        id: "calendar",
+        label: "Economic calendar",
+        status: snapshot.events.length ? "DELAYED" : "UNAVAILABLE",
+        ageLabel: snapshot.events.length ? `${snapshot.events.length} rows` : "Empty",
+        detail: snapshot.events.length
+          ? "US medium/high-impact rows from verified FMP calendar path."
+          : "No verified calendar rows in the current snapshot.",
+      },
+      {
+        id: "news",
+        label: "News intelligence",
+        status: "UNAVAILABLE",
+        ageLabel: "Awaiting",
+        detail: "No verified news provider path is wired yet.",
+      },
+      {
+        id: "earnings",
+        label: "Earnings calendar",
+        status: "UNAVAILABLE",
+        ageLabel: "Awaiting",
+        detail: "No verified earnings provider path is wired yet.",
+      },
+    ];
+
+    const favourites = initialWorkspace.favourites
+      .map((id) => getMarketInstrument(id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+    const active = getMarketInstrument(initialWorkspace.activeMarketId) ?? getMarketInstrument("es")!;
+    const catalystRadar = createCatalystRadar({
+      events: snapshot.events,
+      active,
+      favourites,
+    });
+
+    const briefTargets = new Map<string, MarketInstrument>();
+    for (const id of [active.id, ...initialWorkspace.favourites]) {
+      const instrument = getMarketInstrument(id);
+      if (instrument) briefTargets.set(instrument.id, instrument);
+    }
+    const edgeBriefByMarketId: TradingDeskPayload["edgeBriefByMarketId"] = {};
+    for (const instrument of briefTargets.values()) {
+      const candle =
+        candleSeriesByInstrument && isCandleInstrument(instrument.symbol)
+          ? candleSeriesByInstrument[instrument.symbol]
+          : null;
+      edgeBriefByMarketId[instrument.id] = createEdgeBrief({
+        instrument,
+        snapshot,
+        candle,
+        structure: structureLevels.instruments.find((row) => row.symbol === instrument.symbol) ?? null,
+        deskSignals,
+        events: snapshot.events,
+        session,
+        snapshotAge,
+      });
+    }
+
+    void persistAnalysisSnapshot({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      gateway: gatewayStatus,
+      kind: "refresh",
+      candleRefs: rangeLane
+        ? {
+            rangeHigh: rangeLane.high,
+            rangeLow: rangeLane.low,
+            firstClose: rangeLane.firstClose,
+            ema20: rangeLane.ema20,
+            ema50: rangeLane.ema50,
+            latest: rangeLane.current,
+          }
+        : null,
+    });
+
+    payload = sanitizeForClient({
+      paid,
+      tier: access.tier,
+      snapshot,
+      gatewayStatus,
+      marketState: state,
+      timestamp,
+      snapshotAge,
+      candleSeriesByInstrument,
+      structureLevels,
+      deskSignals,
+      session,
+      edgeBriefByMarketId,
+      catalystRadar,
+      freshnessFeeds,
+      customerWarnings,
+      briefChange,
+      initialWorkspace,
+      preview: {
+        eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
+        available: previewState.available,
+        cadence: previewOffer?.cadence,
+      },
+    });
+  } catch (error) {
+    console.error("[terminal] desk payload failed; rendering recovery shell", error);
+    const session = readSessionClock(new Date());
+    const active = getMarketInstrument(initialWorkspace.activeMarketId) ?? getMarketInstrument("es")!;
+    const snapshot = createUnavailableSnapshot();
+    const gatewayStatus = createUnconfiguredMarketGatewayStatus("Terminal desk recovery");
+    payload = sanitizeForClient({
+      paid,
+      tier: access.tier,
+      snapshot,
+      gatewayStatus,
+      marketState: "unavailable",
+      timestamp: "Unavailable",
+      snapshotAge: "Unavailable",
+      candleSeriesByInstrument: null,
+      structureLevels: null,
+      deskSignals: null,
+      session,
+      edgeBriefByMarketId: {
+        [active.id]: createEdgeBrief({
+          instrument: active,
+          snapshot,
+          candle: null,
+          structure: null,
+          deskSignals: null,
+          events: [],
+          session,
+          snapshotAge: "Unavailable",
+        }),
+      },
+      catalystRadar: createCatalystRadar({ events: [], active, favourites: [] }),
+      freshnessFeeds: [
+        {
+          id: "snapshot",
+          label: "Market snapshot",
+          status: "UNAVAILABLE",
+          ageLabel: "Unavailable",
+          detail: "Desk recovered after a temporary error. Refresh to retry verified feeds.",
+        },
+      ],
+      customerWarnings: ["Verified market data is currently unavailable"],
+      briefChange: null,
+      initialWorkspace,
+      preview: {
+        eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
+        available: previewState.available,
+        cadence: previewOffer?.cadence,
+      },
+    });
+  }
+
+  return (
+    <MemberShell
+      active="terminal"
+      className="customerTerminal premiumTerminal terminalMemberPage todayMemberPage"
+    >
+      <DeskErrorBoundary>
+        <TodayDecisionBrief payload={payload} />
+      </DeskErrorBoundary>
+    </MemberShell>
+  );
 }

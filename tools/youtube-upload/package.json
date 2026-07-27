@@ -1,0 +1,23 @@
+{
+  "name": "@nash-ai-markets/youtube-upload",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Operator-only YouTube OAuth + resumable upload for Project BULLSEYE video automation. Separate from customer Supabase auth.",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "auth": "node --experimental-strip-types src/oauth-cli.ts",
+    "create:episode": "node --experimental-strip-types src/create-episode.ts",
+    "upload": "node --experimental-strip-types src/upload.ts",
+    "typecheck": "tsc --noEmit --incremental false"
+  },
+  "dependencies": {
+    "googleapis": "^148.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.19",
+    "typescript": "^5.8.3"
+  }
+}
