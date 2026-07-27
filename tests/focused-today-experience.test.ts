@@ -43,6 +43,14 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Opening range, support and resistance/);
   assert.match(today, /<DashboardCandlestickChart/);
   assert.match(today, /structureLevels=/);
+  assert.match(today, /Bullseye level matrix/);
+  assert.match(today, /How far is the market from a decision/);
+  assert.match(today, /Distance to support/);
+  assert.match(today, /Distance to resistance/);
+  assert.match(today, /Range position/);
+  assert.match(today, /instrument\.references/);
+  assert.match(today, /levelDistance/);
+  assert.match(today, /proximityLabel/);
   assert.match(today, /<CrossAssetCandleGallery/);
   assert.match(today, /Compare the markets shaping today’s decision/);
   assert.match(today, /What the platform can verify right now/);
@@ -61,6 +69,9 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(css, /\.todayBroadcast/);
   assert.match(css, /\.todayBroadcastVideo iframe/);
   assert.match(css, /\.todayStructureChart/);
+  assert.match(css, /\.todayLevelMatrix/);
+  assert.match(css, /\.todayLevelRange/);
+  assert.match(css, /\.todayLevelMatrixGrid/);
   assert.match(css, /\.todayCoverageMap/);
   assert.match(css, /\.todayVisualIntelligence/);
   assert.match(css, /\[data-level=support\] strong/);

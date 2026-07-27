@@ -210,6 +210,29 @@ function evidenceFingerprint(evidence: Record<string, number>) {
   });
 }
 
+function levelDistance(current: number | null, level: number | null) {
+  if (current === null || level === null || current === 0) {
+    return { display: "Unavailable", percentage: null };
+  }
+
+  const delta = level - current;
+  const percentage = (Math.abs(delta) / Math.abs(current)) * 100;
+  return {
+    display: `${delta > 0 ? "+" : ""}${delta.toLocaleString("en-GB", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} · ${percentage.toFixed(2)}%`,
+    percentage,
+  };
+}
+
+function proximityLabel(percentage: number | null) {
+  if (percentage === null) return "Distance unavailable";
+  if (percentage <= 0.15) return "At the level";
+  if (percentage <= 0.5) return "Near the level";
+  return "Room to the level";
+}
+
 export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
   const channelBroadcasts = await getTodaysYouTubeBroadcasts();
   const premarketVideoId = process.env.BULLSEYE_PREMARKET_YOUTUBE_ID || channelBroadcasts.premarket?.videoId;
@@ -244,6 +267,28 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
     : 0;
   const newsFeed = payload.freshnessFeeds.find((feed) => feed.id === "news") ?? null;
   const fingerprint = evidenceFingerprint(payload.snapshot.evidence);
+  const levelMatrix = (payload.structureLevels?.instruments ?? [])
+    .filter((instrument) => instrument.status === "ready")
+    .slice(0, 6)
+    .map((instrument) => {
+      const quote = payload.snapshot.quotes.find((item) => item.symbol === instrument.symbol) ?? null;
+      const current = parsePriceLevel(quote?.value);
+      const support = instrument.support?.value ?? null;
+      const resistance = instrument.resistance?.value ?? null;
+      const supportDistance = levelDistance(current, support);
+      const resistanceDistance = levelDistance(current, resistance);
+      const range = current !== null && support !== null && resistance !== null && resistance > support
+        ? Math.max(0, Math.min(100, ((current - support) / (resistance - support)) * 100))
+        : null;
+
+      return {
+        instrument,
+        quote,
+        supportDistance,
+        resistanceDistance,
+        range,
+      };
+    });
   const sparklineBySymbol = {
     ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
     VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
@@ -530,6 +575,71 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
         <footer>
           Support and resistance are educational rolling 24-hour structure levels derived from verified candle lows and highs.
         </footer>
+      </section>
+
+      <section className="todayLevelMatrix" aria-labelledby="today-level-matrix-title">
+        <header>
+          <div>
+            <span>Bullseye level matrix</span>
+            <h2 id="today-level-matrix-title">How far is the market from a decision?</h2>
+            <p>Verified rolling structure translated into distance, proximity and reference context.</p>
+          </div>
+          <strong>{levelMatrix.length} market{levelMatrix.length === 1 ? "" : "s"} ready</strong>
+        </header>
+        {levelMatrix.length ? (
+          <div className="todayLevelMatrixGrid">
+            {levelMatrix.map(({ instrument, quote, supportDistance, resistanceDistance, range }) => (
+              <article key={instrument.symbol}>
+                <header>
+                  <div>
+                    <span>{instrument.symbol}</span>
+                    <h3>{instrument.label}</h3>
+                  </div>
+                  <div>
+                    <strong>{quote?.value ?? "Unavailable"}</strong>
+                    <small data-direction={quote?.direction ?? "neutral"}>{quote?.change ?? "No verified move"}</small>
+                  </div>
+                </header>
+                <div className="todayLevelRange" data-available={range === null ? "false" : "true"}>
+                  <div>
+                    <i style={{ left: `${range ?? 0}%` }} aria-hidden="true" />
+                  </div>
+                  <ol>
+                    <li><span>Support</span><strong>{instrument.support?.display ?? "Withheld"}</strong></li>
+                    <li><span>Range position</span><strong>{range === null ? "—" : `${Math.round(range)}%`}</strong></li>
+                    <li><span>Resistance</span><strong>{instrument.resistance?.display ?? "Withheld"}</strong></li>
+                  </ol>
+                </div>
+                <dl>
+                  <div data-level="support">
+                    <dt>Distance to support</dt>
+                    <dd>{supportDistance.display}</dd>
+                    <small>{proximityLabel(supportDistance.percentage)}</small>
+                  </div>
+                  <div data-level="resistance">
+                    <dt>Distance to resistance</dt>
+                    <dd>{resistanceDistance.display}</dd>
+                    <small>{proximityLabel(resistanceDistance.percentage)}</small>
+                  </div>
+                </dl>
+                <footer>
+                  {instrument.references.slice(0, 3).map((reference) => (
+                    <span key={reference.kind}>
+                      <small>{reference.label}</small>
+                      <strong>{reference.display}</strong>
+                    </span>
+                  ))}
+                </footer>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="todayLevelMatrixEmpty">
+            <strong>No verified level matrix is available</strong>
+            <p>Markets appear here only after a valid OHLC range produces support and resistance.</p>
+          </div>
+        )}
+        <footer>{payload.structureLevels?.disclosure ?? "Verified candle structure is unavailable."}</footer>
       </section>
 
       {payload.candleSeriesByInstrument ? (
