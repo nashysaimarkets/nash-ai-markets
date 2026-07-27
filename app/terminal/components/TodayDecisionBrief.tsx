@@ -10,6 +10,7 @@ import {
 } from "../../components/mini-visuals/mini-visual-data";
 import type { TradingDeskPayload } from "../lib/desk-payload";
 import { DecisionCapture } from "./DecisionCapture";
+import { getTodaysYouTubeBroadcasts } from "../../lib/youtube-broadcasts";
 
 type Posture = {
   label: string;
@@ -189,7 +190,12 @@ function workspaceLabel(preset: TradingDeskPayload["initialWorkspace"]["preset"]
   }
 }
 
-export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
+export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
+  const channelBroadcasts = await getTodaysYouTubeBroadcasts();
+  const premarketVideoId = process.env.BULLSEYE_PREMARKET_YOUTUBE_ID || channelBroadcasts.premarket?.videoId;
+  const premarketPublishedAt = process.env.BULLSEYE_PREMARKET_VIDEO_PUBLISHED_AT || channelBroadcasts.premarket?.publishedAt;
+  const closeVideoId = process.env.BULLSEYE_CLOSE_YOUTUBE_ID || channelBroadcasts.close?.videoId;
+  const closePublishedAt = process.env.BULLSEYE_CLOSE_VIDEO_PUBLISHED_AT || channelBroadcasts.close?.publishedAt;
   const posture = postureFor(payload);
   const buying = payload.deskSignals?.buying ?? null;
   const selling = payload.deskSignals?.selling ?? null;
@@ -309,15 +315,15 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
         <div className="todayBroadcastGrid">
           <BroadcastEpisode
             slot="Pre-market"
-            videoId={process.env.BULLSEYE_PREMARKET_YOUTUBE_ID}
-            publishedAt={process.env.BULLSEYE_PREMARKET_VIDEO_PUBLISHED_AT}
+            videoId={premarketVideoId}
+            publishedAt={premarketPublishedAt}
             summary={activeBrief?.secondsCopy ?? posture.detail}
             transcript={activeBrief?.bullets ?? [posture.detail, displayText(payload.snapshot.summary)]}
           />
           <BroadcastEpisode
             slot="Closing review"
-            videoId={process.env.BULLSEYE_CLOSE_YOUTUBE_ID}
-            publishedAt={process.env.BULLSEYE_CLOSE_VIDEO_PUBLISHED_AT}
+            videoId={closeVideoId}
+            publishedAt={closePublishedAt}
             summary={payload.briefChange?.headline ?? "The closing review is published only after the session evidence has been checked."}
             transcript={[
               ...(payload.briefChange?.stateChanges.map((item) => `${item.label}: ${item.from} to ${item.to}.`) ?? []),
