@@ -4,9 +4,9 @@ import test from "node:test";
 
 const source = (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("Free registration enters the existing passwordless login flow", async () => {
+test("public decision-brief access enters the existing passwordless login flow", async () => {
   const home = await source("app/page.tsx");
-  assert.match(home, /href="\/login"[\s\S]*Start free/);
+  assert.match(home, /href="\/login"[\s\S]*See today&apos;s framework/);
   assert.doesNotMatch(home, /subject=NASH%20AI%20Free%20access/);
 });
 

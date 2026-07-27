@@ -177,9 +177,14 @@ These variables are operational controls, not application secrets:
 | `SITES_BUILD_TIMEOUT` | Optional | Bounded production-build duration |
 | `SITES_BUILD_KILL_AFTER` | Optional | Build termination grace period |
 | `CODEX_SANDBOX` | Tool-managed | Enables polling for local HMR under Seatbelt |
+| `VERCEL` | Platform-managed | Identifies Vercel runtime builds; also prevents local-only candle fixtures from loading |
+| `VERCEL_ENV` | Platform-managed | Vercel environment classification used to keep production-only safeguards explicit |
+| `VERCEL_GIT_COMMIT_REF` | Platform-managed | Deployed Git branch/reference shown only through sanitized build diagnostics |
+| `VERCEL_URL` | Platform-managed | Deployment hostname used for same-deployment authentication redirects; never include credentials |
 | `WRANGLER_WRITE_LOGS` | Tool-managed/defaulted | Wrangler logging control |
 | `WRANGLER_LOG_PATH` | Tool-managed/defaulted | Wrangler log path |
 | `MINIFLARE_REGISTRY_PATH` | Tool-managed/defaulted | Miniflare registry path |
+| `BULLSEYE_CANDLE_FIXTURE_PATH` | Local test/layout QA only; never production | Optional path to the labelled, non-live candle fixture. The application ignores it in production and on Vercel. |
 
 `SITES_ENV_READY` and `SITES_PROJECT_ROOT` are set internally by
 `scripts/sites-env.sh`; operators should not configure them as application

@@ -54,7 +54,7 @@ test("visual terminal preserves responsive safeguards while the page canvas is c
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/lib/customer-warnings.ts", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /TradingDeskOS/);
+  assert.match(page, /TodayDecisionBrief/);
   assert.match(canvas, /BrandLogo/);
   assert.match(canvas, /terminalEmptyCanvas|terminalCanvasLogo/);
   assert.doesNotMatch(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}|MarketsBrowser/);

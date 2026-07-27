@@ -40,9 +40,9 @@ test("terminal and dashboard mount cross-asset candle gallery", async () => {
   assert.doesNotMatch(terminal, /CrossAssetCandleGallery/);
   assert.doesNotMatch(dashboard, /CrossAssetCandleGallery/);
   assert.doesNotMatch(brief, /CrossAssetCandleGallery/);
-  assert.match(terminal, /TradingDeskOS/);
+  assert.match(terminal, /TodayDecisionBrief/);
   assert.match(dashboard, /redirect\("\/terminal"\)/);
-  assert.match(brief, /redirect\("\/terminal"\)/);
+  assert.match(brief, /listAnalysisSnapshots\(1\)/);
   assert.match(gallery, /instrument=\{active\}/);
   assert.match(gallery, /Treasury yields remain scalar-only/);
 });

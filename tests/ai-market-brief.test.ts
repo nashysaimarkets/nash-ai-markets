@@ -138,17 +138,17 @@ test("AI brief falls back for missing configuration, provider errors, and invali
   }, "test-model"), { status: "invalid_response", selection: null });
 });
 
-test("AI market brief route is protected, responsive, and preserves entitlement gating", async () => {
+test("Evidence route is protected, responsive, and reads preserved snapshots", async () => {
   const [page, loading, error, css] = await Promise.all([
     readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/loading.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/error.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /redirect\("\/login"\)/);
+  assert.match(page, /requireMemberPage/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
-  assert.match(page, /redirect\("\/terminal"\)/);
-  assert.match(page, /createProgressiveAccess/);
+  assert.match(page, /listAnalysisSnapshots\(1\)/);
+  assert.match(page, /No historical values have been reconstructed/);
   assert.doesNotMatch(page, /LockedPremiumCard|buildMarketBrief/);
   assert.match(loading, /aria-busy="true"/);
   assert.match(error, /No market view has been inferred from the failure/);

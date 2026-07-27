@@ -86,8 +86,8 @@ test("executive dashboard integrates verified summary, preview safety, and subsc
   assert.match(dashboard, /resolveMembershipTier/);
   assert.doesNotMatch(dashboard, /MissionControl|persistAnalysisSnapshot|<SubscriptionStatusCard/);
   assert.match(profile, /<SubscriptionStatusCard/);
-  assert.match(brief, /redirect\("\/terminal"\)/);
-  assert.match(brief, /createProgressiveAccess/);
+  assert.match(brief, /listAnalysisSnapshots\(1\)/);
+  assert.match(brief, /requireMemberPage/);
   assert.doesNotMatch(brief, /buildMarketBrief|LockedPremiumCard/);
 });
 

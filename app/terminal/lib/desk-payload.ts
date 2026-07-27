@@ -12,6 +12,7 @@ import type { EdgeBrief } from "./edge-brief.ts";
 import type { CatalystRadar } from "./catalyst-radar.ts";
 import type { SessionClockReading } from "./session-clock.ts";
 import type { DeskWorkspaceState } from "./desk-workspace.ts";
+import type { BriefChangeSummary } from "../../lib/brief-change-summary.ts";
 
 export type DeskCandleBundle = Record<CandleInstrument, CustomerCandleSeries>;
 
@@ -39,6 +40,7 @@ export type TradingDeskPayload = {
   catalystRadar: CatalystRadar;
   freshnessFeeds: DeskFreshnessFeed[];
   customerWarnings: string[];
+  briefChange: BriefChangeSummary | null;
   initialWorkspace: DeskWorkspaceState;
   preview: {
     eligible: boolean;

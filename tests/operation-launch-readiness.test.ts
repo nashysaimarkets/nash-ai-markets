@@ -58,7 +58,7 @@ test("homepage contains no fixed market values and routes pricing through server
     source("app/api/stripe/checkout/route.ts"),
   ]);
   assert.doesNotMatch(home, /6,318\.25|6,350|6,332|6,310|6,288|16\.42|4\.31%|97\.84/);
-  assert.match(home, /NO LIVE VALUE/);
+  assert.match(home, /NO LIVE MARKET VALUES/);
   assert.match(pricing, /\/api\/stripe\/checkout/);
   assert.match(checkout, /checkout\.sessions\.create/);
   assert.doesNotMatch(home, /buy\.stripe\.com/);

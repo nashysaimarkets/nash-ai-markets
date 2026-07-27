@@ -27,22 +27,22 @@ type MemberShellProps = {
 };
 
 const links = [
-  { href: "/dashboard", label: "Dashboard", key: "dashboard" },
-  { href: "/brief", label: "Market brief", key: "brief" },
-  { href: "/terminal", label: "Terminal", key: "terminal" },
-  { href: "/ideas", label: "Ideas", key: "ideas" },
-  { href: "/profile", label: "Profile", key: "profile" },
-  { href: "/onboarding", label: "Preferences", key: "onboarding" },
+  { href: "/terminal", label: "Today", key: "terminal" },
+  { href: "/brief", label: "Evidence", key: "brief" },
+  { href: "/review", label: "Review", key: "review" },
+  { href: "/profile", label: "Account", key: "profile" },
 ] as const;
 
 const moreLinks = [
-  { href: "/review", label: "Review", key: "review" },
   { href: "/archive", label: "Archive", key: "archive" },
   { href: "/journal", label: "Journal", key: "journal" },
   { href: "/performance", label: "Performance", key: "performance" },
   { href: "/results", label: "Results", key: "results" },
   { href: "/replay", label: "Replay", key: "replay" },
   { href: "/methodology", label: "Methodology", key: "methodology" },
+  { href: "/ideas", label: "Ideas", key: "ideas" },
+  { href: "/onboarding", label: "Preferences", key: "onboarding" },
+  { href: "/dashboard", label: "Legacy dashboard", key: "dashboard" },
 ] as const;
 
 const moreActive = new Set<MemberShellActive>(moreLinks.map((link) => link.key));
