@@ -24,7 +24,19 @@ export async function POST(request: Request) {
       p_interests: preferences.interests,
       p_notifications: preferences.notifications,
     });
-    if (error) throw error;
+    if (error) {
+      const { error: fallbackError } = await supabase
+        .from("member_onboarding")
+        .upsert({
+          user_id: user.id,
+          experience: preferences.experience,
+          interests: preferences.interests,
+          notifications: preferences.notifications,
+          completed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id" });
+      if (fallbackError) throw fallbackError;
+    }
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false, code: "ONBOARDING_UNAVAILABLE" }, { status: 503 });

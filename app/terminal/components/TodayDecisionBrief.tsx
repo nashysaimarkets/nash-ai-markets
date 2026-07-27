@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CrossAssetCandleGallery } from "../../components/CrossAssetCandleGallery";
 import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane";
 import { Sparkline } from "../../components/mini-visuals/Sparkline";
 import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart";
@@ -138,6 +139,10 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
   const activeBrief = payload.edgeBriefByMarketId[workspace.activeMarketId] ?? null;
   const focusLabel = workspaceLabel(workspace.preset);
   const platformLabel = workspace.preferredPlatformId.replaceAll("-", " ");
+  const candleFeedCount = payload.candleSeriesByInstrument
+    ? Object.values(payload.candleSeriesByInstrument).filter((series) => series.candles.length > 0).length
+    : 0;
+  const newsFeed = payload.freshnessFeeds.find((feed) => feed.id === "news") ?? null;
   const sparklineBySymbol = {
     ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
     VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
@@ -315,6 +320,52 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
         <footer>
           Support and resistance are educational rolling 24-hour structure levels derived from verified candle lows and highs.
         </footer>
+      </section>
+
+      {payload.candleSeriesByInstrument ? (
+        <section className="todayVisualIntelligence" aria-label="Cross-asset visual intelligence">
+          <CrossAssetCandleGallery
+            seriesByInstrument={payload.candleSeriesByInstrument}
+            eyebrow="MULTI-MARKET VISUAL INTELLIGENCE"
+            title="Compare the markets shaping today’s decision."
+          />
+        </section>
+      ) : null}
+
+      <section className="todayCoverageMap" aria-labelledby="today-coverage-title">
+        <header>
+          <div>
+            <span>Information coverage</span>
+            <h2 id="today-coverage-title">What the platform can verify right now.</h2>
+          </div>
+          <Link href="/terminal/diagnostics">Inspect feed health →</Link>
+        </header>
+        <div>
+          <article data-tone={statusTone(payload.snapshot.status)}>
+            <i aria-hidden="true" />
+            <span>Market snapshot</span>
+            <strong>{payload.snapshot.status}</strong>
+            <p>{payload.snapshot.quotes.length} verified quote rows · {payload.snapshotAge}</p>
+          </article>
+          <article data-tone={candleFeedCount ? "positive" : "negative"}>
+            <i aria-hidden="true" />
+            <span>Candlestick feeds</span>
+            <strong>{candleFeedCount} / 6</strong>
+            <p>Structurally valid OHLC histories available in this desk payload.</p>
+          </article>
+          <article data-tone={nextCatalysts.length ? "warning" : "negative"}>
+            <i aria-hidden="true" />
+            <span>Economic catalysts</span>
+            <strong>{nextCatalysts.length}</strong>
+            <p>{nextCatalysts.length ? "Verified calendar events currently on radar." : "No verified events in the current window."}</p>
+          </article>
+          <article data-tone={newsFeed ? statusTone(newsFeed.status) : "negative"}>
+            <i aria-hidden="true" />
+            <span>Market news</span>
+            <strong>{newsFeed?.status.replaceAll("_", " ") ?? "UNAVAILABLE"}</strong>
+            <p>{newsFeed?.detail ?? "No verified news provider is connected, so no headlines are invented."}</p>
+          </article>
+        </div>
       </section>
 
       {payload.briefChange ? (

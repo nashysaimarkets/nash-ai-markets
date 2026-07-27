@@ -29,6 +29,10 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Opening range, support and resistance/);
   assert.match(today, /<DashboardCandlestickChart/);
   assert.match(today, /structureLevels=/);
+  assert.match(today, /<CrossAssetCandleGallery/);
+  assert.match(today, /Compare the markets shaping today’s decision/);
+  assert.match(today, /What the platform can verify right now/);
+  assert.match(today, /No verified news provider is connected/);
   assert.match(today, /Session posture/);
   assert.match(today, /Conditional paths/);
   assert.match(today, /Confirmation/);
@@ -38,6 +42,8 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(css, /\.todayLiveCockpit/);
   assert.match(css, /\.todayPersonalFocus/);
   assert.match(css, /\.todayStructureChart/);
+  assert.match(css, /\.todayCoverageMap/);
+  assert.match(css, /\.todayVisualIntelligence/);
   assert.match(css, /\[data-level=support\] strong/);
   assert.match(css, /\[data-level=resistance\] strong/);
   assert.match(chart, /structureLevels\?\.support/);

@@ -15,20 +15,27 @@ test("first-run preferences accept only complete enumerated choices", () => {
 });
 
 test("onboarding persistence is authenticated, same-origin and user-owned", async () => {
-  const [route, migration, rpcMigration] = await Promise.all([
+  const [route, migration, rpcMigration, repairMigration] = await Promise.all([
     read("app/api/onboarding/route.ts"),
     read("supabase/migrations/202607170006_member_onboarding.sql"),
     read("supabase/migrations/202607180008_member_onboarding_rpc.sql"),
+    read("supabase/migrations/202607270001_repair_member_onboarding_interests.sql"),
   ]);
   assert.match(route, /request\.headers\.get\("origin"\) !== origin/);
   assert.match(route, /supabase\.auth\.getUser/);
   assert.match(route, /supabase\.rpc\("save_member_onboarding"/);
+  assert.match(route, /\.from\("member_onboarding"\)/);
+  assert.match(route, /\.upsert\(/);
   assert.match(migration, /enable row level security/);
   assert.match(migration, /auth\.uid\(\) = user_id/g);
   assert.match(rpcMigration, /security definer/);
   assert.match(rpcMigration, /v_user_id uuid := auth\.uid\(\)/);
   assert.match(rpcMigration, /grant execute .* to authenticated/);
   assert.doesNotMatch(rpcMigration, /grant execute .* to anon/);
+  assert.match(rpcMigration, /'equities'/);
+  assert.doesNotMatch(rpcMigration, /'options'/);
+  assert.match(repairMigration, /create or replace function public\.save_member_onboarding/);
+  assert.match(repairMigration, /'equities'/);
 });
 
 test("onboarding UI exposes progress, interests, notifications and recovery", async () => {
