@@ -77,6 +77,30 @@ npm run auth          # browser consent → saves refresh token under .tokens/ (
 npm run upload -- --file ./video.mp4 --title "Draft title" --privacy private
 ```
 
+## Cedar-narrated branded episode
+
+The renderer uses only a supplied, reviewed script. It does not fetch or invent
+market values. Keep `OPENAI_API_KEY` in `.env.local` or another protected runtime.
+Every video carries an on-screen AI-narration disclosure.
+
+```bash
+npm run create:episode -- \
+  --script-file ./brief.txt \
+  --title "Pre-market briefing" \
+  --label "Pre-market · 07:30 UK" \
+  --output ./premarket.mp4
+```
+
+Requirements: `OPENAI_API_KEY`, `BULLSEYE_TTS_VOICE=cedar`, and `ffmpeg`.
+Keep the first upload private for operator review:
+
+```bash
+npm run upload -- \
+  --file ./premarket.mp4 \
+  --title "NASH AI Markets — Pre-market briefing" \
+  --privacy private
+```
+
 ## Next.js callback stub
 
 `app/api/youtube/oauth/callback/route.ts` is a **non-production scaffold** that accepts the OAuth redirect for operator flows. It does **not** integrate with Supabase session cookies or magic-link auth.

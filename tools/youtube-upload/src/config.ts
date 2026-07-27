@@ -14,7 +14,7 @@ export type YoutubeUploadEnv = {
   tokenPath: string;
 };
 
-function loadDotEnvLocal(): void {
+export function loadDotEnvLocal(): void {
   const path = resolve(ROOT, ".env.local");
   if (!existsSync(path)) return;
   const text = readFileSync(path, "utf8");
