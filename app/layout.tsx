@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     locale: "en_GB",
     images: [
       {
-        url: "/og-v2.png",
+        url: "/og-v2.jpg",
         width: 1200,
         height: 630,
         alt: "NASH AI Markets — See the market and see what changes the plan",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "NASH AI Markets — See What Changes the Plan",
     description: "Verified market context and decision review—from pre-market through the close.",
-    images: ["/og-v2.png"],
+    images: ["/og-v2.jpg"],
   },
   icons: {
     icon: [
