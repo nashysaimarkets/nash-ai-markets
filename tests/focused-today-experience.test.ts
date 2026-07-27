@@ -26,6 +26,12 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /payload\.edgeBriefByMarketId/);
   assert.match(today, /preferredPlatformId/);
   assert.match(today, /saved markets/);
+  assert.match(today, /AI market broadcast/);
+  assert.match(today, /BULLSEYE_PREMARKET_YOUTUBE_ID/);
+  assert.match(today, /BULLSEYE_CLOSE_YOUTUBE_ID/);
+  assert.match(today, /youtube-nocookie\.com\/embed/);
+  assert.match(today, /No previous episode is presented as current/);
+  assert.match(today, /ukDateKey\(published\) !== ukDateKey\(new Date\(\)\)/);
   assert.match(today, /Opening range, support and resistance/);
   assert.match(today, /<DashboardCandlestickChart/);
   assert.match(today, /structureLevels=/);
@@ -41,6 +47,8 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Review/);
   assert.match(css, /\.todayLiveCockpit/);
   assert.match(css, /\.todayPersonalFocus/);
+  assert.match(css, /\.todayBroadcast/);
+  assert.match(css, /\.todayBroadcastVideo iframe/);
   assert.match(css, /\.todayStructureChart/);
   assert.match(css, /\.todayCoverageMap/);
   assert.match(css, /\.todayVisualIntelligence/);

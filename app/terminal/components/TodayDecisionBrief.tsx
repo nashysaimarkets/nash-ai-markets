@@ -17,6 +17,80 @@ type Posture = {
   tone: "positive" | "negative" | "warning" | "unavailable";
 };
 
+type BroadcastEpisodeProps = {
+  slot: "Pre-market" | "Closing review";
+  videoId: string | undefined;
+  publishedAt: string | undefined;
+  summary: string;
+  transcript: string[];
+};
+
+function ukDateKey(value: Date): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(value);
+}
+
+function currentYouTubeEpisode(videoId: string | undefined, publishedAt: string | undefined) {
+  if (!videoId || !/^[A-Za-z0-9_-]{11}$/.test(videoId) || !publishedAt) return null;
+  const published = new Date(publishedAt);
+  if (!Number.isFinite(published.getTime()) || ukDateKey(published) !== ukDateKey(new Date())) return null;
+  return {
+    src: `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`,
+    publishedLabel: new Intl.DateTimeFormat("en-GB", {
+      timeZone: "Europe/London",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(published),
+  };
+}
+
+function BroadcastEpisode({ slot, videoId, publishedAt, summary, transcript }: BroadcastEpisodeProps) {
+  const episode = currentYouTubeEpisode(videoId, publishedAt);
+  return (
+    <article className="todayBroadcastEpisode" data-ready={episode ? "true" : "false"}>
+      <header>
+        <div>
+          <span>{slot}</span>
+          <h3>{episode ? `${slot} AI market briefing` : `Awaiting today’s ${slot.toLowerCase()}`}</h3>
+        </div>
+        <strong>{episode ? `Published ${episode.publishedLabel}` : "Not published"}</strong>
+      </header>
+      {episode ? (
+        <div className="todayBroadcastVideo">
+          <iframe
+            src={episode.src}
+            title={`${slot} NASH AI Markets briefing`}
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <div className="todayBroadcastAwaiting">
+          <span aria-hidden="true">▶</span>
+          <div>
+            <strong>Today’s video will appear here after review</strong>
+            <p>No previous episode is presented as current.</p>
+          </div>
+        </div>
+      )}
+      <div className="todayBroadcastTranscript">
+        <p>{summary}</p>
+        <details>
+          <summary>Read briefing points</summary>
+          <ul>{transcript.slice(0, 4).map((item) => <li key={item}>{item}</li>)}</ul>
+        </details>
+      </div>
+    </article>
+  );
+}
+
 function postureFor(payload: TradingDeskPayload): Posture {
   if (
     payload.snapshot.status !== "LIVE"
@@ -216,6 +290,44 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
           <span>{workspace.favourites.length} saved markets</span>
           <span>{workspace.compareIds.length} comparison slots</span>
           <Link href="/brief">Open your full brief →</Link>
+        </footer>
+      </section>
+
+      <section className="todayBroadcast" aria-labelledby="today-broadcast-title">
+        <header>
+          <div>
+            <span>AI market broadcast</span>
+            <h2 id="today-broadcast-title">Watch the plan. Review the outcome.</h2>
+            <p>Human-reviewed video briefings supported by the same verified evidence shown on this page.</p>
+          </div>
+          <div className="todayBroadcastCadence">
+            <span>Pre-market</span>
+            <i aria-hidden="true">→</i>
+            <span>Closing review</span>
+          </div>
+        </header>
+        <div className="todayBroadcastGrid">
+          <BroadcastEpisode
+            slot="Pre-market"
+            videoId={process.env.BULLSEYE_PREMARKET_YOUTUBE_ID}
+            publishedAt={process.env.BULLSEYE_PREMARKET_VIDEO_PUBLISHED_AT}
+            summary={activeBrief?.secondsCopy ?? posture.detail}
+            transcript={activeBrief?.bullets ?? [posture.detail, displayText(payload.snapshot.summary)]}
+          />
+          <BroadcastEpisode
+            slot="Closing review"
+            videoId={process.env.BULLSEYE_CLOSE_YOUTUBE_ID}
+            publishedAt={process.env.BULLSEYE_CLOSE_VIDEO_PUBLISHED_AT}
+            summary={payload.briefChange?.headline ?? "The closing review is published only after the session evidence has been checked."}
+            transcript={[
+              ...(payload.briefChange?.stateChanges.map((item) => `${item.label}: ${item.from} to ${item.to}.`) ?? []),
+              ...(payload.briefChange?.quoteChanges.map((item) => `${item.label}: ${item.from} to ${item.to}.`) ?? []),
+              "No closing outcome is inferred before a verified review is available.",
+            ]}
+          />
+        </div>
+        <footer>
+          Videos are educational commentary, manually approved before publication and never treated as executable trade instructions.
         </footer>
       </section>
 
