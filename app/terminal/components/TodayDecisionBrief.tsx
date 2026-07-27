@@ -2,6 +2,7 @@ import Link from "next/link";
 import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane";
 import { Sparkline } from "../../components/mini-visuals/Sparkline";
 import {
+  parsePriceLevel,
   rangeLaneFromCandles,
   sparklineFromCandles,
 } from "../../components/mini-visuals/mini-visual-data";
@@ -72,6 +73,29 @@ function displayText(value: string | null | undefined, fallback = "Unavailable")
   return trimmed ? trimmed : fallback;
 }
 
+function curveContext(twoYear: number | null, tenYear: number | null) {
+  if (twoYear === null || tenYear === null) {
+    return {
+      value: "Unavailable",
+      detail: "Both verified Treasury readings are required",
+      tone: "unavailable",
+    };
+  }
+
+  const spreadBasisPoints = Math.round((tenYear - twoYear) * 100);
+  const formattedSpread = `${spreadBasisPoints > 0 ? "+" : ""}${spreadBasisPoints} bp`;
+
+  if (spreadBasisPoints < -5) {
+    return { value: formattedSpread, detail: "Inverted curve · growth caution", tone: "negative" };
+  }
+
+  if (spreadBasisPoints > 5) {
+    return { value: formattedSpread, detail: "Positive curve · normal slope", tone: "positive" };
+  }
+
+  return { value: formattedSpread, detail: "Flat curve · transition zone", tone: "warning" };
+}
+
 export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
   const posture = postureFor(payload);
   const buying = payload.deskSignals?.buying ?? null;
@@ -86,6 +110,12 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
   const esCandles = payload.candleSeriesByInstrument?.ES?.candles ?? [];
   const esRange = rangeLaneFromCandles(esCandles);
   const esSparkline = sparklineFromCandles(esCandles);
+  const twoYearQuote = payload.snapshot.quotes.find((item) => item.symbol === "US2Y") ?? null;
+  const tenYearQuote = payload.snapshot.quotes.find((item) => item.symbol === "US10Y") ?? null;
+  const treasuryCurve = curveContext(
+    parsePriceLevel(twoYearQuote?.value),
+    parsePriceLevel(tenYearQuote?.value),
+  );
   const sparklineBySymbol = {
     ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
     VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
@@ -327,12 +357,26 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
               <span>{quote.label}</span>
               <strong>{quote.value}</strong>
               <small>{quote.change}</small>
-              <Sparkline
-                values={sparklineBySymbol[quote.symbol as keyof typeof sparklineBySymbol]}
-                tone={quote.direction}
-                label={`${quote.label} verified rolling candle trend`}
-                filled
-              />
+              {quote.symbol === "US2Y" ? (
+                <div className="todayYieldContext">
+                  <span>Front-end pressure</span>
+                  <b>Policy-sensitive benchmark</b>
+                  <small>Verified scalar · no candle history</small>
+                </div>
+              ) : quote.symbol === "US10Y" ? (
+                <div className="todayYieldContext" data-tone={treasuryCurve.tone}>
+                  <span>10Y − 2Y curve</span>
+                  <b>{treasuryCurve.value}</b>
+                  <small>{treasuryCurve.detail}</small>
+                </div>
+              ) : (
+                <Sparkline
+                  values={sparklineBySymbol[quote.symbol as keyof typeof sparklineBySymbol]}
+                  tone={quote.direction}
+                  label={`${quote.label} verified rolling candle trend`}
+                  filled
+                />
+              )}
             </article>
           ))}
           {!payload.snapshot.quotes.length ? (

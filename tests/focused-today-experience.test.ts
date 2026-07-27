@@ -37,6 +37,11 @@ test("Today earns its visual value from verified candle history only", async () 
   assert.match(today, /<Sparkline/);
   assert.match(today, /<RangePositionLane/);
   assert.match(today, /payload\.candleSeriesByInstrument/);
+  assert.match(today, /quote\.symbol === "US2Y"/);
+  assert.match(today, /quote\.symbol === "US10Y"/);
+  assert.match(today, /10Y − 2Y curve/);
+  assert.match(today, /Verified scalar · no candle history/);
+  assert.match(today, /parsePriceLevel/);
   assert.doesNotMatch(today, /synthetic|Math\.random|sampleSeries|fake/i);
 });
 
