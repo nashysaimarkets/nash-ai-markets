@@ -8,6 +8,11 @@ afterwards.
 
 - [Architecture](ARCHITECTURE.md) — application boundaries, services, data flow,
   routes, dependencies and deployment shape.
+- [Easy YouTube setup (5 steps)](video-automation/CONSOLE_CHECKLIST.md) —
+  grandma-simple Google Cloud Console guide for Project BULLSEYE video upload
+  (operator-only; separate from customer auth). See also
+  `tools/youtube-upload/README.md` and
+  [technical handoff](video-automation/CHATGPT_HANDOFF.md).
 - [Launch playbook](LAUNCH_PLAYBOOK.md) — ordered path from the current state to
   public launch.
 - [RC2 final launch report](RC2_FINAL_LAUNCH_REPORT.md) — current evidence,
