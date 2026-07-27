@@ -34,6 +34,14 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Bearish confirmation/);
   assert.match(today, /Risk veto/);
   assert.match(today, /Prior brief delta/);
+  assert.match(today, /NASH original instrument · BDI-01/);
+  assert.match(today, /Bullseye Decision Instrument/);
+  assert.match(today, /Five separate verified readings/);
+  assert.match(today, /Decision posture/);
+  assert.match(today, /Safety locked/);
+  assert.match(today, /No directional permission/);
+  assert.match(today, /ES range position unavailable/);
+  assert.match(today, /The dial needle represents only ES position/);
   assert.match(today, /AI market broadcast/);
   assert.match(today, /BULLSEYE_PREMARKET_YOUTUBE_ID/);
   assert.match(today, /BULLSEYE_CLOSE_YOUTUBE_ID/);
@@ -66,6 +74,10 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(css, /\.todayDecisionDelta/);
   assert.match(css, /\.todaySessionFingerprint/);
   assert.match(css, /\.todayFingerprintBars/);
+  assert.match(css, /\.todayDecisionInstrument/);
+  assert.match(css, /\.todayInstrumentDial/);
+  assert.match(css, /\.todayInstrumentReadings/);
+  assert.match(css, /\.todayInstrumentEvidence/);
   assert.match(css, /\.todayBroadcast/);
   assert.match(css, /\.todayBroadcastVideo iframe/);
   assert.match(css, /\.todayStructureChart/);
