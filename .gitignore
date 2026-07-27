@@ -11,3 +11,10 @@ node_modules */
 .env
 .env.*
 !.env.example
+
+# YouTube / Project BULLSEYE video automation (operator OAuth — never commit)
+tools/youtube-upload/.env.local
+tools/youtube-upload/.tokens/
+tools/youtube-upload/client_secret*.json
+**/client_secret*.json
+**/youtube-oauth.json
