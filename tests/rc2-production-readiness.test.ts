@@ -39,7 +39,8 @@ test("public launch surfaces and email templates do not claim private-beta statu
     read("app/lib/launch-email.ts"),
   ]);
   for (const source of [home, waitlist, email]) assert.doesNotMatch(source, /private beta/i);
-  assert.match(home, /Daily S&amp;P 500 decision brief/);
+  assert.match(home, /Public launch · Bullseye BDI-01/);
+  assert.match(home, /S&amp;P 500 session/);
 });
 
 test("production environment validation follows server-created Stripe checkout", async () => {

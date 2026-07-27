@@ -6,7 +6,7 @@ const source = (path: string) => readFile(new URL(`../${path}`, import.meta.url)
 
 test("public decision-brief access enters the existing passwordless login flow", async () => {
   const home = await source("app/page.tsx");
-  assert.match(home, /href="\/login"[\s\S]*See today&apos;s framework/);
+  assert.match(home, /href="\/login"[\s\S]*Open today&apos;s brief/);
   assert.doesNotMatch(home, /subject=NASH%20AI%20Free%20access/);
 });
 
