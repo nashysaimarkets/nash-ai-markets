@@ -289,6 +289,14 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
         range,
       };
     });
+  const esLevelState = levelMatrix.find((item) => item.instrument.symbol === "ES") ?? null;
+  const availableEvidence = fingerprint.filter((dimension) => dimension.value !== null);
+  const nextCatalyst = nextCatalysts[0] ?? null;
+  const permissionLabel = !verifiedWindow
+    ? "Safety locked"
+    : payload.deskSignals?.overallLean === "buying" || payload.deskSignals?.overallLean === "selling"
+      ? "Confirmation required"
+      : "No directional permission";
   const sparklineBySymbol = {
     ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
     VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
@@ -434,6 +442,89 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
             ))}
           </div>
         </div>
+      </section>
+
+      <section className="todayDecisionInstrument" aria-labelledby="today-instrument-title">
+        <header>
+          <div>
+            <span>NASH original instrument · BDI-01</span>
+            <h2 id="today-instrument-title">Bullseye Decision Instrument</h2>
+            <p>Five separate verified readings arranged around one decision—never collapsed into an opaque score.</p>
+          </div>
+          <strong data-tone={posture.tone}>{permissionLabel}</strong>
+        </header>
+
+        <div className="todayInstrumentBody">
+          <div className="todayInstrumentDial" data-tone={posture.tone}>
+            <div className="todayInstrumentOrbit" aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="todayInstrumentNeedle" aria-hidden="true">
+              <i
+                style={{
+                  transform: `translateX(-50%) rotate(${esLevelState?.range === null || esLevelState?.range === undefined
+                    ? 0
+                    : -120 + (esLevelState.range / 100) * 240}deg)`,
+                }}
+              />
+            </div>
+            <div className="todayInstrumentCore">
+              <span>Decision posture</span>
+              <strong>{posture.label}</strong>
+              <small>{esLevelState?.range === null || esLevelState?.range === undefined
+                ? "ES range position unavailable"
+                : `ES at ${Math.round(esLevelState.range)}% of verified range`}</small>
+            </div>
+            <span className="todayInstrumentPole isSupport">Support</span>
+            <span className="todayInstrumentPole isResistance">Resistance</span>
+          </div>
+
+          <div className="todayInstrumentReadings">
+            <article data-reading="trust">
+              <span>01 · Trust</span>
+              <strong>{payload.snapshot.status}</strong>
+              <p>{payload.snapshotAge} · {displayText(payload.snapshot.source, "Provider unavailable")}</p>
+            </article>
+            <article data-reading="structure">
+              <span>02 · Structure</span>
+              <strong>{esLevelState?.range === null || esLevelState?.range === undefined
+                ? "Unavailable"
+                : `${Math.round(esLevelState.range)}% of range`}</strong>
+              <p>{esLevelState
+                ? `${esLevelState.supportDistance.display} to support · ${esLevelState.resistanceDistance.display} to resistance`
+                : "Verified ES support and resistance are withheld."}</p>
+            </article>
+            <article data-reading="evidence">
+              <span>03 · Evidence</span>
+              <strong>{availableEvidence.length} / {fingerprint.length} dimensions</strong>
+              <div className="todayInstrumentEvidence" aria-label="Verified evidence dimensions">
+                {fingerprint.map((dimension) => (
+                  <i
+                    key={dimension.key}
+                    data-available={dimension.value === null ? "false" : "true"}
+                    title={dimension.value === null ? `${dimension.label} unavailable` : `${dimension.label} ${dimension.value}`}
+                  />
+                ))}
+              </div>
+            </article>
+            <article data-reading="catalyst">
+              <span>04 · Catalyst</span>
+              <strong>{nextCatalyst?.risk ?? "Unavailable"}</strong>
+              <p>{nextCatalyst ? `${nextCatalyst.time} · ${nextCatalyst.title}` : "No verified event is present in the current window."}</p>
+            </article>
+            <article data-reading="permission">
+              <span>05 · Permission</span>
+              <strong>{permissionLabel}</strong>
+              <p>{posture.detail}</p>
+            </article>
+          </div>
+        </div>
+
+        <footer>
+          The dial needle represents only ES position within its verified rolling range. Trust, evidence, catalyst and permission remain independent readings.
+        </footer>
       </section>
 
       <section className="todayBroadcast" aria-labelledby="today-broadcast-title">
