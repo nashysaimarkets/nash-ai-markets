@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { BrandLogo } from "./components/BrandLogo";
+import { PublicDecisionLab } from "./components/PublicDecisionLab";
 
 export const metadata: Metadata = {
   title: "The Market Decision Instrument",
@@ -130,6 +131,8 @@ export default function Home() {
             what confirms, what vetoes and what would change the plan.
           </p>
         </section>
+
+        <PublicDecisionLab />
 
         <section className="launchReadings" id="instrument" aria-labelledby="launch-readings-title">
           <header>
