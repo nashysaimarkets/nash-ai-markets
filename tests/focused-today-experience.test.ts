@@ -26,6 +26,14 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /payload\.edgeBriefByMarketId/);
   assert.match(today, /preferredPlatformId/);
   assert.match(today, /saved markets/);
+  assert.match(today, /Bullseye decision delta/);
+  assert.match(today, /Session fingerprint/);
+  assert.match(today, /Five verified dimensions/);
+  assert.match(today, /payload\.snapshot\.evidence/);
+  assert.match(today, /Bullish confirmation/);
+  assert.match(today, /Bearish confirmation/);
+  assert.match(today, /Risk veto/);
+  assert.match(today, /Prior brief delta/);
   assert.match(today, /AI market broadcast/);
   assert.match(today, /BULLSEYE_PREMARKET_YOUTUBE_ID/);
   assert.match(today, /BULLSEYE_CLOSE_YOUTUBE_ID/);
@@ -47,6 +55,9 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Review/);
   assert.match(css, /\.todayLiveCockpit/);
   assert.match(css, /\.todayPersonalFocus/);
+  assert.match(css, /\.todayDecisionDelta/);
+  assert.match(css, /\.todaySessionFingerprint/);
+  assert.match(css, /\.todayFingerprintBars/);
   assert.match(css, /\.todayBroadcast/);
   assert.match(css, /\.todayBroadcastVideo iframe/);
   assert.match(css, /\.todayStructureChart/);

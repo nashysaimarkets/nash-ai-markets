@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     default: "NASH AI Markets | Pre-Market Mission Control",
     template: "%s | NASH AI Markets",
   },
-  description: "Prepare for the S&P 500 session with verified market context, conditional scenarios, decision permissions and clear risk awareness.",
+  description: "See the market, what changed, and what would change the plan—from pre-market preparation through the closing review.",
   applicationName: "NASH AI Markets",
   authors: [{ name: "NASH AI Markets", url: "https://www.nashaimarkets.com" }],
   creator: "NASH AI Markets",
@@ -40,26 +40,26 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "NASH AI Markets — Pre-Market Mission Control",
-    description: "Verified context. Conditional scenarios. Risk-aware preparation for the S&P 500 session.",
+    title: "NASH AI Markets — See What Changes the Plan",
+    description: "Verified market context, conditional paths and decision review—from pre-market through the close.",
     type: "website",
     url: "/",
     siteName: "NASH AI Markets",
     locale: "en_GB",
     images: [
       {
-        url: "/og-image.svg",
+        url: "/og-v2.png",
         width: 1200,
         height: 630,
-        alt: "NASH AI Markets — Pre-Market Mission Control",
+        alt: "NASH AI Markets — See the market and see what changes the plan",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NASH AI Markets — Pre-Market Mission Control",
-    description: "Verified context. Conditional scenarios. Risk-aware preparation.",
-    images: ["/og-image.svg"],
+    title: "NASH AI Markets — See What Changes the Plan",
+    description: "Verified market context and decision review—from pre-market through the close.",
+    images: ["/og-v2.png"],
   },
   icons: {
     icon: [

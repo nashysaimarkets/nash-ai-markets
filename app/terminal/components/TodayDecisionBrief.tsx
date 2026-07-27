@@ -190,6 +190,26 @@ function workspaceLabel(preset: TradingDeskPayload["initialWorkspace"]["preset"]
   }
 }
 
+function evidenceFingerprint(evidence: Record<string, number>) {
+  const dimensions = [
+    ["trend", "Trend"],
+    ["momentum", "Momentum"],
+    ["volatility", "Volatility"],
+    ["breadth", "Breadth"],
+    ["macro", "Macro"],
+  ] as const;
+
+  return dimensions.map(([key, label]) => {
+    const raw = evidence[key];
+    const available = typeof raw === "number" && Number.isFinite(raw);
+    return {
+      key,
+      label,
+      value: available ? Math.max(0, Math.min(100, Math.round(raw))) : null,
+    };
+  });
+}
+
 export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
   const channelBroadcasts = await getTodaysYouTubeBroadcasts();
   const premarketVideoId = process.env.BULLSEYE_PREMARKET_YOUTUBE_ID || channelBroadcasts.premarket?.videoId;
@@ -223,6 +243,7 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
     ? Object.values(payload.candleSeriesByInstrument).filter((series) => series.candles.length > 0).length
     : 0;
   const newsFeed = payload.freshnessFeeds.find((feed) => feed.id === "news") ?? null;
+  const fingerprint = evidenceFingerprint(payload.snapshot.evidence);
   const sparklineBySymbol = {
     ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
     VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
@@ -297,6 +318,77 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
           <span>{workspace.compareIds.length} comparison slots</span>
           <Link href="/brief">Open your full brief →</Link>
         </footer>
+      </section>
+
+      <section className="todayDecisionDelta" aria-labelledby="today-decision-delta-title">
+        <header>
+          <div>
+            <span>Bullseye decision delta</span>
+            <h2 id="today-decision-delta-title">See the market. See what would change the plan.</h2>
+            <p>A single evidence chain from verified conditions to confirmation, veto and review.</p>
+          </div>
+          <strong data-tone={posture.tone}>{posture.label}</strong>
+        </header>
+
+        <div className="todayDecisionDeltaGrid">
+          <article data-step="now">
+            <span>01 · Now</span>
+            <h3>{posture.label}</h3>
+            <p>{activeBrief?.secondsCopy ?? posture.detail}</p>
+          </article>
+          <article data-step="bull">
+            <span>02 · Bullish confirmation</span>
+            <h3>{buying?.status ?? "Unavailable"}</h3>
+            <p>{buying?.watchingFor ?? "Await verified upside confirmation."}</p>
+          </article>
+          <article data-step="bear">
+            <span>03 · Bearish confirmation</span>
+            <h3>{selling?.status ?? "Unavailable"}</h3>
+            <p>{selling?.watchingFor ?? "Await verified downside confirmation."}</p>
+          </article>
+          <article data-step="veto">
+            <span>04 · Risk veto</span>
+            <h3>{warnings.length} active condition{warnings.length === 1 ? "" : "s"}</h3>
+            <p>{warnings[0]}</p>
+          </article>
+          <article data-step="next">
+            <span>05 · Next decision point</span>
+            <h3>{nextCatalysts[0]?.time ?? payload.session.countdownLabel ?? payload.session.label}</h3>
+            <p>{nextCatalysts[0]?.title ?? payload.session.nextEventLabel ?? "Await the next verified session transition."}</p>
+          </article>
+          <article data-step="review">
+            <span>06 · Prior brief delta</span>
+            <h3>{payload.briefChange?.available ? "Comparison ready" : "Awaiting history"}</h3>
+            <p>{payload.briefChange?.headline ?? "No earlier immutable session brief is available for comparison."}</p>
+          </article>
+        </div>
+
+        <div className="todaySessionFingerprint">
+          <div>
+            <span>Session fingerprint</span>
+            <h3>Five verified dimensions. No hidden composite score.</h3>
+            <p>Every bar is a preserved evidence input. Missing dimensions remain visibly unavailable.</p>
+          </div>
+          <div className="todayFingerprintBars">
+            {fingerprint.map((dimension) => (
+              <div key={dimension.key} data-available={dimension.value === null ? "false" : "true"}>
+                <header>
+                  <span>{dimension.label}</span>
+                  <strong>{dimension.value === null ? "—" : dimension.value}</strong>
+                </header>
+                <div
+                  role="meter"
+                  aria-label={`${dimension.label} evidence`}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={dimension.value ?? undefined}
+                >
+                  <i style={{ width: `${dimension.value ?? 0}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="todayBroadcast" aria-labelledby="today-broadcast-title">
