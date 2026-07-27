@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { CrossAssetCandleGallery } from "../../components/CrossAssetCandleGallery";
-import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane";
 import { Sparkline } from "../../components/mini-visuals/Sparkline";
 import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart";
+import { MarketAge, MarketFreshnessClock } from "./MarketFreshnessClock";
 import {
   parsePriceLevel,
-  rangeLaneFromCandles,
   sparklineFromCandles,
 } from "../../components/mini-visuals/mini-visual-data";
 import type { TradingDeskPayload } from "../lib/desk-payload";
@@ -234,6 +233,7 @@ function proximityLabel(percentage: number | null) {
 }
 
 export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
+  const renderedAt = new Date().toISOString();
   const channelBroadcasts = await getTodaysYouTubeBroadcasts();
   const premarketVideoId = process.env.BULLSEYE_PREMARKET_YOUTUBE_ID || channelBroadcasts.premarket?.videoId;
   const premarketPublishedAt = process.env.BULLSEYE_PREMARKET_VIDEO_PUBLISHED_AT || channelBroadcasts.premarket?.publishedAt;
@@ -249,9 +249,6 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
     ? payload.customerWarnings.slice(0, 4)
     : ["No additional participation warnings are present in the verified payload."];
   const nextCatalysts = payload.catalystRadar.items.slice(0, 3);
-  const esCandles = payload.candleSeriesByInstrument?.ES?.candles ?? [];
-  const esRange = rangeLaneFromCandles(esCandles);
-  const esSparkline = sparklineFromCandles(esCandles);
   const twoYearQuote = payload.snapshot.quotes.find((item) => item.symbol === "US2Y") ?? null;
   const tenYearQuote = payload.snapshot.quotes.find((item) => item.symbol === "US10Y") ?? null;
   const treasuryCurve = curveContext(
@@ -318,12 +315,12 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
           </p>
         </div>
         <dl>
-          <div><dt>Session</dt><dd>{payload.session.label}</dd></div>
-          <div><dt>Now (ET)</dt><dd>{payload.session.nowEt}</dd></div>
-          <div><dt>Updated</dt><dd>{payload.timestamp}</dd></div>
-          <div><dt>Membership</dt><dd>{payload.tier}</dd></div>
-          <div><dt>Desk</dt><dd>{focusLabel}</dd></div>
-          <div><dt>Saved markets</dt><dd>{workspace.favourites.length}</dd></div>
+          <MarketFreshnessClock
+            asOf={payload.snapshot.asOf}
+            status={payload.snapshot.status}
+            sessionLabel={payload.session.label}
+            initialNow={renderedAt}
+          />
         </dl>
       </section>
 
@@ -333,8 +330,8 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
         </div>
         <div>
           <span>Data trust</span>
-          <strong>{payload.snapshot.status} · {payload.snapshotAge}</strong>
-          <p>{displayText(payload.snapshot.source, "No verified market provider")}</p>
+          <strong>{payload.snapshot.status} · <MarketAge asOf={payload.snapshot.asOf} initialNow={renderedAt} /></strong>
+          <p>{displayText(payload.snapshot.source, "No verified market provider")} · Verified observation: {payload.timestamp}</p>
         </div>
         <div className="todayLiveTrustFeeds">
           {payload.freshnessFeeds.slice(0, 4).map((feed) => (
@@ -342,105 +339,6 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
               <i aria-hidden="true" /> {feed.label}: {feed.status.replaceAll("_", " ")}
             </span>
           ))}
-        </div>
-      </section>
-
-      <section className="todayPersonalFocus" aria-labelledby="today-personal-focus-title">
-        <header>
-          <div>
-            <span>Your focus</span>
-            <h2 id="today-personal-focus-title">{activeBrief?.title ?? `${focusLabel} ready`}</h2>
-          </div>
-          <dl>
-            <div><dt>Layout</dt><dd>{focusLabel}</dd></div>
-            <div><dt>Platform</dt><dd>{platformLabel}</dd></div>
-            <div><dt>Mode</dt><dd>{workspace.focusMode ? "Focus on" : "Full desk"}</dd></div>
-          </dl>
-        </header>
-        <div>
-          <p>{activeBrief?.secondsCopy ?? "Your saved desk is ready. Verified focus details are currently unavailable."}</p>
-          <ul>
-            {(activeBrief?.bullets ?? [
-              "No verified focus briefing is available.",
-              `${workspace.favourites.length} markets are saved to this desk.`,
-            ]).slice(0, 3).map((item) => <li key={item}>{item}</li>)}
-          </ul>
-        </div>
-        <footer>
-          <span>{workspace.favourites.length} saved markets</span>
-          <span>{workspace.compareIds.length} comparison slots</span>
-          <Link href="/brief">Open your full brief →</Link>
-        </footer>
-      </section>
-
-      <section className="todayDecisionDelta" aria-labelledby="today-decision-delta-title">
-        <header>
-          <div>
-            <span>Bullseye decision delta</span>
-            <h2 id="today-decision-delta-title">See the market. See what would change the plan.</h2>
-            <p>A single evidence chain from verified conditions to confirmation, veto and review.</p>
-          </div>
-          <strong data-tone={posture.tone}>{posture.label}</strong>
-        </header>
-
-        <div className="todayDecisionDeltaGrid">
-          <article data-step="now">
-            <span>01 · Now</span>
-            <h3>{posture.label}</h3>
-            <p>{activeBrief?.secondsCopy ?? posture.detail}</p>
-          </article>
-          <article data-step="bull">
-            <span>02 · Bullish confirmation</span>
-            <h3>{buying?.status ?? "Unavailable"}</h3>
-            <p>{buying?.watchingFor ?? "Await verified upside confirmation."}</p>
-          </article>
-          <article data-step="bear">
-            <span>03 · Bearish confirmation</span>
-            <h3>{selling?.status ?? "Unavailable"}</h3>
-            <p>{selling?.watchingFor ?? "Await verified downside confirmation."}</p>
-          </article>
-          <article data-step="veto">
-            <span>04 · Risk veto</span>
-            <h3>{warnings.length} active condition{warnings.length === 1 ? "" : "s"}</h3>
-            <p>{warnings[0]}</p>
-          </article>
-          <article data-step="next">
-            <span>05 · Next decision point</span>
-            <h3>{nextCatalysts[0]?.time ?? payload.session.countdownLabel ?? payload.session.label}</h3>
-            <p>{nextCatalysts[0]?.title ?? payload.session.nextEventLabel ?? "Await the next verified session transition."}</p>
-          </article>
-          <article data-step="review">
-            <span>06 · Prior brief delta</span>
-            <h3>{payload.briefChange?.available ? "Comparison ready" : "Awaiting history"}</h3>
-            <p>{payload.briefChange?.headline ?? "No earlier immutable session brief is available for comparison."}</p>
-          </article>
-        </div>
-
-        <div className="todaySessionFingerprint">
-          <div>
-            <span>Session fingerprint</span>
-            <h3>Five verified dimensions. No hidden composite score.</h3>
-            <p>Every bar is a preserved evidence input. Missing dimensions remain visibly unavailable.</p>
-          </div>
-          <div className="todayFingerprintBars">
-            {fingerprint.map((dimension) => (
-              <div key={dimension.key} data-available={dimension.value === null ? "false" : "true"}>
-                <header>
-                  <span>{dimension.label}</span>
-                  <strong>{dimension.value === null ? "—" : dimension.value}</strong>
-                </header>
-                <div
-                  role="meter"
-                  aria-label={`${dimension.label} evidence`}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={dimension.value ?? undefined}
-                >
-                  <i style={{ width: `${dimension.value ?? 0}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -565,73 +463,6 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
         </footer>
       </section>
 
-      <section className="todayLiveCockpit" aria-labelledby="today-cockpit-title">
-        <article className="todayCockpitDecision" data-tone={posture.tone}>
-          <header>
-            <span>Decision now</span>
-            <b>{verifiedWindow ? "Confirmation gated" : "Safety locked"}</b>
-          </header>
-          <div>
-            <p>{payload.deskSignals?.overallLean?.replaceAll("-", " ") ?? "Insufficient"}</p>
-            <h2 id="today-cockpit-title">{posture.label}</h2>
-            <strong>{posture.detail}</strong>
-          </div>
-          <ul>
-            {(payload.deskSignals?.contextNotes ?? ["Verified directional context is not available."])
-              .slice(0, 3)
-              .map((note) => <li key={note}>{note}</li>)}
-          </ul>
-        </article>
-
-        <div className="todayCockpitSide">
-          <article className="todayCockpitTiming">
-            <span>Session clock</span>
-            <strong>{payload.session.countdownLabel ?? payload.session.label}</strong>
-            <p>{payload.session.nextEventLabel ?? payload.session.detail}</p>
-            <small>{payload.session.nowEt}</small>
-          </article>
-          <article className="todayCockpitCatalyst">
-            <span>Next verified catalyst</span>
-            {nextCatalysts[0] ? (
-              <>
-                <strong>{nextCatalysts[0].time}</strong>
-                <p>{nextCatalysts[0].title}</p>
-                <small data-risk={nextCatalysts[0].risk}>{nextCatalysts[0].risk} impact</small>
-              </>
-            ) : (
-              <>
-                <strong>Unavailable</strong>
-                <p>No verified calendar row is present.</p>
-                <small>No event invented</small>
-              </>
-            )}
-          </article>
-        </div>
-
-        <article className="todayCockpitStructure">
-          <header>
-            <div>
-              <span>ES verified structure</span>
-              <strong>{esQuote?.value ?? "Unavailable"}</strong>
-              <small>{esQuote?.change ?? "No verified move"}</small>
-            </div>
-            <Sparkline
-              values={esSparkline}
-              tone={esQuote?.direction ?? "neutral"}
-              label="Verified ES rolling candle trend"
-              width={260}
-              height={68}
-              filled
-            />
-          </header>
-          {esRange ? (
-            <RangePositionLane markers={esRange} title="ES position within the verified rolling 24-hour range" />
-          ) : (
-            <p className="todayCockpitUnavailable">Verified candle history is insufficient for a range visual.</p>
-          )}
-        </article>
-      </section>
-
       <section className="todayStructureChart" aria-labelledby="today-structure-chart-title">
         <header>
           <div>
@@ -668,6 +499,7 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
         </footer>
       </section>
 
+      {false ? <>
       <section className="todayLevelMatrix" aria-labelledby="today-level-matrix-title">
         <header>
           <div>
@@ -830,6 +662,7 @@ export async function TodayDecisionBrief({ payload }: { payload: TradingDeskPayl
           </ul>
         </div>
       </section>
+      </> : null}
 
       <section className="todayLivePaths" aria-labelledby="today-paths-title">
         <header>

@@ -4,10 +4,11 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("authenticated terminal presents the focused Today decision brief", async () => {
-  const [page, today, css, chart] = await Promise.all([
+test("authenticated terminal presents a current, focused Today decision brief", async () => {
+  const [page, today, clock, css, chart] = await Promise.all([
     read("app/terminal/page.tsx"),
     read("app/terminal/components/TodayDecisionBrief.tsx"),
+    read("app/terminal/components/MarketFreshnessClock.tsx"),
     read("app/today-live.css"),
     read("app/dashboard/components/DashboardCandlestickChart.tsx"),
   ]);
@@ -16,24 +17,22 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.doesNotMatch(page, /<TradingDeskOS/);
   assert.match(today, /Today · your/);
   assert.match(today, /Your market,/);
-  assert.match(today, /Decision now/);
-  assert.match(today, /Session clock/);
-  assert.match(today, /Next verified catalyst/);
   assert.match(today, /Data trust/);
-  assert.match(today, /Your focus/);
   assert.match(today, /workspaceLabel/);
   assert.match(today, /payload\.initialWorkspace/);
   assert.match(today, /payload\.edgeBriefByMarketId/);
-  assert.match(today, /preferredPlatformId/);
-  assert.match(today, /saved markets/);
-  assert.match(today, /Bullseye decision delta/);
-  assert.match(today, /Session fingerprint/);
-  assert.match(today, /Five verified dimensions/);
   assert.match(today, /payload\.snapshot\.evidence/);
-  assert.match(today, /Bullish confirmation/);
-  assert.match(today, /Bearish confirmation/);
-  assert.match(today, /Risk veto/);
-  assert.match(today, /Prior brief delta/);
+  assert.match(today, /<MarketFreshnessClock/);
+  assert.match(today, /<MarketAge/);
+  assert.match(today, /Verified observation/);
+  assert.match(clock, /LIVE_REFRESH_SECONDS = 15/);
+  assert.match(clock, /RECOVERY_REFRESH_SECONDS = 60/);
+  assert.match(clock, /document\.visibilityState !== "visible"/);
+  assert.match(clock, /router\.refresh\(\)/);
+  assert.match(clock, /Market time \(ET\)/);
+  assert.match(clock, /UK time/);
+  assert.match(clock, /Next check in/);
+  assert.match(clock, /setInterval/);
   assert.match(today, /NASH original instrument · BDI-01/);
   assert.match(today, /Bullseye Decision Instrument/);
   assert.match(today, /Five separate verified readings/);
@@ -51,6 +50,7 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Opening range, support and resistance/);
   assert.match(today, /<DashboardCandlestickChart/);
   assert.match(today, /structureLevels=/);
+  assert.match(today, /\{false \? <>/);
   assert.match(today, /Bullseye level matrix/);
   assert.match(today, /How far is the market from a decision/);
   assert.match(today, /Distance to support/);
@@ -99,9 +99,8 @@ test("Today earns its visual value from verified candle history only", async () 
   const today = await read("app/terminal/components/TodayDecisionBrief.tsx");
 
   assert.match(today, /sparklineFromCandles/);
-  assert.match(today, /rangeLaneFromCandles/);
   assert.match(today, /<Sparkline/);
-  assert.match(today, /<RangePositionLane/);
+  assert.doesNotMatch(today, /<RangePositionLane/);
   assert.match(today, /payload\.candleSeriesByInstrument/);
   assert.match(today, /quote\.symbol === "US2Y"/);
   assert.match(today, /quote\.symbol === "US10Y"/);
