@@ -5,10 +5,11 @@ import test from "node:test";
 const read = (path: string) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("authenticated terminal presents the focused Today decision brief", async () => {
-  const [page, today, css] = await Promise.all([
+  const [page, today, css, chart] = await Promise.all([
     read("app/terminal/page.tsx"),
     read("app/terminal/components/TodayDecisionBrief.tsx"),
     read("app/today-live.css"),
+    read("app/dashboard/components/DashboardCandlestickChart.tsx"),
   ]);
 
   assert.match(page, /<TodayDecisionBrief payload=\{payload\}/);
@@ -25,6 +26,9 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /payload\.edgeBriefByMarketId/);
   assert.match(today, /preferredPlatformId/);
   assert.match(today, /saved markets/);
+  assert.match(today, /Opening range, support and resistance/);
+  assert.match(today, /<DashboardCandlestickChart/);
+  assert.match(today, /structureLevels=/);
   assert.match(today, /Session posture/);
   assert.match(today, /Conditional paths/);
   assert.match(today, /Confirmation/);
@@ -33,6 +37,13 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Review/);
   assert.match(css, /\.todayLiveCockpit/);
   assert.match(css, /\.todayPersonalFocus/);
+  assert.match(css, /\.todayStructureChart/);
+  assert.match(css, /\[data-level=support\] strong/);
+  assert.match(css, /\[data-level=resistance\] strong/);
+  assert.match(chart, /structureLevels\?\.support/);
+  assert.match(chart, /color: "#55e69a"/);
+  assert.match(chart, /structureLevels\?\.resistance/);
+  assert.match(chart, /color: "#ec7474"/);
   assert.match(css, /\.todayMemberPage \.memberDashboardNav\{position:relative/);
 });
 

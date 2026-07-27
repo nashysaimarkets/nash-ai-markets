@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane";
 import { Sparkline } from "../../components/mini-visuals/Sparkline";
+import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart";
 import {
   parsePriceLevel,
   rangeLaneFromCandles,
@@ -278,6 +279,42 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
             <p className="todayCockpitUnavailable">Verified candle history is insufficient for a range visual.</p>
           )}
         </article>
+      </section>
+
+      <section className="todayStructureChart" aria-labelledby="today-structure-chart-title">
+        <header>
+          <div>
+            <span>Verified price structure</span>
+            <h2 id="today-structure-chart-title">Opening range, support and resistance.</h2>
+          </div>
+          <div className="todayStructureLegend" aria-label="Structure level legend">
+            <span data-level="support"><i aria-hidden="true" /> Support</span>
+            <span data-level="resistance"><i aria-hidden="true" /> Resistance</span>
+          </div>
+        </header>
+        {payload.candleSeriesByInstrument?.ES ? (
+          <DashboardCandlestickChart
+            series={payload.candleSeriesByInstrument.ES}
+            instrument="ES"
+            compact
+            structureLevels={{
+              support: esStructure?.support
+                ? { value: esStructure.support.value, label: "Support" }
+                : null,
+              resistance: esStructure?.resistance
+                ? { value: esStructure.resistance.value, label: "Resistance" }
+                : null,
+            }}
+          />
+        ) : (
+          <div className="todayStructureUnavailable">
+            <strong>Verified ES candlesticks unavailable</strong>
+            <p>The structure chart stays empty until valid OHLC candle history is present.</p>
+          </div>
+        )}
+        <footer>
+          Support and resistance are educational rolling 24-hour structure levels derived from verified candle lows and highs.
+        </footer>
       </section>
 
       {payload.briefChange ? (
