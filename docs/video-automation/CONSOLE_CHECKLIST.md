@@ -3,10 +3,11 @@
 You only need to do this once. We already built the upload tool for you.
 This does **not** change how customers log in.
 
-**Before you start:** open this link in your browser:  
+**Before you start:** we may already have opened this page for you:  
 https://console.cloud.google.com/
 
-Sign in with the Google account that owns your NASH AI Markets YouTube channel.
+If you see a Google sign-in screen, sign in with the Google account that owns
+your NASH AI Markets YouTube channel.  
 (Do not type your password into chat — only into Google’s own page.)
 
 ---
