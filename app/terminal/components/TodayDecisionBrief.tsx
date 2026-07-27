@@ -1,4 +1,10 @@
 import Link from "next/link";
+import { RangePositionLane } from "../../components/mini-visuals/RangePositionLane";
+import { Sparkline } from "../../components/mini-visuals/Sparkline";
+import {
+  rangeLaneFromCandles,
+  sparklineFromCandles,
+} from "../../components/mini-visuals/mini-visual-data";
 import type { TradingDeskPayload } from "../lib/desk-payload";
 import { DecisionCapture } from "./DecisionCapture";
 
@@ -77,16 +83,27 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
     ? payload.customerWarnings.slice(0, 4)
     : ["No additional participation warnings are present in the verified payload."];
   const nextCatalysts = payload.catalystRadar.items.slice(0, 3);
+  const esCandles = payload.candleSeriesByInstrument?.ES?.candles ?? [];
+  const esRange = rangeLaneFromCandles(esCandles);
+  const esSparkline = sparklineFromCandles(esCandles);
+  const sparklineBySymbol = {
+    ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
+    VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
+    DXY: sparklineFromCandles(payload.candleSeriesByInstrument?.DXY?.candles ?? []),
+    OIL: sparklineFromCandles(payload.candleSeriesByInstrument?.OIL?.candles ?? []),
+    QQQ: sparklineFromCandles(payload.candleSeriesByInstrument?.QQQ?.candles ?? []),
+    NQ: sparklineFromCandles(payload.candleSeriesByInstrument?.NQ?.candles ?? []),
+  } as const;
 
   return (
     <div className="todayLive" data-market-state={payload.marketState}>
       <section className="todayLiveHeader" aria-labelledby="today-live-title">
         <div>
-          <p className="todayLiveEyebrow">Today · S&amp;P 500 decision brief</p>
-          <h1 id="today-live-title">Prepare the conditions.<br /><em>Protect the decision.</em></h1>
+          <p className="todayLiveEyebrow">Today · verified decision cockpit</p>
+          <h1 id="today-live-title">Your market,<br /><em>prepared in minutes.</em></h1>
           <p>
-            One verified hierarchy for the session: trust, posture, evidence,
-            conditional paths and risk.
+            The current posture, what changed, the levels that matter and the
+            conditions that would change the plan.
           </p>
         </div>
         <dl>
@@ -113,6 +130,73 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
             </span>
           ))}
         </div>
+      </section>
+
+      <section className="todayLiveCockpit" aria-labelledby="today-cockpit-title">
+        <article className="todayCockpitDecision" data-tone={posture.tone}>
+          <header>
+            <span>Decision now</span>
+            <b>{verifiedWindow ? "Confirmation gated" : "Safety locked"}</b>
+          </header>
+          <div>
+            <p>{payload.deskSignals?.overallLean?.replaceAll("-", " ") ?? "Insufficient"}</p>
+            <h2 id="today-cockpit-title">{posture.label}</h2>
+            <strong>{posture.detail}</strong>
+          </div>
+          <ul>
+            {(payload.deskSignals?.contextNotes ?? ["Verified directional context is not available."])
+              .slice(0, 3)
+              .map((note) => <li key={note}>{note}</li>)}
+          </ul>
+        </article>
+
+        <div className="todayCockpitSide">
+          <article className="todayCockpitTiming">
+            <span>Session clock</span>
+            <strong>{payload.session.countdownLabel ?? payload.session.label}</strong>
+            <p>{payload.session.nextEventLabel ?? payload.session.detail}</p>
+            <small>{payload.session.nowEt}</small>
+          </article>
+          <article className="todayCockpitCatalyst">
+            <span>Next verified catalyst</span>
+            {nextCatalysts[0] ? (
+              <>
+                <strong>{nextCatalysts[0].time}</strong>
+                <p>{nextCatalysts[0].title}</p>
+                <small data-risk={nextCatalysts[0].risk}>{nextCatalysts[0].risk} impact</small>
+              </>
+            ) : (
+              <>
+                <strong>Unavailable</strong>
+                <p>No verified calendar row is present.</p>
+                <small>No event invented</small>
+              </>
+            )}
+          </article>
+        </div>
+
+        <article className="todayCockpitStructure">
+          <header>
+            <div>
+              <span>ES verified structure</span>
+              <strong>{esQuote?.value ?? "Unavailable"}</strong>
+              <small>{esQuote?.change ?? "No verified move"}</small>
+            </div>
+            <Sparkline
+              values={esSparkline}
+              tone={esQuote?.direction ?? "neutral"}
+              label="Verified ES rolling candle trend"
+              width={260}
+              height={68}
+              filled
+            />
+          </header>
+          {esRange ? (
+            <RangePositionLane markers={esRange} title="ES position within the verified rolling 24-hour range" />
+          ) : (
+            <p className="todayCockpitUnavailable">Verified candle history is insufficient for a range visual.</p>
+          )}
+        </article>
       </section>
 
       {payload.briefChange ? (
@@ -243,6 +327,12 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
               <span>{quote.label}</span>
               <strong>{quote.value}</strong>
               <small>{quote.change}</small>
+              <Sparkline
+                values={sparklineBySymbol[quote.symbol as keyof typeof sparklineBySymbol]}
+                tone={quote.direction}
+                label={`${quote.label} verified rolling candle trend`}
+                filled
+              />
             </article>
           ))}
           {!payload.snapshot.quotes.length ? (
