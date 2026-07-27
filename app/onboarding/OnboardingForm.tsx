@@ -23,10 +23,17 @@ export function OnboardingForm({ initialPreferences = null, updating = false }: 
     setSubmitting(true); setMessage("");
     try {
       const response = await fetch("/api/onboarding", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ experience, interests, notifications }) });
-      if (!response.ok) throw new Error("unavailable");
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({ code: "ONBOARDING_UNAVAILABLE" })) as { code?: string };
+        throw new Error(result.code ?? "ONBOARDING_UNAVAILABLE");
+      }
       router.push(updating ? "/profile?preferences=updated" : "/dashboard"); router.refresh();
-    } catch {
-      setMessage("Your preferences could not be saved. Nothing was lost—please check your connection and try again.");
+    } catch (error) {
+      setMessage(
+        error instanceof Error && error.message === "ONBOARDING_UNAVAILABLE"
+          ? "Your preferences could not be saved because workspace storage is temporarily unavailable. Nothing was lost—please try again shortly."
+          : "Your preferences could not be saved. Nothing was lost—please review the selections and try again.",
+      );
     } finally { setSubmitting(false); }
   }
   return <form className="onboardingForm" onSubmit={submit}>

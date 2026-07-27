@@ -42,15 +42,17 @@ emails, event IDs and customer IDs from evidence.
 
 - [ ] New email requests a magic link without exposing provider errors.
 - [ ] Magic link arrives and uses the production callback.
-- [ ] Link establishes a session and opens `/dashboard`.
+- [ ] Link establishes a session and opens `/terminal` (Today).
 - [ ] Reusing an expired link fails safely.
-- [ ] Authenticated navigation between dashboard, brief, terminal and profile works.
+- [ ] Authenticated navigation between Today (`/terminal`), Evidence (`/brief`), Review (`/review`) and Account (`/profile`) works.
 - [ ] Sign-out ends the session and protected routes return to login.
 - [ ] Display-name update validates input and persists without exposing errors.
 
 ## Free member
 
 - [ ] Welcome shows Free membership and correct effective access.
+- [ ] Today shows the Free market overview without Pro decision signals.
+- [ ] Evidence and Review remain unavailable unless a valid Pro preview is active.
 - [ ] Weekly Pro preview availability is correct.
 - [ ] Locked Pro/Elite output is absent from the DOM.
 - [ ] One Pro preview can be claimed.
@@ -60,7 +62,12 @@ emails, event IDs and customer IDs from evidence.
 ## Pro member
 
 - [ ] Active, unexpired Pro membership resolves to Pro.
-- [ ] Intelligence and Decision Engine appear.
+- [ ] Today shows intelligence and the decision brief.
+- [ ] Evidence reads the latest immutable snapshot without rebuilding history.
+- [ ] Review reads preserved briefs and only the signed-in member’s journal records.
+- [ ] What changed compares only with an earlier immutable session snapshot and stays unavailable when no prior snapshot exists.
+- [ ] One-click decision capture stores a private decision without inventing a fill, position or result.
+- [ ] Weekly process review counts only explicit journal fields and makes no performance claim.
 - [ ] Elite planner output remains absent unless preview is active.
 - [ ] One Elite preview can be claimed per UTC day.
 - [ ] Expired or non-active Pro membership resolves to Free.
@@ -82,7 +89,7 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Malformed or cross-origin submissions fail safely.
 - [ ] Submission never updates `memberships`, Stripe state or preview claims.
 
-## Dashboard and terminal truthfulness
+## Today, Evidence and Review truthfulness
 
 - [ ] Verified live data shows Live only with valid fresh timestamps.
 - [ ] Permitted delayed data is prominent and within the delayed window.
@@ -100,6 +107,8 @@ emails, event IDs and customer IDs from evidence.
 - [ ] Free, preview and unavailable states do not make a Morning Brief OpenAI
       request.
 - [ ] No fabricated candles, prices, levels, entries, stops or targets appear.
+- [ ] Evidence never re-runs the current engine and presents it as a historical record.
+- [ ] Review withholds percentages until at least five qualifying closed journal records exist.
 - [ ] Risk and no-trade warnings remain prominent.
 - [ ] Provider status, attribution and last update are plausible.
 - [ ] Refresh and recovery after a temporary provider failure work.

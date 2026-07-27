@@ -111,12 +111,10 @@ test("Founding awards appear on member surfaces and reporting remains server res
 });
 
 test("pricing states the factual continuous-subscription rule without artificial urgency", async () => {
-  const page = await read("app/page.tsx");
+  const page = await read("app/pricing/page.tsx");
   assert.match(page, /loadFounding100Availability/);
-  assert.match(page, /proFounding\.label/);
-  assert.match(page, /eliteFounding\.label/);
-  assert.match(page, /locked for life while that same membership remains continuously active/);
-  assert.match(page, /cancelled or lapses, the price lock is permanently lost/);
+  assert.match(page, /remains continuously active/);
+  assert.match(page, /price lock is permanently lost/);
   assert.doesNotMatch(page, /only \d+ (spots|places) left/i);
 });
 

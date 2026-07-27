@@ -58,7 +58,7 @@ test("Markets catalog powers the Trading Desk with honest coverage labels", asyn
     read("../app/terminal/components/TradingDeskOS.tsx"),
   ]);
 
-  assert.match(page, /TradingDeskOS/);
+  assert.match(page, /TodayDecisionBrief/);
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);
   assert.match(page, /DashboardCandlestickChart|getConfiguredFmpCandlesForInstruments/);

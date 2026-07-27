@@ -1,0 +1,113 @@
+.weeklyProcessReview {
+  margin-top: 70px;
+  border: 1px solid var(--fm-line);
+  background: var(--fm-panel);
+}
+
+.weeklyProcessReview > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 30px;
+  padding: 28px;
+  border-bottom: 1px solid var(--fm-line);
+}
+
+.weeklyProcessReview header span {
+  color: var(--fm-green);
+  font: 700 9px var(--font-geist-mono), monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.weeklyProcessReview h2 {
+  max-width: 700px;
+  margin: 10px 0 0;
+  font-size: 28px;
+}
+
+.weeklyProcessReview header small {
+  color: #78847e;
+  font: 700 8px var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+
+.weeklyProcessGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.weeklyProcessGrid article {
+  padding: 24px;
+  border-right: 1px solid var(--fm-line);
+}
+
+.weeklyProcessGrid article:last-child {
+  border-right: 0;
+}
+
+.weeklyProcessGrid span,
+.weeklyProcessGrid small {
+  display: block;
+  color: #7d8983;
+  font-size: 8px;
+}
+
+.weeklyProcessGrid strong {
+  display: block;
+  margin: 13px 0;
+  color: var(--fm-green);
+  font-size: 24px;
+}
+
+.weeklyProcessReview > footer {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  padding: 22px 28px;
+  border-top: 1px solid var(--fm-line);
+}
+
+.weeklyProcessReview > footer span {
+  color: var(--fm-gold);
+  font: 700 8px var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+
+.weeklyProcessReview > footer strong {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (max-width: 850px) {
+  .weeklyProcessGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .weeklyProcessGrid article {
+    border-bottom: 1px solid var(--fm-line);
+  }
+
+  .weeklyProcessGrid article:nth-child(2) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .weeklyProcessReview > header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .weeklyProcessGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .weeklyProcessGrid article {
+    border-right: 0;
+  }
+
+  .weeklyProcessReview > footer {
+    grid-template-columns: 1fr;
+  }
+}

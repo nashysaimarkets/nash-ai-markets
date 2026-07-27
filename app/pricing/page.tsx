@@ -6,12 +6,12 @@ import { PricingPlans } from "./PricingPlans.tsx";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Membership Pricing",
-  description: "Compare Free, Pro and Elite NASH AI Markets memberships for structured S&P 500 pre-market preparation.",
+  title: "NASH Membership",
+  description: "Choose access to the focused NASH AI Markets daily decision brief, evidence record and review workflow.",
   alternates: { canonical: "/pricing" },
   openGraph: {
-    title: "NASH AI Markets Membership Pricing",
-    description: "Compare Free, Pro and Elite access to the Bullseye pre-market workflow.",
+    title: "NASH AI Markets Membership",
+    description: "Access a focused daily decision brief, its evidence and your review history.",
     url: "/pricing",
   },
 };
@@ -31,7 +31,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
     <a className="commercialSkip" href="#pricing-content">Skip to pricing</a>
     <header className="commercialNav"><BrandLogo /><Link href="/login">Member login</Link></header>
     <div id="pricing-content">
-      <section className="commercialHero"><span>MEMBERSHIP · PROFESSIONAL MARKET INTELLIGENCE</span><h1>Choose the intelligence<br />that fits <em>your process.</em></h1><p>Transparent monthly and annual access to a calmer, more structured pre-market workflow. No invented scarcity, no guaranteed outcomes, and secure Stripe billing.</p><div className="commercialHeroTrust" aria-label="Membership principles"><span>Verified context</span><span>Conditional scenarios</span><span>Visible risk</span><span>Cancel through Stripe</span></div>{query.checkout === "unavailable" ? <div className="commercialError" role="alert">Secure checkout is temporarily unavailable. No payment was taken. Please retry later.</div> : null}</section>
+      <section className="commercialHero"><span>MEMBERSHIP · ONE FOCUSED DAILY WORKFLOW</span><h1>Prepare with clarity.<br />Review with <em>evidence.</em></h1><p>Start with the recommended NASH Membership for the complete Today → Evidence → Review journey. Existing Free and Elite access remain available, with secure Stripe billing and no guaranteed outcomes.</p><div className="commercialHeroTrust" aria-label="Membership principles"><span>One daily brief</span><span>Preserved evidence</span><span>Private review</span><span>Cancel through Stripe</span></div>{query.checkout === "unavailable" ? <div className="commercialError" role="alert">Secure checkout is temporarily unavailable. No payment was taken. Please retry later.</div> : null}</section>
       <PricingPlans availability={availability} />
     </div>
     <section className="commercialAssurance" aria-labelledby="assurance-title">

@@ -53,10 +53,15 @@ export function DashboardCandlestickChart({
   series: initialSeries,
   instrument = "ES",
   compact = false,
+  structureLevels,
 }: {
   series: CustomerCandleSeries;
   instrument?: CandleInstrument;
   compact?: boolean;
+  structureLevels?: {
+    support: { value: number; label: string } | null;
+    resistance: { value: number; label: string } | null;
+  };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -75,6 +80,7 @@ export function DashboardCandlestickChart({
   const available = !intervalMismatch && series.status !== "unavailable" && series.candles.length > 0;
   const volumeVerified = series.candles.some((candle) => candle.volume > 0);
   const newest = !intervalMismatch ? series.candles.at(-1) ?? null : null;
+  const opening = !intervalMismatch ? series.candles.at(0)?.open ?? null : null;
   const newestLabel = newest
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(newest.time * 1000))
     : null;
@@ -176,6 +182,26 @@ export function DashboardCandlestickChart({
         if (!compact) {
           for (const level of levels) candles.createPriceLine({ price: level.value, color: "#8fa2a866", lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: level.label });
         }
+        if (structureLevels?.support) {
+          candles.createPriceLine({
+            price: structureLevels.support.value,
+            color: "#55e69a",
+            lineWidth: 2,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: structureLevels.support.label,
+          });
+        }
+        if (structureLevels?.resistance) {
+          candles.createPriceLine({
+            price: structureLevels.resistance.value,
+            color: "#ec7474",
+            lineWidth: 2,
+            lineStyle: 2,
+            axisLabelVisible: true,
+            title: structureLevels.resistance.label,
+          });
+        }
         chart.subscribeCrosshairMove((param) => {
           const value = param.seriesData.get(candles);
           if (tooltipRef.current && value && "open" in value) {
@@ -199,7 +225,7 @@ export function DashboardCandlestickChart({
       chartRef.current?.remove();
       chartRef.current = null;
     };
-  }, [available, chartHeight, compact, levels, overlays, series.candles, timeframe, volumeVerified]);
+  }, [available, chartHeight, compact, levels, overlays, series.candles, structureLevels, timeframe, volumeVerified]);
 
   const updated = series.asOf && !intervalMismatch
     ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date(series.asOf))
@@ -226,7 +252,15 @@ export function DashboardCandlestickChart({
         <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
       </div>
       <div className="chartRange"><span>Rolling 24h position</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div>
-    </> : stats && compact ? (
+    </> : stats && compact && structureLevels ? (
+      <div className="chartMarketStrip is-structure" aria-label="Verified opening, range and structure levels">
+        <div><span>Opening</span><strong>{number(opening)}</strong></div>
+        <div><span>Rolling high</span><strong>{number(stats.high)}</strong></div>
+        <div><span>Rolling low</span><strong>{number(stats.low)}</strong></div>
+        <div data-level="support"><span>Support</span><strong>{number(structureLevels.support?.value ?? null)}</strong></div>
+        <div data-level="resistance"><span>Resistance</span><strong>{number(structureLevels.resistance?.value ?? null)}</strong></div>
+      </div>
+    ) : stats && compact ? (
       <div className="chartMarketStrip is-compact" aria-label="Verified candle summary">
         <div><span>Latest close</span><strong>{number(stats.latest)}</strong></div>
         <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>

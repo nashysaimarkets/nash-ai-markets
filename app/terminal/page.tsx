@@ -6,6 +6,8 @@ import { MemberShell } from "../components/MemberShell";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import { createTradingDecision } from "../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner";
+import { buildAnalysisSnapshot } from "../lib/market-analysis-snapshot";
+import { summarizeBriefChanges } from "../lib/brief-change-summary";
 import { formatSnapshotAge, formatUkTimestamp, hasDisplayableQuotes, createUnavailableSnapshot } from "../lib/market-data";
 import { createMarketDeskSignals, deskCandleContextFromRange } from "../lib/market-desk-signals";
 import { createMarketStructureLevels } from "../lib/market-structure-levels";
@@ -13,11 +15,10 @@ import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from ".
 import { getMarketInstrument, type MarketInstrument } from "../lib/markets/market-catalog";
 import { isCandleInstrument } from "../lib/providers/candle-instruments";
 import { rangeLaneFromCandles } from "../components/mini-visuals/mini-visual-data";
-import { persistAnalysisSnapshot } from "../lib/server/market-snapshots";
+import { listAnalysisSnapshots, persistAnalysisSnapshot } from "../lib/server/market-snapshots";
 import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway";
-import { TradingDeskOS } from "./components/TradingDeskOS";
+import { TodayDecisionBrief } from "./components/TodayDecisionBrief";
 import { DeskErrorBoundary } from "./components/DeskErrorBoundary";
-import { TerminalControls } from "./components/TerminalControls";
 import { getTerminalMarketData } from "./lib/terminal-market-data-provider";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "./lib/membership-entitlement";
 import { loadPreviewClaims } from "./lib/preview-access";
@@ -36,8 +37,8 @@ import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } f
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Terminal",
-  description: "Customizable trading desk across interchangeable markets — verified feeds only.",
+  title: "Today",
+  description: "Today’s verified S&P 500 decision brief, conditional paths and visible risk.",
   robots: { index: false, follow: false },
 };
 
@@ -77,11 +78,14 @@ export default async function Terminal() {
 
   let payload: TradingDeskPayload;
   try {
-    const [{ snapshot, gatewayStatus }, candleBundleRaw] = await Promise.all([
+    const [{ snapshot, gatewayStatus }, candleBundleRaw, storedSnapshots] = await Promise.all([
       getTerminalMarketData(),
       paid
         ? getConfiguredFmpCandlesForInstruments("5m").catch(() => null)
         : Promise.resolve(null),
+      access.features.intelligence
+        ? listAnalysisSnapshots(40).catch(() => ({ rows: [], available: false as const }))
+        : Promise.resolve({ rows: [], available: false as const }),
     ]);
 
     const candleSeriesByInstrument = candleBundleRaw
@@ -116,6 +120,20 @@ export default async function Terminal() {
       fallbackActive: gatewayStatus.fallbackActive,
       missingDataWarnings: intelligence.reasoning.missingDataWarnings,
     });
+    const currentAnalysis = buildAnalysisSnapshot({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      gateway: gatewayStatus,
+      kind: "refresh",
+    });
+    const previousSession = storedSnapshots.available
+      ? storedSnapshots.rows.find((row) => row.session_date < currentAnalysis.payload.sessionDate) ?? null
+      : null;
+    const briefChange = access.features.intelligence
+      ? summarizeBriefChanges(previousSession, currentAnalysis.payload)
+      : null;
     const deskCandle = deskCandleContextFromRange(rangeLane);
     const deskSignals = access.features.intelligence
       ? createMarketDeskSignals({
@@ -262,6 +280,7 @@ export default async function Terminal() {
       catalystRadar,
       freshnessFeeds,
       customerWarnings,
+      briefChange,
       initialWorkspace,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
@@ -310,6 +329,7 @@ export default async function Terminal() {
         },
       ],
       customerWarnings: ["Verified market data is currently unavailable"],
+      briefChange: null,
       initialWorkspace,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
@@ -322,14 +342,11 @@ export default async function Terminal() {
   return (
     <MemberShell
       active="terminal"
-      className="customerTerminal premiumTerminal terminalMemberPage tradingDeskPage"
-      toolbar={<div className="ctToolbar ctTopbar"><TerminalControls /></div>}
+      className="customerTerminal premiumTerminal terminalMemberPage todayMemberPage"
     >
-      <div className="memberDashboardShell ctWorkspace deskWorkspaceShell" style={{ color: "#eef2f5" }}>
-        <DeskErrorBoundary>
-          <TradingDeskOS payload={payload} />
-        </DeskErrorBoundary>
-      </div>
+      <DeskErrorBoundary>
+        <TodayDecisionBrief payload={payload} />
+      </DeskErrorBoundary>
     </MemberShell>
   );
 }

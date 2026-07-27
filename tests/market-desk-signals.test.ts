@@ -139,7 +139,7 @@ test("desk candle helper never invents range when inputs are invalid", () => {
   });
 });
 
-test("terminal surfaces desk signals through Trading Desk OS", async () => {
+test("terminal surfaces desk signals through the focused Today brief", async () => {
   const [terminal, canvas, styles, component, deskLib, gaugesLib] = await Promise.all([
     read("../app/terminal/page.tsx"),
     read("../app/components/MemberEmptyCanvas.tsx"),
@@ -148,7 +148,7 @@ test("terminal surfaces desk signals through Trading Desk OS", async () => {
     read("../app/lib/market-desk-signals.ts"),
     read("../app/lib/market-directional-gauges.ts"),
   ]);
-  assert.match(terminal, /TradingDeskOS/);
+  assert.match(terminal, /TodayDecisionBrief/);
   assert.match(terminal, /createMarketDeskSignals/);
   assert.doesNotMatch(terminal, /MarketDeskSignalsPanel|MarketDirectionalGaugesPanel/);
   assert.match(canvas, /BrandLogo/);

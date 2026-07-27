@@ -6,6 +6,11 @@ import {
   listJournalEntries,
   type JournalEntryInput,
 } from "../../lib/server/trade-journal.ts";
+import { loadPreviewClaims } from "../../terminal/lib/preview-access.ts";
+import {
+  createProgressiveAccess,
+  resolveMembershipTier,
+} from "../../terminal/lib/membership-entitlement.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -109,17 +114,40 @@ function validateInput(body: Record<string, unknown>): JournalEntryInput | null 
 async function requireUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  return user;
+  return { user, supabase };
+}
+
+async function journalAccess(identity: Awaited<ReturnType<typeof requireUser>>) {
+  if (!identity.user?.email) return "forbidden" as const;
+  const { data: membership, error } = await identity.supabase
+    .from("memberships")
+    .select("plan, status, current_period_end")
+    .ilike("email", identity.user.email)
+    .in("plan", ["free", "pro", "elite"])
+    .maybeSingle();
+  const tier = resolveMembershipTier(membership, Boolean(error));
+  if (tier === "temporarily_unavailable") return "unavailable" as const;
+  const preview = await loadPreviewClaims(identity.user.id);
+  const access = createProgressiveAccess(tier, preview.claims);
+  return access.features.journal ? "allowed" as const : "forbidden" as const;
+}
+
+function accessFailure(status: "forbidden" | "unavailable") {
+  return status === "unavailable"
+    ? NextResponse.json({ ok: false, message: "Membership access is temporarily unavailable." }, { status: 503 })
+    : NextResponse.json({ ok: false, message: "Decision Journal requires NASH Membership." }, { status: 403 });
 }
 
 export async function GET(request: Request) {
   if (!sameOrigin(request) && request.headers.get("sec-fetch-site") === "cross-site") {
     return NextResponse.json({ ok: false }, { status: 403 });
   }
-  const user = await requireUser();
-  if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
+  const identity = await requireUser();
+  if (!identity.user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
+  const access = await journalAccess(identity);
+  if (access !== "allowed") return accessFailure(access);
 
-  const result = await listJournalEntries(user.id);
+  const result = await listJournalEntries(identity.user.id);
   if (!result.available) {
     return NextResponse.json({
       ok: false,
@@ -133,8 +161,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
-  const user = await requireUser();
-  if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
+  const identity = await requireUser();
+  if (!identity.user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
+  const access = await journalAccess(identity);
+  if (access !== "allowed") return accessFailure(access);
 
   let body: Record<string, unknown> = {};
   try {
@@ -148,7 +178,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, message: "Please check the journal fields and try again." }, { status: 400 });
   }
 
-  const result = await createJournalEntry(user.id, input);
+  const result = await createJournalEntry(identity.user.id, input);
   if (!result.ok) {
     return NextResponse.json({
       ok: false,
@@ -162,15 +192,17 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
-  const user = await requireUser();
-  if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
+  const identity = await requireUser();
+  if (!identity.user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
+  const access = await journalAccess(identity);
+  if (access !== "allowed") return accessFailure(access);
 
   const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
   if (!id || id.length > 64) {
     return NextResponse.json({ ok: false, message: "Please check the journal fields and try again." }, { status: 400 });
   }
 
-  const result = await deleteJournalEntry(user.id, id);
+  const result = await deleteJournalEntry(identity.user.id, id);
   if (!result.ok) {
     return NextResponse.json({
       ok: false,

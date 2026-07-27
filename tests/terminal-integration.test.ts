@@ -10,7 +10,7 @@ import {
 
 test("terminal page is a brand canvas with auth gates intact", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
-  assert.match(page, /TradingDeskOS/);
+  assert.match(page, /TodayDecisionBrief/);
   assert.match(page, /active="terminal"/);
   assert.match(page, /resolveMembershipTier/);
   assert.match(page, /createProgressiveAccess/);

@@ -6,11 +6,11 @@ import type { Founding100Availability } from "../lib/server/founding-100.ts";
 import { founding100AvailabilityLabel } from "../lib/server/founding-100.ts";
 
 const features = [
-  ["Market overview", "Included", "Included", "Included"],
-  ["Weekly Pro preview", "Included", "—", "—"],
-  ["Daily intelligence and decision engine", "Preview", "Included", "Included"],
-  ["Structured trade planner", "Locked", "Daily preview", "Included"],
-  ["Launch diagnostics", "Locked", "Daily preview", "Included"],
+  ["Today decision brief", "Sample access", "Daily", "Daily"],
+  ["Preserved evidence", "—", "Included", "Included"],
+  ["Private review history", "—", "Included", "Included"],
+  ["Advanced planning tools", "—", "Daily preview", "Included"],
+  ["Provider diagnostics", "—", "Daily preview", "Included"],
 ] as const;
 
 export function PricingPlans({ availability }: { availability: Founding100Availability }) {
@@ -18,14 +18,14 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
   const pro = founding100AvailabilityLabel(availability.proRemaining);
   const elite = founding100AvailabilityLabel(availability.eliteRemaining);
   return <>
-    <p className="commercialPlanGuide"><strong>Not sure where to start?</strong> Free explores the workflow, Pro unlocks the complete daily intelligence layer, and Elite adds the full planning and diagnostics workspace.</p>
+    <p className="commercialPlanGuide"><strong>Our recommendation:</strong> choose NASH Membership for the complete daily journey. Free is a limited introduction; Elite preserves advanced planning and diagnostic access for members who need it.</p>
     <div className="commercialToggle" role="group" aria-label="Billing interval">
       <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>Monthly</button>
       <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Annual</button>
     </div>
     <section className="commercialPlans" aria-label="Membership plans">
-      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><small className="commercialPlanFit">For exploring the Bullseye method</small><p>Core market overview with a measured path into premium intelligence.</p><a href="/login">Start free</a></article>
-      <article className="commercialPopular"><b>MOST POPULAR</b><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>PRO</span></div><h2>{annual ? "£149/year" : "£14.99/month"}</h2><small className="commercialPlanFit">For a complete daily pre-market routine</small><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start Pro Membership</button></form></article>
+      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><small className="commercialPlanFit">A limited introduction</small><p>Explore the method before choosing the complete daily journey.</p><a href="/login">Explore free</a></article>
+      <article className="commercialPopular"><b>RECOMMENDED</b><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>NASH MEMBERSHIP</span></div><h2>{annual ? "£149/year" : "£14.99/month"}</h2><small className="commercialPlanFit">The complete Today → Evidence → Review journey</small><p>One focused daily brief, the preserved evidence behind it and a private record for review.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start NASH Membership</button></form></article>
       <article className="commercialElite">
         <div className="commercialPlanBadges">
           <Image src="/brand/badge-elite.svg" width={220} height={56} alt="Elite membership" />
@@ -33,7 +33,7 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
         </div>
         <h2>{annual ? "£299/year" : "£29.99/month"}</h2>
         <small className="commercialPlanFit">For advanced planning and diagnostics</small>
-        <p>Full intelligence, planning and diagnostic access for the complete workflow.</p>
+        <p>The complete daily journey plus the existing advanced planning and provider-diagnostic workspace.</p>
         <div className={`commercialFounding${elite.full ? " isFull" : ""}`}><strong>FOUNDING 100 ELITE</strong><span>{elite.label}</span><small>{elite.detail}</small></div>
         <form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "elite_year" : "elite_month"} /><button type="submit">Unlock Elite</button></form>
       </article>

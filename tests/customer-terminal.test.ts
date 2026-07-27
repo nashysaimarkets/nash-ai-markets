@@ -40,9 +40,9 @@ test("customer terminal provides readable responsive presentation contracts", as
   assert.match(styles, /prefers-contrast:more/);
 });
 
-test("customer terminal ships Trading Desk OS with membership gates", async () => {
+test("customer terminal ships focused Today with membership gates", async () => {
   const terminal = await read("../app/terminal/page.tsx");
-  assert.match(terminal, /TradingDeskOS/);
+  assert.match(terminal, /TodayDecisionBrief/);
   assert.match(terminal, /active="terminal"/);
   assert.match(terminal, /resolveMembershipTier/);
   assert.match(terminal, /createProgressiveAccess/);
