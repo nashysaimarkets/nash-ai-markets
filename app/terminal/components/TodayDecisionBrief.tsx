@@ -96,6 +96,23 @@ function curveContext(twoYear: number | null, tenYear: number | null) {
   return { value: formattedSpread, detail: "Flat curve · transition zone", tone: "warning" };
 }
 
+function workspaceLabel(preset: TradingDeskPayload["initialWorkspace"]["preset"]): string {
+  switch (preset) {
+    case "index-day-trader":
+      return "Index day trader";
+    case "macro":
+      return "Macro desk";
+    case "earnings":
+      return "Earnings watch";
+    case "crypto":
+      return "Crypto desk";
+    case "volatility":
+      return "Volatility desk";
+    default:
+      return "Custom desk";
+  }
+}
+
 export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload }) {
   const posture = postureFor(payload);
   const buying = payload.deskSignals?.buying ?? null;
@@ -116,6 +133,10 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
     parsePriceLevel(twoYearQuote?.value),
     parsePriceLevel(tenYearQuote?.value),
   );
+  const workspace = payload.initialWorkspace;
+  const activeBrief = payload.edgeBriefByMarketId[workspace.activeMarketId] ?? null;
+  const focusLabel = workspaceLabel(workspace.preset);
+  const platformLabel = workspace.preferredPlatformId.replaceAll("-", " ");
   const sparklineBySymbol = {
     ES: sparklineFromCandles(payload.candleSeriesByInstrument?.ES?.candles ?? []),
     VIX: sparklineFromCandles(payload.candleSeriesByInstrument?.VIX?.candles ?? []),
@@ -129,7 +150,7 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
     <div className="todayLive" data-market-state={payload.marketState}>
       <section className="todayLiveHeader" aria-labelledby="today-live-title">
         <div>
-          <p className="todayLiveEyebrow">Today · verified decision cockpit</p>
+          <p className="todayLiveEyebrow">Today · your {focusLabel.toLowerCase()}</p>
           <h1 id="today-live-title">Your market,<br /><em>prepared in minutes.</em></h1>
           <p>
             The current posture, what changed, the levels that matter and the
@@ -141,6 +162,8 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
           <div><dt>Now (ET)</dt><dd>{payload.session.nowEt}</dd></div>
           <div><dt>Updated</dt><dd>{payload.timestamp}</dd></div>
           <div><dt>Membership</dt><dd>{payload.tier}</dd></div>
+          <div><dt>Desk</dt><dd>{focusLabel}</dd></div>
+          <div><dt>Saved markets</dt><dd>{workspace.favourites.length}</dd></div>
         </dl>
       </section>
 
@@ -160,6 +183,34 @@ export function TodayDecisionBrief({ payload }: { payload: TradingDeskPayload })
             </span>
           ))}
         </div>
+      </section>
+
+      <section className="todayPersonalFocus" aria-labelledby="today-personal-focus-title">
+        <header>
+          <div>
+            <span>Your focus</span>
+            <h2 id="today-personal-focus-title">{activeBrief?.title ?? `${focusLabel} ready`}</h2>
+          </div>
+          <dl>
+            <div><dt>Layout</dt><dd>{focusLabel}</dd></div>
+            <div><dt>Platform</dt><dd>{platformLabel}</dd></div>
+            <div><dt>Mode</dt><dd>{workspace.focusMode ? "Focus on" : "Full desk"}</dd></div>
+          </dl>
+        </header>
+        <div>
+          <p>{activeBrief?.secondsCopy ?? "Your saved desk is ready. Verified focus details are currently unavailable."}</p>
+          <ul>
+            {(activeBrief?.bullets ?? [
+              "No verified focus briefing is available.",
+              `${workspace.favourites.length} markets are saved to this desk.`,
+            ]).slice(0, 3).map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </div>
+        <footer>
+          <span>{workspace.favourites.length} saved markets</span>
+          <span>{workspace.compareIds.length} comparison slots</span>
+          <Link href="/brief">Open your full brief →</Link>
+        </footer>
       </section>
 
       <section className="todayLiveCockpit" aria-labelledby="today-cockpit-title">

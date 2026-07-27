@@ -13,12 +13,18 @@ test("authenticated terminal presents the focused Today decision brief", async (
 
   assert.match(page, /<TodayDecisionBrief payload=\{payload\}/);
   assert.doesNotMatch(page, /<TradingDeskOS/);
-  assert.match(today, /Today · verified decision cockpit/);
+  assert.match(today, /Today · your/);
   assert.match(today, /Your market,/);
   assert.match(today, /Decision now/);
   assert.match(today, /Session clock/);
   assert.match(today, /Next verified catalyst/);
   assert.match(today, /Data trust/);
+  assert.match(today, /Your focus/);
+  assert.match(today, /workspaceLabel/);
+  assert.match(today, /payload\.initialWorkspace/);
+  assert.match(today, /payload\.edgeBriefByMarketId/);
+  assert.match(today, /preferredPlatformId/);
+  assert.match(today, /saved markets/);
   assert.match(today, /Session posture/);
   assert.match(today, /Conditional paths/);
   assert.match(today, /Confirmation/);
@@ -26,6 +32,7 @@ test("authenticated terminal presents the focused Today decision brief", async (
   assert.match(today, /Evidence/);
   assert.match(today, /Review/);
   assert.match(css, /\.todayLiveCockpit/);
+  assert.match(css, /\.todayPersonalFocus/);
   assert.match(css, /\.todayMemberPage \.memberDashboardNav\{position:relative/);
 });
 
