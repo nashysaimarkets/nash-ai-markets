@@ -18,6 +18,12 @@ import { readSessionClock } from "../terminal/lib/session-clock";
 import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard.ts";
 import { primaryLevel } from "./lib/command-centre.ts";
 import { buildDecisionDesk } from "./lib/decision-desk.ts";
+import {
+  buildDeskGreeting,
+  buildMarketScore,
+  buildMarketWeather,
+  buildOpportunityRadar,
+} from "./lib/market-weather.ts";
 import { formatDeskConfidenceDisplay } from "./lib/score-display.ts";
 import { MarketCommandCentre } from "./components/MarketCommandCentre";
 import type { StripQuote } from "./components/MarketIntelligenceStrip";
@@ -193,6 +199,10 @@ export default async function MemberDashboard() {
     support: support?.value ?? null,
     resistance: resistance?.value ?? null,
   });
+  const greeting = buildDeskGreeting(displayName, session, new Date(now));
+  const weather = buildMarketWeather({ desk: decisionDesk, intelligence });
+  const radar = buildOpportunityRadar(decisionDesk);
+  const marketScore = buildMarketScore({ desk: decisionDesk, intelligence, weather });
 
   const outlook = {
     verified,
@@ -221,7 +231,7 @@ export default async function MemberDashboard() {
   return (
     <MemberShell active="dashboard">
       <MarketCommandCentre
-        memberName={displayName}
+        greeting={greeting}
         tierLabel={access.tier.toUpperCase()}
         dataStatus={snapshot.status}
         dataAgeLabel={dataAgeLabel}
@@ -230,6 +240,9 @@ export default async function MemberDashboard() {
         candleSeries={candleSeries}
         stripQuotes={stripQuotes}
         decisionDesk={decisionDesk}
+        weather={weather}
+        radar={radar}
+        marketScore={marketScore}
         outlook={outlook}
       />
     </MemberShell>

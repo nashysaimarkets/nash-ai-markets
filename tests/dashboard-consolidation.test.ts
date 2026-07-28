@@ -23,6 +23,7 @@ test("hero chart and intelligence strip ship delayed-data badges", async () => {
   assert.match(centre, /HeroMarketChartLazy/);
   assert.match(centre, /MarketIntelligenceStrip/);
   assert.match(centre, /DecisionDesk/);
+  assert.match(centre, /MarketWeatherPanel/);
 });
 
 test("score display never presents zero as a substitute for unavailable evidence", () => {

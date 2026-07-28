@@ -2,13 +2,20 @@ import Link from "next/link";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import type { SessionClockReading } from "../../terminal/lib/session-clock.ts";
 import type { DecisionDeskModel } from "../lib/decision-desk.ts";
+import type {
+  DeskGreeting,
+  MarketScoreModel,
+  MarketWeatherModel,
+  OpportunityRadarModel,
+} from "../lib/market-weather.ts";
 import { AiMarketOutlook } from "./AiMarketOutlook";
 import { DecisionDesk } from "./DecisionDesk";
 import { HeroMarketChartLazy } from "./HeroMarketChartLazy";
 import { MarketIntelligenceStrip, type StripQuote } from "./MarketIntelligenceStrip";
+import { MarketWeatherPanel } from "./MarketWeatherPanel";
 
 export type MarketCommandCentreProps = {
-  memberName: string;
+  greeting: DeskGreeting;
   tierLabel: string;
   dataStatus: string;
   dataAgeLabel: string;
@@ -17,6 +24,9 @@ export type MarketCommandCentreProps = {
   candleSeries: CustomerCandleSeries | null;
   stripQuotes: StripQuote[];
   decisionDesk: DecisionDeskModel;
+  weather: MarketWeatherModel;
+  radar: OpportunityRadarModel;
+  marketScore: MarketScoreModel;
   outlook: {
     verified: boolean;
     bullish: string;
@@ -32,7 +42,7 @@ export type MarketCommandCentreProps = {
 };
 
 export function MarketCommandCentre({
-  memberName,
+  greeting,
   tierLabel,
   dataStatus,
   dataAgeLabel,
@@ -41,6 +51,9 @@ export function MarketCommandCentre({
   candleSeries,
   stripQuotes,
   decisionDesk,
+  weather,
+  radar,
+  marketScore,
   outlook,
 }: MarketCommandCentreProps) {
   return (
@@ -49,10 +62,10 @@ export function MarketCommandCentre({
         <div>
           <span className="mccEyebrow">MARKET COMMAND CENTRE</span>
           <h1>
-            Good trading day, <em>{memberName}</em>
+            {greeting.salutation}, <em>{greeting.name}</em>.
           </h1>
           <p>
-            Premium workspace for verified delayed market preparation. {tierLabel} access · session {session.label}.
+            {greeting.subtitle} {tierLabel} access · session {session.label}.
           </p>
         </div>
         <div className="mccHeaderMeta">
@@ -85,6 +98,8 @@ export function MarketCommandCentre({
       </header>
 
       <DecisionDesk desk={decisionDesk} />
+
+      <MarketWeatherPanel weather={weather} radar={radar} score={marketScore} />
 
       <div className="mccDelayedBanner" role="status">
         <strong>Market Data: Delayed (~10 minutes)</strong>
