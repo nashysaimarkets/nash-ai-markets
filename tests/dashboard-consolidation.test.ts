@@ -11,6 +11,21 @@ import { createStructuredTradePlan } from "../app/lib/structured-trade-planner.t
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
+test("hero chart and intelligence strip ship delayed-data badges", async () => {
+  const [hero, strip, centre] = await Promise.all([
+    read("../app/dashboard/components/HeroMarketChart.tsx"),
+    read("../app/dashboard/components/MarketIntelligenceStrip.tsx"),
+    read("../app/dashboard/components/MarketCommandCentre.tsx"),
+  ]);
+  assert.match(hero, /Market Data: Delayed \(\~10 minutes\)/);
+  assert.match(hero, /EMA 9|EMA 200|VWAP|PDH|ONH/);
+  assert.match(strip, /Awaiting coverage/);
+  assert.match(centre, /HeroMarketChartLazy/);
+  assert.match(centre, /MarketIntelligenceStrip/);
+  assert.match(centre, /DecisionDesk/);
+  assert.match(centre, /MarketWeatherPanel/);
+});
+
 test("score display never presents zero as a substitute for unavailable evidence", () => {
   assert.equal(formatScoreDisplay(0, false), "Not calculated");
   assert.equal(formatScoreDisplay(null, true), "Not calculated");
@@ -52,19 +67,6 @@ test("Market Command Centre restores Elite dashboard workspace", async () => {
   assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
   assert.doesNotMatch(page, /MissionControl|persistAnalysisSnapshot/);
   assert.doesNotMatch(page, /BullseyeMissionControl|TodaysBullseyePlan|TradeSetupOfTheDay|TodaysEdge|MorningBriefPanel|EliteScenarioCard|MarketStructureVisual|executiveKpiStrip|memberAccessMap|Classification Record/);
-});
-
-test("hero chart and intelligence strip ship delayed-data badges", async () => {
-  const [hero, strip, centre] = await Promise.all([
-    read("../app/dashboard/components/HeroMarketChart.tsx"),
-    read("../app/dashboard/components/MarketIntelligenceStrip.tsx"),
-    read("../app/dashboard/components/MarketCommandCentre.tsx"),
-  ]);
-  assert.match(hero, /Market Data: Delayed \(\~10 minutes\)/);
-  assert.match(hero, /EMA 9|EMA 200|VWAP|PDH|ONH/);
-  assert.match(strip, /Awaiting coverage/);
-  assert.match(centre, /HeroMarketChartLazy/);
-  assert.match(centre, /MarketIntelligenceStrip/);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {

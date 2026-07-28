@@ -11,6 +11,24 @@ type OutlookProps = {
   disclaimer: string;
 };
 
+function friendly(value: string): string {
+  if (!value || value === "Unavailable" || value === "NULL" || value === "Undefined") {
+    return "Not yet confirmed from verified feeds";
+  }
+  return value
+    .replaceAll("CRITICAL_INPUT_MISSING", "Awaiting full confirmation from verified inputs")
+    .replaceAll("Required market inputs are incomplete", "Awaiting full confirmation from verified inputs")
+    .replaceAll("required market inputs are incomplete", "Awaiting full confirmation from verified inputs")
+    .replaceAll("Trigger: ABOVE RESISTANCE", "Bullish confirmation: Sustained move above verified resistance")
+    .replaceAll("Trigger: BELOW SUPPORT", "Bearish confirmation: Sustained move below verified support")
+    .replaceAll("Invalidation: BELOW SUPPORT", "Invalidated by: Move back below verified support")
+    .replaceAll("Invalidation: ABOVE RESISTANCE", "Invalidated by: Move back above verified resistance")
+    .replaceAll("Stand aside", "Stand Aside")
+    .replaceAll("stand aside", "Stand Aside")
+    .replace(/\bmedium\b/g, "Medium")
+    .replace(/\bUnavailable\b/g, "not yet confirmed from verified feeds");
+}
+
 export function AiMarketOutlook({
   verified,
   bullish,
@@ -28,47 +46,47 @@ export function AiMarketOutlook({
       <header>
         <div>
           <span className="mccEyebrow">AI MARKET OUTLOOK</span>
-          <h2 id="mcc-outlook-title">Deterministic desk scenarios</h2>
-          <p>Built from verified engine outputs only — never invented prices or guarantees.</p>
+          <h2 id="mcc-outlook-title">Bullish, Bearish &amp; Stand-Aside Scenarios</h2>
+          <p>Scenario paths from verified engine outputs — never invented prices or guarantees.</p>
         </div>
         <div className={`mccOutlookState ${verified ? "is-verified" : "is-closed"}`}>
           <i aria-hidden="true" />
-          <strong>{verified ? "Verified inputs" : "Fail-closed"}</strong>
+          <strong>{verified ? "Verified inputs" : "Awaiting inputs"}</strong>
         </div>
       </header>
 
       <div className="mccOutlookGrid">
         <article className="is-bull">
           <span>Bullish Scenario</span>
-          <p>{bullish}</p>
+          <p>{friendly(bullish)}</p>
         </article>
         <article className="is-bear">
           <span>Bearish Scenario</span>
-          <p>{bearish}</p>
+          <p>{friendly(bearish)}</p>
         </article>
         <article className="is-neutral">
-          <span>Neutral / No Trade</span>
-          <p>{neutral}</p>
+          <span>Neutral / Stand Aside</span>
+          <p>{friendly(neutral)}</p>
         </article>
         <article>
           <span>Expected Move</span>
-          <strong>{expectedMove}</strong>
+          <strong>{friendly(expectedMove)}</strong>
         </article>
         <article>
           <span>Key Support</span>
-          <strong>{keySupport}</strong>
+          <strong>{friendly(keySupport)}</strong>
         </article>
         <article>
           <span>Key Resistance</span>
-          <strong>{keyResistance}</strong>
+          <strong>{friendly(keyResistance)}</strong>
         </article>
         <article>
           <span>Risk Rating</span>
-          <strong>{riskRating}</strong>
+          <strong>{friendly(riskRating)}</strong>
         </article>
         <article>
           <span>AI Confidence</span>
-          <strong>{aiConfidence}</strong>
+          <strong>{friendly(aiConfidence)}</strong>
         </article>
       </div>
 

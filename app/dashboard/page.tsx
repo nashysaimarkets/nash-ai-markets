@@ -17,6 +17,14 @@ import { loadPreviewClaims } from "../terminal/lib/preview-access";
 import { readSessionClock } from "../terminal/lib/session-clock";
 import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard.ts";
 import { primaryLevel } from "./lib/command-centre.ts";
+import { buildDecisionDesk } from "./lib/decision-desk.ts";
+import {
+  buildDeskGreeting,
+  buildMarketScore,
+  buildMarketWeather,
+  buildOpportunityRadar,
+} from "./lib/market-weather.ts";
+import { formatDeskConfidenceDisplay } from "./lib/score-display.ts";
 import { MarketCommandCentre } from "./components/MarketCommandCentre";
 import type { StripQuote } from "./components/MarketIntelligenceStrip";
 
@@ -153,16 +161,48 @@ export default async function MemberDashboard() {
   const stripQuotes = buildStripQuotes(snapshot.quotes, asOfLabel, sparklines);
 
   const pretty = (value: string) => value.replaceAll("_", " ").replaceAll("-", " ");
+  const scenarioTriggerCopy = (
+    type: "BULLISH" | "BEARISH" | "NEUTRAL",
+    kind: string,
+    level: string | null,
+  ): string => {
+    if (type === "BULLISH" && kind === "ABOVE_RESISTANCE") {
+      return level
+        ? "Bullish confirmation: Sustained move above verified resistance"
+        : "Bullish confirmation awaits verified resistance";
+    }
+    if (type === "BEARISH" && kind === "BELOW_SUPPORT") {
+      return level
+        ? "Bearish confirmation: Sustained move below verified support"
+        : "Bearish confirmation awaits verified support";
+    }
+    if (level) return `${pretty(kind)} near ${level}`;
+    return pretty(kind);
+  };
+  const scenarioInvalidationCopy = (
+    type: "BULLISH" | "BEARISH" | "NEUTRAL",
+    kind: string,
+    level: string | null,
+  ): string => {
+    if (type === "BULLISH" && kind === "BELOW_SUPPORT") {
+      return level
+        ? "Invalidated by: Move back below verified support"
+        : "Invalidation awaits verified support";
+    }
+    if (type === "BEARISH" && kind === "ABOVE_RESISTANCE") {
+      return level
+        ? "Invalidated by: Move back above verified resistance"
+        : "Invalidation awaits verified resistance";
+    }
+    if (level) return `${pretty(kind)} near ${level}`;
+    return pretty(kind);
+  };
   const scenarioCopy = (type: "BULLISH" | "BEARISH" | "NEUTRAL") => {
     const scenario = intelligence.scenarios.find((item) => item.type === type);
     if (!scenario) return null;
-    const trigger = scenario.trigger.level
-      ? `${pretty(scenario.trigger.kind)} near ${scenario.trigger.level}`
-      : pretty(scenario.trigger.kind);
-    const invalidation = scenario.invalidation.level
-      ? `${pretty(scenario.invalidation.kind)} near ${scenario.invalidation.level}`
-      : pretty(scenario.invalidation.kind);
-    return `${scenario.probability}% weight · Trigger: ${trigger}. Invalidation: ${invalidation}.`;
+    const trigger = scenarioTriggerCopy(type, scenario.trigger.kind, scenario.trigger.level);
+    const invalidation = scenarioInvalidationCopy(type, scenario.invalidation.kind, scenario.invalidation.level);
+    return `${scenario.probability}% weight · ${trigger}. ${invalidation}.`;
   };
   const bullishScenario = scenarioCopy("BULLISH");
   const bearishScenario = scenarioCopy("BEARISH");
@@ -175,7 +215,26 @@ export default async function MemberDashboard() {
     : null;
   const expectedMove = verified && rangeHigh != null && rangeLow != null
     ? `${(rangeHigh - rangeLow).toLocaleString("en-GB", { maximumFractionDigits: 2 })} pts (verified 48-bar range)`
-    : "Unavailable without verified range inputs";
+    : "Expected move awaits a verified candle range";
+
+  const confidenceScore = verified
+    ? Math.round(decision.confidenceScore || intelligence.scores.bullseyeConfidence || 0)
+    : null;
+  const decisionDesk = buildDecisionDesk({
+    verified,
+    decision,
+    plan,
+    intelligence,
+    session,
+    candles: candleSeries?.candles,
+    expectedMoveLabel: expectedMove,
+    support: support?.value ?? null,
+    resistance: resistance?.value ?? null,
+  });
+  const greeting = buildDeskGreeting(displayName, session, new Date(now));
+  const weather = buildMarketWeather({ desk: decisionDesk, intelligence });
+  const radar = buildOpportunityRadar(decisionDesk);
+  const marketScore = buildMarketScore({ desk: decisionDesk, intelligence, weather });
 
   const outlook = {
     verified,
@@ -187,16 +246,16 @@ export default async function MemberDashboard() {
       : "Bearish scenario withheld until verified decision inputs clear.",
     neutral: verified
       ? decision.tradePermission === "no-trade"
-        ? decision.noTradeReasons[0] ?? neutralScenario ?? "No-trade conditions active — remain sidelined."
-        : plan.reasonsToRemainSidelined[0] ?? neutralScenario ?? "Neutral / selective participation only."
+        ? decisionDesk.tradeThesis
+        : plan.reasonsToRemainSidelined[0]
+          ? pretty(plan.reasonsToRemainSidelined[0])
+          : neutralScenario ?? "Neutral / selective participation only."
       : "Neutral / no-trade stance held while the provider decision window is incomplete.",
     expectedMove,
-    keySupport: support?.value ?? "Unavailable",
-    keyResistance: resistance?.value ?? "Unavailable",
-    riskRating: verified ? decision.riskRating : "Unrated",
-    aiConfidence: verified
-      ? `${Math.round(decision.confidenceScore || intelligence.scores.bullseyeConfidence || 0)} / 100`
-      : "Unavailable",
+    keySupport: support?.value ?? "Not yet confirmed from verified feeds",
+    keyResistance: resistance?.value ?? "Not yet confirmed from verified feeds",
+    riskRating: verified ? pretty(decision.riskRating) : "Unrated until verified inputs clear",
+    aiConfidence: formatDeskConfidenceDisplay(confidenceScore, verified),
     disclaimer:
       "Outlook uses deterministic Bullseye engines on delayed verified data. Not personalised advice. Market Data: Delayed (~10 minutes).",
   };
@@ -204,7 +263,7 @@ export default async function MemberDashboard() {
   return (
     <MemberShell active="dashboard">
       <MarketCommandCentre
-        memberName={displayName}
+        greeting={greeting}
         tierLabel={access.tier.toUpperCase()}
         dataStatus={snapshot.status}
         dataAgeLabel={dataAgeLabel}
@@ -212,6 +271,10 @@ export default async function MemberDashboard() {
         session={session}
         candleSeries={candleSeries}
         stripQuotes={stripQuotes}
+        decisionDesk={decisionDesk}
+        weather={weather}
+        radar={radar}
+        marketScore={marketScore}
         outlook={outlook}
       />
     </MemberShell>
