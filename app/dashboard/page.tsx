@@ -161,16 +161,48 @@ export default async function MemberDashboard() {
   const stripQuotes = buildStripQuotes(snapshot.quotes, asOfLabel, sparklines);
 
   const pretty = (value: string) => value.replaceAll("_", " ").replaceAll("-", " ");
+  const scenarioTriggerCopy = (
+    type: "BULLISH" | "BEARISH" | "NEUTRAL",
+    kind: string,
+    level: string | null,
+  ): string => {
+    if (type === "BULLISH" && kind === "ABOVE_RESISTANCE") {
+      return level
+        ? "Bullish confirmation: Sustained move above verified resistance"
+        : "Bullish confirmation awaits verified resistance";
+    }
+    if (type === "BEARISH" && kind === "BELOW_SUPPORT") {
+      return level
+        ? "Bearish confirmation: Sustained move below verified support"
+        : "Bearish confirmation awaits verified support";
+    }
+    if (level) return `${pretty(kind)} near ${level}`;
+    return pretty(kind);
+  };
+  const scenarioInvalidationCopy = (
+    type: "BULLISH" | "BEARISH" | "NEUTRAL",
+    kind: string,
+    level: string | null,
+  ): string => {
+    if (type === "BULLISH" && kind === "BELOW_SUPPORT") {
+      return level
+        ? "Invalidated by: Move back below verified support"
+        : "Invalidation awaits verified support";
+    }
+    if (type === "BEARISH" && kind === "ABOVE_RESISTANCE") {
+      return level
+        ? "Invalidated by: Move back above verified resistance"
+        : "Invalidation awaits verified resistance";
+    }
+    if (level) return `${pretty(kind)} near ${level}`;
+    return pretty(kind);
+  };
   const scenarioCopy = (type: "BULLISH" | "BEARISH" | "NEUTRAL") => {
     const scenario = intelligence.scenarios.find((item) => item.type === type);
     if (!scenario) return null;
-    const trigger = scenario.trigger.level
-      ? `${pretty(scenario.trigger.kind)} near ${scenario.trigger.level}`
-      : pretty(scenario.trigger.kind);
-    const invalidation = scenario.invalidation.level
-      ? `${pretty(scenario.invalidation.kind)} near ${scenario.invalidation.level}`
-      : pretty(scenario.invalidation.kind);
-    return `${scenario.probability}% weight · Trigger: ${trigger}. Invalidation: ${invalidation}.`;
+    const trigger = scenarioTriggerCopy(type, scenario.trigger.kind, scenario.trigger.level);
+    const invalidation = scenarioInvalidationCopy(type, scenario.invalidation.kind, scenario.invalidation.level);
+    return `${scenario.probability}% weight · ${trigger}. ${invalidation}.`;
   };
   const bullishScenario = scenarioCopy("BULLISH");
   const bearishScenario = scenarioCopy("BEARISH");

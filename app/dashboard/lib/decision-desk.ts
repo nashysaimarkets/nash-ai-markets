@@ -163,8 +163,17 @@ function buildThesis(input: {
       : "breadth remains mixed";
 
   if (input.decision.tradePermission === "no-trade") {
-    const reason = input.missing[0] ?? "participation filters remain closed";
-    return `Stand aside while ${humanizeFragments(reason).toLowerCase()}. Structure reads as ${structure}; revisit when confirmations improve.`;
+    const structureLabel = input.structure.label.toLowerCase();
+    const structurePhrase = structureLabel.includes("upper")
+      ? "upper range"
+      : structureLabel.includes("lower")
+        ? "lower range"
+        : structureLabel.includes("range") || structureLabel.includes("balanced")
+          ? "balanced range"
+          : structureLabel.includes("awaiting") || structureLabel.includes("incomplete")
+            ? "an unconfirmed structure"
+            : structureLabel;
+    return `Stand Aside while awaiting full confirmation. Structure remains in the ${structurePhrase}; reassess when momentum and breadth align.`;
   }
 
   if (bias === "bullish") {
