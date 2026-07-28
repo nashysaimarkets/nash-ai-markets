@@ -44,13 +44,27 @@ test("cross-market interpretation is plain English and marks mixed evidence", ()
   assert.doesNotMatch(copy, /guarantee|will rise|buy|sell/i);
 });
 
-test("consolidated dashboard redirects into the Trading Desk", async () => {
+test("Market Command Centre restores Elite dashboard workspace", async () => {
   const page = await read("../app/dashboard/page.tsx");
-  assert.match(page, /redirect\("\/terminal"\)/);
+  assert.match(page, /MarketCommandCentre/);
   assert.match(page, /resolveMembershipTier/);
+  assert.match(page, /Market Data: Delayed/);
+  assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
   assert.doesNotMatch(page, /MissionControl|persistAnalysisSnapshot/);
   assert.doesNotMatch(page, /BullseyeMissionControl|TodaysBullseyePlan|TradeSetupOfTheDay|TodaysEdge|MorningBriefPanel|EliteScenarioCard|MarketStructureVisual|executiveKpiStrip|memberAccessMap|Classification Record/);
-  assert.doesNotMatch(page, /BULLSEYE Command Centre/);
+});
+
+test("hero chart and intelligence strip ship delayed-data badges", async () => {
+  const [hero, strip, centre] = await Promise.all([
+    read("../app/dashboard/components/HeroMarketChart.tsx"),
+    read("../app/dashboard/components/MarketIntelligenceStrip.tsx"),
+    read("../app/dashboard/components/MarketCommandCentre.tsx"),
+  ]);
+  assert.match(hero, /Market Data: Delayed \(\~10 minutes\)/);
+  assert.match(hero, /EMA 9|EMA 200|VWAP|PDH|ONH/);
+  assert.match(strip, /Awaiting coverage/);
+  assert.match(centre, /HeroMarketChartLazy/);
+  assert.match(centre, /MarketIntelligenceStrip/);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {

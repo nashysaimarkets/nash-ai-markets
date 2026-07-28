@@ -107,8 +107,8 @@ test("dashboard chart calls only the protected candle route on an explicit contr
   assert.match(chart, /series\.status !== "unavailable"/);
   assert.doesNotMatch(chart, /Failure category|requests avoided|cache \{/);
   assert.match(chart, /Previous session|Market closed|never labelled live/);
-  assert.match(page, /redirect\("\/terminal"\)/);
-  assert.doesNotMatch(page, /toCustomerCandleSeries/);
+  assert.match(page, /MarketCommandCentre|HeroMarketChart|toCustomerCandleSeries/);
+  assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
   assert.match(loading, /aria-busy="true"/);
 });
 
