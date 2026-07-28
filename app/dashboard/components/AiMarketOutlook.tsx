@@ -11,6 +11,15 @@ type OutlookProps = {
   disclaimer: string;
 };
 
+function friendly(value: string): string {
+  if (!value || value === "Unavailable" || value === "NULL" || value === "Undefined") {
+    return "Not yet confirmed from verified feeds";
+  }
+  return value
+    .replaceAll("CRITICAL_INPUT_MISSING", "required market inputs are incomplete")
+    .replace(/\bUnavailable\b/g, "not yet confirmed from verified feeds");
+}
+
 export function AiMarketOutlook({
   verified,
   bullish,
@@ -33,42 +42,42 @@ export function AiMarketOutlook({
         </div>
         <div className={`mccOutlookState ${verified ? "is-verified" : "is-closed"}`}>
           <i aria-hidden="true" />
-          <strong>{verified ? "Verified inputs" : "Fail-closed"}</strong>
+          <strong>{verified ? "Verified inputs" : "Awaiting inputs"}</strong>
         </div>
       </header>
 
       <div className="mccOutlookGrid">
         <article className="is-bull">
           <span>Bullish Scenario</span>
-          <p>{bullish}</p>
+          <p>{friendly(bullish)}</p>
         </article>
         <article className="is-bear">
           <span>Bearish Scenario</span>
-          <p>{bearish}</p>
+          <p>{friendly(bearish)}</p>
         </article>
         <article className="is-neutral">
           <span>Neutral / No Trade</span>
-          <p>{neutral}</p>
+          <p>{friendly(neutral)}</p>
         </article>
         <article>
           <span>Expected Move</span>
-          <strong>{expectedMove}</strong>
+          <strong>{friendly(expectedMove)}</strong>
         </article>
         <article>
           <span>Key Support</span>
-          <strong>{keySupport}</strong>
+          <strong>{friendly(keySupport)}</strong>
         </article>
         <article>
           <span>Key Resistance</span>
-          <strong>{keyResistance}</strong>
+          <strong>{friendly(keyResistance)}</strong>
         </article>
         <article>
           <span>Risk Rating</span>
-          <strong>{riskRating}</strong>
+          <strong>{friendly(riskRating)}</strong>
         </article>
         <article>
           <span>AI Confidence</span>
-          <strong>{aiConfidence}</strong>
+          <strong>{friendly(aiConfidence)}</strong>
         </article>
       </div>
 

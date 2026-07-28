@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import type { SessionClockReading } from "../../terminal/lib/session-clock.ts";
+import type { DecisionDeskModel } from "../lib/decision-desk.ts";
 import { AiMarketOutlook } from "./AiMarketOutlook";
+import { DecisionDesk } from "./DecisionDesk";
 import { HeroMarketChartLazy } from "./HeroMarketChartLazy";
 import { MarketIntelligenceStrip, type StripQuote } from "./MarketIntelligenceStrip";
 
@@ -14,6 +16,7 @@ export type MarketCommandCentreProps = {
   session: SessionClockReading;
   candleSeries: CustomerCandleSeries | null;
   stripQuotes: StripQuote[];
+  decisionDesk: DecisionDeskModel;
   outlook: {
     verified: boolean;
     bullish: string;
@@ -37,6 +40,7 @@ export function MarketCommandCentre({
   session,
   candleSeries,
   stripQuotes,
+  decisionDesk,
   outlook,
 }: MarketCommandCentreProps) {
   return (
@@ -79,6 +83,8 @@ export function MarketCommandCentre({
           </Link>
         </nav>
       </header>
+
+      <DecisionDesk desk={decisionDesk} />
 
       <div className="mccDelayedBanner" role="status">
         <strong>Market Data: Delayed (~10 minutes)</strong>

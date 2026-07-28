@@ -17,6 +17,8 @@ import { loadPreviewClaims } from "../terminal/lib/preview-access";
 import { readSessionClock } from "../terminal/lib/session-clock";
 import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard.ts";
 import { primaryLevel } from "./lib/command-centre.ts";
+import { buildDecisionDesk } from "./lib/decision-desk.ts";
+import { formatDeskConfidenceDisplay } from "./lib/score-display.ts";
 import { MarketCommandCentre } from "./components/MarketCommandCentre";
 import type { StripQuote } from "./components/MarketIntelligenceStrip";
 
@@ -175,7 +177,22 @@ export default async function MemberDashboard() {
     : null;
   const expectedMove = verified && rangeHigh != null && rangeLow != null
     ? `${(rangeHigh - rangeLow).toLocaleString("en-GB", { maximumFractionDigits: 2 })} pts (verified 48-bar range)`
-    : "Unavailable without verified range inputs";
+    : "Expected move awaits a verified candle range";
+
+  const confidenceScore = verified
+    ? Math.round(decision.confidenceScore || intelligence.scores.bullseyeConfidence || 0)
+    : null;
+  const decisionDesk = buildDecisionDesk({
+    verified,
+    decision,
+    plan,
+    intelligence,
+    session,
+    candles: candleSeries?.candles,
+    expectedMoveLabel: expectedMove,
+    support: support?.value ?? null,
+    resistance: resistance?.value ?? null,
+  });
 
   const outlook = {
     verified,
@@ -187,16 +204,16 @@ export default async function MemberDashboard() {
       : "Bearish scenario withheld until verified decision inputs clear.",
     neutral: verified
       ? decision.tradePermission === "no-trade"
-        ? decision.noTradeReasons[0] ?? neutralScenario ?? "No-trade conditions active — remain sidelined."
-        : plan.reasonsToRemainSidelined[0] ?? neutralScenario ?? "Neutral / selective participation only."
+        ? decisionDesk.tradeThesis
+        : plan.reasonsToRemainSidelined[0]
+          ? pretty(plan.reasonsToRemainSidelined[0])
+          : neutralScenario ?? "Neutral / selective participation only."
       : "Neutral / no-trade stance held while the provider decision window is incomplete.",
     expectedMove,
-    keySupport: support?.value ?? "Unavailable",
-    keyResistance: resistance?.value ?? "Unavailable",
-    riskRating: verified ? decision.riskRating : "Unrated",
-    aiConfidence: verified
-      ? `${Math.round(decision.confidenceScore || intelligence.scores.bullseyeConfidence || 0)} / 100`
-      : "Unavailable",
+    keySupport: support?.value ?? "Not yet confirmed from verified feeds",
+    keyResistance: resistance?.value ?? "Not yet confirmed from verified feeds",
+    riskRating: verified ? pretty(decision.riskRating) : "Unrated until verified inputs clear",
+    aiConfidence: formatDeskConfidenceDisplay(confidenceScore, verified),
     disclaimer:
       "Outlook uses deterministic Bullseye engines on delayed verified data. Not personalised advice. Market Data: Delayed (~10 minutes).",
   };
@@ -212,6 +229,7 @@ export default async function MemberDashboard() {
         session={session}
         candleSeries={candleSeries}
         stripQuotes={stripQuotes}
+        decisionDesk={decisionDesk}
         outlook={outlook}
       />
     </MemberShell>

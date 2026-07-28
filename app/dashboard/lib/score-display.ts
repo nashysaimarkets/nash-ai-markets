@@ -1,8 +1,15 @@
+import { formatConfidenceBandLabel } from "./decision-desk.ts";
+
 /** Customer-facing score display: never treat uncalculated evidence as zero. */
 
 export function formatScoreDisplay(score: number | null | undefined, ready: boolean): string {
   if (!ready || score === null || score === undefined) return "Not calculated";
   return `${score} / 100`;
+}
+
+/** Elite desk confidence: qualitative band first (Moderate Confidence), not raw N/100. */
+export function formatDeskConfidenceDisplay(score: number | null | undefined, ready: boolean): string {
+  return formatConfidenceBandLabel(score, ready);
 }
 
 export function scoreIsDisplayable(score: number | null | undefined, ready: boolean): boolean {
