@@ -82,7 +82,7 @@ test("executive dashboard integrates verified summary, preview safety, and subsc
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
   const brief = await readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8");
   const profile = await readFile(new URL("../app/profile/page.tsx", import.meta.url), "utf8");
-  assert.match(dashboard, /redirect\("\/terminal"\)/);
+  assert.match(dashboard, /MarketCommandCentre/);
   assert.match(dashboard, /resolveMembershipTier/);
   assert.doesNotMatch(dashboard, /MissionControl|persistAnalysisSnapshot|<SubscriptionStatusCard/);
   assert.match(profile, /<SubscriptionStatusCard/);
