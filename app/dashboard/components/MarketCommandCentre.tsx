@@ -1,25 +1,9 @@
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import type { SessionClockReading } from "../../terminal/lib/session-clock.ts";
 import { AiMarketOutlook } from "./AiMarketOutlook";
+import { HeroMarketChartLazy } from "./HeroMarketChartLazy";
 import { MarketIntelligenceStrip, type StripQuote } from "./MarketIntelligenceStrip";
-
-const HeroMarketChart = dynamic(
-  () => import("./HeroMarketChart").then((mod) => mod.HeroMarketChart),
-  {
-    ssr: false,
-    loading: () => (
-      <section className="mccHeroChart is-loading" aria-busy="true" aria-label="Loading hero chart">
-        <div className="mccChartSkeleton">
-          <div className="mccSkeletonBar" />
-          <div className="mccSkeletonBar short" />
-          <p>Loading interactive chart…</p>
-        </div>
-      </section>
-    ),
-  },
-);
 
 export type MarketCommandCentreProps = {
   memberName: string;
@@ -104,7 +88,7 @@ export function MarketCommandCentre({
       <MarketIntelligenceStrip quotes={stripQuotes} />
 
       {candleSeries ? (
-        <HeroMarketChart series={candleSeries} instrument="ES" sessionPhase={session.phase} />
+        <HeroMarketChartLazy series={candleSeries} sessionPhase={session.phase} />
       ) : (
         <section className="mccHeroChart mccChartUnavailable" role="status">
           <strong>Hero chart awaiting verified ES candles</strong>
