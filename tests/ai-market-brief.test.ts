@@ -139,21 +139,26 @@ test("AI brief falls back for missing configuration, provider errors, and invali
 });
 
 test("AI market brief route is protected, responsive, and preserves entitlement gating", async () => {
-  const [page, loading, error, css] = await Promise.all([
+  const [page, loading, error, css, briefCss] = await Promise.all([
     readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/loading.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/error.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/market-brief.css", import.meta.url), "utf8"),
   ]);
   assert.match(page, /redirect\("\/login"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
-  assert.match(page, /redirect\("\/terminal"\)/);
   assert.match(page, /createProgressiveAccess/);
-  assert.doesNotMatch(page, /LockedPremiumCard|buildMarketBrief/);
+  assert.match(page, /buildMarketBrief/);
+  assert.match(page, /MorningMarketBrief/);
+  assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
+  assert.doesNotMatch(page, /LockedPremiumCard/);
   assert.match(loading, /aria-busy="true"/);
   assert.match(error, /No market view has been inferred from the failure/);
   assert.match(css, /@media\(max-width:640px\)/);
   assert.match(css, /\.briefHero\{gap:20px/);
+  assert.match(briefCss, /\.morningMarketBrief\{/);
+  assert.match(briefCss, /@media\(max-width:720px\)/);
 });
 
 test("shared member components expose accessible navigation and safe states", async () => {

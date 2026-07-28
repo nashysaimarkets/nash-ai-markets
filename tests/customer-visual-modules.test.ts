@@ -20,7 +20,8 @@ test("customer terminal routes render instrument modules without confidence gaug
   assert.doesNotMatch(terminal, /EventWindowEmpty|Upcoming catalysts|CrossAssetBoard|TodaysMarketPlan|KeyMarketInformation|MarketsBrowser/);
   assert.match(terminal, /TradingDeskOS/);
   assert.doesNotMatch(brief, /BullseyeGauge|CrossAssetBoard/);
-  assert.match(brief, /redirect\("\/terminal"\)/);
+  assert.match(brief, /MorningMarketBrief|composeMorningMarketBrief/);
+  assert.doesNotMatch(brief, /redirect\("\/terminal"\)/);
   assert.match(volGauge, /export function VolatilityGauge/);
   assert.match(yieldVisual, /export function YieldSpreadVisual/);
   assert.match(dxyVisual, /export function DxyPressureVisual/);

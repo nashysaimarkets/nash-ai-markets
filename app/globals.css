@@ -10,6 +10,7 @@
 @import "./dashboard-elite.css";
 @import "./dashboard-mission-control.css";
 @import "./market-command-centre.css";
+@import "./market-brief.css";
 .brandLogo{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:4px 2px;text-decoration:none;border-radius:6px;position:relative}.brandLogo img{display:block;width:auto;height:56px}.brandLogoCompact img{width:64px;height:64px}.brandLogo:focus-visible{outline:2px solid #d9ab52;outline-offset:4px}.memberBrandLogo{padding-right:8px}.memberBrandLogo img{height:50px;width:auto}.ctBrandLogo img{height:52px;width:auto}.brandBullseyeReveal{position:absolute;left:12px;bottom:-2px;opacity:0;transform:translateY(4px);pointer-events:none;color:#d9ab52;font:700 9px/1 var(--font-geist-mono),monospace;letter-spacing:.14em;text-transform:uppercase;transition:opacity .25s ease,transform .25s ease}.brandLogoAuth:hover .brandBullseyeReveal,.brandLogoAuth:focus-visible .brandBullseyeReveal{opacity:1;transform:none}
 :root{--brand-black:#020706;--brand-navy:#050b12;--brand-emerald:#38f28e;--brand-gold:#d9ab52;--brand-ivory:#f4f3ec;--brand-muted:#9ba9a3;--brand-glass:#0a1412e8}
 body{background-color:var(--brand-black);background-image:radial-gradient(circle at 85% -10%,#0d50343d,transparent 34%)}
