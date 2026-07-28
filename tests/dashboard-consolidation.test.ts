@@ -63,8 +63,8 @@ test("hero chart and intelligence strip ship delayed-data badges", async () => {
   assert.match(hero, /Market Data: Delayed \(\~10 minutes\)/);
   assert.match(hero, /EMA 9|EMA 200|VWAP|PDH|ONH/);
   assert.match(strip, /Awaiting coverage/);
-  assert.match(centre, /dynamic\(/);
-  assert.match(centre, /HeroMarketChart/);
+  assert.match(centre, /HeroMarketChartLazy/);
+  assert.match(centre, /MarketIntelligenceStrip/);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {
