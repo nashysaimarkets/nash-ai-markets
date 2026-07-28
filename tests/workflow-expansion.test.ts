@@ -131,7 +131,7 @@ test("workflow routes and migration exist without placeholder-only pages", async
     assert.doesNotMatch(source, /TODO implement|lorem ipsum|fake strike/i);
   }
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
-  assert.match(dashboard, /redirect\("\/terminal"\)/);
+  assert.match(dashboard, /MarketCommandCentre/);
   assert.match(dashboard, /resolveMembershipTier/);
   assert.doesNotMatch(dashboard, /MissionControl|persistAnalysisSnapshot/);
 });
