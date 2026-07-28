@@ -33,6 +33,7 @@ export type OpportunityRadarModel = {
 export type MarketScoreModel = {
   score: number | null;
   label: string;
+  descriptor: "Poor" | "Average" | "Good" | "Excellent" | "Awaiting inputs";
   tone: WeatherTone;
   factors: Array<{ label: string; detail: string; tone: WeatherTone }>;
   summary: string;
@@ -40,15 +41,22 @@ export type MarketScoreModel = {
 
 export type DeskGreeting = {
   salutation: string;
-  name: string;
+  name: string | null;
   subtitle: string;
 };
 
 const NO_OPPORTUNITY = "No verified opportunity currently available";
 
-function firstName(memberName: string): string {
-  const cleaned = memberName.trim().split(/[@\s._-]+/).filter(Boolean)[0] ?? "trader";
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+/** Prefer a real first name; never treat a single initial as a greeting name. */
+export function preferredGreetingName(memberName: string): string | null {
+  const raw = memberName.trim();
+  if (!raw || raw.toLowerCase() === "member") return null;
+
+  const fromPreferred = raw.split(/[\s,]+/).map((part) => part.trim()).find(Boolean) ?? "";
+  const token = fromPreferred.replace(/[^A-Za-z'’-]/g, "");
+  if (token.length < 2) return null;
+  if (!/^[A-Za-z]/.test(token)) return null;
+  return token.charAt(0).toUpperCase() + token.slice(1);
 }
 
 function dayPart(phase: SessionPhase, now = new Date()): "morning" | "afternoon" | "evening" {
@@ -66,7 +74,7 @@ function dayPart(phase: SessionPhase, now = new Date()): "morning" | "afternoon"
 
 /** Dynamic trader greeting from session clock — presentation only. */
 export function buildDeskGreeting(memberName: string, session: SessionClockReading, now = new Date()): DeskGreeting {
-  const name = firstName(memberName);
+  const name = preferredGreetingName(memberName);
   const part = dayPart(session.phase, now);
   const salutation = part === "morning"
     ? "Good morning"
@@ -115,12 +123,35 @@ export function buildDeskGreeting(memberName: string, session: SessionClockReadi
   };
 }
 
+function titleCaseRisk(value: string): string {
+  const cleaned = value.trim();
+  if (!cleaned) return "Unrated";
+  return cleaned.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function customerCopy(value: string): string {
+  return value
+    .replaceAll("CRITICAL_INPUT_MISSING", "Awaiting full confirmation from verified inputs")
+    .replaceAll("Required market inputs are incomplete", "Awaiting full confirmation from verified inputs")
+    .replaceAll("required market inputs are incomplete", "Awaiting full confirmation from verified inputs")
+    .replaceAll("Not confirmed", "Awaiting confirmation")
+    .replaceAll("Stand aside", "Stand Aside")
+    .replaceAll("stand aside", "Stand Aside")
+    .replace(/\bmedium\b/g, "Medium")
+    .replace(/\blow\b/g, "Low")
+    .replace(/\bhigh\b/g, "High")
+    .replace(/\bNULL\b/g, "missing")
+    .replace(/\bUndefined\b/g, "missing")
+    .replace(/\bundefined\b/g, "missing")
+    .replace(/\bUnavailable\b/g, "not yet confirmed from verified feeds");
+}
+
 function momentumFromScores(intelligence: MarketIntelligence, verified: boolean): MarketWeatherModel["momentum"] {
   if (!verified) {
     return {
       label: "Mixed",
       tone: "blue",
-      detail: "Momentum stays unmarked until verified trend and breadth inputs clear.",
+      detail: "Awaiting verified momentum inputs.",
     };
   }
   const trend = intelligence.scores.trend;
@@ -131,20 +162,20 @@ function momentumFromScores(intelligence: MarketIntelligence, verified: boolean)
     return {
       label: "Improving",
       tone: "green",
-      detail: "Trend, breadth, and risk appetite lean constructive on verified scores.",
+      detail: "Verified drivers lean constructive.",
     };
   }
   if (lean <= -12) {
     return {
       label: "Weakening",
       tone: "red",
-      detail: "Trend, breadth, or risk appetite is fading on verified scores.",
+      detail: "Verified drivers lean softer.",
     };
   }
   return {
     label: "Mixed",
     tone: "amber",
-    detail: "Verified drivers disagree — momentum is mixed, not decisive.",
+    detail: "Verified drivers disagree.",
   };
 }
 
@@ -153,16 +184,16 @@ function breadthFromScore(score: number, verified: boolean): MarketWeatherModel[
     return {
       label: "Neutral",
       tone: "blue",
-      detail: "Breadth is withheld while verified sentiment inputs are incomplete.",
+      detail: "Awaiting verified breadth inputs.",
     };
   }
   if (score >= 58) {
-    return { label: "Strong", tone: "green", detail: `Breadth / sentiment score ${score}/100 leans constructive.` };
+    return { label: "Strong", tone: "green", detail: "Breadth leans constructive." };
   }
   if (score <= 42) {
-    return { label: "Weak", tone: "red", detail: `Breadth / sentiment score ${score}/100 leans cautious.` };
+    return { label: "Weak", tone: "red", detail: "Breadth leans cautious." };
   }
-  return { label: "Neutral", tone: "blue", detail: `Breadth / sentiment score ${score}/100 is balanced.` };
+  return { label: "Neutral", tone: "blue", detail: "Breadth is balanced." };
 }
 
 function tradingConditions(
@@ -173,22 +204,22 @@ function tradingConditions(
     return {
       label: "Poor",
       tone: "red",
-      detail: "Trading conditions stay poor until the verified decision window clears.",
+      detail: "Conditions closed until verification clears.",
     };
   }
   const score = desk.confidence.score ?? 0;
   const volPenalty = desk.volatility.label === "Elevated" ? 12 : desk.volatility.label === "Low" ? 0 : 4;
   const adjusted = score - volPenalty;
   if (adjusted >= 75 && desk.opportunity.available) {
-    return { label: "Excellent", tone: "green", detail: "Verified confidence and opportunity alignment are strong." };
+    return { label: "Excellent", tone: "green", detail: "Confidence and setup alignment are strong." };
   }
   if (adjusted >= 58) {
-    return { label: "Good", tone: "green", detail: "Conditions support selective participation with clear invalidation." };
+    return { label: "Good", tone: "green", detail: "Selective participation is supported." };
   }
   if (adjusted >= 40) {
-    return { label: "Average", tone: "amber", detail: "Average conditions — size down and wait for cleaner confirmation." };
+    return { label: "Average", tone: "amber", detail: "Average conditions — stay selective." };
   }
-  return { label: "Poor", tone: "red", detail: "Poor conditions — favour stand-aside over forced participation." };
+  return { label: "Poor", tone: "red", detail: "Favour Stand Aside over forced trades." };
 }
 
 export function buildMarketWeather(input: {
@@ -202,12 +233,16 @@ export function buildMarketWeather(input: {
     ? {
       label: "Neutral",
       tone: "blue",
-      detail: "Trend bias stays Neutral until verified decision inputs clear.",
+      detail: "Awaiting verified trend inputs.",
     }
     : {
       label: desk.marketBias.label,
       tone: desk.marketBias.tone === "bull" ? "green" : desk.marketBias.tone === "bear" ? "red" : "blue",
-      detail: desk.trend.detail,
+      detail: desk.marketBias.label === "Bullish"
+        ? "Bias leans higher on verified inputs."
+        : desk.marketBias.label === "Bearish"
+          ? "Bias leans lower on verified inputs."
+          : "Bias is balanced on verified inputs.",
     };
 
   const volatility: MarketWeatherModel["volatility"] = {
@@ -217,7 +252,11 @@ export function buildMarketWeather(input: {
       : desk.volatility.label === "Low"
         ? "green"
         : "amber",
-    detail: desk.volatility.detail,
+    detail: desk.volatility.label === "Elevated"
+      ? "Ranges are expanded — stay selective."
+      : desk.volatility.label === "Low"
+        ? "Ranges are compressed."
+        : "Volatility is in a normal band.",
   };
 
   return {
@@ -250,17 +289,22 @@ function probability(desk: DecisionDeskModel): OpportunityRadarModel["probabilit
 
 export function buildOpportunityRadar(desk: DecisionDeskModel): OpportunityRadarModel {
   if (!desk.verified || !desk.opportunity.available) {
+    const standAsideReason = customerCopy(
+      desk.confidence.factors.find((factor) => factor.label === "Missing inputs")?.detail
+        ?? desk.opportunity.entryZone
+        ?? "Awaiting a verified high-probability setup.",
+    );
     return {
       available: false,
       headline: NO_OPPORTUNITY,
       rating: 0,
       direction: "Stand Aside",
       probability: "None",
-      preferredZone: "No preferred zone until a verified setup clears.",
-      targetArea: "No target until a verified setup clears.",
-      invalidation: "Not applicable while standing aside.",
-      riskLevel: desk.opportunity.riskLevel,
-      reasoning: desk.tradeThesis,
+      preferredZone: "No preferred zone while no verified setup is active",
+      targetArea: "No target while no verified setup is active",
+      invalidation: "Not applicable while Stand Aside",
+      riskLevel: titleCaseRisk(desk.opportunity.riskLevel),
+      reasoning: standAsideReason,
     };
   }
 
@@ -273,16 +317,26 @@ export function buildOpportunityRadar(desk: DecisionDeskModel): OpportunityRadar
 
   return {
     available: true,
-    headline: desk.opportunity.headline,
+    headline: customerCopy(desk.opportunity.headline),
     rating: starRating(desk),
     direction,
     probability: probability(desk),
-    preferredZone: desk.opportunity.entryZone,
-    targetArea: desk.opportunity.targetArea,
-    invalidation: desk.opportunity.invalidation,
-    riskLevel: desk.opportunity.riskLevel,
-    reasoning: desk.tradeThesis,
+    preferredZone: customerCopy(desk.opportunity.entryZone),
+    targetArea: customerCopy(desk.opportunity.targetArea),
+    invalidation: customerCopy(desk.opportunity.invalidation),
+    riskLevel: titleCaseRisk(desk.opportunity.riskLevel),
+    reasoning: customerCopy(
+      `${desk.opportunity.headline}. ${desk.opportunity.preferredDirection} with ${desk.opportunity.riskLevel} risk.`,
+    ),
   };
+}
+
+function conditionsDescriptor(score: number | null, verified: boolean): MarketScoreModel["descriptor"] {
+  if (!verified || score == null) return "Awaiting inputs";
+  if (score >= 75) return "Excellent";
+  if (score >= 58) return "Good";
+  if (score >= 40) return "Average";
+  return "Poor";
 }
 
 export function buildMarketScore(input: {
@@ -294,27 +348,34 @@ export function buildMarketScore(input: {
   if (!desk.verified || desk.confidence.score == null) {
     return {
       score: null,
-      label: "Today's Market Score",
+      label: "Trading Conditions Score",
+      descriptor: "Awaiting inputs",
       tone: "blue",
-      summary: "Score stays blank until verified trend, breadth, momentum, and volatility inputs clear — blank is not bearish.",
+      summary: "Measures the quality of current trading conditions — not a forecast and not the probability of market direction.",
       factors: [
         { label: "Trend", detail: weather.trend.detail, tone: "blue" },
         { label: "Breadth", detail: weather.breadth.detail, tone: "blue" },
         { label: "Momentum", detail: weather.momentum.detail, tone: "blue" },
         { label: "Volatility", detail: weather.volatility.detail, tone: "blue" },
-        { label: "Confirmation", detail: desk.confidence.factors.find((f) => f.label === "Confirmation")?.detail ?? "Confirmation closed.", tone: "blue" },
+        { label: "Confirmation", detail: "Confirmation closed until verified inputs clear.", tone: "blue" },
       ],
     };
   }
 
   const score = Math.round(desk.confidence.score || intelligence.scores.bullseyeConfidence || 0);
-  const tone: WeatherTone = score >= 65 ? "green" : score >= 40 ? "amber" : "red";
+  const descriptor = conditionsDescriptor(score, true);
+  const tone: WeatherTone = descriptor === "Excellent" || descriptor === "Good"
+    ? "green"
+    : descriptor === "Average"
+      ? "amber"
+      : "red";
 
   return {
     score,
-    label: "Today's Market Score",
+    label: "Trading Conditions Score",
+    descriptor,
     tone,
-    summary: "Based only on verified Bullseye inputs — educational desk score, not a guarantee.",
+    summary: "Measures the quality of current trading conditions — not a forecast and not the probability of market direction.",
     factors: [
       { label: "Trend", detail: weather.trend.detail, tone: weather.trend.tone },
       { label: "Breadth", detail: weather.breadth.detail, tone: weather.breadth.tone },
@@ -322,8 +383,9 @@ export function buildMarketScore(input: {
       { label: "Volatility", detail: weather.volatility.detail, tone: weather.volatility.tone },
       {
         label: "Confirmation",
-        detail: desk.confidence.factors.find((f) => f.label === "Confirmation")?.detail
-          ?? "Confirmation status drawn from the verified trade plan.",
+        detail: desk.opportunity.available
+          ? "Setup confirmation is active."
+          : "Awaiting confirmation for a verified setup.",
         tone: desk.opportunity.available ? "green" : "amber",
       },
     ],

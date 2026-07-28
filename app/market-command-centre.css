@@ -47,21 +47,22 @@
   box-shadow:0 28px 72px #0007,inset 0 1px #ffffff0d;backdrop-filter:blur(16px);
   animation:mccDeskIn .55s ease both;
 }
-.mccDecisionDeskHeader{display:flex;justify-content:space-between;gap:20px;padding:22px 24px;border-bottom:1px solid #1c282e}
-.mccDecisionDeskHeader h2{margin:8px 0 6px;color:var(--mcc-text);font:560 clamp(26px,3vw,34px)/1.08 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.035em}
-.mccDecisionDeskHeader p{margin:0;color:var(--mcc-muted);font-size:12px;line-height:1.5}
-.mccDecisionMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#1c282e}
-.mccDecisionMetric{min-height:128px;padding:18px 20px;background:#0c1318;transition:background .2s ease}
+.mccDecisionDeskHeader{display:flex;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid #1c282e}
+.mccDecisionDeskHeader h2{margin:6px 0 4px;color:var(--mcc-text);font:560 clamp(22px,2.4vw,28px)/1.08 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.035em}
+.mccDecisionDeskHeader p{margin:0;color:var(--mcc-muted);font-size:12px;line-height:1.45}
+.mccDecisionMetrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:#1c282e}
+.mccDecisionMetric{min-height:84px;padding:12px 14px;background:#0c1318;transition:background .2s ease}
 .mccDecisionMetric:hover{background:#10181d}
 .mccDecisionMetric span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase}
-.mccDecisionMetric strong{display:flex;align-items:center;gap:8px;margin-top:10px;color:#e8eef1;font:600 20px/1.15 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
-.mccDecisionMetric p{margin:10px 0 0;color:#84929a;font-size:12px;line-height:1.5}
+.mccDecisionMetric strong{display:flex;align-items:center;gap:6px;margin-top:8px;color:#e8eef1;font:600 15px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
+.mccDecisionMetric p{display:none}
 .mccDecisionMetric.is-bull strong{color:var(--mcc-green)}
 .mccDecisionMetric.is-bear strong{color:var(--mcc-red)}
 .mccDecisionMetric.is-neutral strong{color:var(--mcc-gold)}
-.mccDeskIcon{width:18px;height:18px;flex:0 0 auto}
+.mccDeskIcon{width:16px;height:16px;flex:0 0 auto}
 .mccDecisionPanels{display:grid;grid-template-columns:1.1fr 1.1fr .95fr;gap:1px;background:#1c282e;border-top:1px solid #1c282e}
-.mccDecisionThesis,.mccDecisionOpportunity,.mccDecisionConfidence{padding:22px 24px;background:#0b1216}
+.mccDecisionPanelsCompact{grid-template-columns:1.4fr 1fr}
+.mccDecisionThesis,.mccDecisionOpportunity,.mccDecisionConfidence{padding:16px 18px;background:#0b1216}
 .mccDecisionThesis h3,.mccDecisionOpportunity h3,.mccDecisionConfidence h3{
   display:flex;align-items:center;gap:8px;margin:10px 0 12px;color:var(--mcc-text);
   font:560 18px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em
@@ -94,15 +95,15 @@
   background:linear-gradient(150deg,#0f171be8,#0a1014f5 60%,#0d1418ee);
   box-shadow:0 24px 64px #0006,inset 0 1px #ffffff0c;backdrop-filter:blur(16px);
 }
-.mccWeatherPanel>header{display:flex;justify-content:space-between;gap:20px;padding:20px 24px;border-bottom:1px solid #1c282e}
-.mccWeatherPanel h2{margin:8px 0 6px;color:var(--mcc-text);font:560 clamp(24px,2.6vw,30px)/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
+.mccWeatherPanel>header{display:flex;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid #1c282e}
+.mccWeatherPanel h2{margin:6px 0 4px;color:var(--mcc-text);font:560 clamp(20px,2.2vw,26px)/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
 .mccWeatherPanel>header p{margin:0;color:var(--mcc-muted);font-size:12px}
 .mccWeatherGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:#1c282e}
-.mccWeatherCard{min-height:150px;padding:18px;background:#0c1318;transition:transform .2s ease,background .2s ease}
+.mccWeatherCard{min-height:108px;padding:14px;background:#0c1318;transition:transform .2s ease,background .2s ease}
 .mccWeatherCard:hover{transform:translateY(-2px);background:#10181d}
 .mccWeatherCard span{display:flex;align-items:center;gap:8px;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
-.mccWeatherCard strong{display:block;margin-top:12px;font:600 22px/1.15 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
-.mccWeatherCard p{margin:10px 0 0;color:#84929a;font-size:12px;line-height:1.5}
+.mccWeatherCard strong{display:block;margin-top:8px;font:600 18px/1.15 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
+.mccWeatherCard p{margin:8px 0 0;color:#84929a;font-size:12px;line-height:1.4}
 .mccWxIcon{width:16px;height:16px;flex:0 0 auto}
 .mccWeatherCard.is-green strong,.mccWeatherCard.is-green .mccWxIcon{color:var(--mcc-green)}
 .mccWeatherCard.is-amber strong,.mccWeatherCard.is-amber .mccWxIcon{color:var(--mcc-gold)}
@@ -110,12 +111,12 @@
 .mccWeatherCard.is-blue strong,.mccWeatherCard.is-blue .mccWxIcon{color:var(--mcc-cyan)}
 .mccRadarScoreRow{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:16px}
 .mccOpportunityRadar,.mccMarketScore{
-  border:1px solid var(--mcc-line);border-radius:14px;padding:22px 24px;
+  border:1px solid var(--mcc-line);border-radius:14px;padding:16px 18px;
   background:linear-gradient(160deg,#0e161acc,#0a1014f2);box-shadow:0 22px 56px #0006;backdrop-filter:blur(14px);
 }
 .mccOpportunityRadar>header{display:flex;justify-content:space-between;gap:16px;align-items:start}
-.mccOpportunityRadar h2{margin:8px 0 0;color:var(--mcc-text);font:560 24px/1.15 var(--font-geist-sans),Arial,sans-serif}
-.mccRadarHeadline{margin:16px 0 0;color:#d5dee2;font:500 15px/1.55 var(--font-geist-sans),Arial,sans-serif}
+.mccOpportunityRadar h2{margin:6px 0 0;color:var(--mcc-text);font:560 20px/1.15 var(--font-geist-sans),Arial,sans-serif}
+.mccRadarHeadline{margin:12px 0 0;color:#d5dee2;font:500 14px/1.5 var(--font-geist-sans),Arial,sans-serif}
 .mccOpportunityRadar.is-closed .mccRadarHeadline{color:var(--mcc-gold)}
 .mccRadarStars{display:inline-flex;gap:3px;color:#314047;font-size:18px;letter-spacing:.02em}
 .mccRadarStars .is-on{color:var(--mcc-gold);text-shadow:0 0 12px #d8b36a55}
@@ -136,8 +137,13 @@
 .mccScoreRing.is-amber .mccScoreProgress{stroke:var(--mcc-gold);filter:drop-shadow(0 0 8px #d8b36a44)}
 .mccScoreRing.is-red .mccScoreProgress{stroke:var(--mcc-red);filter:drop-shadow(0 0 8px #ef777744)}
 .mccScoreRing.is-blue .mccScoreProgress{stroke:var(--mcc-cyan)}
-.mccScoreValue{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
-.mccScoreValue strong{color:var(--mcc-text);font:600 42px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.04em;animation:mccScorePop .8s ease both}
+.mccScoreValue{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:12px}
+.mccScoreValue strong{color:var(--mcc-text);font:600 28px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.04em;animation:mccScorePop .8s ease both}
+.mccScoreDescriptor{display:block;margin-top:8px;color:inherit;font:700 12px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.mccScoreRing.is-green .mccScoreDescriptor{color:var(--mcc-green)}
+.mccScoreRing.is-amber .mccScoreDescriptor{color:var(--mcc-gold)}
+.mccScoreRing.is-red .mccScoreDescriptor{color:var(--mcc-red)}
+.mccScoreRing.is-blue .mccScoreDescriptor{color:var(--mcc-cyan)}
 .mccScoreValue span{margin-top:8px;color:#7f8e96;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
 .mccScoreSummary{margin:0;color:#a7b3ba;font-size:12px;line-height:1.5;text-align:center}
 .mccScoreFactors{list-style:none;margin:0;padding:0;width:100%;display:grid;gap:10px}
@@ -265,7 +271,9 @@
   .mccIntelStrip{grid-template-columns:repeat(3,minmax(0,1fr))}
   .mccOutlookGrid{grid-template-columns:1fr 1fr}
   .mccDecisionPanels{grid-template-columns:1fr 1fr}
-  .mccDecisionConfidence{grid-column:1/-1}
+  .mccDecisionPanelsCompact{grid-template-columns:1fr 1fr}
+  .mccDecisionConfidence{grid-column:auto}
+  .mccDecisionMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}
   .mccWeatherGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
   .mccRadarScoreRow{grid-template-columns:1fr}
 }
@@ -279,7 +287,7 @@
   .mccHeroBadges{justify-content:flex-start}
   .mccChartCanvas{min-height:360px;height:420px}
   .mccDecisionMetrics{grid-template-columns:1fr 1fr}
-  .mccDecisionPanels{grid-template-columns:1fr}
+  .mccDecisionPanels,.mccDecisionPanelsCompact{grid-template-columns:1fr}
   .mccWeatherGrid{grid-template-columns:1fr 1fr}
   .mccRadarGrid{grid-template-columns:1fr}
 }

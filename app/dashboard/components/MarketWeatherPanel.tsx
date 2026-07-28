@@ -63,13 +63,29 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function ScoreRing({ score, tone }: { score: number | null; tone: WeatherTone }) {
+function ScoreRing({
+  score,
+  tone,
+  descriptor,
+}: {
+  score: number | null;
+  tone: WeatherTone;
+  descriptor: string;
+}) {
   const value = score == null ? 0 : Math.max(0, Math.min(100, score));
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
   return (
-    <div className={`mccScoreRing is-${tone}`} role="img" aria-label={score == null ? "Market score awaiting verified inputs" : `Market score ${score}`}>
+    <div
+      className={`mccScoreRing is-${tone}`}
+      role="img"
+      aria-label={
+        score == null
+          ? "Trading Conditions Score awaiting verified inputs"
+          : `Trading Conditions Score ${score} out of 100, ${descriptor}`
+      }
+    >
       <svg viewBox="0 0 140 140" aria-hidden="true">
         <circle className="mccScoreTrack" cx="70" cy="70" r={radius} />
         <circle
@@ -81,8 +97,9 @@ function ScoreRing({ score, tone }: { score: number | null; tone: WeatherTone })
         />
       </svg>
       <div className="mccScoreValue">
-        <strong>{score == null ? "—" : score}</strong>
-        <span>Today&apos;s Market Score</span>
+        <strong>{score == null ? "—" : `${score} / 100`}</strong>
+        <b className="mccScoreDescriptor">{descriptor}</b>
+        <span>Trading Conditions Score</span>
       </div>
     </div>
   );
@@ -162,7 +179,7 @@ export function MarketWeatherPanel({ weather, radar, score }: Props) {
             </div>
             <div>
               <dt>Probability</dt>
-              <dd>{radar.probability === "None" ? "Not confirmed" : radar.probability}</dd>
+              <dd>{radar.probability === "None" ? "Awaiting confirmation" : radar.probability}</dd>
             </div>
             <div>
               <dt>Preferred Zone</dt>
@@ -188,7 +205,7 @@ export function MarketWeatherPanel({ weather, radar, score }: Props) {
         </article>
 
         <article className={`mccMarketScore is-${score.tone}`}>
-          <ScoreRing score={score.score} tone={score.tone} />
+          <ScoreRing score={score.score} tone={score.tone} descriptor={score.descriptor} />
           <p className="mccScoreSummary">{score.summary}</p>
           <ul className="mccScoreFactors">
             {score.factors.map((factor) => (

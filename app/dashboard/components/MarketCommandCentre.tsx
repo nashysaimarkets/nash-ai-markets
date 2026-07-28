@@ -62,7 +62,13 @@ export function MarketCommandCentre({
         <div>
           <span className="mccEyebrow">MARKET COMMAND CENTRE</span>
           <h1>
-            {greeting.salutation}, <em>{greeting.name}</em>.
+            {greeting.name ? (
+              <>
+                {greeting.salutation}, <em>{greeting.name}</em>.
+              </>
+            ) : (
+              <>{greeting.salutation}.</>
+            )}
           </h1>
           <p>
             {greeting.subtitle} {tierLabel} access · session {session.label}.

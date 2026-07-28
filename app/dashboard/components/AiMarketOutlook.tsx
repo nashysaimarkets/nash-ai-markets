@@ -16,7 +16,12 @@ function friendly(value: string): string {
     return "Not yet confirmed from verified feeds";
   }
   return value
-    .replaceAll("CRITICAL_INPUT_MISSING", "required market inputs are incomplete")
+    .replaceAll("CRITICAL_INPUT_MISSING", "Awaiting full confirmation from verified inputs")
+    .replaceAll("Required market inputs are incomplete", "Awaiting full confirmation from verified inputs")
+    .replaceAll("required market inputs are incomplete", "Awaiting full confirmation from verified inputs")
+    .replaceAll("Stand aside", "Stand Aside")
+    .replaceAll("stand aside", "Stand Aside")
+    .replace(/\bmedium\b/g, "Medium")
     .replace(/\bUnavailable\b/g, "not yet confirmed from verified feeds");
 }
 
@@ -37,8 +42,8 @@ export function AiMarketOutlook({
       <header>
         <div>
           <span className="mccEyebrow">AI MARKET OUTLOOK</span>
-          <h2 id="mcc-outlook-title">Deterministic desk scenarios</h2>
-          <p>Built from verified engine outputs only — never invented prices or guarantees.</p>
+          <h2 id="mcc-outlook-title">Bullish, Bearish &amp; Stand-Aside Scenarios</h2>
+          <p>Scenario paths from verified engine outputs — never invented prices or guarantees.</p>
         </div>
         <div className={`mccOutlookState ${verified ? "is-verified" : "is-closed"}`}>
           <i aria-hidden="true" />
@@ -56,7 +61,7 @@ export function AiMarketOutlook({
           <p>{friendly(bearish)}</p>
         </article>
         <article className="is-neutral">
-          <span>Neutral / No Trade</span>
+          <span>Neutral / Stand Aside</span>
           <p>{friendly(neutral)}</p>
         </article>
         <article>

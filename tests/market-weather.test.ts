@@ -57,7 +57,7 @@ test("Market Weather fails closed without inventing conditions", () => {
   assert.equal(weather.verified, false);
   assert.equal(weather.trend.label, "Neutral");
   assert.equal(weather.tradingConditions.label, "Poor");
-  assert.match(weather.momentum.detail, /until verified|incomplete|withheld|clear/i);
+  assert.match(weather.momentum.detail, /Awaiting verified|incomplete|withheld|clear/i);
   assert.doesNotMatch(JSON.stringify(weather), /CRITICAL_INPUT_MISSING|\bNULL\b|Undefined/);
 });
 
@@ -68,7 +68,8 @@ test("Opportunity Radar stands aside when engines cannot confirm", () => {
   assert.equal(radar.headline, "No verified opportunity currently available");
   assert.equal(radar.direction, "Stand Aside");
   assert.equal(radar.rating, 0);
-  assert.equal(radar.probability, "None");
+  assert.equal(radar.targetArea, "No target while no verified setup is active");
+  assert.match(radar.reasoning, /Awaiting|verified|Stand Aside/i);
 });
 
 test("Market Score stays blank until verified and greeting is session-aware", () => {
@@ -76,16 +77,21 @@ test("Market Score stays blank until verified and greeting is session-aware", ()
   const weather = buildMarketWeather({ desk, intelligence });
   const score = buildMarketScore({ desk, intelligence, weather });
   assert.equal(score.score, null);
-  assert.match(score.summary, /blank|verified/i);
+  assert.equal(score.label, "Trading Conditions Score");
+  assert.equal(score.descriptor, "Awaiting inputs");
+  assert.match(score.summary, /trading conditions|not a forecast/i);
 
   const pre = buildDeskGreeting(
-    "chris@example.com",
+    "Chris Nash",
     readSessionClock(new Date("2026-07-28T10:00:00Z")),
     new Date("2026-07-28T10:00:00Z"),
   );
   assert.equal(pre.name, "Chris");
   assert.match(pre.salutation, /Good (morning|afternoon|evening)/);
-  assert.ok(pre.subtitle.length > 10);
+
+  const initial = buildDeskGreeting("C", readSessionClock(new Date("2026-07-28T15:00:00Z")), new Date("2026-07-28T15:00:00Z"));
+  assert.equal(initial.name, null);
+  assert.match(initial.salutation, /^Good (morning|afternoon|evening)$/);
 });
 
 test("Weather and Radar ship under MCC without changing Decision Desk logic", async () => {

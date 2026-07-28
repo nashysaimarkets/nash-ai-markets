@@ -150,9 +150,11 @@ test("Decision Desk ships under Market Command Centre without auth/chart edits",
   assert.match(page, /formatDeskConfidenceDisplay/);
   assert.match(centre, /DecisionDesk/);
   assert.match(centre, /decisionDesk/);
-  assert.match(deskUi, /Decision Desk/);
+  assert.match(deskUi, /Decision Desk|Market diagnosis/);
   assert.match(deskLib, /No verified high-probability setup currently available/);
+  assert.doesNotMatch(deskUi, /BEST OPPORTUNITY/);
   assert.match(outlook, /Not yet confirmed from verified feeds/);
+  assert.match(outlook, /Bullish, Bearish/);
   assert.match(page, /supabase\.auth\.getUser/);
   assert.match(centre, /HeroMarketChartLazy/);
   assert.match(centre, /MarketIntelligenceStrip/);

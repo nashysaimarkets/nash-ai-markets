@@ -86,6 +86,10 @@ export function selectNextEconomicEvent(events: MarketSnapshot["events"], now = 
 }
 
 export function memberDisplayName(email: string, metadata: Record<string, unknown> | undefined): string {
+  const preferred = metadata?.preferred_name ?? metadata?.first_name ?? metadata?.given_name;
+  if (typeof preferred === "string" && preferred.trim().length >= 2) {
+    return preferred.trim().slice(0, 60);
+  }
   const candidate = metadata?.full_name ?? metadata?.name;
   if (typeof candidate === "string" && candidate.trim()) return candidate.trim().slice(0, 60);
   const localPart = email.split("@")[0]?.replace(/[._-]+/g, " ").trim();
