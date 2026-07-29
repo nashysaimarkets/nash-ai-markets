@@ -18,3 +18,14 @@ tools/youtube-upload/.tokens/
 tools/youtube-upload/client_secret*.json
 **/client_secret*.json
 **/youtube-oauth.json
+
+# Local agent / preview scratch (never commit)
+.tmp-screens/
+.vinext/
+tools/youtube-upload/.tmp/
+next-env.d.ts
+
+# iCloud conflict / placeholder stubs
+*.icloud
+**/* 2.*
+**/* 3.*
