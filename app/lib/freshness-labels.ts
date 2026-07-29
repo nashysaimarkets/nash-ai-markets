@@ -37,6 +37,20 @@ export function formatAgeFromMs(ageMs: number | null | undefined): string {
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m old`;
 }
 
+/**
+ * Authoritative customer-facing delayed-data age line.
+ * Uses the supplied age string as-is (never invents or rounds differently).
+ */
+export function formatDelayedDataAgeDisplay(ageLabel: string | null | undefined): string {
+  const age = (ageLabel ?? "").trim();
+  if (!age || /unavailable/i.test(age)) {
+    return "Delayed market data · latest candle age unavailable";
+  }
+  const normalized = age.replace(/^latest candle age:\s*/i, "").replace(/^snapshot age:\s*/i, "");
+  if (/^delayed market data/i.test(normalized)) return normalized;
+  return `Delayed market data · latest candle ${normalized}`;
+}
+
 /** Explicit labelled age for UI surfaces that show more than one clock. */
 export function formatFreshnessLabel(
   kind: FreshnessKind,

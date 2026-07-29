@@ -61,21 +61,21 @@ function buildFromCandles(
       support: null,
       resistance: null,
       references: [],
-      summary: `${label} has no verified rolling range suitable for support/resistance context.`,
+      summary: `${label} has no verified rolling range suitable for 24-hour reference levels.`,
       scalarOnly: false,
     };
   }
 
   const resistance: StructureLevelReading = {
     kind: "resistance",
-    label: "Resistance (24h high)",
+    label: "24-hour high / upside reference",
     value: stats.high,
     display: formatLevel(stats.high, symbol),
     source: "Highest verified high in the rolling 24-hour candle window",
   };
   const support: StructureLevelReading = {
     kind: "support",
-    label: "Support (24h low)",
+    label: "24-hour low / downside reference",
     value: stats.low,
     display: formatLevel(stats.low, symbol),
     source: "Lowest verified low in the rolling 24-hour candle window",

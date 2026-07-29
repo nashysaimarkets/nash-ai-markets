@@ -185,10 +185,10 @@ function buildLevels(
   if (resistance) {
     rungs.push({
       id: "key-resistance",
-      label: "Key resistance",
+      label: "Upside reference",
       value: resistance,
       kind: "resistance",
-      note: "Primary verified resistance from the market snapshot.",
+      note: "Primary verified upside reference from the market snapshot.",
     });
   }
   const onh = formatLevel(sessionLevels?.overnightHigh);
@@ -232,10 +232,10 @@ function buildLevels(
   if (support) {
     rungs.push({
       id: "key-support",
-      label: "Key support",
+      label: "Downside reference",
       value: support,
       kind: "support",
-      note: "Primary verified support from the market snapshot.",
+      note: "Primary verified downside reference from the market snapshot.",
     });
   }
 

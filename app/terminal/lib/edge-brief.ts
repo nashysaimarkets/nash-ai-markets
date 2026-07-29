@@ -19,7 +19,7 @@ export type EdgeBrief = {
 };
 
 const DISCLOSURE =
-  "Market summary derived only from verified quotes, candles, calendar rows, and session rules present in this desk. Not personalised advice. Analysis pauses until required data is available.";
+  "Market summary derived only from verified quotes, candles, calendar rows, and session rules present in this desk. Not personalised advice. Trade participation stays restricted until confirmations complete.";
 
 function quoteForSymbol(snapshot: MarketSnapshot, symbol: string): MarketQuote | undefined {
   return snapshot.quotes.find((item) => item.symbol === symbol);

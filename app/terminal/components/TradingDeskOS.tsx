@@ -7,9 +7,11 @@ import {
   coverageDetail,
   coverageLabel,
   getMarketInstrument,
+  type MarketCoverage,
   type MarketGroupId,
   type MarketInstrument,
 } from "../../lib/markets/market-catalog.ts";
+import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import { isCandleInstrument, type CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart.tsx";
@@ -71,6 +73,23 @@ function structureForSymbol(payload: TradingDeskPayload, symbol: string) {
 
 function quoteFor(payload: TradingDeskPayload, symbol: string) {
   return payload.snapshot.quotes.find((item) => item.symbol === symbol);
+}
+
+const COVERAGE_RANK: Record<MarketCoverage, number> = { live: 0, proxy: 1, awaiting: 2 };
+
+function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
+  connected: MarketInstrument[];
+  comingSoon: MarketInstrument[];
+} {
+  const ordered = [...instruments].sort((left, right) => {
+    const rank = COVERAGE_RANK[left.coverage] - COVERAGE_RANK[right.coverage];
+    if (rank !== 0) return rank;
+    return left.name.localeCompare(right.name);
+  });
+  return {
+    connected: ordered.filter((item) => item.coverage === "live"),
+    comingSoon: ordered.filter((item) => item.coverage !== "live"),
+  };
 }
 
 export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
@@ -282,6 +301,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   function renderWidget(id: DeskWidgetId) {
+    const delayedAgeLine = formatDelayedDataAgeDisplay(payload.snapshotAge);
     switch (id) {
       case "freshness-trust":
         return (
@@ -351,7 +371,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               <div className="deskQuoteBody">
                 <strong className={`is-${activeQuote.direction}`}>{activeQuote.value}</strong>
                 <span className={`ctMove is-${activeQuote.direction}`}>{activeQuote.change}</span>
-                <small>{payload.snapshotAge} · {payload.snapshot.status}</small>
+                <small>{delayedAgeLine} · {payload.snapshot.status}</small>
               </div>
             ) : (
               <div className="deskUnavailable" role="status">
@@ -414,15 +434,15 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             {activeStructure?.status === "ready" && activeStructure.support && activeStructure.resistance ? (
               <div className="deskStructureBody">
                 <dl>
-                  <div><dt>Support</dt><dd>{activeStructure.support.display}</dd></div>
-                  <div><dt>Resistance</dt><dd>{activeStructure.resistance.display}</dd></div>
+                  <div><dt>24-hour low / downside reference</dt><dd>{activeStructure.support.display}</dd></div>
+                  <div><dt>24-hour high / upside reference</dt><dd>{activeStructure.resistance.display}</dd></div>
                 </dl>
                 <ul>
                   {activeStructure.references.map((ref) => (
-                    <li key={ref.kind}><b>{ref.label}</b> {ref.display}</li>
+                    <li key={ref.kind}><b>{ref.label === "Window open close" ? "Session opening reference" : ref.label}</b> {ref.display}</li>
                   ))}
                 </ul>
-                <p>{activeStructure.summary}</p>
+                <p>{activeStructure.summary.replace(/support\/resistance/i, "24-hour range references")}</p>
               </div>
             ) : (
               <div className="deskUnavailable" role="status">
@@ -607,7 +627,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               <div className="deskQuoteBody">
                 <strong className={`is-${vix.direction}`}>{vix.value}</strong>
                 <span className={`ctMove is-${vix.direction}`}>{vix.change}</span>
-                <small>{payload.snapshotAge}</small>
+                <small>{delayedAgeLine}</small>
               </div>
             ) : (
               <div className="deskUnavailable" role="status">
@@ -761,6 +781,8 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     }
   }
 
+  const delayedAgeLine = formatDelayedDataAgeDisplay(payload.snapshotAge);
+
   return (
     <div className={`tradingDeskOS${workspace.focusMode ? " is-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">
       <section className="deskHero deskHeroCompact" aria-labelledby="desk-hero-title">
@@ -768,7 +790,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           <span className="ctEyebrow">NASH AI MARKETS</span>
           <h1 id="desk-hero-title">Trading Desk</h1>
           <p>
-            {active.name} · {session.label} · {payload.snapshot.status} · {payload.snapshotAge}
+            {active.name} · {session.label} · {payload.snapshot.status} · {delayedAgeLine}
           </p>
         </div>
         <div className="deskHeroActions">
@@ -949,40 +971,52 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             <ul className="tmMarketsGroups">
               {MARKET_CATALOG.map((group) => {
                 const expanded = openGroup === group.id;
+                const { connected, comingSoon } = sortInstrumentsForSidebar(group.instruments);
+                const renderInstrument = (instrument: MarketInstrument) => (
+                  <li key={instrument.id}>
+                    <button
+                      type="button"
+                      className={`tmMarketsInstrument${instrument.id === active.id ? " is-selected" : ""}`}
+                      onClick={() => selectMarket(instrument)}
+                    >
+                      <span className="tmMarketsInstrumentName">{instrument.name}</span>
+                      <span className="tmMarketsInstrumentMeta">
+                        <code>{instrument.symbol}</code>
+                        <em className={`tmCoverage is-${instrument.coverage}`} title={coverageDetail(instrument)}>
+                          {coverageLabel(instrument.coverage)}
+                        </em>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`deskStar${workspace.favourites.includes(instrument.id) ? " is-on" : ""}`}
+                      aria-label={`${workspace.favourites.includes(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} favourites`}
+                      onClick={() => toggleFavourite(instrument.id)}
+                    >
+                      ★
+                    </button>
+                  </li>
+                );
                 return (
                   <li key={group.id}>
                     <button type="button" className="tmMarketsGroupToggle" aria-expanded={expanded} onClick={() => setOpenGroup(expanded ? null : group.id)}>
                       <span>{group.label}</span>
-                      <small>{group.instruments.length}</small>
+                      <small>{connected.length || group.instruments.length}</small>
                       <i aria-hidden="true">{expanded ? "▾" : "▸"}</i>
                     </button>
                     {expanded ? (
                       <ul className="tmMarketsInstruments">
-                        {group.instruments.map((instrument) => (
-                          <li key={instrument.id}>
-                            <button
-                              type="button"
-                              className={`tmMarketsInstrument${instrument.id === active.id ? " is-selected" : ""}`}
-                              onClick={() => selectMarket(instrument)}
-                            >
-                              <span className="tmMarketsInstrumentName">{instrument.name}</span>
-                              <span className="tmMarketsInstrumentMeta">
-                                <code>{instrument.symbol}</code>
-                                <em className={`tmCoverage is-${instrument.coverage}`} title={coverageDetail(instrument)}>
-                                  {coverageLabel(instrument.coverage)}
-                                </em>
-                              </span>
-                            </button>
-                            <button
-                              type="button"
-                              className={`deskStar${workspace.favourites.includes(instrument.id) ? " is-on" : ""}`}
-                              aria-label={`${workspace.favourites.includes(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} favourites`}
-                              onClick={() => toggleFavourite(instrument.id)}
-                            >
-                              ★
-                            </button>
+                        {connected.map(renderInstrument)}
+                        {comingSoon.length ? (
+                          <li className="tmMarketsComingSoon">
+                            <details>
+                              <summary>Additional markets — coming soon ({comingSoon.length})</summary>
+                              <ul className="tmMarketsInstruments is-nested">
+                                {comingSoon.map(renderInstrument)}
+                              </ul>
+                            </details>
                           </li>
-                        ))}
+                        ) : null}
                       </ul>
                     ) : null}
                   </li>
@@ -991,7 +1025,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             </ul>
             <details className="tmMarketsLegend">
               <summary>Coverage legend</summary>
-              <p>Connected = verified in-app feed. Data pending = symbol ready. Coming soon = listed without live coverage. Prices are never invented.</p>
+              <p>Connected markets appear first. Additional markets remain listed under Coming soon until a verified feed is available. Prices are never invented.</p>
             </details>
               </>
             ) : (
@@ -1022,7 +1056,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                 tone={payload.snapshot.status === "LIVE" || payload.snapshot.status === "DELAYED" ? "positive" : "warning"}
               />
               <TerminalBadge label={coverageLabel(active.coverage)} tone={active.coverage === "live" ? "positive" : "warning"} />
-              <small className="deskActiveAge">{payload.snapshotAge}</small>
+              <small className="deskActiveAge">{delayedAgeLine}</small>
               {platformLaunch.status === "ready" ? (
                 <a href={platformLaunch.url} target="_blank" rel="noopener noreferrer" className="deskLaunchBtn is-compact">
                   Launch {PREFERRED_PLATFORMS[workspace.preferredPlatformId].shortLabel}
@@ -1063,12 +1097,12 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                 <section className={`deskWidget deskRiskGate is-${payload.decisionPresentation.permissionTone}`} aria-labelledby="risk-gate-title">
                   <header>
                     <span>Risk gate</span>
-                    <h2 id="risk-gate-title">Participation condition</h2>
+                    <h2 id="risk-gate-title">Journal &amp; checklist</h2>
                   </header>
                   <p className="deskEdgeLead">
-                    <strong>{payload.decisionPresentation.permissionLabel}</strong>
-                    {" · "}
-                    {payload.decisionPresentation.primaryRisk ?? payload.decisionPresentation.why}
+                    {payload.decisionPresentation.permissionTone === "blocked"
+                      ? "Participation status is summarised above. Use Risk & Journal for checklist and local notes."
+                      : `${payload.decisionPresentation.permissionLabel} · review checklist before participation.`}
                   </p>
                   <button type="button" onClick={() => setDeskView("risk")}>Open Risk &amp; Journal</button>
                 </section>
@@ -1076,7 +1110,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <summary>
                     <span>Data details</span>
                     <strong>
-                      {snapshotFeed?.status ?? payload.snapshot.status} · {payload.snapshotAge}
+                      {snapshotFeed?.status ?? payload.snapshot.status} · {delayedAgeLine}
                     </strong>
                   </summary>
                   {renderWidget("freshness-trust")}

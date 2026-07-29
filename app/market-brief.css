@@ -201,6 +201,26 @@
 }
 .mbVideoUnavailable strong{color:#dce5e8;font:650 14px/1.35 var(--font-geist-sans),Arial,sans-serif}
 .mbVideoUnavailable p{margin:0;color:var(--mb-muted);font:12px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.mbDecisionNote{margin:10px 0 0;color:#c9b48a;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:70ch}
+.mbParticipationDetails{margin:0;padding:14px 18px 18px;border-top:1px solid #1c282e}
+.mbParticipationDetails>summary{cursor:pointer;color:#a89b7a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
+.mbParticipationDetails .mbParticipationFacts{padding:12px 0 0}
+.mbConfirmList{margin:0;padding:0 18px 18px;list-style:none;display:grid;gap:8px}
+.mbConfirmList li{color:#c9d5cf;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.mbInlineRisk{border:0;box-shadow:none;background:transparent;margin:0}
+.mbCompactStack{display:grid;gap:10px;align-content:start}
+.mbStatusRow{
+  padding:12px 14px;border:1px dashed #33434a;border-radius:10px;background:#0a1014;
+  display:grid;gap:4px
+}
+.mbStatusRow .mbEyebrow{margin:0}
+.mbStatusRow strong{color:#dce5e8;font:650 14px/1.35 var(--font-geist-sans),Arial,sans-serif}
+.mbStatusRow p{margin:0;color:var(--mb-muted);font:12px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.mbStatusRow.is-media{border-style:solid}
+.mbStatusRow .mbVideoFrame{margin:8px 0 0;aspect-ratio:16/9}
+.mbHeroMeta strong{color:#eef3f0}
+.mbHeroMeta small,.mbDelayed span,.mbFine{color:#9aa7ad}
+.mbDecisionGrid strong{letter-spacing:-.02em}
 
 @keyframes mbRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 

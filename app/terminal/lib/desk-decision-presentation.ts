@@ -19,6 +19,8 @@ export type DeskDecisionPresentation = {
   supporting: string[];
   opposing: string[];
   primaryRisk: string | null;
+  /** True when verified market observations remain usable even if participation is restricted. */
+  analysisAvailable: boolean;
 };
 
 const humanize = (value: string) =>
@@ -42,10 +44,16 @@ export function leanLabelFromSignals(
 export function permissionPresentation(
   decision: TradingDecision | null,
 ): { label: string; tone: DeskDecisionPresentation["permissionTone"] } {
-  if (!decision) return { label: "Blocked", tone: "blocked" };
+  if (!decision) return { label: "Restricted", tone: "blocked" };
   if (decision.tradePermission === "actionable") return { label: "Permitted with caution", tone: "open" };
   if (decision.tradePermission === "caution") return { label: "Caution", tone: "caution" };
-  return { label: "Blocked", tone: "blocked" };
+  return { label: "Restricted", tone: "blocked" };
+}
+
+function softenRiskPhrase(value: string | null): string | null {
+  if (!value) return null;
+  return customerFacingCopy(value)
+    .replace(/^./, (c) => c.toUpperCase());
 }
 
 /** Build presentation-only decision summary from existing engine outputs. */
@@ -75,15 +83,20 @@ export function buildDeskDecisionPresentation(input: {
     : decision?.conflictingDrivers.map((d) => humanize(d.factor)) ?? []
   ).slice(0, 3);
 
-  const primaryRisk = warnings[0]
+  const rawPrimary = warnings[0]
     ?? (plan?.reasonsToRemainSidelined[0] ? humanize(plan.reasonsToRemainSidelined[0]) : null)
     ?? (decision?.noTradeReasons[0] ? humanize(decision.noTradeReasons[0]) : null);
+  const primaryRisk = softenRiskPhrase(rawPrimary);
+
+  const analysisAvailable = Boolean(decision) || supporting.length > 0 || opposing.length > 0 || lean.label !== "Unavailable";
 
   let why: string;
   if (!decision) {
-    why = "Required market evidence is missing, so participation remains blocked.";
+    why = "Verified market observations may still appear below. Trade participation remains restricted because confirmation data is incomplete.";
   } else if (permission.tone === "blocked" && lean.tone !== "neutral") {
-    why = `Directional inputs lean ${lean.label.toLowerCase()}, but critical evidence is incomplete or risk conditions are active, so participation remains blocked.`;
+    why = `Market lean is ${lean.label.toLowerCase()}, but this is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete.`;
+  } else if (permission.tone === "blocked") {
+    why = "This is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete — not because the whole briefing is unavailable.";
   } else if (permission.tone === "caution") {
     why = `Directional lean is ${lean.label.toLowerCase()}, with caution required before participation.`;
   } else if (permission.tone === "open") {
@@ -92,18 +105,24 @@ export function buildDeskDecisionPresentation(input: {
     why = "Directional lean is unavailable until verified inputs recover.";
   }
 
+  let confidenceLabel: string;
+  if (score == null) confidenceLabel = "Not rated";
+  else if (score === 0 || permission.tone === "blocked") confidenceLabel = `Limited · ${score} / 100`;
+  else confidenceLabel = `${score} / 100`;
+
   return {
     leanLabel: lean.label,
     leanTone: lean.tone,
     permissionLabel: permission.label,
     permissionTone: permission.tone,
-    confidenceLabel: score == null ? "Not rated" : `${score} / 100`,
+    confidenceLabel,
     confidenceScore: score,
     riskLabel,
     why,
     supporting,
     opposing,
     primaryRisk,
+    analysisAvailable,
   };
 }
 
@@ -131,12 +150,16 @@ export function customerFacingCopy(text: string): string {
     .replaceAll("awaiting coverage", "coverage coming soon")
     .replaceAll("no verified provider path is wired", "no verified data connection is currently available")
     .replaceAll("No verified provider path is wired", "No verified data connection is currently available")
-    .replaceAll("Fail-closed", "Analysis paused until required data is available")
-    .replaceAll("fail-closed", "analysis paused until required data is available")
+    .replaceAll("Fail-closed", "Trade participation stays restricted until confirmations complete")
+    .replaceAll("fail-closed", "trade participation stays restricted until confirmations complete")
+    .replaceAll("Analysis paused until required data is available", "Trade participation stays restricted until confirmations complete")
+    .replaceAll("analysis pauses until required data is available", "trade participation stays restricted until confirmations complete")
     .replaceAll("deterministic engine brief", "rules-based market summary")
     .replaceAll("decision permission valid", "participation checks passed")
-    .replaceAll("CRITICAL_INPUT_MISSING", "required market evidence is missing")
-    .replaceAll("critical input missing", "required market evidence is missing")
+    .replaceAll("CRITICAL_INPUT_MISSING", "confirmation data is incomplete")
+    .replaceAll("critical input missing", "confirmation data is incomplete")
+    .replaceAll("Required market evidence is missing", "Confirmation data is incomplete")
+    .replaceAll("required market evidence is missing", "confirmation data is incomplete")
     .replaceAll("Educational Edge Brief", "Market summary")
     .replaceAll("Desk builder", "Layout");
 }

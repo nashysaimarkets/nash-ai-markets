@@ -8,8 +8,8 @@ type DeskDecisionSummaryProps = {
 export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummaryProps) {
   const blocked = decision.permissionTone === "blocked";
   const title = blocked
-    ? "Participation, lean, and confidence"
-    : "Market lean, permission, and confidence";
+    ? "Participation status and market lean"
+    : "Market lean, participation, and confidence";
 
   return (
     <section
@@ -19,6 +19,11 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
       <header>
         <span className="ctEyebrow">Decision summary</span>
         <h2 id="desk-decision-summary-title">{title}</h2>
+        {blocked ? (
+          <p className="deskDecisionSubhead">
+            Trade participation is restricted. Verified market observations below remain available for review.
+          </p>
+        ) : null}
       </header>
       <div className={`deskDecisionGrid${blocked ? " is-blocked-priority" : ""}`} role="list">
         {blocked ? (
@@ -36,7 +41,7 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
               <strong>{decision.confidenceLabel}</strong>
             </div>
             <div className="deskDecisionCell" role="listitem">
-              <span>Primary risk</span>
+              <span>Primary condition</span>
               <strong>{decision.primaryRisk ?? decision.riskLabel}</strong>
             </div>
           </>
@@ -93,16 +98,20 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
             </button>
           ) : null}
         </footer>
-      ) : blocked && onOpenRisk ? (
-        <footer className="deskDecisionRisk">
-          <div>
-            <span>Next step</span>
-            <strong>Review Risk &amp; Journal before any participation decision.</strong>
-          </div>
-          <button type="button" onClick={onOpenRisk}>
-            Open Risk &amp; Journal
-          </button>
-        </footer>
+      ) : blocked ? (
+        <details className="deskDecisionDetails">
+          <summary>Technical confirmation details</summary>
+          <p>
+            Engine participation remains closed while required confirmations are incomplete.
+            {decision.primaryRisk ? ` Condition on record: ${decision.primaryRisk}.` : ""}
+            {" "}This does not invalidate verified quotes, candles, levels or catalysts shown elsewhere on the desk.
+          </p>
+          {onOpenRisk ? (
+            <button type="button" onClick={onOpenRisk}>
+              Open Risk &amp; Journal
+            </button>
+          ) : null}
+        </details>
       ) : null}
     </section>
   );

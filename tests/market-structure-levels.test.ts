@@ -66,8 +66,8 @@ test("structure levels derive support/resistance from verified candles and fail 
   assert.equal(es?.status, "ready");
   assert.ok(es?.support && es.resistance);
   assert.ok(es!.resistance!.value > es!.support!.value);
-  assert.match(es!.support!.label, /Support/);
-  assert.match(es!.resistance!.label, /Resistance/);
+  assert.match(es!.support!.label, /24-hour low \/ downside reference/);
+  assert.match(es!.resistance!.label, /24-hour high \/ upside reference/);
   assert.ok(es!.references.some((ref) => ref.kind === "ema20"));
 
   const treasury = levels.instruments.find((item) => item.symbol === "US2Y");

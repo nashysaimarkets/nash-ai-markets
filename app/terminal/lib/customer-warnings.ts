@@ -4,7 +4,7 @@ import type { MissingDataWarning } from "../../lib/market-intelligence-engine";
 const INTERNAL_FIELDS = new Set(["dataAgeMs", "dataStatus", "providerStatus"]);
 
 const CODE_COPY: Record<string, string> = {
-  CRITICAL_INPUT_MISSING: "Required market evidence is missing",
+  CRITICAL_INPUT_MISSING: "Confirmation data is incomplete",
   LOW_CONFIDENCE: "Confidence is too low for a directional plan",
   PREVIEW_DATA: "Preview data cannot drive a live plan",
   UNAVAILABLE_DATA: "Verified market data is currently unavailable",
@@ -17,7 +17,7 @@ const CODE_COPY: Record<string, string> = {
   DELAYED_DATA: "Market data is delayed",
   LIVE_DATA: "Live market data",
   UNAVAILABLE_DATA_STATUS: "Market data status is unavailable",
-  MISSING_EVIDENCE: "Required market evidence is missing",
+  MISSING_EVIDENCE: "Confirmation data is incomplete",
   MISSING_LEVEL: "A required level is missing",
   MISSING_QUOTE: "A required quote is missing",
   EVENT_NEAR: "A high-impact event is nearby",

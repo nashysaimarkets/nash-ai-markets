@@ -244,7 +244,7 @@ export function DashboardCandlestickChart({
     </> : stats && compact ? (
       <div className="chartMarketStrip is-compact" aria-label="Verified candle summary">
         <div><span>Current price</span><strong>{number(stats.latest)}</strong></div>
-        <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
+        <div><span>Delayed · candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
       </div>
     ) : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}
     <div className="chartControlBar">

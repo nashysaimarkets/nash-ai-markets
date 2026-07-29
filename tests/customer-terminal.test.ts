@@ -65,11 +65,11 @@ test("customer participation warnings hide internal schema field names", () => {
     ["EVENT_NEAR"],
   );
   assert.deepEqual(warnings, [
-    "Required market evidence is missing",
+    "Confirmation data is incomplete",
     "Market data is delayed beyond the live window",
     "Market data is delayed",
     "The market data connection is degraded",
-    "Required market evidence is missing: trend",
+    "Confirmation data is incomplete: trend",
     "A high-impact event is nearby",
   ]);
   assert.ok(warnings.every((item) => !/dataAgeMs|dataStatus|providerStatus/.test(item)));

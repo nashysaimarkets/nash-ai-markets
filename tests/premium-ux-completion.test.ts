@@ -15,6 +15,17 @@ test("freshness labels distinguish snapshot and candle ages", () => {
   assert.match(formatFreshnessLabel("candle", 18 * 60_000), /Latest candle age: 18m old/);
 });
 
+test("authoritative delayed-data age line keeps the supplied age", async () => {
+  const { formatDelayedDataAgeDisplay } = await import("../app/lib/freshness-labels.ts");
+  assert.equal(formatDelayedDataAgeDisplay("10m old"), "Delayed market data · latest candle 10m old");
+  assert.equal(formatDelayedDataAgeDisplay("15 minutes old"), "Delayed market data · latest candle 15 minutes old");
+  assert.equal(
+    formatDelayedDataAgeDisplay("Delayed market data · latest candle 10m old"),
+    "Delayed market data · latest candle 10m old",
+  );
+  assert.equal(formatDelayedDataAgeDisplay(null), "Delayed market data · latest candle age unavailable");
+});
+
 test("Ask Bullseye answers only from provided verified context", () => {
   const ctx = {
     snapshot: {

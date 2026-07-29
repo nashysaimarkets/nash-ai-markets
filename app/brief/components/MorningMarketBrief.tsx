@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
 
 type MorningMarketBriefProps = {
@@ -40,14 +41,32 @@ function TerminalishBadge() {
   return <span className="mbSoftBadge">Not currently available</span>;
 }
 
+function customerLevelLabel(label: string, kind: string): string {
+  if (/24h high|resistance \(24h/i.test(label)) return "24-hour high / upside reference";
+  if (/24h low|support \(24h/i.test(label)) return "24-hour low / downside reference";
+  if (kind === "resistance" && /key resistance/i.test(label)) return "Upside reference";
+  if (kind === "support" && /key support/i.test(label)) return "Downside reference";
+  return label;
+}
+
 export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
-  const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete/i.test(
+  const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted/i.test(
     `${model.playbook.posture} ${model.aiBriefing.mode} ${model.biggestRisk.label}`,
   );
   const timeline = model.economicTimeline.filter((item) => item.available).slice(0, 3);
   const expectedIsObserved = /verified|48-bar|range/i.test(
     `${model.expectedMove.label} ${model.expectedMove.detail}`,
   );
+  const delayedAge = formatDelayedDataAgeDisplay(model.dataAgeLabel);
+  const confidenceLabel = model.aiBriefing.confidence == null
+    ? "Not rated"
+    : permissionBlocked || model.aiBriefing.confidence === 0
+      ? `Limited · ${Math.round(model.aiBriefing.confidence)} / 100`
+      : `${Math.round(model.aiBriefing.confidence)} / 100`;
+  const primaryReason = model.biggestRisk.label
+    .replace(/critical input missing/i, "Confirmation data is incomplete")
+    .replace(/required market evidence is missing/i, "Confirmation data is incomplete")
+    .replace(/incomplete verified inputs/i, "Confirmation data is incomplete");
 
   return (
     <article className="morningMarketBrief" aria-labelledby="mb-title">
@@ -56,11 +75,11 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           <span className="mbEyebrow">Morning Brief · under two minutes</span>
           <h1 id="mb-title">
             {model.greeting}
-            <em> Today’s briefing.</em>
+            <em> Here is today’s market briefing.</em>
           </h1>
           <p>
-            A calm, verified morning briefing for S&P 500 futures traders — what happened overnight,
-            what matters now, and what to watch or avoid.
+            A concise verified briefing for S&P 500 futures traders — what changed,
+            what matters now and what to watch or avoid.
           </p>
         </div>
         <div className="mbHeroMeta">
@@ -74,12 +93,12 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
             <strong className={model.verified ? "is-ok" : "is-warn"}>
               {model.verified ? "Verified delayed" : "Awaiting verification"}
             </strong>
-            <small>{model.dataAgeLabel} · {model.asOfLabel}</small>
+            <small>{delayedAge}</small>
           </div>
           <div>
             <span>Membership</span>
             <strong>{model.tierLabel}</strong>
-            <small>Educational · analysis pauses until required data is available</small>
+            <small>Educational · trade participation may stay restricted until confirmations complete</small>
           </div>
         </div>
         <nav className="mbHeroActions" aria-label="Brief actions">
@@ -95,7 +114,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
       </header>
 
       <div className="mbDelayed" role="status">
-        <strong>Market Data: Delayed (~10 minutes).</strong>
+        <strong>{delayedAge}.</strong>
         <span>Educational commentary only — not personalised advice.</span>
       </div>
 
@@ -104,13 +123,18 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           <span className="mbEyebrow">Decision summary</span>
           <h2 id="mb-decision-title">{model.summary.headline}</h2>
           <p>{model.aiBriefing.sourceLabel.replace(/deterministic engine brief/i, "rules-based market summary")}</p>
+          {permissionBlocked ? (
+            <p className="mbDecisionNote">
+              Trade participation is restricted. Verified market observations in this brief remain available for review.
+            </p>
+          ) : null}
         </header>
         <div className="mbDecisionGrid">
           {permissionBlocked ? (
             <>
               <div className="is-blocked">
                 <span>Participation</span>
-                <strong>Blocked</strong>
+                <strong>Restricted</strong>
               </div>
               <div>
                 <span>Market lean</span>
@@ -118,15 +142,11 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
               </div>
               <div>
                 <span>Confidence</span>
-                <strong>
-                  {model.aiBriefing.confidence != null
-                    ? `${Math.round(model.aiBriefing.confidence)} / 100`
-                    : "Not rated"}
-                </strong>
+                <strong>{confidenceLabel}</strong>
               </div>
               <div>
-                <span>Primary risk</span>
-                <strong>{model.biggestRisk.label}</strong>
+                <span>Primary condition</span>
+                <strong>{primaryReason}</strong>
               </div>
             </>
           ) : (
@@ -141,15 +161,11 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
               </div>
               <div>
                 <span>Confidence</span>
-                <strong>
-                  {model.aiBriefing.confidence != null
-                    ? `${Math.round(model.aiBriefing.confidence)} / 100`
-                    : "Not rated"}
-                </strong>
+                <strong>{confidenceLabel}</strong>
               </div>
               <div>
                 <span>Primary risk</span>
-                <strong>{model.biggestRisk.label}</strong>
+                <strong>{primaryReason}</strong>
               </div>
             </>
           )}
@@ -157,7 +173,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         <p className="mbLead">
           {model.summary.whatMatters}
           {permissionBlocked
-            ? " Directional lean is not a trade instruction while participation remains blocked."
+            ? " Directional lean is context only — not a trade instruction while participation remains restricted."
             : ""}
         </p>
         <div className="mbWatchAvoid mbInlineWatch">
@@ -170,6 +186,47 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
             <ul>{model.summary.avoid.slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul>
           </div>
         </div>
+        {permissionBlocked ? (
+          <details className="mbParticipationDetails">
+            <summary>Why participation stays restricted</summary>
+            <dl className="mbParticipationFacts">
+              <div>
+                <dt>Primary reason</dt>
+                <dd>{primaryReason}</dd>
+              </div>
+              <div>
+                <dt>Confidence</dt>
+                <dd>{confidenceLabel}</dd>
+              </div>
+              <div>
+                <dt>Data condition</dt>
+                <dd>{model.biggestRisk.detail}</dd>
+              </div>
+              <div>
+                <dt>Requirements before participation</dt>
+                <dd>
+                  <ul>
+                    {model.playbook.confirmations.slice(0, 4).map((item) => (
+                      <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            </dl>
+          </details>
+        ) : (
+          <section className="mbPanel mbRisk mbInlineRisk" aria-labelledby="mb-risk-title">
+            <header>
+              <span className="mbEyebrow">Participation conditions</span>
+              <h2 id="mb-risk-title">Before participating</h2>
+            </header>
+            <ul className="mbConfirmList">
+              {model.playbook.confirmations.slice(0, 4).map((item) => (
+                <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </section>
 
       <section className="mbSummary mbOvernight" aria-labelledby="mb-overnight-title">
@@ -204,13 +261,13 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         <section className="mbPanel" aria-labelledby="mb-levels-title">
           <header>
             <span className="mbEyebrow">Key levels</span>
-            <h2 id="mb-levels-title">Support / resistance</h2>
+            <h2 id="mb-levels-title">Verified references</h2>
           </header>
           {model.levels.rungs.length ? (
             <ol className="mbLadder">
               {model.levels.rungs.map((rung) => (
                 <li key={rung.id} className={`is-${rung.kind}`}>
-                  <span>{rung.label}</span>
+                  <span>{customerLevelLabel(rung.label, rung.kind)}</span>
                   <strong>{rung.value}</strong>
                   <small>{rung.note}</small>
                 </li>
@@ -220,7 +277,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
             <div className="mbEmpty mbCompactEmpty" role="status">
               <TerminalishBadge />
               <strong>Levels awaiting verification</strong>
-              <p>Support and resistance stay blank until verified references arrive.</p>
+              <p>Reference levels stay blank until verified prints arrive.</p>
             </div>
           )}
           <p className="mbFine">{model.levels.disclosure}</p>
@@ -266,67 +323,28 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           )}
         </section>
 
-        <section className="mbPanel" aria-labelledby="mb-news-title">
-          <header>
-            <span className="mbEyebrow">Coverage status</span>
-            <h2 id="mb-news-title">Overnight news</h2>
-          </header>
-          <div className="mbEmpty mbCompactEmpty" role="status">
-            <TerminalishBadge />
+        <div className="mbCompactStack" aria-label="Optional coverage">
+          <div className="mbStatusRow" role="status">
+            <span className="mbEyebrow">Overnight news</span>
+            <strong>Verified source not currently connected</strong>
             <p>{model.overnightNews.reason}</p>
           </div>
-        </section>
-      </div>
-
-      <div className="mbTwin">
-        <section className="mbPanel mbRisk" aria-labelledby="mb-risk-title">
-          <header>
-            <span className="mbEyebrow">Participation gate</span>
-            <h2 id="mb-risk-title">
-              {permissionBlocked ? "Why participation is blocked" : "Participation conditions"}
-            </h2>
-          </header>
-          <dl className="mbParticipationFacts">
-            <div>
-              <dt>Primary reason</dt>
-              <dd>{model.biggestRisk.label}</dd>
-            </div>
-            <div>
-              <dt>Confidence</dt>
-              <dd>
-                {model.aiBriefing.confidence != null
-                  ? `${Math.round(model.aiBriefing.confidence)} / 100`
-                  : "Not rated"}
-              </dd>
-            </div>
-            <div>
-              <dt>Data condition</dt>
-              <dd>{model.biggestRisk.detail}</dd>
-            </div>
-            <div>
-              <dt>Requirements before participation</dt>
-              <dd>
-                <ul>
-                  {model.playbook.confirmations.slice(0, 4).map((item) => (
-                    <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className={`mbPanel mbVideo${model.video.available ? "" : " is-empty"}`} aria-labelledby="mb-video-title">
-          {model.video.available ? (
-            <header>
-              <span className="mbEyebrow">Optional</span>
-              <h2 id="mb-video-title">{model.video.title}</h2>
-            </header>
-          ) : (
-            <h2 id="mb-video-title" className="mbVisuallyHidden">{model.video.title}</h2>
-          )}
-          <BriefVideo video={model.video} />
-        </section>
+          <div className={`mbStatusRow${model.video.available ? " is-media" : ""}`} role="status">
+            {model.video.available ? (
+              <>
+                <span className="mbEyebrow">Optional</span>
+                <strong id="mb-video-title">{model.video.title}</strong>
+                <BriefVideo video={model.video} />
+              </>
+            ) : (
+              <>
+                <span className="mbEyebrow">Daily market video</span>
+                <strong id="mb-video-title">Verified source not currently connected</strong>
+                <p>{model.video.reason}</p>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </article>
   );

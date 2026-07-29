@@ -31,8 +31,8 @@ import { composeMorningMarketBrief } from "./lib/compose-market-brief.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Market Brief | NASH AI Markets",
-  description: "A calm, verified morning briefing for S&P 500 futures traders.",
+  title: "Morning Brief | NASH AI Markets",
+  description: "A concise verified briefing for S&P 500 futures traders — what changed, what matters now and what to watch or avoid.",
   robots: { index: false, follow: false },
 };
 
