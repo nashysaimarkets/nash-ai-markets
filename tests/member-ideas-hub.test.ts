@@ -64,6 +64,7 @@ test("Ideas loading state is bounded and never logo-only canvas", () => {
   const errorPage = read("app/ideas/error.tsx");
   assert.match(loading, /role="status"/);
   assert.match(loading, /Fetching verified member submissions/);
+  assert.match(loading, /redirect\("\/login"\)/);
   assert.match(emptyCanvas, /BrandLogo/);
   assert.doesNotMatch(loading, /MemberEmptyCanvas/);
   assert.match(errorPage, /role="alert"/);

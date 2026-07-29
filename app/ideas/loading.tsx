@@ -1,6 +1,14 @@
+import { redirect } from "next/navigation";
+import { createClient } from "../../utils/supabase/server";
 import { MemberShell } from "../components/MemberShell";
 
-export default function Loading() {
+export default async function Loading() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
   return (
     <MemberShell active="ideas">
       <div className="ideasPage" aria-busy="true" aria-live="polite">
