@@ -166,13 +166,18 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
             <strong>{primaryReason}</strong>
           </div>
         </div>
-        <p className="mbLead">{model.summary.setupReading}</p>
-        {model.summary.engineWeightDetail ? (
-          <details className="mbParticipationDetails">
-            <summary>Technical engine detail</summary>
-            <p>{model.summary.engineWeightDetail}</p>
-          </details>
+        {!permissionBlocked ? (
+          <p className="mbLead">{model.summary.setupReading}</p>
         ) : null}
+        <details className="mbParticipationDetails">
+          <summary>Technical engine detail</summary>
+          {permissionBlocked ? <p>{model.summary.setupReading}</p> : null}
+          {model.summary.engineWeightDetail ? <p>{model.summary.engineWeightDetail}</p> : null}
+          <p className="mbFine">
+            Internal posture reference: {model.playbook.posture}. Raw engine scores stay secondary to the
+            participation status above.
+          </p>
+        </details>
       </section>
 
       <section className="mbSummary mbOvernight" id="what-changed" aria-labelledby="mb-overnight-title">

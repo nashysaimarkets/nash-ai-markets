@@ -111,13 +111,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
                 <div><dt>Interests</dt><dd>{preferenceInterests.map((item) => preferenceLabels[item] ?? item).join(" · ")}</dd></div>
                 <div><dt>Notifications</dt><dd>{preferenceLabels[preferences.notifications] ?? "Configured"}</dd></div>
               </dl>
-              <Link href="/onboarding">Update workspace preferences <span>↗</span></Link>
+              <Link href="/preferences">Update workspace preferences <span>↗</span></Link>
             </div>
           ) : (
             <div className="profilePreferenceEmpty">
               <strong>Your workspace needs three short preferences</strong>
               <p>Choose your experience, market interests and optional notification setting.</p>
-              <Link href="/onboarding">Complete workspace setup <span>↗</span></Link>
+              <Link href="/preferences">Complete workspace setup <span>↗</span></Link>
             </div>
           )}
         </DashboardCard>

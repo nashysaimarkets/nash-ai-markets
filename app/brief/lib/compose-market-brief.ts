@@ -115,13 +115,31 @@ function formatLevel(value: number | null | undefined): string | null {
   return value.toLocaleString("en-GB", { maximumFractionDigits: 2 });
 }
 
-function normalizePhrase(value: string): string {
+/** Customer-facing copy only — does not change decision or risk formulas. */
+export function customerFacingBriefCopy(value: string): string {
   return value
-    .toLowerCase()
+    .replace(
+      /Bullseye is maintaining a no-trade posture[^.]*\.?/gi,
+      "Trade participation remains restricted until confirmation clears.",
+    )
+    .replace(
+      /Bullseye has paused directional briefing[^.]*\.?/gi,
+      "Directional briefing is paused until verified inputs recover.",
+    )
+    .replace(/Bullseye will not invent[^.]*\.?/gi, "No values are invented when verification is incomplete.")
     .replace(/critical input missing/gi, "confirmation data is incomplete")
     .replace(/required market evidence is missing/gi, "confirmation data is incomplete")
     .replace(/missing evidence/gi, "confirmation data is incomplete")
     .replace(/low confidence/gi, "confidence not established")
+    .replace(/\bno-trade posture\b/gi, "restricted participation")
+    .replace(/\bstand aside\b/gi, "restricted")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizePhrase(value: string): string {
+  return customerFacingBriefCopy(value)
+    .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -455,17 +473,12 @@ function buildExecutiveSummary(input: {
   interpretation: string;
 }): string {
   const lean = humanize(input.decision.marketBias);
-  const participation = input.decision.tradePermission === "no-trade"
-    ? "Trade participation remains restricted because confirmation data is incomplete."
-    : input.decision.tradePermission === "caution"
-      ? "Participation requires caution while confirmation remains incomplete."
-      : "Participation checks allow selective engagement subject to your own rules.";
 
   if (!input.verified) {
-    return `${input.interpretation} Verified observations may still appear below, but a validated trade setup is not established. ${participation}`;
+    return `${input.interpretation} Verified observations may still appear below, but a validated trade setup is not established.`;
   }
 
-  return `${input.interpretation} Observed market lean is ${lean}. Verified observations remain available for review, but a validated trade setup is not established. ${participation}`;
+  return `${input.interpretation} Observed market lean is ${lean}. These are observations from verified delayed inputs — not a validated trade setup.`;
 }
 
 export function composeMorningMarketBrief(input: {
@@ -536,9 +549,9 @@ export function composeMorningMarketBrief(input: {
       interpretation,
     }),
     summary: {
-      headline: brief.headline,
+      headline: customerFacingBriefCopy(brief.headline),
       overnight: interpretation,
-      whatMatters: brief.whatMatters,
+      whatMatters: customerFacingBriefCopy(brief.whatMatters),
       watch,
       avoid,
       setupReading: reading,
@@ -547,8 +560,8 @@ export function composeMorningMarketBrief(input: {
     aiBriefing: {
       mode: brief.mode,
       sourceLabel: brief.sourceLabel,
-      headline: brief.headline,
-      body: brief.summary,
+      headline: customerFacingBriefCopy(brief.headline),
+      body: customerFacingBriefCopy(brief.summary),
       focusDrivers: brief.focusDrivers,
       confidence: brief.confidence,
     },
@@ -566,12 +579,14 @@ export function composeMorningMarketBrief(input: {
     crossAssets: crossAssets.filter((card) => card.available),
     levels: buildLevels(snapshot, input.sessionLevels, input.support, input.resistance),
     playbook: {
-      posture: verified
-        ? `${desk.marketBias.label} bias · ${humanize(decision.tradePermission)} · ${humanize(decision.recommendedPosture)}`
-        : "Stand Aside until verified inputs recover",
+      posture: customerFacingBriefCopy(
+        verified
+          ? `${desk.marketBias.label} bias · ${humanize(decision.tradePermission)} · ${humanize(decision.recommendedPosture)}`
+          : "Restricted until verified inputs recover",
+      ),
       leanLabel: desk.marketBias.label,
       steps: verified
-        ? brief.nextActions.slice(0, 5)
+        ? brief.nextActions.slice(0, 5).map(customerFacingBriefCopy)
         : ["Refresh after a verified provider update", "Confirm delayed-data disclosures before acting"],
       confirmations: verified
         ? plan.requiredConfirmations.slice(0, 5).map(humanize)
@@ -579,11 +594,13 @@ export function composeMorningMarketBrief(input: {
     },
     biggestRisk: {
       label: verified
-        ? (brief.riskFlags[0] ? brief.riskFlags[0] : humanize(decision.riskRating))
+        ? customerFacingBriefCopy(brief.riskFlags[0] ? brief.riskFlags[0] : humanize(decision.riskRating))
         : "Confirmation data is incomplete",
-      detail: verified
-        ? (brief.avoidWhen || desk.tradeThesis)
-        : "Directional guidance stays withheld while provider coverage or freshness is incomplete.",
+      detail: customerFacingBriefCopy(
+        verified
+          ? (brief.avoidWhen || desk.tradeThesis)
+          : "Directional guidance stays withheld while provider coverage or freshness is incomplete.",
+      ),
     },
     video,
     serviceStatus,
