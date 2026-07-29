@@ -21,6 +21,7 @@ const ALLOWED_NEXT_PREFIXES = [
   "/brief",
   "/profile",
   "/onboarding",
+  "/preferences",
   "/welcome",
   "/ideas",
   "/pricing",

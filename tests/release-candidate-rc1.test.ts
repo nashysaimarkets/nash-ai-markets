@@ -54,7 +54,7 @@ test("public trust routes contain substantive guidance", async () => {
 
 test("member navigation exposes preferences with mobile overflow protection", async () => {
   const [shell, css] = await Promise.all([read("app/components/MemberShell.tsx"), read("app/enhancements.css")]);
-  assert.match(shell, /href: "\/onboarding"/);
+  assert.match(shell, /href: "\/preferences"/);
   assert.doesNotMatch(shell, /<Link href="\/auth\/signout"/);
   assert.match(shell, /<a href="\/auth\/signout"/);
   assert.match(css, /memberDashboardNav nav\{overflow-x:auto/);

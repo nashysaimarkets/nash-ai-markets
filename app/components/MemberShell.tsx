@@ -32,7 +32,7 @@ const links = [
   { href: "/terminal", label: "Trading Desk", key: "terminal" },
   { href: "/ideas", label: "Ideas", key: "ideas" },
   { href: "/profile", label: "Profile", key: "profile" },
-  { href: "/onboarding", label: "Preferences", key: "onboarding" },
+  { href: "/preferences", label: "Preferences", key: "onboarding" },
 ] as const;
 
 const moreLinks = [
