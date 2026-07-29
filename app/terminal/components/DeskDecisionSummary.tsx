@@ -13,6 +13,7 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
 
   return (
     <section
+      id="decision-summary"
       className={`deskDecisionSummary is-permission-${decision.permissionTone}`}
       aria-labelledby="desk-decision-summary-title"
     >

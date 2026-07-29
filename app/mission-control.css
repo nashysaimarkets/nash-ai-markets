@@ -1,4 +1,5 @@
-:root{--ft-bg:#05070a;--ft-surface:#0a0d12;--ft-surface-2:#0d1117;--ft-border:#202630;--ft-border-soft:#171c23;--ft-text:#eef2f5;--ft-muted:#7d8793;--ft-green:#35d89b;--ft-red:#f06472;--ft-amber:#e8b74f;--ft-blue:#69a9ff}
+:root{--ft-bg:#05070a;--ft-surface:#0a0d12;--ft-surface-2:#0d1117;--ft-border:#202630;--ft-border-soft:#171c23;--ft-text:#eef2f5;--ft-muted:#7d8793;--ft-green:#35d89b;--ft-red:#f06472;--ft-amber:#e8b74f;--ft-blue:#69a9ff;--desk-sticky-offset:96px}
+html{scroll-padding-top:var(--desk-sticky-offset)}
 .brandLoader{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:11px;min-height:48px;margin:0 0 12px;border:1px solid #e8c67333;background:linear-gradient(90deg,#0c1512,#101714,#0c1512);color:#aeb8b3;font:700 8px var(--font-geist-mono),monospace;letter-spacing:.09em;text-transform:uppercase}.brandLoaderMark{position:relative;width:25px;height:25px;border:1px solid #e8c673;border-radius:50%}.brandLoaderMark:before,.brandLoaderMark:after{content:"";position:absolute;background:#e8c673}.brandLoaderMark:before{left:4px;right:4px;top:11px;height:1px}.brandLoaderMark:after{top:4px;bottom:4px;left:11px;width:1px}.brandLoaderMark i{position:absolute;left:8px;top:8px;width:7px;height:7px;border:2px solid #4ea1ff;border-radius:50%;animation:brandLoaderPulse 1.2s ease-in-out infinite}@keyframes brandLoaderPulse{50%{box-shadow:0 0 13px #4ea1ff;transform:scale(1.25)}}
 .foxtrotTerminal{min-height:100vh;background:var(--ft-bg);color:var(--ft-text);font-family:var(--font-geist-sans),Arial,sans-serif;display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:58px minmax(0,1fr);overflow-x:hidden}
 .terminalLoading>.brandLoader{position:fixed;z-index:40;top:66px;left:74px;right:16px;margin:0}
@@ -492,6 +493,8 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 
 /* ── Trading Desk OS ─────────────────────────────────────────── */
 .tradingDeskPage .deskWorkspaceShell{width:min(1540px,100%);padding:clamp(18px,3vw,36px) clamp(12px,2.5vw,28px) 56px}
+.tradingDeskPage :is(.deskMainColumn,.deskDecisionSummary,.deskWidget,[id^="desk-view-"]){scroll-margin-top:var(--desk-sticky-offset)}
+.tradingDeskPage h2[id]{scroll-margin-top:calc(var(--desk-sticky-offset) + 8px)}
 .tradingDeskOS{display:flex;flex-direction:column;gap:18px;opacity:1;animation:deskRise .55s ease}
 .deskHero{position:relative;display:grid;grid-template-columns:minmax(0,1.4fr) auto;gap:24px;align-items:end;padding:clamp(28px,4vw,48px);border:1px solid #24322c;border-radius:18px;overflow:hidden;background:
   linear-gradient(135deg,#0f1a16f0 0%,#0a100ef8 42%,#0c1418f5 100%),
@@ -527,7 +530,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskBuilderSave label,.deskJournal label,.deskRiskGrid label{display:grid;gap:6px;color:#8f9c96;font-size:13px}
 .deskBuilderSave input,.deskJournal textarea,.deskRiskGrid input{min-height:44px;padding:10px 12px;border:1px solid #2a3a34;border-radius:8px;background:#070b0a;color:#eef2f5;font:inherit}
 .deskShell{position:relative;display:grid;grid-template-columns:minmax(240px,280px) minmax(0,1fr);gap:16px;align-items:start}
-.deskMarkets{border:1px solid #24322c;border-radius:14px;background:linear-gradient(165deg,#0c1411f2,#090d12f5);box-shadow:0 18px 48px #0006;overflow:hidden;position:sticky;top:96px;max-height:calc(100vh - 112px);z-index:15}
+.deskMarkets{border:1px solid #24322c;border-radius:14px;background:linear-gradient(165deg,#0c1411f2,#090d12f5);box-shadow:0 18px 48px #0006;overflow:hidden;position:sticky;top:var(--desk-sticky-offset);max-height:calc(100vh - 112px);z-index:15}
 .deskMarketsInner{display:flex;flex-direction:column;max-height:inherit;min-height:0}
 .deskMarketsInner>header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #24322c;flex:0 0 auto;background:#0c1411f8;position:sticky;top:0;z-index:1}
 .deskMarkets .tmMarketsGroups{overflow:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
@@ -544,7 +547,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskMainColumn{display:flex;flex-direction:column;gap:16px}
 .deskMainColumn.is-focus{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,0.7fr);gap:16px;align-items:start}
 .deskStageStack,.deskFocusRail{display:flex;flex-direction:column;gap:16px;min-width:0}
-.deskFocusRail{position:sticky;top:96px;max-height:calc(100vh - 112px);overflow:auto;padding-right:4px}
+.deskFocusRail{position:sticky;top:var(--desk-sticky-offset);max-height:calc(100vh - 112px);overflow:auto;padding-right:4px}
 .deskWidget{border:1px solid #24322c;border-radius:14px;background:linear-gradient(155deg,#0d1411e8,#090d12f0);box-shadow:0 18px 48px #0005;overflow:hidden;opacity:1;animation:deskRise .45s ease}
 .deskWidget>header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:18px 20px;border-bottom:1px solid #1e2a26}
 .deskWidget>header span{display:block;color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.12em;text-transform:uppercase}

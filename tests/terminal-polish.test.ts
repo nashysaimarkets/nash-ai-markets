@@ -55,6 +55,11 @@ test("polish remains restrained and the trading desk stays coherent", async () =
   assert.match(styles, /background:#070b0a!important/);
   assert.match(styles, /z-index:60!important/);
   assert.doesNotMatch(styles, /background:#070b0af5!important/);
+  assert.match(styles, /--desk-sticky-offset:96px/);
+  assert.match(styles, /html\{scroll-padding-top:var\(--desk-sticky-offset\)\}/);
+  assert.match(styles, /scroll-margin-top:var\(--desk-sticky-offset\)/);
+  assert.match(styles, /\.deskMarkets\{[^}]*top:var\(--desk-sticky-offset\)/);
+  assert.match(styles, /\.deskFocusRail\{[^}]*top:var\(--desk-sticky-offset\)/);
   assert.match(page, /TradingDeskOS/);
   assert.match(canvas, /BrandLogo/);
   assert.match(canvas, /terminalEmptyCanvas/);

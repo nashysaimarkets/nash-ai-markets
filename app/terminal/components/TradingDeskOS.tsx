@@ -266,6 +266,15 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     setOpenGroup(instrument.group);
   }
 
+  function selectDeskView(view: DeskViewId) {
+    setDeskView(view);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        document.getElementById(`desk-view-${view}`)?.scrollIntoView({ block: "start" });
+      });
+    });
+  }
+
   function toggleFavourite(id: string) {
     updateWorkspace((prev) => {
       const has = prev.favourites.includes(id);
@@ -396,7 +405,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         );
       case "primary-chart":
         return (
-          <section key={id} className="deskWidget deskChart" aria-label="Primary verified chart">
+          <section key={id} id="primary-chart" className="deskWidget deskChart" aria-label="Primary verified chart">
             <header>
               <span>Primary chart</span>
               <strong>{active.symbol} · verified delayed chart</strong>
@@ -439,7 +448,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         );
       case "structure-map":
         return (
-          <section key={id} className="deskWidget deskStructure" aria-labelledby="structure-map-title">
+          <section key={id} id="verified-levels" className="deskWidget deskStructure" aria-labelledby="structure-map-title">
             <header>
               <span>Key levels &amp; structure</span>
               <h2 id="structure-map-title">Verified levels</h2>
@@ -546,7 +555,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         );
       case "catalyst-radar":
         return (
-          <section key={id} className="deskWidget deskCatalyst" aria-labelledby="catalyst-title">
+          <section key={id} id="catalysts" className="deskWidget deskCatalyst" aria-labelledby="catalyst-title">
             <header>
               <span>Catalyst radar</span>
               <h2 id="catalyst-title">Macro timeline for your desk</h2>
@@ -826,7 +835,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             role="tab"
             aria-selected={deskView === view}
             className={deskView === view ? "is-selected" : undefined}
-            onClick={() => setDeskView(view)}
+            onClick={() => selectDeskView(view)}
           >
             {DESK_VIEW_LABELS[view]}
           </button>
@@ -1082,13 +1091,16 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             </div>
           </div>
 
-          <div className={`deskMainColumn${workspace.focusMode ? " is-focus" : ""}`}>
+          <div
+            id={`desk-view-${deskView}`}
+            className={`deskMainColumn${workspace.focusMode ? " is-focus" : ""}`}
+          >
             {deskView === "overview" ? (
               <div className="deskOverviewStack">
-                <DeskDecisionSummary decision={payload.decisionPresentation} onOpenRisk={() => setDeskView("risk")} />
+                <DeskDecisionSummary decision={payload.decisionPresentation} onOpenRisk={() => selectDeskView("risk")} />
                 {renderWidget("primary-chart")}
                 {renderWidget("structure-map")}
-                <section className="deskWidget deskNextCatalyst" aria-labelledby="next-catalyst-title">
+                <section id="next-catalyst" className="deskWidget deskNextCatalyst" aria-labelledby="next-catalyst-title">
                   <header>
                     <span>Next catalyst</span>
                     <h2 id="next-catalyst-title">Upcoming verified event</h2>
@@ -1098,7 +1110,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                       <time>{nextCatalyst.time}</time>
                       <strong>{nextCatalyst.name}</strong>
                       <span>{nextCatalyst.risk} impact</span>
-                      <button type="button" onClick={() => setDeskView("catalysts")}>Open Catalysts</button>
+                      <button type="button" onClick={() => selectDeskView("catalysts")}>Open Catalysts</button>
                     </div>
                   ) : (
                     <div className="deskCoverageRow" role="status">
@@ -1107,7 +1119,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </div>
                   )}
                 </section>
-                <section className={`deskWidget deskRiskGate is-${payload.decisionPresentation.permissionTone}`} aria-labelledby="risk-gate-title">
+                <section id="risk-journal" className={`deskWidget deskRiskGate is-${payload.decisionPresentation.permissionTone}`} aria-labelledby="risk-gate-title">
                   <header>
                     <span>Risk gate</span>
                     <h2 id="risk-gate-title">Journal &amp; checklist</h2>
@@ -1117,7 +1129,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                       ? "Participation status is summarised above. Use Risk & Journal for checklist and local notes."
                       : `${payload.decisionPresentation.permissionLabel} · review checklist before participation.`}
                   </p>
-                  <button type="button" onClick={() => setDeskView("risk")}>Open Risk &amp; Journal</button>
+                  <button type="button" onClick={() => selectDeskView("risk")}>Open Risk &amp; Journal</button>
                 </section>
                 <details className="deskWidget deskDataDetails">
                   <summary>
