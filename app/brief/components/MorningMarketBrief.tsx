@@ -14,9 +14,8 @@ function toneClass(direction: "up" | "down" | "flat" | "unknown") {
 function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
   if (!video.available || !video.youtubeId) {
     return (
-      <div className="mbVideoEmpty mbCompactEmpty" role="status">
-        <TerminalishBadge />
-        <strong>Video not linked yet</strong>
+      <div className="mbVideoUnavailable" role="status">
+        <strong>Daily market video — not available today</strong>
         <p>{video.reason}</p>
       </div>
     );
@@ -107,26 +106,53 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           <p>{model.aiBriefing.sourceLabel.replace(/deterministic engine brief/i, "rules-based market summary")}</p>
         </header>
         <div className="mbDecisionGrid">
-          <div>
-            <span>Market lean</span>
-            <strong>{model.playbook.posture.split("·")[0]?.trim() || "Unavailable"}</strong>
-          </div>
-          <div className={permissionBlocked ? "is-blocked" : ""}>
-            <span>Trade permission</span>
-            <strong>{permissionBlocked ? "Blocked" : "Caution"}</strong>
-          </div>
-          <div>
-            <span>Confidence</span>
-            <strong>
-              {model.aiBriefing.confidence != null
-                ? `${Math.round(model.aiBriefing.confidence)} / 100`
-                : "Not rated"}
-            </strong>
-          </div>
-          <div>
-            <span>Primary risk</span>
-            <strong>{model.biggestRisk.label}</strong>
-          </div>
+          {permissionBlocked ? (
+            <>
+              <div className="is-blocked">
+                <span>Participation</span>
+                <strong>Blocked</strong>
+              </div>
+              <div>
+                <span>Market lean</span>
+                <strong>{model.playbook.posture.split("·")[0]?.trim() || "Unavailable"}</strong>
+              </div>
+              <div>
+                <span>Confidence</span>
+                <strong>
+                  {model.aiBriefing.confidence != null
+                    ? `${Math.round(model.aiBriefing.confidence)} / 100`
+                    : "Not rated"}
+                </strong>
+              </div>
+              <div>
+                <span>Primary risk</span>
+                <strong>{model.biggestRisk.label}</strong>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <span>Market lean</span>
+                <strong>{model.playbook.posture.split("·")[0]?.trim() || "Unavailable"}</strong>
+              </div>
+              <div>
+                <span>Participation</span>
+                <strong>Caution</strong>
+              </div>
+              <div>
+                <span>Confidence</span>
+                <strong>
+                  {model.aiBriefing.confidence != null
+                    ? `${Math.round(model.aiBriefing.confidence)} / 100`
+                    : "Not rated"}
+                </strong>
+              </div>
+              <div>
+                <span>Primary risk</span>
+                <strong>{model.biggestRisk.label}</strong>
+              </div>
+            </>
+          )}
         </div>
         <p className="mbLead">
           {model.summary.whatMatters}
@@ -255,31 +281,50 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
       <div className="mbTwin">
         <section className="mbPanel mbRisk" aria-labelledby="mb-risk-title">
           <header>
-            <span className="mbEyebrow">Main risk &amp; participation</span>
-            <h2 id="mb-risk-title">{model.biggestRisk.label}</h2>
+            <span className="mbEyebrow">Participation gate</span>
+            <h2 id="mb-risk-title">
+              {permissionBlocked ? "Why participation is blocked" : "Participation conditions"}
+            </h2>
           </header>
-          <p className="mbLead">{model.biggestRisk.detail}</p>
-          <div className="mbPlayColumns">
+          <dl className="mbParticipationFacts">
             <div>
-              <h3>Playbook</h3>
-              <ol>{model.playbook.steps.slice(0, 4).map((step) => <li key={step}>{step}</li>)}</ol>
+              <dt>Primary reason</dt>
+              <dd>{model.biggestRisk.label}</dd>
             </div>
             <div>
-              <h3>Before participating</h3>
-              <ul>
-                {model.playbook.confirmations.slice(0, 4).map((item) => (
-                  <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
-                ))}
-              </ul>
+              <dt>Confidence</dt>
+              <dd>
+                {model.aiBriefing.confidence != null
+                  ? `${Math.round(model.aiBriefing.confidence)} / 100`
+                  : "Not rated"}
+              </dd>
             </div>
-          </div>
+            <div>
+              <dt>Data condition</dt>
+              <dd>{model.biggestRisk.detail}</dd>
+            </div>
+            <div>
+              <dt>Requirements before participation</dt>
+              <dd>
+                <ul>
+                  {model.playbook.confirmations.slice(0, 4).map((item) => (
+                    <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          </dl>
         </section>
 
-        <section className="mbPanel mbVideo" aria-labelledby="mb-video-title">
-          <header>
-            <span className="mbEyebrow">Optional</span>
-            <h2 id="mb-video-title">{model.video.title}</h2>
-          </header>
+        <section className={`mbPanel mbVideo${model.video.available ? "" : " is-empty"}`} aria-labelledby="mb-video-title">
+          {model.video.available ? (
+            <header>
+              <span className="mbEyebrow">Optional</span>
+              <h2 id="mb-video-title">{model.video.title}</h2>
+            </header>
+          ) : (
+            <h2 id="mb-video-title" className="mbVisuallyHidden">{model.video.title}</h2>
+          )}
           <BriefVideo video={model.video} />
         </section>
       </div>

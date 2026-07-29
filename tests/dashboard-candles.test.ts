@@ -40,9 +40,9 @@ test("provider failures remain fail closed and contract labels remain exact", as
   assert.equal(unavailable.status, "unavailable");
   assert.equal(unavailable.failureCategory, "entitlement");
   assert.equal(unavailable.symbol, "ESUSD");
-  assert.equal(unavailable.instrumentName, "S&P 500 futures reference series");
-  assert.match(unavailable.contract, /S&P 500 futures reference series/i);
-  assert.match(unavailable.exchange, /delayed provider series/i);
+  assert.equal(unavailable.instrumentName, "S&P 500 futures chart");
+  assert.match(unavailable.contract, /S&P 500 futures chart/i);
+  assert.match(unavailable.exchange, /delayed chart/i);
   assert.deepEqual(unavailable.candles, []);
 });
 
@@ -195,9 +195,9 @@ test("customer candle payloads strip cache internals before browser delivery", a
     dataAgeMs: 60_000,
     classification: "delayed",
     symbol: "ESUSD",
-    instrumentName: "S&P 500 futures reference series",
+    instrumentName: "S&P 500 futures chart",
     instrumentDetail: "Verified delayed series",
-    contract: "S&P 500 futures reference series",
+    contract: "S&P 500 futures chart",
     exchange: "delayed provider series",
     provider: "Financial Modeling Prep",
     timeframe: "5m",

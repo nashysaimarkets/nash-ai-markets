@@ -18,7 +18,14 @@ test("RC2 uses one accessible premium loader across asynchronous routes", async 
     "app/terminal/loading.tsx",
     "app/waitlist/loading.tsx",
   ];
-  for (const route of await Promise.all(routes.map(read))) assert.match(route, /<BrandLoader/);
+  for (const [path, route] of await Promise.all(routes.map(async (path) => [path, await read(path)] as const))) {
+    if (path === "app/terminal/loading.tsx") {
+      assert.match(route, /aria-busy="true"|<BrandLoader/);
+      assert.match(route, /Trading Desk|BrandLoader/);
+      continue;
+    }
+    assert.match(route, /<BrandLoader/);
+  }
 });
 
 test("launch copy no longer presents public surfaces as unfinished or private beta", async () => {

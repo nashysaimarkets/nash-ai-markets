@@ -72,21 +72,26 @@ test("desk views partition widgets without inventing new data sources", () => {
 });
 
 test("Trading Desk IA uses view tabs, decision summary, and softer coverage labels", async () => {
-  const [desk, shell, catalog] = await Promise.all([
+  const [desk, shell, catalog, decisionSummary] = await Promise.all([
     read("../app/terminal/components/TradingDeskOS.tsx"),
     read("../app/components/MemberShell.tsx"),
     read("../app/lib/markets/market-catalog.ts"),
+    read("../app/terminal/components/DeskDecisionSummary.tsx"),
   ]);
   assert.match(shell, /Morning Brief/);
   assert.match(shell, /Trading Desk/);
   assert.match(desk, /DeskDecisionSummary/);
   assert.match(desk, /deskViewTabs/);
+  assert.match(desk, /Workspace preset/);
   assert.match(desk, /Overview/);
   assert.match(desk, /Risk & Journal|Risk &amp; Journal/);
   assert.match(desk, /marketsCollapsed/);
+  assert.match(desk, /verified delayed chart/);
   assert.match(desk, /Bullish lean/);
   assert.match(desk, /Bearish lean/);
   assert.doesNotMatch(desk, />Buying</);
+  assert.match(decisionSummary, /Participation/);
+  assert.match(decisionSummary, /is-blocked-priority|permissionTone === "blocked"/);
   assert.equal(coverageLabel("live"), "Connected");
   assert.match(catalog, /return "Connected"/);
 });

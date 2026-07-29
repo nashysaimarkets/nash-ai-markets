@@ -113,6 +113,18 @@ export function customerFacingCopy(text: string): string {
     .replaceAll("provider path", "data connection")
     .replaceAll("Provider path", "Data connection")
     .replaceAll("configured market gateway", "market-data feed")
+    .replaceAll("configured market-data provider", "verified market-data feed")
+    .replaceAll("reference series from the configured market-data provider", "delayed chart from the verified market-data feed")
+    .replaceAll("S&P 500 futures reference series", "S&P 500 futures chart")
+    .replaceAll("ESUSD reference series", "S&P 500 futures chart")
+    .replaceAll("verified candles only", "verified delayed chart")
+    .replaceAll("Verified candles only", "Verified delayed chart")
+    .replaceAll("rolling 24-hour verified close", "current price within the 24-hour range")
+    .replaceAll("Latest verified close", "Current price")
+    .replaceAll("Rolling 24h position", "Current price within the 24-hour range")
+    .replaceAll("window’s first close", "session opening reference")
+    .replaceAll("window's first close", "session opening reference")
+    .replaceAll("First available close", "Session opening reference")
     .replaceAll("taxonomy only", "market listed; live coverage not yet available")
     .replaceAll("reserved provider symbol", "symbol ready; data connection pending")
     .replaceAll("Awaiting coverage", "Coming soon")
@@ -127,4 +139,14 @@ export function customerFacingCopy(text: string): string {
     .replaceAll("critical input missing", "required market evidence is missing")
     .replaceAll("Educational Edge Brief", "Market summary")
     .replaceAll("Desk builder", "Layout");
+}
+
+/** Customer-facing chart title: keep provider symbol in Data Details only. */
+export function customerFacingChartTitle(instrument: string, instrumentName: string, symbol: string): string {
+  if (instrument === "ES" || symbol === "ESUSD") {
+    return "S&P 500 futures chart · ES";
+  }
+  const name = customerFacingCopy(instrumentName);
+  const short = instrument || symbol;
+  return `${name} · ${short}`;
 }

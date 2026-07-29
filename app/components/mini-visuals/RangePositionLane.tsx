@@ -9,7 +9,7 @@ type Props = {
   title?: string;
 };
 
-export function RangePositionLane({ markers, title = "Price within verified rolling 24h range" }: Props) {
+export function RangePositionLane({ markers, title = "Current price within the 24-hour range" }: Props) {
   if (!markers) return null;
   const pct = positionPercent(markers.current, markers.low, markers.high);
   const toHigh = markers.high - markers.current;

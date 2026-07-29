@@ -98,12 +98,12 @@ function empty(symbol: string, timeframe: CandleTimeframe, category: VerifiedCan
   const es = symbol === "ESUSD";
   return {
     symbol,
-    contract: es ? "S&P 500 futures reference series" : "Configured market series",
-    instrumentName: es ? "S&P 500 futures reference series" : "Configured market series",
-    exchange: "Verified delayed provider series",
+    contract: es ? "S&P 500 futures chart" : "Configured market series",
+    instrumentName: es ? "S&P 500 futures chart" : "Configured market series",
+    exchange: "Verified delayed chart",
     instrumentDetail: es
-      ? "ESUSD reference series from the configured market-data provider. Delayed quotes only — never treated as live."
-      : "Configured symbol from the verified market-data provider.",
+      ? "S&P 500 futures delayed chart from the verified market-data feed. Delayed quotes only — never treated as live."
+      : "Configured symbol from the verified market-data feed.",
     timeframe,
     classification: timeframe === "1d" ? "end_of_day" : "delayed",
     dataAgeMs: null,

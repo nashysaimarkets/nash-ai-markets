@@ -501,15 +501,18 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskHeroCopy{position:relative;z-index:1;min-width:0}
 .deskHeroCopy h1{margin:12px 0 10px;font-size:clamp(42px,6.5vw,68px);line-height:0.98;letter-spacing:-.055em;color:#f4f3ec}
 .deskHeroCopy p{margin:0;max-width:52ch;color:#9aa7a0;font-size:clamp(15px,1.4vw,18px);line-height:1.65}
-.deskHeroCompact{padding:clamp(18px,2.5vw,28px) clamp(18px,2.5vw,32px);align-items:center}
-.deskHeroCompact .deskHeroCopy h1{margin:8px 0 6px;font-size:clamp(28px,3.6vw,40px);letter-spacing:-.04em}
-.deskHeroCompact .deskHeroCopy p{font-size:14px;max-width:64ch}
-.deskHeroActions{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
-.deskHeroActions button,.deskPresetRow button,.deskBuilderControls button,.deskBuilderSave button,.deskComparePick button,.deskMarketsClose,.deskMarketsCollapse,.deskViewTabs button{min-height:44px;padding:10px 16px;border:1px solid #2f4038;border-radius:10px;background:#0c1411;color:#dce6e1;font:650 13px var(--font-geist-sans),Arial,sans-serif;cursor:pointer}
+.deskHeroCompact{padding:clamp(12px,1.8vw,18px) clamp(16px,2.2vw,24px);align-items:center;gap:16px}
+.deskHeroCompact .deskHeroCopy .ctEyebrow{font-size:10px}
+.deskHeroCompact .deskHeroCopy h1{margin:4px 0 4px;font-size:clamp(24px,3vw,34px);letter-spacing:-.04em}
+.deskHeroCompact .deskHeroCopy p{font-size:13px;line-height:1.45;max-width:64ch;color:#9aa7a0}
+.deskHeroActions{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
+.deskHeroActions button,.deskPresetRow button,.deskBuilderControls button,.deskBuilderSave button,.deskComparePick button,.deskMarketsClose,.deskMarketsCollapse,.deskViewTabs button{min-height:40px;padding:8px 14px;border:1px solid #2f4038;border-radius:10px;background:#0c1411;color:#dce6e1;font:650 13px var(--font-geist-sans),Arial,sans-serif;cursor:pointer}
 .deskHeroActions button:hover,.deskPresetRow button:hover,.deskComparePick button:hover,.deskViewTabs button:hover{border-color:#3d5549;background:#12201a}
 .deskHeroActions button.is-on,.deskPresetRow button.is-selected,.deskComparePick button.is-selected,.deskViewTabs button.is-selected,.deskViewTabs button[aria-selected="true"]{border-color:#d9ab5266;background:#d9ab5214;color:#efd39a;box-shadow:0 0 0 1px #d9ab5230}
 .deskViewTabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.deskPresetRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.deskViewTabsLabel,.deskPresetLabel{flex:0 0 auto;color:#7d8a84;font:700 10px/1 var(--font-geist-mono),monospace;letter-spacing:.12em;text-transform:uppercase;margin-right:4px}
+.deskPresetBlock{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-top:2px}
+.deskPresetRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0}
 .deskBuilder{border:1px solid #2a3a34;border-radius:16px;background:linear-gradient(160deg,#0d1512,#090e10);box-shadow:0 20px 60px #0006;overflow:hidden}
 .deskBuilder>header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid #24322c}
 .deskBuilder>header span{display:block;color:#62e6b1;font:700 12px var(--font-geist-mono),monospace;letter-spacing:.12em;text-transform:uppercase}
@@ -622,6 +625,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskDecisionCell.is-bear strong{color:#ef7777}
 .deskDecisionCell.is-mixed strong,.deskDecisionCell.is-neutral strong{color:#d8b36a}
 .deskDecisionCell.is-permission-blocked strong,.deskDecisionSummary.is-permission-blocked .deskDecisionCell.is-permission-blocked{outline:1px solid #ef777755}
+.deskDecisionGrid.is-blocked-priority .deskDecisionCell.is-priority{background:#16100f;box-shadow:inset 3px 0 0 #ef7777}
 .deskDecisionCell.is-permission-blocked strong{color:#ef9a9a}
 .deskDecisionCell.is-permission-caution strong{color:#efd39a}
 .deskDecisionCell.is-permission-open strong{color:#62e6b1}
@@ -664,8 +668,10 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 }
 @media(max-width:720px){
   .deskDecisionGrid,.deskDecisionEvidence,.deskNextCatalystBody{grid-template-columns:1fr}
-  .deskViewTabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
-  .deskViewTabs button{flex:0 0 auto}
+  .deskViewTabs,.deskPresetBlock{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .deskViewTabs button,.deskPresetRow button{flex:0 0 auto}
+  .deskPresetBlock{display:flex;align-items:center}
+  .deskPresetRow{flex-wrap:nowrap}
 }
 
 @media(max-width:1100px){

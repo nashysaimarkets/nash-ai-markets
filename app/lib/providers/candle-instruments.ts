@@ -1,4 +1,4 @@
-import type { CandleTimeframe, VerifiedCandleSeries } from "./financial-modeling-prep-candles.ts";
+import type { VerifiedCandleSeries } from "./financial-modeling-prep-candles.ts";
 
 /** Instruments that can request verified OHLCV candles (never invents series). */
 export const CANDLE_INSTRUMENTS = ["ES", "VIX", "DXY", "OIL", "QQQ", "NQ"] as const;
@@ -26,7 +26,7 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         contract: "CBOE Volatility Index",
         instrumentName: "VIX",
         exchange: "Verified delayed index series",
-        instrumentDetail: "VIX reference series from the configured market-data provider. Delayed quotes only — never treated as live.",
+        instrumentDetail: "VIX delayed chart from the verified market-data feed. Delayed quotes only — never treated as live.",
       };
     case "DXY":
       return {
@@ -35,7 +35,7 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         contract: "US Dollar Index",
         instrumentName: "US Dollar Index",
         exchange: "Verified delayed index series",
-        instrumentDetail: "US Dollar Index reference series from the configured market-data provider. Delayed quotes only — never treated as live.",
+        instrumentDetail: "US Dollar Index delayed chart from the verified market-data feed. Delayed quotes only — never treated as live.",
       };
     case "OIL":
       return {
@@ -44,7 +44,7 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         contract: "United States Oil Fund (USO)",
         instrumentName: "Oil (USO)",
         exchange: "Verified delayed ETF series",
-        instrumentDetail: "USO equity ETF proxy for crude oil exposure from the configured market-data provider. Delayed quotes only — never treated as live futures prints.",
+        instrumentDetail: "USO equity ETF proxy for crude oil exposure from the verified market-data feed. Delayed quotes only — never treated as live futures prints.",
       };
     case "QQQ":
       return {
@@ -53,7 +53,7 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         contract: "Invesco QQQ Trust",
         instrumentName: "QQQ",
         exchange: "Verified delayed ETF series",
-        instrumentDetail: "QQQ equity ETF reference series from the configured market-data provider. Delayed quotes only — never treated as live.",
+        instrumentDetail: "QQQ delayed chart from the verified market-data feed. Delayed quotes only — never treated as live.",
       };
     case "NQ":
       return {
@@ -62,17 +62,17 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         contract: "NASDAQ Composite",
         instrumentName: "Nasdaq Composite",
         exchange: "Verified delayed index series",
-        instrumentDetail: "Nasdaq Composite (^IXIC) reference series from the configured market-data provider. Delayed quotes only — never treated as live Nasdaq futures.",
+        instrumentDetail: "Nasdaq Composite delayed chart from the verified market-data feed. Delayed quotes only — never treated as live Nasdaq futures.",
       };
     case "ES":
     default:
       return {
         envSymbol: process.env.FMP_SP500_FUTURES_SYMBOL?.trim(),
         fallbackSymbol: "ESUSD",
-        contract: "S&P 500 futures reference series",
-        instrumentName: "S&P 500 futures reference series",
-        exchange: "Verified delayed provider series",
-        instrumentDetail: "ESUSD reference series from the configured market-data provider. Delayed quotes only — never treated as live.",
+        contract: "S&P 500 futures chart",
+        instrumentName: "S&P 500 futures chart",
+        exchange: "Verified delayed chart",
+        instrumentDetail: "S&P 500 futures delayed chart from the verified market-data feed. Delayed quotes only — never treated as live.",
       };
   }
 }

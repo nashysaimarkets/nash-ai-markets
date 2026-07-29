@@ -366,7 +366,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           <section key={id} className="deskWidget deskChart" aria-label="Primary verified chart">
             <header>
               <span>Primary chart</span>
-              <strong>{active.symbol} · verified candles only</strong>
+              <strong>{active.symbol} · verified delayed chart</strong>
             </header>
             {!payload.paid ? (
               <LockedPremiumCard
@@ -783,6 +783,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
       </section>
 
       <div className="deskViewTabs" role="tablist" aria-label="Trading Desk views">
+        <span className="deskViewTabsLabel" id="desk-views-label">Views</span>
         {DESK_VIEW_IDS.map((view) => (
           <button
             key={view}
@@ -797,36 +798,39 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         ))}
       </div>
 
-      <div className="deskPresetRow" role="toolbar" aria-label="Desk presets">
-        {(Object.keys(DESK_PRESETS) as Array<keyof typeof DESK_PRESETS>).map((presetId) => (
-          <button
-            key={presetId}
-            type="button"
-            className={workspace.preset === presetId ? "is-selected" : undefined}
-            onClick={() => setWorkspace(applyPreset(presetId))}
-            title={DESK_PRESETS[presetId].description}
-          >
-            {DESK_PRESETS[presetId].label}
+      <div className="deskPresetBlock">
+        <span className="deskPresetLabel" id="desk-preset-label">Workspace preset</span>
+        <div className="deskPresetRow" role="toolbar" aria-labelledby="desk-preset-label">
+          {(Object.keys(DESK_PRESETS) as Array<keyof typeof DESK_PRESETS>).map((presetId) => (
+            <button
+              key={presetId}
+              type="button"
+              className={workspace.preset === presetId ? "is-selected" : undefined}
+              onClick={() => setWorkspace(applyPreset(presetId))}
+              title={DESK_PRESETS[presetId].description}
+            >
+              {DESK_PRESETS[presetId].label}
+            </button>
+          ))}
+          <button type="button" className={workspace.preset === "custom" ? "is-selected" : undefined} onClick={() => updateWorkspace({ preset: "custom" })}>
+            Custom
           </button>
-        ))}
-        <button type="button" className={workspace.preset === "custom" ? "is-selected" : undefined} onClick={() => updateWorkspace({ preset: "custom" })}>
-          Custom
-        </button>
-        {workspace.namedLayouts.map((layout) => (
-          <button
-            key={layout.name}
-            type="button"
-            onClick={() =>
-              updateWorkspace({
-                widgets: layout.widgets,
-                favourites: layout.favourites,
-                preset: "custom",
-              })
-            }
-          >
-            {layout.name}
-          </button>
-        ))}
+          {workspace.namedLayouts.map((layout) => (
+            <button
+              key={layout.name}
+              type="button"
+              onClick={() =>
+                updateWorkspace({
+                  widgets: layout.widgets,
+                  favourites: layout.favourites,
+                  preset: "custom",
+                })
+              }
+            >
+              {layout.name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {builderOpen ? (

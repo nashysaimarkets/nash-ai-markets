@@ -28,6 +28,21 @@ function customerStatusLabel(series: CustomerCandleSeries): string {
   return "Delayed";
 }
 
+function customerChartTitle(instrument: CandleInstrument, series: CustomerCandleSeries): string {
+  if (instrument === "ES" || series.symbol === "ESUSD") return "S&P 500 futures chart · ES";
+  const name = series.instrumentName
+    .replaceAll("S&P 500 futures reference series", "S&P 500 futures chart")
+    .replaceAll(" reference series", " chart");
+  return `${name} · ${instrument}`;
+}
+
+function customerInstrumentDetail(detail: string): string {
+  return detail
+    .replaceAll("ESUSD reference series from the configured market-data provider", "delayed chart from the verified market-data feed")
+    .replaceAll("reference series from the configured market-data provider", "delayed chart from the verified market-data feed")
+    .replaceAll("configured market-data provider", "verified market-data feed");
+}
+
 function unavailableCopy(series: CustomerCandleSeries) {
   const interval = series.timeframe === "1d" ? "daily" : series.timeframe;
   const metric = `Verified ${interval} candlestick history for ${series.symbol}`;
@@ -210,25 +225,25 @@ export function DashboardCandlestickChart({
   return <section className={`dashboardMarketChart${compact ? " is-compact" : ""}`} aria-labelledby={`dashboard-market-chart-title-${instrument}`} data-status={intervalMismatch ? "loading" : series.status} data-timeframe={displayTimeframe} data-instrument={instrument}>
     <header>
       <div>
-        <span className="eliteEyebrow">{compact ? "VERIFIED CANDLES" : "PRIMARY MARKET WORKSPACE"}</span>
-        <h2 id={`dashboard-market-chart-title-${instrument}`}>{series.instrumentName} · {series.symbol}</h2>
-        {!compact ? <p>{series.instrumentDetail}</p> : null}
+        <span className="eliteEyebrow">{compact ? "VERIFIED DELAYED CHART" : "PRIMARY MARKET WORKSPACE"}</span>
+        <h2 id={`dashboard-market-chart-title-${instrument}`}>{customerChartTitle(instrument, series)}</h2>
+        {!compact ? <p>{customerInstrumentDetail(series.instrumentDetail)}</p> : null}
       </div>
       <div className="chartStatus"><i aria-hidden="true" /><strong>{statusLabel}</strong><small>{updated}{intervalMismatch ? "" : ` UK · ${age(series.dataAgeMs)}`}</small></div>
     </header>
     {stats && !compact ? <>
-      <div className="chartMarketStrip" aria-label="Verified rolling 24-hour statistics">
-        <div><span>Latest verified close</span><strong>{number(stats.latest)}</strong></div>
+      <div className="chartMarketStrip" aria-label="Verified 24-hour statistics">
+        <div><span>Current price</span><strong>{number(stats.latest)}</strong></div>
         <div><span>Net / % change</span><strong>{stats.change >= 0 ? "+" : ""}{number(stats.change)} ({number(stats.percentageChange)}%)</strong></div>
         <div><span>24h high</span><strong>{number(stats.high)}</strong></div>
         <div><span>24h low</span><strong>{number(stats.low)}</strong></div>
         <div><span>Newest candle</span><strong>{newestLabel ?? "Unavailable"}</strong></div>
         <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
       </div>
-      <div className="chartRange"><span>Rolling 24h position</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div>
+      <div className="chartRange"><span>Current price within the 24-hour range</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div>
     </> : stats && compact ? (
       <div className="chartMarketStrip is-compact" aria-label="Verified candle summary">
-        <div><span>Latest close</span><strong>{number(stats.latest)}</strong></div>
+        <div><span>Current price</span><strong>{number(stats.latest)}</strong></div>
         <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
       </div>
     ) : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}

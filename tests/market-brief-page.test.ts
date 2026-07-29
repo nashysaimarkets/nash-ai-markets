@@ -196,11 +196,15 @@ test("Market Brief page renders the premium brief instead of redirecting to term
   assert.match(component, /Open Trading Desk/);
   assert.match(component, /Observed range context|Expected move/);
   assert.match(component, /Support \/ resistance/);
-  assert.match(component, /Main risk/);
-  assert.match(component, /Daily market video|Video not linked/);
+  assert.match(component, /Why participation is blocked|Participation conditions/);
+  assert.match(component, /Daily market video — not available today|Daily market video/);
+  assert.match(component, /mbParticipationFacts|Primary reason/);
+  assert.match(component, /Participation/);
+  assert.doesNotMatch(component, /Main risk &amp; participation|Main Risk/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /@media\(max-width:720px\)/);
   assert.match(css, /prefers-reduced-motion/);
+  assert.match(css, /mbVideoUnavailable/);
   assert.match(compose, /No verified breadth provider|not connected/);
   assert.match(compose, /Overnight news headlines are not connected/);
 });

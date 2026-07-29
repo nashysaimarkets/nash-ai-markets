@@ -25,10 +25,15 @@ export function LiveMarketSummary({ verified, regime, bias, confidence, risk, qu
     ["First available close", price(stats?.firstAvailableClose), "First verified candle close in the rolling 24-hour window"],
     ["24h range", stats ? `${price(stats.low)} – ${price(stats.high)}` : "Unavailable", "Rolling 24h low to high; not an official exchange session"],
   ];
+  const customerItems = items.map(([label, value, detail]) => [
+    label === "First available close" ? "Session opening reference" : label,
+    value,
+    detail,
+  ] as const);
   return <section className="liveMarketSummary" aria-labelledby="live-market-summary-title">
     <header><div><span className="eliteEyebrow">LIVE MARKET SUMMARY</span><h2 id="live-market-summary-title">Current decision context</h2><p>Plain-language observations and deterministic classifications. Nothing here guarantees a future outcome.</p></div><div className="summaryHealth"><strong>{dataStatus}</strong><span>{provider}</span><small>{lastUpdated}</small></div></header>
     <div className="marketStatusStrip" aria-label="Verified market status strip">{strip.map((item) => <article key={item.label}><span>{item.label}</span><strong>{item.value}</strong><small>{item.change} · {dataStatus.toLowerCase()} · {lastUpdated}</small></article>)}</div>
     <div className="summaryDecision"><article><span>Market regime</span><strong>{verified ? regime : "Unavailable"}</strong><small>{verified ? "Derived from verified volatility and cross-asset inputs" : "Awaiting complete verified inputs"}</small></article><article><span>Directional bias</span><strong>{verified ? bias : "Neutral safety state"}</strong><small>Deterministic classification, not a calibrated win probability</small></article><article><span>Confidence</span><strong>{verified && confidence !== null ? `${confidence}/100` : "Withheld"}</strong><small>{verified ? "Evidence quality and agreement" : "No score from incomplete evidence"}</small></article><article><span>Overall risk</span><strong>{verified ? risk : "Unrated"}</strong><small>Review alongside catalysts and invalidation</small></article></div>
-    <dl>{items.map(([label, value, detail]) => <div key={label}><dt>{label}</dt><dd>{value}<small>{detail}</small></dd></div>)}</dl>
+    <dl>{customerItems.map(([label, value, detail]) => <div key={label}><dt>{label}</dt><dd>{value}<small>{detail}</small></dd></div>)}</dl>
   </section>;
 }
