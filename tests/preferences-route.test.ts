@@ -25,3 +25,18 @@ test("desktop and mobile member navigation both expose Preferences", async () =>
   assert.equal((shell.match(/href: "\/preferences"/g) ?? []).length, 1);
   assert.match(shell, /links\.map/);
 });
+
+test("Profile routes members to Preferences without inventing a second preferences system", async () => {
+  const [profile, prefs, onboarding] = await Promise.all([
+    read("../app/profile/page.tsx"),
+    read("../app/preferences/page.tsx"),
+    read("../app/onboarding/page.tsx"),
+  ]);
+  assert.match(profile, /href="\/preferences"/);
+  assert.match(profile, /Update workspace preferences|Complete workspace setup/);
+  assert.match(prefs, /redirect\("\/onboarding"\)/);
+  assert.match(onboarding, /WORKSPACE PREFERENCES/);
+  assert.match(onboarding, /Refine your market workspace/);
+  assert.match(onboarding, /Set up your market workspace/);
+  assert.doesNotMatch(prefs, /stripe|memberships|service_role/i);
+});

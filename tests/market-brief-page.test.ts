@@ -11,6 +11,7 @@ import { buildDecisionDesk } from "../app/dashboard/lib/decision-desk.ts";
 import { interpretCrossMarket } from "../app/dashboard/lib/cross-market-interpretation.ts";
 import {
   composeMorningMarketBrief,
+  customerFacingBriefCopy,
   dedupePracticalItems,
 } from "../app/brief/lib/compose-market-brief.ts";
 import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
@@ -234,5 +235,20 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
   assert.match(composeSource, /No verified advance\/decline breadth feed/);
   assert.match(composeSource, /dedupePracticalItems/);
+  assert.match(composeSource, /customerFacingBriefCopy/);
   assert.doesNotMatch(composeSource, /id: "BREADTH"/);
+});
+
+test("customer-facing Brief copy softens internal no-trade terminology", () => {
+  assert.match(
+    customerFacingBriefCopy("Bullseye is maintaining a no-trade posture until conditions clear."),
+    /Trade participation remains restricted/i,
+  );
+  assert.doesNotMatch(
+    customerFacingBriefCopy("Bullseye is maintaining a no-trade posture until conditions clear."),
+    /Bullseye is maintaining a no-trade posture/i,
+  );
+  const model = compose();
+  assert.doesNotMatch(model.executiveSummary, /while confirmation remains incomplete/i);
+  assert.doesNotMatch(`${model.summary.headline} ${model.biggestRisk.label}`, /Bullseye is maintaining a no-trade posture/i);
 });
