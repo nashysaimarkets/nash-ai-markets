@@ -30,16 +30,39 @@ test("dashboard command centre uses shared delayed candle age and Restricted / N
   assert.match(centre, /levels\.map|level\.label/);
   assert.match(centre, /Delayed market data/);
   assert.match(centre, /Breadth is omitted/);
+  assert.match(centre, /dashCatalystEmpty|No upcoming verified event is currently available/);
+  assert.match(centre, /dashLevelsStack|dashSplitRow/);
+  assert.doesNotMatch(centre, /providerDelayNote|Nominal provider delay/);
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /MarketCommandCentre/);
   assert.match(summaryLib, /formatDelayedVerifiedCandleAgeDisplay/);
   assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(summaryLib, /24-hour low \/ downside reference/);
   assert.match(summaryLib, /Session opening reference/);
+  assert.doesNotMatch(summaryLib, /formatNominalProviderDelayNote|providerDelayNote/);
   assert.doesNotMatch(centre, /Opportunity Radar|Trading Conditions Score|AI MARKET OUTLOOK/);
   assert.doesNotMatch(centre, /HeroMarketChartLazy|MarketIntelligenceStrip|DecisionDesk|MarketWeatherPanel/);
   assert.doesNotMatch(page, /coverage:\s*"live"/);
   assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
+});
+
+test("dashboard empty catalyst stays compact and available events still render", async () => {
+  const centre = await read("../app/dashboard/components/MarketCommandCentre.tsx");
+  assert.match(centre, /dashCatalystEmpty/);
+  assert.match(centre, /No upcoming verified event is currently available/);
+  assert.match(centre, /catalyst \? "dashSplitRow" : "dashLevelsStack"/);
+  assert.match(centre, /Event risk ahead/);
+  assert.match(centre, /catalyst\.name/);
+  assert.doesNotMatch(centre, /No future verified calendar event is currently supplied/);
+});
+
+test("restricted decision copy omits defensive briefing clause", async () => {
+  const presentation = await read("../app/terminal/lib/desk-decision-presentation.ts");
+  assert.match(
+    presentation,
+    /This is a limited-confidence environment\. Trade participation remains restricted because confirmation data is incomplete\./,
+  );
+  assert.doesNotMatch(presentation, /not because the whole briefing is unavailable/);
 });
 
 test("score display never presents zero as a substitute for unavailable evidence", () => {

@@ -5,10 +5,7 @@
  */
 
 import type { MarketQuote, MarketSnapshot } from "../../lib/market-data.ts";
-import {
-  formatDelayedVerifiedCandleAgeDisplay,
-  formatNominalProviderDelayNote,
-} from "../../lib/freshness-labels.ts";
+import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
 import {
   buildDeskDecisionPresentation,
   type DeskDecisionPresentation,
@@ -31,7 +28,6 @@ export type DashboardHeroModel = {
   sessionLabel: string;
   sessionDetail: string;
   delayedAgeLine: string;
-  providerDelayNote: string;
   rangePositionPct: number | null;
   rangeLow: string | null;
   rangeHigh: string | null;
@@ -217,7 +213,6 @@ export function buildDashboardCommandSummary(input: {
       ? `${input.session.label} · ${input.session.countdownLabel}`
       : input.session.label,
     delayedAgeLine,
-    providerDelayNote: formatNominalProviderDelayNote(10),
     rangePositionPct: stats ? Math.round(stats.rangePosition) : null,
     rangeLow: stats ? formatPts(stats.low) : null,
     rangeHigh: stats ? formatPts(stats.high) : null,
@@ -261,7 +256,7 @@ export function buildDashboardCommandSummary(input: {
   if (!catalyst) {
     unavailable.push({
       label: "Upcoming catalyst",
-      detail: "No future verified calendar row is currently supplied by the provider feed.",
+      detail: "No upcoming verified event is currently available.",
     });
   }
   if (!levels.length) {

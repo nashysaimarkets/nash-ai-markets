@@ -99,7 +99,7 @@ export function buildDeskDecisionPresentation(input: {
   } else if (permission.tone === "blocked" && lean.tone !== "neutral") {
     why = `${lean.label} is an observed lean from verified inputs — not a validated trade setup. Trade participation remains restricted because confirmation data is incomplete.`;
   } else if (permission.tone === "blocked") {
-    why = "This is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete — not because the whole briefing is unavailable.";
+    why = "This is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete.";
   } else if (permission.tone === "caution") {
     why = `Directional lean is ${lean.label.toLowerCase()}, with caution required before participation.`;
   } else if (permission.tone === "open") {

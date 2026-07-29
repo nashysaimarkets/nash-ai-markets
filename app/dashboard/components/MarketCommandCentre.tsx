@@ -62,7 +62,6 @@ export function MarketCommandCentre({
           <div className="dashFreshness" role="status">
             <strong>Delayed market data</strong>
             <span>{hero.delayedAgeLine}</span>
-            <small>{hero.providerDelayNote}</small>
           </div>
 
           {hero.rangePositionPct != null && hero.rangeLow && hero.rangeHigh ? (
@@ -169,7 +168,7 @@ export function MarketCommandCentre({
         )}
       </section>
 
-      <div className="dashSplitRow">
+      <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
             <span className="mccEyebrow">VERIFIED LEVELS</span>
@@ -193,12 +192,12 @@ export function MarketCommandCentre({
           </Link>
         </section>
 
-        <section className="dashCatalyst" aria-labelledby="dash-catalyst-title">
-          <header>
-            <span className="mccEyebrow">NEXT VERIFIED CATALYST</span>
-            <h2 id="dash-catalyst-title">Event risk ahead</h2>
-          </header>
-          {catalyst ? (
+        {catalyst ? (
+          <section className="dashCatalyst" aria-labelledby="dash-catalyst-title">
+            <header>
+              <span className="mccEyebrow">NEXT VERIFIED CATALYST</span>
+              <h2 id="dash-catalyst-title">Event risk ahead</h2>
+            </header>
             <article>
               <strong>{catalyst.name}</strong>
               <p>{catalyst.whenLabel}</p>
@@ -214,10 +213,16 @@ export function MarketCommandCentre({
                 Review catalysts on Trading Desk
               </Link>
             </article>
-          ) : (
-            <p className="dashEmptyHint">No future verified calendar event is currently supplied.</p>
-          )}
-        </section>
+          </section>
+        ) : (
+          <aside className="dashCatalystEmpty" role="status" aria-label="Next verified catalyst">
+            <span className="mccEyebrow">NEXT VERIFIED CATALYST</span>
+            <p>No upcoming verified event is currently available.</p>
+            <Link href="/terminal#catalysts" className="dashTextLink">
+              Review catalysts on Trading Desk
+            </Link>
+          </aside>
+        )}
       </div>
 
       <section className="dashQuickActions" aria-label="Quick actions">
