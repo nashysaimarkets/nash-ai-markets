@@ -93,8 +93,9 @@ test("cross-market interpretation is plain English and marks mixed evidence", ()
     summary: "test",
   } as unknown as MarketSnapshot;
   const copy = interpretCrossMarket(snapshot);
-  assert.match(copy, /VIX is lower/i);
+  assert.match(copy, /VIX is lower|volatility is easing/i);
   assert.match(copy, /mixed|supportive|restrictive|balanced/i);
+  assert.doesNotMatch(copy, /, while .+, while /i);
   assert.doesNotMatch(copy, /guarantee|will rise|buy|sell/i);
 });
 

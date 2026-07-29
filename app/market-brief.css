@@ -246,3 +246,63 @@
   .morningMarketBrief,.mbHero,.mbDelayed,.mbPanel,.mbSummary,.mbCross{animation:none!important}
   .mbHeroActions a{transition:none}
 }
+
+/* Morning Brief premium UX — hierarchy and compact empty states */
+.morningMarketBrief section[id],.morningMarketBrief header[id],.morningMarketBrief aside[id]{
+  scroll-margin-top:calc(var(--app-header-height, 72px) + 16px);
+}
+.mbHeroCopy p{font-size:15px;line-height:1.65;max-width:42rem}
+.mbLead{font-size:15px;line-height:1.6;max-width:70ch}
+.mbExecutive .mbLead{margin:0;padding:4px 0 2px;color:#dce5e8}
+.mbWeather>header{margin-bottom:12px}
+.mbWeather>header p{margin:8px 0 0;color:var(--mb-muted);font:14px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:48rem}
+.mbCrossCard small{display:block;margin-top:10px;color:#718088;font-size:11px}
+.mbCrossCard.is-supportive strong{color:var(--mb-green)}
+.mbCrossCard.is-restrictive strong{color:var(--mb-red)}
+.mbCrossCard.is-neutral strong{color:var(--mb-text)}
+.mbCrossCard.is-supportive em{color:#9edacc}
+.mbCrossCard.is-restrictive em{color:#ef9a9a}
+.mbLadder li{grid-template-columns:minmax(0,1fr) auto}
+.mbExpectedInline{
+  margin:14px 0 0;padding:14px;border-top:1px solid #1c282e;display:grid;gap:6px;
+}
+.mbExpectedInline span{color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mbExpectedInline strong{color:#eef3f4;font:600 16px/1.3 var(--font-geist-sans),Arial,sans-serif}
+.mbExpectedInline p{margin:0;color:#b7c2c7;font-size:13px;line-height:1.45}
+.mbExpectedInline small{color:#84929a;font-size:12px;line-height:1.4}
+.mbTextLink{display:inline-flex;margin:14px 0 0;color:var(--mb-green);text-decoration:none;font:650 14px var(--font-geist-sans),Arial,sans-serif}
+.mbTextLink:hover{text-decoration:underline}
+.mbCatalystEmpty{
+  display:grid;gap:8px;align-content:start;padding:14px 18px;border:1px solid var(--mb-line);border-radius:12px;
+  background:linear-gradient(150deg,#0f171be8,#0a1014f5);box-shadow:inset 0 1px #ffffff0c;align-self:start;
+}
+.mbCatalystEmpty p{margin:0;color:#84929a;font:500 14px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.mbWatchAvoidPanel .mbWatchAvoid{padding:0}
+.mbQuickActions{
+  border:1px solid var(--mb-line);border-radius:14px;padding:20px 22px;
+  background:linear-gradient(150deg,#0f171be8,#0a1014f5);box-shadow:0 18px 48px #0006,inset 0 1px #ffffff0c;
+}
+.mbActionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.mbAction{
+  display:grid;gap:6px;min-height:84px;padding:16px;border-radius:12px;border:1px solid #2a3940;background:#11191ecc;
+  color:#d9e2e5;text-decoration:none;
+}
+.mbAction small{font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+.mbAction b{font:650 16px/1.25 var(--font-geist-sans),Arial,sans-serif}
+.mbAction.is-primary{border-color:#79c9b9;background:#79c9b9;color:#07110f}
+.mbAction.is-gold{border-color:#d8b36a88;background:#d8b36a18;color:#f0e2c0}
+.mbServiceStatus{
+  border:1px solid var(--mb-line);border-radius:12px;padding:14px 18px;
+  background:linear-gradient(150deg,#0f171be8,#0a1014f5);
+}
+.mbServiceStatus summary{cursor:pointer;color:#9aa7ad;font:600 13px var(--font-geist-sans),Arial,sans-serif}
+.mbServiceStatus ul{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.mbServiceStatus li{display:grid;gap:4px;padding-top:10px;border-top:1px solid #1c282e}
+.mbServiceStatus strong{color:#c5d0d6;font-size:13px}
+.mbServiceStatus span{color:#84929a;font-size:12px;line-height:1.45}
+@media(max-width:1080px){
+  .mbActionGrid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:720px){
+  .mbActionGrid{grid-template-columns:1fr}
+}

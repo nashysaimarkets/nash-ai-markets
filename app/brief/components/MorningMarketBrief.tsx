@@ -6,10 +6,10 @@ type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
 };
 
-function toneClass(direction: "up" | "down" | "flat" | "unknown") {
-  if (direction === "up") return "is-up";
-  if (direction === "down") return "is-down";
-  return "is-flat";
+function implicationClass(implication: MorningMarketBriefModel["crossAssets"][number]["implication"]) {
+  if (implication === "supportive") return "is-supportive";
+  if (implication === "restrictive") return "is-restrictive";
+  return "is-neutral";
 }
 
 function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
@@ -37,15 +37,15 @@ function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
   );
 }
 
-function TerminalishBadge() {
-  return <span className="mbSoftBadge">Not currently available</span>;
-}
-
 function customerLevelLabel(label: string, kind: string): string {
   if (/24h high|resistance \(24h/i.test(label)) return "24-hour high / upside reference";
   if (/24h low|support \(24h/i.test(label)) return "24-hour low / downside reference";
-  if (kind === "resistance" && /key resistance/i.test(label)) return "Upside reference";
-  if (kind === "support" && /key support/i.test(label)) return "Downside reference";
+  if (kind === "resistance" && /key resistance|upside reference/i.test(label)) {
+    return "24-hour high / upside reference";
+  }
+  if (kind === "support" && /key support|downside reference/i.test(label)) {
+    return "24-hour low / downside reference";
+  }
   return label;
 }
 
@@ -77,16 +77,16 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
 
   return (
     <article className="morningMarketBrief" aria-labelledby="mb-title">
-      <header className="mbHero">
+      <header className="mbHero" id="brief-hero">
         <div className="mbHeroCopy">
-          <span className="mbEyebrow">Morning Brief · under two minutes</span>
+          <span className="mbEyebrow">Morning Brief</span>
           <h1 id="mb-title">
             {model.greeting}
             <em> Here is today’s market briefing.</em>
           </h1>
           <p>
             A concise verified briefing for S&P 500 futures traders — what changed,
-            what matters now and what to watch or avoid.
+            what matters now, and where to go next.
           </p>
         </div>
         <div className="mbHeroMeta">
@@ -105,7 +105,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           <div>
             <span>Membership</span>
             <strong>{model.tierLabel}</strong>
-            <small>Educational · trade participation may stay restricted until confirmations complete</small>
+            <small>Educational commentary only</small>
           </div>
         </div>
         <nav className="mbHeroActions" aria-label="Brief actions">
@@ -125,11 +125,22 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         <span>Educational commentary only — not personalised advice.</span>
       </div>
 
-      <section className={`mbPanel mbDecision ${permissionBlocked ? "is-blocked" : ""}`} aria-labelledby="mb-decision-title">
+      <section className="mbPanel mbExecutive" id="executive-summary" aria-labelledby="mb-exec-title">
         <header>
-          <span className="mbEyebrow">Decision summary</span>
+          <span className="mbEyebrow">Executive market summary</span>
+          <h2 id="mb-exec-title">What the verified inputs say now</h2>
+        </header>
+        <p className="mbLead">{model.executiveSummary}</p>
+      </section>
+
+      <section
+        className={`mbPanel mbDecision ${permissionBlocked ? "is-blocked" : ""}`}
+        id="participation"
+        aria-labelledby="mb-decision-title"
+      >
+        <header>
+          <span className="mbEyebrow">Participation status</span>
           <h2 id="mb-decision-title">{model.summary.headline}</h2>
-          <p>{model.aiBriefing.sourceLabel.replace(/deterministic engine brief/i, "rules-based market summary")}</p>
           {permissionBlocked ? (
             <p className="mbDecisionNote">
               Trade participation is restricted. Verified market observations in this brief remain available for review.
@@ -137,143 +148,81 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           ) : null}
         </header>
         <div className="mbDecisionGrid">
-          {permissionBlocked ? (
-            <>
-              <div className="is-blocked">
-                <span>Participation</span>
-                <strong>Restricted</strong>
-              </div>
-              <div>
-                <span>Market lean</span>
-                <strong>{model.playbook.posture.split("·")[0]?.trim() || "Unavailable"}</strong>
-              </div>
-              <div>
-                <span>Confidence</span>
-                <strong>{confidenceLabel}</strong>
-                {confidenceDetail ? <small className="mbScoreDetail">{confidenceDetail}</small> : null}
-              </div>
-              <div>
-                <span>Primary condition</span>
-                <strong>{primaryReason}</strong>
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <span>Market lean</span>
-                <strong>{model.playbook.posture.split("·")[0]?.trim() || "Unavailable"}</strong>
-              </div>
-              <div>
-                <span>Participation</span>
-                <strong>Caution</strong>
-              </div>
-              <div>
-                <span>Confidence</span>
-                <strong>{confidenceLabel}</strong>
-                {confidenceDetail ? <small className="mbScoreDetail">{confidenceDetail}</small> : null}
-              </div>
-              <div>
-                <span>Primary risk</span>
-                <strong>{primaryReason}</strong>
-              </div>
-            </>
-          )}
-        </div>
-        <p className="mbLead">
-          {model.summary.whatMatters}
-          {permissionBlocked
-            ? " Directional lean is context only — not a trade instruction while participation remains restricted."
-            : ""}
-        </p>
-        <div className="mbWatchAvoid mbInlineWatch">
-          <div>
-            <h3>Watch</h3>
-            <ul>{model.summary.watch.slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul>
+          <div className={permissionBlocked ? "is-blocked" : ""}>
+            <span>Participation</span>
+            <strong>{permissionBlocked ? "Restricted" : "Caution"}</strong>
           </div>
           <div>
-            <h3>Avoid</h3>
-            <ul>{model.summary.avoid.slice(0, 3).map((item) => <li key={item}>{item}</li>)}</ul>
+            <span>Observed market lean</span>
+            <strong>{model.playbook.leanLabel}</strong>
+          </div>
+          <div>
+            <span>Confidence</span>
+            <strong>{confidenceLabel}</strong>
+            {confidenceDetail ? <small className="mbScoreDetail">{confidenceDetail}</small> : null}
+          </div>
+          <div>
+            <span>Primary condition</span>
+            <strong>{primaryReason}</strong>
           </div>
         </div>
-        {permissionBlocked ? (
+        <p className="mbLead">{model.summary.setupReading}</p>
+        {model.summary.engineWeightDetail ? (
           <details className="mbParticipationDetails">
-            <summary>Why participation stays restricted</summary>
-            <dl className="mbParticipationFacts">
-              <div>
-                <dt>Primary reason</dt>
-                <dd>{primaryReason}</dd>
-              </div>
-              <div>
-                <dt>Confidence</dt>
-                <dd>
-                  {confidenceLabel}
-                  {confidenceDetail ? ` · ${confidenceDetail}` : ""}
-                </dd>
-              </div>
-              <div>
-                <dt>Data condition</dt>
-                <dd>{model.biggestRisk.detail}</dd>
-              </div>
-              <div>
-                <dt>Requirements before participation</dt>
-                <dd>
-                  <ul>
-                    {model.playbook.confirmations.slice(0, 4).map((item) => (
-                      <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
-                    ))}
-                  </ul>
-                </dd>
-              </div>
-            </dl>
+            <summary>Technical engine detail</summary>
+            <p>{model.summary.engineWeightDetail}</p>
           </details>
-        ) : (
-          <section className="mbPanel mbRisk mbInlineRisk" aria-labelledby="mb-risk-title">
-            <header>
-              <span className="mbEyebrow">Participation conditions</span>
-              <h2 id="mb-risk-title">Before participating</h2>
-            </header>
-            <ul className="mbConfirmList">
-              {model.playbook.confirmations.slice(0, 4).map((item) => (
-                <li key={item}>{item.replace(/decision permission valid/i, "participation checks passed")}</li>
-              ))}
-            </ul>
-          </section>
-        )}
+        ) : null}
       </section>
 
-      <section className="mbSummary mbOvernight" aria-labelledby="mb-overnight-title">
+      <section className="mbSummary mbOvernight" id="what-changed" aria-labelledby="mb-overnight-title">
         <header>
-          <span className="mbEyebrow">Overnight &amp; today</span>
-          <h2 id="mb-overnight-title">What changed and what matters</h2>
+          <span className="mbEyebrow">What changed and what matters</span>
+          <h2 id="mb-overnight-title">Session context</h2>
         </header>
         <div className="mbSummaryGrid mbSummaryTight">
           <article>
-            <h3>What happened overnight?</h3>
+            <h3>Cross-market reading</h3>
             <p>{model.summary.overnight}</p>
           </article>
           <article>
-            <h3>Highest-probability behaviour</h3>
-            <p>{model.summary.highestProbability}</p>
+            <h3>Practical significance</h3>
+            <p>{model.summary.whatMatters}</p>
           </article>
         </div>
       </section>
 
-      <section className="mbCross" aria-label="Market snapshot metrics">
-        {model.crossAssets.map((card) => (
-          <article key={card.id} className={`mbCrossCard ${toneClass(card.direction)} ${card.available ? "" : "is-empty"}`}>
-            <span>{card.label}</span>
-            <strong>{card.available && card.value ? card.value : "—"}</strong>
-            <em>{card.available && card.change ? card.change : "Unavailable"}</em>
-            <p>{card.detail.replace("configured market gateway", "market-data feed")}</p>
-          </article>
-        ))}
+      <section className="mbWeather" id="market-weather" aria-labelledby="mb-weather-title">
+        <header>
+          <span className="mbEyebrow">Market weather</span>
+          <h2 id="mb-weather-title">Verified cross-market context</h2>
+          <p>Values from delayed verified quotes only. Breadth is omitted until a verified advance/decline feed exists.</p>
+        </header>
+        {model.crossAssets.length ? (
+          <div className="mbCross">
+            {model.crossAssets.map((card) => (
+              <article
+                key={card.id}
+                className={`mbCrossCard ${implicationClass(card.implication)}`}
+              >
+                <span>{card.label}</span>
+                <strong>{card.value}</strong>
+                <em>{card.change}</em>
+                <p>{card.detail}</p>
+                <small>Delayed · verified</small>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="mbFine">Cross-market weather awaits verified ES, VIX, DXY or US 10-year quotes.</p>
+        )}
       </section>
 
       <div className="mbTwin mbTwinWide">
-        <section className="mbPanel" aria-labelledby="mb-levels-title">
+        <section className="mbPanel" id="verified-levels" aria-labelledby="mb-levels-title">
           <header>
-            <span className="mbEyebrow">Key levels</span>
-            <h2 id="mb-levels-title">Verified references</h2>
+            <span className="mbEyebrow">Verified levels</span>
+            <h2 id="mb-levels-title">ES references</h2>
           </header>
           {model.levels.rungs.length ? (
             <ol className="mbLadder">
@@ -281,41 +230,37 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
                 <li key={rung.id} className={`is-${rung.kind}`}>
                   <span>{customerLevelLabel(rung.label, rung.kind)}</span>
                   <strong>{rung.value}</strong>
-                  <small>{rung.note}</small>
                 </li>
               ))}
             </ol>
           ) : (
             <div className="mbEmpty mbCompactEmpty" role="status">
-              <TerminalishBadge />
               <strong>Levels awaiting verification</strong>
               <p>Reference levels stay blank until verified prints arrive.</p>
             </div>
           )}
           <p className="mbFine">{model.levels.disclosure}</p>
+          <div className="mbExpectedInline">
+            <span>{expectedIsObserved ? "Observed range context" : "Range context"}</span>
+            <strong>{model.expectedMove.label}</strong>
+            <p>{model.expectedMove.detail}</p>
+            <small>
+              {expectedIsObserved
+                ? "Verified observed range from recent candles — not a forecasted expected move."
+                : "Shown only when verified inputs support the reading."}
+            </small>
+          </div>
+          <Link href="/terminal" className="mbTextLink">
+            Open full chart on Trading Desk
+          </Link>
         </section>
 
-        <section className="mbPanel mbExpected" aria-labelledby="mb-move-title">
-          <header>
-            <span className="mbEyebrow">{expectedIsObserved ? "Observed range context" : "Expected move"}</span>
-            <h2 id="mb-move-title">{model.expectedMove.label}</h2>
-          </header>
-          <p className="mbLead">{model.expectedMove.detail}</p>
-          <p className="mbFine">
-            {expectedIsObserved
-              ? "This is a verified observed range from recent candles — not a forecasted expected move."
-              : "Shown only when verified inputs support the reading."}
-          </p>
-        </section>
-      </div>
-
-      <div className="mbTwin mbTwinWide">
-        <section className="mbPanel" aria-labelledby="mb-timeline-title">
-          <header>
-            <span className="mbEyebrow">Next catalysts</span>
-            <h2 id="mb-timeline-title">Upcoming verified events</h2>
-          </header>
-          {timeline.length ? (
+        {timeline.length ? (
+          <section className="mbPanel" id="catalysts" aria-labelledby="mb-timeline-title">
+            <header>
+              <span className="mbEyebrow">Next verified catalysts</span>
+              <h2 id="mb-timeline-title">Event risk ahead</h2>
+            </header>
             <ol className="mbTimeline">
               {timeline.map((item) => (
                 <li key={item.id}>
@@ -327,37 +272,88 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
                 </li>
               ))}
             </ol>
-          ) : (
-            <div className="mbEmpty mbCompactEmpty" role="status">
-              <TerminalishBadge />
-              <p>No verified calendar events are listed in the current snapshot.</p>
-            </div>
-          )}
-        </section>
+            <Link href="/terminal#catalysts" className="mbTextLink">
+              Review catalysts on Trading Desk
+            </Link>
+          </section>
+        ) : (
+          <aside className="mbCatalystEmpty" role="status" aria-label="Next verified catalysts">
+            <span className="mbEyebrow">Next verified catalysts</span>
+            <p>No upcoming verified event is currently available.</p>
+            <Link href="/terminal#catalysts" className="mbTextLink">
+              Review catalysts on Trading Desk
+            </Link>
+          </aside>
+        )}
+      </div>
 
-        <div className="mbCompactStack" aria-label="Optional coverage">
-          <div className="mbStatusRow" role="status">
-            <span className="mbEyebrow">Overnight news</span>
-            <strong>Verified source not currently connected</strong>
-            <p>{model.overnightNews.reason}</p>
+      <section className="mbPanel mbWatchAvoidPanel" id="watch-avoid" aria-labelledby="mb-watch-title">
+        <header>
+          <span className="mbEyebrow">Watch and avoid</span>
+          <h2 id="mb-watch-title">Practical observations</h2>
+        </header>
+        <div className="mbWatchAvoid">
+          <div>
+            <h3>Watch</h3>
+            <ul>{model.summary.watch.map((item) => <li key={item}>{item}</li>)}</ul>
           </div>
-          <div className={`mbStatusRow${model.video.available ? " is-media" : ""}`} role="status">
-            {model.video.available ? (
-              <>
-                <span className="mbEyebrow">Optional</span>
-                <strong id="mb-video-title">{model.video.title}</strong>
-                <BriefVideo video={model.video} />
-              </>
-            ) : (
-              <>
-                <span className="mbEyebrow">Daily market video</span>
-                <strong id="mb-video-title">Verified source not currently connected</strong>
-                <p>{model.video.reason}</p>
-              </>
-            )}
+          <div>
+            <h3>Avoid</h3>
+            <ul>{model.summary.avoid.map((item) => <li key={item}>{item}</li>)}</ul>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className="mbQuickActions" aria-label="Next actions">
+        <header>
+          <span className="mbEyebrow">Next actions</span>
+          <h2>Where to go next</h2>
+        </header>
+        <nav className="mbActionGrid">
+          <Link href="/terminal" className="mbAction is-primary">
+            <small>DEPTH</small>
+            <b>Open Trading Desk</b>
+          </Link>
+          <Link href="/dashboard" className="mbAction is-gold">
+            <small>COMMAND</small>
+            <b>Open Dashboard</b>
+          </Link>
+          <Link href="/ideas" className="mbAction">
+            <small>EXPLORE</small>
+            <b>Review Ideas</b>
+          </Link>
+          <Link href="/journal" className="mbAction">
+            <small>REFLECT</small>
+            <b>Risk &amp; Journal</b>
+          </Link>
+        </nav>
+      </section>
+
+      {model.serviceStatus.length ? (
+        <details className="mbServiceStatus">
+          <summary>
+            Service status · {model.serviceStatus.length} item{model.serviceStatus.length === 1 ? "" : "s"} pending or unavailable
+          </summary>
+          <ul>
+            {model.serviceStatus.map((item) => (
+              <li key={item.label}>
+                <strong>{item.label}</strong>
+                <span>{item.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+
+      {model.video.available ? (
+        <section className="mbPanel" aria-labelledby="mb-video-title">
+          <header>
+            <span className="mbEyebrow">Optional</span>
+            <h2 id="mb-video-title">{model.video.title}</h2>
+          </header>
+          <BriefVideo video={model.video} />
+        </section>
+      ) : null}
     </article>
   );
 }
