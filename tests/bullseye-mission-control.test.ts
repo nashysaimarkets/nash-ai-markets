@@ -2,58 +2,49 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function source() {
-  return readFile(new URL("../app/dashboard/components/BullseyeMissionControl.tsx", import.meta.url), "utf8");
-}
-
-test("Mission Control renders verified derived engine analytics without provider-native claims", async () => {
-  const component = await source();
-  assert.match(component, /scores\.trend/);
-  assert.match(component, /scores\.marketSentiment/);
-  assert.match(component, /scores\.volatility/);
-  assert.match(component, /scores\.riskOnRiskOff/);
-  assert.match(component, /BULLSEYE RADAR™ · DERIVED/);
-  assert.match(component, /Summary uses current deterministic engine outputs only/);
-  assert.doesNotMatch(component, /Suggested Copilot prompts/);
+test("Mission Control command centre uses verified live inputs without inventing history", async () => {
+  const component = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(component, /KeyMarketInformation/);
+  assert.doesNotMatch(component, /BullseyeGauge|AskBullseye|Stand aside if/);
+  assert.match(component, /What changed/);
+  assert.match(component, /never reconstructed history/);
+  assert.doesNotMatch(component, /Suggested Copilot prompts|fake strike|guaranteed/);
 });
 
-test("Mission Control renders an intentional fail-closed unavailable state", async () => {
-  const component = await source();
-  assert.match(component, /VERIFICATION IN PROGRESS/);
-  assert.match(component, /Stand by for verified inputs/);
-  assert.match(component, /NO-TRADE/);
-  assert.match(component, /Do not infer direction from incomplete data/);
-  assert.match(component, /verified \? item\.score : "—"/);
+test("Mission Control includes workflow actions and path cards", async () => {
+  const component = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
+  assert.match(component, /Open Terminal/);
+  assert.match(component, /Read Market Brief/);
+  assert.doesNotMatch(component, /Open Options Corner|href="\/options"/);
+  assert.match(component, /Review Previous Session/);
+  assert.match(component, /mcPaths/);
+  assert.match(component, /No-trade/);
 });
 
 test("dashboard includes the premium plan and customer trust labels", async () => {
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
-  const styles = await readFile(new URL("../app/dashboard-elite.css", import.meta.url), "utf8");
-  const plan = await readFile(new URL("../app/dashboard/components/TodaysBullseyePlan.tsx", import.meta.url), "utf8");
-  assert.match(dashboard, /BULLSEYE Command Centre/);
-  assert.match(dashboard, /Market intelligence, not financial advice/);
-  assert.doesNotMatch(dashboard, /href="\/terminal\/diagnostics"/);
-  assert.match(plan, /OBSERVED LEVELS/);
-  assert.match(plan, /DERIVED SCENARIOS/);
-  assert.match(plan, /Awaiting verified input/);
-  assert.match(dashboard, /No verified timestamp/);
-  assert.match(styles, /subscriptionStatusCompact dl div:last-child\{grid-column:1\/-1\}/);
-  assert.match(styles, /eliteHeaderMeta strong\{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere\}/);
+  const mission = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
+  const styles = await readFile(new URL("../app/mission-control.css", import.meta.url), "utf8");
+  assert.match(dashboard, /title: "Market Command Centre \| NASH AI Markets"/);
+  assert.match(dashboard, /MarketCommandCentre/);
+  assert.match(dashboard, /resolveMembershipTier/);
+  assert.doesNotMatch(dashboard, /MissionControl|href="\/terminal\/diagnostics"/);
+  assert.match(mission, /Open Terminal/);
+  assert.match(mission, /Review Previous Session/);
+  assert.match(styles, /\.mcHero\{/);
 });
 
 test("dashboard exposes verified catalysts and readable risk controls without additional requests", async () => {
-  const [dashboard, component, styles] = await Promise.all([
+  const [dashboard, mission, styles] = await Promise.all([
     readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/dashboard/components/MarketCatalystBriefing.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/dashboard-elite.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
-  assert.match(dashboard, /MarketCatalystBriefing/);
-  assert.match(component, /What could change the plan/);
-  assert.match(component, /events\.slice\(0, 3\)/);
-  assert.match(component, /rawValue !== null/);
-  assert.match(component, /Plan-change signals remain withheld/);
-  assert.doesNotMatch(component, /fetch\(|useEffect|setInterval/);
-  assert.match(styles, /\.catalystBriefingGrid\{display:grid/);
-  assert.match(styles, /@media\(max-width:700px\)[\s\S]*\.catalystBriefingGrid\{grid-template-columns:1fr\}/);
+  assert.match(dashboard, /MarketCommandCentre/);
+  assert.doesNotMatch(dashboard, /MissionControl/);
+  assert.match(mission, /mcPaths/);
+  assert.match(mission, /No-trade/);
+  assert.doesNotMatch(mission, /fetch\(|useEffect|setInterval/);
+  assert.match(styles, /\.mcPaths/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
 });

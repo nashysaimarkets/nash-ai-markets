@@ -1,6 +1,6 @@
 export type OnboardingPreferences = {
   experience: "new" | "developing" | "experienced";
-  interests: Array<"futures" | "options" | "macro" | "volatility">;
+  interests: Array<"futures" | "equities" | "macro" | "volatility">;
   notifications: "essential" | "brief-and-essential" | "none";
 };
 
@@ -13,7 +13,7 @@ export function normalizeOnboardingPreferences(value: unknown): OnboardingPrefer
   if ((experience !== "new" && experience !== "developing" && experience !== "experienced")
     || (notifications !== "essential" && notifications !== "brief-and-essential" && notifications !== "none")
     || !Array.isArray(interests)) return null;
-  const allowed = new Set(["futures", "options", "macro", "volatility"]);
+  const allowed = new Set(["futures", "equities", "macro", "volatility"]);
   const normalized = [...new Set(interests.filter((item): item is string => typeof item === "string"))];
   if (normalized.length < 1 || normalized.some((item) => !allowed.has(item))) return null;
   return { experience, interests: normalized as OnboardingPreferences["interests"], notifications };

@@ -1,4 +1,5 @@
 import type { MarketSnapshot } from "../../lib/market-data.ts";
+import { isDecisionReadySnapshot } from "../../lib/market-data.ts";
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
@@ -31,16 +32,14 @@ export function buildDailyMission(
   decision: TradingDecision,
   plan: TradePlan,
 ): DailyMission {
-  const verified = (
-    snapshot.status === "LIVE" || snapshot.status === "DELAYED"
-  ) && intelligence.actionable && intelligence.reasoning.missingDataWarnings.length === 0;
+  const verified = isDecisionReadySnapshot(snapshot) && intelligence.actionable;
   if (!verified) {
     return {
       available: false,
       marketCondition: "Verified market condition unavailable",
       confidence: null,
       directionalBias: "Neutral / stand aside",
-      keyWarning: "Current provider data is unavailable. No directional output is active.",
+      keyWarning: "Current provider data is outside the decision window. No directional output is active.",
       nextAction: "Wait for a verified provider update, then refresh the dashboard.",
     };
   }
@@ -87,6 +86,10 @@ export function selectNextEconomicEvent(events: MarketSnapshot["events"], now = 
 }
 
 export function memberDisplayName(email: string, metadata: Record<string, unknown> | undefined): string {
+  const preferred = metadata?.preferred_name ?? metadata?.first_name ?? metadata?.given_name;
+  if (typeof preferred === "string" && preferred.trim().length >= 2) {
+    return preferred.trim().slice(0, 60);
+  }
   const candidate = metadata?.full_name ?? metadata?.name;
   if (typeof candidate === "string" && candidate.trim()) return candidate.trim().slice(0, 60);
   const localPart = email.split("@")[0]?.replace(/[._-]+/g, " ").trim();

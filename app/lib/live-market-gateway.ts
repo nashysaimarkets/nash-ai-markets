@@ -1,5 +1,7 @@
 import {
   createUnavailableSnapshot,
+  hasDisplayableQuotes,
+  isDecisionReadySnapshot,
   type MarketDataProvider,
   type MarketProviderAttemptDiagnostics,
   type MarketEvent,
@@ -148,6 +150,9 @@ export function createUnconfiguredMarketGatewayStatus(providerName = "Not config
         vix: "not_attempted",
         treasuryYields: "not_attempted",
         usDollarIndex: "not_attempted",
+        oil: "not_attempted",
+        qqq: "not_attempted",
+        nasdaq: "not_attempted",
       },
       responseReceived: false,
       schemaRecognized: false,
@@ -190,6 +195,7 @@ export class LiveMarketGateway {
   private retryDelayMs: number;
   private logger: (message: string, details?: Record<string, unknown>) => void;
   private state: MarketGatewayStatus;
+  private lastGoodSnapshot: MarketSnapshot | null = null;
 
   constructor(options: LiveMarketGatewayOptions) {
     this.provider = options.provider;
@@ -215,6 +221,9 @@ export class LiveMarketGateway {
           vix: "not_attempted",
           treasuryYields: "not_attempted",
           usDollarIndex: "not_attempted",
+          oil: "not_attempted",
+          qqq: "not_attempted",
+          nasdaq: "not_attempted",
         },
         responseReceived: false,
         schemaRecognized: false,
@@ -237,6 +246,39 @@ export class LiveMarketGateway {
     return this.getStatus();
   }
 
+  private rememberSuccess(normalized: MarketSnapshot, now: number, refreshStartedAt: number, attempt: number) {
+    const decisionReady = isDecisionReadySnapshot(normalized);
+    this.lastGoodSnapshot = normalized;
+    this.state.connectionStatus = decisionReady ? (normalized.status === "LIVE" ? "connected" : "degraded") : "degraded";
+    this.state.lastSuccessfulUpdate = normalized.asOf;
+    this.state.dataAgeMs = dataAgeMs(normalized.asOf, now);
+    this.state.fallbackActive = false;
+    this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
+    this.state.lastFailureCategory = null;
+    this.state.providerAttempt = this.provider.getDiagnostics?.() ?? {
+      resultCategory: decisionReady ? "success" : "partial_success",
+      httpStatusCategory: "success",
+      endpointStatusCategories: {
+        sp500Futures: "success",
+        vix: "success",
+        treasuryYields: "success",
+        usDollarIndex: "success",
+        oil: "success",
+        qqq: "success",
+        nasdaq: "success",
+      },
+      responseReceived: true,
+      schemaRecognized: true,
+      quoteCount: normalized.quotes.length,
+      requiredInstrumentsFound: normalized.quotes.map((quote) => quote.symbol),
+      requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"].filter((symbol) => !normalized.quotes.some((quote) => quote.symbol === symbol)),
+      providerTimestamp: normalized.asOf,
+      failureReason: decisionReady ? null : "Observation is outside the current decision window.",
+    };
+    this.state.dataClassification = normalized.status === "LIVE" ? "live" : normalized.status === "DELAYED" ? "delayed" : "stale";
+    this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1, quotes: normalized.quotes.length });
+  }
+
   async fetchSnapshot(now = Date.now()): Promise<MarketSnapshot> {
     const refreshStartedAt = Date.now();
     this.state.lastAttempt = new Date(now).toISOString();
@@ -249,35 +291,13 @@ export class LiveMarketGateway {
         if (!snapshot) throw new Error("Provider returned no market snapshot");
 
         const normalized = normalizeSnapshotFreshness(snapshot, now);
-        if (normalized.status !== "LIVE" && normalized.status !== "DELAYED") {
+        // Keep verified quotes for customer display even when they fall outside the
+        // live/delayed decision window. Only reject empty or unusable payloads.
+        if (!hasDisplayableQuotes(normalized) && !isDecisionReadySnapshot(normalized)) {
           throw new Error(`Provider snapshot is ${normalized.status.toLowerCase()}`);
         }
 
-        this.state.connectionStatus = normalized.status === "LIVE" ? "connected" : "degraded";
-        this.state.lastSuccessfulUpdate = normalized.asOf;
-        this.state.dataAgeMs = dataAgeMs(normalized.asOf, now);
-        this.state.fallbackActive = false;
-        this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
-        this.state.lastFailureCategory = null;
-        this.state.providerAttempt = this.provider.getDiagnostics?.() ?? {
-          resultCategory: "success",
-          httpStatusCategory: "success",
-          endpointStatusCategories: {
-            sp500Futures: "success",
-            vix: "success",
-            treasuryYields: "success",
-            usDollarIndex: "success",
-          },
-          responseReceived: true,
-          schemaRecognized: true,
-          quoteCount: normalized.quotes.length,
-          requiredInstrumentsFound: normalized.quotes.map((quote) => quote.symbol),
-          requiredInstrumentsMissing: ["ES", "VIX", "US2Y", "US10Y", "DXY"].filter((symbol) => !normalized.quotes.some((quote) => quote.symbol === symbol)),
-          providerTimestamp: normalized.asOf,
-          failureReason: null,
-        };
-        this.state.dataClassification = normalized.status === "LIVE" ? "live" : "delayed";
-        this.logger("market-provider:success", { status: normalized.status, provider: this.state.providerName, attempt: attempt + 1 });
+        this.rememberSuccess(normalized, now, refreshStartedAt, attempt);
         return normalized;
       } catch (error) {
         const category = safeFailureCategory(error);
@@ -305,8 +325,16 @@ export class LiveMarketGateway {
     this.state.fallbackActive = true;
     this.state.dataAgeMs = this.state.lastSuccessfulUpdate ? dataAgeMs(this.state.lastSuccessfulUpdate, now) : null;
     this.state.lastRefreshLatencyMs = Math.max(0, Date.now() - refreshStartedAt);
+    if (this.lastGoodSnapshot) {
+      const retained = normalizeSnapshotFreshness(this.lastGoodSnapshot, now);
+      if (hasDisplayableQuotes(retained)) {
+        this.state.dataClassification = "stale";
+        this.logger("market-provider:fallback", { provider: this.state.providerName, mode: "retain-last-verified", quotes: retained.quotes.length });
+        return retained;
+      }
+    }
     this.state.dataClassification = this.state.lastSuccessfulUpdate ? "stale" : "unavailable";
-    this.logger("market-provider:fallback", { provider: this.state.providerName });
+    this.logger("market-provider:fallback", { provider: this.state.providerName, mode: "empty" });
     return createUnavailableSnapshot(this.state.lastSuccessfulUpdate ?? undefined);
   }
 }

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { BrandLogo } from "./components/BrandLogo.tsx";
 import { ConversionMetrics } from "./components/ConversionMetrics.tsx";
 import {
   founding100AvailabilityLabel,
@@ -155,9 +156,7 @@ export default async function Home() {
       <a className="mcSkip" href="#main-content">Skip to content</a>
 
       <header className="mcNav">
-        <a href="#top" className="mcBrand" aria-label="NASH AI Markets home">
-          <Image src="/brand/logo-horizontal.svg" width={252} height={44} alt="NASH AI Markets" priority />
-        </a>
+        <BrandLogo className="mcBrandLogo" />
         <nav aria-label="Main navigation">
           <a href="#platform">Platform</a>
           <a href="#workflow">Method</a>

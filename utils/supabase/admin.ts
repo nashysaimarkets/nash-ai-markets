@@ -1,14 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
+import { createAuthCompatibleFetch } from "./auth-compatible-fetch.ts";
+import { resolveSupabasePublicConfig, resolveSupabaseServiceRoleKey } from "./config.ts";
 
 export function createAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url } = resolveSupabasePublicConfig();
+  const service = resolveSupabaseServiceRoleKey();
 
-  if (!url || !serviceRoleKey) {
+  if (!url || !service.value) {
     throw new Error("Supabase server credentials are not configured");
   }
 
-  return createClient(url, serviceRoleKey, {
+  return createClient(url, service.value, {
+    global: {
+      fetch: createAuthCompatibleFetch(service.value),
+    },
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

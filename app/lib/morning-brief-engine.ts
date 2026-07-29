@@ -54,7 +54,7 @@ export function createMorningBrief(input: MorningBriefInput): MorningBrief {
       label: "PREVIEW STRUCTURE · NOT CURRENT MARKET DATA",
       asOf: input.asOf,
       sessionLabel: input.sessionLabel,
-      headline: "Your verified morning brief will appear here",
+      headline: "Your verified market briefing will appear here",
       summary: null,
       confidence: null,
       directionalBias: null,

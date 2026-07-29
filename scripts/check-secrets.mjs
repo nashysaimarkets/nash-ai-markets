@@ -9,6 +9,8 @@ const detectors = [
   ["AWS access key", /AKIA[0-9A-Z]{16}/],
   ["private key material", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/],
   ["populated OpenAI environment assignment", /^OPENAI_API_KEY[ \t]*=[ \t]*\S+/m],
+  ["Google OAuth client secret", /GOCSPX-[A-Za-z0-9_-]{10,}/],
+  ["populated Google client secret assignment", /^GOOGLE_CLIENT_SECRET[ \t]*=[ \t]*\S+/m],
 ];
 
 const repositoryFiles = execFileSync(

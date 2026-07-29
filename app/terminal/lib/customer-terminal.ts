@@ -22,6 +22,11 @@ export function instrumentInterpretation(quote: MarketQuote | undefined): string
   if (quote.direction === "flat") return "Little directional pressure in the latest observation.";
   const isConstraint = quote.symbol === "VIX" || quote.symbol === "DXY" || quote.symbol === "US2Y" || quote.symbol === "US10Y";
   const supportive = isConstraint ? quote.direction === "down" : quote.direction === "up";
+  if (quote.symbol === "OIL") {
+    return quote.direction === "up"
+      ? "Oil proxy is higher on the latest verified print — energy tape firm, equity implication mixed."
+      : "Oil proxy is lower on the latest verified print — energy tape softer, equity implication mixed.";
+  }
   return supportive
     ? "Latest move is supportive for equity risk appetite."
     : "Latest move adds a constraint to equity risk appetite.";

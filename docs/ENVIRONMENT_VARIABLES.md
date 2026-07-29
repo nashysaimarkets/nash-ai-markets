@@ -10,8 +10,11 @@ absent.
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Mandatory | Browser/server Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Mandatory | Browser/server Supabase publishable access |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Mandatory (preferred) | Browser/server publishable key (`sb_publishable_…`) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Temporary fallback only | Legacy JWT `anon` key if publishable is unset; resolved centrally in `utils/supabase/config.ts` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret, server only | Mandatory | Membership preview and verified-outcome server operations; Stripe membership synchronization |
+
+Public clients prefer `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, then fall back to `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Values are trimmed and wrapping quotes stripped. New-format keys are sent on the `apikey` header and are not duplicated into `Authorization: Bearer` (which causes Auth `401` for non-JWT keys).
 
 ## Stripe
 
@@ -100,6 +103,9 @@ is optional and defaults to the official FMP Stable endpoint.
 | `FMP_SP500_FUTURES_SYMBOL` | Server config | Optional | Override ES futures symbol |
 | `FMP_VIX_SYMBOL` | Server config | Optional | Override VIX symbol |
 | `FMP_US_DOLLAR_INDEX_SYMBOL` | Server config | Optional | Override dollar-index symbol |
+| `FMP_OIL_SYMBOL` | Server config | Optional | Override oil proxy symbol (default `USO`) |
+| `FMP_QQQ_SYMBOL` | Server config | Optional | Override QQQ symbol (default `QQQ`) |
+| `FMP_NASDAQ_SYMBOL` | Server config | Optional | Override Nasdaq index symbol (default `^IXIC`) |
 
 The default candle symbol `ESUSD` is FMP's commodity-series identifier named
 `E-Mini S&P 500`, with currency `USD` and exchange classification `CME`. It is

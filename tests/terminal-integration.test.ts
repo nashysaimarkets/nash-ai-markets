@@ -8,15 +8,16 @@ import {
   terminalMarketState,
 } from "../app/terminal/lib/visual-terminal.ts";
 
-test("complete terminal render wires every deterministic output panel", async () => {
+test("terminal page is a brand canvas with auth gates intact", async () => {
   const page = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
-  for (const expected of [
-    "TodaysMarketPlan snapshot={snapshot} decision={decision} plan={plan}",
-    "CrossAssetBoard snapshot={snapshot}",
-    "MarketPressureMap snapshot={snapshot} intelligence={intelligence}",
-    "DecisionEnginePanel snapshot={snapshot} decision={decision} plan={plan}",
-    "Verified intraday chart unavailable",
-  ]) assert.match(page, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  assert.match(page, /TradingDeskOS/);
+  assert.match(page, /active="terminal"/);
+  assert.match(page, /resolveMembershipTier/);
+  assert.match(page, /createProgressiveAccess/);
+  assert.doesNotMatch(page, /MarketsBrowser/);
+  assert.doesNotMatch(page, /MarketDirectionalGaugesPanel|DashboardCandlestickChart|CrossAssetCandleGallery|LockedPremiumCard/);
+  assert.doesNotMatch(page, /TodaysMarketPlan|CrossAssetBoard|KeyMarketInformation|Upcoming catalysts|EventWindowEmpty/);
+  assert.doesNotMatch(page, /MarketDeskSignalsPanel|AskBullseye|MarketPressureMap|DecisionEnginePanel|DecisionIntelligencePanel|StructureLevelsPanel/);
 });
 
 test("decision and planner fields render in their respective panels", async () => {
@@ -51,17 +52,16 @@ test("OHLCV validation rejects malformed, unordered and impossible candles", () 
   assert.equal(isValidOhlcv([{ time: 2, open: 10, high: 11, low: 9, close: 10, volume: 1 }, { time: 1, open: 10, high: 11, low: 9, close: 10, volume: 1 }]), false);
 });
 
-test("critical warnings and high-impact provider events remain visible", async () => {
-  const component = await readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8");
-  assert.match(component, /decision\.dataQualityWarnings/);
-  assert.match(component, /plan\.eventRiskWarnings/);
-  assert.match(component, /decision\.noTradeReasons/);
-  assert.match(component, /Conditions limiting participation/);
+test("participation warning helpers remain available for rebuild", async () => {
+  const warnings = await readFile(new URL("../app/terminal/lib/customer-warnings.ts", import.meta.url), "utf8");
+  assert.match(warnings, /formatCustomerParticipationWarnings/);
 });
 
-test("responsive integration keeps the chart and decisions usable", async () => {
+test("responsive integration keeps chart primitives usable", async () => {
   const styles = await readFile(new URL("../app/mission-control.css", import.meta.url), "utf8");
   assert.match(styles, /ftEngineStrip\{grid-template-columns:1fr 1fr\}/);
   assert.match(styles, /ftPrimaryGrid\{display:flex;flex-direction:column\}/);
   assert.match(styles, /marketChartCanvas,.marketChartState\{height:300px\}/);
+  assert.match(styles, /\.terminalMarketsCanvas|\.terminalEmptyCanvas/);
+  assert.match(styles, /\.tmMarketsSidebar/);
 });

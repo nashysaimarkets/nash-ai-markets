@@ -46,15 +46,20 @@ test("unavailable snapshots hide values instead of inventing them", () => {
   assert.equal(verifiedQuote(snapshot, "ES"), null);
 });
 
-test("visual terminal preserves no-trade warnings and responsive safeguards", async () => {
-  const [page, components, styles] = await Promise.all([
+test("visual terminal preserves responsive safeguards while the page canvas is cleared", async () => {
+  const [page, canvas, components, styles, warnings] = await Promise.all([
     readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/MemberEmptyCanvas.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/lib/customer-warnings.ts", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}/);
-  assert.match(components, /decision\.noTradeReasons/);
-  assert.match(components, /Conditions limiting participation/);
+  assert.match(page, /TradingDeskOS/);
+  assert.match(canvas, /BrandLogo/);
+  assert.match(canvas, /terminalEmptyCanvas|terminalCanvasLogo/);
+  assert.doesNotMatch(page, /DecisionEnginePanel snapshot=\{snapshot\} decision=\{decision\}|MarketsBrowser/);
+  assert.match(warnings, /formatCustomerParticipationWarnings/);
+  assert.match(components, /hasDisplayableQuotes|isDecisionReadySnapshot/);
   assert.match(styles, /overflow-x:hidden/);
   assert.match(styles, /@media\(max-width:640px\)/);
   assert.match(styles, /marketChartCanvas,.marketChartState\{height:300px\}/);

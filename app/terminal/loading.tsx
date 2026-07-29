@@ -1,23 +1,21 @@
-import { BrandLoader } from "../components/BrandLoader.tsx";
-
-function Line({ width = "100%" }: { width?: string }) {
-  return <span className="terminalSkeletonLine" style={{ width }} />;
-}
-
-function Panel({ rows = 3 }: { rows?: number }) {
-  return <section className="ctPanel terminalSkeletonCard"><div><Line width="32%" /><Line width="58%" /></div>{Array.from({ length: rows }, (_, index) => <Line key={index} width={`${92 - index * 12}%`} />)}</section>;
-}
-
 export default function TerminalLoading() {
-  return <main className="customerTerminal terminalLoading" aria-busy="true" aria-live="polite" aria-label="Loading Elite Market Command">
-    <BrandLoader label="Loading verified market intelligence" />
-    <header className="ctTopbar"><Line width="190px" /><Line width="280px" /><Line width="90px" /></header>
-    <section className="ctWorkspace" aria-hidden="true">
-      <section className="ctHero"><div><Line width="36%" /><Line width="70%" /><Line width="88%" /></div><div><Line /><Line /><Line /></div></section>
-      <div className="ctStatus"><Line width="72%" /></div>
-      <Panel rows={4} />
-      <section className="ctPanel"><div className="ctAssetGrid">{Array.from({ length: 5 }, (_, index) => <article key={index}><Line width="54%" /><Line width="76%" /><Line width="88%" /></article>)}</div></section>
-      <section className="ctTwoColumn"><Panel rows={4} /><Panel rows={4} /></section>
-    </section>
-  </main>;
+  return (
+    <main
+      className="memberDashboard customerTerminal premiumTerminal terminalLoading terminalMemberPage tradingDeskPage"
+      aria-busy="true"
+      aria-live="polite"
+      aria-label="Loading Trading Desk"
+      style={{ minHeight: "100vh", background: "#05070a", color: "#eef2f5" }}
+    >
+      <div className="memberDashboardShell ctWorkspace deskWorkspaceShell">
+        <section className="deskHero" aria-hidden="true" style={{ background: "#0a100e", border: "1px solid #24322c", borderRadius: 18, padding: 36 }}>
+          <p style={{ margin: 0, color: "#62e6b1", letterSpacing: "0.12em", fontSize: 12, fontWeight: 700 }}>LOADING</p>
+          <p style={{ margin: "14px 0 0", fontSize: 28, fontWeight: 650, color: "#f4f3ec" }}>Trading Desk</p>
+          <p style={{ margin: "10px 0 0", color: "#9aa7a0" }}>Preparing verified market workspace…</p>
+          <span className="terminalSkeletonLine" style={{ display: "block", width: 180, height: 14, marginTop: 22, background: "#1a2420", borderRadius: 8 }} />
+          <span className="terminalSkeletonLine" style={{ display: "block", width: 320, height: 18, marginTop: 14, background: "#1a2420", borderRadius: 8 }} />
+        </section>
+      </div>
+    </main>
+  );
 }

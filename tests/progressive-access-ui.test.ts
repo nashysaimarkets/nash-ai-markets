@@ -10,14 +10,21 @@ test("locked premium cards use decorative blur without embedding premium output"
   assert.match(source, /improves your workflow/);
 });
 
-test("terminal gates Pro and Elite panels through feature entitlements", async () => {
-  const source = await readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8");
-  for (const feature of ["decision-engine", "trade-planner"]) {
-    assert.match(source, new RegExp(`features\\[\"${feature}\"\\]`));
-  }
-  assert.match(source, /features\.intelligence/);
-  assert.match(source, /LockedPremiumCard/);
-  assert.doesNotMatch(source, /launch-diagnostics/);
+test("terminal keeps membership entitlement gates while the canvas is cleared", async () => {
+  const [page, entitlement, locked] = await Promise.all([
+    readFile(new URL("../app/terminal/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/lib/membership-entitlement.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/terminal/components/LockedPremiumCard.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /resolveMembershipTier/);
+  assert.match(page, /createProgressiveAccess/);
+  assert.match(page, /loadPreviewClaims/);
+  assert.match(page, /TradingDeskOS/);
+  assert.doesNotMatch(page, /launch-diagnostics|MarketsBrowser/);
+  assert.match(entitlement, /decision-engine/);
+  assert.match(entitlement, /trade-planner/);
+  assert.match(entitlement, /intelligence/);
+  assert.match(locked, /LockedPremiumCard|export function LockedPremiumCard/);
 });
 
 test("preview endpoint validates tier progression and persists a unique claim", async () => {

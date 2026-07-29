@@ -49,7 +49,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     developing: "Developing a consistent process",
     experienced: "Experienced workflow",
     futures: "Index futures",
-    options: "Options",
+    equities: "Equities and ETFs",
     macro: "Macro and rates",
     volatility: "Volatility",
     essential: "Essential notices",
@@ -64,8 +64,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   return <MemberShell active="profile" className="profilePage">
     <div className="memberDashboardShell">
       <section className="profileHero">
-        <div><span>ACCOUNT MISSION CONTROL</span><h1>Your account</h1><p>Manage identity, workspace preferences and subscription access from one secure member hub.</p></div>
-        <div className="profileHeroActions"><Link href="/terminal">Open terminal</Link><a href="/auth/signout">Sign out securely</a></div>
+        <div>
+          <span>ACCOUNT</span>
+          <h1>Your account</h1>
+          <p>Manage identity, workspace preferences and subscription access from one secure member hub.</p>
+          <strong className="profileMembershipBadge" data-tier={tier}>{membershipError ? "Membership unverified" : `${tier.toUpperCase()} membership`}</strong>
+        </div>
+        <div className="profileHeroActions"><Link href="/terminal">Open Trading Desk</Link><a href="/auth/signout">Sign out securely</a></div>
       </section>
 
       {membershipError ? <SafeState title="Subscription verification is temporarily unavailable" tone="warning"><p>Your account remains signed in, but Bullseye cannot confirm current billing status. No database error details are displayed.</p></SafeState> : null}

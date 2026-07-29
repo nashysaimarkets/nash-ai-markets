@@ -17,6 +17,9 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>VIX HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.vix.replaceAll("_", " ")}</dd></div>
       <div><dt>Treasury HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.treasuryYields.replaceAll("_", " ")}</dd></div>
       <div><dt>US Dollar HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.usDollarIndex.replaceAll("_", " ")}</dd></div>
+      <div><dt>Oil HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.oil.replaceAll("_", " ")}</dd></div>
+      <div><dt>QQQ HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.qqq.replaceAll("_", " ")}</dd></div>
+      <div><dt>Nasdaq HTTP</dt><dd>{diagnostics.provider.endpointStatusCategories.nasdaq.replaceAll("_", " ")}</dd></div>
       <div><dt>Response received</dt><dd>{diagnostics.provider.responseReceived ? "Yes" : "No"}</dd></div>
       <div><dt>Schema recognised</dt><dd>{diagnostics.provider.schemaRecognized ? "Yes" : "No"}</dd></div>
       <div><dt>Verified quote count</dt><dd>{diagnostics.provider.quoteCount}</dd></div>
@@ -41,6 +44,9 @@ export function LaunchDiagnosticsPanel({ diagnostics, compact = false }: { diagn
       <div><dt>FMP_SP500_FUTURES_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpSp500FuturesSymbolConfigured ? "Present" : "Default active"}</dd></div>
       <div><dt>FMP_VIX_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpVixSymbolConfigured ? "Present" : "Default active"}</dd></div>
       <div><dt>FMP_US_DOLLAR_INDEX_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpUsDollarIndexSymbolConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>FMP_OIL_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpOilSymbolConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>FMP_QQQ_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpQqqSymbolConfigured ? "Present" : "Default active"}</dd></div>
+      <div><dt>FMP_NASDAQ_SYMBOL</dt><dd>{diagnostics.provider.configuration.fmpNasdaqSymbolConfigured ? "Present" : "Default active"}</dd></div>
       <div><dt>FMP_REQUEST_TIMEOUT_MS</dt><dd>{diagnostics.provider.configuration.fmpRequestTimeoutConfigured ? "Present" : "Default active"}</dd></div>
       <div><dt>MARKET_DATA_MAX_RETRIES</dt><dd>{diagnostics.provider.configuration.marketDataMaxRetriesConfigured ? "Present" : "Default active"}</dd></div>
       <div><dt>MARKET_DATA_RETRY_DELAY_MS</dt><dd>{diagnostics.provider.configuration.marketDataRetryDelayConfigured ? "Present" : "Default active"}</dd></div>

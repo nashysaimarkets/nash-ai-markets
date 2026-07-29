@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "../../../utils/supabase/client";
+import {
+  AUTH_NEXT_COOKIE,
+  defaultPostAuthPath,
+  safeAuthNextPath,
+} from "../../lib/auth/safe-auth-redirect";
 
-function safeNext(value: string | null) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+function readAuthNextCookie(): string | null {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${AUTH_NEXT_COOKIE}=([^;]*)`));
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
 }
 
 export default function CompleteEmailSignIn() {
@@ -14,7 +20,12 @@ export default function CompleteEmailSignIn() {
     let active = true;
 
     async function complete() {
-      const next = safeNext(new URLSearchParams(window.location.search).get("next"));
+      const origin = window.location.origin;
+      const next = safeAuthNextPath(
+        new URLSearchParams(window.location.search).get("next") ?? readAuthNextCookie(),
+        defaultPostAuthPath(origin),
+      );
+      document.cookie = `${AUTH_NEXT_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`;
       const fragment = new URLSearchParams(window.location.hash.slice(1));
       const accessToken = fragment.get("access_token");
       const refreshToken = fragment.get("refresh_token");

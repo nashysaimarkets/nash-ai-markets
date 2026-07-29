@@ -53,7 +53,10 @@ export function candleSessionStats(candles: OhlcvPoint[]) {
   const low = Math.min(...current.map((candle) => candle.low));
   const change = latest.close - firstAvailableClose;
   const percentageChange = firstAvailableClose === 0 ? 0 : (change / firstAvailableClose) * 100;
-  return { latest: latest.close, firstAvailableClose, high, low, change, percentageChange, visibleCandles: current };
+  const averageSample = current.slice(-14);
+  const averageCandleRange = averageSample.reduce((sum, candle) => sum + candle.high - candle.low, 0) / averageSample.length;
+  const rangePosition = high === low ? 50 : Math.max(0, Math.min(100, ((latest.close - low) / (high - low)) * 100));
+  return { latest: latest.close, firstAvailableClose, high, low, change, percentageChange, averageCandleRange, rangePosition, visibleCandles: current };
 }
 
 export function candleReferenceLevels(candles: OhlcvPoint[]) {

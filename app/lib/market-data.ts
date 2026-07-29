@@ -67,6 +67,9 @@ export type MarketProviderEndpointStatusCategories = {
   vix: MarketProviderHttpStatusCategory;
   treasuryYields: MarketProviderHttpStatusCategory;
   usDollarIndex: MarketProviderHttpStatusCategory;
+  oil: MarketProviderHttpStatusCategory;
+  qqq: MarketProviderHttpStatusCategory;
+  nasdaq: MarketProviderHttpStatusCategory;
 };
 
 export type GetMarketSnapshotOptions = {
@@ -75,8 +78,15 @@ export type GetMarketSnapshotOptions = {
 };
 
 const VALID_STATUSES = new Set<MarketDataStatus>(["LIVE", "DELAYED", "PREVIEW", "UNAVAILABLE"]);
-const MAX_LIVE_AGE_MS = 5 * 60 * 1000;
-const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
+/** Live quote window — within this age, snapshot status may remain LIVE. */
+export const MAX_LIVE_AGE_MS = 5 * 60 * 1000;
+/**
+ * Delayed-but-current decision window. Beyond this, directional engines fail closed,
+ * but verified quotes are still retained for display with an explicit age label.
+ */
+export const MAX_DELAYED_AGE_MS = 30 * 60 * 1000;
+/** Retain last verified quotes for customer display until this absolute age. */
+export const MAX_DISPLAY_QUOTE_AGE_MS = 18 * 60 * 60 * 1000;
 const MAX_FUTURE_SKEW_MS = 60 * 1000;
 export const UNAVAILABLE_SNAPSHOT_TIMESTAMP = "1970-01-01T00:00:00.000Z";
 
@@ -250,19 +260,33 @@ export function normalizeSnapshotFreshness(snapshot: MarketSnapshot, now = Date.
   if (snapshot.status === "PREVIEW" || snapshot.status === "UNAVAILABLE") return snapshot;
   const timestamp = new Date(snapshot.asOf).getTime();
   if (Number.isNaN(timestamp)) {
-    return { ...snapshot, status: "UNAVAILABLE", source: `${snapshot.source} — invalid timestamp`, summary: "The market feed timestamp could not be verified. Do not treat these figures as current." };
+    return { ...snapshot, status: "UNAVAILABLE", quotes: [], source: `${snapshot.source} — invalid timestamp`, summary: "The market feed timestamp could not be verified. Do not treat these figures as current." };
   }
   if (timestamp > now + MAX_FUTURE_SKEW_MS) {
-    return { ...snapshot, status: "UNAVAILABLE", source: `${snapshot.source} — future timestamp`, summary: "The market feed timestamp is materially ahead of server time. No current decision support is available." };
+    return { ...snapshot, status: "UNAVAILABLE", quotes: [], source: `${snapshot.source} — future timestamp`, summary: "The market feed timestamp is materially ahead of server time. No current decision support is available." };
   }
   const ageMs = Math.max(0, now - timestamp);
+  if (ageMs > MAX_DISPLAY_QUOTE_AGE_MS) {
+    return { ...snapshot, status: "UNAVAILABLE", quotes: [], source: `${snapshot.source} — too old to display`, summary: "The last verified market observation is older than 18 hours and has been cleared from the customer view." };
+  }
   if (ageMs > MAX_DELAYED_AGE_MS) {
-    return { ...snapshot, status: "UNAVAILABLE", source: `${snapshot.source} — stale over 30 minutes`, summary: "The market feed is more than 30 minutes old and unavailable for current decision support." };
+    // Keep verified quotes visible with age labelling, but fail closed for current decisions.
+    return { ...snapshot, status: "UNAVAILABLE", source: `${snapshot.source} — previous session`, summary: "Last verified observation is older than the 30-minute decision window. Values remain visible with their age; no live directional plan is published." };
   }
   if (snapshot.status === "LIVE" && ageMs > MAX_LIVE_AGE_MS) {
     return { ...snapshot, status: "DELAYED", source: `${snapshot.source} — delayed over 5 minutes`, summary: `Delayed data: ${snapshot.summary}` };
   }
   return snapshot;
+}
+
+/** True when the snapshot may drive directional customer conclusions. */
+export function isDecisionReadySnapshot(snapshot: MarketSnapshot): boolean {
+  return snapshot.status === "LIVE" || snapshot.status === "DELAYED";
+}
+
+/** True when at least one verified quote can be shown (including aged previous-session values). */
+export function hasDisplayableQuotes(snapshot: MarketSnapshot): boolean {
+  return snapshot.quotes.length > 0;
 }
 
 function resolveProvider(provider?: MarketDataProviderInput): MarketDataProvider | null {

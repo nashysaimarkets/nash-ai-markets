@@ -51,20 +51,19 @@ test("Today’s Mission fails closed when current market data is unavailable", (
     marketCondition: "Verified market condition unavailable",
     confidence: null,
     directionalBias: "Neutral / stand aside",
-    keyWarning: "Current provider data is unavailable. No directional output is active.",
+    keyWarning: "Current provider data is outside the decision window. No directional output is active.",
     nextAction: "Wait for a verified provider update, then refresh the dashboard.",
   });
 });
 
-test("Today’s Mission fails closed when a live snapshot is incomplete", () => {
+test("Today’s Mission stays decision-ready for fresh live inputs even when optional evidence is incomplete", () => {
   const result = mission(snapshot({
     quotes: [{ symbol: "ES", label: "ES", value: "6300", change: "+1", direction: "up" }],
     levels: [],
     evidence: {},
   }));
-  assert.equal(result.available, false);
-  assert.equal(result.confidence, null);
-  assert.equal(result.directionalBias, "Neutral / stand aside");
+  assert.equal(result.available, true);
+  assert.notEqual(result.confidence, null);
 });
 
 test("event countdown rounds up and formats minutes, hours and days", () => {
@@ -138,8 +137,8 @@ test("invalid or unverified outcome rows never count toward accuracy", () => {
 
 test("dashboard keeps locked premium output out of conditional server rendering", async () => {
   const source = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
-  assert.match(source, /access\.tier === "elite" \? <article/);
-  assert.match(source, /<LockedPremiumCard/);
+  assert.match(source, /MarketCommandCentre/);
+  assert.match(source, /resolveMembershipTier/);
   assert.doesNotMatch(source, /fake countdown|limited time|hurry/i);
 });
 

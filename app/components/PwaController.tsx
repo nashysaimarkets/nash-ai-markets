@@ -9,7 +9,9 @@ interface InstallPromptEvent extends Event {
 }
 
 const DISMISS_KEY = "nash-pwa-install-dismissed";
+const SESSION_KEY = "nash-pwa-install-session-shown";
 const DISMISS_DAYS = 14;
+const INSTALL_DELAY_MS = 45_000;
 const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding"];
 
 function isMemberInstallPath(pathname: string): boolean {
@@ -39,6 +41,22 @@ function recentlyDismissed(): boolean {
   }
 }
 
+function sessionAlreadyShown(): boolean {
+  try {
+    return window.sessionStorage.getItem(SESSION_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSessionShown() {
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, "1");
+  } catch {
+    // Privacy modes may block sessionStorage; in-memory visibility still limits this render.
+  }
+}
+
 export function PwaController() {
   const pathname = usePathname();
   const installSurface = isMemberInstallPath(pathname);
@@ -48,16 +66,32 @@ export function PwaController() {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [status, setStatus] = useState("");
   const updateAccepted = useRef(false);
+  const installEligible = useRef(false);
 
   useEffect(() => {
     let updateTimer: number | undefined;
     let iosPromptTimer: number | undefined;
+    let installRevealTimer: number | undefined;
     let loadHandler: (() => void) | undefined;
     let controllerChangeHandler: (() => void) | undefined;
+
+    const canOfferInstall = () =>
+      installSurface
+      && !isStandalone()
+      && !recentlyDismissed()
+      && !sessionAlreadyShown();
+
+    const revealInstall = () => {
+      if (!canOfferInstall() || !installEligible.current) return;
+      markSessionShown();
+      setVisible(true);
+    };
+
     if ("serviceWorker" in navigator && window.isSecureContext) {
       const offerUpdate = (worker: ServiceWorker) => {
         setWaitingWorker(worker);
-        if (installSurface) setVisible(true);
+        // Updates are opt-in and can appear without competing with the delayed install toast.
+        if (installSurface && !isStandalone()) setVisible(true);
       };
       const register = async () => {
         try {
@@ -88,25 +122,32 @@ export function PwaController() {
     const handleInstallPrompt = (event: Event) => {
       event.preventDefault();
       setPromptEvent(event as InstallPromptEvent);
-      if (installSurface) setVisible(true);
+      installEligible.current = true;
+      if (canOfferInstall()) {
+        installRevealTimer = window.setTimeout(revealInstall, INSTALL_DELAY_MS);
+      }
     };
     const handleInstalled = () => {
       setVisible(false);
       setStatus("NASH AI Markets is installed.");
     };
-    if (installSurface && !isStandalone() && !recentlyDismissed()) {
+
+    if (canOfferInstall()) {
       if (isIosSafari()) {
+        installEligible.current = true;
         iosPromptTimer = window.setTimeout(() => {
           setShowIosHelp(true);
-          setVisible(true);
-        }, 0);
+          revealInstall();
+        }, INSTALL_DELAY_MS);
       }
       window.addEventListener("beforeinstallprompt", handleInstallPrompt);
       window.addEventListener("appinstalled", handleInstalled);
     }
+
     return () => {
       if (updateTimer !== undefined) window.clearInterval(updateTimer);
       if (iosPromptTimer !== undefined) window.clearTimeout(iosPromptTimer);
+      if (installRevealTimer !== undefined) window.clearTimeout(installRevealTimer);
       if (loadHandler) window.removeEventListener("load", loadHandler);
       if (controllerChangeHandler) navigator.serviceWorker.removeEventListener("controllerchange", controllerChangeHandler);
       window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
@@ -120,6 +161,7 @@ export function PwaController() {
     } catch {
       // Storage can be unavailable in privacy modes; dismissal still works now.
     }
+    markSessionShown();
     setVisible(false);
   };
 
@@ -129,6 +171,7 @@ export function PwaController() {
     const choice = await promptEvent.userChoice;
     setPromptEvent(null);
     setVisible(false);
+    markSessionShown();
     setStatus(choice.outcome === "accepted" ? "Installation accepted." : "Installation dismissed.");
   };
 
@@ -139,29 +182,43 @@ export function PwaController() {
     waitingWorker.postMessage({ type: "SKIP_WAITING" });
   };
 
+  if (!visible) {
+    return <div className="pwaStatus" aria-live="polite">{status}</div>;
+  }
+
   return (
     <>
       <div className="pwaStatus" aria-live="polite">{status}</div>
-      {visible ? (
-        <aside className="pwaInstallPrompt" aria-labelledby="pwa-install-title">
-          <div>
-            <span className="pwaInstallEyebrow">{waitingWorker ? "APPLICATION UPDATE" : "INSTALL NASH AI MARKETS"}</span>
-            <strong id="pwa-install-title">{waitingWorker ? "A secure update is ready." : "Keep Bullseye within reach."}</strong>
-            <p>
-              {waitingWorker
-                ? "Apply it when convenient. The application reloads only after you choose Update."
-                : showIosHelp
+      <aside
+        className={`pwaInstallPrompt${waitingWorker ? " is-update" : " is-install"}`}
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="pwa-install-title"
+      >
+        <button type="button" className="pwaInstallClose" onClick={dismiss} aria-label="Close install prompt">
+          Close
+        </button>
+        <div>
+          <span className="pwaInstallEyebrow">{waitingWorker ? "APPLICATION UPDATE" : "INSTALL NASH AI MARKETS"}</span>
+          <strong id="pwa-install-title">
+            {waitingWorker ? "A secure update is ready." : "Keep NASH AI Markets within reach."}
+          </strong>
+          <p>
+            {waitingWorker
+              ? "Apply it when convenient. The application reloads only after you choose Update."
+              : showIosHelp
                 ? <>In Safari, tap Share, then <b>Add to Home Screen</b>.</>
                 : "Install the secure app shell for fast access. Live market and account data are never stored for offline replay."}
-            </p>
-          </div>
-          <div className="pwaInstallActions">
-            {waitingWorker ? <button type="button" onClick={applyUpdate}>Update</button> : null}
-            {!waitingWorker && promptEvent ? <button type="button" onClick={() => void install()}>Install</button> : null}
-            <button type="button" className="pwaInstallDismiss" onClick={dismiss} aria-label="Dismiss installation guidance">Not now</button>
-          </div>
-        </aside>
-      ) : null}
+          </p>
+        </div>
+        <div className="pwaInstallActions">
+          {waitingWorker ? <button type="button" onClick={applyUpdate}>Update</button> : null}
+          {!waitingWorker && promptEvent ? <button type="button" onClick={() => void install()}>Install</button> : null}
+          <button type="button" className="pwaInstallDismiss" onClick={dismiss} aria-label="Dismiss installation guidance">
+            Not now
+          </button>
+        </div>
+      </aside>
     </>
   );
 }

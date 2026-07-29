@@ -80,14 +80,15 @@ test("Morning Brief fails closed for incomplete verified input", () => {
 
 test("executive dashboard integrates verified summary, preview safety, and subscription status", async () => {
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
-  const morningBriefPanel = await readFile(new URL("../app/dashboard/components/MorningBriefPanel.tsx", import.meta.url), "utf8");
-  assert.match(dashboard, /createMorningBrief/);
-  assert.match(dashboard, /MORNING_BRIEF_PLACEHOLDER_INPUT/);
-  assert.match(dashboard, /executiveKpiStrip/);
-  assert.match(morningBriefPanel, /executiveMorningBrief/);
-  assert.match(dashboard, /<SubscriptionStatusCard/);
-  assert.match(morningBriefPanel, /morningBrief\.directionalBias \?\? "Not available"/);
-  assert.match(morningBriefPanel, /Preview fixture timestamp/);
+  const brief = await readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8");
+  const profile = await readFile(new URL("../app/profile/page.tsx", import.meta.url), "utf8");
+  assert.match(dashboard, /MarketCommandCentre/);
+  assert.match(dashboard, /resolveMembershipTier/);
+  assert.doesNotMatch(dashboard, /MissionControl|persistAnalysisSnapshot|<SubscriptionStatusCard/);
+  assert.match(profile, /<SubscriptionStatusCard/);
+  assert.match(brief, /MorningMarketBrief|composeMorningMarketBrief/);
+  assert.match(brief, /createProgressiveAccess/);
+  assert.doesNotMatch(brief, /redirect\("\/terminal"\)|LockedPremiumCard/);
 });
 
 test("member profile is protected, noindex, and exposes no Stripe identifiers", async () => {
@@ -124,7 +125,7 @@ test("Gamma loading, error, navigation, and mobile states remain accessible", as
     readFile(new URL("../app/mission-control.css", import.meta.url), "utf8"),
   ]);
   assert.match(dashboardLoading, /aria-busy="true"/);
-  assert.match(dashboardLoading, /executiveKpiStrip/);
+  assert.match(dashboardLoading, /MemberEmptyCanvas|aria-busy/);
   assert.match(profileLoading, /aria-live="polite"/);
   assert.match(profileError, /No account, billing, or provider error details have been exposed/);
   assert.match(shell, /href: "\/profile"/);

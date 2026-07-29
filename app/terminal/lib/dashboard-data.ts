@@ -50,14 +50,12 @@ export type DashboardViewModel = {
   probabilities: { bullish: number; neutral: number; bearish: number };
   expectedMove: string;
   futuresBias: string;
-  optionsBias: string;
   supportResistance: MarketLevel[];
   vix: { value: string; change: string; note: string };
   treasuries: Array<{ label: string; value: string; delta: string }>;
   dollar: { value: string; change: string; note: string };
   calendar: MarketSnapshot["events"];
   fearGreed: { score: number; label: string; detail: string };
-  options: { putCall: string; iv: string; skew: string; detail: string };
   eliteTradeSetup: {
     title: string;
     direction: "Long" | "Short" | "None";
@@ -123,7 +121,6 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
   const bearishProbability = clamp(bullseye.bearProbability + (snapshot.risk === "HIGH" ? 4 : 0));
   const expectedMove = "Unavailable";
   const futuresBias = bullishProbability >= bearishProbability ? "Bullish bias" : "Bearish bias";
-  const optionsBias = bullishProbability > bearishProbability ? "Call structure" : "Put structure";
   const confidenceScore = clamp(Math.round((bullseye.confidence + (bullishProbability - bearishProbability) / 2 + (fearGreedScore / 2)) / 1.5));
   const tradeRating = confidenceScore >= 80 ? "A+" : confidenceScore >= 70 ? "A" : confidenceScore >= 60 ? "B" : "C";
   const overallBias = confidenceScore >= 75 && bullishProbability >= bearishProbability ? "Bullish" : confidenceScore >= 75 && bearishProbability > bullishProbability ? "Bearish" : "Neutral";
@@ -225,18 +222,11 @@ export function createDashboardViewModel(snapshot: MarketSnapshot, bullseye: Bul
     },
     expectedMove,
     futuresBias,
-    optionsBias,
     calendar: snapshot.events,
     fearGreed: {
       score: fearGreedScore,
       label: fearGreedLabel,
       detail: fearGreedScore >= 60 ? "Sentiment is running hot, which can amplify trend continuation but also increase fragility." : "Risk appetite is constrained, and the market is still waiting for confirmation.",
-    },
-    options: {
-      putCall: "Unavailable",
-      iv: "Unavailable",
-      skew: "Unavailable",
-      detail: "No verified provider-backed options data is available.",
     },
     eliteTradeSetup: {
       title: "No verified trade setup",

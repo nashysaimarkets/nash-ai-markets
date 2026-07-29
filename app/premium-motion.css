@@ -1,0 +1,394 @@
+/* Premium soft-motion system — opacity + small Y only. Never alter document width. */
+:root{
+  --pm-ease:cubic-bezier(.22,.61,.36,1);
+  --pm-fast:.18s;
+  --pm-med:.32s;
+  --pm-slow:.48s;
+}
+
+@keyframes pmRise{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+@keyframes pmFade{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes pmAmbient{
+  0%,100%{background-position:50% 42%}
+  50%{background-position:52% 48%}
+}
+@keyframes pmShimmerSweep{
+  0%{background-position:0% 40%,100% 60%,0 0}
+  50%{background-position:60% 55%,40% 35%,0 0}
+  100%{background-position:100% 48%,0% 52%,0 0}
+}
+@keyframes pmLogoFloat{
+  0%,100%{transform:translateY(0);filter:drop-shadow(0 0 0 transparent)}
+  50%{transform:translateY(-2px);filter:drop-shadow(0 0 10px #38f28e33)}
+}
+@keyframes pmLogoMarkPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.035)}
+}
+@keyframes pmHeadingIn{
+  from{opacity:0;transform:translateY(10px);letter-spacing:.02em}
+  to{opacity:1;transform:none;letter-spacing:normal}
+}
+@keyframes pmHeadingSheen{
+  0%,100%{text-shadow:0 0 0 transparent}
+  50%{text-shadow:0 0 18px #38f28e22}
+}
+@keyframes pmGlow{
+  0%,100%{box-shadow:0 0 0 0 transparent}
+  50%{box-shadow:0 0 0 1px #35d89b33,0 0 18px #35d89b14}
+}
+@keyframes pmNumber{
+  from{opacity:.35;transform:translateY(4px)}
+  to{opacity:1;transform:none}
+}
+@keyframes pmBar{
+  from{transform:scaleX(.08)}
+  to{transform:none}
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .memberDashboardShell>.missionControl,
+  .memberDashboardShell.ctWorkspace,
+  .memberDashboardShell>.briefJourney{
+    animation:pmFade var(--pm-med) var(--pm-ease) both;
+  }
+  .pmEnter,
+  .mcHero,
+  .mcChartStrip,
+  .mcPaths,
+  .mcChanged,
+  .mcActions,
+  .askBullseye,
+  
+  
+  .briefCommand,
+  .briefKeyRibbon,
+  .morningMarketBrief .mbPanel,
+  .morningMarketBrief .mbSummary,
+  .morningMarketBrief .mbCrossCard,
+  .ctChartPrimary,
+  .ctStatus{
+    animation:pmRise var(--pm-slow) var(--pm-ease) both;
+  }
+  .mcPaths article:nth-child(1),
+  .mcActions a:nth-child(1),
+  .askBullseyeChips button:nth-child(1),
+  .optionsScenarioGrid>article:nth-child(1){animation-delay:.04s}
+  .mcPaths article:nth-child(2),
+  .mcActions a:nth-child(2),
+  .askBullseyeChips button:nth-child(2),
+  .optionsScenarioGrid>article:nth-child(2){animation-delay:.08s}
+  .mcPaths article:nth-child(3),
+  .mcActions a:nth-child(3),
+  .askBullseyeChips button:nth-child(3),
+  .optionsScenarioGrid>article:nth-child(3){animation-delay:.12s}
+  .mcPaths article:nth-child(4),
+  .mcActions a:nth-child(4),
+  .askBullseyeChips button:nth-child(4){animation-delay:.16s}
+  .mcActions a:nth-child(5){animation-delay:.2s}
+  .mcActions a:nth-child(6){animation-delay:.24s}
+
+  .mcActions a,
+  .askBullseyeChips button,
+  
+  .memberDashboardNav nav a,
+  .ctToolbar button{
+    transition:border-color var(--pm-fast) ease,background-color var(--pm-fast) ease,transform var(--pm-fast) ease,box-shadow var(--pm-fast) ease,color var(--pm-fast) ease;
+  }
+  .mcActions a:hover,
+  .optionsScenarioCard:hover,
+  .askBullseyeChips button:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 24px #0006;
+  }
+  .memberDashboardNav nav a[aria-current="page"],
+  .askBullseyeChips button.is-active,
+  .timeframeSelector button[aria-pressed="true"]{
+    animation:pmGlow 2.8s ease-in-out 1;
+  }
+  .pmValueUpdate{animation:pmNumber .28s var(--pm-ease) both}
+  .bullseyeGaugeDial,
+  .confidenceGaugeDial{
+    transition:background var(--pm-med) var(--pm-ease),filter var(--pm-med) ease;
+  }
+  .optionsProgress>i{
+    transform-origin:left center;
+    animation:pmBar .55s var(--pm-ease) both;
+  }
+  .memberDashboard{
+    position:relative;
+    isolation:isolate;
+    background-size:auto,112%;
+    animation:pmAmbient 42s ease-in-out infinite;
+  }
+  .memberDashboard::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 55% 40% at 18% 12%,#38f28e22,transparent 62%),
+      radial-gradient(ellipse 45% 35% at 82% 78%,#d9ab5218,transparent 60%),
+      linear-gradient(115deg,transparent 30%,#38f28e0d 48%,transparent 66%);
+    background-size:140% 140%,140% 140%,220% 220%;
+    animation:pmShimmerSweep 18s ease-in-out infinite;
+    opacity:.85;
+  }
+  .memberDashboard > *{position:relative;z-index:1}
+
+  .accessPage,
+  .foxtrotTerminal,
+  body{
+    position:relative;
+  }
+  .accessPage::before,
+  .foxtrotTerminal::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 50% 35% at 70% 8%,#38f28e1a,transparent 58%),
+      linear-gradient(120deg,transparent 35%,#38f28e0a 50%,transparent 65%);
+    background-size:130% 130%,200% 200%;
+    animation:pmShimmerSweep 22s ease-in-out infinite;
+  }
+  .accessPage > *,
+  .foxtrotTerminal > *{position:relative;z-index:1}
+
+  .brandLogo{
+    animation:pmLogoFloat 5.5s ease-in-out infinite;
+  }
+  .brandLogo img,
+  .brandLogoCompact img{
+    animation:pmLogoMarkPulse 4.8s ease-in-out infinite;
+    transform-origin:center center;
+  }
+  .brandLogo:hover,
+  .brandLogo:focus-visible{
+    animation-play-state:paused;
+  }
+  .brandLogo:hover img,
+  .brandLogo:focus-visible img{
+    animation-play-state:paused;
+    filter:drop-shadow(0 0 12px #38f28e44);
+  }
+
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .accessPage h1,
+  .foxtrotTerminal h1,
+  .ctHero h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .profileHero h1,
+  .reviewHero h1,
+  .archiveHero h1,
+  .journalHero h1,
+  .resultsHero h1,
+  .replayHero h1,
+  .methodologyHero h1{
+    animation:pmHeadingIn .55s var(--pm-ease) both;
+  }
+  .memberDashboard h2,
+  .memberDashboardShell h2,
+  .accessPage h2,
+  .foxtrotTerminal h2,
+  .mcChanged > header h2,
+  .mcChartStrip h2,
+  .askBullseye > header h2,
+  .optionsCalendarPanel > header h2,
+  .optionsNewsPanel > header h2,
+  .crossAssetCandleGalleryHeader h2,
+  .briefCommandCopy h2,
+  .ctPanel > header h2,
+  .dailyCard > header h2{
+    animation:pmHeadingIn .5s var(--pm-ease) .06s both;
+  }
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .ctHero h1{
+    animation:pmHeadingIn .55s var(--pm-ease) both,pmHeadingSheen 8s ease-in-out 1s infinite;
+  }
+
+  .ctStatus.is-live,
+  .ctStatus.is-delayed,
+  .ctStatus.is-offline,
+  .ftBadge[data-tone]{
+    transition:border-color var(--pm-med) ease,background-color var(--pm-med) ease,color var(--pm-med) ease;
+  }
+  details.ctPanel>summary,
+  details.briefTech>summary{
+    transition:color var(--pm-fast) ease,background-color var(--pm-fast) ease;
+  }
+  details.ctPanel[open]>summary,
+  details.briefTech[open]>summary{
+    color:var(--ft-green,#62e6b1);
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .memberDashboardShell>.missionControl,
+  .memberDashboardShell.ctWorkspace,
+  .memberDashboardShell>.briefJourney,
+  .pmEnter,
+  .mcHero,
+  .mcChartStrip,
+  .mcPaths,
+  .mcChanged,
+  .mcActions,
+  .askBullseye,
+  
+  
+  .briefCommand,
+  .briefKeyRibbon,
+  .ctChartPrimary,
+  .ctStatus,
+  .memberDashboardNav nav a[aria-current="page"],
+  .askBullseyeChips button.is-active,
+  .pmValueUpdate,
+  .optionsProgress>i,
+  .memberDashboard,
+  .memberDashboard::before,
+  .accessPage::before,
+  .foxtrotTerminal::before,
+  .brandLogo,
+  .brandLogo img,
+  .brandLogoCompact img,
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .memberDashboard h2,
+  .memberDashboardShell h2,
+  .accessPage h1,
+  .accessPage h2,
+  .foxtrotTerminal h1,
+  .foxtrotTerminal h2,
+  .ctHero h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .profileHero h1,
+  .reviewHero h1,
+  .archiveHero h1,
+  .journalHero h1,
+  .resultsHero h1,
+  .replayHero h1,
+  .methodologyHero h1,
+  .mcChanged > header h2,
+  .mcChartStrip h2,
+  .askBullseye > header h2,
+  .optionsCalendarPanel > header h2,
+  .optionsNewsPanel > header h2,
+  .crossAssetCandleGalleryHeader h2,
+  .briefCommandCopy h2,
+  .ctPanel > header h2,
+  .dailyCard > header h2{
+    animation:none!important;
+  }
+  .memberDashboard h1,
+  .memberDashboardShell h1,
+  .mcHeroCopy h1,
+  .briefHero h1,
+  .optionsHero h1,
+  .ctHero h1{
+    text-shadow:none;
+  }
+  .brandLogo:hover img,
+  .brandLogo:focus-visible img{
+    filter:none;
+  }
+  .mcActions a,
+  .askBullseyeChips button,
+  
+  .memberDashboardNav nav a,
+  .ctToolbar button,
+  .bullseyeGaugeDial,
+  .confidenceGaugeDial{
+    transition:none!important;
+  }
+  .mcActions a:hover,
+  .optionsScenarioCard:hover,
+  .askBullseyeChips button:hover{
+    transform:none;
+  }
+}
+
+/* Presentation Mode */
+.presentationToggle{
+  display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:7px 11px;
+  border:1px solid var(--ft-border,#202630);border-radius:3px;background:#0d1117;
+  color:var(--ft-muted,#7d8793);font:700 8px var(--font-geist-mono),monospace;
+  letter-spacing:.05em;text-transform:uppercase;cursor:pointer;
+}
+.presentationToggle:hover,.presentationToggle[aria-pressed="true"]{
+  border-color:#35d89b55;color:var(--ft-green,#62e6b1);background:#35d89b0c;
+}
+.presentationToggle:focus-visible{outline:2px solid var(--ft-blue,#69a9ff);outline-offset:2px}
+.presentationExit{
+  position:fixed;z-index:80;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));
+  display:none;align-items:center;gap:10px;min-height:44px;padding:10px 14px;
+  border:1px solid #35d89b66;border-radius:999px;background:#0c1512f2;color:#62e6b1;
+  font:700 10px var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase;
+  box-shadow:0 16px 40px #000a;cursor:pointer;
+}
+.presentationExit:focus-visible{outline:2px solid var(--ft-blue,#69a9ff);outline-offset:3px}
+
+html[data-presentation="on"] .presentationExit{display:inline-flex}
+html[data-presentation="on"] .memberDashboardNav>nav a:not([aria-current="page"]),
+html[data-presentation="on"] .memberMoreMenu,
+html[data-presentation="on"] .memberMobileMenu,
+html[data-presentation="on"] .mcActions,
+html[data-presentation="on"] .askBullseyeChips,
+html[data-presentation="on"] .optionsDisclosure,
+html[data-presentation="on"] .briefDisclaimer,
+html[data-presentation="on"] .ctFooter,
+html[data-presentation="on"] .ctConstraintsCompact,
+html[data-presentation="on"] .profileQuickLinks,
+html[data-presentation="on"] .pwaInstallPrompt{display:none!important}
+html[data-presentation="on"] .memberDashboardNav{justify-content:flex-start;gap:16px}
+html[data-presentation="on"] .memberDashboardShell{width:min(100% - 24px,1560px);padding-top:12px}
+html[data-presentation="on"] .mcHeroCopy h1,
+html[data-presentation="on"] .ctHero h1,
+html[data-presentation="on"] .briefHero h1{font-size:clamp(40px,5.5vw,64px)}
+html[data-presentation="on"] .ctChartPrimary .dashboardChartCanvas,
+html[data-presentation="on"] .marketChartCanvas{min-height:520px;height:min(62vh,640px)}
+html[data-presentation="on"] .bullseyeGauge{transform:scale(1.08);transform-origin:center right}
+html[data-presentation="on"] .ctStatus,
+html[data-presentation="on"] .mcFreshnessBanner{display:flex!important}
+
+/* Ask Bullseye */
+.askBullseye{
+  display:grid;gap:14px;padding:20px 22px;border:1px solid #24322c;border-radius:16px;
+  background:linear-gradient(145deg,#0e1714,#0a100ef5);
+}
+.askBullseye>header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}
+.askBullseye>header span{color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.12em;text-transform:uppercase}
+.askBullseye>header h2{margin:8px 0 0;font-size:24px}
+.askBullseye>header p{max-width:420px;margin:0;color:#8f9c96;font-size:13px;line-height:1.5}
+.askBullseyeChips{display:flex;flex-wrap:wrap;gap:8px}
+.askBullseyeChips button{
+  min-height:38px;padding:8px 12px;border:1px solid #2a3a34;border-radius:999px;
+  background:#0b1210;color:#b4c0c8;font:650 12px var(--font-geist-sans),Arial,sans-serif;cursor:pointer;
+}
+.askBullseyeChips button.is-active{border-color:#35d89b66;background:#35d89b14;color:#62e6b1}
+.askBullseyeChips button:focus-visible{outline:2px solid #69a9ff;outline-offset:2px}
+.askBullseyePanel{padding:16px 18px;border:1px solid #24322c;border-radius:12px;background:#080d0b}
+.askBullseyePanel h3{margin:0 0 8px;font-size:18px}
+.askBullseyePanel p{margin:0;color:#d5e0c8;font-size:15px;line-height:1.55}
+.askBullseyePanel ul{margin:12px 0 0;padding-left:18px;color:#b4c0c8;font-size:14px;line-height:1.5}
+.askBullseyePanel small{display:block;margin-top:14px;color:#7f8d93;font-size:11px;line-height:1.45}
+.askBullseye.is-compact{padding:16px}
+.askBullseye.is-compact>header{flex-direction:column;align-items:flex-start}
+@media(max-width:900px){.askBullseye>header{flex-direction:column;align-items:flex-start}}

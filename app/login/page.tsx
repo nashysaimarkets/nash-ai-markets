@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import LoginForm from "./LoginForm";
 import { BrandLogo } from "../components/BrandLogo";
 
@@ -41,8 +42,10 @@ export default function Login() {
           <div className="accessCardBody">
             <p className="accessStep">SIGN-IN LINK</p>
             <h2>Continue by email</h2>
-            <p>Enter the email connected to your membership. We’ll send one link that returns you to your dashboard.</p>
-            <LoginForm />
+            <p>Enter the email connected to your membership. We’ll send one link that returns you to the terminal.</p>
+            <Suspense fallback={<p className="accessMessage" role="status">Preparing secure sign-in…</p>}>
+              <LoginForm />
+            </Suspense>
           </div>
           <footer>
             <span>Protected by Supabase authentication</span>

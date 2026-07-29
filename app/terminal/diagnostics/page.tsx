@@ -9,6 +9,7 @@ import { createTradingDecision } from "../../lib/trading-decision-engine";
 import { createStructuredTradePlan } from "../../lib/structured-trade-planner";
 import { LaunchDiagnosticsPanel } from "../components/LaunchDiagnosticsPanel";
 import { getFmpEnvironmentDiagnostics, getTerminalMarketData } from "../lib/terminal-market-data-provider";
+import { getCandleEndpointOutcomes, getConfiguredFmpCandles, type CandleTimeframe } from "../../lib/providers/financial-modeling-prep-candles";
 import { createLaunchDiagnostics } from "../lib/launch-diagnostics";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../lib/membership-entitlement";
 import { loadPreviewClaims } from "../lib/preview-access";
@@ -17,7 +18,15 @@ import { chartDataForStatus, chartDisplayState } from "../lib/visual-terminal";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Launch Diagnostics | Bullseye", robots: { index: false, follow: false } };
 
+/** Probe each unique FMP candle path once through the normal cached loader. */
+async function probeCandleEndpointsOnce() {
+  const probes: CandleTimeframe[] = ["1m", "5m", "15m", "1h", "1d"];
+  await Promise.all(probes.map((timeframe) => getConfiguredFmpCandles(timeframe)));
+  return getCandleEndpointOutcomes();
+}
+
 export default async function TerminalDiagnosticsPage() {
+  if (process.env.NODE_ENV === "production") redirect("/terminal");
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
@@ -28,9 +37,10 @@ export default async function TerminalDiagnosticsPage() {
   const access = createProgressiveAccess(tier, previewState.claims);
   if (!access.features["launch-diagnostics"]) redirect("/terminal");
 
-  const [{ snapshot, gatewayStatus, cache }, openAIHealth] = await Promise.all([
+  const [{ snapshot, gatewayStatus, cache }, openAIHealth, candleOutcomes] = await Promise.all([
     getTerminalMarketData(),
     checkOpenAIConnection(),
+    probeCandleEndpointsOnce(),
   ]);
   const intelligence = analyzeMarketSnapshot(snapshot);
   const decision = createTradingDecision({ intelligence, reasoning: intelligence.reasoning, dataStatus: snapshot.status, providerStatus: gatewayStatus.connectionStatus, dataAgeMs: gatewayStatus.dataAgeMs, fallbackActive: gatewayStatus.fallbackActive, missingDataWarnings: intelligence.reasoning.missingDataWarnings });
@@ -61,6 +71,20 @@ export default async function TerminalDiagnosticsPage() {
         <Link href="/terminal">← Return to terminal</Link>
       </header>
       <LaunchDiagnosticsPanel diagnostics={diagnostics} />
+      <section className="ftCard buildDiagnostics">
+        <header>
+          <div>
+            <span>CANDLE ENDPOINTS</span>
+            <h2>Sanitized historical entitlement outcomes</h2>
+          </div>
+        </header>
+        <dl>
+          {candleOutcomes.length ? candleOutcomes.map((outcome) => (
+            <div key={`${outcome.endpoint}-${outcome.timeframe}`}><dt>{outcome.endpoint}</dt><dd>{outcome.category} · {outcome.timeframe}</dd></div>
+          )) : <div><dt>Endpoints</dt><dd>No probe results yet</dd></div>}
+        </dl>
+        <p>Four-hour bars reuse the 1-hour endpoint and aggregate on UTC boundaries. Outcomes are category-only and never include secrets.</p>
+      </section>
       <section className="ftCard buildDiagnostics">
         <header>
           <div>

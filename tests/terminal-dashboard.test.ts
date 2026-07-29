@@ -47,7 +47,6 @@ test("builds a terminal dashboard view model from the market snapshot", () => {
     bearInvalidation: "Recovery above pivot",
     standAside: "Stand aside when range persists.",
     riskWindowPrep: "Reduce size before the event window.",
-    optionsApproach: "Use defined risk.",
     missionBrief: "The market is balanced but constructive.",
   };
 
@@ -56,7 +55,7 @@ test("builds a terminal dashboard view model from the market snapshot", () => {
   assert.equal(viewModel.futures.value, "6,318.25");
   assert.equal(viewModel.futures.bias, "NEUTRAL → BULLISH");
   assert.equal(viewModel.vix.value, "16.42");
-  assert.equal(viewModel.options.putCall, "Unavailable");
+  assert.equal(viewModel.futuresBias.includes("bias"), true);
   assert.equal(viewModel.eliteTradeSetup.direction, "None");
   assert.equal(viewModel.eliteTradeSetup.status, "Unavailable");
   assert.deepEqual(viewModel.movers, []);
@@ -176,7 +175,6 @@ test("maps provider-backed market data into the terminal panels", async () => {
     bearInvalidation: "Break above resistance",
     standAside: "Stand aside if range persists.",
     riskWindowPrep: "Monitor the event window.",
-    optionsApproach: "Use defined risk.",
     missionBrief: "Momentum is constructive but the range remains active.",
   };
 
@@ -315,19 +313,20 @@ test("recovers on retry after a failed provider response", async () => {
 });
 
 test("defines loading placeholders for every terminal market panel", () => {
-  assert.equal(TERMINAL_SKELETON_PANELS.length, 23);
-  assert.equal(new Set(TERMINAL_SKELETON_PANELS.map((panel) => panel.key)).size, 23);
+  assert.equal(TERMINAL_SKELETON_PANELS.length, 21);
+  assert.equal(new Set(TERMINAL_SKELETON_PANELS.map((panel) => panel.key)).size, 21);
   assert.deepEqual(new Set(TERMINAL_SKELETON_PANELS.map((panel) => panel.className)), new Set([
     "panelProvenance", "panelVerdict", "panelEliteTrade", "panelFutures", "panelBrief", "panelBriefing",
     "panelCalendarCompact", "panelMovers", "panelHeadlines", "panelSentiment", "panelRisk", "panelProbabilities",
-    "panelExpectedMove", "panelBias", "panelOptionsBias", "panelLevels", "panelVix", "panelTreasuries",
-    "panelDollar", "panelCalendar", "panelFearGreed", "panelOptions",
+    "panelExpectedMove", "panelBias", "panelLevels", "panelVix", "panelTreasuries",
+    "panelDollar", "panelCalendar", "panelFearGreed",
   ]));
 });
 
 test("provides recovery-safe unavailable messaging", () => {
-  assert.match(terminalStatusMessage("UNAVAILABLE", 2), /2 FAILED ATTEMPTS/);
+  assert.match(terminalStatusMessage("UNAVAILABLE", 2), /TEMPORARILY UNAVAILABLE/);
   assert.match(terminalStatusMessage("UNAVAILABLE", 2), /NO CURRENT MARKET SIGNALS/);
+  assert.doesNotMatch(terminalStatusMessage("UNAVAILABLE", 2), /FAILED ATTEMPT/);
   assert.match(panelUnavailableMessage("UNAVAILABLE") ?? "", /recover automatically/);
   assert.equal(panelUnavailableMessage("LIVE"), null);
 });

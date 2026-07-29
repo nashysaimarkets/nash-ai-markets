@@ -1,0 +1,306 @@
+/* Market Command Centre — premium Elite dashboard workspace */
+.marketCommandCentre{
+  --mcc-panel:#0c1216cc;
+  --mcc-line:#243238;
+  --mcc-text:#edf2f4;
+  --mcc-muted:#8b989f;
+  --mcc-green:#62e6b1;
+  --mcc-red:#ef7777;
+  --mcc-gold:#d8b36a;
+  --mcc-cyan:#76cfd8;
+  width:min(1560px,calc(100% - 48px));
+  margin:0 auto;
+  padding:28px 0 72px;
+  display:grid;
+  gap:16px;
+}
+.mccEyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--mcc-green);font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.16em}
+.mccCommandHeader{
+  display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.9fr) auto;gap:28px;align-items:end;
+  padding:32px 34px;border:1px solid var(--mcc-line);border-radius:14px;
+  background:linear-gradient(135deg,#10191de8,#0a1116f2 55%,#0c1614e8);
+  box-shadow:0 30px 80px #0008,inset 0 1px #ffffff0d;
+  backdrop-filter:blur(18px);
+}
+.mccCommandHeader h1{margin:12px 0 10px;color:var(--mcc-text);font:560 clamp(34px,4vw,56px)/1.02 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.045em}
+.mccCommandHeader h1 em{color:#b7dcd3;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400}
+.mccCommandHeader p{max-width:640px;margin:0;color:var(--mcc-muted);font:14px/1.6 var(--font-geist-sans),Arial,sans-serif}
+.mccHeaderMeta{display:grid;gap:14px}
+.mccHeaderMeta>div{padding-bottom:10px;border-bottom:1px solid #1c282e}
+.mccHeaderMeta span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.mccHeaderMeta strong{display:block;margin-top:7px;color:#dce5e8;font:600 15px var(--font-geist-sans),Arial,sans-serif}
+.mccHeaderMeta small{display:block;margin-top:5px;color:#718088;font-size:11px;line-height:1.4}
+.mccFeedState.is-DELAYED,.mccFeedState.is-STALE{color:var(--mcc-gold)}
+.mccFeedState.is-LIVE{color:var(--mcc-green)}
+.mccFeedState.is-UNAVAILABLE,.mccFeedState.is-PREVIEW{color:var(--mcc-red)}
+.mccHeaderActions{display:grid;gap:10px}
+.mccHeaderActions a{display:grid;gap:4px;min-height:64px;padding:12px 14px;border-radius:10px;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease}
+.mccPrimaryAction{border:1px solid #79c9b9;background:#79c9b9;color:#07110f;box-shadow:0 12px 30px #4da78f22}
+.mccSecondaryAction{border:1px solid #33434a;background:#11191ecc;color:#d9e2e5}
+.mccHeaderActions small{font:700 8px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+.mccHeaderActions b{font:600 15px var(--font-geist-sans),Arial,sans-serif}
+.mccHeaderActions a:hover{transform:translateY(-2px)}
+/* Decision Desk™ — premium decision hero beneath welcome */
+.mccDecisionDesk{
+  border:1px solid var(--mcc-line);border-radius:14px;overflow:hidden;
+  background:linear-gradient(145deg,#10191de8,#0a1116f2 52%,#0d1613e8);
+  box-shadow:0 28px 72px #0007,inset 0 1px #ffffff0d;backdrop-filter:blur(16px);
+  animation:mccDeskIn .55s ease both;
+}
+.mccDecisionDeskHeader{display:flex;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid #1c282e}
+.mccDecisionDeskHeader h2{margin:6px 0 4px;color:var(--mcc-text);font:560 clamp(22px,2.4vw,28px)/1.08 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.035em}
+.mccDecisionDeskHeader p{margin:0;color:var(--mcc-muted);font-size:12px;line-height:1.45}
+.mccDecisionMetrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:#1c282e}
+.mccDecisionMetric{min-height:84px;padding:12px 14px;background:#0c1318;transition:background .2s ease}
+.mccDecisionMetric:hover{background:#10181d}
+.mccDecisionMetric span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase}
+.mccDecisionMetric strong{display:flex;align-items:center;gap:6px;margin-top:8px;color:#e8eef1;font:600 15px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
+.mccDecisionMetric p{display:none}
+.mccDecisionMetric.is-bull strong{color:var(--mcc-green)}
+.mccDecisionMetric.is-bear strong{color:var(--mcc-red)}
+.mccDecisionMetric.is-neutral strong{color:var(--mcc-gold)}
+.mccDeskIcon{width:16px;height:16px;flex:0 0 auto}
+.mccDecisionPanels{display:grid;grid-template-columns:1.1fr 1.1fr .95fr;gap:1px;background:#1c282e;border-top:1px solid #1c282e}
+.mccDecisionPanelsCompact{grid-template-columns:1.4fr 1fr}
+.mccDecisionThesis,.mccDecisionOpportunity,.mccDecisionConfidence{padding:16px 18px;background:#0b1216}
+.mccDecisionThesis h3,.mccDecisionOpportunity h3,.mccDecisionConfidence h3{
+  display:flex;align-items:center;gap:8px;margin:10px 0 12px;color:var(--mcc-text);
+  font:560 18px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em
+}
+.mccDecisionThesis p,.mccOpportunityHeadline{margin:0;color:#d5dee2;font:500 14px/1.6 var(--font-geist-sans),Arial,sans-serif}
+.mccDecisionOpportunity.is-closed .mccOpportunityHeadline{color:var(--mcc-gold)}
+.mccOpportunityGrid{display:grid;gap:12px;margin:18px 0 0}
+.mccOpportunityGrid div{padding-top:10px;border-top:1px solid #1c282e}
+.mccOpportunityGrid dt{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccOpportunityGrid dd{margin:6px 0 0;color:#dce5e8;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.mccDecisionConfidence header{display:flex;justify-content:space-between;gap:12px;align-items:start}
+.mccDecisionConfidence header small{color:#5f6e76;font:700 22px/1 var(--font-geist-mono),monospace;opacity:.35}
+.mccConfidenceMeter{height:10px;margin:8px 0 14px;border-radius:999px;background:#172229;overflow:hidden}
+.mccConfidenceMeter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#718088,#9aa7ad);transition:width .7s ease}
+.mccDecisionConfidence.is-low .mccConfidenceMeter span{background:linear-gradient(90deg,#ef7777,#ef9a9a)}
+.mccDecisionConfidence.is-mid .mccConfidenceMeter span{background:linear-gradient(90deg,#d8b36a,#e4c88a)}
+.mccDecisionConfidence.is-high .mccConfidenceMeter span{background:linear-gradient(90deg,#3db894,#62e6b1)}
+.mccDecisionConfidence.is-pending .mccConfidenceMeter span{width:8%!important;background:linear-gradient(90deg,#44555d,#6a7a82)}
+.mccConfidenceWhy{margin:0 0 14px;color:#a7b3ba;font-size:12px;line-height:1.5}
+.mccConfidenceFactors{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.mccConfidenceFactors li{display:grid;gap:3px;padding-top:10px;border-top:1px solid #1c282e}
+.mccConfidenceFactors strong{color:#c5d0d6;font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.04em}
+.mccConfidenceFactors span{color:#84929a;font-size:12px;line-height:1.45}
+@keyframes mccDeskIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Market Weather™ + Opportunity Radar™ */
+.mccWeatherBoard{display:grid;gap:16px;animation:mccDeskIn .7s ease both}
+.mccWeatherPanel{
+  border:1px solid var(--mcc-line);border-radius:14px;overflow:hidden;
+  background:linear-gradient(150deg,#0f171be8,#0a1014f5 60%,#0d1418ee);
+  box-shadow:0 24px 64px #0006,inset 0 1px #ffffff0c;backdrop-filter:blur(16px);
+}
+.mccWeatherPanel>header{display:flex;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid #1c282e}
+.mccWeatherPanel h2{margin:6px 0 4px;color:var(--mcc-text);font:560 clamp(20px,2.2vw,26px)/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
+.mccWeatherPanel>header p{margin:0;color:var(--mcc-muted);font-size:12px}
+.mccWeatherGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:#1c282e}
+.mccWeatherCard{min-height:108px;padding:14px;background:#0c1318;transition:transform .2s ease,background .2s ease}
+.mccWeatherCard:hover{transform:translateY(-2px);background:#10181d}
+.mccWeatherCard span{display:flex;align-items:center;gap:8px;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccWeatherCard strong{display:block;margin-top:8px;font:600 18px/1.15 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
+.mccWeatherCard p{margin:8px 0 0;color:#84929a;font-size:12px;line-height:1.4}
+.mccWxIcon{width:16px;height:16px;flex:0 0 auto}
+.mccWeatherCard.is-green strong,.mccWeatherCard.is-green .mccWxIcon{color:var(--mcc-green)}
+.mccWeatherCard.is-amber strong,.mccWeatherCard.is-amber .mccWxIcon{color:var(--mcc-gold)}
+.mccWeatherCard.is-red strong,.mccWeatherCard.is-red .mccWxIcon{color:var(--mcc-red)}
+.mccWeatherCard.is-blue strong,.mccWeatherCard.is-blue .mccWxIcon{color:var(--mcc-cyan)}
+.mccRadarScoreRow{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:16px}
+.mccOpportunityRadar,.mccMarketScore{
+  border:1px solid var(--mcc-line);border-radius:14px;padding:16px 18px;
+  background:linear-gradient(160deg,#0e161acc,#0a1014f2);box-shadow:0 22px 56px #0006;backdrop-filter:blur(14px);
+}
+.mccOpportunityRadar>header{display:flex;justify-content:space-between;gap:16px;align-items:start}
+.mccOpportunityRadar h2{margin:6px 0 0;color:var(--mcc-text);font:560 20px/1.15 var(--font-geist-sans),Arial,sans-serif}
+.mccRadarHeadline{margin:12px 0 0;color:#d5dee2;font:500 14px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.mccOpportunityRadar.is-closed .mccRadarHeadline{color:var(--mcc-gold)}
+.mccRadarStars{display:inline-flex;gap:3px;color:#314047;font-size:18px;letter-spacing:.02em}
+.mccRadarStars .is-on{color:var(--mcc-gold);text-shadow:0 0 12px #d8b36a55}
+.mccRadarGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 0}
+.mccRadarGrid div{padding-top:10px;border-top:1px solid #1c282e}
+.mccRadarGrid .is-wide{grid-column:1/-1}
+.mccRadarGrid dt{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccRadarGrid dd{margin:6px 0 0;color:#dce5e8;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.mccRadarGrid .is-dir-long{color:var(--mcc-green)}
+.mccRadarGrid .is-dir-short{color:var(--mcc-red)}
+.mccRadarGrid .is-dir-aside{color:var(--mcc-gold)}
+.mccMarketScore{display:grid;justify-items:center;align-content:start;gap:16px}
+.mccScoreRing{position:relative;width:168px;height:168px}
+.mccScoreRing svg{width:100%;height:100%;transform:rotate(-90deg)}
+.mccScoreTrack{fill:none;stroke:#1a262c;stroke-width:10}
+.mccScoreProgress{fill:none;stroke-width:10;stroke-linecap:round;stroke:#718088;transition:stroke-dashoffset 1s ease}
+.mccScoreRing.is-green .mccScoreProgress{stroke:var(--mcc-green);filter:drop-shadow(0 0 8px #62e6b144)}
+.mccScoreRing.is-amber .mccScoreProgress{stroke:var(--mcc-gold);filter:drop-shadow(0 0 8px #d8b36a44)}
+.mccScoreRing.is-red .mccScoreProgress{stroke:var(--mcc-red);filter:drop-shadow(0 0 8px #ef777744)}
+.mccScoreRing.is-blue .mccScoreProgress{stroke:var(--mcc-cyan)}
+.mccScoreValue{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:12px}
+.mccScoreValue strong{color:var(--mcc-text);font:600 28px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.04em;animation:mccScorePop .8s ease both}
+.mccScoreDescriptor{display:block;margin-top:8px;color:inherit;font:700 12px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
+.mccScoreRing.is-green .mccScoreDescriptor{color:var(--mcc-green)}
+.mccScoreRing.is-amber .mccScoreDescriptor{color:var(--mcc-gold)}
+.mccScoreRing.is-red .mccScoreDescriptor{color:var(--mcc-red)}
+.mccScoreRing.is-blue .mccScoreDescriptor{color:var(--mcc-cyan)}
+.mccScoreValue span{margin-top:8px;color:#7f8e96;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccScoreSummary{margin:0;color:#a7b3ba;font-size:12px;line-height:1.5;text-align:center}
+.mccScoreFactors{list-style:none;margin:0;padding:0;width:100%;display:grid;gap:10px}
+.mccScoreFactors li{display:grid;gap:3px;padding-top:10px;border-top:1px solid #1c282e}
+.mccScoreFactors strong{font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.04em}
+.mccScoreFactors span{color:#84929a;font-size:12px;line-height:1.45}
+.mccScoreFactors .is-green strong{color:var(--mcc-green)}
+.mccScoreFactors .is-amber strong{color:var(--mcc-gold)}
+.mccScoreFactors .is-red strong{color:var(--mcc-red)}
+.mccScoreFactors .is-blue strong{color:var(--mcc-cyan)}
+@keyframes mccScorePop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+
+.mccDelayedBanner{
+  display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 18px;border-radius:10px;
+  border:1px solid #d8b36a55;border-left-width:3px;background:linear-gradient(100deg,#17140fe8,#0d1216f0);
+  box-shadow:0 14px 40px #0005;
+}
+.mccDelayedBanner strong{color:var(--mcc-gold);font:700 12px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.04em}
+.mccDelayedBanner span{color:#aeb9be;font-size:12px;line-height:1.45}
+
+.mccIntelStrip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.mccIntelCard{
+  min-height:148px;padding:16px;border:1px solid var(--mcc-line);border-radius:12px;
+  background:linear-gradient(160deg,#0e161acc,#0a1014f0);box-shadow:0 16px 40px #0005;
+  backdrop-filter:blur(12px);transition:transform .2s ease,box-shadow .2s ease;
+}
+.mccIntelCard:hover{transform:translateY(-2px);box-shadow:0 22px 48px #0006}
+.mccIntelCard header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mccIntelCard header span{color:#7f8e96;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccIntelCard header b{color:var(--mcc-muted);font-size:11px}
+.mccIntelCard.is-up header b{color:var(--mcc-green)}
+.mccIntelCard.is-down header b{color:var(--mcc-red)}
+.mccIntelCard>strong{display:block;color:var(--mcc-text);font:600 24px/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
+.mccIntelCard .mccAwaiting{font-size:16px;color:var(--mcc-gold)}
+.mccIntelCard p{margin:8px 0 0;color:#84929a;font-size:11px;line-height:1.45}
+.mccIntelChange{display:flex;gap:8px;align-items:baseline;margin-top:8px;color:#a7b3ba;font:600 12px var(--font-geist-mono),monospace}
+.mccIntelCard.is-up .mccIntelChange{color:var(--mcc-green)}
+.mccIntelCard.is-down .mccIntelChange{color:var(--mcc-red)}
+.mccIntelCard footer{margin-top:10px}
+.mccIntelCard footer small{color:#6f7e86;font-size:10px}
+.mccIntelCard.is-skeleton{display:grid;gap:12px;align-content:start}
+.mccSparkline{width:100%;height:28px;margin-top:12px}
+.mccSparkline polyline{stroke:#8fa2a8}
+.mccSparkline.is-up polyline{stroke:var(--mcc-green)}
+.mccSparkline.is-down polyline{stroke:var(--mcc-red)}
+.mccSparkline.is-empty path{stroke:#314047;stroke-dasharray:3 4}
+
+.mccHeroChart{
+  border:1px solid var(--mcc-line);border-radius:14px;overflow:hidden;
+  background:linear-gradient(180deg,#0d1519ee,#090e12f5);box-shadow:0 28px 70px #0007;
+  backdrop-filter:blur(16px);
+}
+.mccHeroChartHeader{display:flex;justify-content:space-between;gap:20px;padding:22px 24px;border-bottom:1px solid #1c282e}
+.mccHeroChartHeader h2{margin:8px 0 6px;color:var(--mcc-text);font:560 26px/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
+.mccHeroChartHeader p{margin:0;color:var(--mcc-muted);font-size:12px}
+.mccHeroBadges{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;justify-content:flex-end}
+.mccSessionBadge,.mccDelayedBadge{
+  display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;
+  font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+}
+.mccSessionBadge{border:1px solid #33434a;background:#11191e;color:#c5d0d6}
+.mccSessionBadge.is-open{border-color:#62e6b155;color:var(--mcc-green);background:#62e6b110}
+.mccSessionBadge.is-premarket{border-color:#76cfd855;color:var(--mcc-cyan);background:#76cfd810}
+.mccSessionBadge.is-postmarket{border-color:#d8b36a55;color:var(--mcc-gold);background:#d8b36a12}
+.mccSessionBadge.is-closed{border-color:#ef777755;color:#ef9a9a;background:#ef777710}
+.mccDelayedBadge{border:1px solid #d8b36a66;background:#d8b36a14;color:var(--mcc-gold)}
+.mccFeedPill{display:grid;gap:2px;min-width:140px;padding:8px 12px;border:1px solid #2a3940;border-radius:10px;background:#0c1318}
+.mccFeedPill strong{color:#dce5e8;font-size:12px}
+.mccFeedPill small{color:#718088;font-size:10px}
+.mccLevelStrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid #1c282e}
+.mccLevelStrip>div{padding:14px 16px;border-right:1px solid #1c282e}
+.mccLevelStrip>div:last-child{border:0}
+.mccLevelStrip span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccLevelStrip strong{display:block;margin-top:8px;color:#e4ecef;font:600 16px var(--font-geist-mono),monospace}
+.mccChartControls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #1c282e}
+.mccTimeframes,.mccOverlays{display:flex;flex-wrap:wrap;gap:6px}
+.mccTimeframes button,.mccOverlays button{
+  min-height:36px;padding:0 12px;border:1px solid #2a3940;border-radius:8px;background:#0f171b;color:#a7b3ba;
+  font:600 11px var(--font-geist-sans),Arial,sans-serif;cursor:pointer;
+}
+.mccTimeframes button[aria-pressed="true"],.mccOverlays button[aria-pressed="true"]{border-color:#62e6b166;background:#62e6b114;color:var(--mcc-green)}
+.mccTimeframes button:disabled,.mccOverlays button:disabled{opacity:.45;cursor:not-allowed}
+.mccChartFrame{position:relative;min-height:480px;background:radial-gradient(ellipse at 50% 0%,#11212655,#091014 70%)}
+.mccChartCanvas{min-height:480px;height:min(58vh,620px);width:100%}
+.mccChartTooltip{padding:8px 16px;color:#8b989f;font:12px var(--font-geist-mono),monospace;border-top:1px solid #1c282e}
+.mccChartLoading{position:absolute;z-index:2;top:12px;right:12px;padding:8px 12px;border-radius:8px;background:#0c1318cc;color:#9edacc;font-size:11px}
+.mccChartError{padding:12px 16px;color:#ef9a9a;font-size:12px;border-bottom:1px solid #1c282e}
+.mccChartUnavailable,.mccChartSkeleton{min-height:280px;display:grid;place-content:center;gap:10px;padding:40px 24px;text-align:center}
+.mccChartUnavailable strong,.mccChartSkeleton p{color:#dce5e8}
+.mccChartUnavailable p{max-width:520px;margin:0 auto;color:#84929a;font-size:13px;line-height:1.5}
+.mccHeroChart>footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #1c282e;color:#718088;font-size:11px}
+
+.mccOutlook{
+  border:1px solid var(--mcc-line);border-radius:14px;padding:0;overflow:hidden;
+  background:linear-gradient(145deg,#0e161acc,#0a1014f2);box-shadow:0 24px 64px #0006;backdrop-filter:blur(14px);
+}
+.mccOutlook>header{display:flex;justify-content:space-between;gap:20px;padding:22px 24px;border-bottom:1px solid #1c282e}
+.mccOutlook h2{margin:8px 0 6px;color:var(--mcc-text);font:560 24px var(--font-geist-sans),Arial,sans-serif}
+.mccOutlook>header p{margin:0;color:var(--mcc-muted);font-size:12px}
+.mccOutlookState{display:flex;gap:8px;align-items:center;align-self:start;padding:8px 12px;border-radius:999px;border:1px solid #33434a}
+.mccOutlookState i{width:8px;height:8px;border-radius:50%;background:#718088}
+.mccOutlookState.is-verified{border-color:#62e6b155}
+.mccOutlookState.is-verified i{background:var(--mcc-green);box-shadow:0 0 10px #62e6b166}
+.mccOutlookState.is-closed{border-color:#ef777755}
+.mccOutlookState.is-closed i{background:var(--mcc-red)}
+.mccOutlookState strong{font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#c5d0d6}
+.mccOutlookGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#1c282e}
+.mccOutlookGrid article{min-height:120px;padding:18px;background:#0c1318}
+.mccOutlookGrid span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase}
+.mccOutlookGrid p,.mccOutlookGrid strong{display:block;margin-top:10px;color:#d5dee2;font:500 13px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.mccOutlookGrid strong{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.mccOutlookGrid .is-bull{border-top:2px solid #62e6b144}
+.mccOutlookGrid .is-bear{border-top:2px solid #ef777744}
+.mccOutlookGrid .is-neutral{border-top:2px solid #d8b36a44}
+.mccOutlook>footer{padding:14px 24px;color:#7f8e96;font-size:11px;line-height:1.5;border-top:1px solid #1c282e}
+
+.mccSkeletonBar{height:12px;border-radius:6px;background:#172329;position:relative;overflow:hidden}
+.mccSkeletonBar.short{width:42%}
+.mccSkeletonBar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#b7d7d014,transparent);transform:translateX(-100%);animation:mccSweep 1.6s ease-in-out infinite}
+@keyframes mccSweep{to{transform:translateX(100%)}}
+
+@media(max-width:1200px){
+  .mccCommandHeader{grid-template-columns:1fr 1fr}
+  .mccHeaderActions{grid-column:1/-1;grid-template-columns:1fr 1fr}
+  .mccIntelStrip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mccOutlookGrid{grid-template-columns:1fr 1fr}
+  .mccDecisionPanels{grid-template-columns:1fr 1fr}
+  .mccDecisionPanelsCompact{grid-template-columns:1fr 1fr}
+  .mccDecisionConfidence{grid-column:auto}
+  .mccDecisionMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mccWeatherGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .mccRadarScoreRow{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .marketCommandCentre{width:min(100% - 24px,1560px);padding-top:16px}
+  .mccCommandHeader{grid-template-columns:1fr;padding:22px}
+  .mccIntelStrip{grid-template-columns:1fr 1fr}
+  .mccLevelStrip{grid-template-columns:1fr 1fr}
+  .mccLevelStrip>div{border-bottom:1px solid #1c282e}
+  .mccHeroChartHeader{flex-direction:column}
+  .mccHeroBadges{justify-content:flex-start}
+  .mccChartCanvas{min-height:360px;height:420px}
+  .mccDecisionMetrics{grid-template-columns:1fr 1fr}
+  .mccDecisionPanels,.mccDecisionPanelsCompact{grid-template-columns:1fr}
+  .mccWeatherGrid{grid-template-columns:1fr 1fr}
+  .mccRadarGrid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .mccIntelStrip,.mccOutlookGrid,.mccLevelStrip,.mccHeaderActions,.mccDecisionMetrics,.mccWeatherGrid{grid-template-columns:1fr}
+  .mccCommandHeader h1{font-size:32px}
+  .mccChartCanvas{min-height:320px;height:360px}
+}
+@media(prefers-reduced-motion:reduce){
+  .mccHeaderActions a,.mccIntelCard,.mccDecisionMetric,.mccWeatherCard{transition:none}
+  .mccHeaderActions a:hover,.mccIntelCard:hover,.mccWeatherCard:hover{transform:none}
+  .mccDecisionDesk,.mccWeatherBoard{animation:none}
+  .mccConfidenceMeter span,.mccScoreProgress{transition:none}
+  .mccScoreValue strong{animation:none}
+  .mccSkeletonBar:after{animation:none}
+}

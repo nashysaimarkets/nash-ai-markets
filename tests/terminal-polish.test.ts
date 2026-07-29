@@ -4,13 +4,14 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("loading route mirrors the integrated terminal hierarchy", async () => {
+test("loading route mirrors the trading desk shell", async () => {
   const source = await read("../app/terminal/loading.tsx");
-  for (const className of ["customerTerminal", "ctTopbar", "ctWorkspace", "ctHero", "ctStatus", "ctPanel", "ctAssetGrid", "ctTwoColumn"]) {
+  for (const className of ["customerTerminal", "ctWorkspace", "deskWorkspaceShell", "tradingDeskPage"]) {
     assert.match(source, new RegExp(className));
   }
   assert.match(source, /aria-busy="true"/);
   assert.match(source, /aria-live="polite"/);
+  assert.doesNotMatch(source, /ctAssetGrid|ctTwoColumn/);
 });
 
 test("terminal controls provide names, state and modal focus management", async () => {
@@ -43,10 +44,28 @@ test("premium polish supports MacBook, mobile, reduced motion and high contrast"
   assert.match(styles, /focus-visible/);
 });
 
-test("polish remains restrained and safety content stays intact", async () => {
-  const [styles, page] = await Promise.all([read("../app/mission-control.css"), read("../app/terminal/page.tsx")]);
+test("polish remains restrained and the trading desk stays coherent", async () => {
+  const [styles, page, canvas] = await Promise.all([
+    read("../app/mission-control.css"),
+    read("../app/terminal/page.tsx"),
+    read("../app/components/MemberEmptyCanvas.tsx"),
+  ]);
   assert.doesNotMatch(styles, /backdrop-filter/);
-  assert.match(page, /terminalStatusMessage/);
-  assert.match(page, /No live values or directional guidance are being inferred/);
-  assert.match(page, /DecisionEnginePanel/);
+  assert.match(styles, /\.memberDashboardNav\{[^}]*background:#070a0e/);
+  assert.match(styles, /background:#070b0a!important/);
+  assert.match(styles, /z-index:60!important/);
+  assert.doesNotMatch(styles, /background:#070b0af5!important/);
+  assert.match(styles, /--app-header-height:84px/);
+  assert.match(styles, /--section-scroll-gap:16px/);
+  assert.match(styles, /--desk-sticky-offset:calc\(var\(--app-header-height\) \+ var\(--section-scroll-gap\)\)/);
+  assert.match(styles, /html\{scroll-padding-top:var\(--desk-sticky-offset\)\}/);
+  assert.match(styles, /scroll-margin-top:var\(--desk-sticky-offset\)/);
+  assert.match(styles, /\.deskMarkets\{[^}]*top:var\(--desk-sticky-offset\)/);
+  assert.match(styles, /\.deskFocusRail\{[^}]*top:var\(--desk-sticky-offset\)/);
+  assert.match(page, /TradingDeskOS/);
+  assert.match(canvas, /BrandLogo/);
+  assert.match(canvas, /terminalEmptyCanvas/);
+  assert.match(canvas, /terminalCanvasLogo/);
+  assert.match(page, /DashboardCandlestickChart|getConfiguredFmpCandlesForInstruments/);
+  assert.doesNotMatch(page, /DecisionEnginePanel|AskBullseye/);
 });

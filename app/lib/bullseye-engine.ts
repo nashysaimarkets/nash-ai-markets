@@ -16,7 +16,6 @@ export type BullseyeResult = {
   bearInvalidation: string;
   standAside: string;
   riskWindowPrep: string;
-  optionsApproach: string;
   missionBrief: string;
 };
 
@@ -59,7 +58,6 @@ export function runBullseyeEngine(snapshot: MarketSnapshot): BullseyeResult {
       bearInvalidation: "Unavailable",
       standAside: "Stand aside until verified current market data is available.",
       riskWindowPrep: "Scheduled event data is unavailable.",
-      optionsApproach: "No options posture is generated without verified current data.",
       missionBrief: "Verified current market data is unavailable. No directional trading guidance has been generated.",
     };
   }
@@ -135,10 +133,6 @@ export function runBullseyeEngine(snapshot: MarketSnapshot): BullseyeResult {
     standAside:
       "Stand aside when price repeatedly crosses the pivot without follow-through or participation.",
     riskWindowPrep: `Reduce size before ${riskWindow}; wait for the first reaction to settle before reassessing.`,
-    optionsApproach:
-      snapshot.risk === "HIGH" || snapshot.risk === "ELEVATED"
-        ? "If trading options, favour defined-risk spreads; avoid uncovered short premium and chasing inflated volatility."
-        : "If trading options, use defined risk, pre-set maximum loss and only act after the mapped trigger confirms.",
     missionBrief: `${leadingCase}. ${snapshot.summary}`,
   };
 }

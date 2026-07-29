@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 72" role="img" aria-labelledby="title desc">
-  <title id="title">NASH AI Markets</title><desc id="desc">NASH AI Markets emerald target mark and wordmark</desc>
-  <g fill="none" stroke="#38f28e"><circle cx="36" cy="36" r="25"/><circle cx="36" cy="36" r="8" opacity=".75"/><path d="M36 5v14M36 53v14M5 36h14M53 36h14"/></g>
-  <path fill="#d9ab52" d="m36 27 9 9-9 9-9-9z"/>
-  <text x="82" y="33" fill="#f4f3ec" font-family="Arial,sans-serif" font-size="23" font-weight="700" letter-spacing="4">NASH <tspan fill="#38f28e">AI</tspan></text>
-  <text x="82" y="55" fill="#aeb8b3" font-family="Arial,sans-serif" font-size="12" font-weight="600" letter-spacing="6">MARKETS</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 80" role="img" aria-labelledby="title desc">
+  <title id="title">NASH AI Markets</title>
+  <desc id="desc">Bullseye reticle mark with NASH AI Markets wordmark</desc>
+  <g fill="none" stroke="#3be08f" stroke-width="1.7" stroke-linecap="round">
+    <circle cx="40" cy="40" r="28"/>
+    <circle cx="40" cy="40" r="18" opacity=".72"/>
+    <path d="M40 8v10M40 62v10M8 40h10M62 40h10"/>
+    <path d="M18 18l7 7M62 18l-7 7M18 62l7-7M62 62l-7-7" opacity=".55"/>
+  </g>
+  <path stroke="#3be08f" stroke-width="2" stroke-linecap="round" d="M40 22v36"/>
+  <rect x="34" y="30" width="12" height="20" rx="1.5" fill="#1a3d32" stroke="#3be08f" stroke-width="1.4"/>
+  <path fill="#d9ab52" d="M40 32l10 8-10 8-10-8z"/>
+  <circle cx="40" cy="40" r="2.6" fill="#f4f3ec"/>
+  <text x="88" y="36" fill="#f4f3ec" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="700" letter-spacing="3.5">NASH <tspan fill="#3be08f">AI</tspan></text>
+  <text x="88" y="58" fill="#9aa8a2" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="600" letter-spacing="7">MARKETS</text>
 </svg>

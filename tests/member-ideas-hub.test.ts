@@ -26,7 +26,7 @@ test("member navigation and safe unavailable state are present without emails", 
   const shell = read("app/components/MemberShell.tsx");
   const page = read("app/ideas/page.tsx");
   assert.match(shell, /href: "\/ideas", label: "Ideas"/);
-  assert.match(page, /The Ideas Hub is being prepared/);
-  assert.match(page, /aria-labelledby="ideas-title"/);
+  assert.match(page, /MemberEmptyCanvas/);
+  assert.match(page, /redirect\("\/login"\)/);
   assert.doesNotMatch(page, /user\.email|\.email\b/);
 });

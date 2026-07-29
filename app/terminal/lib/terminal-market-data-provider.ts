@@ -67,6 +67,9 @@ export type FmpEnvironmentDiagnostics = {
   fmpSp500FuturesSymbolConfigured: boolean;
   fmpVixSymbolConfigured: boolean;
   fmpUsDollarIndexSymbolConfigured: boolean;
+  fmpOilSymbolConfigured: boolean;
+  fmpQqqSymbolConfigured: boolean;
+  fmpNasdaqSymbolConfigured: boolean;
   fmpRequestTimeoutConfigured: boolean;
   marketDataMaxRetriesConfigured: boolean;
   marketDataRetryDelayConfigured: boolean;
@@ -86,11 +89,17 @@ export function getFmpEnvironmentDiagnostics(): FmpEnvironmentDiagnostics {
     fmpSp500FuturesSymbolConfigured: Boolean(process.env.FMP_SP500_FUTURES_SYMBOL?.trim()),
     fmpVixSymbolConfigured: Boolean(process.env.FMP_VIX_SYMBOL?.trim()),
     fmpUsDollarIndexSymbolConfigured: Boolean(process.env.FMP_US_DOLLAR_INDEX_SYMBOL?.trim()),
+    fmpOilSymbolConfigured: Boolean(process.env.FMP_OIL_SYMBOL?.trim()),
+    fmpQqqSymbolConfigured: Boolean(process.env.FMP_QQQ_SYMBOL?.trim()),
+    fmpNasdaqSymbolConfigured: Boolean(process.env.FMP_NASDAQ_SYMBOL?.trim()),
     fmpRequestTimeoutConfigured: Boolean(process.env.FMP_REQUEST_TIMEOUT_MS?.trim()),
     marketDataMaxRetriesConfigured: Boolean(process.env.MARKET_DATA_MAX_RETRIES?.trim()),
     marketDataRetryDelayConfigured: Boolean(process.env.MARKET_DATA_RETRY_DELAY_MS?.trim()),
     supabaseUrlConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()),
-    supabasePublishableKeyConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim()),
+    supabasePublishableKeyConfigured: Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim()
+      || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim(),
+    ),
     supabaseServiceRoleKeyConfigured: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()),
     openAIApiKeyConfigured: Boolean(process.env.OPENAI_API_KEY?.trim()),
     openAIBriefModelConfigured: Boolean(process.env.OPENAI_BRIEF_MODEL?.trim()),
@@ -113,6 +122,9 @@ function createConfiguredProvider(): { provider: MarketDataProvider; name: strin
           sp500Futures: process.env.FMP_SP500_FUTURES_SYMBOL,
           vix: process.env.FMP_VIX_SYMBOL,
           usDollarIndex: process.env.FMP_US_DOLLAR_INDEX_SYMBOL,
+          oil: process.env.FMP_OIL_SYMBOL,
+          qqq: process.env.FMP_QQQ_SYMBOL,
+          nasdaq: process.env.FMP_NASDAQ_SYMBOL,
         },
         logger: (message, details) => console.info(`[${message}]`, details ?? {}),
       }),
@@ -136,7 +148,6 @@ export async function getTerminalMarketData(
   now = Date.now(),
 ): Promise<TerminalMarketGatewayResult> {
   const previewOnly = process.env.MARKET_DATA_PROVIDER === "preview";
-  console.info("[bullseye:market-data] configuration", getFmpEnvironmentDiagnostics());
   const configured = override ? null : createConfiguredProvider();
 
   if (!override && (previewOnly || !configured)) {

@@ -4,6 +4,7 @@ import test from "node:test";
 import { analyzeMarketSnapshot } from "../app/lib/market-intelligence-engine.ts";
 import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
 import { createCustomerSignals, instrumentInterpretation, scoreStance } from "../app/terminal/lib/customer-terminal.ts";
+import { formatCustomerParticipationWarnings } from "../app/terminal/lib/customer-warnings.ts";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
@@ -30,9 +31,46 @@ test("customer terminal keeps diagnostics out of normal customer navigation", as
 
 test("customer terminal provides readable responsive presentation contracts", async () => {
   const styles = await read("../app/mission-control.css");
-  assert.match(styles, /\.customerTerminal\{[^}]*font-size:16px/);
-  assert.match(styles, /\.ctHero h1\{[^}]*clamp\(32px,5vw,44px\)/);
-  assert.match(styles, /@media\(max-width:600px\)/);
+  assert.match(styles, /\.customerTerminal\{[^}]*font-size:18px/);
+  assert.match(styles, /\.tradingDeskOS|\.terminalEmptyCanvas/);
+  assert.match(styles, /\.deskHero|\.terminalCanvasLogo/);
+  assert.match(styles, /\.deskMarkets|\.tmMarketsSidebar/);
+  assert.match(styles, /@media\(max-width:600px\)|@media\(max-width:720px\)/);
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(styles, /prefers-contrast:more/);
+});
+
+test("customer terminal ships Trading Desk OS with membership gates", async () => {
+  const terminal = await read("../app/terminal/page.tsx");
+  assert.match(terminal, /TradingDeskOS/);
+  assert.match(terminal, /active="terminal"/);
+  assert.match(terminal, /resolveMembershipTier/);
+  assert.match(terminal, /createProgressiveAccess/);
+  assert.match(terminal, /loadPreviewClaims/);
+  assert.match(terminal, /DashboardCandlestickChart|getConfiguredFmpCandlesForInstruments/);
+  assert.match(terminal, /LockedPremiumCard|paid/);
+  assert.doesNotMatch(terminal, /LaunchDiagnosticsPanel|createLaunchDiagnostics/);
+  assert.doesNotMatch(terminal, /DecisionIntelligencePanel|AskBullseye/);
+});
+
+test("customer participation warnings hide internal schema field names", () => {
+  const warnings = formatCustomerParticipationWarnings(
+    ["CRITICAL_INPUT_MISSING"],
+    [
+      { code: "AGED_DATA", field: "dataAgeMs" },
+      { code: "DELAYED_DATA", field: "dataStatus" },
+      { code: "PROVIDER_DEGRADED", field: "providerStatus" },
+      { code: "MISSING_EVIDENCE", field: "trend" },
+    ],
+    ["EVENT_NEAR"],
+  );
+  assert.deepEqual(warnings, [
+    "Confirmation data is incomplete",
+    "Market data is delayed beyond the live window",
+    "Market data is delayed",
+    "The market data connection is degraded",
+    "Confirmation data is incomplete: trend",
+    "A high-impact event is nearby",
+  ]);
+  assert.ok(warnings.every((item) => !/dataAgeMs|dataStatus|providerStatus/.test(item)));
 });

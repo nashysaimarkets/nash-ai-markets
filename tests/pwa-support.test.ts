@@ -69,7 +69,20 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.match(controller, /registration\.update\(\)/);
   assert.match(controller, /SKIP_WAITING/);
   assert.match(controller, /reloads only after you choose Update/);
+  assert.match(controller, /SESSION_KEY|sessionStorage/);
+  assert.match(controller, /INSTALL_DELAY_MS|45_000/);
+  assert.match(controller, /DISMISS_DAYS|14/);
+  assert.match(controller, /isStandalone/);
+  assert.match(controller, /pwaInstallClose|Close install prompt/);
   assert.doesNotMatch(controller, /OPENAI_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE/);
   assert.doesNotMatch(layout, /PwaController/);
   assert.match(memberShell, /<PwaController \/>/);
+});
+
+test("install prompt styles stay non-blocking and respect reduced motion", async () => {
+  const css = await read("app/globals.css");
+  assert.match(css, /\.pwaInstallPrompt\{[\s\S]*z-index:40/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+  assert.match(css, /pwaInstallClose/);
+  assert.match(css, /@media\(max-width:640px\)/);
 });

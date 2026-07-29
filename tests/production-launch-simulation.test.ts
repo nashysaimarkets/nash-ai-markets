@@ -12,7 +12,7 @@ const now = Date.parse("2026-07-17T12:00:00.000Z");
 test("production simulation: passwordless authentication is fail-safe and redirect-bound", async () => {
   const [login, callback, dashboard] = await Promise.all([
     source("app/login/LoginForm.tsx"),
-    source("app/auth/callback/route.ts"),
+    source("app/auth/callback/page.tsx"),
     source("app/dashboard/page.tsx"),
   ]);
   assert.match(login, /signInWithOtp/);
@@ -21,7 +21,7 @@ test("production simulation: passwordless authentication is fail-safe and redire
   assert.match(callback, /token_hash/);
   assert.match(callback, /verifyOtp/);
   assert.match(callback, /data\.session/);
-  assert.match(callback, /!requestedNext\.startsWith\("\/\/"\)/);
+  assert.match(callback, /safeAuthNextPath/);
   assert.match(callback, /login\?error=signin/);
   assert.match(dashboard, /redirect\("\/login"\)/);
 });
@@ -120,7 +120,7 @@ test("production simulation: Supabase persistence remains migration-controlled a
     assert.match(migration, /enable row level security/);
     assert.doesNotMatch(migration, /create policy/i);
   }
-  assert.match(admin, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(admin, /resolveSupabaseServiceRoleKey/);
   assert.match(admin, /persistSession: false/);
   assert.match(admin, /credentials are not configured/);
 });
@@ -157,7 +157,8 @@ test("production simulation: mobile, accessibility, performance, and deployment 
   ]);
   assert.match(css, /@media\(max-width:640px\)/);
   assert.match(css, /prefers-reduced-motion:reduce/);
-  assert.match(dashboard, /Promise\.all/);
+  assert.match(dashboard, /MarketCommandCentre/);
+  assert.match(dashboard, /resolveMembershipTier/);
   assert.match(fmp, /timeoutMs = options\.timeoutMs \?\? 4_500/);
   assert.match(ai, /AI_MORNING_BRIEF_TIMEOUT_MS/);
   assert.match(worker, /strict-transport-security/);

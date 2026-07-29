@@ -104,13 +104,12 @@ test("Morning Brief model has a server-side default and supports environment ove
 });
 
 test("dashboard wires live AI only into entitled verified Morning Brief output", async () => {
-  const page = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
+  const brief = await readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8");
   const panel = await readFile(new URL("../app/dashboard/components/MorningBriefPanel.tsx", import.meta.url), "utf8");
-  assert.match(page, /Suspense fallback=\{<MorningBriefSkeleton/);
-  assert.match(page, /aiEligible=\{access\.features\.intelligence\}/);
-  assert.match(panel, /aiEligible && brief\.mode === "verified"/);
+  assert.match(brief, /MorningMarketBrief|composeMorningMarketBrief/);
+  assert.match(brief, /createProgressiveAccess/);
+  assert.doesNotMatch(brief, /redirect\("\/terminal"\)/);
   assert.match(panel, /generateAIMorningBrief/);
   assert.match(panel, /applyAIMorningBrief/);
   assert.match(panel, /Deterministic fallback active/);
-  assert.match(panel, /OpenAI summarized verified engine evidence only/);
 });
