@@ -11,7 +11,7 @@ import {
   type MarketGroupId,
   type MarketInstrument,
 } from "../../lib/markets/market-catalog.ts";
-import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
+import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
 import { isCandleInstrument, type CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart.tsx";
@@ -76,6 +76,19 @@ function quoteFor(payload: TradingDeskPayload, symbol: string) {
 }
 
 const COVERAGE_RANK: Record<MarketCoverage, number> = { live: 0, proxy: 1, awaiting: 2 };
+
+/** Newest verified candle age for the active (or ES fallback) series — not snapshot/gateway age. */
+function latestVerifiedCandleAgeMs(
+  payload: TradingDeskPayload,
+  symbol: string,
+): number | null {
+  const bundle = payload.candleSeriesByInstrument;
+  if (!bundle) return null;
+  const preferred = isCandleInstrument(symbol) ? bundle[symbol as CandleInstrument] : null;
+  const es = bundle.ES;
+  const series = preferred?.dataAgeMs != null ? preferred : es?.dataAgeMs != null ? es : preferred ?? es;
+  return series?.dataAgeMs ?? null;
+}
 
 function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
   connected: MarketInstrument[];
@@ -301,7 +314,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   function renderWidget(id: DeskWidgetId) {
-    const delayedAgeLine = formatDelayedDataAgeDisplay(payload.snapshotAge);
+    const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
     switch (id) {
       case "freshness-trust":
         return (
@@ -781,7 +794,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     }
   }
 
-  const delayedAgeLine = formatDelayedDataAgeDisplay(payload.snapshotAge);
+  const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
 
   return (
     <div className={`tradingDeskOS${workspace.focusMode ? " is-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">

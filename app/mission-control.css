@@ -192,7 +192,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
   background:linear-gradient(160deg,#0e1614f2,#090e0cf5)!important;
   box-shadow:0 22px 60px #0006,inset 0 1px 0 #ffffff07
 }
-.memberDashboardNav{min-height:84px!important;height:auto!important;padding-block:10px;background:#070b0af5!important;border-color:#24322c!important}
+.memberDashboardNav{min-height:84px!important;height:auto!important;padding-block:10px;background:#070b0a!important;border-color:#24322c!important;z-index:60!important;isolation:isolate;opacity:1!important}
 .dashQuoteStrip article{position:relative}
 .dashQuoteStrip .miniSparkline{opacity:.85}
 
@@ -527,7 +527,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskBuilderSave label,.deskJournal label,.deskRiskGrid label{display:grid;gap:6px;color:#8f9c96;font-size:13px}
 .deskBuilderSave input,.deskJournal textarea,.deskRiskGrid input{min-height:44px;padding:10px 12px;border:1px solid #2a3a34;border-radius:8px;background:#070b0a;color:#eef2f5;font:inherit}
 .deskShell{position:relative;display:grid;grid-template-columns:minmax(240px,280px) minmax(0,1fr);gap:16px;align-items:start}
-.deskMarkets{border:1px solid #24322c;border-radius:14px;background:linear-gradient(165deg,#0c1411f2,#090d12f5);box-shadow:0 18px 48px #0006;overflow:hidden;position:sticky;top:96px;max-height:calc(100vh - 112px);z-index:20}
+.deskMarkets{border:1px solid #24322c;border-radius:14px;background:linear-gradient(165deg,#0c1411f2,#090d12f5);box-shadow:0 18px 48px #0006;overflow:hidden;position:sticky;top:96px;max-height:calc(100vh - 112px);z-index:15}
 .deskMarketsInner{display:flex;flex-direction:column;max-height:inherit;min-height:0}
 .deskMarketsInner>header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #24322c;flex:0 0 auto;background:#0c1411f8;position:sticky;top:0;z-index:1}
 .deskMarkets .tmMarketsGroups{overflow:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch}
@@ -633,6 +633,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskDecisionWhy{margin:0;padding:14px 18px;color:#c9d5cf;font:15px/1.55 var(--font-geist-sans),Arial,sans-serif;border-top:1px solid #1c2823}
 .deskDecisionWhy span{display:block;margin-bottom:6px;color:#7d8a84;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
 .deskDecisionSubhead{margin:8px 0 0;color:#aeb8b3;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:62ch}
+.deskDecisionScoreDetail{display:block;margin-top:6px;color:#8f9c96;font:650 11px/1.35 var(--font-geist-mono),monospace}
 .deskDecisionDetails{margin:0;padding:12px 18px 16px;border-top:1px solid #1c2823;background:#0c1210}
 .deskDecisionDetails summary{cursor:pointer;color:#a89b7a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
 .deskDecisionDetails p{margin:10px 0;color:#c9d5cf;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif}

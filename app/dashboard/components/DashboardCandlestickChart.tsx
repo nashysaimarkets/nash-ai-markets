@@ -5,6 +5,7 @@ import type { IChartApi, UTCTimestamp } from "lightweight-charts";
 import type { CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CandleTimeframe, CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { candleReferenceLevels, candleSessionStats, exponentialMovingAverage } from "../lib/candle-analysis.ts";
+import { formatVerifiedCandleAgePhrase } from "../../lib/freshness-labels.ts";
 
 type Overlay = "volume" | "ema20" | "ema50";
 const OPTIONS: Array<{ label: string; timeframe: CandleTimeframe }> = [
@@ -17,8 +18,11 @@ const OPTIONS: Array<{ label: string; timeframe: CandleTimeframe }> = [
 ];
 const REFRESH_MS = 90_000;
 const number = (value: number | null, digits = 2) => value === null ? "Unavailable" : value.toLocaleString("en-GB", { minimumFractionDigits: digits, maximumFractionDigits: digits });
-const age = (ms: number | null) => ms === null ? "Age unavailable" : ms < 60_000 ? "Under 1 minute old" : ms < 3_600_000 ? `${Math.floor(ms / 60_000)} minutes old` : ms < 86_400_000 ? `${Math.floor(ms / 3_600_000)} hours old` : `${Math.floor(ms / 86_400_000)} days old`;
-
+const ageMetric = (ms: number | null) => {
+  const phrase = formatVerifiedCandleAgePhrase(ms);
+  if (phrase === "age unavailable") return "Age unavailable";
+  return phrase.charAt(0).toUpperCase() + phrase.slice(1);
+};
 function customerStatusLabel(series: CustomerCandleSeries): string {
   if (series.status === "unavailable") return "Unavailable";
   if (series.classification === "end_of_day") return "End-of-day";
@@ -229,7 +233,7 @@ export function DashboardCandlestickChart({
         <h2 id={`dashboard-market-chart-title-${instrument}`}>{customerChartTitle(instrument, series)}</h2>
         {!compact ? <p>{customerInstrumentDetail(series.instrumentDetail)}</p> : null}
       </div>
-      <div className="chartStatus"><i aria-hidden="true" /><strong>{statusLabel}</strong><small>{updated}{intervalMismatch ? "" : ` UK · ${age(series.dataAgeMs)}`}</small></div>
+      <div className="chartStatus"><i aria-hidden="true" /><strong>{statusLabel}</strong><small>{updated}{intervalMismatch ? "" : ` UK · ${ageMetric(series.dataAgeMs)}`}</small></div>
     </header>
     {stats && !compact ? <>
       <div className="chartMarketStrip" aria-label="Verified 24-hour statistics">
@@ -238,13 +242,13 @@ export function DashboardCandlestickChart({
         <div><span>24h high</span><strong>{number(stats.high)}</strong></div>
         <div><span>24h low</span><strong>{number(stats.low)}</strong></div>
         <div><span>Newest candle</span><strong>{newestLabel ?? "Unavailable"}</strong></div>
-        <div><span>Latest candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
+        <div><span>Latest candle age</span><strong>{ageMetric(series.dataAgeMs)}</strong></div>
       </div>
       <div className="chartRange"><span>Current price within the 24-hour range</span><div><i style={{ width: `${stats.rangePosition}%` }} /></div><strong>{number(stats.low)} — {number(stats.high)}</strong></div>
     </> : stats && compact ? (
       <div className="chartMarketStrip is-compact" aria-label="Verified candle summary">
         <div><span>Current price</span><strong>{number(stats.latest)}</strong></div>
-        <div><span>Delayed · candle age</span><strong>{age(series.dataAgeMs)}</strong></div>
+        <div><span>Delayed · candle age</span><strong>{ageMetric(series.dataAgeMs)}</strong></div>
       </div>
     ) : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}
     <div className="chartControlBar">

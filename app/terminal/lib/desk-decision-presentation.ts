@@ -12,7 +12,10 @@ export type DeskDecisionPresentation = {
   leanTone: "bull" | "bear" | "neutral" | "mixed";
   permissionLabel: string;
   permissionTone: "open" | "caution" | "blocked";
+  /** Primary customer confidence state (e.g. Not established). */
   confidenceLabel: string;
+  /** Secondary engine score line when the primary label is not the raw score. */
+  confidenceDetail: string | null;
   confidenceScore: number | null;
   riskLabel: string;
   why: string;
@@ -94,7 +97,7 @@ export function buildDeskDecisionPresentation(input: {
   if (!decision) {
     why = "Verified market observations may still appear below. Trade participation remains restricted because confirmation data is incomplete.";
   } else if (permission.tone === "blocked" && lean.tone !== "neutral") {
-    why = `Market lean is ${lean.label.toLowerCase()}, but this is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete.`;
+    why = `${lean.label} is an observed lean from verified inputs — not a validated trade setup. Trade participation remains restricted because confirmation data is incomplete.`;
   } else if (permission.tone === "blocked") {
     why = "This is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete — not because the whole briefing is unavailable.";
   } else if (permission.tone === "caution") {
@@ -106,9 +109,18 @@ export function buildDeskDecisionPresentation(input: {
   }
 
   let confidenceLabel: string;
-  if (score == null) confidenceLabel = "Not rated";
-  else if (score === 0 || permission.tone === "blocked") confidenceLabel = `Limited · ${score} / 100`;
-  else confidenceLabel = `${score} / 100`;
+  let confidenceDetail: string | null = null;
+  if (score == null) {
+    confidenceLabel = "Not rated";
+  } else if (score === 0) {
+    confidenceLabel = "Not established";
+    confidenceDetail = `Engine confidence score: ${score} / 100`;
+  } else if (permission.tone === "blocked") {
+    confidenceLabel = "Limited";
+    confidenceDetail = `Engine confidence score: ${score} / 100`;
+  } else {
+    confidenceLabel = `${score} / 100`;
+  }
 
   return {
     leanLabel: lean.label,
@@ -116,6 +128,7 @@ export function buildDeskDecisionPresentation(input: {
     permissionLabel: permission.label,
     permissionTone: permission.tone,
     confidenceLabel,
+    confidenceDetail,
     confidenceScore: score,
     riskLabel,
     why,

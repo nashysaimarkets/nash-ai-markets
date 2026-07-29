@@ -39,6 +39,7 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
             <div className="deskDecisionCell" role="listitem">
               <span>Confidence</span>
               <strong>{decision.confidenceLabel}</strong>
+              {decision.confidenceDetail ? <small className="deskDecisionScoreDetail">{decision.confidenceDetail}</small> : null}
             </div>
             <div className="deskDecisionCell" role="listitem">
               <span>Primary condition</span>
@@ -58,6 +59,7 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
             <div className="deskDecisionCell" role="listitem">
               <span>Confidence</span>
               <strong>{decision.confidenceLabel}</strong>
+              {decision.confidenceDetail ? <small className="deskDecisionScoreDetail">{decision.confidenceDetail}</small> : null}
             </div>
             <div className="deskDecisionCell" role="listitem">
               <span>Risk state</span>
@@ -104,6 +106,7 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
           <p>
             Engine participation remains closed while required confirmations are incomplete.
             {decision.primaryRisk ? ` Condition on record: ${decision.primaryRisk}.` : ""}
+            {decision.confidenceScore != null ? ` Engine confidence score: ${decision.confidenceScore} / 100.` : ""}
             {" "}This does not invalidate verified quotes, candles, levels or catalysts shown elsewhere on the desk.
           </p>
           {onOpenRisk ? (

@@ -51,6 +51,10 @@ test("polish remains restrained and the trading desk stays coherent", async () =
     read("../app/components/MemberEmptyCanvas.tsx"),
   ]);
   assert.doesNotMatch(styles, /backdrop-filter/);
+  assert.match(styles, /\.memberDashboardNav\{[^}]*background:#070a0e/);
+  assert.match(styles, /background:#070b0a!important/);
+  assert.match(styles, /z-index:60!important/);
+  assert.doesNotMatch(styles, /background:#070b0af5!important/);
   assert.match(page, /TradingDeskOS/);
   assert.match(canvas, /BrandLogo/);
   assert.match(canvas, /terminalEmptyCanvas/);

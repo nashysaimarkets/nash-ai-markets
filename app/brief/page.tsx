@@ -13,8 +13,8 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner";
 import {
   formatUkTimestamp,
   isDecisionReadySnapshot,
-  formatSnapshotAge,
 } from "../lib/market-data";
+import { formatDelayedVerifiedCandleAgeDisplay } from "../lib/freshness-labels.ts";
 import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
 import { generateAIMarketBriefSelection } from "../lib/server/ai-market-brief.ts";
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider";
@@ -90,12 +90,7 @@ export default async function AIMarketBriefPage() {
   const support = primaryLevel(snapshot, "support");
   const resistance = primaryLevel(snapshot, "resistance");
   const asOfLabel = formatUkTimestamp(snapshot.asOf);
-  const dataAgeLabel = formatUkTimestamp(snapshot.asOf) !== "Timestamp unavailable"
-    ? formatSnapshotAge(snapshot.asOf, now)
-    : gatewayStatus.dataAgeMs != null
-      ? `${Math.max(1, Math.round(gatewayStatus.dataAgeMs / 60_000))}m old`
-      : "Age unavailable";
-
+  const dataAgeLabel = formatDelayedVerifiedCandleAgeDisplay(candleSeries?.dataAgeMs ?? null);
   const rangeHigh = candleSeries?.candles.length
     ? Math.max(...candleSeries.candles.slice(-48).map((candle) => candle.high))
     : null;

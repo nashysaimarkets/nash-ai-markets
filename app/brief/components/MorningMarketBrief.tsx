@@ -57,12 +57,19 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
   const expectedIsObserved = /verified|48-bar|range/i.test(
     `${model.expectedMove.label} ${model.expectedMove.detail}`,
   );
-  const delayedAge = formatDelayedDataAgeDisplay(model.dataAgeLabel);
   const confidenceLabel = model.aiBriefing.confidence == null
     ? "Not rated"
-    : permissionBlocked || model.aiBriefing.confidence === 0
-      ? `Limited · ${Math.round(model.aiBriefing.confidence)} / 100`
-      : `${Math.round(model.aiBriefing.confidence)} / 100`;
+    : model.aiBriefing.confidence === 0
+      ? "Not established"
+      : permissionBlocked
+        ? "Limited"
+        : `${Math.round(model.aiBriefing.confidence)} / 100`;
+  const confidenceDetail = model.aiBriefing.confidence == null
+    ? null
+    : model.aiBriefing.confidence === 0 || permissionBlocked
+      ? `Engine confidence score: ${Math.round(model.aiBriefing.confidence)} / 100`
+      : null;
+  const delayedAge = formatDelayedDataAgeDisplay(model.dataAgeLabel);
   const primaryReason = model.biggestRisk.label
     .replace(/critical input missing/i, "Confirmation data is incomplete")
     .replace(/required market evidence is missing/i, "Confirmation data is incomplete")
@@ -143,6 +150,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
               <div>
                 <span>Confidence</span>
                 <strong>{confidenceLabel}</strong>
+                {confidenceDetail ? <small className="mbScoreDetail">{confidenceDetail}</small> : null}
               </div>
               <div>
                 <span>Primary condition</span>
@@ -162,6 +170,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
               <div>
                 <span>Confidence</span>
                 <strong>{confidenceLabel}</strong>
+                {confidenceDetail ? <small className="mbScoreDetail">{confidenceDetail}</small> : null}
               </div>
               <div>
                 <span>Primary risk</span>
@@ -196,7 +205,10 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
               </div>
               <div>
                 <dt>Confidence</dt>
-                <dd>{confidenceLabel}</dd>
+                <dd>
+                  {confidenceLabel}
+                  {confidenceDetail ? ` · ${confidenceDetail}` : ""}
+                </dd>
               </div>
               <div>
                 <dt>Data condition</dt>

@@ -221,6 +221,7 @@
 .mbHeroMeta strong{color:#eef3f0}
 .mbHeroMeta small,.mbDelayed span,.mbFine{color:#9aa7ad}
 .mbDecisionGrid strong{letter-spacing:-.02em}
+.mbDecisionGrid .mbScoreDetail,.mbScoreDetail{display:block;margin-top:6px;color:#8f9c96;font:650 11px/1.35 var(--font-geist-mono),monospace}
 
 @keyframes mbRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 

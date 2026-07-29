@@ -15,15 +15,54 @@ test("freshness labels distinguish snapshot and candle ages", () => {
   assert.match(formatFreshnessLabel("candle", 18 * 60_000), /Latest candle age: 18m old/);
 });
 
-test("authoritative delayed-data age line keeps the supplied age", async () => {
-  const { formatDelayedDataAgeDisplay } = await import("../app/lib/freshness-labels.ts");
-  assert.equal(formatDelayedDataAgeDisplay("10m old"), "Delayed market data · latest candle 10m old");
-  assert.equal(formatDelayedDataAgeDisplay("15 minutes old"), "Delayed market data · latest candle 15 minutes old");
+test("authoritative delayed candle age uses dataAgeMs across surfaces", async () => {
+  const {
+    formatDelayedVerifiedCandleAgeDisplay,
+    formatVerifiedCandleAgePhrase,
+    formatNominalProviderDelayNote,
+  } = await import("../app/lib/freshness-labels.ts");
+  const ageMs = 14 * 60_000;
+  const phrase = formatVerifiedCandleAgePhrase(ageMs);
+  const line = formatDelayedVerifiedCandleAgeDisplay(ageMs);
+  assert.equal(phrase, "14 minutes old");
+  assert.equal(line, "Delayed market data · latest verified candle 14 minutes old");
   assert.equal(
-    formatDelayedDataAgeDisplay("Delayed market data · latest candle 10m old"),
-    "Delayed market data · latest candle 10m old",
+    formatDelayedVerifiedCandleAgeDisplay(ageMs),
+    `Delayed market data · latest verified candle ${formatVerifiedCandleAgePhrase(ageMs)}`,
   );
-  assert.equal(formatDelayedDataAgeDisplay(null), "Delayed market data · latest candle age unavailable");
+  assert.equal(formatNominalProviderDelayNote(10), "Nominal provider delay: approximately 10 minutes");
+  assert.notEqual(formatNominalProviderDelayNote(10), line);
+  assert.doesNotMatch(line, /\b10m\b|approximately 10/);
+
+  const chartMetric = phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  assert.equal(chartMetric, "14 minutes old");
+  assert.match(line, new RegExp(phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+});
+
+test("mapCandleFreshness age labels match shared candle age phrase", async () => {
+  const { mapCandleFreshness } = await import("../app/terminal/lib/desk-payload.ts");
+  const { formatVerifiedCandleAgePhrase } = await import("../app/lib/freshness-labels.ts");
+  const ageMs = 14 * 60_000;
+  const feed = mapCandleFreshness(
+    {
+      symbol: "ESUSD",
+      contract: "ES",
+      instrumentName: "ES",
+      exchange: "CME",
+      instrumentDetail: "test",
+      timeframe: "5m",
+      classification: "delayed",
+      dataAgeMs: ageMs,
+      provider: "Financial Modeling Prep",
+      status: "delayed",
+      asOf: "2026-07-22T11:46:00.000Z",
+      candles: [],
+      failureCategory: null,
+    },
+    "ES candles",
+  );
+  assert.equal(feed.ageLabel, formatVerifiedCandleAgePhrase(ageMs));
+  assert.equal(feed.ageLabel, "14 minutes old");
 });
 
 test("Ask Bullseye answers only from provided verified context", () => {

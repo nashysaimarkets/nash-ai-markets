@@ -14,6 +14,10 @@ import type { SessionClockReading } from "./session-clock.ts";
 import type { DeskWorkspaceState } from "./desk-workspace.ts";
 import type { DeskDecisionPresentation } from "./desk-decision-presentation.ts";
 
+import {
+  formatVerifiedCandleAgePhrase,
+} from "../../lib/freshness-labels.ts";
+
 export type DeskCandleBundle = Record<CandleInstrument, CustomerCandleSeries>;
 
 export type DeskFreshnessFeed = {
@@ -69,7 +73,7 @@ export function mapCandleFreshness(
       id: label,
       label,
       status: "STALE",
-      ageLabel: series.dataAgeMs != null ? `${Math.floor(series.dataAgeMs / 60_000)}m old` : "Age unavailable",
+      ageLabel: formatVerifiedCandleAgePhrase(series.dataAgeMs),
       detail: "Verified bars are older than the freshness window.",
     };
   }
@@ -78,7 +82,7 @@ export function mapCandleFreshness(
       id: label,
       label,
       status: "PREVIOUS_SESSION",
-      ageLabel: series.dataAgeMs != null ? `${Math.floor(series.dataAgeMs / 60_000)}m old` : "Age unavailable",
+      ageLabel: formatVerifiedCandleAgePhrase(series.dataAgeMs),
       detail: "Showing previous session verified history.",
     };
   }
@@ -87,7 +91,7 @@ export function mapCandleFreshness(
       id: label,
       label,
       status: "MARKET_CLOSED",
-      ageLabel: series.dataAgeMs != null ? `${Math.floor(series.dataAgeMs / 60_000)}m old` : "Age unavailable",
+      ageLabel: formatVerifiedCandleAgePhrase(series.dataAgeMs),
       detail: "Market closed — last verified bars retained.",
     };
   }
@@ -95,7 +99,7 @@ export function mapCandleFreshness(
     id: label,
     label,
     status: "DELAYED",
-    ageLabel: series.dataAgeMs != null ? `${Math.floor(series.dataAgeMs / 60_000)}m old` : "Age unavailable",
+    ageLabel: formatVerifiedCandleAgePhrase(series.dataAgeMs),
     detail: "Verified delayed provider series — never treated as live ticks.",
   };
 }

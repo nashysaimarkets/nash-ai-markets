@@ -43,8 +43,9 @@ test("desk decision presentation separates lean from blocked permission", () => 
   assert.equal(presentation.leanLabel, "Mildly bullish");
   assert.equal(presentation.permissionLabel, "Restricted");
   assert.equal(presentation.permissionTone, "blocked");
-  assert.equal(presentation.confidenceLabel, "Limited · 0 / 100");
-  assert.match(presentation.why, /restricted|limited-confidence|incomplete/i);
+  assert.equal(presentation.confidenceLabel, "Not established");
+  assert.equal(presentation.confidenceDetail, "Engine confidence score: 0 / 100");
+  assert.match(presentation.why, /observed lean|restricted|incomplete/i);
   assert.doesNotMatch(presentation.why, /instruction to buy|enter long/i);
 });
 
@@ -91,11 +92,11 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(desk, /Bearish lean/);
   assert.doesNotMatch(desk, />Buying</);
   assert.match(desk, /sortInstrumentsForSidebar|Additional markets — coming soon/);
-  assert.match(desk, /formatDelayedDataAgeDisplay|Delayed market data/);
-  assert.match(desk, /24-hour low \/ downside reference|24-hour high \/ upside reference/);
+  assert.match(desk, /formatDelayedVerifiedCandleAgeDisplay|Delayed market data/);
+  assert.match(desk, /latestVerifiedCandleAgeMs|24-hour low \/ downside reference|24-hour high \/ upside reference/);
   assert.match(decisionSummary, /Participation/);
   assert.match(decisionSummary, /is-blocked-priority|permissionTone === "blocked"/);
-  assert.match(decisionSummary, /Technical confirmation details|Restricted/);
+  assert.match(decisionSummary, /Technical confirmation details|Restricted|Not established|confidenceDetail/);
   assert.equal(coverageLabel("live"), "Connected");
   assert.match(catalog, /return "Connected"/);
 });
