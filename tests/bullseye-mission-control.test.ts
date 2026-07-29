@@ -25,7 +25,7 @@ test("dashboard includes the premium plan and customer trust labels", async () =
   const dashboard = await readFile(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
   const mission = await readFile(new URL("../app/components/mission-control/MissionControl.tsx", import.meta.url), "utf8");
   const styles = await readFile(new URL("../app/mission-control.css", import.meta.url), "utf8");
-  assert.match(dashboard, /title: "Market Command Centre \| NASH AI Markets"/);
+  assert.match(dashboard, /title: "Dashboard \| NASH AI Markets"/);
   assert.match(dashboard, /MarketCommandCentre/);
   assert.match(dashboard, /resolveMembershipTier/);
   assert.doesNotMatch(dashboard, /MissionControl|href="\/terminal\/diagnostics"/);

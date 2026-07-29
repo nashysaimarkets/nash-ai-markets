@@ -59,7 +59,7 @@ test("dashboard and terminal wire mini visuals without inventing cross-asset his
     readFile(new URL("../app/terminal/components/CustomerTerminal.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(dashboard, /MarketCommandCentre/);
-  assert.match(dashboard, /stripQuotes|sparkline/);
+  assert.match(dashboard, /buildDashboardCommandSummary|toCustomerCandleSeries/);
   assert.match(terminal, /rangeLaneFromCandles/);
   assert.doesNotMatch(terminal, /sparklines=\{\{/);
   assert.match(status, /Sparkline/);
