@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "./BrandLogo";
-import { PresentationModeToggle } from "./PresentationModeToggle";
 import { PwaController } from "./PwaController";
 
 export type MemberShellActive =
@@ -26,6 +25,7 @@ type MemberShellProps = {
   toolbar?: ReactNode;
 };
 
+/** Primary signed-in destinations shown in customer navigation. */
 const links = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
   { href: "/brief", label: "Morning Brief", key: "brief" },
@@ -35,7 +35,11 @@ const links = [
   { href: "/preferences", label: "Preferences", key: "onboarding" },
 ] as const;
 
-const moreLinks = [
+/**
+ * Unfinished workspace destinations retained for direct deep-links
+ * (e.g. Risk & Journal from Morning Brief). Not advertised in More until ready.
+ */
+export const unfinishedWorkspaceLinks = [
   { href: "/review", label: "Review", key: "review" },
   { href: "/archive", label: "Archive", key: "archive" },
   { href: "/journal", label: "Journal", key: "journal" },
@@ -45,43 +49,56 @@ const moreLinks = [
   { href: "/methodology", label: "Methodology", key: "methodology" },
 ] as const;
 
-const moreActive = new Set<MemberShellActive>(moreLinks.map((link) => link.key));
-
 export function MemberShell({ active, children, className = "", toolbar }: MemberShellProps) {
-  const moreOpen = moreActive.has(active);
-
-  return <main className={`memberDashboard ${className}`.trim()}>
-    <a className="memberSkipLink" href="#member-content">Skip to member content</a>
-    <header className="memberDashboardNav">
-      <BrandLogo authenticated className="memberBrandLogo" />
-      <nav aria-label="Member navigation">
-        {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}</Link>)}
-        <details className="memberMoreMenu">
-          <summary aria-current={moreOpen ? "page" : undefined}>More</summary>
-          <div className="memberMorePanel" role="group" aria-label="Workspace">
-            <span className="memberMoreLabel">Workspace</span>
-            {moreLinks.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}</Link>)}
-          </div>
-        </details>
-        <PresentationModeToggle />
-        <a href="/auth/signout">Sign out</a>
-      </nav>
-      <details className="memberMobileMenu">
-        <summary aria-label="Open member navigation">
-          <span>Menu</span>
-          <i aria-hidden="true" />
-        </summary>
-        <nav aria-label="Mobile member navigation">
-          {links.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}<span aria-hidden="true">↗</span></Link>)}
-          <span className="memberMoreLabel">Workspace</span>
-          {moreLinks.map((link) => <Link key={link.key} href={link.href} aria-current={active === link.key ? "page" : undefined}>{link.label}<span aria-hidden="true">↗</span></Link>)}
-          <PresentationModeToggle />
-          <a href="/auth/signout">Sign out<span aria-hidden="true">↗</span></a>
+  return (
+    <main className={`memberDashboard ${className}`.trim()}>
+      <a className="memberSkipLink" href="#member-content">
+        Skip to member content
+      </a>
+      <header className="memberDashboardNav">
+        <BrandLogo authenticated className="memberBrandLogo" />
+        <nav aria-label="Member navigation">
+          {links.map((link) => (
+            <Link
+              key={link.key}
+              href={link.href}
+              aria-current={active === link.key ? "page" : undefined}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <a href="/auth/signout">Sign out</a>
         </nav>
-      </details>
-    </header>
-    {toolbar ? <div className="memberToolbar" role="toolbar" aria-label="Page tools">{toolbar}</div> : null}
-    <div id="member-content">{children}</div>
-    <PwaController />
-  </main>;
+        <details className="memberMobileMenu">
+          <summary aria-label="Open member navigation">
+            <span>Menu</span>
+            <i aria-hidden="true" />
+          </summary>
+          <nav aria-label="Mobile member navigation">
+            {links.map((link) => (
+              <Link
+                key={link.key}
+                href={link.href}
+                aria-current={active === link.key ? "page" : undefined}
+              >
+                {link.label}
+                <span aria-hidden="true">↗</span>
+              </Link>
+            ))}
+            <a href="/auth/signout">
+              Sign out
+              <span aria-hidden="true">↗</span>
+            </a>
+          </nav>
+        </details>
+      </header>
+      {toolbar ? (
+        <div className="memberToolbar" role="toolbar" aria-label="Page tools">
+          {toolbar}
+        </div>
+      ) : null}
+      <div id="member-content">{children}</div>
+      <PwaController />
+    </main>
+  );
 }
