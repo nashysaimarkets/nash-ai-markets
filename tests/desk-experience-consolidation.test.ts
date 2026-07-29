@@ -95,7 +95,11 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(desk, /formatDelayedVerifiedCandleAgeDisplay|Delayed market data/);
   assert.match(desk, /latestVerifiedCandleAgeMs|24-hour low \/ downside reference|24-hour high \/ upside reference/);
   assert.match(desk, /selectDeskView/);
-  assert.match(desk, /scrollIntoView\(\{ block: "start" \}\)/);
+  assert.match(desk, /document\.scrollingElement/);
+  assert.match(desk, /measureStickyHeader\(\) \+ SECTION_SCROLL_GAP_PX/);
+  assert.match(desk, /scrollTargetBelowStickyHeader/);
+  assert.match(desk, /ResizeObserver/);
+  assert.doesNotMatch(desk, /scrollIntoView/);
   assert.match(desk, /id=\{`desk-view-\$\{deskView\}`\}/);
   assert.match(desk, /id="primary-chart"|id="verified-levels"|id="next-catalyst"|id="risk-journal"/);
   assert.match(decisionSummary, /Participation/);

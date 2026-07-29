@@ -76,6 +76,20 @@ function quoteFor(payload: TradingDeskPayload, symbol: string) {
 }
 
 const COVERAGE_RANK: Record<MarketCoverage, number> = { live: 0, proxy: 1, awaiting: 2 };
+const SECTION_SCROLL_GAP_PX = 16;
+
+function measureStickyHeader(): number {
+  const header = document.querySelector<HTMLElement>(".memberDashboardNav");
+  return header ? Math.ceil(header.getBoundingClientRect().height) : 84;
+}
+
+function scrollTargetBelowStickyHeader(target: HTMLElement, behavior: ScrollBehavior = "smooth") {
+  const scroller = document.scrollingElement;
+  if (!scroller) return;
+  const clearance = measureStickyHeader() + SECTION_SCROLL_GAP_PX;
+  const targetTop = target.getBoundingClientRect().top + scroller.scrollTop - clearance;
+  scroller.scrollTo({ top: Math.max(0, targetTop), behavior });
+}
 
 /** Newest verified candle age for the active (or ES fallback) series — not snapshot/gateway age. */
 function latestVerifiedCandleAgeMs(
@@ -167,6 +181,32 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const header = document.querySelector<HTMLElement>(".memberDashboardNav");
+    if (!header) return;
+    const updateHeaderHeight = () => {
+      document.documentElement.style.setProperty("--app-header-height", `${measureStickyHeader()}px`);
+    };
+    updateHeaderHeight();
+    const observer = new ResizeObserver(updateHeaderHeight);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const alignHashTarget = () => {
+      const id = window.location.hash.slice(1);
+      if (!id) return;
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(id);
+        if (target) scrollTargetBelowStickyHeader(target, "auto");
+      });
+    };
+    alignHashTarget();
+    window.addEventListener("hashchange", alignHashTarget);
+    return () => window.removeEventListener("hashchange", alignHashTarget);
   }, []);
 
   const active = getMarketInstrument(workspace.activeMarketId) ?? getMarketInstrument("es")!;
@@ -270,7 +310,8 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     setDeskView(view);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        document.getElementById(`desk-view-${view}`)?.scrollIntoView({ block: "start" });
+        const target = document.getElementById(`desk-view-${view}`);
+        if (target) scrollTargetBelowStickyHeader(target);
       });
     });
   }
