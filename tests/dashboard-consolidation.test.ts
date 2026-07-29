@@ -3,27 +3,43 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { formatScoreDisplay, scoreIsDisplayable } from "../app/dashboard/lib/score-display.ts";
 import { interpretCrossMarket } from "../app/dashboard/lib/cross-market-interpretation.ts";
+import {
+  buildDashboardCommandSummary,
+  buildDashboardLevels,
+  buildDashboardWeather,
+} from "../app/dashboard/lib/dashboard-command-summary.ts";
 import { buildMarketBrief } from "../app/lib/market-brief.ts";
 import { analyzeMarketSnapshot } from "../app/lib/market-intelligence-engine.ts";
 import { createUnavailableSnapshot, type MarketSnapshot } from "../app/lib/market-data.ts";
 import { createTradingDecision } from "../app/lib/trading-decision-engine.ts";
 import { createStructuredTradePlan } from "../app/lib/structured-trade-planner.ts";
+import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("hero chart and intelligence strip ship delayed-data badges", async () => {
-  const [hero, strip, centre] = await Promise.all([
-    read("../app/dashboard/components/HeroMarketChart.tsx"),
-    read("../app/dashboard/components/MarketIntelligenceStrip.tsx"),
+test("dashboard command centre uses shared delayed candle age and Restricted / Not established language", async () => {
+  const [centre, page, summaryLib] = await Promise.all([
     read("../app/dashboard/components/MarketCommandCentre.tsx"),
+    read("../app/dashboard/page.tsx"),
+    read("../app/dashboard/lib/dashboard-command-summary.ts"),
   ]);
-  assert.match(hero, /Market Data: Delayed \(\~10 minutes\)/);
-  assert.match(hero, /EMA 9|EMA 200|VWAP|PDH|ONH/);
-  assert.match(strip, /Awaiting coverage/);
-  assert.match(centre, /HeroMarketChartLazy/);
-  assert.match(centre, /MarketIntelligenceStrip/);
-  assert.match(centre, /DecisionDesk/);
-  assert.match(centre, /MarketWeatherPanel/);
+  assert.match(centre, /Open Trading Desk/);
+  assert.match(centre, /Open Morning Brief/);
+  assert.match(centre, /Risk &amp; Journal|Risk & Journal/);
+  assert.match(centre, /VERIFIED LEVELS/);
+  assert.match(centre, /levels\.map|level\.label/);
+  assert.match(centre, /Delayed market data/);
+  assert.match(centre, /Breadth is omitted/);
+  assert.match(page, /buildDashboardCommandSummary/);
+  assert.match(page, /MarketCommandCentre/);
+  assert.match(summaryLib, /formatDelayedVerifiedCandleAgeDisplay/);
+  assert.match(summaryLib, /buildDeskDecisionPresentation/);
+  assert.match(summaryLib, /24-hour low \/ downside reference/);
+  assert.match(summaryLib, /Session opening reference/);
+  assert.doesNotMatch(centre, /Opportunity Radar|Trading Conditions Score|AI MARKET OUTLOOK/);
+  assert.doesNotMatch(centre, /HeroMarketChartLazy|MarketIntelligenceStrip|DecisionDesk|MarketWeatherPanel/);
+  assert.doesNotMatch(page, /coverage:\s*"live"/);
+  assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
 });
 
 test("score display never presents zero as a substitute for unavailable evidence", () => {
@@ -59,14 +75,86 @@ test("cross-market interpretation is plain English and marks mixed evidence", ()
   assert.doesNotMatch(copy, /guarantee|will rise|buy|sell/i);
 });
 
-test("Market Command Centre restores Elite dashboard workspace", async () => {
-  const page = await read("../app/dashboard/page.tsx");
-  assert.match(page, /MarketCommandCentre/);
-  assert.match(page, /resolveMembershipTier/);
-  assert.match(page, /Market Data: Delayed/);
-  assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
-  assert.doesNotMatch(page, /MissionControl|persistAnalysisSnapshot/);
-  assert.doesNotMatch(page, /BullseyeMissionControl|TodaysBullseyePlan|TradeSetupOfTheDay|TodaysEdge|MorningBriefPanel|EliteScenarioCard|MarketStructureVisual|executiveKpiStrip|memberAccessMap|Classification Record/);
+test("dashboard weather omits missing quotes and never invents breadth", () => {
+  const weather = buildDashboardWeather([
+    { symbol: "ES", label: "ES", value: "5400.00", change: "+0.20%", direction: "up" },
+    { symbol: "VIX", label: "VIX", value: "14.20", change: "-1.00%", direction: "down" },
+  ] as MarketSnapshot["quotes"]);
+  assert.equal(weather.find((item) => item.id === "ES")?.available, true);
+  assert.equal(weather.find((item) => item.id === "DXY")?.available, false);
+  assert.equal(weather.find((item) => item.id === "US10Y")?.available, false);
+  assert.doesNotMatch(JSON.stringify(weather), /breadth/i);
+});
+
+test("dashboard levels use verified candle references with precise terminology", () => {
+  const now = Math.floor(Date.now() / 1000);
+  const candles = Array.from({ length: 30 }, (_, index) => ({
+    time: now - (29 - index) * 300,
+    open: 5400 + index,
+    high: 5405 + index,
+    low: 5395 + index,
+    close: 5401 + index,
+    volume: 1000 + index,
+  }));
+  const { levels, note } = buildDashboardLevels({
+    symbol: "ES",
+    contract: "ES",
+    instrumentName: "E-mini S&P 500",
+    exchange: "CME",
+    instrumentDetail: "test",
+    timeframe: "5m",
+    classification: "delayed",
+    dataAgeMs: 14 * 60_000,
+    provider: "Financial Modeling Prep",
+    status: "delayed",
+    asOf: new Date().toISOString(),
+    candles,
+    failureCategory: null,
+  });
+  assert.ok(levels.some((item) => item.label === "24-hour low / downside reference"));
+  assert.ok(levels.some((item) => item.label === "Range midpoint"));
+  assert.ok(levels.some((item) => item.label === "Session opening reference"));
+  assert.ok(levels.some((item) => item.label === "24-hour high / upside reference"));
+  assert.match(note ?? "", /not confirmed support or resistance/i);
+});
+
+test("dashboard summary fails closed without inventing catalyst or live labels", () => {
+  const snapshot = createUnavailableSnapshot();
+  const intelligence = analyzeMarketSnapshot(snapshot);
+  const decision = createTradingDecision({
+    intelligence,
+    reasoning: intelligence.reasoning,
+    dataStatus: snapshot.status,
+    providerStatus: "offline",
+    dataAgeMs: null,
+    fallbackActive: false,
+    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+  });
+  const plan = createStructuredTradePlan({
+    decision,
+    intelligence,
+    dataStatus: snapshot.status,
+    providerStatus: "offline",
+    dataAgeMs: null,
+    fallbackActive: false,
+    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+  });
+  const summary = buildDashboardCommandSummary({
+    snapshot,
+    session: readSessionClock(new Date("2026-07-29T15:00:00Z")),
+    candleSeries: null,
+    decision,
+    plan,
+    signals: null,
+    warnings: ["Confirmation data is incomplete"],
+    now: Date.parse("2026-07-29T15:00:00Z"),
+  });
+  assert.equal(summary.catalyst, null);
+  assert.equal(summary.levels.length, 0);
+  assert.match(summary.hero.delayedAgeLine, /Delayed market data/i);
+  assert.doesNotMatch(summary.hero.delayedAgeLine, /\blive\b/i);
+  assert.equal(summary.decision.permissionLabel, "Restricted");
+  assert.ok(summary.unavailable.length > 0);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {

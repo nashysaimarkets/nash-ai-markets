@@ -138,24 +138,24 @@ test("Decision Desk uses verified bias and structure when actionable", () => {
   assert.ok(desk.sessionStatus.label.length > 0);
 });
 
-test("Decision Desk ships under Market Command Centre without auth/chart edits", async () => {
-  const [page, centre, deskUi, deskLib, outlook] = await Promise.all([
+test("Dashboard decision snapshot uses shared presentation without auth or provider edits", async () => {
+  const [page, centre, deskUi, deskLib, outlook, summaryLib] = await Promise.all([
     read("../app/dashboard/page.tsx"),
     read("../app/dashboard/components/MarketCommandCentre.tsx"),
     read("../app/dashboard/components/DecisionDesk.tsx"),
     read("../app/dashboard/lib/decision-desk.ts"),
     read("../app/dashboard/components/AiMarketOutlook.tsx"),
+    read("../app/dashboard/lib/dashboard-command-summary.ts"),
   ]);
-  assert.match(page, /buildDecisionDesk/);
-  assert.match(page, /formatDeskConfidenceDisplay/);
-  assert.match(centre, /DecisionDesk/);
-  assert.match(centre, /decisionDesk/);
+  assert.match(page, /buildDashboardCommandSummary/);
+  assert.match(page, /supabase\.auth\.getUser/);
+  assert.match(centre, /TODAY.?S DECISION SNAPSHOT|Participation/);
+  assert.match(centre, /summary\.decision|decision\.permissionLabel/);
+  assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(deskUi, /Decision Desk|Market diagnosis/);
   assert.match(deskLib, /No verified high-probability setup currently available/);
   assert.doesNotMatch(deskUi, /BEST OPPORTUNITY/);
   assert.match(outlook, /Not yet confirmed from verified feeds/);
   assert.match(outlook, /Bullish, Bearish/);
-  assert.match(page, /supabase\.auth\.getUser/);
-  assert.match(centre, /HeroMarketChartLazy/);
-  assert.match(centre, /MarketIntelligenceStrip/);
+  assert.doesNotMatch(centre, /HeroMarketChartLazy|MarketIntelligenceStrip/);
 });

@@ -94,18 +94,18 @@ test("Market Score stays blank until verified and greeting is session-aware", ()
   assert.match(initial.salutation, /^Good (morning|afternoon|evening)$/);
 });
 
-test("Weather and Radar ship under MCC without changing Decision Desk logic", async () => {
+test("Weather and Radar libraries remain available while Dashboard routes via command summary", async () => {
   const [page, centre, weatherLib, deskLib] = await Promise.all([
     read("../app/dashboard/page.tsx"),
     read("../app/dashboard/components/MarketCommandCentre.tsx"),
     read("../app/dashboard/lib/market-weather.ts"),
     read("../app/dashboard/lib/decision-desk.ts"),
   ]);
-  assert.match(page, /buildMarketWeather|buildOpportunityRadar|buildMarketScore|buildDeskGreeting/);
-  assert.match(centre, /MarketWeatherPanel/);
-  assert.match(centre, /DecisionDesk/);
+  assert.match(page, /buildDeskGreeting|buildDashboardCommandSummary/);
+  assert.match(centre, /dashWeather|MARKET WEATHER/);
+  assert.match(centre, /greeting\.salutation/);
   assert.match(weatherLib, /No verified opportunity currently available/);
   assert.match(deskLib, /No verified high-probability setup currently available/);
   assert.doesNotMatch(page, /Good trading day/);
-  assert.match(centre, /greeting\.salutation/);
+  assert.doesNotMatch(centre, /MarketWeatherPanel|Opportunity Radar/);
 });
