@@ -19,7 +19,7 @@ export type EdgeBrief = {
 };
 
 const DISCLOSURE =
-  "Educational Edge Brief derived only from verified quotes, candles, calendar rows, and session rules present in this desk payload. Not personalised advice. Fail-closed when inputs are thin.";
+  "Market summary derived only from verified quotes, candles, calendar rows, and session rules present in this desk. Not personalised advice. Analysis pauses until required data is available.";
 
 function quoteForSymbol(snapshot: MarketSnapshot, symbol: string): MarketQuote | undefined {
   return snapshot.quotes.find((item) => item.symbol === symbol);
@@ -44,10 +44,10 @@ export function createEdgeBrief(input: {
   if (instrument.coverage === "awaiting") {
     return {
       status: "insufficient",
-      title: `${instrument.name} — coverage awaiting`,
-      secondsCopy: `${instrument.name} is listed in the Markets taxonomy only. No verified quote or chart feed is wired yet, so this desk will not invent a briefing.`,
+      title: `${instrument.name} — coverage coming soon`,
+      secondsCopy: `${instrument.name} is listed in Markets, but live coverage is not yet available. No verified quote or chart feed is connected yet, so this desk will not invent a briefing.`,
       bullets: [
-        `Coverage: awaiting verified provider path.`,
+        `Coverage: coming soon — no verified data connection.`,
         `Session clock (US equity rules): ${session.label} · ${session.nowEt}.`,
         events[0] ? `Next verified calendar row: ${events[0].time} — ${events[0].name}.` : "No verified US macro calendar rows in the current snapshot.",
       ],
@@ -58,8 +58,8 @@ export function createEdgeBrief(input: {
   if (instrument.coverage === "proxy" && !hasQuote && !hasCandles) {
     return {
       status: "insufficient",
-      title: `${instrument.name} — symbol mapped, feed not live`,
-      secondsCopy: `Provider symbol ${instrument.providerSymbol ?? instrument.symbol} is reserved, but this environment has no verified quote or candle series for it yet. Edge Brief stays closed.`,
+      title: `${instrument.name} — data pending`,
+      secondsCopy: `Symbol ${instrument.providerSymbol ?? instrument.symbol} is ready, but this environment has no verified quote or candle series for it yet. The market summary stays closed.`,
       bullets: [
         `Do not treat the catalog row as a live price.`,
         `Session context: ${session.label}.`,
@@ -116,14 +116,14 @@ export function createEdgeBrief(input: {
 
   const lean =
     deskSignals?.overallLean === "buying"
-      ? "Buying lean is present on educational desk signals — still fail-closed for trade permission until your own rules clear."
+      ? "Bullish lean is present on educational desk signals — participation stays blocked until your own rules clear."
       : deskSignals?.overallLean === "selling"
-        ? "Selling lean is present on educational desk signals — still fail-closed for trade permission until your own rules clear."
+        ? "Bearish lean is present on educational desk signals — participation stays blocked until your own rules clear."
         : "No strong directional lean is asserted beyond the verified inputs above.";
 
   return {
     status: "ready",
-    title: `${instrument.name} — 60-second edge`,
+    title: `${instrument.name} — 60-second summary`,
     secondsCopy: `${instrument.symbol}: ${hasQuote && quote ? `${quote.value} (${quote.change})` : "quote unavailable"} · data ${snapshot.status.toLowerCase()}. ${lean}`,
     bullets: bullets.slice(0, 6),
     disclosure: DISCLOSURE,

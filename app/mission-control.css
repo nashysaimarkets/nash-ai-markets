@@ -501,10 +501,14 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskHeroCopy{position:relative;z-index:1;min-width:0}
 .deskHeroCopy h1{margin:12px 0 10px;font-size:clamp(42px,6.5vw,68px);line-height:0.98;letter-spacing:-.055em;color:#f4f3ec}
 .deskHeroCopy p{margin:0;max-width:52ch;color:#9aa7a0;font-size:clamp(15px,1.4vw,18px);line-height:1.65}
+.deskHeroCompact{padding:clamp(18px,2.5vw,28px) clamp(18px,2.5vw,32px);align-items:center}
+.deskHeroCompact .deskHeroCopy h1{margin:8px 0 6px;font-size:clamp(28px,3.6vw,40px);letter-spacing:-.04em}
+.deskHeroCompact .deskHeroCopy p{font-size:14px;max-width:64ch}
 .deskHeroActions{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
-.deskHeroActions button,.deskPresetRow button,.deskBuilderControls button,.deskBuilderSave button,.deskComparePick button,.deskMarketsClose{min-height:44px;padding:10px 16px;border:1px solid #2f4038;border-radius:10px;background:#0c1411;color:#dce6e1;font:650 13px var(--font-geist-sans),Arial,sans-serif;cursor:pointer}
-.deskHeroActions button:hover,.deskPresetRow button:hover,.deskComparePick button:hover{border-color:#3d5549;background:#12201a}
-.deskHeroActions button.is-on,.deskPresetRow button.is-selected,.deskComparePick button.is-selected{border-color:#d9ab5266;background:#d9ab5214;color:#efd39a;box-shadow:0 0 0 1px #d9ab5230}
+.deskHeroActions button,.deskPresetRow button,.deskBuilderControls button,.deskBuilderSave button,.deskComparePick button,.deskMarketsClose,.deskMarketsCollapse,.deskViewTabs button{min-height:44px;padding:10px 16px;border:1px solid #2f4038;border-radius:10px;background:#0c1411;color:#dce6e1;font:650 13px var(--font-geist-sans),Arial,sans-serif;cursor:pointer}
+.deskHeroActions button:hover,.deskPresetRow button:hover,.deskComparePick button:hover,.deskViewTabs button:hover{border-color:#3d5549;background:#12201a}
+.deskHeroActions button.is-on,.deskPresetRow button.is-selected,.deskComparePick button.is-selected,.deskViewTabs button.is-selected,.deskViewTabs button[aria-selected="true"]{border-color:#d9ab5266;background:#d9ab5214;color:#efd39a;box-shadow:0 0 0 1px #d9ab5230}
+.deskViewTabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .deskPresetRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .deskBuilder{border:1px solid #2a3a34;border-radius:16px;background:linear-gradient(160deg,#0d1512,#090e10);box-shadow:0 20px 60px #0006;overflow:hidden}
 .deskBuilder>header{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:18px 22px;border-bottom:1px solid #24322c}
@@ -604,6 +608,66 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskChecklist input{width:18px;height:18px;accent-color:#62e6b1}
 .deskChart .dashboardMarketChart{margin:0;border:0;border-radius:0;box-shadow:none}
 @keyframes deskRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* Desk consolidation — Overview / Decision / Markets collapse */
+.deskOverviewStack{display:grid;gap:14px}
+.deskDecisionSummary,.deskNextCatalyst,.deskRiskGate{border:1px solid #24322c;border-radius:14px;background:linear-gradient(160deg,#0d1512f5,#0a1012f8);overflow:hidden;box-shadow:0 16px 40px #0005}
+.deskDecisionSummary>header,.deskNextCatalyst>header,.deskRiskGate>header{padding:14px 18px;border-bottom:1px solid #1c2823}
+.deskDecisionSummary h2,.deskNextCatalyst h2,.deskRiskGate h2,.deskWidget>header h2,.deskWidget>header strong{margin:6px 0 0;font-size:clamp(18px,2vw,24px);line-height:1.2;letter-spacing:-.02em;overflow-wrap:anywhere}
+.deskDecisionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#1c2823}
+.deskDecisionCell{padding:14px 16px;background:#0b1210;min-width:0}
+.deskDecisionCell span{display:block;color:#7d8a84;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.deskDecisionCell strong{display:block;margin-top:8px;color:#eef3f0;font:650 18px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
+.deskDecisionCell.is-bull strong{color:#62e6b1}
+.deskDecisionCell.is-bear strong{color:#ef7777}
+.deskDecisionCell.is-mixed strong,.deskDecisionCell.is-neutral strong{color:#d8b36a}
+.deskDecisionCell.is-permission-blocked strong,.deskDecisionSummary.is-permission-blocked .deskDecisionCell.is-permission-blocked{outline:1px solid #ef777755}
+.deskDecisionCell.is-permission-blocked strong{color:#ef9a9a}
+.deskDecisionCell.is-permission-caution strong{color:#efd39a}
+.deskDecisionCell.is-permission-open strong{color:#62e6b1}
+.deskDecisionWhy{margin:0;padding:14px 18px;color:#c9d5cf;font:15px/1.55 var(--font-geist-sans),Arial,sans-serif;border-top:1px solid #1c2823}
+.deskDecisionWhy span{display:block;margin-bottom:6px;color:#7d8a84;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.deskDecisionEvidence{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 18px 16px}
+.deskDecisionEvidence h3{margin:0 0 8px;color:#7d8a84;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.deskDecisionEvidence ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.deskDecisionEvidence li{color:#c9d5cf;font-size:13px;line-height:1.45}
+.deskDecisionRisk{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 18px;border-top:1px solid #1c2823;background:#120e0c}
+.deskDecisionRisk span{display:block;color:#a89b7a;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.deskDecisionRisk strong{display:block;margin-top:6px;color:#efd39a;font:650 14px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.deskDecisionRisk button,.deskNextCatalystBody button,.deskRiskGate>button{min-height:40px;padding:8px 12px;border:1px solid #3d5549;border-radius:8px;background:#12201a;color:#dce6e1;font:650 12px var(--font-geist-sans),Arial,sans-serif;cursor:pointer}
+.deskNextCatalystBody{display:grid;grid-template-columns:88px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:16px 18px}
+.deskNextCatalystBody time{color:#76cfd8;font:700 13px var(--font-geist-mono),monospace}
+.deskRiskGate{border-color:#3a3420}
+.deskRiskGate.is-blocked{border-color:#5a3030}
+.deskRiskGate>button{margin:0 18px 16px}
+.deskCoverageCompact .deskCoverageRow,.deskCoverageRow{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:12px 16px}
+.deskCoverageRow p{margin:0;color:#87948e;font-size:13px;line-height:1.45}
+.deskDataDetails{padding:0}
+.deskDataDetails>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 18px;cursor:pointer;list-style:none}
+.deskDataDetails>summary span{color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.deskDataDetails>summary strong{color:#c9d5cf;font:650 14px var(--font-geist-sans),Arial,sans-serif}
+.deskDataDetails .deskFreshness{border:0;box-shadow:none;border-radius:0}
+.deskMarketsHeaderActions{display:flex;gap:8px}
+.deskMarketsCollapse{min-height:36px;padding:6px 10px;font-size:12px}
+.tradingDeskOS.is-markets-collapsed .deskShell{grid-template-columns:88px minmax(0,1fr)}
+.deskMarkets.is-collapsed{max-height:none}
+.deskMarketsCompactFavs{margin:0;padding:10px;list-style:none;display:grid;gap:8px}
+.deskMarketsCompactFavs button{width:100%;min-height:40px;border:1px solid #2f4038;border-radius:8px;background:#0c1411;color:#dce6e1;font:700 12px var(--font-geist-mono),monospace;cursor:pointer}
+.deskMarketsCompactFavs button.is-active{border-color:#62e6b166;color:#62e6b1}
+.tmMarketsLegend{padding:12px 16px;border-top:1px solid #24322c;color:#87948e;font-size:12px;line-height:1.5}
+.tmMarketsLegend summary{cursor:pointer;color:#aeb8b3;font:650 12px var(--font-geist-sans),Arial,sans-serif}
+.deskActiveAge{color:#87948e;font:650 12px var(--font-geist-mono),monospace}
+@media(max-width:1100px){
+  .deskDecisionGrid,.deskDecisionEvidence,.deskNextCatalystBody{grid-template-columns:1fr 1fr}
+  .tradingDeskOS.is-markets-collapsed .deskShell{grid-template-columns:1fr}
+  .deskMarketsCollapse{display:none}
+}
+@media(max-width:720px){
+  .deskDecisionGrid,.deskDecisionEvidence,.deskNextCatalystBody{grid-template-columns:1fr}
+  .deskViewTabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .deskViewTabs button{flex:0 0 auto}
+}
+
 @media(max-width:1100px){
   .deskShell{grid-template-columns:1fr}
   .deskMarkets{position:fixed;z-index:40;inset:0 auto 0 0;width:min(320px,88vw);max-height:none;border-radius:0 14px 14px 0;transform:translateX(-105%);transition:transform .22s ease}

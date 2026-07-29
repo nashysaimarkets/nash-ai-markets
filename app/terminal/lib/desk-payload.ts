@@ -12,6 +12,7 @@ import type { EdgeBrief } from "./edge-brief.ts";
 import type { CatalystRadar } from "./catalyst-radar.ts";
 import type { SessionClockReading } from "./session-clock.ts";
 import type { DeskWorkspaceState } from "./desk-workspace.ts";
+import type { DeskDecisionPresentation } from "./desk-decision-presentation.ts";
 
 export type DeskCandleBundle = Record<CandleInstrument, CustomerCandleSeries>;
 
@@ -39,6 +40,7 @@ export type TradingDeskPayload = {
   catalystRadar: CatalystRadar;
   freshnessFeeds: DeskFreshnessFeed[];
   customerWarnings: string[];
+  decisionPresentation: DeskDecisionPresentation;
   initialWorkspace: DeskWorkspaceState;
   preview: {
     eligible: boolean;
@@ -58,7 +60,7 @@ export function mapCandleFreshness(
       status: "UNAVAILABLE",
       ageLabel: "Unavailable",
       detail: series?.failureCategory
-        ? `Provider path failed (${series.failureCategory}). No invented candles.`
+        ? `Data connection failed (${series.failureCategory}). No invented candles.`
         : "No verified candle series for this feed.",
     };
   }

@@ -46,7 +46,9 @@ test("market catalog is generously populated per group with honest coverage", ()
   assert.ok(ipo);
   assert.equal(ipo.coverage, "awaiting");
   assert.match(ipo.name, /awaiting verified provider/i);
-  assert.equal(coverageLabel("awaiting"), "Awaiting coverage");
+  assert.equal(coverageLabel("awaiting"), "Coming soon");
+  assert.equal(coverageLabel("live"), "Connected");
+  assert.equal(coverageLabel("proxy"), "Data pending");
 });
 
 test("Markets catalog powers the Trading Desk with honest coverage labels", async () => {
@@ -67,7 +69,7 @@ test("Markets catalog powers the Trading Desk with honest coverage labels", asyn
 
   assert.match(browser, /Markets/);
   assert.match(browser, /MARKET_CATALOG/);
-  assert.match(browser, /Awaiting coverage|coverageLabel/);
+  assert.match(browser, /Coming soon|coverageLabel|Connected|Data pending/);
   assert.match(browser, /No live quote or chart is shown/);
   assert.doesNotMatch(browser, /Math\.random|fakePrice|mockQuote|demoCandle/i);
 

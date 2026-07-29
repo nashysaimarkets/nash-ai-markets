@@ -192,12 +192,12 @@ test("Market Brief page renders the premium brief instead of redirecting to term
   assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
   assert.doesNotMatch(page, /LockedPremiumCard|CrossAssetCandleGallery/);
   assert.match(component, /What happened overnight/);
-  assert.match(component, /What matters today/);
-  assert.match(component, /Highest-probability behaviour/);
-  assert.match(component, /Support \/ resistance ladder/);
-  assert.match(component, /Today’s playbook/);
-  assert.match(component, /Today’s biggest risk/);
-  assert.match(component, /Daily market video/);
+  assert.match(component, /Decision summary/);
+  assert.match(component, /Open Trading Desk/);
+  assert.match(component, /Observed range context|Expected move/);
+  assert.match(component, /Support \/ resistance/);
+  assert.match(component, /Main risk/);
+  assert.match(component, /Daily market video|Video not linked/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /@media\(max-width:720px\)/);
   assert.match(css, /prefers-reduced-motion/);

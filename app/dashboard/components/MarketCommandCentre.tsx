@@ -94,11 +94,11 @@ export function MarketCommandCentre({
         <nav className="mccHeaderActions" aria-label="Command centre actions">
           <Link href="/terminal" className="mccPrimaryAction">
             <small>DESK</small>
-            <b>Open Terminal</b>
+            <b>Open Trading Desk</b>
           </Link>
           <Link href="/brief" className="mccSecondaryAction">
             <small>BRIEF</small>
-            <b>Market brief</b>
+            <b>Morning Brief</b>
           </Link>
         </nav>
       </header>

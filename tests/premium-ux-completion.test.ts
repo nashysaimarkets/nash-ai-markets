@@ -106,7 +106,8 @@ test("premium UX surfaces are wired without auth churn", async () => {
     read("../app/globals.css"),
   ]);
   assert.match(shell, /PresentationModeToggle/);
-  assert.match(shell, /Market brief/);
+  assert.match(shell, /Morning Brief/);
+  assert.match(shell, /Trading Desk/);
   assert.doesNotMatch(shell, /href="\/options"/);
   assert.match(terminal, /TradingDeskOS/);
   assert.match(terminal, /active="terminal"/);

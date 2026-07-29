@@ -5,6 +5,7 @@
 
 import type { MarketEvent } from "../../lib/market-data.ts";
 import type { MarketInstrument } from "../../lib/markets/market-catalog.ts";
+import { dedupeVerifiedEvents } from "./event-display.ts";
 
 export type CatalystKind = "macro" | "earnings" | "news";
 
@@ -25,7 +26,7 @@ export type CatalystRadar = {
 };
 
 const DISCLOSURE =
-  "Macro rows come from the verified FMP US economic calendar when present in the snapshot. Earnings and news timelines stay unavailable until a verified provider path is wired — nothing is invented.";
+  "Macro rows come from the verified US economic calendar when present in the snapshot. Earnings and news timelines stay unavailable until a verified data connection exists — nothing is invented.";
 
 function relevanceFor(instrument: MarketInstrument, favourites: MarketInstrument[]): string {
   const names = [instrument, ...favourites.filter((item) => item.id !== instrument.id)].slice(0, 4);
@@ -43,7 +44,7 @@ export function createCatalystRadar(input: {
   active: MarketInstrument;
   favourites: MarketInstrument[];
 }): CatalystRadar {
-  const items: CatalystItem[] = input.events.slice(0, 12).map((event, index) => ({
+  const items: CatalystItem[] = dedupeVerifiedEvents(input.events).slice(0, 12).map((event, index) => ({
     id: `macro-${index}-${event.time}-${event.name}`,
     kind: "macro" as const,
     time: event.time,
@@ -58,11 +59,11 @@ export function createCatalystRadar(input: {
     unavailable: [
       {
         kind: "earnings",
-        reason: "No verified earnings-calendar provider path is wired for the active instrument yet.",
+        reason: "No verified earnings data connection is currently available for the active instrument.",
       },
       {
         kind: "news",
-        reason: "No verified news-intelligence provider path is wired for market-filtered headlines yet.",
+        reason: "No verified news data connection is currently available for market-filtered headlines.",
       },
     ],
     disclosure: DISCLOSURE,

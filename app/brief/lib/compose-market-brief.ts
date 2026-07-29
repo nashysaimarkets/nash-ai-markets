@@ -152,7 +152,7 @@ function buildCrossAssets(
       value: quote.value,
       change: quote.change,
       direction: quote.direction,
-      detail: "Verified delayed quote from the configured market gateway.",
+      detail: "Verified delayed quote from the market-data feed.",
       available: true,
     };
   });

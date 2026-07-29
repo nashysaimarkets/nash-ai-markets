@@ -28,8 +28,8 @@ type MemberShellProps = {
 
 const links = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
-  { href: "/brief", label: "Market brief", key: "brief" },
-  { href: "/terminal", label: "Terminal", key: "terminal" },
+  { href: "/brief", label: "Morning Brief", key: "brief" },
+  { href: "/terminal", label: "Trading Desk", key: "terminal" },
   { href: "/ideas", label: "Ideas", key: "ideas" },
   { href: "/profile", label: "Profile", key: "profile" },
   { href: "/onboarding", label: "Preferences", key: "onboarding" },

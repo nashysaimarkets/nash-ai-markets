@@ -26,6 +26,8 @@ import { terminalMarketState } from "./lib/visual-terminal";
 import { readSessionClock } from "./lib/session-clock";
 import { createEdgeBrief } from "./lib/edge-brief";
 import { createCatalystRadar } from "./lib/catalyst-radar";
+import { buildDeskDecisionPresentation } from "./lib/desk-decision-presentation";
+import { dedupeVerifiedEvents } from "./lib/event-display";
 import {
   DESK_WORKSPACE_COOKIE,
   createDefaultWorkspace,
@@ -36,7 +38,7 @@ import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } f
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Terminal",
+  title: "Trading Desk",
   description: "Customizable trading desk across interchangeable markets — verified feeds only.",
   robots: { index: false, follow: false },
 };
@@ -147,6 +149,14 @@ export default async function Terminal() {
       decision.dataQualityWarnings,
       plan.eventRiskWarnings.map((warning) => warning.code),
     );
+    const decisionPresentation = buildDeskDecisionPresentation({
+      decision,
+      plan,
+      signals: deskSignals,
+      warnings: customerWarnings,
+    });
+    const displayEvents = dedupeVerifiedEvents(snapshot.events);
+    snapshot.events = displayEvents;
 
     const freshnessFeeds: DeskFreshnessFeed[] = [
       {
@@ -175,22 +185,22 @@ export default async function Terminal() {
         status: snapshot.events.length ? "DELAYED" : "UNAVAILABLE",
         ageLabel: snapshot.events.length ? `${snapshot.events.length} rows` : "Empty",
         detail: snapshot.events.length
-          ? "US medium/high-impact rows from verified FMP calendar path."
+          ? "US medium/high-impact rows from the verified economic calendar."
           : "No verified calendar rows in the current snapshot.",
       },
       {
         id: "news",
         label: "News intelligence",
         status: "UNAVAILABLE",
-        ageLabel: "Awaiting",
-        detail: "No verified news provider path is wired yet.",
+        ageLabel: "Unavailable",
+        detail: "No verified news data connection is currently available.",
       },
       {
         id: "earnings",
         label: "Earnings calendar",
         status: "UNAVAILABLE",
-        ageLabel: "Awaiting",
-        detail: "No verified earnings provider path is wired yet.",
+        ageLabel: "Unavailable",
+        detail: "No verified earnings data connection is currently available.",
       },
     ];
 
@@ -262,6 +272,7 @@ export default async function Terminal() {
       catalystRadar,
       freshnessFeeds,
       customerWarnings,
+      decisionPresentation,
       initialWorkspace,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
@@ -275,6 +286,7 @@ export default async function Terminal() {
     const active = getMarketInstrument(initialWorkspace.activeMarketId) ?? getMarketInstrument("es")!;
     const snapshot = createUnavailableSnapshot();
     const gatewayStatus = createUnconfiguredMarketGatewayStatus("Terminal desk recovery");
+    const recoveryWarnings = ["Verified market data is currently unavailable"];
     payload = sanitizeForClient({
       paid,
       tier: access.tier,
@@ -309,7 +321,13 @@ export default async function Terminal() {
           detail: "Desk recovered after a temporary error. Refresh to retry verified feeds.",
         },
       ],
-      customerWarnings: ["Verified market data is currently unavailable"],
+      customerWarnings: recoveryWarnings,
+      decisionPresentation: buildDeskDecisionPresentation({
+        decision: null,
+        plan: null,
+        signals: null,
+        warnings: recoveryWarnings,
+      }),
       initialWorkspace,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,

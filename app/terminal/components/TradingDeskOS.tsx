@@ -35,6 +35,17 @@ import { createEdgeBrief } from "../lib/edge-brief.ts";
 import { createCatalystRadar } from "../lib/catalyst-radar.ts";
 import type { TradingDeskPayload } from "../lib/desk-payload.ts";
 import {
+  DESK_VIEW_IDS,
+  DESK_VIEW_LABELS,
+  DESK_VIEW_STORAGE_KEY,
+  DESK_MARKETS_COLLAPSED_KEY,
+  isDeskViewId,
+  widgetsForView,
+  type DeskViewId,
+} from "../lib/desk-views.ts";
+import { DeskDecisionSummary } from "./DeskDecisionSummary.tsx";
+import { nextVerifiedEvents } from "../lib/event-display.ts";
+import {
   PREFERRED_PLATFORMS,
   PREFERRED_PLATFORM_IDS,
   resolvePlatformEmbed,
@@ -70,6 +81,23 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   const [session, setSession] = useState(payload.session);
   const [openGroup, setOpenGroup] = useState<MarketGroupId | null>("indices");
   const [marketsOpen, setMarketsOpen] = useState(false);
+  const [marketsCollapsed, setMarketsCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(DESK_MARKETS_COLLAPSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const [deskView, setDeskView] = useState<DeskViewId>(() => {
+    if (typeof window === "undefined") return "overview";
+    try {
+      const view = window.localStorage.getItem(DESK_VIEW_STORAGE_KEY);
+      return view && isDeskViewId(view) ? view : "overview";
+    } catch {
+      return "overview";
+    }
+  });
   const [journal, setJournal] = useState<JournalEntry | null>(null);
   const [embedAllowed, setEmbedAllowed] = useState(false);
 
@@ -85,6 +113,22 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     if (!hydrated) return;
     persistWorkspaceToBrowser(workspace);
   }, [workspace, hydrated]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(DESK_VIEW_STORAGE_KEY, deskView);
+    } catch {
+      /* ignore */
+    }
+  }, [deskView]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(DESK_MARKETS_COLLAPSED_KEY, marketsCollapsed ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
+  }, [marketsCollapsed]);
 
   useEffect(() => {
     const tick = () => setSession(readSessionClock(new Date()));
@@ -109,26 +153,30 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   );
 
   useEffect(() => {
-    setEmbedAllowed(false);
+    startTransition(() => {
+      setEmbedAllowed(false);
+    });
   }, [active.id, workspace.preferredPlatformId]);
 
   useEffect(() => {
     const day = journalDayKey();
     const map = readJournalMap();
     const existing = map[journalKey(active.id, day)];
-    setJournal(
-      existing ?? {
-        marketId: active.id,
-        dayKey: day,
-        note: "",
-        checklist: [
-          { label: "Checked freshness trust bar", done: false },
-          { label: "Reviewed catalysts / calendar", done: false },
-          { label: "Defined invalidation before size", done: false },
-        ],
-        updatedAt: new Date().toISOString(),
-      },
-    );
+    startTransition(() => {
+      setJournal(
+        existing ?? {
+          marketId: active.id,
+          dayKey: day,
+          note: "",
+          checklist: [
+            { label: "Checked freshness trust bar", done: false },
+            { label: "Reviewed catalysts / calendar", done: false },
+            { label: "Defined invalidation before size", done: false },
+          ],
+          updatedAt: new Date().toISOString(),
+        },
+      );
+    });
   }, [active.id]);
 
   const edgeBrief = useMemo(
@@ -158,13 +206,20 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   );
 
   const visibleWidgets = workspace.widgets.filter((id) => !workspace.hidden.includes(id));
+  const viewWidgets = widgetsForView(deskView, visibleWidgets);
   const stageWidgets = workspace.focusMode
-    ? visibleWidgets.filter((id) => DESK_WIDGET_REGISTRY[id]?.stage)
-    : visibleWidgets;
+    ? viewWidgets.filter((id) => DESK_WIDGET_REGISTRY[id]?.stage)
+    : viewWidgets;
   const railWidgets = workspace.focusMode
-    ? visibleWidgets.filter((id) => DESK_WIDGET_REGISTRY[id] && !DESK_WIDGET_REGISTRY[id].stage)
+    ? viewWidgets.filter((id) => DESK_WIDGET_REGISTRY[id] && !DESK_WIDGET_REGISTRY[id].stage)
     : [];
-  const stackedWidgets = workspace.focusMode ? stageWidgets : visibleWidgets;
+  const stackedWidgets = deskView === "overview"
+    ? []
+    : workspace.focusMode
+      ? stageWidgets
+      : viewWidgets;
+  const nextCatalyst = nextVerifiedEvents(payload.snapshot.events, 1)[0] ?? null;
+  const snapshotFeed = payload.freshnessFeeds.find((feed) => feed.id === "snapshot");
 
   function updateWorkspace(patch: Partial<DeskWorkspaceState> | ((prev: DeskWorkspaceState) => DeskWorkspaceState)) {
     setWorkspace((prev) => {
@@ -230,10 +285,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     switch (id) {
       case "freshness-trust":
         return (
-          <section key={id} className="deskWidget deskFreshness" aria-label="Freshness trust bar">
+          <section key={id} className="deskWidget deskFreshness" aria-label="Data health">
             <header>
-              <span>Freshness trust</span>
-              <strong>Every active feed, honestly labelled</strong>
+              <span>Data health</span>
+              <strong>Feed status</strong>
             </header>
             <ul>
               {payload.freshnessFeeds.map((feed) => (
@@ -331,7 +386,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                 <p>
                   {isCandleInstrument(active.symbol)
                     ? "Verified candle history could not be loaded for this instrument right now."
-                    : "Candlestick history is not on the verified provider path for this market. No synthetic series is shown."}
+                    : "Candlestick history is not on a verified data connection for this market. No synthetic series is shown."}
                 </p>
               </div>
             )}
@@ -341,7 +396,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         return (
           <section key={id} className={`deskWidget deskEdge is-${edgeBrief.status}`} aria-labelledby="edge-brief-title">
             <header>
-              <span>Edge brief</span>
+              <span>Market summary</span>
               <h2 id="edge-brief-title">{edgeBrief.title}</h2>
             </header>
             <p className="deskEdgeLead">{edgeBrief.secondsCopy}</p>
@@ -353,8 +408,8 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         return (
           <section key={id} className="deskWidget deskStructure" aria-labelledby="structure-map-title">
             <header>
-              <span>Structure map</span>
-              <h2 id="structure-map-title">Educational levels from verified candles</h2>
+              <span>Key levels &amp; structure</span>
+              <h2 id="structure-map-title">Verified levels</h2>
             </header>
             {activeStructure?.status === "ready" && activeStructure.support && activeStructure.resistance ? (
               <div className="deskStructureBody">
@@ -515,27 +570,27 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         );
       case "earnings-calendar":
         return (
-          <section key={id} className="deskWidget" aria-labelledby="earn-cal-title">
+          <section key={id} className="deskWidget deskCoverageCompact" aria-labelledby="earn-cal-title">
             <header>
-              <span>Earnings calendar</span>
-              <h2 id="earn-cal-title">{active.symbol} earnings</h2>
+              <span>Coverage status</span>
+              <h2 id="earn-cal-title">Earnings</h2>
             </header>
-            <div className="deskUnavailable" role="status">
-              <strong>Earnings feed awaiting verified provider</strong>
-              <p>No earnings-calendar path is wired for {active.name}. Dates and estimates are not invented.</p>
+            <div className="deskCoverageRow" role="status">
+              <TerminalBadge label="Not currently available" tone="info" />
+              <p>No verified earnings data connection for {active.symbol}. No placeholder dates are shown.</p>
             </div>
           </section>
         );
       case "news-intelligence":
         return (
-          <section key={id} className="deskWidget" aria-labelledby="news-title">
+          <section key={id} className="deskWidget deskCoverageCompact" aria-labelledby="news-title">
             <header>
-              <span>News intelligence</span>
-              <h2 id="news-title">Filtered by {active.symbol}</h2>
+              <span>Coverage status</span>
+              <h2 id="news-title">News</h2>
             </header>
-            <div className="deskUnavailable" role="status">
-              <strong>News feed awaiting verified provider</strong>
-              <p>Market-filtered headlines will appear here once a verified FMP news path is connected. No placeholder stories are shown.</p>
+            <div className="deskCoverageRow" role="status">
+              <TerminalBadge label="Not currently available" tone="info" />
+              <p>No verified news data connection for market-filtered headlines. No placeholder stories are shown.</p>
             </div>
           </section>
         );
@@ -570,30 +625,26 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         return (
           <section key={id} className="deskWidget deskSignals" aria-labelledby="desk-signals-title">
             <header>
-              <span>Desk signals</span>
-              <h2 id="desk-signals-title">Educational directional lean</h2>
+              <span>Directional lean</span>
+              <h2 id="desk-signals-title">Educational lean only</h2>
             </header>
             {payload.deskSignals ? (
-              <>
-                <p className="deskEdgeLead">Overall lean: <b>{payload.deskSignals.overallLean}</b></p>
-                <div className="ctDeskSignalPair">
-                  <article className="ctDeskSignalCard is-buying">
-                    <div className="ctDeskSignalHead"><span>Buying</span><em>{payload.deskSignals.buying.status}</em></div>
-                    <strong>{payload.deskSignals.buying.strength}</strong>
-                    <ul>{payload.deskSignals.buying.drivers.slice(0, 3).map((driver) => <li key={driver}>{driver}</li>)}</ul>
-                  </article>
-                  <article className="ctDeskSignalCard is-selling">
-                    <div className="ctDeskSignalHead"><span>Selling</span><em>{payload.deskSignals.selling.status}</em></div>
-                    <strong>{payload.deskSignals.selling.strength}</strong>
-                    <ul>{payload.deskSignals.selling.drivers.slice(0, 3).map((driver) => <li key={driver}>{driver}</li>)}</ul>
-                  </article>
-                </div>
-                <small>{payload.deskSignals.disclosure}</small>
-              </>
+              <div className="ctDeskSignalsGrid">
+                <article className={`ctDeskSignalCard is-${payload.deskSignals.buying.status}`}>
+                  <div className="ctDeskSignalHead"><span>Bullish lean</span><em>{payload.deskSignals.buying.status}</em></div>
+                  <strong>{payload.deskSignals.buying.headline}</strong>
+                  <p>{payload.deskSignals.buying.summary}</p>
+                </article>
+                <article className={`ctDeskSignalCard is-${payload.deskSignals.selling.status}`}>
+                  <div className="ctDeskSignalHead"><span>Bearish lean</span><em>{payload.deskSignals.selling.status}</em></div>
+                  <strong>{payload.deskSignals.selling.headline}</strong>
+                  <p>{payload.deskSignals.selling.summary}</p>
+                </article>
+              </div>
             ) : (
               <div className="deskUnavailable" role="status">
-                <strong>Signals unavailable</strong>
-                <p>Desk signals require verified snapshot inputs inside the decision window.</p>
+                <strong>Lean unavailable</strong>
+                <p>Directional lean stays blank until verified desk inputs recover.</p>
               </div>
             )}
           </section>
@@ -711,24 +762,40 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   return (
-    <div className={`tradingDeskOS${workspace.focusMode ? " is-focus" : ""}`} id="overview">
-      <section className="deskHero" aria-labelledby="desk-hero-title">
-        <img className="deskHeroMark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
+    <div className={`tradingDeskOS${workspace.focusMode ? " is-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">
+      <section className="deskHero deskHeroCompact" aria-labelledby="desk-hero-title">
         <div className="deskHeroCopy">
           <span className="ctEyebrow">NASH AI MARKETS</span>
           <h1 id="desk-hero-title">Trading Desk</h1>
-          <p>Build your own page across interchangeable markets — verified feeds only, honest empty states everywhere else.</p>
+          <p>
+            {active.name} · {session.label} · {payload.snapshot.status} · {payload.snapshotAge}
+          </p>
         </div>
         <div className="deskHeroActions">
           <button type="button" className={workspace.focusMode ? "is-on" : undefined} onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: !prev.focusMode }))}>
-            {workspace.focusMode ? "Exit focus" : "Market focus"}
+            {workspace.focusMode ? "Exit focus" : "Focus chart"}
           </button>
           <button type="button" className={builderOpen ? "is-on" : undefined} onClick={() => setBuilderOpen((open) => !open)}>
-            Desk builder
+            Layout
           </button>
-          <button type="button" onClick={() => setMarketsOpen(true)}>Markets</button>
+          <button type="button" onClick={() => { setMarketsOpen(true); setMarketsCollapsed(false); }}>Markets</button>
         </div>
       </section>
+
+      <div className="deskViewTabs" role="tablist" aria-label="Trading Desk views">
+        {DESK_VIEW_IDS.map((view) => (
+          <button
+            key={view}
+            type="button"
+            role="tab"
+            aria-selected={deskView === view}
+            className={deskView === view ? "is-selected" : undefined}
+            onClick={() => setDeskView(view)}
+          >
+            {DESK_VIEW_LABELS[view]}
+          </button>
+        ))}
+      </div>
 
       <div className="deskPresetRow" role="toolbar" aria-label="Desk presets">
         {(Object.keys(DESK_PRESETS) as Array<keyof typeof DESK_PRESETS>).map((presetId) => (
@@ -766,7 +833,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         <section className="deskBuilder" aria-labelledby="desk-builder-title">
           <header>
             <div>
-              <span>Desk builder</span>
+              <span>Layout</span>
               <h2 id="desk-builder-title">Stack, hide, and save your layout</h2>
             </div>
             <button type="button" onClick={() => setWorkspace(createDefaultWorkspace(active.id))}>Reset</button>
@@ -854,12 +921,27 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
       ) : null}
 
       <div className="deskShell">
-        <aside className={`deskMarkets${marketsOpen ? " is-open" : ""}`} aria-label="Markets browser">
+        <aside
+          className={`deskMarkets${marketsOpen ? " is-open" : ""}${marketsCollapsed ? " is-collapsed" : ""}`}
+          aria-label="Markets browser"
+        >
           <div className="deskMarketsInner">
             <header>
               <strong>Markets</strong>
-              <button type="button" className="deskMarketsClose" onClick={() => setMarketsOpen(false)}>Close</button>
+              <div className="deskMarketsHeaderActions">
+                <button
+                  type="button"
+                  className="deskMarketsCollapse"
+                  aria-pressed={marketsCollapsed}
+                  onClick={() => setMarketsCollapsed((value) => !value)}
+                >
+                  {marketsCollapsed ? "Expand" : "Collapse"}
+                </button>
+                <button type="button" className="deskMarketsClose" onClick={() => setMarketsOpen(false)}>Close</button>
+              </div>
             </header>
+            {!marketsCollapsed ? (
+              <>
             <ul className="tmMarketsGroups">
               {MARKET_CATALOG.map((group) => {
                 const expanded = openGroup === group.id;
@@ -882,7 +964,9 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                               <span className="tmMarketsInstrumentName">{instrument.name}</span>
                               <span className="tmMarketsInstrumentMeta">
                                 <code>{instrument.symbol}</code>
-                                <em className={`tmCoverage is-${instrument.coverage}`}>{coverageLabel(instrument.coverage)}</em>
+                                <em className={`tmCoverage is-${instrument.coverage}`} title={coverageDetail(instrument)}>
+                                  {coverageLabel(instrument.coverage)}
+                                </em>
                               </span>
                             </button>
                             <button
@@ -901,7 +985,22 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                 );
               })}
             </ul>
-            <p className="tmMarketsHonesty">Live = verified in-app path. Symbol mapped = reserved provider symbol. Awaiting = taxonomy only. Prices are never invented.</p>
+            <details className="tmMarketsLegend">
+              <summary>Coverage legend</summary>
+              <p>Connected = verified in-app feed. Data pending = symbol ready. Coming soon = listed without live coverage. Prices are never invented.</p>
+            </details>
+              </>
+            ) : (
+              <ul className="deskMarketsCompactFavs">
+                {favourites.slice(0, 8).map((item) => (
+                  <li key={item.id}>
+                    <button type="button" className={item.id === active.id ? "is-active" : undefined} onClick={() => selectMarket(item)}>
+                      {item.symbol}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </aside>
         {marketsOpen ? <button type="button" className="deskMarketsBackdrop" aria-label="Close markets" onClick={() => setMarketsOpen(false)} /> : null}
@@ -914,7 +1013,12 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               <span>{active.name}</span>
             </div>
             <div className="deskActiveActions">
+              <TerminalBadge
+                label={payload.snapshot.status}
+                tone={payload.snapshot.status === "LIVE" || payload.snapshot.status === "DELAYED" ? "positive" : "warning"}
+              />
               <TerminalBadge label={coverageLabel(active.coverage)} tone={active.coverage === "live" ? "positive" : "warning"} />
+              <small className="deskActiveAge">{payload.snapshotAge}</small>
               {platformLaunch.status === "ready" ? (
                 <a href={platformLaunch.url} target="_blank" rel="noopener noreferrer" className="deskLaunchBtn is-compact">
                   Launch {PREFERRED_PLATFORMS[workspace.preferredPlatformId].shortLabel}
@@ -928,23 +1032,73 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           </div>
 
           <div className={`deskMainColumn${workspace.focusMode ? " is-focus" : ""}`}>
-            <div className="deskStageStack">{stackedWidgets.map(renderWidget)}</div>
-            {workspace.focusMode && railWidgets.length ? (
-              <aside className="deskFocusRail" aria-label="Focus mode rail">
-                {railWidgets.map(renderWidget)}
-              </aside>
-            ) : null}
+            {deskView === "overview" ? (
+              <div className="deskOverviewStack">
+                <DeskDecisionSummary decision={payload.decisionPresentation} onOpenRisk={() => setDeskView("risk")} />
+                {renderWidget("primary-chart")}
+                {renderWidget("structure-map")}
+                <section className="deskWidget deskNextCatalyst" aria-labelledby="next-catalyst-title">
+                  <header>
+                    <span>Next catalyst</span>
+                    <h2 id="next-catalyst-title">Upcoming verified event</h2>
+                  </header>
+                  {nextCatalyst ? (
+                    <div className="deskNextCatalystBody">
+                      <time>{nextCatalyst.time}</time>
+                      <strong>{nextCatalyst.name}</strong>
+                      <span>{nextCatalyst.risk} impact</span>
+                      <button type="button" onClick={() => setDeskView("catalysts")}>Open Catalysts</button>
+                    </div>
+                  ) : (
+                    <div className="deskCoverageRow" role="status">
+                      <TerminalBadge label="Not currently available" tone="info" />
+                      <p>No verified calendar event is listed in the current snapshot.</p>
+                    </div>
+                  )}
+                </section>
+                <section className={`deskWidget deskRiskGate is-${payload.decisionPresentation.permissionTone}`} aria-labelledby="risk-gate-title">
+                  <header>
+                    <span>Risk gate</span>
+                    <h2 id="risk-gate-title">Participation condition</h2>
+                  </header>
+                  <p className="deskEdgeLead">
+                    <strong>{payload.decisionPresentation.permissionLabel}</strong>
+                    {" · "}
+                    {payload.decisionPresentation.primaryRisk ?? payload.decisionPresentation.why}
+                  </p>
+                  <button type="button" onClick={() => setDeskView("risk")}>Open Risk &amp; Journal</button>
+                </section>
+                <details className="deskWidget deskDataDetails">
+                  <summary>
+                    <span>Data details</span>
+                    <strong>
+                      {snapshotFeed?.status ?? payload.snapshot.status} · {payload.snapshotAge}
+                    </strong>
+                  </summary>
+                  {renderWidget("freshness-trust")}
+                </details>
+              </div>
+            ) : (
+              <>
+                <div className="deskStageStack">{stackedWidgets.map(renderWidget)}</div>
+                {workspace.focusMode && railWidgets.length ? (
+                  <aside className="deskFocusRail" aria-label="Focus mode rail">
+                    {railWidgets.map(renderWidget)}
+                  </aside>
+                ) : null}
+              </>
+            )}
           </div>
 
-          {payload.customerWarnings.length ? (
-            <details className="ctPanel ctConstraintsPanel ctConstraintsCompact">
+          {deskView === "risk" && payload.customerWarnings.length ? (
+            <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" open>
               <summary><span>Participation limits</span><strong>Delay and no-trade conditions</strong></summary>
               <div className="ctConstraints"><ul>{payload.customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
             </details>
           ) : null}
 
           <footer className="ctFooter">
-            <span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk.</span>
+            <span>Educational market intelligence only. Not personalised financial advice. Futures involve substantial risk. Market Data: Delayed when shown as delayed.</span>
             <Link href="/risk-disclaimer">Read the risk disclosure</Link>
           </footer>
         </div>

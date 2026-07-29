@@ -276,11 +276,11 @@ export function getMarketInstrument(id: string): MarketInstrument | undefined {
 export function coverageLabel(coverage: MarketCoverage): string {
   switch (coverage) {
     case "live":
-      return "Live path";
+      return "Connected";
     case "proxy":
-      return "Symbol mapped";
+      return "Data pending";
     case "awaiting":
-      return "Awaiting coverage";
+      return "Coming soon";
   }
 }
 
@@ -288,11 +288,11 @@ export function coverageDetail(instrument: MarketInstrument): string {
   if (instrument.note) return instrument.note;
   switch (instrument.coverage) {
     case "live":
-      return "This symbol is on the verified in-app provider path. Quotes and charts appear only when a verified series is loaded — nothing is invented here.";
+      return "This symbol has a verified in-app data connection. Quotes and charts appear only when a verified series is loaded — nothing is invented here.";
     case "proxy":
-      return `Provider symbol ${instrument.providerSymbol ?? instrument.symbol} is reserved for later FMP-style resolution. No live quote or chart is shown until that path is wired and verified.`;
+      return `Symbol ${instrument.providerSymbol ?? instrument.symbol} is ready; data connection pending. No live quote or chart is shown until that feed is verified.`;
     case "awaiting":
-      return "Listed in the Markets taxonomy only. No verified provider coverage yet — prices and charts are not fabricated.";
+      return "Market listed; live coverage not yet available. Prices and charts are not fabricated.";
   }
 }
 
