@@ -7,7 +7,6 @@ import {
   coverageDetail,
   coverageLabel,
   getMarketInstrument,
-  groupAvailabilityLabel,
   isFavouriteMarketId,
   resolveStoredMarketId,
   type MarketCoverage,
@@ -1120,7 +1119,8 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             <ul className="tmMarketsGroups">
               {MARKET_CATALOG.map((group) => {
                 const expanded = openGroup === group.id;
-                const { connected, planned } = sortInstrumentsForSidebar(group.instruments);
+                const { connected } = sortInstrumentsForSidebar(group.instruments);
+                if (!connected.length) return null;
                 const favourited = (instrumentId: string) => isFavouriteMarketId(workspace.favourites, instrumentId);
                 const renderInstrument = (instrument: MarketInstrument) => (
                   <li key={instrument.id}>
@@ -1153,35 +1153,65 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <li key={group.id}>
                     <button type="button" className="tmMarketsGroupToggle" aria-expanded={expanded} onClick={() => setOpenGroup(expanded ? null : group.id)}>
                       <span>{group.label}</span>
-                      <small>{groupAvailabilityLabel(group)}</small>
+                      <small>{connected.length} connected</small>
                       <i aria-hidden="true">{expanded ? "▾" : "▸"}</i>
                     </button>
                     {expanded ? (
                       <ul className="tmMarketsInstruments">
                         {connected.map(renderInstrument)}
-                        {planned.length ? (
-                          <li className="tmMarketsComingSoon">
-                            <details>
-                              <summary>
-                                {connected.length
-                                  ? `Additional markets — planned (${planned.length})`
-                                  : `${group.label} — planned (${planned.length})`}
-                              </summary>
-                              <ul className="tmMarketsInstruments is-nested">
-                                {planned.map(renderInstrument)}
-                              </ul>
-                            </details>
-                          </li>
-                        ) : null}
                       </ul>
                     ) : null}
                   </li>
                 );
               })}
             </ul>
+            {(() => {
+              const plannedAll = MARKET_CATALOG.flatMap((group) =>
+                sortInstrumentsForSidebar(group.instruments).planned,
+              );
+              if (!plannedAll.length) return null;
+              const favourited = (instrumentId: string) => isFavouriteMarketId(workspace.favourites, instrumentId);
+              return (
+                <details className="tmMarketsComingSoon tmMarketsComingSoonGlobal">
+                  <summary>More markets — coming later ({plannedAll.length})</summary>
+                  <ul className="tmMarketsInstruments is-nested">
+                    {plannedAll.map((instrument) => (
+                      <li key={instrument.id}>
+                        <button
+                          type="button"
+                          className={`tmMarketsInstrument${instrument.id === active.id ? " is-selected" : ""}`}
+                          onClick={() => selectMarket(instrument)}
+                          aria-current={instrument.id === active.id ? "true" : undefined}
+                        >
+                          <span className="tmMarketsInstrumentName">{instrument.name}</span>
+                          <span className="tmMarketsInstrumentMeta">
+                            <code>{instrument.symbol}</code>
+                            <em className={`tmCoverage is-${instrument.coverage}`} title={coverageDetail(instrument)}>
+                              {coverageLabel(instrument.coverage)}
+                            </em>
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`deskStar${favourited(instrument.id) ? " is-on" : ""}`}
+                          aria-label={`${favourited(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} ${favourited(instrument.id) ? "from" : "to"} favourites`}
+                          aria-pressed={favourited(instrument.id)}
+                          onClick={() => toggleFavourite(instrument.id)}
+                        >
+                          ★
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              );
+            })()}
             <details className="tmMarketsLegend">
               <summary>Coverage legend</summary>
-              <p>Connected markets appear first with verified feeds. Planned markets stay listed until a verified feed is available. Counts show available instruments only — never invented access. Prices are never invented.</p>
+              <p>
+                Connected markets appear first with verified feeds. Planned markets stay under “More markets —
+                coming later” until a verified feed is available. Prices are never invented.
+              </p>
             </details>
               </>
             ) : (

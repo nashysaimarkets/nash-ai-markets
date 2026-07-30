@@ -17,7 +17,7 @@ import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("dashboard command centre uses shared delayed candle age and Restricted / Not established language", async () => {
+test("dashboard command centre uses shared delayed candle age and Wait for confirmation / Not established language", async () => {
   const [centre, page, summaryLib] = await Promise.all([
     read("../app/dashboard/components/MarketCommandCentre.tsx"),
     read("../app/dashboard/page.tsx"),
@@ -35,6 +35,7 @@ test("dashboard command centre uses shared delayed candle age and Restricted / N
   assert.doesNotMatch(centre, /providerDelayNote|Nominal provider delay/);
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /MarketCommandCentre/);
+  assert.match(page, /getVerifiedMarketContext|sanitizeForClient/);
   assert.match(summaryLib, /formatDelayedVerifiedCandleAgeDisplay/);
   assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(summaryLib, /24-hour low \/ downside reference/);
@@ -56,13 +57,14 @@ test("dashboard empty catalyst stays compact and available events still render",
   assert.doesNotMatch(centre, /No future verified calendar event is currently supplied/);
 });
 
-test("restricted decision copy omits defensive briefing clause", async () => {
+test("blocked decision copy omits defensive briefing clause", async () => {
   const presentation = await read("../app/terminal/lib/desk-decision-presentation.ts");
   assert.match(
     presentation,
-    /This is a limited-confidence environment\. Trade participation remains restricted because confirmation data is incomplete\./,
+    /This is a limited-confidence environment\. Wait for confirmation before treating any lean as a setup\./,
   );
   assert.doesNotMatch(presentation, /not because the whole briefing is unavailable/);
+  assert.doesNotMatch(presentation, /permissionLabel: "Restricted"|return \{ label: "Restricted"/);
 });
 
 test("score display never presents zero as a substitute for unavailable evidence", () => {
@@ -177,7 +179,7 @@ test("dashboard summary fails closed without inventing catalyst or live labels",
   assert.equal(summary.levels.length, 0);
   assert.match(summary.hero.delayedAgeLine, /Delayed market data/i);
   assert.doesNotMatch(summary.hero.delayedAgeLine, /\blive\b/i);
-  assert.equal(summary.decision.permissionLabel, "Restricted");
+  assert.equal(summary.decision.permissionLabel, "Wait for confirmation");
   assert.ok(summary.unavailable.length > 0);
 });
 

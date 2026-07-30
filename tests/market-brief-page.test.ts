@@ -230,7 +230,7 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(page, /composeMorningMarketBrief/);
   assert.match(page, /formatDelayedVerifiedCandleAgeDisplay/);
   assert.match(component, /Executive market summary|executiveSummary/);
-  assert.match(component, /TODAY.?S POSTURE|Restricted|Stay patient/);
+  assert.match(component, /todays-posture|Wait for confirmation|Stay patient|model\.posture/);
   assert.match(component, /Open Trading Desk/);
   assert.match(component, /Market weather/);
   assert.match(component, /Breadth is omitted|advance\/decline/);

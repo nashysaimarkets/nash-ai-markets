@@ -162,7 +162,7 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
         <div className="mbDecisionGrid">
           <div className={permissionBlocked ? "is-blocked" : ""}>
             <span>Participation</span>
-            <strong>{permissionBlocked ? "Restricted" : "Caution"}</strong>
+            <strong>{permissionBlocked ? "Wait for confirmation" : "Proceed with caution"}</strong>
           </div>
           <div>
             <span>Observed market lean</span>

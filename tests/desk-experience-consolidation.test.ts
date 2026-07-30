@@ -45,18 +45,19 @@ test("desk decision presentation separates lean from blocked permission", () => 
   });
 
   assert.equal(presentation.leanLabel, "Mildly bullish");
-  assert.equal(presentation.permissionLabel, "Restricted");
+  assert.equal(presentation.permissionLabel, "Wait for confirmation");
   assert.equal(presentation.permissionTone, "blocked");
   assert.equal(presentation.confidenceLabel, "Not established");
-  assert.equal(presentation.confidenceDetail, "Engine confidence score: 0 / 100");
-  assert.match(presentation.why, /observed lean|restricted|incomplete/i);
-  assert.doesNotMatch(presentation.why, /instruction to buy|enter long/i);
+  assert.match(presentation.confidenceDetail ?? "", /incomplete|not shown as a measured/i);
+  assert.doesNotMatch(presentation.confidenceDetail ?? "", /Engine confidence score: 0 \/ 100/);
+  assert.match(presentation.why, /observed lean|wait for confirmation|incomplete/i);
+  assert.doesNotMatch(presentation.why, /Restricted|instruction to buy|enter long/i);
 
   const posture = buildTodaysPosture(presentation);
   assert.equal(posture.eyebrow, "TODAY'S POSTURE");
   assert.equal(posture.headline, "Stay patient");
-  assert.match(posture.summary, /mildly bullish|restricted|confirmation/i);
-  assert.doesNotMatch(posture.summary, /\bbuy\b|\bsell\b|enter /i);
+  assert.match(posture.summary, /mildly bullish|wait for confirmation|confirmation/i);
+  assert.doesNotMatch(posture.summary, /\bbuy\b|\bsell\b|enter |Restricted/i);
 });
 
 test("event display normalizes and dedupes Fed press conference labels", () => {
@@ -130,7 +131,7 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(decisionSummary, /Participation/);
   assert.match(decisionSummary, /id="decision-summary"/);
   assert.match(decisionSummary, /is-blocked-priority|permissionTone === "blocked"/);
-  assert.match(decisionSummary, /Technical confirmation details|Restricted|Not established|confidenceDetail/);
+  assert.match(decisionSummary, /Technical confirmation details|Wait for confirmation|Not established|confidenceDetail/);
   assert.equal(coverageLabel("live"), "Connected");
   assert.match(catalog, /return "Connected"/);
 });

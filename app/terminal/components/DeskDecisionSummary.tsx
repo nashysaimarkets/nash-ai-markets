@@ -102,9 +102,9 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
           <p>
             Engine participation remains closed while required confirmations are incomplete.
             {decision.primaryRisk ? ` Condition on record: ${decision.primaryRisk}.` : ""}
-            {decision.confidenceScore != null
-              ? ` Engine confidence score: ${decision.confidenceScore} / 100.`
-              : ""}{" "}
+            {decision.confidenceScore != null && decision.confidenceScore > 0
+              ? ` Engine reference score: ${decision.confidenceScore} / 100.`
+              : " Confidence remains not established while confirmation is incomplete."}{" "}
             This does not invalidate verified quotes, candles, levels or catalysts shown elsewhere on
             the desk.
           </p>

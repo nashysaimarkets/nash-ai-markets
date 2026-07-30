@@ -47,10 +47,10 @@ export function leanLabelFromSignals(
 export function permissionPresentation(
   decision: TradingDecision | null,
 ): { label: string; tone: DeskDecisionPresentation["permissionTone"] } {
-  if (!decision) return { label: "Restricted", tone: "blocked" };
+  if (!decision) return { label: "Wait for confirmation", tone: "blocked" };
   if (decision.tradePermission === "actionable") return { label: "Permitted with caution", tone: "open" };
-  if (decision.tradePermission === "caution") return { label: "Caution", tone: "caution" };
-  return { label: "Restricted", tone: "blocked" };
+  if (decision.tradePermission === "caution") return { label: "Proceed with caution", tone: "caution" };
+  return { label: "Wait for confirmation", tone: "blocked" };
 }
 
 function softenRiskPhrase(value: string | null): string | null {
@@ -95,11 +95,11 @@ export function buildDeskDecisionPresentation(input: {
 
   let why: string;
   if (!decision) {
-    why = "Verified market observations may still appear below. Trade participation remains restricted because confirmation data is incomplete.";
+    why = "Verified market observations may still appear below. Wait for confirmation — required evidence is incomplete.";
   } else if (permission.tone === "blocked" && lean.tone !== "neutral") {
-    why = `${lean.label} is an observed lean from verified inputs — not a validated trade setup. Trade participation remains restricted because confirmation data is incomplete.`;
+    why = `Observed lean: ${lean.label}. Participation: wait for confirmation. Directional inputs lean this way, but required confirmation evidence is incomplete.`;
   } else if (permission.tone === "blocked") {
-    why = "This is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete.";
+    why = "This is a limited-confidence environment. Wait for confirmation before treating any lean as a setup.";
   } else if (permission.tone === "caution") {
     why = `Directional lean is ${lean.label.toLowerCase()}, with caution required before participation.`;
   } else if (permission.tone === "open") {
@@ -110,16 +110,16 @@ export function buildDeskDecisionPresentation(input: {
 
   let confidenceLabel: string;
   let confidenceDetail: string | null = null;
-  if (score == null) {
-    confidenceLabel = "Not rated";
-  } else if (score === 0) {
+  if (score == null || score === 0) {
     confidenceLabel = "Not established";
-    confidenceDetail = `Engine confidence score: ${score} / 100`;
+    confidenceDetail =
+      "Required confirmation evidence is incomplete. A zero engine reading is not shown as a measured confidence result.";
   } else if (permission.tone === "blocked") {
-    confidenceLabel = "Limited";
-    confidenceDetail = `Engine confidence score: ${score} / 100`;
+    confidenceLabel = "Not established";
+    confidenceDetail = `Engine reference ${score}/100 remains secondary while confirmation is incomplete.`;
   } else {
     confidenceLabel = `${score} / 100`;
+    confidenceDetail = null;
   }
 
   return {
@@ -160,20 +160,20 @@ export function buildTodaysPosture(decision: DeskDecisionPresentation): TodaysPo
       return {
         eyebrow: "TODAY'S POSTURE",
         headline: "Stay patient",
-        summary: `The observed lean is ${lean}, but confirmation remains incomplete and participation is restricted.`,
+        summary: `The observed lean is ${lean}, but confirmation remains incomplete — wait for confirmation before participation.`,
       };
     }
     if (decision.leanTone === "mixed") {
       return {
         eyebrow: "TODAY'S POSTURE",
         headline: "Stay patient",
-        summary: "Evidence is mixed. Participation stays restricted until confirmation is complete.",
+        summary: "Evidence is mixed. Wait for confirmation until the setup is clearer.",
       };
     }
     return {
       eyebrow: "TODAY'S POSTURE",
       headline: "Stay patient",
-      summary: `Participation is restricted. Primary condition: ${condition}.`,
+      summary: `Wait for confirmation. Primary condition: ${condition}.`,
     };
   }
 
