@@ -55,6 +55,7 @@ export type DashboardCatalystModel = {
   impact: string;
   countdown: string | null;
   startsAt: string;
+  includes: string[];
 } | null;
 
 export type DashboardServiceItem = {
@@ -237,6 +238,7 @@ export function buildDashboardCommandSummary(input: {
         impact: next.risk === "HIGH" ? "High impact" : "Medium impact",
         countdown: formatEventCountdown(next.startsAt, now),
         startsAt: next.startsAt,
+        includes: next.includes,
       }
     : null;
 

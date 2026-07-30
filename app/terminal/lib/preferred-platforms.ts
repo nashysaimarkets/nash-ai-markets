@@ -194,7 +194,7 @@ export function tradingViewSymbol(instrument: MarketInstrument): string | null {
       return provider.includes(":") ? provider : `NASDAQ:${provider.replace(/\./g, "-")}`;
     case "indices":
       if (instrument.symbol === "ES") return "CME_MINI:ES1!";
-      if (instrument.symbol === "NQ") return "NASDAQ:IXIC";
+      if (instrument.symbol === "IXIC") return "NASDAQ:IXIC";
       if (instrument.symbol === "VIX") return "CBOE:VIX";
       if (instrument.symbol === "DXY") return "TVC:DXY";
       if (provider.startsWith("^")) return `TVC:${provider.slice(1)}`;

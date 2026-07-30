@@ -13,6 +13,13 @@ function weatherDirectionClass(direction: MorningMarketBriefModel["crossAssets"]
   return "is-empty";
 }
 
+function weatherMoveCue(direction: MorningMarketBriefModel["crossAssets"][number]["direction"]) {
+  if (direction === "up") return { arrow: "↑", label: "Higher" };
+  if (direction === "down") return { arrow: "↓", label: "Lower" };
+  if (direction === "flat") return { arrow: "→", label: "Unchanged" };
+  return { arrow: "·", label: "Unavailable" };
+}
+
 function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
   if (!video.available || !video.youtubeId) {
     return (
@@ -202,18 +209,28 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         </header>
         {model.crossAssets.length ? (
           <div className="mbCross">
-            {model.crossAssets.map((card) => (
+            {model.crossAssets.map((card) => {
+              const move = weatherMoveCue(card.direction);
+              return (
               <article
                 key={card.id}
                 className={`mbCrossCard ${weatherDirectionClass(card.direction)}`}
               >
                 <span>{card.label}</span>
                 <strong>{card.value}</strong>
-                <em aria-label={`${card.direction} change`}>{card.change}</em>
+                <em>
+                  <span aria-hidden="true">{move.arrow} </span>
+                  {card.change}
+                  <span className="mbMoveLabel"> · {move.label}</span>
+                </em>
+                <span className="mbVisuallyHidden">
+                  Numerical move: {move.label}
+                </span>
                 <p>{card.detail}</p>
-                <small>Delayed · verified</small>
+                <small>Delayed · verified · colour follows this instrument’s own move</small>
               </article>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="mbFine">Cross-market weather awaits verified ES, VIX, DXY or US 10-year quotes.</p>
@@ -270,6 +287,16 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
                   <div>
                     <strong>{item.name}</strong>
                     <span className={`mbRisk is-${item.risk.toLowerCase()}`}>{item.risk} impact</span>
+                    {item.includes.length ? (
+                      <details className="mbCatalystIncludes">
+                        <summary>Includes {item.includes.length} related components</summary>
+                        <ul>
+                          {item.includes.map((part) => (
+                            <li key={part.name}>{part.name}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    ) : null}
                   </div>
                 </li>
               ))}

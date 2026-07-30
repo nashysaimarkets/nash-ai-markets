@@ -21,7 +21,7 @@ function liveSnapshot(): MarketSnapshot {
       { symbol: "DXY", label: "DXY", value: "97.8", change: "-0.20%", direction: "down" },
       { symbol: "OIL", label: "OIL", value: "72.4", change: "+1.10%", direction: "up" },
       { symbol: "QQQ", label: "QQQ", value: "485.2", change: "+0.80%", direction: "up" },
-      { symbol: "NQ", label: "NASDAQ", value: "17850", change: "+0.70%", direction: "up" },
+      { symbol: "IXIC", label: "Nasdaq Composite", value: "17850", change: "+0.70%", direction: "up" },
     ],
     levels: [],
     events: [],

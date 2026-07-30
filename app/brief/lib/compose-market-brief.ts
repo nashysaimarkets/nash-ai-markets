@@ -12,8 +12,7 @@ import {
   type TodaysPosture,
 } from "../../terminal/lib/desk-decision-presentation.ts";
 import {
-  eventTimestampMs,
-  formatVerifiedEventWhen,
+  groupVerifiedEvents,
   upcomingVerifiedEvents,
 } from "../../terminal/lib/event-display.ts";
 
@@ -43,6 +42,7 @@ export type BriefTimelineItem = {
   name: string;
   risk: "HIGH" | "MED" | "UNKNOWN";
   available: boolean;
+  includes: Array<{ name: string; risk: "HIGH" | "MED" }>;
 };
 
 export type BriefVideoSlot = {
@@ -386,16 +386,14 @@ function buildLevels(
 }
 
 function buildTimeline(events: MarketEvent[], now = Date.now()): BriefTimelineItem[] {
-  return upcomingVerifiedEvents(events, now, 3).map((event, index) => {
-    const timestamp = eventTimestampMs(event);
-    return {
-      id: `${event.at ?? event.time}-${index}`,
-      time: timestamp != null ? formatVerifiedEventWhen(timestamp) : event.time,
-      name: event.name,
-      risk: event.risk,
-      available: true,
-    };
-  });
+  return groupVerifiedEvents(events, now, 3).map((event, index) => ({
+    id: `${event.at ?? event.time}-${index}`,
+    time: event.time,
+    name: event.name,
+    risk: event.risk,
+    available: true,
+    includes: event.includes,
+  }));
 }
 
 function resolveVideo(youtubeId: string | null | undefined): BriefVideoSlot {
@@ -467,19 +465,26 @@ function buildWatchAvoid(input: {
   };
 }
 
+function stripRepeatedPosturePhrases(value: string): string {
+  return value
+    .replace(/\s*confirmation remains incomplete[^.]*\.?/gi, "")
+    .replace(/\s*participation (?:is|remains) restricted[^.]*\.?/gi, "")
+    .replace(/\s*not a validated (?:trade )?setup[^.]*\.?/gi, "")
+    .replace(/\s*observed market lean is [^.]*\.?/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function buildExecutiveSummary(input: {
   snapshot: MarketSnapshot;
   decision: TradingDecision;
   verified: boolean;
   interpretation: string;
 }): string {
-  const lean = humanize(input.decision.marketBias);
-
   if (!input.verified) {
-    return `${input.interpretation} Verified observations may still appear below, but a validated trade setup is not established.`;
+    return `${input.interpretation} Verified observations may still appear below.`;
   }
-
-  return `${input.interpretation} Observed market lean is ${lean}. These are observations from verified delayed inputs — not a validated trade setup.`;
+  return `${input.interpretation} These remain observations from delayed verified quotes.`;
 }
 
 export function composeMorningMarketBrief(input: {
@@ -586,8 +591,11 @@ export function composeMorningMarketBrief(input: {
     posture,
     summary: {
       headline: customerFacingBriefCopy(brief.headline),
-      overnight: interpretation,
-      whatMatters: customerFacingBriefCopy(brief.whatMatters),
+      overnight: verified
+        ? "Cross-market prints moved as shown in Market Weather. Use those cards for the factual change set."
+        : "Session context stays limited until verified provider prints recover.",
+      whatMatters: stripRepeatedPosturePhrases(customerFacingBriefCopy(brief.whatMatters))
+        || "Review Market Weather and verified levels before treating any lean as actionable.",
       watch,
       avoid,
       setupReading: reading,

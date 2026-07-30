@@ -64,8 +64,9 @@ function instrument(
 const INDICES: readonly MarketInstrument[] = [
   instrument("indices", "es", "S&P 500 Futures (ES)", "ES", "ESUSD", "live"),
   instrument("indices", "spx", "S&P 500 Index", "SPX", "^GSPC", "proxy"),
-  instrument("indices", "nq", "Nasdaq Composite", "NQ", "^IXIC", "live"),
+  instrument("indices", "ixic", "Nasdaq Composite", "IXIC", "^IXIC", "live"),
   instrument("indices", "ndx", "Nasdaq-100", "NDX", "^NDX", "proxy"),
+  instrument("indices", "nq-futures", "E-mini Nasdaq-100 Futures (NQ)", "NQ", undefined, "awaiting", "Futures series awaiting verified provider mapping. Not the Nasdaq Composite index."),
   instrument("indices", "dji", "Dow Jones Industrial", "DJI", "^DJI", "proxy"),
   instrument("indices", "ym", "Dow Futures (YM)", "YM", undefined, "awaiting", "Futures series awaiting verified provider mapping."),
   instrument("indices", "rut", "Russell 2000", "RUT", "^RUT", "proxy"),
@@ -266,8 +267,10 @@ export function getMarketGroup(id: MarketGroupId): MarketGroup | undefined {
 }
 
 export function getMarketInstrument(id: string): MarketInstrument | undefined {
+  // Legacy desk favourites used "nq" for the Nasdaq Composite (^IXIC) feed.
+  const resolvedId = id === "nq" ? "ixic" : id;
   for (const group of MARKET_CATALOG) {
-    const found = group.instruments.find((item) => item.id === id);
+    const found = group.instruments.find((item) => item.id === resolvedId);
     if (found) return found;
   }
   return undefined;

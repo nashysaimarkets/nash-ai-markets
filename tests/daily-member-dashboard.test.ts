@@ -81,6 +81,7 @@ test("next event selects only the nearest future event with a complete timestamp
   ], NOW);
   assert.equal(result?.name, "Next event");
   assert.equal(result?.countdown, "1h 0m");
+  assert.deepEqual(result?.includes, []);
 });
 
 test("next event prefers authoritative at timestamps over opaque display labels", () => {

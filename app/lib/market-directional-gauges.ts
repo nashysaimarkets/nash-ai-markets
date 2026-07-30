@@ -176,7 +176,7 @@ function buildInstrumentGauge(input: {
   let confidence = 34 + qualityBonus(snapshot);
   confidence += agreementBonus(direction, pressure, invertedPressure);
   if (symbol === "ES") confidence += candleBonus(candle, direction);
-  if (symbol === "OIL" || symbol === "QQQ" || symbol === "NQ") {
+  if (symbol === "OIL" || symbol === "QQQ" || symbol === "IXIC") {
     // Equity/ETF/index secondaries: slight lift when ES agrees with their print.
     const esDir = directionFromQuote(quote(snapshot, "ES"));
     if (esDir === direction) confidence += 10;

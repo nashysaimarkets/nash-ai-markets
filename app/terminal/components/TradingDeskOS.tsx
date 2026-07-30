@@ -46,7 +46,7 @@ import {
   type DeskViewId,
 } from "../lib/desk-views.ts";
 import { DeskDecisionSummary } from "./DeskDecisionSummary.tsx";
-import { eventTimestampMs, formatVerifiedEventWhen, nextVerifiedEvents } from "../lib/event-display.ts";
+import { groupVerifiedEvents } from "../lib/event-display.ts";
 import {
   PREFERRED_PLATFORMS,
   PREFERRED_PLATFORM_IDS,
@@ -290,11 +290,9 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     : workspace.focusMode
       ? stageWidgets
       : viewWidgets;
-  const nextCatalyst = nextVerifiedEvents(payload.snapshot.events, 1)[0] ?? null;
-  const nextCatalystStamp = nextCatalyst ? eventTimestampMs(nextCatalyst) : null;
-  const nextCatalystWhen = nextCatalyst
-    ? (nextCatalystStamp != null ? formatVerifiedEventWhen(nextCatalystStamp) : nextCatalyst.time)
-    : null;
+  const nextGrouped = groupVerifiedEvents(payload.snapshot.events, Date.now(), 1)[0] ?? null;
+  const nextCatalystWhen = nextGrouped?.time ?? null;
+  const nextCatalyst = nextGrouped;
   const snapshotFeed = payload.freshnessFeeds.find((feed) => feed.id === "snapshot");
 
   function updateWorkspace(patch: Partial<DeskWorkspaceState> | ((prev: DeskWorkspaceState) => DeskWorkspaceState)) {
@@ -612,6 +610,11 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     <time>{item.time}</time>
                     <strong>{item.title}</strong>
                     <TerminalBadge label={item.risk} tone={item.risk === "HIGH" ? "danger" : "warning"} />
+                    {item.includes.length ? (
+                      <p className="deskCatalystIncludes">
+                        Includes: {item.includes.join(" · ")}
+                      </p>
+                    ) : null}
                     <p>{item.relevance}</p>
                   </li>
                 ))}
@@ -1147,14 +1150,19 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                 {renderWidget("structure-map")}
                 <section id="next-catalyst" className="deskWidget deskNextCatalyst" aria-labelledby="next-catalyst-title">
                   <header>
-                    <span>Next catalyst</span>
-                    <h2 id="next-catalyst-title">Upcoming verified event</h2>
+                    <span>Next verified catalyst</span>
+                    <h2 id="next-catalyst-title">Event risk ahead</h2>
                   </header>
                   {nextCatalyst ? (
                     <div className="deskNextCatalystBody">
                       <time>{nextCatalystWhen}</time>
                       <strong>{nextCatalyst.name}</strong>
                       <span>{nextCatalyst.risk} impact</span>
+                      {nextCatalyst.includes.length ? (
+                        <p className="deskCatalystIncludes">
+                          Includes: {nextCatalyst.includes.map((item) => item.name).join(" · ")}
+                        </p>
+                      ) : null}
                       <button type="button" onClick={() => selectDeskView("catalysts")}>Open Catalysts</button>
                     </div>
                   ) : (

@@ -210,6 +210,9 @@ export function MarketCommandCentre({
                   </em>
                 ) : null}
               </div>
+              {catalyst.includes.length ? (
+                <p className="dashCatalystIncludes">Includes: {catalyst.includes.join(" · ")}</p>
+              ) : null}
               <Link href="/terminal#catalysts" className="dashTextLink">
                 Review catalysts on Trading Desk
               </Link>

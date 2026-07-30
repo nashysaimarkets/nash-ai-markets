@@ -147,7 +147,7 @@ export default async function AIMarketBriefPage() {
     dataAgeLabel,
     sessionLabel: session.label,
     sessionDetail: session.detail,
-    tierLabel: access.tier.toUpperCase(),
+    tierLabel: access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase(),
     greeting: greeting.name ? `${greeting.salutation}, ${greeting.name}` : greeting.salutation,
     verified,
     youtubeId: null,

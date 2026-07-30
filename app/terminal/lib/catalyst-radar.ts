@@ -5,11 +5,7 @@
 
 import type { MarketEvent } from "../../lib/market-data.ts";
 import type { MarketInstrument } from "../../lib/markets/market-catalog.ts";
-import {
-  eventTimestampMs,
-  formatVerifiedEventWhen,
-  upcomingVerifiedEvents,
-} from "./event-display.ts";
+import { groupVerifiedEvents } from "./event-display.ts";
 
 export type CatalystKind = "macro" | "earnings" | "news";
 
@@ -21,6 +17,7 @@ export type CatalystItem = {
   risk: "HIGH" | "MED" | "INFO";
   relevance: string;
   available: boolean;
+  includes: string[];
 };
 
 export type CatalystRadar = {
@@ -50,18 +47,16 @@ export function createCatalystRadar(input: {
   now?: number;
 }): CatalystRadar {
   const now = input.now ?? Date.now();
-  const items: CatalystItem[] = upcomingVerifiedEvents(input.events, now, 12).map((event, index) => {
-    const stamp = eventTimestampMs(event);
-    return {
-      id: `macro-${index}-${event.at ?? event.time}-${event.name}`,
-      kind: "macro" as const,
-      time: stamp != null ? formatVerifiedEventWhen(stamp) : event.time,
-      title: event.name,
-      risk: event.risk,
-      relevance: relevanceFor(input.active, input.favourites),
-      available: true,
-    };
-  });
+  const items: CatalystItem[] = groupVerifiedEvents(input.events, now, 12).map((event, index) => ({
+    id: `macro-${index}-${event.at ?? event.time}-${event.name}`,
+    kind: "macro" as const,
+    time: event.time,
+    title: event.name,
+    risk: event.risk,
+    relevance: relevanceFor(input.active, input.favourites),
+    available: true,
+    includes: event.includes.map((item) => item.name),
+  }));
 
   return {
     items,

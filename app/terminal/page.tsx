@@ -93,7 +93,7 @@ export default async function Terminal() {
           DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
           OIL: toCustomerCandleSeries(candleBundleRaw.OIL),
           QQQ: toCustomerCandleSeries(candleBundleRaw.QQQ),
-          NQ: toCustomerCandleSeries(candleBundleRaw.NQ),
+          IXIC: toCustomerCandleSeries(candleBundleRaw.IXIC),
         }
       : null;
 
@@ -136,7 +136,7 @@ export default async function Terminal() {
         DXY: candleSeriesByInstrument?.DXY?.candles,
         OIL: candleSeriesByInstrument?.OIL?.candles,
         QQQ: candleSeriesByInstrument?.QQQ?.candles,
-        NQ: candleSeriesByInstrument?.NQ?.candles,
+          IXIC: candleSeriesByInstrument?.IXIC?.candles,
       },
     });
 
@@ -174,7 +174,7 @@ export default async function Terminal() {
         detail: snapshot.source || "Verified provider snapshot",
       },
       mapCandleFreshness(candleSeriesByInstrument?.ES, "ES candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.NQ, "NQ candles"),
+      mapCandleFreshness(candleSeriesByInstrument?.IXIC, "IXIC candles"),
       mapCandleFreshness(candleSeriesByInstrument?.QQQ, "QQQ candles"),
       mapCandleFreshness(candleSeriesByInstrument?.VIX, "VIX candles"),
       mapCandleFreshness(candleSeriesByInstrument?.DXY, "DXY candles"),

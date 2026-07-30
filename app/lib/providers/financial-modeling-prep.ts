@@ -503,7 +503,7 @@ export function createFinancialModelingPrepAdapter(options: FinancialModelingPre
         if (dollar) quotes.push({ symbol: "DXY", label: "US DOLLAR", value: formatPrice(dollar.price), change: formatChange(dollar), direction: direction(dollar.change) });
         if (oil) quotes.push({ symbol: "OIL", label: "OIL (USO)", value: formatPrice(oil.price), change: formatChange(oil), direction: direction(oil.change) });
         if (qqq) quotes.push({ symbol: "QQQ", label: "QQQ", value: formatPrice(qqq.price), change: formatChange(qqq), direction: direction(qqq.change) });
-        if (nasdaq) quotes.push({ symbol: "NQ", label: "NASDAQ", value: formatPrice(nasdaq.price), change: formatChange(nasdaq), direction: direction(nasdaq.change) });
+        if (nasdaq) quotes.push({ symbol: "IXIC", label: "Nasdaq Composite", value: formatPrice(nasdaq.price), change: formatChange(nasdaq), direction: direction(nasdaq.change) });
         const secondaryAvailable = Boolean(vix && treasury && dollar);
 
         const snapshot: MarketSnapshot = {

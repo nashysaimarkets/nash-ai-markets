@@ -101,7 +101,7 @@ export default async function MemberDashboard() {
     <MemberShell active="dashboard">
       <MarketCommandCentre
         greeting={greeting}
-        tierLabel={access.tier.toUpperCase()}
+        tierLabel={access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase()}
         summary={summary}
         now={now}
       />

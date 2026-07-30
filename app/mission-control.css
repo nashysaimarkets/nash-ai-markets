@@ -85,7 +85,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .tmMarketsGroups>li.is-active>.tmMarketsGroupToggle{color:#62e6b1;background:#38f28e12}
 .tmMarketsInstruments{margin:0;padding:0 0 8px;list-style:none;border-bottom:1px solid #1c2823}
 .tmMarketsInstrument{flex-direction:column;align-items:flex-start;gap:4px;min-height:52px;padding:10px 16px 10px 22px}
-.tmMarketsInstrument.is-selected{background:#d9ab5214;border-left:2px solid #d9ab52}
+.tmMarketsInstrument.is-selected{background:#35d89b14;border-left:2px solid #35d89b;box-shadow:none}
 .tmMarketsInstrumentName{color:#e7ecef;font-size:14px;font-weight:600;line-height:1.35}
 .tmMarketsInstrumentMeta{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .tmMarketsInstrumentMeta code,.tmMarketsFacts code{font:650 12px var(--font-geist-mono),monospace;color:#9ba9a3}
@@ -743,3 +743,18 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .tradingDeskPage .deskMainColumn{padding-top:6px}
 .tradingDeskPage .deskChartControls,.tradingDeskPage .ftTimeframes,.tradingDeskPage .ftIndicatorRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .tradingDeskPage .deskMarkets{max-height:calc(100vh - var(--desk-sticky-offset) - 24px)}
+
+/* selected market vs keyboard focus */
+.tmMarketsInstrument.is-selected{background:#35d89b14;border-left:2px solid #35d89b;box-shadow:none;outline:none}
+.tmMarketsInstrument:focus{outline:none}
+.tmMarketsInstrument:focus-visible{outline:2px solid #d9ab52;outline-offset:2px}
+.deskWatchGrid button.is-active,.deskMarketsCompactFavs button.is-active{border-color:#35d89b66;background:#35d89b14;color:#62e6b1;box-shadow:none;outline:none}
+.deskWatchGrid button:focus,.deskMarketsCompactFavs button:focus{outline:none}
+.deskWatchGrid button:focus-visible,.deskMarketsCompactFavs button:focus-visible{outline:2px solid #d9ab52;outline-offset:2px}
+.memberDashboardNav>nav a:focus{outline:none}
+.memberDashboardNav>nav a:focus-visible{outline:2px solid #d9ab52;outline-offset:3px}
+.deskCatalystIncludes,.dashCatalystIncludes{margin:8px 0 0;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.tradingDeskPage .deskLowerStack,.tradingDeskPage .deskOverviewStack{padding-bottom:28px}
+.tradingDeskPage footer,.tradingDeskPage .deskFooter,.ctFooter{margin-top:28px;padding-top:22px;padding-bottom:36px;border-top:1px solid #24322c}
+.deskMarkets{max-height:calc(100vh - var(--desk-sticky-offset) - 32px)}
+.deskWidget{margin-bottom:4px}

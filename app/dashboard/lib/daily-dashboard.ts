@@ -3,6 +3,7 @@ import { isDecisionReadySnapshot } from "../../lib/market-data.ts";
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
+import { groupVerifiedEvents } from "../../terminal/lib/event-display.ts";
 
 export type DailyMission = {
   available: boolean;
@@ -18,6 +19,7 @@ export type NextEconomicEvent = {
   risk: "HIGH" | "MED";
   startsAt: string;
   countdown: string;
+  includes: string[];
 };
 
 const pretty = (value: string) => value.replaceAll("_", " ").replaceAll("-", " ").toLowerCase();
@@ -73,18 +75,17 @@ export function formatEventCountdown(startsAt: string, now = Date.now()): string
 }
 
 export function selectNextEconomicEvent(events: MarketSnapshot["events"], now = Date.now()): NextEconomicEvent | null {
-  const candidates = events.map((event) => {
-    const fromAt = event.at ? Date.parse(event.at) : Number.NaN;
-    const timestamp = Number.isFinite(fromAt) ? fromAt : Date.parse(event.time);
-    return { event, timestamp };
-  }).filter((candidate) => Number.isFinite(candidate.timestamp) && candidate.timestamp > now)
-    .sort((left, right) => left.timestamp - right.timestamp);
-  const next = candidates[0];
-  if (!next) return null;
-  const startsAt = new Date(next.timestamp).toISOString();
-  const countdown = formatEventCountdown(startsAt, now);
+  const next = groupVerifiedEvents(events, now, 1)[0];
+  if (!next?.at) return null;
+  const countdown = formatEventCountdown(next.at, now);
   if (!countdown) return null;
-  return { name: next.event.name, risk: next.event.risk, startsAt, countdown };
+  return {
+    name: next.name,
+    risk: next.risk,
+    startsAt: next.at,
+    countdown,
+    includes: next.includes.map((item) => item.name),
+  };
 }
 
 export function memberDisplayName(email: string, metadata: Record<string, unknown> | undefined): string {

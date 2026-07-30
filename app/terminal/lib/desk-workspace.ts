@@ -57,7 +57,7 @@ export const DESK_PRESETS: Record<
       "risk-toolkit",
       "journal-lite",
     ],
-    favourites: ["es", "nq", "qqq", "vix", "dxy"],
+    favourites: ["es", "ixic", "qqq", "vix", "dxy"],
     activeMarketId: "es",
   },
   macro: {
@@ -137,12 +137,12 @@ export function createDefaultWorkspace(activeMarketId = "es"): DeskWorkspaceStat
   return {
     version: 1,
     activeMarketId,
-    favourites: ["es", "nq", "qqq", "vix", "dxy", "oil"],
+    favourites: ["es", "ixic", "qqq", "vix", "dxy", "oil"],
     widgets: [...DEFAULT_WIDGET_ORDER],
     hidden: ["platform-embed"],
     preset: "index-day-trader",
     focusMode: false,
-    compareIds: ["nq", "qqq"],
+    compareIds: ["ixic", "qqq"],
     preferredPlatformId: "tradingview",
     externalUrlTemplate: "https://www.google.com/search?q={SYMBOL}+stock",
     namedLayouts: [],
