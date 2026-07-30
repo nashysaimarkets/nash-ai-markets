@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
+import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
+import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
+import { DailyChecklistPanel } from "../../components/oracle/DailyChecklistPanel.tsx";
+import type { OracleBundle } from "../../components/oracle/OracleCompanionStack.tsx";
+import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
+import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
@@ -9,6 +15,7 @@ import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
 type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
   insight: AiMarketInsightModel;
+  oracle: OracleBundle;
 };
 
 function weatherDirectionClass(direction: MorningMarketBriefModel["crossAssets"][number]["direction"]) {
@@ -62,7 +69,7 @@ function customerLevelLabel(label: string, kind: string): string {
   return label;
 }
 
-export function MorningMarketBrief({ model, insight }: MorningMarketBriefProps) {
+export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBriefProps) {
   const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted/i.test(
     `${model.playbook.posture} ${model.aiBriefing.mode} ${model.biggestRisk.label}`,
   );
@@ -138,7 +145,9 @@ export function MorningMarketBrief({ model, insight }: MorningMarketBriefProps) 
         <span>Educational commentary only — not personalised advice.</span>
       </div>
 
+      <ThirtySecondBrief model={oracle.thirtySecond} />
       <AiMarketInsightCard model={insight} />
+      <SessionTimeline model={oracle.timeline} />
 
       <section
         className={`mbPanel mbDecision mbPosture ${permissionBlocked ? "is-blocked" : ""}`}
@@ -245,6 +254,27 @@ export function MorningMarketBrief({ model, insight }: MorningMarketBriefProps) 
       </section>
 
       <MarketInternalsPanel cards={insight.internals} />
+      <ConvictionExplainer model={oracle.conviction} />
+      <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
+      <DailyChecklistPanel
+        postureHeadline={oracle.checklist.postureHeadline}
+        permissionTone={oracle.checklist.permissionTone}
+        hasUpcomingEvent={oracle.checklist.hasUpcomingEvent}
+      />
+      <Link href="/dashboard#opportunity-radar" className="oracleLinkCard">
+        <strong>Educational opportunity conditions</strong>
+        <span>
+          Watch setups and confirmation requirements live on the Dashboard radar — kept there to avoid
+          duplicating the same cards on Morning Brief.
+        </span>
+      </Link>
+      <Link href="/dashboard#session-replay" className="oracleLinkCard">
+        <strong>{oracle.replay.primaryActionLabel}</strong>
+        <span>
+          Post-close session review foundation is on the Dashboard. Morning Brief stays focused on narrative
+          context.
+        </span>
+      </Link>
 
       <div className="mbTwin mbTwinWide">
         <section className="mbPanel mbLevelsPanel" id="verified-levels" aria-labelledby="mb-levels-title">

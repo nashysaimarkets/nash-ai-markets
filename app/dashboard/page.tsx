@@ -15,8 +15,10 @@ import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard
 import { buildDeskGreeting } from "./lib/market-weather.ts";
 import { buildDashboardCommandSummary } from "./lib/dashboard-command-summary.ts";
 import { buildAiMarketInsight } from "../lib/ai-market-insight.ts";
+import { buildOracleBundle } from "../lib/oracle/build-oracle-bundle.ts";
 import { MarketCommandCentre } from "./components/MarketCommandCentre";
 import { isDecisionReadySnapshot } from "../lib/market-data";
+import { primaryLevel } from "./lib/command-centre.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -108,6 +110,22 @@ export default async function MemberDashboard() {
     warnings,
     now,
   });
+  const support = primaryLevel(snapshot, "support");
+  const resistance = primaryLevel(snapshot, "resistance");
+  const oracle = buildOracleBundle({
+    snapshot,
+    intelligence,
+    decision,
+    plan,
+    session,
+    verified,
+    freshnessLabel: summary.hero.delayedAgeLine,
+    warnings,
+    candles: candleSeries?.candles ?? null,
+    support: support?.value ?? null,
+    resistance: resistance?.value ?? null,
+    now,
+  });
 
   return (
     <MemberShell active="dashboard">
@@ -116,6 +134,7 @@ export default async function MemberDashboard() {
         tierLabel={access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase()}
         summary={summary}
         insight={insight}
+        oracle={oracle}
         candleSeries={candleSeries}
         now={now}
       />

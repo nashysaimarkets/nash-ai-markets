@@ -4,14 +4,18 @@ import test from "node:test";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("preferences route aliases the existing onboarding workspace preferences", async () => {
-  const [prefs, shell, onboarding] = await Promise.all([
+test("preferences route hosts local workspace controls and links to onboarding", async () => {
+  const [prefs, client, shell, onboarding] = await Promise.all([
     read("../app/preferences/page.tsx"),
+    read("../app/preferences/PreferencesClient.tsx"),
     read("../app/components/MemberShell.tsx"),
     read("../app/onboarding/page.tsx"),
   ]);
-  assert.match(prefs, /redirect\("\/onboarding"\)/);
-  assert.doesNotMatch(prefs, /createClient|from\("memberships"\)|stripe/i);
+  assert.match(prefs, /Personal workspace/);
+  assert.match(prefs, /PreferencesClient/);
+  assert.match(prefs, /href="\/onboarding"/);
+  assert.match(client, /DashboardWorkspaceControls/);
+  assert.doesNotMatch(prefs, /from\("memberships"\)|stripe|service_role/i);
   assert.match(shell, /href: "\/preferences"/);
   assert.match(shell, /label: "Preferences"/);
   assert.match(onboarding, /MemberShell active="onboarding"/);
@@ -26,7 +30,7 @@ test("desktop and mobile member navigation both expose Preferences", async () =>
   assert.match(shell, /links\.map/);
 });
 
-test("Profile routes members to Preferences without inventing a second preferences system", async () => {
+test("Profile routes members to Preferences without inventing a second membership system", async () => {
   const [profile, prefs, onboarding] = await Promise.all([
     read("../app/profile/page.tsx"),
     read("../app/preferences/page.tsx"),
@@ -34,7 +38,8 @@ test("Profile routes members to Preferences without inventing a second preferenc
   ]);
   assert.match(profile, /href="\/preferences"/);
   assert.match(profile, /Update workspace preferences|Complete workspace setup/);
-  assert.match(prefs, /redirect\("\/onboarding"\)/);
+  assert.match(prefs, /Personal workspace/);
+  assert.match(prefs, /href="\/onboarding"/);
   assert.match(onboarding, /WORKSPACE PREFERENCES/);
   assert.match(onboarding, /Refine your market workspace/);
   assert.match(onboarding, /Set up your market workspace/);

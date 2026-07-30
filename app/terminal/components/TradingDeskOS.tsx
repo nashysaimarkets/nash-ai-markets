@@ -51,6 +51,8 @@ import {
 } from "../lib/desk-views.ts";
 import { DeskDecisionSummary } from "./DeskDecisionSummary.tsx";
 import { groupVerifiedEvents } from "../lib/event-display.ts";
+import { buildSessionTimeline } from "../../lib/oracle/session-timeline.ts";
+import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import {
   PREFERRED_PLATFORMS,
   PREFERRED_PLATFORM_IDS,
@@ -871,9 +873,33 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
+  const timeline = buildSessionTimeline();
+
+  useEffect(() => {
+    if (!workspace.focusMode) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setWorkspace((prev) => ({ ...prev, focusMode: false }));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [workspace.focusMode]);
 
   return (
-    <div className={`tradingDeskOS${workspace.focusMode ? " is-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">
+    <div className={`tradingDeskOS${workspace.focusMode ? " is-focus is-oracle-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">
+      {workspace.focusMode ? (
+        <div className="deskFocusExit">
+          <button
+            type="button"
+            className="is-on"
+            aria-keyshortcuts="Escape"
+            onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: false }))}
+          >
+            Exit Focus Mode
+          </button>
+        </div>
+      ) : null}
       <section className="deskHero deskHeroCompact" aria-labelledby="desk-hero-title">
         <div className="deskHeroCopy">
           <span className="ctEyebrow">NASH AI MARKETS</span>
@@ -883,8 +909,13 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           </p>
         </div>
         <div className="deskHeroActions">
-          <button type="button" className={workspace.focusMode ? "is-on" : undefined} onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: !prev.focusMode }))}>
-            {workspace.focusMode ? "Exit focus" : "Focus chart"}
+          <button
+            type="button"
+            className={workspace.focusMode ? "is-on" : undefined}
+            aria-pressed={workspace.focusMode}
+            onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: !prev.focusMode }))}
+          >
+            {workspace.focusMode ? "Exit Focus Mode" : "Focus Mode"}
           </button>
           <button type="button" className={builderOpen ? "is-on" : undefined} onClick={() => setBuilderOpen((open) => !open)}>
             Layout
@@ -892,6 +923,35 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           <button type="button" onClick={() => { setMarketsOpen(true); setMarketsCollapsed(false); }}>Markets</button>
         </div>
       </section>
+
+      {!workspace.focusMode ? <SessionTimeline model={timeline} /> : null}
+
+      {workspace.focusMode ? (
+        <section className="deskFocusStrip" aria-label="Focus mode essentials">
+          <article>
+            <span>Posture</span>
+            <strong>{payload.decisionPresentation.permissionLabel}</strong>
+            <small>{payload.decisionPresentation.leanLabel}</small>
+          </article>
+          <article>
+            <span>Risk</span>
+            <strong>{payload.decisionPresentation.primaryRisk ?? payload.decisionPresentation.riskLabel}</strong>
+            <small>{payload.decisionPresentation.confidenceLabel}</small>
+          </article>
+          <article>
+            <span>Insight</span>
+            <strong>{payload.decisionPresentation.why.slice(0, 120)}{payload.decisionPresentation.why.length > 120 ? "…" : ""}</strong>
+            <small>Educational summary from verified inputs</small>
+          </article>
+          <article>
+            <span>Checklist</span>
+            <button type="button" onClick={() => selectDeskView("risk")}>
+              Open trading checklist
+            </button>
+            <small>Preparation over frequency</small>
+          </article>
+        </section>
+      ) : null}
 
       <div className="deskViewTabs" role="tablist" aria-label="Trading Desk views">
         <span className="deskViewTabsLabel" id="desk-views-label">Views</span>

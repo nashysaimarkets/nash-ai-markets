@@ -7,6 +7,7 @@ import { listJournalEntries } from "../lib/server/trade-journal.ts";
 import { requireMemberPage } from "../lib/server/member-page-access.ts";
 import { LockedPremiumCard } from "../terminal/components/LockedPremiumCard.tsx";
 import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
+import { ProcessScorePanel } from "../components/oracle/ProcessScorePanel.tsx";
 import { JournalForm } from "./JournalForm.tsx";
 import { JournalDeleteButton } from "./JournalDeleteButton.tsx";
 
@@ -75,7 +76,7 @@ export default async function JournalPage() {
         <div>
           <span>TRADE JOURNAL</span>
           <h1>Your private journal</h1>
-          <p>Process-first logging. Optional P&amp;L stays blank until you record a verified close.</p>
+          <p>Process-first logging. Optional P&amp;L stays blank until you record a verified close. Preparation is rewarded — not trade frequency.</p>
         </div>
         <div className="journalHeroStatus">
           <TerminalBadge label={`${journal.rows.length} entries`} tone="info" />
@@ -83,6 +84,8 @@ export default async function JournalPage() {
           <Link href="/performance">Performance</Link>
         </div>
       </section>
+
+      <ProcessScorePanel />
 
       <div className="journalLayout">
         <JournalForm />

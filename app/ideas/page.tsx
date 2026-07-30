@@ -136,6 +136,10 @@ export default async function IdeasPage({
               Suggest improvements, discuss member ideas and vote for the features that would make your
               preparation workflow clearer. This is product feedback — not market advice.
             </p>
+            <p>
+              Educational opportunity conditions (confirmed setups to watch, not buy/sell commands) live on the{" "}
+              <Link href="/dashboard#opportunity-radar">Dashboard Opportunity Radar</Link>.
+            </p>
           </div>
         </header>
 

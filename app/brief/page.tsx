@@ -28,6 +28,7 @@ import { buildDeskGreeting } from "../dashboard/lib/market-weather.ts";
 import { deriveSessionReferenceLevels } from "../dashboard/lib/session-levels.ts";
 import { composeMorningMarketBrief } from "./lib/compose-market-brief.ts";
 import { buildAiMarketInsight } from "../lib/ai-market-insight.ts";
+import { buildOracleBundle } from "../lib/oracle/build-oracle-bundle.ts";
 import { MorningMarketBrief } from "./components/MorningMarketBrief";
 
 export const dynamic = "force-dynamic";
@@ -162,10 +163,24 @@ export default async function AIMarketBriefPage() {
     verified,
     now,
   });
+  const oracle = buildOracleBundle({
+    snapshot,
+    intelligence,
+    decision,
+    plan,
+    session,
+    verified,
+    freshnessLabel: dataAgeLabel,
+    candles: candleSeries?.candles ?? null,
+    support: support?.value ?? null,
+    resistance: resistance?.value ?? null,
+    expectedMoveLabel: expectedMove,
+    now,
+  });
 
   return (
     <MemberShell active="brief">
-      <MorningMarketBrief model={model} insight={insight} />
+      <MorningMarketBrief model={model} insight={insight} oracle={oracle} />
     </MemberShell>
   );
 }

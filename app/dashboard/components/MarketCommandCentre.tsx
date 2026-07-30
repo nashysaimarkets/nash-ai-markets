@@ -1,8 +1,28 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, type ReactNode } from "react";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
+import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
+import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
+import {
+  DashboardWorkspaceControls,
+  useDashboardWorkspace,
+} from "../../components/oracle/DashboardWorkspaceControls.tsx";
+import { DailyChecklistPanel } from "../../components/oracle/DailyChecklistPanel.tsx";
+import { OpportunityConditionsPanel } from "../../components/oracle/OpportunityConditionsPanel.tsx";
+import type { OracleBundle } from "../../components/oracle/OracleCompanionStack.tsx";
+import { SessionReplayPanel } from "../../components/oracle/SessionReplayPanel.tsx";
+import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
+import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
+import { ConceptHint } from "../../components/oracle/ConceptHint.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
+import {
+  ESSENTIAL_DASHBOARD_SECTIONS,
+  type DashboardSectionId,
+} from "../../lib/oracle/dashboard-workspace.ts";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { buildTodaysPosture } from "../../terminal/lib/desk-decision-presentation.ts";
 import type { DeskGreeting } from "../lib/market-weather.ts";
@@ -15,6 +35,7 @@ export type MarketCommandCentreProps = {
   tierLabel: string;
   summary: DashboardCommandSummary;
   insight: AiMarketInsightModel;
+  oracle: OracleBundle;
   candleSeries: CustomerCandleSeries | null;
   now: number;
 };
@@ -28,11 +49,171 @@ export function MarketCommandCentre({
   tierLabel,
   summary,
   insight,
+  oracle,
   candleSeries,
   now,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
   const posture = buildTodaysPosture(decision);
+  const postClose = oracle.timeline.current === "post-close";
+  const { prefs, persist } = useDashboardWorkspace();
+
+  const sectionNodes = useMemo(() => {
+    const map: Partial<Record<DashboardSectionId, ReactNode>> = {
+      "thirty-second": <ThirtySecondBrief key="thirty-second" model={oracle.thirtySecond} />,
+      insight: <AiMarketInsightCard key="insight" model={insight} />,
+      chart: candleSeries ? (
+        <section key="chart" className="companionHeroChart" aria-label="ES hero chart">
+          <DashboardCandlestickChart series={candleSeries} instrument="ES" compact />
+        </section>
+      ) : (
+        <aside key="chart" className="dashCatalystEmpty" role="status" aria-label="ES hero chart">
+          <span className="mccEyebrow">VERIFIED DELAYED CHART</span>
+          <p>ES candlesticks appear here once verified delayed history is available for your membership.</p>
+          <Link href="/terminal" className="dashTextLink">
+            Open Trading Desk
+          </Link>
+        </aside>
+      ),
+      posture: (
+        <section key="posture" className="dashDecisionSnap" aria-labelledby="dash-decision-title">
+          <header>
+            <div>
+              <span className="mccEyebrow">TODAY&apos;S POSTURE</span>
+              <h2 id="dash-decision-title">{posture.headline}</h2>
+              <p className="dashDecisionWhy">{posture.summary}</p>
+            </div>
+            <span className={`dashPill ${toneClass(decision.permissionTone)}`}>{decision.permissionLabel}</span>
+          </header>
+
+          <div className="dashDecisionGrid">
+            <article>
+              <span>Participation</span>
+              <strong className={toneClass(decision.permissionTone)}>{decision.permissionLabel}</strong>
+            </article>
+            <article>
+              <span>Observed market lean</span>
+              <strong className={toneClass(decision.leanTone)}>{decision.leanLabel}</strong>
+            </article>
+            <article>
+              <span>
+                Confidence <ConceptHint conceptId="confidence" />
+              </span>
+              <strong>{decision.confidenceLabel}</strong>
+              {decision.confidenceDetail ? <small>{decision.confidenceDetail}</small> : null}
+            </article>
+            <article>
+              <span>Primary condition</span>
+              <strong>{decision.primaryRisk ?? decision.riskLabel}</strong>
+            </article>
+          </div>
+
+          {(decision.supporting.length > 0 || decision.opposing.length > 0) ? (
+            <details className="dashEngineDetails">
+              <summary>Engine detail (secondary)</summary>
+              <div className="dashEngineColumns">
+                {decision.supporting.length ? (
+                  <div>
+                    <span>Supporting</span>
+                    <ul>
+                      {decision.supporting.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {decision.opposing.length ? (
+                  <div>
+                    <span>Opposing</span>
+                    <ul>
+                      {decision.opposing.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            </details>
+          ) : null}
+        </section>
+      ),
+      timeline: <SessionTimeline key="timeline" model={oracle.timeline} />,
+      conviction: (
+        <div key="conviction">
+          <ConvictionExplainer model={oracle.conviction} />
+          <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
+        </div>
+      ),
+      weather: (
+        <section key="weather" className="dashWeather" aria-labelledby="dash-weather-title">
+          <header>
+            <span className="mccEyebrow">MARKET WEATHER</span>
+            <h2 id="dash-weather-title">Verified cross-market context</h2>
+            <p>
+              Values and direction from delayed verified quotes only. Breadth is omitted until a verified
+              breadth feed exists.
+            </p>
+          </header>
+          {weather.length ? (
+            <div className="dashWeatherGrid">
+              {weather.map((item) => (
+                <article key={item.id} className={`dashWeatherCard is-${item.direction}`}>
+                  <span>
+                    {item.name}{" "}
+                    <ConceptHint
+                      conceptId={
+                        item.id === "VIX"
+                          ? "vix"
+                          : item.id === "DXY"
+                            ? "dxy"
+                            : item.id === "US10Y"
+                              ? "us10y"
+                              : "delayed-data"
+                      }
+                    />
+                  </span>
+                  <strong>{item.value}</strong>
+                  <em>{item.change}</em>
+                  <p>{item.interpretation}</p>
+                  <small>Delayed · verified</small>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="dashEmptyHint">Cross-market weather awaits verified ES, VIX, DXY or US 10-year quotes.</p>
+          )}
+        </section>
+      ),
+      internals: <MarketInternalsPanel key="internals" cards={insight.internals} />,
+      opportunity: (
+        <div key="opportunity" id="opportunity-radar">
+          <OpportunityConditionsPanel model={oracle.opportunity} />
+        </div>
+      ),
+      checklist: (
+        <DailyChecklistPanel
+          key="checklist"
+          postureHeadline={oracle.checklist.postureHeadline}
+          permissionTone={oracle.checklist.permissionTone}
+          hasUpcomingEvent={oracle.checklist.hasUpcomingEvent}
+        />
+      ),
+      replay: (
+        <div key="replay" id="session-replay">
+          <SessionReplayPanel model={oracle.replay} />
+        </div>
+      ),
+    };
+    return map;
+  }, [candleSeries, decision, insight, oracle, posture.headline, posture.summary, weather]);
+
+  const renderOrder = useMemo(() => {
+    const pinned = prefs.order.filter(
+      (id) => prefs.pinned.includes(id) || ESSENTIAL_DASHBOARD_SECTIONS.includes(id),
+    );
+    const rest = prefs.order.filter((id) => !pinned.includes(id));
+    return [...pinned, ...rest];
+  }, [prefs.order, prefs.pinned]);
 
   return (
     <div className="marketCommandCentre dashCommandCentre">
@@ -92,114 +273,20 @@ export function MarketCommandCentre({
             <p className="dashRangePending">24-hour range position awaits verified ES candles.</p>
           )}
 
-          <Link href={hero.deskHref} className="dashHeroCta">
-            Open Trading Desk
+          <Link href={postClose ? "/dashboard#session-replay" : hero.deskHref} className="dashHeroCta">
+            {postClose ? oracle.replay.primaryActionLabel : "Open Trading Desk"}
           </Link>
         </article>
       </header>
 
-      <AiMarketInsightCard model={insight} />
-
-      {candleSeries ? (
-        <section className="companionHeroChart" aria-label="ES hero chart">
-          <DashboardCandlestickChart series={candleSeries} instrument="ES" compact />
-        </section>
-      ) : (
-        <aside className="dashCatalystEmpty" role="status" aria-label="ES hero chart">
-          <span className="mccEyebrow">VERIFIED DELAYED CHART</span>
-          <p>ES candlesticks appear here once verified delayed history is available for your membership.</p>
-          <Link href="/terminal" className="dashTextLink">
-            Open Trading Desk
-          </Link>
-        </aside>
-      )}
-
-      <section className="dashDecisionSnap" aria-labelledby="dash-decision-title">
-        <header>
-          <div>
-            <span className="mccEyebrow">TODAY&apos;S POSTURE</span>
-            <h2 id="dash-decision-title">{posture.headline}</h2>
-            <p className="dashDecisionWhy">{posture.summary}</p>
-          </div>
-          <span className={`dashPill ${toneClass(decision.permissionTone)}`}>{decision.permissionLabel}</span>
-        </header>
-
-        <div className="dashDecisionGrid">
-          <article>
-            <span>Participation</span>
-            <strong className={toneClass(decision.permissionTone)}>{decision.permissionLabel}</strong>
-          </article>
-          <article>
-            <span>Observed market lean</span>
-            <strong className={toneClass(decision.leanTone)}>{decision.leanLabel}</strong>
-          </article>
-          <article>
-            <span>Confidence</span>
-            <strong>{decision.confidenceLabel}</strong>
-            {decision.confidenceDetail ? <small>{decision.confidenceDetail}</small> : null}
-          </article>
-          <article>
-            <span>Primary condition</span>
-            <strong>{decision.primaryRisk ?? decision.riskLabel}</strong>
-          </article>
-        </div>
-
-        {(decision.supporting.length > 0 || decision.opposing.length > 0) ? (
-          <details className="dashEngineDetails">
-            <summary>Engine detail (secondary)</summary>
-            <div className="dashEngineColumns">
-              {decision.supporting.length ? (
-                <div>
-                  <span>Supporting</span>
-                  <ul>
-                    {decision.supporting.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-              {decision.opposing.length ? (
-                <div>
-                  <span>Opposing</span>
-                  <ul>
-                    {decision.opposing.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </div>
-          </details>
-        ) : null}
-      </section>
-
-      <section className="dashWeather" aria-labelledby="dash-weather-title">
-        <header>
-          <span className="mccEyebrow">MARKET WEATHER</span>
-          <h2 id="dash-weather-title">Verified cross-market context</h2>
-          <p>Values and direction from delayed verified quotes only. Breadth is omitted until a verified breadth feed exists.</p>
-        </header>
-        {weather.length ? (
-          <div className="dashWeatherGrid">
-            {weather.map((item) => (
-              <article key={item.id} className={`dashWeatherCard is-${item.direction}`}>
-                <span>{item.name}</span>
-                <strong>{item.value}</strong>
-                <em>{item.change}</em>
-                <p>{item.interpretation}</p>
-                <small>Delayed · verified</small>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p className="dashEmptyHint">Cross-market weather awaits verified ES, VIX, DXY or US 10-year quotes.</p>
-        )}
-      </section>
+      {sectionNodes["thirty-second"]}
 
       <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
-            <span className="mccEyebrow">VERIFIED LEVELS</span>
+            <span className="mccEyebrow">
+              VERIFIED LEVELS <ConceptHint conceptId="session-open" />
+            </span>
             <h2 id="dash-levels-title">ES 24-hour references</h2>
           </header>
           {levels.length ? (
@@ -223,7 +310,9 @@ export function MarketCommandCentre({
         {catalyst ? (
           <section className="dashCatalyst" aria-labelledby="dash-catalyst-title">
             <header>
-              <span className="mccEyebrow">NEXT VERIFIED CATALYST</span>
+              <span className="mccEyebrow">
+                NEXT VERIFIED CATALYST <ConceptHint conceptId="event-risk" />
+              </span>
               <h2 id="dash-catalyst-title">Event risk ahead</h2>
             </header>
             <article>
@@ -256,7 +345,9 @@ export function MarketCommandCentre({
         )}
       </div>
 
-      <MarketInternalsPanel cards={insight.internals} />
+      {renderOrder.filter((id) => id !== "thirty-second").map((id) => sectionNodes[id])}
+
+      <DashboardWorkspaceControls prefs={prefs} onChange={persist} />
 
       <section className="dashQuickActions" aria-label="Quick actions">
         <header>
@@ -269,12 +360,12 @@ export function MarketCommandCentre({
             <b>Open Morning Brief</b>
           </Link>
           <Link href="/terminal" className="dashAction is-primary">
-            <small>EXECUTE VIEW</small>
+            <small>ACTIVE SESSION</small>
             <b>Open Trading Desk</b>
           </Link>
-          <Link href="/ideas" className="dashAction">
-            <small>EXPLORE</small>
-            <b>Review Ideas</b>
+          <Link href="/dashboard#opportunity-radar" className="dashAction">
+            <small>WATCH</small>
+            <b>Opportunity conditions</b>
           </Link>
           <Link href="/journal" className="dashAction">
             <small>REFLECT</small>
@@ -300,6 +391,11 @@ export function MarketCommandCentre({
           </ul>
         </details>
       ) : null}
+
+      <p className="dashDisclosure" role="note">
+        Educational market intelligence only. Not personalised financial advice. Market data may be delayed.
+        Futures involve substantial risk of loss.
+      </p>
     </div>
   );
 }
