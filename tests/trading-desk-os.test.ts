@@ -35,6 +35,18 @@ test("desk widget registry includes distinctive tools", () => {
   assert.equal(DESK_WIDGET_IDS.length >= 16, true);
 });
 
+test("workspace normalises legacy nq favourite to ixic without changing selection semantics", () => {
+  const normalized = normalizeWorkspace({
+    favourites: ["es", "nq", "vix"],
+    activeMarketId: "nq",
+    compareIds: ["nq", "qqq"],
+  });
+  assert.deepEqual(normalized.favourites, ["es", "ixic", "vix"]);
+  assert.equal(normalized.activeMarketId, "ixic");
+  assert.deepEqual(normalized.compareIds, ["ixic", "qqq"]);
+  assert.equal(getMarketInstrument(normalized.activeMarketId)?.symbol, "IXIC");
+});
+
 test("workspace prefs persist preferred platform fields", () => {
   const base = createDefaultWorkspace();
   assert.equal(base.preferredPlatformId, "tradingview");

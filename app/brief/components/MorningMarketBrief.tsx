@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
 
@@ -288,14 +289,11 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
                     <strong>{item.name}</strong>
                     <span className={`mbRisk is-${item.risk.toLowerCase()}`}>{item.risk} impact</span>
                     {item.includes.length ? (
-                      <details className="mbCatalystIncludes">
-                        <summary>Includes {item.includes.length} related components</summary>
-                        <ul>
-                          {item.includes.map((part) => (
-                            <li key={part.name}>{part.name}</li>
-                          ))}
-                        </ul>
-                      </details>
+                      <VerifiedCatalystIncludes
+                        includes={item.includes}
+                        variant="details"
+                        className="mbCatalystIncludes"
+                      />
                     ) : null}
                   </div>
                 </li>
@@ -363,7 +361,9 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
       </section>
 
       {model.serviceStatusSummary && model.serviceStatus.length ? (
-        <details className="mbServiceStatus">
+        <details
+          className={`mbServiceStatus${model.serviceStatus.some((item) => !item.optional) ? " is-warning" : ""}`}
+        >
           <summary>{model.serviceStatusSummary}</summary>
           <ul>
             {model.serviceStatus.map((item) => (

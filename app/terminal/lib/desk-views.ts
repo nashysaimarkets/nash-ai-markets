@@ -22,7 +22,6 @@ export const DESK_VIEW_WIDGETS: Record<Exclude<DeskViewId, "overview">, DeskWidg
   ],
   catalysts: [
     "catalyst-radar",
-    "economic-calendar",
     "earnings-calendar",
     "news-intelligence",
   ],

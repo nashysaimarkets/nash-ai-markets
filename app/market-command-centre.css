@@ -351,6 +351,7 @@
 .dashRangeTrack{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,#ef777744,#d8b36a33,#62e6b144);overflow:visible}
 .dashRangeTrack i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#edf2f4;border:2px solid #62e6b1;transform:translate(-50%,-50%);box-shadow:0 0 0 4px #62e6b122}
 .dashRangePending{margin:0;color:#84929a;font-size:13px;line-height:1.45}
+.dashRangeNote{margin:0;color:#c9b27a;font-size:12px;line-height:1.45}
 .dashHeroCta{
   display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:10px;
   border:1px solid #79c9b9;background:#79c9b9;color:#07110f;text-decoration:none;

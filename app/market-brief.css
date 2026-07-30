@@ -93,7 +93,7 @@
 
 .mbTwin{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}
 .mbTwinWide{grid-template-columns:1fr 1fr;align-items:start}
-.mbLevelsPanel,.mbCatalystPanel{align-self:start;height:fit-content}
+.mbLevelsPanel,.mbCatalystPanel,.mbCatalystEmpty{align-self:start;height:fit-content;min-height:0}
 .mbExpected .mbLead{font-size:18px;letter-spacing:-.02em}
 .mbChips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0 18px 8px;list-style:none}
 .mbChips li{
@@ -313,5 +313,6 @@
 .mbCatalystIncludes{margin-top:8px}
 .mbCatalystIncludes>summary{cursor:pointer;color:#9aa7ad;font:650 12px var(--font-geist-sans),Arial,sans-serif}
 .mbCatalystIncludes ul{margin:8px 0 0;padding:0 0 0 16px;color:#b7c2c7;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.mbServiceStatus.is-warning summary{color:#efd39a}
 .mbHero{padding:24px 28px}
 .mbHeroCopy h1 em{font-size:.92em}

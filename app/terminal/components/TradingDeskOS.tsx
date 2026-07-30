@@ -7,10 +7,14 @@ import {
   coverageDetail,
   coverageLabel,
   getMarketInstrument,
+  groupAvailabilityLabel,
+  isFavouriteMarketId,
+  resolveStoredMarketId,
   type MarketCoverage,
   type MarketGroupId,
   type MarketInstrument,
 } from "../../lib/markets/market-catalog.ts";
+import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
 import { isCandleInstrument, type CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
@@ -106,7 +110,7 @@ function latestVerifiedCandleAgeMs(
 
 function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
   connected: MarketInstrument[];
-  comingSoon: MarketInstrument[];
+  planned: MarketInstrument[];
 } {
   const ordered = [...instruments].sort((left, right) => {
     const rank = COVERAGE_RANK[left.coverage] - COVERAGE_RANK[right.coverage];
@@ -115,7 +119,7 @@ function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
   });
   return {
     connected: ordered.filter((item) => item.coverage === "live"),
-    comingSoon: ordered.filter((item) => item.coverage !== "live"),
+    planned: ordered.filter((item) => item.coverage !== "live"),
   };
 }
 
@@ -273,8 +277,9 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         events: payload.snapshot.events,
         active,
         favourites,
+        now: Date.parse(payload.snapshot.asOf) || undefined,
       }),
-    [active, favourites, payload.snapshot.events],
+    [active, favourites, payload.snapshot.asOf, payload.snapshot.events],
   );
 
   const visibleWidgets = workspace.widgets.filter((id) => !workspace.hidden.includes(id));
@@ -290,7 +295,14 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     : workspace.focusMode
       ? stageWidgets
       : viewWidgets;
-  const nextGrouped = groupVerifiedEvents(payload.snapshot.events, Date.now(), 1)[0] ?? null;
+  const snapshotNow = useMemo(() => {
+    const parsed = Date.parse(payload.snapshot.asOf);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }, [payload.snapshot.asOf]);
+  const nextGrouped = useMemo(
+    () => groupVerifiedEvents(payload.snapshot.events, snapshotNow || undefined, 1)[0] ?? null,
+    [payload.snapshot.events, snapshotNow],
+  );
   const nextCatalystWhen = nextGrouped?.time ?? null;
   const nextCatalyst = nextGrouped;
   const snapshotFeed = payload.freshnessFeeds.find((feed) => feed.id === "snapshot");
@@ -319,12 +331,16 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   function toggleFavourite(id: string) {
+    const resolved = resolveStoredMarketId(id);
     updateWorkspace((prev) => {
-      const has = prev.favourites.includes(id);
+      const has = isFavouriteMarketId(prev.favourites, resolved);
+      const favourites = has
+        ? prev.favourites.filter((item) => resolveStoredMarketId(item) !== resolved)
+        : [...prev.favourites, resolved].slice(0, 24);
       return {
         ...prev,
         preset: "custom",
-        favourites: has ? prev.favourites.filter((item) => item !== id) : [...prev.favourites, id].slice(0, 24),
+        favourites,
       };
     });
   }
@@ -535,7 +551,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                       <strong>{quote?.value ?? "—"}</strong>
                       <small>{quote?.change ?? coverageLabel(item.coverage)}</small>
                     </button>
-                    <button type="button" className="deskStar" aria-label={`Remove ${item.symbol} from favourites`} onClick={() => toggleFavourite(item.id)}>★</button>
+                    <button type="button" className={`deskStar${isFavouriteMarketId(workspace.favourites, item.id) ? " is-on" : ""}`} aria-label={`Remove ${item.symbol} from favourites`} onClick={() => toggleFavourite(item.id)}>★</button>
                   </li>
                 );
               })}
@@ -611,9 +627,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     <strong>{item.title}</strong>
                     <TerminalBadge label={item.risk} tone={item.risk === "HIGH" ? "danger" : "warning"} />
                     {item.includes.length ? (
-                      <p className="deskCatalystIncludes">
-                        Includes: {item.includes.join(" · ")}
-                      </p>
+                      <VerifiedCatalystIncludes includes={item.includes} className="deskCatalystIncludes" />
                     ) : null}
                     <p>{item.relevance}</p>
                   </li>
@@ -633,20 +647,24 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             <small>{catalyst.disclosure}</small>
           </section>
         );
-      case "economic-calendar":
+      case "economic-calendar": {
+        const calendarEvents = groupVerifiedEvents(payload.snapshot.events, snapshotNow || undefined, 12);
         return (
           <section key={id} className="deskWidget deskCalendar" aria-labelledby="econ-cal-title">
             <header>
               <span>Economic calendar</span>
               <h2 id="econ-cal-title">Verified US releases</h2>
             </header>
-            {payload.snapshot.events.length ? (
+            {calendarEvents.length ? (
               <div className="ctEvents">
-                {payload.snapshot.events.map((event) => (
-                  <article key={`${event.time}-${event.name}`}>
+                {calendarEvents.map((event) => (
+                  <article key={`${event.at ?? event.time}-${event.name}`}>
                     <time>{event.time}</time>
                     <strong>{event.name}</strong>
                     <span>{event.risk}</span>
+                    {event.includes.length ? (
+                      <VerifiedCatalystIncludes includes={event.includes} className="deskCatalystIncludes" />
+                    ) : null}
                   </article>
                 ))}
               </div>
@@ -658,6 +676,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             )}
           </section>
         );
+      }
       case "earnings-calendar":
         return (
           <section key={id} className="deskWidget deskCoverageCompact" aria-labelledby="earn-cal-title">
@@ -1041,13 +1060,15 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             <ul className="tmMarketsGroups">
               {MARKET_CATALOG.map((group) => {
                 const expanded = openGroup === group.id;
-                const { connected, comingSoon } = sortInstrumentsForSidebar(group.instruments);
+                const { connected, planned } = sortInstrumentsForSidebar(group.instruments);
+                const favourited = (instrumentId: string) => isFavouriteMarketId(workspace.favourites, instrumentId);
                 const renderInstrument = (instrument: MarketInstrument) => (
                   <li key={instrument.id}>
                     <button
                       type="button"
                       className={`tmMarketsInstrument${instrument.id === active.id ? " is-selected" : ""}`}
                       onClick={() => selectMarket(instrument)}
+                      aria-current={instrument.id === active.id ? "true" : undefined}
                     >
                       <span className="tmMarketsInstrumentName">{instrument.name}</span>
                       <span className="tmMarketsInstrumentMeta">
@@ -1059,8 +1080,9 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </button>
                     <button
                       type="button"
-                      className={`deskStar${workspace.favourites.includes(instrument.id) ? " is-on" : ""}`}
-                      aria-label={`${workspace.favourites.includes(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} favourites`}
+                      className={`deskStar${favourited(instrument.id) ? " is-on" : ""}`}
+                      aria-label={`${favourited(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} ${favourited(instrument.id) ? "from" : "to"} favourites`}
+                      aria-pressed={favourited(instrument.id)}
                       onClick={() => toggleFavourite(instrument.id)}
                     >
                       ★
@@ -1071,18 +1093,22 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <li key={group.id}>
                     <button type="button" className="tmMarketsGroupToggle" aria-expanded={expanded} onClick={() => setOpenGroup(expanded ? null : group.id)}>
                       <span>{group.label}</span>
-                      <small>{connected.length || group.instruments.length}</small>
+                      <small>{groupAvailabilityLabel(group)}</small>
                       <i aria-hidden="true">{expanded ? "▾" : "▸"}</i>
                     </button>
                     {expanded ? (
                       <ul className="tmMarketsInstruments">
                         {connected.map(renderInstrument)}
-                        {comingSoon.length ? (
+                        {planned.length ? (
                           <li className="tmMarketsComingSoon">
                             <details>
-                              <summary>Additional markets — coming soon ({comingSoon.length})</summary>
+                              <summary>
+                                {connected.length
+                                  ? `Additional markets — planned (${planned.length})`
+                                  : `${group.label} — planned (${planned.length})`}
+                              </summary>
                               <ul className="tmMarketsInstruments is-nested">
-                                {comingSoon.map(renderInstrument)}
+                                {planned.map(renderInstrument)}
                               </ul>
                             </details>
                           </li>
@@ -1095,7 +1121,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             </ul>
             <details className="tmMarketsLegend">
               <summary>Coverage legend</summary>
-              <p>Connected markets appear first. Additional markets remain listed under Coming soon until a verified feed is available. Prices are never invented.</p>
+              <p>Connected markets appear first with verified feeds. Planned markets stay listed until a verified feed is available. Counts show available instruments only — never invented access. Prices are never invented.</p>
             </details>
               </>
             ) : (
@@ -1159,9 +1185,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                       <strong>{nextCatalyst.name}</strong>
                       <span>{nextCatalyst.risk} impact</span>
                       {nextCatalyst.includes.length ? (
-                        <p className="deskCatalystIncludes">
-                          Includes: {nextCatalyst.includes.map((item) => item.name).join(" · ")}
-                        </p>
+                        <VerifiedCatalystIncludes includes={nextCatalyst.includes} className="deskCatalystIncludes" />
                       ) : null}
                       <button type="button" onClick={() => selectDeskView("catalysts")}>Open Catalysts</button>
                     </div>

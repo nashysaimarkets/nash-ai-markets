@@ -71,11 +71,40 @@ export function TerminalControls() {
 
   return (
     <div className="terminalControls" role="group" aria-label="Terminal controls">
-      <button type="button" onClick={refresh} disabled={isRefreshing} aria-keyshortcuts="R">
-        <span aria-hidden="true">↻</span> {isRefreshing ? "Refreshing…" : "Refresh"}
+      <button
+        type="button"
+        onClick={refresh}
+        disabled={isRefreshing}
+        aria-keyshortcuts="R"
+        aria-label={isRefreshing ? "Refreshing Trading Desk" : "Refresh Trading Desk"}
+        title="Refresh (R)"
+      >
+        <span aria-hidden="true" className="terminalControlGlyph">↻</span>
+        <span>{isRefreshing ? "Refreshing…" : "Refresh"}</span>
       </button>
-      <button type="button" onClick={() => void toggleFullscreen()} aria-keyshortcuts="F" aria-label="Toggle full screen" title="Full screen (F)">⛶</button>
-      <button ref={helpButtonRef} type="button" onClick={() => setShowHelp(true)} aria-keyshortcuts="?" aria-label="Open keyboard help" aria-expanded={showHelp} aria-controls="terminal-help-dialog" title="Keyboard help (?)">?</button>
+      <button
+        type="button"
+        onClick={() => void toggleFullscreen()}
+        aria-keyshortcuts="F"
+        aria-label="Toggle full screen"
+        title="Full screen (F)"
+      >
+        <span aria-hidden="true" className="terminalControlGlyph">⛶</span>
+        <span className="terminalControlLabel">Full screen</span>
+      </button>
+      <button
+        ref={helpButtonRef}
+        type="button"
+        onClick={() => setShowHelp(true)}
+        aria-keyshortcuts="?"
+        aria-label="Open keyboard help"
+        aria-expanded={showHelp}
+        aria-controls="terminal-help-dialog"
+        title="Keyboard help (?)"
+      >
+        <span aria-hidden="true" className="terminalControlGlyph">?</span>
+        <span className="terminalControlLabel">Help</span>
+      </button>
       <span className="terminalRefreshStatus" aria-live="polite">{isRefreshing ? "Refreshing terminal data" : ""}</span>
       {showHelp ? (
         <div className="terminalHelpBackdrop" role="presentation" onMouseDown={() => setShowHelp(false)}>

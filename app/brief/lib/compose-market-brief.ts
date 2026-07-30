@@ -424,6 +424,8 @@ function buildWatchAvoid(input: {
   support: string | null;
   resistance: string | null;
   now: number;
+  leanLabel?: string;
+  permissionTone?: string;
 }): { watch: string[]; avoid: string[] } {
   if (!input.verified) {
     return {
@@ -437,26 +439,35 @@ function buildWatchAvoid(input: {
   const us10 = quoteOf(input.snapshot.quotes, "US10Y");
   const hasUpcoming = upcomingVerifiedEvents(input.snapshot.events, input.now, 1).length > 0;
   const open = formatLevel(input.sessionLevels?.todaysOpen);
+  const lean = (input.leanLabel ?? "").toLowerCase();
+  const restricted = /blocked|restricted|caution|stand.?aside|no.?trade/i.test(
+    `${input.permissionTone ?? ""} ${input.leanLabel ?? ""}`,
+  );
 
   const watchCandidates = [
-    input.resistance ? "Acceptance around the verified 24-hour high" : null,
-    input.support ? "Defence around the verified 24-hour low" : null,
+    input.resistance ? "Response near the verified 24-hour high" : null,
+    input.support ? "Defence near the verified 24-hour low" : null,
     vix?.direction === "down"
-      ? "Whether volatility continues easing"
+      ? "Whether lower volatility persists"
       : vix?.direction === "up"
         ? "Whether volatility pressure keeps rising"
         : null,
-    dxy || us10 ? "Dollar and yield confirmation" : null,
-    open ? "Response around the session-opening reference" : null,
-    hasUpcoming ? "Confirmation around the next verified event" : null,
-    "Range location and follow-through",
+    dxy || us10 ? "Confirmation from the dollar and yields" : null,
+    open ? "Behaviour around the session-opening reference" : null,
+    hasUpcoming ? "Price behaviour around the next scheduled release" : null,
+    /buy|bull/i.test(lean) ? "Whether the observed upward lean continues to hold" : null,
+    /sell|bear/i.test(lean) ? "Whether the observed downward lean continues to hold" : null,
+    restricted ? "Whether participation conditions improve later in the session" : null,
   ].filter((item): item is string => Boolean(item));
 
   const avoidCandidates = [
-    "Treating an observed lean as a confirmed setup",
-    "Chasing price while confirmation remains incomplete",
-    "Assuming a verified range is a forecast",
-    hasUpcoming ? "Increasing risk ahead of unresolved event risk" : null,
+    "Treating an observed lean as a completed setup",
+    input.resistance || input.support
+      ? "Chasing price at the edge of the verified range"
+      : "Assuming recent prints predict the next move",
+    hasUpcoming ? "Increasing exposure immediately before unresolved event risk" : null,
+    "Assuming the recent range predicts the next move",
+    restricted ? "Forcing participation while confirmation remains incomplete" : null,
   ].filter((item): item is string => Boolean(item));
 
   return {
@@ -531,6 +542,8 @@ export function composeMorningMarketBrief(input: {
     support: input.support,
     resistance: input.resistance,
     now,
+    leanLabel: presentation.leanLabel,
+    permissionTone: presentation.permissionTone,
   });
   const crossAssets = buildCrossAssets(snapshot);
   const timeline = buildTimeline(snapshot.events, now);
@@ -539,24 +552,11 @@ export function composeMorningMarketBrief(input: {
   const serviceStatus: BriefServiceItem[] = [];
   for (const card of crossAssets.filter((item) => !item.available)) {
     serviceStatus.push({
-      label: `${card.label} weather`,
+      label: `${card.label} context`,
       detail: card.detail,
       optional: card.id !== "ES",
     });
   }
-  serviceStatus.push({
-    label: "Market breadth",
-    detail: "No verified advance/decline breadth feed is connected. Engine sentiment is not shown as breadth.",
-    optional: true,
-  });
-  if (!video.available) {
-    serviceStatus.push({ label: "Daily market video", detail: video.reason, optional: true });
-  }
-  serviceStatus.push({
-    label: "Overnight news",
-    detail: "Overnight news headlines are not connected to a verified provider feed on this brief.",
-    optional: true,
-  });
   if (!timeline.length) {
     serviceStatus.push({
       label: "Upcoming catalysts",
@@ -566,11 +566,34 @@ export function composeMorningMarketBrief(input: {
   }
 
   const coreIssues = serviceStatus.filter((item) => !item.optional);
-  const serviceStatusSummary = !serviceStatus.length
-    ? null
-    : coreIssues.length
-      ? `Data coverage: ${coreIssues.length} core input${coreIssues.length === 1 ? "" : "s"} currently unavailable.`
-      : "Data coverage: some optional indicators are currently unavailable.";
+  const optionalIssues = serviceStatus.filter((item) => item.optional);
+  const materialOptional = optionalIssues.filter((item) =>
+    /VIX|DXY|yield|10-?year|catalyst/i.test(`${item.label} ${item.detail}`),
+  );
+
+  let serviceStatusSummary: string | null = null;
+  if (coreIssues.length) {
+    serviceStatusSummary =
+      coreIssues.length === 1
+        ? `${coreIssues[0]!.detail}`
+        : `Core price context is incomplete (${coreIssues.length} inputs unavailable), so the decision summary stays limited.`;
+  } else if (materialOptional.length === 1 && /VIX|volatility/i.test(materialOptional[0]!.label)) {
+    serviceStatusSummary =
+      "Volatility context is currently unavailable, so VIX is excluded from this briefing.";
+  } else if (materialOptional.length === 1 && /DXY|dollar/i.test(materialOptional[0]!.label)) {
+    serviceStatusSummary =
+      "Dollar context is currently unavailable, so DXY is excluded from this briefing.";
+  } else if (materialOptional.length === 1 && /yield|10/i.test(materialOptional[0]!.label)) {
+    serviceStatusSummary =
+      "Yield context is currently unavailable, so the 10-year reading is excluded from this briefing.";
+  } else if (materialOptional.length > 1) {
+    serviceStatusSummary =
+      "Some optional market context is unavailable. Core price data remain available.";
+  } else if (optionalIssues.some((item) => /catalyst/i.test(item.label)) && optionalIssues.length === 1) {
+    serviceStatusSummary = null;
+  } else {
+    serviceStatusSummary = null;
+  }
 
   return {
     schemaVersion: "1.1",

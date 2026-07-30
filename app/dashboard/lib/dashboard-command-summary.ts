@@ -4,6 +4,7 @@
  * Does not invent levels, breadth, catalysts or confidence.
  */
 
+import { describeRangePosition } from "../../lib/range-position-display.ts";
 import type { MarketQuote, MarketSnapshot } from "../../lib/market-data.ts";
 import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
 import {
@@ -31,6 +32,7 @@ export type DashboardHeroModel = {
   rangePositionPct: number | null;
   rangeLow: string | null;
   rangeHigh: string | null;
+  rangeNote: string | null;
   deskHref: string;
 };
 
@@ -199,6 +201,15 @@ export function buildDashboardCommandSummary(input: {
     : null;
 
   const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(input.candleSeries?.dataAgeMs ?? null);
+  const quoteNumber = esQuote?.value ? Number.parseFloat(esQuote.value.replace(/[^0-9.-]/g, "")) : NaN;
+  const rangeReading = stats
+    ? describeRangePosition(
+        Number.isFinite(quoteNumber) ? quoteNumber : stats.latest,
+        stats.low,
+        stats.high,
+      )
+    : null;
+
   const hero: DashboardHeroModel = {
     symbolLabel: "S&P 500 Futures · ES",
     price: stats ? formatPts(stats.latest) : (esQuote?.value ?? null),
@@ -214,9 +225,10 @@ export function buildDashboardCommandSummary(input: {
       ? `${input.session.label} · ${input.session.countdownLabel}`
       : input.session.label,
     delayedAgeLine,
-    rangePositionPct: stats ? Math.round(stats.rangePosition) : null,
+    rangePositionPct: rangeReading?.displayPct ?? null,
     rangeLow: stats ? formatPts(stats.low) : null,
     rangeHigh: stats ? formatPts(stats.high) : null,
+    rangeNote: rangeReading?.note ?? null,
     deskHref: "/terminal",
   };
 

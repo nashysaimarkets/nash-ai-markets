@@ -3,6 +3,7 @@
  * Cookie + localStorage fallback — no production migration required.
  */
 
+import { resolveStoredMarketId } from "../../lib/markets/market-catalog.ts";
 import {
   DEFAULT_WIDGET_ORDER,
   DESK_WIDGET_IDS,
@@ -169,9 +170,11 @@ function uniqueIds(ids: unknown, fallback: string[]): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
   for (const id of ids) {
-    if (typeof id !== "string" || !id.trim() || seen.has(id)) continue;
-    seen.add(id);
-    out.push(id);
+    if (typeof id !== "string" || !id.trim()) continue;
+    const resolved = resolveStoredMarketId(id.trim());
+    if (seen.has(resolved)) continue;
+    seen.add(resolved);
+    out.push(resolved);
   }
   return out.length ? out : [...fallback];
 }
@@ -195,7 +198,10 @@ export function normalizeWorkspace(raw: unknown): DeskWorkspaceState {
     : [];
   return {
     version: 1,
-    activeMarketId: typeof value.activeMarketId === "string" && value.activeMarketId ? value.activeMarketId : defaults.activeMarketId,
+    activeMarketId:
+      typeof value.activeMarketId === "string" && value.activeMarketId
+        ? resolveStoredMarketId(value.activeMarketId)
+        : defaults.activeMarketId,
     favourites: uniqueIds(value.favourites, defaults.favourites).slice(0, 24),
     widgets: uniqueWidgetOrder(value.widgets),
     hidden,

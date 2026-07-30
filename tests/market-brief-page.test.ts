@@ -111,11 +111,17 @@ test("composeMorningMarketBrief answers the morning questions from verified inpu
   assert.doesNotMatch(model.summary.setupReading, /\d+%\s*engine weight/i);
   assert.ok(model.summary.watch.length >= 1);
   assert.ok(model.summary.avoid.length >= 1);
+  assert.ok(model.summary.watch.length <= 4);
+  assert.ok(model.summary.avoid.length <= 4);
   assert.equal(model.crossAssets.some((card) => card.id === "ES"), true);
   assert.equal(model.crossAssets.some((card) => card.label === "Breadth"), false);
   assert.ok(model.economicTimeline.length >= 1);
-  assert.match(model.serviceStatus.map((item) => item.label).join(" "), /breadth/i);
-  assert.match(model.serviceStatusSummary ?? "", /optional|coverage/i);
+  // Optional video/news/breadth gaps no longer force a permanent coverage strip.
+  assert.equal(model.serviceStatus.some((item) => /breadth/i.test(item.label)), false);
+  assert.equal(
+    model.serviceStatusSummary == null || !/some optional indicators are currently unavailable/i.test(model.serviceStatusSummary),
+    true,
+  );
 });
 
 test("composeMorningMarketBrief fails closed without verified decision inputs", () => {
@@ -132,7 +138,7 @@ test("false Breadth presentation never shows engine sentiment as breadth", () =>
   const labels = model.crossAssets.map((card) => card.label);
   assert.equal(labels.includes("Breadth"), false);
   assert.equal(model.crossAssets.every((card) => !/breadth/i.test(card.label)), true);
-  assert.match(JSON.stringify(model.serviceStatus), /No verified advance\/decline breadth feed/i);
+  assert.doesNotMatch(JSON.stringify(model.serviceStatus), /breadth/i);
   assert.doesNotMatch(JSON.stringify(model.crossAssets), /Engine sentiment score only/);
 });
 
@@ -237,11 +243,11 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
   assert.match(css, /align-items:\s*start/);
-  assert.match(composeSource, /No verified advance\/decline breadth feed/);
   assert.match(composeSource, /dedupePracticalItems/);
   assert.match(composeSource, /customerFacingBriefCopy/);
   assert.match(composeSource, /buildTodaysPosture|serviceStatusSummary/);
   assert.doesNotMatch(composeSource, /id: "BREADTH"/);
+  assert.doesNotMatch(composeSource, /some optional indicators are currently unavailable/);
 });
 
 test("customer-facing Brief copy softens internal no-trade terminology", () => {

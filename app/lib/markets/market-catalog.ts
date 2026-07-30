@@ -266,14 +266,39 @@ export function getMarketGroup(id: MarketGroupId): MarketGroup | undefined {
   return MARKET_CATALOG.find((group) => group.id === id);
 }
 
+/** Legacy desk favourites used "nq" for the Nasdaq Composite (^IXIC) feed. */
+export function resolveStoredMarketId(id: string): string {
+  return id === "nq" ? "ixic" : id;
+}
+
 export function getMarketInstrument(id: string): MarketInstrument | undefined {
-  // Legacy desk favourites used "nq" for the Nasdaq Composite (^IXIC) feed.
-  const resolvedId = id === "nq" ? "ixic" : id;
+  const resolvedId = resolveStoredMarketId(id);
   for (const group of MARKET_CATALOG) {
     const found = group.instruments.find((item) => item.id === resolvedId);
     if (found) return found;
   }
   return undefined;
+}
+
+/** Favourite membership independent of selection; normalises legacy ids. */
+export function isFavouriteMarketId(favourites: readonly string[], instrumentId: string): boolean {
+  const resolved = resolveStoredMarketId(instrumentId);
+  return favourites.some((id) => resolveStoredMarketId(id) === resolved);
+}
+
+export function liveAvailableCount(group: MarketGroup): number {
+  return group.instruments.filter((item) => item.coverage === "live").length;
+}
+
+export function plannedMarketCount(group: MarketGroup): number {
+  return group.instruments.filter((item) => item.coverage !== "live").length;
+}
+
+/** Compact group badge: "4 available" or "planned" — never a fake accessible total. */
+export function groupAvailabilityLabel(group: MarketGroup): string {
+  const live = liveAvailableCount(group);
+  if (live > 0) return `${live} available`;
+  return "planned";
 }
 
 export function coverageLabel(coverage: MarketCoverage): string {

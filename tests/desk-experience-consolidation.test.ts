@@ -84,7 +84,8 @@ test("upcomingVerifiedEvents keeps Brief and Desk on the same future filter", ()
 test("desk views partition widgets without inventing new data sources", () => {
   assert.deepEqual(DESK_VIEW_IDS, ["overview", "charts", "catalysts", "risk"]);
   assert.ok(DESK_VIEW_WIDGETS.charts.includes("primary-chart"));
-  assert.ok(DESK_VIEW_WIDGETS.catalysts.includes("economic-calendar"));
+  assert.ok(DESK_VIEW_WIDGETS.catalysts.includes("catalyst-radar"));
+  assert.equal(DESK_VIEW_WIDGETS.catalysts.includes("economic-calendar"), false);
   assert.ok(DESK_VIEW_WIDGETS.risk.includes("risk-toolkit"));
   assert.deepEqual(
     widgetsForView("charts", ["primary-chart", "edge-brief", "compare-rail"]),
@@ -112,7 +113,9 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(desk, /Bullish lean/);
   assert.match(desk, /Bearish lean/);
   assert.doesNotMatch(desk, />Buying</);
-  assert.match(desk, /sortInstrumentsForSidebar|Additional markets — coming soon/);
+  assert.match(desk, /sortInstrumentsForSidebar|Additional markets — planned|groupAvailabilityLabel/);
+  assert.match(desk, /isFavouriteMarketId|resolveStoredMarketId/);
+  assert.match(desk, /VerifiedCatalystIncludes|groupVerifiedEvents/);
   assert.match(desk, /formatDelayedVerifiedCandleAgeDisplay|Delayed market data/);
   assert.match(desk, /latestVerifiedCandleAgeMs|24-hour low \/ downside reference|24-hour high \/ upside reference/);
   assert.match(desk, /selectDeskView/);

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { buildTodaysPosture } from "../../terminal/lib/desk-decision-presentation.ts";
 import type { DeskGreeting } from "../lib/market-weather.ts";
 import type { DashboardCommandSummary } from "../lib/dashboard-command-summary.ts";
@@ -76,6 +77,7 @@ export function MarketCommandCentre({
               <div className="dashRangeTrack">
                 <i style={{ left: `${hero.rangePositionPct}%` }} />
               </div>
+              {hero.rangeNote ? <p className="dashRangeNote">{hero.rangeNote}</p> : null}
             </div>
           ) : (
             <p className="dashRangePending">24-hour range position awaits verified ES candles.</p>
@@ -211,7 +213,7 @@ export function MarketCommandCentre({
                 ) : null}
               </div>
               {catalyst.includes.length ? (
-                <p className="dashCatalystIncludes">Includes: {catalyst.includes.join(" · ")}</p>
+                <VerifiedCatalystIncludes includes={catalyst.includes} className="dashCatalystIncludes" />
               ) : null}
               <Link href="/terminal#catalysts" className="dashTextLink">
                 Review catalysts on Trading Desk
