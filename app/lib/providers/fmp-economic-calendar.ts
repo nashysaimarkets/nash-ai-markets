@@ -72,12 +72,18 @@ export function normalizeEconomicCalendar(payload: unknown, now = Date.now()): M
     if (!name || name.length > 160) continue;
     const stamp = eventTimestampMs(record);
     if (stamp === null || stamp < now - 2 * 60 * 60_000 || stamp > horizonMs) continue;
-    events.push({ time: formatEventTime(stamp), name, risk, sort: stamp });
+    events.push({
+      time: formatEventTime(stamp),
+      name,
+      risk,
+      at: new Date(stamp).toISOString(),
+      sort: stamp,
+    });
   }
   return events
     .sort((left, right) => left.sort - right.sort)
     .slice(0, 10)
-    .map(({ time, name, risk }) => ({ time, name, risk }));
+    .map(({ time, name, risk, at }) => ({ time, name, risk, at }));
 }
 
 export async function loadFmpEconomicCalendar(input: {

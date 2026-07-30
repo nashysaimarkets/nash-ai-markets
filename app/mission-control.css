@@ -1,4 +1,4 @@
-:root{--ft-bg:#05070a;--ft-surface:#0a0d12;--ft-surface-2:#0d1117;--ft-border:#202630;--ft-border-soft:#171c23;--ft-text:#eef2f5;--ft-muted:#7d8793;--ft-green:#35d89b;--ft-red:#f06472;--ft-amber:#e8b74f;--ft-blue:#69a9ff;--app-header-height:84px;--section-scroll-gap:16px;--desk-sticky-offset:calc(var(--app-header-height) + var(--section-scroll-gap))}
+:root{--ft-bg:#05070a;--ft-surface:#0a0d12;--ft-surface-2:#0d1117;--ft-border:#202630;--ft-border-soft:#171c23;--ft-text:#eef2f5;--ft-muted:#7d8793;--ft-green:#35d89b;--ft-red:#f06472;--ft-amber:#e8b74f;--ft-blue:#69a9ff;--app-header-height:84px;--section-scroll-gap:20px;--desk-sticky-offset:calc(var(--app-header-height) + var(--section-scroll-gap))}
 html{scroll-padding-top:var(--desk-sticky-offset)}
 .brandLoader{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:11px;min-height:48px;margin:0 0 12px;border:1px solid #e8c67333;background:linear-gradient(90deg,#0c1512,#101714,#0c1512);color:#aeb8b3;font:700 8px var(--font-geist-mono),monospace;letter-spacing:.09em;text-transform:uppercase}.brandLoaderMark{position:relative;width:25px;height:25px;border:1px solid #e8c673;border-radius:50%}.brandLoaderMark:before,.brandLoaderMark:after{content:"";position:absolute;background:#e8c673}.brandLoaderMark:before{left:4px;right:4px;top:11px;height:1px}.brandLoaderMark:after{top:4px;bottom:4px;left:11px;width:1px}.brandLoaderMark i{position:absolute;left:8px;top:8px;width:7px;height:7px;border:2px solid #4ea1ff;border-radius:50%;animation:brandLoaderPulse 1.2s ease-in-out infinite}@keyframes brandLoaderPulse{50%{box-shadow:0 0 13px #4ea1ff;transform:scale(1.25)}}
 .foxtrotTerminal{min-height:100vh;background:var(--ft-bg);color:var(--ft-text);font-family:var(--font-geist-sans),Arial,sans-serif;display:grid;grid-template-columns:58px minmax(0,1fr);grid-template-rows:58px minmax(0,1fr);overflow-x:hidden}
@@ -737,3 +737,9 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskEmbedFrame{display:grid;gap:0}
 .deskEmbedFrame iframe{width:100%;min-height:min(52vh,520px);height:520px;border:0;background:#0b1210}
 .deskEmbedFrame small{padding:12px 16px 16px;border-top:1px solid #1c2823}
+
+/* desk spacing polish */
+.tradingDeskPage .deskOverviewStack{display:grid;gap:16px}
+.tradingDeskPage .deskMainColumn{padding-top:6px}
+.tradingDeskPage .deskChartControls,.tradingDeskPage .ftTimeframes,.tradingDeskPage .ftIndicatorRow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tradingDeskPage .deskMarkets{max-height:calc(100vh - var(--desk-sticky-offset) - 24px)}

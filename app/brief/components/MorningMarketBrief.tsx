@@ -6,10 +6,11 @@ type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
 };
 
-function implicationClass(implication: MorningMarketBriefModel["crossAssets"][number]["implication"]) {
-  if (implication === "supportive") return "is-supportive";
-  if (implication === "restrictive") return "is-restrictive";
-  return "is-neutral";
+function weatherDirectionClass(direction: MorningMarketBriefModel["crossAssets"][number]["direction"]) {
+  if (direction === "up") return "is-up";
+  if (direction === "down") return "is-down";
+  if (direction === "flat") return "is-flat";
+  return "is-empty";
 }
 
 function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
@@ -125,27 +126,15 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         <span>Educational commentary only — not personalised advice.</span>
       </div>
 
-      <section className="mbPanel mbExecutive" id="executive-summary" aria-labelledby="mb-exec-title">
-        <header>
-          <span className="mbEyebrow">Executive market summary</span>
-          <h2 id="mb-exec-title">What the verified inputs say now</h2>
-        </header>
-        <p className="mbLead">{model.executiveSummary}</p>
-      </section>
-
       <section
-        className={`mbPanel mbDecision ${permissionBlocked ? "is-blocked" : ""}`}
-        id="participation"
-        aria-labelledby="mb-decision-title"
+        className={`mbPanel mbDecision mbPosture ${permissionBlocked ? "is-blocked" : ""}`}
+        id="todays-posture"
+        aria-labelledby="mb-posture-title"
       >
         <header>
-          <span className="mbEyebrow">Participation status</span>
-          <h2 id="mb-decision-title">{model.summary.headline}</h2>
-          {permissionBlocked ? (
-            <p className="mbDecisionNote">
-              Trade participation is restricted. Verified market observations in this brief remain available for review.
-            </p>
-          ) : null}
+          <span className="mbEyebrow">{model.posture.eyebrow}</span>
+          <h2 id="mb-posture-title">{model.posture.headline}</h2>
+          <p className="mbDecisionNote">{model.posture.summary}</p>
         </header>
         <div className="mbDecisionGrid">
           <div className={permissionBlocked ? "is-blocked" : ""}>
@@ -166,18 +155,23 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
             <strong>{primaryReason}</strong>
           </div>
         </div>
-        {!permissionBlocked ? (
-          <p className="mbLead">{model.summary.setupReading}</p>
-        ) : null}
         <details className="mbParticipationDetails">
           <summary>Technical engine detail</summary>
-          {permissionBlocked ? <p>{model.summary.setupReading}</p> : null}
+          <p>{model.summary.setupReading}</p>
           {model.summary.engineWeightDetail ? <p>{model.summary.engineWeightDetail}</p> : null}
           <p className="mbFine">
-            Internal posture reference: {model.playbook.posture}. Raw engine scores stay secondary to the
-            participation status above.
+            Internal posture reference: {model.playbook.posture}. Raw engine scores stay secondary to
+            today’s posture above.
           </p>
         </details>
+      </section>
+
+      <section className="mbPanel mbExecutive" id="executive-summary" aria-labelledby="mb-exec-title">
+        <header>
+          <span className="mbEyebrow">Market state</span>
+          <h2 id="mb-exec-title">What the verified inputs say now</h2>
+        </header>
+        <p className="mbLead">{model.executiveSummary}</p>
       </section>
 
       <section className="mbSummary mbOvernight" id="what-changed" aria-labelledby="mb-overnight-title">
@@ -201,18 +195,21 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         <header>
           <span className="mbEyebrow">Market weather</span>
           <h2 id="mb-weather-title">Verified cross-market context</h2>
-          <p>Values from delayed verified quotes only. Breadth is omitted until a verified advance/decline feed exists.</p>
+          <p>
+            Values from delayed verified quotes only. Colour follows each instrument’s own numeric
+            move. Breadth is omitted until a verified advance/decline feed exists.
+          </p>
         </header>
         {model.crossAssets.length ? (
           <div className="mbCross">
             {model.crossAssets.map((card) => (
               <article
                 key={card.id}
-                className={`mbCrossCard ${implicationClass(card.implication)}`}
+                className={`mbCrossCard ${weatherDirectionClass(card.direction)}`}
               >
                 <span>{card.label}</span>
                 <strong>{card.value}</strong>
-                <em>{card.change}</em>
+                <em aria-label={`${card.direction} change`}>{card.change}</em>
                 <p>{card.detail}</p>
                 <small>Delayed · verified</small>
               </article>
@@ -224,15 +221,16 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
       </section>
 
       <div className="mbTwin mbTwinWide">
-        <section className="mbPanel" id="verified-levels" aria-labelledby="mb-levels-title">
+        <section className="mbPanel mbLevelsPanel" id="verified-levels" aria-labelledby="mb-levels-title">
           <header>
             <span className="mbEyebrow">Verified levels</span>
             <h2 id="mb-levels-title">ES references</h2>
+            <p>Educational references from verified prints — not confirmed support or resistance.</p>
           </header>
           {model.levels.rungs.length ? (
             <ol className="mbLadder">
               {model.levels.rungs.map((rung) => (
-                <li key={rung.id} className={`is-${rung.kind}`}>
+                <li key={rung.id} className={`is-${rung.kind}`} title={rung.note}>
                   <span>{customerLevelLabel(rung.label, rung.kind)}</span>
                   <strong>{rung.value}</strong>
                 </li>
@@ -244,7 +242,6 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
               <p>Reference levels stay blank until verified prints arrive.</p>
             </div>
           )}
-          <p className="mbFine">{model.levels.disclosure}</p>
           <div className="mbExpectedInline">
             <span>{expectedIsObserved ? "Observed range context" : "Range context"}</span>
             <strong>{model.expectedMove.label}</strong>
@@ -261,7 +258,7 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         </section>
 
         {timeline.length ? (
-          <section className="mbPanel" id="catalysts" aria-labelledby="mb-timeline-title">
+          <section className="mbPanel mbCatalystPanel" id="catalysts" aria-labelledby="mb-timeline-title">
             <header>
               <span className="mbEyebrow">Next verified catalysts</span>
               <h2 id="mb-timeline-title">Event risk ahead</h2>
@@ -298,14 +295,18 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           <h2 id="mb-watch-title">Practical observations</h2>
         </header>
         <div className="mbWatchAvoid">
-          <div>
-            <h3>Watch</h3>
-            <ul>{model.summary.watch.map((item) => <li key={item}>{item}</li>)}</ul>
-          </div>
-          <div>
-            <h3>Avoid</h3>
-            <ul>{model.summary.avoid.map((item) => <li key={item}>{item}</li>)}</ul>
-          </div>
+          {model.summary.watch.length ? (
+            <div>
+              <h3>Watch</h3>
+              <ul>{model.summary.watch.map((item) => <li key={item}>{item}</li>)}</ul>
+            </div>
+          ) : null}
+          {model.summary.avoid.length ? (
+            <div>
+              <h3>Avoid</h3>
+              <ul>{model.summary.avoid.map((item) => <li key={item}>{item}</li>)}</ul>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -334,15 +335,16 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         </nav>
       </section>
 
-      {model.serviceStatus.length ? (
+      {model.serviceStatusSummary && model.serviceStatus.length ? (
         <details className="mbServiceStatus">
-          <summary>
-            Service status · {model.serviceStatus.length} item{model.serviceStatus.length === 1 ? "" : "s"} pending or unavailable
-          </summary>
+          <summary>{model.serviceStatusSummary}</summary>
           <ul>
             {model.serviceStatus.map((item) => (
               <li key={item.label}>
-                <strong>{item.label}</strong>
+                <strong>
+                  {item.label}
+                  {item.optional ? <span className="mbSoftBadge">Optional</span> : null}
+                </strong>
                 <span>{item.detail}</span>
               </li>
             ))}

@@ -74,15 +74,17 @@ export function formatEventCountdown(startsAt: string, now = Date.now()): string
 
 export function selectNextEconomicEvent(events: MarketSnapshot["events"], now = Date.now()): NextEconomicEvent | null {
   const candidates = events.map((event) => {
-    const timestamp = Date.parse(event.time);
+    const fromAt = event.at ? Date.parse(event.at) : Number.NaN;
+    const timestamp = Number.isFinite(fromAt) ? fromAt : Date.parse(event.time);
     return { event, timestamp };
   }).filter((candidate) => Number.isFinite(candidate.timestamp) && candidate.timestamp > now)
     .sort((left, right) => left.timestamp - right.timestamp);
   const next = candidates[0];
   if (!next) return null;
-  const countdown = formatEventCountdown(next.event.time, now);
+  const startsAt = new Date(next.timestamp).toISOString();
+  const countdown = formatEventCountdown(startsAt, now);
   if (!countdown) return null;
-  return { name: next.event.name, risk: next.event.risk, startsAt: new Date(next.timestamp).toISOString(), countdown };
+  return { name: next.event.name, risk: next.event.risk, startsAt, countdown };
 }
 
 export function memberDisplayName(email: string, metadata: Record<string, unknown> | undefined): string {

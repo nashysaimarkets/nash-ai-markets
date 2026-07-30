@@ -15,7 +15,14 @@ export type MarketLevel = {
   type: "resistance" | "pivot" | "support";
 };
 
-export type MarketEvent = { time: string; name: string; risk: "HIGH" | "MED" };
+export type MarketEvent = {
+  /** Customer-facing schedule label (typically Europe/London). */
+  time: string;
+  name: string;
+  risk: "HIGH" | "MED";
+  /** Authoritative ISO timestamp for upcoming/past filtering when available. */
+  at?: string;
+};
 
 export type MarketSnapshot = {
   status: MarketDataStatus;

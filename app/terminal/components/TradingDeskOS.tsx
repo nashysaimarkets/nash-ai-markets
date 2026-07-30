@@ -46,7 +46,7 @@ import {
   type DeskViewId,
 } from "../lib/desk-views.ts";
 import { DeskDecisionSummary } from "./DeskDecisionSummary.tsx";
-import { nextVerifiedEvents } from "../lib/event-display.ts";
+import { eventTimestampMs, formatVerifiedEventWhen, nextVerifiedEvents } from "../lib/event-display.ts";
 import {
   PREFERRED_PLATFORMS,
   PREFERRED_PLATFORM_IDS,
@@ -291,6 +291,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
       ? stageWidgets
       : viewWidgets;
   const nextCatalyst = nextVerifiedEvents(payload.snapshot.events, 1)[0] ?? null;
+  const nextCatalystStamp = nextCatalyst ? eventTimestampMs(nextCatalyst) : null;
+  const nextCatalystWhen = nextCatalyst
+    ? (nextCatalystStamp != null ? formatVerifiedEventWhen(nextCatalystStamp) : nextCatalyst.time)
+    : null;
   const snapshotFeed = payload.freshnessFeeds.find((feed) => feed.id === "snapshot");
 
   function updateWorkspace(patch: Partial<DeskWorkspaceState> | ((prev: DeskWorkspaceState) => DeskWorkspaceState)) {
@@ -1148,7 +1152,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   </header>
                   {nextCatalyst ? (
                     <div className="deskNextCatalystBody">
-                      <time>{nextCatalyst.time}</time>
+                      <time>{nextCatalystWhen}</time>
                       <strong>{nextCatalyst.name}</strong>
                       <span>{nextCatalyst.risk} impact</span>
                       <button type="button" onClick={() => selectDeskView("catalysts")}>Open Catalysts</button>
@@ -1156,7 +1160,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   ) : (
                     <div className="deskCoverageRow" role="status">
                       <TerminalBadge label="Not currently available" tone="info" />
-                      <p>No verified calendar event is listed in the current snapshot.</p>
+                      <p>No upcoming verified calendar event is listed in the current snapshot.</p>
                     </div>
                   )}
                 </section>

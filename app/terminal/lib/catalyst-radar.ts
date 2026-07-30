@@ -5,7 +5,11 @@
 
 import type { MarketEvent } from "../../lib/market-data.ts";
 import type { MarketInstrument } from "../../lib/markets/market-catalog.ts";
-import { dedupeVerifiedEvents } from "./event-display.ts";
+import {
+  eventTimestampMs,
+  formatVerifiedEventWhen,
+  upcomingVerifiedEvents,
+} from "./event-display.ts";
 
 export type CatalystKind = "macro" | "earnings" | "news";
 
@@ -43,16 +47,21 @@ export function createCatalystRadar(input: {
   events: MarketEvent[];
   active: MarketInstrument;
   favourites: MarketInstrument[];
+  now?: number;
 }): CatalystRadar {
-  const items: CatalystItem[] = dedupeVerifiedEvents(input.events).slice(0, 12).map((event, index) => ({
-    id: `macro-${index}-${event.time}-${event.name}`,
-    kind: "macro" as const,
-    time: event.time,
-    title: event.name,
-    risk: event.risk,
-    relevance: relevanceFor(input.active, input.favourites),
-    available: true,
-  }));
+  const now = input.now ?? Date.now();
+  const items: CatalystItem[] = upcomingVerifiedEvents(input.events, now, 12).map((event, index) => {
+    const stamp = eventTimestampMs(event);
+    return {
+      id: `macro-${index}-${event.at ?? event.time}-${event.name}`,
+      kind: "macro" as const,
+      time: stamp != null ? formatVerifiedEventWhen(stamp) : event.time,
+      title: event.name,
+      risk: event.risk,
+      relevance: relevanceFor(input.active, input.favourites),
+      available: true,
+    };
+  });
 
   return {
     items,

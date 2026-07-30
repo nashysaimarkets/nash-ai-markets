@@ -77,7 +77,7 @@
 .mbFine{margin:0;padding:0 18px 16px;color:#718088;font-size:11px;line-height:1.5}
 
 .mbSummaryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#1c282e}
-.mbSummaryGrid>article{padding:16px 18px;background:#0b1216;min-height:140px}
+.mbSummaryGrid>article{padding:16px 18px;background:#0b1216;min-height:0}
 .mbSummaryGrid h3,.mbPlayColumns h3{
   margin:0 0 10px;color:#718088;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;
 }
@@ -91,8 +91,9 @@
   content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--mb-cyan);
 }
 
-.mbTwin{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
-.mbTwinWide{grid-template-columns:1fr 1fr}
+.mbTwin{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;align-items:start}
+.mbTwinWide{grid-template-columns:1fr 1fr;align-items:start}
+.mbLevelsPanel,.mbCatalystPanel{align-self:start;height:fit-content}
 .mbExpected .mbLead{font-size:18px;letter-spacing:-.02em}
 .mbChips{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0 18px 8px;list-style:none}
 .mbChips li{
@@ -108,7 +109,7 @@
 
 .mbCross{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;animation:mbRise .75s ease both}
 .mbCrossCard{
-  min-height:132px;padding:14px 16px;border:1px solid var(--mb-line);border-radius:12px;
+  min-height:0;padding:14px 16px;border:1px solid var(--mb-line);border-radius:12px;
   background:linear-gradient(160deg,#0f171be8,#0a1014f5);box-shadow:inset 0 1px #ffffff08;
 }
 .mbCrossCard span{display:block;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
@@ -257,11 +258,12 @@
 .mbWeather>header{margin-bottom:12px}
 .mbWeather>header p{margin:8px 0 0;color:var(--mb-muted);font:14px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:48rem}
 .mbCrossCard small{display:block;margin-top:10px;color:#718088;font-size:11px}
-.mbCrossCard.is-supportive strong{color:var(--mb-green)}
-.mbCrossCard.is-restrictive strong{color:var(--mb-red)}
-.mbCrossCard.is-neutral strong{color:var(--mb-text)}
-.mbCrossCard.is-supportive em{color:#9edacc}
-.mbCrossCard.is-restrictive em{color:#ef9a9a}
+.mbCrossCard.is-flat strong,.mbCrossCard.is-flat em{color:var(--mb-text)}
+.mbCrossCard.is-flat em{color:var(--mb-muted)}
+.mbPosture>header{padding-bottom:14px}
+.mbServiceStatus summary{list-style-position:outside}
+.mbServiceStatus .mbSoftBadge{margin-left:8px;vertical-align:middle}
+.mbLadder li[title]{cursor:help}
 .mbLadder li{grid-template-columns:minmax(0,1fr) auto}
 .mbExpectedInline{
   margin:14px 0 0;padding:14px;border-top:1px solid #1c282e;display:grid;gap:6px;

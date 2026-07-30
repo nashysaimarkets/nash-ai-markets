@@ -6,6 +6,16 @@ import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
 import type { SessionReferenceLevels } from "../../dashboard/lib/session-levels.ts";
 import type { DecisionDeskModel } from "../../dashboard/lib/decision-desk.ts";
 import { interpretCrossMarket } from "../../dashboard/lib/cross-market-interpretation.ts";
+import {
+  buildDeskDecisionPresentation,
+  buildTodaysPosture,
+  type TodaysPosture,
+} from "../../terminal/lib/desk-decision-presentation.ts";
+import {
+  eventTimestampMs,
+  formatVerifiedEventWhen,
+  upcomingVerifiedEvents,
+} from "../../terminal/lib/event-display.ts";
 
 export type BriefCrossAssetCard = {
   id: "ES" | "VIX" | "DXY" | "US10Y";
@@ -45,6 +55,8 @@ export type BriefVideoSlot = {
 export type BriefServiceItem = {
   label: string;
   detail: string;
+  /** Optional enhancements — not core conclusion failures. */
+  optional?: boolean;
 };
 
 export type MorningMarketBriefModel = {
@@ -58,6 +70,7 @@ export type MorningMarketBriefModel = {
   greeting: string;
   delayedDisclosure: string;
   executiveSummary: string;
+  posture: TodaysPosture;
   summary: {
     headline: string;
     overnight: string;
@@ -101,6 +114,7 @@ export type MorningMarketBriefModel = {
   };
   video: BriefVideoSlot;
   serviceStatus: BriefServiceItem[];
+  serviceStatusSummary: string | null;
 };
 
 const humanize = (value: string) =>
@@ -372,37 +386,16 @@ function buildLevels(
 }
 
 function buildTimeline(events: MarketEvent[], now = Date.now()): BriefTimelineItem[] {
-  const upcoming = events
-    .map((event, index) => {
-      const parsed = Date.parse(event.time);
-      return {
-        event,
-        index,
-        timestamp: Number.isFinite(parsed) ? parsed : null,
-      };
-    })
-    .filter((item) => item.timestamp == null || item.timestamp > now)
-    .slice(0, 4);
-
-  if (!upcoming.length) return [];
-
-  return upcoming.map(({ event, index, timestamp }) => ({
-    id: `${event.time}-${index}`,
-    time: timestamp != null
-      ? new Intl.DateTimeFormat("en-GB", {
-          timeZone: "Europe/London",
-          weekday: "short",
-          day: "numeric",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZoneName: "short",
-        }).format(new Date(timestamp))
-      : event.time,
-    name: event.name,
-    risk: event.risk,
-    available: true,
-  }));
+  return upcomingVerifiedEvents(events, now, 3).map((event, index) => {
+    const timestamp = eventTimestampMs(event);
+    return {
+      id: `${event.at ?? event.time}-${index}`,
+      time: timestamp != null ? formatVerifiedEventWhen(timestamp) : event.time,
+      name: event.name,
+      risk: event.risk,
+      available: true,
+    };
+  });
 }
 
 function resolveVideo(youtubeId: string | null | undefined): BriefVideoSlot {
@@ -429,6 +422,10 @@ function buildWatchAvoid(input: {
   brief: MarketBrief;
   plan: TradePlan;
   snapshot: MarketSnapshot;
+  sessionLevels: SessionReferenceLevels | null;
+  support: string | null;
+  resistance: string | null;
+  now: number;
 }): { watch: string[]; avoid: string[] } {
   if (!input.verified) {
     return {
@@ -437,32 +434,36 @@ function buildWatchAvoid(input: {
     };
   }
 
+  const vix = quoteOf(input.snapshot.quotes, "VIX");
+  const dxy = quoteOf(input.snapshot.quotes, "DXY");
+  const us10 = quoteOf(input.snapshot.quotes, "US10Y");
+  const hasUpcoming = upcomingVerifiedEvents(input.snapshot.events, input.now, 1).length > 0;
+  const open = formatLevel(input.sessionLevels?.todaysOpen);
+
   const watchCandidates = [
-    ...input.brief.focusDrivers.map((driver) => {
-      if (/volatil/i.test(driver)) return "Volatility pressure";
-      if (/trend|momentum|es direction/i.test(driver)) return "Range location and follow-through";
-      if (/event|macro/i.test(driver)) return "Confirmation around event risk";
-      return driver;
-    }),
-    input.snapshot.events[0] ? "Confirmation around event risk" : null,
-    "Range location",
-    "Volatility pressure",
+    input.resistance ? "Acceptance around the verified 24-hour high" : null,
+    input.support ? "Defence around the verified 24-hour low" : null,
+    vix?.direction === "down"
+      ? "Whether volatility continues easing"
+      : vix?.direction === "up"
+        ? "Whether volatility pressure keeps rising"
+        : null,
+    dxy || us10 ? "Dollar and yield confirmation" : null,
+    open ? "Response around the session-opening reference" : null,
+    hasUpcoming ? "Confirmation around the next verified event" : null,
+    "Range location and follow-through",
   ].filter((item): item is string => Boolean(item));
 
   const avoidCandidates = [
-    "Treating an observed lean as a validated setup",
+    "Treating an observed lean as a confirmed setup",
     "Chasing price while confirmation remains incomplete",
-    input.brief.avoidWhen
-      ?.replace(/^Avoid trading while:\s*/i, "")
-      .split(";")
-      .map((part) => part.trim())
-      .find((part) => part && !/critical input|missing evidence|low confidence/i.test(part))
-      ?? null,
+    "Assuming a verified range is a forecast",
+    hasUpcoming ? "Increasing risk ahead of unresolved event risk" : null,
   ].filter((item): item is string => Boolean(item));
 
   return {
-    watch: dedupePracticalItems(watchCandidates, 3),
-    avoid: dedupePracticalItems(avoidCandidates, 3),
+    watch: dedupePracticalItems(watchCandidates, 4),
+    avoid: dedupePracticalItems(avoidCandidates, 4),
   };
 }
 
@@ -503,34 +504,68 @@ export function composeMorningMarketBrief(input: {
   now?: number;
 }): MorningMarketBriefModel {
   const { brief, desk, decision, plan, snapshot, verified } = input;
+  const now = input.now ?? Date.now();
   const interpretation = interpretCrossMarket(snapshot);
   const { reading, engineWeightDetail } = setupReading(input.intelligence, decision, verified);
-  const { watch, avoid } = buildWatchAvoid({ verified, brief, plan, snapshot });
+  const presentation = buildDeskDecisionPresentation({
+    decision,
+    plan,
+    signals: null,
+    warnings: [
+      ...decision.noTradeReasons,
+      ...decision.dataQualityWarnings.map((item) => item.code),
+    ],
+  });
+  const posture = buildTodaysPosture(presentation);
+  const { watch, avoid } = buildWatchAvoid({
+    verified,
+    brief,
+    plan,
+    snapshot,
+    sessionLevels: input.sessionLevels,
+    support: input.support,
+    resistance: input.resistance,
+    now,
+  });
   const crossAssets = buildCrossAssets(snapshot);
-  const timeline = buildTimeline(snapshot.events, input.now ?? Date.now());
+  const timeline = buildTimeline(snapshot.events, now);
   const video = resolveVideo(input.youtubeId);
 
   const serviceStatus: BriefServiceItem[] = [];
   for (const card of crossAssets.filter((item) => !item.available)) {
-    serviceStatus.push({ label: `${card.label} weather`, detail: card.detail });
+    serviceStatus.push({
+      label: `${card.label} weather`,
+      detail: card.detail,
+      optional: card.id !== "ES",
+    });
   }
   serviceStatus.push({
     label: "Market breadth",
     detail: "No verified advance/decline breadth feed is connected. Engine sentiment is not shown as breadth.",
+    optional: true,
   });
   if (!video.available) {
-    serviceStatus.push({ label: "Daily market video", detail: video.reason });
+    serviceStatus.push({ label: "Daily market video", detail: video.reason, optional: true });
   }
   serviceStatus.push({
     label: "Overnight news",
     detail: "Overnight news headlines are not connected to a verified provider feed on this brief.",
+    optional: true,
   });
   if (!timeline.length) {
     serviceStatus.push({
       label: "Upcoming catalysts",
       detail: "No upcoming verified event is currently available.",
+      optional: true,
     });
   }
+
+  const coreIssues = serviceStatus.filter((item) => !item.optional);
+  const serviceStatusSummary = !serviceStatus.length
+    ? null
+    : coreIssues.length
+      ? `Data coverage: ${coreIssues.length} core input${coreIssues.length === 1 ? "" : "s"} currently unavailable.`
+      : "Data coverage: some optional indicators are currently unavailable.";
 
   return {
     schemaVersion: "1.1",
@@ -548,6 +583,7 @@ export function composeMorningMarketBrief(input: {
       verified,
       interpretation,
     }),
+    posture,
     summary: {
       headline: customerFacingBriefCopy(brief.headline),
       overnight: interpretation,
@@ -584,7 +620,7 @@ export function composeMorningMarketBrief(input: {
           ? `${desk.marketBias.label} bias · ${humanize(decision.tradePermission)} · ${humanize(decision.recommendedPosture)}`
           : "Restricted until verified inputs recover",
       ),
-      leanLabel: desk.marketBias.label,
+      leanLabel: presentation.leanLabel,
       steps: verified
         ? brief.nextActions.slice(0, 5).map(customerFacingBriefCopy)
         : ["Refresh after a verified provider update", "Confirm delayed-data disclosures before acting"],
@@ -604,5 +640,6 @@ export function composeMorningMarketBrief(input: {
     },
     video,
     serviceStatus,
+    serviceStatusSummary,
   };
 }

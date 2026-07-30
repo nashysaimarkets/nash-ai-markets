@@ -105,6 +105,8 @@ function compose(current: MarketSnapshot = snapshot) {
 test("composeMorningMarketBrief answers the morning questions from verified inputs", () => {
   const model = compose();
   assert.match(model.executiveSummary, /ES is higher|volatility is easing|dollar is softer/i);
+  assert.match(model.posture.eyebrow, /TODAY.?S POSTURE/i);
+  assert.match(model.posture.summary, /lean|patient|caution|restricted|selective/i);
   assert.match(model.summary.setupReading, /lean|setup|confirmation|restricted|caution|selective/i);
   assert.doesNotMatch(model.summary.setupReading, /\d+%\s*engine weight/i);
   assert.ok(model.summary.watch.length >= 1);
@@ -113,6 +115,7 @@ test("composeMorningMarketBrief answers the morning questions from verified inpu
   assert.equal(model.crossAssets.some((card) => card.label === "Breadth"), false);
   assert.ok(model.economicTimeline.length >= 1);
   assert.match(model.serviceStatus.map((item) => item.label).join(" "), /breadth/i);
+  assert.match(model.serviceStatusSummary ?? "", /optional|coverage/i);
 });
 
 test("composeMorningMarketBrief fails closed without verified decision inputs", () => {
@@ -221,10 +224,10 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(page, /composeMorningMarketBrief/);
   assert.match(page, /formatDelayedVerifiedCandleAgeDisplay/);
   assert.match(component, /Executive market summary|executiveSummary/);
-  assert.match(component, /Participation status|Restricted/);
+  assert.match(component, /TODAY.?S POSTURE|Restricted|Stay patient/);
   assert.match(component, /Open Trading Desk/);
   assert.match(component, /Market weather/);
-  assert.match(component, /Breadth is omitted/);
+  assert.match(component, /Breadth is omitted|advance\/decline/);
   assert.match(component, /No upcoming verified event is currently available/);
   assert.match(component, /Risk &amp; Journal|Risk & Journal/);
   assert.match(component, /Technical engine detail/);
@@ -233,9 +236,11 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(component, /Here is today[\u2019']s market briefing|today[\u2019']s market briefing/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
+  assert.match(css, /align-items:\s*start/);
   assert.match(composeSource, /No verified advance\/decline breadth feed/);
   assert.match(composeSource, /dedupePracticalItems/);
   assert.match(composeSource, /customerFacingBriefCopy/);
+  assert.match(composeSource, /buildTodaysPosture|serviceStatusSummary/);
   assert.doesNotMatch(composeSource, /id: "BREADTH"/);
 });
 

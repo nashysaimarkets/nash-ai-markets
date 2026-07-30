@@ -83,6 +83,15 @@ test("next event selects only the nearest future event with a complete timestamp
   assert.equal(result?.countdown, "1h 0m");
 });
 
+test("next event prefers authoritative at timestamps over opaque display labels", () => {
+  const result = selectNextEconomicEvent([
+    { time: "Wed 14:00", name: "CPI", risk: "HIGH", at: "2026-07-17T13:30:00.000Z" },
+    { time: "Wed 16:00", name: "Later", risk: "MED", at: "2026-07-17T15:00:00.000Z" },
+  ], NOW);
+  assert.equal(result?.name, "CPI");
+  assert.equal(result?.startsAt, "2026-07-17T13:30:00.000Z");
+});
+
 test("event area returns unavailable rather than inventing an event", () => {
   assert.equal(selectNextEconomicEvent([], NOW), null);
   assert.equal(selectNextEconomicEvent([{ time: "13:30 UK", name: "No date", risk: "HIGH" }], NOW), null);

@@ -84,13 +84,34 @@ test("edge brief fails closed for awaiting coverage", () => {
 test("catalyst radar keeps earnings and news unavailable honestly", () => {
   const es = getMarketInstrument("es")!;
   const radar = createCatalystRadar({
-    events: [{ time: "Mon 14:00", name: "CPI", risk: "HIGH" }],
+    events: [{
+      time: "Mon 14:00",
+      name: "CPI",
+      risk: "HIGH",
+      at: new Date(Date.now() + 3_600_000).toISOString(),
+    }],
     active: es,
     favourites: [es],
   });
   assert.equal(radar.items.length, 1);
   assert.ok(radar.unavailable.some((item) => item.kind === "earnings"));
   assert.ok(radar.unavailable.some((item) => item.kind === "news"));
+});
+
+test("catalyst radar excludes past events even when display labels remain", () => {
+  const es = getMarketInstrument("es")!;
+  const radar = createCatalystRadar({
+    events: [{
+      time: "Mon 14:00",
+      name: "CPI",
+      risk: "HIGH",
+      at: new Date(Date.now() - 3_600_000).toISOString(),
+    }],
+    active: es,
+    favourites: [es],
+    now: Date.now(),
+  });
+  assert.equal(radar.items.length, 0);
 });
 
 test("preferred platforms launch mapped symbols and refuse unknown classes", () => {

@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildDeskDecisionPresentation } from "../app/terminal/lib/desk-decision-presentation.ts";
-import { dedupeVerifiedEvents, normalizeEventTitle } from "../app/terminal/lib/event-display.ts";
+import { buildDeskDecisionPresentation, buildTodaysPosture } from "../app/terminal/lib/desk-decision-presentation.ts";
+import {
+  dedupeVerifiedEvents,
+  normalizeEventTitle,
+  upcomingVerifiedEvents,
+} from "../app/terminal/lib/event-display.ts";
 import { DESK_VIEW_IDS, DESK_VIEW_WIDGETS, widgetsForView } from "../app/terminal/lib/desk-views.ts";
 import { coverageLabel } from "../app/lib/markets/market-catalog.ts";
 
@@ -47,6 +51,12 @@ test("desk decision presentation separates lean from blocked permission", () => 
   assert.equal(presentation.confidenceDetail, "Engine confidence score: 0 / 100");
   assert.match(presentation.why, /observed lean|restricted|incomplete/i);
   assert.doesNotMatch(presentation.why, /instruction to buy|enter long/i);
+
+  const posture = buildTodaysPosture(presentation);
+  assert.equal(posture.eyebrow, "TODAY'S POSTURE");
+  assert.equal(posture.headline, "Stay patient");
+  assert.match(posture.summary, /mildly bullish|restricted|confirmation/i);
+  assert.doesNotMatch(posture.summary, /\bbuy\b|\bsell\b|enter /i);
 });
 
 test("event display normalizes and dedupes Fed press conference labels", () => {
@@ -58,6 +68,17 @@ test("event display normalizes and dedupes Fed press conference labels", () => {
   ]);
   assert.equal(events.length, 2);
   assert.equal(events[0]?.name, "Fed Press Conference");
+});
+
+test("upcomingVerifiedEvents keeps Brief and Desk on the same future filter", () => {
+  const now = Date.parse("2026-07-28T12:00:00.000Z");
+  const upcoming = upcomingVerifiedEvents([
+    { time: "Wed 10:00", name: "Past CPI", risk: "HIGH", at: "2026-07-28T10:00:00.000Z" },
+    { time: "Wed 14:00", name: "Future CPI", risk: "HIGH", at: "2026-07-28T14:00:00.000Z" },
+    { time: "opaque", name: "Unparseable", risk: "MED" },
+  ], now, 5);
+  assert.equal(upcoming.length, 1);
+  assert.equal(upcoming[0]?.name, "Future CPI");
 });
 
 test("desk views partition widgets without inventing new data sources", () => {
@@ -102,6 +123,7 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.doesNotMatch(desk, /scrollIntoView/);
   assert.match(desk, /id=\{`desk-view-\$\{deskView\}`\}/);
   assert.match(desk, /id="primary-chart"|id="verified-levels"|id="next-catalyst"|id="risk-journal"/);
+  assert.match(decisionSummary, /TODAY.?S POSTURE|buildTodaysPosture|posture\.headline/);
   assert.match(decisionSummary, /Participation/);
   assert.match(decisionSummary, /id="decision-summary"/);
   assert.match(decisionSummary, /is-blocked-priority|permissionTone === "blocked"/);

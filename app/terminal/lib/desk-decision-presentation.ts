@@ -139,6 +139,59 @@ export function buildDeskDecisionPresentation(input: {
   };
 }
 
+export type TodaysPosture = {
+  eyebrow: "TODAY'S POSTURE";
+  headline: string;
+  summary: string;
+};
+
+/**
+ * Concise shared posture line for Dashboard, Morning Brief and Trading Desk.
+ * Presentation only — derived from existing decision presentation fields.
+ */
+export function buildTodaysPosture(decision: DeskDecisionPresentation): TodaysPosture {
+  const lean = decision.leanLabel.toLowerCase();
+  const condition = decision.primaryRisk
+    ? decision.primaryRisk.replace(/\.$/, "")
+    : "confirmation remains incomplete";
+
+  if (decision.permissionTone === "blocked") {
+    if (decision.leanTone === "bull" || decision.leanTone === "bear") {
+      return {
+        eyebrow: "TODAY'S POSTURE",
+        headline: "Stay patient",
+        summary: `The observed lean is ${lean}, but confirmation remains incomplete and participation is restricted.`,
+      };
+    }
+    if (decision.leanTone === "mixed") {
+      return {
+        eyebrow: "TODAY'S POSTURE",
+        headline: "Stay patient",
+        summary: "Evidence is mixed. Participation stays restricted until confirmation is complete.",
+      };
+    }
+    return {
+      eyebrow: "TODAY'S POSTURE",
+      headline: "Stay patient",
+      summary: `Participation is restricted. Primary condition: ${condition}.`,
+    };
+  }
+
+  if (decision.permissionTone === "caution") {
+    return {
+      eyebrow: "TODAY'S POSTURE",
+      headline: "Proceed with caution",
+      summary: `Observed lean is ${lean}. Treat this as an observation, not a validated setup.`,
+    };
+  }
+
+  return {
+    eyebrow: "TODAY'S POSTURE",
+    headline: "Selective engagement only",
+    summary: `Observed lean is ${lean}. Participation checks allow selective engagement subject to your own rules — not personalised advice.`,
+  };
+}
+
 /** Soften common technical phrases for customer UI only. */
 export function customerFacingCopy(text: string): string {
   return text

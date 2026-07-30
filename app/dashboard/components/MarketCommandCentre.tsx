@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buildTodaysPosture } from "../../terminal/lib/desk-decision-presentation.ts";
 import type { DeskGreeting } from "../lib/market-weather.ts";
 import type { DashboardCommandSummary } from "../lib/dashboard-command-summary.ts";
 import { EventCountdown } from "./EventCountdown";
@@ -21,6 +22,7 @@ export function MarketCommandCentre({
   now,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
+  const posture = buildTodaysPosture(decision);
 
   return (
     <div className="marketCommandCentre dashCommandCentre">
@@ -88,8 +90,9 @@ export function MarketCommandCentre({
       <section className="dashDecisionSnap" aria-labelledby="dash-decision-title">
         <header>
           <div>
-            <span className="mccEyebrow">TODAY&apos;S DECISION SNAPSHOT</span>
-            <h2 id="dash-decision-title">Participation, lean and primary risk</h2>
+            <span className="mccEyebrow">TODAY&apos;S POSTURE</span>
+            <h2 id="dash-decision-title">{posture.headline}</h2>
+            <p className="dashDecisionWhy">{posture.summary}</p>
           </div>
           <span className={`dashPill ${toneClass(decision.permissionTone)}`}>{decision.permissionLabel}</span>
         </header>
@@ -113,8 +116,6 @@ export function MarketCommandCentre({
             <strong>{decision.primaryRisk ?? decision.riskLabel}</strong>
           </article>
         </div>
-
-        <p className="dashDecisionWhy">{decision.why}</p>
 
         {(decision.supporting.length > 0 || decision.opposing.length > 0) ? (
           <details className="dashEngineDetails">
@@ -253,7 +254,9 @@ export function MarketCommandCentre({
       {unavailable.length ? (
         <details className="dashServiceStatus">
           <summary>
-            Service status · {unavailable.length} item{unavailable.length === 1 ? "" : "s"} pending or unavailable
+            {unavailable.every((item) => /breadth|video|news|catalyst|optional/i.test(`${item.label} ${item.detail}`))
+              ? "Data coverage: some optional indicators are currently unavailable."
+              : `Data coverage: ${unavailable.length} item${unavailable.length === 1 ? "" : "s"} need attention.`}
           </summary>
           <ul>
             {unavailable.map((item) => (
