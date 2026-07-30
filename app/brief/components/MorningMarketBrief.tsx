@@ -9,6 +9,7 @@ import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { MarketVideoPlayer } from "../../components/MarketVideoPlayer.tsx";
+import { StatusIcon } from "../../components/StatusIcon.tsx";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
@@ -17,6 +18,7 @@ type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
   insight: AiMarketInsightModel;
   oracle: OracleBundle;
+  archiveAvailable?: boolean;
 };
 
 function weatherDirectionClass(direction: MorningMarketBriefModel["crossAssets"][number]["direction"]) {
@@ -33,10 +35,24 @@ function weatherMoveCue(direction: MorningMarketBriefModel["crossAssets"][number
   return { arrow: "·", label: "Unavailable" };
 }
 
-function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
+function sessionAccentFromHeadline(headline: string): "premarket" | "rth" | "postmarket" {
+  if (/pre-market/i.test(headline)) return "premarket";
+  if (/post-market/i.test(headline)) return "postmarket";
+  return "rth";
+}
+
+function BriefVideo({
+  video,
+  showArchiveLink = false,
+}: {
+  video: MorningMarketBriefModel["video"];
+  showArchiveLink?: boolean;
+}) {
   if (!video.available || !video.youtubeId || !video.embedUrl) {
     return null;
   }
+
+  const isPost = video.type === "POST_MARKET";
 
   return (
     <MarketVideoPlayer
@@ -46,22 +62,24 @@ function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
         type: video.type ?? "PRE_MARKET",
         marketDate: video.marketDate ?? "—",
         title: video.title,
-        description: "",
-        publishedAt: new Date().toISOString(),
+        summary: video.summary ?? "",
+        description: video.summary ?? "",
+        publishedAt: video.publishedAt ?? new Date(0).toISOString(),
         durationSeconds: video.durationSeconds,
         thumbnailUrl: video.thumbnailUrl ?? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`,
         watchUrl: video.watchUrl ?? `https://www.youtube.com/watch?v=${video.youtubeId}`,
         embedUrl: video.embedUrl,
         status: "published",
         source: "youtube",
-        verifiedAt: new Date().toISOString(),
+        verifiedAt: video.publishedAt ?? new Date(0).toISOString(),
       }}
-      heading={
-        video.type === "POST_MARKET"
-          ? "Today’s post-market video review"
-          : "Today’s pre-market video"
+      heading={isPost ? "Today’s post-market video review" : "Today’s pre-market video briefing"}
+      supportingText={
+        isPost
+          ? "A calm review of the session, key reactions and what the evidence suggests next."
+          : "A concise walkthrough of the verified market context before the US session."
       }
-      supportingText="A concise walkthrough of today’s verified market context."
+      showArchiveLink={showArchiveLink}
     />
   );
 }
@@ -78,10 +96,17 @@ function customerLevelLabel(label: string, kind: string): string {
   return label;
 }
 
-export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBriefProps) {
+export function MorningMarketBrief({
+  model,
+  insight,
+  oracle,
+  archiveAvailable = false,
+}: MorningMarketBriefProps) {
   const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted|wait for confirmation/i.test(
     `${model.playbook.posture} ${model.aiBriefing.mode} ${model.biggestRisk.label}`,
   );
+  const sessionAccent = sessionAccentFromHeadline(model.briefHeadline);
+  const heroIcon = sessionAccent === "premarket" ? "sunrise" : sessionAccent === "postmarket" ? "sunset" : "brief";
   const timeline = model.economicTimeline.filter((item) => item.available).slice(0, 3);
   const expectedIsObserved = /verified|48-bar|range/i.test(
     `${model.expectedMove.label} ${model.expectedMove.detail}`,
@@ -103,10 +128,13 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
     .replace(/incomplete verified inputs/i, "Confirmation evidence is incomplete");
 
   return (
-    <article className="morningMarketBrief" aria-labelledby="mb-title">
+    <article className={`morningMarketBrief vxSessionAccent-${sessionAccent}`} aria-labelledby="mb-title">
       <header className="mbHero" id="brief-hero">
         <div className="mbHeroCopy">
-          <span className="mbEyebrow">Morning Brief</span>
+          <span className="mbEyebrow vxIconLabel">
+            <StatusIcon name={heroIcon} />
+            Morning Brief
+          </span>
           <h1 id="mb-title">
             {model.greeting}
             <em> {model.briefHeadline}</em>
@@ -118,12 +146,12 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
         </div>
         <div className="mbHeroMeta">
           <div>
-            <span>Session</span>
+            <span className="vxIconLabel"><StatusIcon name="delayed" /> Session</span>
             <strong>{model.sessionLabel}</strong>
             <small>{model.sessionDetail}</small>
           </div>
           <div>
-            <span>Feed</span>
+            <span className="vxIconLabel"><StatusIcon name={model.verified ? "verified" : "stale"} /> Feed</span>
             <strong className={model.verified ? "is-ok" : "is-warn"}>
               {model.verified ? "Verified delayed" : "Awaiting verification"}
             </strong>
@@ -162,7 +190,10 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
         aria-labelledby="mb-posture-title"
       >
         <header>
-          <span className="mbEyebrow">{model.posture.eyebrow}</span>
+          <span className="mbEyebrow vxIconLabel">
+            <StatusIcon name={permissionBlocked ? "pause" : "verified"} />
+            {model.posture.eyebrow}
+          </span>
           <h2 id="mb-posture-title">{model.posture.headline}</h2>
           <p className="mbDecisionNote">{model.posture.summary}</p>
         </header>
@@ -197,8 +228,8 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
       </section>
 
       {model.video.available && model.video.placement === "current" ? (
-        <section className="mbPanel mbVideoPanel" aria-labelledby="mb-video-title">
-          <BriefVideo video={model.video} />
+        <section className="mbPanel mbVideoPanel vxSoftPanel" aria-labelledby="mb-video-title">
+          <BriefVideo video={model.video} showArchiveLink={archiveAvailable} />
         </section>
       ) : null}
 
@@ -438,6 +469,12 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
           </summary>
           <BriefVideo video={model.earlierVideo} />
         </details>
+      ) : null}
+
+      {archiveAvailable ? (
+        <p className="mbArchiveLink">
+          <Link href="/reviews">Previous market reviews</Link>
+        </p>
       ) : null}
     </article>
   );

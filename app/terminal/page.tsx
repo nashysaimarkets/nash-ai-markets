@@ -36,6 +36,7 @@ import {
 } from "./lib/desk-workspace";
 import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } from "./lib/desk-payload";
 import { sanitizeForClient } from "../lib/serialize-for-client.ts";
+import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -247,6 +248,8 @@ export default async function Terminal() {
         : null,
     });
 
+    const sessionVideos = resolveSessionMarketVideos({ phase: session.phase });
+
     payload = sanitizeForClient({
       paid,
       tier: access.tier,
@@ -265,6 +268,7 @@ export default async function Terminal() {
       customerWarnings,
       decisionPresentation,
       initialWorkspace,
+      deskVideoShortcut: sessionVideos.deskShortcut,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
         available: previewState.available,
@@ -320,6 +324,7 @@ export default async function Terminal() {
         warnings: recoveryWarnings,
       }),
       initialWorkspace,
+      deskVideoShortcut: null,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
         available: previewState.available,

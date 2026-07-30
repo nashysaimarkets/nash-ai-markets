@@ -22,6 +22,8 @@ export function briefVideoSlotFromSelection(
       watchUrl: null,
       thumbnailUrl: null,
       durationSeconds: null,
+      summary: null,
+      publishedAt: null,
       placement: "hidden",
     };
   }
@@ -38,6 +40,8 @@ export function briefVideoSlotFromSelection(
     watchUrl: video.watchUrl,
     thumbnailUrl: video.thumbnailUrl,
     durationSeconds: video.durationSeconds,
+    summary: video.summary || null,
+    publishedAt: video.publishedAt,
     placement,
   };
 }

@@ -111,6 +111,8 @@ export default async function MemberDashboard() {
       missingInputs: context.missingInputs,
       correlationId: context.correlationId,
       marketVideo: sessionVideos.dashboardSelection,
+      postMarketPendingNotice: sessionVideos.postMarketPendingNotice,
+      archiveAvailable: sessionVideos.archive.length > 0,
     });
 
     return (
@@ -144,6 +146,8 @@ export default async function MemberDashboard() {
           candleSeries={props.candleSeries}
           now={props.now}
           marketVideo={props.marketVideo}
+          postMarketPendingNotice={props.postMarketPendingNotice}
+          archiveAvailable={props.archiveAvailable}
         />
       </MemberShell>
     );

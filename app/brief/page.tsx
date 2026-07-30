@@ -175,6 +175,7 @@ export default async function AIMarketBriefPage() {
       contextStatus: context.status,
       missingInputs: context.missingInputs,
       correlationId: context.correlationId,
+      archiveAvailable: sessionVideos.archive.length > 0,
     });
 
     return (
@@ -200,7 +201,12 @@ export default async function AIMarketBriefPage() {
             </div>
           </aside>
         ) : null}
-        <MorningMarketBrief model={props.model} insight={props.insight} oracle={props.oracle} />
+        <MorningMarketBrief
+          model={props.model}
+          insight={props.insight}
+          oracle={props.oracle}
+          archiveAvailable={props.archiveAvailable}
+        />
       </MemberShell>
     );
   } catch (error) {
@@ -288,7 +294,12 @@ export default async function AIMarketBriefPage() {
       resistance: null,
       now,
     });
-    const props = sanitizeForClient({ model, insight, oracle });
+    const props = sanitizeForClient({
+      model,
+      insight,
+      oracle,
+      archiveAvailable: sessionVideos.archive.length > 0,
+    });
 
     return (
       <MemberShell active="brief">
@@ -301,7 +312,12 @@ export default async function AIMarketBriefPage() {
             <Link href="/dashboard">Open Dashboard</Link>
           </div>
         </aside>
-        <MorningMarketBrief model={props.model} insight={props.insight} oracle={props.oracle} />
+        <MorningMarketBrief
+          model={props.model}
+          insight={props.insight}
+          oracle={props.oracle}
+          archiveAvailable={props.archiveAvailable}
+        />
       </MemberShell>
     );
   }

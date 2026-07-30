@@ -13,6 +13,8 @@ export type MarketVideoRecord = {
   type: MarketVideoType;
   marketDate: string;
   title: string;
+  /** Customer-facing short summary (alias of description when summary omitted). */
+  summary: string;
   description: string;
   publishedAt: string;
   durationSeconds: number | null;

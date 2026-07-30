@@ -15,6 +15,7 @@ import { buildDashboardCommandSummary } from "../app/dashboard/lib/dashboard-com
 import { getMarketInstrument } from "../app/lib/markets/market-catalog.ts";
 import {
   getCurrentMarketVideo,
+  getCurrentSessionVideo,
   listPublishedMarketVideoArchive,
   marketDateInNewYork,
 } from "../app/lib/market-video/select.ts";
@@ -312,6 +313,50 @@ test("session placement never treats previous-day video as today and fails soft"
   assert.equal(bundle.dashboardSelection.available, false);
 });
 
+test("getCurrentSessionVideo selects by session and shows pending once during RTH", () => {
+  const today = "2026-07-30";
+  const videos = [
+    {
+      id: "pre",
+      youtubeVideoId: "dQw4w9WgXcQ",
+      type: "PRE_MARKET",
+      marketDate: today,
+      title: "Pre",
+      summary: "Context before the open.",
+      description: "Context before the open.",
+      publishedAt: "2026-07-30T11:00:00.000Z",
+      durationSeconds: 300,
+      status: "published",
+      source: "youtube",
+      verifiedAt: "2026-07-30T11:00:00.000Z",
+    },
+  ];
+  const pre = getCurrentSessionVideo({
+    marketDate: today,
+    session: "premarket",
+    videos,
+  });
+  assert.equal(pre.available, true);
+  if (pre.available) assert.equal(pre.video.type, "PRE_MARKET");
+
+  const rth = getCurrentSessionVideo({
+    marketDate: today,
+    session: "rth",
+    videos,
+  });
+  assert.equal(rth.available, false);
+  assert.equal(rth.showPostMarketPending, true);
+
+  const after = resolveSessionMarketVideos({
+    phase: "rth",
+    now: Date.parse("2026-07-30T16:00:00.000Z"),
+    videos,
+  });
+  assert.equal(after.postMarketPendingNotice, "Post-market review will appear here after publication.");
+  assert.equal(after.dashboardSelection.available, false);
+  assert.ok(after.deskShortcut?.available);
+});
+
 test("MarketVideoPlayer is click-to-load without autoplay", () => {
   const source = readFileSync(
     path.join(path.dirname(fileURLToPath(import.meta.url)), "../app/components/MarketVideoPlayer.tsx"),
@@ -321,4 +366,22 @@ test("MarketVideoPlayer is click-to-load without autoplay", () => {
   assert.doesNotMatch(source, /autoplay=1|autoPlay/);
   assert.match(source, /youtube-nocookie|embedUrl/);
   assert.match(source, /loading="lazy"/);
+});
+
+test("normalizeMarketVideoRecord maps summary and rejects scheduled as displayable only via status", () => {
+  const ok = normalizeMarketVideoRecord({
+    id: "s1",
+    youtubeVideoId: "dQw4w9WgXcQ",
+    type: "POST_MARKET",
+    marketDate: "2026-07-30",
+    title: "Review",
+    summary: "Calm session review.",
+    publishedAt: "2026-07-30T21:00:00.000Z",
+    durationSeconds: 420,
+    status: "published",
+    source: "youtube",
+    verifiedAt: "2026-07-30T21:00:00.000Z",
+  });
+  assert.ok(ok);
+  assert.equal(ok?.summary, "Calm session review.");
 });

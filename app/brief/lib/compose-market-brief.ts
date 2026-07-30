@@ -56,6 +56,8 @@ export type BriefVideoSlot = {
   watchUrl: string | null;
   thumbnailUrl: string | null;
   durationSeconds: number | null;
+  summary: string | null;
+  publishedAt: string | null;
   placement: "current" | "earlier" | "hidden";
 };
 
@@ -423,6 +425,8 @@ function resolveVideo(input: {
       watchUrl: `https://www.youtube.com/watch?v=${id}`,
       thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
       durationSeconds: null,
+      summary: null,
+      publishedAt: null,
       placement: "current",
     };
   }
@@ -442,6 +446,8 @@ function unavailableVideoSlot(type: "PRE_MARKET" | "POST_MARKET" | null): BriefV
     watchUrl: null,
     thumbnailUrl: null,
     durationSeconds: null,
+    summary: null,
+    publishedAt: null,
     placement: "hidden",
   };
 }

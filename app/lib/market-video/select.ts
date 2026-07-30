@@ -46,6 +46,16 @@ function publishedForDate(
 }
 
 /** Shared selector — exact market-date match only; never falls back to yesterday. */
+export function getMarketVideo(input: {
+  type: MarketVideoType;
+  marketDate?: string;
+  now?: Date | number;
+  videos: readonly unknown[];
+}): MarketVideoSelection {
+  return getCurrentMarketVideo(input);
+}
+
+/** Alias retained for existing callers. */
 export function getCurrentMarketVideo(input: {
   type: MarketVideoType;
   marketDate?: string;
@@ -70,6 +80,53 @@ export function getCurrentMarketVideo(input: {
     type: input.type,
     marketDate,
   };
+}
+
+export function formatPublishedTimes(publishedAt: string): { et: string; local: string } | null {
+  const ms = Date.parse(publishedAt);
+  if (!Number.isFinite(ms)) return null;
+  const et = new Intl.DateTimeFormat("en-US", {
+    timeZone: NY_TZ,
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(new Date(ms));
+  const local = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(new Date(ms));
+  return { et, local };
+}
+
+/** Session-aware current video selection for member surfaces. */
+export function getCurrentSessionVideo(input: {
+  marketDate?: string;
+  session: "premarket" | "rth" | "afterhours" | "weekend" | "holiday-closed" | string;
+  now?: Date | number;
+  videos: readonly unknown[];
+}): MarketVideoSelection & { showPostMarketPending?: boolean } {
+  const now = input.now ?? Date.now();
+  const marketDate = input.marketDate ?? marketDateInNewYork(now);
+  if (input.session === "premarket") {
+    return getMarketVideo({ type: "PRE_MARKET", marketDate, now, videos: input.videos });
+  }
+  if (input.session === "rth") {
+    const post = getMarketVideo({ type: "POST_MARKET", marketDate, now, videos: input.videos });
+    if (post.available) return post;
+    return {
+      available: false,
+      reason: "Post-market review will appear here after publication.",
+      type: "POST_MARKET",
+      marketDate,
+      showPostMarketPending: true,
+    };
+  }
+  return getMarketVideo({ type: "POST_MARKET", marketDate, now, videos: input.videos });
 }
 
 /** Newest-first archive of published videos only. */

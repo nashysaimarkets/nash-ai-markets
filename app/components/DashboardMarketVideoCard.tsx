@@ -1,15 +1,33 @@
 import Link from "next/link";
 import type { MarketVideoSelection } from "../lib/market-video/types.ts";
 import { customerVideoTypeLabel, formatVideoDuration } from "../lib/market-video/select.ts";
+import { StatusIcon } from "./StatusIcon.tsx";
 
 type DashboardMarketVideoCardProps = {
   selection: MarketVideoSelection;
   href?: string;
+  pendingNotice?: string | null;
 };
 
-/** Compact dashboard card — only renders when a published video exists for the market date. */
-export function DashboardMarketVideoCard({ selection, href = "/brief" }: DashboardMarketVideoCardProps) {
-  if (!selection.available) return null;
+/** Compact dashboard card — only renders when a published video exists, or a single pending notice. */
+export function DashboardMarketVideoCard({
+  selection,
+  href = "/brief",
+  pendingNotice = null,
+}: DashboardMarketVideoCardProps) {
+  if (!selection.available) {
+    if (!pendingNotice) return null;
+    return (
+      <aside className="dashVideoPending" role="status">
+        <StatusIcon name="sunset" />
+        <div>
+          <strong>Post-market review</strong>
+          <p>{pendingNotice}</p>
+        </div>
+      </aside>
+    );
+  }
+
   const video = selection.video;
   const cta =
     video.type === "PRE_MARKET"
@@ -24,11 +42,15 @@ export function DashboardMarketVideoCard({ selection, href = "/brief" }: Dashboa
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={video.thumbnailUrl} alt="" loading="lazy" decoding="async" />
           <span className="dashVideoPlay" aria-hidden="true">
+            <StatusIcon name="video" />
             Play
           </span>
         </span>
         <span className="dashVideoCopy">
-          <span className="mccEyebrow">{customerVideoTypeLabel(video.type)}</span>
+          <span className="mccEyebrow vxIconLabel">
+            <StatusIcon name={video.type === "PRE_MARKET" ? "sunrise" : "sunset"} />
+            {customerVideoTypeLabel(video.type)}
+          </span>
           <strong>{cta}</strong>
           <small>
             {video.marketDate}

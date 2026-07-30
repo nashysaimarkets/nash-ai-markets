@@ -13,6 +13,7 @@ import type { CatalystRadar } from "./catalyst-radar.ts";
 import type { SessionClockReading } from "./session-clock.ts";
 import type { DeskWorkspaceState } from "./desk-workspace.ts";
 import type { DeskDecisionPresentation } from "./desk-decision-presentation.ts";
+import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
 
 import {
   formatVerifiedCandleAgePhrase,
@@ -46,6 +47,8 @@ export type TradingDeskPayload = {
   customerWarnings: string[];
   decisionPresentation: DeskDecisionPresentation;
   initialWorkspace: DeskWorkspaceState;
+  /** Compact video shortcut only — never a large player beside charts. */
+  deskVideoShortcut: MarketVideoSelection | null;
   preview: {
     eligible: boolean;
     available: boolean;

@@ -64,13 +64,25 @@ export function normalizeMarketVideoRecord(raw: unknown): MarketVideoRecord | nu
       ? Math.round(row.durationSeconds)
       : null;
 
+  const description =
+    typeof row.description === "string" && row.description.trim()
+      ? row.description.trim()
+      : typeof row.summary === "string"
+        ? row.summary.trim()
+        : "";
+  const summary =
+    typeof row.summary === "string" && row.summary.trim()
+      ? row.summary.trim()
+      : description;
+
   return {
     id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `${row.type}-${marketDate}-${youtubeVideoId}`,
     youtubeVideoId,
     type: row.type,
     marketDate,
     title,
-    description: typeof row.description === "string" ? row.description.trim() : "",
+    summary,
+    description,
     publishedAt,
     durationSeconds,
     thumbnailUrl,

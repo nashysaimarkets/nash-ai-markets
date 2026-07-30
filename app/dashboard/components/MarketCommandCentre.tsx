@@ -18,6 +18,7 @@ import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
 import { ConceptHint } from "../../components/oracle/ConceptHint.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { StatusIcon } from "../../components/StatusIcon.tsx";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import {
   ESSENTIAL_DASHBOARD_SECTIONS,
@@ -41,6 +42,8 @@ export type MarketCommandCentreProps = {
   candleSeries: CustomerCandleSeries | null;
   now: number;
   marketVideo?: MarketVideoSelection | null;
+  postMarketPendingNotice?: string | null;
+  archiveAvailable?: boolean;
 };
 
 function toneClass(tone: string) {
@@ -56,11 +59,19 @@ export function MarketCommandCentre({
   candleSeries,
   now,
   marketVideo = null,
+  postMarketPendingNotice = null,
+  archiveAvailable = false,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
   const posture = buildTodaysPosture(decision);
   const postClose = oracle.timeline.current === "post-close";
   const { prefs, persist } = useDashboardWorkspace();
+  const sessionAccent =
+    oracle.timeline.current === "post-close"
+      ? "postmarket"
+      : oracle.timeline.current === "premarket" || oracle.timeline.current === "overnight"
+        ? "premarket"
+        : "rth";
 
   const sectionNodes = useMemo(() => {
     const map: Partial<Record<DashboardSectionId, ReactNode>> = {
@@ -220,10 +231,13 @@ export function MarketCommandCentre({
   }, [prefs.order, prefs.pinned]);
 
   return (
-    <div className="marketCommandCentre dashCommandCentre">
+    <div className={`marketCommandCentre dashCommandCentre vxSessionAccent-${sessionAccent}`}>
       <header className="dashHero" aria-labelledby="dash-hero-title">
         <div className="dashHeroCopy">
-          <span className="mccEyebrow">DASHBOARD · DAILY COMMAND CENTRE</span>
+          <span className="mccEyebrow vxIconLabel">
+            <StatusIcon name="dashboard" />
+            DASHBOARD · DAILY COMMAND CENTRE
+          </span>
           <h1 id="dash-hero-title">
             {greeting.name ? (
               <>
@@ -286,7 +300,24 @@ export function MarketCommandCentre({
 
       {sectionNodes["thirty-second"]}
 
-      {marketVideo ? <DashboardMarketVideoCard selection={marketVideo} /> : null}
+      {marketVideo?.available || postMarketPendingNotice ? (
+        <DashboardMarketVideoCard
+          selection={
+            marketVideo ?? {
+              available: false,
+              reason: "Post-market review will appear here after publication.",
+              type: "POST_MARKET",
+              marketDate: "",
+            }
+          }
+          pendingNotice={postMarketPendingNotice}
+        />
+      ) : null}
+      {archiveAvailable ? (
+        <p className="dashArchiveLink">
+          <Link href="/reviews">Previous market reviews</Link>
+        </p>
+      ) : null}
 
       <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">

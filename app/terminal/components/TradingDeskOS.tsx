@@ -15,7 +15,10 @@ import {
   type MarketInstrument,
 } from "../../lib/markets/market-catalog.ts";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { StatusIcon } from "../../components/StatusIcon.tsx";
 import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { customerVideoTypeLabel, formatVideoDuration } from "../../lib/market-video/select.ts";
+import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
 import { buildConfirmationSummary } from "../../lib/confirmation-summary.ts";
 import { buildDataHealthSummary } from "../../lib/data-health-summary.ts";
 import { isCandleInstrument, type CandleInstrument } from "../../lib/providers/candle-instruments.ts";
@@ -125,6 +128,32 @@ function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
     connected: ordered.filter((item) => item.coverage === "live"),
     planned: ordered.filter((item) => item.coverage !== "live"),
   };
+}
+
+function DeskVideoShortcut({ selection }: { selection: MarketVideoSelection | null | undefined }) {
+  if (!selection?.available) return null;
+  const video = selection.video;
+  const duration = formatVideoDuration(video.durationSeconds);
+  const label =
+    video.type === "PRE_MARKET" ? "Watch today’s pre-market briefing" : "Watch today’s post-market review";
+
+  return (
+    <aside className="deskVideoShortcut" aria-label={customerVideoTypeLabel(video.type)}>
+      <Link href="/brief" className="deskVideoShortcutLink">
+        <StatusIcon name="video" />
+        <span>
+          <strong>{label}</strong>
+          <small>
+            {video.marketDate}
+            {duration ? ` · ${duration}` : ""}
+          </small>
+        </span>
+      </Link>
+      <a href={video.watchUrl} target="_blank" rel="noopener noreferrer" className="deskVideoExternal">
+        YouTube
+      </a>
+    </aside>
+  );
 }
 
 export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
@@ -892,7 +921,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </li>
                   ))}
                 </ul>
-                <small>Saved on this device</small>
+                <small className="vxIconLabel deskJournalSaveHint">
+                  <StatusIcon name="device" />
+                  Saved on this device
+                </small>
               </>
             ) : null}
           </section>
@@ -1301,6 +1333,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             {deskView === "overview" ? (
               <div className="deskOverviewStack">
                 <DeskDecisionSummary decision={payload.decisionPresentation} onOpenRisk={() => selectDeskView("risk")} />
+                <DeskVideoShortcut selection={payload.deskVideoShortcut} />
                 {renderWidget("primary-chart")}
                 {renderWidget("structure-map")}
                 <section id="next-catalyst" className="deskWidget deskNextCatalyst" aria-labelledby="next-catalyst-title">
@@ -1349,6 +1382,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               </div>
             ) : (
               <>
+                {deskView === "risk" ? <DeskVideoShortcut selection={payload.deskVideoShortcut} /> : null}
                 <div className="deskStageStack">{stackedWidgets.map(renderWidget)}</div>
                 {workspace.focusMode && railWidgets.length ? (
                   <aside className="deskFocusRail" aria-label="Focus mode rail">

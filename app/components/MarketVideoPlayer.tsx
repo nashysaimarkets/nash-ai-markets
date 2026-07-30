@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { MarketVideoRecord } from "../lib/market-video/types.ts";
 import {
   customerVideoTypeLabel,
+  formatPublishedTimes,
   formatVideoDuration,
 } from "../lib/market-video/select.ts";
+import { StatusIcon } from "./StatusIcon.tsx";
 
 type MarketVideoPlayerProps = {
   video: MarketVideoRecord;
   heading?: string;
   supportingText?: string;
   compact?: boolean;
+  showArchiveLink?: boolean;
 };
 
 /**
@@ -23,20 +27,42 @@ export function MarketVideoPlayer({
   heading,
   supportingText,
   compact = false,
+  showArchiveLink = false,
 }: MarketVideoPlayerProps) {
   const [active, setActive] = useState(false);
+  const [failed, setFailed] = useState(false);
   const typeLabel = customerVideoTypeLabel(video.type);
   const duration = formatVideoDuration(video.durationSeconds);
-  const title = heading ?? (video.type === "PRE_MARKET" ? "Today’s pre-market video" : "Today’s post-market video review");
+  const published = formatPublishedTimes(video.publishedAt);
+  const title =
+    heading ??
+    (video.type === "PRE_MARKET" ? "Today’s pre-market video briefing" : "Today’s post-market video review");
+  const support =
+    supportingText ??
+    (video.type === "PRE_MARKET"
+      ? "A concise walkthrough of the verified market context before the US session."
+      : "A calm review of the session, key reactions and what the evidence suggests next.");
+  const sessionIcon = video.type === "PRE_MARKET" ? "sunrise" : "sunset";
 
   return (
-    <section className={`marketVideoCard${compact ? " is-compact" : ""}`} aria-labelledby={`mv-${video.id}`}>
+    <section
+      className={`marketVideoCard${compact ? " is-compact" : ""}`}
+      aria-labelledby={`mv-${video.id}`}
+    >
       <header>
-        <span className="marketVideoBadge">{typeLabel}</span>
-        <h2 id={`mv-${video.id}`}>{title}</h2>
-        {supportingText ? <p>{supportingText}</p> : null}
+        <span className={`marketVideoBadge is-${video.type === "PRE_MARKET" ? "pre" : "post"}`}>
+          <StatusIcon name={sessionIcon} />
+          {typeLabel}
+        </span>
+        <h2 id={`mv-${video.id}`} className="vxIconLabel">
+          <StatusIcon name="video" />
+          {title}
+        </h2>
+        <p>{support}</p>
+        {video.summary ? <p className="marketVideoSummary">{video.summary}</p> : null}
         <small>
           Market date {video.marketDate}
+          {published ? ` · Published ${published.et} · Local ${published.local}` : ""}
           {duration ? ` · ${duration}` : ""}
           {" · "}
           Educational market commentary based on delayed and verified inputs. Not personalised financial advice.
@@ -44,7 +70,12 @@ export function MarketVideoPlayer({
       </header>
 
       <div className="marketVideoFrame">
-        {active ? (
+        {failed ? (
+          <div className="marketVideoFailed" role="status">
+            <strong>Video player unavailable</strong>
+            <p>The written briefing remains available. You can still open the review on YouTube.</p>
+          </div>
+        ) : active ? (
           <iframe
             title={video.title}
             src={video.embedUrl}
@@ -52,6 +83,11 @@ export function MarketVideoPlayer({
             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             referrerPolicy="strict-origin-when-cross-origin"
+            onError={() => {
+              setFailed(true);
+              setActive(false);
+              console.error("[market-video] embed failed", { id: video.id, type: video.type });
+            }}
           />
         ) : (
           <button
@@ -63,6 +99,7 @@ export function MarketVideoPlayer({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={video.thumbnailUrl} alt="" loading="lazy" decoding="async" />
             <span className="marketVideoPlay" aria-hidden="true">
+              <StatusIcon name="video" />
               Play
             </span>
           </button>
@@ -73,6 +110,12 @@ export function MarketVideoPlayer({
         <a href={video.watchUrl} target="_blank" rel="noopener noreferrer">
           Watch on YouTube
         </a>
+        {showArchiveLink ? (
+          <>
+            {" · "}
+            <Link href="/reviews">Previous market reviews</Link>
+          </>
+        ) : null}
       </p>
     </section>
   );
