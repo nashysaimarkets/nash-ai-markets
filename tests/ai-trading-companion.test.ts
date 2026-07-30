@@ -87,13 +87,14 @@ test("Bull vs Bear meter uses scenario weights and explains factors", () => {
 
 test("Market Internals stay unavailable without inventing breadth put-call or TRIN", () => {
   const cards = buildMarketInternals();
-  assert.equal(cards.length, 3);
+  assert.equal(cards.length, 6);
   assert.deepEqual(
     cards.map((card) => card.id),
-    ["breadth", "put-call", "trin"],
+    ["breadth", "put-call", "trin", "tick", "gamma", "dealer"],
   );
   assert.ok(cards.every((card) => card.available === false && card.status === "Unavailable"));
-  assert.match(cards[0]!.detail, /advance\/decline/i);
+  assert.ok(cards.every((card) => card.whyItMatters.length > 10));
+  assert.match(cards[0]!.detail, /awaiting verified feed|advance\/decline/i);
 });
 
 test("fail-closed insight withholds opportunity when unverified", () => {

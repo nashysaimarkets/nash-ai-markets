@@ -53,11 +53,13 @@ export type PremiumConfidenceModel = {
 };
 
 export type MarketInternalCard = {
-  id: "breadth" | "put-call" | "trin";
+  id: "breadth" | "put-call" | "trin" | "tick" | "gamma" | "dealer";
   label: string;
   available: false;
   status: "Unavailable";
   detail: string;
+  measures: string;
+  whyItMatters: string;
 };
 
 export type AiMarketInsightModel = {
@@ -185,21 +187,54 @@ export function buildMarketInternals(): MarketInternalCard[] {
       label: "Breadth",
       available: false,
       status: "Unavailable",
-      detail: "No verified advance/decline breadth feed is connected. Engine sentiment is never shown as breadth.",
+      detail: "Awaiting verified feed — no advance/decline series is connected.",
+      measures: "How widely advances or declines participate across the market.",
+      whyItMatters: "Index moves with weak breadth can be less durable. Engine sentiment is never shown as breadth.",
     },
     {
       id: "put-call",
       label: "Put / Call",
       available: false,
       status: "Unavailable",
-      detail: "No verified equity put/call ratio feed is connected for this workspace.",
+      detail: "Awaiting verified feed — no equity put/call ratio series is connected.",
+      measures: "The balance of put versus call option activity.",
+      whyItMatters: "Extreme skew can reflect hedging or speculation, but only when the feed is verified.",
     },
     {
       id: "trin",
       label: "TRIN",
       available: false,
       status: "Unavailable",
-      detail: "No verified TRIN / Arms Index feed is connected for this workspace.",
+      detail: "Awaiting verified feed — no TRIN / Arms Index series is connected.",
+      measures: "Advancing/declining issues versus advancing/declining volume.",
+      whyItMatters: "A short-term internals gauge for participation pressure — never invented here.",
+    },
+    {
+      id: "tick",
+      label: "TICK",
+      available: false,
+      status: "Unavailable",
+      detail: "Awaiting verified feed — no NYSE TICK series is connected.",
+      measures: "Net stocks trading on an uptick versus a downtick.",
+      whyItMatters: "Useful for short-term pressure only when a verified feed exists.",
+    },
+    {
+      id: "gamma",
+      label: "Gamma exposure",
+      available: false,
+      status: "Unavailable",
+      detail: "Coming after verified integration — no gamma exposure feed is connected.",
+      measures: "An options-market estimate of hedging sensitivity to price changes.",
+      whyItMatters: "Easy to over-interpret; shown only after a verified source is wired.",
+    },
+    {
+      id: "dealer",
+      label: "Dealer positioning",
+      available: false,
+      status: "Unavailable",
+      detail: "Coming after verified integration — no dealer-positioning feed is connected.",
+      measures: "An estimate of dealer hedging needs as price moves.",
+      whyItMatters: "Educational context only when verified — never fabricated for display.",
     },
   ];
 }
