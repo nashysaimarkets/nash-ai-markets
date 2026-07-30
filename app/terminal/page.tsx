@@ -35,6 +35,7 @@ import {
   parseWorkspaceCookie,
 } from "./lib/desk-workspace";
 import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } from "./lib/desk-payload";
+import { sanitizeForClient } from "../lib/serialize-for-client.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -42,16 +43,6 @@ export const metadata: Metadata = {
   description: "Customizable trading desk across interchangeable markets — verified feeds only.",
   robots: { index: false, follow: false },
 };
-
-/** Flight/RSC rejects NaN/Infinity — replace before crossing the client boundary. */
-function sanitizeForClient<T>(value: T): T {
-  return JSON.parse(
-    JSON.stringify(value, (_key, current) => {
-      if (typeof current === "number" && !Number.isFinite(current)) return null;
-      return current;
-    }),
-  ) as T;
-}
 
 export default async function Terminal() {
   const supabase = await createClient();

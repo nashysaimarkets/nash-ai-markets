@@ -1,26 +1,17 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server.ts";
 import { MemberShell } from "../components/MemberShell";
-import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine";
 import {
   availableBriefDrivers,
   availableBriefRisks,
   buildMarketBrief,
 } from "../lib/market-brief.ts";
-import { createTradingDecision } from "../lib/trading-decision-engine";
-import { createStructuredTradePlan } from "../lib/structured-trade-planner";
-import {
-  formatUkTimestamp,
-  isDecisionReadySnapshot,
-} from "../lib/market-data";
-import { formatDelayedVerifiedCandleAgeDisplay } from "../lib/freshness-labels.ts";
-import { getConfiguredFmpCandlesForInstruments, toCustomerCandleSeries } from "../lib/providers/financial-modeling-prep-candles";
+import { formatUkTimestamp } from "../lib/market-data";
 import { generateAIMarketBriefSelection } from "../lib/server/ai-market-brief.ts";
-import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../terminal/lib/membership-entitlement";
 import { loadPreviewClaims } from "../terminal/lib/preview-access";
-import { readSessionClock } from "../terminal/lib/session-clock";
 import { currentServerTimestamp, memberDisplayName } from "../dashboard/lib/daily-dashboard.ts";
 import { primaryLevel } from "../dashboard/lib/command-centre.ts";
 import { buildDecisionDesk } from "../dashboard/lib/decision-desk.ts";
@@ -30,6 +21,15 @@ import { composeMorningMarketBrief } from "./lib/compose-market-brief.ts";
 import { buildAiMarketInsight } from "../lib/ai-market-insight.ts";
 import { buildOracleBundle } from "../lib/oracle/build-oracle-bundle.ts";
 import { MorningMarketBrief } from "./components/MorningMarketBrief";
+import { getVerifiedMarketContext } from "../lib/verified-market-context.ts";
+import { sanitizeForClient } from "../lib/serialize-for-client.ts";
+import { createUnavailableSnapshot } from "../lib/market-data.ts";
+import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
+import { createTradingDecision } from "../lib/trading-decision-engine.ts";
+import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
+import { readSessionClock } from "../terminal/lib/session-clock.ts";
+import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway.ts";
+import { formatDelayedVerifiedCandleAgeDisplay } from "../lib/freshness-labels.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/** Premium Market Brief — verified inputs only, fail-closed when incomplete. */
+/** Premium Market Brief — verified inputs first; AI narrative is optional and fail-soft. */
 export default async function AIMarketBriefPage() {
   const now = currentServerTimestamp();
   const supabase = await createClient();
@@ -60,127 +60,238 @@ export default async function AIMarketBriefPage() {
   const access = createProgressiveAccess(tier, previewState.claims);
   const paid = access.tier === "pro" || access.tier === "elite";
   const displayName = memberDisplayName(user.email, user.user_metadata as Record<string, unknown> | undefined);
-  const session = readSessionClock(new Date(now));
+  const tierLabel = access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase();
 
-  const [{ snapshot, gatewayStatus }, candleBundle] = await Promise.all([
-    getTerminalMarketData(),
-    paid ? getConfiguredFmpCandlesForInstruments("5m").catch(() => null) : Promise.resolve(null),
-  ]);
+  try {
+    const context = await getVerifiedMarketContext({ paid, now, route: "/brief" });
+    const { snapshot, intelligence, decision, plan, session, verified, candles } = context;
+    const support = primaryLevel(snapshot, "support");
+    const resistance = primaryLevel(snapshot, "resistance");
+    const asOfLabel = formatUkTimestamp(snapshot.asOf);
+    const dataAgeLabel = formatDelayedVerifiedCandleAgeDisplay(candles?.dataAgeMs ?? null);
+    const rangeHigh = candles?.candles.length
+      ? Math.max(...candles.candles.slice(-48).map((candle) => candle.high))
+      : null;
+    const rangeLow = candles?.candles.length
+      ? Math.min(...candles.candles.slice(-48).map((candle) => candle.low))
+      : null;
+    const expectedMove =
+      verified && rangeHigh != null && rangeLow != null && Number.isFinite(rangeHigh - rangeLow)
+        ? `${(rangeHigh - rangeLow).toLocaleString("en-GB", { maximumFractionDigits: 2 })} pts (verified 48-bar range)`
+        : "Expected move awaits a verified candle range";
 
-  const candleSeries = candleBundle ? toCustomerCandleSeries(candleBundle.ES) : null;
-  const intelligence = analyzeMarketSnapshot(snapshot);
-  const decision = createTradingDecision({
-    intelligence,
-    reasoning: intelligence.reasoning,
-    dataStatus: snapshot.status,
-    providerStatus: gatewayStatus.connectionStatus,
-    dataAgeMs: gatewayStatus.dataAgeMs,
-    fallbackActive: gatewayStatus.fallbackActive,
-    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
-  });
-  const plan = createStructuredTradePlan({
-    decision,
-    intelligence,
-    dataStatus: snapshot.status,
-    providerStatus: gatewayStatus.connectionStatus,
-    dataAgeMs: gatewayStatus.dataAgeMs,
-    fallbackActive: gatewayStatus.fallbackActive,
-    missingDataWarnings: intelligence.reasoning.missingDataWarnings,
-  });
-
-  const verified = isDecisionReadySnapshot(snapshot) && intelligence.actionable;
-  const support = primaryLevel(snapshot, "support");
-  const resistance = primaryLevel(snapshot, "resistance");
-  const asOfLabel = formatUkTimestamp(snapshot.asOf);
-  const dataAgeLabel = formatDelayedVerifiedCandleAgeDisplay(candleSeries?.dataAgeMs ?? null);
-  const rangeHigh = candleSeries?.candles.length
-    ? Math.max(...candleSeries.candles.slice(-48).map((candle) => candle.high))
-    : null;
-  const rangeLow = candleSeries?.candles.length
-    ? Math.min(...candleSeries.candles.slice(-48).map((candle) => candle.low))
-    : null;
-  const expectedMove = verified && rangeHigh != null && rangeLow != null
-    ? `${(rangeHigh - rangeLow).toLocaleString("en-GB", { maximumFractionDigits: 2 })} pts (verified 48-bar range)`
-    : "Expected move awaits a verified candle range";
-
-  const decisionDesk = buildDecisionDesk({
-    verified,
-    decision,
-    plan,
-    intelligence,
-    session,
-    candles: candleSeries?.candles,
-    expectedMoveLabel: expectedMove,
-    support: support?.value ?? null,
-    resistance: resistance?.value ?? null,
-  });
-
-  let selection = null;
-  if (verified) {
-    const ai = await generateAIMarketBriefSelection({
-      marketBias: decision.marketBias,
-      tradePermission: decision.tradePermission,
-      riskRating: decision.riskRating,
-      confidence: decision.confidenceScore,
-      availableDrivers: availableBriefDrivers(intelligence, decision),
-      availableRisks: availableBriefRisks(decision, plan),
+    const decisionDesk = buildDecisionDesk({
+      verified,
+      decision,
+      plan,
+      intelligence,
+      session,
+      candles: candles?.candles,
+      expectedMoveLabel: expectedMove,
+      support: support?.value ?? null,
+      resistance: resistance?.value ?? null,
     });
-    selection = ai.selection;
+
+    let selection = null;
+    if (verified) {
+      try {
+        const ai = await generateAIMarketBriefSelection({
+          marketBias: decision.marketBias,
+          tradePermission: decision.tradePermission,
+          riskRating: decision.riskRating,
+          confidence: decision.confidenceScore,
+          availableDrivers: availableBriefDrivers(intelligence, decision),
+          availableRisks: availableBriefRisks(decision, plan),
+        });
+        selection = ai.selection;
+      } catch (error) {
+        console.error("[brief] optional AI selection failed", {
+          name: error instanceof Error ? error.name : "Error",
+          correlationId: context.correlationId,
+        });
+      }
+    }
+
+    const brief = buildMarketBrief(snapshot, intelligence, decision, plan, selection);
+    const greeting = buildDeskGreeting(displayName, session, new Date(now));
+    const sessionLevels = candles?.candles?.length
+      ? deriveSessionReferenceLevels(candles.candles, Math.floor(now / 1000))
+      : null;
+
+    const model = composeMorningMarketBrief({
+      brief,
+      desk: decisionDesk,
+      intelligence,
+      decision,
+      plan,
+      snapshot,
+      sessionLevels,
+      support: support?.value ?? null,
+      resistance: resistance?.value ?? null,
+      expectedMoveLabel: expectedMove,
+      asOfLabel,
+      dataAgeLabel,
+      sessionLabel: session.label,
+      sessionDetail: session.detail,
+      tierLabel,
+      greeting: greeting.name ? `${greeting.salutation}, ${greeting.name}` : greeting.salutation,
+      verified,
+      youtubeId: null,
+    });
+
+    const insight = buildAiMarketInsight({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      verified,
+      now,
+    });
+    const oracle = buildOracleBundle({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      session,
+      verified,
+      freshnessLabel: dataAgeLabel,
+      candles: candles?.candles ?? null,
+      support: support?.value ?? null,
+      resistance: resistance?.value ?? null,
+      expectedMoveLabel: expectedMove,
+      now,
+    });
+
+    const props = sanitizeForClient({
+      model,
+      insight,
+      oracle,
+      contextStatus: context.status,
+      missingInputs: context.missingInputs,
+      correlationId: context.correlationId,
+    });
+
+    return (
+      <MemberShell active="brief">
+        {props.contextStatus !== "complete" ? (
+          <aside className="dashPartialBanner" role="status">
+            <strong>
+              {props.contextStatus === "unavailable"
+                ? "Morning Brief is running with limited verified context"
+                : "Partial Morning Brief"}
+            </strong>
+            <span>
+              Deterministic sections remain available.{" "}
+              {props.missingInputs.length
+                ? `Awaiting: ${props.missingInputs.slice(0, 3).join("; ")}.`
+                : null}{" "}
+              Ref {props.correlationId}.
+            </span>
+            <div>
+              <Link href="/brief">Retry brief</Link>
+              <Link href="/terminal">Open Trading Desk</Link>
+              <Link href="/dashboard">Show dashboard context</Link>
+            </div>
+          </aside>
+        ) : null}
+        <MorningMarketBrief model={props.model} insight={props.insight} oracle={props.oracle} />
+      </MemberShell>
+    );
+  } catch (error) {
+    console.error("[brief] page failed; rendering recovery shell", {
+      name: error instanceof Error ? error.name : "Error",
+    });
+    const snapshot = createUnavailableSnapshot();
+    const gatewayStatus = createUnconfiguredMarketGatewayStatus("Brief recovery");
+    const session = readSessionClock(new Date(now));
+    const intelligence = analyzeMarketSnapshot(snapshot);
+    const decision = createTradingDecision({
+      intelligence,
+      reasoning: intelligence.reasoning,
+      dataStatus: snapshot.status,
+      providerStatus: gatewayStatus.connectionStatus,
+      dataAgeMs: gatewayStatus.dataAgeMs,
+      fallbackActive: true,
+      missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+    });
+    const plan = createStructuredTradePlan({
+      decision,
+      intelligence,
+      dataStatus: snapshot.status,
+      providerStatus: gatewayStatus.connectionStatus,
+      dataAgeMs: gatewayStatus.dataAgeMs,
+      fallbackActive: true,
+      missingDataWarnings: intelligence.reasoning.missingDataWarnings,
+    });
+    const decisionDesk = buildDecisionDesk({
+      verified: false,
+      decision,
+      plan,
+      intelligence,
+      session,
+      candles: undefined,
+      expectedMoveLabel: "Unavailable",
+      support: null,
+      resistance: null,
+    });
+    const brief = buildMarketBrief(snapshot, intelligence, decision, plan, null);
+    const greeting = buildDeskGreeting(displayName, session, new Date(now));
+    const model = composeMorningMarketBrief({
+      brief,
+      desk: decisionDesk,
+      intelligence,
+      decision,
+      plan,
+      snapshot,
+      sessionLevels: null,
+      support: null,
+      resistance: null,
+      expectedMoveLabel: "Unavailable",
+      asOfLabel: formatUkTimestamp(snapshot.asOf),
+      dataAgeLabel: "Delayed market data · age unavailable",
+      sessionLabel: session.label,
+      sessionDetail: session.detail,
+      tierLabel,
+      greeting: greeting.name ? `${greeting.salutation}, ${greeting.name}` : greeting.salutation,
+      verified: false,
+      youtubeId: null,
+    });
+    const insight = buildAiMarketInsight({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      verified: false,
+      now,
+    });
+    const oracle = buildOracleBundle({
+      snapshot,
+      intelligence,
+      decision,
+      plan,
+      session,
+      verified: false,
+      freshnessLabel: "Delayed market data · age unavailable",
+      candles: null,
+      support: null,
+      resistance: null,
+      now,
+    });
+    const props = sanitizeForClient({ model, insight, oracle });
+
+    return (
+      <MemberShell active="brief">
+        <aside className="dashPartialBanner is-critical" role="alert">
+          <strong>Brief recovered in safe mode</strong>
+          <span>No invented market narrative is shown. Retry or continue on the Trading Desk.</span>
+          <div>
+            <Link href="/brief">Retry brief</Link>
+            <Link href="/terminal">Open Trading Desk</Link>
+            <Link href="/dashboard">Open Dashboard</Link>
+          </div>
+        </aside>
+        <MorningMarketBrief model={props.model} insight={props.insight} oracle={props.oracle} />
+      </MemberShell>
+    );
   }
-
-  const brief = buildMarketBrief(snapshot, intelligence, decision, plan, selection);
-  const greeting = buildDeskGreeting(displayName, session, new Date(now));
-  const sessionLevels = candleSeries?.candles?.length
-    ? deriveSessionReferenceLevels(candleSeries.candles, Math.floor(now / 1000))
-    : null;
-
-  const model = composeMorningMarketBrief({
-    brief,
-    desk: decisionDesk,
-    intelligence,
-    decision,
-    plan,
-    snapshot,
-    sessionLevels,
-    support: support?.value ?? null,
-    resistance: resistance?.value ?? null,
-    expectedMoveLabel: expectedMove,
-    asOfLabel,
-    dataAgeLabel,
-    sessionLabel: session.label,
-    sessionDetail: session.detail,
-    tierLabel: access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase(),
-    greeting: greeting.name ? `${greeting.salutation}, ${greeting.name}` : greeting.salutation,
-    verified,
-    youtubeId: null,
-  });
-
-  const insight = buildAiMarketInsight({
-    snapshot,
-    intelligence,
-    decision,
-    plan,
-    verified,
-    now,
-  });
-  const oracle = buildOracleBundle({
-    snapshot,
-    intelligence,
-    decision,
-    plan,
-    session,
-    verified,
-    freshnessLabel: dataAgeLabel,
-    candles: candleSeries?.candles ?? null,
-    support: support?.value ?? null,
-    resistance: resistance?.value ?? null,
-    expectedMoveLabel: expectedMove,
-    now,
-  });
-
-  return (
-    <MemberShell active="brief">
-      <MorningMarketBrief model={model} insight={insight} oracle={oracle} />
-    </MemberShell>
-  );
 }

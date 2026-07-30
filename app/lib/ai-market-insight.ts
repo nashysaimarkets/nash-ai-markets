@@ -135,6 +135,21 @@ export function buildBullBearMeter(
     };
   }
 
+  if (
+    !Number.isFinite(bull.probability) ||
+    !Number.isFinite(neutral.probability) ||
+    !Number.isFinite(bear.probability)
+  ) {
+    return {
+      available: false,
+      disclosure,
+      bullish: { label: "Bullish", probability: 0, factors: ["Unavailable until verified decision inputs clear."] },
+      neutral: { label: "Neutral", probability: 0, factors: ["Unavailable until verified decision inputs clear."] },
+      bearish: { label: "Bearish", probability: 0, factors: ["Unavailable until verified decision inputs clear."] },
+      dominant: "Unavailable",
+    };
+  }
+
   const sides: BullBearSide[] = [
     { label: "Bullish", probability: Math.round(bull.probability), factors: scenarioFactors(bull, verified) },
     { label: "Neutral", probability: Math.round(neutral.probability), factors: scenarioFactors(neutral, verified) },
@@ -157,7 +172,10 @@ export function buildPremiumConfidence(
   intelligence: MarketIntelligence,
   verified: boolean,
 ): PremiumConfidenceModel {
-  const score = verified ? Math.round(Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence)) : null;
+  const rawScore = verified
+    ? Math.min(decision.confidenceScore, intelligence.scores.bullseyeConfidence)
+    : null;
+  const score = typeof rawScore === "number" && Number.isFinite(rawScore) ? Math.round(rawScore) : null;
   const band = mapConfidenceBand(confidenceBandFromScore(score, verified));
   if (!verified || score == null) {
     return {

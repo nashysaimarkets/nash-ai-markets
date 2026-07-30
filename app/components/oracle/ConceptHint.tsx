@@ -2,6 +2,7 @@ import { CONCEPT_EXPLAINERS, type ConceptExplainerId } from "../../lib/oracle/co
 
 export function ConceptHint({ conceptId }: { conceptId: ConceptExplainerId }) {
   const concept = CONCEPT_EXPLAINERS[conceptId];
+  if (!concept) return null;
   return (
     <details className="oracleConceptHint">
       <summary aria-label={`Explain ${concept.title}`}>What is this?</summary>
