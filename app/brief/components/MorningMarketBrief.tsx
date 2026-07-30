@@ -8,6 +8,7 @@ import type { OracleBundle } from "../../components/oracle/OracleCompanionStack.
 import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { MarketVideoPlayer } from "../../components/MarketVideoPlayer.tsx";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
@@ -33,27 +34,35 @@ function weatherMoveCue(direction: MorningMarketBriefModel["crossAssets"][number
 }
 
 function BriefVideo({ video }: { video: MorningMarketBriefModel["video"] }) {
-  if (!video.available || !video.youtubeId) {
-    return (
-      <div className="mbVideoUnavailable" role="status">
-        <strong>Daily market video — not available today</strong>
-        <p>{video.reason}</p>
-      </div>
-    );
+  if (!video.available || !video.youtubeId || !video.embedUrl) {
+    return null;
   }
 
-  const src = `https://www.youtube-nocookie.com/embed/${video.youtubeId}?rel=0&modestbranding=1`;
   return (
-    <div className="mbVideoFrame">
-      <iframe
-        title={video.title}
-        src={src}
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-        referrerPolicy="strict-origin-when-cross-origin"
-      />
-    </div>
+    <MarketVideoPlayer
+      video={{
+        id: `${video.type ?? "video"}-${video.youtubeId}`,
+        youtubeVideoId: video.youtubeId,
+        type: video.type ?? "PRE_MARKET",
+        marketDate: video.marketDate ?? "—",
+        title: video.title,
+        description: "",
+        publishedAt: new Date().toISOString(),
+        durationSeconds: video.durationSeconds,
+        thumbnailUrl: video.thumbnailUrl ?? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`,
+        watchUrl: video.watchUrl ?? `https://www.youtube.com/watch?v=${video.youtubeId}`,
+        embedUrl: video.embedUrl,
+        status: "published",
+        source: "youtube",
+        verifiedAt: new Date().toISOString(),
+      }}
+      heading={
+        video.type === "POST_MARKET"
+          ? "Today’s post-market video review"
+          : "Today’s pre-market video"
+      }
+      supportingText="A concise walkthrough of today’s verified market context."
+    />
   );
 }
 
@@ -70,7 +79,7 @@ function customerLevelLabel(label: string, kind: string): string {
 }
 
 export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBriefProps) {
-  const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted/i.test(
+  const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted|wait for confirmation/i.test(
     `${model.playbook.posture} ${model.aiBriefing.mode} ${model.biggestRisk.label}`,
   );
   const timeline = model.economicTimeline.filter((item) => item.available).slice(0, 3);
@@ -78,22 +87,20 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
     `${model.expectedMove.label} ${model.expectedMove.detail}`,
   );
   const confidenceLabel = model.aiBriefing.confidence == null
-    ? "Not rated"
-    : model.aiBriefing.confidence === 0
-      ? "Not established"
-      : permissionBlocked
-        ? "Limited"
-        : `${Math.round(model.aiBriefing.confidence)} / 100`;
+    ? "NOT ESTABLISHED"
+    : model.aiBriefing.confidence === 0 || permissionBlocked
+      ? "NOT ESTABLISHED"
+      : `${Math.round(model.aiBriefing.confidence)} / 100`;
   const confidenceDetail = model.aiBriefing.confidence == null
     ? null
     : model.aiBriefing.confidence === 0 || permissionBlocked
-      ? `Engine confidence score: ${Math.round(model.aiBriefing.confidence)} / 100`
+      ? "Awaiting evidence — incomplete inputs are not shown as a measured score."
       : null;
   const delayedAge = formatDelayedDataAgeDisplay(model.dataAgeLabel);
   const primaryReason = model.biggestRisk.label
-    .replace(/critical input missing/i, "Confirmation data is incomplete")
-    .replace(/required market evidence is missing/i, "Confirmation data is incomplete")
-    .replace(/incomplete verified inputs/i, "Confirmation data is incomplete");
+    .replace(/critical input missing/i, "Confirmation evidence is incomplete")
+    .replace(/required market evidence is missing/i, "Confirmation evidence is incomplete")
+    .replace(/incomplete verified inputs/i, "Confirmation evidence is incomplete");
 
   return (
     <article className="morningMarketBrief" aria-labelledby="mb-title">
@@ -102,7 +109,7 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
           <span className="mbEyebrow">Morning Brief</span>
           <h1 id="mb-title">
             {model.greeting}
-            <em> Here is today’s market briefing.</em>
+            <em> {model.briefHeadline}</em>
           </h1>
           <p>
             A concise verified briefing for S&P 500 futures traders — what changed,
@@ -162,7 +169,7 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
         <div className="mbDecisionGrid">
           <div className={permissionBlocked ? "is-blocked" : ""}>
             <span>Participation</span>
-            <strong>{permissionBlocked ? "Wait for confirmation" : "Proceed with caution"}</strong>
+            <strong>{permissionBlocked ? "WAIT FOR CONFIRMATION" : "Proceed with caution"}</strong>
           </div>
           <div>
             <span>Observed market lean</span>
@@ -175,7 +182,7 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
           </div>
           <div>
             <span>Primary condition</span>
-            <strong>{primaryReason}</strong>
+            <strong>{permissionBlocked ? "Confirmation evidence is incomplete" : primaryReason}</strong>
           </div>
         </div>
         <details className="mbParticipationDetails">
@@ -188,6 +195,12 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
           </p>
         </details>
       </section>
+
+      {model.video.available && model.video.placement === "current" ? (
+        <section className="mbPanel mbVideoPanel" aria-labelledby="mb-video-title">
+          <BriefVideo video={model.video} />
+        </section>
+      ) : null}
 
       <section className="mbPanel mbExecutive" id="executive-summary" aria-labelledby="mb-exec-title">
         <header>
@@ -417,14 +430,14 @@ export function MorningMarketBrief({ model, insight, oracle }: MorningMarketBrie
         </details>
       ) : null}
 
-      {model.video.available ? (
-        <section className="mbPanel" aria-labelledby="mb-video-title">
-          <header>
-            <span className="mbEyebrow">Optional</span>
-            <h2 id="mb-video-title">{model.video.title}</h2>
-          </header>
-          <BriefVideo video={model.video} />
-        </section>
+      {model.earlierVideo?.available ? (
+        <details className="mbPanel mbEarlierVideo">
+          <summary>
+            Earlier briefing
+            {model.earlierVideo.marketDate ? ` · ${model.earlierVideo.marketDate}` : ""}
+          </summary>
+          <BriefVideo video={model.earlierVideo} />
+        </details>
       ) : null}
     </article>
   );

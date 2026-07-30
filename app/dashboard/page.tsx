@@ -20,6 +20,7 @@ import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { readSessionClock } from "../terminal/lib/session-clock.ts";
 import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway.ts";
+import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -71,6 +72,7 @@ export default async function MemberDashboard() {
       warnings: context.warnings,
       now,
     });
+    const sessionVideos = resolveSessionMarketVideos({ phase: context.session.phase, now });
     const insight = buildAiMarketInsight({
       snapshot: context.snapshot,
       intelligence: context.intelligence,
@@ -108,6 +110,7 @@ export default async function MemberDashboard() {
       contextStatus: context.status,
       missingInputs: context.missingInputs,
       correlationId: context.correlationId,
+      marketVideo: sessionVideos.dashboardSelection,
     });
 
     return (
@@ -140,6 +143,7 @@ export default async function MemberDashboard() {
           oracle={props.oracle}
           candleSeries={props.candleSeries}
           now={props.now}
+          marketVideo={props.marketVideo}
         />
       </MemberShell>
     );

@@ -1,3 +1,4 @@
+import { resolveStoredMarketId } from "../markets/market-catalog.ts";
 import { notifyOracleStorage } from "./oracle-storage-bus.ts";
 
 export const DASHBOARD_WORKSPACE_STORAGE_KEY = "nash-oracle-dashboard-workspace-v1";
@@ -71,7 +72,10 @@ export function readDashboardWorkspace(
     }
     return {
       version: 1,
-      favouriteMarketId: typeof parsed.favouriteMarketId === "string" ? parsed.favouriteMarketId : "es",
+      favouriteMarketId:
+        typeof parsed.favouriteMarketId === "string"
+          ? resolveStoredMarketId(parsed.favouriteMarketId)
+          : "es",
       pinned: [...new Set(pinned)],
       order,
       expanded: Array.isArray(parsed.expanded)
@@ -89,7 +93,11 @@ export function writeDashboardWorkspace(
 ): void {
   if (!storage) return;
   try {
-    storage.setItem(DASHBOARD_WORKSPACE_STORAGE_KEY, JSON.stringify(prefs));
+    const normalized = {
+      ...prefs,
+      favouriteMarketId: resolveStoredMarketId(prefs.favouriteMarketId),
+    };
+    storage.setItem(DASHBOARD_WORKSPACE_STORAGE_KEY, JSON.stringify(normalized));
     notifyOracleStorage();
   } catch {
     // ignore

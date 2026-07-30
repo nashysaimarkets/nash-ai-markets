@@ -571,6 +571,21 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskFreshness li em{color:#87948e;font-style:normal;font-size:12px;line-height:1.4}
 .deskFreshness li[data-status="LIVE"] small{color:#62e6b1}
 .deskFreshness li[data-status="UNAVAILABLE"] small,.deskFreshness li[data-status="STALE"] small{color:#ef7777}
+.deskHealthSummary{margin:0;padding:0 20px 8px;color:#aeb8b3;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.deskHealthFacts{margin:0;padding:0 20px 12px;list-style:none;display:grid;gap:8px}
+.deskHealthFacts li{display:flex;justify-content:space-between;gap:12px;padding:0;border:0}
+.deskHealthFacts span{color:#87948e;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.deskHealthFacts strong{color:#dce6e1;font:650 13px/1.4 var(--font-geist-sans),Arial,sans-serif;text-align:right}
+.deskHealthDetails{margin:0 12px 12px;padding:8px 0 0;border-top:1px solid #1c2823}
+.deskHealthDetails>summary{cursor:pointer;color:#a89b7a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
+.deskConfirmLead{margin:0 0 8px;color:#c9b48a;font:650 13px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.deskTechnicalReasons{margin-top:12px}
+.deskTechnicalReasons>summary{cursor:pointer;color:#a89b7a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
+.tmMarketsGroupLater{
+  display:flex;justify-content:space-between;align-items:center;min-height:40px;padding:8px 16px;color:#6f7f78;
+  font:500 13px var(--font-geist-sans),Arial,sans-serif;
+}
+.tmMarketsGroupLater small{color:#5d6b66;font:650 11px var(--font-geist-mono),monospace}
 .deskSessionGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#24322c;border-top:1px solid #24322c}
 .deskSessionGrid>div{padding:18px 16px;background:#0b1210}
 .deskSessionGrid span{display:block;color:#7d8a84;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}

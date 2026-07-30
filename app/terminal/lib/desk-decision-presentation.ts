@@ -47,10 +47,10 @@ export function leanLabelFromSignals(
 export function permissionPresentation(
   decision: TradingDecision | null,
 ): { label: string; tone: DeskDecisionPresentation["permissionTone"] } {
-  if (!decision) return { label: "Wait for confirmation", tone: "blocked" };
+  if (!decision) return { label: "WAIT FOR CONFIRMATION", tone: "blocked" };
   if (decision.tradePermission === "actionable") return { label: "Permitted with caution", tone: "open" };
   if (decision.tradePermission === "caution") return { label: "Proceed with caution", tone: "caution" };
-  return { label: "Wait for confirmation", tone: "blocked" };
+  return { label: "WAIT FOR CONFIRMATION", tone: "blocked" };
 }
 
 function softenRiskPhrase(value: string | null): string | null {
@@ -89,7 +89,6 @@ export function buildDeskDecisionPresentation(input: {
   const rawPrimary = warnings[0]
     ?? (plan?.reasonsToRemainSidelined[0] ? humanize(plan.reasonsToRemainSidelined[0]) : null)
     ?? (decision?.noTradeReasons[0] ? humanize(decision.noTradeReasons[0]) : null);
-  const primaryRisk = softenRiskPhrase(rawPrimary);
 
   const analysisAvailable = Boolean(decision) || supporting.length > 0 || opposing.length > 0 || lean.label !== "Unavailable";
 
@@ -110,17 +109,19 @@ export function buildDeskDecisionPresentation(input: {
 
   let confidenceLabel: string;
   let confidenceDetail: string | null = null;
-  if (score == null || score === 0) {
-    confidenceLabel = "Not established";
+  if (score == null || score === 0 || permission.tone === "blocked") {
+    confidenceLabel = "NOT ESTABLISHED";
     confidenceDetail =
-      "Required confirmation evidence is incomplete. A zero engine reading is not shown as a measured confidence result.";
-  } else if (permission.tone === "blocked") {
-    confidenceLabel = "Not established";
-    confidenceDetail = `Engine reference ${score}/100 remains secondary while confirmation is incomplete.`;
+      "Confirmation evidence is incomplete. Awaiting evidence — a zero engine reading is not shown as a measured result.";
   } else {
     confidenceLabel = `${score} / 100`;
     confidenceDetail = null;
   }
+
+  const primaryRisk =
+    permission.tone === "blocked"
+      ? "Confirmation evidence is incomplete"
+      : softenRiskPhrase(rawPrimary);
 
   return {
     leanLabel: lean.label,

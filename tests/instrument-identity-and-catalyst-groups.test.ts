@@ -50,7 +50,7 @@ test("Employment Cost components group under one primary catalyst window", () =>
   ], now, 5);
 
   assert.equal(groups.length, 2);
-  assert.equal(groups[0]?.name, "Employment Cost Index QoQ");
+  assert.equal(groups[0]?.name, "Employment Cost Index");
   assert.deepEqual(
     groups[0]?.includes.map((item) => item.name).sort(),
     ["Benefits QoQ", "Wages QoQ"],
@@ -74,14 +74,14 @@ test("catalyst radar and next-event selector stay grouped for the same Employmen
     now,
   });
   assert.equal(radar.items.length, 1);
-  assert.equal(radar.items[0]?.title, "Employment Cost Index QoQ");
+  assert.equal(radar.items[0]?.title, "Employment Cost Index");
   assert.deepEqual(radar.items[0]?.includes.sort(), ["Benefits QoQ", "Wages QoQ"]);
 });
 
 test("group availability labels never imply planned catalogue totals are selectable", () => {
   const fx = MARKET_CATALOG.find((group) => group.id === "fx")!;
   const indices = MARKET_CATALOG.find((group) => group.id === "indices")!;
-  assert.equal(groupAvailabilityLabel(fx), "planned");
+  assert.equal(groupAvailabilityLabel(fx), "coming later");
   assert.match(groupAvailabilityLabel(indices), /\d+ available/);
   assert.equal(isFavouriteMarketId(["nq", "es"], "ixic"), true);
   assert.equal(isFavouriteMarketId(["es"], "ixic"), false);

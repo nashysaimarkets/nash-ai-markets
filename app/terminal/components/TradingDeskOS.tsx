@@ -7,6 +7,7 @@ import {
   coverageDetail,
   coverageLabel,
   getMarketInstrument,
+  groupAvailabilityLabel,
   isFavouriteMarketId,
   resolveStoredMarketId,
   type MarketCoverage,
@@ -15,6 +16,8 @@ import {
 } from "../../lib/markets/market-catalog.ts";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { buildConfirmationSummary } from "../../lib/confirmation-summary.ts";
+import { buildDataHealthSummary } from "../../lib/data-health-summary.ts";
 import { isCandleInstrument, type CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart.tsx";
@@ -385,35 +388,63 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   function renderWidget(id: DeskWidgetId) {
     const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
     switch (id) {
-      case "freshness-trust":
+      case "freshness-trust": {
+        const health = buildDataHealthSummary(payload.freshnessFeeds);
         return (
           <section key={id} className="deskWidget deskFreshness" aria-label="Data health">
             <header>
               <span>Data health</span>
-              <strong>Feed status</strong>
+              <strong>{health.headline}</strong>
             </header>
-            <ul>
-              {payload.freshnessFeeds.map((feed) => (
-                <li key={feed.id} data-status={feed.status}>
-                  <span>{feed.label}</span>
-                  <TerminalBadge
-                    label={feed.status.replace("_", " ")}
-                    tone={
-                      feed.status === "LIVE"
-                        ? "positive"
-                        : feed.status === "DELAYED" || feed.status === "PREVIOUS_SESSION" || feed.status === "MARKET_CLOSED"
-                          ? "warning"
-                          : "danger"
-                    }
-                    pulse={feed.status === "LIVE"}
-                  />
-                  <small>{feed.ageLabel}</small>
-                  <em>{feed.detail}</em>
+            <p className="deskHealthSummary">{health.detail}</p>
+            <ul className="deskHealthFacts">
+              <li>
+                <span>ES educational review</span>
+                <strong>{health.esUsable ? "Usable" : "Unavailable"}</strong>
+              </li>
+              <li>
+                <span>Supporting markets</span>
+                <strong>{health.supportingIncomplete ? "Incomplete" : "Within delayed window"}</strong>
+              </li>
+              {health.oldestImportantLabel ? (
+                <li>
+                  <span>Oldest important input</span>
+                  <strong>{health.oldestImportantLabel}</strong>
                 </li>
-              ))}
+              ) : null}
+              {health.unavailableSources.length ? (
+                <li>
+                  <span>Unavailable sources</span>
+                  <strong>{health.unavailableSources.slice(0, 4).join(", ")}</strong>
+                </li>
+              ) : null}
             </ul>
+            <details className="deskHealthDetails">
+              <summary>View feed ages</summary>
+              <ul>
+                {payload.freshnessFeeds.map((feed) => (
+                  <li key={feed.id} data-status={feed.status}>
+                    <span>{feed.label}</span>
+                    <TerminalBadge
+                      label={feed.status.replace("_", " ")}
+                      tone={
+                        feed.status === "LIVE"
+                          ? "positive"
+                          : feed.status === "DELAYED" || feed.status === "PREVIOUS_SESSION" || feed.status === "MARKET_CLOSED"
+                            ? "warning"
+                            : "danger"
+                      }
+                      pulse={feed.status === "LIVE"}
+                    />
+                    <small>{feed.ageLabel}</small>
+                    <em>{feed.detail}</em>
+                  </li>
+                ))}
+              </ul>
+            </details>
           </section>
         );
+      }
       case "session-clock":
         return (
           <section key={id} className={`deskWidget deskSession is-${session.phase}`} aria-label="Session command strip">
@@ -861,7 +892,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </li>
                   ))}
                 </ul>
-                <small>Stored locally in this browser — not synced to the server journal API.</small>
+                <small>Saved on this device</small>
               </>
             ) : null}
           </section>
@@ -1120,7 +1151,15 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               {MARKET_CATALOG.map((group) => {
                 const expanded = openGroup === group.id;
                 const { connected } = sortInstrumentsForSidebar(group.instruments);
-                if (!connected.length) return null;
+                const availability = groupAvailabilityLabel(group);
+                if (!connected.length) {
+                  return (
+                    <li key={group.id} className="tmMarketsGroupLater">
+                      <span>{group.label}</span>
+                      <small>{availability === "coming later" ? "coming later" : availability}</small>
+                    </li>
+                  );
+                }
                 const favourited = (instrumentId: string) => isFavouriteMarketId(workspace.favourites, instrumentId);
                 const renderInstrument = (instrument: MarketInstrument) => (
                   <li key={instrument.id}>
@@ -1153,7 +1192,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <li key={group.id}>
                     <button type="button" className="tmMarketsGroupToggle" aria-expanded={expanded} onClick={() => setOpenGroup(expanded ? null : group.id)}>
                       <span>{group.label}</span>
-                      <small>{connected.length} connected</small>
+                      <small>{availability}</small>
                       <i aria-hidden="true">{expanded ? "▾" : "▸"}</i>
                     </button>
                     {expanded ? (
@@ -1321,10 +1360,33 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           </div>
 
           {deskView === "risk" && payload.customerWarnings.length ? (
-            <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" open>
-              <summary><span>Participation limits</span><strong>Delay and no-trade conditions</strong></summary>
-              <div className="ctConstraints"><ul>{payload.customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
-            </details>
+            (() => {
+              const confirmation = buildConfirmationSummary(payload.customerWarnings);
+              return (
+                <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" open>
+                  <summary>
+                    <span>Participation limits</span>
+                    <strong>{confirmation.headline}</strong>
+                  </summary>
+                  <div className="ctConstraints">
+                    <p className="deskConfirmLead">Main reasons:</p>
+                    <ul>
+                      {confirmation.primaryReasons.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                    <details className="deskTechnicalReasons">
+                      <summary>View technical reasons</summary>
+                      <ul>
+                        {confirmation.technicalReasons.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  </div>
+                </details>
+              );
+            })()
           ) : null}
 
           <footer className="ctFooter">

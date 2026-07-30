@@ -29,6 +29,8 @@ import type { DeskGreeting } from "../lib/market-weather.ts";
 import type { DashboardCommandSummary } from "../lib/dashboard-command-summary.ts";
 import { DashboardCandlestickChart } from "./DashboardCandlestickChart.tsx";
 import { EventCountdown } from "./EventCountdown";
+import { DashboardMarketVideoCard } from "../../components/DashboardMarketVideoCard.tsx";
+import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -38,6 +40,7 @@ export type MarketCommandCentreProps = {
   oracle: OracleBundle;
   candleSeries: CustomerCandleSeries | null;
   now: number;
+  marketVideo?: MarketVideoSelection | null;
 };
 
 function toneClass(tone: string) {
@@ -52,6 +55,7 @@ export function MarketCommandCentre({
   oracle,
   candleSeries,
   now,
+  marketVideo = null,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
   const posture = buildTodaysPosture(decision);
@@ -255,6 +259,7 @@ export function MarketCommandCentre({
           <div className="dashFreshness" role="status">
             <strong>Delayed market data</strong>
             <span>{hero.delayedAgeLine}</span>
+            {hero.priceSourceLabel ? <em>{hero.priceSourceLabel}</em> : null}
           </div>
 
           {hero.rangePositionPct != null && hero.rangeLow && hero.rangeHigh ? (
@@ -280,6 +285,8 @@ export function MarketCommandCentre({
       </header>
 
       {sectionNodes["thirty-second"]}
+
+      {marketVideo ? <DashboardMarketVideoCard selection={marketVideo} /> : null}
 
       <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">

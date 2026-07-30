@@ -88,7 +88,7 @@ export function DashboardWorkspaceControls({
           onChange={(event) => onChange({ ...prefs, favouriteMarketId: event.target.value })}
         >
           <option value="es">ES</option>
-          <option value="nq">Nasdaq Composite (IXIC)</option>
+          <option value="ixic">Nasdaq Composite (IXIC)</option>
           <option value="qqq">QQQ</option>
           <option value="vix">VIX</option>
           <option value="dxy">DXY</option>

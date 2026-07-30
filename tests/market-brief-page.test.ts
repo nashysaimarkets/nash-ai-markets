@@ -239,7 +239,7 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(component, /Technical engine detail/);
   assert.doesNotMatch(component, /Highest-probability behaviour|engine weight favours/);
   assert.doesNotMatch(component, /label === "Breadth"|BREADTH/);
-  assert.match(component, /Here is today[\u2019']s market briefing|today[\u2019']s market briefing/);
+  assert.match(component, /model\.briefHeadline|pre-market briefing|session update|post-market review/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
   assert.match(css, /align-items:\s*start/);

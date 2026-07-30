@@ -30,6 +30,7 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { readSessionClock } from "../terminal/lib/session-clock.ts";
 import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway.ts";
 import { formatDelayedVerifiedCandleAgeDisplay } from "../lib/freshness-labels.ts";
+import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -114,6 +115,7 @@ export default async function AIMarketBriefPage() {
 
     const brief = buildMarketBrief(snapshot, intelligence, decision, plan, selection);
     const greeting = buildDeskGreeting(displayName, session, new Date(now));
+    const sessionVideos = resolveSessionMarketVideos({ phase: session.phase, now });
     const sessionLevels = candles?.candles?.length
       ? deriveSessionReferenceLevels(candles.candles, Math.floor(now / 1000))
       : null;
@@ -135,8 +137,12 @@ export default async function AIMarketBriefPage() {
       sessionDetail: session.detail,
       tierLabel,
       greeting: greeting.name ? `${greeting.salutation}, ${greeting.name}` : greeting.salutation,
+      briefHeadline: greeting.briefHeadline,
       verified,
-      youtubeId: null,
+      videoSlot: sessionVideos.briefPrimary,
+      earlierVideoSlot: sessionVideos.briefEarlier,
+      sessionPhase: session.phase,
+      now,
     });
 
     const insight = buildAiMarketInsight({
@@ -236,6 +242,7 @@ export default async function AIMarketBriefPage() {
     });
     const brief = buildMarketBrief(snapshot, intelligence, decision, plan, null);
     const greeting = buildDeskGreeting(displayName, session, new Date(now));
+    const sessionVideos = resolveSessionMarketVideos({ phase: session.phase, now });
     const model = composeMorningMarketBrief({
       brief,
       desk: decisionDesk,
@@ -253,8 +260,12 @@ export default async function AIMarketBriefPage() {
       sessionDetail: session.detail,
       tierLabel,
       greeting: greeting.name ? `${greeting.salutation}, ${greeting.name}` : greeting.salutation,
+      briefHeadline: greeting.briefHeadline,
       verified: false,
-      youtubeId: null,
+      videoSlot: sessionVideos.briefPrimary,
+      earlierVideoSlot: sessionVideos.briefEarlier,
+      sessionPhase: session.phase,
+      now,
     });
     const insight = buildAiMarketInsight({
       snapshot,

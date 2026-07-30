@@ -294,11 +294,11 @@ export function plannedMarketCount(group: MarketGroup): number {
   return group.instruments.filter((item) => item.coverage !== "live").length;
 }
 
-/** Compact group badge: "4 available" or "planned" — never a fake accessible total. */
+/** Compact group badge: "4 available" or "coming later" — never a fake catalogue total. */
 export function groupAvailabilityLabel(group: MarketGroup): string {
   const live = liveAvailableCount(group);
   if (live > 0) return `${live} available`;
-  return "planned";
+  return "coming later";
 }
 
 export function coverageLabel(coverage: MarketCoverage): string {

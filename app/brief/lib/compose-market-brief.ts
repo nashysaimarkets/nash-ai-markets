@@ -50,6 +50,13 @@ export type BriefVideoSlot = {
   youtubeId: string | null;
   title: string;
   reason: string;
+  type: "PRE_MARKET" | "POST_MARKET" | null;
+  marketDate: string | null;
+  embedUrl: string | null;
+  watchUrl: string | null;
+  thumbnailUrl: string | null;
+  durationSeconds: number | null;
+  placement: "current" | "earlier" | "hidden";
 };
 
 export type BriefServiceItem = {
@@ -68,6 +75,8 @@ export type MorningMarketBriefModel = {
   sessionDetail: string;
   tierLabel: string;
   greeting: string;
+  /** Session-aware hero clause; navigation label stays Morning Brief. */
+  briefHeadline: string;
   delayedDisclosure: string;
   executiveSummary: string;
   posture: TodaysPosture;
@@ -113,6 +122,8 @@ export type MorningMarketBriefModel = {
     detail: string;
   };
   video: BriefVideoSlot;
+  /** Collapsed earlier briefing when the session has progressed. */
+  earlierVideo: BriefVideoSlot | null;
   serviceStatus: BriefServiceItem[];
   serviceStatusSummary: string | null;
 };
@@ -396,22 +407,42 @@ function buildTimeline(events: MarketEvent[], now = Date.now()): BriefTimelineIt
   }));
 }
 
-function resolveVideo(youtubeId: string | null | undefined): BriefVideoSlot {
-  const id = youtubeId?.trim() ?? "";
+function resolveVideo(input: {
+  youtubeId?: string | null;
+}): BriefVideoSlot {
+  const id = input.youtubeId?.trim() ?? "";
   if (/^[A-Za-z0-9_-]{11}$/.test(id)) {
     return {
       available: true,
       youtubeId: id,
       title: "Daily market video",
       reason: "Verified published brief video.",
+      type: null,
+      marketDate: null,
+      embedUrl: `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`,
+      watchUrl: `https://www.youtube.com/watch?v=${id}`,
+      thumbnailUrl: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+      durationSeconds: null,
+      placement: "current",
     };
   }
+  return unavailableVideoSlot(null);
+}
+
+function unavailableVideoSlot(type: "PRE_MARKET" | "POST_MARKET" | null): BriefVideoSlot {
   return {
     available: false,
     youtubeId: null,
-    title: "Daily market video",
+    title: type === "POST_MARKET" ? "Post-market video review" : "Pre-market video briefing",
     reason:
-      "Today’s published market video is not linked yet. Verified market observations in this brief remain available.",
+      "Today’s video review has not been published yet. The verified written briefing remains available below.",
+    type,
+    marketDate: null,
+    embedUrl: null,
+    watchUrl: null,
+    thumbnailUrl: null,
+    durationSeconds: null,
+    placement: "hidden",
   };
 }
 
@@ -515,8 +546,14 @@ export function composeMorningMarketBrief(input: {
   sessionDetail: string;
   tierLabel: string;
   greeting: string;
+  briefHeadline?: string;
   verified: boolean;
   youtubeId?: string | null;
+  /** Current primary video for this session phase. */
+  videoSlot?: BriefVideoSlot | null;
+  /** Dated earlier briefing kept collapsed after the open. */
+  earlierVideoSlot?: BriefVideoSlot | null;
+  sessionPhase?: string;
   now?: number;
 }): MorningMarketBriefModel {
   const { brief, desk, decision, plan, snapshot, verified } = input;
@@ -547,7 +584,12 @@ export function composeMorningMarketBrief(input: {
   });
   const crossAssets = buildCrossAssets(snapshot);
   const timeline = buildTimeline(snapshot.events, now);
-  const video = resolveVideo(input.youtubeId);
+  const video = input.videoSlot ?? resolveVideo({
+    youtubeId: input.youtubeId,
+  });
+  const earlierVideo = input.earlierVideoSlot?.available
+    ? { ...input.earlierVideoSlot, placement: "earlier" as const }
+    : null;
 
   const serviceStatus: BriefServiceItem[] = [];
   for (const card of crossAssets.filter((item) => !item.available)) {
@@ -604,6 +646,7 @@ export function composeMorningMarketBrief(input: {
     sessionDetail: input.sessionDetail,
     tierLabel: input.tierLabel,
     greeting: input.greeting,
+    briefHeadline: input.briefHeadline ?? "Here is today’s market briefing.",
     delayedDisclosure: input.dataAgeLabel,
     executiveSummary: buildExecutiveSummary({
       snapshot,
@@ -649,7 +692,7 @@ export function composeMorningMarketBrief(input: {
       posture: customerFacingBriefCopy(
         verified
           ? `${desk.marketBias.label} bias · ${humanize(decision.tradePermission)} · ${humanize(decision.recommendedPosture)}`
-          : "Restricted until verified inputs recover",
+          : "Wait for confirmation until verified inputs recover",
       ),
       leanLabel: presentation.leanLabel,
       steps: verified
@@ -670,6 +713,7 @@ export function composeMorningMarketBrief(input: {
       ),
     },
     video,
+    earlierVideo,
     serviceStatus,
     serviceStatusSummary,
   };

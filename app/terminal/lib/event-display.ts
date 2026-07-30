@@ -136,13 +136,13 @@ export function groupVerifiedEvents(
 
     if (!family || stamp == null) {
       used.add(index);
-    groups.push({
-      time: displayTime,
-      at: event.at ?? (stamp != null ? new Date(stamp).toISOString() : undefined),
-      name: event.name,
-      risk: event.risk,
-      includes: [],
-    });
+      groups.push({
+        time: displayTime,
+        at: stamp != null ? new Date(stamp).toISOString() : event.at,
+        name: event.name,
+        risk: event.risk,
+        includes: [],
+      });
       if (groups.length >= limit) break;
       continue;
     }
@@ -161,11 +161,19 @@ export function groupVerifiedEvents(
     const includes = members
       .filter((item) => item !== primary)
       .map((item) => ({ name: familyComponentLabel(item.name), risk: item.risk }));
+    const quarter = members
+      .map((item) => item.name.match(/\b(Q[1-4])\b/i)?.[1]?.toUpperCase())
+      .find(Boolean);
 
     groups.push({
       time: stamp != null ? formatVerifiedEventWhen(stamp) : primary.time,
-      at: primary.at ?? (stamp != null ? new Date(stamp).toISOString() : undefined),
-      name: primary.name,
+      at: stamp != null ? new Date(stamp).toISOString() : primary.at,
+      name:
+        family === "employment-cost"
+          ? quarter
+            ? `Employment Cost Index (${quarter})`
+            : "Employment Cost Index"
+          : primary.name,
       risk: members.some((item) => item.risk === "HIGH") ? "HIGH" : primary.risk,
       includes,
     });

@@ -179,7 +179,7 @@ test("dashboard summary fails closed without inventing catalyst or live labels",
   assert.equal(summary.levels.length, 0);
   assert.match(summary.hero.delayedAgeLine, /Delayed market data/i);
   assert.doesNotMatch(summary.hero.delayedAgeLine, /\blive\b/i);
-  assert.equal(summary.decision.permissionLabel, "Wait for confirmation");
+  assert.equal(summary.decision.permissionLabel, "WAIT FOR CONFIRMATION");
   assert.ok(summary.unavailable.length > 0);
 });
 

@@ -76,8 +76,8 @@ test("incomplete confidence never presents a genuine 0/100 customer score", () =
     } as never,
     warnings: ["Confirmation data is incomplete"],
   });
-  assert.equal(presentation.permissionLabel, "Wait for confirmation");
-  assert.equal(presentation.confidenceLabel, "Not established");
+  assert.equal(presentation.permissionLabel, "WAIT FOR CONFIRMATION");
+  assert.equal(presentation.confidenceLabel, "NOT ESTABLISHED");
   assert.doesNotMatch(presentation.confidenceDetail ?? "", /0 \/ 100/);
   assert.doesNotMatch(presentation.permissionLabel, /Restricted/i);
 

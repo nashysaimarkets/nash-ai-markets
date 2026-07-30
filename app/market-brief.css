@@ -202,6 +202,30 @@
 }
 .mbVideoUnavailable strong{color:#dce5e8;font:650 14px/1.35 var(--font-geist-sans),Arial,sans-serif}
 .mbVideoUnavailable p{margin:0;color:var(--mb-muted);font:12px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.mbEarlierVideo{margin-top:12px}
+.mbEarlierVideo>summary{cursor:pointer;padding:14px 18px;color:#a89b7a;font:700 12px var(--font-geist-sans),Arial,sans-serif}
+.marketVideoCard{display:grid;gap:12px;padding:4px 0 8px}
+.marketVideoCard header{display:grid;gap:6px;padding:0 18px}
+.marketVideoBadge{
+  width:fit-content;padding:4px 8px;border-radius:999px;border:1px solid #33434a;color:#c9b48a;
+  font:700 10px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase;
+}
+.marketVideoCard h2{margin:0;color:#e8eef0;font:650 20px/1.25 var(--font-geist-sans),Arial,sans-serif}
+.marketVideoCard p{margin:0;color:var(--mb-muted);font:13px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.marketVideoCard small{color:#8a969c;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.marketVideoFrame{margin:0 18px;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid #243238;background:#070b0e}
+.marketVideoFrame iframe,.marketVideoPoster{display:block;width:100%;height:100%;border:0}
+.marketVideoPoster{position:relative;padding:0;cursor:pointer;background:#070b0e;color:inherit}
+.marketVideoPoster img{display:block;width:100%;height:100%;object-fit:cover}
+.marketVideoPlay{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  padding:10px 14px;border-radius:999px;background:#0b1512cc;border:1px solid #62e6b155;color:#dceee8;
+  font:700 12px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+}
+.marketVideoWatch{margin:0 18px 8px}
+.marketVideoWatch a{color:#9fd7c4;font:600 13px var(--font-geist-sans),Arial,sans-serif}
+.marketVideoCard.is-compact header{padding:0}
+.marketVideoCard.is-compact .marketVideoFrame{margin:0}
 .mbDecisionNote{margin:10px 0 0;color:#c9b48a;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:70ch}
 .mbParticipationDetails{margin:0;padding:14px 18px 18px;border-top:1px solid #1c282e}
 .mbParticipationDetails>summary{cursor:pointer;color:#a89b7a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}

@@ -76,15 +76,24 @@ export function formatEventCountdown(startsAt: string, now = Date.now()): string
 
 export function selectNextEconomicEvent(events: MarketSnapshot["events"], now = Date.now()): NextEconomicEvent | null {
   const next = groupVerifiedEvents(events, now, 1)[0];
-  if (!next?.at) return null;
-  const countdown = formatEventCountdown(next.at, now);
+  if (!next) return null;
+  const stamp = next.at ? Date.parse(next.at) : Number.NaN;
+  const startsAt = Number.isFinite(stamp) ? new Date(stamp).toISOString() : next.at;
+  if (!startsAt) return null;
+  const startsMs = Date.parse(startsAt);
+  if (!Number.isFinite(startsMs) || startsMs <= now) return null;
+  const countdown = formatEventCountdown(startsAt, now);
   if (!countdown) return null;
   return {
-    name: next.name,
+    name: /employment cost index/i.test(next.name) && next.includes.length
+      ? next.name.replace(/\s+QoQ$/i, "").trim() || next.name
+      : next.name,
     risk: next.risk,
-    startsAt: next.at,
+    startsAt,
     countdown,
-    includes: next.includes.map((item) => item.name),
+    includes: next.includes.length
+      ? ["headline", ...next.includes.map((item) => item.name.replace(/\s+QoQ$/i, "").toLowerCase())]
+      : next.includes.map((item) => item.name),
   };
 }
 

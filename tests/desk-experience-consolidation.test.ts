@@ -45,10 +45,10 @@ test("desk decision presentation separates lean from blocked permission", () => 
   });
 
   assert.equal(presentation.leanLabel, "Mildly bullish");
-  assert.equal(presentation.permissionLabel, "Wait for confirmation");
+  assert.equal(presentation.permissionLabel, "WAIT FOR CONFIRMATION");
   assert.equal(presentation.permissionTone, "blocked");
-  assert.equal(presentation.confidenceLabel, "Not established");
-  assert.match(presentation.confidenceDetail ?? "", /incomplete|not shown as a measured/i);
+  assert.equal(presentation.confidenceLabel, "NOT ESTABLISHED");
+  assert.match(presentation.confidenceDetail ?? "", /incomplete|not shown as a measured|Awaiting evidence/i);
   assert.doesNotMatch(presentation.confidenceDetail ?? "", /Engine confidence score: 0 \/ 100/);
   assert.match(presentation.why, /observed lean|wait for confirmation|incomplete/i);
   assert.doesNotMatch(presentation.why, /Restricted|instruction to buy|enter long/i);
