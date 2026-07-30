@@ -17,6 +17,7 @@ import {
   MEMBER_ROUTES,
   PUBLIC_ROUTES,
   STORAGE_STATE_PATH,
+  VIDEO_VISUAL_FOCUS_ROUTES,
   VIEWPORTS,
   type RouteSpec,
   type ViewportSpec,
@@ -24,7 +25,7 @@ import {
 } from "./config.ts";
 import { ensureAuthenticatedStorage, type AuthResult } from "./auth.ts";
 import { sanitizeText, sanitizeUrl } from "./sanitize.ts";
-import { extractMarketSnapshot, runVisualChecks } from "./visual.ts";
+import { extractMarketSnapshot, runVideoSurfaceChecks, runVisualChecks } from "./visual.ts";
 import { writeHtmlReport, writeJsonReport, writeMarkdownReport } from "./report.ts";
 import type { AuditReport, ConsoleEvent, Finding, NetworkFailure, RouteResult } from "./types.ts";
 
@@ -36,6 +37,25 @@ function parseMode(argv: string[]): Mode {
     return arg;
   }
   return "all";
+}
+
+/** Optional focus to re-audit only changed surfaces (AUDIT_FOCUS=video). */
+function applyRouteFocus(routes: RouteSpec[]): RouteSpec[] {
+  const focus = process.env.AUDIT_FOCUS?.trim().toLowerCase();
+  if (!focus || focus === "all") return routes;
+  if (focus === "video" || focus === "visual") {
+    const allowed = new Set<string>(VIDEO_VISUAL_FOCUS_ROUTES);
+    return routes.filter((route) => allowed.has(route.path));
+  }
+  const allowed = new Set(
+    focus
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item) => (item.startsWith("/") ? item : `/${item}`)),
+  );
+  if (!allowed.size) return routes;
+  return routes.filter((route) => allowed.has(route.path));
 }
 
 function selectedViewports(mode: Mode): ViewportSpec[] {
@@ -60,6 +80,7 @@ function ensureDirs() {
     "screenshots/results",
     "screenshots/replay",
     "screenshots/methodology",
+    "screenshots/reviews",
     "reports",
     "logs",
     ".auth",
@@ -196,7 +217,7 @@ async function runA11y(page: Page) {
       ...counts,
       violations: results.violations.slice(0, 40).map((item) => ({
         id: item.id,
-        impact: item.impact,
+        impact: item.impact ?? null,
         help: item.help,
         nodes: item.nodes.length,
       })),
@@ -210,7 +231,7 @@ async function runA11y(page: Page) {
       violations: [
         {
           id: "axe-failed",
-          impact: "moderate",
+          impact: "moderate" as string | null,
           help: sanitizeText(error instanceof Error ? error.message : "axe failed"),
           nodes: 0,
         },
@@ -259,6 +280,7 @@ async function runInteractions(page: Page, route: RouteSpec, viewport: ViewportS
     await clickSafe("summary:has-text('Coverage legend')", "Coverage legend");
     await clickSafe("summary:has-text('View technical reasons')", "Technical reasons");
     await clickSafe("summary:has-text('View feed ages')", "Feed ages");
+    await clickSafe("a.deskVideoShortcutLink, .deskVideoShortcut a", "Desk video shortcut");
     // Temporary journal note — clearly marked and cleared.
     const journal = page.locator("textarea").first();
     if ((await journal.count()) > 0) {
@@ -278,6 +300,11 @@ async function runInteractions(page: Page, route: RouteSpec, viewport: ViewportS
   if (route.path === "/brief" || route.path === "/dashboard") {
     await clickSafe("summary:has-text('Technical engine detail')", "Engine detail");
     await clickSafe("button.marketVideoPoster, .dashVideoLink", "Video control");
+    await clickSafe('a[href="/reviews"]', "Previous reviews link");
+  }
+
+  if (route.path === "/reviews") {
+    await clickSafe("a.marketVideoArchiveItem, a[href='/brief']", "Archive item or return link");
   }
 
   return findings;
@@ -321,6 +348,15 @@ async function auditRoute(
     viewport: viewport.id,
     screenshot: shots.full,
   });
+  const videoFindings = VIDEO_VISUAL_FOCUS_ROUTES.includes(
+    route.path as (typeof VIDEO_VISUAL_FOCUS_ROUTES)[number],
+  )
+    ? await runVideoSurfaceChecks(page, {
+        route: route.path,
+        viewport: viewport.id,
+        screenshot: shots.full,
+      })
+    : [];
   const interactionFindings = route.interactions ? await runInteractions(page, route, viewport) : [];
   const a11y = await runA11y(page);
   const marketSnapshot =
@@ -337,7 +373,7 @@ async function auditRoute(
     };
   });
 
-  const findings: Finding[] = [...visualFindings, ...interactionFindings];
+  const findings: Finding[] = [...visualFindings, ...videoFindings, ...interactionFindings];
   if (status && status >= 500) {
     findings.push({
       id: `${route.path}-${viewport.id}-http5xx`,
@@ -612,10 +648,21 @@ async function main() {
         ? await browser.newContext({ storageState: auth.storageStatePath })
         : null;
 
-    const routes: RouteSpec[] =
+    const routes: RouteSpec[] = applyRouteFocus(
       mode === "public"
         ? PUBLIC_ROUTES
-        : [...PUBLIC_ROUTES, ...(memberContext ? MEMBER_ROUTES : [])];
+        : [...PUBLIC_ROUTES, ...(memberContext ? MEMBER_ROUTES : [])],
+    );
+
+    const focus = process.env.AUDIT_FOCUS?.trim().toLowerCase();
+    if ((focus === "video" || focus === "visual") && routes.length === 0) {
+      const detail =
+        "AUDIT_FOCUS=video requires member auth. Set AUDIT_USER_EMAIL and AUDIT_USER_PASSWORD, then npm run audit:setup.";
+      console.error(JSON.stringify({ ok: false, focus, routesTested: 0, detail }, null, 2));
+      writeFileSync(join(AUDIT_OUTPUT_DIR, "logs", "focus-blocked.json"), JSON.stringify({ focus, detail }, null, 2));
+      process.exitCode = 1;
+      return;
+    }
 
     const routeResults: RouteResult[] = [];
     for (const viewport of viewports) {

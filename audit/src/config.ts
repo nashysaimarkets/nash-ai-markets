@@ -45,6 +45,7 @@ export const MEMBER_ROUTES: RouteSpec[] = [
   { path: "/dashboard", id: "dashboard", auth: true, folder: "dashboard", label: "Dashboard", interactions: true },
   { path: "/brief", id: "brief", auth: true, folder: "brief", label: "Morning Brief", interactions: true },
   { path: "/terminal", id: "terminal", auth: true, folder: "terminal", label: "Trading Desk", interactions: true },
+  { path: "/reviews", id: "reviews", auth: true, folder: "reviews", label: "Previous market reviews", interactions: true },
   { path: "/ideas", id: "ideas", auth: true, folder: "ideas", label: "Ideas", interactions: true },
   { path: "/profile", id: "profile", auth: true, folder: "profile", label: "Profile", interactions: true },
   { path: "/preferences", id: "preferences", auth: true, folder: "preferences", label: "Preferences", interactions: true },
@@ -56,6 +57,9 @@ export const MEMBER_ROUTES: RouteSpec[] = [
   { path: "/replay", id: "replay", auth: true, folder: "replay", label: "Replay (deep-link)" },
   { path: "/methodology", id: "member-methodology", auth: true, folder: "methodology", label: "Methodology (member)" },
 ];
+
+/** Routes touched by the video + visual-experience layer (optional AUDIT_FOCUS=video). */
+export const VIDEO_VISUAL_FOCUS_ROUTES = ["/dashboard", "/brief", "/terminal", "/reviews"] as const;
 
 export const CONSISTENCY_ROUTES = ["/dashboard", "/brief", "/terminal"] as const;
 

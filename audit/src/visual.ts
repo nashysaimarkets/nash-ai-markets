@@ -176,6 +176,124 @@ export async function runVisualChecks(
   return findings;
 }
 
+/** Checks for session video surfaces introduced in the visual/video layer. */
+export async function runVideoSurfaceChecks(
+  page: Page,
+  meta: { route: string; viewport: string; screenshot?: string | null },
+): Promise<Finding[]> {
+  const findings: Finding[] = [];
+  const state = await page.evaluate(() => {
+    const ytIframes = [...document.querySelectorAll("iframe")].filter((frame) =>
+      /youtube|youtu\.be/i.test(frame.getAttribute("src") || frame.getAttribute("data-src") || ""),
+    );
+    const autoplay = ytIframes.some((frame) => /autoplay=1/i.test(frame.getAttribute("src") || ""));
+    const nonPrivacy = ytIframes.some((frame) => {
+      const src = frame.getAttribute("src") || "";
+      return /youtube\.com\/embed/i.test(src) && !/youtube-nocookie\.com/i.test(src);
+    });
+    const missingTitle = ytIframes.filter((frame) => !(frame.getAttribute("title") || "").trim()).length;
+    const livePulseOnDelayed = [...document.querySelectorAll(".vxPulseLive")].some((el) => {
+      const text = `${el.textContent || ""} ${el.parentElement?.textContent || ""}`;
+      return /delayed|stale|unavailable/i.test(text);
+    });
+    return {
+      ytIframeCount: ytIframes.length,
+      autoplay,
+      nonPrivacy,
+      missingTitle,
+      livePulseOnDelayed,
+      hasVideoControls: document.querySelectorAll(
+        "button.marketVideoPoster, .dashVideoLink, .deskVideoShortcut, .dashVideoPending, .marketVideoArchive",
+      ).length,
+      hasBrokenEmptyIframe: [...document.querySelectorAll("iframe")].some(
+        (frame) => !(frame.getAttribute("src") || "").trim(),
+      ),
+    };
+  });
+
+  if (state.autoplay) {
+    findings.push(
+      finding({
+        id: `${meta.route}-${meta.viewport}-video-autoplay`,
+        severity: "P1",
+        category: "functional",
+        page: meta.route,
+        viewport: meta.viewport,
+        title: "YouTube embed appears to autoplay",
+        evidence: "iframe src contains autoplay=1",
+        recommendedFix: "Remove autoplay from embed URLs; keep click-to-load posters.",
+        screenshot: meta.screenshot,
+      }),
+    );
+  }
+
+  if (state.nonPrivacy) {
+    findings.push(
+      finding({
+        id: `${meta.route}-${meta.viewport}-video-privacy`,
+        severity: "P2",
+        category: "functional",
+        page: meta.route,
+        viewport: meta.viewport,
+        title: "YouTube embed is not using privacy-enhanced domain",
+        evidence: "youtube.com/embed without youtube-nocookie.com",
+        recommendedFix: "Use youtube-nocookie embed URLs for member video players.",
+        screenshot: meta.screenshot,
+      }),
+    );
+  }
+
+  if (state.missingTitle) {
+    findings.push(
+      finding({
+        id: `${meta.route}-${meta.viewport}-video-iframe-title`,
+        severity: "P2",
+        category: "accessibility",
+        page: meta.route,
+        viewport: meta.viewport,
+        title: "YouTube iframe missing accessible title",
+        evidence: `${state.missingTitle} iframe(s) without title`,
+        recommendedFix: "Set a meaningful iframe title from the video record.",
+        screenshot: meta.screenshot,
+      }),
+    );
+  }
+
+  if (state.livePulseOnDelayed) {
+    findings.push(
+      finding({
+        id: `${meta.route}-${meta.viewport}-delayed-live-pulse`,
+        severity: "P1",
+        category: "visual",
+        page: meta.route,
+        viewport: meta.viewport,
+        title: "Delayed/stale indicator uses live pulse styling",
+        evidence: ".vxPulseLive near delayed/stale/unavailable copy",
+        recommendedFix: "Reserve live pulse for genuinely live connected indicators only.",
+        screenshot: meta.screenshot,
+      }),
+    );
+  }
+
+  if (state.hasBrokenEmptyIframe) {
+    findings.push(
+      finding({
+        id: `${meta.route}-${meta.viewport}-empty-iframe`,
+        severity: "P2",
+        category: "functional",
+        page: meta.route,
+        viewport: meta.viewport,
+        title: "Empty iframe present on page",
+        evidence: "iframe without src",
+        recommendedFix: "Do not mount YouTube iframes until click-to-load activation.",
+        screenshot: meta.screenshot,
+      }),
+    );
+  }
+
+  return findings;
+}
+
 export async function extractMarketSnapshot(page: Page): Promise<Record<string, string | null>> {
   return page.evaluate(() => {
     const text = document.body?.innerText || "";

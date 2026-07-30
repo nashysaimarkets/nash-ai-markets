@@ -29,6 +29,17 @@ npm run audit:setup
 | `npm run audit:mobile` | Tablet + mobile viewports |
 | `npm run audit:all` | Full audit + HTML/MD/JSON + zip |
 
+### Focused re-audit (video / visual layer)
+
+To save time after video/visual changes only:
+
+```bash
+AUDIT_FOCUS=video npm run audit:all
+```
+
+This audits `/dashboard`, `/brief`, `/terminal`, and `/reviews` across all viewports (member auth required).
+You can also pass a comma list: `AUDIT_FOCUS=/dashboard,/brief,/reviews`.
+
 ## Outputs
 
 - `audit-output/project-bullseye-audit.html`
