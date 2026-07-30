@@ -1,14 +1,21 @@
 import Link from "next/link";
+import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
+import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
+import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { buildTodaysPosture } from "../../terminal/lib/desk-decision-presentation.ts";
 import type { DeskGreeting } from "../lib/market-weather.ts";
 import type { DashboardCommandSummary } from "../lib/dashboard-command-summary.ts";
+import { DashboardCandlestickChart } from "./DashboardCandlestickChart.tsx";
 import { EventCountdown } from "./EventCountdown";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
   tierLabel: string;
   summary: DashboardCommandSummary;
+  insight: AiMarketInsightModel;
+  candleSeries: CustomerCandleSeries | null;
   now: number;
 };
 
@@ -20,6 +27,8 @@ export function MarketCommandCentre({
   greeting,
   tierLabel,
   summary,
+  insight,
+  candleSeries,
   now,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
@@ -88,6 +97,22 @@ export function MarketCommandCentre({
           </Link>
         </article>
       </header>
+
+      <AiMarketInsightCard model={insight} />
+
+      {candleSeries ? (
+        <section className="companionHeroChart" aria-label="ES hero chart">
+          <DashboardCandlestickChart series={candleSeries} instrument="ES" compact />
+        </section>
+      ) : (
+        <aside className="dashCatalystEmpty" role="status" aria-label="ES hero chart">
+          <span className="mccEyebrow">VERIFIED DELAYED CHART</span>
+          <p>ES candlesticks appear here once verified delayed history is available for your membership.</p>
+          <Link href="/terminal" className="dashTextLink">
+            Open Trading Desk
+          </Link>
+        </aside>
+      )}
 
       <section className="dashDecisionSnap" aria-labelledby="dash-decision-title">
         <header>
@@ -230,6 +255,8 @@ export function MarketCommandCentre({
           </aside>
         )}
       </div>
+
+      <MarketInternalsPanel cards={insight.internals} />
 
       <section className="dashQuickActions" aria-label="Quick actions">
         <header>

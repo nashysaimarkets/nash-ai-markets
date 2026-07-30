@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
+import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
+import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
 
 type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
+  insight: AiMarketInsightModel;
 };
 
 function weatherDirectionClass(direction: MorningMarketBriefModel["crossAssets"][number]["direction"]) {
@@ -58,7 +62,7 @@ function customerLevelLabel(label: string, kind: string): string {
   return label;
 }
 
-export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
+export function MorningMarketBrief({ model, insight }: MorningMarketBriefProps) {
   const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted/i.test(
     `${model.playbook.posture} ${model.aiBriefing.mode} ${model.biggestRisk.label}`,
   );
@@ -133,6 +137,8 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
         <strong>{delayedAge}.</strong>
         <span>Educational commentary only — not personalised advice.</span>
       </div>
+
+      <AiMarketInsightCard model={insight} />
 
       <section
         className={`mbPanel mbDecision mbPosture ${permissionBlocked ? "is-blocked" : ""}`}
@@ -237,6 +243,8 @@ export function MorningMarketBrief({ model }: MorningMarketBriefProps) {
           <p className="mbFine">Cross-market weather awaits verified ES, VIX, DXY or US 10-year quotes.</p>
         )}
       </section>
+
+      <MarketInternalsPanel cards={insight.internals} />
 
       <div className="mbTwin mbTwinWide">
         <section className="mbPanel mbLevelsPanel" id="verified-levels" aria-labelledby="mb-levels-title">

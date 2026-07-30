@@ -14,7 +14,9 @@ import { formatCustomerParticipationWarnings } from "../terminal/lib/customer-wa
 import { currentServerTimestamp, memberDisplayName } from "./lib/daily-dashboard.ts";
 import { buildDeskGreeting } from "./lib/market-weather.ts";
 import { buildDashboardCommandSummary } from "./lib/dashboard-command-summary.ts";
+import { buildAiMarketInsight } from "../lib/ai-market-insight.ts";
 import { MarketCommandCentre } from "./components/MarketCommandCentre";
+import { isDecisionReadySnapshot } from "../lib/market-data";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -96,6 +98,16 @@ export default async function MemberDashboard() {
     warnings,
     now,
   });
+  const verified = isDecisionReadySnapshot(snapshot) && intelligence.actionable;
+  const insight = buildAiMarketInsight({
+    snapshot,
+    intelligence,
+    decision,
+    plan,
+    verified,
+    warnings,
+    now,
+  });
 
   return (
     <MemberShell active="dashboard">
@@ -103,6 +115,8 @@ export default async function MemberDashboard() {
         greeting={greeting}
         tierLabel={access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase()}
         summary={summary}
+        insight={insight}
+        candleSeries={candleSeries}
         now={now}
       />
     </MemberShell>

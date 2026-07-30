@@ -86,7 +86,7 @@ export function DashboardCandlestickChart({
   const [pendingTimeframe, setPendingTimeframe] = useState<CandleTimeframe | null>(null);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
-  const [overlays, setOverlays] = useState<Record<Overlay, boolean>>({ volume: !compact, ema20: true, ema50: false });
+  const [overlays, setOverlays] = useState<Record<Overlay, boolean>>({ volume: true, ema20: true, ema50: false });
   const displayTimeframe = pendingTimeframe ?? timeframe;
   const intervalMismatch = pendingTimeframe !== null && pendingTimeframe !== series.timeframe;
   const stats = useMemo(() => (intervalMismatch ? null : candleSessionStats(series.candles)), [intervalMismatch, series.candles]);
@@ -99,7 +99,7 @@ export function DashboardCandlestickChart({
     : null;
   const statusLabel = intervalMismatch ? `Loading ${pendingTimeframe}` : customerStatusLabel(series);
   const empty = unavailableCopy(series);
-  const chartHeight = compact ? 220 : 360;
+  const chartHeight = compact ? 320 : 360;
 
   async function load(next: CandleTimeframe, opts?: { silent?: boolean }) {
     const requestId = ++requestIdRef.current;
@@ -248,6 +248,9 @@ export function DashboardCandlestickChart({
     </> : stats && compact ? (
       <div className="chartMarketStrip is-compact" aria-label="Verified candle summary">
         <div><span>Current price</span><strong>{number(stats.latest)}</strong></div>
+        <div><span>24h high</span><strong>{number(stats.high)}</strong></div>
+        <div><span>24h low</span><strong>{number(stats.low)}</strong></div>
+        <div><span>20 EMA</span><strong>{number(exponentialMovingAverage(series.candles, 20).at(-1)?.value ?? null)}</strong></div>
         <div><span>Delayed · candle age</span><strong>{ageMetric(series.dataAgeMs)}</strong></div>
       </div>
     ) : loading || intervalMismatch ? <div className="chartRequestError" role="status">Loading verified {displayTimeframe} statistics. The previous interval is not shown as the new selection.</div> : null}

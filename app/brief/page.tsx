@@ -26,8 +26,9 @@ import { primaryLevel } from "../dashboard/lib/command-centre.ts";
 import { buildDecisionDesk } from "../dashboard/lib/decision-desk.ts";
 import { buildDeskGreeting } from "../dashboard/lib/market-weather.ts";
 import { deriveSessionReferenceLevels } from "../dashboard/lib/session-levels.ts";
-import { MorningMarketBrief } from "./components/MorningMarketBrief";
 import { composeMorningMarketBrief } from "./lib/compose-market-brief.ts";
+import { buildAiMarketInsight } from "../lib/ai-market-insight.ts";
+import { MorningMarketBrief } from "./components/MorningMarketBrief";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -153,9 +154,18 @@ export default async function AIMarketBriefPage() {
     youtubeId: null,
   });
 
+  const insight = buildAiMarketInsight({
+    snapshot,
+    intelligence,
+    decision,
+    plan,
+    verified,
+    now,
+  });
+
   return (
     <MemberShell active="brief">
-      <MorningMarketBrief model={model} />
+      <MorningMarketBrief model={model} insight={insight} />
     </MemberShell>
   );
 }
