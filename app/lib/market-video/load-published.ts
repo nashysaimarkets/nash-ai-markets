@@ -3,9 +3,7 @@
  * Request-scoped cache — never blocks member routes on failure.
  */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import manifest from "../../content/published-market-videos.json" with { type: "json" };
 import type { MarketVideoRecord } from "./types.ts";
 import { normalizeMarketVideoRecord } from "./validate.ts";
 
@@ -21,17 +19,14 @@ type CacheEntry = {
 const CACHE_TTL_MS = 60_000;
 let cache: CacheEntry | null = null;
 
+/**
+ * Imported statically rather than read from disk at request time: the bundled
+ * server output does not carry the source tree, so a runtime `readFileSync`
+ * resolved against `import.meta.url` fails in every deployment and silently
+ * published no videos at all.
+ */
 function readManifest(): ManifestShape {
-  try {
-    const here = dirname(fileURLToPath(import.meta.url));
-    const path = join(here, "../../content/published-market-videos.json");
-    return JSON.parse(readFileSync(path, "utf8")) as ManifestShape;
-  } catch (error) {
-    console.error("[market-video] manifest load failed", {
-      name: error instanceof Error ? error.name : "Error",
-    });
-    return { videos: [] };
-  }
+  return manifest as ManifestShape;
 }
 
 export function loadPublishedMarketVideos(options?: { bypassCache?: boolean }): MarketVideoRecord[] {

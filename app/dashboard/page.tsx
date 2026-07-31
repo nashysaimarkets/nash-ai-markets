@@ -21,7 +21,6 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { readSessionClock } from "../terminal/lib/session-clock.ts";
 import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway.ts";
 import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
-import { RouteRenderBoundary } from "../components/RouteRenderBoundary";
 import { createRouteTrace, describeError, newCorrelationId } from "../lib/observability/route-trace.ts";
 import type { MarketCommandCentreProps } from "./components/MarketCommandCentre";
 import { membershipEmailKey } from "../lib/server/membership-email.ts";
@@ -283,14 +282,7 @@ export default async function MemberDashboard() {
           </div>
         </aside>
       ) : null}
-      <RouteRenderBoundary
-        route="dashboard"
-        correlationId={view.correlationId}
-        title="The dashboard could not be displayed"
-        description="Verified market context was retrieved but could not be presented. No market values have been inferred from the failure."
-      >
-        <MarketCommandCentre {...view.centre} />
-      </RouteRenderBoundary>
+      <MarketCommandCentre {...view.centre} />
     </MemberShell>
   );
 }
