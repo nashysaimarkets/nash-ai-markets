@@ -104,7 +104,7 @@ test("Session replay withholds forecast accuracy without inventing scores", () =
   } as unknown as MarketSnapshot;
   const replay = buildSessionReplay({
     snapshot,
-    decision: { tradePermission: "restricted" } as TradingDecision,
+    decision: { tradePermission: "restricted" } as unknown as TradingDecision,
     presentation: decision,
     candles: null,
     verified: false,

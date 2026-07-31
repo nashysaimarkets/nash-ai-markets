@@ -109,6 +109,9 @@ export function MissionControl({
       ) : null}
 
       <section className="mcHero" aria-labelledby="mission-control-title">
+        {/* Decorative local SVG sized entirely by CSS; next/image would add no
+            optimisation for SVG and would fight the watermark layout. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="mcHeroWatermark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
         <div className="mcHeroCopy">
           <span>Mission Control</span>

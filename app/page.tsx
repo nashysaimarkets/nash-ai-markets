@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { BrandLogo } from "./components/BrandLogo.tsx";
 import { ConversionMetrics } from "./components/ConversionMetrics.tsx";
@@ -161,10 +162,10 @@ export default async function Home() {
           <a href="#platform">Platform</a>
           <a href="#workflow">Method</a>
           <a href="#membership">Membership</a>
-          <a href="/terminal">Terminal</a>
+          <Link href="/terminal">Terminal</Link>
         </nav>
         <div className="mcNavActions">
-          <a href="/login">Sign in</a>
+          <Link href="/login">Sign in</Link>
           <a className="mcButton mcButtonSmall" href="#membership">Get access <span>↗</span></a>
         </div>
       </header>
@@ -308,7 +309,7 @@ export default async function Home() {
 
         <section className="mcEliteReasons" aria-labelledby="elite-reasons-title">
           <header><div><p className="mcEyebrow">Why traders choose Elite</p><h2 id="elite-reasons-title">More depth where<br /><em>discipline matters.</em></h2></div><p>Elite extends the daily dashboard into a complete evidence, planning and diagnostic workflow. It does not promise outcomes or remove market risk.</p></header>
-          <div>{eliteReasons.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p><a href="/pricing" aria-label={`Compare Elite membership for ${title}`}>Explore Elite <b aria-hidden="true">→</b></a></article>)}</div>
+          <div>{eliteReasons.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p><Link href="/pricing" aria-label={`Compare Elite membership for ${title}`}>Explore Elite <b aria-hidden="true">→</b></Link></article>)}</div>
         </section>
 
         <ConversionMetrics />
@@ -413,8 +414,8 @@ export default async function Home() {
         <div className="mcFooterTop">
           <a href="#top" className="mcBrand" aria-label="Back to top"><span className="mcBrandMark" aria-hidden="true"><i /></span><span>NASH <b>AI</b> MARKETS</span></a>
           <p>Structured market preparation for traders who value evidence, scenarios and risk awareness.</p>
-          <div><a href="/terminal">Terminal</a><a href="/pricing">Pricing</a><a href="/waitlist">Launch waiting list</a><a href="/about">About</a><a href="/help">Help</a><a href="/contact">Contact</a></div>
-          <div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/risk-disclaimer">Risk disclaimer</a><a href={portalUrl}>Manage subscription</a></div>
+          <div><Link href="/terminal">Terminal</Link><Link href="/pricing">Pricing</Link><Link href="/waitlist">Launch waiting list</Link><Link href="/about">About</Link><Link href="/help">Help</Link><Link href="/contact">Contact</Link></div>
+          <div><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/risk-disclaimer">Risk disclaimer</Link><a href={portalUrl}>Manage subscription</a></div>
         </div>
         <div className="mcFooterBottom">
           <p>Trading futures and options involves substantial risk and is not suitable for everyone. Educational market commentary only. No guaranteed outcomes.</p>

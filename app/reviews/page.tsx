@@ -8,6 +8,7 @@ import { listPublishedMarketVideoArchive } from "../lib/market-video/select.ts";
 import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } from "../terminal/lib/membership-entitlement";
 import { loadPreviewClaims } from "../terminal/lib/preview-access";
 import { currentServerTimestamp } from "../dashboard/lib/daily-dashboard.ts";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function MarketReviewsPage() {
   const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);

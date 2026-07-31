@@ -9,6 +9,7 @@ import {
   type ProgressiveAccess,
 } from "../../terminal/lib/membership-entitlement.ts";
 import { loadPreviewClaims } from "../../terminal/lib/preview-access.ts";
+import { membershipEmailKey } from "./membership-email.ts";
 
 export async function requireMemberPage(): Promise<{
   user: User;
@@ -26,7 +27,7 @@ export async function requireMemberPage(): Promise<{
   const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);

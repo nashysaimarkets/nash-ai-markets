@@ -74,7 +74,8 @@ export async function listJournalEntries(userId: string) {
     .from("member_trade_journal")
     .select("*")
     .eq("user_id", userId)
-    .order("traded_at", { ascending: false });
+    .order("traded_at", { ascending: false })
+    .limit(200);
   if (error) {
     if (isMissingRelation(error)) return { rows: [], available: false as const, reason: "migration_pending" };
     return { rows: [], available: false as const, reason: "query_failed" };

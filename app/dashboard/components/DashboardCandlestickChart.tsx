@@ -81,12 +81,23 @@ export function DashboardCandlestickChart({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const requestIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
   const [series, setSeries] = useState(initialSeries);
   const [timeframe, setTimeframe] = useState<CandleTimeframe>(initialSeries.timeframe);
   const [pendingTimeframe, setPendingTimeframe] = useState<CandleTimeframe | null>(null);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [overlays, setOverlays] = useState<Record<Overlay, boolean>>({ volume: true, ema20: true, ema50: false });
+  const [syncedSeries, setSyncedSeries] = useState(initialSeries);
+
+  // Adjust state during render when the server sends a new series, rather than
+  // in an effect — an effect would paint the stale series first.
+  if (initialSeries !== syncedSeries) {
+    setSyncedSeries(initialSeries);
+    setSeries(initialSeries);
+    setTimeframe(initialSeries.timeframe);
+  }
+
   const displayTimeframe = pendingTimeframe ?? timeframe;
   const intervalMismatch = pendingTimeframe !== null && pendingTimeframe !== series.timeframe;
   const stats = useMemo(() => (intervalMismatch ? null : candleSessionStats(series.candles)), [intervalMismatch, series.candles]);
@@ -103,21 +114,35 @@ export function DashboardCandlestickChart({
 
   async function load(next: CandleTimeframe, opts?: { silent?: boolean }) {
     const requestId = ++requestIdRef.current;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     if (!opts?.silent) {
       setLoading(true);
       setPendingTimeframe(next);
       setRequestError(null);
     }
     try {
-      const response = await fetch(`/api/market/candles?timeframe=${next}&instrument=${encodeURIComponent(instrument)}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(response.status === 403 ? "Your membership could not be verified for candle history." : "Verified candle history could not be loaded.");
+      const response = await fetch(`/api/market/candles?timeframe=${next}&instrument=${encodeURIComponent(instrument)}`, {
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(
+          response.status === 403
+            ? "Your membership could not be verified for candle history."
+            : response.status === 503
+              ? "Membership verification is temporarily unavailable."
+              : "Verified candle history could not be loaded.",
+        );
+      }
       const result = await response.json() as CustomerCandleSeries;
       if (requestId !== requestIdRef.current) return;
       if (result.timeframe !== next) throw new Error("Verified candle history did not match the requested interval.");
       setSeries(result);
       setTimeframe(next);
     } catch (error) {
-      if (requestId !== requestIdRef.current) return;
+      if (controller.signal.aborted || requestId !== requestIdRef.current) return;
       if (!opts?.silent) setRequestError(error instanceof Error ? error.message : "Verified candle history could not be loaded.");
     } finally {
       if (requestId !== requestIdRef.current) return;
@@ -128,15 +153,23 @@ export function DashboardCandlestickChart({
     }
   }
 
+  // Held in a ref so the background refresh does not restart on every render.
+  const loadRef = useRef(load);
   useEffect(() => {
-    const timer = window.setInterval(() => { void load(timeframe, { silent: true }); }, REFRESH_MS);
-    return () => window.clearInterval(timer);
-  }, [timeframe, instrument]);
+    loadRef.current = load;
+  });
 
   useEffect(() => {
-    setSeries(initialSeries);
-    setTimeframe(initialSeries.timeframe);
-  }, [initialSeries]);
+    return () => {
+      requestIdRef.current += 1;
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => { void loadRef.current(timeframe, { silent: true }); }, REFRESH_MS);
+    return () => window.clearInterval(timer);
+  }, [timeframe, instrument]);
 
   useEffect(() => {
     if (!available) {

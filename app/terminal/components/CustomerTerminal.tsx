@@ -18,6 +18,9 @@ export function MarketCommandHeader({
   const decisionReady = isDecisionReadySnapshot(snapshot);
   const observable = hasDisplayableQuotes(snapshot);
   return <section className="ctHero" aria-labelledby="terminal-title">
+    {/* Decorative local SVG sized entirely by CSS; next/image would add no
+        optimisation for SVG and would fight the watermark layout. */}
+    {/* eslint-disable-next-line @next/next/no-img-element */}
     <img className="ctHeroWatermark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
     <div className="ctHeroIntro">
       <span className="ctEyebrow">NASH AI MARKETS · TERMINAL</span>

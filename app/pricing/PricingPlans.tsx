@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import type { Founding100Availability } from "../lib/server/founding-100.ts";
 import { founding100AvailabilityLabel } from "../lib/server/founding-100.ts";
@@ -24,7 +25,7 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
       <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Annual</button>
     </div>
     <section className="commercialPlans" aria-label="Membership plans">
-      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><small className="commercialPlanFit">For exploring the Bullseye method</small><p>Core market overview with a measured path into premium intelligence.</p><a href="/login">Start free</a></article>
+      <article className="commercialFree"><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>FREE</span></div><h2>£0</h2><small className="commercialPlanFit">For exploring the Bullseye method</small><p>Core market overview with a measured path into premium intelligence.</p><Link href="/login">Start free</Link></article>
       <article className="commercialPopular"><b>MOST POPULAR</b><div className="commercialPlanIdentity"><Image src="/brand/logo-mark.svg" width={48} height={48} alt="" /><span>PRO</span></div><h2>{annual ? "£149/year" : "£14.99/month"}</h2><small className="commercialPlanFit">For a complete daily pre-market routine</small><p>Daily intelligence, decision support and a daily Elite preview.</p><div className={`commercialFounding${pro.full ? " isFull" : ""}`}><strong>FOUNDING 100 PRO</strong><span>{pro.label}</span><small>{pro.detail}</small></div><form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "pro_year" : "pro_month"} /><button type="submit">Start Pro Membership</button></form></article>
       <article className="commercialElite">
         <div className="commercialPlanBadges">
@@ -38,6 +39,38 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
         <form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "elite_year" : "elite_month"} /><button type="submit">Unlock Elite</button></form>
       </article>
     </section>
-    <div className="comparisonScroll"><table className="commercialComparison"><caption>Feature comparison</caption><thead><tr><th>Feature</th><th>Free</th><th>Pro</th><th>Elite</th></tr></thead><tbody>{features.map((row) => <tr key={row[0]}>{row.map((cell, index) => index === 0 ? <th key={cell} scope="row">{cell}</th> : <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div>
+    <div
+      className="comparisonScroll"
+      role="region"
+      aria-label="Feature comparison table"
+      tabIndex={0}
+    >
+      <table className="commercialComparison">
+        <caption>Feature comparison</caption>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Free</th>
+            <th>Pro</th>
+            <th>Elite</th>
+          </tr>
+        </thead>
+        <tbody>
+          {features.map((row) => (
+            <tr key={row[0]}>
+              {row.map((cell, index) =>
+                index === 0 ? (
+                  <th key={cell} scope="row">
+                    {cell}
+                  </th>
+                ) : (
+                  <td key={`${row[0]}-${cell}`}>{cell}</td>
+                ),
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </>;
 }

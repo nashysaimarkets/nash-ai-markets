@@ -108,7 +108,7 @@ test("member profile is protected, noindex, and exposes no Stripe identifiers", 
 
 test("profile updates require authentication, same origin, and validated display names", async () => {
   const route = await readFile(new URL("../app/api/profile/route.ts", import.meta.url), "utf8");
-  assert.match(route, /suppliedOrigin !== requestOrigin/);
+  assert.match(route, /rejectCrossOriginCoded|suppliedOrigin !== requestOrigin/);
   assert.match(route, /auth\.getUser\(\)/);
   assert.match(route, /displayName\.length < 2/);
   assert.match(route, /displayName\.length > 60/);

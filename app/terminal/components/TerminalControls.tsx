@@ -14,12 +14,26 @@ export function TerminalControls() {
   const [showHelp, setShowHelp] = useState(false);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const refreshTimerRef = useRef<number | undefined>(undefined);
 
   const refresh = useCallback(() => {
     document.documentElement.dataset.terminalRefreshing = "true";
     startTransition(() => router.refresh());
-    window.setTimeout(() => delete document.documentElement.dataset.terminalRefreshing, 900);
+    if (refreshTimerRef.current !== undefined) window.clearTimeout(refreshTimerRef.current);
+    refreshTimerRef.current = window.setTimeout(() => {
+      delete document.documentElement.dataset.terminalRefreshing;
+      refreshTimerRef.current = undefined;
+    }, 900);
   }, [router]);
+
+  useEffect(() => {
+    return () => {
+      if (refreshTimerRef.current !== undefined) {
+        window.clearTimeout(refreshTimerRef.current);
+        delete document.documentElement.dataset.terminalRefreshing;
+      }
+    };
+  }, []);
 
   const toggleFullscreen = useCallback(async () => {
     try {

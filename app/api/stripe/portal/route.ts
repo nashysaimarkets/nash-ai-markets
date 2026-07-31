@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "../../../../utils/supabase/server.ts";
+import { membershipEmailKey } from "../../../lib/server/membership-email.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
   const { data: membership, error } = await supabase
     .from("memberships")
     .select("stripe_customer_id")
-    .eq("email", user.email.trim().toLowerCase())
+    .eq("email", membershipEmailKey(user.email))
     .maybeSingle();
   const customerId = membership?.stripe_customer_id;
   const secretKey = process.env.STRIPE_SECRET_KEY;

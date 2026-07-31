@@ -14,7 +14,7 @@ export type CatalystItem = {
   kind: CatalystKind;
   time: string;
   title: string;
-  risk: "HIGH" | "MED" | "INFO";
+  risk: "HIGH" | "MED" | "INFO" | "UNKNOWN";
   relevance: string;
   available: boolean;
   includes: string[];

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import { normalizeWaitlistSubmission } from "../../lib/launch-onboarding.ts";
+import { isSameOrigin } from "../../lib/server/same-origin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,9 +9,7 @@ export const dynamic = "force-dynamic";
 const responseHeaders = { "cache-control": "no-store" };
 
 export async function POST(request: Request) {
-  const requestOrigin = new URL(request.url).origin;
-  const suppliedOrigin = request.headers.get("origin");
-  if (suppliedOrigin !== requestOrigin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403, headers: responseHeaders });
   }
 

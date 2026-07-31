@@ -6,16 +6,13 @@ import {
   listJournalEntries,
   type JournalEntryInput,
 } from "../../lib/server/trade-journal.ts";
+import { isSameOrigin } from "../../lib/server/same-origin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DIRECTIONS = new Set(["long", "short", "neutral"]);
 const INSTRUMENTS = new Set(["futures", "options"]);
-
-function sameOrigin(request: Request) {
-  return request.headers.get("origin") === new URL(request.url).origin;
-}
 
 function optionalNumber(value: unknown): number | null | undefined {
   if (value == null || value === "") return null;
@@ -113,7 +110,7 @@ async function requireUser() {
 }
 
 export async function GET(request: Request) {
-  if (!sameOrigin(request) && request.headers.get("sec-fetch-site") === "cross-site") {
+  if (!isSameOrigin(request) && request.headers.get("sec-fetch-site") === "cross-site") {
     return NextResponse.json({ ok: false }, { status: 403 });
   }
   const user = await requireUser();
@@ -132,7 +129,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
+  if (!isSameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
   const user = await requireUser();
   if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
 
@@ -161,7 +158,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
+  if (!isSameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
   const user = await requireUser();
   if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
 

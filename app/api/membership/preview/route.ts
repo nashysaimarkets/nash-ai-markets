@@ -8,13 +8,12 @@ import {
   type PremiumTier,
 } from "../../../terminal/lib/membership-entitlement.ts";
 import { loadPreviewClaims } from "../../../terminal/lib/preview-access.ts";
+import { membershipEmailKey } from "../../../lib/server/membership-email.ts";
+import { rejectCrossOriginCoded } from "../../../lib/server/same-origin.ts";
 
 export async function POST(request: Request) {
-  const requestOrigin = new URL(request.url).origin;
-  const suppliedOrigin = request.headers.get("origin");
-  if (suppliedOrigin !== requestOrigin) {
-    return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403 });
-  }
+  const blocked = rejectCrossOriginCoded(request);
+  if (blocked) return blocked;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.id || !user.email) return NextResponse.json({ ok: false, code: "AUTH_REQUIRED" }, { status: 401 });
@@ -31,7 +30,7 @@ export async function POST(request: Request) {
   const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError));

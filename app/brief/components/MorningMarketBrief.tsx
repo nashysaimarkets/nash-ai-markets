@@ -10,6 +10,7 @@ import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { MarketVideoPlayer } from "../../components/MarketVideoPlayer.tsx";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
+import { verifiedEventRiskLabel } from "../../terminal/lib/event-display.ts";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
@@ -33,6 +34,15 @@ function weatherMoveCue(direction: MorningMarketBriefModel["crossAssets"][number
   if (direction === "down") return { arrow: "↓", label: "Lower" };
   if (direction === "flat") return { arrow: "→", label: "Unchanged" };
   return { arrow: "·", label: "Unavailable" };
+}
+
+/**
+ * Calendar impact ratings originate from an external provider, so treat any
+ * value other than a verified HIGH/MED rating as unverified rather than
+ * assuming the field is present.
+ */
+function riskClass(risk: unknown): string {
+  return risk === "HIGH" ? "high" : risk === "MED" ? "med" : "unknown";
 }
 
 function sessionAccentFromHeadline(headline: string): "premarket" | "rth" | "postmarket" {
@@ -369,7 +379,9 @@ export function MorningMarketBrief({
                   <time>{item.time}</time>
                   <div>
                     <strong>{item.name}</strong>
-                    <span className={`mbRisk is-${item.risk.toLowerCase()}`}>{item.risk} impact</span>
+                    <span className={`mbRisk is-${riskClass(item.risk)}`}>
+                      {verifiedEventRiskLabel(item.risk)}
+                    </span>
                     {item.includes.length ? (
                       <VerifiedCatalystIncludes
                         includes={item.includes}

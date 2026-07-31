@@ -42,7 +42,7 @@ test("Operation Launch migration is server-only, idempotent, and cannot grant me
 
 test("waiting-list endpoint is same-origin, duplicate-safe, and resists enumeration", async () => {
   const route = await readFile(new URL("../app/api/waitlist/route.ts", import.meta.url), "utf8");
-  assert.match(route, /suppliedOrigin !== requestOrigin/);
+  assert.match(route, /isSameOrigin|suppliedOrigin !== requestOrigin/);
   assert.match(route, /normalizeWaitlistSubmission/);
   assert.match(route, /error\.code !== "23505"/);
   assert.match(route, /NextResponse\.json\(\{ ok: true \}/);

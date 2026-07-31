@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../../utils/supabase/server.ts";
+import { membershipEmailKey } from "../../../lib/server/membership-email.ts";
 import { resolveMembershipTier } from "../../../terminal/lib/membership-entitlement.ts";
 import { isCandleInstrument } from "../../../lib/providers/candle-instruments.ts";
 import { getConfiguredFmpCandles, toCustomerCandleSeries, type CandleTimeframe } from "../../../lib/providers/financial-modeling-prep-candles.ts";
@@ -10,8 +11,19 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-  const { data: membership, error } = await supabase.from("memberships").select("plan, status, current_period_end, billing_interval").ilike("email", user.email).in("plan", ["free", "pro", "elite"]).maybeSingle();
+  const { data: membership, error } = await supabase
+    .from("memberships")
+    .select("plan, status, current_period_end, billing_interval")
+    .eq("email", membershipEmailKey(user.email))
+    .in("plan", ["free", "pro", "elite"])
+    .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(error), Date.now());
+  if (tier === "temporarily_unavailable") {
+    return NextResponse.json(
+      { error: "Membership verification is temporarily unavailable" },
+      { status: 503 },
+    );
+  }
   if (tier !== "pro" && tier !== "elite") return NextResponse.json({ error: "A Pro or Elite membership is required" }, { status: 403 });
   const params = new URL(request.url).searchParams;
   const requested = params.get("timeframe") as CandleTimeframe | null;

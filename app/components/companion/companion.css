@@ -57,7 +57,7 @@
 .companionInsightMeta span{
   display:block;
   color:#7f8d93;
-  font:700 10px/1 var(--font-geist-mono),monospace;
+  font:700 10px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor);
   letter-spacing:.1em;
   text-transform:uppercase;
 }
@@ -102,7 +102,7 @@
 }
 .companionConfidenceDial span{
   color:#84929a;
-  font:650 10px/1 var(--font-geist-mono),monospace;
+  font:650 10px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor);
 }
 .companionConfidenceCopy{min-width:0}
 .companionConfidenceCopy em{
@@ -168,7 +168,7 @@
   min-width:0;padding:16px;border:1px dashed #314248;border-radius:12px;background:#0a100ecc;
 }
 .companionInternalsGrid span{
-  display:block;color:#7f8d93;font:700 10px/1 var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase;
+  display:block;color:#7f8d93;font:700 10px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase;
 }
 .companionInternalsGrid strong{display:block;margin-top:10px;color:#efd39a;font:650 16px var(--font-geist-sans),Arial,sans-serif}
 .companionInternalsGrid p{margin:8px 0 0;color:#8a9690;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}

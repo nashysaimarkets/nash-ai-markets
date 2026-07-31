@@ -8,6 +8,14 @@ import type { DeskDecisionPresentation } from "../../terminal/lib/desk-decision-
 import type { SessionClockReading } from "../../terminal/lib/session-clock.ts";
 import type { DashboardHeroModel, DashboardWeatherItem } from "./dashboard-command-summary.ts";
 
+/**
+ * "pending" is a feed we read but have no verified value for right now.
+ * "unconfigured" is an instrument the dashboard has no verified source for at
+ * all. Both are withheld rather than estimated, but only the first can change
+ * during a session, so the two deserve different prominence.
+ */
+export type CommandStripCoverage = "verified" | "pending" | "unconfigured";
+
 export type CommandStripCell = {
   id: string;
   label: string;
@@ -15,6 +23,7 @@ export type CommandStripCell = {
   detail: string | null;
   tone: "up" | "down" | "flat" | "neutral" | "caution" | "risk" | "ok";
   available: boolean;
+  coverage: CommandStripCoverage;
   sparkline?: number[] | null;
 };
 
@@ -33,6 +42,7 @@ function fromQuote(quote: MarketQuote | undefined, id: string, label: string): C
       detail: "Awaiting verified quote",
       tone: "neutral",
       available: false,
+      coverage: "pending",
     };
   }
   return {
@@ -42,6 +52,7 @@ function fromQuote(quote: MarketQuote | undefined, id: string, label: string): C
     detail: quote.change,
     tone: quote.direction === "up" || quote.direction === "down" || quote.direction === "flat" ? quote.direction : "neutral",
     available: true,
+    coverage: "verified",
   };
 }
 
@@ -55,6 +66,7 @@ function weatherCell(items: DashboardWeatherItem[], id: string, label?: string):
       detail: "Awaiting verified quote",
       tone: "neutral",
       available: false,
+      coverage: "pending",
     };
   }
   return {
@@ -64,6 +76,7 @@ function weatherCell(items: DashboardWeatherItem[], id: string, label?: string):
     detail: item.change,
     tone: item.direction === "unknown" ? "neutral" : item.direction,
     available: true,
+    coverage: "verified",
   };
 }
 
@@ -86,6 +99,7 @@ export function buildCommandStrip(input: {
       detail: input.hero.netChange,
       tone: input.hero.direction === "unknown" ? "neutral" : input.hero.direction,
       available: Boolean(input.hero.price),
+      coverage: input.hero.price ? "verified" : "pending",
       sparkline: input.esSparkline ?? null,
     },
     {
@@ -97,6 +111,7 @@ export function buildCommandStrip(input: {
         : input.hero.sessionDetail,
       tone: "ok",
       available: true,
+      coverage: "verified",
     },
     {
       id: "bias",
@@ -112,6 +127,7 @@ export function buildCommandStrip(input: {
               ? "caution"
               : "neutral",
       available: true,
+      coverage: "verified",
     },
     {
       id: "expected",
@@ -120,6 +136,7 @@ export function buildCommandStrip(input: {
       detail: input.expectedMove ? "24h verified range" : "Awaiting candles",
       tone: "neutral",
       available: Boolean(input.expectedMove),
+      coverage: input.expectedMove ? "verified" : "pending",
     },
     {
       id: "risk",
@@ -128,6 +145,7 @@ export function buildCommandStrip(input: {
       detail: input.decision.primaryRisk,
       tone: input.decision.permissionTone === "blocked" ? "risk" : "caution",
       available: true,
+      coverage: "verified",
     },
     weatherCell(input.weather, "VIX"),
     weatherCell(input.weather, "DXY"),
@@ -140,6 +158,7 @@ export function buildCommandStrip(input: {
       detail: "Not on verified dashboard feed",
       tone: "neutral",
       available: false,
+      coverage: "unconfigured",
     },
     {
       id: "GOLD",
@@ -148,6 +167,7 @@ export function buildCommandStrip(input: {
       detail: "Not on verified dashboard feed",
       tone: "neutral",
       available: false,
+      coverage: "unconfigured",
     },
     {
       id: "BTC",
@@ -156,6 +176,7 @@ export function buildCommandStrip(input: {
       detail: "Not on verified dashboard feed",
       tone: "neutral",
       available: false,
+      coverage: "unconfigured",
     },
     {
       id: "breadth",
@@ -164,6 +185,7 @@ export function buildCommandStrip(input: {
       detail: "No verified breadth feed",
       tone: "neutral",
       available: false,
+      coverage: "unconfigured",
     },
     {
       id: "pc",
@@ -172,6 +194,7 @@ export function buildCommandStrip(input: {
       detail: "No verified put/call feed",
       tone: "neutral",
       available: false,
+      coverage: "unconfigured",
     },
     {
       id: "tick",
@@ -180,6 +203,7 @@ export function buildCommandStrip(input: {
       detail: "No verified tick feed",
       tone: "neutral",
       available: false,
+      coverage: "unconfigured",
     },
   ];
 

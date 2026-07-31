@@ -17,7 +17,7 @@
 }
 .mbEyebrow{
   display:inline-flex;align-items:center;gap:8px;
-  color:var(--mb-green);font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--mb-green);font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.16em;text-transform:uppercase;
 }
 .mbHero{
   display:grid;grid-template-columns:minmax(0,1.45fr) minmax(240px,.85fr) auto;gap:28px;align-items:end;
@@ -37,7 +37,7 @@
 .mbHeroCopy p{max-width:560px;margin:0;color:var(--mb-muted);font:14px/1.65 var(--font-geist-sans),Arial,sans-serif}
 .mbHeroMeta{display:grid;gap:14px}
 .mbHeroMeta>div{padding-bottom:10px;border-bottom:1px solid #1c282e}
-.mbHeroMeta span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.mbHeroMeta span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase}
 .mbHeroMeta strong{display:block;margin-top:7px;color:#dce5e8;font:600 15px var(--font-geist-sans),Arial,sans-serif}
 .mbHeroMeta strong.is-ok{color:var(--mb-green)}
 .mbHeroMeta strong.is-warn{color:var(--mb-gold)}
@@ -45,11 +45,11 @@
 .mbHeroActions{display:grid;gap:10px}
 .mbHeroActions a{
   display:grid;gap:4px;min-height:64px;padding:12px 14px;border-radius:10px;text-decoration:none;
-  transition:transform .18s ease,box-shadow .18s ease;
+  transition: transform var(--vx-fast) ease,box-shadow var(--vx-fast) ease;
 }
 .mbPrimaryAction{border:1px solid #79c9b9;background:#79c9b9;color:#07110f;box-shadow:0 12px 30px #4da78f22}
 .mbSecondaryAction{border:1px solid #33434a;background:#11191ecc;color:#d9e2e5}
-.mbHeroActions small{font:700 8px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+.mbHeroActions small{font:700 8px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;opacity:.7}
 .mbHeroActions b{font:600 15px var(--font-geist-sans),Arial,sans-serif}
 .mbHeroActions a:hover{transform:translateY(-2px)}
 
@@ -79,7 +79,7 @@
 .mbSummaryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#1c282e}
 .mbSummaryGrid>article{padding:16px 18px;background:#0b1216;min-height:0}
 .mbSummaryGrid h3,.mbPlayColumns h3{
-  margin:0 0 10px;color:#718088;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+  margin:0 0 10px;color:#718088;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase;
 }
 .mbSummaryGrid p{margin:0;color:#d5dee2;font:500 14px/1.6 var(--font-geist-sans),Arial,sans-serif}
 .mbWatchAvoid{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:24px;background:#0b1216!important}
@@ -104,7 +104,7 @@
   display:flex;justify-content:space-between;gap:12px;align-items:center;
   margin-top:4px;padding:14px 18px;border-top:1px solid #1c282e;
 }
-.mbPanel footer span{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.mbPanel footer span{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase}
 .mbPanel footer strong{color:var(--mb-text);font:600 15px var(--font-geist-sans),Arial,sans-serif}
 
 .mbCross{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;animation:mbRise .75s ease both}
@@ -112,7 +112,7 @@
   min-height:0;padding:14px 16px;border:1px solid var(--mb-line);border-radius:12px;
   background:linear-gradient(160deg,#0f171be8,#0a1014f5);box-shadow:inset 0 1px #ffffff08;
 }
-.mbCrossCard span{display:block;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.mbCrossCard span{display:block;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase}
 .mbCrossCard strong{display:block;margin-top:10px;color:var(--mb-text);font:600 24px/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
 .mbCrossCard em{display:block;margin-top:6px;font-style:normal;color:var(--mb-muted);font:600 12px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .mbCrossCard p{margin:12px 0 0;color:#7f8d95;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
@@ -128,9 +128,10 @@
 .mbTimeline li:last-child{border-bottom:0}
 .mbTimeline time{color:var(--mb-cyan);font:700 12px/1.4 var(--font-geist-mono),monospace}
 .mbTimeline strong{display:block;color:#e4eaed;font:600 14px/1.35 var(--font-geist-sans),Arial,sans-serif}
-.mbRisk{display:inline-block;margin-top:6px;color:#9aa7ad;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mbRisk{display:inline-block;margin-top:6px;color:#9aa7ad;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mbRisk.is-high{color:var(--mb-red)}
 .mbRisk.is-med{color:var(--mb-gold)}
+.mbRisk.is-unknown{color:#7d8a84;letter-spacing:.04em;text-transform:none}
 .mbTimeline li.is-empty time,.mbTimeline li.is-empty strong{color:#718088}
 
 .mbEmpty{padding:18px;color:#a7b3ba}
@@ -138,11 +139,11 @@
 .mbCompactEmpty strong{margin:0}
 .mbSoftBadge{
   display:inline-flex;align-items:center;padding:4px 8px;border:1px solid #33434a;border-radius:999px;
-  color:#9aa7ad;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;
+  color:#9aa7ad;font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase;
 }
 .mbDecisionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#1c282e}
 .mbDecisionGrid>div{padding:14px 16px;background:#0b1216}
-.mbDecisionGrid span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase}
+.mbDecisionGrid span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.11em;text-transform:uppercase}
 .mbDecisionGrid strong{display:block;margin-top:8px;color:#e8eef1;font:600 15px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .mbDecisionGrid .is-blocked{background:#16100f;box-shadow:inset 3px 0 0 #ef7777}
 .mbDecisionGrid .is-blocked strong{color:#ef9a9a}
@@ -169,7 +170,7 @@
   padding:11px 18px;border-bottom:1px solid #1c282e;
 }
 .mbLadder li:last-child{border-bottom:0}
-.mbLadder span{color:#718088;font:700 10px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mbLadder span{color:#718088;font:700 10px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mbLadder strong{color:var(--mb-text);font:600 15px/1 var(--font-geist-mono),monospace;letter-spacing:-.02em}
 .mbLadder small{color:#7f8d95;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .mbLadder .is-resistance strong{color:var(--mb-red)}
@@ -181,7 +182,7 @@
 .mbParticipationFacts{margin:0;padding:4px 18px 18px;display:grid;gap:14px}
 .mbParticipationFacts>div{display:grid;gap:6px;padding-bottom:12px;border-bottom:1px solid #1c282e}
 .mbParticipationFacts>div:last-child{border-bottom:0;padding-bottom:0}
-.mbParticipationFacts dt{color:#7d8a84;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.mbParticipationFacts dt{color:#7d8a84;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mbParticipationFacts dd{margin:0;color:#e8eef0;font:15px/1.5 var(--font-geist-sans),Arial,sans-serif}
 .mbParticipationFacts ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
 .mbParticipationFacts li{color:#c9d5cf;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
@@ -208,7 +209,7 @@
 .marketVideoCard header{display:grid;gap:6px;padding:0 18px}
 .marketVideoBadge{
   width:fit-content;padding:4px 8px;border-radius:999px;border:1px solid #33434a;color:#c9b48a;
-  font:700 10px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase;
+  font:700 10px var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase;
 }
 .marketVideoCard h2{margin:0;color:#e8eef0;font:650 20px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .marketVideoCard p{margin:0;color:var(--mb-muted);font:13px/1.5 var(--font-geist-sans),Arial,sans-serif}
@@ -302,7 +303,7 @@
 }
 @media(prefers-reduced-motion:reduce){
   .morningMarketBrief,.mbHero,.mbDelayed,.mbPanel,.mbSummary,.mbCross{animation:none!important}
-  .mbHeroActions a{transition:none}
+  .mbHeroActions a{transition: none}
 }
 
 /* Morning Brief premium UX — hierarchy and compact empty states */
@@ -325,7 +326,7 @@
 .mbExpectedInline{
   margin:14px 0 0;padding:14px;border-top:1px solid #1c282e;display:grid;gap:6px;
 }
-.mbExpectedInline span{color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mbExpectedInline span{color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mbExpectedInline strong{color:#eef3f4;font:600 16px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .mbExpectedInline p{margin:0;color:#b7c2c7;font-size:13px;line-height:1.45}
 .mbExpectedInline small{color:#84929a;font-size:12px;line-height:1.4}
@@ -346,7 +347,7 @@
   display:grid;gap:6px;min-height:84px;padding:16px;border-radius:12px;border:1px solid #2a3940;background:#11191ecc;
   color:#d9e2e5;text-decoration:none;
 }
-.mbAction small{font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+.mbAction small{font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;opacity:.7}
 .mbAction b{font:650 16px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .mbAction.is-primary{border-color:#79c9b9;background:#79c9b9;color:#07110f}
 .mbAction.is-gold{border-color:#d8b36a88;background:#d8b36a18;color:#f0e2c0}

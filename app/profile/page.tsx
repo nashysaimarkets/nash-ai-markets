@@ -11,6 +11,7 @@ import { resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts
 import { loadFounding100ForEmail } from "../lib/server/founding-100.ts";
 import { loadCommercialMembership } from "../lib/server/commercial.ts";
 import { ProfileForm } from "./components/ProfileForm.tsx";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
     supabase
       .from("memberships")
       .select("plan, status, current_period_end")
-      .ilike("email", user.email)
+      .eq("email", membershipEmailKey(user.email))
       .in("plan", ["free", "pro", "elite"])
       .maybeSingle(),
     supabase

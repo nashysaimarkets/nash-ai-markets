@@ -20,7 +20,7 @@ test("onboarding persistence is authenticated, same-origin and user-owned", asyn
     read("supabase/migrations/202607170006_member_onboarding.sql"),
     read("supabase/migrations/202607180008_member_onboarding_rpc.sql"),
   ]);
-  assert.match(route, /request\.headers\.get\("origin"\) !== origin/);
+  assert.match(route, /rejectCrossOriginCoded|request\.headers\.get\("origin"\) !== origin/);
   assert.match(route, /supabase\.auth\.getUser/);
   assert.match(route, /supabase\.rpc\("save_member_onboarding"/);
   assert.match(migration, /enable row level security/);

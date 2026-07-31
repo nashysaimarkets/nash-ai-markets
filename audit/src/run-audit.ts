@@ -6,10 +6,10 @@ loadAuditEnv();
  * QA only — does not mutate production data or alter product logic.
  */
 
-import { createWriteStream, mkdirSync, writeFileSync, existsSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync, existsSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { chromium, type Browser, type BrowserContext, type Page, type Response } from "@playwright/test";
+import { chromium, type BrowserContext, type Page, type Response } from "@playwright/test";
 import { AxeBuilder } from "@axe-core/playwright";
 import {
   AUDIT_OUTPUT_DIR,
@@ -206,7 +206,7 @@ async function captureScreens(
 
 async function runA11y(page: Page) {
   try {
-    const results = await new AxeBuilder({ page }).analyze();
+    const results = await new AxeBuilder({ page: page as never }).analyze();
     const counts = { critical: 0, serious: 0, moderate: 0, minor: 0 };
     for (const violation of results.violations) {
       const impact = (violation.impact || "minor") as keyof typeof counts;

@@ -34,7 +34,7 @@ test("preview endpoint validates tier progression and persists a unique claim", 
   ]);
   assert.match(route, /canClaimPreview/);
   assert.match(route, /PREVIEW_NOT_ELIGIBLE/);
-  assert.match(route, /INVALID_ORIGIN/);
+  assert.match(route, /rejectCrossOriginCoded|INVALID_ORIGIN/);
   assert.match(route, /createAdminClient/);
   assert.match(migration, /unique \(user_id, target_tier, period_start\)/);
   assert.match(migration, /enable row level security/);

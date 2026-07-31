@@ -114,10 +114,19 @@ export async function loadFmpEconomicCalendar(input: {
       cache: "no-store",
       signal: input.signal ?? AbortSignal.timeout(timeoutMs),
     });
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.warn(`[fmp-economic-calendar] request rejected ${JSON.stringify({ httpStatus: response.status })}`);
+      return [];
+    }
     const payload = await response.json().catch(() => null);
     return normalizeEconomicCalendar(payload, now);
-  } catch {
+  } catch (error) {
+    console.error(
+      `[fmp-economic-calendar] request failed ${JSON.stringify({
+        error: error instanceof Error ? error.name : "Error",
+        message: error instanceof Error ? error.message : String(error),
+      })}`,
+    );
     return [];
   }
 }

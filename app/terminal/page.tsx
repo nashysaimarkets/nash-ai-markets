@@ -37,6 +37,7 @@ import {
 import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } from "./lib/desk-payload";
 import { sanitizeForClient } from "../lib/serialize-for-client.ts";
 import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -54,7 +55,7 @@ export default async function Terminal() {
   const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError));

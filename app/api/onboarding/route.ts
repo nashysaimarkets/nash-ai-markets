@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../utils/supabase/server.ts";
 import { normalizeOnboardingPreferences } from "../../lib/onboarding.ts";
+import { rejectCrossOriginCoded } from "../../lib/server/same-origin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const origin = new URL(request.url).origin;
-  if (request.headers.get("origin") !== origin) return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403 });
+  const blocked = rejectCrossOriginCoded(request);
+  if (blocked) return blocked;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok: false, code: "AUTH_REQUIRED" }, { status: 401 });

@@ -17,6 +17,10 @@ test("canonical membership migration is server-managed and member-readable only 
 });
 
 test("cookie-authenticated and public writes require an exact same-origin request", async () => {
+  const helper = await read("app/lib/server/same-origin.ts");
+  assert.match(helper, /headers\.get\("origin"\)/);
+  assert.match(helper, /INVALID_ORIGIN/);
+
   const routes = await Promise.all([
     read("app/api/profile/route.ts"),
     read("app/api/onboarding/route.ts"),
@@ -26,9 +30,14 @@ test("cookie-authenticated and public writes require an exact same-origin reques
     read("app/api/stripe/checkout/route.ts"),
   ]);
   for (const route of routes) {
-    assert.match(route, /headers\.get\("origin"\)/);
-    assert.match(route, /!== (?:requestOrigin|origin)/);
-    assert.match(route, /INVALID_ORIGIN|Checkout request rejected/);
+    assert.match(
+      route,
+      /rejectCrossOriginCoded|isSameOrigin|headers\.get\("origin"\)/,
+    );
+    assert.match(
+      route,
+      /rejectCrossOriginCoded|isSameOrigin|INVALID_ORIGIN|Checkout request rejected/,
+    );
   }
 });
 

@@ -14,6 +14,8 @@ import {
 import {
   groupVerifiedEvents,
   upcomingVerifiedEvents,
+  verifiedEventRisk,
+  type VerifiedEventRisk,
 } from "../../terminal/lib/event-display.ts";
 
 export type BriefCrossAssetCard = {
@@ -40,9 +42,9 @@ export type BriefTimelineItem = {
   id: string;
   time: string;
   name: string;
-  risk: "HIGH" | "MED" | "UNKNOWN";
+  risk: VerifiedEventRisk;
   available: boolean;
-  includes: Array<{ name: string; risk: "HIGH" | "MED" }>;
+  includes: Array<{ name: string; risk: VerifiedEventRisk }>;
 };
 
 export type BriefVideoSlot = {
@@ -403,9 +405,9 @@ function buildTimeline(events: MarketEvent[], now = Date.now()): BriefTimelineIt
     id: `${event.at ?? event.time}-${index}`,
     time: event.time,
     name: event.name,
-    risk: event.risk,
+    risk: verifiedEventRisk(event.risk),
     available: true,
-    includes: event.includes,
+    includes: Array.isArray(event.includes) ? event.includes : [],
   }));
 }
 

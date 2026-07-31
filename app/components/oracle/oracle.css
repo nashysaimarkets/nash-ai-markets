@@ -6,15 +6,17 @@
   box-shadow:0 18px 48px #0006;
 }
 .oracleThirty.is-limited,.oracleReplay.is-limited{border-color:#3a3426}
+/* Heading and trailing control share a row while they fit, then wrap. */
 .oracleThirty header,.oracleTimeline header,.oracleConviction header,.oracleChange header,.oracleChecklist header,.oracleOpportunity header,.oracleReplay header,.oracleProcess header{
-  display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px;
+  display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px;
 }
+.oracleThirty header>*,.oracleTimeline header>*,.oracleConviction header>*,.oracleChange header>*,.oracleChecklist header>*,.oracleOpportunity header>*,.oracleReplay header>*,.oracleProcess header>*{min-width:0}
 .oracleThirty h2,.oracleTimeline h2,.oracleConviction h2,.oracleChange h2,.oracleChecklist h2,.oracleOpportunity h2,.oracleReplay h2,.oracleProcess h2{
   margin:8px 0 0;color:#f0f3f1;font:600 clamp(22px,2.4vw,30px)/1.15 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em;
 }
 .oracleThirtyGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0}
 .oracleThirtyGrid>div,.oracleChangeGrid>div{min-width:0;padding:12px 14px;border:1px solid #24322c;border-radius:12px;background:#0a1210cc}
-.oracleThirtyGrid dt,.oracleChangeGrid dt{color:#7f8d93;font:700 10px/1 var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.oracleThirtyGrid dt,.oracleChangeGrid dt{color:#7f8d93;font:700 10px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .oracleThirtyGrid dd,.oracleChangeGrid dd{margin:8px 0 0;color:#e8f0eb;font:500 14px/1.45 var(--font-geist-sans),Arial,sans-serif}
 .oracleThirtyGrid .is-wide,.oracleChangeGrid .is-wide{grid-column:1/-1}
 
@@ -22,7 +24,7 @@
 .oracleTimelineTrack li{min-width:0;padding:10px 8px;border:1px solid #24322c;border-radius:10px;background:#0a1210;text-align:center;color:#8a9690;font:650 11px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .oracleTimelineTrack li.is-active{border-color:#62e6b166;background:#35d89b14;color:#62e6b1;box-shadow:0 0 0 1px #62e6b133}
 .oracleTimelineFocus{margin:14px 0 0;color:#c5d0cb;font:500 14px/1.55 var(--font-geist-sans),Arial,sans-serif}
-.oracleTimelineFocus span{display:block;margin-bottom:4px;color:#62e6b1;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.oracleTimelineFocus span{display:block;margin-bottom:4px;color:#62e6b1;font:700 10px var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 
 .oracleConvictionList{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .oracleConvictionList>li{padding:14px;border:1px solid #24322c;border-radius:12px;background:#0a1210cc}
@@ -42,8 +44,14 @@
   color:#9aa7ad;font:650 11px var(--font-geist-sans),Arial,sans-serif;background:#0a1210;
 }
 .oracleConceptHint>summary:focus-visible{outline:2px solid #d9ab52;outline-offset:2px}
+/*
+ * These hints open inside cells much narrower than 36ch. Capping at the parent
+ * width keeps the panel inside its cell, and breaking long terms stops a single
+ * unbreakable word from setting a wide min-content floor for the whole grid.
+ */
 .oracleConceptHint>div{
-  margin-top:8px;padding:12px;border:1px solid #2a3a34;border-radius:12px;background:#09110ef8;max-width:36ch;
+  margin-top:8px;padding:12px;border:1px solid #2a3a34;border-radius:12px;background:#09110ef8;
+  max-width:min(36ch,100%);overflow-wrap:anywhere;
 }
 .oracleConceptHint strong{display:block;color:#eef3f0;margin-bottom:6px}
 .oracleConceptHint p{margin:0 0 8px;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
@@ -71,7 +79,7 @@
 
 .oracleOpportunityGrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .oracleOpportunityGrid>li{padding:16px;border:1px solid #24322c;border-radius:12px;background:#0a1210cc}
-.oracleOpportunityGrid>li>span{display:inline-block;margin-bottom:8px;color:#efd39a;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
+.oracleOpportunityGrid>li>span{display:inline-block;margin-bottom:8px;color:#efd39a;font:700 10px var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
 .oracleOpportunityGrid strong{display:block;color:#eef3f0;font:600 16px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .oracleOpportunityGrid em{display:block;margin-top:10px;color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;font-style:normal;letter-spacing:.08em;text-transform:uppercase}
 .oracleOpportunityGrid ul{margin:6px 0 0;padding-left:16px;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
@@ -100,7 +108,7 @@
   border:1px solid #2a3a34;border-radius:14px;background:#0a1210f2;
 }
 .deskFocusStrip article{min-width:0}
-.deskFocusStrip span{display:block;color:#7f8d93;font:700 10px/1 var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.deskFocusStrip span{display:block;color:#7f8d93;font:700 10px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .deskFocusStrip strong{display:block;margin-top:8px;color:#eef3f0;font:600 14px/1.35 var(--font-geist-sans),Arial,sans-serif}
 .deskFocusStrip small{display:block;margin-top:6px;color:#84929a;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .deskFocusStrip button{

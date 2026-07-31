@@ -34,10 +34,34 @@
   --session-rth: #7eb8d4;
   --session-postmarket: #d8b36a;
 
+  /* Shared geometry — prefer these over one-off radii/shadows */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-panel: 0 18px 50px #0005;
+  --shadow-float: 0 24px 60px #0008;
+  --shadow-focus: 0 0 0 3px #8abaff55;
+
+  /* Readable type floors — labels may be small, never below these */
+  --type-floor: 11px;
+  --type-label: 12px;
+  --type-body: 14px;
+
   /* Motion */
   --vx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --vx-fast: 180ms;
   --vx-med: 280ms;
+}
+
+/*
+ * Browsers apply `font-size: 80%` to `small`, which drops it under the readable
+ * floor wherever the surrounding text is already a micro-label. Keep the
+ * proportional shrink where there is room, but never go below the floor.
+ */
+small {
+  font-size: max(0.8em, var(--type-floor));
 }
 
 /* Softer member composition helpers */

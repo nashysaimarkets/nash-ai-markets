@@ -55,7 +55,7 @@ import {
   type DeskViewId,
 } from "../lib/desk-views.ts";
 import { DeskDecisionSummary } from "./DeskDecisionSummary.tsx";
-import { groupVerifiedEvents } from "../lib/event-display.ts";
+import { groupVerifiedEvents, verifiedEventRiskLabel } from "../lib/event-display.ts";
 import { buildSessionTimeline } from "../../lib/oracle/session-timeline.ts";
 import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import {
@@ -686,7 +686,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <li key={item.id}>
                     <time>{item.time}</time>
                     <strong>{item.title}</strong>
-                    <TerminalBadge label={item.risk} tone={item.risk === "HIGH" ? "danger" : "warning"} />
+                    <TerminalBadge
+                      label={verifiedEventRiskLabel(item.risk)}
+                      tone={item.risk === "HIGH" ? "danger" : "warning"}
+                    />
                     {item.includes.length ? (
                       <VerifiedCatalystIncludes includes={item.includes} className="deskCatalystIncludes" />
                     ) : null}
@@ -1345,7 +1348,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     <div className="deskNextCatalystBody">
                       <time>{nextCatalystWhen}</time>
                       <strong>{nextCatalyst.name}</strong>
-                      <span>{nextCatalyst.risk} impact</span>
+                      <span>{verifiedEventRiskLabel(nextCatalyst.risk)}</span>
                       {nextCatalyst.includes.length ? (
                         <VerifiedCatalystIncludes includes={nextCatalyst.includes} className="deskCatalystIncludes" />
                       ) : null}

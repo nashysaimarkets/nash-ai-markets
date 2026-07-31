@@ -21,6 +21,10 @@ import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { readSessionClock } from "../terminal/lib/session-clock.ts";
 import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway.ts";
 import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
+import { RouteRenderBoundary } from "../components/RouteRenderBoundary";
+import { createRouteTrace, describeError, newCorrelationId } from "../lib/observability/route-trace.ts";
+import type { MarketCommandCentreProps } from "./components/MarketCommandCentre";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -29,38 +33,58 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * Data assembly and rendering are kept separate on purpose. React invokes the
+ * presentation components after this function returns, so JSX built inside the
+ * try/catch would not be covered by it — a render throw would escape to the
+ * route error boundary and blank the page.
+ */
+type DashboardViewState = {
+  mode: "complete" | "partial" | "recovery";
+  contextStatus: "complete" | "partial" | "unavailable";
+  missingInputs: string[];
+  correlationId: string;
+  centre: MarketCommandCentreProps;
+};
+
 export default async function MemberDashboard() {
   const now = currentServerTimestamp();
-  const supabase = await createClient();
+  const pageCorrelationId = newCorrelationId("dashboard");
+  const step = createRouteTrace("dashboard", pageCorrelationId);
+
+  const supabase = await step("supabase.createClient", () => createClient());
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await step("supabase.auth.getUser", () => supabase.auth.getUser());
   if (!user?.email) redirect("/login");
 
-  const { data: onboarding, error: onboardingError } = await supabase
-    .from("member_onboarding")
-    .select("completed_at")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const { data: onboarding, error: onboardingError } = await step("supabase.onboarding", () =>
+    supabase.from("member_onboarding").select("completed_at").eq("user_id", user.id).maybeSingle(),
+  );
   if (!onboardingError && !onboarding?.completed_at) redirect("/onboarding");
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("memberships")
-    .select("plan, status, current_period_end, billing_interval")
-    .ilike("email", user.email)
-    .in("plan", ["free", "pro", "elite"])
-    .maybeSingle();
+  const { data: membership, error: membershipError } = await step("supabase.membership", () =>
+    supabase
+      .from("memberships")
+      .select("plan, status, current_period_end, billing_interval")
+      .eq("email", membershipEmailKey(user.email!))
+      .in("plan", ["free", "pro", "elite"])
+      .maybeSingle(),
+  );
   const tier = resolveMembershipTier(membership, Boolean(membershipError), now);
   if (tier === "temporarily_unavailable") redirect(membershipRedirect(tier));
 
-  const previewState = await loadPreviewClaims(user.id);
+  const previewState = await step("membership.previewClaims", () => loadPreviewClaims(user.id));
   const access = createProgressiveAccess(tier, previewState.claims);
   const paid = access.tier === "pro" || access.tier === "elite";
   const displayName = memberDisplayName(user.email, user.user_metadata as Record<string, unknown> | undefined);
   const tierLabel = access.tier.charAt(0).toUpperCase() + access.tier.slice(1).toLowerCase();
 
+  let view: DashboardViewState;
   try {
-    const context = await getVerifiedMarketContext({ paid, now, route: "/dashboard" });
+    const context = await step("market.verifiedContext", () =>
+      getVerifiedMarketContext({ paid, now, route: "/dashboard" }),
+    );
     const greeting = buildDeskGreeting(displayName, context.session, new Date(now));
     const summary = buildDashboardCommandSummary({
       snapshot: context.snapshot,
@@ -118,49 +142,31 @@ export default async function MemberDashboard() {
       plan: context.plan,
     });
 
-    return (
-      <MemberShell active="dashboard">
-        {props.contextStatus !== "complete" ? (
-          <aside className="dashPartialBanner" role="status">
-            <strong>
-              {props.contextStatus === "unavailable"
-                ? "Verified context is limited"
-                : "Partial verified context"}
-            </strong>
-            <span>
-              {props.missingInputs.length
-                ? `Awaiting: ${props.missingInputs.slice(0, 3).join("; ")}.`
-                : "Some optional feeds are unavailable."}{" "}
-              Available modules remain visible. Ref {props.correlationId}.
-            </span>
-            <div>
-              <Link href="/dashboard">Retry dashboard</Link>
-              <Link href="/terminal">Open Trading Desk</Link>
-              <Link href="/brief">Open Morning Brief</Link>
-            </div>
-          </aside>
-        ) : null}
-        <MarketCommandCentre
-          greeting={props.greeting}
-          tierLabel={props.tierLabel}
-          summary={props.summary}
-          insight={props.insight}
-          oracle={props.oracle}
-          candleSeries={props.candleSeries}
-          now={props.now}
-          marketVideo={props.marketVideo}
-          postMarketPendingNotice={props.postMarketPendingNotice}
-          archiveAvailable={props.archiveAvailable}
-          session={props.session}
-          quotes={props.quotes}
-          plan={props.plan}
-        />
-      </MemberShell>
-    );
+    view = {
+      mode: props.contextStatus === "complete" ? "complete" : "partial",
+      contextStatus: props.contextStatus,
+      missingInputs: props.missingInputs,
+      correlationId: props.correlationId,
+      centre: {
+        greeting: props.greeting,
+        tierLabel: props.tierLabel,
+        summary: props.summary,
+        insight: props.insight,
+        oracle: props.oracle,
+        candleSeries: props.candleSeries,
+        now: props.now,
+        marketVideo: props.marketVideo,
+        postMarketPendingNotice: props.postMarketPendingNotice,
+        archiveAvailable: props.archiveAvailable,
+        session: props.session,
+        quotes: props.quotes,
+        plan: props.plan,
+      },
+    };
   } catch (error) {
-    console.error("[dashboard] command centre failed; rendering recovery shell", {
-      name: error instanceof Error ? error.name : "Error",
-    });
+    console.error(
+      `[dashboard:recovery] ${JSON.stringify({ correlationId: pageCorrelationId, ...describeError(error) })}`,
+    );
     const snapshot = createUnavailableSnapshot();
     const gatewayStatus = createUnconfiguredMarketGatewayStatus("Dashboard recovery");
     const session = readSessionClock(new Date(now));
@@ -227,8 +233,29 @@ export default async function MemberDashboard() {
       plan: null,
     });
 
-    return (
-      <MemberShell active="dashboard">
+    view = {
+      mode: "recovery",
+      contextStatus: "unavailable",
+      missingInputs: [],
+      correlationId: pageCorrelationId,
+      centre: {
+        greeting: props.greeting,
+        tierLabel: props.tierLabel,
+        summary: props.summary,
+        insight: props.insight,
+        oracle: props.oracle,
+        candleSeries: null,
+        now: props.now,
+        session: props.session,
+        quotes: props.quotes,
+        plan: props.plan,
+      },
+    };
+  }
+
+  return (
+    <MemberShell active="dashboard">
+      {view.mode === "recovery" ? (
         <aside className="dashPartialBanner is-critical" role="alert">
           <strong>Command view recovered in safe mode</strong>
           <span>No invented market values are shown. Retry or continue on the Trading Desk.</span>
@@ -237,19 +264,33 @@ export default async function MemberDashboard() {
             <Link href="/terminal">Open Trading Desk</Link>
           </div>
         </aside>
-        <MarketCommandCentre
-          greeting={props.greeting}
-          tierLabel={props.tierLabel}
-          summary={props.summary}
-          insight={props.insight}
-          oracle={props.oracle}
-          candleSeries={null}
-          now={props.now}
-          session={props.session}
-          quotes={props.quotes}
-          plan={props.plan}
-        />
-      </MemberShell>
-    );
-  }
+      ) : null}
+      {view.mode === "partial" ? (
+        <aside className="dashPartialBanner" role="status">
+          <strong>
+            {view.contextStatus === "unavailable" ? "Verified context is limited" : "Partial verified context"}
+          </strong>
+          <span>
+            {view.missingInputs.length
+              ? `Awaiting: ${view.missingInputs.slice(0, 3).join("; ")}.`
+              : "Some optional feeds are unavailable."}{" "}
+            Available modules remain visible. Ref {view.correlationId}.
+          </span>
+          <div>
+            <Link href="/dashboard">Retry dashboard</Link>
+            <Link href="/terminal">Open Trading Desk</Link>
+            <Link href="/brief">Open Morning Brief</Link>
+          </div>
+        </aside>
+      ) : null}
+      <RouteRenderBoundary
+        route="dashboard"
+        correlationId={view.correlationId}
+        title="The dashboard could not be displayed"
+        description="Verified market context was retrieved but could not be presented. No market values have been inferred from the failure."
+      >
+        <MarketCommandCentre {...view.centre} />
+      </RouteRenderBoundary>
+    </MemberShell>
+  );
 }

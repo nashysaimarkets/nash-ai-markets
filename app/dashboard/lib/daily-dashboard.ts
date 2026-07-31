@@ -3,7 +3,7 @@ import { isDecisionReadySnapshot } from "../../lib/market-data.ts";
 import type { MarketIntelligence } from "../../lib/market-intelligence-engine.ts";
 import type { TradePlan } from "../../lib/structured-trade-planner.ts";
 import type { TradingDecision } from "../../lib/trading-decision-engine.ts";
-import { groupVerifiedEvents } from "../../terminal/lib/event-display.ts";
+import { groupVerifiedEvents, type VerifiedEventRisk } from "../../terminal/lib/event-display.ts";
 
 export type DailyMission = {
   available: boolean;
@@ -16,7 +16,7 @@ export type DailyMission = {
 
 export type NextEconomicEvent = {
   name: string;
-  risk: "HIGH" | "MED";
+  risk: VerifiedEventRisk;
   startsAt: string;
   countdown: string;
   includes: string[];

@@ -58,12 +58,16 @@ export default function LoginForm() {
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
-  useEffect(() => {
-    const error = searchParams.get("error");
-    if (error !== "signin") return;
+  // Derived from the URL during render rather than in an effect, so the reason
+  // is shown on the first paint instead of flashing an empty form first.
+  const signInReason =
+    searchParams.get("error") === "signin" ? searchParams.get("reason") ?? "signin" : null;
+  const [shownSignInReason, setShownSignInReason] = useState<string | null>(null);
+  if (signInReason !== null && signInReason !== shownSignInReason) {
+    setShownSignInReason(signInReason);
     setMessageTone("error");
-    setMessage(messageForSignInError(searchParams.get("reason")));
-  }, [searchParams]);
+    setMessage(messageForSignInError(signInReason));
+  }
 
   // Publish the planned emailRedirectTo on the form for deployment inspection (no submit).
   useEffect(() => {

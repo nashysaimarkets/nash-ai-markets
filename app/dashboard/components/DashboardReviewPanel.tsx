@@ -1,3 +1,4 @@
+import { verifiedEventRiskLabel } from "../../terminal/lib/event-display.ts";
 import { TradePlanChecklist } from "./TradePlanChecklist.tsx";
 
 type Props = {
@@ -27,9 +28,9 @@ export function DashboardReviewPanel(props: Props) {
         <h3>Next verified event</h3>
         {props.nextEvent ? <>
           <strong>{props.nextEvent.name}</strong>
-          <p>{props.nextEvent.when} UK · {props.nextEvent.risk} impact{props.nextEvent.countdown ? ` · ${props.nextEvent.countdown}` : ""}</p>
+          <p>{props.nextEvent.when} UK · {verifiedEventRiskLabel(props.nextEvent.risk)}{props.nextEvent.countdown ? ` · ${props.nextEvent.countdown}` : ""}</p>
         </> : <p>No verified economic calendar event is available from the provider. Nothing is invented.</p>}
-        {props.events.length > 1 ? <ul>{props.events.slice(0, 4).map((event) => <li key={`${event.time}-${event.name}`}><time>{event.time}</time> {event.name} <span>{event.risk}</span></li>)}</ul> : null}
+        {props.events.length > 1 ? <ul>{props.events.slice(0, 4).map((event) => <li key={`${event.time}-${event.name}`}><time>{event.time}</time> {event.name} <span>{verifiedEventRiskLabel(event.risk)}</span></li>)}</ul> : null}
       </article>
       <article>
         <h3>Review conditions</h3>

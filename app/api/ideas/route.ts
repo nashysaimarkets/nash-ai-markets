@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../utils/supabase/server";
+import { rejectCrossOrigin } from "../../lib/server/same-origin.ts";
 import { validateIdea } from "../../ideas/lib";
 
 export const dynamic = "force-dynamic";
-const sameOrigin = (request: Request) => request.headers.get("origin") === new URL(request.url).origin;
 const displayName = (email: string | undefined, metadata: Record<string, unknown>) => {
   const supplied = typeof metadata.full_name === "string" ? metadata.full_name.trim() : "";
   return supplied.length >= 2 && supplied.length <= 60 ? supplied : (email?.split("@")[0] || "NASH member").slice(0, 60);
 };
 export async function POST(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
+  const blocked = rejectCrossOrigin(request);
+  if (blocked) return blocked;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok: false }, { status: 401 });

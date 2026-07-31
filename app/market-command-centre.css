@@ -14,7 +14,13 @@
   display:grid;
   gap:16px;
 }
-.mccEyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--mcc-green);font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.16em}
+/*
+ * Grid items default to min-width:auto, so the widest child's min-content sets
+ * the column track. Without this the track grows past the fixed container width
+ * and every section overflows the viewport on narrow screens.
+ */
+.marketCommandCentre>*{min-width:0}
+.mccEyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--mcc-green);font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.16em}
 .mccCommandHeader{
   display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.9fr) auto;gap:28px;align-items:end;
   padding:32px 34px;border:1px solid var(--mcc-line);border-radius:14px;
@@ -27,17 +33,17 @@
 .mccCommandHeader p{max-width:640px;margin:0;color:var(--mcc-muted);font:14px/1.6 var(--font-geist-sans),Arial,sans-serif}
 .mccHeaderMeta{display:grid;gap:14px}
 .mccHeaderMeta>div{padding-bottom:10px;border-bottom:1px solid #1c282e}
-.mccHeaderMeta span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.mccHeaderMeta span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase}
 .mccHeaderMeta strong{display:block;margin-top:7px;color:#dce5e8;font:600 15px var(--font-geist-sans),Arial,sans-serif}
 .mccHeaderMeta small{display:block;margin-top:5px;color:#718088;font-size:11px;line-height:1.4}
 .mccFeedState.is-DELAYED,.mccFeedState.is-STALE{color:var(--mcc-gold)}
 .mccFeedState.is-LIVE{color:var(--mcc-green)}
 .mccFeedState.is-UNAVAILABLE,.mccFeedState.is-PREVIEW{color:var(--mcc-red)}
 .mccHeaderActions{display:grid;gap:10px}
-.mccHeaderActions a{display:grid;gap:4px;min-height:64px;padding:12px 14px;border-radius:10px;text-decoration:none;transition:transform .18s ease,box-shadow .18s ease}
+.mccHeaderActions a{display:grid;gap:4px;min-height:64px;padding:12px 14px;border-radius:10px;text-decoration:none;transition: transform var(--vx-fast) ease,box-shadow var(--vx-fast) ease}
 .mccPrimaryAction{border:1px solid #79c9b9;background:#79c9b9;color:#07110f;box-shadow:0 12px 30px #4da78f22}
 .mccSecondaryAction{border:1px solid #33434a;background:#11191ecc;color:#d9e2e5}
-.mccHeaderActions small{font:700 8px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+.mccHeaderActions small{font:700 8px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;opacity:.7}
 .mccHeaderActions b{font:600 15px var(--font-geist-sans),Arial,sans-serif}
 .mccHeaderActions a:hover{transform:translateY(-2px)}
 /* Decision Desk™ — premium decision hero beneath welcome */
@@ -51,9 +57,9 @@
 .mccDecisionDeskHeader h2{margin:6px 0 4px;color:var(--mcc-text);font:560 clamp(22px,2.4vw,28px)/1.08 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.035em}
 .mccDecisionDeskHeader p{margin:0;color:var(--mcc-muted);font-size:12px;line-height:1.45}
 .mccDecisionMetrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:#1c282e}
-.mccDecisionMetric{min-height:84px;padding:12px 14px;background:#0c1318;transition:background .2s ease}
+.mccDecisionMetric{min-height:84px;padding:12px 14px;background:#0c1318;transition: background var(--vx-fast) ease}
 .mccDecisionMetric:hover{background:#10181d}
-.mccDecisionMetric span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase}
+.mccDecisionMetric span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.11em;text-transform:uppercase}
 .mccDecisionMetric strong{display:flex;align-items:center;gap:6px;margin-top:8px;color:#e8eef1;font:600 15px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
 .mccDecisionMetric p{display:none}
 .mccDecisionMetric.is-bull strong{color:var(--mcc-green)}
@@ -71,12 +77,12 @@
 .mccDecisionOpportunity.is-closed .mccOpportunityHeadline{color:var(--mcc-gold)}
 .mccOpportunityGrid{display:grid;gap:12px;margin:18px 0 0}
 .mccOpportunityGrid div{padding-top:10px;border-top:1px solid #1c282e}
-.mccOpportunityGrid dt{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccOpportunityGrid dt{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mccOpportunityGrid dd{margin:6px 0 0;color:#dce5e8;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif}
 .mccDecisionConfidence header{display:flex;justify-content:space-between;gap:12px;align-items:start}
 .mccDecisionConfidence header small{color:#5f6e76;font:700 22px/1 var(--font-geist-mono),monospace;opacity:.35}
 .mccConfidenceMeter{height:10px;margin:8px 0 14px;border-radius:999px;background:#172229;overflow:hidden}
-.mccConfidenceMeter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#718088,#9aa7ad);transition:width .7s ease}
+.mccConfidenceMeter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#718088,#9aa7ad);transition: width .7s ease}
 .mccDecisionConfidence.is-low .mccConfidenceMeter span{background:linear-gradient(90deg,#ef7777,#ef9a9a)}
 .mccDecisionConfidence.is-mid .mccConfidenceMeter span{background:linear-gradient(90deg,#d8b36a,#e4c88a)}
 .mccDecisionConfidence.is-high .mccConfidenceMeter span{background:linear-gradient(90deg,#3db894,#62e6b1)}
@@ -99,9 +105,9 @@
 .mccWeatherPanel h2{margin:6px 0 4px;color:var(--mcc-text);font:560 clamp(20px,2.2vw,26px)/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}
 .mccWeatherPanel>header p{margin:0;color:var(--mcc-muted);font-size:12px}
 .mccWeatherGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:#1c282e}
-.mccWeatherCard{min-height:108px;padding:14px;background:#0c1318;transition:transform .2s ease,background .2s ease}
+.mccWeatherCard{min-height:108px;padding:14px;background:#0c1318;transition: transform var(--vx-fast) ease,background var(--vx-fast) ease}
 .mccWeatherCard:hover{transform:translateY(-2px);background:#10181d}
-.mccWeatherCard span{display:flex;align-items:center;gap:8px;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccWeatherCard span{display:flex;align-items:center;gap:8px;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mccWeatherCard strong{display:block;margin-top:8px;font:600 18px/1.15 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
 .mccWeatherCard p{margin:8px 0 0;color:#84929a;font-size:12px;line-height:1.4}
 .mccWxIcon{width:16px;height:16px;flex:0 0 auto}
@@ -123,7 +129,7 @@
 .mccRadarGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 0}
 .mccRadarGrid div{padding-top:10px;border-top:1px solid #1c282e}
 .mccRadarGrid .is-wide{grid-column:1/-1}
-.mccRadarGrid dt{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccRadarGrid dt{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mccRadarGrid dd{margin:6px 0 0;color:#dce5e8;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif}
 .mccRadarGrid .is-dir-long{color:var(--mcc-green)}
 .mccRadarGrid .is-dir-short{color:var(--mcc-red)}
@@ -132,7 +138,7 @@
 .mccScoreRing{position:relative;width:168px;height:168px}
 .mccScoreRing svg{width:100%;height:100%;transform:rotate(-90deg)}
 .mccScoreTrack{fill:none;stroke:#1a262c;stroke-width:10}
-.mccScoreProgress{fill:none;stroke-width:10;stroke-linecap:round;stroke:#718088;transition:stroke-dashoffset 1s ease}
+.mccScoreProgress{fill:none;stroke-width:10;stroke-linecap:round;stroke:#718088;transition: stroke-dashoffset 1s ease}
 .mccScoreRing.is-green .mccScoreProgress{stroke:var(--mcc-green);filter:drop-shadow(0 0 8px #62e6b144)}
 .mccScoreRing.is-amber .mccScoreProgress{stroke:var(--mcc-gold);filter:drop-shadow(0 0 8px #d8b36a44)}
 .mccScoreRing.is-red .mccScoreProgress{stroke:var(--mcc-red);filter:drop-shadow(0 0 8px #ef777744)}
@@ -144,7 +150,7 @@
 .mccScoreRing.is-amber .mccScoreDescriptor{color:var(--mcc-gold)}
 .mccScoreRing.is-red .mccScoreDescriptor{color:var(--mcc-red)}
 .mccScoreRing.is-blue .mccScoreDescriptor{color:var(--mcc-cyan)}
-.mccScoreValue span{margin-top:8px;color:#7f8e96;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccScoreValue span{margin-top:8px;color:#7f8e96;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mccScoreSummary{margin:0;color:#a7b3ba;font-size:12px;line-height:1.5;text-align:center}
 .mccScoreFactors{list-style:none;margin:0;padding:0;width:100%;display:grid;gap:10px}
 .mccScoreFactors li{display:grid;gap:3px;padding-top:10px;border-top:1px solid #1c282e}
@@ -168,11 +174,11 @@
 .mccIntelCard{
   min-height:148px;padding:16px;border:1px solid var(--mcc-line);border-radius:12px;
   background:linear-gradient(160deg,#0e161acc,#0a1014f0);box-shadow:0 16px 40px #0005;
-  backdrop-filter:blur(12px);transition:transform .2s ease,box-shadow .2s ease;
+  backdrop-filter:blur(12px);transition: transform var(--vx-fast) ease,box-shadow var(--vx-fast) ease;
 }
 .mccIntelCard:hover{transform:translateY(-2px);box-shadow:0 22px 48px #0006}
 .mccIntelCard header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.mccIntelCard header span{color:#7f8e96;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccIntelCard header span{color:#7f8e96;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mccIntelCard header b{color:var(--mcc-muted);font-size:11px}
 .mccIntelCard.is-up header b{color:var(--mcc-green)}
 .mccIntelCard.is-down header b{color:var(--mcc-red)}
@@ -183,7 +189,7 @@
 .mccIntelCard.is-up .mccIntelChange{color:var(--mcc-green)}
 .mccIntelCard.is-down .mccIntelChange{color:var(--mcc-red)}
 .mccIntelCard footer{margin-top:10px}
-.mccIntelCard footer small{color:#6f7e86;font-size:10px}
+.mccIntelCard footer small{color:#6f7e86;font-size: var(--type-floor)}
 .mccIntelCard.is-skeleton{display:grid;gap:12px;align-content:start}
 .mccSparkline{width:100%;height:28px;margin-top:12px}
 .mccSparkline polyline{stroke:#8fa2a8}
@@ -202,7 +208,7 @@
 .mccHeroBadges{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;justify-content:flex-end}
 .mccSessionBadge,.mccDelayedBadge{
   display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;
-  font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+  font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase;
 }
 .mccSessionBadge{border:1px solid #33434a;background:#11191e;color:#c5d0d6}
 .mccSessionBadge.is-open{border-color:#62e6b155;color:var(--mcc-green);background:#62e6b110}
@@ -212,11 +218,11 @@
 .mccDelayedBadge{border:1px solid #d8b36a66;background:#d8b36a14;color:var(--mcc-gold)}
 .mccFeedPill{display:grid;gap:2px;min-width:140px;padding:8px 12px;border:1px solid #2a3940;border-radius:10px;background:#0c1318}
 .mccFeedPill strong{color:#dce5e8;font-size:12px}
-.mccFeedPill small{color:#718088;font-size:10px}
+.mccFeedPill small{color:#718088;font-size: var(--type-floor)}
 .mccLevelStrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid #1c282e}
 .mccLevelStrip>div{padding:14px 16px;border-right:1px solid #1c282e}
 .mccLevelStrip>div:last-child{border:0}
-.mccLevelStrip span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.mccLevelStrip span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .mccLevelStrip strong{display:block;margin-top:8px;color:#e4ecef;font:600 16px var(--font-geist-mono),monospace}
 .mccChartControls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #1c282e}
 .mccTimeframes,.mccOverlays{display:flex;flex-wrap:wrap;gap:6px}
@@ -252,7 +258,7 @@
 .mccOutlookState strong{font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#c5d0d6}
 .mccOutlookGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#1c282e}
 .mccOutlookGrid article{min-height:120px;padding:18px;background:#0c1318}
-.mccOutlookGrid span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.11em;text-transform:uppercase}
+.mccOutlookGrid span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.11em;text-transform:uppercase}
 .mccOutlookGrid p,.mccOutlookGrid strong{display:block;margin-top:10px;color:#d5dee2;font:500 13px/1.5 var(--font-geist-sans),Arial,sans-serif}
 .mccOutlookGrid strong{font-size:18px;font-weight:600;letter-spacing:-.02em}
 .mccOutlookGrid .is-bull{border-top:2px solid #62e6b144}
@@ -297,18 +303,23 @@
   .mccChartCanvas{min-height:320px;height:360px}
 }
 @media(prefers-reduced-motion:reduce){
-  .mccHeaderActions a,.mccIntelCard,.mccDecisionMetric,.mccWeatherCard{transition:none}
+  .mccHeaderActions a,.mccIntelCard,.mccDecisionMetric,.mccWeatherCard{transition: none}
   .mccHeaderActions a:hover,.mccIntelCard:hover,.mccWeatherCard:hover{transform:none}
   .mccDecisionDesk,.mccWeatherBoard{animation:none}
-  .mccConfidenceMeter span,.mccScoreProgress{transition:none}
+  .mccConfidenceMeter span,.mccScoreProgress{transition: none}
   .mccScoreValue strong{animation:none}
   .mccSkeletonBar:after{animation:none}
 }
 
 /* Dashboard premium command centre — summarise & route */
 .dashCommandCentre{gap:18px}
+/*
+ * The greeting is short and the market card is tall. Stretching the greeting to
+ * match left a large void in the most valuable area of the page, so each card
+ * takes its own height and the strip below moves up into view.
+ */
 .dashHero{
-  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,1fr);gap:18px;align-items:stretch;
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,1fr);gap:18px;align-items:start;
 }
 .dashHeroCopy{
   padding:28px 30px;border:1px solid var(--mcc-line);border-radius:16px;
@@ -336,7 +347,7 @@
 .dashMarketHero.is-up .dashHeroChange,.dashMarketHero.is-up .dashHeroChange em{color:var(--mcc-green)}
 .dashMarketHero.is-down .dashHeroChange,.dashMarketHero.is-down .dashHeroChange em{color:var(--mcc-red)}
 .dashHeroSession{min-width:118px;text-align:right}
-.dashHeroSession span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.dashHeroSession span{display:block;color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase}
 .dashHeroSession strong{display:block;margin-top:6px;color:#e8eef1;font:650 18px var(--font-geist-sans),Arial,sans-serif}
 .dashHeroSession small{display:block;margin-top:6px;color:#84929a;font-size:12px;line-height:1.4}
 .dashFreshness{
@@ -391,7 +402,9 @@
   box-shadow:0 18px 48px #0006,inset 0 1px #ffffff0c;
 }
 .dashDecisionSnap{padding:20px 22px}
-.dashDecisionSnap>header{display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:16px}
+/* Title and status pill share a row until they cannot; then the pill wraps. */
+.dashDecisionSnap>header{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:start;margin-bottom:16px}
+.dashDecisionSnap>header>*{min-width:0}
 .dashDecisionSnap h2,.dashWeather h2,.dashLevels h2,.dashCatalyst h2,.dashQuickActions h2{
   margin:8px 0 0;color:var(--mcc-text);font:560 clamp(22px,2.4vw,28px)/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em;
 }
@@ -404,7 +417,7 @@
 .dashPill.is-open{border-color:#62e6b155;color:var(--mcc-green);background:#62e6b112}
 .dashDecisionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .dashDecisionGrid article{padding:14px;border:1px solid #1c282e;border-radius:12px;background:#0c1318}
-.dashDecisionGrid span{display:block;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.dashDecisionGrid span{display:block;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .dashDecisionGrid strong{display:block;margin-top:10px;color:#e8eef1;font:600 18px/1.25 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
 .dashDecisionGrid small{display:block;margin-top:8px;color:#84929a;font-size:12px;line-height:1.4}
 .dashDecisionGrid .is-bull,.dashDecisionGrid .is-open{color:var(--mcc-green)}
@@ -414,14 +427,14 @@
 .dashEngineDetails{margin-top:14px;border-top:1px solid #1c282e;padding-top:12px}
 .dashEngineDetails summary{cursor:pointer;color:#9aa7ad;font:600 13px var(--font-geist-sans),Arial,sans-serif}
 .dashEngineColumns{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
-.dashEngineColumns span{display:block;margin-bottom:8px;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.dashEngineColumns span{display:block;margin-bottom:8px;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .dashEngineColumns ul{margin:0;padding-left:18px;color:#a7b3ba;font-size:13px;line-height:1.5}
 
 .dashWeather{padding:20px 22px}
 .dashWeather>header p{margin:8px 0 0;color:var(--mcc-muted);font-size:14px;line-height:1.5;max-width:48rem}
 .dashWeatherGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
 .dashWeatherCard{padding:16px;border:1px solid #1c282e;border-radius:12px;background:#0c1318;display:grid;gap:6px}
-.dashWeatherCard>span{color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.dashWeatherCard>span{color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .dashWeatherCard strong{color:#eef3f4;font:650 24px/1.1 var(--font-geist-mono),ui-monospace,monospace}
 .dashWeatherCard em{font-style:normal;color:#a7b3ba;font-size:13px}
 .dashWeatherCard p{margin:4px 0 0;color:#b7c2c7;font-size:13px;line-height:1.45}
@@ -455,9 +468,9 @@
 .dashActionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
 .dashAction{
   display:grid;gap:6px;min-height:88px;padding:16px;border-radius:12px;border:1px solid #2a3940;background:#11191ecc;
-  color:#d9e2e5;text-decoration:none;transition:transform .18s ease,border-color .18s ease;
+  color:#d9e2e5;text-decoration:none;transition: transform var(--vx-fast) ease,border-color var(--vx-fast) ease;
 }
-.dashAction small{font:700 10px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;opacity:.7}
+.dashAction small{font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;opacity:.7}
 .dashAction b{font:650 16px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .dashAction.is-primary{border-color:#79c9b9;background:#79c9b9;color:#07110f}
 .dashAction.is-gold{border-color:#d8b36a88;background:#d8b36a18;color:#f0e2c0}
@@ -484,7 +497,7 @@
   .dashLevels li{flex-direction:column;align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){
-  .dashAction{transition:none}
+  .dashAction{transition: none}
   .dashAction:hover{transform:none}
 }
 
@@ -509,10 +522,16 @@
 .dashCommandCell.is-caution strong{color:var(--accent-caution,#d4a574)}
 .dashCommandCell.is-risk strong{color:var(--accent-risk,#e08a8a)}
 .dashCommandCell.is-ok strong{color:var(--accent-info,#7eb8d4)}
-.dashCommandLabel{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase}
+.dashCommandLabel{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase}
 .dashCommandCell strong{color:#eef3f0;font:650 15px/1.2 var(--font-geist-sans),Arial,sans-serif}
 .dashCommandCell em{color:#9aa7ad;font:12px/1.3 var(--font-geist-sans),Arial,sans-serif;font-style:normal}
 .dashCommandStripNote{margin:10px 0 0;color:#84929a;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
+/* Coverage disclosure for instruments with no verified source, kept truthful but compact. */
+.dashCommandStripCoverage{
+  margin:12px 0 0;padding-top:10px;border-top:1px solid var(--vx-border-soft,#1c282e);
+  color:#8b989f;font:12px/1.5 var(--font-geist-sans),Arial,sans-serif;
+}
+.dashCommandStripCoverage span{color:#6f7d84;font-weight:650}
 .dashGamePlan{margin:0 0 18px;padding:18px;border-radius:16px}
 .dashGamePlanHeader{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
 .dashGamePlanHeader h2{margin:6px 0 4px;color:#eef3f0;font:650 22px/1.25 var(--font-geist-sans),Arial,sans-serif}
@@ -522,7 +541,7 @@
   display:grid;gap:4px;padding:12px;border-radius:12px;border:1px solid #243238;background:#0a1210aa;
 }
 .dashGamePlanGrid article.is-wide{grid-column:1/-1}
-.dashGamePlanGrid span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase}
+.dashGamePlanGrid span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase}
 .dashGamePlanGrid strong{color:#e8eef0;font:650 15px/1.35 var(--font-geist-sans),Arial,sans-serif}
 .dashGamePlanGrid small{color:#9aa7ad;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .dashGamePlanGrid ul{margin:0;padding-left:18px;color:#c9d5cf;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
@@ -554,7 +573,7 @@
 .oracleReplayScorecard article{
   display:grid;gap:4px;padding:12px;border-radius:12px;border:1px solid #243238;background:#0a1210aa;
 }
-.oracleReplayScorecard span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase}
+.oracleReplayScorecard span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase}
 .oracleReplayScorecard strong{color:#e8eef0;font:650 14px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .oracleReplayScorecard small{color:#9aa7ad;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .dashCommandCentre.is-compact .dashCommandCell{min-height:64px;padding:8px}

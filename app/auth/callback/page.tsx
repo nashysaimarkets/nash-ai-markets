@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createClient } from "../../../utils/supabase/client";
 import {
   AUTH_NEXT_COOKIE,
@@ -35,8 +35,6 @@ function fail(reason: string) {
  * set during signInWithOtp is available for exchangeCodeForSession.
  */
 export default function AuthCallbackPage() {
-  const [message, setMessage] = useState("Completing your secure sign-in…");
-
   useEffect(() => {
     let active = true;
 
@@ -121,7 +119,7 @@ export default function AuthCallbackPage() {
       <div className="outcomeCard loginCard">
         <p className="kicker">SECURE ACCESS</p>
         <h1>Signing you in.</h1>
-        <p role="status">{message}</p>
+        <p role="status">Completing your secure sign-in…</p>
       </div>
     </main>
   );

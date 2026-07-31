@@ -6,14 +6,7 @@ import { configuredOffering, type CommercialPlan as Plan, type StripeOffering as
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export function configuredPlan(
-  priceId: string | undefined,
-  environment: Record<string, string | undefined> = process.env,
-): Plan | null {
-  return configuredOffering(priceId, environment)?.plan ?? null;
-}
-
-export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">) {
+function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">) {
   const seconds = subscription.items.data.reduce(
     (latest, item) => Math.max(latest, item.current_period_end ?? 0),
     0,
@@ -21,7 +14,7 @@ export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">
   return seconds ? new Date(seconds * 1000).toISOString() : null;
 }
 
-export function foundingSubscriptionActive(status: string): boolean {
+function foundingSubscriptionActive(status: string): boolean {
   return status === "active" || status === "trialing";
 }
 

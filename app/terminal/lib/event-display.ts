@@ -11,14 +11,37 @@ const TITLE_ALIASES: Record<string, string> = {
   "fomc press conference": "Fed Press Conference",
 };
 
-export function normalizeEventTitle(title: string): string {
+export function normalizeEventTitle(title: unknown): string {
+  if (typeof title !== "string") return "";
   const trimmed = title.trim().replace(/\s+/g, " ");
   const key = trimmed.toLowerCase();
   return TITLE_ALIASES[key] ?? trimmed;
 }
 
+/**
+ * Calendar rows arrive from an external provider and are not schema-guaranteed
+ * per row. Impact that cannot be verified is reported as UNKNOWN rather than
+ * being defaulted to a rating the provider never supplied.
+ */
+export type VerifiedEventRisk = "HIGH" | "MED" | "UNKNOWN";
+
+export function verifiedEventRisk(value: unknown): VerifiedEventRisk {
+  const text = typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (!text) return "UNKNOWN";
+  if (text.includes("high") || text === "3") return "HIGH";
+  if (text.includes("med") || text.includes("moderate") || text === "2") return "MED";
+  return "UNKNOWN";
+}
+
+/** Customer-facing impact wording. Never presents an unverified rating as verified. */
+export function verifiedEventRiskLabel(risk: unknown): string {
+  if (risk === "HIGH") return "HIGH impact";
+  if (risk === "MED") return "MED impact";
+  return "Impact not verified";
+}
+
 function eventKey(event: Pick<MarketEvent, "time" | "name">): string {
-  return `${event.time}|${normalizeEventTitle(event.name).toLowerCase()}`;
+  return `${typeof event.time === "string" ? event.time : ""}|${normalizeEventTitle(event.name).toLowerCase()}`;
 }
 
 /** Prefer authoritative ISO `at`, then fall back to parsing display `time`. */
@@ -49,13 +72,14 @@ export function dedupeVerifiedEvents(events: readonly MarketEvent[]): MarketEven
   const seen = new Set<string>();
   const out: MarketEvent[] = [];
   for (const event of events) {
+    if (!event || typeof event !== "object") continue;
+    const name = normalizeEventTitle(event.name);
+    // An unnamed row cannot be presented as a verified catalyst.
+    if (!name) continue;
     const key = eventKey(event);
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({
-      ...event,
-      name: normalizeEventTitle(event.name),
-    });
+    out.push({ ...event, name });
   }
   return out;
 }
@@ -110,8 +134,8 @@ export type GroupedVerifiedEvent = {
   time: string;
   at?: string;
   name: string;
-  risk: MarketEvent["risk"];
-  includes: Array<{ name: string; risk: MarketEvent["risk"] }>;
+  risk: VerifiedEventRisk;
+  includes: Array<{ name: string; risk: VerifiedEventRisk }>;
 };
 
 /**
@@ -140,7 +164,7 @@ export function groupVerifiedEvents(
         time: displayTime,
         at: stamp != null ? new Date(stamp).toISOString() : event.at,
         name: event.name,
-        risk: event.risk,
+        risk: verifiedEventRisk(event.risk),
         includes: [],
       });
       if (groups.length >= limit) break;
@@ -160,7 +184,7 @@ export function groupVerifiedEvents(
     const primary = members.find((item) => isFamilyPrimary(item.name, family)) ?? members[0]!;
     const includes = members
       .filter((item) => item !== primary)
-      .map((item) => ({ name: familyComponentLabel(item.name), risk: item.risk }));
+      .map((item) => ({ name: familyComponentLabel(item.name), risk: verifiedEventRisk(item.risk) }));
     const quarter = members
       .map((item) => item.name.match(/\b(Q[1-4])\b/i)?.[1]?.toUpperCase())
       .find(Boolean);
@@ -174,7 +198,9 @@ export function groupVerifiedEvents(
             ? `Employment Cost Index (${quarter})`
             : "Employment Cost Index"
           : primary.name,
-      risk: members.some((item) => item.risk === "HIGH") ? "HIGH" : primary.risk,
+      risk: members.some((item) => verifiedEventRisk(item.risk) === "HIGH")
+        ? "HIGH"
+        : verifiedEventRisk(primary.risk),
       includes,
     });
     if (groups.length >= limit) break;
