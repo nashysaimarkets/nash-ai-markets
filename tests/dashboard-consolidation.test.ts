@@ -29,9 +29,9 @@ test("dashboard command centre uses shared delayed candle age and Wait for confi
   assert.match(centre, /VERIFIED LEVELS/);
   assert.match(centre, /levels\.map|level\.label/);
   assert.match(centre, /Delayed market data/);
-  assert.match(centre, /Breadth is omitted/);
-  assert.match(centre, /dashCatalystEmpty|No upcoming verified event is currently available/);
-  assert.match(centre, /dashLevelsStack|dashSplitRow/);
+  assert.match(centre, /Breadth, put\/call and tick stay empty|Breadth is omitted/);
+  assert.match(centre, /TodaysGamePlanPanel|COMMAND CENTRE/);
+  assert.match(centre, /CommandStrip|dashCommandStrip/);
   assert.doesNotMatch(centre, /providerDelayNote|Nominal provider delay/);
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /MarketCommandCentre/);

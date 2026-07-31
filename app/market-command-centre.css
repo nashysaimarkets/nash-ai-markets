@@ -487,3 +487,92 @@
   .dashAction{transition:none}
   .dashAction:hover{transform:none}
 }
+
+/* —— Final premium sprint: command strip, game plan, coach, replay —— */
+.dashCommandStrip{
+  margin:0 0 20px;padding:14px 16px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:16px;
+  background:linear-gradient(165deg,#0f1916f5,#0a1210ee 55%,#0c1418f2);
+}
+.dashCommandStripHead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
+.dashCommandStripHead small{color:#84929a;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandStripGrid{
+  list-style:none;margin:0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;
+}
+.dashCommandCell{
+  display:grid;gap:2px;padding:10px 10px 8px;border-radius:12px;
+  border:1px solid #243238;background:#0a1210cc;min-height:72px;
+}
+.dashCommandCell.is-empty{opacity:.72;border-style:dashed}
+.dashCommandCell.is-up strong{color:var(--accent-primary,#62e6b1)}
+.dashCommandCell.is-down strong{color:var(--accent-risk,#e08a8a)}
+.dashCommandCell.is-caution strong{color:var(--accent-caution,#d4a574)}
+.dashCommandCell.is-risk strong{color:var(--accent-risk,#e08a8a)}
+.dashCommandCell.is-ok strong{color:var(--accent-info,#7eb8d4)}
+.dashCommandLabel{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase}
+.dashCommandCell strong{color:#eef3f0;font:650 15px/1.2 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandCell em{color:#9aa7ad;font:12px/1.3 var(--font-geist-sans),Arial,sans-serif;font-style:normal}
+.dashCommandStripNote{margin:10px 0 0;color:#84929a;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.dashGamePlan{margin:0 0 18px;padding:18px;border-radius:16px}
+.dashGamePlanHeader{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.dashGamePlanHeader h2{margin:6px 0 4px;color:#eef3f0;font:650 22px/1.25 var(--font-geist-sans),Arial,sans-serif}
+.dashGamePlanHeader p{margin:0;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif;max-width:60ch}
+.dashGamePlanGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.dashGamePlanGrid article{
+  display:grid;gap:4px;padding:12px;border-radius:12px;border:1px solid #243238;background:#0a1210aa;
+}
+.dashGamePlanGrid article.is-wide{grid-column:1/-1}
+.dashGamePlanGrid span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase}
+.dashGamePlanGrid strong{color:#e8eef0;font:650 15px/1.35 var(--font-geist-sans),Arial,sans-serif}
+.dashGamePlanGrid small{color:#9aa7ad;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.dashGamePlanGrid ul{margin:0;padding-left:18px;color:#c9d5cf;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.dashGamePlanMindset{background:var(--surface-reflection-soft,#a89bc814);border-color:#a89bc844}
+.dashGamePlanTrade{background:var(--surface-premium-soft,#d8b36a14);border-color:#d8b36a33}
+.dashGamePlanDisclosure{margin:12px 0 0;color:#84929a;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.dashVideoCentre{margin:0 0 18px;padding:16px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:16px;background:linear-gradient(160deg,#0f1916f2,#0a1210f8)}
+.dashVideoCentre header{margin-bottom:12px}
+.dashVideoCentre h2{margin:6px 0 4px;color:#eef3f0;font:650 18px/1.3 var(--font-geist-sans),Arial,sans-serif}
+.dashVideoCentre header p{margin:0;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.dashDelightCard{margin:0 0 18px;padding:16px 18px;border-radius:16px;border:1px solid #a89bc844}
+.dashDelightCard h2{margin:6px 0 8px;color:#eef3f0;font:650 18px/1.3 var(--font-geist-sans),Arial,sans-serif}
+.dashDelightCard p{margin:0;color:#c9d5cf;font:14px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:62ch}
+.dashAiCoach{
+  position:sticky;top:72px;z-index:4;margin:0 0 14px;border:1px solid #243838;border-radius:14px;
+  background:#0b1412f2;backdrop-filter:blur(8px);
+}
+.dashAiCoachToggle{
+  width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border:0;background:transparent;
+  color:#dceee8;cursor:pointer;font:650 13px/1.2 var(--font-geist-sans),Arial,sans-serif;text-align:left;
+}
+.dashAiCoachToggle small{margin-left:auto;color:#84929a;font:12px var(--font-geist-sans),Arial,sans-serif}
+.dashAiCoachBody{padding:0 14px 14px;display:grid;gap:8px}
+.dashAiCoachLead,.dashAiCoachFoot{margin:0;color:#9aa7ad;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.dashAiCoachBody ul{margin:0;padding-left:18px;color:#c9d5cf;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;display:grid;gap:6px}
+.oracleReplayScorecard{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px;
+}
+.oracleReplayScorecard article{
+  display:grid;gap:4px;padding:12px;border-radius:12px;border:1px solid #243238;background:#0a1210aa;
+}
+.oracleReplayScorecard span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase}
+.oracleReplayScorecard strong{color:#e8eef0;font:650 14px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.oracleReplayScorecard small{color:#9aa7ad;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandCentre.is-compact .dashCommandCell{min-height:64px;padding:8px}
+.dashCommandCentre.is-compact .dashGamePlanGrid{gap:8px}
+@media (max-width:900px){
+  .dashGamePlanGrid{grid-template-columns:1fr 1fr}
+  .oracleReplayScorecard{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .dashGamePlanGrid{grid-template-columns:1fr}
+  .dashCommandStripGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dashGamePlanHeader{flex-direction:column}
+}
+@media (prefers-reduced-motion:no-preference){
+  .dashCommandStrip,.dashGamePlan,.dashVideoCentre,.dashDelightCard{
+    animation:vxRise var(--vx-med,280ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1)) both;
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .dashCommandStrip,.dashGamePlan,.dashVideoCentre,.dashDelightCard{animation:none !important}
+}

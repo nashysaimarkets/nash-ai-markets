@@ -31,7 +31,17 @@ import type { DashboardCommandSummary } from "../lib/dashboard-command-summary.t
 import { DashboardCandlestickChart } from "./DashboardCandlestickChart.tsx";
 import { EventCountdown } from "./EventCountdown";
 import { DashboardMarketVideoCard } from "../../components/DashboardMarketVideoCard.tsx";
+import { AiCoachPanel } from "../../components/oracle/AiCoachPanel.tsx";
 import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
+import type { MarketQuote } from "../../lib/market-data.ts";
+import type { SessionClockReading } from "../../terminal/lib/session-clock.ts";
+import type { TradePlan } from "../../lib/structured-trade-planner.ts";
+import { coachingNoteFor } from "../../lib/oracle/daily-checklist.ts";
+import { buildCommandStrip } from "../lib/command-strip.ts";
+import { buildTodaysGamePlan } from "../lib/todays-game-plan.ts";
+import { delightCardForDay } from "../lib/delight-card.ts";
+import { CommandStrip } from "./CommandStrip.tsx";
+import { TodaysGamePlanPanel } from "./TodaysGamePlanPanel.tsx";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -44,6 +54,9 @@ export type MarketCommandCentreProps = {
   marketVideo?: MarketVideoSelection | null;
   postMarketPendingNotice?: string | null;
   archiveAvailable?: boolean;
+  session: SessionClockReading;
+  quotes: MarketQuote[];
+  plan: TradePlan | null;
 };
 
 function toneClass(tone: string) {
@@ -61,6 +74,9 @@ export function MarketCommandCentre({
   marketVideo = null,
   postMarketPendingNotice = null,
   archiveAvailable = false,
+  session,
+  quotes,
+  plan,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
   const posture = buildTodaysPosture(decision);
@@ -73,9 +89,104 @@ export function MarketCommandCentre({
         ? "premarket"
         : "rth";
 
+  const gamePlan = useMemo(
+    () =>
+      buildTodaysGamePlan({
+        decision,
+        plan,
+        levels,
+        candleSeries,
+        sessionLabel: hero.sessionLabel,
+      }),
+    [candleSeries, decision, hero.sessionLabel, levels, plan],
+  );
+
+  const esSparkline = useMemo(() => {
+    const closes = candleSeries?.candles?.map((bar) => bar.close).filter((value) => Number.isFinite(value));
+    return closes && closes.length >= 8 ? closes.slice(-48) : null;
+  }, [candleSeries]);
+
+  const commandStrip = useMemo(
+    () =>
+      buildCommandStrip({
+        hero,
+        decision,
+        weather,
+        session,
+        quotes,
+        expectedMove: gamePlan.expectedMove,
+        esSparkline,
+      }),
+    [decision, esSparkline, gamePlan.expectedMove, hero, quotes, session, weather],
+  );
+
+  const delight = useMemo(() => delightCardForDay(now), [now]);
+
+  const coachNotes = useMemo(
+    () => [
+      coachingNoteFor({
+        postureHeadline: oracle.checklist.postureHeadline,
+        permissionTone: oracle.checklist.permissionTone,
+        hasUpcomingEvent: oracle.checklist.hasUpcomingEvent,
+        completedPrep: 3,
+      }),
+      gamePlan.mindset,
+      decision.primaryRisk ? `Primary condition on record: ${decision.primaryRisk}.` : null,
+      catalyst
+        ? `Verified event risk ahead: ${catalyst.name}. Avoid increasing size solely into the release.`
+        : "No upcoming verified catalyst is listed — still protect capital.",
+      postClose
+        ? "Post-market window favours review and journaling over chasing delayed prints."
+        : "Wait for confirmation before treating any lean as actionable.",
+    ].filter((item): item is string => Boolean(item)),
+    [catalyst, decision.primaryRisk, gamePlan.mindset, oracle.checklist, postClose],
+  );
+
   const sectionNodes = useMemo(() => {
     const map: Partial<Record<DashboardSectionId, ReactNode>> = {
       "thirty-second": <ThirtySecondBrief key="thirty-second" model={oracle.thirtySecond} />,
+      "video-centre": (
+        <section key="video-centre" className="dashVideoCentre" aria-labelledby="dash-video-centre-title">
+          <header>
+            <span className="mccEyebrow vxIconLabel">
+              <StatusIcon name="video" />
+              VIDEO CENTRE
+            </span>
+            <h2 id="dash-video-centre-title">Morning brief &amp; post-market wrap</h2>
+            <p>Published session videos only. Written intelligence remains primary when video is unavailable.</p>
+          </header>
+          {marketVideo?.available || postMarketPendingNotice ? (
+            <DashboardMarketVideoCard
+              selection={
+                marketVideo ?? {
+                  available: false,
+                  reason: "Post-market review will appear here after publication.",
+                  type: "POST_MARKET",
+                  marketDate: "",
+                }
+              }
+              pendingNotice={postMarketPendingNotice}
+            />
+          ) : (
+            <aside className="dashVideoPending" role="status">
+              <StatusIcon name="video" />
+              <div>
+                <strong>Video ready for injection</strong>
+                <p>
+                  No published pre-market or post-market video is listed for today’s New York market date yet.
+                  The Morning Brief remains fully usable.
+                </p>
+              </div>
+            </aside>
+          )}
+          {archiveAvailable ? (
+            <p className="dashArchiveLink">
+              <Link href="/reviews">Previous market reviews</Link>
+            </p>
+          ) : null}
+        </section>
+      ),
+      "game-plan": <TodaysGamePlanPanel key="game-plan" model={gamePlan} />,
       insight: <AiMarketInsightCard key="insight" model={insight} />,
       chart: candleSeries ? (
         <section key="chart" className="companionHeroChart" aria-label="ES hero chart">
@@ -165,8 +276,8 @@ export function MarketCommandCentre({
             <span className="mccEyebrow">MARKET WEATHER</span>
             <h2 id="dash-weather-title">Verified cross-market context</h2>
             <p>
-              Values and direction from delayed verified quotes only. Breadth is omitted until a verified
-              breadth feed exists.
+              Values and direction from delayed verified quotes only. Breadth, put/call and tick stay empty until
+              verified feeds exist.
             </p>
           </header>
           {weather.length ? (
@@ -190,7 +301,7 @@ export function MarketCommandCentre({
                   <strong>{item.value}</strong>
                   <em>{item.change}</em>
                   <p>{item.interpretation}</p>
-                  <small>Delayed · verified</small>
+                  <small>Delayed · verified · {hero.delayedAgeLine}</small>
                 </article>
               ))}
             </div>
@@ -218,9 +329,30 @@ export function MarketCommandCentre({
           <SessionReplayPanel model={oracle.replay} />
         </div>
       ),
+      delight: (
+        <aside key="delight" className="dashDelightCard vxTintReflection" aria-labelledby="dash-delight-title">
+          <span className="mccEyebrow">{delight.eyebrow}</span>
+          <h2 id="dash-delight-title">{delight.title}</h2>
+          <p>{delight.body}</p>
+        </aside>
+      ),
     };
     return map;
-  }, [candleSeries, decision, insight, oracle, posture.headline, posture.summary, weather]);
+  }, [
+    archiveAvailable,
+    candleSeries,
+    decision,
+    delight,
+    gamePlan,
+    hero.delayedAgeLine,
+    insight,
+    marketVideo,
+    oracle,
+    postMarketPendingNotice,
+    posture.headline,
+    posture.summary,
+    weather,
+  ]);
 
   const renderOrder = useMemo(() => {
     const pinned = prefs.order.filter(
@@ -231,7 +363,11 @@ export function MarketCommandCentre({
   }, [prefs.order, prefs.pinned]);
 
   return (
-    <div className={`marketCommandCentre dashCommandCentre vxSessionAccent-${sessionAccent}`}>
+    <div
+      className={`marketCommandCentre dashCommandCentre vxSessionAccent-${sessionAccent}${prefs.density === "compact" ? " is-compact" : ""}`}
+    >
+      <AiCoachPanel notes={coachNotes} sessionLabel={hero.sessionLabel} />
+
       <header className="dashHero" aria-labelledby="dash-hero-title">
         <div className="dashHeroCopy">
           <span className="mccEyebrow vxIconLabel">
@@ -248,8 +384,8 @@ export function MarketCommandCentre({
             )}
           </h1>
           <p>
-            {greeting.subtitle} {tierLabel} access. Summarise the session in under 30 seconds, then open the
-            Brief or Trading Desk for depth.
+            {greeting.subtitle} {tierLabel} access. What is happening, what to watch, and what to do next —
+            then open the Brief or Trading Desk for depth.
           </p>
         </div>
 
@@ -298,26 +434,9 @@ export function MarketCommandCentre({
         </article>
       </header>
 
-      {sectionNodes["thirty-second"]}
+      <CommandStrip model={commandStrip} />
 
-      {marketVideo?.available || postMarketPendingNotice ? (
-        <DashboardMarketVideoCard
-          selection={
-            marketVideo ?? {
-              available: false,
-              reason: "Post-market review will appear here after publication.",
-              type: "POST_MARKET",
-              marketDate: "",
-            }
-          }
-          pendingNotice={postMarketPendingNotice}
-        />
-      ) : null}
-      {archiveAvailable ? (
-        <p className="dashArchiveLink">
-          <Link href="/reviews">Previous market reviews</Link>
-        </p>
-      ) : null}
+      {sectionNodes["thirty-second"]}
 
       <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">

@@ -113,6 +113,9 @@ export default async function MemberDashboard() {
       marketVideo: sessionVideos.dashboardSelection,
       postMarketPendingNotice: sessionVideos.postMarketPendingNotice,
       archiveAvailable: sessionVideos.archive.length > 0,
+      session: context.session,
+      quotes: context.snapshot.quotes,
+      plan: context.plan,
     });
 
     return (
@@ -148,6 +151,9 @@ export default async function MemberDashboard() {
           marketVideo={props.marketVideo}
           postMarketPendingNotice={props.postMarketPendingNotice}
           archiveAvailable={props.archiveAvailable}
+          session={props.session}
+          quotes={props.quotes}
+          plan={props.plan}
         />
       </MemberShell>
     );
@@ -209,7 +215,17 @@ export default async function MemberDashboard() {
       resistance: null,
       now,
     });
-    const props = sanitizeForClient({ greeting, tierLabel, summary, insight, oracle, now });
+    const props = sanitizeForClient({
+      greeting,
+      tierLabel,
+      summary,
+      insight,
+      oracle,
+      now,
+      session,
+      quotes: snapshot.quotes,
+      plan: null,
+    });
 
     return (
       <MemberShell active="dashboard">
@@ -229,6 +245,9 @@ export default async function MemberDashboard() {
           oracle={props.oracle}
           candleSeries={null}
           now={props.now}
+          session={props.session}
+          quotes={props.quotes}
+          plan={props.plan}
         />
       </MemberShell>
     );

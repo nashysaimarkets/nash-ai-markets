@@ -13,17 +13,20 @@ import {
 import { subscribeOracleStorage } from "../../lib/oracle/oracle-storage-bus.ts";
 
 const SECTION_LABELS: Record<DashboardSectionId, string> = {
-  "thirty-second": "Today in 30 seconds",
-  insight: "AI Market Insight",
-  chart: "ES chart",
-  posture: "Today’s posture",
-  timeline: "Session timeline",
-  conviction: "Conviction explainer",
-  weather: "Market weather",
-  internals: "Market internals",
-  opportunity: "Opportunity conditions",
-  checklist: "Daily checklist",
-  replay: "Session replay",
+  "thirty-second": "1 · Overnight / session summary",
+  "video-centre": "2 · Video centre",
+  weather: "3 · Market weather",
+  timeline: "4 · Session timeline",
+  "game-plan": "5 · Today’s Game Plan",
+  insight: "6 · Bull / bear insight",
+  chart: "7 · ES chart",
+  posture: "8 · Posture detail",
+  opportunity: "9 · Opportunity radar",
+  checklist: "10 · Checklist & journal",
+  replay: "11 · Market replay",
+  conviction: "12 · Conviction",
+  internals: "13 · Market internals",
+  delight: "14 · Daily note",
 };
 
 export function useDashboardWorkspace() {
@@ -34,6 +37,7 @@ export function useDashboardWorkspace() {
       ...DEFAULT_DASHBOARD_WORKSPACE,
       order: [...DEFAULT_DASHBOARD_WORKSPACE.order],
       pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned],
+      density: DEFAULT_DASHBOARD_WORKSPACE.density,
     }),
   );
 
@@ -92,6 +96,22 @@ export function DashboardWorkspaceControls({
           <option value="qqq">QQQ</option>
           <option value="vix">VIX</option>
           <option value="dxy">DXY</option>
+        </select>
+      </label>
+
+      <label className="oracleWorkspaceFavourite">
+        <span>Density</span>
+        <select
+          value={prefs.density ?? "comfortable"}
+          onChange={(event) =>
+            onChange({
+              ...prefs,
+              density: event.target.value === "compact" ? "compact" : "comfortable",
+            })
+          }
+        >
+          <option value="comfortable">Comfortable</option>
+          <option value="compact">Compact</option>
         </select>
       </label>
 

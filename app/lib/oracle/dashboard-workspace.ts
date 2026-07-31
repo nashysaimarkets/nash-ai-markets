@@ -5,6 +5,8 @@ export const DASHBOARD_WORKSPACE_STORAGE_KEY = "nash-oracle-dashboard-workspace-
 
 export type DashboardSectionId =
   | "thirty-second"
+  | "game-plan"
+  | "video-centre"
   | "insight"
   | "chart"
   | "posture"
@@ -14,7 +16,8 @@ export type DashboardSectionId =
   | "internals"
   | "opportunity"
   | "checklist"
-  | "replay";
+  | "replay"
+  | "delight";
 
 export type DashboardWorkspacePrefs = {
   version: 1;
@@ -22,41 +25,52 @@ export type DashboardWorkspacePrefs = {
   pinned: DashboardSectionId[];
   order: DashboardSectionId[];
   expanded: string[];
+  density: "comfortable" | "compact";
 };
 
 export const DEFAULT_DASHBOARD_WORKSPACE: DashboardWorkspacePrefs = {
   version: 1,
   favouriteMarketId: "es",
-  pinned: ["thirty-second", "insight", "posture", "chart"],
+  pinned: ["thirty-second", "game-plan", "insight", "chart"],
   order: [
     "thirty-second",
+    "video-centre",
+    "weather",
+    "timeline",
+    "game-plan",
     "insight",
     "chart",
     "posture",
-    "timeline",
-    "conviction",
-    "weather",
-    "internals",
     "opportunity",
     "checklist",
     "replay",
+    "conviction",
+    "internals",
+    "delight",
   ],
   expanded: [],
+  density: "comfortable",
 };
 
 /** Sections that cannot be hidden — disclosures and core risk orientation. */
-export const ESSENTIAL_DASHBOARD_SECTIONS: DashboardSectionId[] = ["thirty-second", "posture"];
+export const ESSENTIAL_DASHBOARD_SECTIONS: DashboardSectionId[] = ["thirty-second", "game-plan", "posture"];
 
 export function readDashboardWorkspace(
   storage: Pick<Storage, "getItem"> | null = typeof localStorage === "undefined" ? null : localStorage,
 ): DashboardWorkspacePrefs {
-  if (!storage) return { ...DEFAULT_DASHBOARD_WORKSPACE, order: [...DEFAULT_DASHBOARD_WORKSPACE.order], pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned] };
+  const blank = (): DashboardWorkspacePrefs => ({
+    ...DEFAULT_DASHBOARD_WORKSPACE,
+    order: [...DEFAULT_DASHBOARD_WORKSPACE.order],
+    pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned],
+    density: DEFAULT_DASHBOARD_WORKSPACE.density,
+  });
+  if (!storage) return blank();
   try {
     const raw = storage.getItem(DASHBOARD_WORKSPACE_STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_DASHBOARD_WORKSPACE, order: [...DEFAULT_DASHBOARD_WORKSPACE.order], pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned] };
+    if (!raw) return blank();
     const parsed = JSON.parse(raw) as Partial<DashboardWorkspacePrefs>;
     if (parsed.version !== 1 || !Array.isArray(parsed.order)) {
-      return { ...DEFAULT_DASHBOARD_WORKSPACE, order: [...DEFAULT_DASHBOARD_WORKSPACE.order], pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned] };
+      return blank();
     }
     const order = parsed.order.filter((id): id is DashboardSectionId =>
       DEFAULT_DASHBOARD_WORKSPACE.order.includes(id as DashboardSectionId),
@@ -81,9 +95,10 @@ export function readDashboardWorkspace(
       expanded: Array.isArray(parsed.expanded)
         ? parsed.expanded.filter((id): id is string => typeof id === "string").slice(0, 24)
         : [],
+      density: parsed.density === "compact" ? "compact" : "comfortable",
     };
   } catch {
-    return { ...DEFAULT_DASHBOARD_WORKSPACE, order: [...DEFAULT_DASHBOARD_WORKSPACE.order], pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned] };
+    return blank();
   }
 }
 
@@ -111,6 +126,7 @@ export function resetDashboardWorkspace(
     ...DEFAULT_DASHBOARD_WORKSPACE,
     order: [...DEFAULT_DASHBOARD_WORKSPACE.order],
     pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned],
+    density: DEFAULT_DASHBOARD_WORKSPACE.density,
   };
   writeDashboardWorkspace(next, storage);
   return next;
