@@ -17,6 +17,7 @@ import {
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
 import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { resolveDeskFeedStatus } from "../lib/feed-status.ts";
 import { customerVideoTypeLabel, formatVideoDuration } from "../../lib/market-video/select.ts";
 import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
 import { buildConfirmationSummary } from "../../lib/confirmation-summary.ts";
@@ -938,6 +939,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
+  const activeFeedStatus = resolveDeskFeedStatus({
+    coverage: active.coverage,
+    status: payload.snapshot.status,
+  });
   const timeline = buildSessionTimeline();
 
   useEffect(() => {
@@ -1311,12 +1316,8 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               <span>{active.name}</span>
             </div>
             <div className="deskActiveActions">
-              <TerminalBadge
-                label={payload.snapshot.status}
-                tone={payload.snapshot.status === "LIVE" || payload.snapshot.status === "DELAYED" ? "positive" : "warning"}
-              />
-              <TerminalBadge label={coverageLabel(active.coverage)} tone={active.coverage === "live" ? "positive" : "warning"} />
-              <small className="deskActiveAge">{delayedAgeLine}</small>
+              <TerminalBadge label={activeFeedStatus.label} tone={activeFeedStatus.tone} />
+              <small className="deskActiveAge" title={activeFeedStatus.detail}>{delayedAgeLine}</small>
               {platformLaunch.status === "ready" ? (
                 <a href={platformLaunch.url} target="_blank" rel="noopener noreferrer" className="deskLaunchBtn is-compact">
                   Launch {PREFERRED_PLATFORMS[workspace.preferredPlatformId].shortLabel}
