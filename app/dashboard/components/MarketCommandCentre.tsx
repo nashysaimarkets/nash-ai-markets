@@ -42,6 +42,7 @@ import { buildTodaysGamePlan } from "../lib/todays-game-plan.ts";
 import { delightCardForDay } from "../lib/delight-card.ts";
 import { CommandStrip } from "./CommandStrip.tsx";
 import { TodaysGamePlanPanel } from "./TodaysGamePlanPanel.tsx";
+import { AwaitingDataNote } from "./AwaitingDataNote.tsx";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -168,16 +169,17 @@ export function MarketCommandCentre({
               pendingNotice={postMarketPendingNotice}
             />
           ) : (
-            <aside className="dashVideoPending" role="status">
-              <StatusIcon name="video" />
-              <div>
-                <strong>Video ready for injection</strong>
-                <p>
-                  No published pre-market or post-market video is listed for today’s New York market date yet.
-                  The Morning Brief remains fully usable.
-                </p>
-              </div>
-            </aside>
+            <AwaitingDataNote
+              className="dashAwaitingVideo"
+              statusLabel="No video published for this session yet"
+              reason="Published pre-market and post-market videos appear here on the day they are released."
+              explanation="The written Morning Brief carries the same verified market context and is ready now."
+              action={
+                <Link href="/brief" className="dashTextLink">
+                  Read the Morning Brief
+                </Link>
+              }
+            />
           )}
           {archiveAvailable ? (
             <p className="dashArchiveLink">
@@ -193,13 +195,16 @@ export function MarketCommandCentre({
           <DashboardCandlestickChart series={candleSeries} instrument="ES" compact />
         </section>
       ) : (
-        <aside key="chart" className="dashCatalystEmpty" role="status" aria-label="ES hero chart">
-          <span className="mccEyebrow">VERIFIED DELAYED CHART</span>
-          <p>ES candlesticks appear here once verified delayed history is available for your membership.</p>
-          <Link href="/terminal" className="dashTextLink">
-            Open Trading Desk
-          </Link>
-        </aside>
+        <AwaitingDataNote
+          key="chart"
+          statusLabel="Awaiting verified ES candles"
+          reason="The chart appears here once verified delayed history is available for your membership."
+          action={
+            <Link href="/terminal" className="dashTextLink">
+              Open Trading Desk
+            </Link>
+          }
+        />
       ),
       posture: (
         <section key="posture" className="dashDecisionSnap" aria-labelledby="dash-decision-title">
@@ -279,6 +284,7 @@ export function MarketCommandCentre({
               Values and direction from delayed verified quotes only. Breadth, put/call and tick stay empty until
               verified feeds exist.
             </p>
+            <p className="dashWeatherFreshness">{hero.delayedAgeLine}</p>
           </header>
           {weather.length ? (
             <div className="dashWeatherGrid">
@@ -301,7 +307,6 @@ export function MarketCommandCentre({
                   <strong>{item.value}</strong>
                   <em>{item.change}</em>
                   <p>{item.interpretation}</p>
-                  <small>Delayed · verified · {hero.delayedAgeLine}</small>
                 </article>
               ))}
             </div>
@@ -407,7 +412,7 @@ export function MarketCommandCentre({
           </div>
 
           <div className="dashFreshness" role="status">
-            <strong>Delayed market data</strong>
+            <strong>Data freshness</strong>
             <span>{hero.delayedAgeLine}</span>
             {hero.priceSourceLabel ? <em>{hero.priceSourceLabel}</em> : null}
           </div>
@@ -492,13 +497,16 @@ export function MarketCommandCentre({
             </article>
           </section>
         ) : (
-          <aside className="dashCatalystEmpty" role="status" aria-label="Next verified catalyst">
-            <span className="mccEyebrow">NEXT VERIFIED CATALYST</span>
-            <p>No upcoming verified event is currently available.</p>
-            <Link href="/terminal#catalysts" className="dashTextLink">
-              Review catalysts on Trading Desk
-            </Link>
-          </aside>
+          <AwaitingDataNote
+            statusLabel="No upcoming verified catalyst"
+            reason="No scheduled event has been verified for the sessions ahead."
+            explanation="Event risk still applies. Unscheduled news can move the market at any time."
+            action={
+              <Link href="/terminal#catalysts" className="dashTextLink">
+                Review catalysts on Trading Desk
+              </Link>
+            }
+          />
         )}
       </div>
 

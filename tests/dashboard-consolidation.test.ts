@@ -18,17 +18,23 @@ import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("dashboard command centre uses shared delayed candle age and Wait for confirmation / Not established language", async () => {
-  const [centre, page, summaryLib] = await Promise.all([
+  const [centre, page, summaryLib, freshnessLib] = await Promise.all([
     read("../app/dashboard/components/MarketCommandCentre.tsx"),
     read("../app/dashboard/page.tsx"),
     read("../app/dashboard/lib/dashboard-command-summary.ts"),
+    read("../app/lib/freshness-labels.ts"),
   ]);
   assert.match(centre, /Open Trading Desk/);
   assert.match(centre, /Open Morning Brief/);
   assert.match(centre, /Risk &amp; Journal|Risk & Journal/);
   assert.match(centre, /VERIFIED LEVELS/);
   assert.match(centre, /levels\.map|level\.label/);
-  assert.match(centre, /Delayed market data/);
+  // The delayed-data disclosure is owned by the shared freshness formatter and
+  // surfaced by the hero, so it is pinned at its source rather than as literal
+  // markup the presentation layer is free to relabel.
+  assert.match(freshnessLib, /Delayed market data · latest verified candle/);
+  assert.match(centre, /hero\.delayedAgeLine/);
+  assert.match(centre, /Data freshness/);
   assert.match(centre, /Breadth, put\/call and tick stay empty|Breadth is omitted/);
   assert.match(centre, /TodaysGamePlanPanel|COMMAND CENTRE/);
   assert.match(centre, /CommandStrip|dashCommandStrip/);
@@ -49,8 +55,11 @@ test("dashboard command centre uses shared delayed candle age and Wait for confi
 
 test("dashboard empty catalyst stays compact and available events still render", async () => {
   const centre = await read("../app/dashboard/components/MarketCommandCentre.tsx");
-  assert.match(centre, /dashCatalystEmpty/);
-  assert.match(centre, /No upcoming verified event is currently available/);
+  // The bespoke empty markup was replaced by the shared unavailable state, which
+  // keeps the same truthful message in one consistent, compact shape.
+  assert.match(centre, /AwaitingDataNote/);
+  assert.match(centre, /No upcoming verified catalyst/);
+  assert.match(centre, /No scheduled event has been verified/);
   assert.match(centre, /catalyst \? "dashSplitRow" : "dashLevelsStack"/);
   assert.match(centre, /Event risk ahead/);
   assert.match(centre, /catalyst\.name/);

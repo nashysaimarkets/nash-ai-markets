@@ -205,10 +205,21 @@ function inlineStylesheets(): string {
  * calc(100% - 48px), so an extra wrapper inset would understate the real width
  * and hide genuine overflow.
  */
+/**
+ * next/font defines --font-geist-sans and --font-geist-mono on the served
+ * document. Stylesheets here use them inside `font:` shorthands, and an
+ * undefined custom property invalidates the whole shorthand, which silently
+ * collapsed every heading and price to 16px Arial and made typography review
+ * worthless. Standing in equivalent stacks keeps the preview faithful.
+ */
 const RESET = `
 *,*::before,*::after{box-sizing:border-box}
+:root{
+  --font-geist-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-geist-mono:ui-monospace,SFMono-Regular,Menlo,"Liberation Mono",monospace;
+}
 body{margin:0;background:#050a09;color:#eef3f0;
-  font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+  font-family:var(--font-geist-sans);}
 a{color:inherit}
 `;
 

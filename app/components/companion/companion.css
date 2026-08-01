@@ -173,6 +173,11 @@
 .companionInternalsGrid strong{display:block;margin-top:10px;color:#efd39a;font:650 16px var(--font-geist-sans),Arial,sans-serif}
 .companionInternalsGrid p{margin:8px 0 0;color:#8a9690;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
 
+/* Compact grouping: planned integrations should read as one quiet list, not six faults */
+.companionInternalsGrid.is-compact li{padding:13px 14px;background:#0a100e99}
+.companionInternalsGrid.is-compact p{margin:6px 0 0;font-size:13px;line-height:1.4}
+.companionInternalStatus{color:#7f8d93;font-size:var(--type-floor)}
+
 .companionHeroChart{margin:0 0 16px}
 .companionHeroChart .dashboardMarketChart.is-compact{min-height:0}
 .companionHeroChart .dashboardChartCanvas{min-height:320px!important}
