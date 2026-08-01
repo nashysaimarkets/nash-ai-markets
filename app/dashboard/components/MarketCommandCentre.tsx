@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
 import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
@@ -19,6 +19,7 @@ import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx
 import { ConceptHint } from "../../components/oracle/ConceptHint.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
+import { Sparkline } from "../../components/mini-visuals/Sparkline.tsx";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import {
   ESSENTIAL_DASHBOARD_SECTIONS,
@@ -43,6 +44,8 @@ import { CommandStrip } from "./CommandStrip.tsx";
 import { TodaysGamePlanPanel } from "./TodaysGamePlanPanel.tsx";
 import { AwaitingDataNote } from "./AwaitingDataNote.tsx";
 import { DashboardVideoCentre } from "./DashboardVideoCentre.tsx";
+import { StatusBadge } from "./visual/StatusBadge.tsx";
+import { VisualLevelMap } from "./visual/VisualLevelMap.tsx";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -83,12 +86,29 @@ export function MarketCommandCentre({
   const posture = buildTodaysPosture(decision);
   const postClose = oracle.timeline.current === "post-close";
   const { prefs, persist } = useDashboardWorkspace();
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const sessionAccent =
     oracle.timeline.current === "post-close"
       ? "postmarket"
       : oracle.timeline.current === "premarket" || oracle.timeline.current === "overnight"
         ? "premarket"
         : "rth";
+
+  const postureTone =
+    decision.permissionTone === "blocked"
+      ? "risk"
+      : decision.permissionTone === "caution"
+        ? "caution"
+        : decision.permissionTone === "open"
+          ? "positive"
+          : "info";
+
+  const primaryNext =
+    postClose
+      ? { href: "/dashboard#session-replay", label: oracle.replay.primaryActionLabel }
+      : catalyst
+        ? { href: "/terminal#catalysts", label: "Review next catalyst" }
+        : { href: hero.deskHref, label: "Open Trading Desk" };
 
   const gamePlan = useMemo(
     () =>
@@ -245,11 +265,8 @@ export function MarketCommandCentre({
         <section key="weather" className="dashWeather" aria-labelledby="dash-weather-title">
           <header>
             <span className="mccEyebrow">MARKET WEATHER</span>
-            <h2 id="dash-weather-title">Verified cross-market context</h2>
-            <p>
-              Values and direction from delayed verified quotes only. Breadth, put/call and tick stay empty until
-              verified feeds exist.
-            </p>
+            <h2 id="dash-weather-title">Market weather</h2>
+            <p>Verified cross-market prints. Breadth, put/call and tick stay offline until feeds exist.</p>
             <p className="dashWeatherFreshness">{hero.delayedAgeLine}</p>
           </header>
           {weather.length ? (
@@ -277,7 +294,7 @@ export function MarketCommandCentre({
               ))}
             </div>
           ) : (
-            <p className="dashEmptyHint">Cross-market weather awaits verified ES, VIX, DXY or US 10-year quotes.</p>
+            <p className="dashEmptyHint">Weather formation incomplete — awaiting verified ES, VIX, DXY or US 10-year quotes.</p>
           )}
         </section>
       ),
@@ -341,10 +358,14 @@ export function MarketCommandCentre({
 
       <header className="dashHero" aria-labelledby="dash-hero-title">
         <div className="dashHeroCopy">
-          <span className="mccEyebrow vxIconLabel">
-            <StatusIcon name="dashboard" />
-            DASHBOARD · DAILY COMMAND CENTRE
-          </span>
+          <div className="dashHeroKicker">
+            <span className="mccEyebrow vxIconLabel">
+              <StatusIcon name="dashboard" />
+              S&amp;P 500 MISSION CONTROL
+            </span>
+            <StatusBadge label={decision.permissionLabel} tone={postureTone} />
+            <StatusBadge label={hero.sessionLabel} tone="info" />
+          </div>
           <h1 id="dash-hero-title">
             {greeting.name ? (
               <>
@@ -354,10 +375,24 @@ export function MarketCommandCentre({
               <>{greeting.salutation}</>
             )}
           </h1>
-          <p>
-            {greeting.subtitle} {tierLabel} access. What is happening, what to watch, and what to do next —
-            then open the Brief or Trading Desk for depth.
+          <p className="dashHeroPosture">
+            <strong>{posture.headline}.</strong> {greeting.subtitle} {tierLabel} access.
           </p>
+          <p className="dashHeroPosture">{posture.summary}</p>
+          <div className="dashHeroActions">
+            <Link href={primaryNext.href} className="dashHeroCta">
+              {primaryNext.label}
+            </Link>
+            <button
+              type="button"
+              className="dashWorkspaceToggle"
+              aria-expanded={workspaceOpen}
+              aria-controls="dash-workspace-panel"
+              onClick={() => setWorkspaceOpen((open) => !open)}
+            >
+              Customise
+            </button>
+          </div>
         </div>
 
         <article className={`dashMarketHero is-${hero.direction}`} aria-label="ES market status">
@@ -369,6 +404,18 @@ export function MarketCommandCentre({
                 <span>{hero.netChange ?? "Net change awaiting verified candles"}</span>
                 <em>{hero.percentChange ?? ""}</em>
               </div>
+              {esSparkline ? (
+                <div className="dashHeroSpark">
+                  <Sparkline
+                    values={esSparkline}
+                    tone={hero.direction === "up" || hero.direction === "down" ? hero.direction : "neutral"}
+                    label="Recent verified ES closes"
+                    width={160}
+                    height={36}
+                    filled
+                  />
+                </div>
+              ) : null}
             </div>
             <div className="dashHeroSession">
               <span>Session</span>
@@ -405,6 +452,18 @@ export function MarketCommandCentre({
         </article>
       </header>
 
+      <div className="dashWorkspaceDrawer">
+        <div
+          id="dash-workspace-panel"
+          className="dashWorkspacePanel"
+          hidden={!workspaceOpen}
+          role="region"
+          aria-label="Dashboard layout customisation"
+        >
+          {workspaceOpen ? <DashboardWorkspaceControls prefs={prefs} onChange={persist} /> : null}
+        </div>
+      </div>
+
       <CommandStrip model={commandStrip} />
 
       {sectionNodes["thirty-second"]}
@@ -413,26 +472,11 @@ export function MarketCommandCentre({
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
             <span className="mccEyebrow">
-              VERIFIED LEVELS <ConceptHint conceptId="session-open" />
+              VERIFIED LEVEL MAP <ConceptHint conceptId="session-open" />
             </span>
             <h2 id="dash-levels-title">ES 24-hour references</h2>
           </header>
-          {levels.length ? (
-            <ul>
-              {levels.map((level) => (
-                <li key={level.label}>
-                  <span>{level.label}</span>
-                  <strong>{level.value}</strong>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="dashEmptyHint">{levelsNote ?? "Levels await verified candles."}</p>
-          )}
-          {levelsNote && levels.length ? <p className="dashLevelsNote">{levelsNote}</p> : null}
-          <Link href="/terminal" className="dashTextLink">
-            Open full chart on Trading Desk
-          </Link>
+          <VisualLevelMap levels={levels} currentPrice={hero.price} note={levelsNote} />
         </section>
 
         {catalyst ? (
@@ -447,7 +491,7 @@ export function MarketCommandCentre({
               <strong>{catalyst.name}</strong>
               <p>{catalyst.whenLabel}</p>
               <div className="dashCatalystMeta">
-                <span>{catalyst.impact}</span>
+                <StatusBadge label={catalyst.impact} tone="caution" />
                 {catalyst.countdown ? (
                   <em>
                     In <EventCountdown startsAt={catalyst.startsAt} initialNow={now} />
@@ -478,28 +522,34 @@ export function MarketCommandCentre({
 
       {renderOrder.filter((id) => id !== "thirty-second").map((id) => sectionNodes[id])}
 
-      <DashboardWorkspaceControls prefs={prefs} onChange={persist} />
-
       <section className="dashQuickActions" aria-label="Quick actions">
         <header>
           <span className="mccEyebrow">QUICK ACTIONS</span>
           <h2>Where to go next</h2>
         </header>
         <nav className="dashActionGrid">
-          <Link href="/brief" className="dashAction is-gold">
-            <small>PREPARE</small>
+          <Link href="/brief" className={`dashAction${postClose ? "" : " is-gold"}`}>
+            <small className="vxIconLabel">
+              <StatusIcon name="brief" /> PREPARE
+            </small>
             <b>Open Morning Brief</b>
           </Link>
-          <Link href="/terminal" className="dashAction is-primary">
-            <small>ACTIVE SESSION</small>
+          <Link href="/terminal" className={`dashAction${!postClose ? " is-primary" : ""}`}>
+            <small className="vxIconLabel">
+              <StatusIcon name="desk" /> ACTIVE SESSION
+            </small>
             <b>Open Trading Desk</b>
           </Link>
           <Link href="/dashboard#opportunity-radar" className="dashAction">
-            <small>WATCH</small>
-            <b>Opportunity conditions</b>
+            <small className="vxIconLabel">
+              <StatusIcon name="verified" /> WATCH
+            </small>
+            <b>Review opportunities</b>
           </Link>
-          <Link href="/journal" className="dashAction">
-            <small>REFLECT</small>
+          <Link href="/journal" className={`dashAction${postClose ? " is-primary" : ""}`}>
+            <small className="vxIconLabel">
+              <StatusIcon name="risk" /> REFLECT
+            </small>
             <b>Risk &amp; Journal</b>
           </Link>
         </nav>

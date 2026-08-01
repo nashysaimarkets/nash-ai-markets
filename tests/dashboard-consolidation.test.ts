@@ -27,16 +27,16 @@ test("dashboard command centre uses shared delayed candle age and Wait for confi
   assert.match(centre, /Open Trading Desk/);
   assert.match(centre, /Open Morning Brief/);
   assert.match(centre, /Risk &amp; Journal|Risk & Journal/);
-  assert.match(centre, /VERIFIED LEVELS/);
-  assert.match(centre, /levels\.map|level\.label/);
+  assert.match(centre, /VERIFIED LEVEL MAP|VisualLevelMap/);
+  assert.match(centre, /VisualLevelMap|levels\.map|level\.label/);
   // The delayed-data disclosure is owned by the shared freshness formatter and
   // surfaced by the hero, so it is pinned at its source rather than as literal
   // markup the presentation layer is free to relabel.
   assert.match(freshnessLib, /Delayed market data · latest verified candle/);
   assert.match(centre, /hero\.delayedAgeLine/);
   assert.match(centre, /Data freshness/);
-  assert.match(centre, /Breadth, put\/call and tick stay empty|Breadth is omitted/);
-  assert.match(centre, /TodaysGamePlanPanel|COMMAND CENTRE/);
+  assert.match(centre, /Breadth, put\/call and tick stay|Breadth is omitted/);
+  assert.match(centre, /TodaysGamePlanPanel|MARKET PULSE|CommandStrip/);
   assert.match(centre, /CommandStrip|dashCommandStrip/);
   assert.doesNotMatch(centre, /providerDelayNote|Nominal provider delay/);
   assert.match(page, /buildDashboardCommandSummary/);

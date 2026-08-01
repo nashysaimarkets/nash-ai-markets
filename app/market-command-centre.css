@@ -632,6 +632,7 @@
 .dashCommandCentre{
   --dash-elev-rest:0 18px 48px #00000059,inset 0 1px #ffffff0c;
   --dash-elev-hover:0 22px 60px #0000006b,inset 0 1px #ffffff14;
+  overflow-x:clip;
 }
 
 /* P4/P8 — one elevation for section panels, one for inner cards */

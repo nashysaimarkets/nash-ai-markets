@@ -29,8 +29,9 @@ export function BullBearMeter({ model }: { model: BullBearMeterModel }) {
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={model.available ? side.probability : 0}
+              aria-valuetext={model.available ? `${side.probability}%` : "Awaiting verified inputs"}
             >
-              <i style={{ width: `${model.available ? side.probability : 0}%` }} />
+              {model.available ? <i style={{ width: `${side.probability}%` }} /> : <i className="is-awaiting" />}
             </div>
             <ul className="companionBullBearFactors">
               {side.factors.slice(0, 2).map((factor) => (

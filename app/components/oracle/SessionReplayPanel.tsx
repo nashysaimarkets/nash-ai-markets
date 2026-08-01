@@ -1,5 +1,6 @@
 import type { SessionReplayModel } from "../../lib/oracle/session-replay.ts";
 import { StatusIcon } from "../StatusIcon.tsx";
+import { StatusBadge } from "../../dashboard/components/visual/StatusBadge.tsx";
 
 export function SessionReplayPanel({ model }: { model: SessionReplayModel }) {
   return (
@@ -13,30 +14,37 @@ export function SessionReplayPanel({ model }: { model: SessionReplayModel }) {
         <p>Compare verified session evidence with your process — without inventing yesterday’s forecast.</p>
       </header>
 
-      <div className="oracleReplayScorecard">
+      <div className="oracleReplayCompare">
         <article>
-          <span>Yesterday’s bias</span>
+          <span>Prior documented posture</span>
           <strong>{model.yesterdayBias ?? "Not archived yet"}</strong>
+          <StatusBadge
+            label={model.bullCasePlayed ?? "Confirmation not scored"}
+            tone={model.available ? "info" : "muted"}
+          />
         </article>
+        <div className="oracleReplayArrow" aria-hidden="true">
+          →
+        </div>
         <article>
-          <span>Actual market outcome</span>
+          <span>Verified outcome</span>
           <strong>{model.actualOutcome ?? "Awaiting verified candles"}</strong>
+          <StatusBadge
+            label={model.bearCasePlayed ?? "Outcome pending"}
+            tone={model.available ? "caution" : "muted"}
+          />
         </article>
-        <article>
-          <span>Bull case played out?</span>
-          <strong>{model.bullCasePlayed ?? "Not established"}</strong>
-        </article>
-        <article>
-          <span>Bear case played out?</span>
-          <strong>{model.bearCasePlayed ?? "Not established"}</strong>
-        </article>
+      </div>
+
+      <aside className="oracleReplayLesson">
+        <span>Lesson learned</span>
+        <strong>{model.lessonLearned ?? "Complete your journal review."}</strong>
+      </aside>
+
+      <div className="oracleReplayScorecard">
         <article>
           <span>Major surprise</span>
           <strong>{model.majorSurprise ?? "Not scored"}</strong>
-        </article>
-        <article>
-          <span>Lesson learned</span>
-          <strong>{model.lessonLearned ?? "Complete your journal review."}</strong>
         </article>
         <article>
           <span>Forecast accuracy</span>

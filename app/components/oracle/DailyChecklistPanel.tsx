@@ -11,6 +11,7 @@ import {
 import { subscribeOracleStorage } from "../../lib/oracle/oracle-storage-bus.ts";
 import { syncProcessScoreFromChecklist } from "../../lib/oracle/process-score.ts";
 import { createCachedSnapshot, createConstantSnapshot } from "../../lib/oracle/cached-snapshot.ts";
+import { ProgressRing } from "../../dashboard/components/visual/ProgressRing.tsx";
 
 const checklistSnapshot = createCachedSnapshot(() => readDailyChecklist());
 const checklistServerSnapshot = createConstantSnapshot(() => readDailyChecklist(null));
@@ -50,6 +51,8 @@ export function DailyChecklistPanel({
     syncProcessScoreFromChecklist(next.items);
   }
 
+  const complete = model.completed === model.total && model.total > 0;
+
   return (
     <section className="oracleChecklist" aria-labelledby="daily-checklist-title">
       <header>
@@ -57,11 +60,14 @@ export function DailyChecklistPanel({
           <span className="companionEyebrow">DAILY CHECKLIST</span>
           <h2 id="daily-checklist-title">Preparation over frequency</h2>
         </div>
-        <strong>
-          {model.completed}/{model.total}
-        </strong>
+        <ProgressRing completed={model.completed} total={model.total} label="Checklist completion" />
       </header>
       <p className="oracleCoaching">{model.coachingNote}</p>
+      {complete ? (
+        <p className="oracleCoaching" role="status">
+          Preparation complete for today. Completing the checklist never requires taking a trade.
+        </p>
+      ) : null}
       <ul>
         {model.items.map((item) => (
           <li key={item.id}>

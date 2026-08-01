@@ -53,6 +53,25 @@
   --vx-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --vx-fast: 180ms;
   --vx-med: 280ms;
+
+  /* Dashboard visual experience — semantic accents beyond a single green */
+  --dash-positive: #62e6b1;
+  --dash-info: #7eb8d4;
+  --dash-caution: #d4a574;
+  --dash-warning: #e0a060;
+  --dash-risk: #e08a8a;
+  --dash-muted: #7a8890;
+  --dash-surface-1: #0a1210;
+  --dash-surface-2: #0f1916;
+  --dash-surface-3: #13201c;
+  --dash-glow-positive: 0 0 28px #62e6b122;
+  --dash-glow-info: 0 0 28px #7eb8d41f;
+  --dash-glow-caution: 0 0 24px #d4a5741f;
+  --dash-space-1: 8px;
+  --dash-space-2: 12px;
+  --dash-space-3: 16px;
+  --dash-space-4: 22px;
+  --dash-space-5: 28px;
 }
 
 /*
