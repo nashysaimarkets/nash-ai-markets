@@ -7,12 +7,16 @@ import {
   readProcessScore,
 } from "../../lib/oracle/process-score.ts";
 import { subscribeOracleStorage } from "../../lib/oracle/oracle-storage-bus.ts";
+import { createCachedSnapshot, createConstantSnapshot } from "../../lib/oracle/cached-snapshot.ts";
+
+const processSnapshot = createCachedSnapshot(() => readProcessScore());
+const processServerSnapshot = createConstantSnapshot(() => readProcessScore(null));
 
 export function ProcessScorePanel() {
   const state = useSyncExternalStore(
     subscribeOracleStorage,
-    () => readProcessScore(),
-    () => readProcessScore(null),
+    processSnapshot,
+    processServerSnapshot,
   );
   const model = buildProcessScore(state);
 

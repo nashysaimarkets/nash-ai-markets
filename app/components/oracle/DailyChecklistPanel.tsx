@@ -10,6 +10,10 @@ import {
 } from "../../lib/oracle/daily-checklist.ts";
 import { subscribeOracleStorage } from "../../lib/oracle/oracle-storage-bus.ts";
 import { syncProcessScoreFromChecklist } from "../../lib/oracle/process-score.ts";
+import { createCachedSnapshot, createConstantSnapshot } from "../../lib/oracle/cached-snapshot.ts";
+
+const checklistSnapshot = createCachedSnapshot(() => readDailyChecklist());
+const checklistServerSnapshot = createConstantSnapshot(() => readDailyChecklist(null));
 
 export function DailyChecklistPanel({
   postureHeadline,
@@ -27,8 +31,8 @@ export function DailyChecklistPanel({
 
   const state = useSyncExternalStore(
     subscribeOracleStorage,
-    () => readDailyChecklist(),
-    () => readDailyChecklist(null),
+    checklistSnapshot,
+    checklistServerSnapshot,
   );
 
   const model = useMemo(() => buildDailyChecklist(state, coaching), [state, coaching]);

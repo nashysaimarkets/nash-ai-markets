@@ -25,7 +25,12 @@ export default function MarketBriefError({
           <Link href="/terminal">Open Trading Desk</Link>
           <Link href="/dashboard">Show available verified context</Link>
         </div>
-        {error.digest ? <small>Reference: {error.digest}</small> : null}
+        {error.digest ? (
+          <details className="memberSupportReference">
+            <summary>Support reference</summary>
+            <code>{error.digest}</code>
+          </details>
+        ) : null}
       </section>
     </main>
   );
