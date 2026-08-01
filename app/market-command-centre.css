@@ -23,7 +23,7 @@
 .mccEyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--mcc-green);font:700 10px/1 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.16em}
 .mccCommandHeader{
   display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.9fr) auto;gap:28px;align-items:end;
-  padding:32px 34px;border:1px solid var(--mcc-line);border-radius:14px;
+  padding:32px 34px;border:1px solid var(--mcc-line);border-radius:var(--radius-lg);
   background:linear-gradient(135deg,#10191de8,#0a1116f2 55%,#0c1614e8);
   box-shadow:0 30px 80px #0008,inset 0 1px #ffffff0d;
   backdrop-filter:blur(18px);
@@ -40,7 +40,7 @@
 .mccFeedState.is-LIVE{color:var(--mcc-green)}
 .mccFeedState.is-UNAVAILABLE,.mccFeedState.is-PREVIEW{color:var(--mcc-red)}
 .mccHeaderActions{display:grid;gap:10px}
-.mccHeaderActions a{display:grid;gap:4px;min-height:64px;padding:12px 14px;border-radius:10px;text-decoration:none;transition: transform var(--vx-fast) ease,box-shadow var(--vx-fast) ease}
+.mccHeaderActions a{display:grid;gap:4px;min-height:64px;padding:12px 14px;border-radius:var(--radius-md);text-decoration:none;transition: transform var(--vx-fast) ease,box-shadow var(--vx-fast) ease}
 .mccPrimaryAction{border:1px solid #79c9b9;background:#79c9b9;color:#07110f;box-shadow:0 12px 30px #4da78f22}
 .mccSecondaryAction{border:1px solid #33434a;background:#11191ecc;color:#d9e2e5}
 .mccHeaderActions small{font:700 8px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;opacity:.7}
@@ -48,7 +48,7 @@
 .mccHeaderActions a:hover{transform:translateY(-2px)}
 /* Decision Desk™ — premium decision hero beneath welcome */
 .mccDecisionDesk{
-  border:1px solid var(--mcc-line);border-radius:14px;overflow:hidden;
+  border:1px solid var(--mcc-line);border-radius:var(--radius-lg);overflow:hidden;
   background:linear-gradient(145deg,#10191de8,#0a1116f2 52%,#0d1613e8);
   box-shadow:0 28px 72px #0007,inset 0 1px #ffffff0d;backdrop-filter:blur(16px);
   animation:mccDeskIn .55s ease both;
@@ -81,7 +81,7 @@
 .mccOpportunityGrid dd{margin:6px 0 0;color:#dce5e8;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif}
 .mccDecisionConfidence header{display:flex;justify-content:space-between;gap:12px;align-items:start}
 .mccDecisionConfidence header small{color:#5f6e76;font:700 22px/1 var(--font-geist-mono),monospace;opacity:.35}
-.mccConfidenceMeter{height:10px;margin:8px 0 14px;border-radius:999px;background:#172229;overflow:hidden}
+.mccConfidenceMeter{height:10px;margin:8px 0 14px;border-radius:var(--radius-pill);background:#172229;overflow:hidden}
 .mccConfidenceMeter span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#718088,#9aa7ad);transition: width .7s ease}
 .mccDecisionConfidence.is-low .mccConfidenceMeter span{background:linear-gradient(90deg,#ef7777,#ef9a9a)}
 .mccDecisionConfidence.is-mid .mccConfidenceMeter span{background:linear-gradient(90deg,#d8b36a,#e4c88a)}
@@ -97,7 +97,7 @@
 /* Market Weather™ + Opportunity Radar™ */
 .mccWeatherBoard{display:grid;gap:16px;animation:mccDeskIn .7s ease both}
 .mccWeatherPanel{
-  border:1px solid var(--mcc-line);border-radius:14px;overflow:hidden;
+  border:1px solid var(--mcc-line);border-radius:var(--radius-lg);overflow:hidden;
   background:linear-gradient(150deg,#0f171be8,#0a1014f5 60%,#0d1418ee);
   box-shadow:0 24px 64px #0006,inset 0 1px #ffffff0c;backdrop-filter:blur(16px);
 }
@@ -117,7 +117,7 @@
 .mccWeatherCard.is-blue strong,.mccWeatherCard.is-blue .mccWxIcon{color:var(--mcc-cyan)}
 .mccRadarScoreRow{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:16px}
 .mccOpportunityRadar,.mccMarketScore{
-  border:1px solid var(--mcc-line);border-radius:14px;padding:16px 18px;
+  border:1px solid var(--mcc-line);border-radius:var(--radius-lg);padding:16px 18px;
   background:linear-gradient(160deg,#0e161acc,#0a1014f2);box-shadow:0 22px 56px #0006;backdrop-filter:blur(14px);
 }
 .mccOpportunityRadar>header{display:flex;justify-content:space-between;gap:16px;align-items:start}
@@ -163,7 +163,7 @@
 @keyframes mccScorePop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 
 .mccDelayedBanner{
-  display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 18px;border-radius:10px;
+  display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:14px 18px;border-radius:var(--radius-md);
   border:1px solid #d8b36a55;border-left-width:3px;background:linear-gradient(100deg,#17140fe8,#0d1216f0);
   box-shadow:0 14px 40px #0005;
 }
@@ -172,7 +172,7 @@
 
 .mccIntelStrip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
 .mccIntelCard{
-  min-height:148px;padding:16px;border:1px solid var(--mcc-line);border-radius:12px;
+  min-height:148px;padding:16px;border:1px solid var(--mcc-line);border-radius:var(--radius-md);
   background:linear-gradient(160deg,#0e161acc,#0a1014f0);box-shadow:0 16px 40px #0005;
   backdrop-filter:blur(12px);transition: transform var(--vx-fast) ease,box-shadow var(--vx-fast) ease;
 }
@@ -198,7 +198,7 @@
 .mccSparkline.is-empty path{stroke:#314047;stroke-dasharray:3 4}
 
 .mccHeroChart{
-  border:1px solid var(--mcc-line);border-radius:14px;overflow:hidden;
+  border:1px solid var(--mcc-line);border-radius:var(--radius-lg);overflow:hidden;
   background:linear-gradient(180deg,#0d1519ee,#090e12f5);box-shadow:0 28px 70px #0007;
   backdrop-filter:blur(16px);
 }
@@ -207,7 +207,7 @@
 .mccHeroChartHeader p{margin:0;color:var(--mcc-muted);font-size:12px}
 .mccHeroBadges{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;justify-content:flex-end}
 .mccSessionBadge,.mccDelayedBadge{
-  display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;
+  display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:var(--radius-pill);
   font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase;
 }
 .mccSessionBadge{border:1px solid #33434a;background:#11191e;color:#c5d0d6}
@@ -216,7 +216,7 @@
 .mccSessionBadge.is-postmarket{border-color:#d8b36a55;color:var(--mcc-gold);background:#d8b36a12}
 .mccSessionBadge.is-closed{border-color:#ef777755;color:#ef9a9a;background:#ef777710}
 .mccDelayedBadge{border:1px solid #d8b36a66;background:#d8b36a14;color:var(--mcc-gold)}
-.mccFeedPill{display:grid;gap:2px;min-width:140px;padding:8px 12px;border:1px solid #2a3940;border-radius:10px;background:#0c1318}
+.mccFeedPill{display:grid;gap:2px;min-width:140px;padding:8px 12px;border:1px solid #2a3940;border-radius:var(--radius-md);background:#0c1318}
 .mccFeedPill strong{color:#dce5e8;font-size:12px}
 .mccFeedPill small{color:#718088;font-size: var(--type-floor)}
 .mccLevelStrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:1px solid #1c282e}
@@ -227,7 +227,7 @@
 .mccChartControls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #1c282e}
 .mccTimeframes,.mccOverlays{display:flex;flex-wrap:wrap;gap:6px}
 .mccTimeframes button,.mccOverlays button{
-  min-height:36px;padding:0 12px;border:1px solid #2a3940;border-radius:8px;background:#0f171b;color:#a7b3ba;
+  min-height:36px;padding:0 12px;border:1px solid #2a3940;border-radius:var(--radius-sm);background:#0f171b;color:#a7b3ba;
   font:600 11px var(--font-geist-sans),Arial,sans-serif;cursor:pointer;
 }
 .mccTimeframes button[aria-pressed="true"],.mccOverlays button[aria-pressed="true"]{border-color:#62e6b166;background:#62e6b114;color:var(--mcc-green)}
@@ -235,7 +235,7 @@
 .mccChartFrame{position:relative;min-height:480px;background:radial-gradient(ellipse at 50% 0%,#11212655,#091014 70%)}
 .mccChartCanvas{min-height:480px;height:min(58vh,620px);width:100%}
 .mccChartTooltip{padding:8px 16px;color:#8b989f;font:12px var(--font-geist-mono),monospace;border-top:1px solid #1c282e}
-.mccChartLoading{position:absolute;z-index:2;top:12px;right:12px;padding:8px 12px;border-radius:8px;background:#0c1318cc;color:#9edacc;font-size:11px}
+.mccChartLoading{position:absolute;z-index:2;top:12px;right:12px;padding:8px 12px;border-radius:var(--radius-sm);background:#0c1318cc;color:#9edacc;font-size:11px}
 .mccChartError{padding:12px 16px;color:#ef9a9a;font-size:12px;border-bottom:1px solid #1c282e}
 .mccChartUnavailable,.mccChartSkeleton{min-height:280px;display:grid;place-content:center;gap:10px;padding:40px 24px;text-align:center}
 .mccChartUnavailable strong,.mccChartSkeleton p{color:#dce5e8}
@@ -243,13 +243,13 @@
 .mccHeroChart>footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #1c282e;color:#718088;font-size:11px}
 
 .mccOutlook{
-  border:1px solid var(--mcc-line);border-radius:14px;padding:0;overflow:hidden;
+  border:1px solid var(--mcc-line);border-radius:var(--radius-lg);padding:0;overflow:hidden;
   background:linear-gradient(145deg,#0e161acc,#0a1014f2);box-shadow:0 24px 64px #0006;backdrop-filter:blur(14px);
 }
 .mccOutlook>header{display:flex;justify-content:space-between;gap:20px;padding:22px 24px;border-bottom:1px solid #1c282e}
 .mccOutlook h2{margin:8px 0 6px;color:var(--mcc-text);font:560 24px var(--font-geist-sans),Arial,sans-serif}
 .mccOutlook>header p{margin:0;color:var(--mcc-muted);font-size:12px}
-.mccOutlookState{display:flex;gap:8px;align-items:center;align-self:start;padding:8px 12px;border-radius:999px;border:1px solid #33434a}
+.mccOutlookState{display:flex;gap:8px;align-items:center;align-self:start;padding:8px 12px;border-radius:var(--radius-pill);border:1px solid #33434a}
 .mccOutlookState i{width:8px;height:8px;border-radius:50%;background:#718088}
 .mccOutlookState.is-verified{border-color:#62e6b155}
 .mccOutlookState.is-verified i{background:var(--mcc-green);box-shadow:0 0 10px #62e6b166}
@@ -266,7 +266,7 @@
 .mccOutlookGrid .is-neutral{border-top:2px solid #d8b36a44}
 .mccOutlook>footer{padding:14px 24px;color:#7f8e96;font-size:11px;line-height:1.5;border-top:1px solid #1c282e}
 
-.mccSkeletonBar{height:12px;border-radius:6px;background:#172329;position:relative;overflow:hidden}
+.mccSkeletonBar{height:12px;border-radius:var(--radius-sm);background:#172329;position:relative;overflow:hidden}
 .mccSkeletonBar.short{width:42%}
 .mccSkeletonBar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,#b7d7d014,transparent);transform:translateX(-100%);animation:mccSweep 1.6s ease-in-out infinite}
 @keyframes mccSweep{to{transform:translateX(100%)}}
@@ -322,7 +322,7 @@
   display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,1fr);gap:18px;align-items:start;
 }
 .dashHeroCopy{
-  padding:28px 30px;border:1px solid var(--mcc-line);border-radius:16px;
+  padding:28px 30px;border:1px solid var(--mcc-line);border-radius:var(--radius-lg);
   background:linear-gradient(145deg,#10191de8,#0a1116f2 58%,#0c1614e8);
   box-shadow:0 24px 64px #0007,inset 0 1px #ffffff0d;
 }
@@ -333,7 +333,7 @@
 .dashHeroCopy h1 em{color:#b7dcd3;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400}
 .dashHeroCopy p{margin:0;max-width:42rem;color:var(--mcc-muted);font:15px/1.6 var(--font-geist-sans),Arial,sans-serif}
 .dashMarketHero{
-  display:grid;gap:14px;padding:22px 22px 18px;border:1px solid #2a4a42;border-radius:16px;
+  display:grid;gap:14px;padding:22px 22px 18px;border:1px solid #2a4a42;border-radius:var(--radius-lg);
   background:linear-gradient(160deg,#0f1c19f2,#0a1214f8 55%,#10160ef0);
   box-shadow:0 28px 70px #0008,inset 0 1px #62e6b118;
 }
@@ -351,18 +351,18 @@
 .dashHeroSession strong{display:block;margin-top:6px;color:#e8eef1;font:650 18px var(--font-geist-sans),Arial,sans-serif}
 .dashHeroSession small{display:block;margin-top:6px;color:#84929a;font-size:12px;line-height:1.4}
 .dashFreshness{
-  display:grid;gap:4px;padding:12px 14px;border-radius:12px;border:1px solid #d8b36a44;background:#d8b36a12;
+  display:grid;gap:4px;padding:12px 14px;border-radius:var(--radius-md);border:1px solid #d8b36a44;background:#d8b36a12;
 }
 .dashFreshness strong{color:var(--mcc-gold);font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase}
 .dashFreshness span{color:#e8dfc8;font:500 14px/1.45 var(--font-geist-sans),Arial,sans-serif}
 .dashFreshness em{color:#9a8f74;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif;font-style:normal}
 .dashFreshness small{color:#9a8f74;font-size:12px;line-height:1.4}
 .dashVideoCard{
-  margin:0 0 18px;padding:14px;border:1px solid var(--vx-border-soft,#243838);border-radius:14px;
+  margin:0 0 18px;padding:14px;border:1px solid var(--vx-border-soft,#243838);border-radius:var(--radius-lg);
   background:linear-gradient(160deg,#0d1614,#0a1113);
 }
 .dashVideoPending{
-  margin:0 0 18px;padding:14px 16px;border:1px dashed #33434a;border-radius:14px;
+  margin:0 0 18px;padding:14px 16px;border:1px dashed #33434a;border-radius:var(--radius-lg);
   background:var(--surface-premium-soft,#d8b36a12);display:flex;gap:12px;align-items:flex-start;color:#c9b48a;
 }
 .dashVideoPending strong{display:block;color:#e8dfc8;font:650 14px/1.35 var(--font-geist-sans),Arial,sans-serif}
@@ -370,11 +370,11 @@
 .dashArchiveLink{margin:-6px 0 16px;padding:0 2px}
 .dashArchiveLink a{color:var(--accent-info,#7eb8d4);font:600 13px var(--font-geist-sans),Arial,sans-serif}
 .dashVideoLink{display:grid;grid-template-columns:148px minmax(0,1fr);gap:14px;align-items:center;color:inherit;text-decoration:none}
-.dashVideoThumb{position:relative;display:block;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#070b0e;border:1px solid #243238}
+.dashVideoThumb{position:relative;display:block;aspect-ratio:16/9;border-radius:var(--radius-md);overflow:hidden;background:#070b0e;border:1px solid #243238}
 .dashVideoThumb img{display:block;width:100%;height:100%;object-fit:cover}
 .dashVideoPlay{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-  padding:8px 12px;border-radius:999px;background:#0b1512cc;border:1px solid #62e6b155;color:#dceee8;
+  padding:8px 12px;border-radius:var(--radius-pill);background:#0b1512cc;border:1px solid #62e6b155;color:#dceee8;
   font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;
 }
 .dashVideoCopy{display:grid;gap:6px}
@@ -386,19 +386,19 @@
 .dashRangeBar{display:grid;gap:8px}
 .dashRangeMeta{display:flex;justify-content:space-between;gap:10px;color:#84929a;font-size:12px}
 .dashRangeMeta strong{color:#c5d0d6;font-weight:600}
-.dashRangeTrack{position:relative;height:10px;border-radius:999px;background:linear-gradient(90deg,#ef777744,#d8b36a33,#62e6b144);overflow:visible}
+.dashRangeTrack{position:relative;height:10px;border-radius:var(--radius-pill);background:linear-gradient(90deg,#ef777744,#d8b36a33,#62e6b144);overflow:visible}
 .dashRangeTrack i{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#edf2f4;border:2px solid #62e6b1;transform:translate(-50%,-50%);box-shadow:0 0 0 4px #62e6b122}
 .dashRangePending{margin:0;color:#84929a;font-size:13px;line-height:1.45}
 .dashRangeNote{margin:0;color:#c9b27a;font-size:12px;line-height:1.45}
 .dashHeroCta{
-  display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:10px;
+  display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 18px;border-radius:var(--radius-md);
   border:1px solid #79c9b9;background:#79c9b9;color:#07110f;text-decoration:none;
   font:700 14px/1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:.02em;
 }
 .dashHeroCta:hover{filter:brightness(1.05)}
 
 .dashDecisionSnap,.dashWeather,.dashLevels,.dashCatalyst,.dashQuickActions,.dashServiceStatus{
-  border:1px solid var(--mcc-line);border-radius:16px;background:linear-gradient(150deg,#0f171be8,#0a1014f5);
+  border:1px solid var(--mcc-line);border-radius:var(--radius-lg);background:linear-gradient(150deg,#0f171be8,#0a1014f5);
   box-shadow:0 18px 48px #0006,inset 0 1px #ffffff0c;
 }
 .dashDecisionSnap{padding:20px 22px}
@@ -409,14 +409,14 @@
   margin:8px 0 0;color:var(--mcc-text);font:560 clamp(22px,2.4vw,28px)/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em;
 }
 .dashPill{
-  display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:999px;border:1px solid #33434a;
+  display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:var(--radius-pill);border:1px solid #33434a;
   color:#c5d0d6;font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
 }
 .dashPill.is-blocked,.dashPill.is-open.is-blocked{border-color:#ef777766;color:#ef9a9a;background:#ef777712}
 .dashPill.is-caution{border-color:#d8b36a66;color:var(--mcc-gold);background:#d8b36a14}
 .dashPill.is-open{border-color:#62e6b155;color:var(--mcc-green);background:#62e6b112}
 .dashDecisionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.dashDecisionGrid article{padding:14px;border:1px solid #1c282e;border-radius:12px;background:#0c1318}
+.dashDecisionGrid article{padding:14px;border:1px solid #1c282e;border-radius:var(--radius-md);background:#0c1318}
 .dashDecisionGrid span{display:block;color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .dashDecisionGrid strong{display:block;margin-top:10px;color:#e8eef1;font:600 18px/1.25 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
 .dashDecisionGrid small{display:block;margin-top:8px;color:#84929a;font-size:12px;line-height:1.4}
@@ -433,7 +433,7 @@
 .dashWeather{padding:20px 22px}
 .dashWeather>header p{margin:8px 0 0;color:var(--mcc-muted);font-size:14px;line-height:1.5;max-width:48rem}
 .dashWeatherGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
-.dashWeatherCard{padding:16px;border:1px solid #1c282e;border-radius:12px;background:#0c1318;display:grid;gap:6px}
+.dashWeatherCard{padding:16px;border:1px solid #1c282e;border-radius:var(--radius-md);background:#0c1318;display:grid;gap:6px}
 .dashWeatherCard>span{color:#718088;font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .dashWeatherCard strong{color:#eef3f4;font:650 24px/1.1 var(--font-geist-mono),ui-monospace,monospace}
 .dashWeatherCard em{font-style:normal;color:#a7b3ba;font-size:13px}
@@ -447,7 +447,7 @@
 .dashLevelsStack{display:grid;gap:12px}
 .dashLevels,.dashCatalyst{padding:20px 22px}
 .dashCatalystEmpty{
-  display:grid;gap:8px;align-content:start;padding:14px 18px;border:1px solid var(--mcc-line);border-radius:12px;
+  display:grid;gap:8px;align-content:start;padding:14px 18px;border:1px solid var(--mcc-line);border-radius:var(--radius-md);
   background:linear-gradient(150deg,#0f171be8,#0a1014f5);box-shadow:inset 0 1px #ffffff0c;
 }
 .dashCatalystEmpty p{margin:0;color:#84929a;font:500 14px/1.45 var(--font-geist-sans),Arial,sans-serif;max-width:42rem}
@@ -456,17 +456,19 @@
 /* Shared unavailable state — one calm shape for every legitimately empty section */
 .dashAwaiting{
   display:grid;gap:6px;align-content:start;padding:16px 18px;border:1px solid var(--mcc-line,#1c282e);
-  border-radius:12px;background:linear-gradient(150deg,#0f171be8,#0a1014f5);box-shadow:inset 0 1px #ffffff0c;
+  border-radius:var(--radius-md);background:linear-gradient(150deg,#0f171be8,#0a1014f5);box-shadow:inset 0 1px #ffffff0c;
 }
 .dashAwaitingStatus{
-  color:#8fa39c;font:700 11px/1.3 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);
-  letter-spacing:.09em;text-transform:uppercase;
+  justify-self:start;display:inline-flex;align-items:center;padding:3px 10px;
+  border-radius:var(--radius-pill);border:1px solid #7eb8d433;background:var(--surface-info-soft,#7eb8d414);
+  color:#9fc6da;font:700 11px/1.4 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);
+  letter-spacing:.08em;text-transform:uppercase;
 }
 .dashAwaitingReason{margin:0;color:#c5d0d6;font:500 14px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:52ch}
 .dashAwaitingExplain{margin:0;color:#84929a;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:52ch}
 .dashAwaitingWhy{margin-top:2px}
 .dashAwaitingWhy>summary{cursor:pointer;color:#8fa39c;font:650 12px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor)}
-.dashAwaitingWhy>summary:focus-visible{outline:2px solid var(--mcc-green,#62e6b1);outline-offset:3px;border-radius:4px}
+.dashAwaitingWhy>summary:focus-visible{outline:2px solid var(--mcc-green,#62e6b1);outline-offset:3px;border-radius:var(--radius-xs)}
 .dashAwaitingWhy p{margin:8px 0 0;color:#84929a;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:52ch}
 .dashAwaitingSource{color:#718088;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor)}
 .dashAwaitingAction .dashTextLink{margin-top:4px}
@@ -481,13 +483,13 @@
 .dashCatalyst article strong{display:block;margin-top:14px;color:#eef3f4;font:600 22px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .dashCatalyst article p{margin:8px 0 0;color:#a7b3ba;font-size:14px}
 .dashCatalystMeta{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
-.dashCatalystMeta span{padding:6px 10px;border-radius:999px;border:1px solid #d8b36a55;color:var(--mcc-gold);font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase}
+.dashCatalystMeta span{padding:6px 10px;border-radius:var(--radius-pill);border:1px solid #d8b36a55;color:var(--mcc-gold);font:700 11px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase}
 .dashCatalystMeta em{font-style:normal;color:#c5d0d6;font-size:14px}
 
 .dashQuickActions{padding:20px 22px}
 .dashActionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
 .dashAction{
-  display:grid;gap:6px;min-height:88px;padding:16px;border-radius:12px;border:1px solid #2a3940;background:#11191ecc;
+  display:grid;gap:6px;min-height:88px;padding:16px;border-radius:var(--radius-md);border:1px solid #2a3940;background:#11191ecc;
   color:#d9e2e5;text-decoration:none;transition: transform var(--vx-fast) ease,border-color var(--vx-fast) ease;
 }
 .dashAction small{font:700 10px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.12em;opacity:.7}
@@ -523,7 +525,7 @@
 
 /* —— Final premium sprint: command strip, game plan, coach, replay —— */
 .dashCommandStrip{
-  margin:0 0 20px;padding:14px 16px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:16px;
+  margin:0 0 20px;padding:14px 16px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:var(--radius-lg);
   background:linear-gradient(165deg,#0f1916f5,#0a1210ee 55%,#0c1418f2);
 }
 .dashCommandStripHead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
@@ -533,7 +535,7 @@
   grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;
 }
 .dashCommandCell{
-  display:grid;gap:2px;padding:10px 10px 8px;border-radius:12px;
+  display:grid;gap:2px;padding:10px 10px 8px;border-radius:var(--radius-md);
   border:1px solid #243238;background:#0a1210cc;min-height:72px;
   align-content:start;min-width:0;
 }
@@ -553,13 +555,13 @@
   color:#8b989f;font:12px/1.5 var(--font-geist-sans),Arial,sans-serif;
 }
 .dashCommandStripCoverage span{color:#6f7d84;font-weight:650}
-.dashGamePlan{margin:0 0 18px;padding:18px;border-radius:16px}
+.dashGamePlan{margin:0 0 18px;padding:18px;border-radius:var(--radius-lg)}
 .dashGamePlanHeader{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
 .dashGamePlanHeader h2{margin:6px 0 4px;color:#eef3f0;font:650 22px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .dashGamePlanHeader p{margin:0;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif;max-width:60ch}
 .dashGamePlanGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .dashGamePlanGrid article{
-  display:grid;gap:4px;padding:12px;border-radius:12px;border:1px solid #243238;background:#0a1210aa;
+  display:grid;gap:4px;padding:12px;border-radius:var(--radius-md);border:1px solid #243238;background:#0a1210aa;
 }
 .dashGamePlanGrid article.is-wide{grid-column:1/-1}
 .dashGamePlanGrid span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase}
@@ -569,15 +571,15 @@
 .dashGamePlanMindset{background:var(--surface-reflection-soft,#a89bc814);border-color:#a89bc844}
 .dashGamePlanTrade{background:var(--surface-premium-soft,#d8b36a14);border-color:#d8b36a33}
 .dashGamePlanDisclosure{margin:12px 0 0;color:#84929a;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
-.dashVideoCentre{margin:0 0 18px;padding:16px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:16px;background:linear-gradient(160deg,#0f1916f2,#0a1210f8)}
+.dashVideoCentre{margin:0 0 18px;padding:16px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:var(--radius-lg);background:linear-gradient(160deg,#0f1916f2,#0a1210f8)}
 .dashVideoCentre header{margin-bottom:12px}
 .dashVideoCentre h2{margin:6px 0 4px;color:#eef3f0;font:650 18px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .dashVideoCentre header p{margin:0;color:#9aa7ad;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
-.dashDelightCard{margin:0 0 18px;padding:16px 18px;border-radius:16px;border:1px solid #a89bc844}
+.dashDelightCard{margin:0 0 18px;padding:16px 18px;border-radius:var(--radius-lg);border:1px solid #a89bc844}
 .dashDelightCard h2{margin:6px 0 8px;color:#eef3f0;font:650 18px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .dashDelightCard p{margin:0;color:#c9d5cf;font:14px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:62ch}
 .dashAiCoach{
-  position:sticky;top:72px;z-index:4;margin:0 0 14px;border:1px solid #243838;border-radius:14px;
+  position:sticky;top:72px;z-index:4;margin:0 0 14px;border:1px solid #243838;border-radius:var(--radius-lg);
   background:#0b1412f2;backdrop-filter:blur(8px);
 }
 .dashAiCoachToggle{
@@ -592,7 +594,7 @@
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px;
 }
 .oracleReplayScorecard article{
-  display:grid;gap:4px;padding:12px;border-radius:12px;border:1px solid #243238;background:#0a1210aa;
+  display:grid;gap:4px;padding:12px;border-radius:var(--radius-md);border:1px solid #243238;background:#0a1210aa;
 }
 .oracleReplayScorecard span{color:#84929a;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase}
 .oracleReplayScorecard strong{color:#e8eef0;font:650 14px/1.4 var(--font-geist-sans),Arial,sans-serif}
@@ -615,4 +617,150 @@
 }
 @media (prefers-reduced-motion:reduce){
   .dashCommandStrip,.dashGamePlan,.dashVideoCentre,.dashDelightCard{animation:none !important}
+}
+
+/* ============================================================
+   Premium experience pass — presentation only.
+
+   Geometry now resolves through the shared scale in
+   visual-tokens.css. This block adds the matching elevation,
+   numeric hierarchy and motion so every dashboard card reads as
+   one system rather than a set of independently styled panels.
+   No content, data, ordering or layout structure changes here.
+   ============================================================ */
+
+.dashCommandCentre{
+  --dash-elev-rest:0 18px 48px #00000059,inset 0 1px #ffffff0c;
+  --dash-elev-hover:0 22px 60px #0000006b,inset 0 1px #ffffff14;
+}
+
+/* P4/P8 — one elevation for section panels, one for inner cards */
+.dashCommandCentre .dashDecisionSnap,
+.dashCommandCentre .dashWeather,
+.dashCommandCentre .dashLevels,
+.dashCommandCentre .dashCatalyst,
+.dashCommandCentre .dashQuickActions,
+.dashCommandCentre .dashServiceStatus,
+.dashCommandCentre .dashCommandStrip,
+.dashCommandCentre .dashGamePlan,
+.dashCommandCentre .dashVideoCentre{
+  box-shadow:var(--dash-elev-rest);
+}
+
+/* P1 — figures align and compare cleanly in columns */
+.dashCommandCentre .dashHeroPrice,
+.dashCommandCentre .dashHeroChange,
+.dashCommandCentre .dashWeatherCard strong,
+.dashCommandCentre .dashWeatherCard em,
+.dashCommandCentre .dashCommandCell strong,
+.dashCommandCentre .dashLevels li strong,
+.dashCommandCentre .dashRangeMeta{
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+
+/* P1 — the headline price carries the most optical weight on the page */
+.dashCommandCentre .dashHeroPrice{letter-spacing:-.045em;text-shadow:0 0 30px #62e6b11f}
+
+/* P1 — Expected Move, Market Risk and Session live in the strip, so the whole
+   row of values is lifted together rather than singling cells out of the grid */
+.dashCommandCentre .dashCommandCell strong{font-size:17px;font-weight:700;letter-spacing:-.02em}
+
+/* P1 — the countdown to the next catalyst is a headline figure, not metadata */
+.dashCommandCentre .dashCatalystMeta em{
+  padding:4px 10px;border-radius:var(--radius-pill);border:1px solid #d8b36a44;
+  background:var(--surface-premium-soft,#d8b36a14);color:var(--mcc-gold,#d8b36a);
+  font:700 14px/1.3 var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;
+}
+
+/* P1 — session state is a status, so it reads as a chip */
+.dashCommandCentre .dashHeroSession strong{font-size:19px;letter-spacing:-.01em}
+
+/* P1 — quiet the label, lift the value, so cards scan value-first */
+.dashCommandCentre .dashCommandLabel,
+.dashCommandCentre .dashWeatherCard>span,
+.dashCommandCentre .dashDecisionGrid span{color:#7b8990}
+.dashCommandCentre .dashDecisionGrid strong{font-size:19px}
+
+/* P3 — restrained hover: a lift and a slightly brighter edge, nothing more */
+@media (prefers-reduced-motion:no-preference){
+  .dashCommandCentre .dashWeatherCard,
+  .dashCommandCentre .dashCommandCell,
+  .dashCommandCentre .dashDecisionGrid article,
+  .dashCommandCentre .dashAction{
+    transition:transform var(--vx-fast,180ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1)),
+               border-color var(--vx-fast,180ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1)),
+               box-shadow var(--vx-fast,180ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1)),
+               background var(--vx-fast,180ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1));
+  }
+  .dashCommandCentre .dashWeatherCard:hover,
+  .dashCommandCentre .dashCommandCell:hover,
+  .dashCommandCentre .dashDecisionGrid article:hover{
+    transform:translateY(-1px);border-color:#2f4149;box-shadow:var(--dash-elev-hover);
+  }
+  .dashCommandCentre .dashHeroCta,
+  .dashCommandCentre .dashTextLink{
+    transition:filter var(--vx-fast,180ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1)),
+               transform var(--vx-fast,180ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1));
+  }
+  .dashCommandCentre .dashHeroCta:hover{transform:translateY(-1px)}
+  /* The range marker settles into position rather than snapping */
+  .dashCommandCentre .dashRangeTrack i{
+    transition:left var(--vx-med,280ms) var(--vx-ease,cubic-bezier(.22,.61,.36,1));
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .dashCommandCentre .dashWeatherCard,
+  .dashCommandCentre .dashCommandCell,
+  .dashCommandCentre .dashDecisionGrid article,
+  .dashCommandCentre .dashAction,
+  .dashCommandCentre .dashHeroCta,
+  .dashCommandCentre .dashRangeTrack i{transition:none}
+  .dashCommandCentre .dashWeatherCard:hover,
+  .dashCommandCentre .dashCommandCell:hover,
+  .dashCommandCentre .dashDecisionGrid article:hover,
+  .dashCommandCentre .dashHeroCta:hover{transform:none}
+}
+
+/* P4/P8 — ConceptHint renders a <details>, which is block-level and stretched
+   to fill any label it sat beside, reading as a full-width button. Inside a
+   label it should behave as the inline affordance it is. Scoped to the
+   dashboard so other surfaces keep their current treatment. */
+.dashCommandCentre .dashWeatherCard>span,
+.dashCommandCentre .dashDecisionGrid span,
+.dashCommandCentre .mccEyebrow{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.dashCommandCentre .dashWeatherCard>span .oracleConceptHint,
+.dashCommandCentre .dashDecisionGrid span .oracleConceptHint,
+.dashCommandCentre .mccEyebrow .oracleConceptHint{
+  display:inline-flex;width:auto;flex:0 0 auto;
+}
+
+/* P8 — every focusable dashboard control shares one focus ring */
+.dashCommandCentre a:focus-visible,
+.dashCommandCentre button:focus-visible,
+.dashCommandCentre summary:focus-visible{
+  outline:2px solid var(--accent-primary,#62e6b1);outline-offset:3px;border-radius:var(--radius-xs);
+}
+
+/* P6 — the chart reads as the anchor, separated from neighbouring cards */
+.dashCommandCentre .companionHeroChart{
+  padding:6px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,#0d1614f2,#0a1113f8);box-shadow:var(--dash-elev-rest);
+}
+
+/* P7 — planned integrations read as roadmap, never as failure */
+.dashCommandCentre .dashAwaiting,
+.companionInternalsGrid.is-compact li{
+  background:
+    linear-gradient(150deg,#0f171be8,#0a1014f5),
+    repeating-linear-gradient(135deg,#ffffff05 0 2px,transparent 2px 8px);
+}
+.companionInternalsGrid.is-compact li{border-style:solid;border-color:var(--vx-border-soft,#1c282e)}
+.dashPlannedBadge{
+  display:inline-flex;align-items:center;gap:.4em;padding:3px 9px;border-radius:var(--radius-pill);
+  border:1px solid #7eb8d43d;background:var(--surface-info-soft,#7eb8d414);color:#9fc6da;
+  font:700 11px/1.3 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);
+  letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
 }

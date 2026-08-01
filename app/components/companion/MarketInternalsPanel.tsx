@@ -13,7 +13,9 @@ export function MarketInternalsPanel({ cards }: { cards: readonly MarketInternal
     <section className="companionInternals" aria-labelledby="market-internals-title">
       <header>
         <span className="companionEyebrow">MARKET INTERNALS</span>
-        <h2 id="market-internals-title">Breadth &amp; flow</h2>
+        <h2 id="market-internals-title">
+          Breadth &amp; flow <span className="dashPlannedBadge">Planned integration</span>
+        </h2>
         <p>
           Advanced datasets that are not connected yet. These are planned integrations rather than faults, and
           nothing here is estimated — unavailable is never shown as zero.
