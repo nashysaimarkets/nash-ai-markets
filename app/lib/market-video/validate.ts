@@ -2,6 +2,9 @@ import type { MarketVideoRecord, MarketVideoStatus, MarketVideoType } from "./ty
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
 const MARKET_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_TAKEAWAYS = 3;
+const MAX_TAKEAWAY_LENGTH = 180;
+const MAX_TRANSCRIPT_PREVIEW_LENGTH = 600;
 
 export function isValidYoutubeVideoId(value: string): boolean {
   return YOUTUBE_ID.test(value.trim());
@@ -75,6 +78,21 @@ export function normalizeMarketVideoRecord(raw: unknown): MarketVideoRecord | nu
       ? row.summary.trim()
       : description;
 
+  // Optional editorial extras. Absent or malformed input yields no section at
+  // all rather than a placeholder, so nothing is ever shown that the operator
+  // did not actually publish.
+  const keyTakeaways = Array.isArray(row.keyTakeaways)
+    ? row.keyTakeaways
+        .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+        .map((item) => item.trim().slice(0, MAX_TAKEAWAY_LENGTH))
+        .slice(0, MAX_TAKEAWAYS)
+    : [];
+  const transcriptPreviewRaw =
+    typeof row.transcriptPreview === "string" ? row.transcriptPreview.trim() : "";
+  const transcriptPreview = transcriptPreviewRaw
+    ? transcriptPreviewRaw.slice(0, MAX_TRANSCRIPT_PREVIEW_LENGTH)
+    : undefined;
+
   return {
     id: typeof row.id === "string" && row.id.trim() ? row.id.trim() : `${row.type}-${marketDate}-${youtubeVideoId}`,
     youtubeVideoId,
@@ -91,5 +109,7 @@ export function normalizeMarketVideoRecord(raw: unknown): MarketVideoRecord | nu
     status: row.status,
     source: "youtube",
     verifiedAt,
+    ...(keyTakeaways.length ? { keyTakeaways } : {}),
+    ...(transcriptPreview ? { transcriptPreview } : {}),
   };
 }

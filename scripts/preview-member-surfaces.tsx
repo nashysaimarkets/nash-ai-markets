@@ -27,6 +27,7 @@ import { createTradingDecision } from "../app/lib/trading-decision-engine.ts";
 import { createStructuredTradePlan } from "../app/lib/structured-trade-planner.ts";
 import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
 import { resolveSessionMarketVideos } from "../app/lib/market-video/session-placement.ts";
+import type { MarketVideoSelection } from "../app/lib/market-video/types.ts";
 import { sanitizeForClient } from "../app/lib/serialize-for-client.ts";
 import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
 import type { MarketSnapshot } from "../app/lib/market-data.ts";
@@ -114,8 +115,48 @@ function syntheticSnapshot(): MarketSnapshot {
 
 type Surface = { id: string; title: string; markup: string };
 
-function renderCommandCentre(options: { snapshot: MarketSnapshot; candles: CustomerCandleSeries | null }): string {
-  const { snapshot, candles } = options;
+/**
+ * Synthetic published video for design review only. The real manifest is
+ * operator-maintained and currently empty, so without this the Video Centre can
+ * only ever be previewed in its unpublished state. This never reaches the
+ * product: it exists solely so the embedded experience can be inspected.
+ */
+function previewVideoSelection(): MarketVideoSelection {
+  return {
+    available: true,
+    video: {
+      id: "preview-pre-market",
+      youtubeVideoId: "aaaaaaaaaaa",
+      type: "PRE_MARKET",
+      marketDate: "2026-08-03",
+      title: "Morning brief — ES holds the overnight range into CPI",
+      summary: "Where price sits, which levels matter, and what would change the picture.",
+      description: "Preview fixture.",
+      publishedAt: new Date(NOW - 90 * 60_000).toISOString(),
+      durationSeconds: 512,
+      thumbnailUrl: "https://i.ytimg.com/vi/aaaaaaaaaaa/hqdefault.jpg",
+      watchUrl: "https://www.youtube.com/watch?v=aaaaaaaaaaa",
+      embedUrl: "https://www.youtube-nocookie.com/embed/aaaaaaaaaaa?rel=0&modestbranding=1",
+      status: "published",
+      source: "youtube",
+      verifiedAt: new Date(NOW - 90 * 60_000).toISOString(),
+      keyTakeaways: [
+        "ES is holding above the overnight low, so the constructive case stays intact while that level holds.",
+        "Volatility is contained, but CPI later in the session is the obvious source of event risk.",
+        "Wait for confirmation above the overnight high before treating strength as a continuation.",
+      ],
+      transcriptPreview:
+        "Good morning. Before the open, the picture is steady rather than decisive. ES spent the overnight session inside a narrow range and is currently sitting in the upper half of it, with the dollar and yields both easing slightly...",
+    },
+  };
+}
+
+function renderCommandCentre(options: {
+  snapshot: MarketSnapshot;
+  candles: CustomerCandleSeries | null;
+  videoOverride?: MarketVideoSelection;
+}): string {
+  const { snapshot, candles, videoOverride } = options;
   const session = readSessionClock(new Date(NOW));
   const intelligence = analyzeMarketSnapshot(snapshot);
   const shared = {
@@ -172,7 +213,7 @@ function renderCommandCentre(options: { snapshot: MarketSnapshot; candles: Custo
     oracle,
     candleSeries: candles,
     now: NOW,
-    marketVideo: videos.dashboardSelection,
+    marketVideo: videoOverride ?? videos.dashboardSelection,
     postMarketPendingNotice: videos.postMarketPendingNotice,
     archiveAvailable: videos.archive.length > 0,
     session,
@@ -258,6 +299,15 @@ function main(): void {
       id: "command-centre-nodata",
       title: "Command Centre (feeds unavailable)",
       markup: renderCommandCentre({ snapshot: createUnavailableSnapshot(), candles: null }),
+    },
+    {
+      id: "command-centre-video",
+      title: "Command Centre (video published)",
+      markup: renderCommandCentre({
+        snapshot,
+        candles: syntheticCandles(),
+        videoOverride: previewVideoSelection(),
+      }),
     },
   ];
 

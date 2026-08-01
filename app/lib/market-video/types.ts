@@ -24,6 +24,17 @@ export type MarketVideoRecord = {
   status: MarketVideoStatus;
   source: "youtube";
   verifiedAt: string;
+  /**
+   * Operator-published highlights, capped at three. Never generated or inferred
+   * from market data — absent unless the manifest supplies them, in which case
+   * the surfaces simply omit the section.
+   */
+  keyTakeaways?: string[];
+  /**
+   * Opening excerpt of the published transcript, when the operator supplies one.
+   * A preview only; it is never assembled from the video or from market inputs.
+   */
+  transcriptPreview?: string;
 };
 
 export type MarketVideoSelection =

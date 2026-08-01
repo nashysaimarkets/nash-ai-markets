@@ -17,9 +17,13 @@ test("no internal or developer-facing wording is shown to customers", () => {
 });
 
 test("the video centre empty state stays truthful and routes to the written brief", () => {
-  assert.match(centre, /No video published for this session yet/);
-  assert.match(centre, /Morning Brief/);
-  assert.doesNotMatch(centre, /placeholder video/i);
+  // The empty state now lives in DashboardVideoCentre, which shows both daily
+  // slots and still routes to the written brief. The centre itself only mounts it.
+  assert.match(centre, /DashboardVideoCentre/);
+  const videoCentre = read("app/dashboard/components/DashboardVideoCentre.tsx");
+  assert.match(videoCentre, /Not published yet/);
+  assert.match(videoCentre, /Morning Brief/);
+  assert.doesNotMatch(videoCentre, /placeholder video/i);
 });
 
 test("market weather states freshness once per section rather than once per card", () => {

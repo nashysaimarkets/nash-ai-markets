@@ -30,7 +30,6 @@ import type { DeskGreeting } from "../lib/market-weather.ts";
 import type { DashboardCommandSummary } from "../lib/dashboard-command-summary.ts";
 import { DashboardCandlestickChart } from "./DashboardCandlestickChart.tsx";
 import { EventCountdown } from "./EventCountdown";
-import { DashboardMarketVideoCard } from "../../components/DashboardMarketVideoCard.tsx";
 import { AiCoachPanel } from "../../components/oracle/AiCoachPanel.tsx";
 import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
 import type { MarketQuote } from "../../lib/market-data.ts";
@@ -43,6 +42,7 @@ import { delightCardForDay } from "../lib/delight-card.ts";
 import { CommandStrip } from "./CommandStrip.tsx";
 import { TodaysGamePlanPanel } from "./TodaysGamePlanPanel.tsx";
 import { AwaitingDataNote } from "./AwaitingDataNote.tsx";
+import { DashboardVideoCentre } from "./DashboardVideoCentre.tsx";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -147,46 +147,12 @@ export function MarketCommandCentre({
     const map: Partial<Record<DashboardSectionId, ReactNode>> = {
       "thirty-second": <ThirtySecondBrief key="thirty-second" model={oracle.thirtySecond} />,
       "video-centre": (
-        <section key="video-centre" className="dashVideoCentre" aria-labelledby="dash-video-centre-title">
-          <header>
-            <span className="mccEyebrow vxIconLabel">
-              <StatusIcon name="video" />
-              VIDEO CENTRE
-            </span>
-            <h2 id="dash-video-centre-title">Morning brief &amp; post-market wrap</h2>
-            <p>Published session videos only. Written intelligence remains primary when video is unavailable.</p>
-          </header>
-          {marketVideo?.available || postMarketPendingNotice ? (
-            <DashboardMarketVideoCard
-              selection={
-                marketVideo ?? {
-                  available: false,
-                  reason: "Post-market review will appear here after publication.",
-                  type: "POST_MARKET",
-                  marketDate: "",
-                }
-              }
-              pendingNotice={postMarketPendingNotice}
-            />
-          ) : (
-            <AwaitingDataNote
-              className="dashAwaitingVideo"
-              statusLabel="No video published for this session yet"
-              reason="Published pre-market and post-market videos appear here on the day they are released."
-              explanation="The written Morning Brief carries the same verified market context and is ready now."
-              action={
-                <Link href="/brief" className="dashTextLink">
-                  Read the Morning Brief
-                </Link>
-              }
-            />
-          )}
-          {archiveAvailable ? (
-            <p className="dashArchiveLink">
-              <Link href="/reviews">Previous market reviews</Link>
-            </p>
-          ) : null}
-        </section>
+        <DashboardVideoCentre
+          key="video-centre"
+          selection={marketVideo}
+          postMarketPendingNotice={postMarketPendingNotice}
+          archiveAvailable={archiveAvailable}
+        />
       ),
       "game-plan": <TodaysGamePlanPanel key="game-plan" model={gamePlan} />,
       insight: <AiMarketInsightCard key="insight" model={insight} />,

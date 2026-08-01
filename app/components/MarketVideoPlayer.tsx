@@ -43,6 +43,8 @@ export function MarketVideoPlayer({
       ? "A concise walkthrough of the verified market context before the US session."
       : "A calm review of the session, key reactions and what the evidence suggests next.");
   const sessionIcon = video.type === "PRE_MARKET" ? "sunrise" : "sunset";
+  // Highlights are operator-published only; an absent list renders no section.
+  const takeaways = (video.keyTakeaways ?? []).slice(0, 3);
 
   return (
     <section
@@ -105,6 +107,30 @@ export function MarketVideoPlayer({
           </button>
         )}
       </div>
+
+      {takeaways.length ? (
+        <div className="marketVideoTakeaways">
+          <h3>Key takeaways</h3>
+          <ol>
+            {takeaways.map((item, index) => (
+              <li key={item}>
+                <span aria-hidden="true">{index + 1}</span>
+                <p>{item}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+
+      {video.transcriptPreview ? (
+        <details className="marketVideoTranscript">
+          <summary>Transcript preview</summary>
+          <p>{video.transcriptPreview}</p>
+          <small>
+            Opening excerpt of the published transcript. Watch the video for the full commentary.
+          </small>
+        </details>
+      ) : null}
 
       <p className="marketVideoWatch">
         <a href={video.watchUrl} target="_blank" rel="noopener noreferrer">

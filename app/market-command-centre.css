@@ -758,6 +758,80 @@
     repeating-linear-gradient(135deg,#ffffff05 0 2px,transparent 2px 8px);
 }
 .companionInternalsGrid.is-compact li{border-style:solid;border-color:var(--vx-border-soft,#1c282e)}
+/* —— Video Centre —— */
+
+/* Both daily slots stay visible when nothing is published, so the section reads
+   as a schedule. The frame is deliberately an empty lit panel rather than a
+   borrowed thumbnail: it shows the shape without standing in for the video. */
+.dashVideoSlots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.dashVideoSlot{
+  display:grid;grid-template-columns:minmax(0,132px) minmax(0,1fr);gap:14px;align-items:center;
+  padding:14px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:var(--radius-lg);
+  background:linear-gradient(150deg,#0f171be8,#0a1014f5);
+}
+.dashVideoSlotFrame{
+  display:flex;align-items:center;justify-content:center;aspect-ratio:16/9;
+  border:1px solid #22313a;border-radius:var(--radius-md);color:#4d616c;font-size:24px;
+  background:
+    radial-gradient(120% 90% at 50% 0%,#16242bcc,transparent 70%),
+    repeating-linear-gradient(135deg,#ffffff05 0 2px,transparent 2px 9px),#0a1114;
+}
+.dashVideoSlotCopy{display:grid;gap:4px;min-width:0}
+.dashVideoSlotWhen{
+  color:#7f9aa6;font:700 11px/1.3 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.dashVideoSlotCopy strong{color:#e8eef1;font:650 16px/1.3 var(--font-geist-sans),Arial,sans-serif}
+.dashVideoSlotCopy p{margin:2px 0 0;color:#8b989f;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.dashVideoSlotStatus{
+  justify-self:start;margin-top:6px;padding:3px 10px;border-radius:var(--radius-pill);
+  border:1px solid #7eb8d433;background:var(--surface-info-soft,#7eb8d414);color:#9fc6da;
+  font:700 11px/1.4 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.05em;
+}
+.dashVideoSlotsNote{margin:14px 0 0;color:#8b989f;font:13px/1.55 var(--font-geist-sans),Arial,sans-serif}
+.dashVideoSlotsNote .dashTextLink{margin-top:0;font-size:13px}
+
+/* Inside the dashboard the player is one section among many, so the frame is
+   capped rather than allowed to run the full panel width and dominate the page.
+   The dedicated brief and archive surfaces keep the larger presentation. */
+.dashVideoCentre .marketVideoCard{margin-top:16px}
+.dashVideoCentre .marketVideoFrame{max-width:620px}
+.dashVideoCentre .marketVideoTakeaways,
+.dashVideoCentre .marketVideoTranscript p{max-width:74ch}
+
+/* Takeaways and transcript render only when the operator publishes them */
+.marketVideoTakeaways{margin-top:18px}
+.marketVideoTakeaways h3{
+  margin:0 0 10px;color:#7f8d93;font:700 11px/1.3 var(--font-geist-sans),Arial,sans-serif;
+  font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase;
+}
+.marketVideoTakeaways ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.marketVideoTakeaways li{
+  display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;
+  padding:11px 13px;border:1px solid var(--vx-border-soft,#1c282e);border-radius:var(--radius-md);background:#0a121099;
+}
+.marketVideoTakeaways li>span{
+  display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+  border-radius:var(--radius-pill);border:1px solid #62e6b13d;background:var(--surface-success-soft,#62e6b114);
+  color:var(--accent-primary,#62e6b1);font:700 11px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor);
+}
+.marketVideoTakeaways li p{margin:0;color:#c5d0d6;font:14px/1.5 var(--font-geist-sans),Arial,sans-serif}
+.marketVideoTranscript{margin-top:14px}
+.marketVideoTranscript>summary{
+  cursor:pointer;color:#9aa7ad;font:650 12px var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-label,12px);
+}
+.marketVideoTranscript>summary:focus-visible{outline:2px solid var(--accent-primary,#62e6b1);outline-offset:3px;border-radius:var(--radius-xs)}
+.marketVideoTranscript p{margin:10px 0 0;color:#a7b3ba;font:14px/1.6 var(--font-geist-sans),Arial,sans-serif}
+.marketVideoTranscript small{display:block;margin-top:8px;color:#718088;font-size:var(--type-floor);line-height:1.45}
+
+@media(max-width:760px){
+  .dashVideoSlots{grid-template-columns:1fr}
+}
+@media(max-width:420px){
+  .dashVideoSlot{grid-template-columns:1fr}
+  .dashVideoSlotFrame{max-width:180px}
+}
+
 .dashPlannedBadge{
   display:inline-flex;align-items:center;gap:.4em;padding:3px 9px;border-radius:var(--radius-pill);
   border:1px solid #7eb8d43d;background:var(--surface-info-soft,#7eb8d414);color:#9fc6da;
