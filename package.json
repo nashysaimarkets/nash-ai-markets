@@ -27,6 +27,7 @@
     "audit:layout": "node scripts/layout-check.mjs",
     "preview:member": "node --import tsx scripts/preview-member-surfaces.tsx",
     "preview:shots": "npm run preview:member && node scripts/preview-screenshots.mjs",
+    "visual-review": "node --env-file-if-exists=.env --import tsx scripts/visual-review.ts",
     "audit:typefloor": "node scripts/apply-type-floor.mjs",
     "audit:motion": "node scripts/apply-motion-tokens.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
@@ -43,7 +44,7 @@
     "@supabase/supabase-js": "^2.110.2",
     "drizzle-orm": "0.45.2",
     "lightweight-charts": "^5.2.0",
-    "next": "16.2.6",
+    "next": "16.2.12",
     "openai": "6.48.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
@@ -52,7 +53,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
     "@cloudflare/vite-plugin": "1.37.1",
-    "@playwright/test": "^1.54.2",
+    "@playwright/test": "1.55.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",
     "@types/react": "19.2.14",
@@ -61,7 +62,7 @@
     "@vitejs/plugin-rsc": "0.5.26",
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.2.6",
+    "eslint-config-next": "16.2.12",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
     "tsx": "4.22.1",
@@ -71,8 +72,9 @@
     "wrangler": "4.92.0"
   },
   "overrides": {
-    "postcss": "8.5.14",
-    "ws": "8.21.1"
+    "postcss": "8.5.25",
+    "ws": "8.21.1",
+    "sharp": "0.35.0"
   },
   "type": "module",
   "displayName": "NASH AI Markets — Project Bullseye"
