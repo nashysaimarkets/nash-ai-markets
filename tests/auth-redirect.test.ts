@@ -17,6 +17,8 @@ const PRODUCTION = "https://www.nashaimarkets.com";
 const PREVIEW =
   "https://nash-ai-markets-git-bullseye-customer-te-69ca60-nash-ai-markets.vercel.app";
 const UNIQUE_PREVIEW = "https://nash-ai-markets-bljrecjyb-nash-ai-markets.vercel.app";
+const SITES_STAGING =
+  "https://nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site";
 
 test("default post-auth destination is /terminal for every host", () => {
   assert.equal(defaultPostAuthPath(PRODUCTION), "/terminal");
@@ -46,6 +48,15 @@ test("preview login returns path-only callback on the originating preview host",
   assert.equal(authCallbackAllowlistUrl(PREVIEW), `${PREVIEW}/auth/callback`);
   assert.ok(buildEmailRedirectTo(PREVIEW).startsWith(`${PREVIEW}/`));
   assert.equal(matchesStablePreviewAllowlist(buildEmailRedirectTo(PREVIEW)), true);
+});
+
+test("owner-only Sites staging keeps authentication on its exact origin", () => {
+  assert.equal(isAllowedAuthOrigin(SITES_STAGING), true);
+  assert.equal(isVercelPreviewOrigin(SITES_STAGING), false);
+  assert.equal(buildEmailRedirectTo(SITES_STAGING), `${SITES_STAGING}/auth/callback`);
+  assert.equal(buildPostAuthRedirect(SITES_STAGING), `${SITES_STAGING}/terminal`);
+  assert.equal(authCallbackAllowlistUrl(SITES_STAGING), `${SITES_STAGING}/auth/callback`);
+  assert.equal(isAllowedAuthOrigin("https://other-staging.nashysinners.chatgpt.site"), false);
 });
 
 test("unsafe external redirect URLs are rejected", () => {
