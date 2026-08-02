@@ -87,14 +87,14 @@ export function resolveAuthRequestOrigin(request: Request): string {
 }
 
 /**
- * Default landing after auth is always /terminal.
- * Callers may still pass an explicit allowlisted `next` (including /dashboard).
+ * Default landing after auth is the member Dashboard.
+ * Callers may still pass an explicit allowlisted `next` (including /terminal).
  * Origin is accepted for call-site clarity; it does not change the default path,
  * and never rewrites production ↔ preview hosts.
  */
 export function defaultPostAuthPath(origin?: string): string {
   void origin;
-  return "/terminal";
+  return "/dashboard";
 }
 
 /**
@@ -126,7 +126,7 @@ export function safeAuthNextPath(
  *
  * Path-only `/auth/callback` (no `?next=`) so Redirect URL allowlists like
  * `https://<preview-host>/**` match reliably. Post-auth destination is resolved
- * on the callback host via cookie/`next` query/`defaultPostAuthPath` (/terminal).
+ * on the callback host via cookie/`next` query/`defaultPostAuthPath` (/dashboard).
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
@@ -143,8 +143,7 @@ export function buildPostAuthRedirect(requestOrigin: string, next?: string | nul
   const origin = normalizeHttpOrigin(requestOrigin);
   if (!origin || !isAllowedAuthOrigin(origin)) {
     // Last-resort absolute URL only when the request origin is unusable/untrusted.
-    // Prefer /terminal — never invent a /dashboard landing here.
-    return "https://www.nashaimarkets.com/terminal";
+    return "https://www.nashaimarkets.com/dashboard";
   }
   const path = safeAuthNextPath(next, defaultPostAuthPath(origin));
   return `${origin}${path}`;
@@ -205,7 +204,7 @@ export function describeAuthRedirectChain(origin: string, next?: string | null) 
     failureModeIfAllowlistRejects: {
       note: "Supabase substitutes Site URL; callback then runs on that host",
       siteUrlFallbackExample: "https://www.nashaimarkets.com/auth/callback",
-      appThenRedirectsTo: "https://www.nashaimarkets.com/terminal",
+      appThenRedirectsTo: "https://www.nashaimarkets.com/dashboard",
     },
   };
 }
