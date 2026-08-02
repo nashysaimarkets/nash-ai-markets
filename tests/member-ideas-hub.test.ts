@@ -73,6 +73,23 @@ test("Ideas loading state is bounded and never logo-only canvas", () => {
   assert.doesNotMatch(errorPage, /error\.message|error\.stack/);
 });
 
+test("Ideas and Journal writes have bounded client requests and native form fallbacks", () => {
+  const ideaForm = read("app/ideas/IdeaForm.tsx");
+  const ideaRoute = read("app/api/ideas/route.ts");
+  const journalForm = read("app/journal/JournalForm.tsx");
+  const journalRoute = read("app/api/journal/route.ts");
+  for (const form of [ideaForm, journalForm]) {
+    assert.match(form, /method="post"/);
+    assert.match(form, /controller\.abort\(\), 12_000/);
+    assert.match(form, /signal: controller\.signal/);
+    assert.match(form, /window\.location\.replace/);
+  }
+  assert.match(ideaRoute, /request\.formData\(\)/);
+  assert.match(ideaRoute, /NextResponse\.redirect/);
+  assert.match(journalRoute, /readJournalBody/);
+  assert.match(journalRoute, /NextResponse\.redirect/);
+});
+
 test("review and learning workflow connects Ideas, Journal and published Reviews", () => {
   const rail = read("app/components/LearningWorkflowRail.tsx");
   const shell = read("app/components/MemberShell.tsx");
