@@ -36,9 +36,19 @@ test("workspace controls are no longer always mounted in the main flow", () => {
 
 test("market pulse and game plan use varied visual primitives", () => {
   assert.match(strip, /MARKET PULSE/);
+  assert.match(strip, /MicroVisual/);
+  assert.match(strip, /dashMicroRisk/);
+  assert.match(strip, /dashMicroBias/);
+  assert.match(strip, /dashMicroDirection/);
   assert.match(gamePlan, /ConfidenceRing/);
   assert.match(gamePlan, /RiskMeter/);
   assert.match(centre, /VisualLevelMap/);
+});
+
+test("snapshot-only feeds are never disguised as historical sparklines", () => {
+  assert.match(strip, /if \(cell\.sparkline\?\.length\)/);
+  assert.match(strip, /direction: \$\{cell\.tone\}/);
+  assert.match(strip, /visual awaiting verified data/);
 });
 
 test("unavailable probability bars do not render a measured zero fill", () => {
