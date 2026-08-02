@@ -1,0 +1,380 @@
+/**
+ * Dashboard visual experience rebuild — presentation only.
+ * Scoped to the command centre so other routes stay untouched.
+ */
+
+/* —— Status badge —— */
+.dashStatusBadge{
+  display:inline-flex;align-items:center;gap:.35em;padding:3px 10px;border-radius:var(--radius-pill);
+  border:1px solid var(--vx-border,#243238);background:#0c1412;color:#c5d0d6;
+  font:700 11px/1.35 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);
+  letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
+  width:max-content;max-width:100%;justify-self:start;align-self:start;
+}
+.dashStatusBadge.is-positive{border-color:#62e6b144;background:var(--surface-success-soft);color:var(--dash-positive)}
+.dashStatusBadge.is-info{border-color:#7eb8d444;background:var(--surface-info-soft);color:var(--dash-info)}
+.dashStatusBadge.is-caution{border-color:#d4a57455;background:var(--surface-warning-soft);color:var(--dash-caution)}
+.dashStatusBadge.is-warning{border-color:#e0a06055;background:#e0a06014;color:var(--dash-warning)}
+.dashStatusBadge.is-risk{border-color:#e08a8a55;background:var(--surface-risk-soft);color:var(--dash-risk)}
+.dashStatusBadge.is-muted,.dashStatusBadge.is-neutral{border-color:#33434a;color:var(--dash-muted);background:#0a1012}
+
+/* —— Confidence ring —— */
+.dashConfidenceRing{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+.dashConfidenceRingDial{
+  display:grid;place-items:center;width:72px;height:72px;border-radius:50%;
+  border:3px solid #2a3a36;background:
+    radial-gradient(circle at 50% 40%,#16241fcc,transparent 70%),
+    conic-gradient(from 210deg,var(--dash-info) 0 55%,#1a2622 55% 100%);
+  box-shadow:inset 0 0 0 8px #0a1210,var(--dash-glow-info);
+}
+.dashConfidenceRingDial strong{
+  color:#eef3f0;font:700 13px/1.1 var(--font-geist-sans),Arial,sans-serif;text-align:center;max-width:4.5rem;
+}
+.dashConfidenceRing.is-positive .dashConfidenceRingDial{background:radial-gradient(circle at 50% 40%,#16241fcc,transparent 70%),conic-gradient(from 210deg,var(--dash-positive) 0 70%,#1a2622 70% 100%);box-shadow:inset 0 0 0 8px #0a1210,var(--dash-glow-positive)}
+.dashConfidenceRing.is-caution .dashConfidenceRingDial{background:radial-gradient(circle at 50% 40%,#16241fcc,transparent 70%),conic-gradient(from 210deg,var(--dash-caution) 0 45%,#1a2622 45% 100%);box-shadow:inset 0 0 0 8px #0a1210,var(--dash-glow-caution)}
+.dashConfidenceRing.is-risk .dashConfidenceRingDial{background:radial-gradient(circle at 50% 40%,#16241fcc,transparent 70%),conic-gradient(from 210deg,var(--dash-risk) 0 30%,#1a2622 30% 100%)}
+.dashConfidenceRing.is-inactive .dashConfidenceRingDial{
+  background:#0c1412;border-style:dashed;border-color:#3a4a50;box-shadow:none;
+}
+.dashConfidenceRingCopy{display:grid;gap:4px;min-width:0}
+.dashConfidenceRingCopy em{font-style:normal;color:#8b989f;font:700 11px/1.3 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
+.dashConfidenceRingCopy span{color:#a7b3ba;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+
+/* —— Risk meter —— */
+.dashRiskMeter{display:grid;gap:6px;min-width:0}
+.dashRiskMeterLabel{color:#7f8d93;font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
+.dashRiskMeter strong{color:#e8eef1;font:650 16px/1.25 var(--font-geist-sans),Arial,sans-serif}
+.dashRiskMeterTrack{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;height:8px}
+.dashRiskMeterTrack i{display:block;border-radius:999px;background:#1c282e}
+.dashRiskMeterTrack i.is-on{background:var(--dash-info)}
+.dashRiskMeter.is-caution .dashRiskMeterTrack i.is-on{background:var(--dash-caution)}
+.dashRiskMeter.is-blocked .dashRiskMeterTrack i.is-on,
+.dashRiskMeter.is-risk .dashRiskMeterTrack i.is-on{background:var(--dash-risk)}
+.dashRiskMeter.is-open .dashRiskMeterTrack i.is-on{background:var(--dash-positive)}
+.dashRiskMeter small{color:#84929a;font-size:var(--type-floor)}
+
+/* —— Progress ring —— */
+.dashProgressRing{position:relative;display:inline-grid;place-items:center;width:44px;height:44px}
+.dashProgressRing svg{transform:rotate(-90deg)}
+.dashProgressRingTrack{fill:none;stroke:#1c282e;stroke-width:4}
+.dashProgressRingFill{fill:none;stroke:var(--dash-positive);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset var(--vx-med) var(--vx-ease)}
+.dashProgressRing strong{position:absolute;color:#e8eef1;font:700 11px/1 var(--font-geist-mono),monospace;font-size:var(--type-floor)}
+
+/* —— Level map —— */
+.dashLevelMap{display:grid;grid-template-columns:28px minmax(0,1fr);gap:16px;align-items:stretch;margin-top:14px}
+.dashLevelMap.is-empty{grid-template-columns:1fr;gap:10px}
+.dashLevelMapTrack{position:relative;min-height:220px;border-radius:var(--radius-pill);background:linear-gradient(180deg,#1a2a26,#0c1412)}
+.dashLevelMapRail{position:absolute;left:50%;top:8px;bottom:8px;width:2px;margin-left:-1px;background:linear-gradient(180deg,#62e6b155,#7eb8d455 50%,#e08a8a55)}
+.dashLevelMapMarker{
+  position:absolute;left:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;
+  border:2px solid #0a1210;background:#84929a;box-shadow:0 0 0 2px #243238;
+}
+.dashLevelMapMarker.is-price{width:16px;height:16px;margin:-8px 0 0 -8px;background:var(--dash-positive);box-shadow:0 0 0 3px #62e6b133,var(--dash-glow-positive)}
+.dashLevelMapMarker.is-high{background:var(--dash-info)}
+.dashLevelMapMarker.is-low{background:var(--dash-risk)}
+.dashLevelMapMarker.is-ema{background:var(--dash-caution)}
+.dashLevelMapMarker.is-open,.dashLevelMapMarker.is-mid{background:#a7b3ba}
+.dashLevelMapList{list-style:none;margin:0;padding:0;display:grid;gap:8px;align-content:start}
+.dashLevelMapList li{
+  display:flex;justify-content:space-between;gap:12px;align-items:baseline;
+  padding:10px 12px;border:1px solid var(--vx-border-soft);border-radius:var(--radius-md);background:#0c1318;
+}
+.dashLevelMapList li span{color:#84929a;font:13px/1.35 var(--font-geist-sans),Arial,sans-serif}
+.dashLevelMapList li strong{color:#eef3f4;font:650 15px/1.2 var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.dashLevelMapList li.is-price{border-color:#62e6b144;background:var(--surface-success-soft)}
+.dashLevelMapList li.is-price strong{color:var(--dash-positive)}
+.dashLevelMapList li.is-high strong{color:var(--dash-info)}
+.dashLevelMapList li.is-low strong{color:var(--dash-risk)}
+.dashLevelMapList li.is-ema strong{color:var(--dash-caution)}
+
+/* —— Hero ambient command centre —— */
+.dashCommandCentre>.dashHero{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 100% 0%,#62e6b114,transparent 55%),
+    radial-gradient(90% 70% at 0% 100%,#7eb8d412,transparent 50%),
+    linear-gradient(160deg,#0f1916f2,#0a1210f8 60%);
+  border:1px solid var(--vx-border-soft);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-panel),inset 0 1px #ffffff0d;
+  padding:var(--dash-space-4);
+}
+.dashCommandCentre>.dashHero::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:
+    linear-gradient(#ffffff06 1px,transparent 1px),
+    linear-gradient(90deg,#ffffff06 1px,transparent 1px);
+  background-size:28px 28px;mask-image:linear-gradient(180deg,#000c,#0000 85%);
+}
+.dashCommandCentre .dashHeroCopy,
+.dashCommandCentre .dashMarketHero{position:relative;z-index:1}
+.dashCommandCentre .dashHeroCopy{display:grid;gap:10px;align-content:start}
+.dashCommandCentre .dashHeroKicker{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dashCommandCentre .dashHeroPosture{
+  margin:0;max-width:42rem;color:#c5d0d6;font:500 15px/1.55 var(--font-geist-sans),Arial,sans-serif;
+}
+.dashCommandCentre .dashHeroActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.dashCommandCentre .dashHeroSpark{
+  margin-top:8px;color:var(--dash-positive);opacity:.9;
+}
+.dashCommandCentre .dashMarketHero.is-up{box-shadow:var(--dash-glow-positive),inset 0 1px #62e6b118}
+.dashCommandCentre .dashMarketHero.is-down{box-shadow:0 0 28px #e08a8a1a,inset 0 1px #e08a8a18}
+
+/* —— Market pulse strip —— */
+.dashCommandCentre .dashCommandStrip{
+  border:1px solid var(--vx-border-soft);border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,#0f1916f2,#0a1210f8);padding:16px 18px;
+  min-width:0;max-width:100%;overflow:hidden;
+}
+.dashCommandCentre .dashCommandStripGrid{
+  display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;min-width:0;width:100%;max-width:100%;
+}
+.dashCommandCentre .dashCommandCell{
+  scroll-snap-align:start;flex:0 0 140px;min-width:140px;min-height:88px;padding:12px;
+  border-radius:var(--radius-md);border:1px solid #243238;background:#0a1210cc;
+  display:grid;gap:4px;align-content:start;
+}
+.dashCommandCentre .dashCommandCell.is-empty{
+  opacity:1;border-style:dashed;border-color:#314248;background:#0a100e99;color:var(--dash-muted);
+}
+.dashCommandCentre .dashCommandCell.is-empty strong{color:var(--dash-muted);font-size:14px}
+.dashCommandCentre .dashCommandCellHead{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.dashCommandCentre .dashCommandCellIcon{color:#6f8580;font-size:14px}
+
+/* —— Today in 30 seconds — varied tiles —— */
+.dashCommandCentre .oracleThirtyGrid{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr;grid-template-areas:
+    "posture lean support"
+    "risk catalyst avoid"
+    "fresh fresh fresh";
+  gap:12px;margin-top:14px;
+}
+.dashCommandCentre .oracleThirtyGrid>div{
+  padding:14px 16px;border:1px solid var(--vx-border-soft);border-radius:var(--radius-md);
+  background:#0c1318;display:grid;gap:8px;min-width:0;
+}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(1){grid-area:posture;background:linear-gradient(160deg,#12201bcc,#0c1318);border-color:#2a4a42}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(2){grid-area:lean}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(3){grid-area:support}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(4){grid-area:risk;border-color:#e08a8a33;background:linear-gradient(160deg,#1a1212cc,#0c1318)}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(5){grid-area:catalyst;border-color:#d8b36a33;background:linear-gradient(160deg,#1a1610cc,#0c1318)}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(6){grid-area:avoid;border-color:#d4a57433}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(7){grid-area:fresh;padding:10px 14px}
+.dashCommandCentre .oracleThirtyGrid dt{color:#7f8d93;font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
+.dashCommandCentre .oracleThirtyGrid dd{margin:0;color:#e8eef1;font:600 16px/1.35 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandCentre .oracleThirtyGrid>div:nth-child(1) dd{font-size:clamp(18px,2vw,22px);letter-spacing:-.02em}
+
+/* —— Session timeline —— */
+.dashCommandCentre .oracleTimeline{
+  min-width:0;max-width:100%;overflow:hidden;
+}
+.dashCommandCentre .oracleTimelineTrack{
+  display:flex;gap:0;overflow-x:auto;padding:18px 4px 8px;position:relative;
+  scroll-snap-type:x proximity;min-width:0;width:100%;max-width:100%;-webkit-overflow-scrolling:touch;
+}
+.dashCommandCentre .oracleTimelineTrack::before{
+  content:"";position:absolute;left:0;right:0;top:28px;height:2px;
+  background:linear-gradient(90deg,#243238,#3a4a50 40%,#243238);
+}
+.dashCommandCentre .oracleTimelineTrack li{
+  position:relative;scroll-snap-align:start;padding:22px 8px 0;text-align:center;
+  flex:0 0 104px;min-width:104px;
+}
+.dashCommandCentre .oracleTimelineTrack li::before{
+  content:"";position:absolute;left:50%;top:22px;width:10px;height:10px;margin:-5px 0 0 -5px;
+  border-radius:50%;background:#314248;border:2px solid #0a1210;z-index:1;
+}
+.dashCommandCentre .oracleTimelineTrack li.is-active::before{
+  background:var(--dash-info);box-shadow:0 0 0 4px #7eb8d433,var(--dash-glow-info);width:14px;height:14px;margin:-7px 0 0 -7px;
+}
+.dashCommandCentre .oracleTimelineTrack li.is-active strong{color:var(--dash-info)}
+.dashCommandCentre .oracleTimelineFocus{
+  display:flex;gap:10px;align-items:baseline;margin-top:12px;padding:12px 14px;
+  border-radius:var(--radius-md);border:1px solid #7eb8d433;background:var(--surface-info-soft);
+}
+.dashCommandCentre .oracleTimelineFocus span{color:var(--dash-info);font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
+
+/* —— Game plan canvas —— */
+.dashCommandCentre .dashGamePlanCanvas{
+  display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;margin-top:14px;
+}
+.dashCommandCentre .dashGamePlanPrimary{
+  display:grid;gap:12px;padding:16px;border:1px solid #2a4a42;border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,#12201bcc,#0c1318);
+}
+.dashCommandCentre .dashGamePlanMetrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dashCommandCentre .dashGamePlanMetrics article,
+.dashCommandCentre .dashGamePlanSide article{
+  padding:12px;border:1px solid var(--vx-border-soft);border-radius:var(--radius-md);background:#0a121099;display:grid;gap:6px;min-width:0;
+}
+.dashCommandCentre .dashGamePlanMetrics span,
+.dashCommandCentre .dashGamePlanSide span{color:#7f8d93;font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
+.dashCommandCentre .dashGamePlanMetrics strong,
+.dashCommandCentre .dashGamePlanSide strong{color:#e8eef1;font:600 15px/1.3 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandCentre .dashGamePlanSide{display:grid;gap:10px}
+.dashCommandCentre .dashGamePlanInvalidation{border-color:#e08a8a44!important;background:linear-gradient(160deg,#1a1212cc,#0c1318)!important}
+.dashCommandCentre .dashGamePlanMindsetBanner{
+  grid-column:1/-1;padding:14px 16px;border-radius:var(--radius-md);border:1px solid #a89bc844;
+  background:var(--surface-reflection-soft);color:#d5cee6;font:500 14px/1.5 var(--font-geist-sans),Arial,sans-serif;
+}
+.dashCommandCentre .dashGamePlanAvoid ul{margin:0;padding-left:18px;color:#a7b3ba;font:13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+
+/* —— Opportunity radar —— */
+.dashCommandCentre .oracleOpportunityGrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:14px;
+}
+.dashCommandCentre .oracleOpportunityGrid>li{
+  position:relative;padding:14px;border-radius:var(--radius-lg);border:1px solid var(--vx-border-soft);
+  background:
+    radial-gradient(120% 80% at 50% 0%,#16241b66,transparent 60%),
+    #0a1210cc;
+  display:grid;gap:8px;min-width:0;
+}
+.dashCommandCentre .oracleOpportunityGrid>li::before{
+  content:"";position:absolute;inset:10px;border-radius:50%;border:1px dashed #243838;pointer-events:none;opacity:.35;
+}
+.dashCommandCentre .oracleOpportunityGrid>li>*{position:relative;z-index:1}
+.dashCommandCentre .oracleOpportunityGrid>li.is-watching{border-color:#7eb8d444}
+.dashCommandCentre .oracleOpportunityGrid>li.is-developing{border-color:#62e6b144}
+.dashCommandCentre .oracleOpportunityGrid>li.is-inactive,
+.dashCommandCentre .oracleOpportunityGrid>li.is-unavailable{border-style:dashed;opacity:.92}
+.dashCommandCentre .oracleOpportunityEmpty{
+  margin-top:14px;padding:18px;border:1px dashed #314248;border-radius:var(--radius-lg);
+  background:#0a100e99;display:grid;gap:6px;
+}
+
+/* —— AI insight denser —— */
+.dashCommandCentre .companionInsight{
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);gap:16px;align-items:start;
+}
+.dashCommandCentre .companionInsightHeader,
+.dashCommandCentre .companionNarrative,
+.dashCommandCentre .companionInsightMeta,
+.dashCommandCentre .companionDisclosure{grid-column:1}
+.dashCommandCentre .companionConfidence{grid-column:2;grid-row:1 / span 2;justify-self:stretch}
+.dashCommandCentre .companionBullBear{grid-column:1 / -1}
+.dashCommandCentre .companionNarrative{
+  margin:0;color:#c5d0d6;font:500 15px/1.55 var(--font-geist-sans),Arial,sans-serif;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.dashCommandCentre .companionInsightMeta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dashCommandCentre .companionBullBear.is-unavailable .companionBullBearTrack i{width:0!important;opacity:0}
+.dashCommandCentre .companionBullBear.is-unavailable .companionBullBearTrack{
+  background:repeating-linear-gradient(90deg,#1c282e 0 8px,transparent 8px 14px);
+}
+
+/* —— Replay comparison —— */
+.dashCommandCentre .oracleReplayCompare{
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:stretch;margin-top:14px;
+}
+.dashCommandCentre .oracleReplayCompare article{
+  padding:14px;border:1px solid var(--vx-border-soft);border-radius:var(--radius-md);background:#0c1318;display:grid;gap:8px;min-width:0;
+}
+.dashCommandCentre .oracleReplayCompare article span{color:#7f8d93;font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase}
+.dashCommandCentre .oracleReplayCompare article strong{color:#e8eef1;font:600 15px/1.35 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandCentre .oracleReplayArrow{
+  display:grid;place-items:center;color:var(--dash-info);font:700 18px/1 var(--font-geist-sans),Arial,sans-serif;
+}
+.dashCommandCentre .oracleReplayLesson{
+  margin-top:12px;padding:14px 16px;border-radius:var(--radius-md);border:1px solid #a89bc844;
+  background:var(--surface-reflection-soft);
+}
+.dashCommandCentre .oracleReplayLesson span{display:block;color:#a89bc8;font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+
+/* —— Checklist —— */
+.dashCommandCentre .oracleChecklist header{display:flex;justify-content:space-between;gap:16px;align-items:start}
+.dashCommandCentre .oracleChecklist ul{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.dashCommandCentre .oracleChecklist li{
+  padding:12px 14px;border:1px solid var(--vx-border-soft);border-radius:var(--radius-md);background:#0c1318;
+}
+.dashCommandCentre .oracleChecklist li:has(input:checked){border-color:#62e6b144;background:var(--surface-success-soft)}
+.dashCommandCentre .oracleChecklist label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.dashCommandCentre .oracleChecklist input{margin-top:3px;accent-color:var(--dash-positive)}
+
+/* —— Quick actions —— */
+.dashCommandCentre .dashActionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.dashCommandCentre .dashAction{
+  display:grid;gap:6px;padding:16px;border-radius:var(--radius-lg);border:1px solid var(--vx-border-soft);
+  background:#0c1318;text-decoration:none;min-height:88px;
+}
+.dashCommandCentre .dashAction small{color:#7f8d93;font:700 11px/1.2 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);letter-spacing:.08em}
+.dashCommandCentre .dashAction b{color:#e8eef1;font:650 15px/1.3 var(--font-geist-sans),Arial,sans-serif}
+.dashCommandCentre .dashAction.is-gold{border-color:#d8b36a55;background:linear-gradient(160deg,#1a1610ee,#0c1318)}
+.dashCommandCentre .dashAction.is-primary{border-color:#62e6b155;background:linear-gradient(160deg,#12201bee,#0c1318)}
+.dashCommandCentre .dashAction.is-primary b{color:var(--dash-positive)}
+
+/* —— Workspace drawer —— */
+.dashWorkspaceDrawer{margin:0 0 16px}
+.dashWorkspaceToggle{
+  display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;
+  border-radius:var(--radius-pill);border:1px solid var(--vx-border);background:#0c1412;color:#c5d0d6;
+  font:650 13px/1 var(--font-geist-sans),Arial,sans-serif;cursor:pointer;
+}
+.dashWorkspaceToggle:focus-visible{outline:2px solid var(--dash-positive);outline-offset:3px}
+.dashWorkspacePanel[hidden]{display:none!important}
+.dashWorkspacePanel{
+  margin-top:12px;padding:16px;border:1px solid var(--vx-border-soft);border-radius:var(--radius-lg);
+  background:linear-gradient(160deg,#0f1916f2,#0a1210f8);box-shadow:var(--shadow-panel);
+}
+.dashWorkspacePanel .oracleWorkspace{margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+
+/* —— Video slots premium —— */
+.dashCommandCentre .dashVideoSlotFrame{
+  background:
+    radial-gradient(80% 70% at 50% 30%,#1a2a26aa,transparent 70%),
+    linear-gradient(160deg,#101a18,#0a1114);
+}
+
+@media (prefers-reduced-motion:no-preference){
+  .dashCommandCentre .oracleTimelineTrack li.is-active::before{
+    animation:dashPulseSoft 2.6s ease-in-out infinite;
+  }
+  .dashCommandCentre .dashCommandCell,
+  .dashCommandCentre .dashAction,
+  .dashCommandCentre .oracleThirtyGrid>div,
+  .dashCommandCentre .oracleOpportunityGrid>li{
+    transition:transform var(--vx-fast) var(--vx-ease),border-color var(--vx-fast) var(--vx-ease),box-shadow var(--vx-fast) var(--vx-ease);
+  }
+  .dashCommandCentre .dashCommandCell:hover,
+  .dashCommandCentre .oracleThirtyGrid>div:hover,
+  .dashCommandCentre .oracleOpportunityGrid>li:hover,
+  .dashCommandCentre .dashAction:hover{
+    transform:translateY(-1px);border-color:#2f4149;
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .dashCommandCentre .oracleTimelineTrack li.is-active::before{animation:none}
+}
+@keyframes dashPulseSoft{
+  0%,100%{box-shadow:0 0 0 4px #7eb8d433,0 0 18px #7eb8d41f}
+  50%{box-shadow:0 0 0 6px #7eb8d422,0 0 10px #7eb8d414}
+}
+
+@media(max-width:1100px){
+  .dashCommandCentre .companionInsight{grid-template-columns:1fr}
+  .dashCommandCentre .companionConfidence{grid-column:1;grid-row:auto}
+  .dashCommandCentre .dashGamePlanCanvas{grid-template-columns:1fr}
+  .dashCommandCentre .oracleReplayCompare{grid-template-columns:1fr;gap:8px}
+  .dashCommandCentre .oracleReplayArrow{transform:rotate(90deg)}
+  .dashCommandCentre .dashActionGrid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .dashCommandCentre .oracleThirtyGrid{
+    grid-template-columns:1fr 1fr;grid-template-areas:
+      "posture posture"
+      "lean support"
+      "risk catalyst"
+      "avoid avoid"
+      "fresh fresh";
+  }
+  .dashCommandCentre .dashLevelMap{grid-template-columns:1fr}
+  .dashCommandCentre .dashLevelMapTrack{min-height:12px;height:12px}
+  .dashCommandCentre .dashLevelMapMarker{top:50%!important;bottom:auto!important;transform:translateY(-50%)}
+  .dashCommandCentre .dashLevelMapRail{left:8px;right:8px;top:50%;bottom:auto;height:2px;width:auto;margin:0;background:linear-gradient(90deg,#62e6b155,#7eb8d455 50%,#e08a8a55)}
+}
+@media(max-width:640px){
+  .dashCommandCentre .dashActionGrid,
+  .dashCommandCentre .dashGamePlanMetrics,
+  .dashCommandCentre .companionInsightMeta{grid-template-columns:1fr}
+  .dashCommandCentre .oracleThirtyGrid{grid-template-columns:1fr;grid-template-areas:"posture" "lean" "support" "risk" "catalyst" "avoid" "fresh"}
+}

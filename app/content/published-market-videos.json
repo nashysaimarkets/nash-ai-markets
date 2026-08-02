@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "source": "manual-manifest",
+  "note": "Operator-maintained published video records only. Do not list draft, private, unlisted or scheduled items as published. marketDate uses America/New_York calendar days (YYYY-MM-DD).",
+  "videos": []
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" role="img" aria-hidden="true">
+  <defs>
+    <pattern id="wg" width="80" height="80" patternUnits="userSpaceOnUse">
+      <path d="M80 0H0V80" fill="none" stroke="#38f28e" stroke-opacity=".055"/>
+      <circle cx="0" cy="0" r="1.2" fill="#d9ab52" fill-opacity=".18"/>
+    </pattern>
+    <radialGradient id="wgGlow" cx="70%" cy="18%" r="55%">
+      <stop offset="0" stop-color="#163a2c" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#020706" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1440" height="900" fill="url(#wg)"/>
+  <rect width="1440" height="900" fill="url(#wgGlow)"/>
+</svg>

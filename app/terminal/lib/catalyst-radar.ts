@@ -1,0 +1,75 @@
+/**
+ * Catalyst Radar — unified timeline from verified calendar rows.
+ * News/earnings slots remain truthful unavailable until provider paths exist.
+ */
+
+import type { MarketEvent } from "../../lib/market-data.ts";
+import type { MarketInstrument } from "../../lib/markets/market-catalog.ts";
+import { groupVerifiedEvents } from "./event-display.ts";
+
+export type CatalystKind = "macro" | "earnings" | "news";
+
+export type CatalystItem = {
+  id: string;
+  kind: CatalystKind;
+  time: string;
+  title: string;
+  risk: "HIGH" | "MED" | "INFO" | "UNKNOWN";
+  relevance: string;
+  available: boolean;
+  includes: string[];
+};
+
+export type CatalystRadar = {
+  items: CatalystItem[];
+  unavailable: Array<{ kind: CatalystKind; reason: string }>;
+  disclosure: string;
+};
+
+const DISCLOSURE =
+  "Macro rows come from the verified US economic calendar when present in the snapshot. Earnings and news timelines stay unavailable until a verified data connection exists — nothing is invented.";
+
+function relevanceFor(instrument: MarketInstrument, favourites: MarketInstrument[]): string {
+  const names = [instrument, ...favourites.filter((item) => item.id !== instrument.id)].slice(0, 4);
+  if (instrument.group === "indices" || instrument.group === "etfs") {
+    return `Relevant to index/ETF desk focus (${names.map((item) => item.symbol).join(", ")}).`;
+  }
+  if (instrument.group === "bonds_and_rates" || instrument.group === "fx") {
+    return `Macro-sensitive favourites on desk: ${names.map((item) => item.symbol).join(", ")}.`;
+  }
+  return `Desk favourites: ${names.map((item) => item.symbol).join(", ") || instrument.symbol}.`;
+}
+
+export function createCatalystRadar(input: {
+  events: MarketEvent[];
+  active: MarketInstrument;
+  favourites: MarketInstrument[];
+  now?: number;
+}): CatalystRadar {
+  const now = input.now ?? Date.now();
+  const items: CatalystItem[] = groupVerifiedEvents(input.events, now, 12).map((event, index) => ({
+    id: `macro-${index}-${event.at ?? event.time}-${event.name}`,
+    kind: "macro" as const,
+    time: event.time,
+    title: event.name,
+    risk: event.risk,
+    relevance: relevanceFor(input.active, input.favourites),
+    available: true,
+    includes: event.includes.map((item) => item.name),
+  }));
+
+  return {
+    items,
+    unavailable: [
+      {
+        kind: "earnings",
+        reason: "No verified earnings data connection is currently available for the active instrument.",
+      },
+      {
+        kind: "news",
+        reason: "No verified news data connection is currently available for market-filtered headlines.",
+      },
+    ],
+    disclosure: DISCLOSURE,
+  };
+}
