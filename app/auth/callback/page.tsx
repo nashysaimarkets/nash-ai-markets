@@ -30,6 +30,20 @@ function fail(reason: string) {
   window.location.replace(`/login?error=signin&reason=${encodeURIComponent(reason)}`);
 }
 
+async function persistServerSession(session: { access_token: string; refresh_token: string }) {
+  const response = await fetch("/api/auth/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    cache: "no-store",
+    body: JSON.stringify({
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+    }),
+  });
+  return response.ok;
+}
+
 /**
  * Complete passwordless sign-in in the browser so the PKCE code verifier cookie
  * set during signInWithOtp is available for exchangeCodeForSession.
@@ -69,6 +83,10 @@ export default function AuthCallbackPage() {
             fail(reason);
             return;
           }
+          if (!await persistServerSession(data.session)) {
+            fail("session");
+            return;
+          }
           window.history.replaceState(null, "", window.location.pathname);
           window.location.replace(next);
           return;
@@ -84,18 +102,26 @@ export default function AuthCallbackPage() {
             fail(error?.code === "otp_expired" ? "expired" : "verify");
             return;
           }
+          if (!await persistServerSession(data.session)) {
+            fail("session");
+            return;
+          }
           window.history.replaceState(null, "", window.location.pathname);
           window.location.replace(next);
           return;
         }
 
         if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({
+          const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
           if (!active) return;
-          if (error) {
+          if (error || !data.session) {
+            fail("session");
+            return;
+          }
+          if (!await persistServerSession(data.session)) {
             fail("session");
             return;
           }
