@@ -266,19 +266,16 @@ export default async function MemberDashboard() {
       ) : null}
       {view.mode === "partial" ? (
         <aside className="dashPartialBanner" role="status">
-          <strong>
-            {view.contextStatus === "unavailable" ? "Verified context is limited" : "Partial verified context"}
-          </strong>
+          <strong>{view.contextStatus === "unavailable" ? "Limited verified context" : "Verification in progress"}</strong>
           <span>
             {view.missingInputs.length
               ? `Awaiting: ${view.missingInputs.slice(0, 3).join("; ")}.`
               : "Some optional feeds are unavailable."}{" "}
-            Available modules remain visible. Ref {view.correlationId}.
+            Available intelligence remains visible.
           </span>
           <div>
-            <Link href="/dashboard">Retry dashboard</Link>
-            <Link href="/terminal">Open Trading Desk</Link>
-            <Link href="/brief">Open Morning Brief</Link>
+            <Link href="/dashboard">Retry</Link>
+            <Link href="/terminal">Open desk</Link>
           </div>
         </aside>
       ) : null}
