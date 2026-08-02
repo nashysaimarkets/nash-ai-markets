@@ -151,6 +151,8 @@
 .companionBullBearFactors{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:4px}
 .companionBullBearFactors li{color:#8a9690;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .companionBullBear>small{display:block;margin-top:12px;color:#7d8a84;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.companionBullBear.is-unavailable .companionBullBearTrack{background:repeating-linear-gradient(90deg,#1b292b 0 12px,#10191b 12px 18px)}
+.companionBullBear.is-unavailable .companionBullBearTrack i{width:0!important;opacity:0}
 
 .companionInternals{padding:20px 22px;margin:0 0 16px}
 .companionInternals>header h2{
@@ -194,3 +196,22 @@
   .companionConfidenceDial,
   .companionBullBearTrack i{transition:none}
 }
+
+/* Shared market-motion language for Dashboard and Morning Brief. */
+.companionInsight,.companionInternals{position:relative;isolation:isolate}
+.companionInsight::before,.companionInternals::before{
+  content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;opacity:.55;
+  background:
+    linear-gradient(90deg,transparent 0 74%,#62e6b10b 74.2%,transparent 74.4%),
+    linear-gradient(transparent 0 78%,#62e6b10a 78.2%,transparent 78.4%),
+    radial-gradient(circle at 90% 12%,#62e6b118,transparent 24%);
+  background-size:68px 68px,68px 68px,100% 100%;
+}
+.companionConfidenceDial{position:relative}
+.companionConfidenceDial::after{content:"";position:absolute;inset:-7px;border:1px solid #62e6b12d;border-radius:50%}
+@media(prefers-reduced-motion:no-preference){
+  .companionConfidence:not(.is-empty) .companionConfidenceDial::after{animation:companionHalo 2.8s ease-in-out infinite}
+  .companionBullBear:not(.is-unavailable) .companionBullBearTrack i{animation:companionBarIn .65s cubic-bezier(.2,.8,.2,1) both;transform-origin:left}
+}
+@keyframes companionHalo{50%{transform:scale(1.06);opacity:.42}}
+@keyframes companionBarIn{from{transform:scaleX(0)}}

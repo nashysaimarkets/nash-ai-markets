@@ -316,9 +316,17 @@ export function MorningMarketBrief({
         )}
       </section>
 
-      <MarketInternalsPanel cards={insight.internals} />
-      <ConvictionExplainer model={oracle.conviction} />
-      <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
+      <details className="mbIntelligenceDrawer">
+        <summary>
+          <span><b>Deep evidence</b> Market internals and conviction factors</span>
+          <i aria-hidden="true">+</i>
+        </summary>
+        <div className="mbIntelligenceDrawerBody">
+          <MarketInternalsPanel cards={insight.internals} />
+          <ConvictionExplainer model={oracle.conviction} />
+          <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
+        </div>
+      </details>
       <DailyChecklistPanel
         postureHeadline={oracle.checklist.postureHeadline}
         permissionTone={oracle.checklist.permissionTone}
