@@ -106,6 +106,7 @@ is optional and defaults to the official FMP Stable endpoint.
 | `FMP_OIL_SYMBOL` | Server config | Optional | Override oil proxy symbol (default `USO`) |
 | `FMP_QQQ_SYMBOL` | Server config | Optional | Override QQQ symbol (default `QQQ`) |
 | `FMP_NASDAQ_SYMBOL` | Server config | Optional | Override Nasdaq index symbol (default `^IXIC`) |
+| `BULLSEYE_CANDLE_FIXTURE_PATH` | Local test config | Optional; forbidden in hosted/production builds | Absolute path to the explicitly labelled, non-live candle fixture used only for local layout and automated test acceptance |
 
 The default candle symbol `ESUSD` is FMP's commodity-series identifier named
 `E-Mini S&P 500`, with currency `USD` and exchange classification `CME`. It is
@@ -135,6 +136,12 @@ the request. The account owner must confirm the endpoint, instrument, account
 entitlement, and any display or redistribution licence with the provider before
 changing the symbol or subscription.
 
+`BULLSEYE_CANDLE_FIXTURE_PATH` is a local acceptance aid, not a market-data
+provider. The application ignores it whenever an FMP key is configured and
+blocks it on hosted previews and production Node builds. Fixture output is
+explicitly labelled non-production and must never be used as launch evidence,
+trading context, or a substitute for provider entitlement.
+
 ## Generic HTTP provider
 
 Used as the alternate provider path when an FMP configuration is not selected.
@@ -157,6 +164,10 @@ Do not embed a credential in `MARKET_DATA_API_URL`.
 | `BUILD_TIMESTAMP` | Build config | Mandatory for traceability | ISO-8601 build timestamp |
 | `GIT_COMMIT_SHA` | Build config | Mandatory unless platform alternative exists | Deployed Git commit |
 | `VERCEL_GIT_COMMIT_SHA` | Build config | Platform alternative | Vercel-provided commit |
+| `VERCEL_GIT_COMMIT_REF` | Build config | Platform alternative | Vercel-provided source branch reference |
+| `VERCEL_URL` | Runtime config | Platform alternative | Vercel deployment hostname used for same-origin diagnostics |
+| `VERCEL_ENV` | Runtime config | Platform alternative | Vercel environment classification such as preview or production |
+| `VERCEL` | Runtime flag | Platform-managed | Indicates that the application is running in Vercel's hosted runtime |
 | `CF_PAGES_COMMIT_SHA` | Build config | Platform alternative | Cloudflare-provided commit |
 | `BULLSEYE_TEST_TOTALS` | Build config | Recommended | Positive verified-test count displayed by diagnostics |
 | `BULLSEYE_ADMIN_EMAILS` | Server | Required for Founding reporting | Comma-separated authenticated operator emails permitted to open `/admin/founding-100`; never expose with `NEXT_PUBLIC_` |

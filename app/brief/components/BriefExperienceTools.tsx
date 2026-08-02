@@ -19,9 +19,13 @@ export function BriefExperienceTools({ posture, risk, catalyst, level }: BriefEx
   const progress = useMemo(() => completeCount * 25, [completeCount]);
 
   useEffect(() => {
+    let restoreTimer: number | undefined;
     try {
       const stored = JSON.parse(window.localStorage.getItem(STORE_KEY) ?? "null");
-      if (Array.isArray(stored) && stored.length === TASKS.length) setCompleted(stored.map(Boolean));
+      if (Array.isArray(stored) && stored.length === TASKS.length) {
+        const restored = stored.map(Boolean);
+        restoreTimer = window.setTimeout(() => setCompleted(restored), 0);
+      }
     } catch { /* Device-only preference remains optional. */ }
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -33,7 +37,10 @@ export function BriefExperienceTools({ posture, risk, catalyst, level }: BriefEx
       if (event.key === "Escape") setPaletteOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      if (restoreTimer !== undefined) window.clearTimeout(restoreTimer);
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   const toggle = (index: number) => {
