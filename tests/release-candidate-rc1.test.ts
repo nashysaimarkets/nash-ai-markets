@@ -39,6 +39,8 @@ test("onboarding UI exposes progress, interests, notifications and recovery", as
   assert.match(form, /Nothing was lost/);
   assert.match(form, /initialPreferences\?\.experience/);
   assert.match(form, /Save workspace preferences/);
+  assert.match(form, /window\.location\.assign\(updating \? "\/profile\?preferences=updated" : "\/dashboard"\)/);
+  assert.doesNotMatch(form, /router\.push/);
   assert.match(page, /\.select\("experience, interests, notifications, completed_at"\)/);
   assert.match(page, /Refine your market workspace/);
   assert.match(dashboard, /redirect\("\/onboarding"\)/);
