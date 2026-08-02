@@ -105,6 +105,10 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(shell, /Morning Brief/);
   assert.match(shell, /Trading Desk/);
   assert.match(desk, /DeskDecisionSummary/);
+  assert.match(desk, /DeskMissionStage/);
+  assert.match(desk, /Decision radar/);
+  assert.match(desk, /Open verified chart/);
+  assert.match(desk, /Review risk gate/);
   assert.match(desk, /deskViewTabs/);
   assert.match(desk, /Workspace preset/);
   assert.match(desk, /Overview/);

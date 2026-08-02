@@ -157,6 +157,105 @@ function DeskVideoShortcut({ selection }: { selection: MarketVideoSelection | nu
   );
 }
 
+function DeskMissionStage(props: {
+  marketSymbol: string;
+  marketName: string;
+  quoteValue: string | null;
+  quoteChange: string | null;
+  quoteDirection: "up" | "down" | "flat" | "unavailable";
+  sessionLabel: string;
+  countdown: string | null;
+  permission: string;
+  permissionTone: "open" | "caution" | "blocked";
+  lean: string;
+  confidence: string;
+  risk: string;
+  dataReady: boolean;
+  candlesReady: boolean;
+  levelsReady: boolean;
+  catalystReady: boolean;
+  nextCatalyst: string | null;
+  nextCatalystWhen: string | null;
+  ageLabel: string;
+  onOpenChart: () => void;
+  onOpenRisk: () => void;
+}) {
+  const checks = [props.dataReady, props.candlesReady, props.levelsReady, props.catalystReady];
+  const verifiedCount = checks.filter(Boolean).length;
+  const readinessLabel = verifiedCount === 4 ? "Evidence connected" : verifiedCount > 1 ? "Partial evidence" : "Awaiting evidence";
+
+  return (
+    <section className={`deskMissionStage is-${props.permissionTone}`} aria-labelledby="desk-mission-title">
+      <div className="deskMissionGlow" aria-hidden="true" />
+      <div className="deskMissionPrimary">
+        <div className="deskMissionKicker">
+          <span className="deskMissionLiveDot" aria-hidden="true" />
+          Active desk · {props.sessionLabel}
+        </div>
+        <div className="deskMissionInstrument">
+          <div>
+            <span>{props.marketName}</span>
+            <h2 id="desk-mission-title">{props.marketSymbol}</h2>
+          </div>
+          <div className={`deskMissionQuote is-${props.quoteDirection}`}>
+            <strong>{props.quoteValue ?? "—"}</strong>
+            <span>{props.quoteChange ?? "Verified quote unavailable"}</span>
+          </div>
+        </div>
+        <div className="deskMissionPermission">
+          <span>Participation permission</span>
+          <strong>{props.permission}</strong>
+          <small>{props.lean} · confidence {props.confidence.toLowerCase()}</small>
+        </div>
+        <div className="deskMissionActions">
+          <button type="button" onClick={props.onOpenChart}>Open verified chart</button>
+          <button type="button" onClick={props.onOpenRisk}>Review risk gate</button>
+        </div>
+      </div>
+
+      <div className="deskMissionRadar" aria-label={`${verifiedCount} of 4 evidence checks connected`}>
+        <div className="deskMissionRadarVisual" aria-hidden="true">
+          <i /><i /><i />
+          <span className={`is-${props.permissionTone}`} />
+        </div>
+        <span>Decision radar</span>
+        <strong>{readinessLabel}</strong>
+        <small>{verifiedCount} / 4 verified checks</small>
+        <div className="deskMissionChecks">
+          {[
+            ["Data", props.dataReady],
+            ["Candles", props.candlesReady],
+            ["Levels", props.levelsReady],
+            ["Catalyst", props.catalystReady],
+          ].map(([label, ready]) => (
+            <span key={String(label)} className={ready ? "is-ready" : "is-waiting"}>
+              <i aria-hidden="true" />{label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="deskMissionContext">
+        <article>
+          <span>Session clock</span>
+          <strong>{props.countdown ?? props.sessionLabel}</strong>
+          <small>{props.sessionLabel}</small>
+        </article>
+        <article>
+          <span>Next catalyst</span>
+          <strong>{props.nextCatalyst ?? "None verified"}</strong>
+          <small>{props.nextCatalystWhen ?? "Calendar remains fail-closed"}</small>
+        </article>
+        <article>
+          <span>Risk lens</span>
+          <strong>{props.risk}</strong>
+          <small>{props.ageLabel}</small>
+        </article>
+      </div>
+    </section>
+  );
+}
+
 export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   const [workspace, setWorkspace] = useState<DeskWorkspaceState>(payload.initialWorkspace);
   const [hydrated, setHydrated] = useState(false);
@@ -340,6 +439,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   const nextCatalystWhen = nextGrouped?.time ?? null;
   const nextCatalyst = nextGrouped;
   const snapshotFeed = payload.freshnessFeeds.find((feed) => feed.id === "snapshot");
+  const missionHealth = buildDataHealthSummary(payload.freshnessFeeds);
 
   function updateWorkspace(patch: Partial<DeskWorkspaceState> | ((prev: DeskWorkspaceState) => DeskWorkspaceState)) {
     setWorkspace((prev) => {
@@ -995,6 +1095,32 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
       </section>
 
       {!workspace.focusMode ? <SessionTimeline model={timeline} /> : null}
+
+      {!workspace.focusMode ? (
+        <DeskMissionStage
+          marketSymbol={active.symbol}
+          marketName={active.name}
+          quoteValue={activeQuote?.value ?? null}
+          quoteChange={activeQuote?.change ?? null}
+          quoteDirection={activeQuote?.direction ?? "unavailable"}
+          sessionLabel={session.label}
+          countdown={session.countdownLabel}
+          permission={payload.decisionPresentation.permissionLabel}
+          permissionTone={payload.decisionPresentation.permissionTone}
+          lean={payload.decisionPresentation.leanLabel}
+          confidence={payload.decisionPresentation.confidenceLabel}
+          risk={payload.decisionPresentation.primaryRisk ?? payload.decisionPresentation.riskLabel}
+          dataReady={missionHealth.esUsable}
+          candlesReady={Boolean(activeCandle && activeCandle.status !== "unavailable")}
+          levelsReady={activeStructure?.status === "ready"}
+          catalystReady={Boolean(nextCatalyst)}
+          nextCatalyst={nextCatalyst?.name ?? null}
+          nextCatalystWhen={nextCatalystWhen}
+          ageLabel={delayedAgeLine}
+          onOpenChart={() => selectDeskView("charts")}
+          onOpenRisk={() => selectDeskView("risk")}
+        />
+      ) : null}
 
       {workspace.focusMode ? (
         <section className="deskFocusStrip" aria-label="Focus mode essentials">
