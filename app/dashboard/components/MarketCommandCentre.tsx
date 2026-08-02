@@ -535,6 +535,9 @@ export function MarketCommandCentre({
               <h2 id="dash-catalyst-title">Event risk ahead</h2>
             </header>
             <article>
+              <div className="dashCatalystTimeline" aria-label={`Next catalyst: ${catalyst.name}`}>
+                <i /><i /><b /><i /><i />
+              </div>
               <strong>{catalyst.name}</strong>
               <p>{catalyst.whenLabel}</p>
               <div className="dashCatalystMeta">
