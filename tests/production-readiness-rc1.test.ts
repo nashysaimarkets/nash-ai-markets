@@ -13,6 +13,16 @@ test("Stripe membership synchronization rejects out-of-order events atomically",
   assert.match(migration, /to service_role/);
 });
 
+test("staging hardening removes default API grants from server-only functions", async () => {
+  const migration = await read("supabase/migrations/202608020011_harden_function_grants.sql");
+  assert.match(migration, /save_member_onboarding[\s\S]*security invoker/);
+  assert.match(migration, /sync_founding_100[\s\S]*from public, anon, authenticated, service_role/);
+  assert.match(migration, /sync_founding_100[\s\S]*to service_role/);
+  assert.match(migration, /sync_membership_from_stripe[\s\S]*from public, anon, authenticated, service_role/);
+  assert.match(migration, /sync_membership_from_stripe[\s\S]*to service_role/);
+  assert.doesNotMatch(migration, /sync_(?:founding_100|membership_from_stripe)[\s\S]*to (?:anon|authenticated)/);
+});
+
 test("public metadata contains no development marker and protects private routes", async () => {
   const [layout, robots, manifest] = await Promise.all([read("app/layout.tsx"), read("app/robots.ts"), read("app/manifest.ts")]);
   assert.doesNotMatch(layout, /codex-preview|development/);
