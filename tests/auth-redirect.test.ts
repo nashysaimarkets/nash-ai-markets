@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import {
   authCallbackAllowlistUrl,
   buildEmailRedirectTo,
@@ -27,6 +28,12 @@ test("default post-auth destination is /dashboard for every host", () => {
   assert.equal(safeAuthNextPath(null), "/dashboard");
   assert.equal(safeAuthNextPath(undefined), "/dashboard");
   assert.equal(safeAuthNextPath("/unknown-admin"), "/dashboard");
+});
+
+test("login resumes an existing authenticated session before requesting another email", async () => {
+  const page = await readFile(new URL("../app/login/page.tsx", import.meta.url), "utf8");
+  assert.match(page, /supabase\.auth\.getUser\(\)/);
+  assert.match(page, /if \(data\.user\) redirect\("\/dashboard"\)/);
 });
 
 test("production login builds a path-only production callback", () => {
