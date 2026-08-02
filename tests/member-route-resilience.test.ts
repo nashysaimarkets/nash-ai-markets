@@ -104,6 +104,24 @@ test("dashboard and brief pages harden shared context and Flight sanitization", 
   assert.match(terminal, /sanitizeForClient/);
 });
 
+test("Trading Desk hydrates from deterministic display defaults", async () => {
+  const desk = await read("../app/terminal/components/TradingDeskOS.tsx");
+  assert.match(desk, /useState\(false\)/);
+  assert.match(desk, /useState<DeskViewId>\("overview"\)/);
+  assert.match(desk, /display preferences are applied after hydration/);
+  assert.doesNotMatch(desk, /useState\(\(\) => \{\s*if \(typeof window === "undefined"\)/);
+});
+
+test("legacy Review destination resolves to the published Reviews library", async () => {
+  const [legacyReview, missionControl] = await Promise.all([
+    read("../app/review/page.tsx"),
+    read("../app/components/mission-control/MissionControl.tsx"),
+  ]);
+  assert.match(legacyReview, /redirect\("\/reviews"\)/);
+  assert.match(missionControl, /href: "\/reviews"/);
+  assert.doesNotMatch(missionControl, /href: "\/review"/);
+});
+
 test("premium confidence rejects non-finite engine scores", () => {
   const snapshot: MarketSnapshot = {
     ...createUnavailableSnapshot(),

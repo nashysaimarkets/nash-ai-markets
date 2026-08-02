@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { MemberEmptyCanvas } from "../components/MemberEmptyCanvas.tsx";
-import { requireMemberPage } from "../lib/server/member-page-access.ts";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -10,6 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default async function YesterdayReviewPage() {
-  await requireMemberPage();
-  return <MemberEmptyCanvas active="review" className="reviewPage" />;
+  redirect("/reviews");
 }

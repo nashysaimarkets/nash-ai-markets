@@ -264,30 +264,29 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   const [session, setSession] = useState(payload.session);
   const [openGroup, setOpenGroup] = useState<MarketGroupId | null>("indices");
   const [marketsOpen, setMarketsOpen] = useState(false);
-  const [marketsCollapsed, setMarketsCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return window.localStorage.getItem(DESK_MARKETS_COLLAPSED_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const [deskView, setDeskView] = useState<DeskViewId>(() => {
-    if (typeof window === "undefined") return "overview";
-    try {
-      const view = window.localStorage.getItem(DESK_VIEW_STORAGE_KEY);
-      return view && isDeskViewId(view) ? view : "overview";
-    } catch {
-      return "overview";
-    }
-  });
+  // Keep the server render and the browser's first render identical. Persisted
+  // display preferences are applied after hydration so they cannot trigger a
+  // React hydration mismatch for returning members.
+  const [marketsCollapsed, setMarketsCollapsed] = useState(false);
+  const [deskView, setDeskView] = useState<DeskViewId>("overview");
   const [journal, setJournal] = useState<JournalEntry | null>(null);
   const [embedAllowed, setEmbedAllowed] = useState(false);
 
   useEffect(() => {
     const stored = readWorkspaceFromBrowser();
+    let storedView: DeskViewId = "overview";
+    let storedMarketsCollapsed = false;
+    try {
+      const view = window.localStorage.getItem(DESK_VIEW_STORAGE_KEY);
+      if (view && isDeskViewId(view)) storedView = view;
+      storedMarketsCollapsed = window.localStorage.getItem(DESK_MARKETS_COLLAPSED_KEY) === "1";
+    } catch {
+      // Browser storage is optional; deterministic defaults remain usable.
+    }
     startTransition(() => {
       setWorkspace(stored.version === 1 ? stored : payload.initialWorkspace);
+      setDeskView(storedView);
+      setMarketsCollapsed(storedMarketsCollapsed);
       setHydrated(true);
     });
   }, [payload.initialWorkspace]);
