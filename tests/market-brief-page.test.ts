@@ -219,11 +219,12 @@ test("unavailable catalyst returns compact empty timeline", () => {
 });
 
 test("Morning Brief page and component preserve auth and delayed-data honesty", async () => {
-  const [page, css, component, composeSource] = await Promise.all([
+  const [page, css, component, composeSource, pulseSource] = await Promise.all([
     readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/market-brief.css", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/components/MorningMarketBrief.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/lib/compose-market-brief.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/brief/components/BullseyePulse.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(page, /redirect\("\/login"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
@@ -243,10 +244,12 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.doesNotMatch(component, /Highest-probability behaviour|engine weight favours/);
   assert.doesNotMatch(component, /label === "Breadth"|BREADTH/);
   assert.match(component, /model\.briefHeadline|pre-market briefing|session update|post-market review/);
+  assert.match(component, /BullseyePulse/);
+  assert.match(pulseSource, /Bullseye pulse|Focus mode|mbHeartbeat|OF 5 LAYERS/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
   assert.match(css, /\.mbBriefRoute/);
-  assert.match(css, /mbRadarSweep|mbIntelligenceDrawer/);
+  assert.match(css, /mbRadarSweep|mbIntelligenceDrawer|mbPulseRadar|mbHeartbeat|mbFocusDeck/);
   assert.match(css, /\.mbBriefRoute\{\s*position:relative/);
   assert.match(css, /align-items:\s*start/);
   assert.match(composeSource, /dedupePracticalItems/);

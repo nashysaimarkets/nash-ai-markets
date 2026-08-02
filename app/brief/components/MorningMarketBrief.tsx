@@ -14,6 +14,7 @@ import { verifiedEventRiskLabel } from "../../terminal/lib/event-display.ts";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
+import { BullseyePulse } from "./BullseyePulse.tsx";
 
 type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
@@ -198,6 +199,8 @@ export function MorningMarketBrief({
         <a href="#watch-avoid"><b>04</b> Risk</a>
         <a href="#next-actions"><b>05</b> Act</a>
       </nav>
+
+      <BullseyePulse model={model} insight={insight} permissionBlocked={permissionBlocked} />
 
       <ThirtySecondBrief model={oracle.thirtySecond} />
       <AiMarketInsightCard model={insight} />
