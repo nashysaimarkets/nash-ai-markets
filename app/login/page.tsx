@@ -54,7 +54,7 @@ export default async function Login() {
           <div className="accessCardBody">
             <p className="accessStep">SIGN-IN LINK</p>
             <h2>Continue by email</h2>
-            <p>Enter the email connected to your membership. We’ll send one link that returns you to the terminal.</p>
+            <p>Enter the email connected to your membership. We’ll send one link that returns you to your workspace.</p>
             <Suspense fallback={<p className="accessMessage" role="status">Preparing secure sign-in…</p>}>
               <LoginForm />
             </Suspense>
