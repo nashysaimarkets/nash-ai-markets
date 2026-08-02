@@ -8,6 +8,7 @@ import {
   defaultPostAuthPath,
   describeAuthRedirectChain,
   isAllowedAuthOrigin,
+  isAuthProviderCompatibleWithOrigin,
   isVercelPreviewOrigin,
   matchesStablePreviewAllowlist,
   resolveAuthRequestOrigin,
@@ -64,6 +65,24 @@ test("owner-only Sites staging keeps authentication on its exact origin", () => 
   assert.equal(buildPostAuthRedirect(SITES_STAGING), `${SITES_STAGING}/dashboard`);
   assert.equal(authCallbackAllowlistUrl(SITES_STAGING), `${SITES_STAGING}/auth/callback`);
   assert.equal(isAllowedAuthOrigin("https://other-staging.nashysinners.chatgpt.site"), false);
+});
+
+test("Sites staging refuses a browser bundle compiled for another Supabase project", () => {
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      SITES_STAGING,
+      "https://pxlqvaddvghjjhenqmdh.supabase.co",
+    ),
+    true,
+  );
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      SITES_STAGING,
+      "https://opmgzchnmcgnsfwpmysc.supabase.co",
+    ),
+    false,
+  );
+  assert.equal(isAuthProviderCompatibleWithOrigin(PRODUCTION, null), true);
 });
 
 test("unsafe external redirect URLs are rejected", () => {

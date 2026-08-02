@@ -8,8 +8,11 @@ import {
   buildEmailRedirectTo,
   defaultPostAuthPath,
   isAllowedAuthOrigin,
+  isAuthProviderCompatibleWithOrigin,
   safeAuthNextPath,
 } from "../lib/auth/safe-auth-redirect";
+
+const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 function resolveLoginRedirectTo(origin: string, search: string): { emailRedirectTo: string; next: string } {
   if (!isAllowedAuthOrigin(origin)) {
@@ -86,6 +89,9 @@ export default function LoginForm() {
     const form = formRef.current;
     if (!form) return;
     try {
+      if (!isAuthProviderCompatibleWithOrigin(window.location.origin, SUPABASE_PUBLIC_URL)) {
+        throw new Error("Staging authentication provider mismatch");
+      }
       const { emailRedirectTo, next } = resolveLoginRedirectTo(
         window.location.origin,
         window.location.search,
@@ -124,6 +130,13 @@ export default function LoginForm() {
         setMessage("This host is not authorized for member sign-in.");
         return;
       }
+      if (!isAuthProviderCompatibleWithOrigin(origin, SUPABASE_PUBLIC_URL)) {
+        setMessageTone("error");
+        setMessage("Staging authentication is being updated. No sign-in email was sent.");
+        formRef.current?.setAttribute("data-auth-provider-ready", "false");
+        return;
+      }
+      formRef.current?.setAttribute("data-auth-provider-ready", "true");
       const { emailRedirectTo, next } = resolveLoginRedirectTo(origin, window.location.search);
       persistAuthNextCookie(next);
       formRef.current?.setAttribute("data-email-redirect-to", emailRedirectTo);
