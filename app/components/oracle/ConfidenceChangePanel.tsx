@@ -20,21 +20,35 @@ function readSessionBaseline(): StoredConfidenceSnapshot | null {
   return sessionBaseline;
 }
 
+function useConfidenceChange(current: Omit<StoredConfidenceSnapshot, "version" | "storedAt">) {
+  const previous = useSyncExternalStore(subscribeOracleStorage, readSessionBaseline, () => null);
+  const model = useMemo(() => buildConfidenceChange({ previous, current }), [previous, current]);
+  useEffect(() => writeStoredConfidenceSnapshot(model.current), [model]);
+  return model;
+}
+
+/** Compact repeat-visit summary for the main command surface. */
+export function CompactConfidenceChange({ current }: { current: Omit<StoredConfidenceSnapshot, "version" | "storedAt"> }) {
+  const model = useConfidenceChange(current);
+  const factors = [...model.added.map((item) => `Added: ${item}`), ...model.removed.map((item) => `Cleared: ${item}`)];
+  return (
+    <section className={`dashChangeStrip is-${model.direction}`} aria-labelledby="dash-change-title">
+      <div><span>WHAT CHANGED?</span><strong id="dash-change-title">{model.comparable ? model.direction === "unchanged" ? "No material confidence change" : `Confidence moved ${model.direction}` : "Comparison starts with this verified snapshot"}</strong></div>
+      <dl>
+        <div><dt>Posture</dt><dd>{model.current.posture}</dd></div>
+        <div><dt>Lean</dt><dd>{model.current.lean}</dd></div>
+        <div><dt>Factors</dt><dd>{factors.length ? factors.slice(0, 2).join(" · ") : model.comparable ? "No factor changes" : "Baseline stored locally"}</dd></div>
+      </dl>
+    </section>
+  );
+}
+
 export function ConfidenceChangePanel({
   current,
 }: {
   current: Omit<StoredConfidenceSnapshot, "version" | "storedAt">;
 }) {
-  const previous = useSyncExternalStore(subscribeOracleStorage, readSessionBaseline, () => null);
-
-  const model: ConfidenceChangeModel = useMemo(
-    () => buildConfidenceChange({ previous, current }),
-    [previous, current],
-  );
-
-  useEffect(() => {
-    writeStoredConfidenceSnapshot(model.current);
-  }, [model]);
+  const model: ConfidenceChangeModel = useConfidenceChange(current);
 
   return (
     <section className="oracleChange" aria-labelledby="confidence-change-title">
