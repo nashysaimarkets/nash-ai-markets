@@ -15,6 +15,7 @@ import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
 import { BullseyePulse } from "./BullseyePulse.tsx";
+import { BriefExperienceTools } from "./BriefExperienceTools.tsx";
 
 type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
@@ -201,6 +202,12 @@ export function MorningMarketBrief({
       </nav>
 
       <BullseyePulse model={model} insight={insight} permissionBlocked={permissionBlocked} />
+      <BriefExperienceTools
+        posture={model.posture.headline}
+        risk={model.biggestRisk.label}
+        catalyst={timeline[0] ? `${timeline[0].time} · ${timeline[0].name}` : "No verified catalyst listed"}
+        level={model.levels.rungs[0] ? `${model.levels.rungs[0].label} · ${model.levels.rungs[0].value}` : "Awaiting verified levels"}
+      />
 
       <ThirtySecondBrief model={oracle.thirtySecond} />
       <AiMarketInsightCard model={insight} />

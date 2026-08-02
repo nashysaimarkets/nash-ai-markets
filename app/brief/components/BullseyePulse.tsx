@@ -30,6 +30,8 @@ export function BullseyePulse({ model, insight, permissionBlocked }: BullseyePul
     { label: "Catalyst", ready: Boolean(catalyst), value: catalyst ? catalyst.name : "None verified" },
   ];
   const readyCount = signals.filter((signal) => signal.ready).length;
+  const weatherReady = model.crossAssets.length >= 3;
+  const weatherTone = permissionBlocked ? "Caution" : insight.bullBear.dominant;
 
   return (
     <section className="mbPulse" aria-labelledby="bullseye-pulse-title">
@@ -67,6 +69,18 @@ export function BullseyePulse({ model, insight, permissionBlocked }: BullseyePul
             </div>
           ))}
         </div>
+      </div>
+
+      <div className={`mbWeatherOrb ${weatherReady ? "is-ready" : "is-dormant"}`}>
+        <div className="mbWeatherVisual" aria-hidden="true"><i /><i /><i /></div>
+        <div><span className="mbEyebrow">Market weather</span><h3>{weatherReady ? weatherTone : "Formation incomplete"}</h3><p>{weatherReady ? "Verified cross-market inputs are forming today’s market atmosphere." : "The orb activates when at least three verified cross-market inputs are available."}</p></div>
+      </div>
+
+      <div className="mbSessionStory" aria-label="Session storyline">
+        <article><b>01</b><span>Overnight</span><strong>{model.summary.overnight}</strong></article>
+        <article><b>02</b><span>Now</span><strong>{model.posture.headline}</strong></article>
+        <article><b>03</b><span>Next catalyst</span><strong>{catalyst ? `${catalyst.time} · ${catalyst.name}` : "None verified"}</strong></article>
+        <article><b>04</b><span>Invalidation</span><strong>{model.biggestRisk.label}</strong></article>
       </div>
 
       <div className="mbHeartbeat" aria-label="Verified cross-market heartbeat">
