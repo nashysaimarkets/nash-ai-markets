@@ -579,8 +579,8 @@
 .dashDelightCard h2{margin:6px 0 8px;color:#eef3f0;font:650 18px/1.3 var(--font-geist-sans),Arial,sans-serif}
 .dashDelightCard p{margin:0;color:#c9d5cf;font:14px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:62ch}
 .dashAiCoach{
-  position:sticky;top:72px;z-index:4;margin:0 0 14px;border:1px solid #243838;border-radius:var(--radius-lg);
-  background:#0b1412f2;backdrop-filter:blur(8px);
+  position:relative;z-index:1;margin:0;border:1px solid #243838;border-radius:var(--radius-lg);
+  background:linear-gradient(90deg,#0c1714f2,#0a1113f2);overflow:hidden;
 }
 .dashAiCoachToggle{
   width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border:0;background:transparent;
@@ -590,6 +590,41 @@
 .dashAiCoachBody{padding:0 14px 14px;display:grid;gap:8px}
 .dashAiCoachLead,.dashAiCoachFoot{margin:0;color:#9aa7ad;font:12px/1.45 var(--font-geist-sans),Arial,sans-serif}
 .dashAiCoachBody ul{margin:0;padding-left:18px;color:#c9d5cf;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;display:grid;gap:6px}
+
+/* Dashboard compression — a decision cockpit first, supporting reports on demand. */
+.dashCockpit,.dashDeepDives{
+  position:relative;padding:22px;border:1px solid #284139;border-radius:var(--radius-lg);
+  background:radial-gradient(100% 120% at 0 0,#17312855,transparent 56%),linear-gradient(145deg,#0d1714f5,#080e11f8);
+  box-shadow:0 28px 76px #0008,inset 0 1px #ffffff0c;overflow:hidden;
+}
+.dashCockpit:before{
+  content:"";position:absolute;right:-80px;top:-110px;width:320px;height:320px;border:1px solid #62e6b11f;border-radius:50%;
+  box-shadow:0 0 0 34px #62e6b10b,0 0 0 72px #62e6b108;pointer-events:none;
+}
+.dashCockpitHeader,.dashDeepDivesHeader{position:relative;z-index:1;display:flex;justify-content:space-between;gap:24px;align-items:start;margin-bottom:18px}
+.dashCockpitHeader h2,.dashDeepDivesHeader h2{margin:7px 0 0;color:#f0f5f2;font:600 clamp(25px,3vw,36px)/1.05 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.045em}
+.dashCockpitGrid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);gap:14px;align-items:start}
+.dashCockpitGrid>*{margin:0!important;min-width:0;height:100%}
+.dashChartStage{position:relative;min-width:0}
+.dashChartStage:before{content:"VERIFIED PRICE ACTION";display:block;margin:0 0 10px;color:#62e6b1;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.14em}
+.dashDeepDives{border-color:#202f2b;background:linear-gradient(145deg,#0b1412f5,#080d10f8)}
+.dashDeepDivesHeader p{max-width:560px;margin:0;color:#8f9d97;font:14px/1.55 var(--font-geist-sans),Arial,sans-serif}
+.dashDeepDiveGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.dashDeepDive{min-width:0;border:1px solid #263832;border-radius:14px;background:#09110f;overflow:hidden}
+.dashDeepDive>summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;min-height:104px;padding:16px;cursor:pointer;list-style:none;background:linear-gradient(145deg,#101c18,#0a1112)}
+.dashDeepDive>summary::-webkit-details-marker{display:none}
+.dashDeepDive>summary>span{display:grid;place-items:center;width:34px;height:34px;border:1px solid #62e6b144;border-radius:50%;color:#62e6b1;font:700 11px var(--font-geist-mono),monospace}
+.dashDeepDive>summary strong,.dashDeepDive>summary small{display:block}
+.dashDeepDive>summary strong{color:#e9f0ec;font:650 17px/1.25 var(--font-geist-sans),Arial,sans-serif}
+.dashDeepDive>summary small{margin-top:5px;color:#7f8d87;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.dashDeepDive>summary i{color:#62e6b1;font:300 25px/1 var(--font-geist-sans),Arial,sans-serif;font-style:normal;transition:transform .2s ease}
+.dashDeepDive[open]{grid-column:1/-1;border-color:#3b5b50;background:#07100d}
+.dashDeepDive[open]>summary{min-height:82px;border-bottom:1px solid #263832}
+.dashDeepDive[open]>summary i{transform:rotate(45deg)}
+.dashDeepDiveBody{display:grid;gap:14px;padding:16px}
+.dashDeepDiveBody>*{margin:0!important;min-width:0}
+@media(max-width:1000px){.dashCockpitGrid{grid-template-columns:1fr}.dashDeepDiveGrid{grid-template-columns:1fr}.dashDeepDive[open]{grid-column:auto}.dashDeepDivesHeader{display:grid}}
+@media(max-width:640px){.dashCockpit,.dashDeepDives{padding:16px}.dashCockpitHeader{display:grid}.dashDeepDive>summary{min-height:88px}}
 .oracleReplayScorecard{
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 14px;
 }
