@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { OnboardingPreferences } from "../lib/onboarding.ts";
 
 type OnboardingFormProps = {
@@ -10,7 +9,6 @@ type OnboardingFormProps = {
 };
 
 export function OnboardingForm({ initialPreferences = null, updating = false }: OnboardingFormProps) {
-  const router = useRouter();
   const [experience, setExperience] = useState(initialPreferences?.experience ?? "");
   const [interests, setInterests] = useState<string[]>(initialPreferences?.interests ?? []);
   const [notifications, setNotifications] = useState(initialPreferences?.notifications ?? "");
@@ -24,7 +22,7 @@ export function OnboardingForm({ initialPreferences = null, updating = false }: 
     try {
       const response = await fetch("/api/onboarding", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ experience, interests, notifications }) });
       if (!response.ok) throw new Error("unavailable");
-      router.push(updating ? "/profile?preferences=updated" : "/dashboard"); router.refresh();
+      window.location.assign(updating ? "/profile?preferences=updated" : "/dashboard");
     } catch {
       setMessage("Your preferences could not be saved. Nothing was lost—please check your connection and try again.");
     } finally { setSubmitting(false); }
