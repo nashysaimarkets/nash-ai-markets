@@ -86,6 +86,9 @@ test("login and callback paths sanitize errors and redirect destinations", async
   assert.ok(login.includes("Delivery may take a few minutes"));
   assert.ok(login.includes('searchParams.get("error")'));
   assert.ok(login.includes("messageForSignInError"));
+  assert.ok(login.includes("messageForOtpRequestError"));
+  assert.ok(login.includes("over_email_send_rate_limit"));
+  assert.ok(login.includes("Do not retry yet"));
   assert.equal(login.includes("Link sent."), false);
   assert.ok(browserClient.includes('flowType: "pkce"'));
   assert.ok(callback.includes("safeAuthNextPath"));

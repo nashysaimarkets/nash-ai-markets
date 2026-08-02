@@ -23,6 +23,19 @@ test("staging hardening removes default API grants from server-only functions", 
   assert.doesNotMatch(migration, /sync_(?:founding_100|membership_from_stripe)[\s\S]*to (?:anon|authenticated)/);
 });
 
+test("onboarding invoker receives only RLS-protected table operations", async () => {
+  const [grants, contract] = await Promise.all([
+    read("supabase/migrations/202608020012_restore_onboarding_table_grants.sql"),
+    read("supabase/migrations/202608020013_align_onboarding_interests.sql"),
+  ]);
+  assert.match(grants, /revoke all on table public\.member_onboarding from anon, authenticated/);
+  assert.match(grants, /grant select, insert, update on table public\.member_onboarding to authenticated/);
+  assert.doesNotMatch(grants, /grant (?:all|delete)/);
+  assert.match(contract, /security invoker/);
+  assert.match(contract, /'futures', 'equities', 'macro', 'volatility'/);
+  assert.doesNotMatch(contract, /'futures', 'options', 'macro', 'volatility'/);
+});
+
 test("public metadata contains no development marker and protects private routes", async () => {
   const [layout, robots, manifest] = await Promise.all([read("app/layout.tsx"), read("app/robots.ts"), read("app/manifest.ts")]);
   assert.doesNotMatch(layout, /codex-preview|development/);
