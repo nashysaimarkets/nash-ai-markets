@@ -27,6 +27,15 @@ test("the hero presents mission-control orientation and a customise control", ()
   assert.match(centre, /BULLSEYE READINESS/);
   assert.match(centre, /dashReadinessSignals/);
   assert.match(centre, /dashSectionRail/);
+  assert.match(centre, /CompactConfidenceChange/);
+  assert.match(centre, /vxAtmosphere-/);
+  assert.match(centre, /dashPlanContinuity/);
+});
+
+test("final polish never lets the section rail cover scrolled content", () => {
+  const centreCss = read("app/market-command-centre.css");
+  assert.match(centreCss, /\.dashSectionRail\{position:relative/);
+  assert.doesNotMatch(centreCss, /\.dashSectionRail\{position:sticky/);
 });
 
 test("workspace controls are no longer always mounted in the main flow", () => {

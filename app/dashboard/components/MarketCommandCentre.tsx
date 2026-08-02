@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
-import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
+import { CompactConfidenceChange, ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
 import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
 import {
   DashboardWorkspaceControls,
@@ -102,6 +102,15 @@ export function MarketCommandCentre({
         : decision.permissionTone === "open"
           ? "positive"
           : "info";
+  const marketAtmosphere =
+    decision.leanTone === "bull"
+      ? "constructive"
+      : decision.leanTone === "bear" || /high|elevated/i.test(decision.riskLabel)
+        ? "defensive"
+        : decision.permissionTone === "caution"
+          ? "mixed"
+          : "neutral";
+  const radarActive = Boolean(hero.price && candleSeries?.candles?.length);
 
   const primaryNext =
     postClose
@@ -359,7 +368,7 @@ export function MarketCommandCentre({
 
   return (
     <div
-      className={`marketCommandCentre dashCommandCentre vxSessionAccent-${sessionAccent}${prefs.density === "compact" ? " is-compact" : ""}`}
+      className={`marketCommandCentre dashCommandCentre vxSessionAccent-${sessionAccent} vxAtmosphere-${marketAtmosphere}${prefs.density === "compact" ? " is-compact" : ""}`}
     >
       <header className="dashHero" aria-labelledby="dash-hero-title">
         <div className="dashHeroCopy">
@@ -401,9 +410,10 @@ export function MarketCommandCentre({
         </div>
 
         <section className="dashReadiness" aria-labelledby="dash-readiness-title">
-          <div className="dashRadar" aria-hidden="true">
+          <div className={`dashRadar${radarActive ? " is-active" : ""}`} aria-hidden="true">
             <i /><i /><i />
             <span />
+            <b />
           </div>
           <div className="dashReadinessCopy">
             <span className="mccEyebrow">BULLSEYE READINESS</span>
@@ -488,6 +498,8 @@ export function MarketCommandCentre({
         <span>{hero.sessionLabel} · {hero.delayedAgeLine}</span>
       </nav>
 
+      <CompactConfidenceChange current={oracle.confidenceSnapshot} />
+
       <div className="dashWorkspaceDrawer">
         <div
           id="dash-workspace-panel"
@@ -515,7 +527,8 @@ export function MarketCommandCentre({
         <div className="dashCockpitGrid">{orderedGroup(cockpitIds)}</div>
       </section>
 
-      <div id="plan" className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
+      <section id="plan" className="dashPlanContinuity" aria-label="Verified levels and price action">
+      <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
             <span className="mccEyebrow">
@@ -572,6 +585,7 @@ export function MarketCommandCentre({
 
       <section className="dashChartStage" aria-label="Verified market chart">
         {sectionNodes.chart}
+      </section>
       </section>
 
       <section id="review" className="dashDeepDives" aria-labelledby="dash-deep-dives-title">
