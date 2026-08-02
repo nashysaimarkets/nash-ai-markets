@@ -43,6 +43,18 @@ function messageForSignInError(reason: string | null): string {
   }
 }
 
+function messageForOtpRequestError(error: { code?: string; message?: string; status?: number }): string {
+  const code = error.code?.toLowerCase() ?? "";
+  const message = error.message?.toLowerCase() ?? "";
+  if (error.status === 429 || code === "over_email_send_rate_limit" || message.includes("rate limit")) {
+    return "The secure-email limit has been reached. Do not retry yet; wait for the email provider window to reset, then request one new link in the browser where you will open it.";
+  }
+  if (error.status === 0 || message.includes("failed to fetch")) {
+    return "We could not reach the sign-in service. The Auth host may be misconfigured; wait for the retry timer, then try again.";
+  }
+  return "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again.";
+}
+
 export default function LoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -141,18 +153,9 @@ export default function LoginForm() {
         );
       }
       setMessageTone(error ? "error" : "success");
-      const networkFailure = Boolean(
-        error
-        && (
-          error.status === 0
-          || error.message?.toLowerCase().includes("failed to fetch")
-        ),
-      );
       setMessage(
         error
-          ? networkFailure
-            ? "We could not reach the sign-in service. The Auth host may be misconfigured; wait for the retry timer, then try again."
-            : "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again."
+          ? messageForOtpRequestError(error)
           : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then open the link in this same browser.",
       );
     } catch {

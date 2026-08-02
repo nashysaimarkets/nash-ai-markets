@@ -20,27 +20,27 @@ const UNIQUE_PREVIEW = "https://nash-ai-markets-bljrecjyb-nash-ai-markets.vercel
 const SITES_STAGING =
   "https://nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site";
 
-test("default post-auth destination is /terminal for every host", () => {
-  assert.equal(defaultPostAuthPath(PRODUCTION), "/terminal");
-  assert.equal(defaultPostAuthPath(PREVIEW), "/terminal");
-  assert.equal(defaultPostAuthPath(UNIQUE_PREVIEW), "/terminal");
-  assert.equal(safeAuthNextPath(null), "/terminal");
-  assert.equal(safeAuthNextPath(undefined), "/terminal");
-  assert.equal(safeAuthNextPath("/unknown-admin"), "/terminal");
+test("default post-auth destination is /dashboard for every host", () => {
+  assert.equal(defaultPostAuthPath(PRODUCTION), "/dashboard");
+  assert.equal(defaultPostAuthPath(PREVIEW), "/dashboard");
+  assert.equal(defaultPostAuthPath(UNIQUE_PREVIEW), "/dashboard");
+  assert.equal(safeAuthNextPath(null), "/dashboard");
+  assert.equal(safeAuthNextPath(undefined), "/dashboard");
+  assert.equal(safeAuthNextPath("/unknown-admin"), "/dashboard");
 });
 
 test("production login builds a path-only production callback", () => {
   assert.equal(isAllowedAuthOrigin(PRODUCTION), true);
   assert.equal(isVercelPreviewOrigin(PRODUCTION), false);
   assert.equal(buildEmailRedirectTo(PRODUCTION), `${PRODUCTION}/auth/callback`);
-  assert.equal(buildPostAuthRedirect(PRODUCTION), `${PRODUCTION}/terminal`);
+  assert.equal(buildPostAuthRedirect(PRODUCTION), `${PRODUCTION}/dashboard`);
 });
 
 test("preview login returns path-only callback on the originating preview host", () => {
   assert.equal(isAllowedAuthOrigin(PREVIEW), true);
   assert.equal(isVercelPreviewOrigin(PREVIEW), true);
   assert.equal(buildEmailRedirectTo(PREVIEW), `${PREVIEW}/auth/callback`);
-  assert.equal(buildPostAuthRedirect(PREVIEW), `${PREVIEW}/terminal`);
+  assert.equal(buildPostAuthRedirect(PREVIEW), `${PREVIEW}/dashboard`);
   assert.equal(buildPostAuthRedirect(UNIQUE_PREVIEW, "/terminal"), `${UNIQUE_PREVIEW}/terminal`);
   assert.equal(buildEmailRedirectTo(UNIQUE_PREVIEW), `${UNIQUE_PREVIEW}/auth/callback`);
   assert.doesNotMatch(buildEmailRedirectTo(PREVIEW), /nashaimarkets\.com/);
@@ -54,19 +54,19 @@ test("owner-only Sites staging keeps authentication on its exact origin", () => 
   assert.equal(isAllowedAuthOrigin(SITES_STAGING), true);
   assert.equal(isVercelPreviewOrigin(SITES_STAGING), false);
   assert.equal(buildEmailRedirectTo(SITES_STAGING), `${SITES_STAGING}/auth/callback`);
-  assert.equal(buildPostAuthRedirect(SITES_STAGING), `${SITES_STAGING}/terminal`);
+  assert.equal(buildPostAuthRedirect(SITES_STAGING), `${SITES_STAGING}/dashboard`);
   assert.equal(authCallbackAllowlistUrl(SITES_STAGING), `${SITES_STAGING}/auth/callback`);
   assert.equal(isAllowedAuthOrigin("https://other-staging.nashysinners.chatgpt.site"), false);
 });
 
 test("unsafe external redirect URLs are rejected", () => {
-  assert.equal(safeAuthNextPath("https://evil.example/phish"), "/terminal");
-  assert.equal(safeAuthNextPath("//evil.example/phish"), "/terminal");
-  assert.equal(safeAuthNextPath("/\\evil.example"), "/terminal");
+  assert.equal(safeAuthNextPath("https://evil.example/phish"), "/dashboard");
+  assert.equal(safeAuthNextPath("//evil.example/phish"), "/dashboard");
+  assert.equal(safeAuthNextPath("/\\evil.example"), "/dashboard");
   assert.equal(isAllowedAuthOrigin("https://evil.example"), false);
   assert.equal(isAllowedAuthOrigin("https://nash-ai-markets-other.vercel.app"), false);
   assert.equal(buildEmailRedirectTo(PREVIEW, "https://evil.example/phish"), `${PREVIEW}/auth/callback`);
-  assert.equal(buildPostAuthRedirect(PREVIEW, "//evil.example"), `${PREVIEW}/terminal`);
+  assert.equal(buildPostAuthRedirect(PREVIEW, "//evil.example"), `${PREVIEW}/dashboard`);
 });
 
 test("valid https origin is never rewritten to www for emailRedirectTo", () => {
@@ -84,13 +84,13 @@ test("explicit next paths remain available after callback", () => {
   assert.equal(buildPostAuthRedirect(PREVIEW, "/dashboard"), `${PREVIEW}/dashboard`);
 });
 
-test("missing next defaults to /terminal not /dashboard", () => {
-  assert.equal(safeAuthNextPath(null, defaultPostAuthPath(PREVIEW)), "/terminal");
-  assert.equal(safeAuthNextPath(undefined, defaultPostAuthPath(UNIQUE_PREVIEW)), "/terminal");
-  assert.equal(safeAuthNextPath(null, defaultPostAuthPath(PRODUCTION)), "/terminal");
-  assert.equal(buildPostAuthRedirect(PREVIEW, null), `${PREVIEW}/terminal`);
-  assert.equal(buildPostAuthRedirect(PRODUCTION, null), `${PRODUCTION}/terminal`);
-  assert.equal(buildPostAuthRedirect("not-a-url"), "https://www.nashaimarkets.com/terminal");
+test("missing next defaults to /dashboard", () => {
+  assert.equal(safeAuthNextPath(null, defaultPostAuthPath(PREVIEW)), "/dashboard");
+  assert.equal(safeAuthNextPath(undefined, defaultPostAuthPath(UNIQUE_PREVIEW)), "/dashboard");
+  assert.equal(safeAuthNextPath(null, defaultPostAuthPath(PRODUCTION)), "/dashboard");
+  assert.equal(buildPostAuthRedirect(PREVIEW, null), `${PREVIEW}/dashboard`);
+  assert.equal(buildPostAuthRedirect(PRODUCTION, null), `${PRODUCTION}/dashboard`);
+  assert.equal(buildPostAuthRedirect("not-a-url"), "https://www.nashaimarkets.com/dashboard");
 });
 
 test("resolveAuthRequestOrigin prefers forwarded host over request URL host", () => {
@@ -133,10 +133,10 @@ test("preview login never rewrites to production www", () => {
   assert.equal(buildPostAuthRedirect(PREVIEW, "/terminal"), `${PREVIEW}/terminal`);
 });
 
-test("redirect chain keeps preview origin through callback to /terminal", () => {
+test("redirect chain keeps preview origin through callback to /dashboard", () => {
   const chain = describeAuthRedirectChain(PREVIEW);
   assert.equal(chain.emailRedirectTo, `${PREVIEW}/auth/callback`);
-  assert.equal(chain.expectedHops[2]?.url, `${PREVIEW}/terminal`);
-  assert.equal(chain.failureModeIfAllowlistRejects.appThenRedirectsTo, `${PRODUCTION}/terminal`);
+  assert.equal(chain.expectedHops[2]?.url, `${PREVIEW}/dashboard`);
+  assert.equal(chain.failureModeIfAllowlistRejects.appThenRedirectsTo, `${PRODUCTION}/dashboard`);
   assert.equal(chain.matchesStablePreviewAllowlist, true);
 });
