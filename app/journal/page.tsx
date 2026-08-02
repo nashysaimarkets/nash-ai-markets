@@ -10,6 +10,7 @@ import { TerminalBadge } from "../terminal/components/TerminalBadge.tsx";
 import { ProcessScorePanel } from "../components/oracle/ProcessScorePanel.tsx";
 import { JournalForm } from "./JournalForm.tsx";
 import { JournalDeleteButton } from "./JournalDeleteButton.tsx";
+import { LearningWorkflowRail } from "../components/LearningWorkflowRail.tsx";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default async function JournalPage() {
   if (!access.features.journal) {
     return <MemberShell active="journal" className="journalPage">
       <div className="memberDashboardShell">
+        <LearningWorkflowRail active="journal" />
         <section className="journalHero">
           <div>
             <span>TRADE JOURNAL</span>
@@ -55,6 +57,7 @@ export default async function JournalPage() {
   if (!journal.available) {
     return <MemberShell active="journal" className="journalPage">
       <div className="memberDashboardShell">
+        <LearningWorkflowRail active="journal" />
         <section className="journalHero">
           <div>
             <span>TRADE JOURNAL</span>
@@ -72,6 +75,7 @@ export default async function JournalPage() {
 
   return <MemberShell active="journal" className="journalPage">
     <div className="memberDashboardShell">
+      <LearningWorkflowRail active="journal" />
       <section className="journalHero">
         <div>
           <span>TRADE JOURNAL</span>
@@ -83,6 +87,12 @@ export default async function JournalPage() {
           <strong>{access.effectiveTier.toUpperCase()} ACCESS</strong>
           <Link href="/performance">Performance</Link>
         </div>
+      </section>
+
+      <section className="journalMissionStrip" aria-label="Journal workflow">
+        <article><span>01 · Capture</span><strong>What happened?</strong><small>Only record real decisions and fills.</small></article>
+        <article><span>02 · Review</span><strong>Did process hold?</strong><small>Plan, confirmation and emotion stay visible.</small></article>
+        <article><span>03 · Learn</span><strong>What changes next?</strong><small>Turn each entry into one practical lesson.</small></article>
       </section>
 
       <ProcessScorePanel />

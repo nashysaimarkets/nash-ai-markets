@@ -63,12 +63,30 @@ test("Ideas loading state is bounded and never logo-only canvas", () => {
   const emptyCanvas = read("app/components/MemberEmptyCanvas.tsx");
   const errorPage = read("app/ideas/error.tsx");
   assert.match(loading, /role="status"/);
-  assert.match(loading, /Fetching verified member submissions/);
-  assert.match(loading, /redirect\("\/login"\)/);
+  assert.match(loading, /Opening the product council/);
+  assert.doesNotMatch(loading, /createClient|getUser|redirect\(/);
   assert.match(emptyCanvas, /BrandLogo/);
   assert.doesNotMatch(loading, /MemberEmptyCanvas/);
   assert.match(errorPage, /role="alert"/);
   assert.match(errorPage, /Retry Ideas/);
   assert.match(errorPage, /Open Morning Brief/);
   assert.doesNotMatch(errorPage, /error\.message|error\.stack/);
+});
+
+test("review and learning workflow connects Ideas, Journal and published Reviews", () => {
+  const rail = read("app/components/LearningWorkflowRail.tsx");
+  const shell = read("app/components/MemberShell.tsx");
+  const ideas = read("app/ideas/page.tsx");
+  const journal = read("app/journal/page.tsx");
+  const reviews = read("app/reviews/page.tsx");
+  const journalLoading = read("app/journal/loading.tsx");
+  const reviewsLoading = read("app/reviews/loading.tsx");
+  assert.match(shell, /href: "\/reviews", label: "Reviews"/);
+  for (const href of ["/ideas", "/journal", "/reviews"]) assert.match(rail, new RegExp(href));
+  assert.match(ideas, /LearningWorkflowRail active="ideas"/);
+  assert.match(journal, /LearningWorkflowRail active="journal"/);
+  assert.match(reviews, /LearningWorkflowRail active="reviews"/);
+  assert.match(journalLoading, /aria-busy="true"/);
+  assert.match(reviewsLoading, /aria-busy="true"/);
+  assert.doesNotMatch(journalLoading + reviewsLoading, /createClient|getUser/);
 });
