@@ -237,11 +237,15 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(component, /No upcoming verified event is currently available/);
   assert.match(component, /Risk &amp; Journal|Risk & Journal/);
   assert.match(component, /Technical engine detail/);
+  assert.match(component, /Morning Brief sections|Briefing route/);
+  assert.match(component, /#todays-posture|#what-changed|#verified-levels|#watch-avoid|#next-actions/);
   assert.doesNotMatch(component, /Highest-probability behaviour|engine weight favours/);
   assert.doesNotMatch(component, /label === "Breadth"|BREADTH/);
   assert.match(component, /model\.briefHeadline|pre-market briefing|session update|post-market review/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
+  assert.match(css, /\.mbBriefRoute/);
+  assert.match(css, /position:sticky/);
   assert.match(css, /align-items:\s*start/);
   assert.match(composeSource, /dedupePracticalItems/);
   assert.match(composeSource, /customerFacingBriefCopy/);

@@ -61,6 +61,25 @@
 .mbDelayed strong{color:var(--mb-gold);font:700 12px/1.4 var(--font-geist-sans),Arial,sans-serif}
 .mbDelayed span{color:#a39b86;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif}
 
+.mbBriefRoute{
+  position:sticky;top:calc(var(--app-header-height,72px) + 10px);z-index:12;
+  display:grid;grid-template-columns:auto repeat(5,minmax(0,1fr));align-items:center;gap:6px;
+  padding:7px;border:1px solid #29383d;border-radius:13px;
+  background:#08100eee;box-shadow:0 18px 44px #0008,inset 0 1px #ffffff0b;
+  backdrop-filter:blur(18px);
+}
+.mbBriefRoute>span{
+  padding:0 12px;color:#718088;font:700 9px var(--font-geist-mono),monospace;
+  font-size:var(--type-floor);letter-spacing:.12em;text-transform:uppercase;
+}
+.mbBriefRoute a{
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:8px 10px;
+  border:1px solid transparent;border-radius:9px;color:#aeb9bd;text-decoration:none;
+  font:650 12px/1 var(--font-geist-sans),Arial,sans-serif;transition:background var(--vx-fast) ease,border-color var(--vx-fast) ease,color var(--vx-fast) ease;
+}
+.mbBriefRoute a b{color:var(--mb-green);font:700 9px/1 var(--font-geist-mono),monospace;letter-spacing:.08em}
+.mbBriefRoute a:hover,.mbBriefRoute a:focus-visible{border-color:#355049;background:#10201b;color:#eef3f1;outline:none}
+
 .mbPanel,.mbSummary{
   border:1px solid var(--mb-line);border-radius:14px;overflow:hidden;
   background:linear-gradient(150deg,#0f171be8,#0a1014f5 60%,#0d1418ee);
@@ -291,6 +310,8 @@
   .mbCross{grid-template-columns:1fr 1fr}
   .mbSummaryGrid{grid-template-columns:1fr}
   .mbWatchAvoid{grid-template-columns:1fr}
+  .mbBriefRoute{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .mbBriefRoute>span{display:none}
 }
 @media(max-width:720px){
   .morningMarketBrief{width:min(100% - 28px,1280px);padding-top:18px}
@@ -300,6 +321,9 @@
   .mbLadder li{grid-template-columns:1fr;gap:4px}
   .mbPlayColumns{grid-template-columns:1fr}
   .mbTimeline li{grid-template-columns:72px minmax(0,1fr)}
+  .mbBriefRoute{top:calc(var(--app-header-height,64px) + 6px);gap:3px;padding:5px}
+  .mbBriefRoute a{min-height:36px;padding:7px 4px;font-size:10px}
+  .mbBriefRoute a b{display:none}
 }
 @media(prefers-reduced-motion:reduce){
   .morningMarketBrief,.mbHero,.mbDelayed,.mbPanel,.mbSummary,.mbCross{animation:none!important}

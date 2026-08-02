@@ -190,6 +190,15 @@ export function MorningMarketBrief({
         <span>Educational commentary only — not personalised advice.</span>
       </div>
 
+      <nav className="mbBriefRoute" aria-label="Morning Brief sections">
+        <span>Briefing route</span>
+        <a href="#todays-posture"><b>01</b> Decision</a>
+        <a href="#what-changed"><b>02</b> Context</a>
+        <a href="#verified-levels"><b>03</b> Levels</a>
+        <a href="#watch-avoid"><b>04</b> Risk</a>
+        <a href="#next-actions"><b>05</b> Act</a>
+      </nav>
+
       <ThirtySecondBrief model={oracle.thirtySecond} />
       <AiMarketInsightCard model={insight} />
       <SessionTimeline model={oracle.timeline} />
@@ -429,7 +438,7 @@ export function MorningMarketBrief({
         </div>
       </section>
 
-      <section className="mbQuickActions" aria-label="Next actions">
+      <section className="mbQuickActions" id="next-actions" aria-label="Next actions">
         <header>
           <span className="mbEyebrow">Next actions</span>
           <h2>Where to go next</h2>
