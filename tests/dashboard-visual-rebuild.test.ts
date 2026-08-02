@@ -24,6 +24,9 @@ test("the hero presents mission-control orientation and a customise control", ()
   assert.match(centre, /Customise/);
   assert.match(centre, /dashWorkspacePanel/);
   assert.match(centre, /Sparkline/);
+  assert.match(centre, /BULLSEYE READINESS/);
+  assert.match(centre, /dashReadinessSignals/);
+  assert.match(centre, /dashSectionRail/);
 });
 
 test("workspace controls are no longer always mounted in the main flow", () => {
@@ -59,8 +62,8 @@ test("dashboard opens as a decision cockpit and keeps secondary reports on deman
   assert.doesNotMatch(centre, /renderOrder\.filter\(\(id\) => id !== "thirty-second"\)\.map/);
 });
 
-test("AI coach no longer sticks over dashboard content", () => {
+test("AI coach is a compact floating assistant rather than a content-width bar", () => {
   const centreCss = read("app/market-command-centre.css");
-  assert.match(centreCss, /\.dashAiCoach\{\s*position:relative/);
+  assert.match(centreCss, /\.dashAiCoach\{\s*position:fixed/);
   assert.doesNotMatch(centreCss, /\.dashAiCoach\{[^}]*position:sticky/);
 });

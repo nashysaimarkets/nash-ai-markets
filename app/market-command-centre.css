@@ -874,3 +874,52 @@
   font:700 11px/1.3 var(--font-geist-sans),Arial,sans-serif;font-size:var(--type-floor);
   letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;
 }
+
+/* Mission canvas — a single first-view command surface. */
+.dashCommandCentre>.dashHero{
+  position:relative;display:grid;grid-template-columns:minmax(300px,1.08fr) minmax(260px,.82fr) minmax(300px,1fr);
+  gap:0;align-items:stretch;border:1px solid #315246;border-radius:var(--radius-lg);overflow:hidden;
+  background:radial-gradient(circle at 48% 35%,#143d3055,transparent 35%),linear-gradient(135deg,#0d1816,#080e12 55%,#11170f);
+  box-shadow:0 34px 90px #0009,inset 0 1px #ffffff10;
+}
+.dashCommandCentre>.dashHero:before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;
+  background:linear-gradient(90deg,transparent 49.8%,#75d5b320 50%,transparent 50.2%),linear-gradient(0deg,transparent 49.8%,#75d5b318 50%,transparent 50.2%);
+  background-size:64px 64px;
+}
+.dashCommandCentre .dashHeroCopy,.dashCommandCentre .dashMarketHero,.dashReadiness{position:relative;z-index:1;min-width:0}
+.dashCommandCentre .dashHeroCopy{
+  padding:32px;border:0;border-radius:var(--radius-xs);background:linear-gradient(120deg,#101b1af2,transparent);box-shadow:none;align-content:center;
+}
+.dashCommandCentre .dashHeroCopy h1{font-size:clamp(34px,4vw,58px);max-width:11ch}
+.dashCommandCentre .dashHeroCta{border-color:#d8b36a;background:#d8b36a;color:#101007;box-shadow:0 10px 28px #d8b36a20}
+.dashCommandCentre .dashHeroCta.is-secondary{min-height:42px;border-color:#3d675a;background:#10231e;color:#bde9db;box-shadow:none}
+.dashReadiness{
+  display:grid;align-content:center;justify-items:center;gap:16px;padding:26px 18px;border-inline:1px solid #294139;
+  background:radial-gradient(circle at 50% 38%,#2f876b26,transparent 52%);
+}
+.dashRadar{position:relative;width:160px;aspect-ratio:1;border:1px solid #58b59466;border-radius:50%;box-shadow:0 0 0 18px #62e6b10b,0 0 0 36px #62e6b107,inset 0 0 42px #62e6b117}
+.dashRadar:before,.dashRadar:after{content:"";position:absolute;background:#62e6b12e}
+.dashRadar:before{left:50%;top:-18px;bottom:-18px;width:1px}
+.dashRadar:after{top:50%;left:-18px;right:-18px;height:1px}
+.dashRadar i{position:absolute;inset:20%;border:1px solid #62e6b133;border-radius:50%}
+.dashRadar i:nth-child(2){inset:36%}.dashRadar i:nth-child(3){inset:46%;background:#d8b36a;border-color:#e9c778;box-shadow:0 0 22px #d8b36a99}
+.dashRadar span{position:absolute;left:50%;top:10%;width:7px;height:7px;border-radius:50%;background:#62e6b1;box-shadow:0 0 14px #62e6b1;transform:translateX(-50%)}
+.dashReadinessCopy{text-align:center}.dashReadinessCopy h2{margin:6px 0 8px;color:#f0f4f2;font:650 20px/1.1 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.03em}.dashReadinessCopy>strong{color:#d8b36a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.1em;text-transform:uppercase}
+.dashReadinessSignals{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.dashReadinessSignals article{padding:9px;border:1px solid #263832;border-radius:var(--radius-sm);background:#07100ec9}
+.dashReadinessSignals span,.dashReadinessSignals strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dashReadinessSignals span{color:#6f7f78;font:700 9px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}.dashReadinessSignals strong{margin-top:5px;color:#c7d3ce;font:650 11px var(--font-geist-sans),Arial,sans-serif}.dashReadinessSignals .is-ready{border-color:#39745e}.dashReadinessSignals .is-ready strong{color:#62e6b1}.dashReadinessSignals .is-caution{border-color:#6b5730}.dashReadinessSignals .is-caution strong{color:#d8b36a}
+.dashCommandCentre .dashMarketHero{align-content:center;padding:28px;border:0;border-radius:var(--radius-xs);background:linear-gradient(225deg,#111b13e8,transparent 72%);box-shadow:none}
+.dashCommandCentre .dashMarketHero .dashHeroCta{justify-self:stretch}
+.dashSectionRail{position:sticky;top:78px;z-index:30;display:flex;align-items:center;gap:4px;padding:7px;border:1px solid #273b35;border-radius:var(--radius-md);background:#07100ed9;box-shadow:0 14px 38px #0007;backdrop-filter:blur(14px)}
+.dashSectionRail a{padding:8px 13px;border-radius:var(--radius-sm);color:#9caaa5;text-decoration:none;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}.dashSectionRail a:hover,.dashSectionRail a:focus-visible{background:#14241f;color:#62e6b1}.dashSectionRail span{margin-left:auto;padding:0 10px;color:#74817c;font:11px var(--font-geist-sans),Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#briefing,#evidence,#plan,#review{scroll-margin-top:140px}
+.dashAiCoach{
+  position:fixed;right:24px;bottom:24px;z-index:55;width:auto;max-width:min(380px,calc(100vw - 32px));margin:0;
+  border:1px solid #3b6658;border-radius:var(--radius-lg);background:#081310f2;overflow:hidden;box-shadow:0 24px 70px #000b;backdrop-filter:blur(18px);
+}
+.dashAiCoach.is-open{width:min(380px,calc(100vw - 32px))}.dashAiCoach:not(.is-open){border-radius:var(--radius-pill)}.dashAiCoach:not(.is-open) .dashAiCoachToggle{width:auto}.dashAiCoachToggle small{max-width:90px;overflow:hidden;text-overflow:ellipsis}.dashAiCoach:not(.is-open) .dashAiCoachToggle small{display:none}
+.dashDeepDive.is-intelligence{border-top-color:#4c9aac}.dashDeepDive.is-intelligence>summary>span{border-color:#4c9aac66;color:#7fc1d0}.dashDeepDive.is-planning{border-top-color:#d8b36a}.dashDeepDive.is-planning>summary>span{border-color:#d8b36a66;color:#d8b36a}.dashDeepDive.is-review{border-top-color:#9b8bc5}.dashDeepDive.is-review>summary>span{border-color:#9b8bc566;color:#b6a8d8}
+.dashCommandStrip{background:linear-gradient(110deg,#0c1715,#0b1114 65%,#151409)!important}.dashCommandStripGrid{scrollbar-width:thin;scrollbar-color:#36564a transparent}
+@media(max-width:1120px){.dashCommandCentre>.dashHero{grid-template-columns:1fr 1fr}.dashReadiness{grid-row:2;grid-column:1/-1;grid-template-columns:auto minmax(180px,.6fr) minmax(320px,1fr);justify-items:start}.dashRadar{width:112px}.dashReadinessCopy{text-align:left}}
+@media(max-width:760px){.dashCommandCentre>.dashHero{grid-template-columns:1fr}.dashReadiness{grid-row:auto;grid-column:auto;grid-template-columns:1fr;justify-items:center}.dashReadinessCopy{text-align:center}.dashCommandCentre .dashHeroCopy,.dashCommandCentre .dashMarketHero{padding:22px}.dashSectionRail{top:8px;overflow-x:auto}.dashSectionRail span{display:none}.dashAiCoach{right:12px;bottom:12px}.dashRadar{width:128px}}

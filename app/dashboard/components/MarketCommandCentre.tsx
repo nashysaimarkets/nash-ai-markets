@@ -400,6 +400,32 @@ export function MarketCommandCentre({
           </div>
         </div>
 
+        <section className="dashReadiness" aria-labelledby="dash-readiness-title">
+          <div className="dashRadar" aria-hidden="true">
+            <i /><i /><i />
+            <span />
+          </div>
+          <div className="dashReadinessCopy">
+            <span className="mccEyebrow">BULLSEYE READINESS</span>
+            <h2 id="dash-readiness-title">{postClose ? "Next session preparation" : posture.headline}</h2>
+            <strong>{decision.permissionLabel}</strong>
+          </div>
+          <div className="dashReadinessSignals">
+            <article className={hero.price ? "is-ready" : "is-awaiting"}>
+              <span>Market</span><strong>{hero.price ? "Verified" : "Awaiting"}</strong>
+            </article>
+            <article className={decision.confidenceLabel === "Not established" ? "is-awaiting" : "is-ready"}>
+              <span>Confidence</span><strong>{decision.confidenceLabel}</strong>
+            </article>
+            <article className="is-caution">
+              <span>Risk</span><strong>{decision.riskLabel}</strong>
+            </article>
+            <article className={catalyst ? "is-caution" : "is-awaiting"}>
+              <span>Catalyst</span><strong>{catalyst ? catalyst.name : "None verified"}</strong>
+            </article>
+          </div>
+        </section>
+
         <article className={`dashMarketHero is-${hero.direction}`} aria-label="ES market status">
           <div className="dashMarketHeroTop">
             <div>
@@ -451,11 +477,16 @@ export function MarketCommandCentre({
             <p className="dashRangePending">24-hour range position awaits verified ES candles.</p>
           )}
 
-          <Link href={postClose ? "/dashboard#session-replay" : hero.deskHref} className="dashHeroCta">
+          <Link href={postClose ? "/dashboard#session-replay" : hero.deskHref} className="dashHeroCta is-secondary">
             {postClose ? oracle.replay.primaryActionLabel : "Open Trading Desk"}
           </Link>
         </article>
       </header>
+
+      <nav className="dashSectionRail" aria-label="Dashboard sections">
+        <a href="#briefing">Briefing</a><a href="#evidence">Evidence</a><a href="#plan">Plan</a><a href="#review">Review</a>
+        <span>{hero.sessionLabel} · {hero.delayedAgeLine}</span>
+      </nav>
 
       <div className="dashWorkspaceDrawer">
         <div
@@ -471,9 +502,9 @@ export function MarketCommandCentre({
 
       <AiCoachPanel notes={coachNotes} sessionLabel={hero.sessionLabel} />
 
-      <CommandStrip model={commandStrip} />
+      <div id="briefing"><CommandStrip model={commandStrip} /></div>
 
-      <section className="dashCockpit" aria-labelledby="dash-cockpit-title">
+      <section id="evidence" className="dashCockpit" aria-labelledby="dash-cockpit-title">
         <header className="dashCockpitHeader">
           <div>
             <span className="mccEyebrow">DECISION COCKPIT</span>
@@ -484,7 +515,7 @@ export function MarketCommandCentre({
         <div className="dashCockpitGrid">{orderedGroup(cockpitIds)}</div>
       </section>
 
-      <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
+      <div id="plan" className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
             <span className="mccEyebrow">
@@ -540,7 +571,7 @@ export function MarketCommandCentre({
         {sectionNodes.chart}
       </section>
 
-      <section className="dashDeepDives" aria-labelledby="dash-deep-dives-title">
+      <section id="review" className="dashDeepDives" aria-labelledby="dash-deep-dives-title">
         <header className="dashDeepDivesHeader">
           <div>
             <span className="mccEyebrow">ON-DEMAND INTELLIGENCE</span>
@@ -549,7 +580,7 @@ export function MarketCommandCentre({
           <p>The decision stays visible. Supporting evidence, preparation and review open without turning the dashboard into a wall of reports.</p>
         </header>
         <div className="dashDeepDiveGrid">
-          <details className="dashDeepDive">
+          <details className="dashDeepDive is-intelligence">
             <summary>
               <span>01</span>
               <div><strong>Market intelligence</strong><small>Insight, conviction, weather and internals</small></div>
@@ -557,7 +588,7 @@ export function MarketCommandCentre({
             </summary>
             <div className="dashDeepDiveBody">{orderedGroup(intelligenceIds)}</div>
           </details>
-          <details className="dashDeepDive">
+          <details className="dashDeepDive is-planning">
             <summary>
               <span>02</span>
               <div><strong>Session planning</strong><small>Timeline, game plan, opportunities and checklist</small></div>
@@ -565,7 +596,7 @@ export function MarketCommandCentre({
             </summary>
             <div className="dashDeepDiveBody">{orderedGroup(planningIds)}</div>
           </details>
-          <details className="dashDeepDive">
+          <details className="dashDeepDive is-review">
             <summary>
               <span>03</span>
               <div><strong>Review &amp; learning</strong><small>Replay, briefings and process notes</small></div>
