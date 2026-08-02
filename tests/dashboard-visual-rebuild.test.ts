@@ -48,3 +48,19 @@ test("visual experience stylesheet is scoped to the command centre", () => {
   assert.match(experience, /prefers-reduced-motion/);
   assert.match(read("app/globals.css"), /dashboard-visual-experience\.css/);
 });
+
+test("dashboard opens as a decision cockpit and keeps secondary reports on demand", () => {
+  assert.match(centre, /DECISION COCKPIT/);
+  assert.match(centre, /dashCockpitGrid/);
+  assert.match(centre, /ON-DEMAND INTELLIGENCE/);
+  assert.match(centre, /Market intelligence/);
+  assert.match(centre, /Session planning/);
+  assert.match(centre, /Review &amp; learning/);
+  assert.doesNotMatch(centre, /renderOrder\.filter\(\(id\) => id !== "thirty-second"\)\.map/);
+});
+
+test("AI coach no longer sticks over dashboard content", () => {
+  const centreCss = read("app/market-command-centre.css");
+  assert.match(centreCss, /\.dashAiCoach\{\s*position:relative/);
+  assert.doesNotMatch(centreCss, /\.dashAiCoach\{[^}]*position:sticky/);
+});

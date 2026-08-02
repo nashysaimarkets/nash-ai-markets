@@ -350,12 +350,17 @@ export function MarketCommandCentre({
     return [...pinned, ...rest];
   }, [prefs.order, prefs.pinned]);
 
+  const cockpitIds: DashboardSectionId[] = ["thirty-second", "posture"];
+  const intelligenceIds: DashboardSectionId[] = ["insight", "conviction", "weather", "internals"];
+  const planningIds: DashboardSectionId[] = ["timeline", "game-plan", "opportunity", "checklist"];
+  const reviewIds: DashboardSectionId[] = ["replay", "video-centre", "delight"];
+  const orderedGroup = (ids: DashboardSectionId[]) =>
+    renderOrder.filter((id) => ids.includes(id)).map((id) => sectionNodes[id]);
+
   return (
     <div
       className={`marketCommandCentre dashCommandCentre vxSessionAccent-${sessionAccent}${prefs.density === "compact" ? " is-compact" : ""}`}
     >
-      <AiCoachPanel notes={coachNotes} sessionLabel={hero.sessionLabel} />
-
       <header className="dashHero" aria-labelledby="dash-hero-title">
         <div className="dashHeroCopy">
           <div className="dashHeroKicker">
@@ -464,9 +469,20 @@ export function MarketCommandCentre({
         </div>
       </div>
 
+      <AiCoachPanel notes={coachNotes} sessionLabel={hero.sessionLabel} />
+
       <CommandStrip model={commandStrip} />
 
-      {sectionNodes["thirty-second"]}
+      <section className="dashCockpit" aria-labelledby="dash-cockpit-title">
+        <header className="dashCockpitHeader">
+          <div>
+            <span className="mccEyebrow">DECISION COCKPIT</span>
+            <h2 id="dash-cockpit-title">See the call. Know the risk. Move with intent.</h2>
+          </div>
+          <StatusBadge label={decision.permissionLabel} tone={postureTone} />
+        </header>
+        <div className="dashCockpitGrid">{orderedGroup(cockpitIds)}</div>
+      </section>
 
       <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
@@ -520,7 +536,45 @@ export function MarketCommandCentre({
         )}
       </div>
 
-      {renderOrder.filter((id) => id !== "thirty-second").map((id) => sectionNodes[id])}
+      <section className="dashChartStage" aria-label="Verified market chart">
+        {sectionNodes.chart}
+      </section>
+
+      <section className="dashDeepDives" aria-labelledby="dash-deep-dives-title">
+        <header className="dashDeepDivesHeader">
+          <div>
+            <span className="mccEyebrow">ON-DEMAND INTELLIGENCE</span>
+            <h2 id="dash-deep-dives-title">Go deeper only when you need to</h2>
+          </div>
+          <p>The decision stays visible. Supporting evidence, preparation and review open without turning the dashboard into a wall of reports.</p>
+        </header>
+        <div className="dashDeepDiveGrid">
+          <details className="dashDeepDive">
+            <summary>
+              <span>01</span>
+              <div><strong>Market intelligence</strong><small>Insight, conviction, weather and internals</small></div>
+              <i aria-hidden="true">+</i>
+            </summary>
+            <div className="dashDeepDiveBody">{orderedGroup(intelligenceIds)}</div>
+          </details>
+          <details className="dashDeepDive">
+            <summary>
+              <span>02</span>
+              <div><strong>Session planning</strong><small>Timeline, game plan, opportunities and checklist</small></div>
+              <i aria-hidden="true">+</i>
+            </summary>
+            <div className="dashDeepDiveBody">{orderedGroup(planningIds)}</div>
+          </details>
+          <details className="dashDeepDive">
+            <summary>
+              <span>03</span>
+              <div><strong>Review &amp; learning</strong><small>Replay, briefings and process notes</small></div>
+              <i aria-hidden="true">+</i>
+            </summary>
+            <div className="dashDeepDiveBody">{orderedGroup(reviewIds)}</div>
+          </details>
+        </div>
+      </section>
 
       <section className="dashQuickActions" aria-label="Quick actions">
         <header>
