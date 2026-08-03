@@ -17,7 +17,6 @@ const features = [
 export function PricingPlans({ availability }: { availability: Founding100Availability }) {
   const [annual, setAnnual] = useState(false);
   const pro = founding100AvailabilityLabel(availability.proRemaining);
-  const elite = founding100AvailabilityLabel(availability.eliteRemaining);
   return <>
     <p className="commercialPlanGuide"><strong>Not sure where to start?</strong> Free explores the workflow, Pro unlocks the complete daily intelligence layer, and Elite adds the full planning and diagnostics workspace.</p>
     <div className="commercialToggle" role="group" aria-label="Billing interval">
@@ -30,12 +29,10 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
       <article className="commercialElite">
         <div className="commercialPlanBadges">
           <Image src="/brand/badge-elite.svg" width={220} height={56} alt="Elite membership" />
-          <Image src="/brand/badge-founding-100.svg" width={270} height={56} alt="Founding 100 member programme" />
         </div>
         <h2>{annual ? "£299/year" : "£29.99/month"}</h2>
         <small className="commercialPlanFit">For advanced planning and diagnostics</small>
         <p>Full intelligence, planning and diagnostic access for the complete workflow.</p>
-        <div className={`commercialFounding${elite.full ? " isFull" : ""}`}><strong>FOUNDING 100 ELITE</strong><span>{elite.label}</span><small>{elite.detail}</small></div>
         <form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "elite_year" : "elite_month"} /><button type="submit">Unlock Elite</button></form>
       </article>
     </section>

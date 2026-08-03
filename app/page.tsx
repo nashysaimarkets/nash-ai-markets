@@ -128,8 +128,6 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const foundingAvailability = await loadFounding100Availability();
   const proFounding = founding100AvailabilityLabel(foundingAvailability.proRemaining);
-  const eliteFounding = founding100AvailabilityLabel(foundingAvailability.eliteRemaining);
-  const foundingByPlan = { Pro: proFounding, Elite: eliteFounding };
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
     "mailto:hello@nashaimarkets.com?subject=Manage%20my%20NASH%20AI%20subscription";
@@ -336,21 +334,15 @@ export default async function Home() {
             </header>
             <div className="mcPlanGrid">
               {plans.map((plan) => {
-                const founding = foundingByPlan[plan.name as keyof typeof foundingByPlan];
+                const founding = plan.name === "Pro" ? proFounding : null;
                 const foundingProAvailable = plan.name === "Pro" && founding && !founding.full;
-                const foundingLabel =
-                  plan.name === "Pro"
-                    ? proFounding.label
-                    : plan.name === "Elite"
-                      ? eliteFounding.label
-                      : null;
                 return (
                   <article key={plan.name} className={plan.featured ? "mcPlanFeatured" : undefined}>
                     <header><span>{plan.name}</span>{plan.featured && <b>Most popular</b>}</header>
                     {founding && (
                       <div className={`mcFounding${founding.full ? " mcFoundingFull" : ""}`} aria-live="polite">
                         <strong>FOUNDING 100 {plan.name.toUpperCase()}</strong>
-                            <span>{foundingLabel}</span>
+                        <span>{proFounding.label}</span>
                         <small>{foundingProAvailable ? "£12/month launch price · checkout opens after final verification." : founding.detail}</small>
                       </div>
                     )}
