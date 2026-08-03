@@ -23,6 +23,7 @@ Public clients prefer `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, then fall back to 
 | `STRIPE_SECRET_KEY` | Secret, server only | Mandatory for paid beta | Stripe API access from the webhook |
 | `STRIPE_WEBHOOK_SECRET` | Secret, server only | Mandatory for paid beta | Webhook signature verification |
 | `STRIPE_PRO_PRICE_ID` | Server config | Mandatory | Pro monthly (£14.99) Price ID; legacy variable retained for existing customers |
+| `STRIPE_FOUNDING_PRO_PRICE_ID` | Server config | Mandatory only when activating Founding Pro checkout | Separate Pro monthly (£12) launch Price ID; must not equal the standard Pro Price |
 | `STRIPE_ELITE_PRICE_ID` | Server config | Mandatory | Elite monthly (£29.99) Price ID; legacy variable retained for existing customers |
 | `STRIPE_PRO_ANNUAL_PRICE_ID` | Server config | Mandatory | Pro annual (£149) Price ID |
 | `STRIPE_ELITE_ANNUAL_PRICE_ID` | Server config | Mandatory | Elite annual (£299) Price ID |
@@ -34,6 +35,10 @@ The pricing page posts an enumerated offering to the server. The server selects
 the corresponding Price ID and creates Stripe Checkout; Price IDs and the
 secret key are never returned to browser code. Configure products and prices
 manually in Stripe test mode before production verification.
+Founding Pro checkout remains unavailable when its dedicated variable is absent.
+The server retrieves that Price before creating Checkout and requires it to be
+active, recurring monthly, GBP and exactly 1200 pence. Only a signed subscription
+event carrying that exact valid Price is eligible for a new Founding Pro place.
 
 ## OpenAI
 

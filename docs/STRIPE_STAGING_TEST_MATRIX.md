@@ -5,7 +5,8 @@ payment methods. Never enter a real card or switch to live mode.
 
 ## Required configuration
 
-Create or verify four recurring GBP Prices:
+Create or verify four standard recurring GBP Prices plus the isolated launch
+Price:
 
 | Offering | Expected amount | Interval | Application variable |
 |---|---:|---|---|
@@ -13,6 +14,7 @@ Create or verify four recurring GBP Prices:
 | Elite monthly | £29.99 | month | `STRIPE_ELITE_PRICE_ID` |
 | Pro annual | £149.00 | year | `STRIPE_PRO_ANNUAL_PRICE_ID` |
 | Elite annual | £299.00 | year | `STRIPE_ELITE_ANNUAL_PRICE_ID` |
+| Founding Pro monthly | £12.00 | month | `STRIPE_FOUNDING_PRO_PRICE_ID` |
 
 Configure the customer portal with only approved upgrade, downgrade and
 cancellation behavior. Configure the staging webhook endpoint
@@ -53,6 +55,10 @@ Store that endpoint’s test signing secret as `STRIPE_WEBHOOK_SECRET`.
 | S21 | Open customer portal from dashboard/profile | Correct test customer portal opens | No Stripe IDs or secret-bearing URL is rendered as application data |
 | S22 | Return from successful Checkout to `/welcome` | Browser reaches staging origin | Page states verification is pending and does not grant access before webhook synchronization |
 | S23 | Cancel Checkout | Browser reaches `/cancelled` | No payment/subscription and no membership change |
+| S24 | Complete Founding Pro checkout with its dedicated valid Price | GBP 12 monthly; signed events deliver 2xx | Membership is `pro`, `month`, 1200 and exactly one Founding Pro position is awarded |
+| S25 | Complete standard Pro monthly and annual checkouts while Founding capacity remains | Standard subscriptions activate | Pro access is granted but neither purchase consumes a Founding position |
+| S26 | Configure the Founding variable to the standard Pro Price ID | No Founding Checkout Session | Ambiguous Price mapping fails closed; no membership or allocation change |
+| S27 | In separate test fixtures, use an inactive, non-GBP, non-monthly or non-1200 Price as the Founding variable | No Founding Checkout Session | Price validation fails closed; no membership or allocation change |
 
 ## Evidence
 
@@ -69,4 +75,5 @@ customer/subscription IDs, payment data, secrets or full webhook payloads.
 - Payment failure, cancellation and lapse remove entitlement.
 - Founding positions are permanent, concurrency-safe and capped at 100 per
   programme.
-
+- Only the exact active GBP £12 monthly Founding Pro Price can create a new Pro
+  founding position; standard Pro Prices never consume capacity.

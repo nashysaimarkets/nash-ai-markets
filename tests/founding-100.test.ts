@@ -93,6 +93,10 @@ test("Stripe lifecycle synchronizes awards from signed server events only", asyn
   assert.match(webhook, /\.rpc\("sync_founding_100"/);
   assert.match(webhook, /event\.created/);
   assert.match(webhook, /status === "active" \|\| status === "trialing"/);
+  assert.match(webhook, /const active = subscriptionActive && foundingEligible/);
+  assert.match(webhook, /validFoundingProPrice\(offerings\[0\]\.item\.price\)/);
+  assert.match(webhook, /from\("founding_100_members"\)/);
+  assert.match(webhook, /existing\.programme === plan/);
   assert.match(webhook, /invoice\.payment_failed/);
   assert.doesNotMatch(webhook, /NEXT_PUBLIC_.*FOUNDING/);
 });

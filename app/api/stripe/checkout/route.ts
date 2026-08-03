@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "../../../../utils/supabase/server.ts";
-import { checkoutPriceId } from "../../../lib/stripe-commercial.ts";
+import { checkoutOffering, validFoundingProPrice } from "../../../lib/stripe-commercial.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,18 +22,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Checkout request rejected" }, { status: 403 });
   }
   const form = await request.formData();
-  const priceId = checkoutPriceId(typeof form.get("offering") === "string" ? String(form.get("offering")) : null);
+  const selected = checkoutOffering(typeof form.get("offering") === "string" ? String(form.get("offering")) : null);
   const secretKey = process.env.STRIPE_SECRET_KEY;
-  if (!secretKey || !priceId) {
+  if (!secretKey || !selected) {
     return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
   }
   try {
+    const stripe = new Stripe(secretKey);
+    if (selected.offering.foundingEligible) {
+      const price = await stripe.prices.retrieve(selected.priceId);
+      if (!validFoundingProPrice(price)) {
+        return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
+      }
+    }
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const verifiedEmail = user?.email?.trim().toLowerCase() || undefined;
-    const session = await new Stripe(secretKey).checkout.sessions.create({
+    const session = await stripe.checkout.sessions.create({
       mode: "subscription",
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{ price: selected.priceId, quantity: 1 }],
       success_url: `${origin}/welcome`,
       cancel_url: `${origin}/cancelled`,
       allow_promotion_codes: true,

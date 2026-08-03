@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "../../../../utils/supabase/admin";
-import { configuredOffering, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
+import { configuredOffering, validFoundingProPrice, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,11 +36,27 @@ async function customerEmail(stripe: Stripe, customer: string | Stripe.Customer 
 async function syncFounding100(
   subscription: Stripe.Subscription,
   plan: Plan | null,
+  foundingEligible: boolean,
   email: string | null,
   eventCreated: number,
 ) {
-  const active = foundingSubscriptionActive(subscription.status);
-  const { error } = await createAdminClient().rpc("sync_founding_100", {
+  const subscriptionActive = foundingSubscriptionActive(subscription.status);
+  const admin = createAdminClient();
+  if (subscriptionActive && !foundingEligible) {
+    const { data: existing, error: lookupError } = await admin
+      .from("founding_100_members")
+      .select("programme")
+      .eq("stripe_subscription_id", subscription.id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (lookupError) {
+      logSupabaseFailure("founding_rpc", lookupError);
+      throw new Error("Founding 100 eligibility lookup failed");
+    }
+    if (!existing || existing.programme === plan) return;
+  }
+  const active = subscriptionActive && foundingEligible;
+  const { error } = await admin.rpc("sync_founding_100", {
     p_email: email ?? "",
     p_programme: active ? plan : null,
     p_stripe_subscription_id: subscription.id,
@@ -86,7 +102,7 @@ async function saveSubscription(
       logSupabaseFailure("membership_rpc", error);
       throw error;
     }
-    await syncFounding100(subscription, null, email, eventCreated);
+    await syncFounding100(subscription, null, false, email, eventCreated);
     return;
   }
 
@@ -111,7 +127,10 @@ async function saveSubscription(
     logSupabaseFailure("membership_rpc", error);
     throw error;
   }
-  await syncFounding100(subscription, plan, email, eventCreated);
+  const foundingEligible = offerings.length === 1
+    && offerings[0].offering.foundingEligible
+    && validFoundingProPrice(offerings[0].item.price);
+  await syncFounding100(subscription, foundingEligible ? plan : null, foundingEligible, email, eventCreated);
 }
 
 export async function POST(request: Request) {

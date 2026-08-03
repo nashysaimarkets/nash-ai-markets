@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { checkoutPriceId, configuredOffering } from "../app/lib/stripe-commercial.ts";
+import {
+  checkoutOffering,
+  checkoutPriceId,
+  configuredOffering,
+  validFoundingProPrice,
+} from "../app/lib/stripe-commercial.ts";
 import { calculateCommercialMetrics } from "../app/lib/server/commercial.ts";
 import {
   buildAnnualRenewalReminderEmail,
@@ -15,6 +20,7 @@ const root = new URL("../", import.meta.url);
 const read = (path: string) => readFile(new URL(path, root), "utf8");
 const environment = {
   STRIPE_PRO_PRICE_ID: "price_pro_month",
+  STRIPE_FOUNDING_PRO_PRICE_ID: "price_founding_pro_month",
   STRIPE_ELITE_PRICE_ID: "price_elite_month",
   STRIPE_PRO_ANNUAL_PRICE_ID: "price_pro_year",
   STRIPE_ELITE_ANNUAL_PRICE_ID: "price_elite_year",
@@ -23,19 +29,45 @@ const environment = {
 };
 
 test("monthly and annual Stripe offerings map without changing legacy customers", () => {
-  assert.deepEqual(configuredOffering("price_pro_month", environment), { plan: "pro", billingInterval: "month" });
-  assert.deepEqual(configuredOffering("price_elite_year", environment), { plan: "elite", billingInterval: "year" });
-  assert.deepEqual(configuredOffering("price_legacy_pro_month", environment), { plan: "pro", billingInterval: "month" });
-  assert.deepEqual(configuredOffering("price_legacy_elite_month", environment), { plan: "elite", billingInterval: "month" });
+  assert.deepEqual(configuredOffering("price_pro_month", environment), { plan: "pro", billingInterval: "month", foundingEligible: false });
+  assert.deepEqual(configuredOffering("price_founding_pro_month", environment), { plan: "pro", billingInterval: "month", foundingEligible: true });
+  assert.deepEqual(configuredOffering("price_elite_year", environment), { plan: "elite", billingInterval: "year", foundingEligible: false });
+  assert.deepEqual(configuredOffering("price_legacy_pro_month", environment), { plan: "pro", billingInterval: "month", foundingEligible: false });
+  assert.deepEqual(configuredOffering("price_legacy_elite_month", environment), { plan: "elite", billingInterval: "month", foundingEligible: false });
   assert.equal(configuredOffering("unknown", environment), null);
 });
 
 test("checkout accepts only enumerated server-side Price IDs", () => {
   assert.equal(checkoutPriceId("pro_year", environment), "price_pro_year");
+  assert.equal(checkoutPriceId("founding_pro_month", environment), "price_founding_pro_month");
   assert.equal(checkoutPriceId("elite_month", environment), "price_elite_month");
   assert.equal(checkoutPriceId("legacy_pro_month", environment), null);
   assert.equal(checkoutPriceId("price_attacker", environment), null);
   assert.equal(checkoutPriceId(null, environment), null);
+});
+
+test("Founding Pro checkout requires an exact, unambiguous £12 monthly Price", () => {
+  assert.deepEqual(checkoutOffering("founding_pro_month", environment), {
+    priceId: "price_founding_pro_month",
+    offering: { plan: "pro", billingInterval: "month", foundingEligible: true },
+  });
+  assert.equal(checkoutOffering("founding_pro_month", {
+    ...environment,
+    STRIPE_FOUNDING_PRO_PRICE_ID: environment.STRIPE_PRO_PRICE_ID,
+  }), null);
+  assert.equal(validFoundingProPrice({
+    active: true,
+    currency: "gbp",
+    type: "recurring",
+    unit_amount: 1200,
+    recurring: { interval: "month" },
+  }), true);
+  for (const invalid of [
+    { active: false, currency: "gbp", type: "recurring", unit_amount: 1200, recurring: { interval: "month" } },
+    { active: true, currency: "usd", type: "recurring", unit_amount: 1200, recurring: { interval: "month" } },
+    { active: true, currency: "gbp", type: "recurring", unit_amount: 1499, recurring: { interval: "month" } },
+    { active: true, currency: "gbp", type: "recurring", unit_amount: 1200, recurring: { interval: "year" } },
+  ]) assert.equal(validFoundingProPrice(invalid), false);
 });
 
 test("checkout binds signed-in members without exposing the session id in return URLs", async () => {
@@ -43,6 +75,8 @@ test("checkout binds signed-in members without exposing the session id in return
   assert.match(checkout, /supabase\.auth\.getUser\(\)/);
   assert.match(checkout, /customer_email: verifiedEmail/);
   assert.match(checkout, /client_reference_id: user\?\.id/);
+  assert.match(checkout, /stripe\.prices\.retrieve\(selected\.priceId\)/);
+  assert.match(checkout, /validFoundingProPrice\(price\)/);
   assert.ok(checkout.includes("success_url: `${origin}/welcome`"));
   assert.doesNotMatch(checkout, /CHECKOUT_SESSION_ID/);
 });
