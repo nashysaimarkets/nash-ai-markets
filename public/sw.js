@@ -1,7 +1,7 @@
 /* NASH AI Markets application-shell service worker.
  * Account, billing, API, market and personalised routes are always network-only.
  */
-const VERSION = "nash-shell-v1";
+const VERSION = "nash-shell-v2";
 const SHELL_CACHE = `${VERSION}-shell`;
 const STATIC_CACHE = `${VERSION}-static`;
 const SHELL_ASSETS = [
@@ -72,6 +72,28 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (!isSafeStaticRequest(request, url)) return;
+
+  // Executable UI assets must prefer the current deployment. Vinext can keep
+  // an asset URL stable while build-time public configuration changes, so
+  // stale-first delivery can otherwise run an obsolete Auth bundle.
+  if (request.destination === "script" || request.destination === "style") {
+    event.respondWith(
+      fetch(request)
+        .then(async (response) => {
+          if (canStore(response)) {
+            const cache = await caches.open(STATIC_CACHE);
+            await cache.put(request, response.clone());
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return cached || new Response("Required application asset is unavailable.", { status: 503 });
+        }),
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => {
       const refresh = fetch(request).then(async (response) => {
