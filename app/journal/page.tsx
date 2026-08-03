@@ -15,7 +15,7 @@ import { LearningWorkflowRail } from "../components/LearningWorkflowRail.tsx";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Trade Journal | NASH AI Markets",
-  description: "Private trade journal for disciplined post-trade review.",
+  description: "Private decision journal for disciplined S&P 500 process review.",
   robots: { index: false, follow: false },
 };
 
@@ -36,7 +36,7 @@ export default async function JournalPage() {
           <div>
             <span>TRADE JOURNAL</span>
             <h1>Private trade journal</h1>
-            <p>Log futures and options decisions without inventing fills or outcomes.</p>
+            <p>Record S&amp;P 500 futures preparation decisions without inventing fills or outcomes.</p>
           </div>
         </section>
         <LockedPremiumCard
