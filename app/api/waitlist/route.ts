@@ -24,7 +24,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { error } = await createAdminClient().from("launch_waitlist").insert(submission);
+    const waitlist = createAdminClient().from("launch_waitlist");
+    const { error } = submission.source === "homepage"
+      ? await waitlist.upsert({ ...submission, updated_at: new Date().toISOString() }, { onConflict: "email" })
+      : await waitlist.insert(submission);
     if (error && error.code !== "23505") {
       return NextResponse.json({ ok: false, code: "WAITLIST_UNAVAILABLE" }, { status: 503, headers: responseHeaders });
     }
