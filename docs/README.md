@@ -6,6 +6,9 @@ afterwards.
 
 ## Documents
 
+- [Current Project Bullseye handoff](PROJECT_BULLSEYE_HANDOFF.md) — exact
+  canonical checkpoint, protected-staging evidence, safety boundaries and a
+  copy-ready prompt for continuing on another device.
 - [Architecture](ARCHITECTURE.md) — application boundaries, services, data flow,
   routes, dependencies and deployment shape.
 - [Easy YouTube setup (5 steps)](video-automation/CONSOLE_CHECKLIST.md) —
