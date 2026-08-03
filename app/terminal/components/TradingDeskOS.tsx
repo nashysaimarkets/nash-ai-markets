@@ -16,7 +16,7 @@ import {
 } from "../../lib/markets/market-catalog.ts";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
-import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { formatMembershipAwareMarketDataDisplay } from "../../lib/freshness-labels.ts";
 import { resolveDeskFeedStatus } from "../lib/feed-status.ts";
 import { customerVideoTypeLabel, formatVideoDuration } from "../../lib/market-video/select.ts";
 import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
@@ -114,6 +114,18 @@ function latestVerifiedCandleAgeMs(
   const es = bundle.ES;
   const series = preferred?.dataAgeMs != null ? preferred : es?.dataAgeMs != null ? es : preferred ?? es;
   return series?.dataAgeMs ?? null;
+}
+
+function marketDataStatusLine(
+  payload: TradingDeskPayload,
+  symbol: string,
+  quoteAvailable: boolean,
+): string {
+  return formatMembershipAwareMarketDataDisplay({
+    candleAgeMs: latestVerifiedCandleAgeMs(payload, symbol),
+    candleAccess: payload.paid,
+    quoteAvailable,
+  });
 }
 
 function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
@@ -527,7 +539,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   function renderWidget(id: DeskWidgetId) {
-    const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
+    const delayedAgeLine = marketDataStatusLine(payload, active.symbol, Boolean(activeQuote));
     switch (id) {
       case "freshness-trust": {
         const health = buildDataHealthSummary(payload.freshnessFeeds);
@@ -1049,7 +1061,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     }
   }
 
-  const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
+  const delayedAgeLine = marketDataStatusLine(payload, active.symbol, Boolean(activeQuote));
   const activeFeedStatus = resolveDeskFeedStatus({
     coverage: active.coverage,
     status: payload.snapshot.status,

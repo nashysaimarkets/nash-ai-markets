@@ -26,7 +26,7 @@ import {
 import { getTerminalMarketData } from "../terminal/lib/terminal-market-data-provider.ts";
 import { readSessionClock, type SessionClockReading } from "../terminal/lib/session-clock.ts";
 import { formatCustomerParticipationWarnings } from "../terminal/lib/customer-warnings.ts";
-import { formatDelayedVerifiedCandleAgeDisplay } from "./freshness-labels.ts";
+import { formatMembershipAwareMarketDataDisplay } from "./freshness-labels.ts";
 import { sanitizeForClient } from "./serialize-for-client.ts";
 
 export type VerifiedMarketContextStatus = "complete" | "partial" | "unavailable";
@@ -179,7 +179,11 @@ export async function getVerifiedMarketContext(input: {
     freshness: {
       snapshotAge: formatSnapshotAge(snapshot.asOf),
       candleAgeMs: candles?.dataAgeMs ?? null,
-      delayedLabel: formatDelayedVerifiedCandleAgeDisplay(candles?.dataAgeMs ?? null),
+      delayedLabel: formatMembershipAwareMarketDataDisplay({
+        candleAgeMs: candles?.dataAgeMs ?? null,
+        candleAccess: input.paid,
+        quoteAvailable: snapshot.quotes.some((quote) => quote.symbol === "ES"),
+      }),
       snapshotStatus: snapshot.status,
     },
     snapshot,

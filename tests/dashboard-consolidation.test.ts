@@ -42,7 +42,7 @@ test("dashboard command centre uses shared delayed candle age and Wait for confi
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /MarketCommandCentre/);
   assert.match(page, /getVerifiedMarketContext|sanitizeForClient/);
-  assert.match(summaryLib, /formatDelayedVerifiedCandleAgeDisplay/);
+  assert.match(summaryLib, /formatMembershipAwareMarketDataDisplay/);
   assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(summaryLib, /24-hour low \/ downside reference/);
   assert.match(summaryLib, /Session opening reference/);
@@ -190,6 +190,26 @@ test("dashboard summary fails closed without inventing catalyst or live labels",
   assert.doesNotMatch(summary.hero.delayedAgeLine, /\blive\b/i);
   assert.equal(summary.decision.permissionLabel, "WAIT FOR CONFIRMATION");
   assert.ok(summary.unavailable.length > 0);
+});
+
+test("free dashboard distinguishes available quote from membership-gated candles", () => {
+  const snapshot = {
+    ...createUnavailableSnapshot(),
+    status: "DELAYED" as const,
+    quotes: [{ symbol: "ES", label: "ES", value: "5,501.00", change: "+8.00", direction: "up" as const }],
+  };
+  const summary = buildDashboardCommandSummary({
+    snapshot,
+    session: readSessionClock(new Date("2026-07-29T15:00:00Z")),
+    candleSeries: null,
+    candleAccess: false,
+    decision: null,
+    plan: null,
+    signals: null,
+    warnings: [],
+  });
+  assert.equal(summary.hero.delayedAgeLine, "Delayed market quote · verified candle history requires Pro or Elite");
+  assert.doesNotMatch(summary.hero.delayedAgeLine, /age unavailable/i);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {

@@ -70,6 +70,21 @@ export function formatDelayedVerifiedCandleAgeDisplay(ageMs: number | null | und
 }
 
 /**
+ * Distinguishes an unavailable candle feed from one that was intentionally not
+ * loaded for the current membership. This never presents quote age as candle age.
+ */
+export function formatMembershipAwareMarketDataDisplay(input: {
+  candleAgeMs: number | null | undefined;
+  candleAccess: boolean;
+  quoteAvailable: boolean;
+}): string {
+  if (input.candleAccess) return formatDelayedVerifiedCandleAgeDisplay(input.candleAgeMs);
+  return input.quoteAvailable
+    ? "Delayed market quote · verified candle history requires Pro or Elite"
+    : "Verified market quote unavailable · candle history requires Pro or Elite";
+}
+
+/**
  * Authoritative customer-facing delayed-data age line from a preformatted age string.
  * Prefer `formatDelayedVerifiedCandleAgeDisplay(dataAgeMs)` when candle age is known.
  */

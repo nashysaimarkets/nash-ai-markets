@@ -166,12 +166,16 @@ export default async function Terminal() {
         ageLabel: snapshotAge,
         detail: snapshot.source || "Verified provider snapshot",
       },
-      mapCandleFreshness(candleSeriesByInstrument?.ES, "ES candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.IXIC, "IXIC candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.QQQ, "QQQ candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.VIX, "VIX candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.DXY, "DXY candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.OIL, "OIL candles"),
+      ...(paid
+        ? [
+            mapCandleFreshness(candleSeriesByInstrument?.ES, "ES candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.IXIC, "IXIC candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.QQQ, "QQQ candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.VIX, "VIX candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.DXY, "DXY candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.OIL, "OIL candles"),
+          ]
+        : []),
       {
         id: "calendar",
         label: "Economic calendar",

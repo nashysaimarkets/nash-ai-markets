@@ -93,6 +93,7 @@ export default async function MemberDashboard() {
       plan: context.plan,
       signals: null,
       warnings: context.warnings,
+      candleAccess: paid,
       now,
     });
     const sessionVideos = resolveSessionMarketVideos({ phase: context.session.phase, now });
@@ -197,6 +198,7 @@ export default async function MemberDashboard() {
       plan,
       signals: null,
       warnings: ["Verified market data is currently unavailable"],
+      candleAccess: paid,
       now,
     });
     const insight = buildAiMarketInsight({

@@ -18,6 +18,7 @@ test("freshness labels distinguish snapshot and candle ages", () => {
 test("authoritative delayed candle age uses dataAgeMs across surfaces", async () => {
   const {
     formatDelayedVerifiedCandleAgeDisplay,
+    formatMembershipAwareMarketDataDisplay,
     formatVerifiedCandleAgePhrase,
     formatNominalProviderDelayNote,
   } = await import("../app/lib/freshness-labels.ts");
@@ -33,6 +34,14 @@ test("authoritative delayed candle age uses dataAgeMs across surfaces", async ()
   assert.equal(formatNominalProviderDelayNote(10), "Nominal provider delay: approximately 10 minutes");
   assert.notEqual(formatNominalProviderDelayNote(10), line);
   assert.doesNotMatch(line, /\b10m\b|approximately 10/);
+  assert.equal(
+    formatMembershipAwareMarketDataDisplay({ candleAgeMs: null, candleAccess: false, quoteAvailable: true }),
+    "Delayed market quote · verified candle history requires Pro or Elite",
+  );
+  assert.equal(
+    formatMembershipAwareMarketDataDisplay({ candleAgeMs: null, candleAccess: false, quoteAvailable: false }),
+    "Verified market quote unavailable · candle history requires Pro or Elite",
+  );
 
   const chartMetric = phrase.charAt(0).toUpperCase() + phrase.slice(1);
   assert.equal(chartMetric, "14 minutes old");

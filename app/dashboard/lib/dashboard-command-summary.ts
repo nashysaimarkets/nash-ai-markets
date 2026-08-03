@@ -6,7 +6,7 @@
 
 import { describeRangePosition } from "../../lib/range-position-display.ts";
 import type { MarketQuote, MarketSnapshot } from "../../lib/market-data.ts";
-import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { formatMembershipAwareMarketDataDisplay } from "../../lib/freshness-labels.ts";
 import {
   buildEsCandleCloseSnapshot,
   buildEsQuoteSnapshot,
@@ -196,13 +196,18 @@ export function buildDashboardCommandSummary(input: {
   plan: TradePlan | null;
   signals: MarketDeskSignals | null;
   warnings: string[];
+  candleAccess?: boolean;
   now?: number;
   timeZone?: string;
 }): DashboardCommandSummary {
   const now = input.now ?? Date.now();
   const timeZone = input.timeZone ?? "Europe/London";
   const retrievalTimestamp = new Date(now).toISOString();
-  const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(input.candleSeries?.dataAgeMs ?? null);
+  const delayedAgeLine = formatMembershipAwareMarketDataDisplay({
+    candleAgeMs: input.candleSeries?.dataAgeMs ?? null,
+    candleAccess: input.candleAccess ?? true,
+    quoteAvailable: input.snapshot.quotes.some((quote) => quote.symbol === "ES"),
+  });
   const esQuoteSnapshot = buildEsQuoteSnapshot({
     snapshot: input.snapshot,
     ageLabel: delayedAgeLine,

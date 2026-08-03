@@ -121,7 +121,7 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(desk, /sortInstrumentsForSidebar|Additional markets — planned|groupAvailabilityLabel/);
   assert.match(desk, /isFavouriteMarketId|resolveStoredMarketId/);
   assert.match(desk, /VerifiedCatalystIncludes|groupVerifiedEvents/);
-  assert.match(desk, /formatDelayedVerifiedCandleAgeDisplay|Delayed market data/);
+  assert.match(desk, /formatMembershipAwareMarketDataDisplay|Delayed market data/);
   assert.match(desk, /latestVerifiedCandleAgeMs|24-hour low \/ downside reference|24-hour high \/ upside reference/);
   assert.match(desk, /selectDeskView/);
   assert.match(desk, /document\.scrollingElement/);
