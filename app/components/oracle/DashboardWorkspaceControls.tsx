@@ -11,6 +11,7 @@ import {
   writeDashboardWorkspace,
 } from "../../lib/oracle/dashboard-workspace.ts";
 import { subscribeOracleStorage } from "../../lib/oracle/oracle-storage-bus.ts";
+import { createCachedSnapshot, createConstantSnapshot } from "../../lib/oracle/cached-snapshot.ts";
 
 const SECTION_LABELS: Record<DashboardSectionId, string> = {
   "thirty-second": "1 · Overnight / session summary",
@@ -29,16 +30,20 @@ const SECTION_LABELS: Record<DashboardSectionId, string> = {
   delight: "14 · Daily note",
 };
 
+const workspaceSnapshot = createCachedSnapshot(() => readDashboardWorkspace());
+
+const workspaceServerSnapshot = createConstantSnapshot<DashboardWorkspacePrefs>(() => ({
+  ...DEFAULT_DASHBOARD_WORKSPACE,
+  order: [...DEFAULT_DASHBOARD_WORKSPACE.order],
+  pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned],
+  density: DEFAULT_DASHBOARD_WORKSPACE.density,
+}));
+
 export function useDashboardWorkspace() {
   const prefs = useSyncExternalStore(
     subscribeOracleStorage,
-    () => readDashboardWorkspace(),
-    () => ({
-      ...DEFAULT_DASHBOARD_WORKSPACE,
-      order: [...DEFAULT_DASHBOARD_WORKSPACE.order],
-      pinned: [...DEFAULT_DASHBOARD_WORKSPACE.pinned],
-      density: DEFAULT_DASHBOARD_WORKSPACE.density,
-    }),
+    workspaceSnapshot,
+    workspaceServerSnapshot,
   );
 
   function persist(next: DashboardWorkspacePrefs) {

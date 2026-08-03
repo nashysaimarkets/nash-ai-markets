@@ -9,6 +9,8 @@ import { createProgressiveAccess, membershipRedirect, resolveMembershipTier } fr
 import { loadPreviewClaims } from "../terminal/lib/preview-access";
 import { currentServerTimestamp } from "../dashboard/lib/daily-dashboard.ts";
 import { membershipEmailKey } from "../lib/server/membership-email.ts";
+import { LearningWorkflowRail } from "../components/LearningWorkflowRail.tsx";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -41,8 +43,23 @@ export default async function MarketReviewsPage() {
   const archive = listPublishedMarketVideoArchive(loadPublishedMarketVideos(), 24);
 
   return (
-    <MemberShell active="brief">
-      <div className="marketReviewsPage">
+    <MemberShell active="review" className="reviewsPage">
+      <div className="memberDashboardShell marketReviewsPage">
+        <LearningWorkflowRail active="reviews" />
+        <section className="reviewsHero">
+          <div>
+            <span>SESSION INTELLIGENCE LIBRARY</span>
+            <h1>Review the tape.<br /><em>Refine the process.</em></h1>
+            <p>Published pre-market context and post-market learning, organised as a disciplined review loop—not an entertainment feed.</p>
+          </div>
+          <div className="reviewsOrbit" aria-hidden="true"><i /><i /><i /><span /></div>
+          <aside>
+            <span>PUBLISHED</span>
+            <strong>{archive.length}</strong>
+            <small>verified review{archive.length === 1 ? "" : "s"}</small>
+            <Link href="/journal">Open private journal ↗</Link>
+          </aside>
+        </section>
         {archive.length ? (
           <MarketVideoArchive videos={archive} />
         ) : (
@@ -51,6 +68,10 @@ export default async function MarketReviewsPage() {
             <p>
               No published market videos are listed yet. The verified written Morning Brief remains available.
             </p>
+            <div className="reviewsEmptyActions">
+              <Link href="/brief">Open Morning Brief</Link>
+              <Link href="/journal">Open private journal</Link>
+            </div>
           </section>
         )}
       </div>

@@ -109,6 +109,32 @@ async function requireUser() {
   return user;
 }
 
+async function readJournalBody(request: Request): Promise<Record<string, unknown>> {
+  if ((request.headers.get("content-type") ?? "").includes("application/json")) {
+    return request.json() as Promise<Record<string, unknown>>;
+  }
+  const form = await request.formData();
+  const numberValue = (name: string) => form.get(name) ? Number(form.get(name)) : null;
+  const boolValue = (name: string) => form.get(name) === "yes" ? true : form.get(name) === "no" ? false : null;
+  return {
+    tradedAt: form.get("tradedAt"),
+    instrumentClass: form.get("instrumentClass"),
+    underlying: form.get("underlying"),
+    direction: form.get("direction"),
+    entryPrice: numberValue("entryPrice"),
+    stopPrice: numberValue("stopPrice"),
+    targetPrice: numberValue("targetPrice"),
+    pnl: numberValue("pnl"),
+    positionSize: form.get("positionSize"),
+    optionsStrategy: form.get("optionsStrategy"),
+    followedPlan: boolValue("followedPlan"),
+    emotion: form.get("emotion"),
+    reason: form.get("reason"),
+    notes: form.get("notes"),
+    lesson: form.get("lesson"),
+  };
+}
+
 export async function GET(request: Request) {
   if (!isSameOrigin(request) && request.headers.get("sec-fetch-site") === "cross-site") {
     return NextResponse.json({ ok: false }, { status: 403 });
@@ -135,7 +161,7 @@ export async function POST(request: Request) {
 
   let body: Record<string, unknown> = {};
   try {
-    body = await request.json() as Record<string, unknown>;
+    body = await readJournalBody(request);
   } catch {
     return NextResponse.json({ ok: false, message: "Please check the journal fields and try again." }, { status: 400 });
   }
@@ -153,6 +179,9 @@ export async function POST(request: Request) {
         ? "The trade journal is being prepared and will be available shortly."
         : "Your journal entry could not be saved. Please try again.",
     }, { status: 503 });
+  }
+  if (!request.headers.get("accept")?.includes("application/json")) {
+    return NextResponse.redirect(new URL("/journal?entry=saved", request.url), 303);
   }
   return NextResponse.json({ ok: true, row: result.row });
 }

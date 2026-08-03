@@ -31,6 +31,7 @@ const links = [
   { href: "/brief", label: "Morning Brief", key: "brief" },
   { href: "/terminal", label: "Trading Desk", key: "terminal" },
   { href: "/ideas", label: "Ideas", key: "ideas" },
+  { href: "/reviews", label: "Reviews", key: "review" },
   { href: "/profile", label: "Profile", key: "profile" },
   { href: "/preferences", label: "Preferences", key: "onboarding" },
 ] as const;

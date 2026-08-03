@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../utils/supabase/server";
 import { MemberShell } from "../components/MemberShell";
+import { LearningWorkflowRail } from "../components/LearningWorkflowRail.tsx";
 import { IdeaForm } from "./IdeaForm";
 import { statusLabel } from "./lib";
 
@@ -128,6 +129,7 @@ export default async function IdeasPage({
   return (
     <MemberShell active="ideas">
       <div className="ideasPage">
+        <LearningWorkflowRail active="ideas" />
         <header className="ideasHero">
           <div>
             <span>MEMBER PRODUCT COUNCIL</span>
@@ -140,6 +142,12 @@ export default async function IdeasPage({
               Educational opportunity conditions (confirmed setups to watch, not buy/sell commands) live on the{" "}
               <Link href="/dashboard#opportunity-radar">Dashboard Opportunity Radar</Link>.
             </p>
+          </div>
+          <div className="ideasHeroPulse" aria-label={`${rows.length} member ideas in this view`}>
+            <div aria-hidden="true"><i /><i /><i /><span /></div>
+            <span>Community signal</span>
+            <strong>{rows.length}</strong>
+            <small>{rows.length === 1 ? "idea in view" : "ideas in view"}</small>
           </div>
         </header>
 

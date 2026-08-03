@@ -14,6 +14,8 @@ import { verifiedEventRiskLabel } from "../../terminal/lib/event-display.ts";
 import { formatDelayedDataAgeDisplay } from "../../lib/freshness-labels.ts";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
 import type { MorningMarketBriefModel } from "../lib/compose-market-brief.ts";
+import { BullseyePulse } from "./BullseyePulse.tsx";
+import { BriefExperienceTools } from "./BriefExperienceTools.tsx";
 
 type MorningMarketBriefProps = {
   model: MorningMarketBriefModel;
@@ -190,6 +192,23 @@ export function MorningMarketBrief({
         <span>Educational commentary only — not personalised advice.</span>
       </div>
 
+      <nav className="mbBriefRoute" aria-label="Morning Brief sections">
+        <span>Briefing route</span>
+        <a href="#todays-posture"><b>01</b> Decision</a>
+        <a href="#what-changed"><b>02</b> Context</a>
+        <a href="#verified-levels"><b>03</b> Levels</a>
+        <a href="#watch-avoid"><b>04</b> Risk</a>
+        <a href="#next-actions"><b>05</b> Act</a>
+      </nav>
+
+      <BullseyePulse model={model} insight={insight} permissionBlocked={permissionBlocked} />
+      <BriefExperienceTools
+        posture={model.posture.headline}
+        risk={model.biggestRisk.label}
+        catalyst={timeline[0] ? `${timeline[0].time} · ${timeline[0].name}` : "No verified catalyst listed"}
+        level={model.levels.rungs[0] ? `${model.levels.rungs[0].label} · ${model.levels.rungs[0].value}` : "Awaiting verified levels"}
+      />
+
       <ThirtySecondBrief model={oracle.thirtySecond} />
       <AiMarketInsightCard model={insight} />
       <SessionTimeline model={oracle.timeline} />
@@ -307,9 +326,17 @@ export function MorningMarketBrief({
         )}
       </section>
 
-      <MarketInternalsPanel cards={insight.internals} />
-      <ConvictionExplainer model={oracle.conviction} />
-      <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
+      <details className="mbIntelligenceDrawer">
+        <summary>
+          <span><b>Deep evidence</b> Market internals and conviction factors</span>
+          <i aria-hidden="true">+</i>
+        </summary>
+        <div className="mbIntelligenceDrawerBody">
+          <MarketInternalsPanel cards={insight.internals} />
+          <ConvictionExplainer model={oracle.conviction} />
+          <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
+        </div>
+      </details>
       <DailyChecklistPanel
         postureHeadline={oracle.checklist.postureHeadline}
         permissionTone={oracle.checklist.permissionTone}
@@ -429,7 +456,7 @@ export function MorningMarketBrief({
         </div>
       </section>
 
-      <section className="mbQuickActions" aria-label="Next actions">
+      <section className="mbQuickActions" id="next-actions" aria-label="Next actions">
         <header>
           <span className="mbEyebrow">Next actions</span>
           <h2>Where to go next</h2>
