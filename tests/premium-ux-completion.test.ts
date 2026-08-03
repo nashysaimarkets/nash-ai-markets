@@ -42,6 +42,11 @@ test("authoritative delayed candle age uses dataAgeMs across surfaces", async ()
     formatMembershipAwareMarketDataDisplay({ candleAgeMs: null, candleAccess: false, quoteAvailable: false }),
     "Verified market quote unavailable · candle history requires Pro or Elite",
   );
+  const { formatDelayedDataAgeDisplay } = await import("../app/lib/freshness-labels.ts");
+  assert.equal(
+    formatDelayedDataAgeDisplay("Delayed market quote · verified candle history requires Pro or Elite"),
+    "Delayed market quote · verified candle history requires Pro or Elite",
+  );
 
   const chartMetric = phrase.charAt(0).toUpperCase() + phrase.slice(1);
   assert.equal(chartMetric, "14 minutes old");

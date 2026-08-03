@@ -93,7 +93,7 @@ export function formatDelayedDataAgeDisplay(ageLabel: string | null | undefined)
   if (!age || /unavailable/i.test(age)) {
     return "Delayed market data · latest verified candle age unavailable";
   }
-  if (/^delayed market data/i.test(age)) return age;
+  if (/^(?:delayed market data|delayed market quote|verified market quote unavailable)/i.test(age)) return age;
   const normalized = age
     .replace(/^latest verified candle\s+/i, "")
     .replace(/^latest candle age:\s*/i, "")
