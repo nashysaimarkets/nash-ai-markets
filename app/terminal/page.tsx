@@ -42,7 +42,7 @@ import { membershipEmailKey } from "../lib/server/membership-email.ts";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Trading Desk",
-  description: "Customizable trading desk across interchangeable markets — verified feeds only.",
+  description: "S&P 500 trading desk with verified supporting-market context.",
   robots: { index: false, follow: false },
 };
 

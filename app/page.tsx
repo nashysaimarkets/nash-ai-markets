@@ -61,7 +61,7 @@ const feedbackThemes = [
   },
   {
     quote: "Show me what is verified, what conflicts and what would change the plan.",
-    role: "Process-led options trader",
+    role: "Process-led S&P 500 trader",
   },
 ] as const;
 
@@ -110,10 +110,10 @@ const plans = [
   {
     name: "Elite",
     price: "29.99",
-    copy: "Deeper options-focused context for a more advanced preparation process.",
+    copy: "Deeper S&P 500 decision context for a more advanced preparation process.",
     features: [
       "Everything included in Pro",
-      "Daily options setup",
+      "Daily S&P 500 decision plan",
       "Expanded volatility context",
       "Priority product access",
     ],
@@ -178,7 +178,7 @@ export default async function Home() {
               <p className="mcEyebrow"><span /> Professional pre-market intelligence</p>
               <h1>Prepare Smarter.<br /><em>Trade Better.</em></h1>
               <p className="mcLead">
-                Professional S&amp;P 500 futures and options intelligence—organised
+                Professional S&amp;P 500 futures intelligence—organised
                 into one calm daily plan before the US session.
               </p>
               <p className="mcValueLine">
@@ -393,7 +393,7 @@ export default async function Home() {
         </section>
 
         <section className="mcFaq" id="faq">
-          <div><p className="mcEyebrow">Clear answers</p><h2>Before you begin.</h2><p>Futures and options are complex, high-risk products. Understanding the limits of any analysis is part of a sound process.</p></div>
+          <div><p className="mcEyebrow">Clear answers</p><h2>Before you begin.</h2><p>Futures are complex, high-risk products. Understanding the limits of any analysis is part of a sound process.</p></div>
           <div>
             <details><summary>Is this financial advice?<span>+</span></summary><p>No. NASH AI Markets provides general educational commentary and market analysis. It does not consider your personal circumstances or tell you what to buy or sell.</p></details>
             <details><summary>Does NASH AI predict profitable trades?<span>+</span></summary><p>No. No credible service can guarantee trading outcomes. The platform helps you prepare for multiple possibilities and makes uncertainty explicit. Losses are always possible.</p></details>
@@ -418,7 +418,7 @@ export default async function Home() {
           <div><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/risk-disclaimer">Risk disclaimer</Link><a href={portalUrl}>Manage subscription</a></div>
         </div>
         <div className="mcFooterBottom">
-          <p>Trading futures and options involves substantial risk and is not suitable for everyone. Educational market commentary only. No guaranteed outcomes.</p>
+          <p>Trading futures involves substantial risk and is not suitable for everyone. Educational market commentary only. No guaranteed outcomes.</p>
           <span>© 2026 NASH AI Markets</span>
         </div>
       </footer>

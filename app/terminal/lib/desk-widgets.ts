@@ -125,7 +125,7 @@ export const DESK_WIDGET_REGISTRY: Record<DeskWidgetId, DeskWidgetMeta> = {
   watchlist: {
     id: "watchlist",
     label: "Watchlist",
-    description: "Favourites across interchangeable markets.",
+    description: "Favourites for verified supporting-market context.",
     stage: false,
     defaultEnabled: true,
   },

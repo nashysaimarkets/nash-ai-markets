@@ -38,6 +38,18 @@ const sampleSession = (phase: SessionClockReading["phase"]): SessionClockReading
   source: "test",
 });
 
+test("customer-facing product copy stays focused on the S&P 500 decision workflow", () => {
+  const repositoryRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const homepage = readFileSync(path.join(repositoryRoot, "app/page.tsx"), "utf8");
+  const terminalPage = readFileSync(path.join(repositoryRoot, "app/terminal/page.tsx"), "utf8");
+  const deskWidgets = readFileSync(path.join(repositoryRoot, "app/terminal/lib/desk-widgets.ts"), "utf8");
+
+  assert.match(homepage, /Professional S&amp;P 500 futures intelligence/);
+  assert.match(homepage, /Daily S&P 500 decision plan/);
+  assert.doesNotMatch(homepage, /options-focused|Daily options setup|futures and options intelligence/i);
+  assert.doesNotMatch(`${terminalPage}\n${deskWidgets}`, /interchangeable markets/i);
+});
+
 test("Restricted enum maps to WAIT FOR CONFIRMATION for customers", () => {
   const presentation = buildDeskDecisionPresentation({
     decision: {
