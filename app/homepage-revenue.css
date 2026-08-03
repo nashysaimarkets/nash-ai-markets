@@ -426,6 +426,14 @@
   font-size: 11px;
 }
 
+.mcLaunchPriceNote {
+  min-height: 0 !important;
+  margin: -8px 0 18px;
+  color: #e5c86f !important;
+  font: 700 var(--type-floor) "Courier New", monospace !important;
+  letter-spacing: 1px;
+}
+
 .mcPlanGrid article > p,
 .mcPlanFeatured > p {
   color: #aeb8b3 !important;

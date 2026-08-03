@@ -50,6 +50,19 @@ test("customer-facing product copy stays focused on the S&P 500 decision workflo
   assert.doesNotMatch(`${terminalPage}\n${deskWidgets}`, /interchangeable markets/i);
 });
 
+test("Founding Pro launch offer is reserved without sending members to the standard-price checkout", () => {
+  const repositoryRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const homepage = readFileSync(path.join(repositoryRoot, "app/page.tsx"), "utf8");
+  const pricingPlans = readFileSync(path.join(repositoryRoot, "app/pricing/PricingPlans.tsx"), "utf8");
+
+  assert.match(homepage, /price: "12"/);
+  assert.match(homepage, /standardPrice: "14\.99"/);
+  assert.match(homepage, /\/waitlist\?plan=founding-pro/);
+  assert.match(pricingPlans, /"£12\/month"/);
+  assert.match(pricingPlans, /Reserve Founding Pro/);
+  assert.match(pricingPlans, /checkout opens after final verification/i);
+});
+
 test("Restricted enum maps to WAIT FOR CONFIRMATION for customers", () => {
   const presentation = buildDeskDecisionPresentation({
     decision: {

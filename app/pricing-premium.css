@@ -162,6 +162,14 @@
   letter-spacing: -0.04em;
 }
 
+.commercialLaunchPrice {
+  display: block;
+  margin: -6px 0 12px;
+  color: #e8c673;
+  font: 700 var(--type-floor) "Courier New", monospace;
+  letter-spacing: 1px;
+}
+
 .commercialPlans p {
   min-height: 66px;
   color: #aeb8b3;

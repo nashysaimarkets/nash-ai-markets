@@ -100,11 +100,12 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "14.99",
+    price: "12",
+    standardPrice: "14.99",
     copy: "The complete pre-market planning workspace for active traders.",
     features: included,
-    action: "Start Pro Membership",
-    href: "/pricing",
+    action: "Reserve Founding Pro",
+    href: "/waitlist?plan=founding-pro",
     featured: true,
   },
   {
@@ -336,6 +337,7 @@ export default async function Home() {
             <div className="mcPlanGrid">
               {plans.map((plan) => {
                 const founding = foundingByPlan[plan.name as keyof typeof foundingByPlan];
+                const foundingProAvailable = plan.name === "Pro" && founding && !founding.full;
                 const foundingLabel =
                   plan.name === "Pro"
                     ? proFounding.label
@@ -349,10 +351,11 @@ export default async function Home() {
                       <div className={`mcFounding${founding.full ? " mcFoundingFull" : ""}`} aria-live="polite">
                         <strong>FOUNDING 100 {plan.name.toUpperCase()}</strong>
                             <span>{foundingLabel}</span>
-                        <small>{founding.detail}</small>
+                        <small>{foundingProAvailable ? "£12/month launch price · checkout opens after final verification." : founding.detail}</small>
                       </div>
                     )}
-                    <div className="mcPrice"><sup>£</sup><strong>{plan.price}</strong><span>/ month</span></div>
+                    <div className="mcPrice"><sup>£</sup><strong>{foundingProAvailable ? plan.price : ("standardPrice" in plan ? plan.standardPrice : plan.price)}</strong><span>/ month</span></div>
+                    {foundingProAvailable && <p className="mcLaunchPriceNote">FOUNDING LAUNCH PRICE · STANDARD £14.99 AFTER 100 PLACES</p>}
                     <p>{plan.copy}</p>
                     <ul>{plan.features.map((feature) => <li key={feature}><i />{feature}</li>)}</ul>
                     <a className={plan.featured ? "mcButton" : "mcPlanButton"} href={plan.href}>{plan.action}<span>↗</span></a>
@@ -363,7 +366,7 @@ export default async function Home() {
             <p className="mcPlanSafety">EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL ANYTIME</p>
             <aside className="mcFoundingTerms" aria-label="Founding 100 terms">
               <strong>Founding 100 price protection</strong>
-              <p>Limited to the first 100 continuously active subscribers in each paid tier. The checkout price remains locked for life while that same membership remains continuously active. If it is cancelled or lapses, the price lock is permanently lost, that price protection ends and any future subscription uses the standard price available at that time.</p>
+              <p>The £12 Founding Pro launch price is limited to the first 100 verified successful subscribers once checkout opens. Joining the waiting list is not a purchase and does not guarantee a place. The successful checkout price remains locked while that same membership stays continuously active. If it is cancelled or lapses, the price lock is permanently lost and any future subscription uses the standard price then available.</p>
             </aside>
           </div>
         </section>
