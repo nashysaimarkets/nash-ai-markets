@@ -42,3 +42,7 @@ audit/.env.local
 *.icloud
 **/* 2.*
 **/* 3.*
+
+# Visual review artifacts
+visual-review/
+playwright/.auth/

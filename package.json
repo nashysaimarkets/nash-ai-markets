@@ -36,7 +36,8 @@
     "audit:desktop": "node --experimental-strip-types audit/src/run-audit.ts --mode=desktop",
     "audit:mobile": "node --experimental-strip-types audit/src/run-audit.ts --mode=mobile",
     "audit:all": "node --experimental-strip-types audit/src/run-audit.ts --mode=all",
-    "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all"
+    "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all",
+    "visual-review": "node --env-file-if-exists=.env --import tsx scripts/visual-review.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
