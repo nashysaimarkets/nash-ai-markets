@@ -276,16 +276,28 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     const stored = readWorkspaceFromBrowser();
     let storedView: DeskViewId = "overview";
     let storedMarketsCollapsed = false;
+    let requestedMarketId: string | null = null;
+    let requestedView: DeskViewId | null = null;
     try {
       const view = window.localStorage.getItem(DESK_VIEW_STORAGE_KEY);
       if (view && isDeskViewId(view)) storedView = view;
       storedMarketsCollapsed = window.localStorage.getItem(DESK_MARKETS_COLLAPSED_KEY) === "1";
+
+      const params = new URLSearchParams(window.location.search);
+      const market = params.get("market");
+      const entryView = params.get("view");
+      if (market) {
+        const resolved = resolveStoredMarketId(market);
+        if (getMarketInstrument(resolved)) requestedMarketId = resolved;
+      }
+      if (entryView && isDeskViewId(entryView)) requestedView = entryView;
     } catch {
       // Browser storage is optional; deterministic defaults remain usable.
     }
     startTransition(() => {
-      setWorkspace(stored.version === 1 ? stored : payload.initialWorkspace);
-      setDeskView(storedView);
+      const restored = stored.version === 1 ? stored : payload.initialWorkspace;
+      setWorkspace(requestedMarketId ? { ...restored, activeMarketId: requestedMarketId } : restored);
+      setDeskView(requestedView ?? storedView);
       setMarketsCollapsed(storedMarketsCollapsed);
       setHydrated(true);
     });

@@ -17,6 +17,7 @@ import {
   tradingViewSymbol,
 } from "../app/terminal/lib/preferred-platforms.ts";
 import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
+import { readFileSync } from "node:fs";
 
 test("desk widget registry includes distinctive tools", () => {
   for (const id of [
@@ -33,6 +34,18 @@ test("desk widget registry includes distinctive tools", () => {
     assert.equal(isDeskWidgetId(id), true);
   }
   assert.equal(DESK_WIDGET_IDS.length >= 16, true);
+});
+
+test("dashboard desk entry requests ES charts and the desk honours explicit entry context", () => {
+  const dashboard = readFileSync(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
+  const commandCentre = readFileSync(new URL("../app/dashboard/components/MarketCommandCentre.tsx", import.meta.url), "utf8");
+  const desk = readFileSync(new URL("../app/terminal/components/TradingDeskOS.tsx", import.meta.url), "utf8");
+
+  assert.match(dashboard, /\/terminal\?market=es&view=charts/);
+  assert.match(commandCentre, /\/terminal\?market=es&view=charts/);
+  assert.match(desk, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(desk, /requestedMarketId \? \{ \.\.\.restored, activeMarketId: requestedMarketId \} : restored/);
+  assert.match(desk, /setDeskView\(requestedView \?\? storedView\)/);
 });
 
 test("workspace normalises legacy nq favourite to ixic without changing selection semantics", () => {

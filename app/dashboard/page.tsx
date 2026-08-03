@@ -260,7 +260,7 @@ export default async function MemberDashboard() {
           <span>No invented market values are shown. Retry or continue on the Trading Desk.</span>
           <div>
             <Link href="/dashboard">Retry dashboard</Link>
-            <Link href="/terminal">Open Trading Desk</Link>
+            <Link href="/terminal?market=es&view=charts">Open Trading Desk</Link>
           </div>
         </aside>
       ) : null}
@@ -275,7 +275,7 @@ export default async function MemberDashboard() {
           </span>
           <div>
             <Link href="/dashboard">Retry</Link>
-            <Link href="/terminal">Open desk</Link>
+            <Link href="/terminal?market=es&view=charts">Open desk</Link>
           </div>
         </aside>
       ) : null}

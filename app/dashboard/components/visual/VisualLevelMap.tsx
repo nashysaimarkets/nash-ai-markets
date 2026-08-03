@@ -38,7 +38,7 @@ export function VisualLevelMap({
       <div className="dashLevelMap is-empty" role="status">
         <span className="dashStatusBadge is-muted">Awaiting verified levels</span>
         <p>{note ?? "ES reference levels appear once verified 24-hour candles are available."}</p>
-        <Link href="/terminal" className="dashTextLink">
+        <Link href="/terminal?market=es&view=charts" className="dashTextLink">
           Open full chart on Trading Desk
         </Link>
       </div>
@@ -93,7 +93,7 @@ export function VisualLevelMap({
         ))}
       </ol>
       {note ? <p className="dashLevelsNote">{note}</p> : null}
-      <Link href="/terminal" className="dashTextLink">
+      <Link href="/terminal?market=es&view=charts" className="dashTextLink">
         Open full chart on Trading Desk
       </Link>
     </div>

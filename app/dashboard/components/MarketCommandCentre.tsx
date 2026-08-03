@@ -195,7 +195,7 @@ export function MarketCommandCentre({
           statusLabel="Awaiting verified ES candles"
           reason="The chart appears here once verified delayed history is available for your membership."
           action={
-            <Link href="/terminal" className="dashTextLink">
+            <Link href="/terminal?market=es&view=charts" className="dashTextLink">
               Open Trading Desk
             </Link>
           }
@@ -636,7 +636,7 @@ export function MarketCommandCentre({
             </small>
             <b>Open Morning Brief</b>
           </Link>
-          <Link href="/terminal" className={`dashAction${!postClose ? " is-primary" : ""}`}>
+          <Link href="/terminal?market=es&view=charts" className={`dashAction${!postClose ? " is-primary" : ""}`}>
             <small className="vxIconLabel">
               <StatusIcon name="desk" /> ACTIVE SESSION
             </small>

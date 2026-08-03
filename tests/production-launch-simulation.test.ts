@@ -11,7 +11,7 @@ const now = Date.parse("2026-07-17T12:00:00.000Z");
 
 test("production simulation: passwordless authentication is fail-safe and redirect-bound", async () => {
   const [login, callback, sessionRoute, dashboard] = await Promise.all([
-    source("app/login/LoginForm.tsx"),
+    source("app/login/StagingLoginForm.tsx"),
     source("app/auth/callback/page.tsx"),
     source("app/api/auth/session/route.ts"),
     source("app/dashboard/page.tsx"),

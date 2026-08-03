@@ -43,7 +43,7 @@ export function TodaysEdge({
       </div>
       <footer>
         <span>Informational analysis · scenarios remain conditional</span>
-        <Link href="/terminal">{verified ? "Inspect the full evidence" : "Open data-safe terminal"} <span aria-hidden="true">→</span></Link>
+        <Link href="/terminal?market=es&view=charts">{verified ? "Inspect the full evidence" : "Open data-safe terminal"} <span aria-hidden="true">→</span></Link>
       </footer>
     </section>
   );
