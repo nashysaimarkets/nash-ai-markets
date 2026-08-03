@@ -115,8 +115,18 @@ test("commercial schema and webhook store interval and unit amount server-side",
 });
 
 test("commercial admin is allowlisted and labels conversion denominator", async () => {
-  const admin = await read("app/admin/commercial/page.tsx");
+  const [admin, server] = await Promise.all([
+    read("app/admin/commercial/page.tsx"),
+    read("app/lib/server/commercial.ts"),
+  ]);
   assert.match(admin, /isFounding100Admin/);
   assert.match(admin, /active paid \/ registered accounts/);
   assert.match(admin, /No member or revenue value has been inferred/);
+  assert.match(admin, /FOUNDING PRO INTEREST/);
+  assert.match(admin, /TOTAL WAITING LIST/);
+  assert.match(admin, /waitlist\.metrics\?\.foundingProInterest/);
+  assert.match(server, /loadWaitlistMetrics/);
+  assert.match(server, /count: "exact", head: true/);
+  assert.match(server, /\.eq\("source", "homepage"\)/);
+  assert.doesNotMatch(admin, /waitlist.*email|email.*waitlist/i);
 });

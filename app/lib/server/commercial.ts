@@ -20,6 +20,11 @@ export type CommercialMetrics = {
   conversionPercent: number | null;
 };
 
+export type WaitlistMetrics = {
+  total: number;
+  foundingProInterest: number;
+};
+
 export function calculateCommercialMetrics(rows: readonly CommercialMembership[]): CommercialMetrics {
   const active = rows.filter((row) => row.status === "active" || row.status === "trialing");
   const free = rows.filter((row) => row.plan === "free").length;
@@ -115,5 +120,29 @@ export async function loadCommercialReport() {
     return { status: "available" as const, metrics, rows };
   } catch {
     return { status: "unavailable" as const, metrics: null, rows: [] };
+  }
+}
+
+export async function loadWaitlistMetrics() {
+  try {
+    const admin = createAdminClient();
+    const [totalResult, foundingProResult] = await Promise.all([
+      admin.from("launch_waitlist").select("*", { count: "exact", head: true }),
+      admin.from("launch_waitlist").select("*", { count: "exact", head: true }).eq("source", "homepage"),
+    ]);
+    if (totalResult.error || foundingProResult.error
+      || typeof totalResult.count !== "number"
+      || typeof foundingProResult.count !== "number") {
+      return { status: "unavailable" as const, metrics: null };
+    }
+    return {
+      status: "available" as const,
+      metrics: {
+        total: totalResult.count,
+        foundingProInterest: foundingProResult.count,
+      } satisfies WaitlistMetrics,
+    };
+  } catch {
+    return { status: "unavailable" as const, metrics: null };
   }
 }
