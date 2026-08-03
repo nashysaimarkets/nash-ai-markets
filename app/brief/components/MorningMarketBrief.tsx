@@ -180,7 +180,7 @@ export function MorningMarketBrief({
             <small>DASHBOARD</small>
             <b>Open Dashboard</b>
           </Link>
-          <Link href="/terminal" className="mbSecondaryAction">
+          <Link href="/terminal?market=es&view=charts" className="mbSecondaryAction">
             <small>DESK</small>
             <b>Open Trading Desk</b>
           </Link>
@@ -389,7 +389,7 @@ export function MorningMarketBrief({
                 : "Shown only when verified inputs support the reading."}
             </small>
           </div>
-          <Link href="/terminal" className="mbTextLink">
+          <Link href="/terminal?market=es&view=charts" className="mbTextLink">
             Open full chart on Trading Desk
           </Link>
         </section>
@@ -462,7 +462,7 @@ export function MorningMarketBrief({
           <h2>Where to go next</h2>
         </header>
         <nav className="mbActionGrid">
-          <Link href="/terminal" className="mbAction is-primary">
+          <Link href="/terminal?market=es&view=charts" className="mbAction is-primary">
             <small>DEPTH</small>
             <b>Open Trading Desk</b>
           </Link>

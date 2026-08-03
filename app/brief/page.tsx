@@ -30,7 +30,6 @@ import { createTradingDecision } from "../lib/trading-decision-engine.ts";
 import { createStructuredTradePlan } from "../lib/structured-trade-planner.ts";
 import { readSessionClock } from "../terminal/lib/session-clock.ts";
 import { createUnconfiguredMarketGatewayStatus } from "../lib/live-market-gateway.ts";
-import { formatDelayedVerifiedCandleAgeDisplay } from "../lib/freshness-labels.ts";
 import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
 import { RouteRenderBoundary } from "../components/RouteRenderBoundary";
 import { createRouteTrace, describeError, newCorrelationId } from "../lib/observability/route-trace.ts";
@@ -98,7 +97,7 @@ export default async function AIMarketBriefPage() {
     const support = primaryLevel(snapshot, "support");
     const resistance = primaryLevel(snapshot, "resistance");
     const asOfLabel = formatUkTimestamp(snapshot.asOf);
-    const dataAgeLabel = formatDelayedVerifiedCandleAgeDisplay(candles?.dataAgeMs ?? null);
+    const dataAgeLabel = context.freshness.delayedLabel;
     const rangeHigh = candles?.candles.length
       ? Math.max(...candles.candles.slice(-48).map((candle) => candle.high))
       : null;
@@ -346,7 +345,7 @@ export default async function AIMarketBriefPage() {
           <span>No invented market narrative is shown. Retry or continue on the Trading Desk.</span>
           <div>
             <Link href="/brief">Retry brief</Link>
-            <Link href="/terminal">Open Trading Desk</Link>
+            <Link href="/terminal?market=es&view=charts">Open Trading Desk</Link>
             <Link href="/dashboard">Open Dashboard</Link>
           </div>
         </aside>
@@ -367,7 +366,7 @@ export default async function AIMarketBriefPage() {
           </span>
           <div>
             <Link href="/brief">Retry brief</Link>
-            <Link href="/terminal">Open Trading Desk</Link>
+            <Link href="/terminal?market=es&view=charts">Open Trading Desk</Link>
             <Link href="/dashboard">Show dashboard context</Link>
           </div>
         </aside>

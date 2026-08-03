@@ -230,10 +230,11 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(page, /redirect\("\/login"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
   assert.match(page, /composeMorningMarketBrief/);
-  assert.match(page, /formatDelayedVerifiedCandleAgeDisplay/);
+  assert.match(page, /context\.freshness\.delayedLabel/);
   assert.match(component, /Executive market summary|executiveSummary/);
   assert.match(component, /todays-posture|Wait for confirmation|Stay patient|model\.posture/);
   assert.match(component, /Open Trading Desk/);
+  assert.match(component, /\/terminal\?market=es&view=charts/);
   assert.match(component, /Market weather/);
   assert.match(component, /Breadth is omitted|advance\/decline/);
   assert.match(component, /No upcoming verified event is currently available/);

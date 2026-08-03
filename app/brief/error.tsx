@@ -22,7 +22,7 @@ export default function MarketBriefError({
           <button type="button" onClick={reset}>
             Retry brief
           </button>
-          <Link href="/terminal">Open Trading Desk</Link>
+          <Link href="/terminal?market=es&view=charts">Open Trading Desk</Link>
           <Link href="/dashboard">Show available verified context</Link>
         </div>
         {error.digest ? (
