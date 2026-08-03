@@ -58,7 +58,7 @@ function messageForOtpRequestError(error: { code?: string; message?: string; sta
   return "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again.";
 }
 
-export default function LoginForm() {
+export default function StagingLoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");

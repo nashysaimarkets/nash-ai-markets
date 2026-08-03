@@ -37,6 +37,8 @@ test("service worker caches only the application shell and safe static assets", 
   assert.match(worker, /PRIVATE_PREFIXES/);
   for (const path of ["/api/", "/auth/", "/dashboard", "/brief", "/terminal"]) assert.match(worker, new RegExp(path.replaceAll("/", "\\/")));
   assert.match(worker, /request\.mode === "navigate"/);
+  assert.match(worker, /request\.destination === "script" \|\| request\.destination === "style"/);
+  assert.match(worker, /nash-shell-v2/);
   assert.match(worker, /no-store\|private/);
   assert.match(worker, /set-cookie/);
   const installHandler = worker.match(/self\.addEventListener\("install"[\s\S]*?\n\}\);/)?.[0] ?? "";

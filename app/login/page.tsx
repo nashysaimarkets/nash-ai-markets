@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import LoginForm from "./LoginForm";
+import LoginForm from "./StagingLoginForm";
 import { BrandLogo } from "../components/BrandLogo";
 import { createClient } from "../../utils/supabase/server";
 
