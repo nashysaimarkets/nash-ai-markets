@@ -9,6 +9,13 @@ const PRODUCTION_ORIGINS = new Set([
   "https://nashaimarkets.com",
 ]);
 
+/** Owner-only Sites environment used for authenticated release acceptance. */
+const STAGING_ORIGINS = new Set([
+  "https://nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site",
+]);
+
+const STAGING_SUPABASE_PROJECT = "pxlqvaddvghjjhenqmdh";
+
 /** Unique and git preview hosts for the nash-ai-markets Vercel project. */
 const VERCEL_PREVIEW_ORIGIN =
   /^https:\/\/nash-ai-markets-[a-z0-9-]+-nash-ai-markets\.vercel\.app$/i;
@@ -52,9 +59,27 @@ export function isAllowedAuthOrigin(origin: string): boolean {
   const normalized = normalizeHttpOrigin(origin);
   if (!normalized) return false;
   if (PRODUCTION_ORIGINS.has(normalized)) return true;
+  if (STAGING_ORIGINS.has(normalized)) return true;
   if (LOCAL_ORIGIN.test(normalized)) return true;
   if (VERCEL_PREVIEW_ORIGIN.test(normalized)) return true;
   return false;
+}
+
+/**
+ * Fail closed when owner-only staging was compiled against another Supabase
+ * project. NEXT_PUBLIC values are embedded into the browser bundle at build.
+ */
+export function isAuthProviderCompatibleWithOrigin(
+  origin: string,
+  supabaseUrl: string | null | undefined,
+): boolean {
+  const normalized = normalizeHttpOrigin(origin);
+  if (!normalized || !STAGING_ORIGINS.has(normalized)) return true;
+  try {
+    return new URL(supabaseUrl ?? "").hostname === `${STAGING_SUPABASE_PROJECT}.supabase.co`;
+  } catch {
+    return false;
+  }
 }
 
 /**
