@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import LoginForm from "./LoginForm";
+import LoginForm from "./StagingLoginForm";
 import { BrandLogo } from "../components/BrandLogo";
 
 export const metadata: Metadata = {

@@ -46,7 +46,7 @@ function messageForSignInError(reason: string | null): string {
   }
 }
 
-export default function LoginForm() {
+export default function StagingLoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
