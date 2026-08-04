@@ -3,8 +3,9 @@
 Last updated: **4 August 2026**  
 Repository path: `/Users/nashys/Desktop/nash-ai-markets-live`  
 GitHub: `nashysaimarkets/nash-ai-markets`  
-Status at write: branch `release/bullseye-launch-candidate` @ `2ae234d`  
-**Public production: NO-GO.** Private staging continues.
+Status at write: branch `release/bullseye-launch-candidate` @ `aa61429` (+ local uncommitted launch docs / evidence tooling)  
+**Public production: NO-GO.** Private staging continues.  
+Local safety checkpoint (not pushed): tag `checkpoint/bullseye-pre-parallel-2026-08-04`, branch `backup/bullseye-pre-parallel-2026-08-04`.
 
 This file is the recovery brief for humans and future AI sessions. Prefer it over chat memory. Cross-check live evidence in `docs/LAUNCH_GATE_STATUS.md` and the current git tip before acting.
 
@@ -101,7 +102,7 @@ Source: `app/lib/auth/safe-auth-redirect.ts`, `docs/LAUNCH_GATE_STATUS.md`, `doc
 
 ---
 
-## 5. Supabase environments — INCLUDING OPEN DISCREPANCY
+## 5. Supabase environments — INCLUDING STAGING BUNDLE BLOCKER
 
 ### What the repository asserts (code + docs + tests)
 
@@ -111,38 +112,53 @@ Source: `app/lib/auth/safe-auth-redirect.ts`, `docs/LAUNCH_GATE_STATUS.md`, `doc
 | `docs/LAUNCH_GATE_STATUS.md` | **`pxlqvaddvghjjhenqmdh`** |
 | `tests/auth-redirect.test.ts` | **`pxlqvaddvghjjhenqmdh`** returns **compatible** on Sites staging origin |
 
-The same test treats **`https://opmgzchnmcgnsfwpmysc.supabase.co` as incompatible** when the request origin is the owner-only Sites staging host (fail-closed on provider mismatch — introduced in `f00fca8`).
+The same test treats **`https://opmgzchnmcgnsfwpmysc.supabase.co` as incompatible** when the request origin is the owner-only Sites staging host (fail-closed on provider mismatch — introduced in `f00fca8`). The guard must **not** be weakened.
 
 Compatibility check applies **only** when the browser origin is the Sites staging origin. Localhost skips that check.
 
-### What this workstation’s local `.env` currently points at (host only)
+### Owner-confirmed Sites staging Settings (4 Aug 2026)
+
+| Item | Status |
+|---|---|
+| Sites staging `NEXT_PUBLIC_SUPABASE_URL` host | **`pxlqvaddvghjjhenqmdh.supabase.co`** (confirmed) |
+| Stripe / FMP / other Sites staging secrets | Populated (values not recorded here) |
+
+### Live staging browser artifact (proven defect)
 
 | Item | Value |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` host | `opmgzchnmcgnsfwpmysc.supabase.co` |
-| Project ref | **`opmgzchnmcgnsfwpmysc`** |
+| Staging URL | `https://nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site` |
+| Live `StagingLoginForm-*.js` inlined host | **`opmgzchnmcgnsfwpmysc`** |
+| `data-auth-redirect-ready` on `/login` | `"false"` |
+| Effect | Magic link refused with “Staging authentication is being updated…” |
 
-No secret values are recorded here.
+Cause: vinext **build-time** bake of `NEXT_PUBLIC_SUPABASE_URL`. Sites Settings update alone does not rewrite an already-deployed client chunk.
 
-### Discrepancy (UNRESOLVED — do not silently “fix”)
+### Local rebuild proof (no deploy)
 
-- **Documented / coded Sites staging provider:** `pxlqvaddvghjjhenqmdh`
-- **Local `.env` provider:** `opmgzchnmcgnsfwpmysc`
-- **Repo evidence for `opmgz…` as production:** none found
-- **Repo evidence for `opmgz…` as staging:** none found — only used as the **negative** fixture in auth tests
-- **Vercel / hosting env files in git:** no committed Supabase URL binding for either ref (`.openai/hosting.json` is OpenAI project metadata, not Supabase)
-- **Owner confirmation:** not yet established which cloud project local keys belong to
+Process-level override only (`.env` not edited):  
+`NEXT_PUBLIC_SUPABASE_URL=https://pxlqvaddvghjjhenqmdh.supabase.co` → `npm run build`  
+Result: client `StagingLoginForm` chunk contains **`pxlqv…`**, dist has **zero** `opmgz…`.
 
-**Implication:** a developer can run localhost against `opmgz…` without tripping the Sites fail-closed guard, while the private Sites host expects a browser/build bundle compiled for `pxlqv…`. Do **not** change `.env`, launch-gate docs, or auth constants until the owner confirms identity of both projects in the Supabase dashboard.
+### Redeploy blocker (operational)
 
-### Safest resolution path (awaiting approval)
+ChatGPT Work usage prevents Sites rebuild/redeploy until **8 August 2026 23:42**.  
+Exact owner steps: `docs/STAGING_REDEPLOY_AFTER_USAGE_RESET.md`.  
+**Not required for that specific blocker:** code change, Stripe change, Supabase project/data change, production change, or removing the auth guard.
 
-1. Owner opens Supabase dashboard and labels which ref is staging vs production vs obsolete.  
-2. Align local `.env` for **local** work intentionally (document purpose).  
-3. Align Sites build/runtime env so Sites host + `STAGING_SUPABASE_PROJECT` match.  
-4. Only then update `docs/LAUNCH_GATE_STATUS.md` if the coded staging ref must change (high risk — needs explicit approval).
+### Local workstation `.env` (host only — do not auto-edit)
 
----
+| Item | Value |
+|---|---|
+| Local `NEXT_PUBLIC_SUPABASE_URL` host | `opmgzchnmcgnsfwpmysc.supabase.co` |
+
+Keep local `.env` intentional and separate from Sites Settings. Do not commit `.env`.
+
+### Post-redeploy verification (before any OTP)
+
+1. Live login chunk contains `pxlqvaddvghjjhenqmdh` and not `opmgzchnmcgnsfwpmysc`.  
+2. `data-auth-redirect-ready="true"` on staging `/login`.  
+3. Then at most one magic-link test.
 
 ## 6. Stripe architecture
 
@@ -150,7 +166,7 @@ No secret values are recorded here.
 - Webhook signature verification required; membership upsert is server-only.
 - Founding Pro uses a dedicated Price ID and eligibility checks (see recent local commits / `docs/ENVIRONMENT_VARIABLES.md`).
 - Staging/test matrix: `docs/STRIPE_STAGING_TEST_MATRIX.md`.
-- **Launch gate:** Stripe test-mode lifecycle not fully configured for public launch.
+- **Launch gate:** Stripe **implementation complete**. Dashboard verification (Prices, portal, webhook, hosted secret names) is an **external operational checklist**, not an application-development blocker. Do not recreate Stripe objects unless runtime testing proves a break.
 - Untracked local: `infra/stripe-webhook-relay/` — treat as experimental until reviewed; do not push blindly.
 
 ---
@@ -175,7 +191,7 @@ No secret values are recorded here.
 - Authenticated tablet/mobile + a11y matrix evidence  
 - Auth link expiry / reuse / sign-out return-path matrix  
 - Populated delayed candle session acceptance (blocked on deliberate FMP entitlement)  
-- Stripe test-mode full lifecycle proof  
+- Stripe operational checklist only (Dashboard / lifecycle proof when billing is exercised)  
 - Transactional email provider readiness  
 - Monitoring, backup/restore drill, legal / financial-promotion approvals  
 - Founding Pro waitlist/offer work present locally — confirm product readiness before publishing  
@@ -185,15 +201,15 @@ No secret values are recorded here.
 
 ## 9. Launch blockers
 
-See `docs/LAUNCH_GATE_STATUS.md` (evidence review 2 Aug 2026). Headline:
+See `docs/LAUNCH_GATE_STATUS.md` (evidence review **4 Aug 2026**). Headline:
 
-1. Auth / mobile / tablet staging evidence incomplete  
-2. FMP entitlement for populated session  
-3. Stripe test-mode acceptance  
+1. **Staging Sites stale browser bundle** (`opmgz` in live login chunk vs Settings `pxlqv`) — redeploy after Work usage reset **8 Aug 2026 23:42**  
+2. Auth / mobile / tablet staging evidence incomplete (needs storage-state after magic-link works)  
+3. FMP entitlement for populated session  
 4. Email delivery readiness  
-5. Ops + legal + promo approvals  
+5. Ops + legal + promo approvals (incl. optional Stripe Dashboard ops checklist when billing is exercised)  
 6. Production DNS/secrets/deploy not authorized  
-7. **Operational:** local tip `2ae234d` is **52 commits ahead** of `origin/release/bullseye-launch-candidate` (`b8bd37a`) — GitHub PR is not “latest local”
+7. **Operational:** local tip leads `origin/release/bullseye-launch-candidate` — do not push without approval  
 
 ---
 
@@ -201,10 +217,11 @@ See `docs/LAUNCH_GATE_STATUS.md` (evidence review 2 Aug 2026). Headline:
 
 | Risk | Notes |
 |---|---|
-| Supabase env ambiguity | Local `opmgz…` vs coded Sites staging `pxlqv…` — unresolved |
-| Stale GitHub launch PR tip | PR #37 @ `b8bd37a`; local @ `2ae234d` |
-| Visual review incomplete | Last pack INCOMPLETE without auth storage state |
-| Untracked `infra/` | Not in version control |
+| Stale staging client bake | Live Sites still serves `opmgz…` in login JS; Settings already `pxlqv…` |
+| Local `.env` still `opmgz…` | Intentional separation until owner aligns local purpose; do not auto-edit |
+| Stale GitHub launch PR tip | PR #37 lagging local tip |
+| Visual / auth evidence incomplete | Needs post-redeploy storage-state |
+| Untracked `infra/stripe-webhook-relay/` | Exclude from commits until reviewed |
 | Local `main` stale | Do not use as upstream truth |
 
 ---
