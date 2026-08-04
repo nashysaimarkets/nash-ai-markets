@@ -186,7 +186,7 @@ export default async function Home() {
               </p>
               <div className="mcHeroActions">
                 <a className="mcButton" href="#membership">Start Your Membership <span>↗</span></a>
-                <a className="mcTextLink" href="/terminal">View the platform <span>↗</span></a>
+                <a className="mcTextLink" href="/login">View membership access <span>↗</span></a>
               </div>
               <ul className="mcTrust" aria-label="Platform principles">
                 <li><i /> Evidence before opinion</li>
@@ -292,7 +292,7 @@ export default async function Home() {
               <p className="mcEyebrow">The Bullseye method</p>
               <h2>A repeatable process<br />for an <em>unpredictable market.</em></h2>
               <p>Each stage is designed to slow down weak assumptions and make the evidence behind a decision easier to review.</p>
-              <a className="mcTextLink" href="/terminal">Open terminal preview <span>↗</span></a>
+              <a className="mcTextLink" href="/login">Open secure member access <span>↗</span></a>
             </div>
             <ol className="mcWorkflowSteps">
               {workflow.map(([title, copy], index) => (
@@ -350,7 +350,19 @@ export default async function Home() {
                     {foundingProAvailable && <p className="mcLaunchPriceNote">FOUNDING LAUNCH PRICE · STANDARD £14.99 AFTER 100 PLACES</p>}
                     <p>{plan.copy}</p>
                     <ul>{plan.features.map((feature) => <li key={feature}><i />{feature}</li>)}</ul>
-                    <a className={plan.featured ? "mcButton" : "mcPlanButton"} href={plan.href}>{plan.action}<span>↗</span></a>
+                    <a
+                      className={plan.featured ? "mcButton" : "mcPlanButton"}
+                      href={
+                        plan.name === "Pro" && founding && founding.full
+                          ? "/pricing"
+                          : plan.href
+                      }
+                    >
+                      {plan.name === "Pro" && founding && founding.full
+                        ? "Start Pro"
+                        : plan.action}
+                      <span>↗</span>
+                    </a>
                   </article>
                 );
               })}
