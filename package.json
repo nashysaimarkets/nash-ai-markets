@@ -28,6 +28,8 @@
     "preview:member": "node --import tsx scripts/preview-member-surfaces.tsx",
     "preview:shots": "npm run preview:member && node scripts/preview-screenshots.mjs",
     "visual-review": "node --env-file-if-exists=.env --import tsx scripts/visual-review.ts",
+    "staging:export-storage": "node --env-file-if-exists=.env --import tsx scripts/export-storage-state.ts",
+    "staging:auth-evidence": "node --env-file-if-exists=.env --import tsx scripts/staging-auth-evidence.ts",
     "audit:typefloor": "node scripts/apply-type-floor.mjs",
     "audit:motion": "node scripts/apply-motion-tokens.mjs",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
