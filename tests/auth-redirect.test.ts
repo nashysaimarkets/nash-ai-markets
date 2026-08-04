@@ -82,6 +82,13 @@ test("Sites staging refuses a browser bundle compiled for another Supabase proje
     ),
     false,
   );
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      SITES_STAGING,
+      "https://PXLQVADDVGHJJHENQMDH.SUPABASE.CO./",
+    ),
+    true,
+  );
   assert.equal(isAuthProviderCompatibleWithOrigin(PRODUCTION, null), true);
 });
 

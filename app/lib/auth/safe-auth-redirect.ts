@@ -77,7 +77,11 @@ export function isAuthProviderCompatibleWithOrigin(
   const normalized = normalizeHttpOrigin(origin);
   if (!normalized || !STAGING_ORIGINS.has(normalized)) return true;
   try {
-    return new URL(supabaseUrl ?? "").hostname === `${STAGING_SUPABASE_PROJECT}.supabase.co`;
+    const providerHostname = new URL(supabaseUrl ?? "")
+      .hostname
+      .toLowerCase()
+      .replace(/\.$/, "");
+    return providerHostname === `${STAGING_SUPABASE_PROJECT}.supabase.co`;
   } catch {
     return false;
   }
