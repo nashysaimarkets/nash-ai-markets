@@ -28,7 +28,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   const [{ data: membership, error: membershipError }, { data: preferences }, founding100] = await Promise.all([
     supabase
       .from("memberships")
-      .select("plan, status, current_period_end, billing_interval")
+      .select("plan, status, current_period_end, billing_interval, cancel_at_period_end")
       .eq("email", membershipEmailKey(user.email))
       .in("plan", ["free", "pro", "elite"])
       .maybeSingle(),
@@ -99,6 +99,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
             verificationUnavailable={Boolean(membershipError)}
             foundingRecords={founding100.records}
             billingInterval={membership?.billing_interval ?? null}
+            cancelAtPeriodEnd={membership?.cancel_at_period_end ?? false}
           />
         </DashboardCard>
 

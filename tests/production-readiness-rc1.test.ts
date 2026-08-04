@@ -13,6 +13,15 @@ test("Stripe membership synchronization rejects out-of-order events atomically",
   assert.match(migration, /to service_role/);
 });
 
+test("scheduled Stripe cancellations remain server-controlled and ordered", async () => {
+  const migration = await read("supabase/migrations/20260804091107_track_stripe_cancellation_schedule.sql");
+  assert.match(migration, /cancel_at_period_end boolean not null default false/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /last_stripe_event_created_at[\s\S]*<= p_event_created_at/);
+  assert.match(migration, /sync_membership_cancellation_from_stripe[\s\S]*from public, anon, authenticated/);
+  assert.match(migration, /sync_membership_cancellation_from_stripe[\s\S]*to service_role/);
+});
+
 test("staging hardening removes default API grants from server-only functions", async () => {
   const migration = await read("supabase/migrations/202608020011_harden_function_grants.sql");
   assert.match(migration, /save_member_onboarding[\s\S]*security invoker/);

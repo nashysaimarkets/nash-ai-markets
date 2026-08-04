@@ -33,6 +33,18 @@ async function customerEmail(stripe: Stripe, customer: string | Stripe.Customer 
   return "deleted" in record && record.deleted ? null : record.email?.toLowerCase() ?? null;
 }
 
+async function syncCancellationSchedule(subscription: Stripe.Subscription, eventCreated: number) {
+  const { error } = await createAdminClient().rpc("sync_membership_cancellation_from_stripe", {
+    p_stripe_subscription_id: subscription.id,
+    p_cancel_at_period_end: subscription.cancel_at_period_end,
+    p_event_created_at: eventCreated,
+  });
+  if (error) {
+    logSupabaseFailure("membership_rpc", error);
+    throw error;
+  }
+}
+
 async function syncFounding100(
   subscription: Stripe.Subscription,
   plan: Plan | null,
@@ -102,6 +114,7 @@ async function saveSubscription(
       logSupabaseFailure("membership_rpc", error);
       throw error;
     }
+    await syncCancellationSchedule(subscription, eventCreated);
     await syncFounding100(subscription, null, false, email, eventCreated);
     return;
   }
@@ -127,6 +140,7 @@ async function saveSubscription(
     logSupabaseFailure("membership_rpc", error);
     throw error;
   }
+  await syncCancellationSchedule(subscription, eventCreated);
   const foundingEligible = offerings.length === 1
     && offerings[0].offering.foundingEligible
     && validFoundingProPrice(offerings[0].item.price);

@@ -14,6 +14,7 @@ type SubscriptionStatusCardProps = {
   verificationUnavailable?: boolean;
   foundingRecords?: readonly Founding100Record[];
   billingInterval?: "month" | "year" | null;
+  cancelAtPeriodEnd?: boolean;
 };
 
 function periodLabel(value: string | null): string {
@@ -33,6 +34,7 @@ export function SubscriptionStatusCard({
   verificationUnavailable = false,
   foundingRecords = [],
   billingInterval = null,
+  cancelAtPeriodEnd = false,
 }: SubscriptionStatusCardProps) {
   const hasPaidRecord = billingPlan === "pro" || billingPlan === "elite" || tier === "pro" || tier === "elite";
   const recordedStatus = status?.toLowerCase() ?? "unavailable";
@@ -44,19 +46,20 @@ export function SubscriptionStatusCard({
         ? recordedStatus
         : "free";
   const healthy = normalizedStatus === "active" || normalizedStatus === "trialing" || normalizedStatus === "free";
+  const scheduledCancellation = cancelAtPeriodEnd && hasPaidRecord && healthy;
   return <section className={`subscriptionStatus ${compact ? "subscriptionStatusCompact" : ""}`.trim()} aria-label="Subscription status">
     {foundingRecords.map((record) => <Founding100Badge key={`${record.programme}-${record.position}`} record={record} compact={compact} />)}
     <div className="subscriptionStatusLead">
       <TerminalBadge label={`${tier} plan`} tone={tier === "elite" ? "warning" : tier === "pro" ? "info" : "neutral"} />
-      <div><span>SUBSCRIPTION STATUS</span><strong>{normalizedStatus.replaceAll("_", " ")}</strong></div>
+      <div><span>SUBSCRIPTION STATUS</span><strong>{scheduledCancellation ? "cancels at period end" : normalizedStatus.replaceAll("_", " ")}</strong></div>
     </div>
     <dl>
       <div><dt>Current access</dt><dd>{verificationUnavailable ? "Unable to verify" : tier.toUpperCase()}</dd></div>
-      <div><dt>{hasPaidRecord ? "Recorded period ends" : "Billing period"}</dt><dd>{hasPaidRecord ? periodLabel(periodEnd) : "No paid subscription"}</dd></div>
+      <div><dt>{scheduledCancellation ? "Access ends" : hasPaidRecord ? "Recorded period ends" : "Billing period"}</dt><dd>{hasPaidRecord ? periodLabel(periodEnd) : "No paid subscription"}</dd></div>
       <div><dt>Billing cadence</dt><dd>{hasPaidRecord ? billingInterval === "year" ? "Annual" : billingInterval === "month" ? "Monthly" : "Unavailable" : "Not applicable"}</dd></div>
     </dl>
     <div className="subscriptionStatusActions">
-      <span data-healthy={healthy}>{healthy ? "Access verified" : "Review billing status"}</span>
+      <span data-healthy={healthy}>{scheduledCancellation ? "Access verified until period end" : healthy ? "Access verified" : "Review billing status"}</span>
       {hasPaidRecord ? <a href={portalUrl}>Manage in Stripe</a> : <Link href="/#membership">Compare memberships</Link>}
       <Link href="/pricing">{tier === "elite" ? "Compare billing options" : "Upgrade options"}</Link>
     </div>

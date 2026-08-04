@@ -104,6 +104,9 @@ test("member profile is protected, noindex, and exposes no Stripe identifiers", 
   assert.match(subscription, /tier === "free" && hasPaidRecord/);
   assert.match(subscription, /\? "expired"/);
   assert.match(subscription, /Manage in Stripe/);
+  assert.match(page, /cancel_at_period_end/);
+  assert.match(subscription, /cancels at period end/);
+  assert.match(subscription, /Access verified until period end/);
 });
 
 test("profile updates require authentication, same origin, and validated display names", async () => {

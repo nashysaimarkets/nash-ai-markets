@@ -43,12 +43,20 @@ test("Founding Member welcome is created only after accepted review", () => {
 });
 
 test("Stripe webhook rejects metadata-only and ambiguous plan mapping", async () => {
-  const webhook = await source("app/api/stripe/webhook/route.ts");
+  const [webhook, edgeWebhook] = await Promise.all([
+    source("app/api/stripe/webhook/route.ts"),
+    source("supabase/functions/stripe-webhook/index.ts"),
+  ]);
   assert.match(webhook, /matchedPlans\.length === 1/);
   assert.doesNotMatch(webhook, /subscription\.metadata\.plan/);
   assert.match(webhook, /Cannot safely map Stripe subscription to membership/);
   assert.match(webhook, /stripe\.webhooks\.constructEvent/);
   assert.match(webhook, /current_period_end/);
+  assert.match(webhook, /cancel_at_period_end/);
+  assert.match(webhook, /sync_membership_cancellation_from_stripe/);
+  assert.match(edgeWebhook, /stripe\.webhooks\.constructEventAsync/);
+  assert.match(edgeWebhook, /sync_membership_cancellation_from_stripe/);
+  assert.match(edgeWebhook, /cancel_at_period_end/);
 });
 
 test("homepage contains no fixed market values and routes pricing through server checkout", async () => {
