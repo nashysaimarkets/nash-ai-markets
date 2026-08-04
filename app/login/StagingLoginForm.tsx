@@ -12,7 +12,7 @@ import {
   safeAuthNextPath,
 } from "../lib/auth/safe-auth-redirect";
 
-const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_PUBLIC_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
 
 function resolveLoginRedirectTo(origin: string, search: string): { emailRedirectTo: string; next: string } {
   if (!isAllowedAuthOrigin(origin)) {
