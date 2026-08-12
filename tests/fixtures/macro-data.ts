@@ -61,8 +61,8 @@ export const macroContextFixture = {
   generatedAt: "2026-08-11T12:00:00.000Z",
   observations: [treasury10YearFixture, federalReserveBroadDollarFixture],
   releases: [blsReleaseFixture],
-  filings: [secFilingFixture],
-  availableSources: ["Treasury", "Federal Reserve", "BLS", "SEC"],
-  unavailableSources: ["BEA", "Census"],
+  filings: [],
+  availableSources: ["Treasury", "Federal Reserve", "BLS", "BEA"],
+  unavailableSources: ["Census", "SEC"],
   status: "partial",
 } satisfies VerifiedMacroContext;

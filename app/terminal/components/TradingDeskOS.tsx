@@ -15,6 +15,7 @@ import {
   type MarketInstrument,
 } from "../../lib/markets/market-catalog.ts";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { VerifiedMacroContextPanel } from "../../components/VerifiedMacroContextPanel.tsx";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
 import { formatMembershipAwareMarketDataDisplay } from "../../lib/freshness-labels.ts";
 import { resolveDeskFeedStatus } from "../lib/feed-status.ts";
@@ -1511,6 +1512,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </div>
                   )}
                 </section>
+                <VerifiedMacroContextPanel context={payload.macroContext} variant="desk" />
                 <section id="risk-journal" className={`deskWidget deskRiskGate is-${payload.decisionPresentation.permissionTone}`} aria-labelledby="risk-gate-title">
                   <header>
                     <span>Risk gate</span>

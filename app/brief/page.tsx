@@ -22,7 +22,9 @@ import { buildAiMarketInsight, type AiMarketInsightModel } from "../lib/ai-marke
 import { buildOracleBundle } from "../lib/oracle/build-oracle-bundle.ts";
 import type { OracleBundle } from "../components/oracle/OracleCompanionStack.tsx";
 import { MorningMarketBrief } from "./components/MorningMarketBrief";
+import type { VerifiedMacroContext } from "../lib/macro-data.ts";
 import { getVerifiedMarketContext, type VerifiedMarketContext } from "../lib/verified-market-context.ts";
+import { getVerifiedMacroContext } from "../lib/verified-macro-context.ts";
 import { sanitizeForClient } from "../lib/serialize-for-client.ts";
 import { createUnavailableSnapshot } from "../lib/market-data.ts";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
@@ -57,6 +59,7 @@ type BriefViewState = {
   insight: AiMarketInsightModel;
   oracle: OracleBundle;
   archiveAvailable: boolean;
+  macroContext: VerifiedMacroContext | null;
 };
 
 /** Premium Market Brief — verified inputs first; AI narrative is optional and fail-soft. */
@@ -90,9 +93,14 @@ export default async function AIMarketBriefPage() {
 
   let view: BriefViewState;
   try {
-    const context = await step("market.verifiedContext", () =>
-      getVerifiedMarketContext({ paid, now, route: "/brief" }),
-    );
+    const [context, macroContext] = await Promise.all([
+      step("market.verifiedContext", () =>
+        getVerifiedMarketContext({ paid, now, route: "/brief" }),
+      ),
+      step("macro.verifiedContext", () =>
+        getVerifiedMacroContext({ now: () => now, route: "/brief" }),
+      ),
+    ]);
     const { snapshot, intelligence, decision, plan, session, verified, candles } = context;
     const support = primaryLevel(snapshot, "support");
     const resistance = primaryLevel(snapshot, "resistance");
@@ -221,6 +229,7 @@ export default async function AIMarketBriefPage() {
       missingInputs: context.missingInputs,
       correlationId: context.correlationId,
       archiveAvailable: sessionVideos.archive.length > 0,
+      macroContext,
     });
 
     view = {
@@ -232,6 +241,7 @@ export default async function AIMarketBriefPage() {
       insight: props.insight,
       oracle: props.oracle,
       archiveAvailable: props.archiveAvailable,
+      macroContext: props.macroContext,
     };
   } catch (error) {
     console.error(
@@ -334,6 +344,7 @@ export default async function AIMarketBriefPage() {
       insight: props.insight,
       oracle: props.oracle,
       archiveAvailable: props.archiveAvailable,
+      macroContext: null,
     };
   }
 
@@ -382,6 +393,7 @@ export default async function AIMarketBriefPage() {
           insight={view.insight}
           oracle={view.oracle}
           archiveAvailable={view.archiveAvailable}
+          macroContext={view.macroContext}
         />
       </RouteRenderBoundary>
     </MemberShell>

@@ -955,3 +955,29 @@
 .dashPlanContinuity{display:grid;gap:0;border:1px solid #263c35;border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(155deg,#0c1514,#080e11)}.dashPlanContinuity>.dashSplitRow,.dashPlanContinuity>.dashLevelsStack{padding:18px;margin:0}.dashPlanContinuity .dashLevels,.dashPlanContinuity .dashCatalyst{box-shadow:none}.dashPlanContinuity>.dashChartStage{padding:18px;border-top:1px solid #2b463c;background:#07100f}.dashPlanContinuity>.dashChartStage:before{margin-bottom:14px}
 @media(max-width:760px){.dashChangeStrip{grid-template-columns:1fr}.dashChangeStrip dl{grid-template-columns:1fr 1fr}.dashChangeStrip dl>div:last-child{grid-column:1/-1}.dashPlanContinuity>.dashSplitRow,.dashPlanContinuity>.dashLevelsStack,.dashPlanContinuity>.dashChartStage{padding:12px}}
 @media(prefers-reduced-motion:reduce){.dashCommandCentre:before{transition:none}.dashRadar.is-active>b{animation:none}}
+
+.verifiedMacroContext{
+  display:grid;gap:14px;padding:20px 22px;border:1px solid #263c35;border-radius:var(--radius-lg);
+  background:linear-gradient(155deg,#0c1514,#080e11);box-shadow:var(--dash-elev-rest)
+}
+.verifiedMacroContext>header h2{margin:6px 0 0;color:#eef3f4;font:600 18px/1.25 var(--font-geist-sans),Arial,sans-serif}
+.verifiedMacroContext>header p{margin:8px 0 0;color:#87948e;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif;max-width:48rem}
+.verifiedMacroContextBody{display:grid;gap:14px}
+.verifiedMacroContextStatus{display:grid;gap:4px;padding:12px 14px;border:1px solid #263832;border-radius:var(--radius-md);background:#0a1211}
+.verifiedMacroContextStatus span{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.verifiedMacroContextStatus strong{color:#edf3f0;font:650 16px var(--font-geist-sans),Arial,sans-serif}
+.verifiedMacroContextStatus small{color:#87948e;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.verifiedMacroContextObservations,.verifiedMacroContextReleases{margin:0;padding:0;list-style:none}
+.verifiedMacroContextObservations li,.verifiedMacroContextReleases li{
+  display:grid;gap:4px;padding:12px 0;border-bottom:1px solid #1c2823
+}
+.verifiedMacroContextObservations li:last-child,.verifiedMacroContextReleases li:last-child{border-bottom:0}
+.verifiedMacroContextObservations span,.verifiedMacroContextReleases time{color:#8f9c96;font:650 12px var(--font-geist-mono),monospace}
+.verifiedMacroContextObservations strong,.verifiedMacroContextReleases strong{color:#e8f2ec;font:600 16px var(--font-geist-sans),Arial,sans-serif}
+.verifiedMacroContextObservations small,.verifiedMacroContextReleases span{color:#87948e;font:12px/1.4 var(--font-geist-sans),Arial,sans-serif}
+.verifiedMacroContextEmpty{margin:0;color:#87948e;font:500 13px/1.45 var(--font-geist-sans),Arial,sans-serif}
+.verifiedMacroContext>footer{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding-top:8px;border-top:1px solid #1c2823}
+.verifiedMacroContext>footer span{color:#718088;font:700 9px var(--font-geist-sans),Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.verifiedMacroContext>footer strong{color:#b9c7c1;font:500 13px var(--font-geist-sans),Arial,sans-serif}
+.deskOverviewStack .verifiedMacroContext{margin-top:0}
+.morningMarketBrief .verifiedMacroContext{margin-top:18px}

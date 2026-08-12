@@ -37,6 +37,7 @@ import {
 import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } from "./lib/desk-payload";
 import { sanitizeForClient } from "../lib/serialize-for-client.ts";
 import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
+import { getVerifiedMacroContext, createUnavailableMacroContext } from "../lib/verified-macro-context.ts";
 import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +72,9 @@ export default async function Terminal() {
   );
 
   let payload: TradingDeskPayload;
+  const macroContext = await getVerifiedMacroContext({ route: "/terminal" }).catch(() =>
+    createUnavailableMacroContext(),
+  );
   try {
     const [{ snapshot, gatewayStatus }, candleBundleRaw] = await Promise.all([
       getTerminalMarketData(),
@@ -279,6 +283,7 @@ export default async function Terminal() {
         available: previewState.available,
         cadence: previewOffer?.cadence,
       },
+      macroContext,
     });
   } catch (error) {
     console.error("[terminal] desk payload failed; rendering recovery shell", error);
@@ -335,6 +340,7 @@ export default async function Terminal() {
         available: previewState.available,
         cadence: previewOffer?.cadence,
       },
+      macroContext,
     });
   }
 

@@ -18,6 +18,8 @@ import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
 import { ConceptHint } from "../../components/oracle/ConceptHint.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { VerifiedMacroContextPanel } from "../../components/VerifiedMacroContextPanel.tsx";
+import type { VerifiedMacroContext } from "../../lib/macro-data.ts";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
 import { Sparkline } from "../../components/mini-visuals/Sparkline.tsx";
 import type { AiMarketInsightModel } from "../../lib/ai-market-insight.ts";
@@ -61,6 +63,7 @@ export type MarketCommandCentreProps = {
   session: SessionClockReading;
   quotes: MarketQuote[];
   plan: TradePlan | null;
+  macroContext?: VerifiedMacroContext | null;
 };
 
 function toneClass(tone: string) {
@@ -81,6 +84,7 @@ export function MarketCommandCentre({
   session,
   quotes,
   plan,
+  macroContext = null,
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
   const posture = buildTodaysPosture(decision);
@@ -623,6 +627,8 @@ export function MarketCommandCentre({
           </details>
         </div>
       </section>
+
+      {macroContext ? <VerifiedMacroContextPanel context={macroContext} variant="dashboard" /> : null}
 
       <section className="dashQuickActions" aria-label="Quick actions">
         <header>

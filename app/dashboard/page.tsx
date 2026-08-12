@@ -13,6 +13,7 @@ import { buildOracleBundle } from "../lib/oracle/build-oracle-bundle.ts";
 import { MarketCommandCentre } from "./components/MarketCommandCentre";
 import { primaryLevel } from "./lib/command-centre.ts";
 import { getVerifiedMarketContext } from "../lib/verified-market-context.ts";
+import { getVerifiedMacroContext } from "../lib/verified-macro-context.ts";
 import { sanitizeForClient } from "../lib/serialize-for-client.ts";
 import { createUnavailableSnapshot } from "../lib/market-data.ts";
 import { analyzeMarketSnapshot } from "../lib/market-intelligence-engine.ts";
@@ -81,9 +82,14 @@ export default async function MemberDashboard() {
 
   let view: DashboardViewState;
   try {
-    const context = await step("market.verifiedContext", () =>
-      getVerifiedMarketContext({ paid, now, route: "/dashboard" }),
-    );
+    const [context, macroContext] = await Promise.all([
+      step("market.verifiedContext", () =>
+        getVerifiedMarketContext({ paid, now, route: "/dashboard" }),
+      ),
+      step("macro.verifiedContext", () =>
+        getVerifiedMacroContext({ now: () => now, route: "/dashboard" }),
+      ),
+    ]);
     const greeting = buildDeskGreeting(displayName, context.session, new Date(now));
     const summary = buildDashboardCommandSummary({
       snapshot: context.snapshot,
@@ -140,6 +146,7 @@ export default async function MemberDashboard() {
       session: context.session,
       quotes: context.snapshot.quotes,
       plan: context.plan,
+      macroContext,
     });
 
     view = {
@@ -161,6 +168,7 @@ export default async function MemberDashboard() {
         session: props.session,
         quotes: props.quotes,
         plan: props.plan,
+        macroContext: props.macroContext,
       },
     };
   } catch (error) {

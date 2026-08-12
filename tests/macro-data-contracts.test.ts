@@ -55,8 +55,8 @@ test("Federal Reserve broad-dollar context cannot masquerade as DXY", () => {
 
 test("partial macro context represents independent source availability without market data", () => {
   assert.equal(macroContextFixture.status, "partial");
-  assert.deepEqual(macroContextFixture.availableSources, ["Treasury", "Federal Reserve", "BLS", "SEC"]);
-  assert.deepEqual(macroContextFixture.unavailableSources, ["BEA", "Census"]);
+  assert.deepEqual(macroContextFixture.availableSources, ["Treasury", "Federal Reserve", "BLS", "BEA"]);
+  assert.deepEqual(macroContextFixture.unavailableSources, ["Census", "SEC"]);
   assert.equal(macroContextFixture.observations.some((row) => (row.metric as string) === "ES"), false);
   assert.equal(macroContextFixture.observations.some((row) => (row.metric as string) === "VIX"), false);
 });

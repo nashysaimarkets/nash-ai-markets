@@ -8,6 +8,8 @@ import type { OracleBundle } from "../../components/oracle/OracleCompanionStack.
 import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import { ThirtySecondBrief } from "../../components/oracle/ThirtySecondBrief.tsx";
 import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { VerifiedMacroContextPanel } from "../../components/VerifiedMacroContextPanel.tsx";
+import type { VerifiedMacroContext } from "../../lib/macro-data.ts";
 import { MarketVideoPlayer } from "../../components/MarketVideoPlayer.tsx";
 import { StatusIcon } from "../../components/StatusIcon.tsx";
 import { verifiedEventRiskLabel } from "../../terminal/lib/event-display.ts";
@@ -22,6 +24,7 @@ type MorningMarketBriefProps = {
   insight: AiMarketInsightModel;
   oracle: OracleBundle;
   archiveAvailable?: boolean;
+  macroContext?: VerifiedMacroContext | null;
 };
 
 function weatherDirectionClass(direction: MorningMarketBriefModel["crossAssets"][number]["direction"]) {
@@ -113,6 +116,7 @@ export function MorningMarketBrief({
   insight,
   oracle,
   archiveAvailable = false,
+  macroContext = null,
 }: MorningMarketBriefProps) {
   const permissionBlocked = /stand aside|no-trade|blocked|unavailable|incomplete|restricted|wait for confirmation/i.test(
     `${model.playbook.posture} ${model.aiBriefing.mode} ${model.biggestRisk.label}`,
@@ -434,6 +438,8 @@ export function MorningMarketBrief({
           </aside>
         )}
       </div>
+
+      {macroContext ? <VerifiedMacroContextPanel context={macroContext} variant="brief" /> : null}
 
       <section className="mbPanel mbWatchAvoidPanel" id="watch-avoid" aria-labelledby="mb-watch-title">
         <header>
