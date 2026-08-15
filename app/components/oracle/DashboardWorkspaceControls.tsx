@@ -56,9 +56,12 @@ export function useDashboardWorkspace() {
 export function DashboardWorkspaceControls({
   prefs,
   onChange,
+  onReset,
 }: {
   prefs: DashboardWorkspacePrefs;
   onChange: (next: DashboardWorkspacePrefs) => void;
+  /** Optional non-persistent reset used by isolated presentation previews. */
+  onReset?: () => DashboardWorkspacePrefs;
 }) {
   function move(id: DashboardSectionId, direction: -1 | 1) {
     const order = [...prefs.order];
@@ -85,7 +88,11 @@ export function DashboardWorkspaceControls({
           <h2 id="dash-workspace-title">Dashboard layout</h2>
           <p>Stored in this browser only. Essential orientation cards stay visible.</p>
         </div>
-        <button type="button" className="oracleResetBtn" onClick={() => onChange(resetDashboardWorkspace())}>
+        <button
+          type="button"
+          className="oracleResetBtn"
+          onClick={() => onChange(onReset ? onReset() : resetDashboardWorkspace())}
+        >
           Restore defaults
         </button>
       </header>
