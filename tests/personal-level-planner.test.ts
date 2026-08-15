@@ -12,5 +12,7 @@ test("personal level planner is device-only and isolated from verified engine in
   assert.match(component, /localStorage/);
   assert.match(component, /not verified NASH data and never enter the decision engine/i);
   assert.doesNotMatch(component, /fetch\(|\/api\//);
+  assert.match(component, /positive numbers only/i);
+  assert.match(component, /aria-live="polite"/);
   assert.match(dashboard, /<PersonalLevelPlanner \/>/);
 });

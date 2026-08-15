@@ -495,6 +495,7 @@
 .personalLevelGrid input{width:100%;min-width:0;border:0;border-bottom:1px solid #33434a;background:transparent;color:#edf3f4;font:650 13px var(--font-geist-mono),monospace;outline:none}
 .personalLevelGrid input:focus{border-color:var(--mcc-green)}
 .personalLevelPlanner footer{display:flex;gap:8px;margin-top:12px}.personalLevelPlanner button{padding:8px 11px;border:1px solid #33454c;border-radius:4px;background:#111c20;color:#cbd6d9;font-size:11px;cursor:pointer}.personalLevelPlanner button:first-child{border-color:#62e6b166;color:#8ceec7}
+.personalLevelStatus{min-height:1.4em;margin:8px 0 0;color:#9fc6b6;font-size:11px}
 @media(max-width:760px){.personalLevelPlanner>summary{grid-template-columns:1fr auto}.personalLevelPlanner>summary small{grid-column:1/-1}.personalLevelGrid{grid-template-columns:repeat(2,1fr)}.personalLevelGrid label:nth-child(4){grid-column:1/-1}}
 .dashCatalyst article strong{display:block;margin-top:14px;color:#eef3f4;font:600 22px/1.25 var(--font-geist-sans),Arial,sans-serif}
 .dashCatalyst article p{margin:8px 0 0;color:#a7b3ba;font-size:14px}

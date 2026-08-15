@@ -81,9 +81,9 @@ const trustBadges = [
 ] as const;
 
 const included = [
-  "Provider-backed futures and cross-market status",
-  "Treasury yields, volatility and US dollar context",
-  "Deterministic market-intelligence scores",
+  "Official macro, funding-rate and event context",
+  "Personal R3–Pivot–S3 level planner",
+  "Verified market status when licensed data is available",
   "Bullish, neutral and bearish scenarios",
   "Decision permission and conflict warnings",
   "Clear data-quality and risk status",
@@ -114,8 +114,8 @@ const plans = [
     copy: "Deeper S&P 500 decision context for a more advanced preparation process.",
     features: [
       "Everything included in Pro",
-      "Daily S&P 500 decision plan",
-      "Expanded volatility context",
+      "Advanced preparation and review workspace",
+      "Licensed volatility context when available",
       "Priority product access",
     ],
     action: "Unlock Elite",
@@ -413,7 +413,7 @@ export default async function Home() {
         </section>
       </div>
 
-      <aside className="mcStickyCta" aria-label="Membership call to action"><div><strong>Build a calmer pre-market routine</strong><span>Free, Pro and Elite access available</span></div><a href="#membership">Compare plans <span aria-hidden="true">→</span></a></aside>
+      <aside className="mcStickyCta" aria-label="Membership call to action"><div><strong>Build a calmer pre-market routine</strong><span>Free access available · Founding Pro reservations open</span></div><a href="#membership">Compare plans <span aria-hidden="true">→</span></a></aside>
 
       <footer className="mcFooter">
         <div className="mcFooterTop">

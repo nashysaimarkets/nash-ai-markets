@@ -18,7 +18,7 @@ function clean(value: string): string {
 
 export function PersonalLevelPlanner() {
   const [values, setValues] = useState<LevelValues>(EMPTY);
-  const [saved, setSaved] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     try {
@@ -31,16 +31,20 @@ export function PersonalLevelPlanner() {
 
   const save = () => {
     const normalized = Object.fromEntries(LEVELS.map((level) => [level, clean(values[level])])) as LevelValues;
+    const invalid = LEVELS.some((level) => values[level].trim() && !normalized[level]);
+    if (invalid) {
+      setMessage("Use positive numbers only. Invalid entries were not saved.");
+      return;
+    }
     setValues(normalized);
     try { window.localStorage.setItem(STORE_KEY, JSON.stringify(normalized)); } catch { /* Still usable without storage. */ }
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 1800);
+    setMessage("Personal levels saved on this device.");
   };
 
   const reset = () => {
     setValues(EMPTY);
     try { window.localStorage.removeItem(STORE_KEY); } catch { /* No-op. */ }
-    setSaved(false);
+    setMessage("Personal levels cleared from this device.");
   };
 
   return (
@@ -62,7 +66,8 @@ export function PersonalLevelPlanner() {
             </label>
           ))}
         </div>
-        <footer><button type="button" onClick={save}>{saved ? "Saved" : "Save on this device"}</button><button type="button" onClick={reset}>Clear</button></footer>
+        <footer><button type="button" onClick={save}>Save on this device</button><button type="button" onClick={reset}>Clear all</button></footer>
+        <p className="personalLevelStatus" role="status" aria-live="polite">{message}</p>
       </div>
     </details>
   );
