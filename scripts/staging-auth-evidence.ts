@@ -52,6 +52,7 @@ type PathCheck = {
   status: CheckStatus;
   finalPath: string;
   redirectedToLogin: boolean;
+  horizontalOverflow: boolean;
   detail: string;
 };
 
@@ -66,6 +67,10 @@ type EvidenceReport = {
     afterSignOutPath: string;
     protectedAfterSignOut: CheckStatus;
     protectedFinalPath: string;
+    historyBackStatus: CheckStatus;
+    historyBackPath: string;
+    historyForwardStatus: CheckStatus;
+    historyForwardPath: string;
     detail: string;
   };
 };
@@ -102,6 +107,17 @@ function isLoginPath(path: string): boolean {
   return path === "/login" || path.startsWith("/login?");
 }
 
+function isProtectedMemberPath(path: string): boolean {
+  return MEMBER_PATHS.some((memberPath) => path === memberPath || path.startsWith(`${memberPath}/`));
+}
+
+async function hasHorizontalOverflow(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const root = document.documentElement;
+    return root.scrollWidth > root.clientWidth + 1;
+  });
+}
+
 async function openPath(page: Page, baseUrl: string, path: string): Promise<{
   finalPath: string;
   redirectedToLogin: boolean;
@@ -136,6 +152,10 @@ async function run(): Promise<EvidenceReport> {
         afterSignOutPath: "",
         protectedAfterSignOut: "blocked",
         protectedFinalPath: "",
+        historyBackStatus: "blocked",
+        historyBackPath: "",
+        historyForwardStatus: "blocked",
+        historyForwardPath: "",
         detail:
           "Missing storage state. Run: npm run staging:export-storage (same origin), then re-run.",
       },
@@ -153,16 +173,20 @@ async function run(): Promise<EvidenceReport> {
       for (const path of MEMBER_PATHS) {
         try {
           const { finalPath, redirectedToLogin } = await openPath(page, baseUrl, path);
-          const ok = !redirectedToLogin && !isLoginPath(finalPath);
+          const horizontalOverflow = await hasHorizontalOverflow(page);
+          const ok = !redirectedToLogin && !isLoginPath(finalPath) && !horizontalOverflow;
           pathChecks.push({
             path,
             viewport: vp.id,
             status: ok ? "pass" : "fail",
             finalPath,
             redirectedToLogin,
+            horizontalOverflow,
             detail: ok
-              ? "Member route stayed authenticated"
-              : `Expected member session; landed on ${finalPath}`,
+              ? "Member route stayed authenticated with no horizontal overflow"
+              : redirectedToLogin || isLoginPath(finalPath)
+                ? `Expected member session; landed on ${finalPath}`
+                : `Horizontal overflow detected at ${vp.width}px`,
           });
         } catch (error) {
           pathChecks.push({
@@ -171,6 +195,7 @@ async function run(): Promise<EvidenceReport> {
             status: "fail",
             finalPath: "",
             redirectedToLogin: false,
+            horizontalOverflow: false,
             detail: error instanceof Error ? error.message : String(error),
           });
         }
@@ -181,11 +206,18 @@ async function run(): Promise<EvidenceReport> {
     await page.setViewportSize({ width: 1280, height: 800 });
     let afterSignOutPath = "";
     let protectedFinalPath = "";
+    let historyBackPath = "";
+    let historyForwardPath = "";
     let signOutStatus: CheckStatus = "fail";
     let protectedStatus: CheckStatus = "fail";
+    let historyBackStatus: CheckStatus = "fail";
+    let historyForwardStatus: CheckStatus = "fail";
     let signOutDetail = "";
 
     try {
+      // Seed history with a protected page before signing out so browser history
+      // cannot accidentally restore authenticated content from bfcache/cache.
+      await openPath(page, baseUrl, "/dashboard");
       await page.goto(`${baseUrl}/auth/signout`, {
         waitUntil: "domcontentloaded",
         timeout: 45_000,
@@ -198,25 +230,48 @@ async function run(): Promise<EvidenceReport> {
         isLoginPath(afterSignOutPath);
       signOutStatus = signedOutLandingOk ? "pass" : "fail";
 
+      await page.goBack({ waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => null);
+      await page.waitForTimeout(800);
+      historyBackPath = pathOnly(page.url());
+      historyBackStatus = isProtectedMemberPath(historyBackPath) && !isLoginPath(historyBackPath)
+        ? "fail"
+        : "pass";
+
+      await page.goForward({ waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => null);
+      await page.waitForTimeout(800);
+      historyForwardPath = pathOnly(page.url());
+      historyForwardStatus = isProtectedMemberPath(historyForwardPath) && !isLoginPath(historyForwardPath)
+        ? "fail"
+        : "pass";
+
       const protectedVisit = await openPath(page, baseUrl, "/dashboard");
       protectedFinalPath = protectedVisit.finalPath;
       protectedStatus = protectedVisit.redirectedToLogin || isLoginPath(protectedFinalPath)
         ? "pass"
         : "fail";
       signOutDetail =
-        signOutStatus === "pass" && protectedStatus === "pass"
-          ? "Sign-out ended session; /dashboard returned to login"
-          : `After sign-out path=${afterSignOutPath}; /dashboard → ${protectedFinalPath}`;
+        signOutStatus === "pass" &&
+        protectedStatus === "pass" &&
+        historyBackStatus === "pass" &&
+        historyForwardStatus === "pass"
+          ? "Sign-out ended session; history navigation did not restore member access; /dashboard returned to login"
+          : `After sign-out path=${afterSignOutPath}; back=${historyBackPath}; forward=${historyForwardPath}; /dashboard → ${protectedFinalPath}`;
     } catch (error) {
       signOutStatus = "fail";
       protectedStatus = "fail";
+      historyBackStatus = "fail";
+      historyForwardStatus = "fail";
       signOutDetail = error instanceof Error ? error.message : String(error);
     }
 
     await context.close();
 
     const pathsOk = pathChecks.every((c) => c.status === "pass");
-    const signOutOk = signOutStatus === "pass" && protectedStatus === "pass";
+    const signOutOk =
+      signOutStatus === "pass" &&
+      protectedStatus === "pass" &&
+      historyBackStatus === "pass" &&
+      historyForwardStatus === "pass";
     const verdict: EvidenceReport["verdict"] =
       pathsOk && signOutOk ? "PASS" : "FAIL";
 
@@ -231,6 +286,10 @@ async function run(): Promise<EvidenceReport> {
         afterSignOutPath,
         protectedAfterSignOut: protectedStatus,
         protectedFinalPath,
+        historyBackStatus,
+        historyBackPath,
+        historyForwardStatus,
+        historyForwardPath,
         detail: signOutDetail,
       },
     };
@@ -247,7 +306,7 @@ function printSummary(report: EvidenceReport): void {
   const failed = report.pathChecks.filter((c) => c.status === "fail").length;
   console.log(`Member routes: ${passed} pass / ${failed} fail / ${report.pathChecks.length} total`);
   console.log(
-    `Sign-out: ${report.signOut.status}; protected-after: ${report.signOut.protectedAfterSignOut}`,
+    `Sign-out: ${report.signOut.status}; back=${report.signOut.historyBackStatus}; forward=${report.signOut.historyForwardStatus}; protected-after=${report.signOut.protectedAfterSignOut}`,
   );
   console.log(`Detail: ${report.signOut.detail}`);
   if (report.verdict !== "PASS") {
