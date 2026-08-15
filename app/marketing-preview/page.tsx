@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarketingPreviewSurface } from "./components/MarketingPreviewSurface.tsx";
 import { RealDashboardPreview } from "./components/RealDashboardPreview.tsx";
+import { RealBriefPreview } from "./components/RealBriefPreview.tsx";
 import {
   MARKETING_PREVIEW_STATES,
   getMarketingPreviewFixture,
@@ -37,11 +38,15 @@ export default async function MarketingPreviewPage({ searchParams }: PageProps) 
   const initialPage = resolveMarketingPreviewPage(params?.view);
   const fixture = getMarketingPreviewFixture(initialState);
 
-  // Dashboard preview deliberately renders the exact signed-in Bullseye presentation
-  // components. Only the data assembly is replaced with deterministic illustrative
-  // fixtures, so private advertising captures cannot drift into a parallel design.
+  // Dashboard and Morning Brief deliberately render the exact signed-in
+  // Bullseye presentation components. Only data assembly is replaced with
+  // deterministic illustrative fixtures, so private advertising captures
+  // cannot drift into a parallel design.
   if (initialPage === "dashboard") {
     return <RealDashboardPreview fixture={fixture} />;
+  }
+  if (initialPage === "brief") {
+    return <RealBriefPreview fixture={fixture} />;
   }
 
   return <MarketingPreviewSurface initialState={initialState} initialPage={initialPage} />;
