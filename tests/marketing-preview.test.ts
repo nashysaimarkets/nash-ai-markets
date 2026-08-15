@@ -37,6 +37,20 @@ test("marketing preview page is production-blocked and labelled illustrative", a
   );
   assert.doesNotMatch(page, /createClient|supabase|stripe/i);
   assert.doesNotMatch(surface, /PwaController|MemberShell/);
+  assert.match(surface, /mpSidebar|Illustrative Bullseye navigation/);
+  assert.match(surface, /mpTopBar|Today.?s command centre|mpSessionPill/);
+  assert.match(surface, /mpBottomStrip|SESSION ANALYTICS/);
+});
+
+test("marketing preview chart exposes premium controls without live fetches", async () => {
+  const chart = await readFile(new URL("../app/marketing-preview/components/MarketingPreviewChart.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(chart, /\/api\/market\/candles/);
+  assert.doesNotMatch(chart, /fetch\(/);
+  assert.match(chart, /mpTimeframes|EMA 9|VWAP|Volume/);
+  assert.match(chart, /520/);
+  assert.match(chart, /exponentialMovingAverage/);
+  assert.match(chart, /volumeWeightedAveragePrice/);
+  assert.match(chart, /ILLUSTRATIVE/);
 });
 
 test("all four marketing preview states render fixture content", () => {
@@ -53,6 +67,7 @@ test("all four marketing preview states render fixture content", () => {
     assertIllustrativeCandleIntegrity(fixture.candles);
     assertLevelOrdering(fixture.levels);
   }
+  assert.equal(getMarketingPreviewFixture("wait").posture.headline, "Stay patient");
   assert.equal(Object.keys(MARKETING_PREVIEW_FIXTURES).sort().join(","), "constructive,defensive,mixed,wait");
 });
 
@@ -101,6 +116,7 @@ test("dashboard confidence copy stays concise and overflow-safe styles exist", a
   const presentation = await readFile(new URL("../app/terminal/lib/desk-decision-presentation.ts", import.meta.url), "utf8");
   const dashCss = await readFile(new URL("../app/market-command-centre.css", import.meta.url), "utf8");
   const deskCss = await readFile(new URL("../app/mission-control.css", import.meta.url), "utf8");
+  const mpCss = await readFile(new URL("../app/marketing-preview/marketing-preview.css", import.meta.url), "utf8");
   assert.match(
     presentation,
     /Confirmation evidence is incomplete\. Bullseye remains non-actionable until evidence improves\./,
@@ -110,13 +126,8 @@ test("dashboard confidence copy stays concise and overflow-safe styles exist", a
   assert.match(dashCss, /\.dashDecisionGrid (strong|small|article)\{[^}]*overflow-wrap:anywhere/);
   assert.match(deskCss, /\.deskDecisionCell\{[^}]*overflow-wrap:anywhere/);
   assert.match(deskCss, /\.deskDecisionScoreDetail\{[^}]*overflow-wrap:anywhere/);
-});
-
-test("marketing preview chart stays isolated from live candle API fetching", async () => {
-  const chart = await readFile(new URL("../app/marketing-preview/components/MarketingPreviewChart.tsx", import.meta.url), "utf8");
-  assert.doesNotMatch(chart, /\/api\/market\/candles/);
-  assert.doesNotMatch(chart, /fetch\(/);
-  assert.match(chart, /exponentialMovingAverage/);
-  assert.match(chart, /volumeWeightedAveragePrice/);
-  assert.match(chart, /ILLUSTRATIVE/);
+  assert.match(mpCss, /\.mpShell\{/);
+  assert.match(mpCss, /\.mpSidebar\{/);
+  assert.match(mpCss, /\.mpBottomStrip\{/);
+  assert.match(mpCss, /overflow-x:hidden/);
 });

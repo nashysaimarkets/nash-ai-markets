@@ -141,7 +141,7 @@ function levelsFromCandles(candles: IllustrativeCandle[]): IllustrativeLevels {
 
 const POSTURES: Record<MarketingPreviewStateId, IllustrativePosture> = {
   wait: {
-    headline: "Wait for confirmation",
+    headline: "Stay patient",
     participation: "Wait for confirmation",
     lean: "Neutral",
     leanTone: "neutral",
@@ -150,7 +150,7 @@ const POSTURES: Record<MarketingPreviewStateId, IllustrativePosture> = {
     confidenceDetail:
       "Confirmation evidence is incomplete. Bullseye remains non-actionable until evidence improves.",
     primaryCondition: "Confirmation evidence is incomplete",
-    summary: "Illustrative wait posture. Directional lean is not actionable until confirmation improves.",
+    summary: "Illustrative wait posture. Stay patient while confirmation evidence remains incomplete.",
     supporting: ["Range structure remains orderly", "Cross-asset pressure is muted"],
     opposing: ["No confirmed directional acceptance", "Evidence quality remains incomplete"],
     weather: "Calm / waiting",
