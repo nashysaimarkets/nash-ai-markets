@@ -50,6 +50,15 @@ test("customer-facing product copy stays focused on the S&P 500 decision workflo
   assert.doesNotMatch(`${terminalPage}\n${deskWidgets}`, /interchangeable markets/i);
 });
 
+test("homepage uses honest research themes instead of testimonial placeholders", () => {
+  const repositoryRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+  const homepage = readFileSync(path.join(repositoryRoot, "app/page.tsx"), "utf8");
+
+  assert.match(homepage, /Trader research/);
+  assert.match(homepage, /Product-research theme · not an endorsement/);
+  assert.doesNotMatch(homepage, /Member stories|testimonial placeholder|Verified member story reserved/i);
+});
+
 test("Founding Pro launch offer is reserved without sending members to the standard-price checkout", () => {
   const repositoryRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
   const homepage = readFileSync(path.join(repositoryRoot, "app/page.tsx"), "utf8");

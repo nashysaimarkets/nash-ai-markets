@@ -383,17 +383,15 @@ export default async function Home() {
 
         <section className="mcVoices" aria-labelledby="feedback-title">
           <header>
-            <p className="mcEyebrow">Member stories</p>
-            <h2 id="feedback-title">Trust earned before testimonials are published.</h2>
-            <p>These premium story slots remain placeholders until feedback, attribution and publication permission are verified. No endorsement has been invented.</p>
+            <p className="mcEyebrow">Trader research</p>
+            <h2 id="feedback-title">Built around the decisions active traders repeatedly face.</h2>
+            <p>These priorities describe the workflow Bullseye is designed to support. They are product-research themes, not customer testimonials or performance claims.</p>
           </header>
           <div>
             {feedbackThemes.map((item) => (
-              <figure key={item.role} className="mcTestimonialPlaceholder">
-                <div className="mcPlaceholderIdentity" aria-hidden="true"><i /><span><b /><b /></span></div>
-                <blockquote aria-label="Verified testimonial placeholder">“Verified member story reserved.”</blockquote>
-                <p>{item.quote}</p>
-                <figcaption>{item.role}<span>Research theme · not an endorsement</span></figcaption>
+              <figure key={item.role}>
+                <blockquote>“{item.quote}”</blockquote>
+                <figcaption>{item.role}<span>Product-research theme · not an endorsement</span></figcaption>
               </figure>
             ))}
           </div>
