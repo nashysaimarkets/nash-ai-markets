@@ -195,6 +195,24 @@ Do not embed a credential in `MARKET_DATA_API_URL`.
 Diagnostics fall back safely when metadata is missing; that fallback is not
 sufficient for production release traceability.
 
+## Dedicated Playwright audit
+
+These variables are test-runner controls only. They must be populated locally or
+in a protected CI secret store for a dedicated, non-customer audit account. They
+must never be exposed with a `NEXT_PUBLIC_` prefix or copied into production
+runtime configuration.
+
+| Variable | Visibility | Requirement | Used for |
+|---|---|---|---|
+| `AUDIT_BASE_URL` | Test config | Optional; required for authenticated hosted audit | Exact private preview/staging origin targeted by Playwright evidence runs |
+| `AUDIT_USER_EMAIL` | Secret, test only | Optional; required for credential-based audit setup | Dedicated non-customer audit account email |
+| `AUDIT_USER_PASSWORD` | Secret, test only | Optional; required for credential-based audit setup | Dedicated non-customer audit account password; never use a real member credential |
+
+Authenticated staging evidence may instead use the project-standard, gitignored
+storage-state workflow. These controls do not bypass authentication, create a
+member, weaken route guards, or make physical-device/accessibility evidence
+appear complete.
+
 ## Build and local tooling
 
 These variables are operational controls, not application secrets:
