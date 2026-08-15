@@ -667,9 +667,9 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskDecisionSummary>header,.deskNextCatalyst>header,.deskRiskGate>header{padding:14px 18px;border-bottom:1px solid #1c2823}
 .deskDecisionSummary h2,.deskNextCatalyst h2,.deskRiskGate h2,.deskWidget>header h2,.deskWidget>header strong{margin:6px 0 0;font-size:clamp(18px,2vw,24px);line-height:1.2;letter-spacing:-.02em;overflow-wrap:anywhere}
 .deskDecisionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#1c2823}
-.deskDecisionCell{padding:14px 16px;background:#0b1210;min-width:0}
-.deskDecisionCell span{display:block;color:#7d8a84;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
-.deskDecisionCell strong{display:block;margin-top:8px;color:#eef3f0;font:650 18px/1.2 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em}
+.deskDecisionCell{padding:14px 16px;background:#0b1210;min-width:0;overflow-wrap:anywhere}
+.deskDecisionCell span{display:block;color:#7d8a84;font:700 10px/1.2 var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase;overflow-wrap:anywhere}
+.deskDecisionCell strong{display:block;margin-top:8px;color:#eef3f0;font:650 clamp(15px,1.5vw,18px)/1.3 var(--font-geist-sans),Arial,sans-serif;letter-spacing:-.02em;overflow-wrap:anywhere;white-space:normal}
 .deskDecisionCell.is-bull strong{color:#62e6b1}
 .deskDecisionCell.is-bear strong{color:#ef7777}
 .deskDecisionCell.is-mixed strong,.deskDecisionCell.is-neutral strong{color:#d8b36a}
@@ -681,7 +681,7 @@ html[data-terminal-refreshing="true"] .ftCard,html[data-terminal-refreshing="tru
 .deskDecisionWhy{margin:0;padding:14px 18px;color:#c9d5cf;font:15px/1.55 var(--font-geist-sans),Arial,sans-serif;border-top:1px solid #1c2823}
 .deskDecisionWhy span{display:block;margin-bottom:6px;color:#7d8a84;font:700 10px var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.1em;text-transform:uppercase}
 .deskDecisionSubhead{margin:8px 0 0;color:#aeb8b3;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif;max-width:62ch}
-.deskDecisionScoreDetail{display:block;margin-top:6px;color:#8f9c96;font:650 11px/1.35 var(--font-geist-mono),monospace}
+.deskDecisionScoreDetail{display:block;margin-top:6px;color:#8f9c96;font:650 11px/1.45 var(--font-geist-mono),monospace;overflow-wrap:anywhere;white-space:normal}
 .deskDecisionDetails{margin:0;padding:12px 18px 16px;border-top:1px solid #1c2823;background:#0c1210}
 .deskDecisionDetails summary{cursor:pointer;color:#a89b7a;font:700 11px var(--font-geist-mono),monospace;letter-spacing:.08em;text-transform:uppercase}
 .deskDecisionDetails p{margin:10px 0;color:#c9d5cf;font:13px/1.5 var(--font-geist-sans),Arial,sans-serif}

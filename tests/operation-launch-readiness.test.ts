@@ -13,14 +13,17 @@ test("launch email readiness fails closed until provider and sender are configur
   assert.deepEqual(getLaunchEmailReadiness({}), {
     providerConfigured: false,
     senderConfigured: false,
+    credentialConfigured: false,
     ready: false,
   });
   assert.deepEqual(getLaunchEmailReadiness({
-    LAUNCH_EMAIL_PROVIDER: "transactional-provider",
+    LAUNCH_EMAIL_PROVIDER: "resend",
     LAUNCH_EMAIL_FROM: "NASH AI Markets <launch@example.invalid>",
+    RESEND_API_KEY: "re_example",
   }), {
     providerConfigured: true,
     senderConfigured: true,
+    credentialConfigured: true,
     ready: true,
   });
 });

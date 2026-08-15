@@ -112,7 +112,7 @@ export function buildDeskDecisionPresentation(input: {
   if (score == null || score === 0 || permission.tone === "blocked") {
     confidenceLabel = "NOT ESTABLISHED";
     confidenceDetail =
-      "Confirmation evidence is incomplete. Awaiting evidence — a zero engine reading is not shown as a measured result.";
+      "Confirmation evidence is incomplete. Bullseye remains non-actionable until evidence improves.";
   } else {
     confidenceLabel = `${score} / 100`;
     confidenceDetail = null;
