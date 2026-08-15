@@ -75,10 +75,7 @@ export function PersonalLevelPlanner() {
         <small>Optional · private on this device</small>
       </summary>
       <div className="personalLevelPlannerBody">
-        <p>
-          Copy reference levels from your own broker or chart. These entries are not verified NASH data and never
-          enter the decision engine.
-        </p>
+        <p>Copy reference levels from your own broker or chart. These entries are not verified NASH data and never enter the decision engine.</p>
         <div className="personalLevelGrid">
           {LEVELS.map((level) => (
             <label
