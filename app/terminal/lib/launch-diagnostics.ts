@@ -220,6 +220,7 @@ export function createLaunchDiagnostics(input: LaunchDiagnosticsInput): LaunchDi
       launchEmail: input.launchEmailReadiness ?? {
         providerConfigured: false,
         senderConfigured: false,
+        credentialConfigured: false,
         ready: false,
       },
     },
