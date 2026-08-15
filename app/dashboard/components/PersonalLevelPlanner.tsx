@@ -21,12 +21,24 @@ export function PersonalLevelPlanner() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    try {
-      const stored = JSON.parse(window.localStorage.getItem(STORE_KEY) ?? "null");
-      if (!stored || typeof stored !== "object") return;
-      const record = stored as Record<string, unknown>;
-      setValues(Object.fromEntries(LEVELS.map((level) => [level, clean(String(record[level] ?? ""))])) as LevelValues);
-    } catch { /* Device-local convenience only. */ }
+    // Keep the server/client first render identical, then hydrate this optional
+    // device-local convenience after paint without a cascading effect update.
+    const timer = window.setTimeout(() => {
+      try {
+        const stored = JSON.parse(window.localStorage.getItem(STORE_KEY) ?? "null");
+        if (!stored || typeof stored !== "object") return;
+        const record = stored as Record<string, unknown>;
+        setValues(
+          Object.fromEntries(
+            LEVELS.map((level) => [level, clean(String(record[level] ?? ""))]),
+          ) as LevelValues,
+        );
+      } catch {
+        // Device-local convenience only.
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const save = () => {
@@ -37,37 +49,66 @@ export function PersonalLevelPlanner() {
       return;
     }
     setValues(normalized);
-    try { window.localStorage.setItem(STORE_KEY, JSON.stringify(normalized)); } catch { /* Still usable without storage. */ }
+    try {
+      window.localStorage.setItem(STORE_KEY, JSON.stringify(normalized));
+    } catch {
+      // Still usable without storage.
+    }
     setMessage("Personal levels saved on this device.");
   };
 
   const reset = () => {
     setValues(EMPTY);
-    try { window.localStorage.removeItem(STORE_KEY); } catch { /* No-op. */ }
+    try {
+      window.localStorage.removeItem(STORE_KEY);
+    } catch {
+      // No-op.
+    }
     setMessage("Personal levels cleared from this device.");
   };
 
   return (
     <details className="personalLevelPlanner">
-      <summary><span>MY LEVELS</span><strong>R3 → Pivot → S3</strong><small>Optional · private on this device</small></summary>
+      <summary>
+        <span>MY LEVELS</span>
+        <strong>R3 → Pivot → S3</strong>
+        <small>Optional · private on this device</small>
+      </summary>
       <div className="personalLevelPlannerBody">
-        <p>Copy reference levels from your own broker or chart. These entries are not verified NASH data and never enter the decision engine.</p>
+        <p>
+          Copy reference levels from your own broker or chart. These entries are not verified NASH data and never
+          enter the decision engine.
+        </p>
         <div className="personalLevelGrid">
           {LEVELS.map((level) => (
-            <label key={level} className={level.startsWith("R") ? "is-resistance" : level.startsWith("S") ? "is-support" : "is-pivot"}>
+            <label
+              key={level}
+              className={level.startsWith("R") ? "is-resistance" : level.startsWith("S") ? "is-support" : "is-pivot"}
+            >
               <span>{level}</span>
               <input
                 inputMode="decimal"
                 value={values[level]}
-                onChange={(event) => setValues((current) => ({ ...current, [level]: event.target.value.slice(0, 14) }))}
+                onChange={(event) =>
+                  setValues((current) => ({ ...current, [level]: event.target.value.slice(0, 14) }))
+                }
                 placeholder="—"
                 aria-label={`${level} personal reference level`}
               />
             </label>
           ))}
         </div>
-        <footer><button type="button" onClick={save}>Save on this device</button><button type="button" onClick={reset}>Clear all</button></footer>
-        <p className="personalLevelStatus" role="status" aria-live="polite">{message}</p>
+        <footer>
+          <button type="button" onClick={save}>
+            Save on this device
+          </button>
+          <button type="button" onClick={reset}>
+            Clear all
+          </button>
+        </footer>
+        <p className="personalLevelStatus" role="status" aria-live="polite">
+          {message}
+        </p>
       </div>
     </details>
   );
