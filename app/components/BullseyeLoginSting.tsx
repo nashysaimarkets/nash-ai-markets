@@ -39,18 +39,24 @@ export function BullseyeLoginSting() {
   const [muted, setMuted] = useState(true);
 
   useEffect(() => {
-    let isMuted = true;
-    let shouldPlay = false;
-    try {
-      isMuted = window.localStorage.getItem(LOGIN_STING_MUTED_KEY) === "1";
-      const pendingAt = Number(window.localStorage.getItem(LOGIN_STING_PENDING_KEY));
-      shouldPlay = Number.isFinite(pendingAt) && Date.now() - pendingAt < PENDING_WINDOW_MS;
-      window.localStorage.removeItem(LOGIN_STING_PENDING_KEY);
-    } catch {
-      // Private browsing may block storage. The dashboard remains fully usable.
-    }
-    setMuted(isMuted);
-    if (shouldPlay && !isMuted) playBullseyeSting();
+    // Defer browser-storage hydration until after the first paint. This keeps
+    // server/client markup stable and avoids a synchronous effect state update.
+    const timer = window.setTimeout(() => {
+      let isMuted = true;
+      let shouldPlay = false;
+      try {
+        isMuted = window.localStorage.getItem(LOGIN_STING_MUTED_KEY) === "1";
+        const pendingAt = Number(window.localStorage.getItem(LOGIN_STING_PENDING_KEY));
+        shouldPlay = Number.isFinite(pendingAt) && Date.now() - pendingAt < PENDING_WINDOW_MS;
+        window.localStorage.removeItem(LOGIN_STING_PENDING_KEY);
+      } catch {
+        // Private browsing may block storage. The dashboard remains fully usable.
+      }
+      setMuted(isMuted);
+      if (shouldPlay && !isMuted) playBullseyeSting();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   function toggleSound() {
