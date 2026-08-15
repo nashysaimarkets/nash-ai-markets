@@ -66,18 +66,23 @@ a key, model output, raw exception, request URL or account detail.
 
 ## Launch email readiness
 
-No email provider is connected by default. Provider-neutral waiting-list and
-accepted Founding Member templates are implemented, but the application does
-not dispatch them yet.
+Provider-neutral launch templates and a fail-closed Resend transport are
+implemented. Dispatch remains dormant unless the supported provider, a verified
+sender and the server-only API key are all configured. Configuration alone does
+not clear the operational launch gate: sender-domain authentication, suppression
+handling, idempotency, delivery monitoring and ownership still require evidence.
 
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
-| `LAUNCH_EMAIL_PROVIDER` | Server config | Optional until dispatch is implemented | Approved transactional provider identifier |
-| `LAUNCH_EMAIL_FROM` | Server config | Optional until dispatch is implemented | Verified sender identity |
+| `LAUNCH_EMAIL_PROVIDER` | Server config | Optional until launch dispatch is approved; supported value `resend` | Selects the approved transactional transport; blank or unsupported values keep dispatch disabled |
+| `LAUNCH_EMAIL_FROM` | Server config | Conditional mandatory with `resend` | Verified sender identity used for launch and membership email templates |
+| `RESEND_API_KEY` | Secret, server only | Conditional mandatory when `LAUNCH_EMAIL_PROVIDER=resend` | Authenticates the dormant Resend transactional-email transport; never expose with `NEXT_PUBLIC_` |
 
-Both values make diagnostics report template/configuration readiness only; they
-do not enable sending. Provider credentials must be introduced as separately
-documented server-only variables when a provider is selected.
+The transport validates recipients and idempotency before network dispatch,
+sends branded plain-text templates, and fails closed on provider errors. Missing
+or incomplete configuration leaves sending disabled. Never use repeated magic
+links or customer mail as a readiness probe; exercise delivery only through the
+approved staging matrix and record suppression and monitoring evidence.
 
 ## Market provider selection
 
