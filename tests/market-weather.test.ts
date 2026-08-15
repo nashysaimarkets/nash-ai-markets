@@ -92,6 +92,13 @@ test("Market Score stays blank until verified and greeting is session-aware", ()
   const initial = buildDeskGreeting("C", readSessionClock(new Date("2026-07-28T15:00:00Z")), new Date("2026-07-28T15:00:00Z"));
   assert.equal(initial.name, null);
   assert.match(initial.salutation, /^Good (morning|afternoon|evening)$/);
+
+  const weekendAfternoon = buildDeskGreeting(
+    "Chris Nash",
+    readSessionClock(new Date("2026-08-15T13:09:00Z")),
+    new Date("2026-08-15T13:09:00Z"),
+  );
+  assert.equal(weekendAfternoon.salutation, "Good afternoon");
 });
 
 test("Weather and Radar libraries remain available while Dashboard routes via command summary", async () => {
