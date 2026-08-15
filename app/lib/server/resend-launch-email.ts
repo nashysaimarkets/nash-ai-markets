@@ -13,6 +13,13 @@ function validEmail(value: string): boolean {
   return trimmed.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
 }
 
+function validSender(value: string): boolean {
+  const trimmed = value.trim();
+  if (validEmail(trimmed)) return true;
+  const match = /^([^<>\r\n]{1,80})\s*<([^<>\s]+)>$/.exec(trimmed);
+  return Boolean(match && validEmail(match[2]));
+}
+
 export async function dispatchLaunchEmail(
   input: {
     to: string;
@@ -30,7 +37,7 @@ export async function dispatchLaunchEmail(
   const apiKey = environment.RESEND_API_KEY?.trim() ?? "";
 
   if (provider !== "resend") return { status: "disabled", reason: "provider" };
-  if (!validEmail(from)) return { status: "disabled", reason: "sender" };
+  if (!validSender(from)) return { status: "disabled", reason: "sender" };
   if (!apiKey) return { status: "disabled", reason: "credential" };
   if (!validEmail(input.to)) return { status: "rejected", reason: "recipient" };
   if (!/^[A-Za-z0-9._:-]{8,128}$/.test(input.idempotencyKey)) {
