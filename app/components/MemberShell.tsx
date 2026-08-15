@@ -76,8 +76,7 @@ export function MemberShell({
         Skip to member content
       </a>
       <header className="memberDashboardNav">
-        <BrandLogo
-          authenticated
+        <BrandLogo authenticated
           className="memberBrandLogo"
           href={isolatedPreview ? "/marketing-preview" : undefined}
         />
