@@ -170,8 +170,8 @@ export function RealDashboardPreview({ fixture }: { fixture: MarketingPreviewFix
     freshnessLabel: "EXAMPLE ONLY · 10-minute illustrative delay",
     warnings: ["Illustrative private-preview data — not live market data"],
     candles: candleSeries.candles,
-    support: fixture.levels.s1,
-    resistance: fixture.levels.r1,
+    support: fixture.levels.s1.toFixed(2),
+    resistance: fixture.levels.r1.toFixed(2),
     now,
   });
 
