@@ -4,6 +4,7 @@ import { BrandLogo } from "./BrandLogo";
 import { PwaController } from "./PwaController";
 import { BullseyeLoginSting } from "./BullseyeLoginSting";
 import { SmileyEasterEgg } from "./SmileyEasterEgg";
+import { PreviewNavigationGuard } from "../marketing-preview/components/PreviewNavigationGuard.tsx";
 
 export type MemberShellActive =
   | "dashboard"
@@ -70,6 +71,7 @@ export function MemberShell({
 
   return (
     <main className={`memberDashboard ${className}`.trim()}>
+      {isolatedPreview ? <PreviewNavigationGuard /> : null}
       <a className="memberSkipLink" href="#member-content">
         Skip to member content
       </a>
