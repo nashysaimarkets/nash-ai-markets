@@ -44,7 +44,7 @@ export function VerifiedMacroContextPanel({
         <span className={variant === "brief" ? "mbEyebrow" : "mccEyebrow"}>OFFICIAL MACRO CONTEXT</span>
         <h2 id={`${variant}-macro-context-title`}>Government data · informational only</h2>
         <p>
-          Treasury yields, Fed dollar index, BLS observations and official release schedules.
+          Treasury yields, Fed funding rates, dollar context, official economic observations and release schedules.
           This layer never drives trade permission, confidence or ES/VIX decision logic.
         </p>
       </header>

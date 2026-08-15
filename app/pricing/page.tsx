@@ -22,6 +22,7 @@ const faqs = [
   ["How does the £12 Founding Pro launch offer work?", "The first 100 verified successful Founding Pro subscribers can retain the £12 monthly checkout price while that same subscription remains continuously active. Joining the waiting list is not a purchase and does not guarantee a place; checkout opens only after final verification."],
   ["What happens if a Founding Pro subscription ends?", "The badge remains in programme history, but the Founding Pro price lock is permanently lost. A later subscription uses the then-current standard price."],
   ["Can I change plan?", "Use the Stripe customer portal to review available upgrades, downgrades or cancellation. Any price and effective date are shown by Stripe before confirmation."],
+  ["Are intraday ES and VIX feeds always available?", "No. Intraday panels require a verified licensed provider and fail closed when that feed is unavailable. Official macro context, event schedules, preparation checklists, mission cards and eligible journal tools remain usable; the site never fills missing market data with invented values."],
   ["Is this financial advice?", "No. NASH AI Markets provides educational market commentary and decision support, not personalised financial advice or guaranteed outcomes."],
 ] as const;
 

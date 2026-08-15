@@ -21,6 +21,8 @@ export const MACRO_METRICS = [
   "US10Y",
   "US30Y",
   "FED_BROAD_DOLLAR",
+  "EFFR",
+  "SOFR",
   "CPI",
   "CORE_CPI",
   "PAYROLLS",

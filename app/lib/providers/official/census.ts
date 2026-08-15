@@ -23,6 +23,13 @@ export type CensusProviderOptions = {
   now?: () => number;
 };
 
+export const DEFAULT_CENSUS_QUERIES = [
+  { metric: "RETAIL_SALES", dataset: "marts", datasetName: "Advance Monthly Retail Trade Survey", unit: "millions of dollars", predicates: { category_code: "441", data_type_code: "SM", seasonally_adj: "yes" } },
+  { metric: "HOUSING", dataset: "resconst", datasetName: "New Residential Construction", unit: "thousands of units", predicates: { category_code: "STARTS", data_type_code: "TOTAL", seasonally_adj: "yes" } },
+  { metric: "DURABLE_GOODS", dataset: "advm3", datasetName: "Advance Report on Durable Goods", unit: "millions of dollars", predicates: { category_code: "DG", data_type_code: "NO", seasonally_adj: "yes" } },
+  { metric: "TRADE", dataset: "ftd", datasetName: "U.S. International Trade in Goods and Services", unit: "millions of dollars", predicates: { category_code: "BOP", data_type_code: "BAL", seasonally_adj: "yes" } },
+] as const satisfies readonly CensusSeriesQuery[];
+
 function finiteNumber(value: unknown): number | null {
   if (typeof value !== "string" && typeof value !== "number") return null;
   const parsed = Number(String(value).replaceAll(",", "").trim());

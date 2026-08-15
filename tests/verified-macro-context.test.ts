@@ -75,7 +75,7 @@ test("getVerifiedMacroContext assembles official sources without market snapshot
   assert.equal(context.observations.some((row) => (row.metric as string) === "VIX"), false);
   assert.deepEqual(context.filings, []);
   assert.deepEqual(context.availableSources, ["BEA", "BLS", "Federal Reserve", "Treasury"]);
-  assert.deepEqual(context.unavailableSources, ["Census", "SEC"]);
+  assert.deepEqual(context.unavailableSources, ["SEC"]);
   assert.equal(context.releases.length, 1);
 });
 

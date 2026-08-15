@@ -81,6 +81,21 @@ documented server-only variables when a provider is selected.
 
 ## Market provider selection
 
+## Free official macro context
+
+The Treasury, Federal Reserve Board, New York Fed funding-rate and BLS feeds
+require no key. BEA and Census observations are enabled only when their free
+server-side API keys are present. The complete official macro bundle is cached
+for 15 minutes per server instance to prevent repeated upstream calls across
+Dashboard, Morning Brief and Trading Desk. These slow-moving observations never
+replace ES/VIX and never enter the intraday decision engine.
+
+| Variable | Visibility | Requirement | Used for |
+|---|---|---|---|
+| `BEA_API_KEY` | Secret, server only | Optional | GDP, PCE and personal-income observations from BEA |
+| `CENSUS_API_KEY` | Secret, server only | Optional | Retail sales, housing, durable-goods and trade observations from Census EITS |
+
+
 | Variable | Visibility | Requirement | Used for |
 |---|---|---|---|
 | `MARKET_DATA_PROVIDER` | Server config | Mandatory for actionable production data | `fmp` selects FMP; `preview` forces safe unavailable mode; other/empty may use generic URL |
