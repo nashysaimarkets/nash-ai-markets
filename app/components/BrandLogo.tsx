@@ -5,14 +5,15 @@ type Props = {
   compact?: boolean;
   authenticated?: boolean;
   className?: string;
+  href?: string;
 };
 
 /**
  * Shared NASH AI Markets wordmark / mark.
  * Authenticated logos quietly reveal “Project BULLSEYE” on hover/focus.
  */
-export function BrandLogo({ compact = false, authenticated = false, className = "" }: Props) {
-  const href = authenticated ? "/dashboard" : "/";
+export function BrandLogo({ compact = false, authenticated = false, className = "", href: hrefOverride }: Props) {
+  const href = hrefOverride ?? (authenticated ? "/dashboard" : "/");
   const label = authenticated ? "NASH AI Markets member dashboard" : "NASH AI Markets home";
   // ~55% larger than the previous 36px / 42px display sizes
   const width = compact ? 64 : 325;
