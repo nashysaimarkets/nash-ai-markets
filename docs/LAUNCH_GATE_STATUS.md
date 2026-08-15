@@ -18,7 +18,7 @@ third-party configuration, physical-device testing, or business approval.
 | Authenticated tablet/mobile/accessibility matrix | Requires staging evidence | Test protected routes on tablet and mobile widths plus keyboard, VoiceOver and TalkBack where available |
 | Market-data failure safety | Cleared | Unavailable, delayed, stale, malformed, timeout and provider-failure states remain explicit and fail closed |
 | Official zero-cost macro runtime | Cleared for Phase 9 | Commit `dfb97a1757073658d4b094cb0802b2cfe72c56e` integrates isolated `VerifiedMacroContext` on Dashboard, Morning Brief and Trading Desk. Fabricated ES/VIX inputs remain blocked and the directional engine remains fail-closed |
-| Populated live/delayed session acceptance | Blocked by provider entitlement | Purchase the appropriate FMP entitlement, then verify ES candles, VIX, DXY, Treasury coverage, freshness and provider-call budget in staging |
+| Populated live/delayed session acceptance | Blocked by display/redistribution entitlement | Obtain written quotes confirming paid customer-facing display and derived-output rights. Prefer the existing FMP adapter only if its separate display licence is the lowest total cost; do not assume a retail API plan grants redistribution. Then verify ES candles, VIX, DXY, Treasury coverage, freshness and provider-call budget in staging |
 | OpenAI brief fallback | Cleared in repository | Deterministic fallback and invalid/missing/timeout provider paths pass; connected staging evidence remains part of the populated-session run |
 | Stripe test-mode lifecycle | Implementation complete | Application Checkout, portal, webhook, Price env mapping and contract tests are in place. Owner reports Dashboard test Prices, portal and webhook already exist. **Dashboard presence + live lifecycle proof are an external operational checklist**, not an application-development blocker. Do not recreate Stripe objects unless runtime testing proves a break. Optional evidence: `docs/STRIPE_STAGING_TEST_MATRIX.md` when exercising billing |
 | Transactional email delivery | Not launch-cleared | Confirm sender/domain, suppression handling, idempotency and delivery monitoring; avoid repeated magic-link requests during testing |
@@ -47,7 +47,8 @@ publicly.
 2. Record passwordless-link expiry/reuse evidence without repeated email sends.
 3. Confirm transactional-email readiness (sender/domain/suppression) without
    repeated magic-link spam.
-4. Purchase FMP only when ready for populated-session acceptance; then run the
+4. Obtain written FMP, CME-feed and Cboe/VIX display-rights quotes. Purchase no
+   feed until rights and first-cohort economics are confirmed; then run the
    verified symbol, candle, freshness, fail-closed and provider-budget matrix.
 5. Complete monitoring, restore, legal and financial-promotion approvals.
 6. Run the final private-staging soak and record the explicit public go/no-go.

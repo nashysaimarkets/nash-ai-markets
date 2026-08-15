@@ -1,53 +1,48 @@
 # Founding Pro £12 activation audit
 
-**Decision: NO-GO for paid checkout activation.** The reservation experience
-can remain available, but the £12 recurring Checkout path must stay closed until
-the eligibility and lifecycle controls below are implemented and verified in
-Stripe test mode.
+**Decision: application implementation complete; paid activation remains
+NO-GO pending test-mode operational evidence.** The reservation experience can
+remain available. The £12 recurring Checkout path must stay closed until an
+explicitly test-mode Price is provisioned, private staging is configured, and
+the lifecycle matrix passes.
 
 No Stripe Product, Price, subscription, environment variable or customer record
 was changed during this audit.
 
-## Confirmed current state
+## Confirmed implementation state
 
 - Public copy offers the first 100 verified successful subscribers Founding Pro
   at £12/month and sends them to `/waitlist?plan=founding-pro`.
-- Checkout accepts only `pro_month`, `pro_year`, `elite_month` and `elite_year`.
-- `pro_month` maps to the existing £14.99 server-side Price variable. There is
-  no dedicated £12 Price variable or Checkout offering.
+- Checkout accepts the four standard offerings plus the distinct allowlisted
+  `founding_pro_month` offering.
+- `founding_pro_month` maps only to the server-side
+  `STRIPE_FOUNDING_PRO_PRICE_ID` variable; it does not reuse the standard
+  £14.99 Pro monthly Price.
 - Webhook membership mapping is fail-closed for unknown Price IDs.
-- Founding allocation is currently based on the mapped plan and active status,
-  not the exact qualifying Price ID. Consequently, any configured active Pro
-  subscription—including Pro annual at £149—can consume a Founding Pro place.
+- Checkout retrieves the configured Price and requires it to be active,
+  recurring monthly, GBP and exactly 1200 pence before creating a Session.
+- Founding allocation is based on the exact validated Founding Price. Standard
+  Pro monthly and annual subscriptions cannot consume a Founding Pro place.
 - The allocation ledger permanently caps each programme at 100 and does not
   reopen forfeited positions.
-- The approved catalogue, environment guide, production check and Stripe test
-  matrix currently describe four standard Prices only.
+- The environment guide, commercial runbook and Stripe staging matrix describe
+  the dedicated Founding Price and fail-closed cases.
 - Terms describe both Founding Pro and Founding Elite, while the current public
   launch promotion is Founding Pro only.
 
-## Required controlled change
+## Remaining controlled operational work
 
 1. In Stripe **test mode**, create a separate reusable recurring GBP Price for
    £12/month under the approved Pro Product. Do not alter or archive a Price
    used by an existing subscription.
-2. Add a server-only variable such as `STRIPE_FOUNDING_PRO_PRICE_ID` and a
-   distinct allowlisted Checkout offering such as `founding_pro_month`.
-3. Preserve the membership result as `pro` / `month` / `1200`, but carry an
-   explicit founding-eligible result from the exact matched Price.
-4. Change Founding allocation so only an active subscription using the exact
-   configured Founding Pro Price can receive a new Pro position. Standard Pro
-   monthly and annual subscriptions must never consume the offer.
-   Preserve an existing same-plan award created before exact-price eligibility
-   was introduced; do not silently revoke legacy member records.
-5. Keep allocation fail-closed when the Price is absent, ambiguous, inactive,
-   the reported amount or currency is unexpected, or capacity cannot be
-   verified.
-6. Open the CTA only when all server configuration is present and verified
+2. Configure `STRIPE_FOUNDING_PRO_PRICE_ID` in private staging only. Never copy
+   a test Price ID into live configuration.
+3. Execute the acceptance matrix below with Stripe test identities and test
+   payment methods, including duplicate, out-of-order and concurrent events.
+4. Open the CTA only when all server configuration is present and verified
    remaining capacity is greater than zero. At zero, route new customers to the
    standard £14.99/month offer.
-7. Update the environment guide, production check, commercial runbook, Stripe
-   test matrix and customer terms before activation.
+5. Update customer terms after legal approval and before activation.
 
 ## Test-mode acceptance gates
 
@@ -84,8 +79,7 @@ was changed during this audit.
 
 ## Activation sequence after approval
 
-Implement the exact-price eligibility change, run the repository gate, create
-and verify the £12 Price in Stripe test mode, configure private staging, execute
-the expanded Stripe matrix, review authenticated evidence, and only then make a
-separate live-mode activation decision. Never copy a test Price ID into live
-configuration.
+Run the repository gate, create and verify the £12 Price in an explicitly
+test-mode Stripe session, configure private staging, execute the expanded Stripe
+matrix, review authenticated evidence, and only then make a separate live-mode
+activation decision. Never copy a test Price ID into live configuration.
