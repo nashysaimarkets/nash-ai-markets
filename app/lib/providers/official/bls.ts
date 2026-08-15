@@ -26,17 +26,6 @@ type BlsProviderOptions = {
   now?: () => number;
 };
 
-type BlsApiDatum = {
-  year?: unknown;
-  period?: unknown;
-  value?: unknown;
-};
-
-type BlsApiSeries = {
-  seriesID?: unknown;
-  data?: unknown;
-};
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
