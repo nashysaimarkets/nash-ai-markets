@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { PwaController } from "./PwaController";
 import { BullseyeLoginSting } from "./BullseyeLoginSting";
+import { SmileyEasterEgg } from "./SmileyEasterEgg";
 
 export type MemberShellActive =
   | "dashboard"
@@ -101,6 +102,7 @@ export function MemberShell({ active, children, className = "", toolbar }: Membe
         </div>
       ) : null}
       <div id="member-content">{children}</div>
+      <SmileyEasterEgg />
       <PwaController />
     </main>
   );
