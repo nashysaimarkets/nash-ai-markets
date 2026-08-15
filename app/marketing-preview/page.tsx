@@ -4,6 +4,8 @@ import { MarketingPreviewSurface } from "./components/MarketingPreviewSurface.ts
 import { RealDashboardPreview } from "./components/RealDashboardPreview.tsx";
 import { RealBriefPreview } from "./components/RealBriefPreview.tsx";
 import { RealTerminalPreview } from "./components/RealTerminalPreview.tsx";
+import { RealIdeasPreview } from "./components/RealIdeasPreview.tsx";
+import { RealReviewsPreview } from "./components/RealReviewsPreview.tsx";
 import {
   MARKETING_PREVIEW_STATES,
   getMarketingPreviewFixture,
@@ -39,10 +41,10 @@ export default async function MarketingPreviewPage({ searchParams }: PageProps) 
   const initialPage = resolveMarketingPreviewPage(params?.view);
   const fixture = getMarketingPreviewFixture(initialState);
 
-  // Core member routes deliberately render the exact signed-in Bullseye
-  // presentation components. Only data assembly is replaced with deterministic
-  // illustrative fixtures, so private advertising captures cannot drift into a
-  // parallel design.
+  // Core member routes deliberately render the signed-in Bullseye presentation
+  // and existing design system. Only private-preview data assembly is replaced
+  // with deterministic illustrative content, so advertising captures cannot
+  // drift into a parallel product design.
   if (initialPage === "dashboard") {
     return <RealDashboardPreview fixture={fixture} />;
   }
@@ -51,6 +53,12 @@ export default async function MarketingPreviewPage({ searchParams }: PageProps) 
   }
   if (initialPage === "terminal") {
     return <RealTerminalPreview fixture={fixture} />;
+  }
+  if (initialPage === "ideas") {
+    return <RealIdeasPreview />;
+  }
+  if (initialPage === "reviews") {
+    return <RealReviewsPreview />;
   }
 
   return <MarketingPreviewSurface initialState={initialState} initialPage={initialPage} />;
