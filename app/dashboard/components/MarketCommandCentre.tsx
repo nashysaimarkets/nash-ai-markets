@@ -48,6 +48,7 @@ import { AwaitingDataNote } from "./AwaitingDataNote.tsx";
 import { DashboardVideoCentre } from "./DashboardVideoCentre.tsx";
 import { StatusBadge } from "./visual/StatusBadge.tsx";
 import { VisualLevelMap } from "./visual/VisualLevelMap.tsx";
+import { PersonalLevelPlanner } from "./PersonalLevelPlanner.tsx";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -541,6 +542,7 @@ export function MarketCommandCentre({
             <h2 id="dash-levels-title">ES 24-hour references</h2>
           </header>
           <VisualLevelMap levels={levels} currentPrice={hero.price} note={levelsNote} />
+          <PersonalLevelPlanner />
         </section>
 
         {catalyst ? (
