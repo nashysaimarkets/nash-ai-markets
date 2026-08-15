@@ -36,6 +36,13 @@ test("waiting-list confirmation template is transparent and contains no fabricat
   assert.doesNotMatch(template.text, /your place is confirmed|limited spots|act now/i);
 });
 
+test("waitlist campaign destination is self-canonical and uses launch-specific social metadata", async () => {
+  const waitlist = await source("app/waitlist/page.tsx");
+  assert.match(waitlist, /alternates:\s*\{\s*canonical:\s*"\/waitlist"/s);
+  assert.match(waitlist, /openGraph:\s*\{[\s\S]*url:\s*"\/waitlist"/);
+  assert.match(waitlist, /Join the NASH AI Markets Launch Waiting List/);
+});
+
 test("Founding Member welcome is created only after accepted review", () => {
   assert.equal(buildFoundingMemberWelcomeEmail("pending"), null);
   assert.equal(buildFoundingMemberWelcomeEmail("declined"), null);
