@@ -97,9 +97,16 @@ const IDEAS: PreviewIdea[] = [
   },
 ];
 
-function PreviewIdeaCard({ idea }: { idea: PreviewIdea }) {
+function PreviewIdeaCard({
+  idea,
+  instance,
+}: {
+  idea: PreviewIdea;
+  instance: "shortlist" | "roadmap";
+}) {
+  const cardId = `preview-${instance}-${idea.id}`;
   return (
-    <article className="ideaCard" id={`preview-${idea.id}`}>
+    <article className="ideaCard" id={cardId}>
       <div className="ideaVoteCount">
         <strong>{idea.votes}</strong>
         <span>votes</span>
@@ -110,7 +117,7 @@ function PreviewIdeaCard({ idea }: { idea: PreviewIdea }) {
           <b data-status={idea.status}>{statusLabel(idea.status)}</b>
         </header>
         <h3>
-          <Link href={`#preview-${idea.id}`}>{idea.title}</Link>
+          <Link href={`#${cardId}`}>{idea.title}</Link>
         </h3>
         <p>{idea.description}</p>
         <footer>
@@ -219,7 +226,7 @@ export function RealIdeasPreview() {
           </header>
           <div>
             {shortlisted.map((idea) => (
-              <PreviewIdeaCard key={idea.id} idea={idea} />
+              <PreviewIdeaCard key={idea.id} idea={idea} instance="shortlist" />
             ))}
           </div>
         </section>
@@ -256,7 +263,7 @@ export function RealIdeasPreview() {
             </header>
             <div className="ideaList">
               {IDEAS.map((idea) => (
-                <PreviewIdeaCard key={idea.id} idea={idea} />
+                <PreviewIdeaCard key={idea.id} idea={idea} instance="roadmap" />
               ))}
             </div>
           </section>
