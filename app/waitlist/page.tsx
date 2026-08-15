@@ -6,6 +6,20 @@ import { WaitlistForm } from "./WaitlistForm.tsx";
 export const metadata: Metadata = {
   title: "Launch Waiting List",
   description: "Request launch and access updates for NASH AI Markets.",
+  alternates: {
+    canonical: "/waitlist",
+  },
+  openGraph: {
+    title: "Join the NASH AI Markets Launch Waiting List",
+    description: "Request launch and access updates for NASH AI Markets.",
+    url: "/waitlist",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Join the NASH AI Markets Launch Waiting List",
+    description: "Request launch and access updates for NASH AI Markets.",
+  },
 };
 
 export default async function WaitlistPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
