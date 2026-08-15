@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "./BrandLogo";
 import { PwaController } from "./PwaController";
+import { BullseyeLoginSting } from "./BullseyeLoginSting";
 
 export type MemberShellActive =
   | "dashboard"
@@ -58,6 +59,7 @@ export function MemberShell({ active, children, className = "", toolbar }: Membe
       </a>
       <header className="memberDashboardNav">
         <BrandLogo authenticated className="memberBrandLogo" />
+        <BullseyeLoginSting />
         <nav aria-label="Member navigation">
           {links.map((link) => (
             <Link

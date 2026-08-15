@@ -11,6 +11,7 @@ import {
   isAuthProviderCompatibleWithOrigin,
   safeAuthNextPath,
 } from "../lib/auth/safe-auth-redirect";
+import { LOGIN_STING_PENDING_KEY } from "../components/BullseyeLoginSting";
 
 const SUPABASE_PUBLIC_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
 
@@ -166,6 +167,13 @@ export default function StagingLoginForm() {
         );
       }
       setMessageTone(error ? "error" : "success");
+      if (!error) {
+        try {
+          window.localStorage.setItem(LOGIN_STING_PENDING_KEY, String(Date.now()));
+        } catch {
+          // The optional login sting never blocks authentication.
+        }
+      }
       setMessage(
         error
           ? messageForOtpRequestError(error)
