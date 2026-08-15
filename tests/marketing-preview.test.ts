@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   MARKETING_PREVIEW_FIXTURES,
   MARKETING_PREVIEW_STATES,
+  aggregateIllustrativeCandles,
   assertIllustrativeCandleIntegrity,
   assertLevelOrdering,
   getMarketingPreviewFixture,
@@ -83,6 +84,21 @@ test("illustrative candles are valid OHLCV with strictly increasing timestamps",
       assert.ok(candles[index]!.time > candles[index - 1]!.time);
     }
   }
+});
+
+test("advertising timeframe controls regroup the illustrative tape instead of changing labels only", () => {
+  const candles = getMarketingPreviewFixture("constructive").candles;
+  const oneMinute = aggregateIllustrativeCandles(candles, "1m");
+  const fiveMinute = aggregateIllustrativeCandles(candles, "5m");
+  const fifteenMinute = aggregateIllustrativeCandles(candles, "15m");
+  const hourly = aggregateIllustrativeCandles(candles, "1H");
+  assert.equal(oneMinute.length, candles.length);
+  assert.ok(fiveMinute.length < oneMinute.length);
+  assert.ok(fifteenMinute.length < fiveMinute.length);
+  assert.ok(hourly.length < fifteenMinute.length);
+  assert.equal(fiveMinute.reduce((sum, candle) => sum + candle.volume, 0), candles.reduce((sum, candle) => sum + candle.volume, 0));
+  assertIllustrativeCandleIntegrity(fiveMinute);
+  assertIllustrativeCandleIntegrity(fifteenMinute);
 });
 
 test("live member routes do not import marketing fixtures", async () => {

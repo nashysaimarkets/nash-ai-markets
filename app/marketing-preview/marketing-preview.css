@@ -372,6 +372,11 @@
 }
 .mpCrossGrid span{display:block;color:#718088;font:700 10px var(--font-geist-mono),monospace;letter-spacing:.08em}
 .mpCrossGrid strong{display:block;margin-top:6px;font:700 15px/1.2 var(--font-geist-mono),monospace}
+.mpCrossGrid svg{display:block;width:100%;height:34px;margin-top:7px;overflow:visible}
+.mpCrossGrid polyline{fill:none;stroke:currentColor;stroke-width:2;vector-effect:non-scaling-stroke}
+.mpCrossGrid .is-up svg{color:var(--mp-green)}
+.mpCrossGrid .is-down svg{color:var(--mp-red)}
+.mpCrossGrid .is-flat svg{color:var(--mp-gold)}
 .mpCrossGrid small{display:block;margin-top:4px;color:var(--mp-muted);font-size:11px;line-height:1.35}
 .mpBottomStrip{
   display:grid;

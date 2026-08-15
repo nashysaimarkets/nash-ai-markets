@@ -59,8 +59,44 @@ export type MarketingPreviewFixture = {
   posture: IllustrativePosture;
   candles: IllustrativeCandle[];
   levels: IllustrativeLevels;
-  crossMarket: Array<{ symbol: string; label: string; change: string; tone: "up" | "down" | "flat" }>;
+  crossMarket: Array<{
+    symbol: string;
+    label: string;
+    change: string;
+    tone: "up" | "down" | "flat";
+    sparkline: number[];
+  }>;
 };
+
+export type MarketingPreviewTimeframe = "1m" | "5m" | "15m" | "1H" | "4H";
+
+const TIMEFRAME_SECONDS: Record<MarketingPreviewTimeframe, number> = {
+  "1m": 60,
+  "5m": 300,
+  "15m": 900,
+  "1H": 3_600,
+  "4H": 14_400,
+};
+
+export function aggregateIllustrativeCandles(candles: IllustrativeCandle[], timeframe: MarketingPreviewTimeframe) {
+  const seconds = TIMEFRAME_SECONDS[timeframe];
+  if (seconds === 60) return candles;
+  const buckets = new Map<number, IllustrativeCandle[]>();
+  for (const candle of candles) {
+    const bucket = Math.floor(candle.time / seconds) * seconds;
+    const group = buckets.get(bucket) ?? [];
+    group.push(candle);
+    buckets.set(bucket, group);
+  }
+  return [...buckets.entries()].map(([time, group]) => ({
+    time,
+    open: group[0]!.open,
+    high: Math.max(...group.map((candle) => candle.high)),
+    low: Math.min(...group.map((candle) => candle.low)),
+    close: group.at(-1)!.close,
+    volume: group.reduce((sum, candle) => sum + candle.volume, 0),
+  }));
+}
 
 const BANNER = "ILLUSTRATIVE SESSION SNAPSHOT";
 const DISCLAIMER =
@@ -68,8 +104,8 @@ const DISCLAIMER =
 
 /** Fixed session anchor so repeated screenshots stay identical. */
 const SESSION_END = Date.UTC(2026, 6, 21, 17, 0, 0) / 1000;
-const BAR_SECONDS = 300;
-const BAR_COUNT = 78;
+const BAR_SECONDS = 60;
+const BAR_COUNT = 390;
 
 function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -239,6 +275,11 @@ function fixtureFor(id: MarketingPreviewStateId): MarketingPreviewFixture {
   const last = candles.at(-1)!.close;
   const first = candles[0]!.close;
   const changePct = round2(((last - first) / first) * 100);
+  const sparkline = candles
+    .filter((_, index) => index % 20 === 0 || index === candles.length - 1)
+    .map((candle) => candle.close);
+  const invertSparkline = sparkline.map((value) => round2(first * 2 - value));
+  const softenSparkline = sparkline.map((value, index) => round2(first + (value - first) * 0.72 + Math.sin(index) * 0.18));
   return {
     id,
     label: id === "wait" ? "Wait" : id === "constructive" ? "Constructive" : id === "defensive" ? "Defensive" : "Mixed",
@@ -254,18 +295,21 @@ function fixtureFor(id: MarketingPreviewStateId): MarketingPreviewFixture {
         label: "Nasdaq futures",
         change: `${changePct >= 0 ? "+" : ""}${round2(changePct * 1.15)}%`,
         tone: changePct > 0.05 ? "up" : changePct < -0.05 ? "down" : "flat",
+        sparkline,
       },
       {
         symbol: "RTY",
         label: "Russell futures",
         change: `${changePct >= 0 ? "+" : ""}${round2(changePct * 0.8)}%`,
         tone: changePct > 0.05 ? "up" : changePct < -0.05 ? "down" : "flat",
+        sparkline: softenSparkline,
       },
       {
         symbol: "VIX",
         label: "Volatility proxy",
         change: id === "defensive" ? "+4.2%" : id === "constructive" ? "-3.1%" : "+0.4%",
         tone: id === "defensive" ? "up" : id === "constructive" ? "down" : "flat",
+        sparkline: id === "defensive" ? invertSparkline : id === "constructive" ? invertSparkline : softenSparkline,
       },
     ],
   };

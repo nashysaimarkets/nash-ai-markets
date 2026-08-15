@@ -34,6 +34,15 @@ function sessionClockLabel() {
   return "21 Jul 2026 · 15:55 UK · Regular session";
 }
 
+function sparklinePoints(values: number[]) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(max - min, 0.01);
+  return values
+    .map((value, index) => `${(index / Math.max(values.length - 1, 1)) * 100},${26 - ((value - min) / span) * 22}`)
+    .join(" ");
+}
+
 export function MarketingPreviewSurface({ initialState = "wait" }: { initialState?: MarketingPreviewStateId }) {
   const [stateId, setStateId] = useState<MarketingPreviewStateId>(initialState);
   const fixture = useMemo(() => getMarketingPreviewFixture(stateId), [stateId]);
@@ -187,6 +196,9 @@ export function MarketingPreviewSurface({ initialState = "wait" }: { initialStat
                   <article key={card.symbol} className={toneClass(card.tone)}>
                     <span>{card.symbol}</span>
                     <strong>{card.change}</strong>
+                    <svg viewBox="0 0 100 28" role="img" aria-label={`${card.label} illustrative mini chart`}>
+                      <polyline points={sparklinePoints(card.sparkline)} />
+                    </svg>
                     <small>{card.label}</small>
                   </article>
                 ))}

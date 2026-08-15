@@ -6,7 +6,12 @@ import {
   exponentialMovingAverage,
   volumeWeightedAveragePrice,
 } from "../../dashboard/lib/candle-analysis.ts";
-import type { IllustrativeCandle, IllustrativeLevels } from "../lib/illustrative-fixtures.ts";
+import {
+  aggregateIllustrativeCandles,
+  type IllustrativeCandle,
+  type IllustrativeLevels,
+  type MarketingPreviewTimeframe,
+} from "../lib/illustrative-fixtures.ts";
 
 type MarketingPreviewChartProps = {
   candles: IllustrativeCandle[];
@@ -14,7 +19,7 @@ type MarketingPreviewChartProps = {
   stateLabel: string;
 };
 
-const TIMEFRAMES = ["1m", "5m", "15m", "1H", "4H"] as const;
+const TIMEFRAMES = ["1m", "5m", "15m", "1H", "4H"] as const satisfies readonly MarketingPreviewTimeframe[];
 const OVERLAYS = [
   { id: "ema9", label: "EMA 9" },
   { id: "ema21", label: "EMA 21" },
@@ -34,16 +39,17 @@ export function MarketingPreviewChart({ candles, levels, stateLabel }: Marketing
     vwap: true,
     volume: true,
   });
-  const ema9 = useMemo(() => exponentialMovingAverage(candles, 9), [candles]);
-  const ema21 = useMemo(() => exponentialMovingAverage(candles, 21), [candles]);
-  const ema50 = useMemo(() => exponentialMovingAverage(candles, 50), [candles]);
-  const ema200 = useMemo(() => exponentialMovingAverage(candles, 200), [candles]);
-  const vwap = useMemo(() => volumeWeightedAveragePrice(candles), [candles]);
-  const latest = candles.at(-1);
+  const displayCandles = useMemo(() => aggregateIllustrativeCandles(candles, timeframe), [candles, timeframe]);
+  const ema9 = useMemo(() => exponentialMovingAverage(displayCandles, 9), [displayCandles]);
+  const ema21 = useMemo(() => exponentialMovingAverage(displayCandles, 21), [displayCandles]);
+  const ema50 = useMemo(() => exponentialMovingAverage(displayCandles, 50), [displayCandles]);
+  const ema200 = useMemo(() => exponentialMovingAverage(displayCandles, 200), [displayCandles]);
+  const vwap = useMemo(() => volumeWeightedAveragePrice(displayCandles), [displayCandles]);
+  const latest = displayCandles.at(-1);
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host || candles.length === 0) return;
+    if (!host || displayCandles.length === 0) return;
     let disposed = false;
     let painted = false;
     let resizeObserver: ResizeObserver | null = null;
@@ -81,7 +87,7 @@ export function MarketingPreviewChart({ candles, levels, stateLabel }: Marketing
           lastValueVisible: true,
         });
         candleSeries.setData(
-          candles.map(({ time, open, high, low, close }) => ({
+          displayCandles.map(({ time, open, high, low, close }) => ({
             time: time as UTCTimestamp,
             open,
             high,
@@ -98,7 +104,7 @@ export function MarketingPreviewChart({ candles, levels, stateLabel }: Marketing
           });
           volume.priceScale().applyOptions({ scaleMargins: { top: 0.76, bottom: 0 } });
           volume.setData(
-            candles.map((point) => ({
+            displayCandles.map((point) => ({
               time: point.time as UTCTimestamp,
               value: point.volume,
               color: point.close >= point.open ? "#68d7b455" : "#e77f8655",
@@ -154,7 +160,7 @@ export function MarketingPreviewChart({ candles, levels, stateLabel }: Marketing
       chartRef.current?.remove();
       chartRef.current = null;
     };
-  }, [candles, ema9, ema21, ema50, ema200, levels.priorClose, levels.sessionHigh, levels.sessionLow, overlays, vwap]);
+  }, [displayCandles, ema9, ema21, ema50, ema200, levels.priorClose, levels.sessionHigh, levels.sessionLow, overlays, vwap]);
 
   return (
     <section className="mpChart" aria-label={`Illustrative ${stateLabel} candlestick chart`}>
@@ -162,7 +168,7 @@ export function MarketingPreviewChart({ candles, levels, stateLabel }: Marketing
         <div>
           <span>PRIMARY MARKET WORKSPACE · ILLUSTRATIVE</span>
           <h2>S&P 500 futures · ES</h2>
-          <p>Deterministic presentation tape · not live market data</p>
+          <p>Deterministic full-session presentation tape · {timeframe} view · not live market data</p>
         </div>
         <div className="mpChartMeta">
           <strong>ILLUSTRATIVE · NOT LIVE</strong>
