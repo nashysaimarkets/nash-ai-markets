@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MarketingPreviewSurface } from "./components/MarketingPreviewSurface.tsx";
 import { RealDashboardPreview } from "./components/RealDashboardPreview.tsx";
 import { RealBriefPreview } from "./components/RealBriefPreview.tsx";
 import { RealTerminalPreview } from "./components/RealTerminalPreview.tsx";
 import { RealIdeasPreview } from "./components/RealIdeasPreview.tsx";
 import { RealReviewsPreview } from "./components/RealReviewsPreview.tsx";
+import { RealProfilePreview } from "./components/RealProfilePreview.tsx";
+import { RealPreferencesPreview } from "./components/RealPreferencesPreview.tsx";
 import {
   MARKETING_PREVIEW_STATES,
   getMarketingPreviewFixture,
@@ -41,25 +42,15 @@ export default async function MarketingPreviewPage({ searchParams }: PageProps) 
   const initialPage = resolveMarketingPreviewPage(params?.view);
   const fixture = getMarketingPreviewFixture(initialState);
 
-  // Core member routes deliberately render the signed-in Bullseye presentation
-  // and existing design system. Only private-preview data assembly is replaced
-  // with deterministic illustrative content, so advertising captures cannot
+  // Every advertised member route deliberately renders the signed-in Bullseye
+  // presentation and existing design system. Only private-preview data assembly
+  // is replaced with deterministic illustrative content, so captures cannot
   // drift into a parallel product design.
-  if (initialPage === "dashboard") {
-    return <RealDashboardPreview fixture={fixture} />;
-  }
-  if (initialPage === "brief") {
-    return <RealBriefPreview fixture={fixture} />;
-  }
-  if (initialPage === "terminal") {
-    return <RealTerminalPreview fixture={fixture} />;
-  }
-  if (initialPage === "ideas") {
-    return <RealIdeasPreview />;
-  }
-  if (initialPage === "reviews") {
-    return <RealReviewsPreview />;
-  }
-
-  return <MarketingPreviewSurface initialState={initialState} initialPage={initialPage} />;
+  if (initialPage === "dashboard") return <RealDashboardPreview fixture={fixture} />;
+  if (initialPage === "brief") return <RealBriefPreview fixture={fixture} />;
+  if (initialPage === "terminal") return <RealTerminalPreview fixture={fixture} />;
+  if (initialPage === "ideas") return <RealIdeasPreview />;
+  if (initialPage === "reviews") return <RealReviewsPreview />;
+  if (initialPage === "profile") return <RealProfilePreview />;
+  return <RealPreferencesPreview />;
 }
