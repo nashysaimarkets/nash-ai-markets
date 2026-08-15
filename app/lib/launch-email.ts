@@ -7,18 +7,22 @@ export type LaunchEmailTemplate = {
 export type LaunchEmailReadiness = {
   providerConfigured: boolean;
   senderConfigured: boolean;
+  credentialConfigured: boolean;
   ready: boolean;
 };
 
 export function getLaunchEmailReadiness(
   environment: Record<string, string | undefined> = process.env,
 ): LaunchEmailReadiness {
-  const providerConfigured = Boolean(environment.LAUNCH_EMAIL_PROVIDER?.trim());
+  const provider = environment.LAUNCH_EMAIL_PROVIDER?.trim().toLowerCase() ?? "";
+  const providerConfigured = provider === "resend";
   const senderConfigured = Boolean(environment.LAUNCH_EMAIL_FROM?.trim());
+  const credentialConfigured = provider === "resend" && Boolean(environment.RESEND_API_KEY?.trim());
   return {
     providerConfigured,
     senderConfigured,
-    ready: providerConfigured && senderConfigured,
+    credentialConfigured,
+    ready: providerConfigured && senderConfigured && credentialConfigured,
   };
 }
 
