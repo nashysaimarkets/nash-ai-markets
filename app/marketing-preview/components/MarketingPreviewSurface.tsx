@@ -8,106 +8,87 @@ import {
   getMarketingPreviewFixture,
   type MarketingPreviewStateId,
 } from "../lib/illustrative-fixtures.ts";
-import { MarketingPreviewChart } from "./MarketingPreviewChart.tsx";
-
-const NAV_ITEMS = [
-  "Dashboard",
-  "Posture",
-  "Markets",
-  "Evidence",
-  "Levels",
-  "Watchlist",
-  "Alerts",
-  "Reports",
-  "Settings",
-] as const;
-
-function toneClass(tone: string) {
-  return `is-${tone}`;
-}
-
-function formatLevel(value: number) {
-  return value.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
+import {
+  MARKETING_PREVIEW_PAGES,
+  getMarketingPreviewPage,
+  type MarketingPreviewPageId,
+} from "../lib/page-sections.ts";
+import { MarketingPreviewPageContent } from "./MarketingPreviewPages.tsx";
 
 function sessionClockLabel() {
-  return "21 Jul 2026 · 15:55 UK · Regular session";
+  return "21 Jul 2026 · 15:55 UK · Example session";
 }
 
-function sparklinePoints(values: number[]) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = Math.max(max - min, 0.01);
-  return values
-    .map((value, index) => `${(index / Math.max(values.length - 1, 1)) * 100},${26 - ((value - min) / span) * 22}`)
-    .join(" ");
+function replacePreviewQuery(key: "state" | "view", value: string, defaultValue?: string) {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (value === defaultValue) url.searchParams.delete(key);
+  else url.searchParams.set(key, value);
+  window.history.replaceState(null, "", url);
 }
 
-export function MarketingPreviewSurface({ initialState = "wait" }: { initialState?: MarketingPreviewStateId }) {
+export function MarketingPreviewSurface({
+  initialState = "wait",
+  initialPage = "dashboard",
+}: {
+  initialState?: MarketingPreviewStateId;
+  initialPage?: MarketingPreviewPageId;
+}) {
   const [stateId, setStateId] = useState<MarketingPreviewStateId>(initialState);
+  const [pageId, setPageId] = useState<MarketingPreviewPageId>(initialPage);
   const fixture = useMemo(() => getMarketingPreviewFixture(stateId), [stateId]);
-  const { posture, levels, candles, crossMarket } = fixture;
-  const latest = candles.at(-1)!;
-  const first = candles[0]!;
-  const net = latest.close - first.close;
-  const netPct = (net / first.close) * 100;
-  const avgRange =
-    candles.slice(-20).reduce((sum, candle) => sum + (candle.high - candle.low), 0) / Math.min(20, candles.length);
-  const upBars = candles.filter((candle) => candle.close >= candle.open).length;
-  const trendBias = netPct > 0.08 ? "Rising" : netPct < -0.08 ? "Falling" : "Balanced";
-  const momentum = Math.abs(netPct) > 0.12 ? "Expanding" : "Contained";
-  const structure = posture.leanTone === "mixed" ? "Range" : posture.leanTone === "neutral" ? "Compression" : "Directional";
-  const volumeTone = candles.slice(-8).reduce((sum, candle) => sum + candle.volume, 0) >
-    candles.slice(0, 8).reduce((sum, candle) => sum + candle.volume, 0)
-    ? "Building"
-    : "Steady";
+  const page = getMarketingPreviewPage(pageId);
+
+  function selectPage(nextPage: MarketingPreviewPageId) {
+    setPageId(nextPage);
+    replacePreviewQuery("view", nextPage, "dashboard");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function selectState(nextState: MarketingPreviewStateId) {
+    setStateId(nextState);
+    replacePreviewQuery("state", nextState, "wait");
+  }
 
   return (
-    <div className="mpShell" data-marketing-preview="illustrative" data-state={fixture.id}>
+    <div className="mpShell" data-marketing-preview="illustrative" data-state={fixture.id} data-page={pageId}>
       <aside className="mpSidebar" aria-label="Illustrative Bullseye navigation">
         <div className="mpBrand">
           <Image src="/brand/logo-mark.svg" width={36} height={36} alt="" aria-hidden="true" />
-          <div>
-            <strong>BULLSEYE</strong>
-            <span>NASH AI Markets</span>
-          </div>
+          <div><strong>BULLSEYE</strong><span>NASH AI Markets</span></div>
         </div>
         <nav className="mpNav">
-          {NAV_ITEMS.map((item) => (
+          {MARKETING_PREVIEW_PAGES.map((item) => (
             <button
-              key={item}
+              key={item.id}
               type="button"
-              className={item === "Dashboard" ? "is-active" : undefined}
-              aria-current={item === "Dashboard" ? "page" : undefined}
+              className={item.id === pageId ? "is-active" : undefined}
+              aria-current={item.id === pageId ? "page" : undefined}
+              onClick={() => selectPage(item.id)}
             >
-              {item}
+              {item.label}
             </button>
           ))}
         </nav>
         <div className="mpSidebarFoot">
           <span>ILLUSTRATIVE SESSION SNAPSHOT</span>
-          <small>Not live market data</small>
+          <strong>Full example workspace</strong>
+          <small>Illustrative content · no account or live market data</small>
         </div>
       </aside>
 
       <div className="mpMain">
+        <div className="mpGlobalDemoBanner" role="status">
+          <strong>EXAMPLE-ONLY MEMBER EXPERIENCE</strong>
+          <span>Every figure, chart, profile and idea on this preview is illustrative.</span>
+        </div>
         <header className="mpTopBar">
-          <div>
-            <span className="mpEyebrow">MEMBER DASHBOARD · PRESENTATION</span>
-            <h1>Today&apos;s command centre</h1>
-          </div>
+          <div><span className="mpEyebrow">{page.eyebrow}</span><h1>{page.title}</h1></div>
           <div className="mpTopMeta">
             <span className="mpSessionPill">{sessionClockLabel()}</span>
             <div className="mpStateSwitcher" role="tablist" aria-label="Illustrative screenshot states">
               {MARKETING_PREVIEW_STATES.map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="tab"
-                  aria-selected={stateId === id}
-                  className={stateId === id ? "is-active" : undefined}
-                  onClick={() => setStateId(id)}
-                >
+                <button key={id} type="button" role="tab" aria-selected={stateId === id} className={stateId === id ? "is-active" : undefined} onClick={() => selectState(id)}>
                   {getMarketingPreviewFixture(id).label}
                 </button>
               ))}
@@ -115,147 +96,11 @@ export function MarketingPreviewSurface({ initialState = "wait" }: { initialStat
           </div>
         </header>
 
-        <section className="mpPosture" aria-labelledby="mp-posture-title">
-          <header>
-            <div>
-              <span className="mpEyebrow">TODAY&apos;S POSTURE</span>
-              <h2 id="mp-posture-title">{posture.headline}</h2>
-              <p>{posture.summary}</p>
-            </div>
-            <span className={`mpPill ${toneClass(posture.permissionTone)}`}>{posture.participation}</span>
-          </header>
-          <div className="mpDecisionGrid">
-            <article>
-              <span>Participation</span>
-              <strong className={toneClass(posture.permissionTone)}>{posture.participation}</strong>
-            </article>
-            <article>
-              <span>Observed market lean</span>
-              <strong className={toneClass(posture.leanTone)}>{posture.lean}</strong>
-            </article>
-            <article>
-              <span>Confidence</span>
-              <strong>{posture.confidence}</strong>
-              <small>{posture.confidenceDetail}</small>
-            </article>
-            <article>
-              <span>Primary condition</span>
-              <strong>{posture.primaryCondition}</strong>
-            </article>
-          </div>
-        </section>
-
-        <div className="mpWorkspace">
-          <MarketingPreviewChart candles={candles} levels={levels} stateLabel={fixture.label} />
-
-          <aside className="mpSideStack" aria-label="Illustrative support panels">
-            <section className="mpPanel">
-              <header>
-                <span>KEY LEVELS</span>
-                <h3>Session map</h3>
-              </header>
-              <ul>
-                <li><span>R2</span><strong>{formatLevel(levels.r2)}</strong></li>
-                <li><span>R1</span><strong>{formatLevel(levels.r1)}</strong></li>
-                <li><span>Pivot</span><strong>{formatLevel(levels.pivot)}</strong></li>
-                <li><span>S1</span><strong>{formatLevel(levels.s1)}</strong></li>
-                <li><span>S2</span><strong>{formatLevel(levels.s2)}</strong></li>
-              </ul>
-            </section>
-
-            <section className="mpPanel">
-              <header>
-                <span>OVERNIGHT / SESSION</span>
-                <h3>Range context</h3>
-              </header>
-              <ul>
-                <li><span>Overnight high</span><strong>{formatLevel(levels.overnightHigh)}</strong></li>
-                <li><span>Overnight low</span><strong>{formatLevel(levels.overnightLow)}</strong></li>
-                <li><span>Overnight range</span><strong>{formatLevel(levels.overnightRange)}</strong></li>
-                <li><span>Overnight midpoint</span><strong>{formatLevel(levels.overnightMidpoint)}</strong></li>
-                <li><span>Expected move</span><strong>{formatLevel(levels.expectedMove)}</strong></li>
-                <li><span>Session status</span><strong>{posture.sessionStatus}</strong></li>
-              </ul>
-            </section>
-
-            <section className="mpPanel">
-              <header>
-                <span>MARKET WEATHER</span>
-                <h3>{posture.weather}</h3>
-              </header>
-              <p>{posture.weatherDetail}</p>
-            </section>
-
-            <section className="mpPanel">
-              <header>
-                <span>CROSS-MARKET</span>
-                <h3>Related cards</h3>
-              </header>
-              <div className="mpCrossGrid">
-                {crossMarket.map((card) => (
-                  <article key={card.symbol} className={toneClass(card.tone)}>
-                    <span>{card.symbol}</span>
-                    <strong>{card.change}</strong>
-                    <svg viewBox="0 0 100 28" role="img" aria-label={`${card.label} illustrative mini chart`}>
-                      <polyline points={sparklinePoints(card.sparkline)} />
-                    </svg>
-                    <small>{card.label}</small>
-                  </article>
-                ))}
-              </div>
-            </section>
-          </aside>
-        </div>
-
-        <section className="mpBottomStrip" aria-label="Illustrative analytics strip">
-          <article className="mpPanel">
-            <header>
-              <span>EVIDENCE SUMMARY</span>
-              <h3>Illustrative stack</h3>
-            </header>
-            <ul className="mpEvidence">
-              {posture.evidence.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </article>
-          <article className="mpPanel mpMiniMetrics">
-            <header>
-              <span>SESSION ANALYTICS</span>
-              <h3>Compact read</h3>
-            </header>
-            <div className="mpMetricGrid">
-              <div><span>Trend</span><strong>{trendBias}</strong></div>
-              <div><span>Momentum</span><strong>{momentum}</strong></div>
-              <div><span>Structure</span><strong>{structure}</strong></div>
-              <div><span>Volume</span><strong>{volumeTone}</strong></div>
-              <div><span>Net</span><strong>{`${net >= 0 ? "+" : ""}${net.toFixed(2)} (${netPct >= 0 ? "+" : ""}${netPct.toFixed(2)}%)`}</strong></div>
-              <div><span>Avg range</span><strong>{avgRange.toFixed(2)}</strong></div>
-              <div><span>Up bars</span><strong>{`${upBars}/${candles.length}`}</strong></div>
-              <div><span>Last</span><strong>{formatLevel(latest.close)}</strong></div>
-            </div>
-          </article>
-          <article className="mpPanel">
-            <header>
-              <span>RECENT POSTURE HISTORY</span>
-              <h3>Session trail</h3>
-            </header>
-            <ul>
-              {posture.postureHistory.map((item) => (
-                <li key={`${item.label}-${item.lean}`}>
-                  <span>{item.label}</span>
-                  <strong>{item.lean}</strong>
-                </li>
-              ))}
-            </ul>
-          </article>
-        </section>
+        <MarketingPreviewPageContent pageId={pageId} fixture={fixture} onNavigate={selectPage} />
 
         <footer className="mpFooter">
-          <p>
-            Illustrative session data for product demonstration. Not live market data and not financial advice.
-          </p>
-          <Link href="/dashboard">Return to verified dashboard</Link>
+          <p>Illustrative session data for product demonstration. Not live market data and not financial advice.</p>
+          <div><button type="button" onClick={() => selectPage("dashboard")}>Example Dashboard</button><Link href="/">NASH AI Markets home</Link></div>
         </footer>
       </div>
     </div>

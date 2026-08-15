@@ -10,6 +10,10 @@ import {
   assertLevelOrdering,
   getMarketingPreviewFixture,
 } from "../app/marketing-preview/lib/illustrative-fixtures.ts";
+import {
+  MARKETING_PREVIEW_PAGES,
+  resolveMarketingPreviewPage,
+} from "../app/marketing-preview/lib/page-sections.ts";
 
 async function collectSourceFiles(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true });
@@ -40,7 +44,40 @@ test("marketing preview page is production-blocked and labelled illustrative", a
   assert.doesNotMatch(surface, /PwaController|MemberShell/);
   assert.match(surface, /mpSidebar|Illustrative Bullseye navigation/);
   assert.match(surface, /mpTopBar|Today.?s command centre|mpSessionPill/);
-  assert.match(surface, /mpBottomStrip|SESSION ANALYTICS/);
+  assert.match(surface, /EXAMPLE-ONLY MEMBER EXPERIENCE/);
+  assert.match(surface, /MarketingPreviewPageContent/);
+  assert.match(page, /resolveMarketingPreviewPage/);
+  assert.match(page, /initialPage/);
+});
+
+test("marketing preview exposes every confirmed primary member page without advertising unfinished routes", async () => {
+  const surface = await readFile(new URL("../app/marketing-preview/components/MarketingPreviewSurface.tsx", import.meta.url), "utf8");
+  const pages = await readFile(new URL("../app/marketing-preview/components/MarketingPreviewPages.tsx", import.meta.url), "utf8");
+  assert.deepEqual(
+    MARKETING_PREVIEW_PAGES.map((page) => page.label),
+    ["Dashboard", "Morning Brief", "Trading Desk", "Ideas", "Reviews", "Profile", "Preferences"],
+  );
+  assert.equal(resolveMarketingPreviewPage("terminal"), "terminal");
+  assert.equal(resolveMarketingPreviewPage(["brief"]), "brief");
+  assert.equal(resolveMarketingPreviewPage("journal"), "dashboard");
+  assert.match(surface, /onClick=\{\(\) => selectPage\(item\.id\)\}/);
+  assert.match(surface, /replacePreviewQuery\("view"/);
+  assert.match(pages, /MorningBriefPreview/);
+  assert.match(pages, /TradingDeskPreview/);
+  assert.match(pages, /IdeasPreview/);
+  assert.match(pages, /ReviewsPreview/);
+  assert.match(pages, /ProfilePreview/);
+  assert.match(pages, /PreferencesPreview/);
+  assert.doesNotMatch(JSON.stringify(MARKETING_PREVIEW_PAGES), /Journal|Performance|Results|Replay/);
+});
+
+test("example member pages remain isolated from accounts, billing and live providers", async () => {
+  const pages = await readFile(new URL("../app/marketing-preview/components/MarketingPreviewPages.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(pages, /createClient|supabase|stripe|\/api\/market|fetch\(/i);
+  assert.match(pages, /EXAMPLE ONLY · NOT LIVE/);
+  assert.match(pages, /SAMPLE ACCOUNT · NO REAL DETAILS/);
+  assert.match(pages, /No account data is changed/);
+  assert.match(pages, /not a recommendation/i);
 });
 
 test("marketing preview chart exposes premium controls without live fetches", async () => {
@@ -145,5 +182,8 @@ test("dashboard confidence copy stays concise and overflow-safe styles exist", a
   assert.match(mpCss, /\.mpShell\{/);
   assert.match(mpCss, /\.mpSidebar\{/);
   assert.match(mpCss, /\.mpBottomStrip\{/);
+  assert.match(mpCss, /\.mpIdeasGrid\{/);
+  assert.match(mpCss, /\.mpReviewGrid\{/);
+  assert.match(mpCss, /\.mpSettingsGrid/);
   assert.match(mpCss, /overflow-x:hidden/);
 });

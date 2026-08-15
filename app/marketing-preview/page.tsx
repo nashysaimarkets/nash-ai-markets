@@ -5,6 +5,7 @@ import {
   MARKETING_PREVIEW_STATES,
   type MarketingPreviewStateId,
 } from "./lib/illustrative-fixtures.ts";
+import { resolveMarketingPreviewPage } from "./lib/page-sections.ts";
 import "./marketing-preview.css";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function MarketingPreviewPage({ searchParams }: PageProps) 
 
   const params = searchParams instanceof Promise ? await searchParams : searchParams;
   const initialState = resolveState(params?.state);
+  const initialPage = resolveMarketingPreviewPage(params?.view);
 
-  return <MarketingPreviewSurface initialState={initialState} />;
+  return <MarketingPreviewSurface initialState={initialState} initialPage={initialPage} />;
 }
