@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 
+const ORIGINAL_HREF_ATTRIBUTE = "data-preview-original-href";
+
 const PREVIEW_VIEWS: Record<string, string> = {
   "/dashboard": "dashboard",
   "/brief": "brief",
@@ -54,8 +56,11 @@ function protectedPreviewHref(rawHref: string): string | null {
 
 function rewritePreviewLinks(root: HTMLElement) {
   root.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((anchor) => {
-    const replacement = protectedPreviewHref(anchor.getAttribute("href") ?? "");
+    const currentHref = anchor.getAttribute("href") ?? "";
+    const originalHref = anchor.getAttribute(ORIGINAL_HREF_ATTRIBUTE) ?? currentHref;
+    const replacement = protectedPreviewHref(originalHref);
     if (!replacement || anchor.getAttribute("href") === replacement) return;
+    anchor.setAttribute(ORIGINAL_HREF_ATTRIBUTE, originalHref);
     anchor.setAttribute("href", replacement);
     if (replacement.startsWith("#")) {
       anchor.removeAttribute("target");
@@ -93,9 +98,33 @@ export function PreviewNavigationGuard() {
     };
     root.addEventListener("submit", preventSubmit, true);
 
+    // Next.js Link keeps its original destination inside the client router.
+    // Rewriting only the DOM href can therefore look safe while still routing
+    // to the protected member page. Intercept every rewritten link in capture
+    // phase and perform the isolated preview navigation ourselves.
+    const preventProtectedNavigation = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const anchor = target?.closest<HTMLAnchorElement>("a[href]") ?? null;
+      if (!anchor || !root.contains(anchor)) return;
+      const originalHref = anchor.getAttribute(ORIGINAL_HREF_ATTRIBUTE);
+      if (!originalHref) return;
+      const replacement = protectedPreviewHref(originalHref);
+      if (!replacement) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (replacement.startsWith("#")) {
+        window.location.hash = replacement.slice(1);
+      } else {
+        window.location.assign(replacement);
+      }
+    };
+    root.addEventListener("click", preventProtectedNavigation, true);
+
     return () => {
       observer.disconnect();
       root.removeEventListener("submit", preventSubmit, true);
+      root.removeEventListener("click", preventProtectedNavigation, true);
     };
   }, []);
 

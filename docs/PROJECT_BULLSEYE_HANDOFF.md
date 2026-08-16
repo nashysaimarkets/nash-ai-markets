@@ -9,7 +9,7 @@
 
 Last saved: **16 August 2026, 00:05 BST**
 
-Latest private acceptance and isolation evidence: **16 August 2026, 15:06 BST**
+Latest private acceptance and isolation evidence: **16 August 2026, 15:16 BST**
 
 ## Paste this into ChatGPT or Cursor on another device
 
@@ -66,7 +66,9 @@ The checkpoint branch named above is intended to point to the documentation save
 - Supabase's project list confirms the private preview's baked `opmgzchnmcgnsfwpmysc` provider is named `nashaimarkets Project`, while `pxlqvaddvghjjhenqmdh` is `nashaimarkets-staging`. The test therefore exercised the production-linked auth service once and is not new acceptance evidence for isolated Sites staging.
 - During that test, no second email was generated, no link token was recorded here, the session was signed out, the link was invalidated, and no code, deployment or Supabase configuration was changed. Routine auth session/audit metadata may have been recorded by the production-linked provider.
 - The feature branch now fails closed before OTP submission whenever a Vercel deployment URL is compiled against anything except `nashaimarkets-staging`; canonical production domains retain their existing provider behaviour.
-- **93 focused auth, trust, navigation, preview-isolation, PWA and resilience tests pass locally.** Full connected CI/build remains pending because the fresh fallback checkout has no installed application dependencies.
+- Private deployment `09dd2f9` is READY. Its `/login` form reports `data-auth-redirect-ready=false`, and its built chunks contain the preview/provider guard and explicit no-email failure message. No browser form submission was needed.
+- Live review then exposed a separate nested-link defect: a Morning Brief action displayed an isolated marketing-preview href but the Next.js client router still reached `/login`. The feature source now stores each original href and intercepts rewritten links in capture phase before the client router can escape.
+- **94 focused auth, trust, navigation, preview-isolation, PWA and resilience tests pass locally.** Connected build and browser proof for the nested-link repair remain pending because the fresh fallback checkout has no installed application dependencies.
 
 ### Private marketing walkthrough
 
@@ -134,7 +136,7 @@ The latest complete Bullseye quality gate passes:
 
 ## Remaining public-launch blockers
 
-1. Run connected CI/build for the new Vercel-preview auth guard, then verify on the resulting private deployment that `/login` fails closed before OTP submission. Use only an inert test address for that check and generate no email. Use isolated Sites staging for any future real authentication test.
+1. Deploy and verify the nested real-component preview-link repair on the private Vercel branch. Confirm Morning Brief actions and other rewritten Next.js links remain inside `/marketing-preview`; generate no authentication email. Use isolated Sites staging for any future real authentication test.
 2. Complete tablet-width, keyboard and VoiceOver/TalkBack evidence on private staging. Private-preview protected-route evidence and the owner-reported phone navigation pass are recorded, including the repaired auto-closing member menu.
 3. Record natural passwordless-link time-expiry evidence only if separately required. Deliberate sign-out, return-path and same-link reuse rejection passed with one email on the private Vercel preview on 16 August 2026.
 4. Send and compare the prepared market-data vendor enquiries; obtain written ES/CME and Cboe/VIX customer-display and derived-use rights.
