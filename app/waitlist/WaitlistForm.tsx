@@ -44,11 +44,11 @@ export function WaitlistForm({ foundingPro = false }: { foundingPro?: boolean })
     }
   }
 
-  return <form className="waitlistForm" onSubmit={submit}>
+  return <form className="waitlistForm" onSubmit={submit} aria-busy={submitting}>
     <label htmlFor="waitlist-email">Email address</label>
-    <div><input id="waitlist-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} required placeholder="you@example.com" aria-describedby="waitlist-guidance waitlist-status" /><button type="submit" disabled={submitting} aria-busy={submitting}>{submitting ? "Submitting…" : foundingPro ? "Register Founding Pro interest" : "Join the waiting list"}</button></div>
+    <div><input id="waitlist-email" name="email" type="email" inputMode="email" enterKeyHint="send" autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} required placeholder="you@example.com" aria-describedby="waitlist-guidance waitlist-status" /><button type="submit" disabled={submitting} aria-busy={submitting}>{submitting ? "Submitting…" : foundingPro ? "Register Founding Pro interest" : "Join the waiting list"}</button></div>
     <label className="waitlistHoneypot" aria-hidden="true">Company<input tabIndex={-1} autoComplete="off" value={company} onChange={(event) => setCompany(event.target.value)} /></label>
     <small id="waitlist-guidance">{foundingPro ? "Interest only. No payment, guaranteed place, or automatic subscription. You can opt out of launch communication at any time." : "Launch updates only. No guaranteed invitation, artificial deadline, or automatic subscription. You can opt out at any time."}</small>
-    <span id="waitlist-status" data-tone={messageTone ?? undefined} role={messageTone === "error" ? "alert" : "status"} aria-live="polite">{message}</span>
+    <span id="waitlist-status" data-tone={messageTone ?? undefined} role={messageTone === "error" ? "alert" : "status"} aria-live={messageTone === "error" ? "assertive" : "polite"} aria-atomic="true">{message}</span>
   </form>;
 }
