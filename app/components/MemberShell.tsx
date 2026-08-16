@@ -4,6 +4,7 @@ import { BrandLogo } from "./BrandLogo";
 import { PwaController } from "./PwaController";
 import { BullseyeLoginSting } from "./BullseyeLoginSting";
 import { SmileyEasterEgg } from "./SmileyEasterEgg";
+import { MemberMobileMenu } from "./MemberMobileMenu";
 import { PreviewNavigationGuard } from "../marketing-preview/components/PreviewNavigationGuard.tsx";
 
 export type MemberShellActive =
@@ -99,11 +100,7 @@ export function MemberShell({
             <a href="/auth/signout">Sign out</a>
           )}
         </nav>
-        <details className="memberMobileMenu">
-          <summary aria-label="Open member navigation">
-            <span>Menu</span>
-            <i aria-hidden="true" />
-          </summary>
+        <MemberMobileMenu key={`${active}:${isolatedPreview ? "preview" : "member"}`}>
           <nav aria-label="Mobile member navigation">
             {links.map((link) => (
               <Link
@@ -127,7 +124,7 @@ export function MemberShell({
               </a>
             )}
           </nav>
-        </details>
+        </MemberMobileMenu>
       </header>
       {toolbar ? (
         <div className="memberToolbar" role="toolbar" aria-label="Page tools">
