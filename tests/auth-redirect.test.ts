@@ -67,7 +67,7 @@ test("owner-only Sites staging keeps authentication on its exact origin", () => 
   assert.equal(isAllowedAuthOrigin("https://other-staging.nashysinners.chatgpt.site"), false);
 });
 
-test("Sites staging refuses a browser bundle compiled for another Supabase project", () => {
+test("private acceptance origins refuse a browser bundle compiled for production Supabase", () => {
   assert.equal(
     isAuthProviderCompatibleWithOrigin(
       SITES_STAGING,
@@ -89,7 +89,36 @@ test("Sites staging refuses a browser bundle compiled for another Supabase proje
     ),
     true,
   );
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      PREVIEW,
+      "https://pxlqvaddvghjjhenqmdh.supabase.co",
+    ),
+    true,
+  );
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      PREVIEW,
+      "https://opmgzchnmcgnsfwpmysc.supabase.co",
+    ),
+    false,
+  );
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      UNIQUE_PREVIEW,
+      "https://PXLQVADDVGHJJHENQMDH.SUPABASE.CO./",
+    ),
+    true,
+  );
+  assert.equal(isAuthProviderCompatibleWithOrigin(PREVIEW, null), false);
   assert.equal(isAuthProviderCompatibleWithOrigin(PRODUCTION, null), true);
+  assert.equal(
+    isAuthProviderCompatibleWithOrigin(
+      PRODUCTION,
+      "https://opmgzchnmcgnsfwpmysc.supabase.co",
+    ),
+    true,
+  );
 });
 
 test("unsafe external redirect URLs are rejected", () => {

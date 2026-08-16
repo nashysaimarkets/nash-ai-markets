@@ -91,7 +91,7 @@ export default function StagingLoginForm() {
     if (!form) return;
     try {
       if (!isAuthProviderCompatibleWithOrigin(window.location.origin, SUPABASE_PUBLIC_URL)) {
-        throw new Error("Staging authentication provider mismatch");
+        throw new Error("Private authentication provider mismatch");
       }
       const { emailRedirectTo, next } = resolveLoginRedirectTo(
         window.location.origin,
@@ -133,7 +133,7 @@ export default function StagingLoginForm() {
       }
       if (!isAuthProviderCompatibleWithOrigin(origin, SUPABASE_PUBLIC_URL)) {
         setMessageTone("error");
-        setMessage("Staging authentication is being updated. No sign-in email was sent.");
+        setMessage("Private test authentication is unavailable. No sign-in email was sent.");
         formRef.current?.setAttribute("data-auth-provider-ready", "false");
         return;
       }

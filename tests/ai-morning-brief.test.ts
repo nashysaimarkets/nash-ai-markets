@@ -32,6 +32,7 @@ test("live Morning Brief uses structured OpenAI output grounded in deterministic
     },
   }, "test-model");
   assert.equal(result.status, "generated");
+  assert.equal((request as Record<string, unknown> | null)?.store, false);
   assert.match(JSON.stringify(request), /json_schema/);
   assert.match(JSON.stringify(request), /Do not add facts, prices, levels/);
   assert.doesNotMatch(JSON.stringify(request), /OPENAI_API_KEY|apikey/i);

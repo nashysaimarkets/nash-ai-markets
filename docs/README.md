@@ -47,6 +47,44 @@ afterwards.
   database and DNS rollback.
 - [Incident runbook](INCIDENT_RUNBOOK.md) — response procedures for Stripe,
   Supabase, provider, authentication and high-error-rate incidents.
+- [Monitoring and alerting plan](MONITORING_AND_ALERTING_PLAN.md) — the
+  credit-conscious launch thresholds, ownership record and safe alert-test
+  evidence required before public release.
+- [Operational ownership](OPERATIONAL_OWNERSHIP.md) — named one-person primary
+  responsibilities, authority boundaries and the confirmed Richard Nash backup
+  safety handover.
+- [Staging restore evidence — 16 August 2026](RESTORE_EVIDENCE_2026-08-16.md) —
+  non-destructive staging baseline, RLS/function evidence, temporary round-trip,
+  free-plan recovery targets and the remaining disposable full-restore gate.
+- [Physical screen-reader acceptance](ACCESSIBILITY_PHYSICAL_ACCEPTANCE.md) —
+  existing phone/keyboard evidence and five-check VoiceOver/TalkBack protocols.
+- [UK legal and privacy approval pack](UK_LEGAL_PRIVACY_APPROVAL_PACK.md) —
+  conservative launch decisions, ICO/FCA review questions, low-cost escalation
+  route and the qualified approvals still required.
+- [Cookie and device-storage inventory](COOKIE_AND_DEVICE_STORAGE_INVENTORY.md) —
+  exact first-party source keys/caches, preliminary classifications and the
+  clean-profile deployment audit still required.
+- [Data retention and rights schedule](DATA_RETENTION_AND_RIGHTS_SCHEDULE.md) —
+  owner-approved short-period schedule, 28-day rights target and exercise state.
+- [Staging retention and rights exercise — 16 August 2026](RETENTION_RIGHTS_EXERCISE_2026-08-16.md)
+  — synthetic export/correction/deletion evidence and remaining token/provider
+  boundary.
+- [ICO fee self-assessment — 16 August 2026](ICO_FEE_SELF_ASSESSMENT_2026-08-16.md)
+  — official no-fee-yet pre-trading result and mandatory reassessment trigger.
+- [Processor and vendor register](PROCESSOR_AND_VENDOR_REGISTER.md) — a
+  repository-backed operational register reflecting the completed official-source
+  audit, paid-launch blockers and account evidence still required, without
+  recording credentials or member identifiers.
+- [Vendor privacy evidence — 16 August 2026](VENDOR_PRIVACY_EVIDENCE_2026-08-16.md)
+  — official DPA, subprocessor, transfer, location and retention findings plus
+  the lowest-cost safe path; account acceptance and qualified approval remain
+  pending.
+- [Customer support playbook](CUSTOMER_SUPPORT_PLAYBOOK.md) — safe identity,
+  triage and escalation guidance plus realistic one-person launch response
+  targets awaiting owner approval.
+- [Market-data vendor evaluation](MARKET_DATA_VENDOR_EVALUATION.md) — mandatory
+  ES/VIX rights, total-cost questions, staging acceptance and a weighted
+  credit-saving comparison method.
 - [Environment variables](ENVIRONMENT_VARIABLES.md) — complete implemented
   variable inventory and required/optional status.
 - [Production smoke tests](PRODUCTION_SMOKE_TESTS.md) — post-deployment user and

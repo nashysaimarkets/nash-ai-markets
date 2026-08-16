@@ -113,6 +113,7 @@ test("AI selection can only prioritize supplied deterministic evidence", async (
     },
   }, "test-model");
   assert.equal(result.status, "generated");
+  assert.equal((request as Record<string, unknown> | null)?.store, false);
   assert.match(JSON.stringify(request), /json_schema/);
   assert.doesNotMatch(JSON.stringify(request), /OPENAI_API_KEY|apikey/i);
 });

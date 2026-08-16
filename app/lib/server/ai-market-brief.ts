@@ -60,6 +60,7 @@ export async function generateAIMarketBriefSelection(
   try {
     const response = await client.responses.create({
       model,
+      store: false,
       instructions: [
         "Prioritize only the supplied deterministic Bullseye evidence.",
         "Do not create prose, prices, levels, entries, stops, targets, forecasts, or personalized advice.",

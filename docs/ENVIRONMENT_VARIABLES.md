@@ -58,6 +58,9 @@ an entitled Pro/Elite experience. It uses strict structured output, supplies
 only deterministic Bullseye evidence, and rejects invented priorities, price
 levels, instructions, certainty and malformed responses. Missing credentials,
 rate limits, timeouts and provider failures retain the deterministic brief.
+Every OpenAI Responses request explicitly sets `store: false`; this avoids
+default Responses application-state storage but does not remove separate
+provider abuse-monitoring retention or replace account-level privacy controls.
 
 The internal Elite diagnostics page performs a sanitized minimal Responses API
 generation check. It distinguishes authentication, exhausted quota, request

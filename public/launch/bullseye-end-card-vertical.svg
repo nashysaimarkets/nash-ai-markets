@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" role="img" aria-labelledby="title description">
+  <title id="title">NASH AI Markets — Bullseye vertical launch card</title>
+  <desc id="description">Prepare the session, see the risk and know when to stand aside. Join the launch waiting list.</desc>
+  <defs>
+    <radialGradient id="bg" cx="70%" cy="16%" r="82%"><stop offset="0" stop-color="#194737"/><stop offset=".45" stop-color="#0a1713"/><stop offset="1" stop-color="#050807"/></radialGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#10221b"/><stop offset="1" stop-color="#080d0b"/></linearGradient>
+    <filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <g opacity=".065" stroke="#62e6b1"><path d="M0 120.5h1080M0 240.5h1080M0 360.5h1080M0 480.5h1080M0 600.5h1080M0 720.5h1080M0 840.5h1080M0 960.5h1080M0 1080.5h1080M0 1200.5h1080M0 1320.5h1080M0 1440.5h1080M0 1560.5h1080M0 1680.5h1080M0 1800.5h1080"/><path d="M120.5 0v1920M240.5 0v1920M360.5 0v1920M480.5 0v1920M600.5 0v1920M720.5 0v1920M840.5 0v1920M960.5 0v1920"/></g>
+  <rect x="54" y="86" width="972" height="1650" rx="34" fill="none" stroke="#76b99e" stroke-opacity=".24"/>
+
+  <g transform="translate(90 142)">
+    <circle cx="38" cy="38" r="36" fill="#07110e" stroke="#62e6b1" stroke-width="2"/><circle cx="38" cy="38" r="22" fill="none" stroke="#62e6b1" stroke-opacity=".55"/><path d="M6 38h64M38 6v64" stroke="#62e6b1" stroke-opacity=".78"/><circle cx="38" cy="38" r="7" fill="#62e6b1" filter="url(#glow)"/><circle cx="38" cy="38" r="5" fill="#62e6b1"/>
+    <text x="102" y="34" fill="#62e6b1" font-family="Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="7">BULLSEYE</text><text x="102" y="66" fill="#82968c" font-family="Arial, sans-serif" font-size="17" font-weight="700" letter-spacing="4">NASH AI MARKETS</text>
+  </g>
+
+  <text x="90" y="354" fill="#62e6b1" font-family="monospace" font-size="20" font-weight="700" letter-spacing="5">S&amp;P 500 SESSION WORKFLOW</text>
+  <text x="84" y="480" fill="#eff6f2" font-family="Arial, sans-serif" font-size="88" font-weight="650" letter-spacing="-5">Prepare the</text><text x="84" y="578" fill="#eff6f2" font-family="Arial, sans-serif" font-size="88" font-weight="650" letter-spacing="-5">session.</text>
+  <text x="84" y="702" fill="#eff6f2" font-family="Arial, sans-serif" font-size="88" font-weight="650" letter-spacing="-5">See the risk.</text>
+  <text x="84" y="820" fill="#dfb45f" font-family="Georgia, serif" font-size="76" font-style="italic" letter-spacing="-2">Know when to</text><text x="84" y="904" fill="#dfb45f" font-family="Georgia, serif" font-size="76" font-style="italic" letter-spacing="-2">stand aside.</text>
+
+  <g transform="translate(84 990)">
+    <rect width="912" height="330" rx="22" fill="url(#panel)" stroke="#62e6b1" stroke-opacity=".33" stroke-width="2"/>
+    <text x="34" y="53" fill="#62e6b1" font-family="monospace" font-size="15" font-weight="700" letter-spacing="3">SESSION READINESS · EVIDENCE FIRST</text>
+    <text x="34" y="91" fill="#84968d" font-family="Arial, sans-serif" font-size="18">Permission stays closed when required inputs are unavailable.</text>
+    <g transform="translate(34 133)"><rect width="844" height="54" rx="10" fill="#0c1713" stroke="#2b463a"/><circle cx="27" cy="27" r="7" fill="#62e6b1"/><text x="54" y="23" fill="#71837a" font-family="monospace" font-size="11" letter-spacing="2">CONTEXT</text><text x="54" y="42" fill="#dce8e2" font-family="Arial, sans-serif" font-size="16" font-weight="700">ORIENT</text></g>
+    <g transform="translate(34 198)"><rect width="844" height="54" rx="10" fill="#0c1713" stroke="#514429"/><circle cx="27" cy="27" r="7" fill="#dfb45f"/><text x="54" y="23" fill="#71837a" font-family="monospace" font-size="11" letter-spacing="2">CONDITIONS</text><text x="54" y="42" fill="#dce8e2" font-family="Arial, sans-serif" font-size="16" font-weight="700">PLAN</text></g>
+    <g transform="translate(34 263)"><rect width="844" height="54" rx="10" fill="#0c1713" stroke="#2b463a"/><circle cx="27" cy="27" r="7" fill="#68776f"/><text x="54" y="23" fill="#71837a" font-family="monospace" font-size="11" letter-spacing="2">OUTCOME</text><text x="54" y="42" fill="#dce8e2" font-family="Arial, sans-serif" font-size="16" font-weight="700">REVIEW</text></g>
+  </g>
+
+  <g transform="translate(84 1370)"><rect width="650" height="108" rx="16" fill="#62e6b1" fill-opacity=".1" stroke="#62e6b1" stroke-opacity=".65" stroke-width="2"/><text x="325" y="65" text-anchor="middle" fill="#80f0c4" font-family="monospace" font-size="19" font-weight="700" letter-spacing="1.5">JOIN THE LAUNCH WAITING LIST</text></g>
+  <text x="84" y="1560" fill="#65766e" font-family="monospace" font-size="13" font-weight="700" letter-spacing="1.6">EDUCATIONAL DECISION SUPPORT</text><text x="84" y="1592" fill="#65766e" font-family="monospace" font-size="13" font-weight="700" letter-spacing="1.6">EXAMPLE PRODUCT VISUAL · NOT LIVE MARKET DATA</text>
+  <text x="996" y="1684" text-anchor="end" fill="#788a81" font-family="monospace" font-size="15" font-weight="700" letter-spacing="3">NASH AIMARKETS.COM</text>
+</svg>

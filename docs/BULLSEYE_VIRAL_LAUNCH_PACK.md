@@ -10,6 +10,12 @@ Public production: **NO-GO**
 
 Paid promotion: **NO-GO until the documented compliance gate is cleared**
 
+Editor assets: **READY PENDING MASTER MEDIA** — `public/launch/` contains the
+widescreen, square and vertical end cards plus four subtitle files.
+`docs/BULLSEYE_LAUNCH_VIDEO_EDIT_PACK.md` contains the exact edit recipes and
+pre-post checks. Final MP4 derivatives are not claimed until the approved v16
+master film is supplied and reviewed.
+
 This is a reusable, zero-data-cost content system. Record only the protected
 `/launch-preview` and `/marketing-preview` routes, keep every **EXAMPLE ONLY / NOT
 LIVE** disclosure visible, and never expose the private-preview share token.

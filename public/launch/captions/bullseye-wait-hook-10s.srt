@@ -1,0 +1,13 @@
+1
+00:00:00,000 --> 00:00:02,400
+THE MARKET HAS A WAIT BUTTON.
+
+2
+00:00:02,400 --> 00:00:06,800
+When the evidence is incomplete,
+the decision stays closed.
+
+3
+00:00:06,800 --> 00:00:10,000
+Process over prediction.
+Follow the Bullseye build.

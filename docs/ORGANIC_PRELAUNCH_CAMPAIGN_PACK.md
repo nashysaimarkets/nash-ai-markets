@@ -1,9 +1,13 @@
 # Project Bullseye — Organic Prelaunch Campaign Pack
 
 Status: **READY FOR OWNER / QUALIFIED-COPY REVIEW**  
-Prepared: **15 August 2026**  
+Prepared: **16 August 2026**<br>
 Destination: truthful waiting-list or approved prelaunch page only  
 Public production: **NO-GO**
+
+Static share asset: **READY** — `public/waitlist-og.png` (1200×630), backed by the editable `public/waitlist-og.svg` source. The asset contains its example/not-live boundary and is attached to `/waitlist` social metadata. Public posting and video derivatives remain subject to the review and launch gates below.
+
+Editor pack: **READY PENDING MASTER MEDIA** — widescreen, square and vertical end cards plus four subtitle files are under `public/launch/`. Exact video timelines, four final captions and the pre-post acceptance controls are in `docs/BULLSEYE_LAUNCH_VIDEO_EDIT_PACK.md`. This records preparation only; no public post or final MP4 export is claimed.
 
 This pack is for unpaid founder-led posts and product demonstrations. It sells a
 clearer market-preparation process, not trading outcomes. Every screen containing
