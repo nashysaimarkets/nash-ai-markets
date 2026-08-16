@@ -14,5 +14,9 @@ test("personal level planner is device-only and isolated from verified engine in
   assert.doesNotMatch(component, /fetch\(|\/api\//);
   assert.match(component, /positive numbers only/i);
   assert.match(component, /aria-live="polite"/);
+  assert.match(component, /aria-invalid=\{invalidLevels\.includes\(level\)/);
+  assert.match(component, /Confirm clear/);
+  assert.match(component, /Keep levels/);
+  assert.match(component, /role=\{messageTone === "error" \? "alert" : "status"\}/);
   assert.match(dashboard, /<PersonalLevelPlanner \/>/);
 });

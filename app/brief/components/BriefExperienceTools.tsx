@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 type BriefExperienceToolsProps = {
   posture: string;
@@ -11,12 +11,23 @@ type BriefExperienceToolsProps = {
 
 const TASKS = ["Context reviewed", "Risk defined", "Catalyst checked", "Plan prepared"] as const;
 const STORE_KEY = "nash:brief:preparation:v1";
+const COMMANDS = [
+  ["Today’s decision", "#todays-posture"],
+  ["Verified levels", "#verified-levels"],
+  ["Risk and avoid", "#watch-avoid"],
+  ["Trading Desk", "/terminal"],
+  ["Dashboard", "/dashboard"],
+  ["Risk & Journal", "/journal"],
+] as const;
 
 export function BriefExperienceTools({ posture, risk, catalyst, level }: BriefExperienceToolsProps) {
   const [completed, setCompleted] = useState<boolean[]>([false, false, false, false]);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const paletteButtonRef = useRef<HTMLButtonElement>(null);
+  const paletteDialogRef = useRef<HTMLElement>(null);
+  const paletteCloseRef = useRef<HTMLButtonElement>(null);
   const completeCount = completed.filter(Boolean).length;
-  const progress = useMemo(() => completeCount * 25, [completeCount]);
+  const progress = completeCount * 25;
 
   useEffect(() => {
     let restoreTimer: number | undefined;
@@ -43,12 +54,46 @@ export function BriefExperienceTools({ posture, risk, catalyst, level }: BriefEx
     };
   }, []);
 
+  useEffect(() => {
+    if (!paletteOpen) return;
+
+    const previousFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : paletteButtonRef.current;
+    paletteCloseRef.current?.focus();
+
+    const keepFocusInside = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const controls = paletteDialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href]:not([aria-disabled="true"]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (!controls?.length) return;
+      const first = controls[0]!;
+      const last = controls[controls.length - 1]!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", keepFocusInside);
+    return () => {
+      window.removeEventListener("keydown", keepFocusInside);
+      previousFocus?.focus();
+    };
+  }, [paletteOpen]);
+
   const toggle = (index: number) => {
-    setCompleted((current) => {
-      const next = current.map((value, itemIndex) => itemIndex === index ? !value : value);
+    const next = completed.map((value, itemIndex) => itemIndex === index ? !value : value);
+    setCompleted(next);
+    try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify(next));
-      return next;
-    });
+    } catch {
+      // Preparation state remains usable for this page view when storage is unavailable.
+    }
   };
 
   const downloadMission = () => {
@@ -75,12 +120,6 @@ export function BriefExperienceTools({ posture, risk, catalyst, level }: BriefEx
     link.href = canvas.toDataURL("image/png"); link.click();
   };
 
-  const commands = [
-    ["Today’s decision", "#todays-posture"], ["Verified levels", "#verified-levels"],
-    ["Risk and avoid", "#watch-avoid"], ["Trading Desk", "/terminal"],
-    ["Dashboard", "/dashboard"], ["Risk & Journal", "/journal"],
-  ];
-
   return (
     <section className="mbExperienceTools" aria-labelledby="preparation-progress-title">
       <div className="mbPreparationArc" style={{ "--brief-progress": `${progress}%` } as CSSProperties}>
@@ -95,9 +134,42 @@ export function BriefExperienceTools({ posture, risk, catalyst, level }: BriefEx
       </div>
       <div className="mbExperienceActions">
         <button type="button" onClick={downloadMission}>Download mission card</button>
-        <button type="button" onClick={() => setPaletteOpen(true)}>Open command palette <kbd>/</kbd></button>
+        <button
+          ref={paletteButtonRef}
+          type="button"
+          onClick={() => setPaletteOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={paletteOpen}
+          aria-controls="brief-command-dialog"
+        >
+          Open command palette <kbd>/</kbd>
+        </button>
       </div>
-      {paletteOpen ? <div className="mbCommandBackdrop" role="presentation" onMouseDown={() => setPaletteOpen(false)}><section aria-modal="true" aria-labelledby="brief-command-title" role="dialog" onMouseDown={(event) => event.stopPropagation()}><header><div><span className="mbEyebrow">Command centre</span><h2 id="brief-command-title">Where do you need to go?</h2></div><button aria-label="Close command palette" onClick={() => setPaletteOpen(false)} type="button">×</button></header><nav>{commands.map(([label, href], index) => <a href={href} key={href}><b>{String(index + 1).padStart(2, "0")}</b>{label}<span>↗</span></a>)}</nav></section></div> : null}
+      {paletteOpen ? (
+        <div className="mbCommandBackdrop" role="presentation" onMouseDown={() => setPaletteOpen(false)}>
+          <section
+            ref={paletteDialogRef}
+            id="brief-command-dialog"
+            aria-modal="true"
+            aria-labelledby="brief-command-title"
+            aria-describedby="brief-command-description"
+            role="dialog"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <header>
+              <div>
+                <span className="mbEyebrow">Command centre</span>
+                <h2 id="brief-command-title">Where do you need to go?</h2>
+                <p className="srOnly" id="brief-command-description">Choose a destination or press Escape to return to the Morning Brief.</p>
+              </div>
+              <button ref={paletteCloseRef} aria-label="Close command palette" onClick={() => setPaletteOpen(false)} type="button">×</button>
+            </header>
+            <nav aria-label="Morning Brief destinations">
+              {COMMANDS.map(([label, href], index) => <a href={href} key={href}><b>{String(index + 1).padStart(2, "0")}</b>{label}<span>↗</span></a>)}
+            </nav>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }
