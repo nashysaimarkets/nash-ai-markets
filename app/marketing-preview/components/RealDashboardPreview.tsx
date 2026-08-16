@@ -167,6 +167,7 @@ export function RealDashboardPreview({ fixture }: { fixture: MarketingPreviewFix
     plan,
     session,
     verified: false,
+    exampleOnly: true,
     freshnessLabel: "EXAMPLE ONLY · 10-minute illustrative delay",
     warnings: ["Illustrative private-preview data — not live market data"],
     candles: candleSeries.candles,

@@ -5,7 +5,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
 import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
-import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
+import { EvidenceMap } from "../../components/oracle/EvidenceMap.tsx";
 import {
   DashboardWorkspaceControls,
   useDashboardWorkspace,
@@ -277,7 +277,7 @@ export function MarketCommandCentre({
       timeline: <SessionTimeline key="timeline" model={oracle.timeline} />,
       conviction: (
         <div key="conviction">
-          <ConvictionExplainer model={oracle.conviction} />
+          <EvidenceMap model={oracle.evidenceMap} />
           <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
         </div>
       ),

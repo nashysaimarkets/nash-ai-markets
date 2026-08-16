@@ -1,6 +1,6 @@
 import { ThirtySecondBrief } from "./ThirtySecondBrief.tsx";
 import { SessionTimeline } from "./SessionTimeline.tsx";
-import { ConvictionExplainer } from "./ConvictionExplainer.tsx";
+import { EvidenceMap } from "./EvidenceMap.tsx";
 import { ConfidenceChangePanel } from "./ConfidenceChangePanel.tsx";
 import { DailyChecklistPanel } from "./DailyChecklistPanel.tsx";
 import { OpportunityConditionsPanel } from "./OpportunityConditionsPanel.tsx";
@@ -8,6 +8,7 @@ import { SessionReplayPanel } from "./SessionReplayPanel.tsx";
 import type { ThirtySecondBriefModel } from "../../lib/oracle/thirty-second-brief.ts";
 import type { SessionTimelineModel } from "../../lib/oracle/session-timeline.ts";
 import type { ConvictionExplainerModel } from "../../lib/oracle/conviction-explainer.ts";
+import type { EvidenceMapModel } from "../../lib/oracle/evidence-map.ts";
 import type { OpportunityRadarEducational } from "../../lib/oracle/opportunity-conditions.ts";
 import type { SessionReplayModel } from "../../lib/oracle/session-replay.ts";
 
@@ -15,6 +16,7 @@ export type OracleBundle = {
   thirtySecond: ThirtySecondBriefModel;
   timeline: SessionTimelineModel;
   conviction: ConvictionExplainerModel;
+  evidenceMap: EvidenceMapModel;
   opportunity: OpportunityRadarEducational;
   replay: SessionReplayModel;
   confidenceSnapshot: {
@@ -43,7 +45,7 @@ export function OracleCompanionStack({
     <>
       <ThirtySecondBrief model={oracle.thirtySecond} />
       <SessionTimeline model={oracle.timeline} />
-      <ConvictionExplainer model={oracle.conviction} />
+      <EvidenceMap model={oracle.evidenceMap} />
       <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
       <OpportunityConditionsPanel model={oracle.opportunity} />
       <DailyChecklistPanel
