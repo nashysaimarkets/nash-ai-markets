@@ -48,6 +48,7 @@ export function ReturnVisitBriefing({ current }: { current: ReturnVisitInput }) 
   const model = previous === undefined ? null : buildReturnVisitBriefing({ previous, current });
 
   useEffect(() => {
+    let cancelled = false;
     const baseline = readSessionBaseline();
     const next = buildReturnVisitBriefing({
       previous: baseline,
@@ -65,10 +66,20 @@ export function ReturnVisitBriefing({ current }: { current: ReturnVisitInput }) 
         verified,
       },
     });
-    setPrevious(baseline);
+
+    // Defer device-local hydration until after the effect body so React does not
+    // perform a synchronous cascading render during initial client attachment.
+    queueMicrotask(() => {
+      if (!cancelled) setPrevious(baseline);
+    });
+
     if (verified && marketStatus !== "UNAVAILABLE" && marketStatus !== "PREVIEW") {
       writeStoredReturnVisitSnapshot(next.current);
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [
     capturedAt,
     catalystKey,
