@@ -174,7 +174,8 @@ test("tradingview embed is optional and sandboxed-ready only for tradingview", (
   assert.equal(embed.status, "ready");
   if (embed.status === "ready") {
     assert.match(embed.src, /s\.tradingview\.com\/widgetembed/);
-    assert.match(embed.detail, /Third-party/);
+    assert.match(embed.detail, /Official TradingView public widget/);
+    assert.match(embed.detail, /never enter Bullseye’s verified feed or decision engine/);
   }
   const ibkr = resolvePlatformEmbed("interactive-brokers", qqq);
   assert.equal(ibkr.status, "unavailable");

@@ -27,7 +27,7 @@ test("the hero presents mission-control orientation and a customise control", ()
   assert.match(centre, /BULLSEYE READINESS/);
   assert.match(centre, /dashReadinessSignals/);
   assert.match(centre, /dashSectionRail/);
-  assert.match(centre, /CompactConfidenceChange/);
+  assert.match(centre, /ReturnVisitBriefing/);
   assert.match(centre, /vxAtmosphere-/);
   assert.match(centre, /dashPlanContinuity/);
 });

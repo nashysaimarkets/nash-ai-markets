@@ -147,6 +147,8 @@ export default async function MemberDashboard() {
       quotes: context.snapshot.quotes,
       plan: context.plan,
       macroContext,
+      verifiedContext: context.verified,
+      marketStatus: context.snapshot.status,
     });
 
     view = {
@@ -169,6 +171,8 @@ export default async function MemberDashboard() {
         quotes: props.quotes,
         plan: props.plan,
         macroContext: props.macroContext,
+        verifiedContext: props.verifiedContext,
+        marketStatus: props.marketStatus,
       },
     };
   } catch (error) {
@@ -240,6 +244,8 @@ export default async function MemberDashboard() {
       session,
       quotes: snapshot.quotes,
       plan: null,
+      verifiedContext: false,
+      marketStatus: snapshot.status,
     });
 
     view = {
@@ -258,6 +264,8 @@ export default async function MemberDashboard() {
         session: props.session,
         quotes: props.quotes,
         plan: props.plan,
+        verifiedContext: props.verifiedContext,
+        marketStatus: props.marketStatus,
       },
     };
   }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
-import { CompactConfidenceChange, ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
+import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
 import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
 import {
   DashboardWorkspaceControls,
@@ -49,6 +49,8 @@ import { DashboardVideoCentre } from "./DashboardVideoCentre.tsx";
 import { StatusBadge } from "./visual/StatusBadge.tsx";
 import { VisualLevelMap } from "./visual/VisualLevelMap.tsx";
 import { PersonalLevelPlanner } from "./PersonalLevelPlanner.tsx";
+import { ReturnVisitBriefing } from "../../components/oracle/ReturnVisitBriefing.tsx";
+import type { MarketDataStatus } from "../../lib/market-data.ts";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -65,6 +67,8 @@ export type MarketCommandCentreProps = {
   quotes: MarketQuote[];
   plan: TradePlan | null;
   macroContext?: VerifiedMacroContext | null;
+  verifiedContext?: boolean;
+  marketStatus?: MarketDataStatus;
 };
 
 function toneClass(tone: string) {
@@ -86,6 +90,8 @@ export function MarketCommandCentre({
   quotes,
   plan,
   macroContext = null,
+  verifiedContext = false,
+  marketStatus = "UNAVAILABLE",
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
   const posture = buildTodaysPosture(decision);
@@ -503,7 +509,21 @@ export function MarketCommandCentre({
         <span>{hero.sessionLabel} · {hero.delayedAgeLine}</span>
       </nav>
 
-      <CompactConfidenceChange current={oracle.confidenceSnapshot} />
+      <ReturnVisitBriefing
+        current={{
+          capturedAt: new Date(now).toISOString(),
+          verified: verifiedContext,
+          sessionPhase: session.phase,
+          sessionLabel: hero.sessionLabel,
+          lean: decision.leanLabel,
+          permission: decision.permissionLabel,
+          risk: decision.riskLabel,
+          catalystKey: catalyst ? `${catalyst.name}|${catalyst.startsAt}` : null,
+          catalystLabel: catalyst ? `${catalyst.name} · ${catalyst.whenLabel}` : null,
+          marketStatus,
+          freshness: hero.delayedAgeLine,
+        }}
+      />
 
       <div className="dashWorkspaceDrawer">
         <div

@@ -422,8 +422,8 @@ export function resolvePlatformLaunch(
 }
 
 /**
- * Optional TradingView Advanced Chart embed — public widget only.
- * Sandboxed iframe; no API keys; clearly third-party.
+ * Optional official TradingView public widget only.
+ * Display-only and sandboxed: no scraping, API keys, broker session or engine input.
  */
 export function resolvePlatformEmbed(
   platformId: PreferredPlatformId,
@@ -453,6 +453,6 @@ export function resolvePlatformEmbed(
     src,
     title: `TradingView chart for ${tv}`,
     detail:
-      "Third-party TradingView embed — sandboxed, no NASH API keys, not a live broker ticket. Prices inside the iframe are TradingView’s, not the verified FMP desk feed.",
+      "Official TradingView public widget — display-only, sandboxed and opt-in. Its values may be delayed or unavailable and never enter Bullseye’s verified feed or decision engine.",
   };
 }
