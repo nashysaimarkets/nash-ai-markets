@@ -36,8 +36,8 @@ const productMoments = [
   {
     index: "04",
     eyebrow: "REVIEW",
-    title: "Score process—not guessed direction.",
-    copy: "Use the free Discipline Check to make preparation visible without pretending it predicts the market.",
+    title: "Build a five-session discipline habit.",
+    copy: "Use the free Discipline Check and device-local challenge to make preparation visible without pretending either predicts the market.",
   },
 ] as const;
 

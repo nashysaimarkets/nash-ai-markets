@@ -10,6 +10,7 @@ import {
   type DisciplineAnswers,
   type DisciplineQuestionId,
 } from "../lib/discipline-check.ts";
+import { SessionChallenge } from "./SessionChallenge.tsx";
 
 export function DisciplineCheck() {
   const [answers, setAnswers] = useState<DisciplineAnswers>(() => createEmptyDisciplineAnswers());
@@ -28,6 +29,12 @@ export function DisciplineCheck() {
     setAnswers(createEmptyDisciplineAnswers());
     setTouched(false);
     setStatus("Discipline Check reset. Answers stay on this device.");
+  }
+
+  function prepareNextSession() {
+    setAnswers(createEmptyDisciplineAnswers());
+    setTouched(false);
+    setStatus("Session recorded locally. Checklist reset for the next review.");
   }
 
   async function shareResult() {
@@ -170,6 +177,8 @@ export function DisciplineCheck() {
           <p className="vlScoreStatus" role="status" aria-live="polite">{status}</p>
         </aside>
       </div>
+
+      <SessionChallenge score={score} touched={touched} onRecorded={prepareNextSession} />
     </section>
   );
 }

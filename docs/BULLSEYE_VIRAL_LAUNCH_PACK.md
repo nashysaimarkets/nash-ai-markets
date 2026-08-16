@@ -158,9 +158,9 @@ spoken line should also appear as burned-in subtitles.
 
 - **Format:** 9:16, 15 seconds
 - **Hook:** `HOW COMPLETE IS YOUR PLAN—REALLY?`
-- **Voice-over:** “Eight preparation gates. A process score. No market prediction and no answers uploaded.”
-- **Capture:** Tick three example gates → local score changes.
-- **CTA:** `Run the free Bullseye Discipline Check.`
+- **Voice-over:** “Eight preparation gates, a process score and a five-session habit challenge. No market prediction and no answers uploaded.”
+- **Capture:** Tick three example gates → local score changes → First 5 Sessions panel.
+- **CTA:** `Start the free Bullseye First 5 Sessions challenge.`
 
 #### 16 — Scorecard reveal
 
@@ -250,8 +250,8 @@ spoken line should also appear as burned-in subtitles.
 
 - **Format:** 9:16, 15 seconds
 - **Hook:** `THE 8-GATE BEFORE-THE-BELL CHALLENGE`
-- **Voice-over:** “Run the Discipline Check for five sessions. Share the score—not a trade—and notice which preparation gate you skip most often.”
-- **Capture:** Check → scorecard → five empty calendar boxes.
+- **Voice-over:** “Run the Discipline Check for five sessions. Log one review each day and share the X-out-of-five streak—not a trade.”
+- **Capture:** Check → record this session → five-session progress panel.
 - **CTA:** `Join #BullseyeBeforeTheBell.`
 
 #### 27 — Comment reply: “Is it a signal?”

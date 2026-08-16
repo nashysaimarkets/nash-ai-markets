@@ -8,6 +8,14 @@ import {
   DISCIPLINE_QUESTIONS,
   getDisciplineScoreBand,
 } from "../app/launch-preview/lib/discipline-check.ts";
+import {
+  createChallengeShareText,
+  createEmptySessionChallenge,
+  parseSessionChallenge,
+  recordChallengeSession,
+  SESSION_CHALLENGE_SIZE,
+  SESSION_CHALLENGE_STORAGE_KEY,
+} from "../app/launch-preview/lib/session-challenge.ts";
 
 async function launchSource(relativePath: string): Promise<string> {
   return readFile(new URL(`../app/launch-preview/${relativePath}`, import.meta.url), "utf8");
@@ -26,7 +34,7 @@ test("launch centre is private, production-blocked and excluded from search", as
   assert.doesNotMatch(page, /\/waitlist|signOut|checkout|createClient|supabase|stripe|fetch\(|\/api\//i);
 });
 
-test("launch centre and discipline check make no provider, account or persistence calls", async () => {
+test("launch centre and individual checklist answers make no provider, account or persistence calls", async () => {
   const sources = await Promise.all([
     launchSource("page.tsx"),
     launchSource("_components/DisciplineCheck.tsx"),
@@ -83,6 +91,76 @@ test("discipline check provides local sharing, download, reset and accessible st
   assert.match(component, /aria-live=["']polite["']/);
   assert.match(component, /Reset safely/);
   assert.match(component, /disabled=\{!touched\}/);
+  assert.match(component, /<SessionChallenge score=\{score\} touched=\{touched\}/);
+});
+
+test("five-session challenge stores only bounded local dates and process scores", () => {
+  assert.equal(SESSION_CHALLENGE_SIZE, 5);
+  assert.equal(SESSION_CHALLENGE_STORAGE_KEY, "nash.bullseye.first-five.v1");
+  const empty = createEmptySessionChallenge();
+  assert.deepEqual(empty, { version: 1, sessions: [] });
+
+  const first = recordChallengeSession(empty, { date: "2026-08-17", score: 6 });
+  assert.equal(first.outcome, "recorded");
+  assert.deepEqual(first.progress.sessions, [{ date: "2026-08-17", score: 6 }]);
+
+  const duplicate = recordChallengeSession(first.progress, { date: "2026-08-17", score: 8 });
+  assert.equal(duplicate.outcome, "duplicate");
+  assert.deepEqual(duplicate.progress, first.progress);
+
+  const restored = parseSessionChallenge(JSON.stringify({
+    version: 1,
+    sessions: [
+      { date: "2026-08-17", score: 6 },
+      { date: "2026-08-17", score: 8 },
+      { date: "bad-date", score: 7 },
+      { date: "2026-08-18", score: 99 },
+      { date: "2026-08-19", score: 7, answerDetails: { risk: true } },
+    ],
+  }));
+  assert.deepEqual(restored, {
+    version: 1,
+    sessions: [
+      { date: "2026-08-17", score: 6 },
+      { date: "2026-08-19", score: 7 },
+    ],
+  });
+  assert.equal(parseSessionChallenge("not-json").sessions.length, 0);
+});
+
+test("five-session challenge stops at five and shares no private or session detail", () => {
+  let progress = createEmptySessionChallenge();
+  for (let day = 17; day <= 21; day += 1) {
+    const result = recordChallengeSession(progress, { date: `2026-08-${day}`, score: day % 9 });
+    assert.equal(result.outcome, "recorded");
+    progress = result.progress;
+  }
+  assert.equal(progress.sessions.length, 5);
+  assert.equal(
+    recordChallengeSession(progress, { date: "2026-08-22", score: 8 }).outcome,
+    "complete",
+  );
+  const text = createChallengeShareText(progress.sessions.length);
+  assert.equal(
+    text,
+    "My Bullseye First 5 Sessions challenge: 5/5 sessions reviewed. Process over prediction. #BullseyeBeforeTheBell",
+  );
+  assert.doesNotMatch(text, /2026|score|https?:|vercel|launch-preview|_vercel_share/);
+});
+
+test("challenge persistence is device-only, minimal, accessible and reset-confirmed", async () => {
+  const challenge = await launchSource("_components/SessionChallenge.tsx");
+  assert.match(challenge, /window\.localStorage\.getItem\(SESSION_CHALLENGE_STORAGE_KEY\)/);
+  assert.match(challenge, /window\.localStorage\.setItem\(SESSION_CHALLENGE_STORAGE_KEY/);
+  assert.match(challenge, /window\.localStorage\.removeItem\(SESSION_CHALLENGE_STORAGE_KEY\)/);
+  assert.doesNotMatch(challenge, /fetch\(|XMLHttpRequest|WebSocket|EventSource|createClient|supabase|stripe|\/api\//i);
+  assert.match(challenge, /Stores only five dates and scores/);
+  assert.match(challenge, /Never stores individual answers/);
+  assert.match(challenge, /Never sends progress to Bullseye/);
+  assert.match(challenge, /one entry per local calendar day/i);
+  assert.match(challenge, /role="group" aria-label="Confirm challenge reset"/);
+  assert.match(challenge, /role="status" aria-live="polite"/);
+  assert.match(challenge, /No dates, scores, account data or preview link were included/);
 });
 
 test("launch centre styles include responsive, keyboard and reduced-motion safeguards", async () => {
@@ -92,6 +170,8 @@ test("launch centre styles include responsive, keyboard and reduced-motion safeg
   assert.match(css, /@media\(max-width:720px\)/);
   assert.match(css, /@media\(prefers-reduced-motion:reduce\)/);
   assert.match(css, /overflow-x:hidden/);
+  assert.match(css, /\.vlChallenge\{/);
+  assert.match(css, /\.vlChallengeProgress ol\{/);
 });
 
 test("organic launch pack contains 30 assets and preserves the launch safety gates", async () => {
