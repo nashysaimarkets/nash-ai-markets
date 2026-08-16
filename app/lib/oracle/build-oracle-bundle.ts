@@ -5,6 +5,7 @@ import { buildThirtySecondBrief } from "./thirty-second-brief.ts";
 import { buildSessionTimeline } from "./session-timeline.ts";
 import { buildConvictionExplainer } from "./conviction-explainer.ts";
 import { buildEvidenceMap } from "./evidence-map.ts";
+import { buildEventMode } from "./event-mode.ts";
 import { buildEducationalOpportunityRadar } from "./opportunity-conditions.ts";
 import { buildSessionReplay } from "./session-replay.ts";
 import { upcomingVerifiedEvents } from "../../terminal/lib/event-display.ts";
@@ -77,6 +78,14 @@ export function buildOracleBundle(input: {
     primaryRisk: presentation.primaryRisk,
     freshness: input.freshnessLabel,
   });
+  const eventMode = buildEventMode({
+    events: input.snapshot.events,
+    now,
+    verified: input.verified,
+    exampleOnly: input.exampleOnly,
+    permissionLabel: presentation.permissionLabel,
+    permissionTone: presentation.permissionTone,
+  });
   const hasUpcomingEvent = upcomingVerifiedEvents(input.snapshot.events, now, 1).length > 0;
 
   return {
@@ -92,6 +101,7 @@ export function buildOracleBundle(input: {
     timeline: buildSessionTimeline(new Date(now)),
     conviction,
     evidenceMap,
+    eventMode,
     opportunity: buildEducationalOpportunityRadar({
       snapshot: input.snapshot,
       intelligence: input.intelligence,

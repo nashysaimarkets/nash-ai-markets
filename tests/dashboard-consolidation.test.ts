@@ -60,7 +60,8 @@ test("dashboard empty catalyst stays compact and available events still render",
   assert.match(centre, /AwaitingDataNote/);
   assert.match(centre, /No upcoming verified catalyst/);
   assert.match(centre, /No scheduled event has been verified/);
-  assert.match(centre, /catalyst \? "dashSplitRow" : "dashLevelsStack"/);
+  assert.match(centre, /catalyst && !eventModeAvailable \? "dashSplitRow" : "dashLevelsStack"/);
+  assert.match(centre, /<EventModePanel model=\{oracle\.eventMode\}/);
   assert.match(centre, /Event risk ahead/);
   assert.match(centre, /catalyst\.name/);
   assert.doesNotMatch(centre, /No future verified calendar event is currently supplied/);

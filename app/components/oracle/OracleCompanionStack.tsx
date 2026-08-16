@@ -9,6 +9,7 @@ import type { ThirtySecondBriefModel } from "../../lib/oracle/thirty-second-brie
 import type { SessionTimelineModel } from "../../lib/oracle/session-timeline.ts";
 import type { ConvictionExplainerModel } from "../../lib/oracle/conviction-explainer.ts";
 import type { EvidenceMapModel } from "../../lib/oracle/evidence-map.ts";
+import type { EventModeModel } from "../../lib/oracle/event-mode.ts";
 import type { OpportunityRadarEducational } from "../../lib/oracle/opportunity-conditions.ts";
 import type { SessionReplayModel } from "../../lib/oracle/session-replay.ts";
 
@@ -17,6 +18,7 @@ export type OracleBundle = {
   timeline: SessionTimelineModel;
   conviction: ConvictionExplainerModel;
   evidenceMap: EvidenceMapModel;
+  eventMode: EventModeModel;
   opportunity: OpportunityRadarEducational;
   replay: SessionReplayModel;
   confidenceSnapshot: {

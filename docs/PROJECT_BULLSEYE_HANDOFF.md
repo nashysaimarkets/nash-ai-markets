@@ -1,5 +1,12 @@
 # Project Bullseye — current verified handoff
 
+## Credit-saving Sites workspace recovery
+
+- Sites is installed, enabled and owner access to `nash-ai-markets-bullseye-staging` was confirmed on 16 August 2026.
+- Before opening by slug, check for the warm official checkout at `/workspace/sites/nash-ai-markets-bullseye-staging`.
+- When its `.openai/hosting.json` exists, use the official Sites `edit --path /workspace/sites/nash-ai-markets-bullseye-staging` workflow. This avoids creating another dependency/network handoff.
+- Use the slug workflow only once when the warm checkout is genuinely absent. Never loop cancelled handoff requests; continue isolated GitHub/Vercel work without touching production and report the platform permission fault.
+
 Last saved: **16 August 2026, 00:05 BST**
 
 ## Paste this into ChatGPT or Cursor on another device

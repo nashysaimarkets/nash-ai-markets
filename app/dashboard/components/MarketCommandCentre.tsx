@@ -6,6 +6,7 @@ import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightC
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
 import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
 import { EvidenceMap } from "../../components/oracle/EvidenceMap.tsx";
+import { EventModePanel } from "../../components/oracle/EventModePanel.tsx";
 import {
   DashboardWorkspaceControls,
   useDashboardWorkspace,
@@ -94,6 +95,7 @@ export function MarketCommandCentre({
   marketStatus = "UNAVAILABLE",
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
+  const eventModeAvailable = oracle.eventMode.available;
   const posture = buildTodaysPosture(decision);
   const postClose = oracle.timeline.current === "post-close";
   const { prefs, persist } = useDashboardWorkspace();
@@ -541,6 +543,8 @@ export function MarketCommandCentre({
 
       <div id="briefing"><CommandStrip model={commandStrip} /></div>
 
+      <EventModePanel model={oracle.eventMode} />
+
       <section id="evidence" className="dashCockpit" aria-labelledby="dash-cockpit-title">
         <header className="dashCockpitHeader">
           <div>
@@ -553,7 +557,7 @@ export function MarketCommandCentre({
       </section>
 
       <section id="plan" className="dashPlanContinuity" aria-label="Verified levels and price action">
-      <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
+      <div className={catalyst && !eventModeAvailable ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
             <span className="mccEyebrow">
@@ -565,7 +569,7 @@ export function MarketCommandCentre({
           <PersonalLevelPlanner />
         </section>
 
-        {catalyst ? (
+        {catalyst && !eventModeAvailable ? (
           <section className="dashCatalyst" aria-labelledby="dash-catalyst-title">
             <header>
               <span className="mccEyebrow">
@@ -595,7 +599,7 @@ export function MarketCommandCentre({
               </Link>
             </article>
           </section>
-        ) : (
+        ) : !catalyst ? (
           <AwaitingDataNote
             statusLabel="No upcoming verified catalyst"
             reason="No scheduled event has been verified for the sessions ahead."
@@ -606,7 +610,7 @@ export function MarketCommandCentre({
               </Link>
             }
           />
-        )}
+        ) : null}
       </div>
 
       <section className="dashChartStage" aria-label="Verified market chart">
