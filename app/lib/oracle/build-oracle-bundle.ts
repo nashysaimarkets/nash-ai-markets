@@ -4,6 +4,8 @@ import { buildDeskDecisionPresentation, buildTodaysPosture } from "../../termina
 import { buildThirtySecondBrief } from "./thirty-second-brief.ts";
 import { buildSessionTimeline } from "./session-timeline.ts";
 import { buildConvictionExplainer } from "./conviction-explainer.ts";
+import { buildEvidenceMap } from "./evidence-map.ts";
+import { buildEventMode } from "./event-mode.ts";
 import { buildEducationalOpportunityRadar } from "./opportunity-conditions.ts";
 import { buildSessionReplay } from "./session-replay.ts";
 import { upcomingVerifiedEvents } from "../../terminal/lib/event-display.ts";
@@ -22,6 +24,7 @@ export function buildOracleBundle(input: {
   plan: TradePlan;
   session: SessionClockReading;
   verified: boolean;
+  exampleOnly?: boolean;
   freshnessLabel: string;
   warnings?: string[];
   candles?: OhlcvPoint[] | null;
@@ -65,6 +68,24 @@ export function buildOracleBundle(input: {
     verified: input.verified,
     now,
   });
+  const evidenceMap = buildEvidenceMap({
+    conviction,
+    verified: input.verified,
+    exampleOnly: input.exampleOnly,
+    permissionLabel: presentation.permissionLabel,
+    permissionTone: presentation.permissionTone,
+    leanLabel: presentation.leanLabel,
+    primaryRisk: presentation.primaryRisk,
+    freshness: input.freshnessLabel,
+  });
+  const eventMode = buildEventMode({
+    events: input.snapshot.events,
+    now,
+    verified: input.verified,
+    exampleOnly: input.exampleOnly,
+    permissionLabel: presentation.permissionLabel,
+    permissionTone: presentation.permissionTone,
+  });
   const hasUpcomingEvent = upcomingVerifiedEvents(input.snapshot.events, now, 1).length > 0;
 
   return {
@@ -79,6 +100,8 @@ export function buildOracleBundle(input: {
     }),
     timeline: buildSessionTimeline(new Date(now)),
     conviction,
+    evidenceMap,
+    eventMode,
     opportunity: buildEducationalOpportunityRadar({
       snapshot: input.snapshot,
       intelligence: input.intelligence,

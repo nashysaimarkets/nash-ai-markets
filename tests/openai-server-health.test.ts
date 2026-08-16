@@ -21,6 +21,7 @@ test("OpenAI health check confirms a successful sanitized connection", async () 
     responses: {
       async create(body) {
         requested = true;
+        assert.equal(body.store, false);
         assert.equal(body.max_output_tokens, 16);
         return { data: [{ id: "test-model" }] };
       },

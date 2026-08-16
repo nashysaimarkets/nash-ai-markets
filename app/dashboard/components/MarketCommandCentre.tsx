@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
-import { CompactConfidenceChange, ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
-import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
+import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
+import { EvidenceMap } from "../../components/oracle/EvidenceMap.tsx";
+import { EventModePanel } from "../../components/oracle/EventModePanel.tsx";
 import {
   DashboardWorkspaceControls,
   useDashboardWorkspace,
@@ -49,6 +50,8 @@ import { DashboardVideoCentre } from "./DashboardVideoCentre.tsx";
 import { StatusBadge } from "./visual/StatusBadge.tsx";
 import { VisualLevelMap } from "./visual/VisualLevelMap.tsx";
 import { PersonalLevelPlanner } from "./PersonalLevelPlanner.tsx";
+import { ReturnVisitBriefing } from "../../components/oracle/ReturnVisitBriefing.tsx";
+import type { MarketDataStatus } from "../../lib/market-data.ts";
 
 export type MarketCommandCentreProps = {
   greeting: DeskGreeting;
@@ -65,6 +68,8 @@ export type MarketCommandCentreProps = {
   quotes: MarketQuote[];
   plan: TradePlan | null;
   macroContext?: VerifiedMacroContext | null;
+  verifiedContext?: boolean;
+  marketStatus?: MarketDataStatus;
 };
 
 function toneClass(tone: string) {
@@ -86,8 +91,11 @@ export function MarketCommandCentre({
   quotes,
   plan,
   macroContext = null,
+  verifiedContext = false,
+  marketStatus = "UNAVAILABLE",
 }: MarketCommandCentreProps) {
   const { hero, decision, weather, levels, levelsNote, catalyst, unavailable } = summary;
+  const eventModeAvailable = oracle.eventMode.available;
   const posture = buildTodaysPosture(decision);
   const postClose = oracle.timeline.current === "post-close";
   const { prefs, persist } = useDashboardWorkspace();
@@ -271,7 +279,7 @@ export function MarketCommandCentre({
       timeline: <SessionTimeline key="timeline" model={oracle.timeline} />,
       conviction: (
         <div key="conviction">
-          <ConvictionExplainer model={oracle.conviction} />
+          <EvidenceMap model={oracle.evidenceMap} />
           <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
         </div>
       ),
@@ -503,7 +511,21 @@ export function MarketCommandCentre({
         <span>{hero.sessionLabel} · {hero.delayedAgeLine}</span>
       </nav>
 
-      <CompactConfidenceChange current={oracle.confidenceSnapshot} />
+      <ReturnVisitBriefing
+        current={{
+          capturedAt: new Date(now).toISOString(),
+          verified: verifiedContext,
+          sessionPhase: session.phase,
+          sessionLabel: hero.sessionLabel,
+          lean: decision.leanLabel,
+          permission: decision.permissionLabel,
+          risk: decision.riskLabel,
+          catalystKey: catalyst ? `${catalyst.name}|${catalyst.startsAt}` : null,
+          catalystLabel: catalyst ? `${catalyst.name} · ${catalyst.whenLabel}` : null,
+          marketStatus,
+          freshness: hero.delayedAgeLine,
+        }}
+      />
 
       <div className="dashWorkspaceDrawer">
         <div
@@ -521,6 +543,8 @@ export function MarketCommandCentre({
 
       <div id="briefing"><CommandStrip model={commandStrip} /></div>
 
+      <EventModePanel model={oracle.eventMode} />
+
       <section id="evidence" className="dashCockpit" aria-labelledby="dash-cockpit-title">
         <header className="dashCockpitHeader">
           <div>
@@ -533,7 +557,7 @@ export function MarketCommandCentre({
       </section>
 
       <section id="plan" className="dashPlanContinuity" aria-label="Verified levels and price action">
-      <div className={catalyst ? "dashSplitRow" : "dashLevelsStack"}>
+      <div className={catalyst && !eventModeAvailable ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
           <header>
             <span className="mccEyebrow">
@@ -545,7 +569,7 @@ export function MarketCommandCentre({
           <PersonalLevelPlanner />
         </section>
 
-        {catalyst ? (
+        {catalyst && !eventModeAvailable ? (
           <section className="dashCatalyst" aria-labelledby="dash-catalyst-title">
             <header>
               <span className="mccEyebrow">
@@ -575,7 +599,7 @@ export function MarketCommandCentre({
               </Link>
             </article>
           </section>
-        ) : (
+        ) : !catalyst ? (
           <AwaitingDataNote
             statusLabel="No upcoming verified catalyst"
             reason="No scheduled event has been verified for the sessions ahead."
@@ -586,7 +610,7 @@ export function MarketCommandCentre({
               </Link>
             }
           />
-        )}
+        ) : null}
       </div>
 
       <section className="dashChartStage" aria-label="Verified market chart">

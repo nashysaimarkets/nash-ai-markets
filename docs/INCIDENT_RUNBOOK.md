@@ -2,6 +2,11 @@
 
 ## Common incident protocol
 
+Chris Nash is the named primary incident lead for the current one-person launch
+model. Richard Nash accepted the operational backup role and confirmed the
+safety handover on 16 August 2026. Never place personal recovery details in this
+repository or grant unnecessary routine access.
+
 1. **Acknowledge:** assign incident lead, severity and timestamp.
 2. **Protect:** preserve fail-closed behavior and stop unsafe deployments.
 3. **Scope:** identify affected routes, tiers, regions and start time.
@@ -229,8 +234,19 @@ SMTP credentials, API keys or a live magic link into tickets or chat.
 
 ## Launch email failure
 
-Email dispatch is not implemented in the current candidate. If introduced,
-failures must not affect waiting-list storage, authentication, billing or
-entitlement. Confirm provider status, verified sender, suppression state and
-idempotency without logging message bodies or recipient addresses. Do not claim
-that a confirmation was sent until the provider has accepted it.
+The current candidate contains a dormant, fail-closed Resend transport with
+recipient validation and an idempotency key. It must remain disabled until the
+provider, verified sender and server-only credential are deliberately approved
+and configured. A delivery failure must not affect waiting-list storage,
+authentication, billing or entitlement.
+
+1. Confirm sanitized readiness reports provider, sender and credential present;
+   never print their values.
+2. Inspect only the provider message ID, accepted/rejected state, suppression
+   category and timestamp. Do not copy message bodies or recipient addresses.
+3. Confirm the event-specific idempotency key was stable before any controlled
+   retry. Do not generate a new key merely to bypass duplicate protection.
+4. Keep customer confirmation wording disabled until the provider has accepted
+   the message and delivery/suppression monitoring is operational.
+5. If rejection persists, stop sending, preserve the underlying product action
+   and follow the communication path in `MONITORING_AND_ALERTING_PLAN.md`.

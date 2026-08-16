@@ -250,6 +250,11 @@ test("Morning Brief page and component preserve auth and delayed-data honesty", 
   assert.match(pulseSource, /Bullseye pulse|Focus mode|mbHeartbeat|OF 5 LAYERS/);
   assert.match(pulseSource, /Market weather|Session storyline|mbSessionStory/);
   assert.match(toolsSource, /Download mission card|Command centre|localStorage|Preparation state/);
+  assert.match(toolsSource, /paletteCloseRef\.current\?\.focus\(\)/);
+  assert.match(toolsSource, /previousFocus\?\.focus\(\)/);
+  assert.match(toolsSource, /event\.key !== "Tab"/);
+  assert.match(toolsSource, /aria-haspopup="dialog"/);
+  assert.match(toolsSource, /aria-describedby="brief-command-description"/);
   assert.match(css, /\.morningMarketBrief\{/);
   assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
   assert.match(css, /\.mbBriefRoute/);

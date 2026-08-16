@@ -65,3 +65,57 @@ test("production readiness documentation covers deployment, incidents, known iss
   const report = await read("docs/RC1_PRODUCTION_READINESS.md");
   for (const heading of ["Deployment checklist", "Incident recovery", "Known issues", "Post-launch monitoring", "Go / no-go"]) assert.match(report, new RegExp(heading));
 });
+
+test("launch evidence distinguishes completed readiness from external acceptance", async () => {
+  const [ownership, restore, accessibility, legal, storage, retention, retentionExercise, icoFee, vendors, vendorEvidence, openaiHealth, morningBrief, marketBrief] = await Promise.all([
+    read("docs/OPERATIONAL_OWNERSHIP.md"),
+    read("docs/RESTORE_EVIDENCE_2026-08-16.md"),
+    read("docs/ACCESSIBILITY_PHYSICAL_ACCEPTANCE.md"),
+    read("docs/UK_LEGAL_PRIVACY_APPROVAL_PACK.md"),
+    read("docs/COOKIE_AND_DEVICE_STORAGE_INVENTORY.md"),
+    read("docs/DATA_RETENTION_AND_RIGHTS_SCHEDULE.md"),
+    read("docs/RETENTION_RIGHTS_EXERCISE_2026-08-16.md"),
+    read("docs/ICO_FEE_SELF_ASSESSMENT_2026-08-16.md"),
+    read("docs/PROCESSOR_AND_VENDOR_REGISTER.md"),
+    read("docs/VENDOR_PRIVACY_EVIDENCE_2026-08-16.md"),
+    read("app/lib/server/openai.ts"),
+    read("app/lib/server/ai-morning-brief.ts"),
+    read("app/lib/server/ai-market-brief.ts"),
+  ]);
+
+  assert.match(ownership, /Chris Nash/);
+  assert.match(ownership, /Richard Nash accepted the operational backup[\s\S]*16 August 2026/i);
+  assert.match(ownership, /named-owner and backup-briefing[\s\S]*CLEARED/i);
+  assert.match(restore, /RESTORE READINESS: PASS\. FULL DISPOSABLE RESTORE: PENDING/);
+  assert.match(restore, /production-linked project[\s\S]*explicitly excluded/i);
+  assert.match(accessibility, /physical iPhone VoiceOver passed/i);
+  assert.match(accessibility, /Android TalkBack remains[\s\S]*pending/i);
+  assert.match(legal, /QUALIFIED APPROVAL: OUTSTANDING/);
+  assert.match(legal, /not legal[\s\S]*advice, FCA authorisation or Section 21 approval/i);
+  assert.match(legal, /OWNER APPROVAL: Chris Nash approved[\s\S]*16 August 2026/i);
+  assert.match(storage, /nash_desk_workspace_v1/);
+  assert.match(storage, /no marketing analytics, advertising pixel, behavioural tracker/i);
+  assert.match(retention, /OWNER-APPROVED FOR OPERATIONS/);
+  assert.match(retention, /APPROVED — 16 August 2026/);
+  assert.match(retention, /target completion within \*\*28 days\*\*/i);
+  assert.match(retention, /DATABASE PASS — 16 August 2026/);
+  assert.match(retentionExercise, /ISOLATED STAGING DATABASE EXERCISE: PASS/);
+  assert.match(retentionExercise, /REAL SIGNED-SESSION BROWSER REPLAY: PENDING/);
+  assert.match(retentionExercise, /original staging user\/session counts/i);
+  assert.doesNotMatch(retentionExercise, /example\.invalid|00000000-0000-4000-8000-/i);
+  assert.match(icoFee, /NO FEE REQUIRED YET/);
+  assert.match(icoFee, /Retake the checker immediately[\s\S]*first paid subscription/i);
+  assert.match(vendors, /OFFICIAL-SOURCE EVIDENCE AUDIT: COMPLETE/);
+  assert.match(vendors, /Vercel[\s\S]*Pro Plan[\s\S]*continuity blocker/i);
+  assert.match(vendors, /Automatic Vercel Agent[\s\S]*disabled[\s\S]*billing adjustment/i);
+  assert.match(vendors, /free ImprovMX[\s\S]*consumer Gmail/i);
+  assert.match(vendorEvidence, /PUBLIC PAID LAUNCH: HOLD/);
+  assert.match(vendorEvidence, /Organisation plan is Free[\s\S]*London `eu-west-2`/i);
+  assert.match(vendorEvidence, /Every current OpenAI Responses call explicitly sets `store: false`/i);
+  assert.match(vendorEvidence, /automatic Agent features were switched off[\s\S]*remaining unpaid balance/i);
+  assert.doesNotMatch(`${vendors}\n${vendorEvidence}`, /nashysinners@gmail\.com/i);
+  const openaiSources = `${openaiHealth}\n${morningBrief}\n${marketBrief}`;
+  assert.equal(openaiSources.match(/responses\.create\(/g)?.length, 3);
+  assert.equal(openaiSources.match(/responses\.create\(\{\s*model,\s*store:\s*false,/g)?.length, 3);
+  assert.doesNotMatch(`${vendors}\n${vendorEvidence}`, /89\.34|9169|inv_[A-Za-z0-9]/i);
+});

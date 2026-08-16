@@ -80,6 +80,19 @@ test("example member pages remain isolated from accounts, billing and live provi
   assert.match(pages, /not a recommendation/i);
 });
 
+test("real-component preview links cannot escape through the Next.js client router", async () => {
+  const guard = await readFile(
+    new URL("../app/marketing-preview/components/PreviewNavigationGuard.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(guard, /data-preview-original-href/);
+  assert.match(guard, /addEventListener\("click", preventProtectedNavigation, true\)/);
+  assert.match(guard, /event\.preventDefault\(\)/);
+  assert.match(guard, /event\.stopImmediatePropagation\(\)/);
+  assert.match(guard, /window\.location\.assign\(replacement\)/);
+  assert.match(guard, /removeEventListener\("click", preventProtectedNavigation, true\)/);
+});
+
 test("marketing preview chart exposes premium controls without live fetches", async () => {
   const chart = await readFile(new URL("../app/marketing-preview/components/MarketingPreviewChart.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(chart, /\/api\/market\/candles/);

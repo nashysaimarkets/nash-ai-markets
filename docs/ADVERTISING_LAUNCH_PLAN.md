@@ -1,7 +1,7 @@
 # Project Bullseye — Prelaunch Advertising Plan
 
 Status: **PRELAUNCH / OWNER REVIEW REQUIRED**  
-Last updated: **15 August 2026**  
+Last updated: **16 August 2026**<br>
 Public production: **NO-GO**  
 Paid campaign destination: **waitlist or dedicated prelaunch landing page only**
 
@@ -125,9 +125,13 @@ Required derivatives:
 5. silent subtitle-first version
 6. static end card with logo, value line and waitlist CTA
 
+Asset status: **the zero-cost launch-media suite is implemented and phone playback passed.** The checksum-recorded approved v16 master was supplied and five captioned derivatives were cut without a paid rendering service. The 1200×630 link card, editable end cards and subtitle files remain under `public/`; the repository waitlist uses a first-party, fast-started 720p web copy of approximately 3 MB with a 40 KB poster, no autoplay and metadata-only preload. Nothing has been posted publicly.
+
 ## Landing-page structure
 
-1. approved video hero;
+Repository status: **IMPLEMENTED AT `/waitlist`; PRIVATE INTEGRATED-PAGE VISUAL ACCEPTANCE AND AUTHORISED NON-PRODUCTION DEPLOYMENT PENDING.** The implementation uses one first-party, non-entitling waitlist form, one click-to-play first-party film and no advertising tracker or live-market-data request.
+
+1. approved click-to-play launch film with example/not-live labels;
 2. one-sentence value proposition;
 3. three outcomes: orient faster, see risk clearly, review process;
 4. real Bullseye interface gallery, clearly labelled example-only where necessary;
@@ -140,14 +144,17 @@ Required derivatives:
 
 ## Measurement
 
-Track only the minimum required first-party campaign data:
+The credit- and privacy-saving organic default is now explicit:
 
-- landing-page sessions by campaign;
-- video-start and video-complete events;
-- waitlist-form start;
-- valid waitlist completion;
-- email confirmation delivery once operationally approved;
-- later: activated account and paid membership, only after launch.
+- use existing server-side valid waitlist-completion totals as the sole conversion
+  metric;
+- record platform post reach manually from the platform's own dashboard;
+- do not add video-start, video-complete, form-start, behavioural-session or
+  advertising-pixel scripts merely for prelaunch;
+- add first-party landing-session attribution only if a later qualified review
+  and approved measurement purpose show it is necessary;
+- email-delivery, activated-account and paid-membership measurement remains off
+  until each underlying operation is separately launch-cleared.
 
 Do not upload customer lists to advertising platforms without an approved privacy basis and vendor-register entry.
 

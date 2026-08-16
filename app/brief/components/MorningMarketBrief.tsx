@@ -2,7 +2,8 @@ import Link from "next/link";
 import { AiMarketInsightCard } from "../../components/companion/AiMarketInsightCard.tsx";
 import { MarketInternalsPanel } from "../../components/companion/MarketInternalsPanel.tsx";
 import { ConfidenceChangePanel } from "../../components/oracle/ConfidenceChangePanel.tsx";
-import { ConvictionExplainer } from "../../components/oracle/ConvictionExplainer.tsx";
+import { EvidenceMap } from "../../components/oracle/EvidenceMap.tsx";
+import { EventModePanel } from "../../components/oracle/EventModePanel.tsx";
 import { DailyChecklistPanel } from "../../components/oracle/DailyChecklistPanel.tsx";
 import type { OracleBundle } from "../../components/oracle/OracleCompanionStack.tsx";
 import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
@@ -213,6 +214,8 @@ export function MorningMarketBrief({
         level={model.levels.rungs[0] ? `${model.levels.rungs[0].label} · ${model.levels.rungs[0].value}` : "Awaiting verified levels"}
       />
 
+      <EventModePanel model={oracle.eventMode} />
+
       <ThirtySecondBrief model={oracle.thirtySecond} />
       <AiMarketInsightCard model={insight} />
       <SessionTimeline model={oracle.timeline} />
@@ -332,12 +335,12 @@ export function MorningMarketBrief({
 
       <details className="mbIntelligenceDrawer">
         <summary>
-          <span><b>Deep evidence</b> Market internals and conviction factors</span>
+          <span><b>Deep evidence</b> Market internals and transparent evidence map</span>
           <i aria-hidden="true">+</i>
         </summary>
         <div className="mbIntelligenceDrawerBody">
           <MarketInternalsPanel cards={insight.internals} />
-          <ConvictionExplainer model={oracle.conviction} />
+          <EvidenceMap model={oracle.evidenceMap} />
           <ConfidenceChangePanel current={oracle.confidenceSnapshot} />
         </div>
       </details>
@@ -361,7 +364,7 @@ export function MorningMarketBrief({
         </span>
       </Link>
 
-      <div className="mbTwin mbTwinWide">
+      <div className={`mbTwin mbTwinWide${oracle.eventMode.available ? " is-single" : ""}`}>
         <section className="mbPanel mbLevelsPanel" id="verified-levels" aria-labelledby="mb-levels-title">
           <header>
             <span className="mbEyebrow">Verified levels</span>
@@ -398,7 +401,7 @@ export function MorningMarketBrief({
           </Link>
         </section>
 
-        {timeline.length ? (
+        {oracle.eventMode.available ? null : timeline.length ? (
           <section className="mbPanel mbCatalystPanel" id="catalysts" aria-labelledby="mb-timeline-title">
             <header>
               <span className="mbEyebrow">Next verified catalysts</span>

@@ -12,7 +12,16 @@ test("personal level planner is device-only and isolated from verified engine in
   assert.match(component, /localStorage/);
   assert.match(component, /not verified NASH data and never enter the decision engine/i);
   assert.doesNotMatch(component, /fetch\(|\/api\//);
+  assert.match(component, /Classic pivot calculator/);
+  assert.match(component, /makes no data request/);
+  assert.match(component, /calculateClassicPivotLevels/);
+  assert.match(component, /Review the levels, then save them on this device/);
+  assert.match(component, /aria-invalid=\{invalidSourceFields\.includes\(field\)/);
   assert.match(component, /positive numbers only/i);
   assert.match(component, /aria-live="polite"/);
+  assert.match(component, /aria-invalid=\{invalidLevels\.includes\(level\)/);
+  assert.match(component, /Confirm clear/);
+  assert.match(component, /Keep levels/);
+  assert.match(component, /role=\{messageTone === "error" \? "alert" : "status"\}/);
   assert.match(dashboard, /<PersonalLevelPlanner \/>/);
 });

@@ -37,7 +37,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
     </div>
     <section className="commercialAssurance" aria-labelledby="assurance-title">
       <div><span>BUY WITH CLARITY</span><h2 id="assurance-title">A membership built on transparent boundaries.</h2></div>
-      <ul><li><strong>Secure checkout</strong><span>Payment details stay with Stripe.</span></li><li><strong>Visible data quality</strong><span>Freshness and provider status remain in view.</span></li><li><strong>No outcome promises</strong><span>Educational scenarios, never guaranteed trades.</span></li></ul>
+      <ul><li><strong>Secure checkout</strong><span>Payment details stay with Stripe.</span></li><li><strong>Useful fail-closed states</strong><span>Provider status stays visible, with macro, levels and preparation tools still available.</span></li><li><strong>No outcome promises</strong><span>Educational scenarios, never guaranteed trades.</span></li></ul>
     </section>
     <section className="commercialFaq"><span>QUESTIONS, ANSWERED</span><h2>Frequently asked questions</h2><div>{faqs.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
     <p className="commercialRisk"><strong>Risk notice:</strong> Trading futures and options can result in substantial losses. Membership provides educational information only.</p>

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "NASH AI Markets",
     short_name: "NASH AI",
-    description: "Provider-backed market intelligence with deterministic risk controls.",
+    description: "Verified market context, personal preparation tools and fail-closed risk controls.",
     start_url: "/",
     scope: "/",
     display: "standalone",

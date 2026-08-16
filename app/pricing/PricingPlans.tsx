@@ -21,7 +21,7 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
   const [annual, setAnnual] = useState(false);
   const pro = founding100AvailabilityLabel(availability.proRemaining);
   return <>
-    <p className="commercialPlanGuide"><strong>Not sure where to start?</strong> Free explores the workflow, Pro unlocks the complete daily intelligence layer, and Elite adds the full planning and diagnostics workspace.</p>
+    <p className="commercialPlanGuide"><strong>Not sure where to start?</strong> Free includes official macro context and preparation tools. Pro adds the complete daily planning routine, and Elite adds advanced planning and diagnostics. Intraday intelligence appears only when a verified licensed feed is available.</p>
     <div className="commercialToggle" role="group" aria-label="Billing interval">
       <button type="button" aria-pressed={!annual} onClick={() => setAnnual(false)}>Monthly</button>
       <button type="button" aria-pressed={annual} onClick={() => setAnnual(true)}>Annual</button>
@@ -35,7 +35,7 @@ export function PricingPlans({ availability }: { availability: Founding100Availa
         </div>
         <h2>{annual ? "£299/year" : "£29.99/month"}</h2>
         <small className="commercialPlanFit">For advanced planning and diagnostics</small>
-        <p>Full intelligence, planning and diagnostic access for the complete workflow.</p>
+        <p>Full planning and diagnostic access, plus verified intraday intelligence whenever entitled licensed data is available.</p>
         <form action="/api/stripe/checkout" method="post"><input type="hidden" name="offering" value={annual ? "elite_year" : "elite_month"} /><button type="submit">Unlock Elite</button></form>
       </article>
     </section>

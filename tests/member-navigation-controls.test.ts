@@ -31,3 +31,17 @@ test("primary signed-in destinations remain in desktop and mobile navigation", a
   }
   assert.match(shell, /href="\/auth\/signout"/);
 });
+
+test("mobile navigation closes after selecting a destination", async () => {
+  const [shell, mobileMenu] = await Promise.all([
+    read("../app/components/MemberShell.tsx"),
+    read("../app/components/MemberMobileMenu.tsx"),
+  ]);
+
+  assert.match(shell, /<MemberMobileMenu key=/);
+  assert.match(shell, /active.*isolatedPreview/);
+  assert.match(mobileMenu, /target\.closest\("a\[href\]"\)/);
+  assert.match(mobileMenu, /setOpen\(false\)/);
+  assert.match(mobileMenu, /aria-expanded=\{open\}/);
+  assert.match(mobileMenu, /Close member navigation/);
+});

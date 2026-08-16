@@ -48,6 +48,7 @@ export async function checkOpenAIConnection(
   try {
     await client.responses.create({
       model,
+      store: false,
       input: "Reply with OK only.",
       max_output_tokens: 16,
     });

@@ -42,6 +42,7 @@ test("premium polish supports MacBook, mobile, reduced motion and high contrast"
   assert.match(styles, /prefers-reduced-motion:reduce/);
   assert.match(styles, /prefers-contrast:more/);
   assert.match(styles, /focus-visible/);
+  assert.match(styles, /memberMobileMenu summary\{min-height:44px\}/);
 });
 
 test("polish remains restrained and the trading desk stays coherent", async () => {
