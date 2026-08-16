@@ -9,6 +9,8 @@
 
 Last saved: **16 August 2026, 00:05 BST**
 
+Latest private acceptance and isolation evidence: **16 August 2026, 15:06 BST**
+
 ## Paste this into ChatGPT or Cursor on another device
 
 > WAKE PROJECT BULLSEYE — RESUME FROM THE SAVED PRIVATE-STAGING CHECKPOINT.
@@ -54,6 +56,17 @@ The checkpoint branch named above is intended to point to the documentation save
 - Fabricated ES/VIX decision inputs remain blocked.
 - The directional engine remains non-actionable when required evidence, freshness or entitlement is missing.
 - Customer-facing ES/VIX populated-session acceptance remains blocked until written display/redistribution rights are obtained and tested.
+
+### Private Vercel preview authentication evidence
+
+- One passwordless request on the private feature preview delivered one sign-in link to the existing owner-member account.
+- Opening the link in the requesting browser authenticated successfully and returned to protected `/dashboard`.
+- Deliberate sign-out ended the session, and a direct `/dashboard` request returned to `/login`.
+- Reusing the identical one-time link was rejected with `error=signin&reason=missing`; a subsequent `/dashboard` request remained unauthenticated.
+- Supabase's project list confirms the private preview's baked `opmgzchnmcgnsfwpmysc` provider is named `nashaimarkets Project`, while `pxlqvaddvghjjhenqmdh` is `nashaimarkets-staging`. The test therefore exercised the production-linked auth service once and is not new acceptance evidence for isolated Sites staging.
+- During that test, no second email was generated, no link token was recorded here, the session was signed out, the link was invalidated, and no code, deployment or Supabase configuration was changed. Routine auth session/audit metadata may have been recorded by the production-linked provider.
+- The feature branch now fails closed before OTP submission whenever a Vercel deployment URL is compiled against anything except `nashaimarkets-staging`; canonical production domains retain their existing provider behaviour.
+- **93 focused auth, trust, navigation, preview-isolation, PWA and resilience tests pass locally.** Full connected CI/build remains pending because the fresh fallback checkout has no installed application dependencies.
 
 ### Private marketing walkthrough
 
@@ -121,16 +134,17 @@ The latest complete Bullseye quality gate passes:
 
 ## Remaining public-launch blockers
 
-1. Complete the authenticated phone/tablet, keyboard, VoiceOver/TalkBack and accessibility walkthrough on private staging.
-2. Record deliberate sign-out, return-path and passwordless-link expiry/reuse evidence with minimal email sends.
-3. Send and compare the prepared market-data vendor enquiries; obtain written ES/CME and Cboe/VIX customer-display and derived-use rights.
-4. Connect the chosen licensed feed only after first-cohort economics are understood, then run the symbol, candle, freshness, fail-closed and provider-budget acceptance matrix.
-5. Confirm transactional-email sender/domain, suppression handling, idempotency, delivery monitoring and named ownership.
-6. Configure monitoring thresholds, test alerts and incident ownership.
-7. Record backup/restore evidence, rollback owner, RPO/RTO and escalation path.
-8. Complete privacy, retention/deletion, processor/vendor and advertising/tracking approval.
-9. Obtain qualified risk-disclaimer and financial-promotion review for intended jurisdictions.
-10. Run the final private-staging soak and record the explicit public go/no-go decision.
+1. Run connected CI/build for the new Vercel-preview auth guard, then verify on the resulting private deployment that `/login` fails closed before OTP submission. Use only an inert test address for that check and generate no email. Use isolated Sites staging for any future real authentication test.
+2. Complete tablet-width, keyboard and VoiceOver/TalkBack evidence on private staging. Private-preview protected-route evidence and the owner-reported phone navigation pass are recorded, including the repaired auto-closing member menu.
+3. Record natural passwordless-link time-expiry evidence only if separately required. Deliberate sign-out, return-path and same-link reuse rejection passed with one email on the private Vercel preview on 16 August 2026.
+4. Send and compare the prepared market-data vendor enquiries; obtain written ES/CME and Cboe/VIX customer-display and derived-use rights.
+5. Connect the chosen licensed feed only after first-cohort economics are understood, then run the symbol, candle, freshness, fail-closed and provider-budget acceptance matrix.
+6. Confirm transactional-email sender/domain, suppression handling, idempotency, delivery monitoring and named ownership.
+7. Configure monitoring thresholds, test alerts and incident ownership.
+8. Record backup/restore evidence, rollback owner, RPO/RTO and escalation path.
+9. Complete privacy, retention/deletion, processor/vendor and advertising/tracking approval.
+10. Obtain qualified risk-disclaimer and financial-promotion review for intended jurisdictions.
+11. Run the final private-staging soak and record the explicit public go/no-go decision.
 
 ## Advertising decision
 

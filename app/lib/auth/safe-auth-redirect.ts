@@ -66,16 +66,22 @@ export function isAllowedAuthOrigin(origin: string): boolean {
 }
 
 /**
- * Fail closed when the owner-only staging UI was compiled against another
- * Supabase project. NEXT_PUBLIC values are baked into the browser bundle, so
- * a correct hosting runtime value alone cannot repair a mismatched build.
+ * Fail closed when a non-public acceptance UI was compiled against another
+ * Supabase project. This covers the owner-only Sites origin and every Vercel
+ * deployment URL; only the canonical production domains may use the
+ * production provider. NEXT_PUBLIC values are baked into the browser bundle,
+ * so a correct hosting runtime value alone cannot repair a mismatched build.
  */
 export function isAuthProviderCompatibleWithOrigin(
   origin: string,
   supabaseUrl: string | null | undefined,
 ): boolean {
   const normalized = normalizeHttpOrigin(origin);
-  if (!normalized || !STAGING_ORIGINS.has(normalized)) return true;
+  const requiresStagingProvider = Boolean(
+    normalized &&
+      (STAGING_ORIGINS.has(normalized) || VERCEL_PREVIEW_ORIGIN.test(normalized)),
+  );
+  if (!requiresStagingProvider) return true;
   try {
     const providerHostname = new URL(supabaseUrl ?? "")
       .hostname

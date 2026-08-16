@@ -1,6 +1,6 @@
 # Launch Gate Status
 
-Last evidence review: **15 August 2026**. This record separates repository proof,
+Last evidence review: **16 August 2026**. This record separates repository proof,
 private-staging evidence, and work that still requires a paid provider,
 third-party configuration, physical-device testing, qualified approval or a
 named business owner.
@@ -16,8 +16,8 @@ named business owner.
 | Staging schema and member-data protection | Cleared for current schema | Critical member tables have RLS enabled and authenticated read policies; server-only operational tables remain deny-by-default |
 | Staging authentication URLs | Cleared | Exact staging Site URL and callback are configured; the owner-only gate can reach Bullseye `/login` |
 | Primary desktop customer journey | Provisionally accepted | Owner reports Dashboard, Morning Brief, Trading Desk and related navigation working on private staging; repeat automated signed-in walkthrough remains an evidence task |
-| Authentication expiry, reuse and sign-out matrix | Partially cleared | Staging sign-in, dashboard and Elite access passed with Supabase 200 responses and no recent auth failures. Expiry/reuse, deliberate sign-out and return-path evidence remain |
-| Authenticated tablet/mobile/accessibility matrix | Requires staging evidence | Test protected routes on tablet and mobile widths plus keyboard, VoiceOver and TalkBack where available |
+| Private Vercel preview authentication, reuse and sign-out | Security mechanics passed; repository isolation guard added; deployment evidence pending | On 16 August 2026 one request on the private feature preview delivered one link, authenticated the owner account and returned to protected `/dashboard`. Deliberate sign-out ended the session; a direct `/dashboard` request returned to `/login`; reusing the same link produced `error=signin&reason=missing`; and a final `/dashboard` request remained unauthenticated. Supabase's project list confirms the preview's baked `opmgzchnmcgnsfwpmysc` provider is named `nashaimarkets Project`, while `pxlqvaddvghjjhenqmdh` is `nashaimarkets-staging`. The test therefore exercised the production-linked auth service once and is not isolated-staging acceptance. The feature branch now makes all Vercel deployment URLs require the staging provider before OTP submission, while canonical production origins retain their existing behaviour. **93 focused auth, trust, navigation, preview-isolation, PWA and resilience tests pass locally**; connected CI/build and private-preview proof remain. No second email was sent; the session was signed out and the link invalidated. No provider configuration was changed |
+| Authenticated tablet/mobile/accessibility matrix | Partially cleared | Owner reported **PHONE PASS** on the private example preview on 16 August 2026, including page navigation and the repaired auto-closing member menu. Authenticated tablet/mobile protected routes, tablet width, keyboard, VoiceOver and TalkBack evidence remain |
 | Market-data failure safety | Cleared | Unavailable, delayed, stale, malformed, timeout and provider-failure states remain explicit and fail closed |
 | Official zero-cost macro runtime | Cleared for Phase 9 | Commit `dfb97a1757073658d4b094cb0802b2cfe72c56e` integrates isolated `VerifiedMacroContext` on Dashboard, Morning Brief and Trading Desk. Fabricated ES/VIX inputs remain blocked and the directional engine remains fail closed |
 | Populated live/delayed session acceptance | Blocked by display/redistribution entitlement | Obtain written quotes confirming paid customer-facing display and derived-output rights. Prefer the existing FMP adapter only if its separate display licence is the lowest total cost; do not assume a retail API plan grants redistribution. Then verify ES candles, VIX, DXY, Treasury coverage, freshness and provider-call budget in staging |
@@ -47,10 +47,11 @@ production, deploy publicly, or advertise profit/prediction claims.
 
 ## Next blocking sequence
 
-1. Finish the authenticated tablet/mobile, accessibility and sign-out/return-path walkthrough (`npm run staging:auth-evidence` once gitignored storage state is present).
-2. Record passwordless-link expiry/reuse evidence without repeated email sends.
-3. Confirm transactional-email sender/domain/suppression and delivery monitoring without repeated magic-link spam.
-4. Obtain written FMP, CME-feed and Cboe/VIX display-rights quotes. Purchase no feed until rights and first-cohort economics are confirmed; then run the verified symbol, candle, freshness, fail-closed and provider-budget matrix.
-5. Complete monitoring, restore, privacy/retention and qualified financial-promotion approvals.
-6. Finalise the waitlist landing page, vertical/social creative derivatives, measurement plan and platform-verification position.
-7. Run the final private-staging soak and record the explicit public go/no-go.
+1. Run connected CI/build for the new repository guard, then verify on the resulting private Vercel deployment that `/login` reports the provider mismatch before OTP submission. Use only an inert test address for that fail-closed UI check; do not generate another email. For actual authentication, use the isolated Sites staging origin tied to `pxlqvaddvghjjhenqmdh`.
+2. Finish tablet-width, keyboard and VoiceOver/TalkBack evidence (`npm run staging:auth-evidence` once gitignored storage state is present). The private Vercel preview's protected-route, deliberate sign-out, return-path and one-time-link reuse evidence are recorded; the owner-reported private-preview phone navigation pass is also recorded.
+3. Record natural passwordless-link time-expiry evidence only if separately required; do not generate repeated email sends merely to duplicate the already-passed reuse control.
+4. Confirm transactional-email sender/domain/suppression and delivery monitoring without repeated magic-link spam.
+5. Obtain written FMP, CME-feed and Cboe/VIX display-rights quotes. Purchase no feed until rights and first-cohort economics are confirmed; then run the verified symbol, candle, freshness, fail-closed and provider-budget matrix.
+6. Complete monitoring, restore, privacy/retention and qualified financial-promotion approvals.
+7. Finalise the waitlist landing page, vertical/social creative derivatives, measurement plan and platform-verification position.
+8. Run the final private-staging soak and record the explicit public go/no-go.
