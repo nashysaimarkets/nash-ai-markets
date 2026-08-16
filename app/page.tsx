@@ -76,7 +76,7 @@ const eliteReasons = [
 
 const trustBadges = [
   ["Secure Payments", "Stripe-hosted checkout"],
-  ["Live Data Labels", "Freshness stays visible"],
+  ["Data Status Labels", "Freshness stays visible"],
   ["Professional Analysis", "Evidence-led scenarios"],
 ] as const;
 
@@ -84,8 +84,8 @@ const included = [
   "Official macro, funding-rate and event context",
   "Personal R3–Pivot–S3 level planner",
   "Verified market status when licensed data is available",
-  "Bullish, neutral and bearish scenarios",
-  "Decision permission and conflict warnings",
+  "Conditional scenarios when evidence verifies",
+  "Fail-closed decision permission and conflict warnings",
   "Clear data-quality and risk status",
 ];
 
@@ -94,7 +94,7 @@ const plans = [
     name: "Free",
     price: "0",
     copy: "Explore the planning workflow and build a more structured market routine.",
-    features: ["Weekly market outlook", "Selected key levels", "Market education updates"],
+    features: ["Official macro and event context", "Personal level planner", "Preparation checklist and mission card"],
     action: "Start free",
     href: "/login",
   },
@@ -118,7 +118,7 @@ const plans = [
       "Licensed volatility context when available",
       "Priority product access",
     ],
-    action: "Unlock Elite",
+    action: "Compare Elite",
     href: "/pricing",
   },
 ];
@@ -185,7 +185,7 @@ export default async function Home() {
                 Key levels and event risk · Clear uncertainty and risk warnings
               </p>
               <div className="mcHeroActions">
-                <a className="mcButton" href="#membership">Start Your Membership <span>↗</span></a>
+                <a className="mcButton" href="#membership">Explore Memberships <span>↗</span></a>
                 <a className="mcTextLink" href="/login">View membership access <span>↗</span></a>
               </div>
               <ul className="mcTrust" aria-label="Platform principles">
@@ -231,7 +231,7 @@ export default async function Home() {
                 </div>
                 <div className="mcMissionLocked">
                   <div aria-hidden="true"><span /><span /><span /></div>
-                  <p><strong>Member intelligence continues</strong>Unlock the full plan, invalidation framework and risk checklist.</p>
+                  <p><strong>Member planning continues</strong>Explore the invalidation framework, preparation tools and risk checklist.</p>
                   <a href="#membership">Start membership <span>↗</span></a>
                 </div>
                 <footer>Illustrative example · Not live market data · Not a recommendation <span>NO LIVE VALUE</span></footer>
@@ -330,7 +330,7 @@ export default async function Home() {
           <div className="mcMembershipInner">
             <header className="mcSectionHead">
               <div><p className="mcEyebrow">Membership</p><h2>Choose the workspace<br />for <em>your routine.</em></h2></div>
-              <p>Start free or unlock the full daily intelligence workflow. Upgrade, downgrade or cancel through secure Stripe billing.</p>
+              <p>Start free with official macro context and personal planning tools. Paid tiers add deeper workflows; verified intraday intelligence activates only when licensed data is available.</p>
             </header>
             <div className="mcPlanGrid">
               {plans.map((plan) => {
@@ -367,7 +367,7 @@ export default async function Home() {
                 );
               })}
             </div>
-            <p className="mcPlanSafety">EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL ANYTIME</p>
+            <p className="mcPlanSafety">LICENSED INTRADAY INTELLIGENCE IS CONDITIONAL · NO GUARANTEED OUTCOMES · MANAGE BILLING THROUGH STRIPE</p>
             <aside className="mcFoundingTerms" aria-label="Founding 100 terms">
               <strong>Founding 100 price protection</strong>
               <p>The £12 Founding Pro launch price is limited to the first 100 verified successful subscribers once checkout opens. Joining the waiting list is not a purchase and does not guarantee a place. The successful checkout price remains locked while that same membership stays continuously active. If it is cancelled or lapses, the price lock is permanently lost and any future subscription uses the standard price then available.</p>

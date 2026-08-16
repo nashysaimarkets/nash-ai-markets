@@ -62,6 +62,9 @@ test("Founding Pro waitlist interest is explicit and cannot claim payment or all
   assert.match(page, /not a purchase and does not guarantee a place/);
   assert.match(form, /source: foundingPro \? "homepage" : "launch-page"/);
   assert.match(form, /No payment, guaranteed place, or automatic subscription/);
+  assert.match(form, /controller\.abort\(\), 12_000/);
+  assert.match(form, /role=\{messageTone === "error" \? "alert" : "status"\}/);
+  assert.match(form, /You can opt out/);
 });
 
 test("Founding Member endpoint requires current paid access and records pending review only", async () => {

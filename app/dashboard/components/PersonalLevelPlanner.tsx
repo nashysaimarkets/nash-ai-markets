@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { calculateClassicPivotLevels } from "../lib/personal-pivots.ts";
 
 const LEVELS = ["R3", "R2", "R1", "PIVOT", "S1", "S2", "S3"] as const;
 type LevelName = (typeof LEVELS)[number];
 type LevelValues = Record<LevelName, string>;
+const SOURCE_FIELDS = ["HIGH", "LOW", "CLOSE"] as const;
+type SourceField = (typeof SOURCE_FIELDS)[number];
+type SourceValues = Record<SourceField, string>;
 
 const STORE_KEY = "nash:personal-level-planner:v1";
 const EMPTY = Object.fromEntries(LEVELS.map((level) => [level, ""])) as LevelValues;
+const EMPTY_SOURCE = Object.fromEntries(SOURCE_FIELDS.map((field) => [field, ""])) as SourceValues;
 
 function clean(value: string): string {
   const trimmed = value.trim().replaceAll(",", "");
@@ -18,9 +23,11 @@ function clean(value: string): string {
 
 export function PersonalLevelPlanner() {
   const [values, setValues] = useState<LevelValues>(EMPTY);
+  const [sourceValues, setSourceValues] = useState<SourceValues>(EMPTY_SOURCE);
   const [message, setMessage] = useState("");
   const [messageTone, setMessageTone] = useState<"error" | "status">("status");
   const [invalidLevels, setInvalidLevels] = useState<LevelName[]>([]);
+  const [invalidSourceFields, setInvalidSourceFields] = useState<SourceField[]>([]);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
@@ -65,9 +72,38 @@ export function PersonalLevelPlanner() {
     }
   };
 
+  const calculate = () => {
+    const individuallyInvalid = SOURCE_FIELDS.filter((field) => !clean(sourceValues[field]));
+    if (individuallyInvalid.length) {
+      setInvalidSourceFields(individuallyInvalid);
+      setMessageTone("error");
+      setMessage(`Enter a positive number for ${individuallyInvalid.join(", ")} before calculating.`);
+      return;
+    }
+    const calculated = calculateClassicPivotLevels({
+      high: sourceValues.HIGH,
+      low: sourceValues.LOW,
+      close: sourceValues.CLOSE,
+    });
+    if (!calculated) {
+      setInvalidSourceFields(SOURCE_FIELDS.slice());
+      setMessageTone("error");
+      setMessage("High must exceed Low, Close must be inside that range, and every calculated level must remain positive.");
+      return;
+    }
+    setValues(calculated);
+    setInvalidLevels([]);
+    setInvalidSourceFields([]);
+    setConfirmReset(false);
+    setMessageTone("status");
+    setMessage("Classic pivots calculated on this screen. Review the levels, then save them on this device if useful.");
+  };
+
   const reset = () => {
     setValues(EMPTY);
+    setSourceValues(EMPTY_SOURCE);
     setInvalidLevels([]);
+    setInvalidSourceFields([]);
     setConfirmReset(false);
     setMessageTone("status");
     try {
@@ -79,7 +115,7 @@ export function PersonalLevelPlanner() {
   };
 
   const requestReset = () => {
-    if (!LEVELS.some((level) => values[level].trim())) {
+    if (!LEVELS.some((level) => values[level].trim()) && !SOURCE_FIELDS.some((field) => sourceValues[field].trim())) {
       setMessageTone("status");
       setMessage("There are no personal levels to clear.");
       return;
@@ -104,6 +140,31 @@ export function PersonalLevelPlanner() {
       </summary>
       <div className="personalLevelPlannerBody">
         <p id="personal-level-guidance">Copy reference levels from your own broker or chart. These entries are not verified NASH data and never enter the decision engine.</p>
+        <fieldset className="personalLevelCalculator">
+          <legend>Classic pivot calculator · manual H/L/C</legend>
+          <p id="personal-level-calculator-guidance">Enter the previous completed session High, Low and Close from the same instrument and session definition. The formula runs only on this screen and makes no data request.</p>
+          <div className="personalLevelSourceGrid">
+            {SOURCE_FIELDS.map((field) => (
+              <label key={field}>
+                <span>Previous {field.toLowerCase()}</span>
+                <input
+                  inputMode="decimal"
+                  value={sourceValues[field]}
+                  onChange={(event) => {
+                    setSourceValues((current) => ({ ...current, [field]: event.target.value.slice(0, 14) }));
+                    setInvalidSourceFields((current) => current.filter((item) => item !== field));
+                    setConfirmReset(false);
+                  }}
+                  placeholder="—"
+                  aria-label={`Previous completed session ${field.toLowerCase()}`}
+                  aria-invalid={invalidSourceFields.includes(field) || undefined}
+                  aria-describedby="personal-level-calculator-guidance personal-level-status"
+                />
+              </label>
+            ))}
+            <button type="button" className="personalLevelCalculate" onClick={calculate}>Calculate R3–S3</button>
+          </div>
+        </fieldset>
         <div className="personalLevelGrid">
           {LEVELS.map((level) => (
             <label
