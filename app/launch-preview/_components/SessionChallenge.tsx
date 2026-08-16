@@ -38,17 +38,31 @@ export function SessionChallenge({ score, touched, onRecorded }: SessionChalleng
   const isComplete = completed === SESSION_CHALLENGE_SIZE;
 
   useEffect(() => {
+    let cancelled = false;
+    let restored = createEmptySessionChallenge();
+    let restoredStatus = "Challenge ready. No session has been recorded yet.";
+
     try {
-      const saved = parseSessionChallenge(window.localStorage.getItem(SESSION_CHALLENGE_STORAGE_KEY));
-      setProgress(saved);
-      setStatus(saved.sessions.length > 0
-        ? `Restored ${saved.sessions.length} of ${SESSION_CHALLENGE_SIZE} locally saved sessions.`
-        : "Challenge ready. No session has been recorded yet.");
+      restored = parseSessionChallenge(window.localStorage.getItem(SESSION_CHALLENGE_STORAGE_KEY));
+      restoredStatus = restored.sessions.length > 0
+        ? `Restored ${restored.sessions.length} of ${SESSION_CHALLENGE_SIZE} locally saved sessions.`
+        : "Challenge ready. No session has been recorded yet.";
     } catch {
-      setStatus("Browser storage is unavailable. Progress will last only for this visit.");
-    } finally {
-      setHydrated(true);
+      restoredStatus = "Browser storage is unavailable. Progress will last only for this visit.";
     }
+
+    // Device-local hydration is intentionally deferred so the effect does not
+    // synchronously cascade a second render while React is attaching the client.
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setProgress(restored);
+      setStatus(restoredStatus);
+      setHydrated(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function saveProgress(next: SessionChallengeProgress): boolean {
