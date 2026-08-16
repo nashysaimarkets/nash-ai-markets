@@ -78,7 +78,7 @@ export function buildEvidenceMap(input: {
   primaryRisk: string | null;
   freshness: string;
 }): EvidenceMapModel {
-  const nodes = input.conviction.factors.map((factor) => {
+  const nodes: EvidenceMapNode[] = input.conviction.factors.map((factor) => {
     const presentation = FACTOR_PRESENTATION[factor.id] ?? {
       label: factor.label,
       source: "Existing verified factor",
