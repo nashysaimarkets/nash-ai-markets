@@ -73,7 +73,20 @@ export async function POST(request: Request) {
     const analysis = JSON.parse(response.output_text);
     return NextResponse.json({ analysis }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
-    console.error("[pocket-bullseye] analysis unavailable", error instanceof Error ? error.name : "Error");
+    const failure = error && typeof error === "object" ? error as {
+      name?: unknown;
+      message?: unknown;
+      status?: unknown;
+      code?: unknown;
+      type?: unknown;
+    } : {};
+    console.error("[pocket-bullseye] analysis unavailable", JSON.stringify({
+      name: typeof failure.name === "string" ? failure.name : "Error",
+      status: typeof failure.status === "number" ? failure.status : null,
+      code: typeof failure.code === "string" ? failure.code : null,
+      type: typeof failure.type === "string" ? failure.type : null,
+      message: typeof failure.message === "string" ? failure.message.slice(0, 240) : null,
+    }));
     return NextResponse.json({ error: "Bullseye could not read that chart safely. Please try a clearer screenshot." }, { status: 503 });
   }
 }
