@@ -11,21 +11,21 @@ const schema = {
   properties: {
     direction: { type: "string", enum: ["BULLISH", "BEARISH", "NEUTRAL"] },
     confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
-    instrument: { type: "string" },
-    timeframe: { type: "string" },
-    summary: { type: "string" },
-    bullishCase: { type: "string" },
-    bearishCase: { type: "string" },
-    invalidation: { type: "string" },
-    riskFlags: { type: "array", maxItems: 5, items: { type: "string" } },
-    indicators: { type: "array", maxItems: 6, items: { type: "string" } },
+    instrument: { type: "string", maxLength: 40 },
+    timeframe: { type: "string", maxLength: 40 },
+    summary: { type: "string", maxLength: 320 },
+    bullishCase: { type: "string", maxLength: 280 },
+    bearishCase: { type: "string", maxLength: 280 },
+    invalidation: { type: "string", maxLength: 280 },
+    riskFlags: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
+    indicators: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
     levels: {
       type: "array", maxItems: 5, items: {
         type: "object", additionalProperties: false,
         properties: {
           kind: { type: "string", enum: ["support", "resistance", "trend"] },
-          label: { type: "string" },
-          price: { type: "string" },
+          label: { type: "string", maxLength: 50 },
+          price: { type: "string", maxLength: 30 },
           y: { type: "number", minimum: 0, maximum: 100 },
         },
         required: ["kind", "label", "price", "y"],
@@ -60,6 +60,7 @@ export async function POST(request: Request) {
         "Give both bullish and bearish cases. Call out cropped scales, hidden axes, insufficient candles and ambiguous patterns.",
         "For each reliable support/resistance/trend level, return its vertical position y as a percentage from the top of the full image. Keep levels sparse and only include price text that is clearly legible.",
         "Indicators must describe only indicators visibly present, such as RSI or moving averages. Keep every field concise for a mobile display.",
+        "Keep summary, scenarios and invalidation under 40 words each. Return no more than 4 risks, 5 indicators and 5 levels.",
       ].join(" "),
       input: [{
         role: "user",
@@ -68,10 +69,17 @@ export async function POST(request: Request) {
           { type: "input_image", image_url: image, detail: "high" },
         ],
       }],
-      max_output_tokens: 1200,
+      max_output_tokens: 2400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     });
-    const analysis = JSON.parse(response.output_text);
+    const output = response.output_text?.trim();
+    if (!output) throw new Error(`Structured response was empty (${response.status ?? "unknown"}).`);
+    let analysis: unknown;
+    try {
+      analysis = JSON.parse(output);
+    } catch {
+      throw new Error(`Structured response was incomplete (${response.status ?? "unknown"}; ${output.length} chars).`);
+    }
     return NextResponse.json({ analysis }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
     const failure = error && typeof error === "object" ? error as {
