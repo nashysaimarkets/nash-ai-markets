@@ -17,12 +17,15 @@ type OpenAIHealthClient = {
   };
 };
 
-export function createOpenAIClient(apiKey = process.env.OPENAI_API_KEY): OpenAI | null {
+export function createOpenAIClient(
+  apiKey = process.env.OPENAI_API_KEY,
+  timeout = OPENAI_HEALTH_TIMEOUT_MS,
+): OpenAI | null {
   if (!apiKey?.trim()) return null;
   return new OpenAI({
     apiKey,
     maxRetries: 0,
-    timeout: OPENAI_HEALTH_TIMEOUT_MS,
+    timeout,
   });
 }
 

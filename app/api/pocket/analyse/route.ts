@@ -3,6 +3,7 @@ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/op
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
+const POCKET_ANALYSIS_TIMEOUT_MS = 30_000;
 
 const schema = {
   type: "object",
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
   if (!/^data:image\/(jpeg|png|webp);base64,/.test(image) || image.length > MAX_DATA_URL_LENGTH) {
     return NextResponse.json({ error: "Please upload a valid JPEG, PNG or WebP chart under 8 MB." }, { status: 400 });
   }
-  const client = createOpenAIClient();
+  const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
 
   try {
