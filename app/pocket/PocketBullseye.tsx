@@ -8,6 +8,8 @@ type Level = { kind: "support" | "resistance" | "trend"; label: string; price: s
 type FibLevel = { ratio: string; price: string; y: number };
 type StudyName = "RSI" | "EMA" | "MACD" | "BOLLINGER" | "VWAP" | "ATR" | "FIBONACCI";
 type StudyReading = { name: StudyName; status: "APPLIED" | "VISIBLE" | "UNAVAILABLE"; signal: "BULLISH" | "BEARISH" | "NEUTRAL" | "UNKNOWN"; detail: string };
+type Intention = "LONG" | "SHORT" | "UNSURE";
+type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
 type Analysis = {
   direction: Direction;
   confidence: "LOW" | "MEDIUM" | "HIGH";
@@ -15,6 +17,13 @@ type Analysis = {
   ticker: string;
   timeframe: string;
   summary: string;
+  verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
+  verdictHeadline: string;
+  setupScore: SetupScore;
+  whatYouMayBeMissing: string[];
+  improvesSetup: string[];
+  killsSetup: string[];
+  traderTrap: string;
   bullishCase: string;
   bearishCase: string;
   invalidation: string;
@@ -54,7 +63,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [privacyChecked, setPrivacyChecked] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -63,7 +71,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend", "fibonacci"]));
-  const [requestedStudies, setRequestedStudies] = useState<StudyName[]>(["RSI", "EMA", "MACD", "FIBONACCI"]);
+  const [requestedStudies, setRequestedStudies] = useState<StudyName[]>(["FIBONACCI"]);
+  const [intention, setIntention] = useState<Intention>("UNSURE");
 
   useEffect(() => {
     if (!analysis || analysis.ticker === "UNKNOWN") return;
@@ -130,7 +139,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image, requestedStudies }),
+        body: JSON.stringify({ image, requestedStudies, intention }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
@@ -139,7 +148,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setStockEventStatus(payload.analysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
       setAnalysis(payload.analysis);
       setImmersive(true);
-      if (soundOn && "vibrate" in navigator) navigator.vibrate([35, 45, 70]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
@@ -174,11 +182,15 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); }}>NEW CHART</button>
           </div>
           <header className="psVerdict">
-            <p><i /> AI VISUAL INTELLIGENCE · CHART-ONLY EVIDENCE</p>
-            <h1><small>DIRECTIONAL READ</small><em data-direction={analysis.direction}>{analysis.direction}</em></h1>
-            <span>{analysis.summary}</span>
-            <b>CONDITIONAL ANALYSIS · NOT A TRADE INSTRUCTION</b>
+            <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
+            <div className="psVerdictTop"><h1><small>SETUP GRADE</small><em data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</em></h1><div><small>{analysis.setupScore.overall}/100</small><strong data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</strong></div></div>
+            <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
+            <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <section className="psScorecard">
+            {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
+          </section>
+          <section className="psAuditGrid"><article data-audit="missing"><span>WHAT YOU MAY BE MISSING</span><ul>{analysis.whatYouMayBeMissing.map((item) => <li key={item}>{item}</li>)}</ul></article><article data-audit="improve"><span>WHAT IMPROVES IT</span><ul>{analysis.improvesSetup.map((item) => <li key={item}>{item}</li>)}</ul></article><article data-audit="kill"><span>WHAT KILLS IT</span><ul>{analysis.killsSetup.map((item) => <li key={item}>{item}</li>)}</ul></article><article data-audit="trap"><span>TRADER TRAP</span><p>{analysis.traderTrap}</p></article></section>
           <div className="psConfidence">
             <div><span>CONFIDENCE</span><strong>{analysis.confidence}</strong></div>
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
@@ -243,10 +255,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     <main className="psApp">
       <header className="psHeader">
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>POCKET ANALYSIS</small></span></div>
-        <div className="psHeaderActions"><span>OWNER PILOT · PRIVATE</span><button type="button" aria-pressed={soundOn} onClick={() => setSoundOn((value) => !value)}>SOUND {soundOn ? "ON" : "OFF"}</button></div>
+        <div className="psHeaderActions"><span>PRIVATE BETA</span></div>
       </header>
       <section className="psScanner">
-        <div className="psCopy"><p><i /> POST-MARKET · DEVICE TIME</p><h1>See the setup.<br /><em>See both sides.</em></h1><span>Load a chart. Bullseye challenges the structure, visible levels and the risks you may be missing.</span></div>
+        <div className="psCopy"><p><i /> PRIVATE PRE-TRADE AUDIT</p><h1>Pause before<br /><em>you press buy.</em></h1><span>Load the chart you are considering. Bullseye grades the setup, challenges your bias and tells you what a patient trader would wait for.</span></div>
         <label className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -256,12 +268,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <input aria-label="Load chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
+        {image && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span><b>ONE TAP · NO ORDER IS PLACED</b></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
         {image && <section className="psStudyPicker"><header><span>POPULAR INDICATORS</span><b>CHOOSE WHAT BULLSEYE CHECKS</b></header><div>{POPULAR_STUDIES.map((study) => <button key={study.name} type="button" data-active={requestedStudies.includes(study.name)} onClick={() => toggleStudy(study.name)}>{study.label}</button>)}</div><p>Selected studies are checked automatically. Hidden studies requiring candle or volume data are never guessed from the screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? "SCANNING STRUCTURE…" : "ANALYSE THIS CHART"}<b>◎</b></button>
-        <div className="psEvents"><header><span>TODAY’S MARKET INFLUENCE</span><b>OFFICIAL FEED NOT CONNECTED</b></header><div><strong>MACRO EVENTS</strong><p>No events are displayed until an official cached calendar is connected. Bullseye will never invent an announcement or release time.</p></div></div>
+        <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? "CHALLENGING THE SETUP…" : "RUN PRE-TRADE CHECK"}<b>◎</b></button>
+        <div className="psEvents"><header><span>VERIFIED EVENT LAYER</span><b>{macroContext.status.toUpperCase()}</b></header><div><strong>OFFICIAL MACRO CALENDAR</strong><p>{macroContext.releases.length ? `${macroContext.releases.length} verified upcoming release${macroContext.releases.length === 1 ? "" : "s"} available for the decision audit.` : "No official release rows are available in the current window. Event safety will be marked unknown."}</p></div></div>
       </section>
     </main>
   );

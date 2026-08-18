@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const POCKET_ANALYSIS_TIMEOUT_MS = 55_000;
 export const maxDuration = 60;
 const STUDIES = ["RSI", "EMA", "MACD", "BOLLINGER", "VWAP", "ATR", "FIBONACCI"] as const;
+const INTENTIONS = ["LONG", "SHORT", "UNSURE"] as const;
 
 const schema = {
   type: "object",
@@ -17,6 +19,26 @@ const schema = {
     ticker: { type: "string", maxLength: 16 },
     timeframe: { type: "string", maxLength: 40 },
     summary: { type: "string", maxLength: 320 },
+    verdict: { type: "string", enum: ["WATCH", "WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"] },
+    verdictHeadline: { type: "string", maxLength: 100 },
+    setupScore: {
+      type: "object", additionalProperties: false,
+      properties: {
+        overall: { type: "integer", minimum: 0, maximum: 100 },
+        grade: { type: "string", enum: ["A", "B", "C", "D", "F"] },
+        structure: { type: "integer", minimum: 0, maximum: 10 },
+        momentum: { type: "integer", minimum: 0, maximum: 10 },
+        location: { type: "integer", minimum: 0, maximum: 10 },
+        confirmation: { type: "integer", minimum: 0, maximum: 10 },
+        riskClarity: { type: "integer", minimum: 0, maximum: 10 },
+        eventSafety: { type: "integer", minimum: 0, maximum: 10 },
+      },
+      required: ["overall", "grade", "structure", "momentum", "location", "confirmation", "riskClarity", "eventSafety"],
+    },
+    whatYouMayBeMissing: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
+    improvesSetup: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
+    killsSetup: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
+    traderTrap: { type: "string", maxLength: 180 },
     bullishCase: { type: "string", maxLength: 280 },
     bearishCase: { type: "string", maxLength: 280 },
     invalidation: { type: "string", maxLength: 280 },
@@ -66,18 +88,22 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "summary", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "studyReadings", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "studyReadings", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
   let image = "";
   let requestedStudies: Array<typeof STUDIES[number]> = [];
+  let intention: typeof INTENTIONS[number] = "UNSURE";
   try {
-    const payload = await request.json() as { image?: unknown; requestedStudies?: unknown };
+    const payload = await request.json() as { image?: unknown; requestedStudies?: unknown; intention?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     requestedStudies = Array.isArray(payload.requestedStudies)
       ? payload.requestedStudies.filter((value): value is typeof STUDIES[number] => typeof value === "string" && STUDIES.includes(value as typeof STUDIES[number])).slice(0, 7)
       : [];
+    intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
+      ? payload.intention as typeof INTENTIONS[number]
+      : "UNSURE";
   } catch {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
@@ -88,6 +114,8 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
 
   try {
+    const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse" });
+    const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
     const response = await client.responses.create({
       model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
       reasoning: { effort: "low" },
@@ -95,6 +123,9 @@ export async function POST(request: Request) {
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
+        "Act as a pre-trade decision auditor, not a signal seller. Challenge the proposed direction, highlight contradiction, and reward patience. A WATCH verdict means conditions deserve monitoring, never permission to trade.",
+        "Score only screenshot evidence. Missing confirmation, unreadable information or unknown event risk must reduce the relevant score. Grade A=85-100, B=70-84, C=55-69, D=40-54, F=0-39.",
+        "Use WAIT when confirmation is missing, STAND_ASIDE when conditions are poor or contradictory, REVIEW_REQUIRED when evidence is insufficient, and WATCH only when structure is coherent with clearly stated confirmation and invalidation.",
         "If text is unreadable, return UNKNOWN. Direction must be conditional and based on visible structure, never certainty.",
         "Return ticker only when a standard listed-company symbol is clearly visible; otherwise return UNKNOWN. Do not convert spread-bet labels or index names into a guessed company ticker.",
         "Give both bullish and bearish cases. Call out cropped scales, hidden axes, insufficient candles and ambiguous patterns.",
@@ -108,7 +139,7 @@ export async function POST(request: Request) {
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: `Analyse this chart screenshot with balanced scenarios, visible levels, indicators and risks. Requested studies: ${requestedStudies.length ? requestedStudies.join(", ") : "none"}.` },
+          { type: "input_text", text: `Pre-trade audit this chart. Trader is considering: ${intention}. Requested studies: ${requestedStudies.length ? requestedStudies.join(", ") : "none"}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, contradictions, patience conditions, balanced scenarios, visible levels and risks.` },
           { type: "input_image", image_url: image, detail: "high" },
         ],
       }],
