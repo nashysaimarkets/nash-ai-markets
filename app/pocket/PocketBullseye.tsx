@@ -39,6 +39,8 @@ type Analysis = {
   fibLevels: FibLevel[];
 };
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
+type LockedDecision = { id: string; createdAt: string; intention: Intention; image: string; analysis: Analysis };
+type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; lessons: string[]; behaviourTags: string[] };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -50,6 +52,42 @@ function formatEventTime(value: string) {
   const parsed = Date.parse(value);
   if (!Number.isFinite(parsed)) return value;
   return new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/London", timeZoneName: "short" }).format(parsed);
+}
+
+function openVault() {
+  return new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open("bullseye-decision-vault", 1);
+    request.onupgradeneeded = () => request.result.createObjectStore("decisions", { keyPath: "id" });
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function vaultList(): Promise<LockedDecision[]> {
+  const db = await openVault();
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("decisions", "readonly").objectStore("decisions").getAll();
+    request.onsuccess = () => resolve((request.result as LockedDecision[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function vaultSave(decision: LockedDecision) {
+  const db = await openVault();
+  return new Promise<void>((resolve, reject) => {
+    const request = db.transaction("decisions", "readwrite").objectStore("decisions").put(decision);
+    request.onsuccess = () => resolve(); request.onerror = () => reject(request.error);
+  });
+}
+
+async function prepareImage(file: File): Promise<string> {
+  const source = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1800 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas"); canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
+  if (scale === 1 && source.length < 3_800_000) return source;
+  return canvas.toDataURL("image/jpeg", .88);
 }
 
 export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
@@ -65,6 +103,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend", "fibonacci"]));
   const [intention, setIntention] = useState<Intention>("UNSURE");
+  const [vault, setVault] = useState<LockedDecision[]>([]);
+  const [reviewTarget, setReviewTarget] = useState<LockedDecision | null>(null);
+  const [review, setReview] = useState<ProcessReview | null>(null);
+  const [vaultMessage, setVaultMessage] = useState("");
+
+  useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
   useEffect(() => {
     if (!analysis || analysis.ticker === "UNKNOWN") return;
@@ -98,7 +142,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     });
   }
 
-  function loadFile(event: ChangeEvent<HTMLInputElement>) {
+  async function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     setError("");
@@ -111,12 +155,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setError("That image is too large. Please use a chart screenshot under 8 MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(String(reader.result));
+    try {
+      const prepared = await prepareImage(file);
+      setImage(prepared);
       setFileName(file.name);
-    };
-    reader.readAsDataURL(file);
+    } catch { setError("That image could not be prepared safely."); }
   }
 
   async function analyse() {
@@ -124,11 +167,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/pocket/analyse", {
+      const response = await fetch(reviewTarget ? "/api/pocket/review" : "/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image, intention }),
+        body: JSON.stringify(reviewTarget ? { beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis } : { image, intention }),
       });
+      if (reviewTarget) {
+        const payload = await response.json() as { review?: ProcessReview; error?: string };
+        if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
+        setReview(payload.review); setImmersive(true); return;
+      }
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
@@ -141,6 +189,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } finally {
       setBusy(false);
     }
+  }
+
+  async function lockDecision() {
+    if (!analysis || !image) return;
+    const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis };
+    try { await vaultSave(decision); setVault((current) => [decision, ...current]); setVaultMessage("Decision locked on this device. It cannot be edited."); }
+    catch { setVaultMessage("Decision could not be stored on this device."); }
+  }
+
+  function startReview(decision: LockedDecision) {
+    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setImmersive(false); setError("");
   }
 
   const annotatedChart = (focus = false) => image ? (
@@ -160,6 +219,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       ))}
     </div>
   ) : null;
+
+  if (review && reviewTarget) {
+    return <main className="psApp"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section></main>;
+  }
 
   if (analysis) {
     return (
@@ -219,9 +282,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <footer>Corporate rows appear only when the chart contains a reliable listed-company ticker and the provider responds. Dates must be confirmed with the issuer or exchange.</footer>
           </section>
           <div className="psResultActions">
-            <button type="button" onClick={() => setImmersive(false)}>COMPACT VIEW</button>
+            <button type="button" onClick={lockDecision}>LOCK THIS DECISION</button>
             <button type="button" onClick={() => setChartFocus(true)}>OPEN CHART FULL SCREEN</button>
           </div>
+          {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
         </section>
         {chartFocus && (
@@ -242,7 +306,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psHeaderActions"><span>PRIVATE BETA</span></div>
       </header>
       <section className="psScanner">
-        <div className="psCopy"><p><i /> PRIVATE PRE-TRADE AUDIT</p><h1>Pause before<br /><em>you press buy.</em></h1><span>Load the chart you are considering. Bullseye grades the setup, challenges your bias and tells you what a patient trader would wait for.</span></div>
+        <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "PRIVATE PRE-TRADE AUDIT"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>Pause before<br /><em>you press buy.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Load the chart you are considering. Bullseye grades the setup, challenges your bias and tells you what a patient trader would wait for."}</span></div>
         <label className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -252,11 +316,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <input aria-label="Load chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
-        {image && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span><b>ONE TAP · NO ORDER IS PLACED</b></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
+        {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span><b>ONE TAP · NO ORDER IS PLACED</b></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? "CHALLENGING THE SETUP…" : "RUN PRE-TRADE CHECK"}<b>◎</b></button>
+        <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "CHALLENGING THE SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "RUN PRE-TRADE CHECK")}<b>◎</b></button>
+        {!reviewTarget && vault.length ? <section className="psVault"><header><span>DECISION VAULT</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>ADD OUTCOME</button></article>)}</section> : null}
         <div className="psEvents"><header><span>VERIFIED EVENT LAYER</span><b>{macroContext.status.toUpperCase()}</b></header><div><strong>OFFICIAL MACRO CALENDAR</strong><p>{macroContext.releases.length ? `${macroContext.releases.length} verified upcoming release${macroContext.releases.length === 1 ? "" : "s"} available for the decision audit.` : "No official release rows are available in the current window. Event safety will be marked unknown."}</p></div></div>
       </section>
     </main>
