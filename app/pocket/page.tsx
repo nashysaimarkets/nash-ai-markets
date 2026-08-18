@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import PocketBullseye from "./PocketBullseye";
+import { createUnavailableMacroContext, getVerifiedMacroContext } from "../lib/verified-macro-context";
 import "./pocket.css";
 
 export const metadata: Metadata = {
@@ -16,6 +17,7 @@ export const viewport: Viewport = {
   themeColor: "#050304",
 };
 
-export default function PocketPage() {
-  return <PocketBullseye />;
+export default async function PocketPage() {
+  const macroContext = await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
+  return <PocketBullseye macroContext={macroContext} />;
 }

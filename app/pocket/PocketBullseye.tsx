@@ -1,22 +1,35 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import type { VerifiedMacroContext } from "../lib/macro-data";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type Level = { kind: "support" | "resistance" | "trend"; label: string; price: string; y: number };
+type FibLevel = { ratio: string; price: string; y: number };
 type Analysis = {
   direction: Direction;
   confidence: "LOW" | "MEDIUM" | "HIGH";
   instrument: string;
+  ticker: string;
   timeframe: string;
   summary: string;
   bullishCase: string;
   bearishCase: string;
   invalidation: string;
+  marketStructure: string;
+  levelStory: string;
+  momentum: string;
+  bullConfirmation: string;
+  bearConfirmation: string;
+  noTradeCondition: string;
   riskFlags: string[];
   indicators: string[];
+  checklist: string[];
+  relevantEventTypes: string[];
   levels: Level[];
+  fibLevels: FibLevel[];
 };
+type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -24,7 +37,13 @@ function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
 }
 
-export default function PocketBullseye() {
+function formatEventTime(value: string) {
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) return value;
+  return new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/London", timeZoneName: "short" }).format(parsed);
+}
+
+export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [privacyChecked, setPrivacyChecked] = useState(false);
@@ -36,7 +55,24 @@ export default function PocketBullseye() {
   const [chartFocus, setChartFocus] = useState(false);
   const [activeTool, setActiveTool] = useState<Level["kind"]>("support");
   const [manualLevels, setManualLevels] = useState<Level[]>([]);
+  const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
+  const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
+  const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend", "fibonacci"]));
   const chartRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!analysis || analysis.ticker === "UNKNOWN") return;
+    const controller = new AbortController();
+    fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
+      .then(async (response) => {
+        const payload = await response.json() as { events?: StockEvent[] };
+        if (!response.ok) throw new Error("unavailable");
+        setStockEvents(payload.events ?? []);
+        setStockEventStatus("ready");
+      })
+      .catch((error) => { if (error instanceof Error && error.name !== "AbortError") setStockEventStatus("unavailable"); });
+    return () => controller.abort();
+  }, [analysis]);
 
   useEffect(() => {
     if (!immersive && !chartFocus) return;
@@ -46,6 +82,15 @@ export default function PocketBullseye() {
   }, [immersive, chartFocus]);
 
   const levels = useMemo(() => [...(analysis?.levels ?? []), ...manualLevels], [analysis, manualLevels]);
+  const displayedLevels = levels.filter((level) => visibleOverlays.has(level.kind));
+
+  function toggleOverlay(name: string) {
+    setVisibleOverlays((current) => {
+      const next = new Set(current);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  }
 
   function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -90,6 +135,8 @@ export default function PocketBullseye() {
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
+      setStockEvents([]);
+      setStockEventStatus(payload.analysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
       setAnalysis(payload.analysis);
       setImmersive(true);
       if (soundOn && "vibrate" in navigator) navigator.vibrate([35, 45, 70]);
@@ -110,10 +157,13 @@ export default function PocketBullseye() {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image} alt="Uploaded trading chart" />
-      {levels.map((level, index) => (
+      {displayedLevels.map((level, index) => (
         <i key={`${level.kind}-${level.y}-${index}`} data-tool={level.kind} style={{ top: `${clampY(level.y)}%` }}>
           <span>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
         </i>
+      ))}
+      {analysis && visibleOverlays.has("fibonacci") && analysis.fibLevels.map((level, index) => (
+        <i key={`fib-${level.ratio}-${index}`} data-tool="fibonacci" style={{ top: `${clampY(level.y)}%` }}><span>FIB {level.ratio}{level.price ? ` · ${level.price}` : ""}</span></i>
       ))}
     </div>
   ) : null;
@@ -137,6 +187,9 @@ export default function PocketBullseye() {
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
+          <nav className="psOverlayBar" aria-label="Chart overlays">
+            {(["support", "resistance", "trend", "fibonacci"] as const).map((overlay) => <button key={overlay} type="button" data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{overlay === "fibonacci" ? "FIB" : overlay.toUpperCase()}</button>)}
+          </nav>
           <section className="psResultChart">
             <header><span>ANNOTATED CHART</span><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
             <div>{annotatedChart()}</div>
@@ -147,13 +200,26 @@ export default function PocketBullseye() {
               <div key={`${level.label}-${index}`}><span>{level.label}</span><i /><strong>{level.price || `${Math.round(level.y)}%`}</strong></div>
             )) : <div><span>NO RELIABLE LEVEL</span><i /><strong>UNREADABLE</strong></div>}
           </section>
-          <section className="psCases">
-            <article data-tone="bull"><span>BULL CASE</span><p>{analysis.bullishCase}</p></article>
-            <article data-tone="bear"><span>BEAR CASE</span><p>{analysis.bearishCase}</p></article>
+          <section className="psNarrative">
+            <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
+            <p>{analysis.levelStory}</p>
+            <div><article><span>STRUCTURE</span><p>{analysis.marketStructure}</p></article><article><span>MOMENTUM / RSI</span><p>{analysis.momentum}</p></article></div>
           </section>
+          <section className="psCases">
+            <article data-tone="bull"><span>BULL CASE</span><p>{analysis.bullishCase}</p><strong>CONFIRMATION</strong><p>{analysis.bullConfirmation}</p></article>
+            <article data-tone="bear"><span>BEAR CASE</span><p>{analysis.bearishCase}</p><strong>CONFIRMATION</strong><p>{analysis.bearConfirmation}</p></article>
+          </section>
+          <section className="psDecisionGrid"><article><span>STAND ASIDE WHEN</span><p>{analysis.noTradeCondition}</p></article><article><span>DECISION CHECKLIST</span><ol>{analysis.checklist.map((item) => <li key={item}>{item}</li>)}</ol></article></section>
           <section className="psIntel">
             <article><span>VISIBLE INDICATORS</span><p>{analysis.indicators.length ? analysis.indicators.join(" · ") : "No indicator can be read reliably from this image."}</p></article>
             <article data-risk><span>INVALIDATION & RISK</span><p>{analysis.invalidation}</p><ul>{analysis.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul></article>
+          </section>
+          <section className="psEventDeck">
+            <header><span>VERIFIED EVENT RADAR</span><b>{macroContext.status.toUpperCase()}</b></header>
+            <p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>
+            {macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 6).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · {event.risk} IMPACT</span></li>)}</ol> : <div className="psEventEmpty">No verified official release rows are available in the current window.</div>}
+            {analysis.ticker !== "UNKNOWN" ? <div className="psStockEvents"><strong>{analysis.ticker} CORPORATE EVENTS</strong>{stockEventStatus === "loading" ? <p>Checking verified company calendar…</p> : stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><b>{event.type}</b><span>{event.detail}</span></li>)}</ol> : <p>No verified upcoming corporate event was returned for this symbol.</p>}</div> : null}
+            <footer>Corporate rows appear only when the chart contains a reliable listed-company ticker and the provider responds. Dates must be confirmed with the issuer or exchange.</footer>
           </section>
           <div className="psResultActions">
             <button type="button" onClick={() => setImmersive(false)}>COMPACT VIEW</button>

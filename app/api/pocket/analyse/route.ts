@@ -12,13 +12,22 @@ const schema = {
     direction: { type: "string", enum: ["BULLISH", "BEARISH", "NEUTRAL"] },
     confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
     instrument: { type: "string", maxLength: 40 },
+    ticker: { type: "string", maxLength: 16 },
     timeframe: { type: "string", maxLength: 40 },
     summary: { type: "string", maxLength: 320 },
     bullishCase: { type: "string", maxLength: 280 },
     bearishCase: { type: "string", maxLength: 280 },
     invalidation: { type: "string", maxLength: 280 },
+    marketStructure: { type: "string", maxLength: 320 },
+    levelStory: { type: "string", maxLength: 480 },
+    momentum: { type: "string", maxLength: 240 },
+    bullConfirmation: { type: "string", maxLength: 220 },
+    bearConfirmation: { type: "string", maxLength: 220 },
+    noTradeCondition: { type: "string", maxLength: 220 },
     riskFlags: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
     indicators: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
+    checklist: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
+    relevantEventTypes: { type: "array", maxItems: 6, items: { type: "string", maxLength: 80 } },
     levels: {
       type: "array", maxItems: 5, items: {
         type: "object", additionalProperties: false,
@@ -31,8 +40,19 @@ const schema = {
         required: ["kind", "label", "price", "y"],
       },
     },
+    fibLevels: {
+      type: "array", maxItems: 5, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          ratio: { type: "string", maxLength: 12 },
+          price: { type: "string", maxLength: 30 },
+          y: { type: "number", minimum: 0, maximum: 100 },
+        },
+        required: ["ratio", "price", "y"],
+      },
+    },
   },
-  required: ["direction", "confidence", "instrument", "timeframe", "summary", "bullishCase", "bearishCase", "invalidation", "riskFlags", "indicators", "levels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "summary", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
@@ -57,10 +77,13 @@ export async function POST(request: Request) {
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
         "If text is unreadable, return UNKNOWN. Direction must be conditional and based on visible structure, never certainty.",
+        "Return ticker only when a standard listed-company symbol is clearly visible; otherwise return UNKNOWN. Do not convert spread-bet labels or index names into a guessed company ticker.",
         "Give both bullish and bearish cases. Call out cropped scales, hidden axes, insufficient candles and ambiguous patterns.",
         "For each reliable support/resistance/trend level, return its vertical position y as a percentage from the top of the full image. Keep levels sparse and only include price text that is clearly legible.",
         "Indicators must describe only indicators visibly present, such as RSI or moving averages. Keep every field concise for a mobile display.",
-        "Keep summary, scenarios and invalidation under 40 words each. Return no more than 4 risks, 5 indicators and 5 levels.",
+        "Explain the level-to-level story: what price is testing, what acceptance or rejection would imply, and the next visible area in either direction.",
+        "Return Fibonacci levels only when two reliable visible swing anchors and readable prices allow calculation; otherwise return an empty fibLevels array. Never claim RSI is visible when it is not.",
+        "Name relevant event categories for the identified instrument, but never invent event names, dates or times. Keep summary, scenarios and invalidation under 40 words each.",
       ].join(" "),
       input: [{
         role: "user",
@@ -69,7 +92,7 @@ export async function POST(request: Request) {
           { type: "input_image", image_url: image, detail: "high" },
         ],
       }],
-      max_output_tokens: 2400,
+      max_output_tokens: 3600,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     });
     const output = response.output_text?.trim();
