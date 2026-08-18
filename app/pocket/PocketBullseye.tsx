@@ -6,6 +6,8 @@ import type { VerifiedMacroContext } from "../lib/macro-data";
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type Level = { kind: "support" | "resistance" | "trend"; label: string; price: string; y: number };
 type FibLevel = { ratio: string; price: string; y: number };
+type StudyName = "RSI" | "EMA" | "MACD" | "BOLLINGER" | "VWAP" | "ATR" | "FIBONACCI";
+type StudyReading = { name: StudyName; status: "APPLIED" | "VISIBLE" | "UNAVAILABLE"; signal: "BULLISH" | "BEARISH" | "NEUTRAL" | "UNKNOWN"; detail: string };
 type Analysis = {
   direction: Direction;
   confidence: "LOW" | "MEDIUM" | "HIGH";
@@ -26,12 +28,17 @@ type Analysis = {
   indicators: string[];
   checklist: string[];
   relevantEventTypes: string[];
+  studyReadings: StudyReading[];
   levels: Level[];
   fibLevels: FibLevel[];
 };
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const POPULAR_STUDIES: Array<{ name: StudyName; label: string }> = [
+  { name: "RSI", label: "RSI 14" }, { name: "EMA", label: "EMA 20/50" }, { name: "MACD", label: "MACD" },
+  { name: "BOLLINGER", label: "BOLLINGER" }, { name: "VWAP", label: "VWAP" }, { name: "ATR", label: "ATR 14" }, { name: "FIBONACCI", label: "FIBONACCI" },
+];
 
 function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
@@ -56,6 +63,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend", "fibonacci"]));
+  const [requestedStudies, setRequestedStudies] = useState<StudyName[]>(["RSI", "EMA", "MACD", "FIBONACCI"]);
 
   useEffect(() => {
     if (!analysis || analysis.ticker === "UNKNOWN") return;
@@ -89,6 +97,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     });
   }
 
+  function toggleStudy(name: StudyName) {
+    setRequestedStudies((current) => current.includes(name) ? current.filter((study) => study !== name) : [...current, name]);
+  }
+
   function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -118,7 +130,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image }),
+        body: JSON.stringify({ image, requestedStudies }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
@@ -190,6 +202,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <p>{analysis.levelStory}</p>
             <div><article><span>STRUCTURE</span><p>{analysis.marketStructure}</p></article><article><span>MOMENTUM / RSI</span><p>{analysis.momentum}</p></article></div>
           </section>
+          <section className="psStudyResults">
+            <header><span>REQUESTED STUDIES</span><b>AUTOMATIC · EVIDENCE-GATED</b></header>
+            <div>{analysis.studyReadings.map((study) => <article key={study.name} data-status={study.status}><span>{study.name}</span><strong>{study.status}</strong><b data-signal={study.signal}>{study.signal}</b><p>{study.detail}</p></article>)}</div>
+          </section>
           <section className="psCases">
             <article data-tone="bull"><span>BULL CASE</span><p>{analysis.bullishCase}</p><strong>CONFIRMATION</strong><p>{analysis.bullConfirmation}</p></article>
             <article data-tone="bear"><span>BEAR CASE</span><p>{analysis.bearishCase}</p><strong>CONFIRMATION</strong><p>{analysis.bearConfirmation}</p></article>
@@ -241,6 +257,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
         {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
+        {image && <section className="psStudyPicker"><header><span>POPULAR INDICATORS</span><b>CHOOSE WHAT BULLSEYE CHECKS</b></header><div>{POPULAR_STUDIES.map((study) => <button key={study.name} type="button" data-active={requestedStudies.includes(study.name)} onClick={() => toggleStudy(study.name)}>{study.label}</button>)}</div><p>Selected studies are checked automatically. Hidden studies requiring candle or volume data are never guessed from the screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? "SCANNING STRUCTURE…" : "ANALYSE THIS CHART"}<b>◎</b></button>

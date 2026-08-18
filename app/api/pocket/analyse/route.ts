@@ -5,6 +5,7 @@ export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const POCKET_ANALYSIS_TIMEOUT_MS = 55_000;
 export const maxDuration = 60;
+const STUDIES = ["RSI", "EMA", "MACD", "BOLLINGER", "VWAP", "ATR", "FIBONACCI"] as const;
 
 const schema = {
   type: "object",
@@ -29,6 +30,18 @@ const schema = {
     indicators: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
     checklist: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
     relevantEventTypes: { type: "array", maxItems: 6, items: { type: "string", maxLength: 80 } },
+    studyReadings: {
+      type: "array", maxItems: 7, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          name: { type: "string", enum: STUDIES },
+          status: { type: "string", enum: ["APPLIED", "VISIBLE", "UNAVAILABLE"] },
+          signal: { type: "string", enum: ["BULLISH", "BEARISH", "NEUTRAL", "UNKNOWN"] },
+          detail: { type: "string", maxLength: 180 },
+        },
+        required: ["name", "status", "signal", "detail"],
+      },
+    },
     levels: {
       type: "array", maxItems: 5, items: {
         type: "object", additionalProperties: false,
@@ -53,14 +66,18 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "summary", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "summary", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "studyReadings", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
   let image = "";
+  let requestedStudies: Array<typeof STUDIES[number]> = [];
   try {
-    const payload = await request.json() as { image?: unknown };
+    const payload = await request.json() as { image?: unknown; requestedStudies?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
+    requestedStudies = Array.isArray(payload.requestedStudies)
+      ? payload.requestedStudies.filter((value): value is typeof STUDIES[number] => typeof value === "string" && STUDIES.includes(value as typeof STUDIES[number])).slice(0, 7)
+      : [];
   } catch {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
@@ -85,12 +102,13 @@ export async function POST(request: Request) {
         "Indicators must describe only indicators visibly present, such as RSI or moving averages. Keep every field concise for a mobile display.",
         "Explain the level-to-level story: what price is testing, what acceptance or rejection would imply, and the next visible area in either direction.",
         "Return Fibonacci levels only when two reliable visible swing anchors and readable prices allow calculation; otherwise return an empty fibLevels array. Never claim RSI is visible when it is not.",
+        "For every requested study, return one studyReadings row. APPLIED means it can be calculated defensibly from visible chart evidence; VISIBLE means the study and its value or shape already appear clearly; UNAVAILABLE means underlying OHLC or volume data is required. Never estimate a hidden RSI, EMA, MACD, Bollinger Band, VWAP or ATR from pixels.",
         "Name relevant event categories for the identified instrument, but never invent event names, dates or times. Keep summary, scenarios and invalidation under 40 words each.",
       ].join(" "),
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: "Analyse this chart screenshot with balanced scenarios, visible levels, indicators and risks." },
+          { type: "input_text", text: `Analyse this chart screenshot with balanced scenarios, visible levels, indicators and risks. Requested studies: ${requestedStudies.length ? requestedStudies.join(", ") : "none"}.` },
           { type: "input_image", image_url: image, detail: "high" },
         ],
       }],
