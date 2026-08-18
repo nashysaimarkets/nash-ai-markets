@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
@@ -53,12 +53,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [immersive, setImmersive] = useState(false);
   const [chartFocus, setChartFocus] = useState(false);
-  const [activeTool, setActiveTool] = useState<Level["kind"]>("support");
-  const [manualLevels, setManualLevels] = useState<Level[]>([]);
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
   const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend", "fibonacci"]));
-  const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!analysis || analysis.ticker === "UNKNOWN") return;
@@ -81,7 +78,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return () => { document.body.style.overflow = previous; };
   }, [immersive, chartFocus]);
 
-  const levels = useMemo(() => [...(analysis?.levels ?? []), ...manualLevels], [analysis, manualLevels]);
+  const levels = analysis?.levels ?? [];
   const displayedLevels = levels.filter((level) => visibleOverlays.has(level.kind));
 
   function toggleOverlay(name: string) {
@@ -97,7 +94,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!file) return;
     setError("");
     setAnalysis(null);
-    setManualLevels([]);
     if (!file.type.startsWith("image/")) {
       setError("Please choose a JPEG, PNG or WebP chart image.");
       return;
@@ -112,14 +108,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setFileName(file.name);
     };
     reader.readAsDataURL(file);
-  }
-
-  function placeManualLevel(event: React.PointerEvent<HTMLDivElement>) {
-    if (!image || busy) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const y = clampY(((event.clientY - rect.top) / rect.height) * 100);
-    const label = activeTool === "support" ? "MANUAL SUPPORT" : activeTool === "resistance" ? "MANUAL RESISTANCE" : "MANUAL TREND";
-    setManualLevels((current) => [...current.filter((level) => level.kind !== activeTool), { kind: activeTool, label, price: "", y }]);
   }
 
   async function analyse() {
@@ -150,10 +138,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const annotatedChart = (focus = false) => image ? (
     <div
       className={focus ? "psChartFocusCanvas" : "psAnnotatedChart"}
-      ref={focus ? undefined : chartRef}
-      onPointerDown={focus ? undefined : placeManualLevel}
-      role={focus ? undefined : "application"}
-      aria-label={focus ? undefined : "Uploaded chart. Tap to place the selected drawing level."}
+      aria-label="Automatically annotated uploaded chart"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={image} alt="Uploaded trading chart" />
@@ -255,7 +240,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <input aria-label="Load chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
-        {image && <section className="psDrawingDesk"><header><span>QUICK LEVEL TOOLS</span><b>TAP CHART TO PLACE</b></header><div className="psToolBar">{(["support", "resistance", "trend"] as const).map((tool) => <button key={tool} type="button" data-active={activeTool === tool} onClick={() => setActiveTool(tool)}>{tool.toUpperCase()}</button>)}<button type="button" onClick={() => setManualLevels([])}>CLEAR</button></div>{annotatedChart()}<p>Optional manual marks stay on your device and are shown beside AI-detected levels.</p></section>}
+        {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? "SCANNING STRUCTURE…" : "ANALYSE THIS CHART"}<b>◎</b></button>

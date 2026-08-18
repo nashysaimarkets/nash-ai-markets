@@ -3,7 +3,8 @@ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/op
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
-const POCKET_ANALYSIS_TIMEOUT_MS = 30_000;
+const POCKET_ANALYSIS_TIMEOUT_MS = 55_000;
+export const maxDuration = 60;
 
 const schema = {
   type: "object",
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
   try {
     const response = await client.responses.create({
       model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      reasoning: { effort: "low" },
       store: false,
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
@@ -119,6 +121,7 @@ export async function POST(request: Request) {
       type: typeof failure.type === "string" ? failure.type : null,
       message: typeof failure.message === "string" ? failure.message.slice(0, 240) : null,
     }));
-    return NextResponse.json({ error: "Bullseye could not read that chart safely. Please try a clearer screenshot." }, { status: 503 });
+    const timedOut = typeof failure.message === "string" && /timed out/i.test(failure.message);
+    return NextResponse.json({ error: timedOut ? "The chart analysis took too long to finish. Please retry once." : "Bullseye could not verify enough chart detail safely. Please use a clearer screenshot." }, { status: 503 });
   }
 }
