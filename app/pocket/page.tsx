@@ -4,6 +4,7 @@ import { createUnavailableMacroContext, getVerifiedMacroContext } from "../lib/v
 import "./pocket.css";
 import "./pocket-launch-polish.css";
 import "./pocket-launch-depth.css";
+import "./pocket-launch-v2.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
