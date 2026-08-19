@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import PocketBullseye from "./PocketBullseye";
 import { createUnavailableMacroContext, getVerifiedMacroContext } from "../lib/verified-macro-context";
 import "./pocket.css";
+import "./pocket-launch-polish.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
@@ -14,7 +15,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#050304",
+  themeColor: "#0a0e13",
 };
 
 export default async function PocketPage() {
