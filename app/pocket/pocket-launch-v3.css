@@ -1,0 +1,52 @@
+/* Pocket Bullseye — launch polish v3
+   Mobile-first decision-terminal layer. CSS-only: no network, assets or market-data cost. */
+.psApp{
+  --pb-v3-surface:rgba(18,22,28,.82);
+  --pb-v3-edge:rgba(255,255,255,.075);
+  --pb-v3-highlight:rgba(255,255,255,.075);
+  --pb-v3-shadow:0 24px 70px rgba(0,0,0,.42);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.psApp::selection{background:rgba(183,255,42,.22)}
+.psApp button,.psApp input,.psApp label{touch-action:manipulation}
+.psHeader,.psImmersiveBar{padding-top:max(10px,env(safe-area-inset-top));}
+.psHeader{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+.psUpload,.psVerdict,.psScorecard,.psAuditGrid article,.psCases article,.psIntel article,.psReviewGrid article,.psResultChart,.psDrawingDesk,.psLevelDeck,.psEvents,.psVault,.psResultActions{
+  border:1px solid var(--pb-v3-edge);
+  box-shadow:var(--pb-v3-shadow),inset 0 1px 0 var(--pb-v3-highlight);
+}
+.psUpload{background:linear-gradient(145deg,rgba(28,34,42,.94),rgba(10,13,18,.94));}
+.psUpload::after{content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.055),transparent 24%,transparent 72%,rgba(183,255,42,.018));}
+.psLogoMark{box-shadow:0 12px 34px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -8px 18px rgba(0,0,0,.2);}
+.psTarget{filter:drop-shadow(0 16px 22px rgba(0,0,0,.42));}
+.psAnalyse{box-shadow:0 12px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.16),inset 0 -3px 0 rgba(0,0,0,.2);}
+.psAnalyse:focus-visible{box-shadow:0 0 0 3px rgba(183,255,42,.18),0 14px 34px rgba(0,0,0,.4);}
+.psVerdict{background:linear-gradient(145deg,rgba(23,28,35,.96),rgba(10,13,18,.96));}
+.psVerdictTop em{box-shadow:0 10px 28px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.12);}
+.psScorecard article{background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.008));}
+.psScorecard article i{background:rgba(255,255,255,.065);box-shadow:inset 0 1px 2px rgba(0,0,0,.45);}
+.psScorecard article i b{box-shadow:0 0 10px rgba(183,255,42,.12);}
+.psAuditGrid article,.psCases article,.psIntel article,.psReviewGrid article{background:linear-gradient(145deg,rgba(22,27,34,.82),rgba(11,14,19,.88));}
+.psResultChart,.psDrawingDesk,.psLevelDeck,.psEvents,.psVault{background:linear-gradient(145deg,rgba(20,25,32,.9),rgba(9,12,17,.95));}
+.psResultChart>header,.psImmersiveBar{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(8,11,15,.72);}
+.psResultActions{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:rgba(10,14,19,.78);padding-bottom:max(8px,env(safe-area-inset-bottom));}
+.psResultActions button,.psImmersiveBar button{min-height:42px;}
+.psResultActions button:focus-visible,.psImmersiveBar button:focus-visible{box-shadow:0 0 0 3px rgba(183,255,42,.16);}
+.psAnnotatedChart,.psChartFocusCanvas{box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 0 80px rgba(0,0,0,.16);}
+.psAnnotatedChart img,.psChartFocusCanvas img{display:block;max-width:100%;}
+.psAnnotatedChart>i,.psChartFocusCanvas>i{filter:drop-shadow(0 1px 3px rgba(0,0,0,.8));}
+.psAnnotatedChart>i span,.psChartFocusCanvas>i span{background:rgba(7,10,14,.78);border:1px solid rgba(255,255,255,.08);box-shadow:0 5px 14px rgba(0,0,0,.28);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.psVault article{background:linear-gradient(90deg,rgba(255,255,255,.012),transparent);}
+.psVault article:hover{background:rgba(255,255,255,.025);}
+.psProcessNote{border:1px solid rgba(183,255,42,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 30px rgba(0,0,0,.24);}
+@media(max-width:680px){
+  .psApp{min-height:100svh;}
+  .psUpload,.psVerdict,.psScorecard,.psAuditGrid article,.psCases article,.psIntel article,.psReviewGrid article,.psResultChart,.psDrawingDesk,.psLevelDeck,.psEvents,.psVault{box-shadow:0 14px 38px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.055);}
+  .psResultActions{position:sticky;bottom:0;z-index:30;margin-bottom:0;}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .psResults[data-immersive="true"] .psImmersiveBar{min-height:38px;}
+  .psResults[data-immersive="true"] .psResultChart{min-height:calc(100svh - 52px);}
+  .psResults[data-immersive="true"] .psAnnotatedChart,.psResults[data-immersive="true"] .psChartFocusCanvas{max-height:calc(100svh - 92px);}
+}
+@media(prefers-reduced-motion:reduce){.psApp *,.psApp *::before,.psApp *::after{scroll-behavior:auto!important;animation-duration:.001ms!important;transition-duration:.001ms!important;}}
