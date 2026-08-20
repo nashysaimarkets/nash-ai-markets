@@ -67,6 +67,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `CODEX_SANDBOX` — CI/development sandbox runtime marker; never a customer credential.
 - `MINIFLARE_REGISTRY_PATH` — local/CI Miniflare registry path; never a customer credential.
 - `WRANGLER_LOG_PATH` — local/CI Wrangler log path; never a customer credential.
+- `WRANGLER_WRITE_LOGS` — local/CI Wrangler logging toggle; never a customer credential.
 - `BULLSEYE_TEST_TOTALS`
 - `BULLSEYE_ADMIN_EMAILS`
 
@@ -79,7 +80,6 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `SITES_RUNTIME_ROOT`
 - `SITES_NPM_CACHE_SEED`
 - `SITES_INSTALL_TIMEOUT`
-- `SITES_NPM_CACHE_SEED`
 - `SITES_INSTALL_KILL_AFTER`
 - `SITES_BUILD_TIMEOUT`
 - `SITES_BUILD_KILL_AFTER`
