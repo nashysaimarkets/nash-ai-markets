@@ -65,6 +65,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `VERCEL`
 - `CF_PAGES_COMMIT_SHA` — Cloudflare Pages commit identifier; runtime metadata only.
 - `CODEX_SANDBOX` — CI/development sandbox runtime marker; never a customer credential.
+- `MINIFLARE_REGISTRY_PATH` — local/CI Miniflare registry path; never a customer credential.
 - `BULLSEYE_TEST_TOTALS`
 - `BULLSEYE_ADMIN_EMAILS`
 
