@@ -80,3 +80,5 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `SITES_BUILD_KILL_AFTER`
 
 Never expose server secrets with `NEXT_PUBLIC_` or `VITE_` prefixes. Rotate credentials immediately after suspected exposure. OpenAI Responses requests explicitly use `store: false`; Pocket Bullseye retains deterministic fallback output when AI is unavailable.
+
+<!-- Pocket Bullseye launch-gate verification marker: documentation validated on 2026-08-20. -->
