@@ -63,6 +63,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `VERCEL_URL`
 - `VERCEL_ENV`
 - `VERCEL`
+- `CF_PAGES_COMMIT_SHA` — Cloudflare Pages commit identifier; runtime metadata only.
 - `BULLSEYE_TEST_TOTALS`
 - `BULLSEYE_ADMIN_EMAILS`
 
@@ -75,7 +76,6 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `SITES_RUNTIME_ROOT`
 - `SITES_NPM_CACHE_SEED`
 - `SITES_INSTALL_TIMEOUT`
-- `SITES_INSTALL_KILL_AFTER`
 - `SITES_INSTALL_KILL_AFTER`
 - `SITES_BUILD_TIMEOUT`
 - `SITES_BUILD_KILL_AFTER`
