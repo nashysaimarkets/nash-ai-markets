@@ -34,7 +34,7 @@
 .psTarget{width:132px;height:132px;border-color:rgba(183,255,42,.58);box-shadow:0 0 70px rgba(183,255,42,.12),0 18px 38px rgba(0,0,0,.45)}
 .psTarget:before{border-color:rgba(183,255,42,.22)}.psTarget:after{background:var(--ps-green);box-shadow:0 0 28px rgba(183,255,42,.7)}
 .psTarget i:first-child{height:158px;background:linear-gradient(transparent,rgba(183,255,42,.75),transparent)}.psTarget i:nth-child(2){width:158px;background:linear-gradient(90deg,transparent,rgba(183,255,42,.75),transparent)}
-.psScanLine{background:rgba(183,255,42,.55);box-shadow:0 0 15px rgba(183,255,42,.3)}
+.psScanLine{display:block;background:rgba(183,255,42,.55);box-shadow:0 0 15px rgba(183,255,42,.3)}
 .psUpload>strong{margin-top:30px;font-size:24px;letter-spacing:-.02em;text-shadow:0 0 24px rgba(183,255,42,.18)}
 .psUpload>small{color:#8b9790;font-size:7px}
 .psCaptureRow{margin-top:11px}.psCaptureRow label{border-color:rgba(183,255,42,.55);color:var(--ps-green);background:rgba(183,255,42,.04);border-radius:10px;padding:12px 14px}.psCaptureRow span{font-size:6px;color:#7c8982}
