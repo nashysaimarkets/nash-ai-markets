@@ -1,0 +1,30 @@
+/* Pocket Bullseye v4 — focused mobile hierarchy overrides. */
+
+/* Remove the redundant post-upload preview/status panel. The primary action below is the single source of truth. */
+.psAutoPreview { display: none !important; }
+
+/* Slightly improve readability without making the scanner feel bulky. */
+.psCopy span,
+.psCopy p,
+.psCaptureRow,
+.psIntent span,
+.psIntent b,
+.psPrivacy,
+.psEvents,
+.psUpload small { font-size: 1.04em; }
+
+.psCopy h1 { line-height: 1.02; }
+
+/* Make the analysis action unmistakable on mobile. */
+.psAnalyse {
+  min-height: 58px;
+  font-size: 1.08rem;
+  letter-spacing: .055em;
+  font-weight: 800;
+}
+
+/* The result overlay no longer offers Fibonacci. */
+.psOverlayBar button:last-child { display: none !important; }
+
+/* Keep the remaining overlay controls comfortable to tap. */
+.psOverlayBar button { min-height: 42px; }
