@@ -3,7 +3,7 @@
 Values belong in the deployment secret/configuration manager. Never commit populated secrets. The application fails closed when optional providers are absent.
 
 ## AI
-- `OPENAI_API_KEY` — server secret for OpenAI.
+- `OPENAI_API_KEY` | Secret, server only.
 - `OPENAI_BRIEF_MODEL` — optional server model override.
 - `OPENAI_MORNING_BRIEF_MODEL` — optional Morning Brief model override.
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
@@ -75,6 +75,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `SITES_RUNTIME_ROOT`
 - `SITES_NPM_CACHE_SEED`
 - `SITES_INSTALL_TIMEOUT`
+- `SITES_INSTALL_KILL_AFTER`
 - `SITES_INSTALL_KILL_AFTER`
 - `SITES_BUILD_TIMEOUT`
 - `SITES_BUILD_KILL_AFTER`
