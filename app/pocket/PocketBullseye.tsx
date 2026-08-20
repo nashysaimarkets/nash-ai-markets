@@ -82,12 +82,14 @@ async function vaultSave(decision: LockedDecision) {
 
 async function prepareImage(file: File): Promise<string> {
   const source = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
+  // Preserve the original screenshot whenever possible. Re-encoding a chart before
+  // analysis destroys fine candle, price-label and indicator detail on mobile.
+  if (file.size <= 6 * 1024 * 1024) return source;
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1800 / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas"); canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
-  if (scale === 1 && source.length < 3_800_000) return source;
-  return canvas.toDataURL("image/jpeg", .88);
+  return canvas.toDataURL("image/jpeg", .96);
 }
 
 export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
@@ -317,7 +319,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span><b>ONE TAP · NO ORDER IS PLACED</b></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
-        {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
+        {image && <section className="psAutoPreview"><header><span>CHART LOADED · READY TO ANALYSE</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Review your chart, then run the pre-trade check when you are ready.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "CHALLENGING THE SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "RUN PRE-TRADE CHECK")}<b>◎</b></button>
