@@ -17,6 +17,20 @@ const schema = {
     instrument: { type: "string", maxLength: 40 },
     ticker: { type: "string", maxLength: 16 },
     timeframe: { type: "string", maxLength: 40 },
+    evidenceQuality: {
+      type: "object", additionalProperties: false,
+      properties: {
+        chartReadability: { type: "string", enum: ["CLEAR", "PARTIAL", "POOR"] },
+        instrumentConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+        timeframeConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+        scaleReadable: { type: "boolean" },
+        candlesReadable: { type: "boolean" },
+        limitations: { type: "array", maxItems: 4, items: { type: "string", maxLength: 120 } },
+      },
+      required: ["chartReadability", "instrumentConfidence", "timeframeConfidence", "scaleReadable", "candlesReadable", "limitations"],
+    },
+    observableFacts: { type: "array", maxItems: 6, items: { type: "string", maxLength: 140 } },
+    contradictions: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
     summary: { type: "string", maxLength: 320 },
     verdict: { type: "string", enum: ["WATCH", "WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"] },
     verdictHeadline: { type: "string", maxLength: 100 },
@@ -75,7 +89,7 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
@@ -106,6 +120,9 @@ export async function POST(request: Request) {
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
+        "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
+        "Instrument and timeframe confidence describe label readability, not market confidence. If either label is absent or ambiguous, use UNKNOWN and never infer it from chart shape.",
+        "If chartReadability is POOR, or candles are not readable, verdict must be REVIEW_REQUIRED, confidence LOW, and the setup grade cannot exceed D. If scale is unreadable, do not return numeric prices.",
         "Act as a pre-trade decision auditor, not a signal seller. Challenge the proposed direction, highlight contradiction, and reward patience. A WATCH verdict means conditions deserve monitoring, never permission to trade.",
         "Score only screenshot evidence. Missing confirmation, unreadable information or unknown event risk must reduce the relevant score. Grade A=85-100, B=70-84, C=55-69, D=40-54, F=0-39.",
         "Use WAIT when confirmation is missing, STAND_ASIDE when conditions are poor or contradictory, REVIEW_REQUIRED when evidence is insufficient, and WATCH only when structure is coherent with clearly stated confirmation and invalidation.",
@@ -123,7 +140,7 @@ export async function POST(request: Request) {
         role: "user",
         content: [
           { type: "input_text", text: `Pre-trade audit this chart. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, contradictions, patience conditions, balanced scenarios, visible levels and risks.` },
-          { type: "input_image", image_url: image, detail: "high" },
+          { type: "input_image", image_url: image, detail: "high" }, // gpt-5-mini high fidelity; original detail is not supported by this model family
         ],
       }],
       max_output_tokens: 3600,
