@@ -31,6 +31,41 @@ const schema = {
     },
     observableFacts: { type: "array", maxItems: 6, items: { type: "string", maxLength: 140 } },
     contradictions: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
+    higherTimeframe: {
+      type: "object", additionalProperties: false,
+      properties: {
+        provided: { type: "boolean" },
+        timeframe: { type: "string", maxLength: 40 },
+        direction: { type: "string", enum: ["BULLISH", "BEARISH", "NEUTRAL", "UNKNOWN"] },
+        alignment: { type: "string", enum: ["ALIGNED", "CONFLICTING", "MIXED", "NOT_PROVIDED"] },
+        summary: { type: "string", maxLength: 240 },
+      },
+      required: ["provided", "timeframe", "direction", "alignment", "summary"],
+    },
+    patterns: {
+      type: "array", maxItems: 4, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          name: { type: "string", maxLength: 60 },
+          status: { type: "string", enum: ["FORMING", "CONFIRMED", "FAILED", "AMBIGUOUS", "EXTENDED"] },
+          evidence: { type: "string", maxLength: 180 },
+          invalidation: { type: "string", maxLength: 160 },
+        },
+        required: ["name", "status", "evidence", "invalidation"],
+      },
+    },
+    nextSequence: {
+      type: "object", additionalProperties: false,
+      properties: {
+        now: { type: "string", maxLength: 180 },
+        confirmation: { type: "string", maxLength: 180 },
+        failure: { type: "string", maxLength: 180 },
+        patience: { type: "string", maxLength: 180 },
+        reassess: { type: "string", maxLength: 180 },
+      },
+      required: ["now", "confirmation", "failure", "patience", "reassess"],
+    },
+    missingInputs: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
     summary: { type: "string", maxLength: 320 },
     verdict: { type: "string", enum: ["WATCH", "WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"] },
     verdictHeadline: { type: "string", maxLength: 100 },
@@ -89,15 +124,17 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
+  let contextImage = "";
   try {
-    const payload = await request.json() as { image?: unknown; intention?: unknown };
+    const payload = await request.json() as { image?: unknown; contextImage?: unknown; intention?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
+    contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
     intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
       ? payload.intention as typeof INTENTIONS[number]
       : "UNSURE";
@@ -106,6 +143,9 @@ export async function POST(request: Request) {
   }
   if (!/^data:image\/(jpeg|png|webp);base64,/.test(image) || image.length > MAX_DATA_URL_LENGTH) {
     return NextResponse.json({ error: "Please upload a valid JPEG, PNG or WebP chart under 8 MB." }, { status: 400 });
+  }
+  if (contextImage && (!/^data:image\/(jpeg|png|webp);base64,/.test(contextImage) || contextImage.length > MAX_DATA_URL_LENGTH)) {
+    return NextResponse.json({ error: "Please use a valid higher-timeframe chart under 8 MB." }, { status: 400 });
   }
   const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
@@ -121,6 +161,10 @@ export async function POST(request: Request) {
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
+        "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
+        "Pattern labels must include status, visible evidence and invalidation. Prefer AMBIGUOUS over forcing a name. CONFIRMED requires visible completion; FORMING is incomplete; EXTENDED means the move is already mature.",
+        "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
+        "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
         "Instrument and timeframe confidence describe label readability, not market confidence. If either label is absent or ambiguous, use UNKNOWN and never infer it from chart shape.",
         "If chartReadability is POOR, or candles are not readable, verdict must be REVIEW_REQUIRED, confidence LOW, and the setup grade cannot exceed D. If scale is unreadable, do not return numeric prices.",
         "Act as a pre-trade decision auditor, not a signal seller. Challenge the proposed direction, highlight contradiction, and reward patience. A WATCH verdict means conditions deserve monitoring, never permission to trade.",
@@ -140,11 +184,12 @@ export async function POST(request: Request) {
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: `Pre-trade audit this chart. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, contradictions, patience conditions, balanced scenarios, visible levels and risks.` },
-          { type: "input_image", image_url: image, detail: "high" }, // gpt-5-mini high fidelity; original detail is not supported by this model family
+          { type: "input_text", text: `Pre-trade audit the first trading chart${contextImage ? " and compare the optional second higher-timeframe chart" : ""}. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, multi-timeframe alignment, pattern status, next-event sequence, only-material missing inputs, visible levels and risks.` },
+          { type: "input_image", image_url: image, detail: "high" },
+          ...(contextImage ? [{ type: "input_image" as const, image_url: contextImage, detail: "high" as const }] : []),
         ],
       }],
-      max_output_tokens: 3600,
+      max_output_tokens: 4400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     });
     const output = response.output_text?.trim();
