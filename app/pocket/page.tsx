@@ -11,6 +11,7 @@ import "./pocket-final-tuning.css";
 import "./pocket-launch-v5.css";
 import "./pocket-launch-v6.css";
 import "./pocket-launch-v7.css";
+import "./pocket-launch-v8.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
