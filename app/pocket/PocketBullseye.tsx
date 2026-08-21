@@ -101,7 +101,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [chartFocus, setChartFocus] = useState(false);
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
-  const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend", "fibonacci"]));
+  const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend"]));
   const [intention, setIntention] = useState<Intention>("UNSURE");
   const [vault, setVault] = useState<LockedDecision[]>([]);
   const [reviewTarget, setReviewTarget] = useState<LockedDecision | null>(null);
@@ -214,10 +214,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <span>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
         </i>
       ))}
-      {analysis && visibleOverlays.has("fibonacci") && analysis.fibLevels.map((level, index) => (
-        <i key={`fib-${level.ratio}-${index}`} data-tool="fibonacci" style={{ top: `${clampY(level.y)}%` }}><span>FIB {level.ratio}{level.price ? ` · ${level.price}` : ""}</span></i>
-      ))}
-    </div>
+          </div>
   ) : null;
 
   if (review && reviewTarget) {
@@ -248,7 +245,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
           <nav className="psOverlayBar" aria-label="Chart overlays">
-            {(["support", "resistance", "trend", "fibonacci"] as const).map((overlay) => <button key={overlay} type="button" data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{overlay === "fibonacci" ? "FIB" : overlay.toUpperCase()}</button>)}
+            {(["support", "resistance", "trend"] as const).map((overlay) => <button key={overlay} type="button" data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{overlay.toUpperCase()}</button>)}
           </nav>
           <section className="psResultChart">
             <header><span>ANNOTATED CHART</span><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
@@ -302,8 +299,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   return (
     <main className="psApp" data-pocket-build="v3.1">
       <header className="psHeader">
-        <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>POCKET ANALYSIS</small></span></div>
-        <div className="psHeaderActions"><span>PRIVATE BETA</span></div>
+        <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
+        <div className="psHeaderActions"><span>BULLSEYE ENGINE · PRIVATE BETA</span></div>
       </header>
       <section className="psScanner">
         <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "PRIVATE PRE-TRADE AUDIT"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>Pause before<br /><em>you press buy.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Load the chart you are considering. Bullseye grades the setup, challenges your bias and tells you what a patient trader would wait for."}</span></div>
