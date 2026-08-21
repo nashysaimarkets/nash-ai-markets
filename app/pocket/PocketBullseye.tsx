@@ -424,14 +424,18 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             {followUpError ? <p className="psAskError" role="alert">{followUpError}</p> : null}
             {followUpReply ? <article className="psAskReply"><strong>BULLSEYE ANSWER</strong><p>{followUpReply.answer}</p><ul>{followUpReply.evidence.map((item) => <li key={item}>{item}</li>)}</ul><small>CAUTION · {followUpReply.caution}</small><b>NEXT CHECK · {followUpReply.nextCheck}</b></article> : null}
           </section>
-          <div className="psResultActions">
-            <button type="button" onClick={lockDecision}>SAVE FOR LATER REVIEW</button>
-            <button type="button" onClick={() => setChartFocus(true)}>OPEN CHART FULL SCREEN</button>
-            <button type="button" onClick={shareDecision}>SHARE DECISION SUMMARY</button>
-          </div>
-          <p className="psSaveExplainer">Saved privately on this device. Later, upload an after-chart and Bullseye will review the quality of the original decision—not merely whether it won or lost.</p>
+
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
+          <details className="psUtilityTray">
+            <summary><span>RESULT OPTIONS</span><small>SAVE · CHART · SHARE</small><b>＋</b></summary>
+            <div>
+              <button type="button" onClick={lockDecision}><i>▣</i><span><strong>SAVE</strong><small>Review this decision later</small></span></button>
+              <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>CHART</strong><small>Open full screen</small></span></button>
+              <button type="button" onClick={shareDecision}><i>↗</i><span><strong>SHARE</strong><small>Decision summary only</small></span></button>
+            </div>
+            <p>Saved decisions stay privately on this device. Shared summaries never include the uploaded screenshot.</p>
+          </details>
         </section>
         {chartFocus && (
           <section className="psChartFocus" aria-modal="true" role="dialog" aria-label="Full-screen annotated chart">
@@ -469,7 +473,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "CHALLENGE MY SETUP")}<b>🎯</b></button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "CHALLENGE MY SETUP")}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget && vault.length ? <section className="psFingerprint">
           <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
           <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>
