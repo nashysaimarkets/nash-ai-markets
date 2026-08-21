@@ -61,6 +61,7 @@ type Analysis = {
 };
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
 type LockedDecision = { id: string; createdAt: string; intention: Intention; image: string; analysis: Analysis };
+type FollowUpReply = { answer: string; evidence: string[]; caution: string; nextCheck: string };
 type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; lessons: string[]; behaviourTags: string[] };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -131,6 +132,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [reviewTarget, setReviewTarget] = useState<LockedDecision | null>(null);
   const [review, setReview] = useState<ProcessReview | null>(null);
   const [vaultMessage, setVaultMessage] = useState("");
+  const [followUpQuestion, setFollowUpQuestion] = useState("");
+  const [followUpReply, setFollowUpReply] = useState<FollowUpReply | null>(null);
+  const [followUpBusy, setFollowUpBusy] = useState(false);
+  const [followUpError, setFollowUpError] = useState("");
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
@@ -233,6 +238,38 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
+  async function askBullseye(question = followUpQuestion) {
+    if (!analysis || !question.trim() || followUpBusy) return;
+    setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
+    try {
+      const response = await fetch("/api/pocket/follow-up", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ analysis, question: question.trim() }),
+      });
+      const payload = await response.json() as { reply?: FollowUpReply; error?: string };
+      if (!response.ok || !payload.reply) throw new Error(payload.error || "Ask Bullseye is temporarily unavailable.");
+      setFollowUpReply(payload.reply); setFollowUpQuestion(question.trim());
+    } catch (caught) {
+      setFollowUpError(caught instanceof Error ? caught.message : "Ask Bullseye is temporarily unavailable.");
+    } finally { setFollowUpBusy(false); }
+  }
+
+  async function shareDecision() {
+    if (!analysis) return;
+    const summary = [
+      `Pocket Bullseye · ${analysis.instrument} · ${analysis.timeframe}`,
+      `Grade ${analysis.setupScore.grade} (${analysis.setupScore.overall}/100) · ${analysis.verdict.replaceAll("_", " ")}`,
+      analysis.verdictHeadline,
+      `Confirmation: ${analysis.nextSequence.confirmation}`,
+      `Failure: ${analysis.nextSequence.failure}`,
+      "Conditional decision support—not a trade instruction.",
+    ].join("\n");
+    try {
+      if (navigator.share) await navigator.share({ title: "Pocket Bullseye decision audit", text: summary });
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(summary); setVaultMessage("Decision summary copied."); }
+    } catch { setVaultMessage("Sharing was cancelled."); }
+  }
+
   async function lockDecision() {
     if (!analysis || !image) return;
     const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis };
@@ -243,6 +280,21 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   function startReview(decision: LockedDecision) {
     setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(false); setError("");
   }
+
+  const vaultStats = (() => {
+    const total = vault.length;
+    if (!total) return { total: 0, average: 0, patience: 0, commonRisk: "NOT ENOUGH HISTORY", dominant: "NO PATTERN YET" };
+    const average = Math.round(vault.reduce((sum, item) => sum + item.analysis.setupScore.overall, 0) / total);
+    const patience = Math.round(vault.filter((item) => item.analysis.verdict !== "WATCH").length / total * 100);
+    const risks = new Map<string, number>();
+    const instruments = new Map<string, number>();
+    vault.forEach((item) => {
+      item.analysis.riskFlags.forEach((risk) => risks.set(risk, (risks.get(risk) ?? 0) + 1));
+      instruments.set(item.analysis.instrument, (instruments.get(item.analysis.instrument) ?? 0) + 1);
+    });
+    const top = (map: Map<string, number>, fallback: string) => [...map.entries()].sort((a,b) => b[1] - a[1])[0]?.[0] ?? fallback;
+    return { total, average, patience, commonRisk: top(risks, "NO REPEATED RISK"), dominant: top(instruments, "NO PATTERN YET") };
+  })();
 
   const annotatedChart = (focus = false) => image ? (
     <div
@@ -364,9 +416,18 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             {analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <div className="psStockEvents"><strong>{analysis.ticker} · VERIFIED COMPANY LOOKUP</strong>{stockEventStatus === "loading" ? <p>Checking the connected company calendar…</p> : stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><b>{event.type}</b><span>{event.detail} · {event.source}</span></li>)}</ol> : <p>No verified upcoming corporate event was returned by the connected feed.</p>}<a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">OPEN OFFICIAL SEC FILINGS ↗</a></div> : <div className="psTickerHold"><strong>COMPANY LOOKUP PAUSED</strong><p>Bullseye will not query company data until the ticker is clearly visible and identified with high confidence.</p></div>}
             <footer>Official macro rows are scheduled facts, not live prices. Company events use the connected provider; SEC filings open from the official EDGAR service. No quote is labelled LIVE unless a licensed feed supplies a timestamp.</footer>
           </section>
+          <section className="psAskBullseye">
+            <header><span>💬 ASK BULLSEYE</span><b>USES THIS AUDIT ONLY</b></header>
+            <p>Challenge one part of the result without uploading the chart again.</p>
+            <div className="psQuickQuestions">{["What am I missing?","Why should I wait?","What would improve this?","Where is the trap?"].map((question) => <button key={question} type="button" disabled={followUpBusy} onClick={() => askBullseye(question)}>{question}</button>)}</div>
+            <form onSubmit={(event) => { event.preventDefault(); askBullseye(); }}><input value={followUpQuestion} maxLength={180} onChange={(event) => setFollowUpQuestion(event.target.value)} placeholder="Ask one short question…" aria-label="Ask Bullseye a follow-up question" /><button type="submit" disabled={!followUpQuestion.trim() || followUpBusy}>{followUpBusy ? "THINKING…" : "ASK"}</button></form>
+            {followUpError ? <p className="psAskError" role="alert">{followUpError}</p> : null}
+            {followUpReply ? <article className="psAskReply"><strong>BULLSEYE ANSWER</strong><p>{followUpReply.answer}</p><ul>{followUpReply.evidence.map((item) => <li key={item}>{item}</li>)}</ul><small>CAUTION · {followUpReply.caution}</small><b>NEXT CHECK · {followUpReply.nextCheck}</b></article> : null}
+          </section>
           <div className="psResultActions">
             <button type="button" onClick={lockDecision}>SAVE FOR LATER REVIEW</button>
             <button type="button" onClick={() => setChartFocus(true)}>OPEN CHART FULL SCREEN</button>
+            <button type="button" onClick={shareDecision}>SHARE DECISION SUMMARY</button>
           </div>
           <p className="psSaveExplainer">Saved privately on this device. Later, upload an after-chart and Bullseye will review the quality of the original decision—not merely whether it won or lost.</p>
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
@@ -409,6 +470,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "CHALLENGE MY SETUP")}<b>🎯</b></button>
+        {!reviewTarget && vault.length ? <section className="psFingerprint">
+          <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
+          <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>
+          <p><strong>REPEATED RISK WATCH:</strong> {vaultStats.commonRisk}</p>
+          <footer>{vaultStats.total < 10 ? `${10 - vaultStats.total} more saved audits will make this fingerprint substantially more useful.` : "Your fingerprint is now using enough decisions to expose repeated tendencies."}</footer>
+        </section> : null}
         {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
         <div className="psEvents"><header><span>VERIFIED EVENT LAYER</span><b>{macroContext.status.toUpperCase()}</b></header><div><strong>OFFICIAL MACRO CALENDAR</strong><p>{macroContext.releases.length ? `${macroContext.releases.length} verified upcoming release${macroContext.releases.length === 1 ? "" : "s"} available for the decision audit.` : "No official release rows are available in the current window. Event safety will be marked unknown."}</p></div></div>
       </section>
