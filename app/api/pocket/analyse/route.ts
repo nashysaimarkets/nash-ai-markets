@@ -69,7 +69,7 @@ const schema = {
       type: "array", maxItems: 5, items: {
         type: "object", additionalProperties: false,
         properties: {
-          kind: { type: "string", enum: ["support", "resistance", "trend"] },
+          kind: { type: "string", enum: ["support", "resistance", "trend", "pivot", "zone", "gap"] },
           label: { type: "string", maxLength: 50 },
           price: { type: "string", maxLength: 30 },
           y: { type: "number", minimum: 0, maximum: 100 },
@@ -129,7 +129,8 @@ export async function POST(request: Request) {
         "If text is unreadable, return UNKNOWN. Direction must be conditional and based on visible structure, never certainty.",
         "Return ticker only when a standard listed-company symbol is clearly visible; otherwise return UNKNOWN. Do not convert spread-bet labels or index names into a guessed company ticker.",
         "Give both bullish and bearish cases. Call out cropped scales, hidden axes, insufficient candles and ambiguous patterns.",
-        "For each reliable support/resistance/trend level, return its vertical position y as a percentage from the top of the full image. Keep levels sparse and only include price text that is clearly legible.",
+        "For each reliable support, resistance, trend reference, pivot, reaction zone or visible gap, return its vertical position y as a percentage from the top of the full image. Keep levels sparse and only include price text that is clearly legible.",
+        "Use pivot only for a conspicuous swing high or low, zone only for a visibly repeated reaction area, and gap only for a clearly visible unfilled price gap or imbalance. Never add an overlay merely to fill the chart.",
         "Indicators must describe only indicators visibly present, such as RSI or moving averages. Keep every field concise for a mobile display.",
         "Explain the level-to-level story: what price is testing, what acceptance or rejection would imply, and the next visible area in either direction.",
         "Return Fibonacci levels only when two reliable visible swing anchors and readable prices allow calculation; otherwise return an empty fibLevels array. Never claim RSI is visible when it is not.",
