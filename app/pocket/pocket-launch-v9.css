@@ -1,0 +1,106 @@
+/* Pocket Bullseye v9 — remove the full-chart tint and energise the challenge action. */
+
+/* Earlier decorative pseudo-elements inherited inset:0 and tinted the whole chart.
+   Remove them entirely so dark-mode charts retain their original brightness. */
+.psApp .psAnnotatedChart::before,
+.psApp .psAnnotatedChart::after,
+.psApp .psResultChart>div::before,
+.psApp .psResultChart>div::after,
+.psApp .psChartFocusCanvas::before,
+.psApp .psChartFocusCanvas::after{
+  content:none!important;
+  display:none!important;
+  position:static!important;
+  inset:auto!important;
+  background:none!important;
+  opacity:0!important;
+  filter:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  mix-blend-mode:normal!important;
+}
+.psApp .psAnnotatedChart img,
+.psApp .psResultChart>div>img,
+.psApp .psChartFocusCanvas>img{
+  opacity:1!important;
+  visibility:visible!important;
+  filter:none!important;
+}
+
+/* Clearer, more purposeful primary action. */
+.psApp .psAnalyse{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  min-height:62px!important;
+  padding:18px 20px!important;
+  border:1px solid #aaff62!important;
+  border-radius:15px!important;
+  background:
+    radial-gradient(circle at 85% 50%,#d8ff782e,transparent 28%),
+    linear-gradient(105deg,#6fb818,#b7ff2a 52%,#e2ff91)!important;
+  color:#071006!important;
+  font-size:17px!important;
+  font-weight:950!important;
+  letter-spacing:.1em!important;
+  text-shadow:0 1px 0 #ffffff55;
+  box-shadow:0 15px 40px #8fe61f2c,inset 0 1px 0 #ffffffa8!important;
+}
+.psApp .psAnalyse::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:-50%;
+  bottom:-50%;
+  left:-45%;
+  width:24%;
+  transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,#ffffff90,transparent);
+  pointer-events:none;
+}
+.psApp .psAnalyse b{
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  border:1px solid #07100638;
+  border-radius:50%;
+  background:#07100612;
+  font-size:20px!important;
+  text-shadow:none;
+}
+.psApp .psAnalyse:disabled{
+  border-color:#39433d!important;
+  background:#172019!important;
+  color:#738078!important;
+  text-shadow:none;
+  box-shadow:none!important;
+}
+.psApp .psAnalyse:disabled::before{display:none}
+
+@media(prefers-reduced-motion:no-preference){
+  .psApp .psAnalyse:not(:disabled)::before{
+    animation:pb-challenge-sweep 4.4s ease-in-out infinite;
+  }
+  .psApp .psAnalyse:not(:disabled) b{
+    animation:pb-challenge-target 2.8s ease-in-out infinite;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .psApp .psAnalyse::before,
+  .psApp .psAnalyse b{animation:none!important}
+}
+
+@keyframes pb-challenge-sweep{
+  0%,58%{left:-45%;opacity:0}
+  64%{opacity:.65}
+  82%{left:125%;opacity:.18}
+  100%{left:125%;opacity:0}
+}
+@keyframes pb-challenge-target{
+  0%,100%{transform:scale(1) rotate(0)}
+  48%{transform:scale(1)}
+  58%{transform:scale(1.12) rotate(-8deg)}
+  68%{transform:scale(1) rotate(0)}
+}
