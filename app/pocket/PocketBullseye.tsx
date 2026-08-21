@@ -81,13 +81,14 @@ async function vaultSave(decision: LockedDecision) {
 }
 
 async function prepareImage(file: File): Promise<string> {
-  const source = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); });
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 1800 / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas"); canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height); bitmap.close();
-  if (scale === 1 && source.length < 3_800_000) return source;
-  return canvas.toDataURL("image/jpeg", .88);
+  // Preserve every accepted chart byte-for-byte. Dark-mode labels, candles and
+  // fine grid detail must never be softened by a browser-side JPEG conversion.
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
