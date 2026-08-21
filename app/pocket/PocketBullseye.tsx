@@ -146,7 +146,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const levels = analysis?.levels ?? [];
   const displayedLevels = levels.filter((level) => visibleOverlays.has(level.kind));
 
-  function toggleOverlay(name: string) {
+  function toggleOverlay(name: ToolKind) {
     setVisibleOverlays((current) => {
       const next = new Set(current);
       if (next.has(name)) next.delete(name); else next.add(name);
