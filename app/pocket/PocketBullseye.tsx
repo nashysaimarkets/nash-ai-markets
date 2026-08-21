@@ -4,7 +4,8 @@ import { ChangeEvent, useEffect, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
-type Level = { kind: "support" | "resistance" | "trend"; label: string; price: string; y: number };
+type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
+type Level = { kind: ToolKind; label: string; price: string; y: number };
 type FibLevel = { ratio: string; price: string; y: number };
 type Intention = "LONG" | "SHORT" | "UNSURE";
 type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
@@ -112,7 +113,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [chartFocus, setChartFocus] = useState(false);
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
-  const [visibleOverlays, setVisibleOverlays] = useState(() => new Set(["support", "resistance", "trend"]));
+  const [visibleOverlays, setVisibleOverlays] = useState(() => new Set<ToolKind>(["support", "resistance"]));
   const [intention, setIntention] = useState<Intention>("UNSURE");
   const [vault, setVault] = useState<LockedDecision[]>([]);
   const [reviewTarget, setReviewTarget] = useState<LockedDecision | null>(null);
@@ -122,7 +123,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
   useEffect(() => {
-    if (!analysis || analysis.ticker === "UNKNOWN") return;
+    if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") return;
     const controller = new AbortController();
     fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
       .then(async (response) => {
@@ -282,9 +283,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
-          <nav className="psOverlayBar" aria-label="Chart overlays">
-            {(["support", "resistance", "trend"] as const).map((overlay) => <button key={overlay} type="button" data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{overlay.toUpperCase()}</button>)}
-          </nav>
+          <section className="psToolDock">
+            <header><span>CHART TOOLBOX</span><b>TAP TO SHOW / HIDE</b></header>
+            <nav className="psOverlayBar" aria-label="Optional chart overlays">
+              {([
+                ["support","🟢 SUPPORT"],["resistance","🔴 RESISTANCE"],["trend","📐 TREND"],
+                ["pivot","📍 SWING POINTS"],["zone","▰ REACTION ZONES"],["gap","⚡ GAPS"]
+              ] as const).map(([overlay,label]) => <button key={overlay} type="button" data-active={visibleOverlays.has(overlay)} disabled={!levels.some((level) => level.kind === overlay)} onClick={() => toggleOverlay(overlay)}>{label}</button>)}
+            </nav>
+            <p>Support and resistance start on. Optional tools activate only when Bullseye can justify them from visible chart evidence.</p>
+          </section>
           <section className="psResultChart">
             <header><span>ANNOTATED CHART</span><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
             <div>{annotatedChart()}</div>
@@ -307,8 +315,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <header><span>VERIFIED EVENT RADAR</span><b>{macroContext.status.toUpperCase()}</b></header>
             <p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>
             {macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 6).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · {event.risk} IMPACT</span></li>)}</ol> : <div className="psEventEmpty">No verified official release rows are available in the current window.</div>}
-            {analysis.ticker !== "UNKNOWN" ? <div className="psStockEvents"><strong>{analysis.ticker} CORPORATE EVENTS</strong>{stockEventStatus === "loading" ? <p>Checking verified company calendar…</p> : stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><b>{event.type}</b><span>{event.detail}</span></li>)}</ol> : <p>No verified upcoming corporate event was returned for this symbol.</p>}</div> : null}
-            <footer>Corporate rows appear only when the chart contains a reliable listed-company ticker and the provider responds. Dates must be confirmed with the issuer or exchange.</footer>
+            {analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <div className="psStockEvents"><strong>{analysis.ticker} · VERIFIED COMPANY LOOKUP</strong>{stockEventStatus === "loading" ? <p>Checking the connected company calendar…</p> : stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><b>{event.type}</b><span>{event.detail} · {event.source}</span></li>)}</ol> : <p>No verified upcoming corporate event was returned by the connected feed.</p>}<a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">OPEN OFFICIAL SEC FILINGS ↗</a></div> : <div className="psTickerHold"><strong>COMPANY LOOKUP PAUSED</strong><p>Bullseye will not query company data until the ticker is clearly visible and identified with high confidence.</p></div>}
+            <footer>Official macro rows are scheduled facts, not live prices. Company events use the connected provider; SEC filings open from the official EDGAR service. No quote is labelled LIVE unless a licensed feed supplies a timestamp.</footer>
           </section>
           <div className="psResultActions">
             <button type="button" onClick={lockDecision}>SAVE FOR LATER REVIEW</button>
