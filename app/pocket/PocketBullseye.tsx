@@ -195,8 +195,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   async function lockDecision() {
     if (!analysis || !image) return;
     const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis };
-    try { await vaultSave(decision); setVault((current) => [decision, ...current]); setVaultMessage("Decision locked on this device. It cannot be edited."); }
-    catch { setVaultMessage("Decision could not be stored on this device."); }
+    try { await vaultSave(decision); setVault((current) => [decision, ...current]); setVaultMessage("Saved privately on this device. Upload a later chart whenever you want Bullseye to review the decision process."); }
+    catch { setVaultMessage("This decision could not be saved on this device."); }
   }
 
   function startReview(decision: LockedDecision) {
@@ -252,12 +252,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <header><span>ANNOTATED CHART</span><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
             <div>{annotatedChart()}</div>
           </section>
-          <section className="psLevelDeck">
-            <header><span>VISIBLE LEVEL MAP</span><b>VERIFY ON YOUR PLATFORM</b></header>
-            {levels.length ? levels.map((level, index) => (
-              <div key={`${level.label}-${index}`}><span>{level.label}</span><i /><strong>{level.price || `${Math.round(level.y)}%`}</strong></div>
-            )) : <div><span>NO RELIABLE LEVEL</span><i /><strong>UNREADABLE</strong></div>}
-          </section>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
             <p>{analysis.levelStory}</p>
@@ -280,9 +274,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <footer>Corporate rows appear only when the chart contains a reliable listed-company ticker and the provider responds. Dates must be confirmed with the issuer or exchange.</footer>
           </section>
           <div className="psResultActions">
-            <button type="button" onClick={lockDecision}>LOCK THIS DECISION</button>
+            <button type="button" onClick={lockDecision}>SAVE FOR LATER REVIEW</button>
             <button type="button" onClick={() => setChartFocus(true)}>OPEN CHART FULL SCREEN</button>
           </div>
+          <p className="psSaveExplainer">Saved privately on this device. Later, upload an after-chart and Bullseye will review the quality of the original decision—not merely whether it won or lost.</p>
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
         </section>
@@ -319,7 +314,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "CHALLENGE MY SETUP")}<b>🎯</b></button>
-        {!reviewTarget && vault.length ? <section className="psVault"><header><span>DECISION VAULT</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>ADD OUTCOME</button></article>)}</section> : null}
+        {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
         <div className="psEvents"><header><span>VERIFIED EVENT LAYER</span><b>{macroContext.status.toUpperCase()}</b></header><div><strong>OFFICIAL MACRO CALENDAR</strong><p>{macroContext.releases.length ? `${macroContext.releases.length} verified upcoming release${macroContext.releases.length === 1 ? "" : "s"} available for the decision audit.` : "No official release rows are available in the current window. Event safety will be marked unknown."}</p></div></div>
       </section>
     </main>
