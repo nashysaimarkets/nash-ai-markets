@@ -1,0 +1,38 @@
+/* Pocket Bullseye v13 — context stack, pattern proof and next-event timeline. */
+.psContextUpload{margin-top:12px;padding:15px;border:1px solid #355040;border-radius:14px;background:linear-gradient(135deg,#101920,#0b1711);display:flex;align-items:center;justify-content:space-between;gap:14px}
+.psContextUpload span{display:block;color:#61eca2;font-size:11px;font-weight:900;letter-spacing:.12em}
+.psContextUpload strong{display:block;margin-top:6px;color:#e5eee9;font-size:clamp(15px,3.8vw,18px)}
+.psContextUpload p{margin:5px 0 0;color:#9eaaa4;font-size:clamp(13px,3.3vw,15px);line-height:1.45}
+.psContextUpload label,.psContextUpload button{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid #55e99b70;border-radius:9px;background:#163025;color:#baf8d6;font-size:11px;font-weight:900;letter-spacing:.08em;display:grid;place-items:center}
+.psContextUpload input{display:none}
+.psTimeframeStack,.psPatternDeck,.psNextSequence,.psMissingInputs{margin-top:14px;border:1px solid #29343e;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,#111820,#0a1016);box-shadow:0 16px 40px #0006}
+.psTimeframeStack>header,.psPatternDeck>header,.psNextSequence>header,.psMissingInputs>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;border-bottom:1px solid #29343e;background:linear-gradient(90deg,#111a22,#0c1512)}
+.psTimeframeStack>header span,.psPatternDeck>header span,.psNextSequence>header span,.psMissingInputs>header span{color:#65efa5;font-size:clamp(12px,3.2vw,15px);font-weight:900;letter-spacing:.1em}
+.psTimeframeStack>header b,.psPatternDeck>header b,.psNextSequence>header b,.psMissingInputs>header b{color:#d9b45b;font-size:clamp(10px,2.7vw,12px);letter-spacing:.08em}
+.psTimeframeStack[data-alignment="CONFLICTING"]>header b{color:#ef6873}.psTimeframeStack[data-alignment="ALIGNED"]>header b{color:#55e99b}
+.psTimeframeStack>div{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:16px}
+.psTimeframeStack article{padding:14px;border:1px solid #2a3540;border-radius:12px;background:#0b1218}
+.psTimeframeStack small{display:block;color:#7f8d96;font-size:10px;font-weight:900;letter-spacing:.11em}
+.psTimeframeStack strong{display:block;margin-top:6px;color:#e7efeb;font-size:clamp(15px,4vw,19px)}
+.psTimeframeStack em{display:inline-block;margin-top:8px;color:#d9b45b;font-size:12px;font-style:normal;font-weight:900;letter-spacing:.08em}
+.psTimeframeStack em[data-direction="BULLISH"]{color:#55e99b}.psTimeframeStack em[data-direction="BEARISH"]{color:#ef6873}
+.psTimeframeStack>div>i{color:#d9b45b;font-size:24px;font-style:normal;animation:psContextPulse 2.4s ease-in-out infinite}
+.psTimeframeStack>p{margin:0;padding:0 16px 16px;color:#aeb9b4;font-size:clamp(14px,3.6vw,16px);line-height:1.55}
+.psPatternDeck>div{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.psPatternDeck article{position:relative;padding:14px;border:1px solid #2a3540;border-radius:12px;background:#0b1218;overflow:hidden}
+.psPatternDeck article:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:#7b8790}
+.psPatternDeck article[data-status="CONFIRMED"]:before{background:#55e99b}.psPatternDeck article[data-status="FAILED"]:before{background:#ef6873}.psPatternDeck article[data-status="FORMING"]:before{background:#d9b45b}
+.psPatternDeck span{color:#d9b45b;font-size:10px;font-weight:900;letter-spacing:.12em}
+.psPatternDeck strong{display:block;margin-top:6px;color:#e5ede9;font-size:clamp(16px,4vw,20px)}
+.psPatternDeck p{margin:8px 0;color:#aeb9b4;font-size:clamp(14px,3.5vw,16px);line-height:1.5}
+.psPatternDeck small{display:block;padding-top:8px;border-top:1px solid #26313a;color:#8f9b96;font-size:12px;line-height:1.45}
+.psNextSequence ol{list-style:none;margin:0;padding:14px}
+.psNextSequence li{position:relative;display:grid;grid-template-columns:38px 1fr;gap:12px;padding:0 0 15px}
+.psNextSequence li:not(:last-child):after{content:"";position:absolute;left:18px;top:36px;bottom:1px;width:1px;background:linear-gradient(#55e99b,#d9b45b)}
+.psNextSequence li>i{width:36px;height:36px;border:1px solid #55e99b70;border-radius:50%;display:grid;place-items:center;background:#10231a;color:#8cf1bb;font-style:normal;font-weight:900;box-shadow:0 0 18px #55e99b12}
+.psNextSequence strong{color:#d9b45b;font-size:11px;letter-spacing:.11em}
+.psNextSequence p{margin:5px 0 0;color:#b2bcb7;font-size:clamp(14px,3.6vw,16px);line-height:1.5}
+.psMissingInputs ul{margin:0;padding:14px 18px 16px 36px}.psMissingInputs li{margin:7px 0;color:#b2bcb7;font-size:clamp(14px,3.6vw,16px);line-height:1.5}.psMissingInputs li::marker{color:#d9b45b}
+@keyframes psContextPulse{50%{transform:scale(1.22);filter:drop-shadow(0 0 8px #d9b45b)}}
+@media(max-width:620px){.psPatternDeck>div{grid-template-columns:1fr}.psContextUpload{align-items:flex-start}.psTimeframeStack>div{gap:7px}.psTimeframeStack article{padding:11px}.psTimeframeStack>div>i{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.psTimeframeStack>div>i{animation:none}}
