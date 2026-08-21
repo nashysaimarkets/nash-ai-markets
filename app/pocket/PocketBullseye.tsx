@@ -14,6 +14,16 @@ type Analysis = {
   instrument: string;
   ticker: string;
   timeframe: string;
+  evidenceQuality: {
+    chartReadability: "CLEAR" | "PARTIAL" | "POOR";
+    instrumentConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+    timeframeConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+    scaleReadable: boolean;
+    candlesReadable: boolean;
+    limitations: string[];
+  };
+  observableFacts: string[];
+  contradictions: string[];
   summary: string;
   verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
   verdictHeadline: string;
@@ -236,6 +246,33 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <section className="psDecisionCompass">
+            <header><span>DECISION COMPASS</span><b>EVIDENCE · NOT ODDS</b></header>
+            <div className="psCompassBody">
+              <div className="psCompassDial" data-direction={analysis.direction}>
+                <i /><strong>{analysis.direction}</strong><small>{analysis.verdict.replaceAll("_", " ")}</small>
+              </div>
+              <div className="psCompassSignals">
+                <article data-signal="bull" data-active={analysis.direction === "BULLISH"}><span>🐂 BULL PRESSURE</span><p>{analysis.bullConfirmation}</p></article>
+                <article data-signal="wait" data-active={analysis.direction === "NEUTRAL"}><span>🛡️ PATIENCE ZONE</span><p>{analysis.noTradeCondition}</p></article>
+                <article data-signal="bear" data-active={analysis.direction === "BEARISH"}><span>🐻 BEAR PRESSURE</span><p>{analysis.bearConfirmation}</p></article>
+              </div>
+            </div>
+          </section>
+          <section className="psEvidenceConsole">
+            <header><span>EVIDENCE CONSOLE</span><b data-quality={analysis.evidenceQuality.chartReadability}>{analysis.evidenceQuality.chartReadability} IMAGE</b></header>
+            <div className="psEvidenceMeters">
+              <article><span>CHART</span><strong>{analysis.evidenceQuality.chartReadability}</strong></article>
+              <article><span>INSTRUMENT ID</span><strong>{analysis.evidenceQuality.instrumentConfidence}</strong></article>
+              <article><span>TIMEFRAME ID</span><strong>{analysis.evidenceQuality.timeframeConfidence}</strong></article>
+              <article><span>PRICE SCALE</span><strong>{analysis.evidenceQuality.scaleReadable ? "READABLE" : "UNVERIFIED"}</strong></article>
+            </div>
+            <div className="psEvidenceSplit">
+              <article data-evidence="seen"><span>👁️ WHAT THE IMAGE ACTUALLY SHOWS</span><ul>{analysis.observableFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul></article>
+              <article data-evidence="conflict"><span>⚡ CONFLICTING EVIDENCE</span>{analysis.contradictions.length ? <ul>{analysis.contradictions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No clear contradiction is visible in this screenshot.</p>}</article>
+            </div>
+            {analysis.evidenceQuality.limitations.length ? <p className="psEvidenceLimits"><strong>LIMITS:</strong> {analysis.evidenceQuality.limitations.join(" · ")}</p> : null}
+          </section>
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
