@@ -25,6 +25,16 @@ type Analysis = {
   };
   observableFacts: string[];
   contradictions: string[];
+  higherTimeframe: {
+    provided: boolean;
+    timeframe: string;
+    direction: Direction | "UNKNOWN";
+    alignment: "ALIGNED" | "CONFLICTING" | "MIXED" | "NOT_PROVIDED";
+    summary: string;
+  };
+  patterns: { name: string; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; evidence: string; invalidation: string }[];
+  nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
+  missingInputs: string[];
   summary: string;
   verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
   verdictHeadline: string;
@@ -105,6 +115,8 @@ async function prepareImage(file: File): Promise<string> {
 export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
+  const [contextImage, setContextImage] = useState<string | null>(null);
+  const [contextFileName, setContextFileName] = useState("");
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -174,6 +186,24 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } catch { setError("That image could not be prepared safely."); }
   }
 
+  async function loadContextFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose a JPEG, PNG or WebP higher-timeframe chart.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError("That higher-timeframe image is too large. Please use a screenshot under 8 MB.");
+      return;
+    }
+    try {
+      setContextImage(await prepareImage(file));
+      setContextFileName(file.name);
+    } catch { setError("That higher-timeframe image could not be prepared safely."); }
+  }
+
   async function analyse() {
     if (!image || !privacyChecked || busy) return;
     setBusy(true);
@@ -182,7 +212,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const response = await fetch(reviewTarget ? "/api/pocket/review" : "/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(reviewTarget ? { beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis } : { image, intention }),
+        body: JSON.stringify(reviewTarget ? { beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis } : { image, contextImage, intention }),
       });
       if (reviewTarget) {
         const payload = await response.json() as { review?: ProcessReview; error?: string };
@@ -211,7 +241,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   function startReview(decision: LockedDecision) {
-    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setImmersive(false); setError("");
+    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(false); setError("");
   }
 
   const annotatedChart = (focus = false) => image ? (
@@ -239,7 +269,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
-            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); }}>NEW CHART</button>
+            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); }}>NEW CHART</button>
           </div>
           <header className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
@@ -274,6 +304,22 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             </div>
             {analysis.evidenceQuality.limitations.length ? <p className="psEvidenceLimits"><strong>LIMITS:</strong> {analysis.evidenceQuality.limitations.join(" · ")}</p> : null}
           </section>
+          <section className="psTimeframeStack" data-alignment={analysis.higherTimeframe.alignment}>
+            <header><span>🔭 MULTI-TIMEFRAME AGREEMENT</span><b>{analysis.higherTimeframe.alignment.replaceAll("_", " ")}</b></header>
+            <div><article><small>TRADING CHART</small><strong>{analysis.timeframe}</strong><em data-direction={analysis.direction}>{analysis.direction}</em></article><i>↔</i><article><small>HIGHER CONTEXT</small><strong>{analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : "NOT ADDED"}</strong><em data-direction={analysis.higherTimeframe.direction}>{analysis.higherTimeframe.direction}</em></article></div>
+            <p>{analysis.higherTimeframe.summary}</p>
+          </section>
+          {analysis.patterns.length ? <section className="psPatternDeck">
+            <header><span>🧩 PATTERN STATUS</span><b>EVIDENCE REQUIRED</b></header>
+            <div>{analysis.patterns.map((pattern) => <article key={pattern.name + pattern.status} data-status={pattern.status}><span>{pattern.status}</span><strong>{pattern.name}</strong><p>{pattern.evidence}</p><small>INVALIDATED WHEN · {pattern.invalidation}</small></article>)}</div>
+          </section> : null}
+          <section className="psNextSequence">
+            <header><span>⏱️ WHAT MUST HAPPEN NEXT?</span><b>CONDITIONAL SEQUENCE</b></header>
+            <ol>{([
+              ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure],["PATIENCE",analysis.nextSequence.patience],["REASSESS",analysis.nextSequence.reassess]
+            ] as const).map(([label,copy],index) => <li key={label}><i>{index + 1}</i><div><strong>{label}</strong><p>{copy}</p></div></li>)}</ol>
+          </section>
+          {analysis.missingInputs.length ? <section className="psMissingInputs"><header><span>📷 ONE MORE VIEW COULD HELP</span><b>ONLY IF AVAILABLE</b></header><ul>{analysis.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
@@ -354,6 +400,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <input aria-label="Load chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
+        {image && !reviewTarget ? <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
+          <div><span>② OPTIONAL CONTEXT CHART</span><strong>{contextImage ? "HIGHER TIMEFRAME LOADED" : "ADD HIGHER TIMEFRAME"}</strong><p>{contextImage ? contextFileName : "Add a 1-hour, 4-hour or daily view for alignment. Skip to keep analysis fast and data-light."}</p></div>
+          {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
+        </section> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
