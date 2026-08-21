@@ -1,0 +1,45 @@
+/* Pocket Bullseye v5.1 — premium readability + restrained motion. Staging/preview only. */
+
+/* Readability pass: make the mobile experience easier to scan without turning it into a dashboard. */
+.psCopy span { font-size: 1.12rem; line-height: 1.58; }
+.psCopy p { font-size: .78rem; letter-spacing: .12em; }
+.psCopy h1 { font-size: clamp(2.75rem, 12vw, 4.2rem); }
+.psUpload > strong { font-size: clamp(1.45rem, 6vw, 2rem); }
+.psUpload > small { font-size: .68rem; letter-spacing: .13em; }
+.psCaptureRow { font-size: .78rem; }
+.psPrivacy { font-size: .78rem; line-height: 1.45; }
+.psPrivacy strong { font-size: .72rem; letter-spacing: .1em; }
+.psEvents { font-size: .82rem; }
+.psEvents header { font-size: .68rem; letter-spacing: .11em; }
+.psEvents p { font-size: .82rem; line-height: 1.4; }
+.psAnalyse { min-height: 62px; font-size: 1.02rem; }
+
+/* Give the Bullseye mark a living identity: subtle, premium, never distracting. */
+.psLogoMark { animation: pocketBullseyeBreath 4.8s ease-in-out infinite; }
+.psTargetLarge { animation: pocketTargetBreath 4.8s ease-in-out infinite; }
+.psScanLine { animation: pocketScan 3.2s ease-in-out infinite; }
+.psAnalyse:not(:disabled) { animation: pocketActionGlow 3.4s ease-in-out infinite; }
+
+@keyframes pocketBullseyeBreath {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(183,255,42,0)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 12px rgba(183,255,42,.28)); transform: scale(1.035); }
+}
+
+@keyframes pocketTargetBreath {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(183,255,42,0)); }
+  50% { filter: drop-shadow(0 0 24px rgba(183,255,42,.16)); }
+}
+
+@keyframes pocketScan {
+  0%, 100% { opacity: .28; transform: translateY(-16px); }
+  50% { opacity: .92; transform: translateY(16px); }
+}
+
+@keyframes pocketActionGlow {
+  0%, 100% { box-shadow: 0 12px 30px rgba(0,0,0,.28); }
+  50% { box-shadow: 0 14px 34px rgba(183,255,42,.14); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psLogoMark, .psTargetLarge, .psScanLine, .psAnalyse:not(:disabled) { animation: none; }
+}
