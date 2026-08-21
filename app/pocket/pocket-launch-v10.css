@@ -1,0 +1,21 @@
+/* Pocket Bullseye v10 — concise save-for-review explanation. */
+
+.psApp .psSaveExplainer{
+  margin:8px 0 0;
+  padding:13px 15px;
+  border:1px solid #38f28e24;
+  border-radius:10px;
+  background:#38f28e09;
+  color:#aebbb4;
+  font-size:clamp(14px,3.6vw,16px);
+  line-height:1.55;
+}
+.psApp .psResultActions button:first-child{
+  border-color:#38f28e70;
+  background:linear-gradient(135deg,#10231a,#0b1712);
+  color:#a8f5cb;
+}
+.psApp .psVault button{
+  min-height:40px;
+  font-size:10px;
+}
