@@ -1,24 +1,18 @@
-/* Pocket Bullseye v6 — Bullseye Verdict + challenge-first hierarchy. Staging only. */
+/* Pocket Bullseye v6 — verdict-first hierarchy, visual category language and purposeful motion. Staging only. */
 .psResults { max-width: 760px; margin-inline: auto; }
 .psVerdict { position: relative; overflow: hidden; }
 .psVerdict::after { content: ""; position: absolute; inset: auto -15% -45% 35%; height: 180px; background: radial-gradient(circle, rgba(183,255,42,.12), transparent 65%); pointer-events: none; }
 .psVerdictTop h1 em { font-size: clamp(4rem, 20vw, 7rem); line-height: .8; }
 .psVerdictTop > div strong { display: block; font-size: clamp(1.05rem, 4.5vw, 1.45rem); letter-spacing: .08em; }
 .psScorecard { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.psScorecard article { padding: 14px; border-radius: 16px; }
+.psScorecard article { padding: 14px; border-radius: 16px; position:relative; overflow:hidden; }
 .psScorecard article strong { font-size: 1.35rem; }
 .psScorecard article i { display: block; height: 4px; margin-top: 8px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.09); }
-.psScorecard article i b { display: block; height: 100%; border-radius: inherit; background: currentColor; }
+.psScorecard article i b { display: block; height: 100%; border-radius: inherit; background: currentColor; animation: pocketBarIn .9s cubic-bezier(.2,.8,.2,1) both; transform-origin:left; }
 .psAuditGrid article { border-radius: 18px; }
 .psCases { gap: 12px; }
 .psCases article { border-radius: 18px; }
-.psChallenge {
-  margin: 18px 0;
-  padding: 18px;
-  border: 1px solid rgba(183,255,42,.25);
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(183,255,42,.10), rgba(255,255,255,.025));
-}
+.psChallenge { margin: 18px 0; padding: 18px; border: 1px solid rgba(183,255,42,.25); border-radius: 20px; background: linear-gradient(135deg, rgba(183,255,42,.10), rgba(255,255,255,.025)); }
 .psChallenge header { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:10px; }
 .psChallenge header span { font-size:.7rem; font-weight:900; letter-spacing:.13em; }
 .psChallenge header b { font-size:.62rem; letter-spacing:.08em; opacity:.65; }
@@ -30,5 +24,39 @@
 .psBottomNav { position:sticky; bottom:10px; z-index:20; display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:20px 0 8px; padding:7px; border:1px solid rgba(255,255,255,.08); border-radius:18px; background:rgba(10,14,19,.9); backdrop-filter:blur(16px); }
 .psBottomNav button { min-height:44px; border:0; border-radius:12px; background:transparent; font-size:.62rem; font-weight:900; letter-spacing:.05em; }
 .psBottomNav button[data-active="true"] { background:rgba(183,255,42,.12); }
+
+/* Visual category language: every audit card gets a recognisable marker. */
+.psAuditGrid article::before { display:inline-grid; place-items:center; width:28px; height:28px; margin-bottom:10px; border:1px solid rgba(255,255,255,.10); border-radius:9px; background:rgba(255,255,255,.035); font-size:14px; line-height:1; }
+.psAuditGrid article[data-audit="missing"]::before { content:"◉"; }
+.psAuditGrid article[data-audit="improve"]::before { content:"↗"; }
+.psAuditGrid article[data-audit="kill"]::before { content:"⚠"; }
+.psAuditGrid article[data-audit="trap"]::before { content:"♟"; }
+.psAuditGrid article[data-audit="risk"]::before { content:"⚡"; }
+.psAuditGrid article[data-audit="event"]::before { content:"◌"; }
+.psAuditGrid article[data-audit="vault"]::before { content:"⌾"; }
+.psAuditGrid article[data-audit="review"]::before { content:"↻"; }
+.psAuditGrid article[data-audit="missing"]::before,
+.psAuditGrid article[data-audit="kill"]::before { animation:pocketIconPulse 2.8s ease-in-out infinite; }
+
+/* Motion language: scan, reveal, lock. Never animate when the user requests reduced motion. */
+.psVerdict { animation:pocketReveal .55s cubic-bezier(.2,.8,.2,1) both; }
+.psVerdictTop h1 em { animation:pocketLock .75s cubic-bezier(.2,.9,.2,1) .12s both; }
+.psAuditGrid article, .psScorecard article { animation:pocketRise .5s cubic-bezier(.2,.8,.2,1) both; }
+.psAuditGrid article:nth-child(2), .psScorecard article:nth-child(2) { animation-delay:.07s; }
+.psAuditGrid article:nth-child(3), .psScorecard article:nth-child(3) { animation-delay:.14s; }
+.psAuditGrid article:nth-child(4), .psScorecard article:nth-child(4) { animation-delay:.21s; }
+.psChallenge { animation:pocketChallengeIn .55s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes pocketReveal { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes pocketRise { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+@keyframes pocketLock { 0% { opacity:0; transform:scale(.72); filter:blur(5px); } 65% { opacity:1; transform:scale(1.08); filter:blur(0); } 100% { transform:scale(1); } }
+@keyframes pocketBarIn { from { transform:scaleX(0); opacity:.3; } to { transform:scaleX(1); opacity:1; } }
+@keyframes pocketIconPulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.08); box-shadow:0 0 16px rgba(183,255,42,.12); } }
+@keyframes pocketChallengeIn { from { opacity:0; transform:translateY(16px) scale(.985); } to { opacity:1; transform:none; } }
+
 @media (max-width:480px) { .psScorecard { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-@media (prefers-reduced-motion:reduce) { .psVerdict::after { display:none; } }
+@media (prefers-reduced-motion:reduce) {
+  .psVerdict, .psVerdictTop h1 em, .psAuditGrid article, .psScorecard article, .psChallenge,
+  .psScorecard article i b, .psAuditGrid article[data-audit="missing"]::before, .psAuditGrid article[data-audit="kill"]::before { animation:none; }
+  .psVerdict::after { display:none; }
+}
