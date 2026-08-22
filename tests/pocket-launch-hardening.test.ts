@@ -72,6 +72,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /addResultContextFile/);
   assert.match(client, /Add a supporting chart photo/);
   assert.match(client, /Supporting chart added[\s\S]*rerun the audit/);
+  assert.match(client, /psChartOverlayLayer/);
+  assert.match(client, /Full-screen chart overlays/);
+  assert.match(client, /aria-pressed=\{visibleOverlays\.has\(overlay\)\}/);
+  assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
+  assert.match(analyseRoute, /Trend uses two visible swing anchors/);
   assert.match(styles, /\.psApp \.psMissingInputs>footer/);
   assert.match(styles, /min-height:44px/);
   assert.match(reviewRoute, /MAX_IMAGE_LENGTH = 11_000_000/);

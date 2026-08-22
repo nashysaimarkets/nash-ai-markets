@@ -1,12 +1,12 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, CSSProperties, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
-type Level = { kind: ToolKind; label: string; price: string; y: number };
+type Level = { kind: ToolKind; label: string; price: string; x: number; y: number; x2: number; y2: number };
 type FibLevel = { ratio: string; price: string; y: number };
 type Intention = "LONG" | "SHORT" | "UNSURE";
 type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
@@ -66,9 +66,68 @@ type FollowUpReply = { answer: string; evidence: string[]; caution: string; next
 type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; lessons: string[]; behaviourTags: string[] };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const TOOL_OPTIONS = [
+  ["support","🟢 SUPPORT"],["resistance","🔴 RESISTANCE"],["trend","📐 TREND"],
+  ["pivot","📍 SWING POINTS"],["zone","▰ REACTION ZONES"],["gap","⚡ GAPS"],
+] as const;
 
 function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
+}
+
+function clampCoordinate(value: number, fallback: number) {
+  return Math.max(0, Math.min(100, Number.isFinite(value) ? value : fallback));
+}
+
+function ChartOverlay({ level, index }: { level: Level; index: number }) {
+  const x1 = clampCoordinate(level.x, 4);
+  const y1 = clampY(level.y);
+  const x2 = clampCoordinate(level.x2, 96);
+  const measuredY2 = clampCoordinate(level.y2, y1);
+  const y2 = level.kind === "support" || level.kind === "resistance" ? y1 : measuredY2;
+  const left = Math.min(x1, x2);
+  const top = Math.min(y1, y2);
+  const width = Math.max(1, Math.abs(x2 - x1));
+  const height = Math.max(1, Math.abs(y2 - y1));
+  const labelStyle = { left: `${Math.min(82, Math.max(1, x2))}%`, top: `${Math.min(92, Math.max(2, y2))}%` };
+
+  if (level.kind === "pivot") return <span className="psChartMark psChartPoint" data-tool={level.kind} style={{ left: `${x1}%`, top: `${y1}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
+  if (level.kind === "zone" || level.kind === "gap") return <span className="psChartMark psChartArea" data-tool={level.kind} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
+  return <>
+    <svg className="psChartVector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line data-tool={level.kind} x1={x1} y1={y1} x2={x2} y2={y2} vectorEffect="non-scaling-stroke" /></svg>
+    <span className="psChartLineLabel" data-tool={level.kind} style={labelStyle as CSSProperties} data-index={index}>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
+  </>;
+}
+
+function AnnotatedChart({ image, levels, focus = false }: { image: string; levels: Level[]; focus?: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [bounds, setBounds] = useState<CSSProperties>({ inset: 0 });
+
+  useEffect(() => {
+    const update = () => {
+      const container = containerRef.current?.getBoundingClientRect();
+      const chart = imageRef.current?.getBoundingClientRect();
+      if (!container || !chart) return;
+      setBounds({ left: chart.left - container.left, top: chart.top - container.top, width: chart.width, height: chart.height });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    if (containerRef.current) observer.observe(containerRef.current);
+    if (imageRef.current) observer.observe(imageRef.current);
+    window.addEventListener("resize", update);
+    return () => { observer.disconnect(); window.removeEventListener("resize", update); };
+  }, [image]);
+
+  return <div ref={containerRef} className={focus ? "psChartFocusCanvas" : "psAnnotatedChart"} aria-label="Automatically annotated uploaded chart">
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img ref={imageRef} src={image} alt="Uploaded trading chart" onLoad={() => {
+      const container = containerRef.current?.getBoundingClientRect();
+      const chart = imageRef.current?.getBoundingClientRect();
+      if (container && chart) setBounds({ left: chart.left - container.left, top: chart.top - container.top, width: chart.width, height: chart.height });
+    }} />
+    <div className="psChartOverlayLayer" style={bounds}>{levels.map((level, index) => <ChartOverlay key={`${level.kind}-${level.x}-${level.y}-${index}`} level={level} index={index} />)}</div>
+  </div>;
 }
 
 function formatEventTime(value: string) {
@@ -323,20 +382,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return { total, average, patience, commonRisk: top(risks, "NO REPEATED RISK"), dominant: top(instruments, "NO PATTERN YET") };
   })();
 
-  const annotatedChart = (focus = false) => image ? (
-    <div
-      className={focus ? "psChartFocusCanvas" : "psAnnotatedChart"}
-      aria-label="Automatically annotated uploaded chart"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={image} alt="Uploaded trading chart" />
-      {displayedLevels.map((level, index) => (
-        <i key={`${level.kind}-${level.y}-${index}`} data-tool={level.kind} style={{ top: `${clampY(level.y)}%` }}>
-          <span>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
-        </i>
-      ))}
-          </div>
-  ) : null;
+  const annotatedChart = (focus = false) => image ? <AnnotatedChart image={image} levels={displayedLevels} focus={focus} /> : null;
 
   if (review && reviewTarget) {
     return <main className="psApp" data-pocket-build="v3.1"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section></main>;
@@ -378,7 +424,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               <article><span>PRICE SCALE</span><strong>{analysis.evidenceQuality.scaleReadable ? "READABLE" : "UNVERIFIED"}</strong></article>
             </div>
             <div className="psEvidenceSplit">
-              <article data-evidence="seen"><span>👁️ WHAT THE IMAGE ACTUALLY SHOWS</span><ul>{analysis.observableFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul></article>
+              <article data-evidence="seen"><span>👁️ VERIFIED CHART READ</span><ul>{analysis.observableFacts.slice(0, 3).map((fact) => <li key={fact}>{fact}</li>)}</ul></article>
               <article data-evidence="conflict"><span>⚡ CONFLICTING EVIDENCE</span>{analysis.contradictions.length ? <ul>{analysis.contradictions.map((item) => <li key={item}>{item}</li>)}</ul> : <p>No clear contradiction is visible in this screenshot.</p>}</article>
             </div>
             {analysis.evidenceQuality.limitations.length ? <p className="psEvidenceLimits"><strong>LIMITS:</strong> {analysis.evidenceQuality.limitations.join(" · ")}</p> : null}
@@ -411,10 +457,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psToolDock">
             <header><span>CHART TOOLBOX</span><b>TAP TO SHOW / HIDE</b></header>
             <nav className="psOverlayBar" aria-label="Optional chart overlays">
-              {([
-                ["support","🟢 SUPPORT"],["resistance","🔴 RESISTANCE"],["trend","📐 TREND"],
-                ["pivot","📍 SWING POINTS"],["zone","▰ REACTION ZONES"],["gap","⚡ GAPS"]
-              ] as const).map(([overlay,label]) => <button key={overlay} type="button" data-active={visibleOverlays.has(overlay)} disabled={!levels.some((level) => level.kind === overlay)} onClick={() => toggleOverlay(overlay)}>{label}</button>)}
+              {TOOL_OPTIONS.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} disabled={!levels.some((level) => level.kind === overlay)} onClick={() => toggleOverlay(overlay)}>{label}</button>)}
             </nav>
             <p>Support and resistance start on. Optional tools activate only when Bullseye can justify them from visible chart evidence.</p>
           </section>
@@ -467,6 +510,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {chartFocus && (
           <section className="psChartFocus" aria-modal="true" role="dialog" aria-label="Full-screen annotated chart">
             <header><span>ANNOTATED CHART · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
+            <nav className="psFocusTools" aria-label="Full-screen chart overlays">{TOOL_OPTIONS.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} disabled={!levels.some((level) => level.kind === overlay)} onClick={() => toggleOverlay(overlay)}>{label}</button>)}</nav>
             {annotatedChart(true)}
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
