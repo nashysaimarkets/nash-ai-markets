@@ -188,6 +188,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /personalDailyMessage/);
   assert.match(client, /YOUR MESSAGE FOR TODAY/);
   assert.match(client, /CinematicTranscript/);
+  assert.match(client, /psFinaleRatioCards/);
+  assert.match(client, /EVIDENCE BALANCE/);
   assert.match(eventsRoute, /if \(returnedSymbol !== symbol\) return \[\]/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
@@ -225,6 +227,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /@keyframes psLogoSlam/);
   assert.match(styles, /\.psEvidenceRatio/);
   assert.match(styles, /\.psDailyMessage/);
+  assert.match(styles, /\.psFinalePage/);
+  assert.match(styles, /@keyframes psBullEnter/);
+  assert.match(styles, /@keyframes psBearEnter/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
