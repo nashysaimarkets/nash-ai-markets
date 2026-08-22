@@ -58,6 +58,8 @@ type Analysis = {
   indicators: string[];
   checklist: string[];
   relevantEventTypes: string[];
+  plotBounds?: { left: number; top: number; right: number; bottom: number };
+  priceScaleAnchors?: { price: number; y: number }[];
   levels: Level[];
   fibLevels: FibLevel[];
 };
@@ -127,7 +129,10 @@ function AnnotatedChart({ image, levels, focus = false }: { image: string; level
   useEffect(() => {
     const update = () => {
       if (!containerRef.current || !imageRef.current) return;
-      setBounds(containedImageBounds(containerRef.current, imageRef.current));
+      if (focus) {
+        const style = getComputedStyle(containerRef.current);
+        setBounds({ left: 0, top: Number.parseFloat(style.paddingTop) || 0, width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
+      } else setBounds(containedImageBounds(containerRef.current, imageRef.current));
     };
     update();
     const observer = new ResizeObserver(update);
@@ -135,12 +140,17 @@ function AnnotatedChart({ image, levels, focus = false }: { image: string; level
     if (imageRef.current) observer.observe(imageRef.current);
     window.addEventListener("resize", update);
     return () => { observer.disconnect(); window.removeEventListener("resize", update); };
-  }, [image]);
+  }, [focus, image]);
 
   return <div ref={containerRef} className={focus ? "psChartFocusCanvas" : "psAnnotatedChart"} aria-label="Automatically annotated uploaded chart">
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img ref={imageRef} src={image} alt="Uploaded trading chart" onLoad={() => {
-      if (containerRef.current && imageRef.current) setBounds(containedImageBounds(containerRef.current, imageRef.current));
+      if (containerRef.current && imageRef.current) {
+        if (focus) {
+          const style = getComputedStyle(containerRef.current);
+          setBounds({ left: 0, top: Number.parseFloat(style.paddingTop) || 0, width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
+        } else setBounds(containedImageBounds(containerRef.current, imageRef.current));
+      }
     }} />
     {bounds ? <div className="psChartOverlayLayer" style={bounds}>{levels.map((level, index) => <ChartOverlay key={`${level.kind}-${level.x}-${level.y}-${index}`} level={level} index={index} />)}</div> : null}
   </div>;
@@ -507,7 +517,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psResultChart psChartWorkspace">
             <header><div><span>🎯 ANNOTATED CHART</span><small>{availableToolOptions.length} VERIFIED {availableToolOptions.length === 1 ? "OVERLAY" : "OVERLAYS"}</small></div><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
             {availableToolOptions.length ? <><nav className="psWorkspaceTools" aria-label="Detected chart overlays">{availableToolOptions.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}><span>{label}</span><small>{visibleOverlays.has(overlay) ? "ON · TAP TO HIDE" : "OFF · TAP TO SHOW"}</small></button>)}</nav><p className="psWorkspaceNote">Every tool shown was detected from visible chart evidence. Changes apply here and in full screen.</p></> : <p className="psWorkspaceEmpty">No overlay was reliable enough to place precisely on this screenshot.</p>}
-            <div>{annotatedChart()}</div>
+            <div role="button" tabIndex={0} aria-label="Open annotated chart full screen" onClick={() => setChartFocus(true)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setChartFocus(true); }}>{annotatedChart()}</div>
           </section>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>

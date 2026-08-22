@@ -112,8 +112,23 @@ const schema = {
     indicators: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
     checklist: { type: "array", maxItems: 5, items: { type: "string", maxLength: 120 } },
     relevantEventTypes: { type: "array", maxItems: 6, items: { type: "string", maxLength: 80 } },
+    plotBounds: {
+      type: "object", additionalProperties: false,
+      properties: {
+        left: { type: "number", minimum: 0, maximum: 100 }, top: { type: "number", minimum: 0, maximum: 100 },
+        right: { type: "number", minimum: 0, maximum: 100 }, bottom: { type: "number", minimum: 0, maximum: 100 },
+      },
+      required: ["left", "top", "right", "bottom"],
+    },
+    priceScaleAnchors: {
+      type: "array", maxItems: 4, items: {
+        type: "object", additionalProperties: false,
+        properties: { price: { type: "number" }, y: { type: "number", minimum: 0, maximum: 100 } },
+        required: ["price", "y"],
+      },
+    },
     levels: {
-      type: "array", maxItems: 5, items: {
+      type: "array", maxItems: 8, items: {
         type: "object", additionalProperties: false,
         properties: {
           kind: { type: "string", enum: ["support", "resistance", "trend", "pivot", "zone", "gap"] },
@@ -139,7 +154,7 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
@@ -198,6 +213,8 @@ export async function POST(request: Request) {
         "Give both bullish and bearish cases. Call out cropped scales, hidden axes, insufficient candles and ambiguous patterns.",
         "observableFacts must contain no more than three decision-useful facts: identified chart context, visible price structure, and the current test or reaction. Do not inventory gridlines, axis ticks, footer statistics or decorative interface text.",
         "For each reliable overlay return image-relative percentage geometry x,y to x2,y2. Support/resistance are horizontal lines spanning only the visible plotted price area. Trend uses two visible swing anchors. Pivot uses the same start/end point at the exact swing. Zone and gap use opposite corners of a tightly bounded rectangle. Coordinates refer to the full uploaded image, not a crop. Keep overlays sparse and include price text only when clearly legible.",
+        "Return plotBounds around only the candle plotting rectangle, excluding phone chrome, order tickets, headers, axes, footer statistics and volume panels. Return 2-4 priceScaleAnchors from clearly readable axis labels with their full-image y percentages; otherwise return an empty array.",
+        "When candles and scale are readable, prioritise up to two meaningful supports, two resistances and up to three conspicuous pivot swing highs/lows. Do not omit a clear pivot merely because support and resistance were also returned. Never force a level where the chart lacks a visible reaction.",
         "Use pivot only for a conspicuous swing high or low, zone only for a visibly repeated reaction area, and gap only for a clearly visible unfilled price gap or imbalance. Never add an overlay merely to fill the chart.",
         "Indicators must describe only indicators visibly present, such as RSI or moving averages. Keep every field concise for a mobile display.",
         "Explain the level-to-level story: what price is testing, what acceptance or rejection would imply, and the next visible area in either direction.",

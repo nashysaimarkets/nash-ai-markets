@@ -65,6 +65,18 @@ test("one-more-view prompts exclude trader plan fields", () => {
   assert.deepEqual(calibrated.missingInputs, ["A visible volume panel"]);
 });
 
+test("readable price anchors calibrate horizontal levels into the candle plot", () => {
+  const calibrated = calibratePocketAnalysis({
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
+    setupScore: { overall: 70, grade: "B" },
+    missingInputs: [],
+    plotBounds: { left: 20, top: 15, right: 82, bottom: 80 },
+    priceScaleAnchors: [{ price: 7800, y: 20 }, { price: 7600, y: 70 }],
+    levels: [{ kind: "support", label: "Support", price: "7700", x: 0, y: 2, x2: 1, y2: 2 }],
+  }) as { levels: Array<{ x: number; y: number; x2: number; y2: number }> };
+  assert.deepEqual(calibrated.levels[0], { kind: "support", label: "Support", price: "7700", x: 20, y: 45, x2: 82, y2: 45 });
+});
+
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
   const [client, styles, analyseRoute, reviewRoute, followUpRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
@@ -89,6 +101,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /psChartOverlayLayer/);
   assert.match(client, /containedImageBounds/);
+  assert.match(client, /Open annotated chart full screen/);
+  assert.match(styles, /\.psApp \.psChartFocusCanvas>img/);
+  assert.match(analyseRoute, /priceScaleAnchors/);
   assert.match(client, /chart\.naturalWidth \/ chart\.naturalHeight/);
   assert.match(client, /Full-screen chart overlays/);
   assert.match(client, /availableToolOptions/);
