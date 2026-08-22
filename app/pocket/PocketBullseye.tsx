@@ -386,9 +386,42 @@ function formatEventTime(value: string) {
 
 function openVault() {
   return new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open("bullseye-decision-vault", 1);
-    request.onupgradeneeded = () => request.result.createObjectStore("decisions", { keyPath: "id" });
+    const request = indexedDB.open("bullseye-decision-vault", 2);
+    request.onupgradeneeded = () => {
+      if (!request.result.objectStoreNames.contains("decisions")) request.result.createObjectStore("decisions", { keyPath: "id" });
+      if (!request.result.objectStoreNames.contains("analyses")) request.result.createObjectStore("analyses", { keyPath: "key" });
+    };
     request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: 1 };
+
+async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention) {
+  const bytes = new TextEncoder().encode(`pocket-analysis-v1\n${intention}\n${image}\n${contextImage ?? ""}`);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function analysisCacheGet(key: string): Promise<Analysis | null> {
+  const db = await openVault();
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("analyses", "readonly").objectStore("analyses").get(key);
+    request.onsuccess = () => {
+      const cached = request.result as CachedAnalysis | undefined;
+      resolve(cached?.version === 1 ? cached.analysis : null);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function analysisCacheSave(key: string, analysis: Analysis) {
+  const db = await openVault();
+  return new Promise<void>((resolve, reject) => {
+    const value: CachedAnalysis = { key, analysis, createdAt: new Date().toISOString(), version: 1 };
+    const request = db.transaction("analyses", "readwrite").objectStore("analyses").put(value);
+    request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
   });
 }
@@ -584,6 +617,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     analysisRequestActive.current = true;
     setBusy(true);
     try {
+      const cacheKey = await analysisCacheKey(image, selectedContext, intention);
+      const cached = await analysisCacheGet(cacheKey).catch(() => null);
+      if (cached) return cached;
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -592,6 +628,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
+      await analysisCacheSave(cacheKey, payload.analysis).catch(() => undefined);
       return payload.analysis;
     } finally {
       analysisRequestActive.current = false;
