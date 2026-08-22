@@ -157,6 +157,19 @@ const schema = {
   required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
 } as const;
 
+const precisionOverlaySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    plotBounds: schema.properties.plotBounds,
+    priceScaleAnchors: schema.properties.priceScaleAnchors,
+    levels: schema.properties.levels,
+    confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] },
+    limitation: { type: "string", maxLength: 160 },
+  },
+  required: ["plotBounds", "priceScaleAnchors", "levels", "confidence", "limitation"],
+} as const;
+
 export async function POST(request: Request) {
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
@@ -188,8 +201,9 @@ export async function POST(request: Request) {
   try {
     const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse" });
     const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
-    const response = await client.responses.create({
-      model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+    const model = process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
+    const analysisRequest = client.responses.create({
+      model,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -233,6 +247,37 @@ export async function POST(request: Request) {
       max_output_tokens: 4400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     });
+    const precisionRequest = client.responses.create({
+      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
+      reasoning: { effort: "low" },
+      store: false,
+      instructions: [
+        "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
+        "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
+        "plotBounds must tightly enclose only the candle plotting rectangle. Exclude phone chrome, chart headers, order tickets, price-axis labels, dates, footer data, indicator panels and volume panels.",
+        "Read 2-4 clearly printed prices from the visible price axis and return each exact numeric price with the y coordinate through the centre of its label. Higher prices must have smaller y coordinates. If fewer than two exact scale labels are readable, return no support or resistance levels.",
+        "Return one or two support levels and one or two resistance levels only when repeated reactions or a major visible swing justify them. Every support/resistance must have an exact readable price and must lie inside plotBounds.",
+        "Return up to three conspicuous pivot swing highs or lows at the wick extremity. Pivot x/y and x2/y2 must be identical.",
+        "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
+        "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
+      ].join(" "),
+      input: [{
+        role: "user",
+        content: [
+          { type: "input_text", text: "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
+          { type: "input_image", image_url: image, detail: "high" },
+        ],
+      }],
+      max_output_tokens: 1400,
+      text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
+    });
+    const [response, precisionResult] = await Promise.all([
+      analysisRequest,
+      precisionRequest.then((result) => result).catch((error) => {
+        console.error("[pocket-bullseye] precision overlay pass unavailable", error instanceof Error ? error.message : "unknown");
+        return null;
+      }),
+    ]);
     const output = response.output_text?.trim();
     if (!output) throw new Error(`Structured response was empty (${response.status ?? "unknown"}).`);
     let analysis: unknown;
@@ -240,6 +285,27 @@ export async function POST(request: Request) {
       analysis = JSON.parse(output);
     } catch {
       throw new Error(`Structured response was incomplete (${response.status ?? "unknown"}; ${output.length} chars).`);
+    }
+    if (analysis && typeof analysis === "object") {
+      let precision: unknown = null;
+      try {
+        precision = precisionResult?.output_text ? JSON.parse(precisionResult.output_text) : null;
+      } catch {
+        precision = null;
+      }
+      const record = analysis as Record<string, unknown>;
+      if (precision && typeof precision === "object") {
+        const geometry = precision as Record<string, unknown>;
+        analysis = {
+          ...record,
+          plotBounds: geometry.plotBounds,
+          priceScaleAnchors: geometry.priceScaleAnchors,
+          levels: geometry.levels,
+        };
+      } else {
+        // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
+        analysis = { ...record, priceScaleAnchors: [], levels: [] };
+      }
     }
     return NextResponse.json(
       { analysis: calibratePocketAnalysis(analysis) },

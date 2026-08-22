@@ -57,27 +57,34 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       .sort((a, b) => a.price - b.price) : [];
     const low = anchors[0];
     const high = anchors.at(-1);
+    const calibratedScale = Boolean(low && high && low.price !== high.price && low.y > high.y);
     const priceToY = (price: unknown, fallback: number) => {
       const numeric = numericPrice(price);
       if (!low || !high || low.price === high.price || numeric === null) return fallback;
       return low.y + ((numeric - low.price) / (high.price - low.price)) * (high.y - low.y);
     };
     calibrated.plotBounds = { left, top, right, bottom };
-    calibrated.levels = analysis.levels.map((item) => {
+    const seen = new Set<string>();
+    calibrated.levels = analysis.levels.flatMap((item) => {
       if (!item || typeof item !== "object") return item;
       const level = item as JsonRecord;
       const kind = level.kind;
       const modelY = boundedPercent(level.y, 50);
-      const scaledY = quality.scaleReadable === true ? priceToY(level.price, modelY) : modelY;
-      const y = Math.max(top, Math.min(bottom, scaledY));
       const horizontal = kind === "support" || kind === "resistance";
-      return {
+      const price = numericPrice(level.price);
+      if (horizontal && (!calibratedScale || price === null || !low || !high || price < low.price || price > high.price)) return [];
+      const scaledY = horizontal ? priceToY(level.price, modelY) : modelY;
+      const y = Math.max(top, Math.min(bottom, scaledY));
+      const key = `${String(kind)}:${Math.round(y * 2)}`;
+      if (seen.has(key)) return [];
+      seen.add(key);
+      return [{
         ...level,
         x: horizontal ? left : Math.max(left, Math.min(right, boundedPercent(level.x, left))),
         y,
         x2: horizontal ? right : Math.max(left, Math.min(right, boundedPercent(level.x2, right))),
         y2: horizontal ? y : Math.max(top, Math.min(bottom, boundedPercent(level.y2, y))),
-      };
+      }];
     });
   }
 

@@ -77,6 +77,18 @@ test("readable price anchors calibrate horizontal levels into the candle plot", 
   assert.deepEqual(calibrated.levels[0], { kind: "support", label: "Support", price: "7700", x: 20, y: 45, x2: 82, y2: 45 });
 });
 
+test("unverified or out-of-scale horizontal levels fail closed", () => {
+  const base = {
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
+    setupScore: { overall: 70, grade: "B" },
+    plotBounds: { left: 20, top: 15, right: 82, bottom: 80 },
+  };
+  const noAnchors = calibratePocketAnalysis({ ...base, priceScaleAnchors: [], levels: [{ kind: "support", price: "7700", y: 45 }] }) as { levels: unknown[] };
+  const outsideScale = calibratePocketAnalysis({ ...base, priceScaleAnchors: [{ price: 7800, y: 20 }, { price: 7600, y: 70 }], levels: [{ kind: "resistance", price: "8100", y: 12 }] }) as { levels: unknown[] };
+  assert.deepEqual(noAnchors.levels, []);
+  assert.deepEqual(outsideScale.levels, []);
+});
+
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
   const [client, styles, analyseRoute, reviewRoute, followUpRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
@@ -104,6 +116,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /Open annotated chart full screen/);
   assert.match(styles, /\.psApp \.psChartFocusCanvas>img/);
   assert.match(analyseRoute, /priceScaleAnchors/);
+  assert.match(analyseRoute, /pocket_bullseye_precision_overlays/);
+  assert.match(analyseRoute, /Promise\.all/);
+  assert.match(analyseRoute, /Fail closed/);
   assert.match(client, /chart\.naturalWidth \/ chart\.naturalHeight/);
   assert.match(client, /Full-screen chart overlays/);
   assert.match(client, /availableToolOptions/);
