@@ -1,0 +1,116 @@
+/* Premium result cinema: restrained motion, precise hierarchy, no evidence distortion. */
+.psMarketStory {
+  border-color: #3b4a51;
+  background: #05090c;
+  box-shadow: 0 24px 80px #000c, inset 0 1px #ffffff0a;
+}
+
+.psMarketStory > header {
+  background: linear-gradient(90deg, #0a1519 0%, #10180f 55%, #0a1116 100%);
+  box-shadow: inset 0 -1px #55e99b22;
+}
+
+.psStoryProgress { grid-template-columns: repeat(7, 1fr); }
+.psStoryProgress button > i { animation-duration: 6s; }
+.psStoryStage { height: 680px; isolation: isolate; background: #030608; }
+.psStoryStage::before, .psStoryStage::after {
+  content: "";
+  position: absolute;
+  z-index: 16;
+  left: 0;
+  right: 0;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(#000, #0000);
+}
+.psStoryStage::before { top: 0; }
+.psStoryStage::after { bottom: 0; transform: rotate(180deg); }
+
+.psStoryStage > img {
+  animation: psProChartDrift 6s ease-out both;
+  filter: saturate(.82) contrast(1.12) brightness(.65);
+}
+
+.psStoryShade {
+  background: radial-gradient(circle at 65% 25%, #0c2b2055, transparent 30%), linear-gradient(90deg, #030608ed 0%, #030608a8 58%, #030608d9 100%);
+}
+
+.psCinemaFx { position: absolute; z-index: 4; inset: 0; overflow: hidden; pointer-events: none; }
+.psCinemaFx::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .13;
+  background-image: linear-gradient(#55e99b12 1px, transparent 1px), linear-gradient(90deg, #55e99b12 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(90deg, #000, transparent 75%);
+  animation: psProGridReveal 1.1s ease-out both;
+}
+.psCinemaFx::after {
+  content: "";
+  position: absolute;
+  top: -45%;
+  bottom: -45%;
+  width: 24%;
+  opacity: .42;
+  background: linear-gradient(90deg, transparent, #7fffc722, transparent);
+  filter: blur(8px);
+  transform: skewX(-17deg);
+  animation: psProLensSweep 1.25s .12s ease-out both;
+}
+.psCinemaFx > i { position: absolute; width: 42px; height: 42px; border-color: #55e99b66; }
+.psCinemaFx > i:nth-child(1) { left: 17px; top: 17px; border-left: 1px solid; border-top: 1px solid; }
+.psCinemaFx > i:nth-child(2) { right: 17px; top: 17px; border-right: 1px solid; border-top: 1px solid; }
+.psCinemaFx > i:nth-child(3) { right: 17px; bottom: 17px; border-right: 1px solid; border-bottom: 1px solid; }
+.psCinemaFx > b {
+  position: absolute;
+  right: 29px;
+  bottom: 26px;
+  color: #55e99b30;
+  font: 900 66px/.8 Impact, "Arial Narrow", sans-serif;
+  letter-spacing: .04em;
+}
+
+.psStoryScene > article { animation: psProSceneEnter .72s cubic-bezier(.14,.86,.19,1) both; }
+.psStoryScene > article > small { text-shadow: 0 0 14px #55e99b88; }
+.psStoryScene h2 { text-wrap: balance; }
+
+.psEvidencePulse { margin-top: 9px; padding: 10px 12px; border-left: 2px solid #55e99b; background: #07120fe8; }
+.psEvidencePulse b, .psEvidencePulse p { display: inline; }
+.psEvidencePulse b { color: #d9b45b; font: 900 6px var(--font-geist-mono), monospace; letter-spacing: .08em; }
+.psEvidencePulse p { margin: 0 12px 0 5px; color: #b9c4be; font-size: 9px; line-height: 1.35; }
+
+.psEventSafety { display: flex !important; align-items: center !important; gap: 12px !important; margin-top: 9px; padding: 9px 11px; border: 1px solid #d9b45b55; border-radius: 9px; background: #17150de8; }
+.psEventSafety strong { color: #d9b45b; font: 900 28px/.9 Impact, "Arial Narrow", sans-serif; }
+.psEventSafety strong small { font-size: 10px; }
+.psEventSafety span { color: #c5cec9; font: 900 6px var(--font-geist-mono), monospace; letter-spacing: .07em; }
+
+.psNextCheck { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; margin-top: 9px; padding: 10px 11px; border: 1px solid #55e99b44; border-radius: 9px; background: #07130fe8; }
+.psNextCheck b { color: #d9b45b; font: 900 6px var(--font-geist-mono), monospace; letter-spacing: .07em; }
+.psNextCheck span { color: #c5d0ca; font-size: 9px; line-height: 1.35; }
+
+.psMarketStory[data-scene="3"] .psStoryShade { background: linear-gradient(90deg, #092117dc 0%, #030608b8 48%, #210b11dc 100%); }
+.psMarketStory[data-scene="4"] .psStoryShade { background: radial-gradient(circle at 75% 30%, #41131c66, transparent 32%), linear-gradient(90deg, #05080bed, #09080bd8); }
+.psMarketStory[data-scene="6"] .psStoryStage { height: 780px; background: radial-gradient(circle at 50% 20%, #173d2d, #071014 32%, #030608 72%); }
+.psMarketStory[data-scene="6"] .psStoryStage > img { opacity: .08; filter: grayscale(1) contrast(1.4); }
+.psMarketStory[data-scene="6"] .psStoryShade { background: radial-gradient(circle at 50% 20%, transparent, #030608d9 58%); }
+.psMarketStory[data-scene="6"] .psStoryScene { align-items: center; padding: 28px 32px; }
+
+@keyframes psProChartDrift { from { transform: scale(1.08) translate3d(-1.5%,1%,0); } to { transform: scale(1.14) translate3d(1.5%,-1%,0); } }
+@keyframes psProGridReveal { from { opacity: 0; transform: scale(1.08); } to { opacity: .13; transform: none; } }
+@keyframes psProLensSweep { from { left: -35%; } to { left: 125%; } }
+@keyframes psProSceneEnter { from { opacity: 0; transform: translate3d(0,28px,0) scale(.975); filter: blur(7px); } to { opacity: 1; transform: none; filter: none; } }
+
+@media (max-width: 520px) {
+  .psStoryProgress { grid-template-columns: repeat(7, 1fr); }
+  .psStoryProgress button small { font-size: 4.5px; }
+  .psStoryStage { height: 660px; }
+  .psEvidencePulse p { display: block; margin: 3px 0 7px; font-size: 8px; }
+  .psMarketStory[data-scene="6"] .psStoryStage { height: 760px; }
+  .psMarketStory[data-scene="6"] .psStoryScene { padding: 18px; }
+  .psCinemaFx > b { right: 22px; bottom: 22px; font-size: 50px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psStoryStage > img, .psCinemaFx::before, .psCinemaFx::after, .psStoryScene > article { animation: none !important; }
+}

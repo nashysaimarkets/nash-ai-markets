@@ -90,10 +90,11 @@ test("unverified or out-of-scale horizontal levels fail closed", () => {
 });
 
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
-  const [client, styles, feedbackStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
+  const [client, styles, feedbackStyles, cinemaStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-feedback.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-cinema-pro.css", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/review/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/follow-up/route.ts", import.meta.url), "utf8"),
@@ -162,7 +163,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.doesNotMatch(client, /<ConfluenceStack analysis=/);
   assert.match(client, /MarketStory/);
   assert.match(client, /BULLSEYE MARKET STORY/);
-  assert.match(client, /CHAPTER 05 · THE BATTLE/);
+  assert.match(client, /CHAPTER 04 · BULL VS BEAR/);
   assert.match(client, /FINAL CHAPTER ·/);
   assert.match(client, /BULLSEYE"/);
   assert.match(client, /STORY, NOT CERTAINTY/);
@@ -178,13 +179,14 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /↻ REANALYSE/);
   assert.match(client, /SUPPORT AREA NOT VERIFIED/);
   assert.match(client, /CLEARER VIEW NEEDED/);
-  assert.match(client, /9000/);
+  assert.match(client, /6000/);
+  assert.match(client, /psCinemaFx/);
   assert.match(client, /bullseye-events/);
   assert.match(client, /bullseye-levels/);
   assert.match(client, /bullseye-evidence/);
   assert.match(client, /CINEMATIC RESULT/);
   assert.match(client, /WRITTEN REPORT/);
-  assert.match(client, /WHAT THE IMAGE PROVES/);
+  assert.match(client, /CHAPTER 02 · VERIFIED EVIDENCE/);
   assert.match(client, /STRUCTURE & MOMENTUM/);
   assert.match(client, /THE PRICE BATTLEFIELD/);
   assert.match(client, /OPEN FULL WRITTEN REPORT/);
@@ -199,6 +201,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /SUGGEST AN IDEA/);
   assert.match(client, /mailto:hello@nashaimarkets\.com/);
   assert.match(feedbackStyles, /\.psFeedback/);
+  assert.match(cinemaStyles, /\.psCinemaFx/);
+  assert.match(cinemaStyles, /@keyframes psProLensSweep/);
+  assert.match(cinemaStyles, /prefers-reduced-motion/);
   assert.match(eventsRoute, /if \(returnedSymbol !== symbol\) return \[\]/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
