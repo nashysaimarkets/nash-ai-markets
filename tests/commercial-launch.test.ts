@@ -65,6 +65,7 @@ test("Pocket Founding 650 page submits the server-enumerated Stripe offering", a
   assert.match(page, /action="\/api\/stripe\/checkout"/);
   assert.match(page, /name="offering" value="pocket_founding_month"/);
   assert.match(page, /CONTINUE TO SECURE CHECKOUT/);
+  assert.match(page, /method="post"/);
   assert.doesNotMatch(page, /WaitlistForm/);
 });
 
