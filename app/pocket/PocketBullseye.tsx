@@ -86,7 +86,7 @@ function isListedEquityAnalysis(analysis: Analysis | null) {
   return !/(INDEX|DFB|FUTURE|FOREX|FX\b|CRYPTO|BITCOIN|COMMODIT|BOND|YIELD|VIX|ETF)/.test(identity);
 }
 
-function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void }) {
+function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario, onReanalyse, reanalysing = false }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; onReanalyse?: () => void; reanalysing?: boolean }) {
   const verified = analysis.levels.flatMap((level) => {
     const price = numericLevel(level.price);
     return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
@@ -153,7 +153,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
       <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "PIVOT" : level.kind.toUpperCase()}</small><em>{current === null ? "" : formatPercent(Math.abs(level.numericPrice - current))}</em>
     </button>)}
     {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span><b>◎</b> CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
-    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>Bullseye could not verify an exact support or resistance price from this image—and will not invent one.</p><button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD CLEARER PRICE-SCALE VIEW</button></div> : null}
+    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>Exact levels could not be verified safely. Add a clearer price-scale view or retry the current images.</p><div><button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD ANOTHER PHOTO</button><button type="button" disabled={reanalysing} onClick={onReanalyse}>{reanalysing ? "REANALYSING…" : "↻ REANALYSE"}</button></div></div> : null}
     <div className="psBattleDirection" data-direction={analysis.direction}><span>BEAR PRESSURE</span><strong>{analysis.direction}</strong><span>BULL PRESSURE</span></div>
     <nav className="psMapActions" aria-label="Explore Decision Map scenarios"><button type="button" data-tone="bull" onClick={() => onScenario?.("bull")}>WHAT IF PRICE RISES?</button><button type="button" data-tone="wait" onClick={() => onScenario?.("wait")}>WHY WAIT?</button><button type="button" data-tone="bear" onClick={() => onScenario?.("bear")}>WHAT IF PRICE FALLS?</button></nav>
   </div>;
@@ -507,6 +507,26 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
+  async function reanalyseResult() {
+    if (!analysis || busy || analysisRequestActive.current) return;
+    const resultScroller = document.querySelector(".psResults") as HTMLElement | null;
+    const savedScrollTop = resultScroller?.scrollTop ?? 0;
+    setError("");
+    setRefinementBefore(analysis);
+    setRefinementStatus("analysing");
+    try {
+      const refreshed = await requestPocketAnalysis(contextImage);
+      setAnalysis(refreshed);
+      setStockEvents([]);
+      setStockEventStatus(refreshed.ticker === "UNKNOWN" ? "unavailable" : "loading");
+      setRefinementStatus("updated");
+      requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
+    } catch (caught) {
+      setRefinementStatus("error");
+      setError(caught instanceof Error ? caught.message : "This result could not be reanalysed safely.");
+    }
+  }
+
   async function requestPocketAnalysis(selectedContext: string | null): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     analysisRequestActive.current = true;
@@ -722,7 +742,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
             {battlefieldTabs}
-            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} />
+            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} onReanalyse={reanalyseResult} reanalysing={refinementStatus === "analysing"} />
             <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
           </section>
           <details className="psAuditDrawer">
@@ -808,7 +828,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye Decision Map">
             <header><span>DECISION MAP · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
             {battlefieldTabs}
-            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} expanded scenario={selectedScenario} onScenario={setSelectedScenario} />
+            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} expanded scenario={selectedScenario} onScenario={setSelectedScenario} onReanalyse={reanalyseResult} reanalysing={refinementStatus === "analysing"} />
             <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart(true) : sourceChart(true)}</details>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
