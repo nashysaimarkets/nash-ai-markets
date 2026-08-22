@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please ask one short question about this result." }, { status: 400 });
   }
 
+  const budget = takePocketBudget(request, "follow-up");
+  if (!budget.allowed) return NextResponse.json(
+    { error: "Your Ask Bullseye beta allowance needs a short reset. No request was sent to the AI provider." },
+    { status: 429, headers: pocketBudgetHeaders(budget) },
+  );
+
   const client = createOpenAIClient(undefined, 25_000);
   if (!client) return NextResponse.json({ error: "Ask Bullseye is not connected in this environment." }, { status: 503 });
 
@@ -54,7 +61,7 @@ export async function POST(request: Request) {
     });
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty");
-    return NextResponse.json({ reply: JSON.parse(output) }, { headers: { "cache-control": "no-store" } });
+    return NextResponse.json({ reply: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
   } catch {
     return NextResponse.json({ error: "Ask Bullseye could not answer safely. Please retry once." }, { status: 503 });
   }

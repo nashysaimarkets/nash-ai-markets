@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -35,6 +36,11 @@ export async function POST(request: Request) {
     if (![beforeImage, afterImage].every((image) => /^data:image\/(jpeg|png|webp);base64,/.test(image) && image.length <= MAX_IMAGE_LENGTH)) {
       return NextResponse.json({ error: "Both chart screenshots are required." }, { status: 400 });
     }
+    const budget = takePocketBudget(request, "review");
+    if (!budget.allowed) return NextResponse.json(
+      { error: "Your beta review allowance needs a short reset. No request was sent to the AI provider." },
+      { status: 429, headers: pocketBudgetHeaders(budget) },
+    );
     const client = createOpenAIClient(undefined, 55_000);
     if (!client) return NextResponse.json({ error: "AI review is not connected." }, { status: 503 });
     const lockedAnalysis = JSON.stringify(payload.lockedAnalysis ?? {}).slice(0, 12_000);
@@ -61,7 +67,7 @@ export async function POST(request: Request) {
     });
     const output = response.output_text?.trim();
     if (!output) throw new Error("Review response was empty.");
-    return NextResponse.json({ review: JSON.parse(output) }, { headers: { "cache-control": "no-store" } });
+    return NextResponse.json({ review: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     console.error("[pocket-bullseye] review unavailable", error instanceof Error ? error.name : "Error");
     return NextResponse.json({ error: "Bullseye could not complete the comparison safely." }, { status: 503 });

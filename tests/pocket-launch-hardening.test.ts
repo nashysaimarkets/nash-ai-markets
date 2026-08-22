@@ -3,6 +3,7 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { calibratePocketAnalysis } from "../app/api/pocket/analysis-calibration.ts";
 import { normalizeLockedDecision, normalizeLockedDecisions } from "../app/pocket/decision-compatibility.ts";
+import { resetPocketBudgetsForTesting, takePocketBudget } from "../app/lib/server/pocket-request-budget.ts";
 
 test("legacy saved decisions are migrated without changing chart bytes", () => {
   const image = "data:image/png;base64,UNCHANGED";
@@ -76,6 +77,26 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(reviewRoute, /MAX_IMAGE_LENGTH = 11_000_000/);
   for (const route of [analyseRoute, reviewRoute, followUpRoute]) {
     assert.match(route, /store: false/);
-    assert.match(route, /cache-control["']?, ["']no-store|"cache-control": "no-store"/);
+    assert.match(route, /pocketBudgetHeaders/);
   }
+});
+
+test("server beta budgets stop duplicate cost before the provider is called", () => {
+  resetPocketBudgetsForTesting();
+  const request = new Request("https://example.test/api/pocket/analyse", { headers: { "x-forwarded-for": "192.0.2.10" } });
+  const results = Array.from({ length: 5 }, () => takePocketBudget(request, "analyse", 1_000));
+  assert.deepEqual(results.slice(0, 4).map((result) => result.allowed), [true, true, true, true]);
+  assert.equal(results[4].allowed, false);
+  assert.equal(results[4].remaining, 0);
+  assert.ok(results[4].retryAfterSeconds > 0);
+});
+
+test("beta budgets are isolated by action and requester and reset after the window", () => {
+  resetPocketBudgetsForTesting();
+  const first = new Request("https://example.test", { headers: { "x-forwarded-for": "192.0.2.11" } });
+  const second = new Request("https://example.test", { headers: { "x-forwarded-for": "192.0.2.12" } });
+  assert.equal(takePocketBudget(first, "review", 1_000).remaining, 2);
+  assert.equal(takePocketBudget(first, "follow-up", 1_000).remaining, 9);
+  assert.equal(takePocketBudget(second, "review", 1_000).remaining, 2);
+  assert.equal(takePocketBudget(first, "review", 1_000 + 31 * 60_000).remaining, 2);
 });

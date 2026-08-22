@@ -13,7 +13,7 @@ export default function Privacy() {
       <article>
         <span>LEGAL</span>
         <h1>Privacy Policy</h1>
-        <p className="updated">Last updated: 16 August 2026</p>
+        <p className="updated">Last updated: 22 August 2026</p>
 
         <h2>Who we are</h2>
         <p>
@@ -37,6 +37,29 @@ export default function Privacy() {
           administer launch communications and onboarding review, prevent preview abuse, respond
           to enquiries, operate and secure the service, and meet legal obligations. We do not sell
           personal information.
+        </p>
+
+        <h2>Pocket Bullseye chart audits</h2>
+        <p>
+          When you choose to run a Pocket Bullseye audit, the chart image and any optional
+          supporting image are sent to our configured AI provider so the requested audit can be
+          produced. Remove names, account numbers, balances, notifications and any other personal
+          information before uploading. Pocket requests that the provider does not store the AI
+          response for later retrieval, although limited provider safety and abuse-monitoring
+          retention may still apply.
+        </p>
+        <p>
+          Pocket does not place trades or connect an uploaded chart to a brokerage account. Saved
+          decisions and their chart images are stored locally in that browser using device storage;
+          they are not synchronised to a NASH AI Markets account. Clearing the browser&apos;s site data
+          removes them. A shared text summary does not include the chart image.
+        </p>
+        <p>
+          To protect the private beta from automated or excessive use, Pocket derives a
+          pseudonymous request key from technical network information and keeps only a short-lived
+          request count in volatile server memory. The counter automatically expires and is not
+          used for advertising or profiling. Our hosting provider may separately process ordinary
+          technical request logs to operate and secure the service.
         </p>
 
         <h2>Retention and your rights</h2>

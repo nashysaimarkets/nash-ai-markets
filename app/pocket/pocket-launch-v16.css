@@ -32,3 +32,4 @@
 .psApp .psMissingInputs>footer label{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid #55e99b88;border-radius:10px;background:#153226;color:#bdf8d7;font-size:11px;font-weight:900;letter-spacing:.08em;display:grid;place-items:center;cursor:pointer;box-shadow:0 0 20px #55e99b12}
 .psApp .psMissingInputs>footer label:active{transform:translateY(1px);background:#1a3b2d}.psApp .psMissingInputs>footer label:focus-within{outline:2px solid #78efb0;outline-offset:3px}.psApp .psMissingInputs>footer input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(max-width:520px){.psApp .psMissingInputs>footer{align-items:flex-start;flex-direction:column}.psApp .psMissingInputs>footer label{width:100%}}
+.psDataNote{margin:7px 3px 0;color:#68747d;font:600 7px/1.55 var(--font-geist-mono),monospace;letter-spacing:.035em}.psDataNote a{color:#9eabb4;text-decoration:underline;text-underline-offset:3px}

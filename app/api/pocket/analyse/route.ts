@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
+import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 
 export const runtime = "nodejs";
@@ -148,6 +149,11 @@ export async function POST(request: Request) {
   if (contextImage && (!/^data:image\/(jpeg|png|webp);base64,/.test(contextImage) || contextImage.length > MAX_DATA_URL_LENGTH)) {
     return NextResponse.json({ error: "Please use a valid higher-timeframe chart under 8 MB." }, { status: 400 });
   }
+  const budget = takePocketBudget(request, "analyse");
+  if (!budget.allowed) return NextResponse.json(
+    { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
+    { status: 429, headers: pocketBudgetHeaders(budget) },
+  );
   const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
 
@@ -201,7 +207,10 @@ export async function POST(request: Request) {
     } catch {
       throw new Error(`Structured response was incomplete (${response.status ?? "unknown"}; ${output.length} chars).`);
     }
-    return NextResponse.json({ analysis: calibratePocketAnalysis(analysis) }, { headers: { "cache-control": "no-store" } });
+    return NextResponse.json(
+      { analysis: calibratePocketAnalysis(analysis) },
+      { headers: pocketBudgetHeaders(budget) },
+    );
   } catch (error) {
     const failure = error && typeof error === "object" ? error as {
       name?: unknown;
