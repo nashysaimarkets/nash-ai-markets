@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
+import { calibratePocketAnalysis } from "../analysis-calibration";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -200,7 +201,7 @@ export async function POST(request: Request) {
     } catch {
       throw new Error(`Structured response was incomplete (${response.status ?? "unknown"}; ${output.length} chars).`);
     }
-    return NextResponse.json({ analysis }, { headers: { "cache-control": "no-store" } });
+    return NextResponse.json({ analysis: calibratePocketAnalysis(analysis) }, { headers: { "cache-control": "no-store" } });
   } catch (error) {
     const failure = error && typeof error === "object" ? error as {
       name?: unknown;

@@ -3,7 +3,9 @@ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/op
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-const MAX_IMAGE_LENGTH = 4_500_000;
+// Match the 8 MB upload contract used by the Pocket UI and analysis route.
+// A base64 data URL can be roughly 4/3 larger than its original file.
+const MAX_IMAGE_LENGTH = 11_000_000;
 
 const schema = {
   type: "object",

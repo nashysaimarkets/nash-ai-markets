@@ -1,7 +1,8 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
+import { normalizeLockedDecisions } from "./decision-compatibility";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -89,7 +90,7 @@ async function vaultList(): Promise<LockedDecision[]> {
   const db = await openVault();
   return new Promise((resolve, reject) => {
     const request = db.transaction("decisions", "readonly").objectStore("decisions").getAll();
-    request.onsuccess = () => resolve((request.result as LockedDecision[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    request.onsuccess = () => resolve((normalizeLockedDecisions(request.result) as unknown as LockedDecision[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
     request.onerror = () => reject(request.error);
   });
 }
@@ -136,6 +137,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpReply, setFollowUpReply] = useState<FollowUpReply | null>(null);
   const [followUpBusy, setFollowUpBusy] = useState(false);
   const [followUpError, setFollowUpError] = useState("");
+  const analysisRequestActive = useRef(false);
+  const followUpRequestActive = useRef(false);
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
@@ -210,7 +213,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function analyse() {
-    if (!image || !privacyChecked || busy) return;
+    if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
+    analysisRequestActive.current = true;
     setBusy(true);
     setError("");
     try {
@@ -234,12 +238,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
+      analysisRequestActive.current = false;
       setBusy(false);
     }
   }
 
   async function askBullseye(question = followUpQuestion) {
-    if (!analysis || !question.trim() || followUpBusy) return;
+    if (!analysis || !question.trim() || followUpBusy || followUpRequestActive.current) return;
+    followUpRequestActive.current = true;
     setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
     try {
       const response = await fetch("/api/pocket/follow-up", {
@@ -251,7 +257,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setFollowUpReply(payload.reply); setFollowUpQuestion(question.trim());
     } catch (caught) {
       setFollowUpError(caught instanceof Error ? caught.message : "Ask Bullseye is temporarily unavailable.");
-    } finally { setFollowUpBusy(false); }
+    } finally { followUpRequestActive.current = false; setFollowUpBusy(false); }
   }
 
   async function shareDecision() {
