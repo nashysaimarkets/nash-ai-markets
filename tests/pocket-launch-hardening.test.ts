@@ -151,6 +151,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /THREE CONDITIONAL FUTURES/);
   assert.match(client, /SPECULATIVE ONLY/);
   assert.match(client, /ScenarioCandles/);
+  assert.match(client, /psScenarioSource/);
+  assert.match(client, /SOURCE <b>→<\/b> IDEA/);
+  assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
   assert.match(styles, /\.psBattleLevel/);
@@ -167,6 +170,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psResultCardModal/);
   assert.match(styles, /\.psScenarioTheatre/);
   assert.match(styles, /\.psScenarioPanel/);
+  assert.match(styles, /\.psScenarioSource/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);

@@ -103,7 +103,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   const formatDistance = (distance: number | null) => distance === null ? "—" : distance.toLocaleString("en-GB", { maximumFractionDigits: 2 });
   const formatPercent = (distance: number | null) => distance === null || current === null || current === 0 ? "" : `${(distance / current * 100).toFixed(2)}%`;
   const proximity = supportDistance !== null && resistanceDistance !== null
-    ? supportDistance <= resistanceDistance ? "NEAR SUPPORT" : "NEAR RESISTANCE"
+    ? "ABOVE SUPPORT · BELOW RESISTANCE"
     : nearestSupport ? "ABOVE SUPPORT" : nearestResistance ? "BELOW RESISTANCE" : "LEVELS UNVERIFIED";
   const currentY = current === null ? 50 : position(current);
   const supportY = nearestSupport ? position(nearestSupport.numericPrice) : Math.min(88, currentY + 18);
@@ -115,7 +115,9 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   });
   const rangeTop = Math.min(resistanceY, supportY);
   const rangeHeight = Math.abs(supportY - resistanceY);
-  const locationHeadline = current !== null && nearestSupport && supportDistance !== null
+  const locationHeadline = current !== null && nearestSupport && nearestResistance && supportDistance !== null && resistanceDistance !== null
+    ? `Price is ${formatDistance(supportDistance)} above support and ${formatDistance(resistanceDistance)} below resistance.`
+    : current !== null && nearestSupport && supportDistance !== null
     ? `Price is ${formatDistance(supportDistance)} above verified support.`
     : current !== null && nearestResistance && resistanceDistance !== null
       ? `Price is ${formatDistance(resistanceDistance)} below verified resistance.`
@@ -176,7 +178,7 @@ function ScenarioCandles({ kind }: { kind: ScenarioKind }) {
   </svg>;
 }
 
-function ScenarioTheatre({ analysis }: { analysis: Analysis }) {
+function ScenarioTheatre({ analysis, sourceImage }: { analysis: Analysis; sourceImage: string }) {
   const active: ScenarioKind = analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait";
   const [selected, setSelected] = useState<ScenarioKind>(active);
   useEffect(() => setSelected(active), [active]);
@@ -195,6 +197,8 @@ function ScenarioTheatre({ analysis }: { analysis: Analysis }) {
     <div className="psScenarioStage" role="group" aria-label="Three speculative market scenarios">
       {scenarios.map((scenario) => <button key={scenario.kind} type="button" className="psScenarioPanel" data-kind={scenario.kind} data-active={selected === scenario.kind} data-read={active === scenario.kind} aria-pressed={selected === scenario.kind} onClick={() => setSelected(scenario.kind)}>
         <span className="psScenarioStatus">{active === scenario.kind ? "● AI READ" : "○ CONDITIONAL"}</span>
+        <img className="psScenarioSource" src={sourceImage} alt="" aria-hidden="true" />
+        <span className="psScenarioHandoff">SOURCE <b>→</b> IDEA</span>
         <ScenarioCandles kind={scenario.kind}/>
         <div><b>{scenario.icon}</b><strong>{scenario.title}</strong><small>{scenario.status}</small></div>
       </button>)}
@@ -611,7 +615,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <ScenarioTheatre analysis={analysis} />
+          <ScenarioTheatre analysis={analysis} sourceImage={image ?? ""} />
           <BullseyePlan analysis={analysis} onResultCard={() => setShowResultCard(true)} />
           <section className="psDecisionCompass">
             <header><span>DECISION COMPASS</span><b>EVIDENCE · NOT ODDS</b></header>
