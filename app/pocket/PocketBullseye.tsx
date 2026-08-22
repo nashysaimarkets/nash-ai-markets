@@ -764,7 +764,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function shareFoundingInvite() {
-    const url = `${window.location.origin}/pocket/founding`;
+    const url = `${window.location.origin}/join`;
     const text = "Try Pocket Bullseye — upload a chart and get an evidence-first second opinion before you trade. Founding 650 access is £4.99/month.";
     try {
       if (navigator.share) {
