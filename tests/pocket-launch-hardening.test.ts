@@ -146,6 +146,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /VIEW RESULT CARD/);
   assert.match(client, /showResultCard/);
   assert.match(client, /pocket-bullseye-result\.png/);
+  assert.match(client, /ScenarioTheatre/);
+  assert.match(client, /BULLSEYE SCENARIO THEATRE/);
+  assert.match(client, /THREE CONDITIONAL FUTURES/);
+  assert.match(client, /SPECULATIVE ONLY/);
+  assert.match(client, /ScenarioCandles/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
   assert.match(styles, /\.psBattleLevel/);
@@ -160,6 +165,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psClarityLock/);
   assert.match(styles, /\.psBullseyePlan/);
   assert.match(styles, /\.psResultCardModal/);
+  assert.match(styles, /\.psScenarioTheatre/);
+  assert.match(styles, /\.psScenarioPanel/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);

@@ -157,6 +157,53 @@ function SourceChart({ image, expanded = false }: { image: string; expanded?: bo
   </div>;
 }
 
+type ScenarioKind = "bull" | "wait" | "bear";
+const scenarioCandles: Record<ScenarioKind, Array<[number, number, number, number]>> = {
+  bull: [[58,48,63,44],[49,54,58,46],[53,43,57,40],[44,35,48,31],[36,29,40,25],[30,20,34,17],[21,14,25,11]],
+  wait: [[48,55,59,44],[54,45,58,42],[46,51,55,43],[50,42,54,38],[43,49,52,40],[48,44,52,41],[45,47,50,42]],
+  bear: [[45,38,49,34],[39,46,50,36],[45,52,55,42],[51,61,64,48],[60,70,73,57],[69,78,81,66],[77,87,90,73]],
+};
+
+function ScenarioCandles({ kind }: { kind: ScenarioKind }) {
+  return <svg className="psScenarioCandles" viewBox="0 0 210 112" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id={`grid-${kind}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffffff12"/><stop offset="1" stopColor="#ffffff02"/></linearGradient></defs>
+    {[22,44,66,88].map((y) => <line key={y} className="grid" x1="4" y1={y} x2="206" y2={y} />)}
+    <path className="pulse" d={kind === "bull" ? "M4 78 C50 74 90 76 118 61 S166 27 206 17" : kind === "bear" ? "M4 43 C55 39 88 42 116 55 S167 78 206 91" : "M4 58 C45 43 74 69 106 51 S164 65 206 50"} />
+    {scenarioCandles[kind].map(([open, close, high, low], index) => {
+      const x = 18 + index * 27; const rising = close < open; const top = Math.min(open, close); const height = Math.max(3, Math.abs(close - open));
+      return <g key={`${kind}-${index}`} data-candle={rising ? "up" : "down"}><line x1={x} y1={low} x2={x} y2={high}/><rect x={x - 6} y={top} width="12" height={height} rx="1"/></g>;
+    })}
+  </svg>;
+}
+
+function ScenarioTheatre({ analysis }: { analysis: Analysis }) {
+  const active: ScenarioKind = analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait";
+  const [selected, setSelected] = useState<ScenarioKind>(active);
+  useEffect(() => setSelected(active), [active]);
+  const levels = analysis.levels.flatMap((level) => { const price = numericLevel(level.price); return price === null ? [] : [{ ...level, priceValue: price }]; });
+  const current = numericLevel(analysis.currentPrice);
+  const support = levels.filter((level) => level.kind === "support" && (current === null || level.priceValue <= current)).sort((a,b) => b.priceValue-a.priceValue)[0];
+  const resistance = levels.filter((level) => level.kind === "resistance" && (current === null || level.priceValue >= current)).sort((a,b) => a.priceValue-b.priceValue)[0];
+  const scenarios: Array<{ kind: ScenarioKind; icon: string; title: string; status: string; trigger: string; failure: string }> = [
+    { kind: "bull", icon: "↗", title: "BULL CONTINUATION", status: analysis.direction === "BULLISH" ? "ACTIVE READ" : "ALTERNATE PATH", trigger: analysis.bullConfirmation || analysis.nextSequence.confirmation, failure: resistance ? `Failure to hold above ${resistance.price}` : analysis.invalidation },
+    { kind: "wait", icon: "↔", title: "PATIENCE / RANGE", status: analysis.direction === "NEUTRAL" ? "ACTIVE READ" : "SAFETY PATH", trigger: analysis.nextSequence.patience || analysis.noTradeCondition, failure: analysis.nextSequence.reassess },
+    { kind: "bear", icon: "↘", title: "BEAR BREAKDOWN", status: analysis.direction === "BEARISH" ? "ACTIVE READ" : "ALTERNATE PATH", trigger: analysis.bearConfirmation || analysis.nextSequence.failure, failure: support ? `Recovery and hold above ${support.price}` : analysis.invalidation },
+  ];
+  const chosen = scenarios.find((scenario) => scenario.kind === selected) ?? scenarios[1];
+  return <section className="psScenarioTheatre" data-selected={selected}>
+    <header><div><span>◈ BULLSEYE SCENARIO THEATRE</span><small>YOUR CHART · THREE CONDITIONAL FUTURES</small></div><strong>SPECULATIVE<br/>ILLUSTRATION</strong></header>
+    <div className="psScenarioStage" role="group" aria-label="Three speculative market scenarios">
+      {scenarios.map((scenario) => <button key={scenario.kind} type="button" className="psScenarioPanel" data-kind={scenario.kind} data-active={selected === scenario.kind} data-read={active === scenario.kind} aria-pressed={selected === scenario.kind} onClick={() => setSelected(scenario.kind)}>
+        <span className="psScenarioStatus">{active === scenario.kind ? "● AI READ" : "○ CONDITIONAL"}</span>
+        <ScenarioCandles kind={scenario.kind}/>
+        <div><b>{scenario.icon}</b><strong>{scenario.title}</strong><small>{scenario.status}</small></div>
+      </button>)}
+    </div>
+    <article className="psScenarioBrief" data-kind={selected} aria-live="polite"><div><small>THIS PATH ACTIVATES IF</small><p>{chosen.trigger}</p></div><i/><div><small>THIS PATH WEAKENS IF</small><p>{chosen.failure}</p></div></article>
+    <footer><b>⚠ SPECULATIVE ONLY</b><span>These candles illustrate conditional scenarios—not predicted prices, probabilities or trade instructions. Confirm every trigger on the live source chart.</span></footer>
+  </section>;
+}
+
 function ClarityLock({ analysis }: { analysis: Analysis }) {
   const metrics = ([
     ["STRUCTURE", analysis.setupScore.structure], ["MOMENTUM", analysis.setupScore.momentum],
@@ -564,7 +611,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <ClarityLock analysis={analysis} />
+          <ScenarioTheatre analysis={analysis} />
           <BullseyePlan analysis={analysis} onResultCard={() => setShowResultCard(true)} />
           <section className="psDecisionCompass">
             <header><span>DECISION COMPASS</span><b>EVIDENCE · NOT ODDS</b></header>
