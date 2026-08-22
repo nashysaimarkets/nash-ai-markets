@@ -381,7 +381,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   useEffect(() => {
     setStockEvents([]);
-    if (!isListedEquityAnalysis(analysis)) { setStockEventStatus("idle"); return; }
+    if (!analysis || !isListedEquityAnalysis(analysis)) { setStockEventStatus("idle"); return; }
     setStockEventStatus("loading");
     const controller = new AbortController();
     fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
