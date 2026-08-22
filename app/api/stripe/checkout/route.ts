@@ -30,7 +30,10 @@ export async function POST(request: Request) {
       pocketPricePresent: Boolean(process.env.STRIPE_POCKET_FOUNDING_PRICE_ID?.trim()),
       offeringPresent: Boolean(selected),
     });
-    return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
+    const unavailablePath = form.get("offering") === "pocket_founding_month"
+      ? "/pocket/founding?checkout=unavailable"
+      : "/pricing?checkout=unavailable";
+    return NextResponse.redirect(new URL(unavailablePath, origin), 303);
   }
   try {
     const stripe = new Stripe(secretKey);
@@ -64,6 +67,9 @@ export async function POST(request: Request) {
       code: stripeError?.code || "unknown",
       message: stripeError?.message || "unknown",
     });
-    return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
+    const unavailablePath = selected.offering.plan === "pocket"
+      ? "/pocket/founding?checkout=unavailable"
+      : "/pricing?checkout=unavailable";
+    return NextResponse.redirect(new URL(unavailablePath, origin), 303);
   }
 }
