@@ -252,6 +252,35 @@ function ConfluenceStack({ analysis, sourceImage }: { analysis: Analysis; source
   </section>;
 }
 
+function MarketStory({ analysis, sourceImage, onShare }: { analysis: Analysis; sourceImage: string; onShare: () => void }) {
+  const [scene, setScene] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const sceneNames = ["SETUP", "BATTLE", "TRIGGER", "VERDICT"];
+  useEffect(() => {
+    if (paused) return;
+    const timer = window.setTimeout(() => setScene((current) => (current + 1) % sceneNames.length), 6500);
+    return () => window.clearTimeout(timer);
+  }, [scene, paused, sceneNames.length]);
+  const previous = () => setScene((current) => (current + sceneNames.length - 1) % sceneNames.length);
+  const next = () => setScene((current) => (current + 1) % sceneNames.length);
+  return <section className="psMarketStory" data-scene={scene} data-direction={analysis.direction}>
+    <header><div><span>◈ YOUR BULLSEYE MARKET STORY</span><small>BUILT FROM YOUR CHART · TAP TO EXPLORE</small></div><button type="button" onClick={() => setPaused((value) => !value)}>{paused ? "▶ PLAY" : "Ⅱ PAUSE"}</button></header>
+    <div className="psStoryProgress" aria-label={`Scene ${scene + 1} of ${sceneNames.length}`}>{sceneNames.map((name, index) => <button key={name} type="button" data-complete={index < scene} data-active={index === scene} onClick={() => setScene(index)} aria-label={`Open ${name.toLowerCase()} scene`}><span/><small>{name}</small>{index === scene && !paused ? <i key={`${scene}-${paused}`}/> : null}</button>)}</div>
+    <div className="psStoryStage">
+      <img src={sourceImage} alt="Customer's uploaded chart forming the animated Bullseye market story"/>
+      <div className="psStoryShade"/><div className="psStoryScan" aria-hidden="true"/>
+      <button type="button" className="psStoryPrevious" onClick={previous} aria-label="Previous story scene">‹</button><button type="button" className="psStoryNext" onClick={next} aria-label="Next story scene">›</button>
+      <div className="psStoryScene" key={scene} aria-live="polite">
+        {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · THE SETUP</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>{analysis.marketStructure}</p></article> : null}
+        {scene === 1 ? <article className="psStoryBattle"><small>CHAPTER 02 · THE BATTLE</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
+        {scene === 2 ? <article className="psStoryTrigger"><small>CHAPTER 03 · THE LINE IN THE SAND</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ THE READ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ THE READ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div></article> : null}
+        {scene === 3 ? <article className="psStoryVerdict"><small>FINAL CHAPTER · THE BULLSEYE</small><div><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{analysis.verdictHeadline}</h2><p>NEXT CHECK · {analysis.nextSequence.reassess}</p><button type="button" onClick={onShare}>OPEN SHAREABLE RESULT ↗</button></article> : null}
+      </div>
+    </div>
+    <footer><b>STORY, NOT CERTAINTY</b><span>Every chapter is conditional decision support built from the uploaded screenshot. It does not predict a future price or instruct a trade.</span></footer>
+  </section>;
+}
+
 function ClarityLock({ analysis }: { analysis: Analysis }) {
   const metrics = ([
     ["STRUCTURE", analysis.setupScore.structure], ["MOMENTUM", analysis.setupScore.momentum],
@@ -661,7 +690,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <ConfluenceStack analysis={analysis} sourceImage={image ?? ""} />
+          <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} />
           <section className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
