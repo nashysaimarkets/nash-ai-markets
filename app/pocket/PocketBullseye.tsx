@@ -62,6 +62,7 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
   currentPrice?: string;
   levels: Level[];
+  contextBattlefield?: { currentPrice?: string; levels: Level[]; priceScaleAnchors?: { price: number; y: number }[]; plotBounds?: { left: number; top: number; right: number; bottom: number } } | null;
   fibLevels: FibLevel[];
 };
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
@@ -208,6 +209,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
+  const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
@@ -239,6 +241,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!file) return;
     setError("");
     setAnalysis(null);
+    setBattlefieldChart("primary");
     if (!file.type.startsWith("image/")) {
       setError("Please choose a JPEG, PNG or WebP chart image.");
       return;
@@ -417,18 +420,31 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   })();
 
   const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
+  const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
 
   if (review && reviewTarget) {
     return <main className="psApp" data-pocket-build="v3.1"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section></main>;
   }
 
   if (analysis) {
+    const contextBattlefield = analysis.contextBattlefield;
+    const battlefieldAnalysis: Analysis = battlefieldChart === "context" && contextBattlefield ? {
+      ...analysis,
+      levels: Array.isArray(contextBattlefield.levels) ? contextBattlefield.levels : [],
+      currentPrice: contextBattlefield.currentPrice,
+      timeframe: analysis.higherTimeframe.timeframe || "CONTEXT",
+      direction: analysis.higherTimeframe.direction === "UNKNOWN" ? "NEUTRAL" : analysis.higherTimeframe.direction,
+    } : analysis;
+    const battlefieldTabs = contextImage ? <nav className="psBattleTabs" aria-label="Choose chart for Price Battlefield">
+      <button type="button" data-active={battlefieldChart === "primary"} aria-pressed={battlefieldChart === "primary"} onClick={() => setBattlefieldChart("primary")}><span>①</span><strong>PRIMARY</strong><small>{analysis.timeframe}</small></button>
+      <button type="button" data-active={battlefieldChart === "context"} aria-pressed={battlefieldChart === "context"} onClick={() => setBattlefieldChart("context")}><span>②</span><strong>CONTEXT</strong><small>{analysis.higherTimeframe.timeframe || "SECOND VIEW"}</small></button>
+    </nav> : null;
     return (
       <main className="psApp" data-pocket-build="v3.1">
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
-            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setShowResultReveal(false); }}>NEW CHART</button>
+            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setShowResultReveal(false); }}>NEW CHART</button>
           </div>
           <header className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
@@ -495,8 +511,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div>
           <section className="psResultChart psChartWorkspace psBattleWorkspace">
             <header><div><span>🎯 PRICE BATTLEFIELD</span><small>MARKET LOCATION · CONSEQUENCE MAP</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
-            <PriceBattlefield analysis={analysis} scenario={selectedScenario} />
-            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>⌄</b></summary>{sourceChart()}</details>
+            {battlefieldTabs}
+            <PriceBattlefield analysis={battlefieldAnalysis} scenario={selectedScenario} />
+            <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
           </section>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
@@ -539,8 +556,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {chartFocus && (
           <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye price battlefield">
             <header><span>PRICE BATTLEFIELD · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
-            <PriceBattlefield analysis={analysis} expanded scenario={selectedScenario} />
-            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>⌄</b></summary>{sourceChart(true)}</details>
+            {battlefieldTabs}
+            <PriceBattlefield analysis={battlefieldAnalysis} expanded scenario={selectedScenario} />
+            <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart(true) : sourceChart(true)}</details>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
         )}

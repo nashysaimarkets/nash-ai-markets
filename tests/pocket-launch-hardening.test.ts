@@ -113,10 +113,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /PriceBattlefield/);
   assert.match(client, /Bullseye price battlefield/);
-  assert.match(client, /VIEW ORIGINAL SOURCE CHART/);
+  assert.match(client, /SOURCE CHART/);
   assert.match(styles, /\.psBattlefield\{/);
   assert.match(analyseRoute, /priceScaleAnchors/);
   assert.match(analyseRoute, /pocket_bullseye_precision_overlays/);
+  assert.match(analyseRoute, /contextPrecisionResult/);
+  assert.match(analyseRoute, /contextBattlefield/);
   assert.match(analyseRoute, /Promise\.all/);
   assert.match(analyseRoute, /Fail closed/);
   assert.match(client, /numericLevel/);
@@ -128,6 +130,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /VIEW CONDITIONS/);
   assert.match(client, /SHOW ON PRICE BATTLEFIELD/);
   assert.match(client, /aria-pressed=\{selectedScenario === "bull"\}/);
+  assert.match(client, /battlefieldChart/);
+  assert.match(client, /Choose chart for Price Battlefield/);
+  assert.match(client, /contextBattlefield/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /OPEN MY FULL RESULT/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
@@ -136,6 +141,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psBattleIntel/);
   assert.match(styles, /\.psBattleRoutes/);
   assert.match(styles, /\.psScenarioFocus/);
+  assert.match(styles, /\.psBattleTabs/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);

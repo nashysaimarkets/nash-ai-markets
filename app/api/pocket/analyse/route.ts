@@ -248,11 +248,7 @@ export async function POST(request: Request) {
       max_output_tokens: 4400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     });
-    const precisionRequest = client.responses.create({
-      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
-      reasoning: { effort: "low" },
-      store: false,
-      instructions: [
+    const precisionInstructions = [
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
         "plotBounds must tightly enclose only the candle plotting rectangle. Exclude phone chrome, chart headers, order tickets, price-axis labels, dates, footer data, indicator panels and volume panels.",
@@ -262,23 +258,30 @@ export async function POST(request: Request) {
         "Return up to three conspicuous pivot swing highs or lows at the wick extremity. Pivot x/y and x2/y2 must be identical.",
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
-      ].join(" "),
+      ].join(" ");
+    const requestPrecision = (chartImage: string) => client.responses.create({
+      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
+      reasoning: { effort: "low" },
+      store: false,
+      instructions: precisionInstructions,
       input: [{
         role: "user",
         content: [
           { type: "input_text", text: "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
-          { type: "input_image", image_url: image, detail: "high" },
+          { type: "input_image", image_url: chartImage, detail: "high" },
         ],
       }],
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
     });
-    const [response, precisionResult] = await Promise.all([
+    const safePrecision = (chartImage: string, label: string) => requestPrecision(chartImage).catch((error) => {
+      console.error(`[pocket-bullseye] ${label} precision pass unavailable`, error instanceof Error ? error.message : "unknown");
+      return null;
+    });
+    const [response, precisionResult, contextPrecisionResult] = await Promise.all([
       analysisRequest,
-      precisionRequest.then((result) => result).catch((error) => {
-        console.error("[pocket-bullseye] precision overlay pass unavailable", error instanceof Error ? error.message : "unknown");
-        return null;
-      }),
+      safePrecision(image, "primary"),
+      contextImage ? safePrecision(contextImage, "context") : Promise.resolve(null),
     ]);
     const output = response.output_text?.trim();
     if (!output) throw new Error(`Structured response was empty (${response.status ?? "unknown"}).`);
@@ -290,11 +293,13 @@ export async function POST(request: Request) {
     }
     if (analysis && typeof analysis === "object") {
       let precision: unknown = null;
-      try {
-        precision = precisionResult?.output_text ? JSON.parse(precisionResult.output_text) : null;
-      } catch {
-        precision = null;
-      }
+      let contextPrecision: unknown = null;
+      const parsePrecision = (outputText: string | undefined) => {
+        try { return outputText ? JSON.parse(outputText) as unknown : null; }
+        catch { return null; }
+      };
+      precision = parsePrecision(precisionResult?.output_text);
+      contextPrecision = parsePrecision(contextPrecisionResult?.output_text);
       const record = analysis as Record<string, unknown>;
       if (precision && typeof precision === "object") {
         const geometry = precision as Record<string, unknown>;
@@ -304,14 +309,33 @@ export async function POST(request: Request) {
           priceScaleAnchors: geometry.priceScaleAnchors,
           levels: geometry.levels,
           currentPrice: geometry.currentPrice,
+          contextBattlefield: contextPrecision && typeof contextPrecision === "object" ? {
+            levels: (contextPrecision as Record<string, unknown>).levels,
+            currentPrice: (contextPrecision as Record<string, unknown>).currentPrice,
+            priceScaleAnchors: (contextPrecision as Record<string, unknown>).priceScaleAnchors,
+            plotBounds: (contextPrecision as Record<string, unknown>).plotBounds,
+          } : null,
         };
       } else {
         // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
         analysis = { ...record, priceScaleAnchors: [], levels: [] };
       }
     }
+    const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;
+    const contextBattlefield = calibrated?.contextBattlefield;
+    if (contextBattlefield && typeof contextBattlefield === "object") {
+      const context = contextBattlefield as Record<string, unknown>;
+      const contextCalibrated = calibratePocketAnalysis({
+        ...calibrated,
+        plotBounds: context.plotBounds,
+        priceScaleAnchors: context.priceScaleAnchors,
+        levels: context.levels,
+        currentPrice: context.currentPrice,
+      }) as Record<string, unknown>;
+      calibrated.contextBattlefield = { ...context, levels: contextCalibrated.levels };
+    }
     return NextResponse.json(
-      { analysis: calibratePocketAnalysis(analysis) },
+      { analysis: calibrated },
       { headers: pocketBudgetHeaders(budget) },
     );
   } catch (error) {
