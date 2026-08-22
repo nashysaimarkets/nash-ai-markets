@@ -201,7 +201,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /SUGGEST AN IDEA/);
   assert.match(client, /mailto:hello@nashaimarkets\.com/);
   assert.match(client, /INVITE A TRADER/);
-  assert.match(client, /\/pocket\/founding/);
+  assert.match(client, /\/join/);
   assert.match(client, /navigator\.share/);
   assert.match(client, /navigator\.clipboard\.writeText/);
   assert.match(feedbackStyles, /\.psFeedback/);
