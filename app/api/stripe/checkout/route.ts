@@ -52,7 +52,13 @@ export async function POST(request: Request) {
     });
     if (!session.url) throw new Error("checkout_url_unavailable");
     return NextResponse.redirect(session.url, 303);
-  } catch {
+  } catch (error) {
+    const stripeError = error as { type?: string; code?: string; message?: string };
+    console.error("[stripe-checkout] session creation failed", {
+      type: stripeError?.type || "unknown",
+      code: stripeError?.code || "unknown",
+      message: stripeError?.message || "unknown",
+    });
     return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
   }
 }
