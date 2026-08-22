@@ -252,7 +252,7 @@ function ConfluenceStack({ analysis, sourceImage }: { analysis: Analysis; source
   </section>;
 }
 
-function MarketStory({ analysis, sourceImage, onShare }: { analysis: Analysis; sourceImage: string; onShare: () => void }) {
+function MarketStory({ analysis, sourceImage, onShare, viewerName, intention }: { analysis: Analysis; sourceImage: string; onShare: () => void; viewerName: string; intention: Intention }) {
   const [scene, setScene] = useState(0);
   const [paused, setPaused] = useState(false);
   const sceneNames = ["SETUP", "BATTLE", "TRIGGER", "VERDICT"];
@@ -264,17 +264,17 @@ function MarketStory({ analysis, sourceImage, onShare }: { analysis: Analysis; s
   const previous = () => setScene((current) => (current + sceneNames.length - 1) % sceneNames.length);
   const next = () => setScene((current) => (current + 1) % sceneNames.length);
   return <section className="psMarketStory" data-scene={scene} data-direction={analysis.direction}>
-    <header><div><span>◈ YOUR BULLSEYE MARKET STORY</span><small>BUILT FROM YOUR CHART · TAP TO EXPLORE</small></div><button type="button" onClick={() => setPaused((value) => !value)}>{paused ? "▶ PLAY" : "Ⅱ PAUSE"}</button></header>
+    <header><div><span>◈ {viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"} BULLSEYE MARKET STORY</span><small>BUILT FROM YOUR CHART · {intention === "UNSURE" ? "OPEN-MINDED READ" : `${intention} IDEA CHALLENGED`}</small></div><button type="button" onClick={() => setPaused((value) => !value)}>{paused ? "▶ PLAY" : "Ⅱ PAUSE"}</button></header>
     <div className="psStoryProgress" aria-label={`Scene ${scene + 1} of ${sceneNames.length}`}>{sceneNames.map((name, index) => <button key={name} type="button" data-complete={index < scene} data-active={index === scene} onClick={() => setScene(index)} aria-label={`Open ${name.toLowerCase()} scene`}><span/><small>{name}</small>{index === scene && !paused ? <i key={`${scene}-${paused}`}/> : null}</button>)}</div>
     <div className="psStoryStage">
       <img src={sourceImage} alt="Customer's uploaded chart forming the animated Bullseye market story"/>
       <div className="psStoryShade"/><div className="psStoryScan" aria-hidden="true"/>
       <button type="button" className="psStoryPrevious" onClick={previous} aria-label="Previous story scene">‹</button><button type="button" className="psStoryNext" onClick={next} aria-label="Next story scene">›</button>
       <div className="psStoryScene" key={scene} aria-live="polite">
-        {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · THE SETUP</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>{analysis.marketStructure}</p></article> : null}
+        {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · {viewerName ? `${viewerName.toUpperCase()}, HERE'S YOUR SETUP` : "THE SETUP"}</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>{analysis.marketStructure}</p></article> : null}
         {scene === 1 ? <article className="psStoryBattle"><small>CHAPTER 02 · THE BATTLE</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
         {scene === 2 ? <article className="psStoryTrigger"><small>CHAPTER 03 · THE LINE IN THE SAND</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ THE READ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ THE READ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div></article> : null}
-        {scene === 3 ? <article className="psStoryVerdict"><small>FINAL CHAPTER · THE BULLSEYE</small><div><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{analysis.verdictHeadline}</h2><p>NEXT CHECK · {analysis.nextSequence.reassess}</p><button type="button" onClick={onShare}>OPEN SHAREABLE RESULT ↗</button></article> : null}
+        {scene === 3 ? <article className="psStoryVerdict"><small>FINAL CHAPTER · {viewerName ? `${viewerName.toUpperCase()}'S BULLSEYE` : "THE BULLSEYE"}</small><div><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{viewerName ? `${viewerName}, ${analysis.verdictHeadline.charAt(0).toLowerCase()}${analysis.verdictHeadline.slice(1)}` : analysis.verdictHeadline}</h2><p>NEXT CHECK · {analysis.nextSequence.reassess}</p><button type="button" onClick={onShare}>OPEN SHAREABLE RESULT ↗</button></article> : null}
       </div>
     </div>
     <footer><b>STORY, NOT CERTAINTY</b><span>Every chapter is conditional decision support built from the uploaded screenshot. It does not predict a future price or instruct a trade.</span></footer>
@@ -403,10 +403,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [showResultCard, setShowResultCard] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
+  const [viewerName, setViewerName] = useState("");
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
+
+  useEffect(() => { try { setViewerName(localStorage.getItem("pocket-bullseye-viewer-name") ?? ""); } catch {} }, []);
 
   useEffect(() => {
     setStockEvents([]);
@@ -690,14 +693,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} />
+          <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} viewerName={viewerName.trim()} intention={intention} />
           <section className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
             <details><summary>VIEW EVENT SOURCES <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 5).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · OFFICIAL SCHEDULE · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
             <footer>Company dates are provider-scheduled and symbol-matched; they may be estimated or revised. Macro rows labelled official come from agency schedules. Always confirm with the issuer or exchange.</footer>
           </section>
-          <BullseyePlan analysis={analysis} onResultCard={() => setShowResultCard(true)} />
           <section className="psDecisionCompass">
             <header><span>DECISION COMPASS</span><b>EVIDENCE · NOT ODDS</b></header>
             <div className="psCompassBody">
@@ -841,6 +843,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         </section>
         {!reviewTarget ? <section className="psOpeningRail" aria-label="How Bullseye works"><article><i>01</i><div><strong>READ</strong><span>Structure and levels</span></div></article><article><i>02</i><div><strong>CHALLENGE</strong><span>Bias and contradictions</span></div></article><article><i>03</i><div><strong>PROTECT</strong><span>Patience and risk</span></div></article></section> : null}
         {!reviewTarget ? <div className="psTrustPulse"><span>🔒 PRIVATE IMAGE</span><span>◉ EVIDENCE FIRST</span><span>✕ NO ORDER CONNECTION</span></div> : null}
+        {!reviewTarget ? <label className="psPersonalTouch"><span><strong>MAKE BULLSEYE YOURS</strong><small>OPTIONAL · STAYS ON THIS DEVICE</small></span><input value={viewerName} maxLength={24} autoComplete="given-name" placeholder="What should Bullseye call you?" onChange={(event) => { const value = event.target.value; setViewerName(value); try { localStorage.setItem("pocket-bullseye-viewer-name", value); } catch {} }} /></label> : null}
         <label className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>
             {/* eslint-disable-next-line @next/next/no-img-element */}

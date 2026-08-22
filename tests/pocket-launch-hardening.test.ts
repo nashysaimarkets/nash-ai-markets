@@ -156,10 +156,15 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /FIVE EVIDENCE LAYERS/);
   assert.doesNotMatch(client, /<ConfluenceStack analysis=/);
   assert.match(client, /MarketStory/);
-  assert.match(client, /YOUR BULLSEYE MARKET STORY/);
+  assert.match(client, /BULLSEYE MARKET STORY/);
   assert.match(client, /CHAPTER 02 · THE BATTLE/);
-  assert.match(client, /FINAL CHAPTER · THE BULLSEYE/);
+  assert.match(client, /FINAL CHAPTER ·/);
+  assert.match(client, /BULLSEYE"/);
   assert.match(client, /STORY, NOT CERTAINTY/);
+  assert.match(client, /pocket-bullseye-viewer-name/);
+  assert.match(client, /MAKE BULLSEYE YOURS/);
+  assert.match(client, /viewerName\.trim\(\)/);
+  assert.doesNotMatch(client, /<BullseyePlan analysis=/);
   assert.match(client, /EVENT IMPACT CHECK/);
   assert.match(client, /psResultSupportInput/);
   assert.match(client, /will not invent one/);
@@ -189,6 +194,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psMarketStory/);
   assert.match(styles, /\.psStoryProgress/);
   assert.match(styles, /@keyframes psStoryKenBurns/);
+  assert.match(styles, /\.psPersonalTouch/);
+  assert.match(styles, /\.psDecisionCompass,\.psApp \.psNextSequence/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
