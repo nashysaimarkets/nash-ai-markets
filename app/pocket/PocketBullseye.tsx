@@ -108,9 +108,19 @@ function PriceBattlefield({ analysis, expanded = false, scenario = null }: { ana
   const currentY = current === null ? 50 : position(current);
   const supportY = nearestSupport ? position(nearestSupport.numericPrice) : Math.min(88, currentY + 18);
   const resistanceY = nearestResistance ? position(nearestResistance.numericPrice) : Math.max(12, currentY - 18);
+  const priceDecimals = values.some((value) => Math.abs(value - Math.round(value)) > .001) ? 2 : 0;
+  const scaleTicks = Array.from({ length: 7 }, (_, index) => {
+    const fraction = index / 6;
+    return { price: max - (max - min) * fraction, top: 9 + 82 * fraction };
+  });
+  const rangeTop = Math.min(resistanceY, supportY);
+  const rangeHeight = Math.abs(supportY - resistanceY);
 
   return <div className={`psBattlefield${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} aria-label="Bullseye price battlefield">
     <div className="psBattleGrid" aria-hidden="true" />
+    {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Battlefield price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
+    {nearestSupport && nearestResistance ? <div className="psDecisionRange" style={{ top: `${rangeTop}%`, height: `${rangeHeight}%` }} aria-label={`Active decision range from ${nearestSupport.price} to ${nearestResistance.price}`}><span>ACTIVE DECISION RANGE</span><i /><i /><i /></div> : null}
+    {current !== null ? <div className="psPressureContours" style={{ top: `${currentY}%` }} aria-hidden="true"><i /><i /><i /></div> : null}
     <div className="psBattleIntel">
       <article data-tone="support"><span>TO SUPPORT</span><strong>{formatDistance(supportDistance)}</strong><small>{formatPercent(supportDistance)}</small></article>
       <article data-tone="location"><span>MARKET LOCATION</span><strong>{proximity}</strong><small>{analysis.timeframe}</small></article>

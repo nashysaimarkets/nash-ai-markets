@@ -133,6 +133,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /battlefieldChart/);
   assert.match(client, /Choose chart for Price Battlefield/);
   assert.match(client, /contextBattlefield/);
+  assert.match(client, /Calibrated Battlefield price ladder/);
+  assert.match(client, /ACTIVE DECISION RANGE/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /OPEN MY FULL RESULT/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
@@ -142,6 +144,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psBattleRoutes/);
   assert.match(styles, /\.psScenarioFocus/);
   assert.match(styles, /\.psBattleTabs/);
+  assert.match(styles, /\.psPriceLadder/);
+  assert.match(styles, /\.psDecisionRange/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
