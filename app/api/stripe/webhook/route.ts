@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "../../../../utils/supabase/admin";
-import { configuredOffering, validFoundingProPrice, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
+import { configuredOffering, validFoundingProPrice, validPocketFoundingPrice, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,6 +96,20 @@ async function saveSubscription(
   const billingInterval = billingIntervals.length === 1 ? billingIntervals[0] : null;
   const unitAmount = offerings.length === 1 ? offerings[0].item.price.unit_amount : null;
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
+
+  if (plan === "pocket") {
+    if (!email || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
+    const { error } = await createAdminClient().rpc("sync_pocket_founding_650", {
+      p_email: email,
+      p_stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
+      p_stripe_subscription_id: subscription.id,
+      p_subscription_active: foundingSubscriptionActive(subscription.status),
+      p_current_period_end: subscriptionEnd(subscription),
+      p_event_created_at: eventCreated,
+    });
+    if (error) { logSupabaseFailure("founding_rpc", error); throw new Error("Pocket Founding 650 synchronization failed"); }
+    return;
+  }
 
   const admin = createAdminClient();
   if (!plan && !foundingSubscriptionActive(subscription.status)) {

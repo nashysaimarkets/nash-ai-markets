@@ -6,6 +6,7 @@ import {
   checkoutPriceId,
   configuredOffering,
   validFoundingProPrice,
+  validPocketFoundingPrice,
 } from "../app/lib/stripe-commercial.ts";
 import { calculateCommercialMetrics } from "../app/lib/server/commercial.ts";
 import {
@@ -19,6 +20,7 @@ import {
 const root = new URL("../", import.meta.url);
 const read = (path: string) => readFile(new URL(path, root), "utf8");
 const environment = {
+  STRIPE_POCKET_FOUNDING_PRICE_ID: "price_pocket_founding_month",
   STRIPE_PRO_PRICE_ID: "price_pro_month",
   STRIPE_FOUNDING_PRO_PRICE_ID: "price_founding_pro_month",
   STRIPE_ELITE_PRICE_ID: "price_elite_month",
@@ -31,6 +33,7 @@ const environment = {
 test("monthly and annual Stripe offerings map without changing legacy customers", () => {
   assert.deepEqual(configuredOffering("price_pro_month", environment), { plan: "pro", billingInterval: "month", foundingEligible: false });
   assert.deepEqual(configuredOffering("price_founding_pro_month", environment), { plan: "pro", billingInterval: "month", foundingEligible: true });
+  assert.deepEqual(configuredOffering("price_pocket_founding_month", environment), { plan: "pocket", billingInterval: "month", foundingEligible: true });
   assert.deepEqual(configuredOffering("price_elite_year", environment), { plan: "elite", billingInterval: "year", foundingEligible: false });
   assert.deepEqual(configuredOffering("price_legacy_pro_month", environment), { plan: "pro", billingInterval: "month", foundingEligible: false });
   assert.deepEqual(configuredOffering("price_legacy_elite_month", environment), { plan: "elite", billingInterval: "month", foundingEligible: false });
@@ -40,10 +43,21 @@ test("monthly and annual Stripe offerings map without changing legacy customers"
 test("checkout accepts only enumerated server-side Price IDs", () => {
   assert.equal(checkoutPriceId("pro_year", environment), "price_pro_year");
   assert.equal(checkoutPriceId("founding_pro_month", environment), "price_founding_pro_month");
+  assert.equal(checkoutPriceId("pocket_founding_month", environment), "price_pocket_founding_month");
   assert.equal(checkoutPriceId("elite_month", environment), "price_elite_month");
   assert.equal(checkoutPriceId("legacy_pro_month", environment), null);
   assert.equal(checkoutPriceId("price_attacker", environment), null);
   assert.equal(checkoutPriceId(null, environment), null);
+});
+
+test("Pocket Founding 650 checkout requires the exact £4.99 monthly Price", () => {
+  assert.deepEqual(checkoutOffering("pocket_founding_month", environment), {
+    priceId: "price_pocket_founding_month",
+    offering: { plan: "pocket", billingInterval: "month", foundingEligible: true },
+  });
+  assert.equal(validPocketFoundingPrice({ active:true,currency:"gbp",type:"recurring",unit_amount:499,recurring:{interval:"month"} }), true);
+  assert.equal(validPocketFoundingPrice({ active:true,currency:"gbp",type:"recurring",unit_amount:500,recurring:{interval:"month"} }), false);
+  assert.equal(validPocketFoundingPrice({ active:true,currency:"gbp",type:"recurring",unit_amount:499,recurring:{interval:"year"} }), false);
 });
 
 test("Founding Pro checkout requires an exact, unambiguous £12 monthly Price", () => {
@@ -76,8 +90,8 @@ test("checkout binds signed-in members without exposing the session id in return
   assert.match(checkout, /customer_email: verifiedEmail/);
   assert.match(checkout, /client_reference_id: user\?\.id/);
   assert.match(checkout, /stripe\.prices\.retrieve\(selected\.priceId\)/);
-  assert.match(checkout, /validFoundingProPrice\(price\)/);
-  assert.ok(checkout.includes("success_url: `${origin}/welcome`"));
+  assert.match(checkout, /validPocketFoundingPrice\(price\)/);
+  assert.match(checkout, /pocket\/founding\/welcome/);
   assert.doesNotMatch(checkout, /CHECKOUT_SESSION_ID/);
 });
 

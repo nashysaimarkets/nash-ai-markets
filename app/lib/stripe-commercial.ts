@@ -1,4 +1,4 @@
-export type CommercialPlan = "pro" | "elite";
+export type CommercialPlan = "pro" | "elite" | "pocket";
 export type BillingInterval = "month" | "year";
 export type StripeOffering = {
   plan: CommercialPlan;
@@ -7,6 +7,7 @@ export type StripeOffering = {
 };
 
 const offeringVariables = {
+  pocket_founding_month: "STRIPE_POCKET_FOUNDING_PRICE_ID",
   founding_pro_month: "STRIPE_FOUNDING_PRO_PRICE_ID",
   pro_month: "STRIPE_PRO_PRICE_ID",
   pro_year: "STRIPE_PRO_ANNUAL_PRICE_ID",
@@ -37,7 +38,7 @@ export function checkoutOffering(
   const selected = {
     plan: plan as CommercialPlan,
     billingInterval: interval as BillingInterval,
-    foundingEligible: offering === "founding_pro_month",
+    foundingEligible: offering === "founding_pro_month" || offering === "pocket_founding_month",
   };
   const configured = configuredOffering(priceId, environment);
   return configured
@@ -62,6 +63,20 @@ export function validFoundingProPrice(price: {
     && price.recurring?.interval === "month";
 }
 
+export function validPocketFoundingPrice(price: {
+  active: boolean;
+  currency: string;
+  type: string;
+  unit_amount: number | null;
+  recurring?: { interval: string } | null;
+}): boolean {
+  return price.active
+    && price.currency.toLowerCase() === "gbp"
+    && price.type === "recurring"
+    && price.unit_amount === 499
+    && price.recurring?.interval === "month";
+}
+
 export function configuredOffering(
   priceId: string | undefined,
   environment: Record<string, string | undefined> = process.env,
@@ -77,7 +92,7 @@ export function configuredOffering(
     matches.push({
       plan: plan as CommercialPlan,
       billingInterval: interval as BillingInterval,
-      foundingEligible: offering === "founding_pro_month",
+      foundingEligible: offering === "founding_pro_month" || offering === "pocket_founding_month",
     });
   }
   const unique = matches.filter((match, index) => matches.findIndex((candidate) => (
