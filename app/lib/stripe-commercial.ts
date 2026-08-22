@@ -87,7 +87,7 @@ export function configuredOffering(
     ...Object.entries(offeringVariables),
     ...Object.entries(legacyOfferingVariables),
   ]) {
-    if (priceId !== environment[variable]) continue;
+    if (priceId.trim() !== environment[variable]?.trim()) continue;
     const [plan, interval] = offering.replace("founding_", "").split("_");
     matches.push({
       plan: plan as CommercialPlan,
