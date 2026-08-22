@@ -80,17 +80,35 @@ function clampCoordinate(value: number, fallback: number) {
   return Math.max(0, Math.min(100, Number.isFinite(value) ? value : fallback));
 }
 
+function containedImageBounds(container: HTMLDivElement, chart: HTMLImageElement): CSSProperties | null {
+  if (!chart.naturalWidth || !chart.naturalHeight) return null;
+  const style = getComputedStyle(container);
+  const paddingTop = Number.parseFloat(style.paddingTop) || 0;
+  const paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
+  const availableWidth = container.clientWidth;
+  const availableHeight = Math.max(1, container.clientHeight - paddingTop - paddingBottom);
+  const imageRatio = chart.naturalWidth / chart.naturalHeight;
+  const boxRatio = availableWidth / availableHeight;
+  const width = boxRatio > imageRatio ? availableHeight * imageRatio : availableWidth;
+  const height = boxRatio > imageRatio ? availableHeight : availableWidth / imageRatio;
+  return { left: (availableWidth - width) / 2, top: paddingTop + (availableHeight - height) / 2, width, height };
+}
+
 function ChartOverlay({ level, index }: { level: Level; index: number }) {
-  const x1 = clampCoordinate(level.x, 4);
+  let x1 = clampCoordinate(level.x, 4);
   const y1 = clampY(level.y);
-  const x2 = clampCoordinate(level.x2, 96);
+  let x2 = clampCoordinate(level.x2, 96);
+  if ((level.kind === "support" || level.kind === "resistance") && Math.abs(x2 - x1) < 20) {
+    x1 = 4;
+    x2 = 96;
+  }
   const measuredY2 = clampCoordinate(level.y2, y1);
   const y2 = level.kind === "support" || level.kind === "resistance" ? y1 : measuredY2;
   const left = Math.min(x1, x2);
   const top = Math.min(y1, y2);
   const width = Math.max(1, Math.abs(x2 - x1));
   const height = Math.max(1, Math.abs(y2 - y1));
-  const labelStyle = { left: `${Math.min(82, Math.max(1, x2))}%`, top: `${Math.min(92, Math.max(2, y2))}%` };
+  const labelStyle = { left: `${Math.min(98, Math.max(35, Math.max(x1, x2)))}%`, top: `${Math.min(94, Math.max(6, y2))}%` };
 
   if (level.kind === "pivot") return <span className="psChartMark psChartPoint" data-tool={level.kind} style={{ left: `${x1}%`, top: `${y1}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
   if (level.kind === "zone" || level.kind === "gap") return <span className="psChartMark psChartArea" data-tool={level.kind} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
@@ -103,14 +121,12 @@ function ChartOverlay({ level, index }: { level: Level; index: number }) {
 function AnnotatedChart({ image, levels, focus = false }: { image: string; levels: Level[]; focus?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const [bounds, setBounds] = useState<CSSProperties>({ inset: 0 });
+  const [bounds, setBounds] = useState<CSSProperties | null>(null);
 
   useEffect(() => {
     const update = () => {
-      const container = containerRef.current?.getBoundingClientRect();
-      const chart = imageRef.current?.getBoundingClientRect();
-      if (!container || !chart) return;
-      setBounds({ left: chart.left - container.left, top: chart.top - container.top, width: chart.width, height: chart.height });
+      if (!containerRef.current || !imageRef.current) return;
+      setBounds(containedImageBounds(containerRef.current, imageRef.current));
     };
     update();
     const observer = new ResizeObserver(update);
@@ -123,11 +139,9 @@ function AnnotatedChart({ image, levels, focus = false }: { image: string; level
   return <div ref={containerRef} className={focus ? "psChartFocusCanvas" : "psAnnotatedChart"} aria-label="Automatically annotated uploaded chart">
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img ref={imageRef} src={image} alt="Uploaded trading chart" onLoad={() => {
-      const container = containerRef.current?.getBoundingClientRect();
-      const chart = imageRef.current?.getBoundingClientRect();
-      if (container && chart) setBounds({ left: chart.left - container.left, top: chart.top - container.top, width: chart.width, height: chart.height });
+      if (containerRef.current && imageRef.current) setBounds(containedImageBounds(containerRef.current, imageRef.current));
     }} />
-    <div className="psChartOverlayLayer" style={bounds}>{levels.map((level, index) => <ChartOverlay key={`${level.kind}-${level.x}-${level.y}-${index}`} level={level} index={index} />)}</div>
+    {bounds ? <div className="psChartOverlayLayer" style={bounds}>{levels.map((level, index) => <ChartOverlay key={`${level.kind}-${level.x}-${level.y}-${index}`} level={level} index={index} />)}</div> : null}
   </div>;
 }
 

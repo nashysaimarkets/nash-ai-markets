@@ -88,6 +88,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /psChartOverlayLayer/);
+  assert.match(client, /containedImageBounds/);
+  assert.match(client, /chart\.naturalWidth \/ chart\.naturalHeight/);
   assert.match(client, /Full-screen chart overlays/);
   assert.match(client, /aria-pressed=\{visibleOverlays\.has\(overlay\)\}/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
