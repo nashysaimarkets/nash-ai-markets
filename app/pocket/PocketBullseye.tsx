@@ -79,7 +79,7 @@ function numericLevel(value: string | undefined) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function PriceBattlefield({ analysis, expanded = false }: { analysis: Analysis; expanded?: boolean }) {
+function PriceBattlefield({ analysis, expanded = false, scenario = null }: { analysis: Analysis; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null }) {
   const verified = analysis.levels.flatMap((level) => {
     const price = numericLevel(level.price);
     return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
@@ -108,7 +108,7 @@ function PriceBattlefield({ analysis, expanded = false }: { analysis: Analysis; 
   const supportY = nearestSupport ? position(nearestSupport.numericPrice) : Math.min(88, currentY + 18);
   const resistanceY = nearestResistance ? position(nearestResistance.numericPrice) : Math.max(12, currentY - 18);
 
-  return <div className={`psBattlefield${expanded ? " psBattlefieldExpanded" : ""}`} aria-label="Bullseye price battlefield">
+  return <div className={`psBattlefield${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} aria-label="Bullseye price battlefield">
     <div className="psBattleGrid" aria-hidden="true" />
     <div className="psBattleIntel">
       <article data-tone="support"><span>TO SUPPORT</span><strong>{formatDistance(supportDistance)}</strong><small>{formatPercent(supportDistance)}</small></article>
@@ -207,6 +207,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [refinementStatus, setRefinementStatus] = useState<"idle" | "analysing" | "updated" | "error">("idle");
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
@@ -442,11 +443,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
                 <i /><strong>{analysis.direction}</strong><small>{analysis.verdict.replaceAll("_", " ")}</small>
               </div>
               <div className="psCompassSignals">
-                <article data-signal="bull" data-active={analysis.direction === "BULLISH"}><span>🐂 BULL CASE</span><strong>{analysis.direction === "BULLISH" ? "ACTIVE READ" : "SECONDARY"}</strong></article>
-                <article data-signal="wait" data-active={analysis.direction === "NEUTRAL"}><span>🛡️ PATIENCE</span><strong>{analysis.direction === "NEUTRAL" ? "ACTIVE READ" : "ALWAYS VALID"}</strong></article>
-                <article data-signal="bear" data-active={analysis.direction === "BEARISH"}><span>🐻 BEAR CASE</span><strong>{analysis.direction === "BEARISH" ? "ACTIVE READ" : "SECONDARY"}</strong></article>
+                <button type="button" data-signal="bull" data-active={selectedScenario === "bull" || (!selectedScenario && analysis.direction === "BULLISH")} aria-pressed={selectedScenario === "bull"} onClick={() => setSelectedScenario((current) => current === "bull" ? null : "bull")}><span>🐂 BULL CASE</span><strong>{analysis.direction === "BULLISH" ? "ACTIVE READ" : "SECONDARY"}</strong><small>VIEW ROUTE →</small></button>
+                <button type="button" data-signal="wait" data-active={selectedScenario === "wait" || (!selectedScenario && analysis.direction === "NEUTRAL")} aria-pressed={selectedScenario === "wait"} onClick={() => setSelectedScenario((current) => current === "wait" ? null : "wait")}><span>🛡️ PATIENCE</span><strong>{analysis.direction === "NEUTRAL" ? "ACTIVE READ" : "ALWAYS VALID"}</strong><small>VIEW CONDITIONS →</small></button>
+                <button type="button" data-signal="bear" data-active={selectedScenario === "bear" || (!selectedScenario && analysis.direction === "BEARISH")} aria-pressed={selectedScenario === "bear"} onClick={() => setSelectedScenario((current) => current === "bear" ? null : "bear")}><span>🐻 BEAR CASE</span><strong>{analysis.direction === "BEARISH" ? "ACTIVE READ" : "SECONDARY"}</strong><small>VIEW ROUTE →</small></button>
               </div>
             </div>
+            {selectedScenario ? <article className="psScenarioFocus" data-scenario={selectedScenario} aria-live="polite">
+              <header><span>{selectedScenario === "bull" ? "🐂 BULL ROUTE" : selectedScenario === "bear" ? "🐻 BEAR ROUTE" : "🛡️ PATIENCE ROUTE"}</span><button type="button" onClick={() => setSelectedScenario(null)}>CLOSE</button></header>
+              <p>{selectedScenario === "bull" ? analysis.bullishCase : selectedScenario === "bear" ? analysis.bearishCase : analysis.nextSequence.patience}</p>
+              <div><article><small>{selectedScenario === "wait" ? "STAND ASIDE WHILE" : "ACTIVATES WHEN"}</small><strong>{selectedScenario === "bull" ? analysis.bullConfirmation : selectedScenario === "bear" ? analysis.bearConfirmation : analysis.noTradeCondition}</strong></article><article><small>{selectedScenario === "wait" ? "REASSESS WHEN" : "FAILS WHEN"}</small><strong>{selectedScenario === "wait" ? analysis.nextSequence.reassess : analysis.invalidation}</strong></article></div>
+              <button type="button" className="psScenarioMapLink" onClick={() => document.querySelector(".psBattleWorkspace")?.scrollIntoView({ behavior: "smooth", block: "start" })}>SHOW ON PRICE BATTLEFIELD ↓</button>
+            </article> : null}
           </section>
           <section className="psEvidenceConsole">
             <header><span>EVIDENCE CONSOLE</span><b data-quality={analysis.evidenceQuality.chartReadability}>{analysis.evidenceQuality.chartReadability} IMAGE</b></header>
@@ -488,17 +495,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div>
           <section className="psResultChart psChartWorkspace psBattleWorkspace">
             <header><div><span>🎯 PRICE BATTLEFIELD</span><small>MARKET LOCATION · CONSEQUENCE MAP</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
-            <PriceBattlefield analysis={analysis} />
+            <PriceBattlefield analysis={analysis} scenario={selectedScenario} />
             <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>⌄</b></summary>{sourceChart()}</details>
           </section>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
             <p>{analysis.levelStory}</p>
             <div><article><span>STRUCTURE</span><p>{analysis.marketStructure}</p></article><article><span>MOMENTUM / RSI</span><p>{analysis.momentum}</p></article></div>
-          </section>
-          <section className="psCases">
-            <article data-tone="bull"><span>BULL CASE</span><p>{analysis.bullishCase}</p><strong>CONFIRMATION</strong><p>{analysis.bullConfirmation}</p></article>
-            <article data-tone="bear"><span>BEAR CASE</span><p>{analysis.bearishCase}</p><strong>CONFIRMATION</strong><p>{analysis.bearConfirmation}</p></article>
           </section>
           <section className="psDecisionGrid"><article><span>STAND ASIDE WHEN</span><p>{analysis.noTradeCondition}</p></article><article><span>DECISION CHECKLIST</span><ol>{analysis.checklist.map((item) => <li key={item}>{item}</li>)}</ol></article></section>
           <section className="psIntel">
@@ -536,7 +539,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {chartFocus && (
           <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye price battlefield">
             <header><span>PRICE BATTLEFIELD · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
-            <PriceBattlefield analysis={analysis} expanded />
+            <PriceBattlefield analysis={analysis} expanded scenario={selectedScenario} />
             <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>⌄</b></summary>{sourceChart(true)}</details>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
