@@ -27,6 +27,7 @@ export async function POST(request: Request) {
   if (!secretKey || !selected) {
     console.error("[stripe-checkout] configuration unavailable", {
       secretKeyPresent: Boolean(secretKey),
+      pocketPricePresent: Boolean(process.env.STRIPE_POCKET_FOUNDING_PRICE_ID?.trim()),
       offeringPresent: Boolean(selected),
     });
     return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
