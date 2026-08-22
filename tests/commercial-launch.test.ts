@@ -181,6 +181,12 @@ test("Pocket checkout welcome page exposes the complete quick-start journey", as
   assert.match(page, /\/pocket#pocket-chart-upload/);
 });
 
+test("universal advertising link routes directly to the Founding 650 offer", async () => {
+  const page = await read("app/join/page.tsx");
+  assert.match(page, /redirect\("\/pocket\/founding#founding"\)/);
+  assert.match(page, /index: false/);
+});
+
 test("Founding confirmation validates position and continuous-subscription wording", () => {
   assert.equal(buildFounding100ConfirmationEmail("pro", 0), null);
   const email = buildFounding100ConfirmationEmail("elite", 100);
