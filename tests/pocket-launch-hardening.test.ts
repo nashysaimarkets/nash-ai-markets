@@ -139,7 +139,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /DETAILED MARKET AUDIT/);
   assert.match(client, /ACTIVE DECISION RANGE/);
   assert.match(client, /showResultReveal/);
-  assert.match(client, /OPEN MY FULL RESULT/);
+  assert.match(client, /START MY CINEMATIC RESULT/);
   assert.match(client, /ClarityLock/);
   assert.match(client, /BULLSEYE CLARITY LOCK/);
   assert.match(client, /BullseyePlan/);
@@ -157,7 +157,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.doesNotMatch(client, /<ConfluenceStack analysis=/);
   assert.match(client, /MarketStory/);
   assert.match(client, /BULLSEYE MARKET STORY/);
-  assert.match(client, /CHAPTER 02 · THE BATTLE/);
+  assert.match(client, /CHAPTER 05 · THE BATTLE/);
   assert.match(client, /FINAL CHAPTER ·/);
   assert.match(client, /BULLSEYE"/);
   assert.match(client, /STORY, NOT CERTAINTY/);
@@ -177,6 +177,13 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /bullseye-events/);
   assert.match(client, /bullseye-levels/);
   assert.match(client, /bullseye-evidence/);
+  assert.match(client, /CINEMATIC RESULT/);
+  assert.match(client, /WRITTEN REPORT/);
+  assert.match(client, /WHAT THE IMAGE PROVES/);
+  assert.match(client, /STRUCTURE & MOMENTUM/);
+  assert.match(client, /THE PRICE BATTLEFIELD/);
+  assert.match(client, /OPEN FULL WRITTEN REPORT/);
+  assert.match(client, /psStoryFinale/);
   assert.match(eventsRoute, /if \(returnedSymbol !== symbol\) return \[\]/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
@@ -208,6 +215,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psDecisionMap\.psBattlefieldExpanded\.psDecisionMapEmpty/);
   assert.match(styles, /\.psStoryLinks/);
   assert.match(styles, /\.psMissingLevelCue/);
+  assert.match(styles, /\.psResultViewSwitch/);
+  assert.match(styles, /@keyframes psScoreSlam/);
+  assert.match(styles, /@keyframes psFinaleShock/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);

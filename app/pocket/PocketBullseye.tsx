@@ -254,10 +254,11 @@ function ConfluenceStack({ analysis, sourceImage }: { analysis: Analysis; source
   </section>;
 }
 
-function MarketStory({ analysis, sourceImage, onShare, viewerName, intention }: { analysis: Analysis; sourceImage: string; onShare: () => void; viewerName: string; intention: Intention }) {
+function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName, intention }: { analysis: Analysis; sourceImage: string; onShare: () => void; onOpenReport: (target?: string) => void; viewerName: string; intention: Intention }) {
   const [scene, setScene] = useState(0);
   const [paused, setPaused] = useState(false);
-  const sceneNames = ["SETUP", "BATTLE", "TRIGGER", "VERDICT"];
+  const sceneNames = ["OPEN", "EVIDENCE", "STRUCTURE", "LEVELS", "BATTLE", "EVENTS", "DECISION", "BULLSEYE"];
+  const verifiedLevels = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
   useEffect(() => {
     if (paused) return;
     const timer = window.setTimeout(() => setScene((current) => (current + 1) % sceneNames.length), 9000);
@@ -265,7 +266,7 @@ function MarketStory({ analysis, sourceImage, onShare, viewerName, intention }: 
   }, [scene, paused, sceneNames.length]);
   const previous = () => setScene((current) => (current + sceneNames.length - 1) % sceneNames.length);
   const next = () => setScene((current) => (current + 1) % sceneNames.length);
-  const openExplanation = (id: string) => { setPaused(true); document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const openExplanation = (id: string) => { setPaused(true); onOpenReport(id); };
   return <section className="psMarketStory" data-scene={scene} data-direction={analysis.direction}>
     <header><div><span>◈ {viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"} BULLSEYE MARKET STORY</span><small>BUILT FROM YOUR CHART · {intention === "UNSURE" ? "OPEN-MINDED READ" : `${intention} IDEA CHALLENGED`}</small></div><button type="button" onClick={() => setPaused((value) => !value)}>{paused ? "▶ PLAY" : "Ⅱ PAUSE"}</button></header>
     <div className="psStoryProgress" aria-label={`Scene ${scene + 1} of ${sceneNames.length}`}>{sceneNames.map((name, index) => <button key={name} type="button" data-complete={index < scene} data-active={index === scene} onClick={() => setScene(index)} aria-label={`Open ${name.toLowerCase()} scene`}><span/><small>{name}</small>{index === scene && !paused ? <i key={`${scene}-${paused}`}/> : null}</button>)}</div>
@@ -274,10 +275,14 @@ function MarketStory({ analysis, sourceImage, onShare, viewerName, intention }: 
       <div className="psStoryShade"/><div className="psStoryScan" aria-hidden="true"/>
       <button type="button" className="psStoryPrevious" onClick={previous} aria-label="Previous story scene">‹</button><button type="button" className="psStoryNext" onClick={next} aria-label="Next story scene">›</button>
       <div className="psStoryScene" key={scene} aria-live="polite">
-        {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · {viewerName ? `${viewerName.toUpperCase()}, HERE'S YOUR SETUP` : "THE SETUP"}</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>{analysis.marketStructure}</p><button type="button" onClick={() => openExplanation("bullseye-evidence")}>OPEN VERIFIED EVIDENCE ↓</button></article> : null}
-        {scene === 1 ? <article className="psStoryBattle"><small>CHAPTER 02 · THE BATTLE</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}
-        {scene === 2 ? <article className="psStoryTrigger"><small>CHAPTER 03 · THE LINE IN THE SAND</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ THE READ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ THE READ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><button type="button" onClick={() => openExplanation("bullseye-events")}>CHECK EVENT RISK ↓</button></article> : null}
-        {scene === 3 ? <article className="psStoryVerdict"><small>FINAL CHAPTER · {viewerName ? `${viewerName.toUpperCase()}'S BULLSEYE` : "THE BULLSEYE"}</small><div><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{viewerName ? `${viewerName}, ${analysis.verdictHeadline.charAt(0).toLowerCase()}${analysis.verdictHeadline.slice(1)}` : analysis.verdictHeadline}</h2><p>NEXT CHECK · {analysis.nextSequence.reassess}</p><button type="button" onClick={onShare}>OPEN SHAREABLE RESULT ↗</button></article> : null}
+        {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · {viewerName ? `${viewerName.toUpperCase()}, YOUR ANALYSIS IS READY` : "YOUR ANALYSIS IS READY"}</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>Bullseye has challenged the chart, the opposing case and the conditions that could change this read.</p></article> : null}
+        {scene === 1 ? <article className="psStoryEvidence"><small>CHAPTER 02 · WHAT THE IMAGE PROVES</small><h2>Evidence before opinion.</h2><ul>{analysis.observableFacts.slice(0, 3).map((fact) => <li key={fact}>{fact}</li>)}</ul><div><span>IMAGE {analysis.evidenceQuality.chartReadability}</span><span>SCALE {analysis.evidenceQuality.scaleReadable ? "VERIFIED" : "UNVERIFIED"}</span></div><button type="button" onClick={() => openExplanation("bullseye-evidence")}>OPEN VERIFIED EVIDENCE ↓</button></article> : null}
+        {scene === 2 ? <article className="psStoryStructure"><small>CHAPTER 03 · STRUCTURE & MOMENTUM</small><h2>The market’s current posture.</h2><section><b>STRUCTURE</b><p>{analysis.marketStructure}</p></section><section><b>MOMENTUM</b><p>{analysis.momentum}</p></section></article> : null}
+        {scene === 3 ? <article className="psStoryLevels"><small>CHAPTER 04 · THE PRICE BATTLEFIELD</small><h2>{verifiedLevels.length ? `${verifiedLevels.length} level${verifiedLevels.length === 1 ? "" : "s"} survived verification.` : "Exact levels remain unverified."}</h2><div>{analysis.currentPrice ? <span><small>CURRENT</small><b>{analysis.currentPrice}</b></span> : null}{verifiedLevels.slice(0, 3).map((level) => <span key={`${level.kind}-${level.price}`} data-kind={level.kind}><small>{level.kind.toUpperCase()}</small><b>{level.price}</b></span>)}</div><p>{analysis.levelStory}</p><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}
+        {scene === 4 ? <article className="psStoryBattle"><small>CHAPTER 05 · THE BATTLE</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
+        {scene === 5 ? <article className="psStoryEvents"><small>CHAPTER 06 · EVENT RISK</small><h2>Timing can overpower a good chart.</h2><div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY</span></div><p>{analysis.relevantEventTypes.length ? `Bullseye flagged ${analysis.relevantEventTypes.join(" · ")} as relevant timing categories. Confirm the live calendar before acting.` : "No event category was identified safely from this image. Confirm the live calendar before acting."}</p><button type="button" onClick={() => openExplanation("bullseye-events")}>CHECK VERIFIED EVENT LAYER ↓</button></article> : null}
+        {scene === 6 ? <article className="psStoryTrigger"><small>CHAPTER 07 · THE DECISION</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ THE READ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ THE READ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><p>NEXT CHECK · {analysis.nextSequence.reassess}</p></article> : null}
+        {scene === 7 ? <article className="psStoryVerdict psStoryFinale"><small>FINAL CHAPTER · {viewerName ? `${viewerName.toUpperCase()}'S BULLSEYE` : "YOUR BULLSEYE"}</small><div className="psFinaleTarget" aria-hidden="true"><i/><i/><i/></div><div><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{viewerName ? `${viewerName}, ${analysis.verdictHeadline.charAt(0).toLowerCase()}${analysis.verdictHeadline.slice(1)}` : analysis.verdictHeadline}</h2><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
       </div>
     </div>
     <nav className="psStoryLinks" aria-label="Open the solid-state explanation"><button type="button" onClick={() => openExplanation("bullseye-events")}><b>01</b><span>EVENTS</span></button><button type="button" onClick={() => openExplanation("bullseye-levels")}><b>02</b><span>PRICE LEVELS</span></button><button type="button" onClick={() => openExplanation("bullseye-evidence")}><b>03</b><span>EVIDENCE</span></button></nav>
@@ -408,6 +413,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
+  const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
@@ -531,6 +537,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
+  function openResultReport(target?: string) {
+    setResultView("report");
+    requestAnimationFrame(() => requestAnimationFrame(() => target ? document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }) : document.querySelector(".psResults")?.scrollTo({ top: 0, behavior: "smooth" })));
+  }
+
   async function requestPocketAnalysis(selectedContext: string | null): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     analysisRequestActive.current = true;
@@ -560,6 +571,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         setStockEvents([]);
         setStockEventStatus(nextAnalysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
         setAnalysis(nextAnalysis);
+        setResultView("cinema");
         setImmersive(true);
         setShowResultReveal(true);
         return;
@@ -709,15 +721,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
-            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setShowResultReveal(false); }}>NEW CHART</button>
+            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setResultView("cinema"); setShowResultReveal(false); }}>NEW CHART</button>
           </div>
+          <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
+          {resultView === "cinema" ? <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
           <header className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
             <div className="psVerdictTop"><h1><small>SETUP GRADE</small><em data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</em></h1><div><small>{analysis.setupScore.overall}/100</small><strong data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</strong></div></div>
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} viewerName={viewerName.trim()} intention={intention} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
@@ -827,6 +840,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             </div>
             <p>Saved decisions stay privately on this device. Shared summaries never include the uploaded screenshot.</p>
           </details>
+          </div>}
         </section>
         {chartFocus && (
           <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye Decision Map">
@@ -844,7 +858,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div className="psRevealScore"><span>SETUP GRADE</span><strong data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</strong><b>{analysis.setupScore.overall}<small>/100</small></b></div>
             <div className="psRevealVerdict"><span data-direction={analysis.direction}>{analysis.direction}</span><strong>{analysis.verdict.replaceAll("_", " ")}</strong></div>
             <h2>{analysis.verdictHeadline}</h2>
-            <button type="button" onClick={() => setShowResultReveal(false)}>OPEN MY FULL RESULT <b>→</b></button>
+            <button type="button" onClick={() => { setResultView("cinema"); setShowResultReveal(false); }}>START MY CINEMATIC RESULT <b>→</b></button>
             <small>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</small>
           </section>
         )}
