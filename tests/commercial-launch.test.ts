@@ -60,6 +60,16 @@ test("Pocket Founding 650 checkout requires the exact £4.99 monthly Price", () 
   assert.equal(validPocketFoundingPrice({ active:true,currency:"gbp",type:"recurring",unit_amount:499,recurring:{interval:"year"} }), false);
 });
 
+test("Stripe price configuration tolerates pasted surrounding whitespace", () => {
+  assert.deepEqual(checkoutOffering("pocket_founding_month", {
+    ...environment,
+    STRIPE_POCKET_FOUNDING_PRICE_ID: "  price_pocket_founding_month\n",
+  }), {
+    priceId: "price_pocket_founding_month",
+    offering: { plan: "pocket", billingInterval: "month", foundingEligible: true },
+  });
+});
+
 test("Founding Pro checkout requires an exact, unambiguous £12 monthly Price", () => {
   assert.deepEqual(checkoutOffering("founding_pro_month", environment), {
     priceId: "price_founding_pro_month",
