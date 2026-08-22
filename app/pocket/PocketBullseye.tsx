@@ -763,6 +763,26 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     catch { setVaultMessage("This decision could not be saved on this device."); }
   }
 
+  async function shareFoundingInvite() {
+    const url = `${window.location.origin}/pocket/founding`;
+    const text = "Try Pocket Bullseye — upload a chart and get an evidence-first second opinion before you trade. Founding 650 access is £4.99/month.";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "Pocket Bullseye", text, url });
+        setVaultMessage("Pocket Bullseye invite shared.");
+        return;
+      }
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setVaultMessage("Founding 650 invite link copied. Paste it into any message.");
+    } catch (shareError) {
+      if (shareError instanceof DOMException && shareError.name === "AbortError") {
+        setVaultMessage("Sharing was cancelled.");
+        return;
+      }
+      setVaultMessage("The invite could not open automatically. Visit the Founding 650 page and copy its address.");
+    }
+  }
+
   function startReview(decision: LockedDecision) {
     setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(false); setError("");
   }
@@ -919,13 +939,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
           <details className="psUtilityTray">
-            <summary><span>RESULT OPTIONS</span><small>SAVE · CHART · SHARE</small><b>＋</b></summary>
+            <summary><span>RESULT OPTIONS</span><small>SAVE · CHART · SHARE · INVITE</small><b>＋</b></summary>
             <div>
               <button type="button" onClick={lockDecision}><i>▣</i><span><strong>SAVE</strong><small>Review this decision later</small></span></button>
               <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>DECISION MAP</strong><small>Open full screen</small></span></button>
               <button type="button" onClick={shareDecision}><i>↗</i><span><strong>SHARE</strong><small>Decision summary only</small></span></button>
+              <button type="button" onClick={shareFoundingInvite}><i>◎</i><span><strong>INVITE A TRADER</strong><small>Share the Founding 650 link</small></span></button>
             </div>
-            <p>Saved decisions stay privately on this device. Shared summaries never include the uploaded screenshot.</p>
+            <p>Saved decisions stay privately on this device. Shared summaries and invites never include the uploaded screenshot.</p>
           </details>
           </div>}
         </section>
