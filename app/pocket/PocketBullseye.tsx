@@ -80,6 +80,21 @@ function numericLevel(value: string | undefined) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function evidenceBalance(analysis: Analysis) {
+  if (analysis.direction === "NEUTRAL") return { bull: 50, bear: 50 };
+  const directionalStrength = Math.max(5, Math.min(28, Math.round((analysis.setupScore.overall - 50) * .32 + (analysis.setupScore.confirmation - 5) * 1.6 + 6)));
+  const bull = analysis.direction === "BULLISH" ? 50 + directionalStrength : 50 - directionalStrength;
+  return { bull, bear: 100 - bull };
+}
+
+function personalDailyMessage(analysis: Analysis, viewerName = "") {
+  const lead = viewerName ? `${viewerName}, ` : "";
+  if (analysis.verdict === "WATCH") return `${lead}protect the plan today: watch the confirmation, not the excitement.`;
+  if (analysis.verdict === "STAND_ASIDE") return `${lead}protecting capital is a strong decision today. You do not need to force this chart.`;
+  if (analysis.verdict === "REVIEW_REQUIRED") return `${lead}clarity comes first today. Add the missing evidence before making the decision.`;
+  return `${lead}patience is your edge today. No proof, no trade.`;
+}
+
 function isListedEquityAnalysis(analysis: Analysis | null) {
   if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") return false;
   const identity = `${analysis.instrument} ${analysis.ticker}`.toUpperCase();
@@ -257,8 +272,10 @@ function ConfluenceStack({ analysis, sourceImage }: { analysis: Analysis; source
 function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName, intention }: { analysis: Analysis; sourceImage: string; onShare: () => void; onOpenReport: (target?: string) => void; viewerName: string; intention: Intention }) {
   const [scene, setScene] = useState(0);
   const [paused, setPaused] = useState(false);
-  const sceneNames = ["OPEN", "EVIDENCE", "STRUCTURE", "LEVELS", "BATTLE", "EVENTS", "DECISION", "BULLSEYE"];
+  const sceneNames = ["OPEN", "EVIDENCE", "STRUCTURE", "LEVELS", "BATTLE", "RISKS", "EVENTS", "DECISION", "PLAN", "BULLSEYE"];
   const verifiedLevels = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
+  const balance = evidenceBalance(analysis);
+  const dailyMessage = personalDailyMessage(analysis, viewerName);
   useEffect(() => {
     if (paused) return;
     const timer = window.setTimeout(() => setScene((current) => (current + 1) % sceneNames.length), 9000);
@@ -280,13 +297,33 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
         {scene === 2 ? <article className="psStoryStructure"><small>CHAPTER 03 · STRUCTURE & MOMENTUM</small><h2>The market’s current posture.</h2><section><b>STRUCTURE</b><p>{analysis.marketStructure}</p></section><section><b>MOMENTUM</b><p>{analysis.momentum}</p></section></article> : null}
         {scene === 3 ? <article className="psStoryLevels"><small>CHAPTER 04 · THE PRICE BATTLEFIELD</small><h2>{verifiedLevels.length ? `${verifiedLevels.length} level${verifiedLevels.length === 1 ? "" : "s"} survived verification.` : "Exact levels remain unverified."}</h2><div>{analysis.currentPrice ? <span><small>CURRENT</small><b>{analysis.currentPrice}</b></span> : null}{verifiedLevels.slice(0, 3).map((level) => <span key={`${level.kind}-${level.price}`} data-kind={level.kind}><small>{level.kind.toUpperCase()}</small><b>{level.price}</b></span>)}</div><p>{analysis.levelStory}</p><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}
         {scene === 4 ? <article className="psStoryBattle"><small>CHAPTER 05 · THE BATTLE</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
-        {scene === 5 ? <article className="psStoryEvents"><small>CHAPTER 06 · EVENT RISK</small><h2>Timing can overpower a good chart.</h2><div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY</span></div><p>{analysis.relevantEventTypes.length ? `Bullseye flagged ${analysis.relevantEventTypes.join(" · ")} as relevant timing categories. Confirm the live calendar before acting.` : "No event category was identified safely from this image. Confirm the live calendar before acting."}</p><button type="button" onClick={() => openExplanation("bullseye-events")}>CHECK VERIFIED EVENT LAYER ↓</button></article> : null}
-        {scene === 6 ? <article className="psStoryTrigger"><small>CHAPTER 07 · THE DECISION</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ THE READ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ THE READ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><p>NEXT CHECK · {analysis.nextSequence.reassess}</p></article> : null}
-        {scene === 7 ? <article className="psStoryVerdict psStoryFinale"><small>FINAL CHAPTER · {viewerName ? `${viewerName.toUpperCase()}'S BULLSEYE` : "YOUR BULLSEYE"}</small><div className="psFinaleTarget" aria-hidden="true"><i/><i/><i/></div><div><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{viewerName ? `${viewerName}, ${analysis.verdictHeadline.charAt(0).toLowerCase()}${analysis.verdictHeadline.slice(1)}` : analysis.verdictHeadline}</h2><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
+        {scene === 5 ? <article className="psStoryRisks"><small>CHAPTER 06 · RISKS & CONTRADICTIONS</small><h2>What could make this read wrong?</h2><div><section><b>⚡ CONFLICTS</b><ul>{(analysis.contradictions.length ? analysis.contradictions : ["No clear contradiction is visible in this screenshot."]).slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section><section><b>⚠ RISK FLAGS</b><ul>{analysis.riskFlags.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section></div><p>TRADER TRAP · {analysis.traderTrap}</p></article> : null}
+        {scene === 6 ? <article className="psStoryEvents"><small>CHAPTER 07 · EVENT RISK</small><h2>Timing can overpower a good chart.</h2><div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY</span></div><p>{analysis.relevantEventTypes.length ? `Bullseye flagged ${analysis.relevantEventTypes.join(" · ")} as relevant timing categories. Confirm the live calendar before acting.` : "No event category was identified safely from this image. Confirm the live calendar before acting."}</p><button type="button" onClick={() => openExplanation("bullseye-events")}>CHECK VERIFIED EVENT LAYER ↓</button></article> : null}
+        {scene === 7 ? <article className="psStoryTrigger"><small>CHAPTER 08 · THE DECISION</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ THE READ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ THE READ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><p>STAND ASIDE · {analysis.noTradeCondition}</p></article> : null}
+        {scene === 8 ? <article className="psStoryPlan"><small>CHAPTER 09 · YOUR NEXT MOVE</small><h2>Preparation—not prediction.</h2><section><b>RIGHT NOW</b><p>{analysis.nextSequence.now}</p></section><section><b>NEXT CHECK</b><p>{analysis.nextSequence.reassess}</p></section>{analysis.missingInputs.length ? <p>ONE MORE VIEW · {analysis.missingInputs.slice(0, 2).join(" · ")}</p> : <p>IMAGE INPUT · No additional chart was identified as essential to this read.</p>}<button type="button" onClick={() => onOpenReport()}>OPEN THE MATCHING ACTION PLAN ↓</button></article> : null}
+        {scene === 9 ? <article className="psStoryVerdict psStoryFinale"><small>FINAL CHAPTER · {viewerName ? `${viewerName.toUpperCase()}'S BULLSEYE` : "YOUR BULLSEYE"}</small><div className="psFinaleTarget" aria-hidden="true"><i/><i/><i/></div><div className="psFinaleLogo"><span className="psLogoMark"><i/></span><strong>BULLSEYE</strong></div><div className="psFinaleScore"><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span></div><div className="psEvidenceRatio" aria-label={`Bull ${balance.bull} percent, bear ${balance.bear} percent evidence balance`}><span><b>🐂 {balance.bull}%</b><i style={{ width: `${balance.bull}%` }}/></span><em>EVIDENCE BALANCE · NOT PROBABILITY</em><span><b>🐻 {balance.bear}%</b><i style={{ width: `${balance.bear}%` }}/></span></div><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b><h2>{viewerName ? `${viewerName}, ${analysis.verdictHeadline.charAt(0).toLowerCase()}${analysis.verdictHeadline.slice(1)}` : analysis.verdictHeadline}</h2><p className="psDailyMessage"><span>YOUR MESSAGE FOR TODAY</span>{dailyMessage}</p><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
       </div>
     </div>
     <nav className="psStoryLinks" aria-label="Open the solid-state explanation"><button type="button" onClick={() => openExplanation("bullseye-events")}><b>01</b><span>EVENTS</span></button><button type="button" onClick={() => openExplanation("bullseye-levels")}><b>02</b><span>PRICE LEVELS</span></button><button type="button" onClick={() => openExplanation("bullseye-evidence")}><b>03</b><span>EVIDENCE</span></button></nav>
     <footer><b>STORY, NOT CERTAINTY</b><span>Every chapter is conditional decision support built from the uploaded screenshot. It does not predict a future price or instruct a trade.</span></footer>
+  </section>;
+}
+
+function CinematicTranscript({ analysis, viewerName }: { analysis: Analysis; viewerName: string }) {
+  const balance = evidenceBalance(analysis);
+  const verifiedLevels = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
+  return <section className="psCinematicTranscript">
+    <header><div><span>▤ CINEMATIC ANALYSIS · WRITTEN MATCH</span><small>THE SAME EVIDENCE USED IN YOUR FILM</small></div><strong>{analysis.setupScore.grade} · {analysis.setupScore.overall}/100</strong></header>
+    <div>
+      <article><small>01 · VERIFIED EVIDENCE</small><ul>{analysis.observableFacts.slice(0, 3).map((fact) => <li key={fact}>{fact}</li>)}</ul></article>
+      <article><small>02 · STRUCTURE & MOMENTUM</small><p>{analysis.marketStructure}</p><p>{analysis.momentum}</p></article>
+      <article><small>03 · PRICE LEVELS</small><p>{verifiedLevels.length ? verifiedLevels.slice(0, 3).map((level) => `${level.kind.toUpperCase()} ${level.price}`).join(" · ") : "No exact support, resistance or pivot survived verification."}</p><p>{analysis.levelStory}</p></article>
+      <article><small>04 · BULL / BEAR CASE</small><p><b>BULL ·</b> {analysis.bullishCase}</p><p><b>BEAR ·</b> {analysis.bearishCase}</p></article>
+      <article><small>05 · RISKS & EVENTS</small><p>{analysis.riskFlags.slice(0, 2).join(" · ") || "No specific chart risk flag was returned."}</p><p>{analysis.relevantEventTypes.length ? `Relevant timing: ${analysis.relevantEventTypes.join(" · ")}.` : "No event category was identified safely from the image."}</p></article>
+      <article><small>06 · DECISION CONDITIONS</small><p><b>STRENGTHENS ·</b> {analysis.nextSequence.confirmation}</p><p><b>FAILS ·</b> {analysis.nextSequence.failure || analysis.invalidation}</p><p><b>STAND ASIDE ·</b> {analysis.noTradeCondition}</p></article>
+      <article><small>07 · ACTION PLAN</small><p>{analysis.nextSequence.now}</p><p><b>NEXT CHECK ·</b> {analysis.nextSequence.reassess}</p></article>
+    </div>
+    <footer><div><span>🐂 {balance.bull}% BULL</span><i><b style={{ width: `${balance.bull}%` }}/></i><span>🐻 {balance.bear}% BEAR</span></div><p>EVIDENCE BALANCE · DERIVED FROM THIS AUDIT · NOT A FORECAST OR PROBABILITY</p><blockquote><b>YOUR MESSAGE FOR TODAY</b>{personalDailyMessage(analysis, viewerName)}</blockquote></footer>
   </section>;
 }
 
@@ -731,6 +768,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <CinematicTranscript analysis={analysis} viewerName={viewerName.trim()} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
