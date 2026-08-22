@@ -12,7 +12,7 @@ const DISMISS_KEY = "nash-pwa-install-dismissed";
 const SESSION_KEY = "nash-pwa-install-session-shown";
 const DISMISS_DAYS = 14;
 const INSTALL_DELAY_MS = 45_000;
-const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding"];
+const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding", "/pocket"];
 
 function isMemberInstallPath(pathname: string): boolean {
   return MEMBER_INSTALL_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
