@@ -28,6 +28,12 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     setupScore: { ...score, overall, grade: scoreGrade(overall) },
   };
 
+  if (Array.isArray(analysis.missingInputs)) {
+    calibrated.missingInputs = analysis.missingInputs.filter((item) =>
+      typeof item === "string" && !/\b(entry|stop|target|trade size|position size|account size|risk percentage|stake)\b/i.test(item),
+    ).slice(0, 2);
+  }
+
   if (unreadable) {
     calibrated.verdict = "REVIEW_REQUIRED";
     calibrated.confidence = "LOW";

@@ -56,6 +56,15 @@ test("score and grade are made internally consistent for readable charts", () =>
   assert.equal(result.setupScore.grade, "A");
 });
 
+test("one-more-view prompts exclude trader plan fields", () => {
+  const calibrated = calibratePocketAnalysis({
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
+    setupScore: { overall: 70, grade: "B" },
+    missingInputs: ["Exact entry, stop and target", "A visible volume panel", "Account size"],
+  }) as { missingInputs: string[] };
+  assert.deepEqual(calibrated.missingInputs, ["A visible volume panel"]);
+});
+
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
   const [client, styles, analyseRoute, reviewRoute, followUpRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
@@ -73,6 +82,10 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /Add a supporting chart photo/);
   assert.match(client, /requestPocketAnalysis\(prepared\)/);
   assert.match(client, /Keeping this result open while Bullseye refines it/);
+  assert.match(client, /SECOND VIEW RESULT/);
+  assert.match(client, /psRefineDelta/);
+  assert.match(analyseRoute, /contextContribution/);
+  assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /psChartOverlayLayer/);
   assert.match(client, /Full-screen chart overlays/);

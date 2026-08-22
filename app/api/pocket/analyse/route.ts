@@ -67,7 +67,17 @@ const schema = {
       },
       required: ["now", "confirmation", "failure", "patience", "reassess"],
     },
-    missingInputs: { type: "array", maxItems: 4, items: { type: "string", maxLength: 140 } },
+    missingInputs: { type: "array", maxItems: 2, items: { type: "string", maxLength: 140 } },
+    contextContribution: {
+      type: "object", additionalProperties: false,
+      properties: {
+        used: { type: "boolean" },
+        materialChange: { type: "boolean" },
+        summary: { type: "string", maxLength: 180 },
+        resolvedInputs: { type: "array", maxItems: 3, items: { type: "string", maxLength: 100 } },
+      },
+      required: ["used", "materialChange", "summary", "resolvedInputs"],
+    },
     summary: { type: "string", maxLength: 320 },
     verdict: { type: "string", enum: ["WATCH", "WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"] },
     verdictHeadline: { type: "string", maxLength: 100 },
@@ -129,7 +139,7 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "levels", "fibLevels"],
 } as const;
 
 export async function POST(request: Request) {
@@ -176,6 +186,8 @@ export async function POST(request: Request) {
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
+        "missingInputs may request only another chart view. Never request entry, stop, target, account size, trade size, risk percentage or another trader-plan field as a view.",
+        "contextContribution must describe the second image only. With no second image use used=false, materialChange=false, resolvedInputs=[] and briefly state what view would help. With a second image use used=true, identify exactly what it confirmed or contradicted, list inputs it genuinely resolved, and set materialChange=true only when it changed the verdict, direction, score reasoning, visible structure or risk assessment.",
         "Instrument and timeframe confidence describe label readability, not market confidence. If either label is absent or ambiguous, use UNKNOWN and never infer it from chart shape.",
         "If chartReadability is POOR, or candles are not readable, verdict must be REVIEW_REQUIRED, confidence LOW, and the setup grade cannot exceed D. If scale is unreadable, do not return numeric prices.",
         "Act as a pre-trade decision auditor, not a signal seller. Challenge the proposed direction, highlight contradiction, and reward patience. A WATCH verdict means conditions deserve monitoring, never permission to trade.",

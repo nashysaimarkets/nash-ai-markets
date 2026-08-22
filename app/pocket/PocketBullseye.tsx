@@ -36,6 +36,7 @@ type Analysis = {
   patterns: { name: string; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; evidence: string; invalidation: string }[];
   nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
   missingInputs: string[];
+  contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
   summary: string;
   verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
   verdictHeadline: string;
@@ -197,6 +198,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpBusy, setFollowUpBusy] = useState(false);
   const [followUpError, setFollowUpError] = useState("");
   const [refinementStatus, setRefinementStatus] = useState<"idle" | "analysing" | "updated" | "error">("idle");
+  const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
@@ -288,6 +290,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
     try {
       const prepared = await prepareImage(file);
+      setRefinementBefore(analysis);
       setContextImage(prepared);
       setContextFileName(file.name);
       setRefinementStatus("analysing");
@@ -476,7 +479,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure]
             ] as const).map(([label,copy],index) => <li key={label}><i>{index + 1}</i><div><strong>{label}</strong><p>{copy}</p></div></li>)}</ol>
           </section>
-          {analysis.missingInputs.length || refinementStatus === "analysing" ? <section className="psMissingInputs" aria-busy={refinementStatus === "analysing"}><header><span>📷 ONE MORE VIEW COULD HELP</span><b>{refinementStatus === "analysing" ? "ANALYSING…" : refinementStatus === "updated" ? "ANALYSIS UPDATED" : "ONLY IF AVAILABLE"}</b></header>{analysis.missingInputs.length ? <ul>{analysis.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul> : null}<footer><div><strong>{refinementStatus === "analysing" ? "USING BOTH CHARTS" : refinementStatus === "updated" ? "SECOND VIEW APPLIED" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Keeping this result open while Bullseye refines it." : refinementStatus === "updated" ? `${contextFileName} now informs this result.` : "Add it and Bullseye will update this result here."}</span></div><label>{refinementStatus === "analysing" ? "WORKING…" : "＋ ADD PHOTO"}<input disabled={refinementStatus === "analysing"} aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
+          {analysis.missingInputs.length || refinementStatus !== "idle" ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} aria-busy={refinementStatus === "analysing"}><header><span>📷 {refinementStatus === "updated" ? "SECOND VIEW RESULT" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "COMPARING BOTH…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "ANALYSIS CHANGED" : "READ CONFIRMED" : "ONLY IF AVAILABLE"}</b></header>{refinementStatus === "updated" && contextImage ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>ORIGINAL</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting chart" /><figcaption>SECOND VIEW</figcaption></figure></div><p>{analysis.contextContribution?.summary || "The supporting chart was compared with the original analysis."}</p><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>EVIDENCE</span><strong>{analysis.contextContribution?.materialChange ? "MATERIAL" : "CONFIRMING"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : null}<footer><div><strong>{refinementStatus === "analysing" ? "USING BOTH CHARTS" : refinementStatus === "updated" ? "COMPARISON COMPLETE" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Keeping this result open while Bullseye refines it." : refinementStatus === "updated" ? "Both charts now inform the result above." : "Add a chart view that answers one of the points above."}</span></div><label>{refinementStatus === "analysing" ? "WORKING…" : refinementStatus === "updated" ? "CHANGE VIEW" : "＋ ADD PHOTO"}<input disabled={refinementStatus === "analysing"} aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
