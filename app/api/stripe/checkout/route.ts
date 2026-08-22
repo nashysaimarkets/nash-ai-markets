@@ -25,6 +25,10 @@ export async function POST(request: Request) {
   const selected = checkoutOffering(typeof form.get("offering") === "string" ? String(form.get("offering")) : null);
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey || !selected) {
+    console.error("[stripe-checkout] configuration unavailable", {
+      secretKeyPresent: Boolean(secretKey),
+      offeringPresent: Boolean(selected),
+    });
     return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
   }
   try {
