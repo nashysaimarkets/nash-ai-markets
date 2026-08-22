@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "../../../../utils/supabase/admin";
+import { buildPocketFoundingWelcomeEmail, buildPocketSubscriptionAlertEmail } from "../../../lib/launch-email.ts";
+import { dispatchLaunchEmail } from "../../../lib/server/resend-launch-email.ts";
 import { configuredOffering, validFoundingProPrice, validPocketFoundingPrice, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
 
 export const runtime = "nodejs";
@@ -108,7 +110,7 @@ async function saveSubscription(
       p_event_created_at: eventCreated,
     });
     if (error) { logSupabaseFailure("founding_rpc", error); throw new Error("Pocket Founding 650 synchronization failed"); }
-    return;
+    return "pocket" as const;
   }
 
   const admin = createAdminClient();
@@ -130,7 +132,7 @@ async function saveSubscription(
     }
     await syncCancellationSchedule(subscription, eventCreated);
     await syncFounding100(subscription, null, false, email, eventCreated);
-    return;
+    return null;
   }
 
   if (!email || !plan) {
@@ -159,6 +161,44 @@ async function saveSubscription(
     && offerings[0].offering.foundingEligible
     && validFoundingProPrice(offerings[0].item.price);
   await syncFounding100(subscription, foundingEligible ? plan : null, foundingEligible, email, eventCreated);
+  return plan;
+}
+
+async function sendPocketWelcome(email: string, sessionId: string, requestUrl: string) {
+  const pocketUrl = new URL("/pocket", requestUrl).toString();
+  const result = await dispatchLaunchEmail({
+    to: email,
+    email: buildPocketFoundingWelcomeEmail(pocketUrl),
+    idempotencyKey: `pocket-welcome:${sessionId}`,
+  });
+  if (result.status === "failed" || result.status === "rejected") {
+    console.error("Pocket welcome email was not delivered", {
+      category: "pocket_welcome_email_failure",
+      status: result.status,
+      reason: result.reason,
+    });
+  }
+}
+
+async function sendPocketOwnerAlert(customerEmail: string, sessionId: string, requestUrl: string) {
+  const configuredOwner = process.env.BULLSEYE_ADMIN_EMAILS
+    ?.split(",")
+    .map((value) => value.trim().toLowerCase())
+    .find(Boolean);
+  const ownerEmail = configuredOwner || "hello@nashaimarkets.com";
+  const dashboardUrl = new URL("/admin/commercial", requestUrl).toString();
+  const result = await dispatchLaunchEmail({
+    to: ownerEmail,
+    email: buildPocketSubscriptionAlertEmail(customerEmail, dashboardUrl),
+    idempotencyKey: `pocket-owner-alert:${sessionId}`,
+  });
+  if (result.status !== "sent") {
+    console.error("Pocket owner subscription alert was not delivered", {
+      category: "pocket_owner_alert_failure",
+      status: result.status,
+      reason: "reason" in result ? result.reason : "unknown",
+    });
+  }
 }
 
 export async function POST(request: Request) {
@@ -182,7 +222,15 @@ export async function POST(request: Request) {
       const session = event.data.object;
       if (session.mode === "subscription" && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(String(session.subscription));
-        await saveSubscription(stripe, subscription, event.created, session.customer_details?.email);
+        const customerAddress = session.customer_details?.email?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
+        const savedPlan = await saveSubscription(stripe, subscription, event.created, customerAddress);
+        if (savedPlan === "pocket" && customerAddress) {
+          // Welcome delivery is deliberately non-blocking: membership access is the critical path.
+          await Promise.allSettled([
+            sendPocketWelcome(customerAddress, session.id, request.url),
+            sendPocketOwnerAlert(customerAddress, session.id, request.url),
+          ]);
+        }
       }
     }
 
