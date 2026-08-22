@@ -150,12 +150,14 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ScenarioTheatre/);
   assert.match(client, /SPECULATIVE ONLY/);
   assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
-  assert.match(client, /BULLSEYE NEXT-CANDLE LAB/);
-  assert.match(client, /psProjectedCandle/);
+  assert.doesNotMatch(client, /<ScenarioTheatre analysis=/);
+  assert.match(client, /ConfluenceStack/);
+  assert.match(client, /BULLSEYE CONFLUENCE STACK/);
+  assert.match(client, /FIVE EVIDENCE LAYERS/);
   assert.match(client, /EVENT IMPACT CHECK/);
   assert.match(client, /psResultSupportInput/);
   assert.match(client, /will not invent one/);
-  assert.match(eventsRoute, /returnedSymbol !== symbol/);
+  assert.match(eventsRoute, /if \(returnedSymbol !== symbol\) return \[\]/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
   assert.match(styles, /\.psBattleLevel/);
@@ -176,6 +178,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psNextCandleCanvas/);
   assert.match(styles, /\.psDecisionEvents/);
   assert.match(styles, /\.psDecisionMapEmpty/);
+  assert.match(styles, /\.psConfluenceStack/);
+  assert.match(styles, /\.psLayerDeck/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);

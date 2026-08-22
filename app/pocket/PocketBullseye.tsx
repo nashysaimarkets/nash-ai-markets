@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, type CSSProperties, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 
@@ -78,6 +78,12 @@ function clampY(y: number) {
 function numericLevel(value: string | undefined) {
   const parsed = Number(value?.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0]);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isListedEquityAnalysis(analysis: Analysis | null) {
+  if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") return false;
+  const identity = `${analysis.instrument} ${analysis.ticker}`.toUpperCase();
+  return !/(INDEX|DFB|FUTURE|FOREX|FX\b|CRYPTO|BITCOIN|COMMODIT|BOND|YIELD|VIX|ETF)/.test(identity);
 }
 
 function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void }) {
@@ -223,6 +229,29 @@ function ScenarioTheatre({ analysis, sourceImage }: { analysis: Analysis; source
   </section>;
 }
 
+function ConfluenceStack({ analysis, sourceImage }: { analysis: Analysis; sourceImage: string }) {
+  const layers = [
+    { id: "structure", icon: "⌁", label: "STRUCTURE", score: analysis.setupScore.structure, status: analysis.marketStructure },
+    { id: "timeframe", icon: "◫", label: "TIMEFRAME", score: analysis.higherTimeframe.alignment === "ALIGNED" ? 9 : analysis.higherTimeframe.alignment === "CONFLICTING" ? 3 : 6, status: analysis.higherTimeframe.summary },
+    { id: "location", icon: "◎", label: "LOCATION", score: analysis.setupScore.location, status: analysis.levelStory },
+    { id: "momentum", icon: "↗", label: "MOMENTUM", score: analysis.setupScore.momentum, status: analysis.momentum },
+    { id: "confirmation", icon: "◆", label: "CONFIRMATION", score: analysis.setupScore.confirmation, status: analysis.nextSequence.confirmation },
+  ];
+  const [selectedLayer, setSelectedLayer] = useState(layers[0].id);
+  const selected = layers.find((layer) => layer.id === selectedLayer) ?? layers[0];
+  const aligned = layers.filter((layer) => layer.score >= 7).length;
+  return <section className="psConfluenceStack" data-direction={analysis.direction}>
+    <header><div><span>◈ BULLSEYE CONFLUENCE STACK</span><small>FIVE EVIDENCE LAYERS · ONE DEFENSIBLE READ</small></div><strong>{aligned}<small>/5</small><b> ALIGNED</b></strong></header>
+    <div className="psConfluenceStage">
+      <figure><img src={sourceImage} alt="Customer's uploaded source chart used for the evidence stack"/><figcaption>① VERIFIED SOURCE</figcaption></figure>
+      <div className="psLayerDeck">{layers.map((layer, index) => <button key={layer.id} type="button" data-active={selectedLayer === layer.id} data-strength={layer.score >= 8 ? "high" : layer.score >= 6 ? "mid" : "low"} style={{ "--layer": index } as CSSProperties} aria-pressed={selectedLayer === layer.id} onClick={() => setSelectedLayer(layer.id)}><i>{layer.icon}</i><span>{layer.label}</span><strong>{layer.score}<small>/10</small></strong><b/></button>)}</div>
+      <div className="psConfluenceLock"><small>CURRENT READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong><span>{analysis.verdict.replaceAll("_", " ")}</span></div>
+    </div>
+    <article className="psLayerRead" aria-live="polite"><div><small>SELECTED EVIDENCE · {selected.label}</small><strong>{selected.score}/10</strong></div><p>{selected.status}</p></article>
+    <footer><b>WHY THIS READ?</b><span>Tap each layer to inspect the evidence that supports—or weakens—the current decision. This is analysis, not a forecast or trade instruction.</span></footer>
+  </section>;
+}
+
 function ClarityLock({ analysis }: { analysis: Analysis }) {
   const metrics = ([
     ["STRUCTURE", analysis.setupScore.structure], ["MOMENTUM", analysis.setupScore.momentum],
@@ -352,7 +381,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   useEffect(() => {
     setStockEvents([]);
-    if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") { setStockEventStatus("idle"); return; }
+    if (!isListedEquityAnalysis(analysis)) { setStockEventStatus("idle"); return; }
     setStockEventStatus("loading");
     const controller = new AbortController();
     fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
@@ -632,12 +661,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <ScenarioTheatre analysis={analysis} sourceImage={image ?? ""} />
+          <ConfluenceStack analysis={analysis} sourceImage={image ?? ""} />
           <section className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
-            {analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "Bullseye found no verified company-specific event in the connected feed window."}</span></div> : <div className="psEventHeadline"><b>COMPANY LOOKUP HELD</b><span>A company calendar is used only when a listed ticker is identified with high confidence.</span></div>}
-            <details><summary>VIEW VERIFIED CALENDAR <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source}</span></li>)}</ol> : null}{macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 5).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">OPEN OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
-            <footer>Scheduled facts only—not a live-price forecast. Company events are requested for the identified ticker only.</footer>
+            {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
+            <details><summary>VIEW EVENT SOURCES <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 5).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · OFFICIAL SCHEDULE · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
+            <footer>Company dates are provider-scheduled and symbol-matched; they may be estimated or revised. Macro rows labelled official come from agency schedules. Always confirm with the issuer or exchange.</footer>
           </section>
           <BullseyePlan analysis={analysis} onResultCard={() => setShowResultCard(true)} />
           <section className="psDecisionCompass">
@@ -809,7 +838,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <footer>{vaultStats.total < 10 ? `${10 - vaultStats.total} more saved audits will make this fingerprint substantially more useful.` : "Your fingerprint is now using enough decisions to expose repeated tendencies."}</footer>
         </section> : null}
         {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
-        <div className="psEvents"><header><span>VERIFIED EVENT LAYER</span><b>{macroContext.status.toUpperCase()}</b></header><div><strong>OFFICIAL MACRO CALENDAR</strong><p>{macroContext.releases.length ? `${macroContext.releases.length} verified upcoming release${macroContext.releases.length === 1 ? "" : "s"} available for the decision audit.` : "No official release rows are available in the current window. Event safety will be marked unknown."}</p></div></div>
       </section>
     </main>
   );

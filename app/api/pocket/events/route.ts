@@ -37,7 +37,7 @@ export async function GET(request: Request) {
         if (!value || typeof value !== "object") return [];
         const row = value as ProviderRow;
         const returnedSymbol = text(row, "symbol").trim().toUpperCase();
-        if (returnedSymbol && returnedSymbol !== symbol) return [];
+        if (returnedSymbol !== symbol) return [];
         const date = text(row, "date") || text(row, "paymentDate");
         if (!future(date)) return [];
         let detail = "Scheduled company event";
