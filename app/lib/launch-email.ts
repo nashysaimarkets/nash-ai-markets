@@ -1,5 +1,5 @@
 export type LaunchEmailTemplate = {
-  template: "waitlist-confirmation" | "founding-member-welcome" | "membership-welcome" | "payment-successful" | "founding-100-confirmation" | "annual-renewal-reminder" | "subscription-cancellation";
+  template: "waitlist-confirmation" | "founding-member-welcome" | "pocket-founding-welcome" | "pocket-subscription-alert" | "membership-welcome" | "payment-successful" | "founding-100-confirmation" | "annual-renewal-reminder" | "subscription-cancellation";
   subject: string;
   text: string;
 };
@@ -28,6 +28,36 @@ export function getLaunchEmailReadiness(
 
 type PaidPlan = "pro" | "elite";
 const brandFooter = "NASH AI Markets provides educational market commentary, not personalised financial advice.";
+
+export function buildPocketFoundingWelcomeEmail(pocketUrl: string): LaunchEmailTemplate {
+  return {
+    template: "pocket-founding-welcome",
+    subject: "Welcome to Pocket Bullseye — start with your first chart",
+    text: [
+      "Welcome to Pocket Bullseye. Your Founding 650 subscription has been confirmed.",
+      `OPEN POCKET\n${pocketUrl}`,
+      "SAVE POCKET TO YOUR PHONE\niPhone: open Pocket in Safari, tap Share, then Add to Home Screen.\nAndroid: open Pocket in Chrome, tap the menu, then Add to Home screen or Install app.\nDesktop: use the install icon in the browser address bar, or bookmark Pocket.",
+      "UPLOAD YOUR FIRST CHART\n1. Tap LOAD CHART.\n2. Choose a clear screenshot showing the instrument, timeframe and price scale.\n3. Remove your name, account number, balance and notifications before uploading.\n4. Choose LONG, SHORT or JUST ANALYSE, confirm the Privacy Shield, then tap CHALLENGE MY SETUP.",
+      "SEND FEEDBACK\nTap the green FEEDBACK button at the bottom-right of Pocket. Choose REPORT A PROBLEM if something is not working, or SHARE AN IDEA to help shape the product. You can also email hello@nashaimarkets.com.",
+      "Your £4.99 Founding 650 price remains locked while this subscription stays continuously active.",
+      "Pocket Bullseye provides educational chart analysis only. It does not provide personalised financial advice, execute trades or guarantee outcomes.",
+    ].join("\n\n"),
+  };
+}
+
+export function buildPocketSubscriptionAlertEmail(customerEmail: string, dashboardUrl: string): LaunchEmailTemplate {
+  return {
+    template: "pocket-subscription-alert",
+    subject: "New Pocket Bullseye subscription \uD83C\uDFAF",
+    text: [
+      "A new Pocket Bullseye Founding 650 subscription has been verified by Stripe.",
+      `Customer: ${customerEmail}`,
+      "Price: \u00A34.99 per month",
+      `OPEN LAUNCH CONTROL\n${dashboardUrl}`,
+      "No payment-card information is included in this notification.",
+    ].join("\n\n"),
+  };
+}
 
 export function buildMembershipWelcomeEmail(plan: PaidPlan): LaunchEmailTemplate {
   return { template: "membership-welcome", subject: `Welcome to NASH AI Markets ${plan.toUpperCase()}`, text: [`Your ${plan.toUpperCase()} membership is active.`, "Sign in using the email address used at checkout.", brandFooter].join("\n\n") };
