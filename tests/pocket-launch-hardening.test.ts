@@ -56,8 +56,9 @@ test("score and grade are made internally consistent for readable charts", () =>
 });
 
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
-  const [client, analyseRoute, reviewRoute, followUpRoute] = await Promise.all([
+  const [client, styles, analyseRoute, reviewRoute, followUpRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/review/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/follow-up/route.ts", import.meta.url), "utf8"),
@@ -67,6 +68,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
+  assert.match(client, /addResultContextFile/);
+  assert.match(client, /Add a supporting chart photo/);
+  assert.match(client, /Supporting chart added[\s\S]*rerun the audit/);
+  assert.match(styles, /\.psApp \.psMissingInputs>footer/);
+  assert.match(styles, /min-height:44px/);
   assert.match(reviewRoute, /MAX_IMAGE_LENGTH = 11_000_000/);
   for (const route of [analyseRoute, reviewRoute, followUpRoute]) {
     assert.match(route, /store: false/);

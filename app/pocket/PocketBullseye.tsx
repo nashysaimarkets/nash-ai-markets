@@ -212,6 +212,27 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } catch { setError("That higher-timeframe image could not be prepared safely."); }
   }
 
+  async function addResultContextFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose a JPEG, PNG or WebP supporting chart.");
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError("That supporting chart is too large. Please use a screenshot under 8 MB.");
+      return;
+    }
+    try {
+      setContextImage(await prepareImage(file));
+      setContextFileName(file.name);
+      setAnalysis(null);
+      setImmersive(false);
+      setVaultMessage("Supporting chart added. Review both images, then rerun the audit when ready.");
+    } catch { setError("That supporting chart could not be prepared safely."); }
+  }
+
   async function analyse() {
     if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
     analysisRequestActive.current = true;
@@ -377,7 +398,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure],["PATIENCE",analysis.nextSequence.patience],["REASSESS",analysis.nextSequence.reassess]
             ] as const).map(([label,copy],index) => <li key={label}><i>{index + 1}</i><div><strong>{label}</strong><p>{copy}</p></div></li>)}</ol>
           </section>
-          {analysis.missingInputs.length ? <section className="psMissingInputs"><header><span>📷 ONE MORE VIEW COULD HELP</span><b>ONLY IF AVAILABLE</b></header><ul>{analysis.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
+          {analysis.missingInputs.length ? <section className="psMissingInputs"><header><span>📷 ONE MORE VIEW COULD HELP</span><b>ONLY IF AVAILABLE</b></header><ul>{analysis.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul><footer><div><strong>HAVE THAT VIEW?</strong><span>Add it as supporting context and rerun only when you are ready.</span></div><label>＋ ADD PHOTO<input aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer></section> : null}
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
