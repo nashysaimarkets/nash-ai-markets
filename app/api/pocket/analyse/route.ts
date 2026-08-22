@@ -174,6 +174,7 @@ export async function POST(request: Request) {
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
         "Pattern labels must include status, visible evidence and invalidation. Prefer AMBIGUOUS over forcing a name. CONFIRMED requires visible completion; FORMING is incomplete; EXTENDED means the move is already mature.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
+        "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
         "Instrument and timeframe confidence describe label readability, not market confidence. If either label is absent or ambiguous, use UNKNOWN and never infer it from chart shape.",
         "If chartReadability is POOR, or candles are not readable, verdict must be REVIEW_REQUIRED, confidence LOW, and the setup grade cannot exceed D. If scale is unreadable, do not return numeric prices.",

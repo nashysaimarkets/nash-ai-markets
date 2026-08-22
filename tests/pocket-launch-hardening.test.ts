@@ -71,7 +71,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /normalizeLockedDecisions/);
   assert.match(client, /addResultContextFile/);
   assert.match(client, /Add a supporting chart photo/);
-  assert.match(client, /Supporting chart added[\s\S]*rerun the audit/);
+  assert.match(client, /requestPocketAnalysis\(prepared\)/);
+  assert.match(client, /Keeping this result open while Bullseye refines it/);
+  assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /psChartOverlayLayer/);
   assert.match(client, /Full-screen chart overlays/);
   assert.match(client, /aria-pressed=\{visibleOverlays\.has\(overlay\)\}/);

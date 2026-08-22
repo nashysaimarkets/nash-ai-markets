@@ -196,6 +196,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpReply, setFollowUpReply] = useState<FollowUpReply | null>(null);
   const [followUpBusy, setFollowUpBusy] = useState(false);
   const [followUpError, setFollowUpError] = useState("");
+  const [refinementStatus, setRefinementStatus] = useState<"idle" | "analysing" | "updated" | "error">("idle");
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
@@ -274,6 +275,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   async function addResultContextFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    const resultScroller = event.currentTarget.closest(".psResults") as HTMLElement | null;
+    const savedScrollTop = resultScroller?.scrollTop ?? 0;
     setError("");
     if (!file.type.startsWith("image/")) {
       setError("Please choose a JPEG, PNG or WebP supporting chart.");
@@ -284,37 +287,66 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     try {
-      setContextImage(await prepareImage(file));
+      const prepared = await prepareImage(file);
+      setContextImage(prepared);
       setContextFileName(file.name);
-      setAnalysis(null);
-      setImmersive(false);
-      setVaultMessage("Supporting chart added. Review both images, then rerun the audit when ready.");
-    } catch { setError("That supporting chart could not be prepared safely."); }
+      setRefinementStatus("analysing");
+      const refined = await requestPocketAnalysis(prepared);
+      setAnalysis(refined);
+      setStockEvents([]);
+      setStockEventStatus(refined.ticker === "UNKNOWN" ? "unavailable" : "loading");
+      setRefinementStatus("updated");
+      requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
+    } catch (caught) {
+      setRefinementStatus("error");
+      setError(caught instanceof Error ? caught.message : "That supporting chart could not be analysed safely.");
+    } finally {
+      event.currentTarget.value = "";
+    }
+  }
+
+  async function requestPocketAnalysis(selectedContext: string | null): Promise<Analysis> {
+    if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
+    analysisRequestActive.current = true;
+    setBusy(true);
+    try {
+      const response = await fetch("/api/pocket/analyse", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ image, contextImage: selectedContext, intention }),
+      });
+      const payload = await response.json() as { analysis?: Analysis; error?: string };
+      if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
+      payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
+      return payload.analysis;
+    } finally {
+      analysisRequestActive.current = false;
+      setBusy(false);
+    }
   }
 
   async function analyse() {
     if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
-    analysisRequestActive.current = true;
-    setBusy(true);
     setError("");
     try {
-      const response = await fetch(reviewTarget ? "/api/pocket/review" : "/api/pocket/analyse", {
+      if (!reviewTarget) {
+        const nextAnalysis = await requestPocketAnalysis(contextImage);
+        setStockEvents([]);
+        setStockEventStatus(nextAnalysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
+        setAnalysis(nextAnalysis);
+        setImmersive(true);
+        return;
+      }
+      analysisRequestActive.current = true;
+      setBusy(true);
+      const response = await fetch("/api/pocket/review", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(reviewTarget ? { beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis } : { image, contextImage, intention }),
+        body: JSON.stringify({ beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis }),
       });
-      if (reviewTarget) {
-        const payload = await response.json() as { review?: ProcessReview; error?: string };
-        if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
-        setReview(payload.review); setImmersive(true); return;
-      }
-      const payload = await response.json() as { analysis?: Analysis; error?: string };
-      if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
-      payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
-      setStockEvents([]);
-      setStockEventStatus(payload.analysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
-      setAnalysis(payload.analysis);
-      setImmersive(true);
+      const payload = await response.json() as { review?: ProcessReview; error?: string };
+      if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
+      setReview(payload.review); setImmersive(true);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
@@ -409,9 +441,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
                 <i /><strong>{analysis.direction}</strong><small>{analysis.verdict.replaceAll("_", " ")}</small>
               </div>
               <div className="psCompassSignals">
-                <article data-signal="bull" data-active={analysis.direction === "BULLISH"}><span>🐂 BULL PRESSURE</span><p>{analysis.bullConfirmation}</p></article>
-                <article data-signal="wait" data-active={analysis.direction === "NEUTRAL"}><span>🛡️ PATIENCE ZONE</span><p>{analysis.noTradeCondition}</p></article>
-                <article data-signal="bear" data-active={analysis.direction === "BEARISH"}><span>🐻 BEAR PRESSURE</span><p>{analysis.bearConfirmation}</p></article>
+                <article data-signal="bull" data-active={analysis.direction === "BULLISH"}><span>🐂 BULL CASE</span><strong>{analysis.direction === "BULLISH" ? "ACTIVE READ" : "SECONDARY"}</strong></article>
+                <article data-signal="wait" data-active={analysis.direction === "NEUTRAL"}><span>🛡️ PATIENCE</span><strong>{analysis.direction === "NEUTRAL" ? "ACTIVE READ" : "ALWAYS VALID"}</strong></article>
+                <article data-signal="bear" data-active={analysis.direction === "BEARISH"}><span>🐻 BEAR CASE</span><strong>{analysis.direction === "BEARISH" ? "ACTIVE READ" : "SECONDARY"}</strong></article>
               </div>
             </div>
           </section>
@@ -441,14 +473,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psNextSequence">
             <header><span>⏱️ WHAT MUST HAPPEN NEXT?</span><b>CONDITIONAL SEQUENCE</b></header>
             <ol>{([
-              ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure],["PATIENCE",analysis.nextSequence.patience],["REASSESS",analysis.nextSequence.reassess]
+              ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure]
             ] as const).map(([label,copy],index) => <li key={label}><i>{index + 1}</i><div><strong>{label}</strong><p>{copy}</p></div></li>)}</ol>
           </section>
-          {analysis.missingInputs.length ? <section className="psMissingInputs"><header><span>📷 ONE MORE VIEW COULD HELP</span><b>ONLY IF AVAILABLE</b></header><ul>{analysis.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul><footer><div><strong>HAVE THAT VIEW?</strong><span>Add it as supporting context and rerun only when you are ready.</span></div><label>＋ ADD PHOTO<input aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer></section> : null}
+          {analysis.missingInputs.length || refinementStatus === "analysing" ? <section className="psMissingInputs" aria-busy={refinementStatus === "analysing"}><header><span>📷 ONE MORE VIEW COULD HELP</span><b>{refinementStatus === "analysing" ? "ANALYSING…" : refinementStatus === "updated" ? "ANALYSIS UPDATED" : "ONLY IF AVAILABLE"}</b></header>{analysis.missingInputs.length ? <ul>{analysis.missingInputs.map((item) => <li key={item}>{item}</li>)}</ul> : null}<footer><div><strong>{refinementStatus === "analysing" ? "USING BOTH CHARTS" : refinementStatus === "updated" ? "SECOND VIEW APPLIED" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Keeping this result open while Bullseye refines it." : refinementStatus === "updated" ? `${contextFileName} now informs this result.` : "Add it and Bullseye will update this result here."}</span></div><label>{refinementStatus === "analysing" ? "WORKING…" : "＋ ADD PHOTO"}<input disabled={refinementStatus === "analysing"} aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
-          <section className="psAuditGrid"><article data-audit="missing"><span>WHAT YOU MAY BE MISSING</span><ul>{analysis.whatYouMayBeMissing.map((item) => <li key={item}>{item}</li>)}</ul></article><article data-audit="improve"><span>WHAT IMPROVES IT</span><ul>{analysis.improvesSetup.map((item) => <li key={item}>{item}</li>)}</ul></article><article data-audit="kill"><span>WHAT KILLS IT</span><ul>{analysis.killsSetup.map((item) => <li key={item}>{item}</li>)}</ul></article><article data-audit="trap"><span>TRADER TRAP</span><p>{analysis.traderTrap}</p></article></section>
           <div className="psConfidence">
             <div><span>CONFIDENCE</span><strong>{analysis.confidence}</strong></div>
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
