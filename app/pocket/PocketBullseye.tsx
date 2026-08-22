@@ -110,14 +110,14 @@ function ChartOverlay({ level, index }: { level: Level; index: number }) {
   const top = Math.min(y1, y2);
   const width = Math.max(1, Math.abs(x2 - x1));
   const height = Math.max(1, Math.abs(y2 - y1));
-  const labelStyle = { left: `${Math.min(98, Math.max(35, Math.max(x1, x2)))}%`, top: `${Math.min(94, Math.max(6, y2))}%` };
-  const labelEdge = y2 < 12 ? "top" : y2 > 88 ? "bottom" : "middle";
+  const icon = level.kind === "support" ? "●" : level.kind === "resistance" ? "●" : level.kind === "trend" ? "△" : level.kind === "pivot" ? "◆" : level.kind === "zone" ? "▰" : "⚡";
+  const iconStyle = { left: `${Math.min(97, Math.max(3, Math.max(x1, x2)))}%`, top: `${Math.min(97, Math.max(3, y2))}%` };
 
-  if (level.kind === "pivot") return <span className="psChartMark psChartPoint" data-tool={level.kind} style={{ left: `${x1}%`, top: `${y1}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
-  if (level.kind === "zone" || level.kind === "gap") return <span className="psChartMark psChartArea" data-tool={level.kind} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
+  if (level.kind === "pivot") return <span className="psChartMark psChartPoint" data-tool={level.kind} style={{ left: `${x1}%`, top: `${y1}%` }} aria-label={`Pivot point${level.price ? ` at ${level.price}` : ""}`} />;
+  if (level.kind === "zone" || level.kind === "gap") return <><span className="psChartMark psChartArea" data-tool={level.kind} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }} aria-label={`${level.kind} overlay`} /><span className="psChartIcon" data-tool={level.kind} style={iconStyle as CSSProperties} aria-hidden="true">{icon}</span></>;
   return <>
     <svg className="psChartVector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line data-tool={level.kind} x1={x1} y1={y1} x2={x2} y2={y2} vectorEffect="non-scaling-stroke" /></svg>
-    <span className="psChartLineLabel" data-tool={level.kind} data-edge={labelEdge} style={labelStyle as CSSProperties} data-index={index}>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
+    <span className="psChartIcon" data-tool={level.kind} style={iconStyle as CSSProperties} data-index={index} aria-label={`${level.kind}${level.price ? ` at ${level.price}` : ""}`}>{icon}</span>
   </>;
 }
 
@@ -224,6 +224,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpError, setFollowUpError] = useState("");
   const [refinementStatus, setRefinementStatus] = useState<"idle" | "analysing" | "updated" | "error">("idle");
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
+  const [showResultReveal, setShowResultReveal] = useState(false);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
 
@@ -244,11 +245,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [analysis]);
 
   useEffect(() => {
-    if (!immersive && !chartFocus) return;
+    if (!immersive && !chartFocus && !showResultReveal) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
-  }, [immersive, chartFocus]);
+  }, [immersive, chartFocus, showResultReveal]);
 
   const levels = analysis?.levels ?? [];
   const availableToolOptions = TOOL_OPTIONS.filter(([kind]) => levels.some((level) => level.kind === kind));
@@ -364,6 +365,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         setStockEventStatus(nextAnalysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
         setAnalysis(nextAnalysis);
         setImmersive(true);
+        setShowResultReveal(true);
         return;
       }
       analysisRequestActive.current = true;
@@ -455,7 +457,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
-            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); }}>NEW CHART</button>
+            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setShowResultReveal(false); }}>NEW CHART</button>
           </div>
           <header className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
@@ -567,6 +569,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <nav className="psFocusTools" aria-label="Full-screen chart overlays">{availableToolOptions.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{label} · {visibleOverlays.has(overlay) ? "ON" : "OFF"}</button>)}</nav>
             {annotatedChart(true)}
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
+          </section>
+        )}
+        {showResultReveal && (
+          <section className="psResultReveal" role="dialog" aria-modal="true" aria-label="Pocket Bullseye result ready">
+            <div className="psRevealRadar" aria-hidden="true"><i /><i /><i /><b>🎯</b></div>
+            <p>BULLSEYE ANALYSIS COMPLETE</p>
+            <div className="psRevealScore"><span>SETUP GRADE</span><strong data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</strong><b>{analysis.setupScore.overall}<small>/100</small></b></div>
+            <div className="psRevealVerdict"><span data-direction={analysis.direction}>{analysis.direction}</span><strong>{analysis.verdict.replaceAll("_", " ")}</strong></div>
+            <h2>{analysis.verdictHeadline}</h2>
+            <button type="button" onClick={() => setShowResultReveal(false)}>OPEN MY FULL RESULT <b>→</b></button>
+            <small>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</small>
           </section>
         )}
       </main>

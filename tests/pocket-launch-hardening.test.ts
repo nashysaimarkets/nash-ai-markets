@@ -107,6 +107,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /chart\.naturalWidth \/ chart\.naturalHeight/);
   assert.match(client, /Full-screen chart overlays/);
   assert.match(client, /availableToolOptions/);
+  assert.match(client, /showResultReveal/);
+  assert.match(client, /OPEN MY FULL RESULT/);
+  assert.doesNotMatch(client, /className="psChartLineLabel"/);
+  assert.match(styles, /\.psResultReveal\{/);
+  assert.match(styles, /\.psChartIcon\{/);
   assert.match(client, /ON · TAP TO HIDE/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.match(client, /aria-pressed=\{visibleOverlays\.has\(overlay\)\}/);
