@@ -171,6 +171,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ADD ANOTHER PHOTO/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
+  assert.match(client, /SUPPORT AREA NOT VERIFIED/);
+  assert.match(client, /CLEARER VIEW NEEDED/);
+  assert.match(client, /9000/);
+  assert.match(client, /bullseye-events/);
+  assert.match(client, /bullseye-levels/);
+  assert.match(client, /bullseye-evidence/);
   assert.match(eventsRoute, /if \(returnedSymbol !== symbol\) return \[\]/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
@@ -200,6 +206,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psPersonalTouch/);
   assert.match(styles, /\.psDecisionCompass,\.psApp \.psNextSequence/);
   assert.match(styles, /\.psDecisionMap\.psBattlefieldExpanded\.psDecisionMapEmpty/);
+  assert.match(styles, /\.psStoryLinks/);
+  assert.match(styles, /\.psMissingLevelCue/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
