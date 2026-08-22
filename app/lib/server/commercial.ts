@@ -122,7 +122,7 @@ export async function loadPocketLaunchReport() {
       cancelled: pocketSubscriptions.filter((subscription) => subscription.status === "canceled").length,
       failedPayments: openInvoices.filter((invoice) => {
         const subscriptionId = stripeSubscriptionId(invoice);
-        return Boolean(subscriptionId && activeIds.has(subscriptionId) && invoice.attempt_count > 0 && !invoice.paid);
+        return Boolean(subscriptionId && activeIds.has(subscriptionId) && invoice.attempt_count > 0);
       }).length,
     };
     const recentMembers: PocketLaunchMember[] = pocketSubscriptions
