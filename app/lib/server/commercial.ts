@@ -1,4 +1,5 @@
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
+import Stripe from "stripe";
 
 export type CommercialMembership = {
   email: string;
@@ -24,6 +25,127 @@ export type WaitlistMetrics = {
   total: number;
   foundingProInterest: number;
 };
+
+export type PocketLaunchMember = {
+  id: string;
+  email: string;
+  status: string;
+  joinedAt: string;
+  renewsAt: string | null;
+  cancellationScheduled: boolean;
+};
+
+export type PocketLaunchMetrics = {
+  activeSubscribers: number;
+  mrrPence: number;
+  collected30dPence: number;
+  cancellationScheduled: number;
+  cancelled: number;
+  failedPayments: number;
+};
+
+function stripeSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const subscription = invoice.parent?.subscription_details?.subscription;
+  return typeof subscription === "string" ? subscription : subscription?.id ?? null;
+}
+
+function stripeCustomerEmail(customer: Stripe.Subscription["customer"]): string {
+  if (typeof customer === "string" || ("deleted" in customer && customer.deleted)) return "Email unavailable";
+  return customer.email?.trim().toLowerCase() || "Email unavailable";
+}
+
+async function listAll<T extends { id: string }>(
+  load: (startingAfter?: string) => Promise<{ data: T[]; has_more: boolean }>,
+  maximum = 1000,
+): Promise<T[]> {
+  const records: T[] = [];
+  let startingAfter: string | undefined;
+  while (records.length < maximum) {
+    const page = await load(startingAfter);
+    records.push(...page.data);
+    if (!page.has_more || page.data.length === 0) break;
+    startingAfter = page.data.at(-1)?.id;
+  }
+  if (records.length >= maximum) throw new Error("Stripe launch report exceeded its safe record limit");
+  return records;
+}
+
+export async function loadPocketLaunchReport() {
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
+  const pocketPriceId = process.env.STRIPE_POCKET_FOUNDING_PRICE_ID?.trim();
+  if (!secretKey || !pocketPriceId) {
+    return { status: "unavailable" as const, metrics: null, recentMembers: [] };
+  }
+  try {
+    const stripe = new Stripe(secretKey);
+    const subscriptions = await listAll<Stripe.Subscription>((startingAfter) => stripe.subscriptions.list({
+      status: "all",
+      limit: 100,
+      ...(startingAfter ? { starting_after: startingAfter } : {}),
+      expand: ["data.customer"],
+    }));
+    const pocketSubscriptions = subscriptions.filter((subscription) =>
+      subscription.items.data.some((item) => item.price.id === pocketPriceId),
+    );
+    const active = pocketSubscriptions.filter((subscription) =>
+      subscription.status === "active" || subscription.status === "trialing",
+    );
+    const activeIds = new Set(active.map((subscription) => subscription.id));
+    const pocketIds = new Set(pocketSubscriptions.map((subscription) => subscription.id));
+    const since = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
+    const [paidInvoices, openInvoices] = await Promise.all([
+      listAll<Stripe.Invoice>((startingAfter) => stripe.invoices.list({
+        status: "paid", created: { gte: since }, limit: 100,
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
+      })),
+      listAll<Stripe.Invoice>((startingAfter) => stripe.invoices.list({
+        status: "open", limit: 100,
+        ...(startingAfter ? { starting_after: startingAfter } : {}),
+      })),
+    ]);
+    const metrics: PocketLaunchMetrics = {
+      activeSubscribers: active.length,
+      mrrPence: active.reduce((sum, subscription) => sum + subscription.items.data.reduce((itemSum, item) => {
+        if (item.price.id !== pocketPriceId || item.price.currency !== "gbp") return itemSum;
+        const amount = item.price.unit_amount ?? 0;
+        const quantity = item.quantity ?? 1;
+        return itemSum + amount * quantity;
+      }, 0), 0),
+      collected30dPence: paidInvoices.reduce((sum, invoice) => {
+        const subscriptionId = stripeSubscriptionId(invoice);
+        return subscriptionId && pocketIds.has(subscriptionId) && invoice.currency === "gbp"
+          ? sum + invoice.amount_paid
+          : sum;
+      }, 0),
+      cancellationScheduled: active.filter((subscription) => subscription.cancel_at_period_end).length,
+      cancelled: pocketSubscriptions.filter((subscription) => subscription.status === "canceled").length,
+      failedPayments: openInvoices.filter((invoice) => {
+        const subscriptionId = stripeSubscriptionId(invoice);
+        return Boolean(subscriptionId && activeIds.has(subscriptionId) && invoice.attempt_count > 0 && !invoice.paid);
+      }).length,
+    };
+    const recentMembers: PocketLaunchMember[] = pocketSubscriptions
+      .toSorted((a, b) => b.created - a.created)
+      .slice(0, 8)
+      .map((subscription) => ({
+        id: subscription.id,
+        email: stripeCustomerEmail(subscription.customer),
+        status: subscription.status,
+        joinedAt: new Date(subscription.created * 1000).toISOString(),
+        renewsAt: subscription.items.data.reduce((latest, item) => Math.max(latest, item.current_period_end ?? 0), 0)
+          ? new Date(subscription.items.data.reduce((latest, item) => Math.max(latest, item.current_period_end ?? 0), 0) * 1000).toISOString()
+          : null,
+        cancellationScheduled: subscription.cancel_at_period_end,
+      }));
+    return { status: "available" as const, metrics, recentMembers };
+  } catch (error) {
+    console.error("Pocket launch reporting unavailable", {
+      category: "owner_launch_report_failure",
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    return { status: "unavailable" as const, metrics: null, recentMembers: [] };
+  }
+}
 
 export function calculateCommercialMetrics(rows: readonly CommercialMembership[]): CommercialMetrics {
   const active = rows.filter((row) => row.status === "active" || row.status === "trialing");

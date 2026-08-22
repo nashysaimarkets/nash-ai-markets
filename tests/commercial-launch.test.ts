@@ -197,3 +197,22 @@ test("commercial admin is allowlisted and labels conversion denominator", async 
   assert.match(server, /\.eq\("source", "homepage"\)/);
   assert.doesNotMatch(admin, /waitlist.*email|email.*waitlist/i);
 });
+
+test("owner launch dashboard is server-only, allowlisted and fail-closed", async () => {
+  const [admin, server, css] = await Promise.all([
+    read("app/admin/commercial/page.tsx"),
+    read("app/lib/server/commercial.ts"),
+    read("app/admin/commercial/launch-dashboard.css"),
+  ]);
+  assert.match(admin, /isFounding100Admin/);
+  assert.match(admin, /loadPocketLaunchReport/);
+  assert.match(admin, /ACTIVE POCKET SUBSCRIBERS/);
+  assert.match(admin, /PAYMENT PROBLEMS/);
+  assert.match(admin, /Recent Pocket subscriptions/);
+  assert.match(server, /process\.env\.STRIPE_SECRET_KEY/);
+  assert.match(server, /stripe\.subscriptions\.list/);
+  assert.match(server, /stripe\.invoices\.list/);
+  assert.match(server, /status: "unavailable" as const/);
+  assert.doesNotMatch(admin, /STRIPE_SECRET_KEY/);
+  assert.match(css, /launchMetrics/);
+});
