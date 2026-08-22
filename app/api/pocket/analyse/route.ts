@@ -164,10 +164,11 @@ const precisionOverlaySchema = {
     plotBounds: schema.properties.plotBounds,
     priceScaleAnchors: schema.properties.priceScaleAnchors,
     levels: schema.properties.levels,
+    currentPrice: { type: "string", maxLength: 30 },
     confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] },
     limitation: { type: "string", maxLength: 160 },
   },
-  required: ["plotBounds", "priceScaleAnchors", "levels", "confidence", "limitation"],
+  required: ["plotBounds", "priceScaleAnchors", "levels", "currentPrice", "confidence", "limitation"],
 } as const;
 
 export async function POST(request: Request) {
@@ -256,6 +257,7 @@ export async function POST(request: Request) {
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
         "plotBounds must tightly enclose only the candle plotting rectangle. Exclude phone chrome, chart headers, order tickets, price-axis labels, dates, footer data, indicator panels and volume panels.",
         "Read 2-4 clearly printed prices from the visible price axis and return each exact numeric price with the y coordinate through the centre of its label. Higher prices must have smaller y coordinates. If fewer than two exact scale labels are readable, return no support or resistance levels.",
+        "Return currentPrice only when the chart's current-price marker is clearly readable; otherwise return an empty string.",
         "Return one or two support levels and one or two resistance levels only when repeated reactions or a major visible swing justify them. Every support/resistance must have an exact readable price and must lie inside plotBounds.",
         "Return up to three conspicuous pivot swing highs or lows at the wick extremity. Pivot x/y and x2/y2 must be identical.",
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
@@ -301,6 +303,7 @@ export async function POST(request: Request) {
           plotBounds: geometry.plotBounds,
           priceScaleAnchors: geometry.priceScaleAnchors,
           levels: geometry.levels,
+          currentPrice: geometry.currentPrice,
         };
       } else {
         // Fail closed: a report may still be useful, but unverified geometry must never be drawn.

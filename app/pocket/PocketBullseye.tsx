@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, CSSProperties, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 
@@ -60,6 +60,7 @@ type Analysis = {
   relevantEventTypes: string[];
   plotBounds?: { left: number; top: number; right: number; bottom: number };
   priceScaleAnchors?: { price: number; y: number }[];
+  currentPrice?: string;
   levels: Level[];
   fibLevels: FibLevel[];
 };
@@ -69,90 +70,46 @@ type FollowUpReply = { answer: string; evidence: string[]; caution: string; next
 type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; lessons: string[]; behaviourTags: string[] };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-const TOOL_OPTIONS = [
-  ["support","🟢 SUPPORT"],["resistance","🔴 RESISTANCE"],["trend","📐 TREND"],
-  ["pivot","📍 SWING POINTS"],["zone","▰ REACTION ZONES"],["gap","⚡ GAPS"],
-] as const;
-
 function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
 }
 
-function clampCoordinate(value: number, fallback: number) {
-  return Math.max(0, Math.min(100, Number.isFinite(value) ? value : fallback));
+function numericLevel(value: string | undefined) {
+  const parsed = Number(value?.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0]);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
-function containedImageBounds(container: HTMLDivElement, chart: HTMLImageElement): CSSProperties | null {
-  if (!chart.naturalWidth || !chart.naturalHeight) return null;
-  const style = getComputedStyle(container);
-  const paddingTop = Number.parseFloat(style.paddingTop) || 0;
-  const paddingBottom = Number.parseFloat(style.paddingBottom) || 0;
-  const availableWidth = container.clientWidth;
-  const availableHeight = Math.max(1, container.clientHeight - paddingTop - paddingBottom);
-  const imageRatio = chart.naturalWidth / chart.naturalHeight;
-  const boxRatio = availableWidth / availableHeight;
-  const width = boxRatio > imageRatio ? availableHeight * imageRatio : availableWidth;
-  const height = boxRatio > imageRatio ? availableHeight : availableWidth / imageRatio;
-  return { left: (availableWidth - width) / 2, top: paddingTop + (availableHeight - height) / 2, width, height };
+function PriceBattlefield({ analysis, expanded = false }: { analysis: Analysis; expanded?: boolean }) {
+  const verified = analysis.levels.flatMap((level) => {
+    const price = numericLevel(level.price);
+    return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
+  });
+  const current = numericLevel(analysis.currentPrice);
+  const values = [...verified.map((level) => level.numericPrice), ...(current !== null ? [current] : [])];
+  const rawMin = values.length ? Math.min(...values) : 0;
+  const rawMax = values.length ? Math.max(...values) : 1;
+  const padding = Math.max((rawMax - rawMin) * .16, Math.abs(rawMax || 1) * .0025, 1);
+  const min = rawMin - padding;
+  const max = rawMax + padding;
+  const position = (price: number) => 9 + ((max - price) / (max - min)) * 82;
+  const ordered = [...verified].sort((a, b) => b.numericPrice - a.numericPrice);
+
+  return <div className={`psBattlefield${expanded ? " psBattlefieldExpanded" : ""}`} aria-label="Bullseye price battlefield">
+    <div className="psBattleScan" aria-hidden="true" />
+    <div className="psBattleAxis" aria-hidden="true"><i /><i /><i /></div>
+    {ordered.map((level, index) => <button key={`${level.kind}-${level.numericPrice}-${index}`} type="button" className="psBattleLevel" data-kind={level.kind} style={{ top: `${position(level.numericPrice)}%` }} aria-label={`${level.kind} at ${level.price}`}>
+      <span className="psBattleIcon">{level.kind === "support" ? "●" : level.kind === "resistance" ? "●" : "◆"}</span>
+      <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "PIVOT" : level.kind.toUpperCase()}</small>
+    </button>)}
+    {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span>CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
+    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>No exact level survived verification. Add a chart with a clear price scale for the Battlefield.</p></div> : null}
+    <div className="psBattleDirection" data-direction={analysis.direction}><span>BEAR PRESSURE</span><strong>{analysis.direction}</strong><span>BULL PRESSURE</span></div>
+  </div>;
 }
 
-function ChartOverlay({ level, index }: { level: Level; index: number }) {
-  let x1 = clampCoordinate(level.x, 4);
-  const y1 = clampY(level.y);
-  let x2 = clampCoordinate(level.x2, 96);
-  if ((level.kind === "support" || level.kind === "resistance") && Math.abs(x2 - x1) < 20) {
-    x1 = 4;
-    x2 = 96;
-  }
-  const measuredY2 = clampCoordinate(level.y2, y1);
-  const y2 = level.kind === "support" || level.kind === "resistance" ? y1 : measuredY2;
-  const left = Math.min(x1, x2);
-  const top = Math.min(y1, y2);
-  const width = Math.max(1, Math.abs(x2 - x1));
-  const height = Math.max(1, Math.abs(y2 - y1));
-  const icon = level.kind === "support" ? "●" : level.kind === "resistance" ? "●" : level.kind === "trend" ? "△" : level.kind === "pivot" ? "◆" : level.kind === "zone" ? "▰" : "⚡";
-  const iconStyle = { left: `${Math.min(97, Math.max(3, Math.max(x1, x2)))}%`, top: `${Math.min(97, Math.max(3, y2))}%` };
-
-  if (level.kind === "pivot") return <span className="psChartMark psChartPoint" data-tool={level.kind} style={{ left: `${x1}%`, top: `${y1}%` }} aria-label={`Pivot point${level.price ? ` at ${level.price}` : ""}`} />;
-  if (level.kind === "zone" || level.kind === "gap") return <><span className="psChartMark psChartArea" data-tool={level.kind} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }} aria-label={`${level.kind} overlay`} /><span className="psChartIcon" data-tool={level.kind} style={iconStyle as CSSProperties} aria-hidden="true">{icon}</span></>;
-  return <>
-    <svg className="psChartVector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line data-tool={level.kind} x1={x1} y1={y1} x2={x2} y2={y2} vectorEffect="non-scaling-stroke" /></svg>
-    <span className="psChartIcon" data-tool={level.kind} style={iconStyle as CSSProperties} data-index={index} aria-label={`${level.kind}${level.price ? ` at ${level.price}` : ""}`}>{icon}</span>
-  </>;
-}
-
-function AnnotatedChart({ image, levels, focus = false }: { image: string; levels: Level[]; focus?: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
-  const [bounds, setBounds] = useState<CSSProperties | null>(null);
-
-  useEffect(() => {
-    const update = () => {
-      if (!containerRef.current || !imageRef.current) return;
-      if (focus) {
-        const style = getComputedStyle(containerRef.current);
-        setBounds({ left: 0, top: Number.parseFloat(style.paddingTop) || 0, width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
-      } else setBounds(containedImageBounds(containerRef.current, imageRef.current));
-    };
-    update();
-    const observer = new ResizeObserver(update);
-    if (containerRef.current) observer.observe(containerRef.current);
-    if (imageRef.current) observer.observe(imageRef.current);
-    window.addEventListener("resize", update);
-    return () => { observer.disconnect(); window.removeEventListener("resize", update); };
-  }, [focus, image]);
-
-  return <div ref={containerRef} className={focus ? "psChartFocusCanvas" : "psAnnotatedChart"} aria-label="Automatically annotated uploaded chart">
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img ref={imageRef} src={image} alt="Uploaded trading chart" onLoad={() => {
-      if (containerRef.current && imageRef.current) {
-        if (focus) {
-          const style = getComputedStyle(containerRef.current);
-          setBounds({ left: 0, top: Number.parseFloat(style.paddingTop) || 0, width: imageRef.current.offsetWidth, height: imageRef.current.offsetHeight });
-        } else setBounds(containedImageBounds(containerRef.current, imageRef.current));
-      }
-    }} />
-    {bounds ? <div className="psChartOverlayLayer" style={bounds}>{levels.map((level, index) => <ChartOverlay key={`${level.kind}-${level.x}-${level.y}-${index}`} level={level} index={index} />)}</div> : null}
+function SourceChart({ image, expanded = false }: { image: string; expanded?: boolean }) {
+  return <div className={expanded ? "psSourceChart psSourceChartExpanded" : "psSourceChart"}>
+    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={image} alt="Original uploaded trading chart" />
   </div>;
 }
 
@@ -212,7 +169,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [chartFocus, setChartFocus] = useState(false);
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
   const [stockEventStatus, setStockEventStatus] = useState<"idle" | "loading" | "ready" | "unavailable">("idle");
-  const [visibleOverlays, setVisibleOverlays] = useState(() => new Set<ToolKind>(["support", "resistance"]));
   const [intention, setIntention] = useState<Intention>("UNSURE");
   const [vault, setVault] = useState<LockedDecision[]>([]);
   const [reviewTarget, setReviewTarget] = useState<LockedDecision | null>(null);
@@ -250,18 +206,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
   }, [immersive, chartFocus, showResultReveal]);
-
-  const levels = analysis?.levels ?? [];
-  const availableToolOptions = TOOL_OPTIONS.filter(([kind]) => levels.some((level) => level.kind === kind));
-  const displayedLevels = levels.filter((level) => visibleOverlays.has(level.kind));
-
-  function toggleOverlay(name: ToolKind) {
-    setVisibleOverlays((current) => {
-      const next = new Set(current);
-      if (next.has(name)) next.delete(name); else next.add(name);
-      return next;
-    });
-  }
 
   async function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -445,7 +389,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return { total, average, patience, commonRisk: top(risks, "NO REPEATED RISK"), dominant: top(instruments, "NO PATTERN YET") };
   })();
 
-  const annotatedChart = (focus = false) => image ? <AnnotatedChart image={image} levels={displayedLevels} focus={focus} /> : null;
+  const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
 
   if (review && reviewTarget) {
     return <main className="psApp" data-pocket-build="v3.1"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section></main>;
@@ -516,10 +460,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
-          <section className="psResultChart psChartWorkspace">
-            <header><div><span>🎯 ANNOTATED CHART</span><small>{availableToolOptions.length} VERIFIED {availableToolOptions.length === 1 ? "OVERLAY" : "OVERLAYS"}</small></div><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
-            {availableToolOptions.length ? <><nav className="psWorkspaceTools" aria-label="Detected chart overlays">{availableToolOptions.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}><span>{label}</span><small>{visibleOverlays.has(overlay) ? "ON · TAP TO HIDE" : "OFF · TAP TO SHOW"}</small></button>)}</nav><p className="psWorkspaceNote">Every tool shown was detected from visible chart evidence. Changes apply here and in full screen.</p></> : <p className="psWorkspaceEmpty">No overlay was reliable enough to place precisely on this screenshot.</p>}
-            <div role="button" tabIndex={0} aria-label="Open annotated chart full screen" onClick={() => setChartFocus(true)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setChartFocus(true); }}>{annotatedChart()}</div>
+          <section className="psResultChart psChartWorkspace psBattleWorkspace">
+            <header><div><span>🎯 PRICE BATTLEFIELD</span><small>{analysis.levels.filter((level) => numericLevel(level.price) !== null).length} VERIFIED LEVELS</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
+            <PriceBattlefield analysis={analysis} />
+            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>＋</b></summary>{sourceChart()}</details>
           </section>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
@@ -557,17 +501,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <summary><span>RESULT OPTIONS</span><small>SAVE · CHART · SHARE</small><b>＋</b></summary>
             <div>
               <button type="button" onClick={lockDecision}><i>▣</i><span><strong>SAVE</strong><small>Review this decision later</small></span></button>
-              <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>CHART</strong><small>Open full screen</small></span></button>
+              <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>BATTLEFIELD</strong><small>Open full screen</small></span></button>
               <button type="button" onClick={shareDecision}><i>↗</i><span><strong>SHARE</strong><small>Decision summary only</small></span></button>
             </div>
             <p>Saved decisions stay privately on this device. Shared summaries never include the uploaded screenshot.</p>
           </details>
         </section>
         {chartFocus && (
-          <section className="psChartFocus" aria-modal="true" role="dialog" aria-label="Full-screen annotated chart">
-            <header><span>ANNOTATED CHART · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
-            <nav className="psFocusTools" aria-label="Full-screen chart overlays">{availableToolOptions.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{label} · {visibleOverlays.has(overlay) ? "ON" : "OFF"}</button>)}</nav>
-            {annotatedChart(true)}
+          <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye price battlefield">
+            <header><span>PRICE BATTLEFIELD · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
+            <PriceBattlefield analysis={analysis} expanded />
+            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>＋</b></summary>{sourceChart(true)}</details>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
         )}
@@ -614,7 +558,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
         </section> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
-        {image && <section className="psAutoPreview"><header><span>AUTOMATIC ANALYSIS</span><b>NO MANUAL DRAWING</b></header>{annotatedChart()}<p>Bullseye will detect and place only the levels and overlays it can justify from the screenshot.</p></section>}
+        {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a calibrated Price Battlefield—without drawing over your screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
