@@ -157,6 +157,57 @@ function SourceChart({ image, expanded = false }: { image: string; expanded?: bo
   </div>;
 }
 
+function ClarityLock({ analysis }: { analysis: Analysis }) {
+  const metrics = ([
+    ["STRUCTURE", analysis.setupScore.structure], ["MOMENTUM", analysis.setupScore.momentum],
+    ["LOCATION", analysis.setupScore.location], ["CONFIRM", analysis.setupScore.confirmation],
+    ["RISK", analysis.setupScore.riskClarity], ["EVENTS", analysis.setupScore.eventSafety],
+  ] as const);
+  const aligned = metrics.filter(([, score]) => score >= 7).length;
+  return <section className="psClarityLock" data-direction={analysis.direction}>
+    <header><div><span>🎯 BULLSEYE CLARITY LOCK</span><small>DECISION CLARITY · NOT PERMISSION TO TRADE</small></div><strong>{aligned}<small>/6</small><b> ALIGNED</b></strong></header>
+    <div className="psLockStage">
+      <svg className="psLockRings" viewBox="0 0 240 240" aria-hidden="true">
+        <circle className="psLockTrack" cx="120" cy="120" r="78" />
+        {metrics.map(([label, score], index) => <circle key={label} className="psLockArc" data-strength={score >= 8 ? "high" : score >= 6 ? "mid" : "low"} cx="120" cy="120" r="78" pathLength="100" strokeDasharray={`${Math.max(4, score * 1.35)} 100`} style={{ transform: `rotate(${index * 60 - 88}deg)`, transformOrigin: "120px 120px" }} />)}
+        <circle className="psLockScan" cx="120" cy="120" r="58" />
+        <line x1="120" y1="28" x2="120" y2="212" /><line x1="28" y1="120" x2="212" y2="120" />
+      </svg>
+      <div className="psLockCore"><small>SETUP</small><strong>{analysis.setupScore.grade}</strong><b>{analysis.verdict.replaceAll("_", " ")}</b></div>
+      <div className="psLockMetrics">{metrics.map(([label, score]) => <article key={label} data-strength={score >= 8 ? "high" : score >= 6 ? "mid" : "low"}><span>{label}</span><strong>{score}<small>/10</small></strong><i /></article>)}</div>
+    </div>
+    <footer><span>CLARITY STATUS</span><strong>{aligned >= 5 ? "STRONG ALIGNMENT" : aligned >= 3 ? "PARTIAL ALIGNMENT" : "EVIDENCE NOT LOCKED"}</strong><p>{analysis.verdictHeadline}</p></footer>
+  </section>;
+}
+
+function BullseyePlan({ analysis, onResultCard }: { analysis: Analysis; onResultCard: () => void }) {
+  return <section className="psBullseyePlan">
+    <header><div><span>🧭 YOUR BULLSEYE PLAN</span><small>THE RESULT IN FOUR DECISIONS</small></div><button type="button" onClick={onResultCard}>VIEW RESULT CARD ↗</button></header>
+    <div>
+      <article data-step="now"><i>01</i><small>RIGHT NOW</small><strong>{analysis.verdict.replaceAll("_", " ")}</strong><p>{analysis.summary}</p></article>
+      <article data-step="lock"><i>02</i><small>CLARITY IMPROVES WHEN</small><strong>{analysis.nextSequence.confirmation}</strong></article>
+      <article data-step="break"><i>03</i><small>THE READ FAILS WHEN</small><strong>{analysis.nextSequence.failure || analysis.invalidation}</strong></article>
+      <article data-step="next"><i>04</i><small>NEXT CHECK</small><strong>{analysis.nextSequence.reassess}</strong></article>
+    </div>
+  </section>;
+}
+
+function ResultCard({ analysis, onClose, onShare }: { analysis: Analysis; onClose: () => void; onShare: () => void }) {
+  const verified = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind)).slice(0, 3);
+  return <section className="psResultCardModal" role="dialog" aria-modal="true" aria-label="Shareable Pocket Bullseye result card">
+    <div className="psShareCard">
+      <header><span>🎯 POCKET BULLSEYE</span><button type="button" onClick={onClose} aria-label="Close result card">×</button></header>
+      <div className="psShareIdentity"><small>PRIVATE DECISION AUDIT</small><strong>{analysis.instrument}</strong><span>{analysis.timeframe}</span></div>
+      <div className="psShareScore"><strong>{analysis.setupScore.grade}</strong><div><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction}</b><em>{analysis.verdict.replaceAll("_", " ")}</em></div></div>
+      <h2>{analysis.verdictHeadline}</h2>
+      {verified.length ? <div className="psShareLevels">{verified.map((level, index) => <article key={`${level.kind}-${level.price}-${index}`} data-kind={level.kind}><small>{level.kind.toUpperCase()}</small><strong>{level.price}</strong></article>)}</div> : null}
+      <article className="psShareNext"><small>CLARITY IMPROVES WHEN</small><p>{analysis.nextSequence.confirmation}</p></article>
+      <footer><span>CONDITIONAL DECISION SUPPORT</span><small>NOT A TRADE INSTRUCTION · VERIFY ON SOURCE PLATFORM</small></footer>
+      <div className="psShareActions"><button type="button" onClick={onClose}>BACK TO RESULT</button><button type="button" onClick={onShare}>SAVE / SHARE CARD ↗</button></div>
+    </div>
+  </section>;
+}
+
 function formatEventTime(value: string) {
   const parsed = Date.parse(value);
   if (!Number.isFinite(parsed)) return value;
@@ -225,6 +276,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [refinementStatus, setRefinementStatus] = useState<"idle" | "analysing" | "updated" | "error">("idle");
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
+  const [showResultCard, setShowResultCard] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const analysisRequestActive = useRef(false);
@@ -247,11 +299,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [analysis]);
 
   useEffect(() => {
-    if (!immersive && !chartFocus && !showResultReveal) return;
+    if (!immersive && !chartFocus && !showResultReveal && !showResultCard) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
-  }, [immersive, chartFocus, showResultReveal]);
+  }, [immersive, chartFocus, showResultReveal, showResultCard]);
 
   async function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -410,6 +462,49 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } catch { setVaultMessage("Sharing was cancelled."); }
   }
 
+  async function shareResultCard() {
+    if (!analysis) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080; canvas.height = 1350;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    const wrap = (copy: string, x: number, y: number, width: number, lineHeight: number, maxLines: number) => {
+      const words = copy.split(/\s+/); let line = ""; let row = 0;
+      for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word;
+        if (context.measureText(candidate).width > width && line) { context.fillText(line, x, y + row * lineHeight); line = word; row += 1; if (row >= maxLines) return y + row * lineHeight; }
+        else line = candidate;
+      }
+      if (row < maxLines) context.fillText(line, x, y + row * lineHeight);
+      return y + (row + 1) * lineHeight;
+    };
+    const gradient = context.createLinearGradient(0, 0, 1080, 1350);
+    gradient.addColorStop(0, "#111b21"); gradient.addColorStop(.58, "#071014"); gradient.addColorStop(1, "#0b1812");
+    context.fillStyle = gradient; context.fillRect(0, 0, 1080, 1350);
+    context.strokeStyle = "#55e99b"; context.lineWidth = 4; context.strokeRect(34, 34, 1012, 1282);
+    context.fillStyle = "#65eda7"; context.font = "700 35px monospace"; context.fillText("◎ POCKET BULLSEYE", 78, 112);
+    context.fillStyle = "#75838b"; context.font = "700 22px monospace"; context.fillText("PRIVATE DECISION AUDIT", 78, 158);
+    context.fillStyle = "#e8f0ec"; context.font = "700 37px sans-serif"; context.fillText(analysis.instrument, 78, 235);
+    context.fillStyle = "#9aa8a1"; context.font = "700 25px monospace"; context.fillText(analysis.timeframe, 78, 276);
+    context.fillStyle = "#55e99b"; context.font = "700 230px sans-serif"; context.fillText(analysis.setupScore.grade, 76, 520);
+    context.fillStyle = "#edf4f0"; context.font = "700 66px monospace"; context.fillText(`${analysis.setupScore.overall}/100`, 455, 410);
+    context.fillStyle = analysis.direction === "BULLISH" ? "#55e99b" : analysis.direction === "BEARISH" ? "#ef6672" : "#e1bb5b";
+    context.font = "700 34px monospace"; context.fillText(`${analysis.direction} · ${analysis.verdict.replaceAll("_", " ")}`, 455, 474);
+    context.fillStyle = "#e8f0ec"; context.font = "700 48px sans-serif";
+    let nextY = wrap(analysis.verdictHeadline, 78, 635, 924, 62, 4) + 35;
+    context.strokeStyle = "#2d3b42"; context.beginPath(); context.moveTo(78, nextY); context.lineTo(1002, nextY); context.stroke();
+    nextY += 62; context.fillStyle = "#d9b45b"; context.font = "700 23px monospace"; context.fillText("CLARITY IMPROVES WHEN", 78, nextY);
+    nextY += 49; context.fillStyle = "#c4cec9"; context.font = "500 31px sans-serif"; wrap(analysis.nextSequence.confirmation, 78, nextY, 924, 43, 5);
+    context.fillStyle = "#68777f"; context.font = "700 19px monospace"; context.fillText("CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION", 78, 1250);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) return;
+    const file = new File([blob], "pocket-bullseye-result.png", { type: "image/png" });
+    try {
+      if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: "Pocket Bullseye Result" });
+      else { const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = file.name; link.click(); URL.revokeObjectURL(link.href); setVaultMessage("Result card downloaded without your chart image."); }
+    } catch { setVaultMessage("Sharing was cancelled."); }
+  }
+
   async function lockDecision() {
     if (!analysis || !image) return;
     const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis };
@@ -469,6 +564,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <ClarityLock analysis={analysis} />
+          <BullseyePlan analysis={analysis} onResultCard={() => setShowResultCard(true)} />
           <section className="psDecisionCompass">
             <header><span>DECISION COMPASS</span><b>EVIDENCE · NOT ODDS</b></header>
             <div className="psCompassBody">
@@ -489,7 +586,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             </article> : null}
           </section>
           <section className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
-            <header><div><span>🎯 BULLSEYE DECISION MAP</span><small>WHERE PRICE IS NOW · WHAT MATTERS NEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
+            <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
             {battlefieldTabs}
             <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} />
             <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
@@ -600,6 +697,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <small>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</small>
           </section>
         )}
+        {showResultCard ? <ResultCard analysis={analysis} onClose={() => setShowResultCard(false)} onShare={shareResultCard} /> : null}
       </main>
     );
   }

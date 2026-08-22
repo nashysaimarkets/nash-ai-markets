@@ -139,6 +139,13 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ACTIVE DECISION RANGE/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /OPEN MY FULL RESULT/);
+  assert.match(client, /ClarityLock/);
+  assert.match(client, /BULLSEYE CLARITY LOCK/);
+  assert.match(client, /BullseyePlan/);
+  assert.match(client, /YOUR BULLSEYE PLAN/);
+  assert.match(client, /VIEW RESULT CARD/);
+  assert.match(client, /showResultCard/);
+  assert.match(client, /pocket-bullseye-result\.png/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
   assert.match(styles, /\.psBattleLevel/);
@@ -150,6 +157,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psDecisionRange/);
   assert.match(styles, /\.psMapIntro/);
   assert.match(styles, /\.psAuditDrawer/);
+  assert.match(styles, /\.psClarityLock/);
+  assert.match(styles, /\.psBullseyePlan/);
+  assert.match(styles, /\.psResultCardModal/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
