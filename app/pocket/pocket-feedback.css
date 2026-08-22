@@ -1,0 +1,71 @@
+.psFeedback {
+  position: fixed;
+  z-index: 80;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.psFeedback > summary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid #55e99b88;
+  border-radius: 999px;
+  background: #0a1713ed;
+  color: #75efad;
+  box-shadow: 0 10px 36px #000b;
+  cursor: pointer;
+  list-style: none;
+}
+
+.psFeedback > summary::-webkit-details-marker { display: none; }
+.psFeedback > summary span { font-size: 15px; }
+.psFeedback > summary strong { font-size: 7px; letter-spacing: .09em; }
+.psFeedback[open] > summary { width: max-content; margin-left: auto; }
+
+.psFeedback > div {
+  width: min(290px, calc(100vw - 28px));
+  margin: 8px 0 0 auto;
+  padding: 12px;
+  border: 1px solid #35434a;
+  border-radius: 13px;
+  background: #091116f5;
+  box-shadow: 0 18px 55px #000e;
+}
+
+.psFeedback > div p {
+  margin: 0 0 9px;
+  color: #b8c4be;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.psFeedback > div a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 54px;
+  padding: 8px 10px;
+  border: 1px solid #2f3d43;
+  border-radius: 9px;
+  background: #0d171c;
+  color: #e5ece8;
+  text-decoration: none;
+}
+
+.psFeedback > div a + a { margin-top: 7px; border-color: #55e99b55; background: #0b1914; }
+.psFeedback > div a > b { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #ef667266; border-radius: 50%; color: #ef7b86; }
+.psFeedback > div a + a > b { border-color: #55e99b66; color: #64eba5; }
+.psFeedback > div a span, .psFeedback > div a strong, .psFeedback > div a small { display: block; }
+.psFeedback > div a strong { font-size: 7px; letter-spacing: .07em; }
+.psFeedback > div a small { margin-top: 4px; color: #87958e; font-size: 6px; letter-spacing: .04em; }
+
+@media (max-width: 520px) {
+  .psFeedback { right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); }
+  .psFeedback > summary { min-height: 42px; padding: 0 12px; }
+  .psFeedback > div { width: min(280px, calc(100vw - 20px)); }
+}

@@ -90,9 +90,10 @@ test("unverified or out-of-scale horizontal levels fail closed", () => {
 });
 
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
-  const [client, styles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
+  const [client, styles, feedbackStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-feedback.css", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/review/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/follow-up/route.ts", import.meta.url), "utf8"),
@@ -194,6 +195,10 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /CinematicTranscript/);
   assert.match(client, /psFinaleRatioCards/);
   assert.match(client, /EVIDENCE BALANCE/);
+  assert.match(client, /REPORT A PROBLEM/);
+  assert.match(client, /SUGGEST AN IDEA/);
+  assert.match(client, /mailto:hello@nashaimarkets\.com/);
+  assert.match(feedbackStyles, /\.psFeedback/);
   assert.match(eventsRoute, /if \(returnedSymbol !== symbol\) return \[\]/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
