@@ -60,6 +60,14 @@ test("Pocket Founding 650 checkout requires the exact £4.99 monthly Price", () 
   assert.equal(validPocketFoundingPrice({ active:true,currency:"gbp",type:"recurring",unit_amount:499,recurring:{interval:"year"} }), false);
 });
 
+test("Pocket Founding 650 page submits the server-enumerated Stripe offering", async () => {
+  const page = await read("app/pocket/founding/page.tsx");
+  assert.match(page, /action="\/api\/stripe\/checkout"/);
+  assert.match(page, /name="offering" value="pocket_founding_month"/);
+  assert.match(page, /CONTINUE TO SECURE CHECKOUT/);
+  assert.doesNotMatch(page, /WaitlistForm/);
+});
+
 test("Stripe price configuration tolerates pasted surrounding whitespace", () => {
   assert.deepEqual(checkoutOffering("pocket_founding_month", {
     ...environment,
