@@ -80,7 +80,7 @@ function numericLevel(value: string | undefined) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function PriceBattlefield({ analysis, expanded = false, scenario = null }: { analysis: Analysis; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null }) {
+function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void }) {
   const verified = analysis.levels.flatMap((level) => {
     const price = numericLevel(level.price);
     return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
@@ -92,7 +92,7 @@ function PriceBattlefield({ analysis, expanded = false, scenario = null }: { ana
   const padding = Math.max((rawMax - rawMin) * .16, Math.abs(rawMax || 1) * .0025, 1);
   const min = rawMin - padding;
   const max = rawMax + padding;
-  const position = (price: number) => 9 + ((max - price) / (max - min)) * 82;
+  const position = (price: number) => 34 + ((max - price) / (max - min)) * 42;
   const ordered = [...verified].sort((a, b) => b.numericPrice - a.numericPrice);
   const supports = ordered.filter((level) => level.kind === "support" && (current === null || level.numericPrice <= current));
   const resistances = ordered.filter((level) => level.kind === "resistance" && (current === null || level.numericPrice >= current));
@@ -111,14 +111,20 @@ function PriceBattlefield({ analysis, expanded = false, scenario = null }: { ana
   const priceDecimals = values.some((value) => Math.abs(value - Math.round(value)) > .001) ? 2 : 0;
   const scaleTicks = Array.from({ length: 7 }, (_, index) => {
     const fraction = index / 6;
-    return { price: max - (max - min) * fraction, top: 9 + 82 * fraction };
+    return { price: max - (max - min) * fraction, top: 34 + 42 * fraction };
   });
   const rangeTop = Math.min(resistanceY, supportY);
   const rangeHeight = Math.abs(supportY - resistanceY);
+  const locationHeadline = current !== null && nearestSupport && supportDistance !== null
+    ? `Price is ${formatDistance(supportDistance)} above verified support.`
+    : current !== null && nearestResistance && resistanceDistance !== null
+      ? `Price is ${formatDistance(resistanceDistance)} below verified resistance.`
+      : "Verified price location needs a clearer scale.";
 
-  return <div className={`psBattlefield${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} aria-label="Bullseye price battlefield">
+  return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} aria-label="Bullseye Decision Map">
+    <header className="psMapIntro"><div><small>YOU ARE HERE</small><strong>{locationHeadline}</strong><p>Nearest verified levels and the conditions that could change this read.</p></div>{sourceImage ? <figure><img src={sourceImage} alt="Selected source chart thumbnail" /><figcaption>{analysis.timeframe}</figcaption></figure> : null}</header>
     <div className="psBattleGrid" aria-hidden="true" />
-    {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Battlefield price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
+    {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Decision Map price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
     {nearestSupport && nearestResistance ? <div className="psDecisionRange" style={{ top: `${rangeTop}%`, height: `${rangeHeight}%` }} aria-label={`Active decision range from ${nearestSupport.price} to ${nearestResistance.price}`}><span>ACTIVE DECISION RANGE</span><i /><i /><i /></div> : null}
     {current !== null ? <div className="psPressureContours" style={{ top: `${currentY}%` }} aria-hidden="true"><i /><i /><i /></div> : null}
     <div className="psBattleIntel">
@@ -139,8 +145,9 @@ function PriceBattlefield({ analysis, expanded = false, scenario = null }: { ana
       <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "PIVOT" : level.kind.toUpperCase()}</small><em>{current === null ? "" : formatPercent(Math.abs(level.numericPrice - current))}</em>
     </button>)}
     {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span><b>◎</b> CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
-    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>No exact level survived verification. Add a chart with a clear price scale for the Battlefield.</p></div> : null}
+    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>No exact level survived verification. Add a chart with a clear price scale for the Decision Map.</p></div> : null}
     <div className="psBattleDirection" data-direction={analysis.direction}><span>BEAR PRESSURE</span><strong>{analysis.direction}</strong><span>BULL PRESSURE</span></div>
+    <nav className="psMapActions" aria-label="Explore Decision Map scenarios"><button type="button" data-tone="bull" onClick={() => onScenario?.("bull")}>WHAT IF PRICE RISES?</button><button type="button" data-tone="wait" onClick={() => onScenario?.("wait")}>WHY WAIT?</button><button type="button" data-tone="bear" onClick={() => onScenario?.("bear")}>WHAT IF PRICE FALLS?</button></nav>
   </div>;
 }
 
@@ -445,7 +452,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       timeframe: analysis.higherTimeframe.timeframe || "CONTEXT",
       direction: analysis.higherTimeframe.direction === "UNKNOWN" ? "NEUTRAL" : analysis.higherTimeframe.direction,
     } : analysis;
-    const battlefieldTabs = contextImage ? <nav className="psBattleTabs" aria-label="Choose chart for Price Battlefield">
+    const battlefieldTabs = contextImage ? <nav className="psBattleTabs" aria-label="Choose chart for Bullseye Decision Map">
       <button type="button" data-active={battlefieldChart === "primary"} aria-pressed={battlefieldChart === "primary"} onClick={() => setBattlefieldChart("primary")}><span>①</span><strong>PRIMARY</strong><small>{analysis.timeframe}</small></button>
       <button type="button" data-active={battlefieldChart === "context"} aria-pressed={battlefieldChart === "context"} onClick={() => setBattlefieldChart("context")}><span>②</span><strong>CONTEXT</strong><small>{analysis.higherTimeframe.timeframe || "SECOND VIEW"}</small></button>
     </nav> : null;
@@ -478,9 +485,18 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               <header><span>{selectedScenario === "bull" ? "🐂 BULL ROUTE" : selectedScenario === "bear" ? "🐻 BEAR ROUTE" : "🛡️ PATIENCE ROUTE"}</span><button type="button" onClick={() => setSelectedScenario(null)}>CLOSE</button></header>
               <p>{selectedScenario === "bull" ? analysis.bullishCase : selectedScenario === "bear" ? analysis.bearishCase : analysis.nextSequence.patience}</p>
               <div><article><small>{selectedScenario === "wait" ? "STAND ASIDE WHILE" : "ACTIVATES WHEN"}</small><strong>{selectedScenario === "bull" ? analysis.bullConfirmation : selectedScenario === "bear" ? analysis.bearConfirmation : analysis.noTradeCondition}</strong></article><article><small>{selectedScenario === "wait" ? "REASSESS WHEN" : "FAILS WHEN"}</small><strong>{selectedScenario === "wait" ? analysis.nextSequence.reassess : analysis.invalidation}</strong></article></div>
-              <button type="button" className="psScenarioMapLink" onClick={() => document.querySelector(".psBattleWorkspace")?.scrollIntoView({ behavior: "smooth", block: "start" })}>SHOW ON PRICE BATTLEFIELD ↓</button>
+              <button type="button" className="psScenarioMapLink" onClick={() => document.querySelector(".psBattleWorkspace")?.scrollIntoView({ behavior: "smooth", block: "start" })}>SHOW ON DECISION MAP ↓</button>
             </article> : null}
           </section>
+          <section className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
+            <header><div><span>🎯 BULLSEYE DECISION MAP</span><small>WHERE PRICE IS NOW · WHAT MATTERS NEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
+            {battlefieldTabs}
+            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} />
+            <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
+          </section>
+          <details className="psAuditDrawer">
+            <summary><span>FULL EVIDENCE AUDIT</span><small>IMAGE QUALITY · TIMEFRAMES · PATTERNS</small><b>⌄</b></summary>
+            <div>
           <section className="psEvidenceConsole">
             <header><span>EVIDENCE CONSOLE</span><b data-quality={analysis.evidenceQuality.chartReadability}>{analysis.evidenceQuality.chartReadability} IMAGE</b></header>
             <div className="psEvidenceMeters">
@@ -504,6 +520,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <header><span>🧩 PATTERN STATUS</span><b>EVIDENCE REQUIRED</b></header>
             <div>{analysis.patterns.map((pattern) => <article key={pattern.name + pattern.status} data-status={pattern.status}><span>{pattern.status}</span><strong>{pattern.name}</strong><p>{pattern.evidence}</p><small>INVALIDATED WHEN · {pattern.invalidation}</small></article>)}</div>
           </section> : null}
+            </div>
+          </details>
           <section className="psNextSequence">
             <header><span>⏱️ WHAT MUST HAPPEN NEXT?</span><b>CONDITIONAL SEQUENCE</b></header>
             <ol>{([
@@ -519,12 +537,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
-          <section className="psResultChart psChartWorkspace psBattleWorkspace">
-            <header><div><span>🎯 PRICE BATTLEFIELD</span><small>MARKET LOCATION · CONSEQUENCE MAP</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
-            {battlefieldTabs}
-            <PriceBattlefield analysis={battlefieldAnalysis} scenario={selectedScenario} />
-            <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
-          </section>
+          <details className="psAuditDrawer psDeepAudit">
+            <summary><span>DETAILED MARKET AUDIT</span><small>STRUCTURE · RISK · EVENTS</small><b>⌄</b></summary>
+            <div>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
             <p>{analysis.levelStory}</p>
@@ -542,6 +557,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             {analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <div className="psStockEvents"><strong>{analysis.ticker} · VERIFIED COMPANY LOOKUP</strong>{stockEventStatus === "loading" ? <p>Checking the connected company calendar…</p> : stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><b>{event.type}</b><span>{event.detail} · {event.source}</span></li>)}</ol> : <p>No verified upcoming corporate event was returned by the connected feed.</p>}<a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">OPEN OFFICIAL SEC FILINGS ↗</a></div> : <div className="psTickerHold"><strong>COMPANY LOOKUP PAUSED</strong><p>Bullseye will not query company data until the ticker is clearly visible and identified with high confidence.</p></div>}
             <footer>Official macro rows are scheduled facts, not live prices. Company events use the connected provider; SEC filings open from the official EDGAR service. No quote is labelled LIVE unless a licensed feed supplies a timestamp.</footer>
           </section>
+            </div>
+          </details>
           <section className="psAskBullseye">
             <header><span>💬 ASK BULLSEYE</span><b>USES THIS AUDIT ONLY</b></header>
             <p>Challenge one part of the result without uploading the chart again.</p>
@@ -557,17 +574,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <summary><span>RESULT OPTIONS</span><small>SAVE · CHART · SHARE</small><b>＋</b></summary>
             <div>
               <button type="button" onClick={lockDecision}><i>▣</i><span><strong>SAVE</strong><small>Review this decision later</small></span></button>
-              <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>BATTLEFIELD</strong><small>Open full screen</small></span></button>
+              <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>DECISION MAP</strong><small>Open full screen</small></span></button>
               <button type="button" onClick={shareDecision}><i>↗</i><span><strong>SHARE</strong><small>Decision summary only</small></span></button>
             </div>
             <p>Saved decisions stay privately on this device. Shared summaries never include the uploaded screenshot.</p>
           </details>
         </section>
         {chartFocus && (
-          <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye price battlefield">
-            <header><span>PRICE BATTLEFIELD · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
+          <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye Decision Map">
+            <header><span>DECISION MAP · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
             {battlefieldTabs}
-            <PriceBattlefield analysis={battlefieldAnalysis} expanded scenario={selectedScenario} />
+            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} expanded scenario={selectedScenario} onScenario={setSelectedScenario} />
             <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart(true) : sourceChart(true)}</details>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
@@ -615,7 +632,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
         </section> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
-        {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a calibrated Price Battlefield—without drawing over your screenshot.</p></section>}
+        {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}

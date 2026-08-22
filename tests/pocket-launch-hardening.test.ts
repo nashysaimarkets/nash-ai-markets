@@ -111,8 +111,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /contextContribution/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
-  assert.match(client, /PriceBattlefield/);
-  assert.match(client, /Bullseye price battlefield/);
+  assert.match(client, /DecisionMap/);
+  assert.match(client, /Bullseye Decision Map/);
   assert.match(client, /SOURCE CHART/);
   assert.match(styles, /\.psBattlefield\{/);
   assert.match(analyseRoute, /priceScaleAnchors/);
@@ -128,12 +128,14 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /RECLAIM ROUTE/);
   assert.match(client, /BREAK ROUTE/);
   assert.match(client, /VIEW CONDITIONS/);
-  assert.match(client, /SHOW ON PRICE BATTLEFIELD/);
+  assert.match(client, /SHOW ON DECISION MAP/);
   assert.match(client, /aria-pressed=\{selectedScenario === "bull"\}/);
   assert.match(client, /battlefieldChart/);
-  assert.match(client, /Choose chart for Price Battlefield/);
+  assert.match(client, /Choose chart for Bullseye Decision Map/);
   assert.match(client, /contextBattlefield/);
-  assert.match(client, /Calibrated Battlefield price ladder/);
+  assert.match(client, /Calibrated Decision Map price ladder/);
+  assert.match(client, /FULL EVIDENCE AUDIT/);
+  assert.match(client, /DETAILED MARKET AUDIT/);
   assert.match(client, /ACTIVE DECISION RANGE/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /OPEN MY FULL RESULT/);
@@ -146,6 +148,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psBattleTabs/);
   assert.match(styles, /\.psPriceLadder/);
   assert.match(styles, /\.psDecisionRange/);
+  assert.match(styles, /\.psMapIntro/);
+  assert.match(styles, /\.psAuditDrawer/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
