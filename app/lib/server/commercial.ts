@@ -54,7 +54,7 @@ function stripeCustomerEmail(customer: Stripe.Subscription["customer"]): string 
   return customer.email?.trim().toLowerCase() || "Email unavailable";
 }
 
-async function listAll<T extends { id: string }>(
+async function listAll<T extends { id?: string }>(
   load: (startingAfter?: string) => Promise<{ data: T[]; has_more: boolean }>,
   maximum = 1000,
 ): Promise<T[]> {
@@ -65,6 +65,7 @@ async function listAll<T extends { id: string }>(
     records.push(...page.data);
     if (!page.has_more || page.data.length === 0) break;
     startingAfter = page.data.at(-1)?.id;
+    if (!startingAfter) throw new Error("Stripe pagination cursor unavailable");
   }
   if (records.length >= maximum) throw new Error("Stripe launch report exceeded its safe record limit");
   return records;
