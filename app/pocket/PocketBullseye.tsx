@@ -123,7 +123,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
       ? `Price is ${formatDistance(resistanceDistance)} below verified resistance.`
       : "Verified price location needs a clearer scale.";
 
-  return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} aria-label="Bullseye Decision Map">
+  return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}${verified.length ? "" : " psDecisionMapEmpty"}`} data-scenario={scenario ?? "all"} aria-label="Bullseye Decision Map">
     <header className="psMapIntro"><div><small>YOU ARE HERE</small><strong>{locationHeadline}</strong><p>Nearest verified levels and the conditions that could change this read.</p></div>{sourceImage ? <figure><img src={sourceImage} alt="Selected source chart thumbnail" /><figcaption>{analysis.timeframe}</figcaption></figure> : null}</header>
     <div className="psBattleGrid" aria-hidden="true" />
     {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Decision Map price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
@@ -147,7 +147,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
       <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "PIVOT" : level.kind.toUpperCase()}</small><em>{current === null ? "" : formatPercent(Math.abs(level.numericPrice - current))}</em>
     </button>)}
     {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span><b>◎</b> CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
-    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>No exact level survived verification. Add a chart with a clear price scale for the Decision Map.</p></div> : null}
+    {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>Bullseye could not verify an exact support or resistance price from this image—and will not invent one.</p><button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD CLEARER PRICE-SCALE VIEW</button></div> : null}
     <div className="psBattleDirection" data-direction={analysis.direction}><span>BEAR PRESSURE</span><strong>{analysis.direction}</strong><span>BULL PRESSURE</span></div>
     <nav className="psMapActions" aria-label="Explore Decision Map scenarios"><button type="button" data-tone="bull" onClick={() => onScenario?.("bull")}>WHAT IF PRICE RISES?</button><button type="button" data-tone="wait" onClick={() => onScenario?.("wait")}>WHY WAIT?</button><button type="button" data-tone="bear" onClick={() => onScenario?.("bear")}>WHAT IF PRICE FALLS?</button></nav>
   </div>;
@@ -192,19 +192,34 @@ function ScenarioTheatre({ analysis, sourceImage }: { analysis: Analysis; source
     { kind: "bear", icon: "↘", title: "BEAR BREAKDOWN", status: analysis.direction === "BEARISH" ? "ACTIVE READ" : "ALTERNATE PATH", trigger: analysis.bearConfirmation || analysis.nextSequence.failure, failure: support ? `Recovery and hold above ${support.price}` : analysis.invalidation },
   ];
   const chosen = scenarios.find((scenario) => scenario.kind === selected) ?? scenarios[1];
+  const bounds = analysis.plotBounds ?? { left: 16, top: 15, right: 84, bottom: 82 };
+  const anchors = analysis.priceScaleAnchors ?? [];
+  const currentPrice = numericLevel(analysis.currentPrice);
+  const currentY = (() => {
+    if (currentPrice === null || anchors.length < 2) return bounds.top + (bounds.bottom - bounds.top) * .48;
+    const sorted = [...anchors].sort((a,b) => a.price-b.price); const low = sorted[0]; const high = sorted.at(-1)!;
+    if (high.price === low.price) return bounds.top + (bounds.bottom - bounds.top) * .48;
+    return Math.max(bounds.top + 4, Math.min(bounds.bottom - 4, low.y + (currentPrice-low.price)/(high.price-low.price)*(high.y-low.y)));
+  })();
+  const bodyHeight = Math.max(4, (bounds.bottom - bounds.top) * .075);
+  const nextCandle = selected === "bull"
+    ? { top: currentY - bodyHeight, height: bodyHeight, wickTop: currentY - bodyHeight * 1.55, wickBottom: currentY + bodyHeight * .28, tone: "up" }
+    : selected === "bear"
+      ? { top: currentY, height: bodyHeight, wickTop: currentY - bodyHeight * .28, wickBottom: currentY + bodyHeight * 1.55, tone: "down" }
+      : { top: currentY - bodyHeight * .22, height: Math.max(2, bodyHeight * .3), wickTop: currentY - bodyHeight, wickBottom: currentY + bodyHeight, tone: "wait" };
   return <section className="psScenarioTheatre" data-selected={selected}>
-    <header><div><span>◈ BULLSEYE SCENARIO THEATRE</span><small>YOUR CHART · THREE CONDITIONAL FUTURES</small></div><strong>SPECULATIVE<br/>ILLUSTRATION</strong></header>
-    <div className="psScenarioStage" role="group" aria-label="Three speculative market scenarios">
-      {scenarios.map((scenario) => <button key={scenario.kind} type="button" className="psScenarioPanel" data-kind={scenario.kind} data-active={selected === scenario.kind} data-read={active === scenario.kind} aria-pressed={selected === scenario.kind} onClick={() => setSelected(scenario.kind)}>
-        <span className="psScenarioStatus">{active === scenario.kind ? "● AI READ" : "○ CONDITIONAL"}</span>
-        <img className="psScenarioSource" src={sourceImage} alt="" aria-hidden="true" />
-        <span className="psScenarioHandoff">SOURCE <b>→</b> IDEA</span>
-        <ScenarioCandles kind={scenario.kind}/>
-        <div><b>{scenario.icon}</b><strong>{scenario.title}</strong><small>{scenario.status}</small></div>
-      </button>)}
+    <header><div><span>◈ BULLSEYE NEXT-CANDLE LAB</span><small>YOUR SOURCE CHART · ONE CONDITIONAL CANDLE</small></div><strong>SPECULATIVE<br/>ILLUSTRATION</strong></header>
+    <div className="psNextCandleStage">
+      <div className="psNextCandleCanvas" data-kind={selected}>
+        <img src={sourceImage} alt="Customer's uploaded source chart with a clearly separated speculative next-candle overlay" />
+        <span className="psEvidenceBadge">VERIFIED SOURCE</span>
+        <div className="psProjectionGate" style={{ left: `${Math.min(94, bounds.right)}%`, top: `${bounds.top}%`, height: `${bounds.bottom-bounds.top}%` }}><span>SPECULATIVE<br/>NEXT CANDLE</span></div>
+        <div className="psProjectedCandle" data-tone={nextCandle.tone} style={{ left: `${Math.min(96, bounds.right + 2.2)}%`, top: `${nextCandle.wickTop}%`, height: `${nextCandle.wickBottom-nextCandle.wickTop}%` }}><i/><b style={{ top: `${(nextCandle.top-nextCandle.wickTop)/(nextCandle.wickBottom-nextCandle.wickTop)*100}%`, height: `${nextCandle.height/(nextCandle.wickBottom-nextCandle.wickTop)*100}%` }}/></div>
+      </div>
+      <nav className="psNextCandleChoices" role="group" aria-label="Choose a speculative next-candle condition">{scenarios.map((scenario) => <button key={scenario.kind} type="button" data-kind={scenario.kind} data-active={selected === scenario.kind} data-read={active === scenario.kind} aria-pressed={selected === scenario.kind} onClick={() => setSelected(scenario.kind)}><b>{scenario.icon}</b><span>{scenario.title}</span><small>{active === scenario.kind ? "● AI READ" : "○ CONDITIONAL"}</small></button>)}</nav>
     </div>
     <article className="psScenarioBrief" data-kind={selected} aria-live="polite"><div><small>THIS PATH ACTIVATES IF</small><p>{chosen.trigger}</p></div><i/><div><small>THIS PATH WEAKENS IF</small><p>{chosen.failure}</p></div></article>
-    <footer><b>⚠ SPECULATIVE ONLY</b><span>These candles illustrate conditional scenarios—not predicted prices, probabilities or trade instructions. Confirm every trigger on the live source chart.</span></footer>
+    <footer><b>⚠ SPECULATIVE ONLY</b><span>The added candle is an illustrative condition—not a predicted candle, price, probability or trade instruction. It is deliberately marked outside the verified source area.</span></footer>
   </section>;
 }
 
@@ -336,7 +351,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
   useEffect(() => {
-    if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") return;
+    setStockEvents([]);
+    if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") { setStockEventStatus("idle"); return; }
+    setStockEventStatus("loading");
     const controller = new AbortController();
     fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
       .then(async (response) => {
@@ -616,6 +633,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
           <ScenarioTheatre analysis={analysis} sourceImage={image ?? ""} />
+          <section className="psDecisionEvents" data-status={stockEventStatus}>
+            <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
+            {analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "Bullseye found no verified company-specific event in the connected feed window."}</span></div> : <div className="psEventHeadline"><b>COMPANY LOOKUP HELD</b><span>A company calendar is used only when a listed ticker is identified with high confidence.</span></div>}
+            <details><summary>VIEW VERIFIED CALENDAR <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source}</span></li>)}</ol> : null}{macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 5).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">OPEN OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
+            <footer>Scheduled facts only—not a live-price forecast. Company events are requested for the identified ticker only.</footer>
+          </section>
           <BullseyePlan analysis={analysis} onResultCard={() => setShowResultCard(true)} />
           <section className="psDecisionCompass">
             <header><span>DECISION COMPASS</span><b>EVIDENCE · NOT ODDS</b></header>
@@ -676,7 +699,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure]
             ] as const).map(([label,copy],index) => <li key={label}><i>{index + 1}</i><div><strong>{label}</strong><p>{copy}</p></div></li>)}</ol>
           </section>
-          {analysis.missingInputs.length || refinementStatus !== "idle" ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} aria-busy={refinementStatus === "analysing"}><header><span>📷 {refinementStatus === "updated" ? "SECOND VIEW RESULT" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "COMPARING BOTH…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "ANALYSIS CHANGED" : "READ CONFIRMED" : "ONLY IF AVAILABLE"}</b></header>{refinementStatus === "updated" && contextImage ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>ORIGINAL</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting chart" /><figcaption>SECOND VIEW</figcaption></figure></div><p>{analysis.contextContribution?.summary || "The supporting chart was compared with the original analysis."}</p><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>EVIDENCE</span><strong>{analysis.contextContribution?.materialChange ? "MATERIAL" : "CONFIRMING"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : null}<footer><div><strong>{refinementStatus === "analysing" ? "USING BOTH CHARTS" : refinementStatus === "updated" ? "COMPARISON COMPLETE" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Keeping this result open while Bullseye refines it." : refinementStatus === "updated" ? "Both charts now inform the result above." : "Add a chart view that answers one of the points above."}</span></div><label>{refinementStatus === "analysing" ? "WORKING…" : refinementStatus === "updated" ? "CHANGE VIEW" : "＋ ADD PHOTO"}<input disabled={refinementStatus === "analysing"} aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
+          {analysis.missingInputs.length || refinementStatus !== "idle" || !analysis.levels.some((level) => numericLevel(level.price) !== null) ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} aria-busy={refinementStatus === "analysing"}><header><span>📷 {refinementStatus === "updated" ? "SECOND VIEW RESULT" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "COMPARING BOTH…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "ANALYSIS CHANGED" : "READ CONFIRMED" : "ONLY IF AVAILABLE"}</b></header>{refinementStatus === "updated" && contextImage ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>ORIGINAL</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting chart" /><figcaption>SECOND VIEW</figcaption></figure></div><p>{analysis.contextContribution?.summary || "The supporting chart was compared with the original analysis."}</p><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>EVIDENCE</span><strong>{analysis.contextContribution?.materialChange ? "MATERIAL" : "CONFIRMING"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="psPrecisionPrompt">Add a view with a clear price scale so Bullseye can retry exact support and resistance verification.</p>}<footer><div><strong>{refinementStatus === "analysing" ? "USING BOTH CHARTS" : refinementStatus === "updated" ? "COMPARISON COMPLETE" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Keeping this result open while Bullseye refines it." : refinementStatus === "updated" ? "Both charts now inform the result above." : "Add a chart view that answers one of the points above."}</span></div><label>{refinementStatus === "analysing" ? "WORKING…" : refinementStatus === "updated" ? "CHANGE VIEW" : "＋ ADD PHOTO"}<input id="psResultSupportInput" disabled={refinementStatus === "analysing"} aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
@@ -697,13 +720,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psIntel">
             <article><span>VISIBLE INDICATORS</span><p>{analysis.indicators.length ? analysis.indicators.join(" · ") : "No indicator can be read reliably from this image."}</p></article>
             <article data-risk><span>INVALIDATION & RISK</span><p>{analysis.invalidation}</p><ul>{analysis.riskFlags.map((risk) => <li key={risk}>{risk}</li>)}</ul></article>
-          </section>
-          <section className="psEventDeck">
-            <header><span>VERIFIED EVENT RADAR</span><b>{macroContext.status.toUpperCase()}</b></header>
-            <p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>
-            {macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 6).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · {event.risk} IMPACT</span></li>)}</ol> : <div className="psEventEmpty">No verified official release rows are available in the current window.</div>}
-            {analysis.ticker !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH" ? <div className="psStockEvents"><strong>{analysis.ticker} · VERIFIED COMPANY LOOKUP</strong>{stockEventStatus === "loading" ? <p>Checking the connected company calendar…</p> : stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><b>{event.type}</b><span>{event.detail} · {event.source}</span></li>)}</ol> : <p>No verified upcoming corporate event was returned by the connected feed.</p>}<a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">OPEN OFFICIAL SEC FILINGS ↗</a></div> : <div className="psTickerHold"><strong>COMPANY LOOKUP PAUSED</strong><p>Bullseye will not query company data until the ticker is clearly visible and identified with high confidence.</p></div>}
-            <footer>Official macro rows are scheduled facts, not live prices. Company events use the connected provider; SEC filings open from the official EDGAR service. No quote is labelled LIVE unless a licensed feed supplies a timestamp.</footer>
           </section>
             </div>
           </details>

@@ -90,12 +90,13 @@ test("unverified or out-of-scale horizontal levels fail closed", () => {
 });
 
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
-  const [client, styles, analyseRoute, reviewRoute, followUpRoute] = await Promise.all([
+  const [client, styles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/review/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/follow-up/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/api/pocket/events/route.ts", import.meta.url), "utf8"),
   ]);
   assert.match(client, /analysisRequestActive\.current/);
   assert.match(client, /followUpRequestActive\.current/);
@@ -147,13 +148,14 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /showResultCard/);
   assert.match(client, /pocket-bullseye-result\.png/);
   assert.match(client, /ScenarioTheatre/);
-  assert.match(client, /BULLSEYE SCENARIO THEATRE/);
-  assert.match(client, /THREE CONDITIONAL FUTURES/);
   assert.match(client, /SPECULATIVE ONLY/);
-  assert.match(client, /ScenarioCandles/);
-  assert.match(client, /psScenarioSource/);
-  assert.match(client, /SOURCE <b>→<\/b> IDEA/);
   assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
+  assert.match(client, /BULLSEYE NEXT-CANDLE LAB/);
+  assert.match(client, /psProjectedCandle/);
+  assert.match(client, /EVENT IMPACT CHECK/);
+  assert.match(client, /psResultSupportInput/);
+  assert.match(client, /will not invent one/);
+  assert.match(eventsRoute, /returnedSymbol !== symbol/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
   assert.match(styles, /\.psBattleLevel/);
@@ -171,6 +173,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psScenarioTheatre/);
   assert.match(styles, /\.psScenarioPanel/);
   assert.match(styles, /\.psScenarioSource/);
+  assert.match(styles, /\.psNextCandleCanvas/);
+  assert.match(styles, /\.psDecisionEvents/);
+  assert.match(styles, /\.psDecisionMapEmpty/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
