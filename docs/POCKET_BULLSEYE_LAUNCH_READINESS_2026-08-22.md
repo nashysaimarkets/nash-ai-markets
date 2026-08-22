@@ -52,6 +52,25 @@ closed whenever the screenshot cannot support a safe audit.
 1. Run the representative-chart calibration matrix with approved test images.
 2. Run private-preview upload, analysis, failure, retry, save and later-review
    journeys on iPhone and at tablet width.
-3. Establish per-user/server request budgets before opening paid public access.
-4. Complete qualified UK privacy/consumer-terms and FCA-perimeter review.
+3. Complete qualified UK privacy/consumer-terms and FCA-perimeter review.
+4. Replace the instance-local beta budget with a durable distributed limiter
+   before broad or unmetered public access.
 5. Record the explicit owner public-launch go/no-go decision.
+
+## Controlled-beta gate — 22 August 2026
+
+- Protected checkpoint: `360a121ab115bb70f3fcbf1423fe7db19f453493`.
+- Vercel connected build: READY / success.
+- Focused launch tests: 7 passed, 0 failed.
+- Repository secret-pattern scan: passed across 704 version-control candidates.
+- Live preview smoke check: Pocket loaded; upload-point processing disclosure and
+  Privacy link were visible; Pocket-specific Privacy, Terms and Risk pages loaded.
+- Server-side beta budgets now reject excess analysis, review and follow-up
+  requests before an AI-provider call and return retry guidance. These counters
+  are intentionally short-lived and instance-local: suitable as controlled-beta
+  defence-in-depth, not as the sole control for public scale.
+
+Decision: **GO for a small, supervised private beta. NO-GO for broad paid public
+promotion until the remaining legal/perimeter review, representative-chart and
+physical-device checks, durable cost controls and explicit owner go/no-go are
+complete.**
