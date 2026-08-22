@@ -91,6 +91,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /containedImageBounds/);
   assert.match(client, /chart\.naturalWidth \/ chart\.naturalHeight/);
   assert.match(client, /Full-screen chart overlays/);
+  assert.match(client, /availableToolOptions/);
+  assert.match(client, /ON · TAP TO HIDE/);
+  assert.doesNotMatch(client, /className="psToolDock"/);
   assert.match(client, /aria-pressed=\{visibleOverlays\.has\(overlay\)\}/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);
   assert.match(analyseRoute, /Trend uses two visible swing anchors/);

@@ -109,12 +109,13 @@ function ChartOverlay({ level, index }: { level: Level; index: number }) {
   const width = Math.max(1, Math.abs(x2 - x1));
   const height = Math.max(1, Math.abs(y2 - y1));
   const labelStyle = { left: `${Math.min(98, Math.max(35, Math.max(x1, x2)))}%`, top: `${Math.min(94, Math.max(6, y2))}%` };
+  const labelEdge = y2 < 12 ? "top" : y2 > 88 ? "bottom" : "middle";
 
   if (level.kind === "pivot") return <span className="psChartMark psChartPoint" data-tool={level.kind} style={{ left: `${x1}%`, top: `${y1}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
   if (level.kind === "zone" || level.kind === "gap") return <span className="psChartMark psChartArea" data-tool={level.kind} style={{ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%` }}><b>{level.label}{level.price ? ` · ${level.price}` : ""}</b></span>;
   return <>
     <svg className="psChartVector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><line data-tool={level.kind} x1={x1} y1={y1} x2={x2} y2={y2} vectorEffect="non-scaling-stroke" /></svg>
-    <span className="psChartLineLabel" data-tool={level.kind} style={labelStyle as CSSProperties} data-index={index}>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
+    <span className="psChartLineLabel" data-tool={level.kind} data-edge={labelEdge} style={labelStyle as CSSProperties} data-index={index}>{level.label}{level.price ? ` · ${level.price}` : ""}</span>
   </>;
 }
 
@@ -240,6 +241,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [immersive, chartFocus]);
 
   const levels = analysis?.levels ?? [];
+  const availableToolOptions = TOOL_OPTIONS.filter(([kind]) => levels.some((level) => level.kind === kind));
   const displayedLevels = levels.filter((level) => visibleOverlays.has(level.kind));
 
   function toggleOverlay(name: ToolKind) {
@@ -502,15 +504,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div><span>INSTRUMENT</span><strong>{analysis.instrument}</strong></div>
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
-          <section className="psToolDock">
-            <header><span>CHART TOOLBOX</span><b>TAP TO SHOW / HIDE</b></header>
-            <nav className="psOverlayBar" aria-label="Optional chart overlays">
-              {TOOL_OPTIONS.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} disabled={!levels.some((level) => level.kind === overlay)} onClick={() => toggleOverlay(overlay)}>{label}</button>)}
-            </nav>
-            <p>Support and resistance start on. Optional tools activate only when Bullseye can justify them from visible chart evidence.</p>
-          </section>
-          <section className="psResultChart">
-            <header><span>ANNOTATED CHART</span><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
+          <section className="psResultChart psChartWorkspace">
+            <header><div><span>🎯 ANNOTATED CHART</span><small>{availableToolOptions.length} VERIFIED {availableToolOptions.length === 1 ? "OVERLAY" : "OVERLAYS"}</small></div><button type="button" onClick={() => setChartFocus(true)}>FULL SCREEN</button></header>
+            {availableToolOptions.length ? <><nav className="psWorkspaceTools" aria-label="Detected chart overlays">{availableToolOptions.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}><span>{label}</span><small>{visibleOverlays.has(overlay) ? "ON · TAP TO HIDE" : "OFF · TAP TO SHOW"}</small></button>)}</nav><p className="psWorkspaceNote">Every tool shown was detected from visible chart evidence. Changes apply here and in full screen.</p></> : <p className="psWorkspaceEmpty">No overlay was reliable enough to place precisely on this screenshot.</p>}
             <div>{annotatedChart()}</div>
           </section>
           <section className="psNarrative">
@@ -558,7 +554,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {chartFocus && (
           <section className="psChartFocus" aria-modal="true" role="dialog" aria-label="Full-screen annotated chart">
             <header><span>ANNOTATED CHART · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
-            <nav className="psFocusTools" aria-label="Full-screen chart overlays">{TOOL_OPTIONS.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} disabled={!levels.some((level) => level.kind === overlay)} onClick={() => toggleOverlay(overlay)}>{label}</button>)}</nav>
+            <nav className="psFocusTools" aria-label="Full-screen chart overlays">{availableToolOptions.map(([overlay,label]) => <button key={overlay} type="button" aria-pressed={visibleOverlays.has(overlay)} data-active={visibleOverlays.has(overlay)} onClick={() => toggleOverlay(overlay)}>{label} · {visibleOverlays.has(overlay) ? "ON" : "OFF"}</button>)}</nav>
             {annotatedChart(true)}
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
