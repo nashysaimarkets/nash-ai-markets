@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   try {
     const waitlist = createAdminClient().from("launch_waitlist");
-    const { error } = submission.source === "homepage"
+    const { error } = submission.source === "homepage" || submission.source === "pocket-founding"
       ? await waitlist.upsert({ ...submission, updated_at: new Date().toISOString() }, { onConflict: "email" })
       : await waitlist.insert(submission);
     if (error && error.code !== "23505") {
