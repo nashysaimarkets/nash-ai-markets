@@ -122,11 +122,16 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /numericLevel/);
   assert.match(client, /psBattleCurrent/);
   assert.match(client, /psSourceEvidence/);
+  assert.match(client, /MARKET LOCATION/);
+  assert.match(client, /RECLAIM ROUTE/);
+  assert.match(client, /BREAK ROUTE/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /OPEN MY FULL RESULT/);
   assert.doesNotMatch(client, /className="psChartLineLabel"/);
   assert.match(styles, /\.psResultReveal\{/);
   assert.match(styles, /\.psBattleLevel/);
+  assert.match(styles, /\.psBattleIntel/);
+  assert.match(styles, /\.psBattleRoutes/);
   assert.doesNotMatch(client, /className="psToolDock"/);
   assert.doesNotMatch(client, /ChartOverlay/);
   assert.match(analyseRoute, /"x", "y", "x2", "y2"/);

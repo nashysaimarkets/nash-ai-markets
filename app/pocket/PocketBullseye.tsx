@@ -93,15 +93,41 @@ function PriceBattlefield({ analysis, expanded = false }: { analysis: Analysis; 
   const max = rawMax + padding;
   const position = (price: number) => 9 + ((max - price) / (max - min)) * 82;
   const ordered = [...verified].sort((a, b) => b.numericPrice - a.numericPrice);
+  const supports = ordered.filter((level) => level.kind === "support" && (current === null || level.numericPrice <= current));
+  const resistances = ordered.filter((level) => level.kind === "resistance" && (current === null || level.numericPrice >= current));
+  const nearestSupport = supports[0] ?? null;
+  const nearestResistance = resistances.at(-1) ?? null;
+  const supportDistance = current !== null && nearestSupport ? current - nearestSupport.numericPrice : null;
+  const resistanceDistance = current !== null && nearestResistance ? nearestResistance.numericPrice - current : null;
+  const formatDistance = (distance: number | null) => distance === null ? "—" : distance.toLocaleString("en-GB", { maximumFractionDigits: 2 });
+  const formatPercent = (distance: number | null) => distance === null || current === null || current === 0 ? "" : `${(distance / current * 100).toFixed(2)}%`;
+  const proximity = supportDistance !== null && resistanceDistance !== null
+    ? supportDistance <= resistanceDistance ? "NEAR SUPPORT" : "NEAR RESISTANCE"
+    : nearestSupport ? "ABOVE SUPPORT" : nearestResistance ? "BELOW RESISTANCE" : "LEVELS UNVERIFIED";
+  const currentY = current === null ? 50 : position(current);
+  const supportY = nearestSupport ? position(nearestSupport.numericPrice) : Math.min(88, currentY + 18);
+  const resistanceY = nearestResistance ? position(nearestResistance.numericPrice) : Math.max(12, currentY - 18);
 
   return <div className={`psBattlefield${expanded ? " psBattlefieldExpanded" : ""}`} aria-label="Bullseye price battlefield">
+    <div className="psBattleGrid" aria-hidden="true" />
+    <div className="psBattleIntel">
+      <article data-tone="support"><span>TO SUPPORT</span><strong>{formatDistance(supportDistance)}</strong><small>{formatPercent(supportDistance)}</small></article>
+      <article data-tone="location"><span>MARKET LOCATION</span><strong>{proximity}</strong><small>{analysis.timeframe}</small></article>
+      <article data-tone="resistance"><span>TO RESISTANCE</span><strong>{formatDistance(resistanceDistance)}</strong><small>{formatPercent(resistanceDistance)}</small></article>
+    </div>
     <div className="psBattleScan" aria-hidden="true" />
     <div className="psBattleAxis" aria-hidden="true"><i /><i /><i /></div>
+    {current !== null && verified.length ? <svg className="psBattleRoutes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {nearestResistance ? <path data-route="bull" d={`M 50 ${currentY} C 68 ${currentY - 4}, 67 ${resistanceY + 6}, 82 ${resistanceY}`} /> : null}
+      {nearestSupport ? <path data-route="bear" d={`M 50 ${currentY} C 32 ${currentY + 4}, 33 ${supportY - 5}, 18 ${Math.min(93, supportY + 7)}`} /> : null}
+    </svg> : null}
+    {nearestResistance ? <div className="psRouteCue psRouteBull" style={{ top: `${Math.max(16, resistanceY + 4)}%` }}><b>↗</b><span>RECLAIM ROUTE</span></div> : null}
+    {nearestSupport ? <div className="psRouteCue psRouteBear" style={{ top: `${Math.min(87, supportY + 7)}%` }}><b>↘</b><span>BREAK ROUTE</span></div> : null}
     {ordered.map((level, index) => <button key={`${level.kind}-${level.numericPrice}-${index}`} type="button" className="psBattleLevel" data-kind={level.kind} style={{ top: `${position(level.numericPrice)}%` }} aria-label={`${level.kind} at ${level.price}`}>
       <span className="psBattleIcon">{level.kind === "support" ? "●" : level.kind === "resistance" ? "●" : "◆"}</span>
-      <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "PIVOT" : level.kind.toUpperCase()}</small>
+      <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "PIVOT" : level.kind.toUpperCase()}</small><em>{current === null ? "" : formatPercent(Math.abs(level.numericPrice - current))}</em>
     </button>)}
-    {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span>CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
+    {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span><b>◎</b> CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
     {!verified.length ? <div className="psBattleEmpty"><b>PRECISION HOLD</b><p>No exact level survived verification. Add a chart with a clear price scale for the Battlefield.</p></div> : null}
     <div className="psBattleDirection" data-direction={analysis.direction}><span>BEAR PRESSURE</span><strong>{analysis.direction}</strong><span>BULL PRESSURE</span></div>
   </div>;
@@ -461,9 +487,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div><span>TIMEFRAME</span><strong>{analysis.timeframe}</strong></div>
           </div>
           <section className="psResultChart psChartWorkspace psBattleWorkspace">
-            <header><div><span>🎯 PRICE BATTLEFIELD</span><small>{analysis.levels.filter((level) => numericLevel(level.price) !== null).length} VERIFIED LEVELS</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
+            <header><div><span>🎯 PRICE BATTLEFIELD</span><small>MARKET LOCATION · CONSEQUENCE MAP</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
             <PriceBattlefield analysis={analysis} />
-            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>＋</b></summary>{sourceChart()}</details>
+            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>⌄</b></summary>{sourceChart()}</details>
           </section>
           <section className="psNarrative">
             <header><span>LEVEL-TO-LEVEL STORY</span><b>CONDITIONAL ROADMAP</b></header>
@@ -511,7 +537,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye price battlefield">
             <header><span>PRICE BATTLEFIELD · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
             <PriceBattlefield analysis={analysis} expanded />
-            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>＋</b></summary>{sourceChart(true)}</details>
+            <details className="psSourceEvidence"><summary>VIEW ORIGINAL SOURCE CHART <b>⌄</b></summary>{sourceChart(true)}</details>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
         )}
