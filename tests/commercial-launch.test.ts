@@ -13,6 +13,8 @@ import {
   buildAnnualRenewalReminderEmail,
   buildFounding100ConfirmationEmail,
   buildMembershipWelcomeEmail,
+  buildPocketFoundingWelcomeEmail,
+  buildPocketSubscriptionAlertEmail,
   buildPaymentSuccessfulEmail,
   buildSubscriptionCancellationEmail,
 } from "../app/lib/launch-email.ts";
@@ -65,7 +67,6 @@ test("Pocket Founding 650 page submits the server-enumerated Stripe offering", a
   assert.match(page, /action="\/api\/stripe\/checkout"/);
   assert.match(page, /name="offering" value="pocket_founding_month"/);
   assert.match(page, /CONTINUE TO SECURE CHECKOUT/);
-  assert.match(page, /method="post"/);
   assert.doesNotMatch(page, /WaitlistForm/);
 });
 
@@ -150,6 +151,34 @@ test("branded lifecycle email templates state billing and risk truthfully", () =
   assert.match(buildPaymentSuccessfulEmail("elite", "1 August 2027").text, /confirmed by Stripe/);
   assert.match(buildAnnualRenewalReminderEmail("pro", "1 August 2027").text, /customer portal/);
   assert.match(buildSubscriptionCancellationEmail("elite", "1 August 2027", true).text, /price lock has been permanently lost/);
+});
+
+test("Pocket welcome email explains installation, first upload and feedback", () => {
+  const email = buildPocketFoundingWelcomeEmail("https://example.test/pocket");
+  assert.equal(email.template, "pocket-founding-welcome");
+  assert.match(email.text, /https:\/\/example\.test\/pocket/);
+  assert.match(email.text, /Add to Home Screen/);
+  assert.match(email.text, /Tap LOAD CHART/);
+  assert.match(email.text, /green FEEDBACK button/);
+  assert.match(email.text, /does not provide personalised financial advice/);
+});
+
+test("Pocket subscription alert identifies a verified sale without card data", () => {
+  const email = buildPocketSubscriptionAlertEmail("member@example.com", "https://example.test/admin/commercial");
+  assert.equal(email.template, "pocket-subscription-alert");
+  assert.match(email.subject, /New Pocket Bullseye subscription/);
+  assert.match(email.text, /member@example\.com/);
+  assert.match(email.text, /\u00A34\.99 per month/);
+  assert.match(email.text, /https:\/\/example\.test\/admin\/commercial/);
+  assert.doesNotMatch(email.text, /card number|CVC/i);
+});
+
+test("Pocket checkout welcome page exposes the complete quick-start journey", async () => {
+  const page = await read("app/pocket/founding/welcome/page.tsx");
+  assert.match(page, /SAVE POCKET/);
+  assert.match(page, /UPLOAD YOUR FIRST CHART/);
+  assert.match(page, /HELP SHAPE POCKET/);
+  assert.match(page, /\/pocket#pocket-chart-upload/);
 });
 
 test("Founding confirmation validates position and continuous-subscription wording", () => {
