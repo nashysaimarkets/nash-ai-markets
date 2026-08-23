@@ -7,6 +7,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
+import { calculateRangePosition, calculateRTargets, rankChartLevels, type NumericChartLevel, type ToolkitDirection } from "./pocket-chart-toolkit";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -231,37 +232,41 @@ function ScenarioTheatre({ analysis, sourceImage }: { analysis: Analysis; source
   </section>;
 }
 
-type XRayLayer = "levels" | "structure" | "momentum" | "quality";
+type XRayLayer = "structure" | "levels" | "momentum" | "risk";
 
 function ChartXRay({ analysis, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [layer, setLayer] = useState<XRayLayer>("levels");
+  const [toolDirection, setToolDirection] = useState<ToolkitDirection>(analysis.direction === "BEARISH" ? "SHORT" : "LONG");
+  const [entry, setEntry] = useState(analysis.currentPrice ?? "");
+  const [stop, setStop] = useState("");
   const verifiedLevels = analysis.levels.filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind));
   const drawableLevels = analysis.levels.filter((item) => ["support", "resistance", "pivot", "trend"].includes(item.kind));
-  const uncertain = [...analysis.contradictions, ...analysis.evidenceQuality.limitations];
+  const numericLevels: NumericChartLevel[] = verifiedLevels.map((item) => ({ kind: item.kind as NumericChartLevel["kind"], label: item.label, price: numericLevel(item.price)! }));
+  const contextLevels: NumericChartLevel[] = (analysis.contextBattlefield?.levels ?? []).filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind)).map((item) => ({ kind: item.kind as NumericChartLevel["kind"], label: item.label, price: numericLevel(item.price)! }));
+  const current = numericLevel(analysis.currentPrice ?? "");
+  const rankedLevels = rankChartLevels(numericLevels, current, contextLevels, analysis.evidenceQuality.scaleReadable);
+  const range = calculateRangePosition(current, numericLevels);
+  const rTargets = calculateRTargets(entry, stop, toolDirection);
+  const formatPrice = (value: number) => new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(value);
   const tabs: Array<{ id: XRayLayer; icon: string; label: string }> = [
-    { id: "levels", icon: "⌖", label: "LEVELS" }, { id: "structure", icon: "⌁", label: "STRUCTURE" },
-    { id: "momentum", icon: "↗", label: "MOMENTUM" }, { id: "quality", icon: "◫", label: "QUALITY" },
-  ];
-  const observations = layer === "levels"
-    ? (verifiedLevels.length ? verifiedLevels.map((item) => `${item.kind.toUpperCase()} · ${item.price}${item.label ? ` · ${item.label}` : ""}`) : ["No exact support, resistance or pivot survived verification.", analysis.levelStory])
-    : layer === "structure" ? [analysis.marketStructure, ...analysis.observableFacts]
-      : layer === "momentum" ? [analysis.momentum, ...analysis.indicators]
-        : [`CHART ${analysis.evidenceQuality.chartReadability}`, `PRICE SCALE ${analysis.evidenceQuality.scaleReadable ? "READABLE" : "NOT VERIFIED"}`, `CANDLES ${analysis.evidenceQuality.candlesReadable ? "READABLE" : "NOT VERIFIED"}`, `TIMEFRAME CONFIDENCE ${analysis.evidenceQuality.timeframeConfidence}`, ...analysis.evidenceQuality.limitations];
-  const counts = [
-    { tone: "verified", label: "VERIFIED", value: analysis.observableFacts.length + verifiedLevels.length },
-    { tone: "uncertain", label: "UNCERTAIN", value: uncertain.length },
-    { tone: "missing", label: "MISSING", value: analysis.missingInputs.length },
+    { id: "structure", icon: "⌁", label: "STRUCTURE MAP" }, { id: "levels", icon: "⌖", label: "LEVEL STRENGTH" },
+    { id: "momentum", icon: "↗", label: "MOMENTUM / VOL" }, { id: "risk", icon: "◇", label: "R-MULTIPLE" },
   ];
   return <section className="psChartXRay" data-layer={layer}>
-    <header><div><span>⌖ BULLSEYE CHART X-RAY</span><small>SEE WHAT THE READ IS ACTUALLY BUILT ON</small></div><strong>LIVE AUDIT</strong></header>
+    <header><div><span>⌖ BULLSEYE CHART TOOLKIT</span><small>MEASURE THE CHART · CHALLENGE THE SETUP</small></div><strong>4 LIVE TOOLS</strong></header>
     <div className="psXRayCanvas"><img src={sourceImage} alt="Customer's uploaded source chart with verified Bullseye X-Ray overlays"/><div className="psXRayShade"/><div className="psXRayScan" aria-hidden="true"/>
       {layer === "levels" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Verified chart level overlay">{drawableLevels.map((item, index) => <g key={`${item.kind}-${item.label}-${index}`} data-kind={item.kind}><line x1={item.x} y1={item.y} x2={item.x2} y2={item.y2} vectorEffect="non-scaling-stroke"/><circle cx={item.x} cy={item.y} r="1.15" vectorEffect="non-scaling-stroke"/><text x={Math.min(82, Math.max(3, item.x + 2))} y={Math.min(96, Math.max(5, item.y - 2))}>{numericLevel(item.price) !== null ? item.price : item.label}</text></g>)}</svg> : null}
       <span className="psXRaySource">● VERIFIED SOURCE</span><span className="psXRayLayerTag">{layer.toUpperCase()} LAYER</span></div>
-    <div className="psXRayCounts" aria-label="Evidence status">{counts.map((item) => <article key={item.label} data-tone={item.tone}><strong>{item.value}</strong><span>{item.label}</span></article>)}</div>
+    <div className="psXRayCounts" aria-label="Chart toolkit summary"><article data-tone="verified"><strong>{rankedLevels.length}</strong><span>EXACT LEVELS</span></article><article data-tone="uncertain"><strong>{range ? `${Math.round(range.percent)}%` : "—"}</strong><span>RANGE POSITION</span></article><article data-tone="missing"><strong>{contextLevels.length}</strong><span>CONTEXT LEVELS</span></article></div>
     <nav aria-label="Choose Chart X-Ray layer">{tabs.map((item) => <button key={item.id} type="button" data-active={layer === item.id} aria-pressed={layer === item.id} onClick={() => setLayer(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}</nav>
-    <article className="psXRayRead" aria-live="polite"><small>{layer.toUpperCase()} · EXACT OBSERVATIONS</small><ul>{observations.filter(Boolean).slice(0, 4).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></article>
+    <article className="psXRayRead" aria-live="polite">
+      {layer === "structure" ? <><small>STRUCTURE MAP · SCREENSHOT-BOUND</small><div className="psToolkitHeadline"><strong>{analysis.direction}</strong><span>{range ? `${range.label} · ${Math.round(range.percent)}% THROUGH VERIFIED RANGE` : "RANGE POSITION NEEDS VERIFIED SUPPORT + RESISTANCE"}</span></div><ul><li>{analysis.marketStructure}</li><li>{analysis.nextSequence.confirmation}</li><li>{analysis.nextSequence.failure || analysis.invalidation}</li></ul>{range ? <div className="psRangeMeter"><i style={{ width: `${range.percent}%` }}/><b style={{ left: `${range.percent}%` }}/><span>{formatPrice(range.support)}</span><span>{formatPrice(range.resistance)}</span></div> : null}</> : null}
+      {layer === "levels" ? <><small>LEVEL STRENGTH · VERIFIED PRICE SCALE ONLY</small>{rankedLevels.length ? <div className="psLevelRanking">{rankedLevels.slice(0, 5).map((item, index) => <section key={`${item.kind}-${item.price}`} data-kind={item.kind}><i>{index + 1}</i><div><span>{item.kind.toUpperCase()} · {item.verification} VERIFICATION</span><strong>{formatPrice(item.price)}</strong><small>{item.distance === null ? "DISTANCE NEEDS CURRENT PRICE" : `${formatPrice(item.distance)} PTS · ${item.distancePercent!.toFixed(2)}% AWAY`}{item.contextMatch ? " · MULTI-TIMEFRAME MATCH" : " · SINGLE-VIEW LEVEL"}</small></div></section>)}</div> : <div className="psToolkitEmpty"><strong>EXACT LEVELS NOT VERIFIED</strong><p>{analysis.levelStory}</p><span>Attach a clearer price-scale or higher-timeframe chart, then reanalyse.</span></div>}</> : null}
+      {layer === "momentum" ? <><small>MOMENTUM + VOLATILITY · NO INVENTED INDICATORS</small><div className="psToolkitScore"><strong>{analysis.setupScore.momentum}<small>/10</small></strong><span>{analysis.momentum}</span></div><ul>{analysis.indicators.length ? analysis.indicators.slice(0, 3).map((item) => <li key={item}>{item}</li>) : <li>No readable indicator was present. Bullseye will not manufacture RSI, ATR or divergence values.</li>}<li>{analysis.evidenceQuality.candlesReadable ? "Candles are readable enough for qualitative expansion/compression commentary." : "Candle volatility cannot be measured safely from this image."}</li></ul></> : null}
+      {layer === "risk" ? <><small>R-MULTIPLE RULER · YOUR NUMBERS, NOT A RECOMMENDATION</small><div className="psRTool"><div className="psRDirection"><button type="button" data-active={toolDirection === "LONG"} onClick={() => setToolDirection("LONG")}>LONG IDEA</button><button type="button" data-active={toolDirection === "SHORT"} onClick={() => setToolDirection("SHORT")}>SHORT IDEA</button></div><label><span>POSSIBLE ENTRY</span><input inputMode="decimal" value={entry} onChange={(event) => setEntry(event.target.value)} placeholder="e.g. 8640.5"/></label><label><span>INVALIDATION / STOP</span><input inputMode="decimal" value={stop} onChange={(event) => setStop(event.target.value)} placeholder="Enter your level"/></label></div>{rTargets ? <div className="psRTargets"><p>1R RISK DISTANCE · <b>{formatPrice(rTargets.risk)} PTS</b></p>{rTargets.targets.map((target) => <section key={target.multiple}><span>{target.multiple}R</span><strong>{formatPrice(target.price)}</strong></section>)}</div> : <div className="psToolkitEmpty"><strong>ADD A VALID ENTRY + STOP</strong><p>For long ideas the stop must be below entry; for short ideas it must be above.</p></div>}</> : null}
+    </article>
     <div className="psXRayActions"><label><input id="psXRaySupportInput" type="file" accept="image/jpeg,image/png,image/webp" onChange={onAddChart}/><span>＋ ADD TIMEFRAME PHOTO</span></label><button type="button" disabled={!hasContext || reanalysing} onClick={onReanalyse}>{reanalysing ? "ANALYSING…" : "↻ REANALYSE ALL CHARTS"}</button></div>
-    <footer><b>TRANSPARENT BY DESIGN</b><span>Green is directly observed or numerically verified. Amber is uncertain. Missing means Bullseye refused to guess.</span></footer>
+    <footer><b>MEASUREMENT, NOT PERMISSION</b><span>Distances and R targets are arithmetic from verified or user-entered prices. They are not probabilities, forecasts or trade instructions.</span></footer>
   </section>;
 }
 

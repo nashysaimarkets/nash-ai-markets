@@ -170,10 +170,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
   assert.match(client, /<ScenarioTheatre analysis=/);
   assert.match(client, /ChartXRay/);
-  assert.match(client, /BULLSEYE CHART X-RAY/);
-  assert.match(client, /VERIFIED/);
-  assert.match(client, /UNCERTAIN/);
-  assert.match(client, /MISSING/);
+  assert.match(client, /BULLSEYE CHART TOOLKIT/);
+  assert.match(client, /STRUCTURE MAP/);
+  assert.match(client, /LEVEL STRENGTH/);
+  assert.match(client, /MOMENTUM \/ VOL/);
+  assert.match(client, /R-MULTIPLE/);
+  assert.match(client, /MULTI-TIMEFRAME MATCH/);
   assert.match(client, /<ChartXRay analysis=/);
   assert.match(client, /MarketStory/);
   assert.match(client, /BULLSEYE MARKET STORY/);
