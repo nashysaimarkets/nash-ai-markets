@@ -7,7 +7,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
-import { calculateRangePosition, calculateRTargets, rankChartLevels, type NumericChartLevel, type ToolkitDirection } from "./pocket-chart-toolkit";
+import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel, type ToolkitDirection } from "./pocket-chart-toolkit";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -896,15 +896,39 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   if (analysis) {
     const contextBattlefield = analysis.contextBattlefield;
+    const primaryNumericLevels: NumericChartLevel[] = analysis.levels.flatMap((level) => {
+      const price = numericLevel(level.price);
+      return price !== null && ["support", "resistance", "pivot"].includes(level.kind)
+        ? [{ kind: level.kind as NumericChartLevel["kind"], label: level.label, price }]
+        : [];
+    });
+    const contextNumericLevels: NumericChartLevel[] = (contextBattlefield?.levels ?? []).flatMap((level) => {
+      const price = numericLevel(level.price);
+      return price !== null && ["support", "resistance", "pivot"].includes(level.kind)
+        ? [{ kind: level.kind as NumericChartLevel["kind"], label: level.label, price }]
+        : [];
+    });
+    const combinedNumericLevels = mergeCompatibleChartLevels(
+      primaryNumericLevels,
+      contextNumericLevels,
+      numericLevel(analysis.currentPrice),
+      numericLevel(contextBattlefield?.currentPrice),
+    );
+    const combinedLevels: Level[] = combinedNumericLevels.map((numeric) => {
+      const source = analysis.levels.find((level) => level.kind === numeric.kind && numericLevel(level.price) === numeric.price)
+        ?? contextBattlefield?.levels.find((level) => level.kind === numeric.kind && numericLevel(level.price) === numeric.price);
+      return source ?? { kind: numeric.kind, label: numeric.label, price: String(numeric.price), x: 0, y: 0, x2: 0, y2: 0 };
+    });
+    const combinedAnalysis: Analysis = { ...analysis, levels: combinedLevels };
     const battlefieldAnalysis: Analysis = battlefieldChart === "context" && contextBattlefield ? {
       ...analysis,
       levels: Array.isArray(contextBattlefield.levels) ? contextBattlefield.levels : [],
       currentPrice: contextBattlefield.currentPrice,
       timeframe: analysis.higherTimeframe.timeframe || "CONTEXT",
       direction: analysis.higherTimeframe.direction === "UNKNOWN" ? "NEUTRAL" : analysis.higherTimeframe.direction,
-    } : analysis;
+    } : combinedAnalysis;
     const battlefieldTabs = contextImage ? <nav className="psBattleTabs" aria-label="Choose chart for Bullseye Decision Map">
-      <button type="button" data-active={battlefieldChart === "primary"} aria-pressed={battlefieldChart === "primary"} onClick={() => setBattlefieldChart("primary")}><span>①</span><strong>PRIMARY</strong><small>{analysis.timeframe}</small></button>
+      <button type="button" data-active={battlefieldChart === "primary"} aria-pressed={battlefieldChart === "primary"} onClick={() => setBattlefieldChart("primary")}><span>①＋②</span><strong>COMBINED MAP</strong><small>{analysis.timeframe} + {analysis.higherTimeframe.timeframe || "SECOND VIEW"}</small></button>
       <button type="button" data-active={battlefieldChart === "context"} aria-pressed={battlefieldChart === "context"} onClick={() => setBattlefieldChart("context")}><span>②</span><strong>CONTEXT</strong><small>{analysis.higherTimeframe.timeframe || "SECOND VIEW"}</small></button>
     </nav> : null;
     return (

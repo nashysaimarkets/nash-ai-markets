@@ -13,6 +13,38 @@ export type RankedChartLevel = NumericChartLevel & {
   verification: "HIGH" | "MEDIUM";
 };
 
+export function mergeCompatibleChartLevels(
+  primaryLevels: NumericChartLevel[],
+  contextLevels: NumericChartLevel[],
+  primaryCurrentPrice: number | null,
+  contextCurrentPrice: number | null,
+) {
+  if (!contextLevels.length) return primaryLevels;
+
+  // A second screenshot may be a different instrument or contract. Never mix its
+  // geometry into the decision map when the visible current prices disagree.
+  if (primaryCurrentPrice !== null && contextCurrentPrice !== null) {
+    const denominator = Math.max(Math.abs(primaryCurrentPrice), Math.abs(contextCurrentPrice), 1);
+    if (Math.abs(primaryCurrentPrice - contextCurrentPrice) / denominator > 0.05) return primaryLevels;
+  }
+
+  const reference = primaryCurrentPrice ?? contextCurrentPrice;
+  const compatibleContext = contextLevels.filter((level) => {
+    if (!Number.isFinite(level.price) || level.price <= 0) return false;
+    // When only one image exposes the current-price badge, require the added
+    // level to remain reasonably close to that market's visible trading range.
+    return reference === null || Math.abs(level.price - reference) / Math.max(Math.abs(reference), 1) <= 0.2;
+  });
+
+  return compatibleContext.reduce<NumericChartLevel[]>((merged, level) => {
+    const duplicate = merged.some((existing) => {
+      const tolerance = Math.max(Math.abs(level.price) * 0.0015, 0.01);
+      return existing.kind === level.kind && Math.abs(existing.price - level.price) <= tolerance;
+    });
+    return duplicate ? merged : [...merged, level];
+  }, [...primaryLevels]);
+}
+
 export function rankChartLevels(levels: NumericChartLevel[], currentPrice: number | null, contextLevels: NumericChartLevel[], scaleReadable: boolean): RankedChartLevel[] {
   return levels.map((level): RankedChartLevel => {
     const priceNow = currentPrice;
