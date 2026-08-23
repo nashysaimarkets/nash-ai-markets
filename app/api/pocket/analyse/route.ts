@@ -3,6 +3,7 @@ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/op
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
+import { recoverPrecisionGeometry } from "../precision-fallback";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -259,7 +260,7 @@ export async function POST(request: Request) {
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
-    const requestPrecision = (chartImage: string) => client.responses.create({
+    const requestPrecision = (chartImage: string, rescue = false) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
       reasoning: { effort: "low" },
       store: false,
@@ -267,17 +268,30 @@ export async function POST(request: Request) {
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
+          { type: "input_text", text: rescue
+            ? "Retry the chart carefully. Read the visible scale, current-price badge and major swing geometry. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high or breakout shelf is sufficient; repeated reactions are not mandatory. Never invent a hidden price."
+            : "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
           { type: "input_image", image_url: chartImage, detail: "high" },
         ],
       }],
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
     });
-    const safePrecision = (chartImage: string, label: string) => requestPrecision(chartImage).catch((error) => {
-      console.error(`[pocket-bullseye] ${label} precision pass unavailable`, error instanceof Error ? error.message : "unknown");
-      return null;
-    });
+    const safePrecision = async (chartImage: string, label: string) => {
+      try {
+        const first = await requestPrecision(chartImage);
+        try {
+          const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
+          if (parsed && Array.isArray(parsed.levels) && parsed.levels.length === 0) {
+            return await requestPrecision(chartImage, true);
+          }
+        } catch { /* The normal parse/fail-closed path below handles malformed output. */ }
+        return first;
+      } catch (error) {
+        console.error(`[pocket-bullseye] ${label} precision pass unavailable`, error instanceof Error ? error.message : "unknown");
+        return null;
+      }
+    };
     const [response, precisionResult, contextPrecisionResult] = await Promise.all([
       analysisRequest,
       safePrecision(image, "primary"),
@@ -301,6 +315,7 @@ export async function POST(request: Request) {
       precision = parsePrecision(precisionResult?.output_text);
       contextPrecision = parsePrecision(contextPrecisionResult?.output_text);
       const record = analysis as Record<string, unknown>;
+      precision = recoverPrecisionGeometry(record, precision && typeof precision === "object" ? precision as Record<string, unknown> : null);
       if (precision && typeof precision === "object") {
         const geometry = precision as Record<string, unknown>;
         analysis = {
