@@ -121,9 +121,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /analysisCacheGet\(cacheKey\)/);
   assert.match(client, /analysisCacheSave\(cacheKey, payload\.analysis\)/);
   assert.match(client, /addResultContextFile/);
-  assert.match(client, /Add a supporting chart photo/);
-  assert.match(client, /requestPocketAnalysis\(prepared\)/);
-  assert.match(client, /Keeping this result open while Bullseye refines it/);
+  assert.match(client, /Add another timeframe chart photo/);
+  assert.match(client, /requestPocketAnalysis\(contextImage, \{ bypassCache: true \}\)/);
+  assert.match(client, /Support, resistance and the written read are being checked again/);
   assert.match(client, /SECOND VIEW RESULT/);
   assert.match(client, /psRefineDelta/);
   assert.match(analyseRoute, /contextContribution/);
@@ -192,6 +192,10 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ADD ANOTHER PHOTO/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
+  assert.match(client, /REANALYSE ALL CHARTS/);
+  assert.match(client, /bypassCache: true/);
+  assert.match(client, /SECOND VIEW ATTACHED/);
+  assert.match(client, /FINDINGS UPDATED/);
   assert.match(client, /SUPPORT AREA NOT VERIFIED/);
   assert.match(client, /CLEARER VIEW NEEDED/);
   assert.match(client, /6000/);

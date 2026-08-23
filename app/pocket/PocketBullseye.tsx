@@ -550,7 +550,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpReply, setFollowUpReply] = useState<FollowUpReply | null>(null);
   const [followUpBusy, setFollowUpBusy] = useState(false);
   const [followUpError, setFollowUpError] = useState("");
-  const [refinementStatus, setRefinementStatus] = useState<"idle" | "analysing" | "updated" | "error">("idle");
+  const [refinementStatus, setRefinementStatus] = useState<"idle" | "attached" | "analysing" | "updated" | "error">("idle");
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
@@ -650,19 +650,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
     try {
       const prepared = await prepareImage(file);
-      setRefinementBefore(analysis);
       setContextImage(prepared);
       setContextFileName(file.name);
-      setRefinementStatus("analysing");
-      const refined = await requestPocketAnalysis(prepared);
-      setAnalysis(refined);
-      setStockEvents([]);
-      setStockEventStatus(refined.ticker === "UNKNOWN" ? "unavailable" : "loading");
-      setRefinementStatus("updated");
+      setRefinementStatus("attached");
+      setBattlefieldChart("context");
       requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
     } catch (caught) {
       setRefinementStatus("error");
-      setError(caught instanceof Error ? caught.message : "That supporting chart could not be analysed safely.");
+      setError(caught instanceof Error ? caught.message : "That supporting chart could not be attached safely.");
     } finally {
       event.currentTarget.value = "";
     }
@@ -676,10 +671,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setRefinementBefore(analysis);
     setRefinementStatus("analysing");
     try {
-      const refreshed = await requestPocketAnalysis(contextImage);
+      const refreshed = await requestPocketAnalysis(contextImage, { bypassCache: true });
       setAnalysis(refreshed);
       setStockEvents([]);
       setStockEventStatus(refreshed.ticker === "UNKNOWN" ? "unavailable" : "loading");
+      const primaryHasVerifiedLevels = refreshed.levels.some((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
+      const contextHasVerifiedLevels = refreshed.contextBattlefield?.levels?.some((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
+      setBattlefieldChart(!primaryHasVerifiedLevels && contextHasVerifiedLevels ? "context" : "primary");
       setRefinementStatus("updated");
       requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
     } catch (caught) {
@@ -693,14 +691,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     requestAnimationFrame(() => requestAnimationFrame(() => target ? document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }) : document.querySelector(".psResults")?.scrollTo({ top: 0, behavior: "smooth" })));
   }
 
-  async function requestPocketAnalysis(selectedContext: string | null): Promise<Analysis> {
+  async function requestPocketAnalysis(selectedContext: string | null, options: { bypassCache?: boolean } = {}): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     analysisRequestActive.current = true;
     setBusy(true);
     try {
       const cacheKey = await analysisCacheKey(image, selectedContext, intention);
-      const cached = await analysisCacheGet(cacheKey).catch(() => null);
-      if (cached) return cached;
+      if (!options.bypassCache) {
+        const cached = await analysisCacheGet(cacheKey).catch(() => null);
+        if (cached) return cached;
+      }
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -973,7 +973,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               ["NOW",analysis.nextSequence.now],["CONFIRM",analysis.nextSequence.confirmation],["FAILURE",analysis.nextSequence.failure]
             ] as const).map(([label,copy],index) => <li key={label}><i>{index + 1}</i><div><strong>{label}</strong><p>{copy}</p></div></li>)}</ol>
           </section>
-          {analysis.missingInputs.length || refinementStatus !== "idle" || !analysis.levels.some((level) => numericLevel(level.price) !== null) ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} aria-busy={refinementStatus === "analysing"}><header><span>📷 {refinementStatus === "updated" ? "SECOND VIEW RESULT" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "COMPARING BOTH…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "ANALYSIS CHANGED" : "READ CONFIRMED" : "ONLY IF AVAILABLE"}</b></header>{refinementStatus === "updated" && contextImage ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>ORIGINAL</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting chart" /><figcaption>SECOND VIEW</figcaption></figure></div><p>{analysis.contextContribution?.summary || "The supporting chart was compared with the original analysis."}</p><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>EVIDENCE</span><strong>{analysis.contextContribution?.materialChange ? "MATERIAL" : "CONFIRMING"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="psPrecisionPrompt">Add a view with a clear price scale so Bullseye can retry exact support and resistance verification.</p>}<footer><div><strong>{refinementStatus === "analysing" ? "USING BOTH CHARTS" : refinementStatus === "updated" ? "COMPARISON COMPLETE" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Keeping this result open while Bullseye refines it." : refinementStatus === "updated" ? "Both charts now inform the result above." : "Add a chart view that answers one of the points above."}</span></div><label>{refinementStatus === "analysing" ? "WORKING…" : refinementStatus === "updated" ? "CHANGE VIEW" : "＋ ADD PHOTO"}<input id="psResultSupportInput" disabled={refinementStatus === "analysing"} aria-label="Add a supporting chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
+          {analysis.missingInputs.length || refinementStatus !== "idle" || !analysis.levels.some((level) => numericLevel(level.price) !== null) ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} data-status={refinementStatus} aria-busy={refinementStatus === "analysing"} aria-live="polite"><header><span>📷 {refinementStatus === "updated" ? "SECOND VIEW RESULT" : refinementStatus === "attached" ? "SECOND VIEW ATTACHED" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "REANALYSING ALL CHARTS…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "FINDINGS UPDATED" : "READ CONFIRMED" : refinementStatus === "attached" ? "2 CHARTS READY" : "ONLY IF AVAILABLE"}</b></header>{contextImage && (refinementStatus === "attached" || refinementStatus === "updated") ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>PRIMARY</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting timeframe chart" /><figcaption>ADDED VIEW</figcaption></figure></div><p>{refinementStatus === "attached" ? "Your second timeframe is attached. Tap Reanalyse all charts to replace the findings using both images." : analysis.contextContribution?.summary || "Both charts were compared and the current findings were replaced."}</p>{refinementStatus === "updated" ? <><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>LEVELS</span><strong>{battlefieldChart === "context" ? "CONTEXT VIEW" : "PRIMARY VIEW"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="psPrecisionPrompt">Add a view with a clear price scale so Bullseye can retry exact support and resistance verification.</p>}<footer><div><strong>{refinementStatus === "analysing" ? "CHECKING BOTH CHARTS" : refinementStatus === "updated" ? "FINDINGS REPLACED" : refinementStatus === "attached" ? "PHOTO ADDED — READY" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Support, resistance and the written read are being checked again." : refinementStatus === "updated" ? "The decision map and report now use the latest two-chart analysis." : refinementStatus === "attached" ? contextFileName : "Add a clearer lower, upper or higher-timeframe view."}</span></div><div className="psRefineActions"><label>{contextImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input id="psResultSupportInput" disabled={refinementStatus === "analysing"} aria-label="Add another timeframe chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label><button type="button" disabled={!contextImage || refinementStatus === "analysing"} onClick={reanalyseResult}>{refinementStatus === "analysing" ? "REANALYSING…" : "↻ REANALYSE ALL CHARTS"}</button></div></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
           <section className="psScorecard">
             {([['STRUCTURE','structure'],['MOMENTUM','momentum'],['LOCATION','location'],['CONFIRMATION','confirmation'],['RISK CLARITY','riskClarity'],['EVENT SAFETY','eventSafety']] as const).map(([label,key]) => <article key={key}><span>{label}</span><strong>{analysis.setupScore[key]}/10</strong><i><b style={{ width: `${analysis.setupScore[key] * 10}%` }} /></i></article>)}
           </section>
