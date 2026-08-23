@@ -3,7 +3,7 @@
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
 
-import { ChangeEvent, type CSSProperties, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
@@ -231,26 +231,37 @@ function ScenarioTheatre({ analysis, sourceImage }: { analysis: Analysis; source
   </section>;
 }
 
-function ConfluenceStack({ analysis, sourceImage }: { analysis: Analysis; sourceImage: string }) {
-  const layers = [
-    { id: "structure", icon: "⌁", label: "STRUCTURE", score: analysis.setupScore.structure, status: analysis.marketStructure },
-    { id: "timeframe", icon: "◫", label: "TIMEFRAME", score: analysis.higherTimeframe.alignment === "ALIGNED" ? 9 : analysis.higherTimeframe.alignment === "CONFLICTING" ? 3 : 6, status: analysis.higherTimeframe.summary },
-    { id: "location", icon: "◎", label: "LOCATION", score: analysis.setupScore.location, status: analysis.levelStory },
-    { id: "momentum", icon: "↗", label: "MOMENTUM", score: analysis.setupScore.momentum, status: analysis.momentum },
-    { id: "confirmation", icon: "◆", label: "CONFIRMATION", score: analysis.setupScore.confirmation, status: analysis.nextSequence.confirmation },
+type XRayLayer = "levels" | "structure" | "momentum" | "quality";
+
+function ChartXRay({ analysis, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+  const [layer, setLayer] = useState<XRayLayer>("levels");
+  const verifiedLevels = analysis.levels.filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind));
+  const drawableLevels = analysis.levels.filter((item) => ["support", "resistance", "pivot", "trend"].includes(item.kind));
+  const uncertain = [...analysis.contradictions, ...analysis.evidenceQuality.limitations];
+  const tabs: Array<{ id: XRayLayer; icon: string; label: string }> = [
+    { id: "levels", icon: "⌖", label: "LEVELS" }, { id: "structure", icon: "⌁", label: "STRUCTURE" },
+    { id: "momentum", icon: "↗", label: "MOMENTUM" }, { id: "quality", icon: "◫", label: "QUALITY" },
   ];
-  const [selectedLayer, setSelectedLayer] = useState(layers[0].id);
-  const selected = layers.find((layer) => layer.id === selectedLayer) ?? layers[0];
-  const aligned = layers.filter((layer) => layer.score >= 7).length;
-  return <section className="psConfluenceStack" data-direction={analysis.direction}>
-    <header><div><span>◈ BULLSEYE CONFLUENCE STACK</span><small>FIVE EVIDENCE LAYERS · ONE DEFENSIBLE READ</small></div><strong>{aligned}<small>/5</small><b> ALIGNED</b></strong></header>
-    <div className="psConfluenceStage">
-      <figure><img src={sourceImage} alt="Customer's uploaded source chart used for the evidence stack"/><figcaption>① VERIFIED SOURCE</figcaption></figure>
-      <div className="psLayerDeck">{layers.map((layer, index) => <button key={layer.id} type="button" data-active={selectedLayer === layer.id} data-strength={layer.score >= 8 ? "high" : layer.score >= 6 ? "mid" : "low"} style={{ "--layer": index } as CSSProperties} aria-pressed={selectedLayer === layer.id} onClick={() => setSelectedLayer(layer.id)}><i>{layer.icon}</i><span>{layer.label}</span><strong>{layer.score}<small>/10</small></strong><b/></button>)}</div>
-      <div className="psConfluenceLock"><small>CURRENT READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong><span>{analysis.verdict.replaceAll("_", " ")}</span></div>
-    </div>
-    <article className="psLayerRead" aria-live="polite"><div><small>SELECTED EVIDENCE · {selected.label}</small><strong>{selected.score}/10</strong></div><p>{selected.status}</p></article>
-    <footer><b>WHY THIS READ?</b><span>Tap each layer to inspect the evidence that supports—or weakens—the current decision. This is analysis, not a forecast or trade instruction.</span></footer>
+  const observations = layer === "levels"
+    ? (verifiedLevels.length ? verifiedLevels.map((item) => `${item.kind.toUpperCase()} · ${item.price}${item.label ? ` · ${item.label}` : ""}`) : ["No exact support, resistance or pivot survived verification.", analysis.levelStory])
+    : layer === "structure" ? [analysis.marketStructure, ...analysis.observableFacts]
+      : layer === "momentum" ? [analysis.momentum, ...analysis.indicators]
+        : [`CHART ${analysis.evidenceQuality.chartReadability}`, `PRICE SCALE ${analysis.evidenceQuality.scaleReadable ? "READABLE" : "NOT VERIFIED"}`, `CANDLES ${analysis.evidenceQuality.candlesReadable ? "READABLE" : "NOT VERIFIED"}`, `TIMEFRAME CONFIDENCE ${analysis.evidenceQuality.timeframeConfidence}`, ...analysis.evidenceQuality.limitations];
+  const counts = [
+    { tone: "verified", label: "VERIFIED", value: analysis.observableFacts.length + verifiedLevels.length },
+    { tone: "uncertain", label: "UNCERTAIN", value: uncertain.length },
+    { tone: "missing", label: "MISSING", value: analysis.missingInputs.length },
+  ];
+  return <section className="psChartXRay" data-layer={layer}>
+    <header><div><span>⌖ BULLSEYE CHART X-RAY</span><small>SEE WHAT THE READ IS ACTUALLY BUILT ON</small></div><strong>LIVE AUDIT</strong></header>
+    <div className="psXRayCanvas"><img src={sourceImage} alt="Customer's uploaded source chart with verified Bullseye X-Ray overlays"/><div className="psXRayShade"/><div className="psXRayScan" aria-hidden="true"/>
+      {layer === "levels" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Verified chart level overlay">{drawableLevels.map((item, index) => <g key={`${item.kind}-${item.label}-${index}`} data-kind={item.kind}><line x1={item.x} y1={item.y} x2={item.x2} y2={item.y2} vectorEffect="non-scaling-stroke"/><circle cx={item.x} cy={item.y} r="1.15" vectorEffect="non-scaling-stroke"/><text x={Math.min(82, Math.max(3, item.x + 2))} y={Math.min(96, Math.max(5, item.y - 2))}>{numericLevel(item.price) !== null ? item.price : item.label}</text></g>)}</svg> : null}
+      <span className="psXRaySource">● VERIFIED SOURCE</span><span className="psXRayLayerTag">{layer.toUpperCase()} LAYER</span></div>
+    <div className="psXRayCounts" aria-label="Evidence status">{counts.map((item) => <article key={item.label} data-tone={item.tone}><strong>{item.value}</strong><span>{item.label}</span></article>)}</div>
+    <nav aria-label="Choose Chart X-Ray layer">{tabs.map((item) => <button key={item.id} type="button" data-active={layer === item.id} aria-pressed={layer === item.id} onClick={() => setLayer(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}</nav>
+    <article className="psXRayRead" aria-live="polite"><small>{layer.toUpperCase()} · EXACT OBSERVATIONS</small><ul>{observations.filter(Boolean).slice(0, 4).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ul></article>
+    <div className="psXRayActions"><label><input id="psXRaySupportInput" type="file" accept="image/jpeg,image/png,image/webp" onChange={onAddChart}/><span>＋ ADD TIMEFRAME PHOTO</span></label><button type="button" disabled={!hasContext || reanalysing} onClick={onReanalyse}>{reanalysing ? "ANALYSING…" : "↻ REANALYSE ALL CHARTS"}</button></div>
+    <footer><b>TRANSPARENT BY DESIGN</b><span>Green is directly observed or numerically verified. Amber is uncertain. Missing means Bullseye refused to guess.</span></footer>
   </section>;
 }
 
@@ -345,7 +356,7 @@ function BullseyePlan({ analysis, onResultCard }: { analysis: Analysis; onResult
   </section>;
 }
 
-type CommandDeckMode = "evidence" | "scenarios" | "plan" | "risk";
+type CommandDeckMode = "xray" | "scenarios" | "plan" | "risk";
 type RiskCurrency = "GBP" | "USD" | "EUR";
 type StoredRiskDesk = RiskDeskInput & { currency: RiskCurrency; version: 1 };
 
@@ -400,10 +411,10 @@ function RiskDesk() {
   </section>;
 }
 
-function PocketCommandDeck({ analysis, sourceImage, onResultCard }: { analysis: Analysis; sourceImage: string; onResultCard: () => void }) {
-  const [mode, setMode] = useState<CommandDeckMode>("evidence");
+function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+  const [mode, setMode] = useState<CommandDeckMode>("xray");
   const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
-    { id: "evidence", number: "01", label: "EVIDENCE", detail: "WHY THIS READ" },
+    { id: "xray", number: "01", label: "CHART X-RAY", detail: "SOURCE AUDIT" },
     { id: "scenarios", number: "02", label: "SCENARIOS", detail: "IF / THEN PATHS" },
     { id: "plan", number: "03", label: "PLAN", detail: "CLARITY LOCK" },
     { id: "risk", number: "04", label: "RISK", detail: "PERSONAL LIMITS" },
@@ -413,7 +424,7 @@ function PocketCommandDeck({ analysis, sourceImage, onResultCard }: { analysis: 
     <header><div><span>◎ POCKET BULLSEYE 2.0</span><strong>SCAN. UNDERSTAND. PLAN. REVIEW.</strong></div><b>COMMAND DECK</b></header>
     <nav aria-label="Pocket Bullseye command deck">{modes.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
     <div className="psCommandStage" data-mode={mode}>
-      {mode === "evidence" ? <ConfluenceStack analysis={analysis} sourceImage={sourceImage} /> : null}
+      {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}
@@ -907,7 +918,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
           <CinematicTranscript analysis={analysis} viewerName={viewerName.trim()} />
-          <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} />
+          <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}

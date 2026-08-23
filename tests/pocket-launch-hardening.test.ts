@@ -101,9 +101,10 @@ test("the personal risk desk calculates from explicit customer inputs only", () 
 });
 
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
-  const [client, styles, feedbackStyles, cinemaStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
+  const [client, styles, commandStyles, feedbackStyles, cinemaStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-2.css", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-feedback.css", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-cinema-pro.css", import.meta.url), "utf8"),
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
@@ -168,10 +169,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /SPECULATIVE ONLY/);
   assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
   assert.match(client, /<ScenarioTheatre analysis=/);
-  assert.match(client, /ConfluenceStack/);
-  assert.match(client, /BULLSEYE CONFLUENCE STACK/);
-  assert.match(client, /FIVE EVIDENCE LAYERS/);
-  assert.match(client, /<ConfluenceStack analysis=/);
+  assert.match(client, /ChartXRay/);
+  assert.match(client, /BULLSEYE CHART X-RAY/);
+  assert.match(client, /VERIFIED/);
+  assert.match(client, /UNCERTAIN/);
+  assert.match(client, /MISSING/);
+  assert.match(client, /<ChartXRay analysis=/);
   assert.match(client, /MarketStory/);
   assert.match(client, /BULLSEYE MARKET STORY/);
   assert.match(client, /CHAPTER 04 · BULL VS BEAR/);
@@ -248,8 +251,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psNextCandleCanvas/);
   assert.match(styles, /\.psDecisionEvents/);
   assert.match(styles, /\.psDecisionMapEmpty/);
-  assert.match(styles, /\.psConfluenceStack/);
-  assert.match(styles, /\.psLayerDeck/);
+  assert.match(commandStyles, /\.psChartXRay/);
+  assert.match(commandStyles, /\.psXRayCanvas/);
   assert.match(styles, /\.psMarketStory/);
   assert.match(styles, /\.psStoryProgress/);
   assert.match(styles, /@keyframes psStoryKenBurns/);
