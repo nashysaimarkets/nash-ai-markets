@@ -17,6 +17,7 @@ import {
   tradingViewSymbol,
 } from "../app/terminal/lib/preferred-platforms.ts";
 import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
+import { readFileSync } from "node:fs";
 
 test("desk widget registry includes distinctive tools", () => {
   for (const id of [
@@ -33,6 +34,30 @@ test("desk widget registry includes distinctive tools", () => {
     assert.equal(isDeskWidgetId(id), true);
   }
   assert.equal(DESK_WIDGET_IDS.length >= 16, true);
+});
+
+test("dashboard desk entry requests ES charts and the desk honours explicit entry context", () => {
+  const dashboard = readFileSync(new URL("../app/dashboard/page.tsx", import.meta.url), "utf8");
+  const commandCentre = readFileSync(new URL("../app/dashboard/components/MarketCommandCentre.tsx", import.meta.url), "utf8");
+  const desk = readFileSync(new URL("../app/terminal/components/TradingDeskOS.tsx", import.meta.url), "utf8");
+
+  assert.match(dashboard, /\/terminal\?market=es&view=charts/);
+  assert.match(commandCentre, /\/terminal\?market=es&view=charts/);
+  assert.match(desk, /new URLSearchParams\(window\.location\.search\)/);
+  assert.match(desk, /requestedMarketId \? \{ \.\.\.restored, activeMarketId: requestedMarketId \} : restored/);
+  assert.match(desk, /setDeskView\(requestedView \?\? storedView\)/);
+});
+
+test("workspace normalises legacy nq favourite to ixic without changing selection semantics", () => {
+  const normalized = normalizeWorkspace({
+    favourites: ["es", "nq", "vix"],
+    activeMarketId: "nq",
+    compareIds: ["nq", "qqq"],
+  });
+  assert.deepEqual(normalized.favourites, ["es", "ixic", "vix"]);
+  assert.equal(normalized.activeMarketId, "ixic");
+  assert.deepEqual(normalized.compareIds, ["ixic", "qqq"]);
+  assert.equal(getMarketInstrument(normalized.activeMarketId)?.symbol, "IXIC");
 });
 
 test("workspace prefs persist preferred platform fields", () => {
@@ -84,13 +109,34 @@ test("edge brief fails closed for awaiting coverage", () => {
 test("catalyst radar keeps earnings and news unavailable honestly", () => {
   const es = getMarketInstrument("es")!;
   const radar = createCatalystRadar({
-    events: [{ time: "Mon 14:00", name: "CPI", risk: "HIGH" }],
+    events: [{
+      time: "Mon 14:00",
+      name: "CPI",
+      risk: "HIGH",
+      at: new Date(Date.now() + 3_600_000).toISOString(),
+    }],
     active: es,
     favourites: [es],
   });
   assert.equal(radar.items.length, 1);
   assert.ok(radar.unavailable.some((item) => item.kind === "earnings"));
   assert.ok(radar.unavailable.some((item) => item.kind === "news"));
+});
+
+test("catalyst radar excludes past events even when display labels remain", () => {
+  const es = getMarketInstrument("es")!;
+  const radar = createCatalystRadar({
+    events: [{
+      time: "Mon 14:00",
+      name: "CPI",
+      risk: "HIGH",
+      at: new Date(Date.now() - 3_600_000).toISOString(),
+    }],
+    active: es,
+    favourites: [es],
+    now: Date.now(),
+  });
+  assert.equal(radar.items.length, 0);
 });
 
 test("preferred platforms launch mapped symbols and refuse unknown classes", () => {
@@ -128,7 +174,8 @@ test("tradingview embed is optional and sandboxed-ready only for tradingview", (
   assert.equal(embed.status, "ready");
   if (embed.status === "ready") {
     assert.match(embed.src, /s\.tradingview\.com\/widgetembed/);
-    assert.match(embed.detail, /Third-party/);
+    assert.match(embed.detail, /Official TradingView public widget/);
+    assert.match(embed.detail, /never enter Bullseye’s verified feed or decision engine/);
   }
   const ibkr = resolvePlatformEmbed("interactive-brokers", qqq);
   assert.equal(ibkr.status, "unavailable");

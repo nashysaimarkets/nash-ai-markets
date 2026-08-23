@@ -1,0 +1,66 @@
+/* Pocket Bullseye — launch polish
+   Lightweight visual layer: no images, no fonts, no network requests. */
+:root{color-scheme:dark}
+.psApp{--pb-depth:0 22px 60px rgba(0,0,0,.34);--pb-depth-sm:0 10px 28px rgba(0,0,0,.24);--pb-glass:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.012) 42%,rgba(0,0,0,.12));isolation:isolate}
+.psApp:before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(900px 500px at 8% -10%,rgba(66,207,131,.08),transparent 60%),radial-gradient(760px 460px at 100% 0,rgba(240,100,110,.08),transparent 58%),linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:auto,auto,32px 32px,32px 32px;mask-image:linear-gradient(to bottom,#000 0,#000 72%,transparent 100%)}
+.psHeader{box-shadow:0 12px 34px rgba(0,0,0,.28);border-bottom-color:rgba(255,255,255,.08);transform:translateZ(0)}
+.psLogoMark{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 8px 24px rgba(66,207,131,.08)}
+.psScanner,.psResults{perspective:1400px}
+.psCopy{padding-top:34px}
+.psCopy h1{font-weight:800;letter-spacing:-.055em;text-wrap:balance}
+.psCopy>span{max-width:390px;font-size:12px;color:#7f8b96}
+.psUpload{min-height:330px;height:clamp(300px,52vh,430px);border:1px solid rgba(255,255,255,.09);border-radius:16px;background:linear-gradient(145deg,#121a22,#0b1016 62%,#0a0d11);box-shadow:var(--pb-depth),inset 0 1px 0 rgba(255,255,255,.055),inset 0 -30px 70px rgba(0,0,0,.18);transform:translateZ(0);transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}
+.psUpload:after{content:"";position:absolute;inset:1px;border-radius:15px;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.08),transparent 22%,transparent 68%,rgba(66,207,131,.045));opacity:.75}
+.psUpload:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.16);box-shadow:0 28px 72px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.07)}
+.psUpload img{opacity:.72;filter:saturate(.88) contrast(1.04)}
+.psTarget{transform:translateZ(28px);box-shadow:0 18px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.12)}
+.psTarget:after{box-shadow:0 0 20px rgba(66,207,131,.28)}
+.psCaptureRow{margin-top:12px}
+.psCaptureRow label{min-height:42px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #526170;background:linear-gradient(145deg,#18212a,#10171e);box-shadow:0 7px 18px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .18s ease,border-color .18s ease}
+.psCaptureRow label:active{transform:translateY(1px) scale(.985)}
+.psPrivacy{border-radius:10px;background:var(--pb-glass);box-shadow:var(--pb-depth-sm),inset 0 1px 0 rgba(255,255,255,.045)}
+.psAnalyse{min-height:54px;border:1px solid rgba(255,255,255,.7);border-radius:10px;background:linear-gradient(145deg,#f7fafc,#dbe3e9);box-shadow:0 12px 30px rgba(0,0,0,.28),inset 0 1px 0 #fff,inset 0 -3px 7px rgba(0,0,0,.08);transition:transform .18s ease,box-shadow .18s ease}
+.psAnalyse:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 18px 38px rgba(0,0,0,.34),inset 0 1px 0 #fff}
+.psAnalyse:not(:disabled):active{transform:translateY(1px) scale(.992)}
+.psEvents,.psLevelDeck,.psResultChart,.psDrawingDesk,.psAutoPreview,.psStudyPicker,.psStudyResults,.psNarrative,.psDecisionGrid,.psEventDeck,.psVault,.psIntent{box-shadow:var(--pb-depth-sm),inset 0 1px 0 rgba(255,255,255,.035);background:var(--pb-glass);transform:translateZ(0)}
+.psResults[data-immersive="true"]{padding-bottom:70px}
+.psResults[data-immersive="true"]>.psImmersiveBar{box-shadow:0 10px 28px rgba(0,0,0,.3)}
+.psVerdict{position:relative;overflow:hidden;box-shadow:var(--pb-depth),inset 0 1px 0 rgba(255,255,255,.055);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(17,23,31,.94) 55%,rgba(7,10,14,.96))}
+.psVerdict:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.075),transparent 20%,transparent 58%,rgba(255,255,255,.018));mix-blend-mode:screen}
+.psVerdictTop{position:relative;z-index:1}
+.psVerdict h2,.psVerdict>span,.psVerdict>b{position:relative;z-index:1}
+.psVerdictTop>div strong{box-shadow:0 5px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.08)}
+.psScorecard{box-shadow:var(--pb-depth-sm),inset 0 1px 0 rgba(255,255,255,.04)}
+.psScorecard article{min-height:72px;align-content:center;background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(17,23,31,.96));transition:transform .18s ease,background .18s ease}
+.psScorecard article:hover{transform:translateY(-2px);background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(17,23,31,.96))}
+.psScorecard i{background:#202a34;box-shadow:inset 0 1px 2px rgba(0,0,0,.35)}
+.psScorecard i b{box-shadow:0 0 12px rgba(66,207,131,.16)}
+.psAuditGrid article,.psReviewGrid article{position:relative;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.035);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(17,23,31,.96))}
+.psAuditGrid article:after,.psReviewGrid article:after{content:"";position:absolute;top:0;right:0;width:70px;height:70px;background:radial-gradient(circle at top right,rgba(255,255,255,.05),transparent 68%);pointer-events:none}
+.psLevelDeck>div{min-height:48px;background:rgba(255,255,255,.008);transition:background .18s ease}
+.psLevelDeck>div:hover{background:rgba(255,255,255,.025)}
+.psToolBar,.psOverlayBar,.psStudyPicker>div{box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+.psToolBar button,.psOverlayBar button,.psStudyPicker button,.psIntent button{transition:background .16s ease,color .16s ease,transform .16s ease}
+.psToolBar button:active,.psOverlayBar button:active,.psStudyPicker button:active,.psIntent button:active{transform:scale(.98)}
+.psResultChart{overflow:hidden}
+.psResultChart>header,.psDrawingDesk>header,.psEvents header,.psLevelDeck header,.psNarrative>header,.psEventDeck>header,.psAutoPreview>header,.psStudyPicker>header,.psStudyResults>header{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.005))}
+.psAnnotatedChart,.psResultChart>div{background:radial-gradient(circle at 50% 50%,rgba(66,207,131,.025),transparent 55%),#05080b}
+.psAnnotatedChart img,.psResultChart>div>img,.psChartFocusCanvas>img{filter:contrast(1.02) saturate(.9)}
+.psAnnotatedChart>i,.psResultChart>div>i,.psChartFocusCanvas>i{opacity:.78;box-shadow:none}
+.psAnnotatedChart>i span,.psResultChart>div>i span,.psChartFocusCanvas>i span{border:1px solid rgba(255,255,255,.08);border-radius:4px;box-shadow:0 5px 14px rgba(0,0,0,.28);backdrop-filter:blur(8px)}
+.psResultActions{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom));z-index:8;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:rgba(9,13,18,.84);box-shadow:0 16px 36px rgba(0,0,0,.38);backdrop-filter:blur(16px)}
+.psResultActions button{min-height:48px;box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 7px 18px rgba(0,0,0,.18);transition:transform .16s ease,filter .16s ease}
+.psResultActions button:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.psChartFocusCanvas{background:radial-gradient(circle at 50% 35%,rgba(66,207,131,.045),transparent 42%),#030609}
+.psChartFocus>footer{box-shadow:0 -12px 30px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.04)}
+.psVault article{background:rgba(255,255,255,.008);transition:background .18s ease}
+.psVault article:hover{background:rgba(255,255,255,.025)}
+.psVault button{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 5px 14px rgba(0,0,0,.18);transition:transform .16s ease,background .16s ease}
+.psVault button:active{transform:scale(.97)}
+.psLegal{opacity:.62}
+/* Trim low-value explanatory chrome without removing safety/decision content. */
+.psCaptureRow span,.psDrawingDesk>p,.psAutoPreview>p,.psStudyPicker>p{font-size:7px;color:#697784}
+@media(max-width:680px){.psScanner,.psResults{width:min(calc(100% - 20px),600px)}.psCopy{padding-top:26px}.psUpload{height:min(54vh,390px);min-height:280px;border-radius:14px}.psResults[data-immersive="true"]{padding-inline:10px}.psResults[data-immersive="true"] .psVerdict{border-radius:11px}.psScorecard article{min-height:68px}.psAuditGrid article,.psReviewGrid article{padding:14px}.psResultActions{margin-inline:-2px}}
+@media(max-width:420px){.psCopy h1{font-size:36px}.psCopy>span{font-size:11px;line-height:1.5}.psUpload{height:48vh}.psVerdict{padding:17px!important}.psVerdictTop h1 em{font-size:60px}.psVerdict h2{font-size:16px}.psScorecard article{padding:10px}.psScorecard span{font-size:6px}.psScorecard strong{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.psUpload,.psAnalyse,.psScorecard article,.psResultActions button,.psVault button{transition:none}.psApp:before{display:none}}
+@media(hover:none){.psUpload:hover,.psScorecard article:hover,.psLevelDeck>div:hover,.psVault article:hover{transform:none;background:inherit}.psAnalyse:not(:disabled):hover,.psResultActions button:hover{transform:none;filter:none}}

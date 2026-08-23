@@ -25,6 +25,21 @@ tools/youtube-upload/client_secret*.json
 tools/youtube-upload/.tmp/
 next-env.d.ts
 
+# Playwright / Project Bullseye audit artifacts (never commit secrets or storage state)
+audit-output/
+audit-output/**
+audit-output-run-*.log
+project-bullseye-audit.zip
+playwright-report/
+test-results/
+blob-report/
+.auth/
+**/storage-state.json
+playwright/.auth/
+visual-review/
+audit/.env
+audit/.env.local
+
 # iCloud conflict / placeholder stubs
 *.icloud
 **/* 2.*

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { BrandLogo } from "./components/BrandLogo.tsx";
 import { ConversionMetrics } from "./components/ConversionMetrics.tsx";
@@ -60,7 +61,7 @@ const feedbackThemes = [
   },
   {
     quote: "Show me what is verified, what conflicts and what would change the plan.",
-    role: "Process-led options trader",
+    role: "Process-led S&P 500 trader",
   },
 ] as const;
 
@@ -75,16 +76,16 @@ const eliteReasons = [
 
 const trustBadges = [
   ["Secure Payments", "Stripe-hosted checkout"],
-  ["Live Data Labels", "Freshness stays visible"],
+  ["Data Status Labels", "Freshness stays visible"],
   ["Professional Analysis", "Evidence-led scenarios"],
 ] as const;
 
 const included = [
-  "Provider-backed futures and cross-market status",
-  "Treasury yields, volatility and US dollar context",
-  "Deterministic market-intelligence scores",
-  "Bullish, neutral and bearish scenarios",
-  "Decision permission and conflict warnings",
+  "Official macro, funding-rate and event context",
+  "Personal R3–Pivot–S3 level planner",
+  "Verified market status when licensed data is available",
+  "Conditional scenarios when evidence verifies",
+  "Fail-closed decision permission and conflict warnings",
   "Clear data-quality and risk status",
 ];
 
@@ -93,30 +94,31 @@ const plans = [
     name: "Free",
     price: "0",
     copy: "Explore the planning workflow and build a more structured market routine.",
-    features: ["Weekly market outlook", "Selected key levels", "Market education updates"],
+    features: ["Official macro and event context", "Personal level planner", "Preparation checklist and mission card"],
     action: "Start free",
     href: "/login",
   },
   {
     name: "Pro",
-    price: "14.99",
+    price: "12",
+    standardPrice: "14.99",
     copy: "The complete pre-market planning workspace for active traders.",
     features: included,
-    action: "Start Pro Membership",
-    href: "/pricing",
+    action: "Reserve Founding Pro",
+    href: "/waitlist?plan=founding-pro",
     featured: true,
   },
   {
     name: "Elite",
     price: "29.99",
-    copy: "Deeper options-focused context for a more advanced preparation process.",
+    copy: "Deeper S&P 500 decision context for a more advanced preparation process.",
     features: [
       "Everything included in Pro",
-      "Daily options setup",
-      "Expanded volatility context",
+      "Advanced preparation and review workspace",
+      "Licensed volatility context when available",
       "Priority product access",
     ],
-    action: "Unlock Elite",
+    action: "Compare Elite",
     href: "/pricing",
   },
 ];
@@ -126,8 +128,6 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const foundingAvailability = await loadFounding100Availability();
   const proFounding = founding100AvailabilityLabel(foundingAvailability.proRemaining);
-  const eliteFounding = founding100AvailabilityLabel(foundingAvailability.eliteRemaining);
-  const foundingByPlan = { Pro: proFounding, Elite: eliteFounding };
   const portalUrl =
     process.env.STRIPE_CUSTOMER_PORTAL_LINK ||
     "mailto:hello@nashaimarkets.com?subject=Manage%20my%20NASH%20AI%20subscription";
@@ -161,10 +161,10 @@ export default async function Home() {
           <a href="#platform">Platform</a>
           <a href="#workflow">Method</a>
           <a href="#membership">Membership</a>
-          <a href="/terminal">Terminal</a>
+          <Link href="/terminal">Terminal</Link>
         </nav>
         <div className="mcNavActions">
-          <a href="/login">Sign in</a>
+          <Link href="/login">Sign in</Link>
           <a className="mcButton mcButtonSmall" href="#membership">Get access <span>↗</span></a>
         </div>
       </header>
@@ -177,7 +177,7 @@ export default async function Home() {
               <p className="mcEyebrow"><span /> Professional pre-market intelligence</p>
               <h1>Prepare Smarter.<br /><em>Trade Better.</em></h1>
               <p className="mcLead">
-                Professional S&amp;P 500 futures and options intelligence—organised
+                Professional S&amp;P 500 futures intelligence—organised
                 into one calm daily plan before the US session.
               </p>
               <p className="mcValueLine">
@@ -185,8 +185,8 @@ export default async function Home() {
                 Key levels and event risk · Clear uncertainty and risk warnings
               </p>
               <div className="mcHeroActions">
-                <a className="mcButton" href="#membership">Start Your Membership <span>↗</span></a>
-                <a className="mcTextLink" href="/terminal">View the platform <span>↗</span></a>
+                <a className="mcButton" href="#membership">Explore Memberships <span>↗</span></a>
+                <a className="mcTextLink" href="/login">View membership access <span>↗</span></a>
               </div>
               <ul className="mcTrust" aria-label="Platform principles">
                 <li><i /> Evidence before opinion</li>
@@ -231,7 +231,7 @@ export default async function Home() {
                 </div>
                 <div className="mcMissionLocked">
                   <div aria-hidden="true"><span /><span /><span /></div>
-                  <p><strong>Member intelligence continues</strong>Unlock the full plan, invalidation framework and risk checklist.</p>
+                  <p><strong>Member planning continues</strong>Explore the invalidation framework, preparation tools and risk checklist.</p>
                   <a href="#membership">Start membership <span>↗</span></a>
                 </div>
                 <footer>Illustrative example · Not live market data · Not a recommendation <span>NO LIVE VALUE</span></footer>
@@ -292,7 +292,7 @@ export default async function Home() {
               <p className="mcEyebrow">The Bullseye method</p>
               <h2>A repeatable process<br />for an <em>unpredictable market.</em></h2>
               <p>Each stage is designed to slow down weak assumptions and make the evidence behind a decision easier to review.</p>
-              <a className="mcTextLink" href="/terminal">Open terminal preview <span>↗</span></a>
+              <a className="mcTextLink" href="/login">Open secure member access <span>↗</span></a>
             </div>
             <ol className="mcWorkflowSteps">
               {workflow.map(([title, copy], index) => (
@@ -308,7 +308,7 @@ export default async function Home() {
 
         <section className="mcEliteReasons" aria-labelledby="elite-reasons-title">
           <header><div><p className="mcEyebrow">Why traders choose Elite</p><h2 id="elite-reasons-title">More depth where<br /><em>discipline matters.</em></h2></div><p>Elite extends the daily dashboard into a complete evidence, planning and diagnostic workflow. It does not promise outcomes or remove market risk.</p></header>
-          <div>{eliteReasons.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p><a href="/pricing" aria-label={`Compare Elite membership for ${title}`}>Explore Elite <b aria-hidden="true">→</b></a></article>)}</div>
+          <div>{eliteReasons.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p><Link href="/pricing" aria-label={`Compare Elite membership for ${title}`}>Explore Elite <b aria-hidden="true">→</b></Link></article>)}</div>
         </section>
 
         <ConversionMetrics />
@@ -330,39 +330,47 @@ export default async function Home() {
           <div className="mcMembershipInner">
             <header className="mcSectionHead">
               <div><p className="mcEyebrow">Membership</p><h2>Choose the workspace<br />for <em>your routine.</em></h2></div>
-              <p>Start free or unlock the full daily intelligence workflow. Upgrade, downgrade or cancel through secure Stripe billing.</p>
+              <p>Start free with official macro context and personal planning tools. Paid tiers add deeper workflows; verified intraday intelligence activates only when licensed data is available.</p>
             </header>
             <div className="mcPlanGrid">
               {plans.map((plan) => {
-                const founding = foundingByPlan[plan.name as keyof typeof foundingByPlan];
-                const foundingLabel =
-                  plan.name === "Pro"
-                    ? proFounding.label
-                    : plan.name === "Elite"
-                      ? eliteFounding.label
-                      : null;
+                const founding = plan.name === "Pro" ? proFounding : null;
+                const foundingProAvailable = plan.name === "Pro" && founding && !founding.full;
                 return (
                   <article key={plan.name} className={plan.featured ? "mcPlanFeatured" : undefined}>
                     <header><span>{plan.name}</span>{plan.featured && <b>Most popular</b>}</header>
                     {founding && (
                       <div className={`mcFounding${founding.full ? " mcFoundingFull" : ""}`} aria-live="polite">
                         <strong>FOUNDING 100 {plan.name.toUpperCase()}</strong>
-                            <span>{foundingLabel}</span>
-                        <small>{founding.detail}</small>
+                        <span>{proFounding.label}</span>
+                        <small>{foundingProAvailable ? "£12/month launch price · checkout opens after final verification." : founding.detail}</small>
                       </div>
                     )}
-                    <div className="mcPrice"><sup>£</sup><strong>{plan.price}</strong><span>/ month</span></div>
+                    <div className="mcPrice"><sup>£</sup><strong>{foundingProAvailable ? plan.price : ("standardPrice" in plan ? plan.standardPrice : plan.price)}</strong><span>/ month</span></div>
+                    {foundingProAvailable && <p className="mcLaunchPriceNote">FOUNDING LAUNCH PRICE · STANDARD £14.99 AFTER 100 PLACES</p>}
                     <p>{plan.copy}</p>
                     <ul>{plan.features.map((feature) => <li key={feature}><i />{feature}</li>)}</ul>
-                    <a className={plan.featured ? "mcButton" : "mcPlanButton"} href={plan.href}>{plan.action}<span>↗</span></a>
+                    <a
+                      className={plan.featured ? "mcButton" : "mcPlanButton"}
+                      href={
+                        plan.name === "Pro" && founding && founding.full
+                          ? "/pricing"
+                          : plan.href
+                      }
+                    >
+                      {plan.name === "Pro" && founding && founding.full
+                        ? "Start Pro"
+                        : plan.action}
+                      <span>↗</span>
+                    </a>
                   </article>
                 );
               })}
             </div>
-            <p className="mcPlanSafety">EDUCATIONAL MARKET COMMENTARY ONLY · NO GUARANTEED OUTCOMES · CANCEL ANYTIME</p>
+            <p className="mcPlanSafety">LICENSED INTRADAY INTELLIGENCE IS CONDITIONAL · NO GUARANTEED OUTCOMES · MANAGE BILLING THROUGH STRIPE</p>
             <aside className="mcFoundingTerms" aria-label="Founding 100 terms">
               <strong>Founding 100 price protection</strong>
-              <p>Limited to the first 100 continuously active subscribers in each paid tier. The checkout price remains locked for life while that same membership remains continuously active. If it is cancelled or lapses, the price lock is permanently lost, that price protection ends and any future subscription uses the standard price available at that time.</p>
+              <p>The £12 Founding Pro launch price is limited to the first 100 verified successful subscribers once checkout opens. Joining the waiting list is not a purchase and does not guarantee a place. The successful checkout price remains locked while that same membership stays continuously active. If it is cancelled or lapses, the price lock is permanently lost and any future subscription uses the standard price then available.</p>
             </aside>
           </div>
         </section>
@@ -375,24 +383,22 @@ export default async function Home() {
 
         <section className="mcVoices" aria-labelledby="feedback-title">
           <header>
-            <p className="mcEyebrow">Member stories</p>
-            <h2 id="feedback-title">Trust earned before testimonials are published.</h2>
-            <p>These premium story slots remain placeholders until feedback, attribution and publication permission are verified. No endorsement has been invented.</p>
+            <p className="mcEyebrow">Trader research</p>
+            <h2 id="feedback-title">Built around the decisions active traders repeatedly face.</h2>
+            <p>These priorities describe the workflow Bullseye is designed to support. They are product-research themes, not customer testimonials or performance claims.</p>
           </header>
           <div>
             {feedbackThemes.map((item) => (
-              <figure key={item.role} className="mcTestimonialPlaceholder">
-                <div className="mcPlaceholderIdentity" aria-hidden="true"><i /><span><b /><b /></span></div>
-                <blockquote aria-label="Verified testimonial placeholder">“Verified member story reserved.”</blockquote>
-                <p>{item.quote}</p>
-                <figcaption>{item.role}<span>Research theme · not an endorsement</span></figcaption>
+              <figure key={item.role}>
+                <blockquote>“{item.quote}”</blockquote>
+                <figcaption>{item.role}<span>Product-research theme · not an endorsement</span></figcaption>
               </figure>
             ))}
           </div>
         </section>
 
         <section className="mcFaq" id="faq">
-          <div><p className="mcEyebrow">Clear answers</p><h2>Before you begin.</h2><p>Futures and options are complex, high-risk products. Understanding the limits of any analysis is part of a sound process.</p></div>
+          <div><p className="mcEyebrow">Clear answers</p><h2>Before you begin.</h2><p>Futures are complex, high-risk products. Understanding the limits of any analysis is part of a sound process.</p></div>
           <div>
             <details><summary>Is this financial advice?<span>+</span></summary><p>No. NASH AI Markets provides general educational commentary and market analysis. It does not consider your personal circumstances or tell you what to buy or sell.</p></details>
             <details><summary>Does NASH AI predict profitable trades?<span>+</span></summary><p>No. No credible service can guarantee trading outcomes. The platform helps you prepare for multiple possibilities and makes uncertainty explicit. Losses are always possible.</p></details>
@@ -407,17 +413,17 @@ export default async function Home() {
         </section>
       </div>
 
-      <aside className="mcStickyCta" aria-label="Membership call to action"><div><strong>Build a calmer pre-market routine</strong><span>Free, Pro and Elite access available</span></div><a href="#membership">Compare plans <span aria-hidden="true">→</span></a></aside>
+      <aside className="mcStickyCta" aria-label="Membership call to action"><div><strong>Build a calmer pre-market routine</strong><span>Free access available · Founding Pro reservations open</span></div><a href="#membership">Compare plans <span aria-hidden="true">→</span></a></aside>
 
       <footer className="mcFooter">
         <div className="mcFooterTop">
           <a href="#top" className="mcBrand" aria-label="Back to top"><span className="mcBrandMark" aria-hidden="true"><i /></span><span>NASH <b>AI</b> MARKETS</span></a>
           <p>Structured market preparation for traders who value evidence, scenarios and risk awareness.</p>
-          <div><a href="/terminal">Terminal</a><a href="/pricing">Pricing</a><a href="/waitlist">Launch waiting list</a><a href="/about">About</a><a href="/help">Help</a><a href="/contact">Contact</a></div>
-          <div><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/risk-disclaimer">Risk disclaimer</a><a href={portalUrl}>Manage subscription</a></div>
+          <div><Link href="/terminal">Terminal</Link><Link href="/pricing">Pricing</Link><Link href="/waitlist">Launch waiting list</Link><Link href="/about">About</Link><Link href="/help">Help</Link><Link href="/contact">Contact</Link></div>
+          <div><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/risk-disclaimer">Risk disclaimer</Link><a href={portalUrl}>Manage subscription</a></div>
         </div>
         <div className="mcFooterBottom">
-          <p>Trading futures and options involves substantial risk and is not suitable for everyone. Educational market commentary only. No guaranteed outcomes.</p>
+          <p>Trading futures involves substantial risk and is not suitable for everyone. Educational market commentary only. No guaranteed outcomes.</p>
           <span>© 2026 NASH AI Markets</span>
         </div>
       </footer>

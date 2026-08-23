@@ -1,7 +1,9 @@
+import Link from "next/link";
 import type { MarketQuote } from "../../lib/market-data.ts";
 import { formatScoreDisplay, formatConfidenceLabel, scoreIsDisplayable } from "../lib/score-display.ts";
 import { Sparkline } from "../../components/mini-visuals/Sparkline.tsx";
 import { EvidenceMeter } from "../../components/mini-visuals/EvidenceMeter.tsx";
+import { verifiedEventRiskLabel } from "../../terminal/lib/event-display.ts";
 
 type QuoteStrip = {
   label: string;
@@ -40,9 +42,9 @@ export function DashboardMarketStatus(props: Props) {
         <p>Good session, {props.name}. One data-health strip and one posture — not repeated safety cards.</p>
       </div>
       <div className="dashQuickLinks">
-        <a href={props.terminalHref}>Open terminal</a>
-        <a href={props.briefHref}>Market brief</a>
-        <a href="/profile">Account</a>
+        <Link href={props.terminalHref}>Open terminal</Link>
+        <Link href={props.briefHref}>Market brief</Link>
+        <Link href="/profile">Account</Link>
       </div>
     </header>
 
@@ -70,7 +72,7 @@ export function DashboardMarketStatus(props: Props) {
         </div>
         <div><dt>Risk rating</dt><dd>{props.riskRating ?? "Not rated"}<small>{props.riskRating ? "Derived from verified inputs" : "Withheld without sufficient verified evidence"}</small></dd></div>
         <div><dt>Session</dt><dd>{props.sessionLabel}<small>{props.sessionDetail}</small></dd></div>
-        <div><dt>Next event</dt><dd>{props.nextEvent ? props.nextEvent.name : "No verified schedule"}<small>{props.nextEvent ? `${props.nextEvent.when} · ${props.nextEvent.risk} impact` : "Events appear only from the provider calendar"}</small></dd></div>
+        <div><dt>Next event</dt><dd>{props.nextEvent ? props.nextEvent.name : "No verified schedule"}<small>{props.nextEvent ? `${props.nextEvent.when} · ${verifiedEventRiskLabel(props.nextEvent.risk)}` : "Events appear only from the provider calendar"}</small></dd></div>
       </dl>
     </article>
 

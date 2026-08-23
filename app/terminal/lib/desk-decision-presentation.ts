@@ -47,10 +47,10 @@ export function leanLabelFromSignals(
 export function permissionPresentation(
   decision: TradingDecision | null,
 ): { label: string; tone: DeskDecisionPresentation["permissionTone"] } {
-  if (!decision) return { label: "Restricted", tone: "blocked" };
+  if (!decision) return { label: "WAIT FOR CONFIRMATION", tone: "blocked" };
   if (decision.tradePermission === "actionable") return { label: "Permitted with caution", tone: "open" };
-  if (decision.tradePermission === "caution") return { label: "Caution", tone: "caution" };
-  return { label: "Restricted", tone: "blocked" };
+  if (decision.tradePermission === "caution") return { label: "Proceed with caution", tone: "caution" };
+  return { label: "WAIT FOR CONFIRMATION", tone: "blocked" };
 }
 
 function softenRiskPhrase(value: string | null): string | null {
@@ -89,17 +89,16 @@ export function buildDeskDecisionPresentation(input: {
   const rawPrimary = warnings[0]
     ?? (plan?.reasonsToRemainSidelined[0] ? humanize(plan.reasonsToRemainSidelined[0]) : null)
     ?? (decision?.noTradeReasons[0] ? humanize(decision.noTradeReasons[0]) : null);
-  const primaryRisk = softenRiskPhrase(rawPrimary);
 
   const analysisAvailable = Boolean(decision) || supporting.length > 0 || opposing.length > 0 || lean.label !== "Unavailable";
 
   let why: string;
   if (!decision) {
-    why = "Verified market observations may still appear below. Trade participation remains restricted because confirmation data is incomplete.";
+    why = "Verified market observations may still appear below. Wait for confirmation — required evidence is incomplete.";
   } else if (permission.tone === "blocked" && lean.tone !== "neutral") {
-    why = `${lean.label} is an observed lean from verified inputs — not a validated trade setup. Trade participation remains restricted because confirmation data is incomplete.`;
+    why = `Observed lean: ${lean.label}. Participation: wait for confirmation. Directional inputs lean this way, but required confirmation evidence is incomplete.`;
   } else if (permission.tone === "blocked") {
-    why = "This is a limited-confidence environment. Trade participation remains restricted because confirmation data is incomplete.";
+    why = "This is a limited-confidence environment. Wait for confirmation before treating any lean as a setup.";
   } else if (permission.tone === "caution") {
     why = `Directional lean is ${lean.label.toLowerCase()}, with caution required before participation.`;
   } else if (permission.tone === "open") {
@@ -110,17 +109,19 @@ export function buildDeskDecisionPresentation(input: {
 
   let confidenceLabel: string;
   let confidenceDetail: string | null = null;
-  if (score == null) {
-    confidenceLabel = "Not rated";
-  } else if (score === 0) {
-    confidenceLabel = "Not established";
-    confidenceDetail = `Engine confidence score: ${score} / 100`;
-  } else if (permission.tone === "blocked") {
-    confidenceLabel = "Limited";
-    confidenceDetail = `Engine confidence score: ${score} / 100`;
+  if (score == null || score === 0 || permission.tone === "blocked") {
+    confidenceLabel = "NOT ESTABLISHED";
+    confidenceDetail =
+      "Confirmation evidence is incomplete. Bullseye remains non-actionable until evidence improves.";
   } else {
     confidenceLabel = `${score} / 100`;
+    confidenceDetail = null;
   }
+
+  const primaryRisk =
+    permission.tone === "blocked"
+      ? "Confirmation evidence is incomplete"
+      : softenRiskPhrase(rawPrimary);
 
   return {
     leanLabel: lean.label,
@@ -136,6 +137,59 @@ export function buildDeskDecisionPresentation(input: {
     opposing,
     primaryRisk,
     analysisAvailable,
+  };
+}
+
+export type TodaysPosture = {
+  eyebrow: "TODAY'S POSTURE";
+  headline: string;
+  summary: string;
+};
+
+/**
+ * Concise shared posture line for Dashboard, Morning Brief and Trading Desk.
+ * Presentation only — derived from existing decision presentation fields.
+ */
+export function buildTodaysPosture(decision: DeskDecisionPresentation): TodaysPosture {
+  const lean = decision.leanLabel.toLowerCase();
+  const condition = decision.primaryRisk
+    ? decision.primaryRisk.replace(/\.$/, "")
+    : "confirmation remains incomplete";
+
+  if (decision.permissionTone === "blocked") {
+    if (decision.leanTone === "bull" || decision.leanTone === "bear") {
+      return {
+        eyebrow: "TODAY'S POSTURE",
+        headline: "Stay patient",
+        summary: `The observed lean is ${lean}, but confirmation remains incomplete — wait for confirmation before participation.`,
+      };
+    }
+    if (decision.leanTone === "mixed") {
+      return {
+        eyebrow: "TODAY'S POSTURE",
+        headline: "Stay patient",
+        summary: "Evidence is mixed. Wait for confirmation until the setup is clearer.",
+      };
+    }
+    return {
+      eyebrow: "TODAY'S POSTURE",
+      headline: "Stay patient",
+      summary: `Wait for confirmation. Primary condition: ${condition}.`,
+    };
+  }
+
+  if (decision.permissionTone === "caution") {
+    return {
+      eyebrow: "TODAY'S POSTURE",
+      headline: "Proceed with caution",
+      summary: `Observed lean is ${lean}. Treat this as an observation, not a validated setup.`,
+    };
+  }
+
+  return {
+    eyebrow: "TODAY'S POSTURE",
+    headline: "Selective engagement only",
+    summary: `Observed lean is ${lean}. Participation checks allow selective engagement subject to your own rules — not personalised advice.`,
   };
 }
 

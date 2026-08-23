@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "../../../utils/supabase/server.ts";
+import { rejectCrossOriginCoded } from "../../lib/server/same-origin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const requestOrigin = new URL(request.url).origin;
-  const suppliedOrigin = request.headers.get("origin");
-  if (suppliedOrigin !== requestOrigin) {
-    return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403 });
-  }
+  const blocked = rejectCrossOriginCoded(request);
+  if (blocked) return blocked;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -31,7 +31,7 @@ type Props = {
 const ACTIONS = [
   { href: "/terminal", title: "Open Terminal", description: "Candles, paths and confirmations", icon: "◎" },
   { href: "/brief", title: "Read Market Brief", description: "Plain-English decision summary", icon: "☰" },
-  { href: "/review", title: "Review Previous Session", description: "Compare what changed overnight", icon: "↺" },
+  { href: "/reviews", title: "Review Previous Sessions", description: "Open the published review library", icon: "↺" },
   { href: "/journal", title: "Trade Journal", description: "Capture disciplined notes", icon: "✎" },
   { href: "/archive", title: "Archive", description: "Immutable daily snapshots", icon: "▣" },
 ] as const;
@@ -109,6 +109,9 @@ export function MissionControl({
       ) : null}
 
       <section className="mcHero" aria-labelledby="mission-control-title">
+        {/* Decorative local SVG sized entirely by CSS; next/image would add no
+            optimisation for SVG and would fight the watermark layout. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="mcHeroWatermark" src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
         <div className="mcHeroCopy">
           <span>Mission Control</span>

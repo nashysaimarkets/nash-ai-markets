@@ -1,7 +1,7 @@
 import type { VerifiedCandleSeries } from "./financial-modeling-prep-candles.ts";
 
 /** Instruments that can request verified OHLCV candles (never invents series). */
-export const CANDLE_INSTRUMENTS = ["ES", "VIX", "DXY", "OIL", "QQQ", "NQ"] as const;
+export const CANDLE_INSTRUMENTS = ["ES", "VIX", "DXY", "OIL", "QQQ", "IXIC"] as const;
 export type CandleInstrument = (typeof CANDLE_INSTRUMENTS)[number];
 
 export function isCandleInstrument(value: string | null | undefined): value is CandleInstrument {
@@ -55,14 +55,15 @@ export function resolveCandleInstrumentMeta(instrument: CandleInstrument): Instr
         exchange: "Verified delayed ETF series",
         instrumentDetail: "QQQ delayed chart from the verified market-data feed. Delayed quotes only — never treated as live.",
       };
-    case "NQ":
+    case "IXIC":
       return {
         envSymbol: process.env.FMP_NASDAQ_SYMBOL?.trim(),
         fallbackSymbol: "^IXIC",
-        contract: "NASDAQ Composite",
+        contract: "Nasdaq Composite",
         instrumentName: "Nasdaq Composite",
         exchange: "Verified delayed index series",
-        instrumentDetail: "Nasdaq Composite delayed chart from the verified market-data feed. Delayed quotes only — never treated as live Nasdaq futures.",
+        instrumentDetail:
+          "Nasdaq Composite (^IXIC) delayed chart from the verified market-data feed. Delayed quotes only — never treated as live Nasdaq-100 futures (NQ).",
       };
     case "ES":
     default:
@@ -109,8 +110,8 @@ export function candleInstrumentLabel(instrument: CandleInstrument): string {
       return "Oil (USO)";
     case "QQQ":
       return "QQQ";
-    case "NQ":
-      return "Nasdaq";
+    case "IXIC":
+      return "Nasdaq Composite";
     case "ES":
     default:
       return "ES futures";

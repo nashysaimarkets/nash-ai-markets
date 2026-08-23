@@ -1,0 +1,175 @@
+/* Pocket Bullseye v5 — section identity, readability and restrained motion.
+   Presentation only: no analysis, market-data, auth or trading-logic changes. */
+
+.psApp{
+  --pb-panel-icon:#9dffce;
+  --pb-focus-ring:#7affb6;
+}
+
+/* Give each decision block a recognisable visual cue without adding image requests. */
+.psApp .psAuditGrid article>span,
+.psApp .psNarrative header>span,
+.psApp .psCases article>span,
+.psApp .psDecisionGrid article>span,
+.psApp .psIntel article>span,
+.psApp .psEventDeck header>span,
+.psApp .psLevelDeck header>span,
+.psApp .psResultChart header>span,
+.psApp .psEvents header>span,
+.psApp .psVault header>span{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.psApp .psAuditGrid article>span::before,
+.psApp .psNarrative header>span::before,
+.psApp .psCases article>span::before,
+.psApp .psDecisionGrid article>span::before,
+.psApp .psIntel article>span::before,
+.psApp .psEventDeck header>span::before,
+.psApp .psLevelDeck header>span::before,
+.psApp .psResultChart header>span::before,
+.psApp .psEvents header>span::before,
+.psApp .psVault header>span::before{
+  display:inline-grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  border:1px solid #ffffff16;
+  border-radius:7px;
+  background:#ffffff08;
+  color:var(--pb-panel-icon);
+  font:900 12px/1 var(--font-geist-mono),monospace;
+  box-shadow:inset 0 0 12px #38f28e08;
+}
+
+.psApp .psAuditGrid article[data-audit="missing"]>span::before{content:"?"}
+.psApp .psAuditGrid article[data-audit="improve"]>span::before{content:"↑"}
+.psApp .psAuditGrid article[data-audit="kill"]>span::before{content:"×";color:#ff9e9e}
+.psApp .psAuditGrid article[data-audit="trap"]>span::before{content:"!";color:#ffd67a}
+.psApp .psNarrative header>span::before{content:"↳"}
+.psApp .psCases article[data-tone="bull"]>span::before{content:"▲";color:#61f5a2}
+.psApp .psCases article[data-tone="bear"]>span::before{content:"▼";color:#ff8f8f}
+.psApp .psDecisionGrid article:first-child>span::before{content:"Ⅱ";color:#ffd67a}
+.psApp .psDecisionGrid article:last-child>span::before{content:"✓"}
+.psApp .psIntel article:first-child>span::before{content:"∿"}
+.psApp .psIntel article[data-risk]>span::before{content:"!";color:#ffb47a}
+.psApp .psEventDeck header>span::before,.psApp .psEvents header>span::before{content:"◷"}
+.psApp .psLevelDeck header>span::before{content:"≡"}
+.psApp .psResultChart header>span::before{content:"◎"}
+.psApp .psVault header>span::before{content:"◇"}
+
+/* Stronger reading rhythm on long analysis results. */
+.psApp .psResults section{
+  scroll-margin-top:72px;
+}
+.psApp .psAuditGrid article,
+.psApp .psNarrative,
+.psApp .psCases article,
+.psApp .psDecisionGrid article,
+.psApp .psIntel article,
+.psApp .psEventDeck{
+  border-top-color:#ffffff18;
+}
+.psApp .psAuditGrid li,
+.psApp .psDecisionGrid li,
+.psApp .psIntel li{
+  padding-block:3px;
+}
+.psApp .psCases p,
+.psApp .psNarrative p,
+.psApp .psDecisionGrid p,
+.psApp .psIntel p{
+  max-width:72ch;
+}
+
+/* Accessible, unmistakable keyboard and touch focus. */
+.psApp button:focus-visible,
+.psApp label:has(input:focus-visible){
+  outline:3px solid var(--pb-focus-ring);
+  outline-offset:3px;
+}
+.psApp button:not(:disabled){
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:#38f28e2b;
+}
+.psApp button:active:not(:disabled){
+  transform:translateY(1px) scale(.995);
+}
+
+/* A quiet branded shimmer and analysis arrival sequence. */
+@media(prefers-reduced-motion:no-preference){
+  .psApp .psLogo strong{
+    color:transparent;
+    background:linear-gradient(100deg,#edf7f1 15%,#edf7f1 38%,#75f5ae 48%,#fff 52%,#edf7f1 62%,#edf7f1 85%);
+    background-size:240% 100%;
+    background-clip:text;
+    -webkit-background-clip:text;
+    animation:pb-wordmark-shimmer 8s ease-in-out infinite;
+  }
+  .psApp .psResults[data-immersive="true"] .psAuditGrid article,
+  .psApp .psResults[data-immersive="true"] .psNarrative,
+  .psApp .psResults[data-immersive="true"] .psCases article,
+  .psApp .psResults[data-immersive="true"] .psDecisionGrid article,
+  .psApp .psResults[data-immersive="true"] .psIntel article{
+    animation:pb-section-enter .42s ease both;
+  }
+  .psApp .psResults[data-immersive="true"] .psAuditGrid article:nth-child(2),
+  .psApp .psResults[data-immersive="true"] .psCases article:nth-child(2),
+  .psApp .psResults[data-immersive="true"] .psDecisionGrid article:nth-child(2),
+  .psApp .psResults[data-immersive="true"] .psIntel article:nth-child(2){animation-delay:.05s}
+  .psApp .psScorecard article i b{
+    transform-origin:left center;
+    animation:pb-meter-fill .7s cubic-bezier(.2,.8,.2,1) both;
+  }
+}
+
+/* Mobile density: bigger meanings, fewer tiny labels. */
+@media(max-width:640px){
+  .psApp .psAuditGrid article>span,
+  .psApp .psNarrative header>span,
+  .psApp .psCases article>span,
+  .psApp .psDecisionGrid article>span,
+  .psApp .psIntel article>span,
+  .psApp .psEventDeck header>span,
+  .psApp .psLevelDeck header>span,
+  .psApp .psResultChart header>span,
+  .psApp .psEvents header>span,
+  .psApp .psVault header>span{
+    font-size:11px;
+    line-height:1.25;
+    letter-spacing:.08em;
+  }
+  .psApp .psAuditGrid article,
+  .psApp .psNarrative,
+  .psApp .psCases article,
+  .psApp .psDecisionGrid article,
+  .psApp .psIntel article,
+  .psApp .psEventDeck{
+    padding:17px 15px;
+  }
+  .psApp .psConfidence strong{font-size:14px}
+  .psApp .psImmersiveBar{backdrop-filter:blur(14px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .psApp .psLogo strong{
+    color:inherit;
+    background:none;
+  }
+}
+
+@keyframes pb-wordmark-shimmer{
+  0%,72%,100%{background-position:100% 0}
+  86%{background-position:0 0}
+}
+@keyframes pb-section-enter{
+  from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:none}
+}
+@keyframes pb-meter-fill{
+  from{transform:scaleX(0)}
+  to{transform:scaleX(1)}
+}

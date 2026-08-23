@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 export function JournalForm() {
-  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [tone, setTone] = useState<"success" | "error" | null>(null);
@@ -16,6 +14,8 @@ export function JournalForm() {
     setTone(null);
     const form = event.currentTarget;
     const data = new FormData(form);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
     const body = {
       tradedAt: String(data.get("tradedAt") ?? ""),
       instrumentClass: String(data.get("instrumentClass") ?? ""),
@@ -37,8 +37,9 @@ export function JournalForm() {
     try {
       const response = await fetch("/api/journal", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", accept: "application/json" },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
       const payload = await response.json().catch(() => ({})) as { message?: string };
       if (!response.ok) {
@@ -49,16 +50,17 @@ export function JournalForm() {
       setTone("success");
       setMessage("Journal entry saved.");
       form.reset();
-      router.refresh();
+      window.location.replace("/journal?entry=saved");
     } catch {
       setTone("error");
       setMessage("Your journal entry could not be saved. Please try again.");
     } finally {
+      window.clearTimeout(timeout);
       setSaving(false);
     }
   }
 
-  return <form className="journalForm" onSubmit={submit}>
+  return <form className="journalForm" action="/api/journal" method="post" onSubmit={submit}>
     <header>
       <span>NEW ENTRY</span>
       <h2>Log a trade</h2>

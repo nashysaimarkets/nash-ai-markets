@@ -1,0 +1,52 @@
+/* Pocket Bullseye final UX tuning — staging only. */
+
+/* Keep uploaded charts crisp and fully readable on mobile. */
+.psApp .psUpload img,
+.psApp .psAnnotatedChart img,
+.psApp .psResultChart > div > img,
+.psApp .psChartFocusCanvas > img {
+  opacity: 1;
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* The upload card is a loaded state, not an automatic analysis result. */
+.psApp .psAutoPreview {
+  display: none !important;
+}
+
+.psApp .psUpload[data-loaded="true"]::after {
+  content: "🎯  CHART LOADED  ·  READY TO ANALYSE";
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  z-index: 4;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 9px 12px;
+  border: 1px solid #38f28e55;
+  border-radius: 6px;
+  background: #050304ed;
+  color: #b7ff2a;
+  font: 800 10px/1.2 var(--font-geist-mono), monospace;
+  letter-spacing: .08em;
+  text-align: center;
+  box-shadow: 0 8px 24px #0008;
+}
+
+.psApp .psUpload[data-loaded="true"] > small {
+  opacity: .9;
+}
+
+@media (max-width: 640px) {
+  .psApp .psUpload[data-loaded="true"]::after {
+    font-size: 9px;
+    bottom: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psApp .psUpload[data-loaded="true"]::after { transition: none; }
+}

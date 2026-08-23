@@ -1,19 +1,14 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createAdminClient } from "../../../../utils/supabase/admin";
-import { configuredOffering, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
+import { buildPocketFoundingWelcomeEmail, buildPocketSubscriptionAlertEmail } from "../../../lib/launch-email.ts";
+import { dispatchLaunchEmail } from "../../../lib/server/resend-launch-email.ts";
+import { configuredOffering, validFoundingProPrice, validPocketFoundingPrice, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export function configuredPlan(
-  priceId: string | undefined,
-  environment: Record<string, string | undefined> = process.env,
-): Plan | null {
-  return configuredOffering(priceId, environment)?.plan ?? null;
-}
-
-export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">) {
+function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">) {
   const seconds = subscription.items.data.reduce(
     (latest, item) => Math.max(latest, item.current_period_end ?? 0),
     0,
@@ -21,7 +16,7 @@ export function subscriptionEnd(subscription: Pick<Stripe.Subscription, "items">
   return seconds ? new Date(seconds * 1000).toISOString() : null;
 }
 
-export function foundingSubscriptionActive(status: string): boolean {
+function foundingSubscriptionActive(status: string): boolean {
   return status === "active" || status === "trialing";
 }
 
@@ -40,14 +35,42 @@ async function customerEmail(stripe: Stripe, customer: string | Stripe.Customer 
   return "deleted" in record && record.deleted ? null : record.email?.toLowerCase() ?? null;
 }
 
+async function syncCancellationSchedule(subscription: Stripe.Subscription, eventCreated: number) {
+  const { error } = await createAdminClient().rpc("sync_membership_cancellation_from_stripe", {
+    p_stripe_subscription_id: subscription.id,
+    p_cancel_at_period_end: subscription.cancel_at_period_end,
+    p_event_created_at: eventCreated,
+  });
+  if (error) {
+    logSupabaseFailure("membership_rpc", error);
+    throw error;
+  }
+}
+
 async function syncFounding100(
   subscription: Stripe.Subscription,
   plan: Plan | null,
+  foundingEligible: boolean,
   email: string | null,
   eventCreated: number,
 ) {
-  const active = foundingSubscriptionActive(subscription.status);
-  const { error } = await createAdminClient().rpc("sync_founding_100", {
+  const subscriptionActive = foundingSubscriptionActive(subscription.status);
+  const admin = createAdminClient();
+  if (subscriptionActive && !foundingEligible) {
+    const { data: existing, error: lookupError } = await admin
+      .from("founding_100_members")
+      .select("programme")
+      .eq("stripe_subscription_id", subscription.id)
+      .eq("status", "active")
+      .maybeSingle();
+    if (lookupError) {
+      logSupabaseFailure("founding_rpc", lookupError);
+      throw new Error("Founding 100 eligibility lookup failed");
+    }
+    if (!existing || existing.programme === plan) return;
+  }
+  const active = subscriptionActive && foundingEligible;
+  const { error } = await admin.rpc("sync_founding_100", {
     p_email: email ?? "",
     p_programme: active ? plan : null,
     p_stripe_subscription_id: subscription.id,
@@ -76,6 +99,20 @@ async function saveSubscription(
   const unitAmount = offerings.length === 1 ? offerings[0].item.price.unit_amount : null;
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
 
+  if (plan === "pocket") {
+    if (!email || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
+    const { error } = await createAdminClient().rpc("sync_pocket_founding_650", {
+      p_email: email,
+      p_stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
+      p_stripe_subscription_id: subscription.id,
+      p_subscription_active: foundingSubscriptionActive(subscription.status),
+      p_current_period_end: subscriptionEnd(subscription),
+      p_event_created_at: eventCreated,
+    });
+    if (error) { logSupabaseFailure("founding_rpc", error); throw new Error("Pocket Founding 650 synchronization failed"); }
+    return "pocket" as const;
+  }
+
   const admin = createAdminClient();
   if (!plan && !foundingSubscriptionActive(subscription.status)) {
     const { error } = await admin.rpc("sync_membership_from_stripe", {
@@ -93,8 +130,9 @@ async function saveSubscription(
       logSupabaseFailure("membership_rpc", error);
       throw error;
     }
-    await syncFounding100(subscription, null, email, eventCreated);
-    return;
+    await syncCancellationSchedule(subscription, eventCreated);
+    await syncFounding100(subscription, null, false, email, eventCreated);
+    return null;
   }
 
   if (!email || !plan) {
@@ -118,7 +156,49 @@ async function saveSubscription(
     logSupabaseFailure("membership_rpc", error);
     throw error;
   }
-  await syncFounding100(subscription, plan, email, eventCreated);
+  await syncCancellationSchedule(subscription, eventCreated);
+  const foundingEligible = offerings.length === 1
+    && offerings[0].offering.foundingEligible
+    && validFoundingProPrice(offerings[0].item.price);
+  await syncFounding100(subscription, foundingEligible ? plan : null, foundingEligible, email, eventCreated);
+  return plan;
+}
+
+async function sendPocketWelcome(email: string, sessionId: string, requestUrl: string) {
+  const pocketUrl = new URL("/pocket", requestUrl).toString();
+  const result = await dispatchLaunchEmail({
+    to: email,
+    email: buildPocketFoundingWelcomeEmail(pocketUrl),
+    idempotencyKey: `pocket-welcome:${sessionId}`,
+  });
+  if (result.status === "failed" || result.status === "rejected") {
+    console.error("Pocket welcome email was not delivered", {
+      category: "pocket_welcome_email_failure",
+      status: result.status,
+      reason: result.reason,
+    });
+  }
+}
+
+async function sendPocketOwnerAlert(customerEmail: string, sessionId: string, requestUrl: string) {
+  const configuredOwner = process.env.BULLSEYE_ADMIN_EMAILS
+    ?.split(",")
+    .map((value) => value.trim().toLowerCase())
+    .find(Boolean);
+  const ownerEmail = configuredOwner || "hello@nashaimarkets.com";
+  const dashboardUrl = new URL("/admin/commercial", requestUrl).toString();
+  const result = await dispatchLaunchEmail({
+    to: ownerEmail,
+    email: buildPocketSubscriptionAlertEmail(customerEmail, dashboardUrl),
+    idempotencyKey: `pocket-owner-alert:${sessionId}`,
+  });
+  if (result.status !== "sent") {
+    console.error("Pocket owner subscription alert was not delivered", {
+      category: "pocket_owner_alert_failure",
+      status: result.status,
+      reason: "reason" in result ? result.reason : "unknown",
+    });
+  }
 }
 
 export async function POST(request: Request) {
@@ -142,7 +222,15 @@ export async function POST(request: Request) {
       const session = event.data.object;
       if (session.mode === "subscription" && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(String(session.subscription));
-        await saveSubscription(stripe, subscription, event.created, session.customer_details?.email);
+        const customerAddress = session.customer_details?.email?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
+        const savedPlan = await saveSubscription(stripe, subscription, event.created, customerAddress);
+        if (savedPlan === "pocket" && customerAddress) {
+          // Welcome delivery is deliberately non-blocking: membership access is the critical path.
+          await Promise.allSettled([
+            sendPocketWelcome(customerAddress, session.id, request.url),
+            sendPocketOwnerAlert(customerAddress, session.id, request.url),
+          ]);
+        }
       }
     }
 

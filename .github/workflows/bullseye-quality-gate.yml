@@ -1,0 +1,71 @@
+name: Bullseye quality gate
+
+on:
+  push:
+    branches:
+      - release/bullseye-launch-candidate
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bullseye-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify launch candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      APP_VERSION: "ci"
+      BUILD_TIMESTAMP: "2026-08-15T00:00:00.000Z"
+      GIT_COMMIT_SHA: ${{ github.sha }}
+      NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_ci_placeholder"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.19.0"
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Scan repository for committed secrets
+        run: npm run security:scan
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run component render tests
+        run: npm run test:render
+
+      - name: Simulate production safeguards
+        run: npm run simulate:production
+
+      - name: Validate operations documentation
+        run: npm run ops:validate
+
+      - name: Build and validate the Sites artifact
+        run: npm run build
+
+      - name: Test the rendered production artifact
+        run: npm run test:rendered

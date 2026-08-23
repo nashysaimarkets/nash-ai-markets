@@ -7,6 +7,7 @@ import { MemberShell } from "../components/MemberShell.tsx";
 import { SafeState } from "../components/SafeState.tsx";
 import { resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
 import { FoundingMemberForm } from "./FoundingMemberForm.tsx";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default async function FoundingMemberPage() {
   const { data: membership, error } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(error));

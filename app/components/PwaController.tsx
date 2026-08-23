@@ -12,7 +12,7 @@ const DISMISS_KEY = "nash-pwa-install-dismissed";
 const SESSION_KEY = "nash-pwa-install-session-shown";
 const DISMISS_DAYS = 14;
 const INSTALL_DELAY_MS = 45_000;
-const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding"];
+const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding", "/pocket"];
 
 function isMemberInstallPath(pathname: string): boolean {
   return MEMBER_INSTALL_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -72,8 +72,14 @@ export function PwaController() {
     let updateTimer: number | undefined;
     let iosPromptTimer: number | undefined;
     let installRevealTimer: number | undefined;
-    let loadHandler: (() => void) | undefined;
-    let controllerChangeHandler: (() => void) | undefined;
+    /*
+     * This effect re-runs whenever the visitor moves between member and public
+     * routes. Listeners bound to the long-lived ServiceWorkerRegistration would
+     * otherwise accumulate on every navigation, so everything is bound to one
+     * signal that the cleanup aborts.
+     */
+    const lifetime = new AbortController();
+    const { signal } = lifetime;
 
     const canOfferInstall = () =>
       installSurface
@@ -96,27 +102,38 @@ export function PwaController() {
       const register = async () => {
         try {
           const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+          // Registration resolves asynchronously and may land after cleanup.
+          if (signal.aborted) return;
           if (registration.waiting) offerUpdate(registration.waiting);
-          registration.addEventListener("updatefound", () => {
-            const installing = registration.installing;
-            installing?.addEventListener("statechange", () => {
-              if (installing.state === "installed" && navigator.serviceWorker.controller) offerUpdate(installing);
-            });
-          });
+          registration.addEventListener(
+            "updatefound",
+            () => {
+              const installing = registration.installing;
+              installing?.addEventListener(
+                "statechange",
+                () => {
+                  if (installing.state === "installed" && navigator.serviceWorker.controller) offerUpdate(installing);
+                },
+                { signal },
+              );
+            },
+            { signal },
+          );
           updateTimer = window.setInterval(() => void registration.update(), 60 * 60 * 1_000);
         } catch {
           // Installation remains optional and the web experience stays available.
         }
       };
       if (document.readyState === "complete") void register();
-      else {
-        loadHandler = () => void register();
-        window.addEventListener("load", loadHandler, { once: true });
-      }
-      controllerChangeHandler = () => {
-        if (updateAccepted.current) window.location.reload();
-      };
-      navigator.serviceWorker.addEventListener("controllerchange", controllerChangeHandler);
+      else window.addEventListener("load", () => void register(), { once: true, signal });
+
+      navigator.serviceWorker.addEventListener(
+        "controllerchange",
+        () => {
+          if (updateAccepted.current) window.location.reload();
+        },
+        { signal },
+      );
     }
 
     const handleInstallPrompt = (event: Event) => {
@@ -140,18 +157,15 @@ export function PwaController() {
           revealInstall();
         }, INSTALL_DELAY_MS);
       }
-      window.addEventListener("beforeinstallprompt", handleInstallPrompt);
-      window.addEventListener("appinstalled", handleInstalled);
+      window.addEventListener("beforeinstallprompt", handleInstallPrompt, { signal });
+      window.addEventListener("appinstalled", handleInstalled, { signal });
     }
 
     return () => {
       if (updateTimer !== undefined) window.clearInterval(updateTimer);
       if (iosPromptTimer !== undefined) window.clearTimeout(iosPromptTimer);
       if (installRevealTimer !== undefined) window.clearTimeout(installRevealTimer);
-      if (loadHandler) window.removeEventListener("load", loadHandler);
-      if (controllerChangeHandler) navigator.serviceWorker.removeEventListener("controllerchange", controllerChangeHandler);
-      window.removeEventListener("beforeinstallprompt", handleInstallPrompt);
-      window.removeEventListener("appinstalled", handleInstalled);
+      lifetime.abort();
     };
   }, [installSurface]);
 

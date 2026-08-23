@@ -35,23 +35,17 @@ import {
   parseWorkspaceCookie,
 } from "./lib/desk-workspace";
 import { mapCandleFreshness, type DeskFreshnessFeed, type TradingDeskPayload } from "./lib/desk-payload";
+import { sanitizeForClient } from "../lib/serialize-for-client.ts";
+import { resolveSessionMarketVideos } from "../lib/market-video/session-placement.ts";
+import { getVerifiedMacroContext, createUnavailableMacroContext } from "../lib/verified-macro-context.ts";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Trading Desk",
-  description: "Customizable trading desk across interchangeable markets — verified feeds only.",
+  description: "S&P 500 trading desk with verified supporting-market context.",
   robots: { index: false, follow: false },
 };
-
-/** Flight/RSC rejects NaN/Infinity — replace before crossing the client boundary. */
-function sanitizeForClient<T>(value: T): T {
-  return JSON.parse(
-    JSON.stringify(value, (_key, current) => {
-      if (typeof current === "number" && !Number.isFinite(current)) return null;
-      return current;
-    }),
-  ) as T;
-}
 
 export default async function Terminal() {
   const supabase = await createClient();
@@ -62,7 +56,7 @@ export default async function Terminal() {
   const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["free", "pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError));
@@ -78,6 +72,9 @@ export default async function Terminal() {
   );
 
   let payload: TradingDeskPayload;
+  const macroContext = await getVerifiedMacroContext({ route: "/terminal" }).catch(() =>
+    createUnavailableMacroContext(),
+  );
   try {
     const [{ snapshot, gatewayStatus }, candleBundleRaw] = await Promise.all([
       getTerminalMarketData(),
@@ -93,7 +90,7 @@ export default async function Terminal() {
           DXY: toCustomerCandleSeries(candleBundleRaw.DXY),
           OIL: toCustomerCandleSeries(candleBundleRaw.OIL),
           QQQ: toCustomerCandleSeries(candleBundleRaw.QQQ),
-          NQ: toCustomerCandleSeries(candleBundleRaw.NQ),
+          IXIC: toCustomerCandleSeries(candleBundleRaw.IXIC),
         }
       : null;
 
@@ -136,7 +133,7 @@ export default async function Terminal() {
         DXY: candleSeriesByInstrument?.DXY?.candles,
         OIL: candleSeriesByInstrument?.OIL?.candles,
         QQQ: candleSeriesByInstrument?.QQQ?.candles,
-        NQ: candleSeriesByInstrument?.NQ?.candles,
+          IXIC: candleSeriesByInstrument?.IXIC?.candles,
       },
     });
 
@@ -173,12 +170,16 @@ export default async function Terminal() {
         ageLabel: snapshotAge,
         detail: snapshot.source || "Verified provider snapshot",
       },
-      mapCandleFreshness(candleSeriesByInstrument?.ES, "ES candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.NQ, "NQ candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.QQQ, "QQQ candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.VIX, "VIX candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.DXY, "DXY candles"),
-      mapCandleFreshness(candleSeriesByInstrument?.OIL, "OIL candles"),
+      ...(paid
+        ? [
+            mapCandleFreshness(candleSeriesByInstrument?.ES, "ES candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.IXIC, "IXIC candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.QQQ, "QQQ candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.VIX, "VIX candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.DXY, "DXY candles"),
+            mapCandleFreshness(candleSeriesByInstrument?.OIL, "OIL candles"),
+          ]
+        : []),
       {
         id: "calendar",
         label: "Economic calendar",
@@ -256,6 +257,8 @@ export default async function Terminal() {
         : null,
     });
 
+    const sessionVideos = resolveSessionMarketVideos({ phase: session.phase });
+
     payload = sanitizeForClient({
       paid,
       tier: access.tier,
@@ -274,11 +277,13 @@ export default async function Terminal() {
       customerWarnings,
       decisionPresentation,
       initialWorkspace,
+      deskVideoShortcut: sessionVideos.deskShortcut,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
         available: previewState.available,
         cadence: previewOffer?.cadence,
       },
+      macroContext,
     });
   } catch (error) {
     console.error("[terminal] desk payload failed; rendering recovery shell", error);
@@ -329,11 +334,13 @@ export default async function Terminal() {
         warnings: recoveryWarnings,
       }),
       initialWorkspace,
+      deskVideoShortcut: null,
       preview: {
         eligible: previewOffer?.targetTier === "pro" && previewOffer.eligible,
         available: previewState.available,
         cadence: previewOffer?.cadence,
       },
+      macroContext,
     });
   }
 

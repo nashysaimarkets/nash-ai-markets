@@ -93,6 +93,10 @@ test("Stripe lifecycle synchronizes awards from signed server events only", asyn
   assert.match(webhook, /\.rpc\("sync_founding_100"/);
   assert.match(webhook, /event\.created/);
   assert.match(webhook, /status === "active" \|\| status === "trialing"/);
+  assert.match(webhook, /const active = subscriptionActive && foundingEligible/);
+  assert.match(webhook, /validPocketFoundingPrice\(offerings\[0\]\.item\.price\)/);
+  assert.match(webhook, /from\("founding_100_members"\)/);
+  assert.match(webhook, /existing\.programme === plan/);
   assert.match(webhook, /invoice\.payment_failed/);
   assert.doesNotMatch(webhook, /NEXT_PUBLIC_.*FOUNDING/);
 });
@@ -114,10 +118,18 @@ test("pricing states the factual continuous-subscription rule without artificial
   const page = await read("app/page.tsx");
   assert.match(page, /loadFounding100Availability/);
   assert.match(page, /proFounding\.label/);
-  assert.match(page, /eliteFounding\.label/);
-  assert.match(page, /locked for life while that same membership remains continuously active/);
+  assert.doesNotMatch(page, /eliteFounding|FOUNDING 100 ELITE/);
+  assert.match(page, /price remains locked while that same membership stays continuously active/);
   assert.match(page, /cancelled or lapses, the price lock is permanently lost/);
   assert.doesNotMatch(page, /only \d+ (spots|places) left/i);
+});
+
+test("public launch pricing promotes Founding Pro only while preserving Elite checkout", async () => {
+  const pricing = await read("app/pricing/PricingPlans.tsx");
+  assert.match(pricing, /FOUNDING 100 PRO/);
+  assert.doesNotMatch(pricing, /FOUNDING 100 ELITE|badge-founding-100/);
+  assert.match(pricing, /value=\{annual \? "elite_year" : "elite_month"\}/);
+  assert.match(pricing, /£29\.99\/month/);
 });
 
 test("public availability reads only programme positions and fails neutral", async () => {

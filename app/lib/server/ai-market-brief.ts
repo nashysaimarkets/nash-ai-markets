@@ -45,6 +45,13 @@ export async function generateAIMarketBriefSelection(
   model = process.env.OPENAI_BRIEF_MODEL?.trim(),
 ): Promise<AIMarketBriefResult> {
   if (!client || !model || input.availableDrivers.length === 0) {
+    console.warn(
+      `[ai-market-brief] not_configured ${JSON.stringify({
+        client: Boolean(client),
+        briefModelConfigured: Boolean(model),
+        availableDrivers: input.availableDrivers.length,
+      })}`,
+    );
     return { status: "not_configured", selection: null };
   }
 
@@ -53,6 +60,7 @@ export async function generateAIMarketBriefSelection(
   try {
     const response = await client.responses.create({
       model,
+      store: false,
       instructions: [
         "Prioritize only the supplied deterministic Bullseye evidence.",
         "Do not create prose, prices, levels, entries, stops, targets, forecasts, or personalized advice.",
@@ -90,12 +98,24 @@ export async function generateAIMarketBriefSelection(
     try {
       parsed = JSON.parse(response.output_text);
     } catch {
+      console.warn("[ai-market-brief] invalid_response: output was not JSON");
       return { status: "invalid_response", selection: null };
     }
-    return isSelection(parsed, input)
-      ? { status: "generated", selection: parsed }
-      : { status: "invalid_response", selection: null };
-  } catch {
+    if (!isSelection(parsed, input)) {
+      console.warn("[ai-market-brief] invalid_response: output failed selection validation");
+      return { status: "invalid_response", selection: null };
+    }
+    return { status: "generated", selection: parsed };
+  } catch (error) {
+    const aborted = controller.signal.aborted;
+    console.error(
+      `[ai-market-brief] unavailable ${JSON.stringify({
+        timedOut: aborted,
+        timeoutMs: AI_BRIEF_TIMEOUT_MS,
+        error: error instanceof Error ? error.name : "Error",
+        message: error instanceof Error ? error.message : String(error),
+      })}`,
+    );
     return { status: "unavailable", selection: null };
   } finally {
     clearTimeout(timeout);

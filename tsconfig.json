@@ -31,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "tools/youtube-upload"]
+  "exclude": ["node_modules", "tools/youtube-upload", "infra/stripe-webhook-relay", "supabase/functions"]
 }

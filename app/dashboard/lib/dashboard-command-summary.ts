@@ -4,8 +4,14 @@
  * Does not invent levels, breadth, catalysts or confidence.
  */
 
+import { describeRangePosition } from "../../lib/range-position-display.ts";
 import type { MarketQuote, MarketSnapshot } from "../../lib/market-data.ts";
-import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { formatMembershipAwareMarketDataDisplay } from "../../lib/freshness-labels.ts";
+import {
+  buildEsCandleCloseSnapshot,
+  buildEsQuoteSnapshot,
+  resolvePrimaryEsDisplay,
+} from "../../lib/es-primary-snapshot.ts";
 import {
   buildDeskDecisionPresentation,
   type DeskDecisionPresentation,
@@ -28,9 +34,11 @@ export type DashboardHeroModel = {
   sessionLabel: string;
   sessionDetail: string;
   delayedAgeLine: string;
+  priceSourceLabel: string;
   rangePositionPct: number | null;
   rangeLow: string | null;
   rangeHigh: string | null;
+  rangeNote: string | null;
   deskHref: string;
 };
 
@@ -55,6 +63,7 @@ export type DashboardCatalystModel = {
   impact: string;
   countdown: string | null;
   startsAt: string;
+  includes: string[];
 } | null;
 
 export type DashboardServiceItem = {
@@ -187,35 +196,75 @@ export function buildDashboardCommandSummary(input: {
   plan: TradePlan | null;
   signals: MarketDeskSignals | null;
   warnings: string[];
+  candleAccess?: boolean;
   now?: number;
   timeZone?: string;
 }): DashboardCommandSummary {
   const now = input.now ?? Date.now();
   const timeZone = input.timeZone ?? "Europe/London";
-  const esQuote = findQuote(input.snapshot.quotes, "ES");
+  const retrievalTimestamp = new Date(now).toISOString();
+  const delayedAgeLine = formatMembershipAwareMarketDataDisplay({
+    candleAgeMs: input.candleSeries?.dataAgeMs ?? null,
+    candleAccess: input.candleAccess ?? true,
+    quoteAvailable: input.snapshot.quotes.some((quote) => quote.symbol === "ES"),
+  });
+  const esQuoteSnapshot = buildEsQuoteSnapshot({
+    snapshot: input.snapshot,
+    ageLabel: delayedAgeLine,
+    retrievalTimestamp,
+  });
   const stats = input.candleSeries?.candles?.length
     ? candleSessionStats(input.candleSeries.candles)
     : null;
+  const candleClose = buildEsCandleCloseSnapshot({
+    close: stats?.latest ?? null,
+    sourceTimestamp: input.candleSeries?.asOf ?? null,
+    ageLabel: delayedAgeLine,
+  });
+  const primaryEs = resolvePrimaryEsDisplay({
+    quote: esQuoteSnapshot,
+    candleClose,
+  });
+  const quoteNumber = esQuoteSnapshot.value
+    ? Number.parseFloat(esQuoteSnapshot.value.replace(/[^0-9.-]/g, ""))
+    : NaN;
+  const rangeReading = stats
+    ? describeRangePosition(
+        Number.isFinite(quoteNumber) ? quoteNumber : stats.latest,
+        stats.low,
+        stats.high,
+      )
+    : null;
 
-  const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(input.candleSeries?.dataAgeMs ?? null);
+  const heroUsesQuote = primaryEs.primarySource === "quote";
   const hero: DashboardHeroModel = {
     symbolLabel: "S&P 500 Futures · ES",
-    price: stats ? formatPts(stats.latest) : (esQuote?.value ?? null),
-    netChange: stats ? `${formatSigned(stats.change)} pts` : null,
-    percentChange: stats
-      ? `${formatSigned(stats.percentageChange)}%`
-      : (esQuote?.change ?? null),
-    direction: stats
-      ? (stats.change > 0 ? "up" : stats.change < 0 ? "down" : "flat")
-      : (esQuote?.direction ?? "unknown"),
+    price: primaryEs.primaryValue,
+    netChange: heroUsesQuote
+      ? (esQuoteSnapshot.absoluteChange ?? primaryEs.primaryChange)
+      : stats
+        ? `${formatSigned(stats.change)} pts (candle)`
+        : null,
+    percentChange: heroUsesQuote
+      ? (esQuoteSnapshot.percentChange ?? (esQuoteSnapshot.absoluteChange ? null : primaryEs.primaryChange))
+      : stats
+        ? `${formatSigned(stats.percentageChange)}% (candle)`
+        : null,
+    direction: heroUsesQuote
+      ? esQuoteSnapshot.direction
+      : stats
+        ? (stats.change > 0 ? "up" : stats.change < 0 ? "down" : "flat")
+        : "unknown",
     sessionLabel: sessionStatusLabel(input.session.phase),
     sessionDetail: input.session.countdownLabel
       ? `${input.session.label} · ${input.session.countdownLabel}`
       : input.session.label,
     delayedAgeLine,
-    rangePositionPct: stats ? Math.round(stats.rangePosition) : null,
+    priceSourceLabel: primaryEs.disclosure,
+    rangePositionPct: rangeReading?.displayPct ?? null,
     rangeLow: stats ? formatPts(stats.low) : null,
     rangeHigh: stats ? formatPts(stats.high) : null,
+    rangeNote: rangeReading?.note ?? null,
     deskHref: "/terminal",
   };
 
@@ -226,7 +275,17 @@ export function buildDashboardCommandSummary(input: {
     warnings: input.warnings,
   });
 
-  const weather = buildDashboardWeather(input.snapshot.quotes);
+  const weather = buildDashboardWeather(input.snapshot.quotes).map((item) => {
+    if (item.id !== "ES" || !esQuoteSnapshot.available) return item;
+    const direction = esQuoteSnapshot.direction === "unknown" ? undefined : esQuoteSnapshot.direction;
+    return {
+      ...item,
+      value: esQuoteSnapshot.value,
+      change: esQuoteSnapshot.absoluteChange ?? esQuoteSnapshot.percentChange,
+      direction: esQuoteSnapshot.direction,
+      interpretation: `${quoteInterpretation("ES", direction, true)} Same verified quote snapshot as the hero.`,
+    };
+  });
   const { levels, note: levelsNote } = buildDashboardLevels(input.candleSeries);
 
   const next = selectNextEconomicEvent(input.snapshot.events, now);
@@ -237,6 +296,7 @@ export function buildDashboardCommandSummary(input: {
         impact: next.risk === "HIGH" ? "High impact" : "Medium impact",
         countdown: formatEventCountdown(next.startsAt, now),
         startsAt: next.startsAt,
+        includes: next.includes,
       }
     : null;
 

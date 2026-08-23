@@ -1,60 +1,60 @@
 # Launch Gate Status
 
-Status reflects repository evidence at commit `29d8dce`. Update this file with
-sanitized staging evidence; never mark a gate Cleared from assumption.
+Last evidence review: **16 August 2026**. This record separates repository proof,
+private-staging evidence, and work that still requires a paid provider,
+third-party configuration, physical-device testing, qualified approval or a
+named business owner.
 
-| Gate | Classification | Evidence required to clear |
+| Gate | Status | Current evidence / remaining requirement |
 |---|---|---|
-| Repository tests, typecheck, lint and build | Cleared | RC2 validation: 230 tests, production build, rendered output and simulation passed |
-| Deployment artifact and operations validation | Cleared | Artifact, documentation and secret-pattern checks passed |
-| Target staging hosting account/project | Requires external configuration | Account/project owner, staging hostname and environment scope recorded |
-| Canonical Supabase migration chain documented | Cleared | `202607170000`–`202607170007` and migration runbook exist |
-| Identify or create isolated staging Supabase project | Ready for user action | Staging project reference and owner recorded |
-| Staging backup/restore evidence | Requires external configuration | Backup identifier and successful disposable restore |
-| Apply and verify migrations in staging | Requires staging evidence | Migration log, RLS/grant checks and schema verification |
-| Production migration | Requires external configuration | Separate approval after staging; not authorized in this phase |
-| Four Stripe test-mode Prices | Requires external configuration | GBP amounts/intervals and Price mappings verified |
-| Stripe portal and signed webhook endpoint | Requires external configuration | Test endpoint, selected events and portal policy verified |
-| Stripe lifecycle, duplicate and ordering matrix | Requires staging evidence | Completed matrix with sanitized event evidence |
-| Founding 100 limit and concurrency | Requires staging evidence | Concurrent Pro/Elite tests, exhaustion and permanent allocation checks |
-| Supabase staging Site URL and redirect URL | Requires external configuration | Exact HTTPS staging origin/callback saved |
-| Magic-link delivery, expiry, reuse and sign-out | Requires staging evidence | Completed auth-domain matrix |
-| Production domain, DNS and TLS | Requires external configuration | Assigned hostname, DNS/TLS and redirect evidence |
-| Target hosting environment variables | Requires external configuration | Matrix completed and `ops:check-env` passed in target environment |
-| Market-provider licence and symbols | Requires legal or business approval | Account entitlement/licence and verified symbol catalogue |
-| Market data live/fallback smoke tests | Requires staging evidence | Fresh/live and stale/future/timeout fail-closed evidence |
-| OpenAI staging health and deterministic fallback | Requires staging evidence | Sanitized connected/degraded results and fallback output |
-| Transactional lifecycle email delivery | Requires external configuration | Provider, sender, suppression, idempotency and monitoring; repository currently has templates only |
-| PWA implementation and static assets | Cleared | Manifest, service worker, icons, splash assets and automated contracts pass |
-| Physical PWA/device/accessibility matrix | Requires staging evidence | iPhone, iPad, Android Chrome, Samsung Internet, VoiceOver and TalkBack results |
-| Monitoring vendor, thresholds and owners | Requires external configuration | Monitor IDs, test alerts, on-call owner and escalation timing |
-| Backup/RPO/RTO and incident ownership | Requires legal or business approval | Approved recovery targets, operators and restore drill |
-| Privacy/data retention/vendor register | Requires legal or business approval | Approved policies and processor inventory |
-| Terms, risk disclaimer and financial-promotion review | Requires legal or business approval | Qualified approval for launch jurisdictions |
-| Provider and OpenAI terms/data-use review | Requires legal or business approval | Approved vendor/licensing record |
-| Staging smoke test and 48-hour soak | Requires staging evidence | Completed smoke checklist and stable monitoring window |
-| Production deployment | Ready for user action only after all launch gates clear | Explicit go decision, immutable artifact and rollback owner |
+| Repository tests and type safety | Cleared | Dedicated GitHub Actions quality gate passes secret scan, typecheck, lint, **617 unit tests**, 4 component-render tests, 8 production-safeguard simulations, operations validation, verified artifact build and rendered-artifact tests |
+| Operations and environment documentation | Cleared | Implemented variable surface matches `ENVIRONMENT_VARIABLES.md`; Resend, audit-only, hosted-only and local-fixture boundaries are documented |
+| Isolated private staging | Cleared | Owner-only Sites/Vercel preview paths exist for the Bullseye launch candidate; production was not changed |
+| Vercel commercial plan and continuity | Pro tier cleared; billing continuity blocked | Authenticated Billing evidence on 16 August 2026 identifies **Pro Plan**, satisfying the current DPA's plan-tier condition. Automatic Vercel Agent chat, code reviews and investigations were disabled and an automated Agent billing adjustment reduced the invoice. A remaining unpaid balance and possible account-shutdown warning still require the account to be restored to current status before public launch. No plan, payment method, add-on, project or production deployment was changed |
+| Private marketing walkthrough | Cleared for visual and keyboard review | Dashboard, Morning Brief, Trading Desk, Ideas, Reviews, Profile and Preferences use the real Bullseye presentation with deterministic example-only data; the route is production-blocked, noindex and write-isolated. Private Vercel deployment `ed4e484` is READY. Live browser evidence confirms mouse and Enter-key activation of Morning Brief actions remain inside `/marketing-preview`, Trading Desk renders, the example-only banner remains visible and `robots` remains `noindex, nofollow`. Disabled Journal/sign-out actions remain `aria-disabled` hash targets and do not leave the preview |
+| Isolated staging Supabase project | Cleared | The deployed staging browser artifact uses project `pxlqvaddvghjjhenqmdh`; the coded guard expects the same project |
+| Staging browser auth artifact | Cleared | Empty cache-bust commit `796686dd956deeb1f9adb7b99ef676bb2baa654d` forced a fresh staging build. The live Supabase host is `pxlqvaddvghjjhenqmdh.supabase.co`, the auth guard is true, and production was untouched |
+| Staging schema and member-data protection | Cleared for current schema | Critical member tables have RLS enabled and authenticated read policies; server-only operational tables remain deny-by-default |
+| Staging authentication URLs | Cleared | Exact staging Site URL and callback are configured; the owner-only gate can reach Bullseye `/login` |
+| Primary desktop customer journey | Provisionally accepted | Owner reports Dashboard, Morning Brief, Trading Desk and related navigation working on private staging; repeat automated signed-in walkthrough remains an evidence task |
+| Private Vercel preview authentication, reuse and sign-out | Security mechanics and deployed isolation guard passed; not isolated-staging acceptance | On 16 August 2026 one request on the private feature preview delivered one link, authenticated the owner account and returned to protected `/dashboard`. Deliberate sign-out ended the session; a direct `/dashboard` request returned to `/login`; reusing the same link produced `error=signin&reason=missing`; and a final `/dashboard` request remained unauthenticated. Supabase's project list confirms the preview's baked `opmgzchnmcgnsfwpmysc` provider is named `nashaimarkets Project`, while `pxlqvaddvghjjhenqmdh` is `nashaimarkets-staging`. The test therefore exercised the production-linked auth service once and is not isolated-staging acceptance. Private deployment `09dd2f9` is READY, its `/login` form reports `data-auth-redirect-ready=false`, and the built chunks contain the fail-closed preview guard and safe message; no form submission or second email was used. Canonical production origins retain their existing behaviour. **94 focused auth, trust, navigation, preview-isolation, PWA and resilience tests pass locally**. The session was signed out, the first link invalidated and no provider configuration was changed |
+| Authenticated tablet/mobile/accessibility matrix | Partially cleared; VoiceOver passed | Owner reported **PHONE PASS** and **VOICEOVER PASS** on the private example preview on 16 August 2026, including the five-check disclosure, menu-state, Trading Desk navigation, focus and disabled-Journal protocol. Private-preview keyboard navigation also passes. The owner confirmed no Android device is available, so TalkBack needs a borrowed device/trusted tester; authenticated protected-route mobile/tablet and tablet-width evidence also remain |
+| Market-data failure safety | Cleared | Unavailable, delayed, stale, malformed, timeout and provider-failure states remain explicit and fail closed |
+| Official zero-cost macro runtime | Cleared for Phase 9 | Commit `dfb97a1757073658d4b094cb0802b2cfe72c56e` integrates isolated `VerifiedMacroContext` on Dashboard, Morning Brief and Trading Desk. Fabricated ES/VIX inputs remain blocked and the directional engine remains fail closed |
+| Populated live/delayed session acceptance | Blocked by display/redistribution entitlement | Obtain written quotes confirming paid customer-facing display and derived-output rights. Prefer the existing FMP adapter only if its separate display licence is the lowest total cost; do not assume a retail API plan grants redistribution. Then verify ES candles, VIX, DXY, Treasury coverage, freshness and provider-call budget in staging |
+| Market-data vendor rights enquiries | Awaiting usable written quotes | Enquiries were sent to FMP, CME, Cboe, Intrinio, Barchart and Databento. Intrinio supplied preliminary general plan information but has not confirmed the required CME ES/Cboe VIX instruments, display/derived/caching/promotional rights or total fees. Databento supplied only an automated availability notice; no substantive reply has arrived from the other vendors. The attempted dxFeed mailbox bounced; use dxFeed's official business quote form for any approved resend instead of guessing another address |
+| OpenAI brief fallback and storage minimisation | Cleared in repository | Deterministic fallback and invalid/missing/timeout provider paths pass. Every current Responses request explicitly sets `store: false` with regression coverage; separate provider abuse-monitoring retention and account/DPA review remain. Connected staging evidence remains part of the populated-session run |
+| Stripe test-mode lifecycle | Implementation complete | Application Checkout, portal, webhook, Price environment mapping and contract tests are in place. Dashboard presence plus live lifecycle proof are an external operational checklist, not an application-development blocker. Do not recreate Stripe objects unless runtime testing proves a break |
+| Transactional email delivery | Not launch-cleared | Dormant Resend transport and idempotent templates are implemented. Confirm verified sender/domain, suppression handling, delivery monitoring and named ownership; avoid repeated magic-link requests during testing |
+| Organic prelaunch marketing | Protected desktop/film/network acceptance passed; physical responsive page pass pending | The checksum-recorded approved v16 master was supplied, five captioned derivatives were cut and the owner reported `PHONE VIDEO PASS`. The first-party 25-second `/waitlist` film reached a protected Vercel preview at runtime commit `49e61ea`. Connected build/TypeScript completed, the deployment is `READY`, `/waitlist` returns `x-robots-tag: noindex`, and private Chrome evidence at 1363×936 confirms no autoplay, deliberate play/pause, Enter-key transcript access, truthful standard/Founding copy and no horizontal overflow. Pre-play buffering was limited to about 2.435 seconds; no app tracker, third-party player or runtime error/warning/fatal entry was found. Physical iPhone/tablet/rotation, complete Tab/zoom and page-specific screen-reader evidence remain. Nothing was posted publicly |
+| Paid advertising | Not launch-cleared | Complete qualified financial-promotion review, platform verification, public landing-page acceptance, privacy/tracking approval and a fixed spend cap. Paid activity must remain waitlist-only until the marketed product capability is actually deliverable |
+| Performance adviser backlog | Non-blocking before scale | Add selected foreign-key indexes and optimise auth-policy initialisation after measuring production-like workloads |
+| Staging backup/restore and incident drill | Restore readiness passed; full disposable restore pending | `RESTORE_EVIDENCE_2026-08-16.md` records the healthy isolated staging target, 13 RLS-protected tables, restricted critical functions, a successful transaction-temporary schema/data round-trip and adopted 24-hour RPO/8-business-hour RTO. A full logical dump restored into a third disposable non-production target is still required; neither known project was overwritten and no paid resource was created |
+| Monitoring and alert ownership | Owners cleared; external configuration pending | Chris Nash is primary and Richard Nash is the accepted, briefed backup across release, incident, auth, billing, provider and email/support operations. Actual monitor IDs, tested notifications and acknowledgement evidence remain required |
+| Customer support operations | Primary and backup named; operational acceptance pending | Chris Nash is primary, Richard Nash is accepted/briefed backup and 09:00–17:00 Europe/London weekdays is the provisional no-24/7 default. Confirm mailbox MFA/recovery, retention and three controlled exercises before paid launch |
+| Privacy, retention and vendor register | Business defaults, retention schedule, staging database exercise, pre-trading ICO check, official-source vendor audit and Vercel Pro tier cleared; account/qualified approval pending | Chris Nash approved the conservative defaults plus the operational retention schedule and 28-day rights target. The staging exercise passed and the pre-trading ICO result remains time-limited. Vercel Pro is now evidenced; its automatic Agent features are disabled and an Agent billing adjustment was approved, but the remaining unpaid balance still blocks hosting continuity. The free ImprovMX to consumer Gmail support chain remains not paid-launch-cleared, and Supabase is London-region but Free. Qualified policy/terms/accounting approval, account/DPA/subprocessor evidence and signed-session/provider deletion follow-up remain required |
+| Risk disclaimer and financial-promotion review | Scoped; requires qualified approval | The exact FCA perimeter/section-21/jurisdiction questions and lowest-cost FCA Innovation Pathways route are documented. A qualified UK financial-services reviewer must approve the exact product, site and campaign before public promotion; Bullseye must not claim authorisation |
+| Production DNS, secrets and deployment | Not authorised | Complete every public-launch blocker, select immutable artifact and rollback owner, then obtain an explicit go decision |
 
 ## Current decision
 
-**NO-GO for public deployment.** The repository is ready for staging
-configuration. No production deployment, migration or live billing is
-authorized by this status.
+**Private staging and compliant prelaunch preparation continue. Public production
+and paid subscription acquisition remain NO-GO.** Stripe application work is
+treated as complete; further Stripe Dashboard checks are operational and not an
+application-development blocker unless runtime billing breaks. The stale staging
+auth bundle has been replaced and the core staging sign-in and Elite journey now
+pass. The product can continue through device, accessibility, resilience,
+marketing-asset and private-staging preparation without buying the data upgrade.
+It must not represent unavailable data as live, bypass authentication, migrate
+production, deploy publicly, or advertise profit/prediction claims.
 
-## Safest next manual action for Chris
+## Next blocking sequence
 
-Identify an isolated staging Supabase project before entering any credentials
-or running SQL:
-
-1. Open [Supabase Dashboard](https://supabase.com/dashboard).
-2. Inspect the organizations and projects visible to your account.
-3. If a project explicitly labelled **staging** exists, open it, then open
-   **Project Settings → General** and record its project name/reference in the
-   private release record.
-4. If no explicitly labelled staging project exists, record
-   **“staging Supabase project required”** and stop; do not create one until the
-   project owner confirms the organization, region, plan and password-storage
-   location.
-5. Do not open SQL Editor or apply migrations. The next action after ownership
-   confirmation is the backup and schema preflight in
-   `SUPABASE_MIGRATION_RUNBOOK.md`.
+1. Complete the five-check physical TalkBack run in `ACCESSIBILITY_PHYSICAL_ACCEPTANCE.md`, plus tablet width and authenticated isolated-staging evidence. VoiceOver, private-preview keyboard and ordinary phone navigation have passed.
+2. Record natural passwordless-link time-expiry evidence only if separately required; do not generate repeated email sends merely to duplicate the already-passed reuse control. Any real authentication test must use the isolated Sites staging origin tied to `pxlqvaddvghjjhenqmdh`.
+3. Confirm transactional-email sender/domain/suppression and delivery monitoring without repeated magic-link spam.
+4. Obtain written FMP, CME-feed and Cboe/VIX display-rights quotes. Route any dxFeed follow-up through its official business quote form. Purchase no feed until rights and first-cohort economics are confirmed; then run the verified symbol, candle, freshness, fail-closed and provider-budget matrix.
+5. Restore the verified Vercel Pro account to current billing status without enabling optional add-ons. Replace or obtain reviewed business terms for the free ImprovMX to consumer Gmail support chain; the lowest-cost engineering candidate is a first-party Supabase support inbox with Resend replies, subject to separate approval.
+6. Run alert exercises, complete a logical dump restore into a disposable target, complete the signed-session/provider follow-up to the passed staging retention exercise and obtain qualified privacy/consumer, accounting and FCA-perimeter approval. Primary/backup ownership, conservative privacy defaults, the operational retention schedule, its database exercise and the official-source vendor audit are cleared.
+7. Complete the physical iPhone/tablet/rotation, full Tab/zoom and page-specific screen-reader portions of the waitlist acceptance, then record the platform-verification position. The approved v16 master, five derivatives, source-film phone pass, protected desktop film/network pass and minimum no-tracker organic measurement decision are complete. Do not add paid tracking merely to clear this gate.
+8. Run the final private-staging soak and record the explicit public go/no-go.

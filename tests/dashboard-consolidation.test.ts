@@ -17,25 +17,32 @@ import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
 
 const read = (path: string) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("dashboard command centre uses shared delayed candle age and Restricted / Not established language", async () => {
-  const [centre, page, summaryLib] = await Promise.all([
+test("dashboard command centre uses shared delayed candle age and Wait for confirmation / Not established language", async () => {
+  const [centre, page, summaryLib, freshnessLib] = await Promise.all([
     read("../app/dashboard/components/MarketCommandCentre.tsx"),
     read("../app/dashboard/page.tsx"),
     read("../app/dashboard/lib/dashboard-command-summary.ts"),
+    read("../app/lib/freshness-labels.ts"),
   ]);
   assert.match(centre, /Open Trading Desk/);
   assert.match(centre, /Open Morning Brief/);
   assert.match(centre, /Risk &amp; Journal|Risk & Journal/);
-  assert.match(centre, /VERIFIED LEVELS/);
-  assert.match(centre, /levels\.map|level\.label/);
-  assert.match(centre, /Delayed market data/);
-  assert.match(centre, /Breadth is omitted/);
-  assert.match(centre, /dashCatalystEmpty|No upcoming verified event is currently available/);
-  assert.match(centre, /dashLevelsStack|dashSplitRow/);
+  assert.match(centre, /VERIFIED LEVEL MAP|VisualLevelMap/);
+  assert.match(centre, /VisualLevelMap|levels\.map|level\.label/);
+  // The delayed-data disclosure is owned by the shared freshness formatter and
+  // surfaced by the hero, so it is pinned at its source rather than as literal
+  // markup the presentation layer is free to relabel.
+  assert.match(freshnessLib, /Delayed market data · latest verified candle/);
+  assert.match(centre, /hero\.delayedAgeLine/);
+  assert.match(centre, /Data freshness/);
+  assert.match(centre, /Breadth, put\/call and tick stay|Breadth is omitted/);
+  assert.match(centre, /TodaysGamePlanPanel|MARKET PULSE|CommandStrip/);
+  assert.match(centre, /CommandStrip|dashCommandStrip/);
   assert.doesNotMatch(centre, /providerDelayNote|Nominal provider delay/);
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /MarketCommandCentre/);
-  assert.match(summaryLib, /formatDelayedVerifiedCandleAgeDisplay/);
+  assert.match(page, /getVerifiedMarketContext|sanitizeForClient/);
+  assert.match(summaryLib, /formatMembershipAwareMarketDataDisplay/);
   assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(summaryLib, /24-hour low \/ downside reference/);
   assert.match(summaryLib, /Session opening reference/);
@@ -48,21 +55,26 @@ test("dashboard command centre uses shared delayed candle age and Restricted / N
 
 test("dashboard empty catalyst stays compact and available events still render", async () => {
   const centre = await read("../app/dashboard/components/MarketCommandCentre.tsx");
-  assert.match(centre, /dashCatalystEmpty/);
-  assert.match(centre, /No upcoming verified event is currently available/);
-  assert.match(centre, /catalyst \? "dashSplitRow" : "dashLevelsStack"/);
+  // The bespoke empty markup was replaced by the shared unavailable state, which
+  // keeps the same truthful message in one consistent, compact shape.
+  assert.match(centre, /AwaitingDataNote/);
+  assert.match(centre, /No upcoming verified catalyst/);
+  assert.match(centre, /No scheduled event has been verified/);
+  assert.match(centre, /catalyst && !eventModeAvailable \? "dashSplitRow" : "dashLevelsStack"/);
+  assert.match(centre, /<EventModePanel model=\{oracle\.eventMode\}/);
   assert.match(centre, /Event risk ahead/);
   assert.match(centre, /catalyst\.name/);
   assert.doesNotMatch(centre, /No future verified calendar event is currently supplied/);
 });
 
-test("restricted decision copy omits defensive briefing clause", async () => {
+test("blocked decision copy omits defensive briefing clause", async () => {
   const presentation = await read("../app/terminal/lib/desk-decision-presentation.ts");
   assert.match(
     presentation,
-    /This is a limited-confidence environment\. Trade participation remains restricted because confirmation data is incomplete\./,
+    /This is a limited-confidence environment\. Wait for confirmation before treating any lean as a setup\./,
   );
   assert.doesNotMatch(presentation, /not because the whole briefing is unavailable/);
+  assert.doesNotMatch(presentation, /permissionLabel: "Restricted"|return \{ label: "Restricted"/);
 });
 
 test("score display never presents zero as a substitute for unavailable evidence", () => {
@@ -93,8 +105,9 @@ test("cross-market interpretation is plain English and marks mixed evidence", ()
     summary: "test",
   } as unknown as MarketSnapshot;
   const copy = interpretCrossMarket(snapshot);
-  assert.match(copy, /VIX is lower/i);
+  assert.match(copy, /VIX is lower|volatility is easing/i);
   assert.match(copy, /mixed|supportive|restrictive|balanced/i);
+  assert.doesNotMatch(copy, /, while .+, while /i);
   assert.doesNotMatch(copy, /guarantee|will rise|buy|sell/i);
 });
 
@@ -176,8 +189,28 @@ test("dashboard summary fails closed without inventing catalyst or live labels",
   assert.equal(summary.levels.length, 0);
   assert.match(summary.hero.delayedAgeLine, /Delayed market data/i);
   assert.doesNotMatch(summary.hero.delayedAgeLine, /\blive\b/i);
-  assert.equal(summary.decision.permissionLabel, "Restricted");
+  assert.equal(summary.decision.permissionLabel, "WAIT FOR CONFIRMATION");
   assert.ok(summary.unavailable.length > 0);
+});
+
+test("free dashboard distinguishes available quote from membership-gated candles", () => {
+  const snapshot = {
+    ...createUnavailableSnapshot(),
+    status: "DELAYED" as const,
+    quotes: [{ symbol: "ES", label: "ES", value: "5,501.00", change: "+8.00", direction: "up" as const }],
+  };
+  const summary = buildDashboardCommandSummary({
+    snapshot,
+    session: readSessionClock(new Date("2026-07-29T15:00:00Z")),
+    candleSeries: null,
+    candleAccess: false,
+    decision: null,
+    plan: null,
+    signals: null,
+    warnings: [],
+  });
+  assert.equal(summary.hero.delayedAgeLine, "Delayed market quote · verified candle history requires Pro or Elite");
+  assert.doesNotMatch(summary.hero.delayedAgeLine, /age unavailable/i);
 });
 
 test("market brief omits unsupported probability percentages and withholds unavailable scores", () => {

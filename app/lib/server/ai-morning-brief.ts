@@ -83,6 +83,7 @@ export async function generateAIMorningBrief(
     try {
       const response = await configuredClient.responses.create({
       model,
+      store: false,
       instructions: [
         "Write a concise executive morning market summary using only the supplied verified Bullseye fields.",
         "Do not add facts, prices, levels, forecasts, entries, stops, targets, recommendations, certainty, or personalised advice.",

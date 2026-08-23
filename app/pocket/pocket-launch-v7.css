@@ -1,0 +1,115 @@
+/* Pocket Bullseye v7 — lossless dark-chart surface.
+   Removes GPU compositing and decorative layers that can soften dark screenshots. */
+
+.psApp .psUpload[data-loaded="true"]{
+  transform:none!important;
+  transform-style:flat!important;
+  perspective:none!important;
+  will-change:auto!important;
+  contain:none!important;
+  isolation:auto!important;
+  padding:0;
+  border-color:#ffffff20;
+  background:#000!important;
+  box-shadow:0 18px 48px #0008!important;
+}
+.psApp .psUpload[data-loaded="true"]:hover{
+  transform:none!important;
+}
+.psApp .psUpload[data-loaded="true"]::before,
+.psApp .psUpload[data-loaded="true"]::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  mix-blend-mode:normal!important;
+}
+.psApp .psUpload[data-loaded="true"] img{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+  object-position:center;
+  opacity:1!important;
+  filter:none!important;
+  transform:none!important;
+  backface-visibility:visible!important;
+  -webkit-backface-visibility:visible!important;
+  image-rendering:auto;
+}
+.psApp .psUpload[data-loaded="true"]>.psScanLine,
+.psApp .psUpload[data-loaded="true"]>strong,
+.psApp .psUpload[data-loaded="true"]>small{
+  display:none!important;
+}
+
+/* Results use the same clean dark-chart rules, with annotations above the image. */
+.psApp .psAnnotatedChart,
+.psApp .psResultChart>div,
+.psApp .psChartFocusCanvas{
+  transform:none!important;
+  transform-style:flat!important;
+  perspective:none!important;
+  will-change:auto!important;
+  contain:none!important;
+  background:#000!important;
+}
+.psApp .psAnnotatedChart img,
+.psApp .psResultChart>div>img,
+.psApp .psChartFocusCanvas>img{
+  z-index:1;
+  opacity:1!important;
+  filter:none!important;
+  transform:none!important;
+  backface-visibility:visible!important;
+  -webkit-backface-visibility:visible!important;
+  object-fit:contain;
+  object-position:center;
+  image-rendering:auto;
+}
+.psApp .psAnnotatedChart::before,
+.psApp .psResultChart>div::before,
+.psApp .psChartFocusCanvas::before{
+  content:none!important;
+  display:none!important;
+}
+.psApp .psAnnotatedChart::after,
+.psApp .psResultChart>div::after,
+.psApp .psChartFocusCanvas::after{
+  background:#06100de8!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  mix-blend-mode:normal!important;
+}
+.psApp .psAnnotatedChart>i,
+.psApp .psResultChart>div>i,
+.psApp .psChartFocusCanvas>i{
+  z-index:5;
+  opacity:1!important;
+  filter:none!important;
+}
+
+/* Give dark-mode screenshots more physical screen area before any browser scaling. */
+@media(max-width:640px){
+  .psApp .psUpload[data-loaded="true"]{
+    height:min(72dvh,680px)!important;
+    min-height:420px;
+  }
+  .psApp .psResultChart>div{
+    height:min(74dvh,760px)!important;
+  }
+}
+@media(min-width:641px){
+  .psApp .psUpload[data-loaded="true"]{
+    height:min(76vh,760px)!important;
+  }
+  .psApp .psResultChart>div{
+    height:min(76vh,820px)!important;
+  }
+}

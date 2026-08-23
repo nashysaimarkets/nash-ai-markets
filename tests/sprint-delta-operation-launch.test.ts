@@ -42,11 +42,29 @@ test("Operation Launch migration is server-only, idempotent, and cannot grant me
 
 test("waiting-list endpoint is same-origin, duplicate-safe, and resists enumeration", async () => {
   const route = await readFile(new URL("../app/api/waitlist/route.ts", import.meta.url), "utf8");
-  assert.match(route, /suppliedOrigin !== requestOrigin/);
+  assert.match(route, /isSameOrigin|suppliedOrigin !== requestOrigin/);
   assert.match(route, /normalizeWaitlistSubmission/);
+  assert.match(route, /submission\.source === "homepage"/);
+  assert.match(route, /upsert\(\{ \.\.\.submission, updated_at:/);
+  assert.match(route, /onConflict: "email"/);
   assert.match(route, /error\.code !== "23505"/);
   assert.match(route, /NextResponse\.json\(\{ ok: true \}/);
   assert.doesNotMatch(route, /already exists|already joined|console\.|error\.message/i);
+});
+
+test("Founding Pro waitlist interest is explicit and cannot claim payment or allocation", async () => {
+  const [page, form] = await Promise.all([
+    readFile(new URL("../app/waitlist/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/waitlist/WaitlistForm.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /query\.plan === "founding-pro"/);
+  assert.match(page, /£12\/month Founding Pro launch offer/);
+  assert.match(page, /not a purchase and does not guarantee a place/);
+  assert.match(form, /source: foundingPro \? "homepage" : "launch-page"/);
+  assert.match(form, /No payment, guaranteed place, or automatic subscription/);
+  assert.match(form, /controller\.abort\(\), 12_000/);
+  assert.match(form, /role=\{messageTone === "error" \? "alert" : "status"\}/);
+  assert.match(form, /You can opt out/);
 });
 
 test("Founding Member endpoint requires current paid access and records pending review only", async () => {

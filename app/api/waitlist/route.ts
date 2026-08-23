@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import { normalizeWaitlistSubmission } from "../../lib/launch-onboarding.ts";
+import { isSameOrigin } from "../../lib/server/same-origin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,9 +9,7 @@ export const dynamic = "force-dynamic";
 const responseHeaders = { "cache-control": "no-store" };
 
 export async function POST(request: Request) {
-  const requestOrigin = new URL(request.url).origin;
-  const suppliedOrigin = request.headers.get("origin");
-  if (suppliedOrigin !== requestOrigin) {
+  if (!isSameOrigin(request)) {
     return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403, headers: responseHeaders });
   }
 
@@ -25,7 +24,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { error } = await createAdminClient().from("launch_waitlist").insert(submission);
+    const waitlist = createAdminClient().from("launch_waitlist");
+    const { error } = submission.source === "homepage" || submission.source === "pocket-founding"
+      ? await waitlist.upsert({ ...submission, updated_at: new Date().toISOString() }, { onConflict: "email" })
+      : await waitlist.insert(submission);
     if (error && error.code !== "23505") {
       return NextResponse.json({ ok: false, code: "WAITLIST_UNAVAILABLE" }, { status: 503, headers: responseHeaders });
     }

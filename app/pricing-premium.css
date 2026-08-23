@@ -1,6 +1,8 @@
 .commercialPage {
   position: relative;
-  overflow: hidden;
+  /* clip decorative bleed without creating a keyboard-trapping scroll region */
+  overflow-x: clip;
+  overflow-y: visible;
   padding-bottom: 0;
   background:
     radial-gradient(circle at 78% 3%, #08704635, transparent 24%),
@@ -53,7 +55,7 @@
 
 .commercialHero > span {
   color: #d9b85e;
-  font-size: 9px;
+  font-size: var(--type-floor);
 }
 
 .commercialHero h1 {
@@ -90,7 +92,7 @@
   border: 1px solid #38f28e35;
   background: #38f28e0a;
   color: #a9b8b0;
-  font: 700 8px "Courier New", monospace;
+  font:700 8px "Courier New", monospace;font-size:var(--type-floor);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -135,7 +137,7 @@
 .commercialPlans article > span,
 .commercialPlanIdentity > span {
   color: #d9b85e;
-  font: 700 10px "Courier New", monospace;
+  font:700 10px "Courier New", monospace;font-size:var(--type-floor);
   letter-spacing: 0.15em;
 }
 
@@ -158,6 +160,14 @@
   margin: 26px 0 16px;
   font-size: 36px;
   letter-spacing: -0.04em;
+}
+
+.commercialLaunchPrice {
+  display: block;
+  margin: -6px 0 12px;
+  color: #e8c673;
+  font: 700 var(--type-floor) "Courier New", monospace;
+  letter-spacing: 1px;
 }
 
 .commercialPlans p {
@@ -191,7 +201,7 @@
   padding: 7px 9px;
   border: 1px solid #38f28e66;
   background: #38f28e12;
-  font-size: 7px;
+  font-size: var(--type-floor);
 }
 
 .commercialPopular form button,
@@ -216,9 +226,6 @@
   height: 42px;
 }
 
-.commercialPlanBadges img:last-child {
-  height: 36px;
-}
 
 .commercialFounding {
   min-height: 112px;
@@ -231,7 +238,7 @@
 
 .commercialFounding strong {
   color: #e9ca70;
-  font-size: 9px;
+  font-size: var(--type-floor);
 }
 
 .commercialFounding span {
@@ -270,7 +277,7 @@
 
 .commercialFaq > span {
   color: #d9b85e;
-  font-size: 9px;
+  font-size: var(--type-floor);
 }
 
 .commercialFaq h2 {
@@ -312,7 +319,7 @@
 
 .commercialFooter div a {
   color: #909c96;
-  font-size: 10px;
+  font-size: var(--type-floor);
   text-decoration: none;
 }
 
@@ -337,7 +344,7 @@
 
   .commercialNav > a:last-child {
     padding: 0 11px;
-    font-size: 9px;
+    font-size: var(--type-floor);
   }
 
   .commercialHero {
@@ -402,7 +409,7 @@
   font-size: 12px;
   font-weight: 800;
   text-decoration: none;
-  transition: top 0.2s ease;
+  transition: top var(--vx-fast) ease;
 }
 
 .commercialSkip:focus {
@@ -434,14 +441,14 @@
   min-height: 32px;
   margin: -8px 0 9px;
   color: #d9b85e;
-  font: 700 8px var(--font-geist-mono), monospace;
+  font:700 8px var(--font-geist-mono), monospace;font-size:var(--type-floor);
   letter-spacing: 0.08em;
   line-height: 1.5;
   text-transform: uppercase;
 }
 
 .commercialPlans article {
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition: border-color var(--vx-fast) ease, box-shadow var(--vx-fast) ease, transform var(--vx-fast) ease;
 }
 
 .commercialPlans article:hover {
@@ -455,7 +462,7 @@
 }
 
 .commercialPlans form button {
-  transition: filter 0.2s ease, transform 0.2s ease;
+  transition: filter var(--vx-fast) ease, transform var(--vx-fast) ease;
 }
 
 .commercialPlans form button:hover {
@@ -477,7 +484,7 @@
 
 .commercialAssurance > div > span {
   color: #d9b85e;
-  font: 700 9px var(--font-geist-mono), monospace;
+  font:700 9px var(--font-geist-mono), monospace;font-size:var(--type-floor);
   letter-spacing: 0.14em;
 }
 

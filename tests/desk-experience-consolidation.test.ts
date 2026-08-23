@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildDeskDecisionPresentation } from "../app/terminal/lib/desk-decision-presentation.ts";
-import { dedupeVerifiedEvents, normalizeEventTitle } from "../app/terminal/lib/event-display.ts";
+import { buildDeskDecisionPresentation, buildTodaysPosture } from "../app/terminal/lib/desk-decision-presentation.ts";
+import {
+  dedupeVerifiedEvents,
+  normalizeEventTitle,
+  upcomingVerifiedEvents,
+} from "../app/terminal/lib/event-display.ts";
 import { DESK_VIEW_IDS, DESK_VIEW_WIDGETS, widgetsForView } from "../app/terminal/lib/desk-views.ts";
 import { coverageLabel } from "../app/lib/markets/market-catalog.ts";
 
@@ -41,12 +45,19 @@ test("desk decision presentation separates lean from blocked permission", () => 
   });
 
   assert.equal(presentation.leanLabel, "Mildly bullish");
-  assert.equal(presentation.permissionLabel, "Restricted");
+  assert.equal(presentation.permissionLabel, "WAIT FOR CONFIRMATION");
   assert.equal(presentation.permissionTone, "blocked");
-  assert.equal(presentation.confidenceLabel, "Not established");
-  assert.equal(presentation.confidenceDetail, "Engine confidence score: 0 / 100");
-  assert.match(presentation.why, /observed lean|restricted|incomplete/i);
-  assert.doesNotMatch(presentation.why, /instruction to buy|enter long/i);
+  assert.equal(presentation.confidenceLabel, "NOT ESTABLISHED");
+  assert.match(presentation.confidenceDetail ?? "", /incomplete|non-actionable|Awaiting evidence/i);
+  assert.doesNotMatch(presentation.confidenceDetail ?? "", /Engine confidence score: 0 \/ 100/);
+  assert.match(presentation.why, /observed lean|wait for confirmation|incomplete/i);
+  assert.doesNotMatch(presentation.why, /Restricted|instruction to buy|enter long/i);
+
+  const posture = buildTodaysPosture(presentation);
+  assert.equal(posture.eyebrow, "TODAY'S POSTURE");
+  assert.equal(posture.headline, "Stay patient");
+  assert.match(posture.summary, /mildly bullish|wait for confirmation|confirmation/i);
+  assert.doesNotMatch(posture.summary, /\bbuy\b|\bsell\b|enter |Restricted/i);
 });
 
 test("event display normalizes and dedupes Fed press conference labels", () => {
@@ -60,10 +71,22 @@ test("event display normalizes and dedupes Fed press conference labels", () => {
   assert.equal(events[0]?.name, "Fed Press Conference");
 });
 
+test("upcomingVerifiedEvents keeps Brief and Desk on the same future filter", () => {
+  const now = Date.parse("2026-07-28T12:00:00.000Z");
+  const upcoming = upcomingVerifiedEvents([
+    { time: "Wed 10:00", name: "Past CPI", risk: "HIGH", at: "2026-07-28T10:00:00.000Z" },
+    { time: "Wed 14:00", name: "Future CPI", risk: "HIGH", at: "2026-07-28T14:00:00.000Z" },
+    { time: "opaque", name: "Unparseable", risk: "MED" },
+  ], now, 5);
+  assert.equal(upcoming.length, 1);
+  assert.equal(upcoming[0]?.name, "Future CPI");
+});
+
 test("desk views partition widgets without inventing new data sources", () => {
   assert.deepEqual(DESK_VIEW_IDS, ["overview", "charts", "catalysts", "risk"]);
   assert.ok(DESK_VIEW_WIDGETS.charts.includes("primary-chart"));
-  assert.ok(DESK_VIEW_WIDGETS.catalysts.includes("economic-calendar"));
+  assert.ok(DESK_VIEW_WIDGETS.catalysts.includes("catalyst-radar"));
+  assert.equal(DESK_VIEW_WIDGETS.catalysts.includes("economic-calendar"), false);
   assert.ok(DESK_VIEW_WIDGETS.risk.includes("risk-toolkit"));
   assert.deepEqual(
     widgetsForView("charts", ["primary-chart", "edge-brief", "compare-rail"]),
@@ -82,6 +105,10 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(shell, /Morning Brief/);
   assert.match(shell, /Trading Desk/);
   assert.match(desk, /DeskDecisionSummary/);
+  assert.match(desk, /DeskMissionStage/);
+  assert.match(desk, /Decision radar/);
+  assert.match(desk, /Open verified chart/);
+  assert.match(desk, /Review risk gate/);
   assert.match(desk, /deskViewTabs/);
   assert.match(desk, /Workspace preset/);
   assert.match(desk, /Overview/);
@@ -91,8 +118,10 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.match(desk, /Bullish lean/);
   assert.match(desk, /Bearish lean/);
   assert.doesNotMatch(desk, />Buying</);
-  assert.match(desk, /sortInstrumentsForSidebar|Additional markets — coming soon/);
-  assert.match(desk, /formatDelayedVerifiedCandleAgeDisplay|Delayed market data/);
+  assert.match(desk, /sortInstrumentsForSidebar|Additional markets — planned|groupAvailabilityLabel/);
+  assert.match(desk, /isFavouriteMarketId|resolveStoredMarketId/);
+  assert.match(desk, /VerifiedCatalystIncludes|groupVerifiedEvents/);
+  assert.match(desk, /formatMembershipAwareMarketDataDisplay|Delayed market data/);
   assert.match(desk, /latestVerifiedCandleAgeMs|24-hour low \/ downside reference|24-hour high \/ upside reference/);
   assert.match(desk, /selectDeskView/);
   assert.match(desk, /document\.scrollingElement/);
@@ -102,10 +131,11 @@ test("Trading Desk IA uses view tabs, decision summary, and softer coverage labe
   assert.doesNotMatch(desk, /scrollIntoView/);
   assert.match(desk, /id=\{`desk-view-\$\{deskView\}`\}/);
   assert.match(desk, /id="primary-chart"|id="verified-levels"|id="next-catalyst"|id="risk-journal"/);
+  assert.match(decisionSummary, /TODAY.?S POSTURE|buildTodaysPosture|posture\.headline/);
   assert.match(decisionSummary, /Participation/);
   assert.match(decisionSummary, /id="decision-summary"/);
   assert.match(decisionSummary, /is-blocked-priority|permissionTone === "blocked"/);
-  assert.match(decisionSummary, /Technical confirmation details|Restricted|Not established|confidenceDetail/);
+  assert.match(decisionSummary, /Technical confirmation details|Wait for confirmation|Not established|confidenceDetail/);
   assert.equal(coverageLabel("live"), "Connected");
   assert.match(catalog, /return "Connected"/);
 });

@@ -7,11 +7,22 @@ import {
   coverageDetail,
   coverageLabel,
   getMarketInstrument,
+  groupAvailabilityLabel,
+  isFavouriteMarketId,
+  resolveStoredMarketId,
   type MarketCoverage,
   type MarketGroupId,
   type MarketInstrument,
 } from "../../lib/markets/market-catalog.ts";
-import { formatDelayedVerifiedCandleAgeDisplay } from "../../lib/freshness-labels.ts";
+import { VerifiedCatalystIncludes } from "../../components/VerifiedCatalystIncludes.tsx";
+import { VerifiedMacroContextPanel } from "../../components/VerifiedMacroContextPanel.tsx";
+import { StatusIcon } from "../../components/StatusIcon.tsx";
+import { formatMembershipAwareMarketDataDisplay } from "../../lib/freshness-labels.ts";
+import { resolveDeskFeedStatus } from "../lib/feed-status.ts";
+import { customerVideoTypeLabel, formatVideoDuration } from "../../lib/market-video/select.ts";
+import type { MarketVideoSelection } from "../../lib/market-video/types.ts";
+import { buildConfirmationSummary } from "../../lib/confirmation-summary.ts";
+import { buildDataHealthSummary } from "../../lib/data-health-summary.ts";
 import { isCandleInstrument, type CandleInstrument } from "../../lib/providers/candle-instruments.ts";
 import type { CustomerCandleSeries } from "../../lib/providers/financial-modeling-prep-candles.ts";
 import { DashboardCandlestickChart } from "../../dashboard/components/DashboardCandlestickChart.tsx";
@@ -46,7 +57,9 @@ import {
   type DeskViewId,
 } from "../lib/desk-views.ts";
 import { DeskDecisionSummary } from "./DeskDecisionSummary.tsx";
-import { nextVerifiedEvents } from "../lib/event-display.ts";
+import { groupVerifiedEvents, verifiedEventRiskLabel } from "../lib/event-display.ts";
+import { buildSessionTimeline } from "../../lib/oracle/session-timeline.ts";
+import { SessionTimeline } from "../../components/oracle/SessionTimeline.tsx";
 import {
   PREFERRED_PLATFORMS,
   PREFERRED_PLATFORM_IDS,
@@ -104,9 +117,21 @@ function latestVerifiedCandleAgeMs(
   return series?.dataAgeMs ?? null;
 }
 
+function marketDataStatusLine(
+  payload: TradingDeskPayload,
+  symbol: string,
+  quoteAvailable: boolean,
+): string {
+  return formatMembershipAwareMarketDataDisplay({
+    candleAgeMs: latestVerifiedCandleAgeMs(payload, symbol),
+    candleAccess: payload.paid,
+    quoteAvailable,
+  });
+}
+
 function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
   connected: MarketInstrument[];
-  comingSoon: MarketInstrument[];
+  planned: MarketInstrument[];
 } {
   const ordered = [...instruments].sort((left, right) => {
     const rank = COVERAGE_RANK[left.coverage] - COVERAGE_RANK[right.coverage];
@@ -115,8 +140,133 @@ function sortInstrumentsForSidebar(instruments: readonly MarketInstrument[]): {
   });
   return {
     connected: ordered.filter((item) => item.coverage === "live"),
-    comingSoon: ordered.filter((item) => item.coverage !== "live"),
+    planned: ordered.filter((item) => item.coverage !== "live"),
   };
+}
+
+function DeskVideoShortcut({ selection }: { selection: MarketVideoSelection | null | undefined }) {
+  if (!selection?.available) return null;
+  const video = selection.video;
+  const duration = formatVideoDuration(video.durationSeconds);
+  const label =
+    video.type === "PRE_MARKET" ? "Watch today’s pre-market briefing" : "Watch today’s post-market review";
+
+  return (
+    <aside className="deskVideoShortcut" aria-label={customerVideoTypeLabel(video.type)}>
+      <Link href="/brief" className="deskVideoShortcutLink">
+        <StatusIcon name="video" />
+        <span>
+          <strong>{label}</strong>
+          <small>
+            {video.marketDate}
+            {duration ? ` · ${duration}` : ""}
+          </small>
+        </span>
+      </Link>
+      <a href={video.watchUrl} target="_blank" rel="noopener noreferrer" className="deskVideoExternal">
+        YouTube
+      </a>
+    </aside>
+  );
+}
+
+function DeskMissionStage(props: {
+  marketSymbol: string;
+  marketName: string;
+  quoteValue: string | null;
+  quoteChange: string | null;
+  quoteDirection: "up" | "down" | "flat" | "unavailable";
+  sessionLabel: string;
+  countdown: string | null;
+  permission: string;
+  permissionTone: "open" | "caution" | "blocked";
+  lean: string;
+  confidence: string;
+  risk: string;
+  dataReady: boolean;
+  candlesReady: boolean;
+  levelsReady: boolean;
+  catalystReady: boolean;
+  nextCatalyst: string | null;
+  nextCatalystWhen: string | null;
+  ageLabel: string;
+  onOpenChart: () => void;
+  onOpenRisk: () => void;
+}) {
+  const checks = [props.dataReady, props.candlesReady, props.levelsReady, props.catalystReady];
+  const verifiedCount = checks.filter(Boolean).length;
+  const readinessLabel = verifiedCount === 4 ? "Evidence connected" : verifiedCount > 1 ? "Partial evidence" : "Awaiting evidence";
+
+  return (
+    <section className={`deskMissionStage is-${props.permissionTone}`} aria-labelledby="desk-mission-title">
+      <div className="deskMissionGlow" aria-hidden="true" />
+      <div className="deskMissionPrimary">
+        <div className="deskMissionKicker">
+          <span className="deskMissionLiveDot" aria-hidden="true" />
+          Active desk · {props.sessionLabel}
+        </div>
+        <div className="deskMissionInstrument">
+          <div>
+            <span>{props.marketName}</span>
+            <h2 id="desk-mission-title">{props.marketSymbol}</h2>
+          </div>
+          <div className={`deskMissionQuote is-${props.quoteDirection}`}>
+            <strong>{props.quoteValue ?? "—"}</strong>
+            <span>{props.quoteChange ?? "Verified quote unavailable"}</span>
+          </div>
+        </div>
+        <div className="deskMissionPermission">
+          <span>Participation permission</span>
+          <strong>{props.permission}</strong>
+          <small>{props.lean} · confidence {props.confidence.toLowerCase()}</small>
+        </div>
+        <div className="deskMissionActions">
+          <button type="button" onClick={props.onOpenChart}>Open verified chart</button>
+          <button type="button" onClick={props.onOpenRisk}>Review risk gate</button>
+        </div>
+      </div>
+
+      <div className="deskMissionRadar" aria-label={`${verifiedCount} of 4 evidence checks connected`}>
+        <div className="deskMissionRadarVisual" aria-hidden="true">
+          <i /><i /><i />
+          <span className={`is-${props.permissionTone}`} />
+        </div>
+        <span>Decision radar</span>
+        <strong>{readinessLabel}</strong>
+        <small>{verifiedCount} / 4 verified checks</small>
+        <div className="deskMissionChecks">
+          {[
+            ["Data", props.dataReady],
+            ["Candles", props.candlesReady],
+            ["Levels", props.levelsReady],
+            ["Catalyst", props.catalystReady],
+          ].map(([label, ready]) => (
+            <span key={String(label)} className={ready ? "is-ready" : "is-waiting"}>
+              <i aria-hidden="true" />{label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="deskMissionContext">
+        <article>
+          <span>Session clock</span>
+          <strong>{props.countdown ?? props.sessionLabel}</strong>
+          <small>{props.sessionLabel}</small>
+        </article>
+        <article>
+          <span>Next catalyst</span>
+          <strong>{props.nextCatalyst ?? "None verified"}</strong>
+          <small>{props.nextCatalystWhen ?? "Calendar remains fail-closed"}</small>
+        </article>
+        <article>
+          <span>Risk lens</span>
+          <strong>{props.risk}</strong>
+          <small>{props.ageLabel}</small>
+        </article>
+      </div>
+    </section>
+  );
 }
 
 export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
@@ -127,30 +277,41 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   const [session, setSession] = useState(payload.session);
   const [openGroup, setOpenGroup] = useState<MarketGroupId | null>("indices");
   const [marketsOpen, setMarketsOpen] = useState(false);
-  const [marketsCollapsed, setMarketsCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return window.localStorage.getItem(DESK_MARKETS_COLLAPSED_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const [deskView, setDeskView] = useState<DeskViewId>(() => {
-    if (typeof window === "undefined") return "overview";
-    try {
-      const view = window.localStorage.getItem(DESK_VIEW_STORAGE_KEY);
-      return view && isDeskViewId(view) ? view : "overview";
-    } catch {
-      return "overview";
-    }
-  });
+  // Keep the server render and the browser's first render identical. Persisted
+  // display preferences are applied after hydration so they cannot trigger a
+  // React hydration mismatch for returning members.
+  const [marketsCollapsed, setMarketsCollapsed] = useState(false);
+  const [deskView, setDeskView] = useState<DeskViewId>("overview");
   const [journal, setJournal] = useState<JournalEntry | null>(null);
   const [embedAllowed, setEmbedAllowed] = useState(false);
 
   useEffect(() => {
     const stored = readWorkspaceFromBrowser();
+    let storedView: DeskViewId = "overview";
+    let storedMarketsCollapsed = false;
+    let requestedMarketId: string | null = null;
+    let requestedView: DeskViewId | null = null;
+    try {
+      const view = window.localStorage.getItem(DESK_VIEW_STORAGE_KEY);
+      if (view && isDeskViewId(view)) storedView = view;
+      storedMarketsCollapsed = window.localStorage.getItem(DESK_MARKETS_COLLAPSED_KEY) === "1";
+
+      const params = new URLSearchParams(window.location.search);
+      const market = params.get("market");
+      const entryView = params.get("view");
+      if (market) {
+        const resolved = resolveStoredMarketId(market);
+        if (getMarketInstrument(resolved)) requestedMarketId = resolved;
+      }
+      if (entryView && isDeskViewId(entryView)) requestedView = entryView;
+    } catch {
+      // Browser storage is optional; deterministic defaults remain usable.
+    }
     startTransition(() => {
-      setWorkspace(stored.version === 1 ? stored : payload.initialWorkspace);
+      const restored = stored.version === 1 ? stored : payload.initialWorkspace;
+      setWorkspace(requestedMarketId ? { ...restored, activeMarketId: requestedMarketId } : restored);
+      setDeskView(requestedView ?? storedView);
+      setMarketsCollapsed(storedMarketsCollapsed);
       setHydrated(true);
     });
   }, [payload.initialWorkspace]);
@@ -273,8 +434,9 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
         events: payload.snapshot.events,
         active,
         favourites,
+        now: Date.parse(payload.snapshot.asOf) || undefined,
       }),
-    [active, favourites, payload.snapshot.events],
+    [active, favourites, payload.snapshot.asOf, payload.snapshot.events],
   );
 
   const visibleWidgets = workspace.widgets.filter((id) => !workspace.hidden.includes(id));
@@ -290,8 +452,18 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     : workspace.focusMode
       ? stageWidgets
       : viewWidgets;
-  const nextCatalyst = nextVerifiedEvents(payload.snapshot.events, 1)[0] ?? null;
+  const snapshotNow = useMemo(() => {
+    const parsed = Date.parse(payload.snapshot.asOf);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }, [payload.snapshot.asOf]);
+  const nextGrouped = useMemo(
+    () => groupVerifiedEvents(payload.snapshot.events, snapshotNow || undefined, 1)[0] ?? null,
+    [payload.snapshot.events, snapshotNow],
+  );
+  const nextCatalystWhen = nextGrouped?.time ?? null;
+  const nextCatalyst = nextGrouped;
   const snapshotFeed = payload.freshnessFeeds.find((feed) => feed.id === "snapshot");
+  const missionHealth = buildDataHealthSummary(payload.freshnessFeeds);
 
   function updateWorkspace(patch: Partial<DeskWorkspaceState> | ((prev: DeskWorkspaceState) => DeskWorkspaceState)) {
     setWorkspace((prev) => {
@@ -317,12 +489,16 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   function toggleFavourite(id: string) {
+    const resolved = resolveStoredMarketId(id);
     updateWorkspace((prev) => {
-      const has = prev.favourites.includes(id);
+      const has = isFavouriteMarketId(prev.favourites, resolved);
+      const favourites = has
+        ? prev.favourites.filter((item) => resolveStoredMarketId(item) !== resolved)
+        : [...prev.favourites, resolved].slice(0, 24);
       return {
         ...prev,
         preset: "custom",
-        favourites: has ? prev.favourites.filter((item) => item !== id) : [...prev.favourites, id].slice(0, 24),
+        favourites,
       };
     });
   }
@@ -364,37 +540,65 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
   }
 
   function renderWidget(id: DeskWidgetId) {
-    const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
+    const delayedAgeLine = marketDataStatusLine(payload, active.symbol, Boolean(activeQuote));
     switch (id) {
-      case "freshness-trust":
+      case "freshness-trust": {
+        const health = buildDataHealthSummary(payload.freshnessFeeds);
         return (
           <section key={id} className="deskWidget deskFreshness" aria-label="Data health">
             <header>
               <span>Data health</span>
-              <strong>Feed status</strong>
+              <strong>{health.headline}</strong>
             </header>
-            <ul>
-              {payload.freshnessFeeds.map((feed) => (
-                <li key={feed.id} data-status={feed.status}>
-                  <span>{feed.label}</span>
-                  <TerminalBadge
-                    label={feed.status.replace("_", " ")}
-                    tone={
-                      feed.status === "LIVE"
-                        ? "positive"
-                        : feed.status === "DELAYED" || feed.status === "PREVIOUS_SESSION" || feed.status === "MARKET_CLOSED"
-                          ? "warning"
-                          : "danger"
-                    }
-                    pulse={feed.status === "LIVE"}
-                  />
-                  <small>{feed.ageLabel}</small>
-                  <em>{feed.detail}</em>
+            <p className="deskHealthSummary">{health.detail}</p>
+            <ul className="deskHealthFacts">
+              <li>
+                <span>ES educational review</span>
+                <strong>{health.esUsable ? "Usable" : "Unavailable"}</strong>
+              </li>
+              <li>
+                <span>Supporting markets</span>
+                <strong>{health.supportingIncomplete ? "Incomplete" : "Within delayed window"}</strong>
+              </li>
+              {health.oldestImportantLabel ? (
+                <li>
+                  <span>Oldest important input</span>
+                  <strong>{health.oldestImportantLabel}</strong>
                 </li>
-              ))}
+              ) : null}
+              {health.unavailableSources.length ? (
+                <li>
+                  <span>Unavailable sources</span>
+                  <strong>{health.unavailableSources.slice(0, 4).join(", ")}</strong>
+                </li>
+              ) : null}
             </ul>
+            <details className="deskHealthDetails">
+              <summary>View feed ages</summary>
+              <ul>
+                {payload.freshnessFeeds.map((feed) => (
+                  <li key={feed.id} data-status={feed.status}>
+                    <span>{feed.label}</span>
+                    <TerminalBadge
+                      label={feed.status.replace("_", " ")}
+                      tone={
+                        feed.status === "LIVE"
+                          ? "positive"
+                          : feed.status === "DELAYED" || feed.status === "PREVIOUS_SESSION" || feed.status === "MARKET_CLOSED"
+                            ? "warning"
+                            : "danger"
+                      }
+                      pulse={feed.status === "LIVE"}
+                    />
+                    <small>{feed.ageLabel}</small>
+                    <em>{feed.detail}</em>
+                  </li>
+                ))}
+              </ul>
+            </details>
           </section>
         );
+      }
       case "session-clock":
         return (
           <section key={id} className={`deskWidget deskSession is-${session.phase}`} aria-label="Session command strip">
@@ -533,7 +737,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                       <strong>{quote?.value ?? "—"}</strong>
                       <small>{quote?.change ?? coverageLabel(item.coverage)}</small>
                     </button>
-                    <button type="button" className="deskStar" aria-label={`Remove ${item.symbol} from favourites`} onClick={() => toggleFavourite(item.id)}>★</button>
+                    <button type="button" className={`deskStar${isFavouriteMarketId(workspace.favourites, item.id) ? " is-on" : ""}`} aria-label={`Remove ${item.symbol} from favourites`} onClick={() => toggleFavourite(item.id)}>★</button>
                   </li>
                 );
               })}
@@ -607,7 +811,13 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <li key={item.id}>
                     <time>{item.time}</time>
                     <strong>{item.title}</strong>
-                    <TerminalBadge label={item.risk} tone={item.risk === "HIGH" ? "danger" : "warning"} />
+                    <TerminalBadge
+                      label={verifiedEventRiskLabel(item.risk)}
+                      tone={item.risk === "HIGH" ? "danger" : "warning"}
+                    />
+                    {item.includes.length ? (
+                      <VerifiedCatalystIncludes includes={item.includes} className="deskCatalystIncludes" />
+                    ) : null}
                     <p>{item.relevance}</p>
                   </li>
                 ))}
@@ -626,20 +836,24 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             <small>{catalyst.disclosure}</small>
           </section>
         );
-      case "economic-calendar":
+      case "economic-calendar": {
+        const calendarEvents = groupVerifiedEvents(payload.snapshot.events, snapshotNow || undefined, 12);
         return (
           <section key={id} className="deskWidget deskCalendar" aria-labelledby="econ-cal-title">
             <header>
               <span>Economic calendar</span>
               <h2 id="econ-cal-title">Verified US releases</h2>
             </header>
-            {payload.snapshot.events.length ? (
+            {calendarEvents.length ? (
               <div className="ctEvents">
-                {payload.snapshot.events.map((event) => (
-                  <article key={`${event.time}-${event.name}`}>
+                {calendarEvents.map((event) => (
+                  <article key={`${event.at ?? event.time}-${event.name}`}>
                     <time>{event.time}</time>
                     <strong>{event.name}</strong>
                     <span>{event.risk}</span>
+                    {event.includes.length ? (
+                      <VerifiedCatalystIncludes includes={event.includes} className="deskCatalystIncludes" />
+                    ) : null}
                   </article>
                 ))}
               </div>
@@ -651,6 +865,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             )}
           </section>
         );
+      }
       case "earnings-calendar":
         return (
           <section key={id} className="deskWidget deskCoverageCompact" aria-labelledby="earn-cal-title">
@@ -834,7 +1049,10 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </li>
                   ))}
                 </ul>
-                <small>Stored locally in this browser — not synced to the server journal API.</small>
+                <small className="vxIconLabel deskJournalSaveHint">
+                  <StatusIcon name="device" />
+                  Saved on this device
+                </small>
               </>
             ) : null}
           </section>
@@ -844,10 +1062,38 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
     }
   }
 
-  const delayedAgeLine = formatDelayedVerifiedCandleAgeDisplay(latestVerifiedCandleAgeMs(payload, active.symbol));
+  const delayedAgeLine = marketDataStatusLine(payload, active.symbol, Boolean(activeQuote));
+  const activeFeedStatus = resolveDeskFeedStatus({
+    coverage: active.coverage,
+    status: payload.snapshot.status,
+  });
+  const timeline = buildSessionTimeline();
+
+  useEffect(() => {
+    if (!workspace.focusMode) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setWorkspace((prev) => ({ ...prev, focusMode: false }));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [workspace.focusMode]);
 
   return (
-    <div className={`tradingDeskOS${workspace.focusMode ? " is-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">
+    <div className={`tradingDeskOS${workspace.focusMode ? " is-focus is-oracle-focus" : ""}${marketsCollapsed ? " is-markets-collapsed" : ""}`} id="overview">
+      {workspace.focusMode ? (
+        <div className="deskFocusExit">
+          <button
+            type="button"
+            className="is-on"
+            aria-keyshortcuts="Escape"
+            onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: false }))}
+          >
+            Exit Focus Mode
+          </button>
+        </div>
+      ) : null}
       <section className="deskHero deskHeroCompact" aria-labelledby="desk-hero-title">
         <div className="deskHeroCopy">
           <span className="ctEyebrow">NASH AI MARKETS</span>
@@ -857,8 +1103,13 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           </p>
         </div>
         <div className="deskHeroActions">
-          <button type="button" className={workspace.focusMode ? "is-on" : undefined} onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: !prev.focusMode }))}>
-            {workspace.focusMode ? "Exit focus" : "Focus chart"}
+          <button
+            type="button"
+            className={workspace.focusMode ? "is-on" : undefined}
+            aria-pressed={workspace.focusMode}
+            onClick={() => setWorkspace((prev) => ({ ...prev, focusMode: !prev.focusMode }))}
+          >
+            {workspace.focusMode ? "Exit Focus Mode" : "Focus Mode"}
           </button>
           <button type="button" className={builderOpen ? "is-on" : undefined} onClick={() => setBuilderOpen((open) => !open)}>
             Layout
@@ -866,6 +1117,61 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           <button type="button" onClick={() => { setMarketsOpen(true); setMarketsCollapsed(false); }}>Markets</button>
         </div>
       </section>
+
+      {!workspace.focusMode ? <SessionTimeline model={timeline} /> : null}
+
+      {!workspace.focusMode ? (
+        <DeskMissionStage
+          marketSymbol={active.symbol}
+          marketName={active.name}
+          quoteValue={activeQuote?.value ?? null}
+          quoteChange={activeQuote?.change ?? null}
+          quoteDirection={activeQuote?.direction ?? "unavailable"}
+          sessionLabel={session.label}
+          countdown={session.countdownLabel}
+          permission={payload.decisionPresentation.permissionLabel}
+          permissionTone={payload.decisionPresentation.permissionTone}
+          lean={payload.decisionPresentation.leanLabel}
+          confidence={payload.decisionPresentation.confidenceLabel}
+          risk={payload.decisionPresentation.primaryRisk ?? payload.decisionPresentation.riskLabel}
+          dataReady={missionHealth.esUsable}
+          candlesReady={Boolean(activeCandle && activeCandle.status !== "unavailable")}
+          levelsReady={activeStructure?.status === "ready"}
+          catalystReady={Boolean(nextCatalyst)}
+          nextCatalyst={nextCatalyst?.name ?? null}
+          nextCatalystWhen={nextCatalystWhen}
+          ageLabel={delayedAgeLine}
+          onOpenChart={() => selectDeskView("charts")}
+          onOpenRisk={() => selectDeskView("risk")}
+        />
+      ) : null}
+
+      {workspace.focusMode ? (
+        <section className="deskFocusStrip" aria-label="Focus mode essentials">
+          <article>
+            <span>Posture</span>
+            <strong>{payload.decisionPresentation.permissionLabel}</strong>
+            <small>{payload.decisionPresentation.leanLabel}</small>
+          </article>
+          <article>
+            <span>Risk</span>
+            <strong>{payload.decisionPresentation.primaryRisk ?? payload.decisionPresentation.riskLabel}</strong>
+            <small>{payload.decisionPresentation.confidenceLabel}</small>
+          </article>
+          <article>
+            <span>Insight</span>
+            <strong>{payload.decisionPresentation.why.slice(0, 120)}{payload.decisionPresentation.why.length > 120 ? "…" : ""}</strong>
+            <small>Educational summary from verified inputs</small>
+          </article>
+          <article>
+            <span>Checklist</span>
+            <button type="button" onClick={() => selectDeskView("risk")}>
+              Open trading checklist
+            </button>
+            <small>Preparation over frequency</small>
+          </article>
+        </section>
+      ) : null}
 
       <div className="deskViewTabs" role="tablist" aria-label="Trading Desk views">
         <span className="deskViewTabsLabel" id="desk-views-label">Views</span>
@@ -1034,13 +1340,24 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             <ul className="tmMarketsGroups">
               {MARKET_CATALOG.map((group) => {
                 const expanded = openGroup === group.id;
-                const { connected, comingSoon } = sortInstrumentsForSidebar(group.instruments);
+                const { connected } = sortInstrumentsForSidebar(group.instruments);
+                const availability = groupAvailabilityLabel(group);
+                if (!connected.length) {
+                  return (
+                    <li key={group.id} className="tmMarketsGroupLater">
+                      <span>{group.label}</span>
+                      <small>{availability === "coming later" ? "coming later" : availability}</small>
+                    </li>
+                  );
+                }
+                const favourited = (instrumentId: string) => isFavouriteMarketId(workspace.favourites, instrumentId);
                 const renderInstrument = (instrument: MarketInstrument) => (
                   <li key={instrument.id}>
                     <button
                       type="button"
                       className={`tmMarketsInstrument${instrument.id === active.id ? " is-selected" : ""}`}
                       onClick={() => selectMarket(instrument)}
+                      aria-current={instrument.id === active.id ? "true" : undefined}
                     >
                       <span className="tmMarketsInstrumentName">{instrument.name}</span>
                       <span className="tmMarketsInstrumentMeta">
@@ -1052,8 +1369,9 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                     </button>
                     <button
                       type="button"
-                      className={`deskStar${workspace.favourites.includes(instrument.id) ? " is-on" : ""}`}
-                      aria-label={`${workspace.favourites.includes(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} favourites`}
+                      className={`deskStar${favourited(instrument.id) ? " is-on" : ""}`}
+                      aria-label={`${favourited(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} ${favourited(instrument.id) ? "from" : "to"} favourites`}
+                      aria-pressed={favourited(instrument.id)}
                       onClick={() => toggleFavourite(instrument.id)}
                     >
                       ★
@@ -1064,31 +1382,65 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
                   <li key={group.id}>
                     <button type="button" className="tmMarketsGroupToggle" aria-expanded={expanded} onClick={() => setOpenGroup(expanded ? null : group.id)}>
                       <span>{group.label}</span>
-                      <small>{connected.length || group.instruments.length}</small>
+                      <small>{availability}</small>
                       <i aria-hidden="true">{expanded ? "▾" : "▸"}</i>
                     </button>
                     {expanded ? (
                       <ul className="tmMarketsInstruments">
                         {connected.map(renderInstrument)}
-                        {comingSoon.length ? (
-                          <li className="tmMarketsComingSoon">
-                            <details>
-                              <summary>Additional markets — coming soon ({comingSoon.length})</summary>
-                              <ul className="tmMarketsInstruments is-nested">
-                                {comingSoon.map(renderInstrument)}
-                              </ul>
-                            </details>
-                          </li>
-                        ) : null}
                       </ul>
                     ) : null}
                   </li>
                 );
               })}
             </ul>
+            {(() => {
+              const plannedAll = MARKET_CATALOG.flatMap((group) =>
+                sortInstrumentsForSidebar(group.instruments).planned,
+              );
+              if (!plannedAll.length) return null;
+              const favourited = (instrumentId: string) => isFavouriteMarketId(workspace.favourites, instrumentId);
+              return (
+                <details className="tmMarketsComingSoon tmMarketsComingSoonGlobal">
+                  <summary>More markets — coming later ({plannedAll.length})</summary>
+                  <ul className="tmMarketsInstruments is-nested">
+                    {plannedAll.map((instrument) => (
+                      <li key={instrument.id}>
+                        <button
+                          type="button"
+                          className={`tmMarketsInstrument${instrument.id === active.id ? " is-selected" : ""}`}
+                          onClick={() => selectMarket(instrument)}
+                          aria-current={instrument.id === active.id ? "true" : undefined}
+                        >
+                          <span className="tmMarketsInstrumentName">{instrument.name}</span>
+                          <span className="tmMarketsInstrumentMeta">
+                            <code>{instrument.symbol}</code>
+                            <em className={`tmCoverage is-${instrument.coverage}`} title={coverageDetail(instrument)}>
+                              {coverageLabel(instrument.coverage)}
+                            </em>
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          className={`deskStar${favourited(instrument.id) ? " is-on" : ""}`}
+                          aria-label={`${favourited(instrument.id) ? "Remove" : "Add"} ${instrument.symbol} ${favourited(instrument.id) ? "from" : "to"} favourites`}
+                          aria-pressed={favourited(instrument.id)}
+                          onClick={() => toggleFavourite(instrument.id)}
+                        >
+                          ★
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              );
+            })()}
             <details className="tmMarketsLegend">
               <summary>Coverage legend</summary>
-              <p>Connected markets appear first. Additional markets remain listed under Coming soon until a verified feed is available. Prices are never invented.</p>
+              <p>
+                Connected markets appear first with verified feeds. Planned markets stay under “More markets —
+                coming later” until a verified feed is available. Prices are never invented.
+              </p>
             </details>
               </>
             ) : (
@@ -1114,12 +1466,8 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               <span>{active.name}</span>
             </div>
             <div className="deskActiveActions">
-              <TerminalBadge
-                label={payload.snapshot.status}
-                tone={payload.snapshot.status === "LIVE" || payload.snapshot.status === "DELAYED" ? "positive" : "warning"}
-              />
-              <TerminalBadge label={coverageLabel(active.coverage)} tone={active.coverage === "live" ? "positive" : "warning"} />
-              <small className="deskActiveAge">{delayedAgeLine}</small>
+              <TerminalBadge label={activeFeedStatus.label} tone={activeFeedStatus.tone} />
+              <small className="deskActiveAge" title={activeFeedStatus.detail}>{delayedAgeLine}</small>
               {platformLaunch.status === "ready" ? (
                 <a href={platformLaunch.url} target="_blank" rel="noopener noreferrer" className="deskLaunchBtn is-compact">
                   Launch {PREFERRED_PLATFORMS[workspace.preferredPlatformId].shortLabel}
@@ -1139,27 +1487,32 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
             {deskView === "overview" ? (
               <div className="deskOverviewStack">
                 <DeskDecisionSummary decision={payload.decisionPresentation} onOpenRisk={() => selectDeskView("risk")} />
+                <DeskVideoShortcut selection={payload.deskVideoShortcut} />
                 {renderWidget("primary-chart")}
                 {renderWidget("structure-map")}
                 <section id="next-catalyst" className="deskWidget deskNextCatalyst" aria-labelledby="next-catalyst-title">
                   <header>
-                    <span>Next catalyst</span>
-                    <h2 id="next-catalyst-title">Upcoming verified event</h2>
+                    <span>Next verified catalyst</span>
+                    <h2 id="next-catalyst-title">Event risk ahead</h2>
                   </header>
                   {nextCatalyst ? (
                     <div className="deskNextCatalystBody">
-                      <time>{nextCatalyst.time}</time>
+                      <time>{nextCatalystWhen}</time>
                       <strong>{nextCatalyst.name}</strong>
-                      <span>{nextCatalyst.risk} impact</span>
+                      <span>{verifiedEventRiskLabel(nextCatalyst.risk)}</span>
+                      {nextCatalyst.includes.length ? (
+                        <VerifiedCatalystIncludes includes={nextCatalyst.includes} className="deskCatalystIncludes" />
+                      ) : null}
                       <button type="button" onClick={() => selectDeskView("catalysts")}>Open Catalysts</button>
                     </div>
                   ) : (
                     <div className="deskCoverageRow" role="status">
                       <TerminalBadge label="Not currently available" tone="info" />
-                      <p>No verified calendar event is listed in the current snapshot.</p>
+                      <p>No upcoming verified calendar event is listed in the current snapshot.</p>
                     </div>
                   )}
                 </section>
+                <VerifiedMacroContextPanel context={payload.macroContext} variant="desk" />
                 <section id="risk-journal" className={`deskWidget deskRiskGate is-${payload.decisionPresentation.permissionTone}`} aria-labelledby="risk-gate-title">
                   <header>
                     <span>Risk gate</span>
@@ -1184,6 +1537,7 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
               </div>
             ) : (
               <>
+                {deskView === "risk" ? <DeskVideoShortcut selection={payload.deskVideoShortcut} /> : null}
                 <div className="deskStageStack">{stackedWidgets.map(renderWidget)}</div>
                 {workspace.focusMode && railWidgets.length ? (
                   <aside className="deskFocusRail" aria-label="Focus mode rail">
@@ -1195,10 +1549,33 @@ export function TradingDeskOS({ payload }: { payload: TradingDeskPayload }) {
           </div>
 
           {deskView === "risk" && payload.customerWarnings.length ? (
-            <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" open>
-              <summary><span>Participation limits</span><strong>Delay and no-trade conditions</strong></summary>
-              <div className="ctConstraints"><ul>{payload.customerWarnings.map((item) => <li key={item}>{item}</li>)}</ul></div>
-            </details>
+            (() => {
+              const confirmation = buildConfirmationSummary(payload.customerWarnings);
+              return (
+                <details className="ctPanel ctConstraintsPanel ctConstraintsCompact" open>
+                  <summary>
+                    <span>Participation limits</span>
+                    <strong>{confirmation.headline}</strong>
+                  </summary>
+                  <div className="ctConstraints">
+                    <p className="deskConfirmLead">Main reasons:</p>
+                    <ul>
+                      {confirmation.primaryReasons.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                    <details className="deskTechnicalReasons">
+                      <summary>View technical reasons</summary>
+                      <ul>
+                        {confirmation.technicalReasons.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  </div>
+                </details>
+              );
+            })()
           ) : null}
 
           <footer className="ctFooter">

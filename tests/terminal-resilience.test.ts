@@ -69,7 +69,7 @@ test("legacy trade output selects primary levels and never duplicates the UK suf
 
 test("login and callback paths sanitize errors and redirect destinations", async () => {
   const [login, browserClient, callback, confirmation, implicit] = await Promise.all([
-    readFile(new URL("../app/login/LoginForm.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/login/StagingLoginForm.tsx", import.meta.url), "utf8"),
     readFile(new URL("../utils/supabase/client.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/callback/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/confirm/route.ts", import.meta.url), "utf8"),
@@ -86,6 +86,9 @@ test("login and callback paths sanitize errors and redirect destinations", async
   assert.ok(login.includes("Delivery may take a few minutes"));
   assert.ok(login.includes('searchParams.get("error")'));
   assert.ok(login.includes("messageForSignInError"));
+  assert.ok(login.includes("messageForOtpRequestError"));
+  assert.ok(login.includes("over_email_send_rate_limit"));
+  assert.ok(login.includes("Do not retry yet"));
   assert.equal(login.includes("Link sent."), false);
   assert.ok(browserClient.includes('flowType: "pkce"'));
   assert.ok(callback.includes("safeAuthNextPath"));

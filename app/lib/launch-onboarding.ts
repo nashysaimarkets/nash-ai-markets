@@ -1,6 +1,6 @@
 export type WaitlistSubmission = {
   email: string;
-  source: "launch-page" | "homepage";
+  source: "launch-page" | "homepage" | "pocket-founding";
 };
 
 export type FoundingOnboardingSubmission = {
@@ -18,7 +18,7 @@ export function normalizeWaitlistSubmission(value: unknown): WaitlistSubmission 
   if (typeof input.company === "string" && input.company.trim()) return null;
   const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
   if (email.length > 254 || !EMAIL_PATTERN.test(email)) return null;
-  const source = input.source === "homepage" ? "homepage" : "launch-page";
+  const source = input.source === "homepage" || input.source === "pocket-founding" ? input.source : "launch-page";
   return { email, source };
 }
 

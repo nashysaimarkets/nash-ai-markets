@@ -1,0 +1,82 @@
+/* Pocket Bullseye v8 — living information markers.
+   Every mini-picture receives calm, staggered motion; never flashing. */
+
+@media(prefers-reduced-motion:no-preference){
+  .psApp .psAuditGrid article>span::before,
+  .psApp .psNarrative header>span::before,
+  .psApp .psCases article>span::before,
+  .psApp .psDecisionGrid article>span::before,
+  .psApp .psIntel article>span::before,
+  .psApp .psEventDeck header>span::before,
+  .psApp .psLevelDeck header>span::before,
+  .psApp .psResultChart header>span::before,
+  .psApp .psEvents header>span::before,
+  .psApp .psVault header>span::before{
+    transform-origin:center;
+    animation:pb-picture-pulse 4.6s ease-in-out infinite!important;
+  }
+
+  .psApp .psAuditGrid article:nth-child(2)>span::before,
+  .psApp .psCases article:nth-child(2)>span::before,
+  .psApp .psDecisionGrid article:nth-child(2)>span::before,
+  .psApp .psIntel article:nth-child(2)>span::before{animation-delay:.55s!important}
+
+  .psApp .psAuditGrid article:nth-child(3)>span::before,
+  .psApp .psEventDeck header>span::before,
+  .psApp .psEvents header>span::before{animation-delay:1.1s!important}
+
+  .psApp .psAuditGrid article:nth-child(4)>span::before,
+  .psApp .psVault header>span::before{animation-delay:1.65s!important}
+
+  .psApp .psCases article[data-tone="bull"]>span::before{
+    animation:pb-bull-picture 4.4s ease-in-out infinite!important;
+  }
+  .psApp .psCases article[data-tone="bear"]>span::before{
+    animation:pb-bear-picture 4.9s ease-in-out .6s infinite!important;
+  }
+
+  .psApp .psAuditGrid article:hover>span::before,
+  .psApp .psNarrative:hover header>span::before,
+  .psApp .psCases article:hover>span::before,
+  .psApp .psDecisionGrid article:hover>span::before,
+  .psApp .psIntel article:hover>span::before,
+  .psApp .psEventDeck:hover header>span::before,
+  .psApp .psLevelDeck:hover header>span::before,
+  .psApp .psResultChart:hover header>span::before,
+  .psApp .psEvents:hover header>span::before,
+  .psApp .psVault:hover header>span::before{
+    animation-duration:2.4s!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .psApp .psAuditGrid article>span::before,
+  .psApp .psNarrative header>span::before,
+  .psApp .psCases article>span::before,
+  .psApp .psDecisionGrid article>span::before,
+  .psApp .psIntel article>span::before,
+  .psApp .psEventDeck header>span::before,
+  .psApp .psLevelDeck header>span::before,
+  .psApp .psResultChart header>span::before,
+  .psApp .psEvents header>span::before,
+  .psApp .psVault header>span::before{animation:none!important}
+}
+
+@keyframes pb-picture-pulse{
+  0%,100%{transform:scale(1);box-shadow:inset 0 0 12px #38f28e08,0 0 0 #38f28e00}
+  45%{transform:scale(1)}
+  52%{transform:scale(1.09);box-shadow:inset 0 0 16px #38f28e14,0 0 14px #38f28e20}
+  61%{transform:scale(1)}
+}
+@keyframes pb-bull-picture{
+  0%,100%{transform:translateX(0) scale(1)}
+  48%{transform:translateX(0) scale(1)}
+  55%{transform:translateX(3px) scale(1.1) rotate(-2deg)}
+  66%{transform:translateX(0) scale(1)}
+}
+@keyframes pb-bear-picture{
+  0%,100%{transform:translateY(0) scale(1)}
+  48%{transform:translateY(0) scale(1)}
+  56%{transform:translateY(2px) scale(1.1)}
+  67%{transform:translateY(0) scale(1)}
+}

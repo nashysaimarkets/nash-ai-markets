@@ -281,7 +281,7 @@ export async function getConfiguredFmpCandles(
 export async function getConfiguredFmpCandlesForInstruments(
   timeframe: CandleTimeframe = "5m",
   now = Date.now(),
-  instruments: CandleInstrument[] = ["ES", "VIX", "DXY", "OIL", "QQQ", "NQ"],
+  instruments: CandleInstrument[] = ["ES", "VIX", "DXY", "OIL", "QQQ", "IXIC"],
 ): Promise<Record<CandleInstrument, VerifiedCandleSeries>> {
   const entries = await Promise.all(
     instruments.map(async (instrument) => [instrument, await getConfiguredFmpCandles(timeframe, now, instrument)] as const),

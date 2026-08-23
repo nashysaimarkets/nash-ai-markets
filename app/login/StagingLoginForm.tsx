@@ -8,8 +8,12 @@ import {
   buildEmailRedirectTo,
   defaultPostAuthPath,
   isAllowedAuthOrigin,
+  isAuthProviderCompatibleWithOrigin,
   safeAuthNextPath,
 } from "../lib/auth/safe-auth-redirect";
+import { LOGIN_STING_PENDING_KEY } from "../components/BullseyeLoginSting";
+
+const SUPABASE_PUBLIC_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
 
 function resolveLoginRedirectTo(origin: string, search: string): { emailRedirectTo: string; next: string } {
   if (!isAllowedAuthOrigin(origin)) {
@@ -43,7 +47,19 @@ function messageForSignInError(reason: string | null): string {
   }
 }
 
-export default function LoginForm() {
+function messageForOtpRequestError(error: { code?: string; message?: string; status?: number }): string {
+  const code = error.code?.toLowerCase() ?? "";
+  const message = error.message?.toLowerCase() ?? "";
+  if (error.status === 429 || code === "over_email_send_rate_limit" || message.includes("rate limit")) {
+    return "The secure-email limit has been reached. Do not retry yet; wait for the email provider window to reset, then request one new link in the browser where you will open it.";
+  }
+  if (error.status === 0 || message.includes("failed to fetch")) {
+    return "We could not reach the sign-in service. The Auth host may be misconfigured; wait for the retry timer, then try again.";
+  }
+  return "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again.";
+}
+
+export default function StagingLoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -58,18 +74,25 @@ export default function LoginForm() {
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
-  useEffect(() => {
-    const error = searchParams.get("error");
-    if (error !== "signin") return;
+  // Derived from the URL during render rather than in an effect, so the reason
+  // is shown on the first paint instead of flashing an empty form first.
+  const signInReason =
+    searchParams.get("error") === "signin" ? searchParams.get("reason") ?? "signin" : null;
+  const [shownSignInReason, setShownSignInReason] = useState<string | null>(null);
+  if (signInReason !== null && signInReason !== shownSignInReason) {
+    setShownSignInReason(signInReason);
     setMessageTone("error");
-    setMessage(messageForSignInError(searchParams.get("reason")));
-  }, [searchParams]);
+    setMessage(messageForSignInError(signInReason));
+  }
 
   // Publish the planned emailRedirectTo on the form for deployment inspection (no submit).
   useEffect(() => {
     const form = formRef.current;
     if (!form) return;
     try {
+      if (!isAuthProviderCompatibleWithOrigin(window.location.origin, SUPABASE_PUBLIC_URL)) {
+        throw new Error("Private authentication provider mismatch");
+      }
       const { emailRedirectTo, next } = resolveLoginRedirectTo(
         window.location.origin,
         window.location.search,
@@ -108,6 +131,13 @@ export default function LoginForm() {
         setMessage("This host is not authorized for member sign-in.");
         return;
       }
+      if (!isAuthProviderCompatibleWithOrigin(origin, SUPABASE_PUBLIC_URL)) {
+        setMessageTone("error");
+        setMessage("Private test authentication is unavailable. No sign-in email was sent.");
+        formRef.current?.setAttribute("data-auth-provider-ready", "false");
+        return;
+      }
+      formRef.current?.setAttribute("data-auth-provider-ready", "true");
       const { emailRedirectTo, next } = resolveLoginRedirectTo(origin, window.location.search);
       persistAuthNextCookie(next);
       formRef.current?.setAttribute("data-email-redirect-to", emailRedirectTo);
@@ -137,18 +167,16 @@ export default function LoginForm() {
         );
       }
       setMessageTone(error ? "error" : "success");
-      const networkFailure = Boolean(
-        error
-        && (
-          error.status === 0
-          || error.message?.toLowerCase().includes("failed to fetch")
-        ),
-      );
+      if (!error) {
+        try {
+          window.localStorage.setItem(LOGIN_STING_PENDING_KEY, String(Date.now()));
+        } catch {
+          // The optional login sting never blocks authentication.
+        }
+      }
       setMessage(
         error
-          ? networkFailure
-            ? "We could not reach the sign-in service. The Auth host may be misconfigured; wait for the retry timer, then try again."
-            : "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again."
+          ? messageForOtpRequestError(error)
           : "Request accepted. Delivery may take a few minutes. Check your inbox and junk folder, then open the link in this same browser.",
       );
     } catch {

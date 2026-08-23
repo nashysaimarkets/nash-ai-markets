@@ -17,12 +17,15 @@ type OpenAIHealthClient = {
   };
 };
 
-export function createOpenAIClient(apiKey = process.env.OPENAI_API_KEY): OpenAI | null {
+export function createOpenAIClient(
+  apiKey = process.env.OPENAI_API_KEY,
+  timeout = OPENAI_HEALTH_TIMEOUT_MS,
+): OpenAI | null {
   if (!apiKey?.trim()) return null;
   return new OpenAI({
     apiKey,
     maxRetries: 0,
-    timeout: OPENAI_HEALTH_TIMEOUT_MS,
+    timeout,
   });
 }
 
@@ -48,6 +51,7 @@ export async function checkOpenAIConnection(
   try {
     await client.responses.create({
       model,
+      store: false,
       input: "Reply with OK only.",
       max_output_tokens: 16,
     });

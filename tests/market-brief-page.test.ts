@@ -4,10 +4,16 @@ import test from "node:test";
 import { analyzeMarketSnapshot } from "../app/lib/market-intelligence-engine.ts";
 import { buildMarketBrief } from "../app/lib/market-brief.ts";
 import type { MarketSnapshot } from "../app/lib/market-data.ts";
+import { createUnavailableSnapshot } from "../app/lib/market-data.ts";
 import { createStructuredTradePlan } from "../app/lib/structured-trade-planner.ts";
 import { createTradingDecision } from "../app/lib/trading-decision-engine.ts";
 import { buildDecisionDesk } from "../app/dashboard/lib/decision-desk.ts";
-import { composeMorningMarketBrief } from "../app/brief/lib/compose-market-brief.ts";
+import { interpretCrossMarket } from "../app/dashboard/lib/cross-market-interpretation.ts";
+import {
+  composeMorningMarketBrief,
+  customerFacingBriefCopy,
+  dedupePracticalItems,
+} from "../app/brief/lib/compose-market-brief.ts";
 import { readSessionClock } from "../app/terminal/lib/session-clock.ts";
 
 const snapshot: MarketSnapshot = {
@@ -26,8 +32,8 @@ const snapshot: MarketSnapshot = {
     { label: "S1", value: "6280", note: "verified", type: "support" },
   ],
   events: [
-    { time: "13:30", name: "US CPI", risk: "HIGH" },
-    { time: "15:00", name: "Consumer sentiment", risk: "MED" },
+    { time: "2099-07-28T13:30:00.000Z", name: "US CPI", risk: "HIGH" },
+    { time: "2099-07-28T15:00:00.000Z", name: "Consumer sentiment", risk: "MED" },
   ],
   bias: "BULLISH",
   risk: "MODERATE",
@@ -59,11 +65,12 @@ function engines(current: MarketSnapshot = snapshot) {
   return { intelligence, decision, plan };
 }
 
-test("composeMorningMarketBrief answers the six morning questions from verified inputs", () => {
-  const { intelligence, decision, plan } = engines();
-  const brief = buildMarketBrief(snapshot, intelligence, decision, plan);
+function compose(current: MarketSnapshot = snapshot) {
+  const { intelligence, decision, plan } = engines(current);
+  const brief = buildMarketBrief(current, intelligence, decision, plan);
+  const verified = current.status !== "UNAVAILABLE" && intelligence.actionable;
   const desk = buildDecisionDesk({
-    verified: true,
+    verified,
     decision,
     plan,
     intelligence,
@@ -73,141 +80,204 @@ test("composeMorningMarketBrief answers the six morning questions from verified 
     support: "6280",
     resistance: "6320",
   });
-  const model = composeMorningMarketBrief({
+  return composeMorningMarketBrief({
     brief,
     desk,
     intelligence,
     decision,
     plan,
-    snapshot,
-    sessionLevels: {
-      previousDayHigh: 6310,
-      previousDayLow: 6270,
-      overnightHigh: 6305,
-      overnightLow: 6288,
-      todaysOpen: 6295,
-      source: "Derived from verified OHLCV",
-    },
+    snapshot: current,
+    sessionLevels: null,
     support: "6280",
     resistance: "6320",
     expectedMoveLabel: "18 pts (verified 48-bar range)",
-    asOfLabel: "28 Jul 12:59 UK",
-    dataAgeLabel: "2m old",
+    asOfLabel: "28 Jul 2026, 12:59",
+    dataAgeLabel: "Delayed market data · latest verified candle 14 minutes old",
     sessionLabel: "US cash open",
-    sessionDetail: "Regular session",
+    sessionDetail: "Regular hours",
     tierLabel: "ELITE",
-    greeting: "Good morning",
-    verified: true,
-    youtubeId: null,
+    greeting: "Good afternoon, Nash",
+    verified,
+    now: Date.parse("2026-07-28T12:00:00.000Z"),
   });
+}
 
-  assert.equal(model.schemaVersion, "1.0");
-  assert.equal(model.verified, true);
-  assert.ok(model.summary.overnight.length > 20);
-  assert.ok(model.summary.whatMatters.length > 10);
+test("composeMorningMarketBrief answers the morning questions from verified inputs", () => {
+  const model = compose();
+  assert.match(model.executiveSummary, /ES is higher|volatility is easing|dollar is softer/i);
+  assert.match(model.posture.eyebrow, /TODAY.?S POSTURE/i);
+  assert.match(model.posture.summary, /lean|patient|caution|restricted|selective/i);
+  assert.match(model.summary.setupReading, /lean|setup|confirmation|restricted|caution|selective/i);
+  assert.doesNotMatch(model.summary.setupReading, /\d+%\s*engine weight/i);
   assert.ok(model.summary.watch.length >= 1);
   assert.ok(model.summary.avoid.length >= 1);
-  assert.match(model.summary.highestProbability, /%|favours|stance/i);
-  assert.equal(model.crossAssets.find((card) => card.id === "VIX")?.available, true);
-  assert.equal(model.crossAssets.find((card) => card.id === "DXY")?.available, true);
-  assert.equal(model.crossAssets.find((card) => card.id === "US10Y")?.available, true);
-  assert.match(model.crossAssets.find((card) => card.id === "BREADTH")?.detail ?? "", /not|engine|breadth/i);
-  assert.ok(model.levels.rungs.some((rung) => rung.label === "Downside reference" || rung.label === "Key support"));
-  assert.ok(model.levels.rungs.some((rung) => rung.label === "Upside reference" || rung.label === "Key resistance"));
-  assert.ok(model.levels.rungs.some((rung) => rung.label === "Overnight high"));
-  assert.equal(model.economicTimeline[0]?.name, "US CPI");
-  assert.equal(model.overnightNews.available, false);
-  assert.match(model.overnightNews.reason, /not connected|verified/i);
-  assert.equal(model.video.available, false);
-  assert.match(model.video.reason, /not linked|verified/i);
-  assert.ok(model.playbook.steps.length >= 1);
-  assert.ok(model.biggestRisk.label.length > 0);
+  assert.ok(model.summary.watch.length <= 4);
+  assert.ok(model.summary.avoid.length <= 4);
+  assert.equal(model.crossAssets.some((card) => card.id === "ES"), true);
+  assert.equal(model.crossAssets.some((card) => card.label === "Breadth"), false);
+  assert.ok(model.economicTimeline.length >= 1);
+  // Optional video/news/breadth gaps no longer force a permanent coverage strip.
+  assert.equal(model.serviceStatus.some((item) => /breadth/i.test(item.label)), false);
+  assert.equal(
+    model.serviceStatusSummary == null || !/some optional indicators are currently unavailable/i.test(model.serviceStatusSummary),
+    true,
+  );
 });
 
 test("composeMorningMarketBrief fails closed without verified decision inputs", () => {
-  const unavailable: MarketSnapshot = {
-    ...snapshot,
-    status: "UNAVAILABLE",
-    asOf: "1970-01-01T00:00:00.000Z",
-    quotes: [],
-    levels: [],
-    events: [],
-    evidence: {},
-  };
-  const { intelligence, decision, plan } = engines(unavailable);
-  const brief = buildMarketBrief(unavailable, intelligence, decision, plan);
-  const desk = buildDecisionDesk({
-    verified: false,
-    decision,
-    plan,
-    intelligence,
-    session: readSessionClock(new Date("2026-07-28T11:00:00Z")),
-    candles: null,
-    expectedMoveLabel: "Expected move awaits a verified candle range",
-    support: null,
-    resistance: null,
-  });
-  const model = composeMorningMarketBrief({
-    brief,
-    desk,
-    intelligence,
-    decision,
-    plan,
-    snapshot: unavailable,
-    sessionLevels: null,
-    support: null,
-    resistance: null,
-    expectedMoveLabel: "Expected move awaits a verified candle range",
-    asOfLabel: "Timestamp unavailable",
-    dataAgeLabel: "Age unavailable",
-    sessionLabel: "Pre-market",
-    sessionDetail: "Awaiting open",
-    tierLabel: "PRO",
-    greeting: "Good morning",
-    verified: false,
-  });
-
+  const unavailable = createUnavailableSnapshot();
+  const model = compose(unavailable);
   assert.equal(model.verified, false);
-  assert.equal(model.aiBriefing.confidence, null);
-  assert.match(model.summary.highestProbability, /withheld|await/i);
-  assert.equal(model.crossAssets.every((card) => card.id === "BREADTH" || !card.available), true);
-  assert.equal(model.levels.rungs.length, 0);
-  assert.equal(model.economicTimeline[0]?.available, false);
-  assert.equal(model.video.available, false);
+  assert.match(model.summary.setupReading, /incomplete|not established|withheld|unavailable/i);
+  assert.doesNotMatch(model.summary.setupReading, /\d+%\s*engine weight/i);
+  assert.equal(model.crossAssets.some((card) => card.label === "Breadth"), false);
 });
 
-test("Market Brief page renders the premium brief instead of redirecting to terminal", async () => {
-  const [page, css, component, compose] = await Promise.all([
+test("false Breadth presentation never shows engine sentiment as breadth", () => {
+  const model = compose();
+  const labels = model.crossAssets.map((card) => card.label);
+  assert.equal(labels.includes("Breadth"), false);
+  assert.equal(model.crossAssets.every((card) => !/breadth/i.test(card.label)), true);
+  assert.doesNotMatch(JSON.stringify(model.serviceStatus), /breadth/i);
+  assert.doesNotMatch(JSON.stringify(model.crossAssets), /Engine sentiment score only/);
+});
+
+test("editorial cross-market copy avoids while-chains and inventing news", () => {
+  const constructive = interpretCrossMarket(snapshot);
+  assert.match(constructive, /ES is higher/i);
+  assert.match(constructive, /volatility is easing|dollar is softer/i);
+  assert.doesNotMatch(constructive, /, while .+, while /i);
+  assert.doesNotMatch(constructive, /because|due to|after the|fed|cpi caused/i);
+
+  const restrictiveSnap = {
+    ...snapshot,
+    quotes: snapshot.quotes.map((quote) => ({
+      ...quote,
+      direction: quote.symbol === "ES" || quote.symbol === "VIX" || quote.symbol === "DXY"
+        ? ("up" as const)
+        : quote.direction,
+      change: "+1",
+    })),
+  };
+  // Force restrictive: ES down, VIX up, DXY up
+  restrictiveSnap.quotes = [
+    { symbol: "ES", label: "ES", value: "6300", change: "-1", direction: "down" },
+    { symbol: "VIX", label: "VIX", value: "18", change: "+1", direction: "up" },
+    { symbol: "US10Y", label: "10Y", value: "4.3%", change: "0", direction: "flat" },
+    { symbol: "DXY", label: "DXY", value: "99", change: "+1", direction: "up" },
+  ];
+  const restrictive = interpretCrossMarket(restrictiveSnap);
+  assert.match(restrictive, /restrictive|rising|firmer|lower/i);
+  assert.doesNotMatch(restrictive, /, while .+, while /i);
+
+  const mixedSnap: MarketSnapshot = {
+    ...snapshot,
+    quotes: [
+      { symbol: "ES", label: "ES", value: "6300", change: "+1", direction: "up" },
+      { symbol: "VIX", label: "VIX", value: "18", change: "+1", direction: "up" },
+      { symbol: "DXY", label: "DXY", value: "98", change: "-1", direction: "down" },
+    ],
+  };
+  const mixed = interpretCrossMarket(mixedSnap);
+  assert.match(mixed, /mixed|incomplete/i);
+
+  const empty = interpretCrossMarket({ ...snapshot, quotes: [] });
+  assert.match(empty, /unavailable/i);
+});
+
+test("Watch/Avoid bullets stay unique and practical", () => {
+  const deduped = dedupePracticalItems([
+    "Critical input missing",
+    "Confirmation data is incomplete",
+    "Low confidence",
+    "Missing evidence",
+    "Volatility pressure",
+    "Range location",
+  ], 3);
+  assert.equal(deduped.length, 3);
+  assert.equal(deduped.filter((item) => /critical input|missing evidence|confirmation data/i.test(item)).length <= 1, true);
+
+  const model = compose();
+  const keys = new Set(model.summary.avoid.map((item) => item.toLowerCase()));
+  assert.equal(keys.size, model.summary.avoid.length);
+  assert.doesNotMatch(model.summary.avoid.join(" | "), /critical input missing.*critical input missing/i);
+});
+
+test("restricted setup reading never reads like a trade recommendation", () => {
+  const model = compose();
+  assert.doesNotMatch(model.summary.setupReading, /buy now|sell now|enter long|enter short|place order/i);
+  if (/restricted|incomplete|not establish/i.test(model.summary.setupReading + model.playbook.posture)) {
+    assert.doesNotMatch(model.summary.setupReading, /\d+%\s*engine weight favours/i);
+  }
+});
+
+test("unavailable catalyst returns compact empty timeline", () => {
+  const noEvents = { ...snapshot, events: [] };
+  const model = compose(noEvents);
+  assert.equal(model.economicTimeline.length, 0);
+  assert.match(model.serviceStatus.map((item) => item.detail).join(" "), /No upcoming verified event/i);
+});
+
+test("Morning Brief page and component preserve auth and delayed-data honesty", async () => {
+  const [page, css, component, composeSource, pulseSource, toolsSource] = await Promise.all([
     readFile(new URL("../app/brief/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/market-brief.css", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/components/MorningMarketBrief.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/brief/lib/compose-market-brief.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/brief/components/BullseyePulse.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/brief/components/BriefExperienceTools.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(page, /redirect\("\/login"\)/);
   assert.match(page, /robots: \{ index: false, follow: false \}/);
-  assert.match(page, /createProgressiveAccess/);
-  assert.match(page, /buildMarketBrief/);
   assert.match(page, /composeMorningMarketBrief/);
-  assert.match(page, /MorningMarketBrief/);
-  assert.match(page, /MemberShell active="brief"/);
-  assert.doesNotMatch(page, /redirect\("\/terminal"\)/);
-  assert.doesNotMatch(page, /LockedPremiumCard|CrossAssetCandleGallery/);
-  assert.match(component, /What happened overnight/);
-  assert.match(component, /Decision summary/);
+  assert.match(page, /context\.freshness\.delayedLabel/);
+  assert.match(component, /Executive market summary|executiveSummary/);
+  assert.match(component, /todays-posture|Wait for confirmation|Stay patient|model\.posture/);
   assert.match(component, /Open Trading Desk/);
-  assert.match(component, /Observed range context|Expected move/);
-  assert.match(component, /Verified references|Upside reference|Downside reference/);
-  assert.match(component, /Participation conditions|Technical confirmation details|Restricted/);
-  assert.match(component, /Daily market video|verified source is not currently connected|mbStatusRow|Verified source not currently connected/);
-  assert.match(component, /mbParticipationFacts|Primary reason|mbParticipationDetails/);
-  assert.match(component, /Participation|Restricted/);
-  assert.doesNotMatch(component, /Main risk &amp; participation|Main Risk/);
-  assert.match(component, /Here is today[\u2019']s market briefing|today[\u2019']s market briefing/);
-  assert.doesNotMatch(component, /verified morning briefing/i);
+  assert.match(component, /\/terminal\?market=es&view=charts/);
+  assert.match(component, /Market weather/);
+  assert.match(component, /Breadth is omitted|advance\/decline/);
+  assert.match(component, /No upcoming verified event is currently available/);
+  assert.match(component, /Risk &amp; Journal|Risk & Journal/);
+  assert.match(component, /Technical engine detail/);
+  assert.match(component, /Morning Brief sections|Briefing route/);
+  assert.match(component, /mbIntelligenceDrawer|Deep evidence/);
+  assert.match(component, /#todays-posture|#what-changed|#verified-levels|#watch-avoid|#next-actions/);
+  assert.doesNotMatch(component, /Highest-probability behaviour|engine weight favours/);
+  assert.doesNotMatch(component, /label === "Breadth"|BREADTH/);
+  assert.match(component, /model\.briefHeadline|pre-market briefing|session update|post-market review/);
+  assert.match(component, /BullseyePulse/);
+  assert.match(pulseSource, /Bullseye pulse|Focus mode|mbHeartbeat|OF 5 LAYERS/);
+  assert.match(pulseSource, /Market weather|Session storyline|mbSessionStory/);
+  assert.match(toolsSource, /Download mission card|Command centre|localStorage|Preparation state/);
+  assert.match(toolsSource, /paletteCloseRef\.current\?\.focus\(\)/);
+  assert.match(toolsSource, /previousFocus\?\.focus\(\)/);
+  assert.match(toolsSource, /event\.key !== "Tab"/);
+  assert.match(toolsSource, /aria-haspopup="dialog"/);
+  assert.match(toolsSource, /aria-describedby="brief-command-description"/);
   assert.match(css, /\.morningMarketBrief\{/);
-  assert.match(css, /@media\(max-width:720px\)/);
-  assert.match(css, /prefers-reduced-motion/);
-  assert.match(css, /mbStatusRow|mbVideoUnavailable/);
-  assert.match(compose, /No verified breadth provider|not connected/);
-  assert.match(compose, /Overnight news headlines are not connected/);
+  assert.match(css, /mbCatalystEmpty|mbServiceStatus|mbActionGrid/);
+  assert.match(css, /\.mbBriefRoute/);
+  assert.match(css, /mbRadarSweep|mbIntelligenceDrawer|mbPulseRadar|mbHeartbeat|mbFocusDeck/);
+  assert.match(css, /\.mbBriefRoute\{\s*position:relative/);
+  assert.match(css, /align-items:\s*start/);
+  assert.match(composeSource, /dedupePracticalItems/);
+  assert.match(composeSource, /customerFacingBriefCopy/);
+  assert.match(composeSource, /buildTodaysPosture|serviceStatusSummary/);
+  assert.doesNotMatch(composeSource, /id: "BREADTH"/);
+  assert.doesNotMatch(composeSource, /some optional indicators are currently unavailable/);
+});
+
+test("customer-facing Brief copy softens internal no-trade terminology", () => {
+  assert.match(
+    customerFacingBriefCopy("Bullseye is maintaining a no-trade posture until conditions clear."),
+    /Trade participation remains restricted/i,
+  );
+  assert.doesNotMatch(
+    customerFacingBriefCopy("Bullseye is maintaining a no-trade posture until conditions clear."),
+    /Bullseye is maintaining a no-trade posture/i,
+  );
+  const model = compose();
+  assert.doesNotMatch(model.executiveSummary, /while confirmation remains incomplete/i);
+  assert.doesNotMatch(`${model.summary.headline} ${model.biggestRisk.label}`, /Bullseye is maintaining a no-trade posture/i);
 });

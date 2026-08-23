@@ -2,17 +2,16 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import { createClient } from "../../../utils/supabase/server.ts";
 import { normalizeFoundingOnboarding } from "../../lib/launch-onboarding.ts";
+import { membershipEmailKey } from "../../lib/server/membership-email.ts";
+import { rejectCrossOriginCoded } from "../../lib/server/same-origin.ts";
 import { resolveMembershipTier } from "../../terminal/lib/membership-entitlement.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const requestOrigin = new URL(request.url).origin;
-  const suppliedOrigin = request.headers.get("origin");
-  if (suppliedOrigin !== requestOrigin) {
-    return NextResponse.json({ ok: false, code: "INVALID_ORIGIN" }, { status: 403 });
-  }
+  const blocked = rejectCrossOriginCoded(request);
+  if (blocked) return blocked;
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -21,7 +20,7 @@ export async function POST(request: Request) {
   const { data: membership, error: membershipError } = await supabase
     .from("memberships")
     .select("plan, status, current_period_end")
-    .ilike("email", user.email)
+    .eq("email", membershipEmailKey(user.email))
     .in("plan", ["pro", "elite"])
     .maybeSingle();
   const tier = resolveMembershipTier(membership, Boolean(membershipError));

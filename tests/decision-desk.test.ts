@@ -149,7 +149,7 @@ test("Dashboard decision snapshot uses shared presentation without auth or provi
   ]);
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /supabase\.auth\.getUser/);
-  assert.match(centre, /TODAY.?S DECISION SNAPSHOT|Participation/);
+  assert.match(centre, /TODAY.?S POSTURE|Participation/);
   assert.match(centre, /summary\.decision|decision\.permissionLabel/);
   assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(deskUi, /Decision Desk|Market diagnosis/);

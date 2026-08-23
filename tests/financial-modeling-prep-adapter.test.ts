@@ -59,7 +59,7 @@ test("maps a valid mocked FMP response into the generic market snapshot", async 
   assert.equal(snapshot.status, "LIVE");
   assert.equal(snapshot.source, FINANCIAL_MODELING_PREP_PROVIDER_NAME);
   assert.equal(snapshot.asOf, asOf);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY", "OIL", "QQQ", "NQ"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY", "OIL", "QQQ", "IXIC"]);
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "ES")?.value, "6,325.50");
   assert.equal(snapshot.quotes.find((quote) => quote.symbol === "US2Y")?.value, "4.18%");
   assert.deepEqual(snapshot.events, []);
@@ -127,7 +127,7 @@ test("accepts a canonical provider alias only for a single scoped quote record",
 
   const snapshot = await adapter.fetchSnapshot();
   assert.ok(snapshot);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY", "OIL", "QQQ", "NQ"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "DXY", "OIL", "QQQ", "IXIC"]);
   assert.equal(adapter.getDiagnostics?.().schemaRecognized, true);
   assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "success");
 });
@@ -212,7 +212,7 @@ test("keeps endpoint HTTP categories sanitized when secondary access is restrict
 
   const snapshot = await adapter.fetchSnapshot();
   assert.ok(snapshot);
-  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "OIL", "QQQ", "NQ"]);
+  assert.deepEqual(snapshot.quotes.map((quote) => quote.symbol), ["ES", "VIX", "US2Y", "US10Y", "OIL", "QQQ", "IXIC"]);
   assert.equal(adapter.getDiagnostics?.().resultCategory, "partial_success");
   assert.equal(adapter.getDiagnostics?.().httpStatusCategory, "mixed");
   assert.equal(adapter.getDiagnostics?.().endpointStatusCategories.usDollarIndex, "access_restricted");

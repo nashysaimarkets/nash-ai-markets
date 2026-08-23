@@ -4,6 +4,8 @@ import type { MarketIntelligence } from "./market-intelligence-engine.ts";
 import type { TradePlan } from "./structured-trade-planner.ts";
 import type { TradingDecision } from "./trading-decision-engine.ts";
 import { interpretCrossMarket } from "../dashboard/lib/cross-market-interpretation.ts";
+import { selectNextEconomicEvent } from "../dashboard/lib/daily-dashboard.ts";
+import { formatVerifiedEventWhen } from "../terminal/lib/event-display.ts";
 
 export type BriefMode = "ai-assisted" | "deterministic" | "unavailable";
 
@@ -155,9 +157,15 @@ export function buildMarketBrief(
     ...intelligence.reasoning.missingDataWarnings.map((warning) => `${warning.code}:${warning.field}`),
   ]).map(humanize);
   const interpretation = interpretCrossMarket(snapshot);
-  const nextEvent = snapshot.events[0]
-    ? `${snapshot.events[0].name} (${snapshot.events[0].risk} impact, ${snapshot.events[0].time})`
-    : "No verified economic event is listed by the provider.";
+  const nextGrouped = selectNextEconomicEvent(snapshot.events);
+  const nextEvent = nextGrouped
+    ? `${nextGrouped.name} (${nextGrouped.risk} impact, ${
+        (() => {
+          const ms = Date.parse(nextGrouped.startsAt);
+          return Number.isFinite(ms) ? formatVerifiedEventWhen(ms) : nextGrouped.startsAt;
+        })()
+      })`
+    : "No upcoming verified economic event is listed by the provider.";
 
   if (!verified || !intelligence.actionable || !decisionReady) {
     return {

@@ -329,7 +329,7 @@
 .presentationToggle{
   display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:7px 11px;
   border:1px solid var(--ft-border,#202630);border-radius:3px;background:#0d1117;
-  color:var(--ft-muted,#7d8793);font:700 8px var(--font-geist-mono),monospace;
+  color:var(--ft-muted,#7d8793);font:700 8px var(--font-geist-mono),monospace;font-size:var(--type-floor);
   letter-spacing:.05em;text-transform:uppercase;cursor:pointer;
 }
 .presentationToggle:hover,.presentationToggle[aria-pressed="true"]{
@@ -340,7 +340,7 @@
   position:fixed;z-index:80;right:18px;bottom:calc(18px + env(safe-area-inset-bottom));
   display:none;align-items:center;gap:10px;min-height:44px;padding:10px 14px;
   border:1px solid #35d89b66;border-radius:999px;background:#0c1512f2;color:#62e6b1;
-  font:700 10px var(--font-geist-mono),monospace;letter-spacing:.06em;text-transform:uppercase;
+  font:700 10px var(--font-geist-mono),monospace;font-size:var(--type-floor);letter-spacing:.06em;text-transform:uppercase;
   box-shadow:0 16px 40px #000a;cursor:pointer;
 }
 .presentationExit:focus-visible{outline:2px solid var(--ft-blue,#69a9ff);outline-offset:3px}

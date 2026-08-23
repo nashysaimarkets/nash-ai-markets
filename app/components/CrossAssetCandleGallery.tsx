@@ -14,7 +14,7 @@ type Props = {
   eyebrow?: string;
 };
 
-const ORDER: CandleInstrument[] = ["ES", "VIX", "DXY", "OIL", "QQQ", "NQ"];
+const ORDER: CandleInstrument[] = ["ES", "VIX", "DXY", "OIL", "QQQ", "IXIC"];
 
 /**
  * Tabbed verified candlestick gallery for every instrument that can supply OHLCV.

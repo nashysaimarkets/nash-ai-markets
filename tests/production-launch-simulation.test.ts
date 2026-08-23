@@ -10,9 +10,10 @@ const source = (path: string) => readFile(new URL(`../${path}`, import.meta.url)
 const now = Date.parse("2026-07-17T12:00:00.000Z");
 
 test("production simulation: passwordless authentication is fail-safe and redirect-bound", async () => {
-  const [login, callback, dashboard] = await Promise.all([
-    source("app/login/LoginForm.tsx"),
+  const [login, callback, sessionRoute, dashboard] = await Promise.all([
+    source("app/login/StagingLoginForm.tsx"),
     source("app/auth/callback/page.tsx"),
+    source("app/api/auth/session/route.ts"),
     source("app/dashboard/page.tsx"),
   ]);
   assert.match(login, /signInWithOtp/);
@@ -23,6 +24,11 @@ test("production simulation: passwordless authentication is fail-safe and redire
   assert.match(callback, /data\.session/);
   assert.match(callback, /safeAuthNextPath/);
   assert.match(callback, /login\?error=signin/);
+  assert.match(callback, /persistServerSession/);
+  assert.match(callback, /\/api\/auth\/session/);
+  assert.match(sessionRoute, /supabase\.auth\.setSession/);
+  assert.match(sessionRoute, /Cache-Control.*no-store/);
+  assert.doesNotMatch(sessionRoute, /console\.|accessToken.*log|refreshToken.*log/);
   assert.match(dashboard, /redirect\("\/login"\)/);
 });
 

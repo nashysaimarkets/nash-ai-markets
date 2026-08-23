@@ -72,12 +72,18 @@ export function normalizeEconomicCalendar(payload: unknown, now = Date.now()): M
     if (!name || name.length > 160) continue;
     const stamp = eventTimestampMs(record);
     if (stamp === null || stamp < now - 2 * 60 * 60_000 || stamp > horizonMs) continue;
-    events.push({ time: formatEventTime(stamp), name, risk, sort: stamp });
+    events.push({
+      time: formatEventTime(stamp),
+      name,
+      risk,
+      at: new Date(stamp).toISOString(),
+      sort: stamp,
+    });
   }
   return events
     .sort((left, right) => left.sort - right.sort)
     .slice(0, 10)
-    .map(({ time, name, risk }) => ({ time, name, risk }));
+    .map(({ time, name, risk, at }) => ({ time, name, risk, at }));
 }
 
 export async function loadFmpEconomicCalendar(input: {
@@ -108,10 +114,19 @@ export async function loadFmpEconomicCalendar(input: {
       cache: "no-store",
       signal: input.signal ?? AbortSignal.timeout(timeoutMs),
     });
-    if (!response.ok) return [];
+    if (!response.ok) {
+      console.warn(`[fmp-economic-calendar] request rejected ${JSON.stringify({ httpStatus: response.status })}`);
+      return [];
+    }
     const payload = await response.json().catch(() => null);
     return normalizeEconomicCalendar(payload, now);
-  } catch {
+  } catch (error) {
+    console.error(
+      `[fmp-economic-calendar] request failed ${JSON.stringify({
+        error: error instanceof Error ? error.name : "Error",
+        message: error instanceof Error ? error.message : String(error),
+      })}`,
+    );
     return [];
   }
 }

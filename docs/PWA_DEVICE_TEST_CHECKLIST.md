@@ -4,6 +4,9 @@ Test the exact staging build over HTTPS. Use dedicated test accounts and remove
 the installed app between clean-install cases. Record OS/browser versions, not
 device identifiers or account details.
 
+The concise physical screen-reader result and current outstanding platforms are
+tracked in `ACCESSIBILITY_PHYSICAL_ACCEPTANCE.md`.
+
 ## Common preflight
 
 - [ ] Manifest loads with `id`, `start_url` and `scope` set to `/`.
@@ -81,4 +84,3 @@ device identifiers or account details.
 - Install, dismissal, update and uninstall never block the normal web journey.
 - VoiceOver/TalkBack, keyboard, reduced motion, zoom and touch targets remain
   usable.
-

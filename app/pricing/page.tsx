@@ -19,9 +19,10 @@ export const metadata: Metadata = {
 const faqs = [
   ["Is checkout secure?", "Yes. Subscription checkout is created server-side and completed on Stripe. Card details are not stored by NASH AI Markets."],
   ["What does the annual plan include?", "Annual Pro and Elite provide the same tier access as monthly billing at the published annual price."],
-  ["How does Founding 100 work?", "The first 100 verified successful subscribers in each paid tier receive a permanent Founding badge and retain their original subscription price while that subscription remains continuously active."],
-  ["What happens if a Founding subscription ends?", "The badge remains in programme history, but the lifetime price lock is permanently lost. A later subscription uses the then-current standard price."],
+  ["How does the £12 Founding Pro launch offer work?", "The first 100 verified successful Founding Pro subscribers can retain the £12 monthly checkout price while that same subscription remains continuously active. Joining the waiting list is not a purchase and does not guarantee a place; checkout opens only after final verification."],
+  ["What happens if a Founding Pro subscription ends?", "The badge remains in programme history, but the Founding Pro price lock is permanently lost. A later subscription uses the then-current standard price."],
   ["Can I change plan?", "Use the Stripe customer portal to review available upgrades, downgrades or cancellation. Any price and effective date are shown by Stripe before confirmation."],
+  ["Are intraday ES and VIX feeds always available?", "No. Intraday panels require a verified licensed provider and fail closed when that feed is unavailable. Official macro context, event schedules, preparation checklists, mission cards and eligible journal tools remain usable; the site never fills missing market data with invented values."],
   ["Is this financial advice?", "No. NASH AI Markets provides educational market commentary and decision support, not personalised financial advice or guaranteed outcomes."],
 ] as const;
 
@@ -36,7 +37,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
     </div>
     <section className="commercialAssurance" aria-labelledby="assurance-title">
       <div><span>BUY WITH CLARITY</span><h2 id="assurance-title">A membership built on transparent boundaries.</h2></div>
-      <ul><li><strong>Secure checkout</strong><span>Payment details stay with Stripe.</span></li><li><strong>Visible data quality</strong><span>Freshness and provider status remain in view.</span></li><li><strong>No outcome promises</strong><span>Educational scenarios, never guaranteed trades.</span></li></ul>
+      <ul><li><strong>Secure checkout</strong><span>Payment details stay with Stripe.</span></li><li><strong>Useful fail-closed states</strong><span>Provider status stays visible, with macro, levels and preparation tools still available.</span></li><li><strong>No outcome promises</strong><span>Educational scenarios, never guaranteed trades.</span></li></ul>
     </section>
     <section className="commercialFaq"><span>QUESTIONS, ANSWERED</span><h2>Frequently asked questions</h2><div>{faqs.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
     <p className="commercialRisk"><strong>Risk notice:</strong> Trading futures and options can result in substantial losses. Membership provides educational information only.</p>

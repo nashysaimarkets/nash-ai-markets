@@ -6,16 +6,13 @@ import {
   listJournalEntries,
   type JournalEntryInput,
 } from "../../lib/server/trade-journal.ts";
+import { isSameOrigin } from "../../lib/server/same-origin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DIRECTIONS = new Set(["long", "short", "neutral"]);
 const INSTRUMENTS = new Set(["futures", "options"]);
-
-function sameOrigin(request: Request) {
-  return request.headers.get("origin") === new URL(request.url).origin;
-}
 
 function optionalNumber(value: unknown): number | null | undefined {
   if (value == null || value === "") return null;
@@ -112,8 +109,34 @@ async function requireUser() {
   return user;
 }
 
+async function readJournalBody(request: Request): Promise<Record<string, unknown>> {
+  if ((request.headers.get("content-type") ?? "").includes("application/json")) {
+    return request.json() as Promise<Record<string, unknown>>;
+  }
+  const form = await request.formData();
+  const numberValue = (name: string) => form.get(name) ? Number(form.get(name)) : null;
+  const boolValue = (name: string) => form.get(name) === "yes" ? true : form.get(name) === "no" ? false : null;
+  return {
+    tradedAt: form.get("tradedAt"),
+    instrumentClass: form.get("instrumentClass"),
+    underlying: form.get("underlying"),
+    direction: form.get("direction"),
+    entryPrice: numberValue("entryPrice"),
+    stopPrice: numberValue("stopPrice"),
+    targetPrice: numberValue("targetPrice"),
+    pnl: numberValue("pnl"),
+    positionSize: form.get("positionSize"),
+    optionsStrategy: form.get("optionsStrategy"),
+    followedPlan: boolValue("followedPlan"),
+    emotion: form.get("emotion"),
+    reason: form.get("reason"),
+    notes: form.get("notes"),
+    lesson: form.get("lesson"),
+  };
+}
+
 export async function GET(request: Request) {
-  if (!sameOrigin(request) && request.headers.get("sec-fetch-site") === "cross-site") {
+  if (!isSameOrigin(request) && request.headers.get("sec-fetch-site") === "cross-site") {
     return NextResponse.json({ ok: false }, { status: 403 });
   }
   const user = await requireUser();
@@ -132,13 +155,13 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
+  if (!isSameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
   const user = await requireUser();
   if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
 
   let body: Record<string, unknown> = {};
   try {
-    body = await request.json() as Record<string, unknown>;
+    body = await readJournalBody(request);
   } catch {
     return NextResponse.json({ ok: false, message: "Please check the journal fields and try again." }, { status: 400 });
   }
@@ -157,11 +180,14 @@ export async function POST(request: Request) {
         : "Your journal entry could not be saved. Please try again.",
     }, { status: 503 });
   }
+  if (!request.headers.get("accept")?.includes("application/json")) {
+    return NextResponse.redirect(new URL("/journal?entry=saved", request.url), 303);
+  }
   return NextResponse.json({ ok: true, row: result.row });
 }
 
 export async function DELETE(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
+  if (!isSameOrigin(request)) return NextResponse.json({ ok: false }, { status: 403 });
   const user = await requireUser();
   if (!user) return NextResponse.json({ ok: false, message: "Sign in required." }, { status: 401 });
 

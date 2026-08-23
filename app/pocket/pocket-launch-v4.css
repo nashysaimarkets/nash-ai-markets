@@ -1,0 +1,185 @@
+/* Pocket Bullseye v4 — premium mobile experience layer.
+   Staging-only visual enhancement; no data, analysis or trading logic changes. */
+
+.psApp{
+  --pb-green:#38f28e;
+  --pb-gold:#e8c673;
+  --pb-ink:#06100d;
+  --pb-ivory:#f4f3ec;
+  --pb-muted:#aeb8b3;
+}
+
+/* Clearer reading on small screens: increase hierarchy without increasing density. */
+.psApp .psCopy>span,
+.psApp .psPrivacy span,
+.psApp .psAutoPreview p,
+.psApp .psEventEmpty,
+.psApp .psEvents p,
+.psApp .psVault article span,
+.psApp .psVerdict>span,
+.psApp .psAuditGrid p,
+.psApp .psAuditGrid li,
+.psApp .psNarrative p,
+.psApp .psCases p,
+.psApp .psDecisionGrid p,
+.psApp .psDecisionGrid li,
+.psApp .psIntel p,
+.psApp .psEventDeck p,
+.psApp .psEventDeck li,
+.psApp .psLegal{
+  font-size:clamp(14px,3.8vw,16px);
+  line-height:1.58;
+}
+
+.psApp .psCopy h1{font-size:clamp(40px,11vw,66px);line-height:.96}
+.psApp .psCopy>p,.psApp .psHeaderActions span{font-size:12px;letter-spacing:.14em}
+.psApp button,.psApp input,.psApp label{font-size:14px}
+
+/* One visual family: Bullseye remains the hero mark, while NASH AI MARKETS becomes the parent brand. */
+.psHeader{
+  position:relative;
+  overflow:hidden;
+}
+.psHeader::after{
+  content:"NASH AI MARKETS  ·  YOUR TRADING SECOND OPINION";
+  display:block;
+  margin-top:8px;
+  color:#8d9994;
+  font:700 9px/1.2 var(--font-geist-mono),"Courier New",monospace;
+  letter-spacing:.16em;
+  opacity:.9;
+}
+.psLogo{filter:drop-shadow(0 0 14px #38f28e18)}
+.psLogoMark{
+  box-shadow:0 0 0 1px #38f28e20,0 0 26px #38f28e10;
+}
+.psLogoMark i{box-shadow:0 0 18px #38f28e55}
+
+/* Signature lock-on moment. Respects reduced-motion preferences. */
+@media(prefers-reduced-motion:no-preference){
+  .psApp .psScanner::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:42%;
+    width:min(70vw,360px);
+    aspect-ratio:1;
+    border:1px solid #38f28e0b;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+    animation:pb-orbit 14s linear infinite;
+  }
+  .psApp .psTargetLarge{
+    animation:pb-target-breathe 3.2s ease-in-out infinite;
+  }
+  .psApp .psScanLine{
+    animation:pb-scan 2.8s ease-in-out infinite;
+  }
+  .psApp .psAnalyse:not(:disabled){
+    animation:pb-button-glow 3.4s ease-in-out infinite;
+  }
+  .psApp .psResults[data-immersive="true"] .psVerdict{
+    animation:pb-arrive .42s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .psApp .psResults[data-immersive="true"] .psScorecard article{
+    animation:pb-rise .38s ease both;
+  }
+  .psApp .psResults[data-immersive="true"] .psScorecard article:nth-child(2){animation-delay:.04s}
+  .psApp .psResults[data-immersive="true"] .psScorecard article:nth-child(3){animation-delay:.08s}
+  .psApp .psResults[data-immersive="true"] .psScorecard article:nth-child(4){animation-delay:.12s}
+  .psApp .psResults[data-immersive="true"] .psScorecard article:nth-child(5){animation-delay:.16s}
+  .psApp .psResults[data-immersive="true"] .psScorecard article:nth-child(6){animation-delay:.20s}
+}
+
+/* A small, human-feeling focus strip without pretending the system knows more than the analysis. */
+.psApp .psIntent{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #38f28e24;
+  background:linear-gradient(135deg,#0b1714,#0a1110);
+  box-shadow:0 12px 40px #0005;
+}
+.psApp .psIntent::before{
+  content:"FOCUS";
+  position:absolute;
+  top:0;right:0;
+  padding:6px 9px;
+  background:#38f28e14;
+  color:#38f28e;
+  font:800 8px/1 var(--font-geist-mono),monospace;
+  letter-spacing:.16em;
+}
+.psApp .psIntent header b{font-size:10px}
+.psApp .psIntent button{min-height:46px;font-weight:800;letter-spacing:.06em}
+
+/* Make the annotated chart feel like a living instrument, not a static screenshot. */
+.psApp .psResultChart,
+.psApp .psAutoPreview{
+  box-shadow:0 18px 55px #0007, inset 0 0 0 1px #ffffff08;
+}
+.psApp .psAnnotatedChart,
+.psApp .psChartFocusCanvas{isolation:isolate}
+.psApp .psAnnotatedChart::after,
+.psApp .psChartFocusCanvas::after{
+  content:"BULLSEYE  ·  ANALYSIS LAYER";
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  z-index:4;
+  padding:5px 7px;
+  border:1px solid #38f28e30;
+  border-radius:5px;
+  background:#06100dcc;
+  color:#c9d3ce;
+  font:800 8px/1 var(--font-geist-mono),monospace;
+  letter-spacing:.12em;
+  backdrop-filter:blur(8px);
+}
+.psApp .psAnnotatedChart i[data-tool="support"],
+.psApp .psAnnotatedChart i[data-tool="resistance"],
+.psApp .psAnnotatedChart i[data-tool="trend"],
+.psApp .psAnnotatedChart i[data-tool="fibonacci"]{opacity:.96}
+
+/* Premium score bars and cards. */
+.psApp .psScorecard article{
+  position:relative;
+  overflow:hidden;
+  border-color:#ffffff12;
+  background:linear-gradient(145deg,#0d1815,#09100e);
+}
+.psApp .psScorecard article::after{
+  content:"";
+  position:absolute;
+  inset:auto -30% -70% auto;
+  width:120px;height:120px;
+  border-radius:50%;
+  background:#38f28e0a;
+  filter:blur(14px);
+}
+
+/* Mobile controls stay comfortably tappable. */
+@media(max-width:640px){
+  .psApp{font-size:15px}
+  .psApp .psHeader{padding:14px 16px 12px}
+  .psApp .psHeaderActions{display:none}
+  .psApp .psScanner{padding-left:16px;padding-right:16px}
+  .psApp .psAnalyse{min-height:54px;font-size:15px}
+  .psApp .psCaptureRow label{min-height:46px;display:grid;place-items:center}
+  .psApp .psOverlayBar{gap:7px}
+  .psApp .psOverlayBar button{min-height:42px;padding-inline:11px}
+  .psApp .psResultActions{grid-template-columns:1fr}
+  .psApp .psResultActions button{min-height:48px}
+  .psApp .psVerdictTop h1 em{font-size:clamp(54px,16vw,76px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .psApp *,.psApp *::before,.psApp *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
+
+@keyframes pb-orbit{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes pb-target-breathe{0%,100%{transform:scale(1);opacity:.92}50%{transform:scale(1.035);opacity:1}}
+@keyframes pb-scan{0%,100%{transform:translateY(-10px);opacity:.18}50%{transform:translateY(210px);opacity:.72}}
+@keyframes pb-button-glow{0%,100%{box-shadow:0 0 0 0 #38f28e00}50%{box-shadow:0 0 0 5px #38f28e12,0 10px 35px #38f28e14}}
+@keyframes pb-arrive{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pb-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}

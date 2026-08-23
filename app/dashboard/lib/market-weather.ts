@@ -43,6 +43,8 @@ export type DeskGreeting = {
   salutation: string;
   name: string | null;
   subtitle: string;
+  /** Session-aware Morning Brief hero clause (navigation label stays Morning Brief). */
+  briefHeadline: string;
 };
 
 const NO_OPPORTUNITY = "No verified opportunity currently available";
@@ -61,9 +63,9 @@ export function preferredGreetingName(memberName: string): string | null {
 
 function dayPart(phase: SessionPhase, now = new Date()): "morning" | "afternoon" | "evening" {
   if (phase === "premarket") return "morning";
-  if (phase === "afterhours" || phase === "weekend" || phase === "holiday-closed") return "evening";
+  if (phase === "afterhours") return "evening";
   const hour = Number(
-    new Intl.DateTimeFormat("en-GB", { timeZone: "America/New_York", hour: "2-digit", hour12: false })
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", hour: "2-digit", hour12: false })
       .formatToParts(now)
       .find((part) => part.type === "hour")?.value ?? "12",
   );
@@ -82,6 +84,13 @@ export function buildDeskGreeting(memberName: string, session: SessionClockReadi
       ? "Good afternoon"
       : "Good evening";
 
+  const briefHeadline =
+    session.phase === "premarket"
+      ? "Here is today’s pre-market briefing."
+      : session.phase === "rth"
+        ? "Here is today’s session update."
+        : "Here is today’s post-market review.";
+
   if (session.phase === "premarket") {
     return {
       salutation,
@@ -89,6 +98,7 @@ export function buildDeskGreeting(memberName: string, session: SessionClockReadi
       subtitle: session.countdownLabel
         ? `Markets are preparing. US cash session opens in ${session.countdownLabel}.`
         : "Markets are preparing for the US cash open.",
+      briefHeadline,
     };
   }
   if (session.phase === "rth") {
@@ -98,6 +108,7 @@ export function buildDeskGreeting(memberName: string, session: SessionClockReadi
       subtitle: session.countdownLabel
         ? `Cash session is open. Regular hours wrap in ${session.countdownLabel}.`
         : "US cash session is open — prepare with delayed verified feeds.",
+      briefHeadline,
     };
   }
   if (session.phase === "afterhours") {
@@ -105,6 +116,7 @@ export function buildDeskGreeting(memberName: string, session: SessionClockReadi
       salutation,
       name,
       subtitle: "Post-market review is ready. Use delayed prints for education, not live execution.",
+      briefHeadline,
     };
   }
   if (session.phase === "weekend") {
@@ -114,12 +126,14 @@ export function buildDeskGreeting(memberName: string, session: SessionClockReadi
       subtitle: session.countdownLabel
         ? `Weekend desk mode. Next pre-market window in ${session.countdownLabel}.`
         : "Weekend desk mode — review structure without forcing a trade.",
+      briefHeadline,
     };
   }
   return {
     salutation,
     name,
     subtitle: "Cash session is closed. Keep preparation educational until verified inputs reopen.",
+    briefHeadline,
   };
 }
 

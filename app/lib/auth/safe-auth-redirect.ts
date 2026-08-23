@@ -9,6 +9,13 @@ const PRODUCTION_ORIGINS = new Set([
   "https://nashaimarkets.com",
 ]);
 
+/** Owner-only Sites environment used for authenticated release acceptance. */
+const STAGING_ORIGINS = new Set([
+  "https://nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site",
+]);
+
+const STAGING_SUPABASE_PROJECT = "pxlqvaddvghjjhenqmdh";
+
 /** Unique and git preview hosts for the nash-ai-markets Vercel project. */
 const VERCEL_PREVIEW_ORIGIN =
   /^https:\/\/nash-ai-markets-[a-z0-9-]+-nash-ai-markets\.vercel\.app$/i;
@@ -21,6 +28,7 @@ const ALLOWED_NEXT_PREFIXES = [
   "/brief",
   "/profile",
   "/onboarding",
+  "/preferences",
   "/welcome",
   "/ideas",
   "/pricing",
@@ -51,9 +59,38 @@ export function isAllowedAuthOrigin(origin: string): boolean {
   const normalized = normalizeHttpOrigin(origin);
   if (!normalized) return false;
   if (PRODUCTION_ORIGINS.has(normalized)) return true;
+  if (STAGING_ORIGINS.has(normalized)) return true;
   if (LOCAL_ORIGIN.test(normalized)) return true;
   if (VERCEL_PREVIEW_ORIGIN.test(normalized)) return true;
   return false;
+}
+
+/**
+ * Fail closed when a non-public acceptance UI was compiled against another
+ * Supabase project. This covers the owner-only Sites origin and every Vercel
+ * deployment URL; only the canonical production domains may use the
+ * production provider. NEXT_PUBLIC values are baked into the browser bundle,
+ * so a correct hosting runtime value alone cannot repair a mismatched build.
+ */
+export function isAuthProviderCompatibleWithOrigin(
+  origin: string,
+  supabaseUrl: string | null | undefined,
+): boolean {
+  const normalized = normalizeHttpOrigin(origin);
+  const requiresStagingProvider = Boolean(
+    normalized &&
+      (STAGING_ORIGINS.has(normalized) || VERCEL_PREVIEW_ORIGIN.test(normalized)),
+  );
+  if (!requiresStagingProvider) return true;
+  try {
+    const providerHostname = new URL(supabaseUrl ?? "")
+      .hostname
+      .toLowerCase()
+      .replace(/\.$/, "");
+    return providerHostname === `${STAGING_SUPABASE_PROJECT}.supabase.co`;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -80,14 +117,14 @@ export function resolveAuthRequestOrigin(request: Request): string {
 }
 
 /**
- * Default landing after auth is always /terminal.
- * Callers may still pass an explicit allowlisted `next` (including /dashboard).
+ * Default landing after auth is the member Dashboard.
+ * Callers may still pass an explicit allowlisted `next` (including /terminal).
  * Origin is accepted for call-site clarity; it does not change the default path,
  * and never rewrites production ↔ preview hosts.
  */
 export function defaultPostAuthPath(origin?: string): string {
   void origin;
-  return "/terminal";
+  return "/dashboard";
 }
 
 /**
@@ -119,7 +156,7 @@ export function safeAuthNextPath(
  *
  * Path-only `/auth/callback` (no `?next=`) so Redirect URL allowlists like
  * `https://<preview-host>/**` match reliably. Post-auth destination is resolved
- * on the callback host via cookie/`next` query/`defaultPostAuthPath` (/terminal).
+ * on the callback host via cookie/`next` query/`defaultPostAuthPath` (/dashboard).
  */
 export function buildEmailRedirectTo(origin: string, next?: string | null): string {
   const trustedOrigin = normalizeHttpOrigin(origin);
@@ -136,8 +173,7 @@ export function buildPostAuthRedirect(requestOrigin: string, next?: string | nul
   const origin = normalizeHttpOrigin(requestOrigin);
   if (!origin || !isAllowedAuthOrigin(origin)) {
     // Last-resort absolute URL only when the request origin is unusable/untrusted.
-    // Prefer /terminal — never invent a /dashboard landing here.
-    return "https://www.nashaimarkets.com/terminal";
+    return "https://www.nashaimarkets.com/dashboard";
   }
   const path = safeAuthNextPath(next, defaultPostAuthPath(origin));
   return `${origin}${path}`;
@@ -198,7 +234,7 @@ export function describeAuthRedirectChain(origin: string, next?: string | null) 
     failureModeIfAllowlistRejects: {
       note: "Supabase substitutes Site URL; callback then runs on that host",
       siteUrlFallbackExample: "https://www.nashaimarkets.com/auth/callback",
-      appThenRedirectsTo: "https://www.nashaimarkets.com/terminal",
+      appThenRedirectsTo: "https://www.nashaimarkets.com/dashboard",
     },
   };
 }

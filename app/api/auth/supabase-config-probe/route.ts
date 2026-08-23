@@ -6,6 +6,8 @@ import {
   resolveSupabasePublicConfig,
   supabaseConfigDiagnostics,
 } from "../../../../utils/supabase/config.ts";
+import { createClient } from "../../../../utils/supabase/server.ts";
+import { isFounding100Admin } from "../../../lib/server/founding-100.ts";
 
 export const dynamic = "force-dynamic";
 
@@ -45,12 +47,29 @@ async function classifyHostname(hostname: string | null): Promise<{
   }
 }
 
+async function requireProbeAccess(): Promise<NextResponse | null> {
+  // Opaque 404 in production so the route does not advertise itself.
+  if (process.env.VERCEL_ENV === "production") {
+    return new NextResponse(null, { status: 404 });
+  }
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email || !isFounding100Admin(user.email)) {
+    return new NextResponse(null, { status: 404 });
+  }
+  return null;
+}
+
 /**
  * Secure auth configuration probe.
  * Reports presence / hostname / key kind only — never key material.
  * Optionally probes GET /auth/v1/settings without sending magic links.
+ * Restricted to founding admins outside production.
  */
 export async function GET(request: Request) {
+  const denied = await requireProbeAccess();
+  if (denied) return denied;
+
   const diagnostics = supabaseConfigDiagnostics();
   const url = new URL(request.url);
   const probe = url.searchParams.get("probe") === "1";
@@ -70,7 +89,7 @@ export async function GET(request: Request) {
     errorMessageSafe: null,
   };
 
-  if (probe && process.env.VERCEL_ENV !== "production") {
+  if (probe) {
     const config = resolveSupabasePublicConfig();
     if (config.urlConfigured && config.keyConfigured && config.hostname) {
       authSettingsProbe.attempted = true;

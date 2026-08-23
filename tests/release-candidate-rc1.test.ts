@@ -20,7 +20,7 @@ test("onboarding persistence is authenticated, same-origin and user-owned", asyn
     read("supabase/migrations/202607170006_member_onboarding.sql"),
     read("supabase/migrations/202607180008_member_onboarding_rpc.sql"),
   ]);
-  assert.match(route, /request\.headers\.get\("origin"\) !== origin/);
+  assert.match(route, /rejectCrossOriginCoded|request\.headers\.get\("origin"\) !== origin/);
   assert.match(route, /supabase\.auth\.getUser/);
   assert.match(route, /supabase\.rpc\("save_member_onboarding"/);
   assert.match(migration, /enable row level security/);
@@ -39,6 +39,10 @@ test("onboarding UI exposes progress, interests, notifications and recovery", as
   assert.match(form, /Nothing was lost/);
   assert.match(form, /initialPreferences\?\.experience/);
   assert.match(form, /Save workspace preferences/);
+  assert.match(form, /action="\/api\/onboarding" method="post"/);
+  assert.match(form, /window\.location\.replace/);
+  assert.match(form, /controller\.abort\(\), 12_000/);
+  assert.doesNotMatch(form, /router\.push/);
   assert.match(page, /\.select\("experience, interests, notifications, completed_at"\)/);
   assert.match(page, /Refine your market workspace/);
   assert.match(dashboard, /redirect\("\/onboarding"\)/);
@@ -54,7 +58,7 @@ test("public trust routes contain substantive guidance", async () => {
 
 test("member navigation exposes preferences with mobile overflow protection", async () => {
   const [shell, css] = await Promise.all([read("app/components/MemberShell.tsx"), read("app/enhancements.css")]);
-  assert.match(shell, /href: "\/onboarding"/);
+  assert.match(shell, /href: "\/preferences"/);
   assert.doesNotMatch(shell, /<Link href="\/auth\/signout"/);
   assert.match(shell, /<a href="\/auth\/signout"/);
   assert.match(css, /memberDashboardNav nav\{overflow-x:auto/);

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import LoginForm from "./LoginForm";
+import { redirect } from "next/navigation";
+import LoginForm from "./StagingLoginForm";
 import { BrandLogo } from "../components/BrandLogo";
+import { createClient } from "../../utils/supabase/server";
 
 export const metadata: Metadata = {
   title: "Secure Member Access",
@@ -10,7 +12,17 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function Login() {
+export default async function Login() {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    if (data.user) redirect("/dashboard");
+  } catch (error) {
+    // Next.js redirects are implemented as thrown control-flow errors.
+    if (error && typeof error === "object" && "digest" in error) throw error;
+    // If Auth configuration is unavailable, keep the recoverable sign-in page.
+  }
+
   return (
     <main className="accessPage">
       <header className="accessNav">
@@ -42,7 +54,7 @@ export default function Login() {
           <div className="accessCardBody">
             <p className="accessStep">SIGN-IN LINK</p>
             <h2>Continue by email</h2>
-            <p>Enter the email connected to your membership. We’ll send one link that returns you to the terminal.</p>
+            <p>Enter the email connected to your membership. We’ll send one link that returns you to your workspace.</p>
             <Suspense fallback={<p className="accessMessage" role="status">Preparing secure sign-in…</p>}>
               <LoginForm />
             </Suspense>

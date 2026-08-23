@@ -1,4 +1,5 @@
 import type { DeskDecisionPresentation } from "../lib/desk-decision-presentation.ts";
+import { buildTodaysPosture } from "../lib/desk-decision-presentation.ts";
 
 type DeskDecisionSummaryProps = {
   decision: DeskDecisionPresentation;
@@ -7,9 +8,7 @@ type DeskDecisionSummaryProps = {
 
 export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummaryProps) {
   const blocked = decision.permissionTone === "blocked";
-  const title = blocked
-    ? "Participation status and market lean"
-    : "Market lean, participation, and confidence";
+  const posture = buildTodaysPosture(decision);
 
   return (
     <section
@@ -18,13 +17,9 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
       aria-labelledby="desk-decision-summary-title"
     >
       <header>
-        <span className="ctEyebrow">Decision summary</span>
-        <h2 id="desk-decision-summary-title">{title}</h2>
-        {blocked ? (
-          <p className="deskDecisionSubhead">
-            Trade participation is restricted. Verified market observations below remain available for review.
-          </p>
-        ) : null}
+        <span className="ctEyebrow">{posture.eyebrow}</span>
+        <h2 id="desk-decision-summary-title">{posture.headline}</h2>
+        <p className="deskDecisionSubhead">{posture.summary}</p>
       </header>
       <div className={`deskDecisionGrid${blocked ? " is-blocked-priority" : ""}`} role="list">
         {blocked ? (
@@ -34,13 +29,15 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
               <strong>{decision.permissionLabel}</strong>
             </div>
             <div className={`deskDecisionCell is-${decision.leanTone}`} role="listitem">
-              <span>Market lean</span>
+              <span>Observed market lean</span>
               <strong>{decision.leanLabel}</strong>
             </div>
             <div className="deskDecisionCell" role="listitem">
               <span>Confidence</span>
               <strong>{decision.confidenceLabel}</strong>
-              {decision.confidenceDetail ? <small className="deskDecisionScoreDetail">{decision.confidenceDetail}</small> : null}
+              {decision.confidenceDetail ? (
+                <small className="deskDecisionScoreDetail">{decision.confidenceDetail}</small>
+              ) : null}
             </div>
             <div className="deskDecisionCell" role="listitem">
               <span>Primary condition</span>
@@ -50,7 +47,7 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
         ) : (
           <>
             <div className={`deskDecisionCell is-${decision.leanTone}`} role="listitem">
-              <span>Market lean</span>
+              <span>Observed market lean</span>
               <strong>{decision.leanLabel}</strong>
             </div>
             <div className={`deskDecisionCell is-permission-${decision.permissionTone}`} role="listitem">
@@ -60,7 +57,9 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
             <div className="deskDecisionCell" role="listitem">
               <span>Confidence</span>
               <strong>{decision.confidenceLabel}</strong>
-              {decision.confidenceDetail ? <small className="deskDecisionScoreDetail">{decision.confidenceDetail}</small> : null}
+              {decision.confidenceDetail ? (
+                <small className="deskDecisionScoreDetail">{decision.confidenceDetail}</small>
+              ) : null}
             </div>
             <div className="deskDecisionCell" role="listitem">
               <span>Risk state</span>
@@ -69,10 +68,6 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
           </>
         )}
       </div>
-      <p className="deskDecisionWhy">
-        <span>Why</span>
-        {decision.why}
-      </p>
       {(decision.supporting.length > 0 || decision.opposing.length > 0) ? (
         <div className="deskDecisionEvidence">
           {decision.supporting.length ? (
@@ -107,8 +102,11 @@ export function DeskDecisionSummary({ decision, onOpenRisk }: DeskDecisionSummar
           <p>
             Engine participation remains closed while required confirmations are incomplete.
             {decision.primaryRisk ? ` Condition on record: ${decision.primaryRisk}.` : ""}
-            {decision.confidenceScore != null ? ` Engine confidence score: ${decision.confidenceScore} / 100.` : ""}
-            {" "}This does not invalidate verified quotes, candles, levels or catalysts shown elsewhere on the desk.
+            {decision.confidenceScore != null && decision.confidenceScore > 0
+              ? ` Engine reference score: ${decision.confidenceScore} / 100.`
+              : " Confidence remains not established while confirmation is incomplete."}{" "}
+            This does not invalidate verified quotes, candles, levels or catalysts shown elsewhere on
+            the desk.
           </p>
           {onOpenRisk ? (
             <button type="button" onClick={onOpenRisk}>

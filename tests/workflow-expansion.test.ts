@@ -135,3 +135,9 @@ test("workflow routes and migration exist without placeholder-only pages", async
   assert.match(dashboard, /resolveMembershipTier/);
   assert.doesNotMatch(dashboard, /MissionControl|persistAnalysisSnapshot/);
 });
+
+test("private journal stays focused on the Bullseye S&P 500 process", async () => {
+  const journal = await readFile(new URL("../app/journal/page.tsx", import.meta.url), "utf8");
+  assert.match(journal, /S&amp;P 500 futures preparation decisions/);
+  assert.doesNotMatch(journal, /options decisions/i);
+});

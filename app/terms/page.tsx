@@ -8,14 +8,17 @@ export const metadata: Metadata = {
 
 export default function Terms() {
   return <main className="legal"><header><Link href="/">← NASH AI MARKETS</Link></header><article>
-    <span>LEGAL</span><h1>Terms of Use</h1><p className="updated">Last updated: 17 July 2026</p>
+    <span>LEGAL</span><h1>Terms of Use</h1><p className="updated">Last updated: 22 August 2026</p>
     <h2>Educational information only</h2><p>NASH AI Markets provides general educational commentary. Nothing on this site or in a briefing is personal financial advice, a recommendation, an offer, or a solicitation to buy or sell any financial instrument.</p>
     <h2>Trading risk</h2><p>Futures and options can produce substantial and rapid losses, including losses greater than an initial investment. You are solely responsible for your decisions, position sizing and risk management. Past performance does not predict future results.</p>
     <h2>No guarantee</h2><p>Markets are uncertain. We do not guarantee the accuracy, completeness or timeliness of information, uninterrupted access, or any trading outcome. Illustrative levels and scenarios are not live signals unless clearly stated otherwise.</p>
     <h2>Membership and billing</h2><p>Paid memberships are billed through Stripe at the price and interval shown during checkout. Subscription management and cancellation are available through the customer portal or support. Cancellation stops future renewal and does not normally reverse a completed billing period unless required by law or an expressly stated refund policy.</p>
     <h2>Founding 100</h2><p>Founding 100 Pro and Founding 100 Elite are limited to the first 100 successful subscribers recorded for each programme. An eligible member keeps the checkout subscription price while that same subscription remains continuously active. Cancellation, lapse or loss of paid status permanently ends that price lock. A later subscription is charged at the standard price then available. The historic Founding badge remains as a record of the award, but does not restore forfeited pricing.</p>
     <h2>Service availability</h2><p>Provider outages, delayed data, maintenance and other technical conditions may limit or suspend market output. Bullseye fails closed when current verified inputs are unavailable, and membership does not guarantee uninterrupted market-data availability.</p>
+    <h2>Pocket Bullseye beta</h2><p>Pocket Bullseye audits only the evidence visible in the images you submit. It can misread, omit or misunderstand chart content and does not verify your brokerage account, live market price, instrument specification or order details. Its score, grade and verdict are decision-support outputs, not trading signals. Private-beta access may be subject to reasonable request limits, changed, suspended or withdrawn while the service is tested.</p>
+    <h2>Uploaded charts and saved decisions</h2><p>You must have the right to submit an image and must remove personal, confidential and account information before upload. Saved Pocket decisions are held in that browser&apos;s device storage rather than synchronised to an account. You are responsible for retaining or deleting them and should not rely on browser storage as a permanent archive.</p>
     <h2>Acceptable use</h2><p>Content is for your personal use. You may not republish, resell, scrape or distribute briefings without written permission.</p>
+    <h2>Statutory rights</h2><p>Nothing in these terms excludes rights or remedies that cannot lawfully be excluded, including applicable consumer cancellation and refund rights.</p>
     <h2>Contact</h2><p>Questions can be sent to <a href="mailto:hello@nashaimarkets.com">hello@nashaimarkets.com</a>.</p>
   </article></main>;
 }

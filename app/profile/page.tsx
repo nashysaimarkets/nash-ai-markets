@@ -9,8 +9,8 @@ import { SubscriptionStatusCard } from "../components/SubscriptionStatusCard.tsx
 import { memberDisplayName } from "../dashboard/lib/daily-dashboard.ts";
 import { resolveMembershipTier } from "../terminal/lib/membership-entitlement.ts";
 import { loadFounding100ForEmail } from "../lib/server/founding-100.ts";
-import { loadCommercialMembership } from "../lib/server/commercial.ts";
 import { ProfileForm } from "./components/ProfileForm.tsx";
+import { membershipEmailKey } from "../lib/server/membership-email.ts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -25,11 +25,11 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.email) redirect("/login");
 
-  const [{ data: membership, error: membershipError }, { data: preferences }, founding100, commercial] = await Promise.all([
+  const [{ data: membership, error: membershipError }, { data: preferences }, founding100] = await Promise.all([
     supabase
       .from("memberships")
-      .select("plan, status, current_period_end")
-      .ilike("email", user.email)
+      .select("plan, status, current_period_end, billing_interval, cancel_at_period_end")
+      .eq("email", membershipEmailKey(user.email))
       .in("plan", ["free", "pro", "elite"])
       .maybeSingle(),
     supabase
@@ -38,7 +38,6 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
       .eq("user_id", user.id)
       .maybeSingle(),
     loadFounding100ForEmail(user.email),
-    loadCommercialMembership(user.email),
   ]);
   const resolved = resolveMembershipTier(membership, Boolean(membershipError));
   const tier = resolved === "temporarily_unavailable" ? "free" : resolved;
@@ -79,7 +78,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
 
       <section className="profileOverview" aria-label="Account overview">
         <article><span>Account status</span><strong>{accountReady ? "Ready" : "Action needed"}</strong><small>{accountReady ? "Identity, preferences and access available" : "Complete the highlighted account step"}</small></article>
-        <article><span>Membership</span><strong>{membershipError ? "Unverified" : tier.toUpperCase()}</strong><small>{commercial.membership?.billingInterval === "year" ? "Annual billing" : commercial.membership?.billingInterval === "month" ? "Monthly billing" : "No paid billing cadence"}</small></article>
+        <article><span>Membership</span><strong>{membershipError ? "Unverified" : tier.toUpperCase()}</strong><small>{membership?.billing_interval === "year" ? "Annual billing" : membership?.billing_interval === "month" ? "Monthly billing" : "No paid billing cadence"}</small></article>
         <article><span>Workspace</span><strong>{preferences?.completed_at ? "Configured" : "Not configured"}</strong><small>{preferences?.completed_at ? "Preferences can be updated anytime" : "Set up your market workspace"}</small></article>
         <article><span>Security</span><strong>Passwordless</strong><small>Supabase session · Stripe-hosted billing</small></article>
       </section>
@@ -99,7 +98,8 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
             portalUrl={portalUrl}
             verificationUnavailable={Boolean(membershipError)}
             foundingRecords={founding100.records}
-            billingInterval={commercial.membership?.billingInterval ?? null}
+            billingInterval={membership?.billing_interval ?? null}
+            cancelAtPeriodEnd={membership?.cancel_at_period_end ?? false}
           />
         </DashboardCard>
 
@@ -111,13 +111,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
                 <div><dt>Interests</dt><dd>{preferenceInterests.map((item) => preferenceLabels[item] ?? item).join(" · ")}</dd></div>
                 <div><dt>Notifications</dt><dd>{preferenceLabels[preferences.notifications] ?? "Configured"}</dd></div>
               </dl>
-              <Link href="/onboarding">Update workspace preferences <span>↗</span></Link>
+              <Link href="/preferences">Update workspace preferences <span>↗</span></Link>
             </div>
           ) : (
             <div className="profilePreferenceEmpty">
               <strong>Your workspace needs three short preferences</strong>
               <p>Choose your experience, market interests and optional notification setting.</p>
-              <Link href="/onboarding">Complete workspace setup <span>↗</span></Link>
+              <Link href="/preferences">Complete workspace setup <span>↗</span></Link>
             </div>
           )}
         </DashboardCard>

@@ -1,0 +1,44 @@
+/* Pocket Bullseye — launch polish v2
+   Zero-network UX layer: premium depth, focus states, clearer hierarchy, no new assets. */
+.psApp{--pb-v2-edge:rgba(255,255,255,.075);--pb-v2-hi:rgba(255,255,255,.11);--pb-v2-shadow:0 18px 50px rgba(0,0,0,.34);}
+.psApp button,.psApp label{-webkit-tap-highlight-color:transparent}
+.psApp :focus-visible{outline:2px solid rgba(183,255,42,.72);outline-offset:3px}
+.psHeader,.psImmersiveBar{box-shadow:0 14px 36px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.045)}
+.psLogoMark{transform:perspective(180px) rotateX(5deg);transition:transform .25s ease,box-shadow .25s ease}
+.psLogoMark:hover{transform:perspective(180px) rotateX(5deg) translateY(-1px) scale(1.04);box-shadow:0 10px 26px rgba(183,255,42,.12),inset 0 1px 0 rgba(255,255,255,.2)}
+.psUpload{isolation:isolate}
+.psUpload:before{content:"";position:absolute;z-index:1;inset:10px;border:1px solid rgba(255,255,255,.045);border-radius:10px;pointer-events:none;box-shadow:inset 0 0 35px rgba(0,0,0,.2)}
+.psUpload[data-loaded="true"]:before{border-color:rgba(183,255,42,.12)}
+.psScanLine{opacity:.72;filter:drop-shadow(0 0 4px rgba(255,47,61,.35))}
+.psTarget{transition:transform .25s ease,filter .25s ease}
+.psUpload:hover .psTarget{transform:translateZ(28px) scale(1.025);filter:brightness(1.06)}
+.psAnalyse{position:relative;overflow:hidden}
+.psAnalyse:after{content:"";position:absolute;top:0;bottom:0;left:-35%;width:22%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent);transform:skewX(-18deg);animation:pbV2Shine 4.8s ease-in-out infinite;pointer-events:none}
+.psAnalyse:disabled:after{display:none}
+@keyframes pbV2Shine{0%,58%{left:-35%;opacity:0}65%{opacity:.7}82%,100%{left:125%;opacity:0}}
+.psVerdict{transform:perspective(1400px) rotateX(.35deg);transform-origin:center top}
+.psVerdictTop h1 em{filter:drop-shadow(0 8px 18px rgba(0,0,0,.3))}
+.psScorecard{border-radius:10px;overflow:hidden;transform:translateZ(0)}
+.psScorecard article{position:relative;overflow:hidden}
+.psScorecard article:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.055),transparent 28%,transparent 75%,rgba(183,255,42,.018));pointer-events:none}
+.psScorecard article strong{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.psScorecard i b{transition:width .7s cubic-bezier(.2,.75,.25,1)}
+.psAuditGrid article,.psCases article,.psIntel article,.psReviewGrid article{border-radius:9px;transform:translateZ(0);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.psAuditGrid article:hover,.psCases article:hover,.psIntel article:hover,.psReviewGrid article:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.045)}
+.psResultChart,.psDrawingDesk,.psLevelDeck,.psEvents{border-radius:10px;overflow:hidden}
+.psResultChart>header button,.psImmersiveBar button{border-radius:6px;transition:transform .16s ease,background .16s ease,box-shadow .16s ease}
+.psResultChart>header button:active,.psImmersiveBar button:active{transform:translateY(1px) scale(.98);box-shadow:none}
+.psAnnotatedChart,.psResultChart>div,.psChartFocusCanvas{isolation:isolate}
+.psAnnotatedChart:after,.psResultChart>div:after,.psChartFocusCanvas:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.025),transparent 18%,transparent 82%,rgba(0,0,0,.14));z-index:3}
+.psAnnotatedChart>i,.psResultChart>div>i,.psChartFocusCanvas>i{z-index:4}
+.psAnnotatedChart>i span,.psResultChart>div>i span,.psChartFocusCanvas>i span{white-space:nowrap}
+.psResultActions{box-shadow:0 20px 42px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.05)}
+.psResultActions button{border-radius:7px;position:relative;overflow:hidden}
+.psResultActions button:active{transform:translateY(1px) scale(.985)}
+.psVault{border-radius:10px;overflow:hidden}
+.psVault article{border-bottom:1px solid rgba(255,255,255,.045)}
+.psVault article:last-child{border-bottom:0}
+.psVault button{border-radius:6px}
+.psLegal{max-width:640px;margin-inline:auto}
+@media(max-width:680px){.psUpload:before{inset:8px}.psVerdict{transform:none}.psAuditGrid article,.psCases article,.psIntel article,.psReviewGrid article{transition:none}.psAuditGrid article:hover,.psCases article:hover,.psIntel article:hover,.psReviewGrid article:hover{transform:none}.psAnalyse:after{animation-duration:6s}}
+@media(prefers-reduced-motion:reduce){.psLogoMark,.psAnalyse:after,.psScorecard i b{transition:none;animation:none}.psUpload:hover .psTarget{transform:none}.psVerdict{transform:none}}

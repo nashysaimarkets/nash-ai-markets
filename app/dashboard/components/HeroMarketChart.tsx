@@ -53,8 +53,19 @@ export function HeroMarketChart({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const requestIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
   const [series, setSeries] = useState(initialSeries);
   const [timeframe, setTimeframe] = useState<CandleTimeframe>(initialSeries.timeframe);
+  const [syncedSeries, setSyncedSeries] = useState(initialSeries);
+
+  // Adjust state during render when the server sends a new series, rather than
+  // in an effect — an effect would paint the stale series first.
+  if (initialSeries !== syncedSeries) {
+    setSyncedSeries(initialSeries);
+    setSeries(initialSeries);
+    setTimeframe(initialSeries.timeframe);
+  }
+
   const [pendingTimeframe, setPendingTimeframe] = useState<CandleTimeframe | null>(null);
   const [loading, setLoading] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
@@ -73,6 +84,9 @@ export function HeroMarketChart({
 
   async function load(next: CandleTimeframe, opts?: { silent?: boolean }) {
     const requestId = ++requestIdRef.current;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     if (!opts?.silent) {
       setLoading(true);
       setPendingTimeframe(next);
@@ -81,12 +95,15 @@ export function HeroMarketChart({
     try {
       const response = await fetch(`/api/market/candles?timeframe=${next}&instrument=${encodeURIComponent(instrument)}`, {
         cache: "no-store",
+        signal: controller.signal,
       });
       if (!response.ok) {
         throw new Error(
           response.status === 403
             ? "Your membership could not be verified for candle history."
-            : "Verified candle history could not be loaded.",
+            : response.status === 503
+              ? "Membership verification is temporarily unavailable."
+              : "Verified candle history could not be loaded.",
         );
       }
       const result = (await response.json()) as CustomerCandleSeries;
@@ -95,7 +112,7 @@ export function HeroMarketChart({
       setSeries(result);
       setTimeframe(next);
     } catch (error) {
-      if (requestId !== requestIdRef.current) return;
+      if (controller.signal.aborted || requestId !== requestIdRef.current) return;
       if (!opts?.silent) setRequestError(error instanceof Error ? error.message : "Verified candle history could not be loaded.");
     } finally {
       if (requestId !== requestIdRef.current) return;
@@ -106,17 +123,25 @@ export function HeroMarketChart({
     }
   }
 
+  // Held in a ref so the background refresh does not restart on every render.
+  const loadRef = useRef(load);
+  useEffect(() => {
+    loadRef.current = load;
+  });
+
+  useEffect(() => {
+    return () => {
+      requestIdRef.current += 1;
+      abortRef.current?.abort();
+    };
+  }, []);
+
   useEffect(() => {
     const timer = window.setInterval(() => {
-      void load(timeframe, { silent: true });
+      void loadRef.current(timeframe, { silent: true });
     }, REFRESH_MS);
     return () => window.clearInterval(timer);
   }, [timeframe, instrument]);
-
-  useEffect(() => {
-    setSeries(initialSeries);
-    setTimeframe(initialSeries.timeframe);
-  }, [initialSeries]);
 
   useEffect(() => {
     if (!available) {

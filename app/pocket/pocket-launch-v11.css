@@ -1,0 +1,78 @@
+/* Pocket Bullseye v11 — premium evidence-led analysis dashboard. */
+
+.psDecisionCompass,.psEvidenceConsole{
+  margin-top:14px;border:1px solid #2a3540;border-radius:16px;overflow:hidden;
+  background:linear-gradient(145deg,#111820 0%,#0b1016 58%,#09100d 100%);
+  box-shadow:0 18px 50px #0008,inset 0 1px #ffffff08;
+}
+.psDecisionCompass>header,.psEvidenceConsole>header{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;
+  border-bottom:1px solid #27313a;background:linear-gradient(90deg,#111922,#0c1512);
+}
+.psDecisionCompass>header span,.psEvidenceConsole>header span{
+  color:#65efa5;font-size:clamp(13px,3.4vw,15px);font-weight:900;letter-spacing:.13em;
+}
+.psDecisionCompass>header b,.psEvidenceConsole>header b{
+  color:#d9b45b;font-size:clamp(11px,2.9vw,13px);letter-spacing:.12em;
+}
+.psCompassBody{display:grid;grid-template-columns:minmax(150px,.72fr) 1.5fr;gap:16px;padding:16px}
+.psCompassDial{
+  --needle:0deg;position:relative;min-height:210px;border:1px solid #2b3741;border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:22px 12px;
+  background:
+    radial-gradient(circle at 50% 42%,#1dffc51a 0 6%,transparent 7%),
+    conic-gradient(from 225deg,#ef6270 0 25%,#d6b457 25% 50%,#39df90 50% 75%,transparent 75%);
+  isolation:isolate;
+}
+.psCompassDial:before{
+  content:"";position:absolute;inset:13px;border-radius:13px;background:#0c1218;z-index:-1;
+}
+.psCompassDial:after{
+  content:"BEAR   •   WAIT   •   BULL";position:absolute;top:18px;color:#7e8a94;
+  font-size:10px;font-weight:900;letter-spacing:.12em;
+}
+.psCompassDial[data-direction="BULLISH"]{--needle:52deg}
+.psCompassDial[data-direction="BEARISH"]{--needle:-52deg}
+.psCompassDial i{
+  position:absolute;left:50%;top:43%;width:3px;height:62px;border-radius:3px;
+  background:linear-gradient(#f5d270,#49efa1);transform-origin:50% 100%;
+  transform:translate(-50%,-100%) rotate(var(--needle));box-shadow:0 0 14px #55ec9a;
+  animation:psNeedleSet .9s cubic-bezier(.2,.9,.2,1) both;
+}
+.psCompassDial i:after{content:"";position:absolute;left:50%;bottom:-7px;width:15px;height:15px;border-radius:50%;background:#d9b45b;transform:translateX(-50%);box-shadow:0 0 15px #d9b45b88}
+.psCompassDial strong{color:#eef5f2;font-size:clamp(20px,5vw,28px);letter-spacing:.06em}
+.psCompassDial small{margin-top:5px;color:#8d9aa5;font-size:12px;font-weight:800;letter-spacing:.1em}
+.psCompassSignals{display:grid;gap:10px}
+.psCompassSignals article{position:relative;padding:13px 14px;border:1px solid #26313a;border-radius:12px;background:#0d1319;overflow:hidden}
+.psCompassSignals article:before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:#76818a}
+.psCompassSignals article[data-signal="bull"]:before{background:#43e696}
+.psCompassSignals article[data-signal="bear"]:before{background:#ef6470}
+.psCompassSignals article[data-signal="wait"]:before{background:#d9b45b}
+.psCompassSignals article[data-active="true"]{border-color:#d9b45b66;box-shadow:inset 0 0 25px #d9b45b0b}
+.psCompassSignals span{display:block;color:#d8e1dd;font-size:12px;font-weight:900;letter-spacing:.09em}
+.psCompassSignals p{margin:7px 0 0;color:#aeb8b4;font-size:clamp(14px,3.5vw,16px);line-height:1.5}
+
+.psEvidenceConsole>header b[data-quality="CLEAR"]{color:#55e99b}
+.psEvidenceConsole>header b[data-quality="POOR"]{color:#ef6a75}
+.psEvidenceMeters{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#27313a}
+.psEvidenceMeters article{padding:13px 12px;background:#0d141a}
+.psEvidenceMeters span{display:block;color:#7f8d96;font-size:10px;font-weight:900;letter-spacing:.11em}
+.psEvidenceMeters strong{display:block;margin-top:7px;color:#e5ede9;font-size:clamp(13px,3.3vw,16px)}
+.psEvidenceSplit{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px}
+.psEvidenceSplit article{padding:14px;border:1px solid #27323b;border-radius:12px;background:#0a1015}
+.psEvidenceSplit article[data-evidence="seen"]{border-color:#42e59435}
+.psEvidenceSplit article[data-evidence="conflict"]{border-color:#ef68733a}
+.psEvidenceSplit span{color:#dbe4df;font-size:12px;font-weight:900;letter-spacing:.08em}
+.psEvidenceSplit ul{margin:11px 0 0;padding-left:20px}
+.psEvidenceSplit li,.psEvidenceSplit p{margin:7px 0;color:#aeb9b4;font-size:clamp(14px,3.6vw,16px);line-height:1.5}
+.psEvidenceSplit li::marker{color:#55e99b}.psEvidenceSplit [data-evidence="conflict"] li::marker{color:#ef6873}
+.psEvidenceLimits{margin:0 14px 14px;padding:12px 14px;border-radius:10px;background:#d9b45b0e;color:#aeb8b4;font-size:clamp(13px,3.4vw,15px);line-height:1.5}
+.psEvidenceLimits strong{color:#d9b45b;letter-spacing:.08em}
+
+@keyframes psNeedleSet{from{transform:translate(-50%,-100%) rotate(-85deg)}}
+@media(max-width:700px){
+  .psCompassBody,.psEvidenceSplit{grid-template-columns:1fr}
+  .psCompassDial{min-height:190px}
+  .psEvidenceMeters{grid-template-columns:1fr 1fr}
+}
+@media(prefers-reduced-motion:reduce){.psCompassDial i{animation:none}}

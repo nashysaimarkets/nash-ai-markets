@@ -5,6 +5,7 @@ import {
   MARKET_CATALOG,
   coverageDetail,
   coverageLabel,
+  groupAvailabilityLabel,
   type MarketCoverage,
   type MarketGroup,
   type MarketGroupId,
@@ -85,7 +86,7 @@ export function MarketsBrowser() {
                       onClick={() => selectGroup(group)}
                     >
                       <span>{group.label}</span>
-                      <small>{group.instruments.length}</small>
+                      <small>{groupAvailabilityLabel(group)}</small>
                       <i aria-hidden="true">{expanded ? "▾" : "▸"}</i>
                     </button>
                     {expanded ? (
