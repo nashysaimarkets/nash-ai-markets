@@ -53,7 +53,7 @@ test("checkout accepts only enumerated server-side Price IDs", () => {
   assert.equal(checkoutPriceId(null, environment), null);
 });
 
-test("Pocket Founding 650 checkout requires the exact £4.99 monthly Price", () => {
+test("Pocket Founding 650 checkout requires the exact Â£4.99 monthly Price", () => {
   assert.deepEqual(checkoutOffering("pocket_founding_month", environment), {
     priceId: "price_pocket_founding_month",
     offering: { plan: "pocket", billingInterval: "month", foundingEligible: true },
@@ -81,7 +81,7 @@ test("Stripe price configuration tolerates pasted surrounding whitespace", () =>
   });
 });
 
-test("Founding Pro checkout requires an exact, unambiguous £12 monthly Price", () => {
+test("Founding Pro checkout requires an exact, unambiguous Â£12 monthly Price", () => {
   assert.deepEqual(checkoutOffering("founding_pro_month", environment), {
     priceId: "price_founding_pro_month",
     offering: { plan: "pro", billingInterval: "month", foundingEligible: true },
@@ -190,6 +190,7 @@ test("universal advertising link routes directly to the Founding 650 offer", asy
 
 test("campaign attribution accepts only approved social labels", () => {
   assert.deepEqual(campaignAttribution({ utm_source: "Instagram", utm_medium: "social", utm_campaign: "founding650" }), { source: "instagram", medium: "social", campaign: "founding650" });
+  assert.deepEqual(campaignAttribution({ utm_source: "Snapchat", utm_medium: "social", utm_campaign: "founding650" }), { source: "snapchat", medium: "social", campaign: "founding650" });
   assert.deepEqual(campaignAttribution({ utm_source: "bad source!", utm_medium: "email<script>", utm_campaign: "" }), { source: "direct", medium: "none", campaign: "founding650" });
   assert.equal(campaignQuery({ source: "x", medium: "social", campaign: "founding650" }), "utm_source=x&utm_medium=social&utm_campaign=founding650");
 });
@@ -221,10 +222,10 @@ test("Founding confirmation validates position and continuous-subscription wordi
 
 test("pricing page exposes approved prices, toggle, comparison, FAQ and secure forms", async () => {
   const [page, plans] = await Promise.all([read("app/pricing/page.tsx"), read("app/pricing/PricingPlans.tsx")]);
-  assert.match(plans, /£14\.99\/month/);
-  assert.match(plans, /£29\.99\/month/);
-  assert.match(plans, /£149\/year/);
-  assert.match(plans, /£299\/year/);
+  assert.match(plans, /Â£14\.99\/month/);
+  assert.match(plans, /Â£29\.99\/month/);
+  assert.match(plans, /Â£149\/year/);
+  assert.match(plans, /Â£299\/year/);
   assert.match(plans, /Feature comparison/);
   assert.match(page, /Frequently asked questions/);
   assert.match(plans, /action="\/api\/stripe\/checkout"/);
