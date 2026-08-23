@@ -9,6 +9,7 @@ import {
   validPocketFoundingPrice,
 } from "../app/lib/stripe-commercial.ts";
 import { calculateCommercialMetrics } from "../app/lib/server/commercial.ts";
+import { campaignAttribution, campaignQuery } from "../app/lib/marketing-attribution.ts";
 import {
   buildAnnualRenewalReminderEmail,
   buildFounding100ConfirmationEmail,
@@ -183,8 +184,32 @@ test("Pocket checkout welcome page exposes the complete quick-start journey", as
 
 test("universal advertising link routes directly to the Founding 650 offer", async () => {
   const page = await read("app/join/page.tsx");
-  assert.match(page, /redirect\("\/pocket\/founding#founding"\)/);
+  assert.match(page, /campaignQuery\(attribution\)/);
   assert.match(page, /index: false/);
+});
+
+test("campaign attribution accepts only approved social labels", () => {
+  assert.deepEqual(campaignAttribution({ utm_source: "Instagram", utm_medium: "social", utm_campaign: "founding650" }), { source: "instagram", medium: "social", campaign: "founding650" });
+  assert.deepEqual(campaignAttribution({ utm_source: "bad source!", utm_medium: "email<script>", utm_campaign: "" }), { source: "direct", medium: "none", campaign: "founding650" });
+  assert.equal(campaignQuery({ source: "x", medium: "social", campaign: "founding650" }), "utm_source=x&utm_medium=social&utm_campaign=founding650");
+});
+
+test("Pocket campaign source is recorded without personal browsing data", async () => {
+  const [page, checkout, visit, migration, admin] = await Promise.all([
+    read("app/pocket/founding/page.tsx"),
+    read("app/api/stripe/checkout/route.ts"),
+    read("app/api/marketing/visit/route.ts"),
+    read("supabase/migrations/20260823180000_marketing_attribution.sql"),
+    read("app/admin/commercial/page.tsx"),
+  ]);
+  assert.match(page, /name="utm_source"/);
+  assert.match(checkout, /acquisition_source/);
+  assert.match(checkout, /subscription_data/);
+  assert.match(visit, /sameOrigin/);
+  assert.doesNotMatch(migration, /ip_address|user_agent|email/);
+  assert.match(migration, /enable row level security/);
+  assert.match(migration, /revoke all.*anon, authenticated/);
+  assert.match(admin, /Campaign source performance/);
 });
 
 test("Founding confirmation validates position and continuous-subscription wording", () => {

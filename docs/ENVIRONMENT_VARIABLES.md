@@ -7,6 +7,8 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_BRIEF_MODEL` — optional server model override.
 - `OPENAI_MORNING_BRIEF_MODEL` — optional Morning Brief model override.
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
+- `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
+- `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
 
 ## Supabase
 - `NEXT_PUBLIC_SUPABASE_URL` — public project URL.
@@ -19,6 +21,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `STRIPE_WEBHOOK_SECRET` — server webhook secret.
 - `STRIPE_PRO_PRICE_ID` — Pro monthly Price ID.
 - `STRIPE_FOUNDING_PRO_PRICE_ID` — conditional Founding Pro Price ID.
+- `STRIPE_POCKET_FOUNDING_PRICE_ID` — Pocket Bullseye founding monthly Price ID.
 - `STRIPE_ELITE_PRICE_ID` — Elite monthly Price ID.
 - `STRIPE_PRO_ANNUAL_PRICE_ID` — Pro annual Price ID.
 - `STRIPE_ELITE_ANNUAL_PRICE_ID` — Elite annual Price ID.

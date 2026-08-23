@@ -1,5 +1,6 @@
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import Stripe from "stripe";
+import { CAMPAIGN_SOURCES, type CampaignSource } from "../marketing-attribution.ts";
 
 export type CommercialMembership = {
   email: string;
@@ -33,7 +34,10 @@ export type PocketLaunchMember = {
   joinedAt: string;
   renewsAt: string | null;
   cancellationScheduled: boolean;
+  source: CampaignSource;
 };
+
+export type PocketAttributionRow = { source: CampaignSource; visits: number; subscriptions: number; conversionPercent: number | null };
 
 export type PocketLaunchMetrics = {
   activeSubscribers: number;
@@ -75,7 +79,7 @@ export async function loadPocketLaunchReport() {
   const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
   const pocketPriceId = process.env.STRIPE_POCKET_FOUNDING_PRICE_ID?.trim();
   if (!secretKey || !pocketPriceId) {
-    return { status: "unavailable" as const, metrics: null, recentMembers: [] };
+    return { status: "unavailable" as const, metrics: null, recentMembers: [], attributionAvailable: false, attribution: [] };
   }
   try {
     const stripe = new Stripe(secretKey);
@@ -88,6 +92,24 @@ export async function loadPocketLaunchReport() {
     const pocketSubscriptions = subscriptions.filter((subscription) =>
       subscription.items.data.some((item) => item.price.id === pocketPriceId),
     );
+    const { data: visitData, error: visitError } = await createAdminClient().from("marketing_visits").select("source").eq("campaign", "founding650").limit(10000);
+    const attributionAvailable = !visitError && Array.isArray(visitData);
+    const visitsBySource = new Map<CampaignSource, number>();
+    if (attributionAvailable) for (const row of visitData) if (CAMPAIGN_SOURCES.includes(row.source as CampaignSource)) {
+      const source = row.source as CampaignSource;
+      visitsBySource.set(source, (visitsBySource.get(source) ?? 0) + 1);
+    }
+    const subscriptionsBySource = new Map<CampaignSource, number>();
+    for (const subscription of pocketSubscriptions) {
+      const requested = subscription.metadata.acquisition_source;
+      const source = CAMPAIGN_SOURCES.includes(requested as CampaignSource) ? requested as CampaignSource : "direct";
+      subscriptionsBySource.set(source, (subscriptionsBySource.get(source) ?? 0) + 1);
+    }
+    const attribution: PocketAttributionRow[] = CAMPAIGN_SOURCES.map((source) => {
+      const visits = visitsBySource.get(source) ?? 0;
+      const sourceSubscriptions = subscriptionsBySource.get(source) ?? 0;
+      return { source, visits, subscriptions: sourceSubscriptions, conversionPercent: visits > 0 ? Math.round((sourceSubscriptions / visits) * 1000) / 10 : null };
+    }).filter((row) => row.visits > 0 || row.subscriptions > 0);
     const active = pocketSubscriptions.filter((subscription) =>
       subscription.status === "active" || subscription.status === "trialing",
     );
@@ -137,14 +159,15 @@ export async function loadPocketLaunchReport() {
           ? new Date(subscription.items.data.reduce((latest, item) => Math.max(latest, item.current_period_end ?? 0), 0) * 1000).toISOString()
           : null,
         cancellationScheduled: subscription.cancel_at_period_end,
+        source: CAMPAIGN_SOURCES.includes(subscription.metadata.acquisition_source as CampaignSource) ? subscription.metadata.acquisition_source as CampaignSource : "direct",
       }));
-    return { status: "available" as const, metrics, recentMembers };
+    return { status: "available" as const, metrics, recentMembers, attributionAvailable, attribution };
   } catch (error) {
     console.error("Pocket launch reporting unavailable", {
       category: "owner_launch_report_failure",
       message: error instanceof Error ? error.message : "unknown",
     });
-    return { status: "unavailable" as const, metrics: null, recentMembers: [] };
+    return { status: "unavailable" as const, metrics: null, recentMembers: [], attributionAvailable: false, attribution: [] };
   }
 }
 

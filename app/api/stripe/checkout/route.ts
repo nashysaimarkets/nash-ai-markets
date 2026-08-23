@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "../../../../utils/supabase/server.ts";
 import { checkoutOffering, validFoundingProPrice, validPocketFoundingPrice } from "../../../lib/stripe-commercial.ts";
+import { campaignAttribution } from "../../../lib/marketing-attribution.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +23,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Checkout request rejected" }, { status: 403 });
   }
   const form = await request.formData();
+  const attribution = campaignAttribution({
+    utm_source: form.get("utm_source"),
+    utm_medium: form.get("utm_medium"),
+    utm_campaign: form.get("utm_campaign"),
+  });
   const selected = checkoutOffering(typeof form.get("offering") === "string" ? String(form.get("offering")) : null);
   const secretKey = process.env.STRIPE_SECRET_KEY;
   if (!secretKey || !selected) {
@@ -55,8 +61,8 @@ export async function POST(request: Request) {
       allow_promotion_codes: true,
       customer_email: verifiedEmail,
       client_reference_id: user?.id,
-      metadata: { ...(user?.id ? { supabase_user_id: user.id } : {}), offering: selected.offering.plan === "pocket" ? "pocket_founding_650" : selected.offering.plan },
-      subscription_data: selected.offering.plan === "pocket" ? { metadata: { offering: "pocket_founding_650" } } : undefined,
+      metadata: { ...(user?.id ? { supabase_user_id: user.id } : {}), offering: selected.offering.plan === "pocket" ? "pocket_founding_650" : selected.offering.plan, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign },
+      subscription_data: selected.offering.plan === "pocket" ? { metadata: { offering: "pocket_founding_650", acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign } } : undefined,
     });
     if (!session.url) throw new Error("checkout_url_unavailable");
     return NextResponse.redirect(session.url, 303);
