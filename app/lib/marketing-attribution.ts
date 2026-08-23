@@ -1,4 +1,4 @@
-export const CAMPAIGN_SOURCES = ["instagram", "tiktok", "x", "youtube", "linkedin", "direct"] as const;
+export const CAMPAIGN_SOURCES = ["instagram", "tiktok", "x", "youtube", "snapchat", "linkedin", "direct"] as const;
 
 export type CampaignSource = typeof CAMPAIGN_SOURCES[number];
 
