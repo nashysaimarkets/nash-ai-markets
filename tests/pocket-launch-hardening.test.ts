@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { calibratePocketAnalysis } from "../app/api/pocket/analysis-calibration.ts";
 import { normalizeLockedDecision, normalizeLockedDecisions } from "../app/pocket/decision-compatibility.ts";
 import { resetPocketBudgetsForTesting, takePocketBudget } from "../app/lib/server/pocket-request-budget.ts";
+import { calculateRiskDesk } from "../app/pocket/pocket-risk-desk.ts";
 
 test("legacy saved decisions are migrated without changing chart bytes", () => {
   const image = "data:image/png;base64,UNCHANGED";
@@ -89,6 +90,16 @@ test("unverified or out-of-scale horizontal levels fail closed", () => {
   assert.deepEqual(outsideScale.levels, []);
 });
 
+test("the personal risk desk calculates from explicit customer inputs only", () => {
+  const result = calculateRiskDesk({ accountValue: "10,000", riskPercent: "0.5", stopDistance: "12.5", valuePerPoint: "2" });
+  assert.equal(result.cashRisk, 50);
+  assert.equal(result.riskPerUnit, 25);
+  assert.equal(result.units, 2);
+  const incomplete = calculateRiskDesk({ accountValue: "10,000", riskPercent: "0.5", stopDistance: "", valuePerPoint: "" });
+  assert.equal(incomplete.cashRisk, 50);
+  assert.equal(incomplete.units, null);
+});
+
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
   const [client, styles, feedbackStyles, cinemaStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
@@ -156,11 +167,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ScenarioTheatre/);
   assert.match(client, /SPECULATIVE ONLY/);
   assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
-  assert.doesNotMatch(client, /<ScenarioTheatre analysis=/);
+  assert.match(client, /<ScenarioTheatre analysis=/);
   assert.match(client, /ConfluenceStack/);
   assert.match(client, /BULLSEYE CONFLUENCE STACK/);
   assert.match(client, /FIVE EVIDENCE LAYERS/);
-  assert.doesNotMatch(client, /<ConfluenceStack analysis=/);
+  assert.match(client, /<ConfluenceStack analysis=/);
   assert.match(client, /MarketStory/);
   assert.match(client, /BULLSEYE MARKET STORY/);
   assert.match(client, /CHAPTER 04 · BULL VS BEAR/);
@@ -170,7 +181,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /pocket-bullseye-viewer-name/);
   assert.match(client, /MAKE BULLSEYE YOURS/);
   assert.match(client, /viewerName\.trim\(\)/);
-  assert.doesNotMatch(client, /<BullseyePlan analysis=/);
+  assert.match(client, /<BullseyePlan analysis=/);
+  assert.match(client, /PocketCommandDeck/);
+  assert.match(client, /POCKET BULLSEYE 2\.0/);
+  assert.match(client, /PERSONAL RISK DESK/);
+  assert.match(client, /pocket-risk-desk-v1/);
   assert.match(client, /EVENT IMPACT CHECK/);
   assert.match(client, /psResultSupportInput/);
   assert.match(client, /could not be verified safely/);

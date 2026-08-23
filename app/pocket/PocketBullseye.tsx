@@ -1,8 +1,12 @@
 "use client";
 
+/* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
+/* eslint-disable @next/next/no-img-element */
+
 import { ChangeEvent, type CSSProperties, useEffect, useRef, useState } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
+import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -178,33 +182,14 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
 
 function SourceChart({ image, expanded = false }: { image: string; expanded?: boolean }) {
   return <div className={expanded ? "psSourceChart psSourceChartExpanded" : "psSourceChart"}>
-    {/* eslint-disable-next-line @next/next/no-img-element */}<img src={image} alt="Original uploaded trading chart" />
+    <img src={image} alt="Original uploaded trading chart" />
   </div>;
 }
 
 type ScenarioKind = "bull" | "wait" | "bear";
-const scenarioCandles: Record<ScenarioKind, Array<[number, number, number, number]>> = {
-  bull: [[58,48,63,44],[49,54,58,46],[53,43,57,40],[44,35,48,31],[36,29,40,25],[30,20,34,17],[21,14,25,11]],
-  wait: [[48,55,59,44],[54,45,58,42],[46,51,55,43],[50,42,54,38],[43,49,52,40],[48,44,52,41],[45,47,50,42]],
-  bear: [[45,38,49,34],[39,46,50,36],[45,52,55,42],[51,61,64,48],[60,70,73,57],[69,78,81,66],[77,87,90,73]],
-};
-
-function ScenarioCandles({ kind }: { kind: ScenarioKind }) {
-  return <svg className="psScenarioCandles" viewBox="0 0 210 112" preserveAspectRatio="none" aria-hidden="true">
-    <defs><linearGradient id={`grid-${kind}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffffff12"/><stop offset="1" stopColor="#ffffff02"/></linearGradient></defs>
-    {[22,44,66,88].map((y) => <line key={y} className="grid" x1="4" y1={y} x2="206" y2={y} />)}
-    <path className="pulse" d={kind === "bull" ? "M4 78 C50 74 90 76 118 61 S166 27 206 17" : kind === "bear" ? "M4 43 C55 39 88 42 116 55 S167 78 206 91" : "M4 58 C45 43 74 69 106 51 S164 65 206 50"} />
-    {scenarioCandles[kind].map(([open, close, high, low], index) => {
-      const x = 18 + index * 27; const rising = close < open; const top = Math.min(open, close); const height = Math.max(3, Math.abs(close - open));
-      return <g key={`${kind}-${index}`} data-candle={rising ? "up" : "down"}><line x1={x} y1={low} x2={x} y2={high}/><rect x={x - 6} y={top} width="12" height={height} rx="1"/></g>;
-    })}
-  </svg>;
-}
-
 function ScenarioTheatre({ analysis, sourceImage }: { analysis: Analysis; sourceImage: string }) {
   const active: ScenarioKind = analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait";
   const [selected, setSelected] = useState<ScenarioKind>(active);
-  useEffect(() => setSelected(active), [active]);
   const levels = analysis.levels.flatMap((level) => { const price = numericLevel(level.price); return price === null ? [] : [{ ...level, priceValue: price }]; });
   const current = numericLevel(analysis.currentPrice);
   const support = levels.filter((level) => level.kind === "support" && (current === null || level.priceValue <= current)).sort((a,b) => b.priceValue-a.priceValue)[0];
@@ -360,6 +345,83 @@ function BullseyePlan({ analysis, onResultCard }: { analysis: Analysis; onResult
   </section>;
 }
 
+type CommandDeckMode = "evidence" | "scenarios" | "plan" | "risk";
+type RiskCurrency = "GBP" | "USD" | "EUR";
+type StoredRiskDesk = RiskDeskInput & { currency: RiskCurrency; version: 1 };
+
+const EMPTY_RISK_DESK: RiskDeskInput = { accountValue: "", riskPercent: "0.5", stopDistance: "", valuePerPoint: "" };
+
+function RiskDesk() {
+  const [input, setInput] = useState<RiskDeskInput>(EMPTY_RISK_DESK);
+  const [currency, setCurrency] = useState<RiskCurrency>("GBP");
+  const [status, setStatus] = useState("");
+  const calculation = calculateRiskDesk(input);
+  const money = (value: number | null) => value === null ? "—" : new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("pocket-risk-desk-v1") ?? "null") as StoredRiskDesk | null;
+        if (!stored || stored.version !== 1) return;
+        setInput({ accountValue: stored.accountValue, riskPercent: stored.riskPercent, stopDistance: stored.stopDistance, valuePerPoint: stored.valuePerPoint });
+        if (["GBP", "USD", "EUR"].includes(stored.currency)) setCurrency(stored.currency);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const update = (key: keyof RiskDeskInput, value: string) => setInput((current) => ({ ...current, [key]: value }));
+  const save = () => {
+    try {
+      const stored: StoredRiskDesk = { ...input, currency, version: 1 };
+      localStorage.setItem("pocket-risk-desk-v1", JSON.stringify(stored));
+      setStatus("Saved privately on this device.");
+    } catch { setStatus("This browser could not save your risk settings."); }
+  };
+
+  return <section className="psRiskDesk">
+    <header><div><span>🛡 PERSONAL RISK DESK</span><small>YOUR LIMITS · YOUR DEVICE · NO ORDER CONNECTION</small></div><strong>{calculation.riskPercent !== null && calculation.riskPercent > 2 ? "HIGH LIMIT" : "PRIVATE"}</strong></header>
+    <div className="psRiskDeskBody">
+      <form onSubmit={(event) => { event.preventDefault(); save(); }}>
+        <label><span>ACCOUNT VALUE</span><div><select aria-label="Account currency" value={currency} onChange={(event) => setCurrency(event.target.value as RiskCurrency)}><option value="GBP">GBP</option><option value="USD">USD</option><option value="EUR">EUR</option></select><input aria-label="Account value" inputMode="decimal" value={input.accountValue} onChange={(event) => update("accountValue", event.target.value)} placeholder="10,000" /></div></label>
+        <label><span>MAX RISK PER IDEA</span><div><input aria-label="Maximum risk percent" inputMode="decimal" value={input.riskPercent} onChange={(event) => update("riskPercent", event.target.value)} placeholder="0.5" /><b>%</b></div></label>
+        <label><span>STOP DISTANCE</span><div><input aria-label="Stop distance in points" inputMode="decimal" value={input.stopDistance} onChange={(event) => update("stopDistance", event.target.value)} placeholder="Optional" /><b>PTS</b></div></label>
+        <label><span>VALUE PER POINT / UNIT</span><div><input aria-label="Value per point per unit" inputMode="decimal" value={input.valuePerPoint} onChange={(event) => update("valuePerPoint", event.target.value)} placeholder="Check broker" /><b>{currency}</b></div></label>
+        <button type="submit">SAVE ON THIS DEVICE</button>
+      </form>
+      <div className="psRiskReadout" aria-live="polite">
+        <article><small>MAX CASH RISK</small><strong>{money(calculation.cashRisk)}</strong><span>{calculation.riskPercent === null ? "Add account value and risk %" : `${calculation.riskPercent}% personal ceiling`}</span></article>
+        <article><small>RISK PER UNIT</small><strong>{money(calculation.riskPerUnit)}</strong><span>Stop distance × value per point</span></article>
+        <article data-primary><small>ILLUSTRATIVE MAX UNITS</small><strong>{calculation.units ?? "—"}</strong><span>{calculation.units === 0 ? "The stated unit risk exceeds your cash limit" : "Round down only · never up"}</span></article>
+      </div>
+    </div>
+    {status ? <p className="psRiskStatus" role="status">{status}</p> : null}
+    <footer><b>VERIFY CONTRACT SPECS</b><span>This calculator uses only the figures you enter. It does not know leverage, fees, slippage, margin or your broker’s contract size, and it does not place or recommend a trade.</span></footer>
+  </section>;
+}
+
+function PocketCommandDeck({ analysis, sourceImage, onResultCard }: { analysis: Analysis; sourceImage: string; onResultCard: () => void }) {
+  const [mode, setMode] = useState<CommandDeckMode>("evidence");
+  const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
+    { id: "evidence", number: "01", label: "EVIDENCE", detail: "WHY THIS READ" },
+    { id: "scenarios", number: "02", label: "SCENARIOS", detail: "IF / THEN PATHS" },
+    { id: "plan", number: "03", label: "PLAN", detail: "CLARITY LOCK" },
+    { id: "risk", number: "04", label: "RISK", detail: "PERSONAL LIMITS" },
+  ];
+
+  return <section className="psCommandDeck">
+    <header><div><span>◎ POCKET BULLSEYE 2.0</span><strong>SCAN. UNDERSTAND. PLAN. REVIEW.</strong></div><b>COMMAND DECK</b></header>
+    <nav aria-label="Pocket Bullseye command deck">{modes.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
+    <div className="psCommandStage" data-mode={mode}>
+      {mode === "evidence" ? <ConfluenceStack analysis={analysis} sourceImage={sourceImage} /> : null}
+      {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
+      {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
+      {mode === "risk" ? <RiskDesk /> : null}
+    </div>
+    <footer><span>Every mode stays evidence-first. Scenario graphics are conditional illustrations; risk figures come only from your inputs.</span></footer>
+  </section>;
+}
+
 function ResultCard({ analysis, onClose, onShare }: { analysis: Analysis; onClose: () => void; onShare: () => void }) {
   const verified = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind)).slice(0, 3);
   return <section className="psResultCardModal" role="dialog" aria-modal="true" aria-label="Shareable Pocket Bullseye result card">
@@ -501,22 +563,29 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
-  useEffect(() => { try { setViewerName(localStorage.getItem("pocket-bullseye-viewer-name") ?? ""); } catch {} }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try { setViewerName(localStorage.getItem("pocket-bullseye-viewer-name") ?? ""); } catch {}
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
-    setStockEvents([]);
-    if (!analysis || !isListedEquityAnalysis(analysis)) { setStockEventStatus("idle"); return; }
-    setStockEventStatus("loading");
     const controller = new AbortController();
-    fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
-      .then(async (response) => {
-        const payload = await response.json() as { events?: StockEvent[] };
-        if (!response.ok) throw new Error("unavailable");
-        setStockEvents(payload.events ?? []);
-        setStockEventStatus("ready");
-      })
-      .catch((error) => { if (error instanceof Error && error.name !== "AbortError") setStockEventStatus("unavailable"); });
-    return () => controller.abort();
+    const timer = window.setTimeout(() => {
+      setStockEvents([]);
+      if (!analysis || !isListedEquityAnalysis(analysis)) { setStockEventStatus("idle"); return; }
+      setStockEventStatus("loading");
+      fetch(`/api/pocket/events?symbol=${encodeURIComponent(analysis.ticker)}`, { signal: controller.signal })
+        .then(async (response) => {
+          const payload = await response.json() as { events?: StockEvent[] };
+          if (!response.ok) throw new Error("unavailable");
+          setStockEvents(payload.events ?? []);
+          setStockEventStatus("ready");
+        })
+        .catch((error) => { if (error instanceof Error && error.name !== "AbortError") setStockEventStatus("unavailable"); });
+    }, 0);
+    return () => { window.clearTimeout(timer); controller.abort(); };
   }, [analysis]);
 
   useEffect(() => {
@@ -838,6 +907,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
           <CinematicTranscript analysis={analysis} viewerName={viewerName.trim()} />
+          <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT IMPACT CHECK</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "VERIFIED MACRO TIMING"}</small></div><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong></header>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
@@ -993,7 +1063,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget ? <label className="psPersonalTouch"><span><strong>MAKE BULLSEYE YOURS</strong><small>OPTIONAL · STAYS ON THIS DEVICE</small></span><input value={viewerName} maxLength={24} autoComplete="given-name" placeholder="What should Bullseye call you?" onChange={(event) => { const value = event.target.value; setViewerName(value); try { localStorage.setItem("pocket-bullseye-viewer-name", value); } catch {} }} /></label> : null}
         <label id="pocket-chart-upload" className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image} alt="Selected chart preview" />
           </> : <div className="psTarget psTargetLarge" aria-hidden="true"><i /><i /><b /><b /></div>}
           <div className="psScanLine" aria-hidden="true" /><strong>{image ? "CHART LOADED" : "LOAD CHART"}</strong><small>{image ? fileName : "PHOTO · SCREENSHOT · CAMERA ROLL"}</small>
