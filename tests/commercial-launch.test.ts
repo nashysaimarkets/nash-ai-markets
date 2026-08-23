@@ -190,6 +190,7 @@ test("universal advertising link routes directly to the Founding 650 offer", asy
 
 test("campaign attribution accepts only approved social labels", () => {
   assert.deepEqual(campaignAttribution({ utm_source: "Instagram", utm_medium: "social", utm_campaign: "founding650" }), { source: "instagram", medium: "social", campaign: "founding650" });
+  assert.deepEqual(campaignAttribution({ utm_source: "Snapchat", utm_medium: "social", utm_campaign: "founding650" }), { source: "snapchat", medium: "social", campaign: "founding650" });
   assert.deepEqual(campaignAttribution({ utm_source: "bad source!", utm_medium: "email<script>", utm_campaign: "" }), { source: "direct", medium: "none", campaign: "founding650" });
   assert.equal(campaignQuery({ source: "x", medium: "social", campaign: "founding650" }), "utm_source=x&utm_medium=social&utm_campaign=founding650");
 });
