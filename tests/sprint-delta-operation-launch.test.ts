@@ -60,7 +60,7 @@ test("Founding Pro waitlist interest is explicit and cannot claim payment or all
   assert.match(page, /query\.plan === "founding-pro"/);
   assert.match(page, /£12\/month Founding Pro launch offer/);
   assert.match(page, /not a purchase and does not guarantee a place/);
-  assert.match(form, /source: foundingPro \? "homepage" : "launch-page"/);
+  assert.match(form, /source: pocketFounding \? "pocket-founding" : foundingPro \? "homepage" : "launch-page"/);
   assert.match(form, /No payment, guaranteed place, or automatic subscription/);
   assert.match(form, /controller\.abort\(\), 12_000/);
   assert.match(form, /role=\{messageTone === "error" \? "alert" : "status"\}/);
