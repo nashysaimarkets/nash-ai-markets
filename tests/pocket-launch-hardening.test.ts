@@ -128,6 +128,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /SECOND VIEW RESULT/);
   assert.match(client, /psRefineDelta/);
   assert.match(analyseRoute, /contextContribution/);
+  assert.match(analyseRoute, /max_output_tokens: 7000/);
+  assert.match(analyseRoute, /analysis report was interrupted before it finished/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /DecisionMap/);

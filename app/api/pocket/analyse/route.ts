@@ -246,7 +246,9 @@ export async function POST(request: Request) {
           ...(contextImage ? [{ type: "input_image" as const, image_url: contextImage, detail: "high" as const }] : []),
         ],
       }],
-      max_output_tokens: 4400,
+      // Structured reports can exceed the old cap when two charts contribute
+      // distinct evidence. Reasoning tokens also count toward this allowance.
+      max_output_tokens: 7000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     });
     const precisionInstructions = [
@@ -368,7 +370,13 @@ export async function POST(request: Request) {
       type: typeof failure.type === "string" ? failure.type : null,
       message: typeof failure.message === "string" ? failure.message.slice(0, 240) : null,
     }));
-    const timedOut = typeof failure.message === "string" && /timed out/i.test(failure.message);
-    return NextResponse.json({ error: timedOut ? "The chart analysis took too long to finish. Please retry once." : "Bullseye could not verify enough chart detail safely. Please use a clearer screenshot." }, { status: 503 });
+    const message = typeof failure.message === "string" ? failure.message : "";
+    const timedOut = /timed out/i.test(message);
+    const incomplete = /structured response was (?:empty|incomplete)/i.test(message);
+    return NextResponse.json({ error: timedOut
+      ? "The chart analysis took too long to finish. Please retry once."
+      : incomplete
+        ? "The analysis report was interrupted before it finished. Your chart is still loaded—please retry once."
+        : "Bullseye could not verify enough chart detail safely. Please use a clearer screenshot." }, { status: 503 });
   }
 }
