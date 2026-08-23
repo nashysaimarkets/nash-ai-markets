@@ -5,6 +5,7 @@ import { createClient } from "../../../utils/supabase/server.ts";
 import { isFounding100Admin, loadFounding100Availability } from "../../lib/server/founding-100.ts";
 import { loadCommercialReport, loadPocketLaunchReport, loadWaitlistMetrics } from "../../lib/server/commercial.ts";
 import "./launch-dashboard.css";
+import "./campaign-attribution.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Commercial Administration", robots: { index: false, follow: false } };
@@ -35,7 +36,10 @@ export default async function CommercialAdminPage() {
         <article><span>CANCELLED</span><strong>{pocket.metrics.cancelled}</strong><small>Historic Pocket subscriptions</small></article>
       </section>
       <section className="foundingAdminTable launchMembers" aria-labelledby="recent-pocket-members"><header><div><span>NEWEST FIRST</span><h2 id="recent-pocket-members">Recent Pocket subscriptions</h2></div><b>{pocket.recentMembers.length} shown</b></header>
-        {pocket.recentMembers.length ? <div className="foundingAdminTableScroll"><table><thead><tr><th>Customer</th><th>Status</th><th>Joined</th><th>Renews / ends</th></tr></thead><tbody>{pocket.recentMembers.map((member) => <tr key={member.id}><td>{member.email}</td><td><mark data-status={member.cancellationScheduled ? "ending" : member.status}>{member.cancellationScheduled ? "ending" : member.status}</mark></td><td>{date(member.joinedAt)}</td><td>{date(member.renewsAt)}</td></tr>)}</tbody></table></div> : <p className="foundingAdminEmpty">No Pocket subscriptions have been recorded in Stripe yet.</p>}
+        {pocket.recentMembers.length ? <div className="foundingAdminTableScroll"><table><thead><tr><th>Customer</th><th>Source</th><th>Status</th><th>Joined</th><th>Renews / ends</th></tr></thead><tbody>{pocket.recentMembers.map((member) => <tr key={member.id}><td>{member.email}</td><td>{member.source}</td><td><mark data-status={member.cancellationScheduled ? "ending" : member.status}>{member.cancellationScheduled ? "ending" : member.status}</mark></td><td>{date(member.joinedAt)}</td><td>{date(member.renewsAt)}</td></tr>)}</tbody></table></div> : <p className="foundingAdminEmpty">No Pocket subscriptions have been recorded in Stripe yet.</p>}
+      </section>
+      <section className="foundingAdminTable launchAttribution" aria-labelledby="campaign-attribution"><header><div><span>FOUNDING 650 · UNIQUE VISITS</span><h2 id="campaign-attribution">Campaign source performance</h2></div><b>Platform → subscription</b></header>
+        {!pocket.attributionAvailable ? <p className="foundingAdminEmpty">Campaign visit reporting is temporarily unavailable. Stripe subscription figures remain verified.</p> : pocket.attribution.length ? <div className="foundingAdminTableScroll"><table><thead><tr><th>Platform</th><th>Visits</th><th>Subscriptions</th><th>Conversion</th></tr></thead><tbody>{pocket.attribution.map((row) => <tr key={row.source}><td><strong>{row.source.toUpperCase()}</strong></td><td>{row.visits}</td><td>{row.subscriptions}</td><td>{row.conversionPercent === null ? "—" : `${row.conversionPercent}%`}</td></tr>)}</tbody></table></div> : <p className="foundingAdminEmpty">Tracked visits will appear after the new social links are opened.</p>}
       </section>
     </>}
     <section className="launchSecondary"><span>WIDER BUSINESS</span><h2>NASH AI Markets overview</h2></section>
