@@ -8,6 +8,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_MORNING_BRIEF_MODEL` — optional Morning Brief model override.
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
+- `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
 
 ## Supabase
 - `NEXT_PUBLIC_SUPABASE_URL` — public project URL.
