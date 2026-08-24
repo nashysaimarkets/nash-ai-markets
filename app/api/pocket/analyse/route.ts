@@ -178,8 +178,9 @@ export async function POST(request: Request) {
   let contextImage = "";
   let precisionImage = "";
   let contextPrecisionImage = "";
+  let chartConfirmation: { instrument: string; timeframe: string; currentPrice: string; contextMatch: "MATCHED" | "NOT_PROVIDED" } | null = null;
   try {
-    const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown };
+    const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown; chartConfirmation?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
     precisionImage = typeof payload.precisionImage === "string" ? payload.precisionImage : "";
@@ -187,6 +188,14 @@ export async function POST(request: Request) {
     intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
       ? payload.intention as typeof INTENTIONS[number]
       : "UNSURE";
+    if (payload.chartConfirmation && typeof payload.chartConfirmation === "object") {
+      const candidate = payload.chartConfirmation as Record<string, unknown>;
+      const instrument = typeof candidate.instrument === "string" ? candidate.instrument.trim().slice(0, 40) : "";
+      const timeframe = typeof candidate.timeframe === "string" ? candidate.timeframe.trim().slice(0, 30) : "";
+      const currentPrice = typeof candidate.currentPrice === "string" ? candidate.currentPrice.trim().slice(0, 30) : "";
+      const contextMatch = candidate.contextMatch === "MATCHED" ? "MATCHED" : "NOT_PROVIDED";
+      if (instrument && timeframe && /^-?\\d[\\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
+    }
   } catch {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
@@ -218,6 +227,7 @@ export async function POST(request: Request) {
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
+        "When user-confirmed chart facts are provided, treat their instrument, timeframe and current-price marker as authoritative metadata. Do not override them with a visual label guess. Still derive all structure, levels and directional reasoning independently from visible chart evidence.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
         "Pattern labels must include status, visible evidence and invalidation. Prefer AMBIGUOUS over forcing a name. CONFIRMED requires visible completion; FORMING is incomplete; EXTENDED means the move is already mature.",
@@ -248,7 +258,7 @@ export async function POST(request: Request) {
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: `Pre-trade audit the first trading chart${contextImage ? " and compare the optional second higher-timeframe chart" : ""}. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, multi-timeframe alignment, pattern status, next-event sequence, only-material missing inputs, visible levels and risks.` },
+          { type: "input_text", text: `Pre-trade audit the first trading chart${contextImage ? " and compare the optional second higher-timeframe chart" : ""}. Trader-confirmed chart facts: ${chartConfirmation ? `instrument=${chartConfirmation.instrument}; timeframe=${chartConfirmation.timeframe}; current price=${chartConfirmation.currentPrice}; context=${chartConfirmation.contextMatch}` : "none"}. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, multi-timeframe alignment, pattern status, next-event sequence, only-material missing inputs, visible levels and risks.` },
           { type: "input_image", image_url: image, detail: "high" },
           ...(contextImage ? [{ type: "input_image" as const, image_url: contextImage, detail: "high" as const }] : []),
         ],
