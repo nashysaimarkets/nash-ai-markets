@@ -176,10 +176,14 @@ export async function POST(request: Request) {
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
   let contextImage = "";
+  let precisionImage = "";
+  let contextPrecisionImage = "";
   try {
-    const payload = await request.json() as { image?: unknown; contextImage?: unknown; intention?: unknown };
+    const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
+    precisionImage = typeof payload.precisionImage === "string" ? payload.precisionImage : "";
+    contextPrecisionImage = typeof payload.contextPrecisionImage === "string" ? payload.contextPrecisionImage : "";
     intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
       ? payload.intention as typeof INTENTIONS[number]
       : "UNSURE";
@@ -191,6 +195,9 @@ export async function POST(request: Request) {
   }
   if (contextImage && (!/^data:image\/(jpeg|png|webp);base64,/.test(contextImage) || contextImage.length > MAX_DATA_URL_LENGTH)) {
     return NextResponse.json({ error: "Please use a valid higher-timeframe chart under 8 MB." }, { status: 400 });
+  }
+  if ([precisionImage, contextPrecisionImage].some((value) => value && (!/^data:image\/(jpeg|png|webp);base64,/.test(value) || value.length > MAX_DATA_URL_LENGTH))) {
+    return NextResponse.json({ error: "The chart reading crop could not be prepared safely." }, { status: 400 });
   }
   const budget = takePocketBudget(request, "analyse");
   if (!budget.allowed) return NextResponse.json(
@@ -262,7 +269,7 @@ export async function POST(request: Request) {
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
-    const requestPrecision = (chartImage: string, rescue = false) => client.responses.create({
+    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
       reasoning: { effort: "low" },
       store: false,
@@ -271,15 +278,16 @@ export async function POST(request: Request) {
         role: "user",
         content: [
           { type: "input_text", text: rescue
-            ? "Retry the chart carefully. Read the visible scale, current-price badge and major swing geometry. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high or breakout shelf is sufficient; repeated reactions are not mandatory. Never invent a hidden price."
+            ? `Retry the chart carefully. ${readingCrop ? "The second image is an enlarged reading crop of the first chart; use it to read candles and the right-hand price scale, but return coordinates relative to the complete first image." : ""} Read the visible scale, current-price badge and major swing geometry. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high, breakout shelf or prior range edge is sufficient; repeated reactions are not mandatory. Never invent a hidden price.`
             : "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
           { type: "input_image", image_url: chartImage, detail: "high" },
+          ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
         ],
       }],
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
     });
-    const safePrecision = async (chartImage: string, label: string) => {
+    const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
         const first = await requestPrecision(chartImage);
         try {
@@ -293,7 +301,7 @@ export async function POST(request: Request) {
             });
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
             if (parsed.levels.length === 0 || missingSide) {
-              const rescue = await requestPrecision(chartImage, true);
+              const rescue = await requestPrecision(chartImage, true, readingCrop);
               const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
               if (rescued) {
                 const merged = recoverPrecisionGeometry(parsed, rescued);
@@ -310,8 +318,8 @@ export async function POST(request: Request) {
     };
     const [response, precisionResult, contextPrecisionResult] = await Promise.all([
       analysisRequest,
-      safePrecision(image, "primary"),
-      contextImage ? safePrecision(contextImage, "context") : Promise.resolve(null),
+      safePrecision(image, "primary", precisionImage || null),
+      contextImage ? safePrecision(contextImage, "context", contextPrecisionImage || null) : Promise.resolve(null),
     ]);
     const output = response.output_text?.trim();
     if (!output) throw new Error(`Structured response was empty (${response.status ?? "unknown"}).`);
@@ -353,6 +361,13 @@ export async function POST(request: Request) {
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;
+    console.info("[pocket-bullseye] calibrated geometry", JSON.stringify({
+      primaryAnchors: Array.isArray(calibrated.priceScaleAnchors) ? calibrated.priceScaleAnchors.length : 0,
+      primaryLevels: Array.isArray(calibrated.levels) ? calibrated.levels.length : 0,
+      scaleReadable: (calibrated.evidenceQuality as Record<string, unknown> | undefined)?.scaleReadable ?? null,
+      precisionCrop: Boolean(precisionImage),
+      contextCrop: Boolean(contextPrecisionImage),
+    }));
     const contextBattlefield = calibrated?.contextBattlefield;
     if (contextBattlefield && typeof contextBattlefield === "object") {
       const context = contextBattlefield as Record<string, unknown>;
