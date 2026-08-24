@@ -78,6 +78,29 @@ test("readable price anchors calibrate horizontal levels into the candle plot", 
   assert.deepEqual(calibrated.levels[0], { kind: "support", label: "Support", price: "7700", x: 20, y: 45, x2: 82, y2: 45 });
 });
 
+test("dedicated scale anchors override a conservative prose-pass scale flag", () => {
+  const calibrated = calibratePocketAnalysis({
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: false },
+    setupScore: { overall: 70, grade: "B" },
+    plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
+    priceScaleAnchors: [{ price: 7750, y: 30 }, { price: 7650, y: 60 }],
+    levels: [{ kind: "support", label: "Defended low", price: "7600", y: 75 }],
+  }) as { evidenceQuality: { scaleReadable: boolean }; levels: Array<{ price: string; y: number }> };
+  assert.equal(calibrated.evidenceQuality.scaleReadable, true);
+  assert.deepEqual(calibrated.levels.map((level) => [level.price, level.y]), [["7600", 75]]);
+});
+
+test("verified linear scale accepts extrapolated levels that remain inside the plot", () => {
+  const calibrated = calibratePocketAnalysis({
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
+    setupScore: { overall: 70, grade: "B" },
+    plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
+    priceScaleAnchors: [{ price: 7750, y: 30 }, { price: 7650, y: 60 }],
+    levels: [{ kind: "support", label: "Lower shelf", price: "7600", y: 75 }],
+  }) as { levels: Array<{ price: string; y: number }> };
+  assert.deepEqual(calibrated.levels.map((level) => [level.price, level.y]), [["7600", 75]]);
+});
+
 test("mislabelled horizontal levels are classified by current market location", () => {
   const calibrated = calibratePocketAnalysis({
     currentPrice: "7661.05",
@@ -135,7 +158,10 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /pocket-analysis-v1/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 5/);
+  assert.match(client, /createPrecisionReadingCrop/);
+  assert.match(client, /precisionImage, contextPrecisionImage/);
+  assert.match(client, /pocket-analysis-v\$\{POCKET_ANALYSIS_ENGINE_VERSION\}/);
   assert.match(client, /crypto\.subtle\.digest\("SHA-256"/);
   assert.match(client, /analysisCacheGet\(cacheKey\)/);
   assert.match(client, /analysisCacheSave\(cacheKey, payload\.analysis\)/);
