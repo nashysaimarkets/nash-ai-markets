@@ -11,6 +11,7 @@ import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, 
 import LevelVerificationPanel from "./LevelVerificationPanel";
 import ChartPreflightPanel from "./ChartPreflightPanel";
 import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
+import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
@@ -509,8 +510,8 @@ function hasVerifiedStructuralLevel(analysis: Analysis) {
   );
 }
 
-async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention, confirmation: ChartConfirmation | null = null) {
-  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${intention}\n${JSON.stringify(confirmation)}\n${image}\n${contextImage ?? ""}`);
+async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
+  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${intention}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -590,6 +591,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [accuracyCorrection, setAccuracyCorrection] = useState<AccuracyFeedback | null>(null);
+  const [correctionOriginal, setCorrectionOriginal] = useState<Analysis | null>(null);
   const [immersive, setImmersive] = useState(false);
   const [chartFocus, setChartFocus] = useState(false);
   const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
@@ -744,12 +747,42 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     requestAnimationFrame(() => requestAnimationFrame(() => target ? document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" }) : document.querySelector(".psResults")?.scrollTo({ top: 0, behavior: "smooth" })));
   }
 
+  function applyAccuracyCorrection(feedback: AccuracyFeedback) {
+    const patch = correctionPatch(feedback);
+    setAccuracyCorrection(feedback);
+    setAnalysis((current) => {
+      if (!current) return current;
+      setCorrectionOriginal((original) => original ?? current);
+      let levels = current.levels;
+      if (patch.level) {
+        const index = levels.findIndex((level) => level.kind === patch.level!.kind);
+        const verified = index >= 0
+          ? { ...levels[index], price: patch.level.price, label: `${levels[index].label} · USER VERIFIED` }
+          : { kind: patch.level.kind, label: `USER VERIFIED ${patch.level.kind.toUpperCase()}`, price: patch.level.price, x: 10, y: 50, x2: 90, y2: 50 };
+        levels = index >= 0 ? levels.map((level, levelIndex) => levelIndex === index ? verified : level) : [...levels, verified];
+      }
+      return { ...current, instrument: patch.instrument ?? current.instrument, timeframe: patch.timeframe ?? current.timeframe, currentPrice: patch.currentPrice ?? current.currentPrice, levels };
+    });
+  }
+
+  async function reanalyseWithCorrection() {
+    if (!accuracyCorrection || !image || busy) return;
+    setError("");
+    try {
+      const corrected = await requestPocketAnalysis(contextImage, { bypassCache: true });
+      setAnalysis(corrected);
+      setResultView("report");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Correction replay could not complete safely.");
+    }
+  }
+
   async function requestPocketAnalysis(selectedContext: string | null, options: { bypassCache?: boolean } = {}): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     analysisRequestActive.current = true;
     setBusy(true);
     try {
-      const cacheKey = await analysisCacheKey(image, selectedContext, intention, chartConfirmation);
+      const cacheKey = await analysisCacheKey(image, selectedContext, intention, chartConfirmation, accuracyCorrection);
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         // A held/empty result must never become sticky. Only reuse evidence
@@ -763,7 +796,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention, chartConfirmation }),
+        body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention, chartConfirmation, accuracyCorrection }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
@@ -1092,7 +1125,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             {followUpReply ? <article className="psAskReply"><strong>BULLSEYE ANSWER</strong><p>{followUpReply.answer}</p><ul>{followUpReply.evidence.map((item) => <li key={item}>{item}</li>)}</ul><small>CAUTION · {followUpReply.caution}</small><b>NEXT CHECK · {followUpReply.nextCheck}</b></article> : null}
           </section>
 
-          <AccuracyFeedbackPanel analysis={analysis} />
+          {correctionOriginal ? <section className="psCorrectionReplaySummary"><header><span>↻ CORRECTION REPLAY ACTIVE</span><strong>ORIGINAL RESULT PRESERVED</strong></header><div><article><small>ORIGINAL</small><b>{correctionOriginal.instrument} · {correctionOriginal.timeframe} · {correctionOriginal.currentPrice || "UNKNOWN"}</b></article><article><small>CORRECTED MAP</small><b>{analysis.instrument} · {analysis.timeframe} · {analysis.currentPrice || "UNKNOWN"}</b></article></div></section> : null}
+          <AccuracyFeedbackPanel analysis={analysis} onApplyCorrection={applyAccuracyCorrection} onReanalyse={reanalyseWithCorrection} reanalysing={busy} />
 
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>

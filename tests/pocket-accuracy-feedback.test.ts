@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { accuracySummary, benchmarkCandidates, readAccuracyFeedback, type AccuracyFeedback } from "../app/pocket/accuracy-feedback.ts";
+import { accuracySummary, benchmarkCandidates, correctionPatch, readAccuracyFeedback, type AccuracyFeedback } from "../app/pocket/accuracy-feedback.ts";
 
 const accurate: AccuracyFeedback = {
   id: "a", createdAt: "2026-08-24T00:00:00.000Z", verdict: "ACCURATE", categories: [], correction: "", note: "",
@@ -23,4 +23,9 @@ test("only corrections become benchmark candidates", () => {
   const candidates = benchmarkCandidates([accurate, correction]);
   assert.equal(candidates.length, 1);
   assert.equal(candidates[0].expected.correction, "7638");
+});
+
+test("correction replay extracts a deterministic user-verified level", () => {
+  assert.deepEqual(correctionPatch(correction), { level: { kind: "support", price: "7638" } });
+  assert.deepEqual(correctionPatch(accurate), {});
 });
