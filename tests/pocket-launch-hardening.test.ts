@@ -78,6 +78,24 @@ test("readable price anchors calibrate horizontal levels into the candle plot", 
   assert.deepEqual(calibrated.levels[0], { kind: "support", label: "Support", price: "7700", x: 20, y: 45, x2: 82, y2: 45 });
 });
 
+test("mislabelled horizontal levels are classified by current market location", () => {
+  const calibrated = calibratePocketAnalysis({
+    currentPrice: "7661.05",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
+    setupScore: { overall: 70, grade: "B" },
+    plotBounds: { left: 20, top: 15, right: 82, bottom: 80 },
+    priceScaleAnchors: [{ price: 7800, y: 20 }, { price: 7600, y: 70 }],
+    levels: [
+      { kind: "support", label: "upper shelf", price: "7700", y: 45 },
+      { kind: "resistance", label: "lower shelf", price: "7600", y: 70 },
+    ],
+  }) as { levels: Array<{ kind: string; price: string }> };
+  assert.deepEqual(calibrated.levels.map((level) => [level.kind, level.price]), [
+    ["resistance", "7700"],
+    ["support", "7600"],
+  ]);
+});
+
 test("unverified or out-of-scale horizontal levels fail closed", () => {
   const base = {
     evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
