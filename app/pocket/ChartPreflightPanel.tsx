@@ -1,31 +1,44 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ChartPreflight, PreflightStatus } from "./chart-preflight";
+import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
 
-export default function ChartPreflightPanel({ image, contextImage, onStatus }: {
+export default function ChartPreflightPanel({ image, contextImage, onStatus, onConfirmation }: {
   image: string;
   contextImage?: string | null;
   onStatus: (status: PreflightStatus) => void;
+  onConfirmation: (confirmation: ChartConfirmation | null) => void;
 }) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
   const [message, setMessage] = useState("");
+  const [instrument, setInstrument] = useState("");
+  const [timeframe, setTimeframe] = useState("");
+  const [currentPrice, setCurrentPrice] = useState("");
   const statusHandler = useRef(onStatus);
+  const confirmationHandler = useRef(onConfirmation);
   useEffect(() => { statusHandler.current = onStatus; }, [onStatus]);
+  useEffect(() => { confirmationHandler.current = onConfirmation; }, [onConfirmation]);
 
   useEffect(() => {
     const controller = new AbortController();
-    setStatus("CHECKING"); setResult(null); setMessage(""); statusHandler.current("CHECKING");
+    setStatus("CHECKING"); setResult(null); setMessage(""); statusHandler.current("CHECKING"); confirmationHandler.current(null);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
-        setResult(payload.preflight); setStatus(payload.preflight.status); statusHandler.current(payload.preflight.status);
+        const next = payload.preflight;
+        setResult(next);
+        setInstrument(next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument);
+        setTimeframe(next.timeframeConfidence === "UNKNOWN" ? "" : next.timeframe);
+        setCurrentPrice(next.currentPriceConfidence === "UNKNOWN" ? "" : next.currentPrice);
+        const nextStatus: PreflightStatus = next.status === "RETAKE" ? "RETAKE" : "AWAITING_CONFIRMATION";
+        setStatus(nextStatus); statusHandler.current(nextStatus);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
-        setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); setMessage(error instanceof Error ? error.message : "Preflight unavailable");
+        setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); confirmationHandler.current(null);
+        setMessage(error instanceof Error ? error.message : "Preflight unavailable");
       }
     }, 300);
     return () => { window.clearTimeout(timer); controller.abort(); };
@@ -35,20 +48,31 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus }: {
   if (status === "UNAVAILABLE") return <section className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message} Full analysis remains available.</p></section>;
   if (!result) return null;
 
-  const checks = [
-    ["INSTRUMENT", result.instrumentConfidence === "UNKNOWN" ? "UNKNOWN" : result.instrument, result.instrumentConfidence !== "LOW" && result.instrumentConfidence !== "UNKNOWN"],
-    ["TIMEFRAME", result.timeframeConfidence === "UNKNOWN" ? "UNKNOWN" : result.timeframe, result.timeframeConfidence !== "LOW" && result.timeframeConfidence !== "UNKNOWN"],
-    ["PRICE SCALE", result.priceScaleVisible ? "VISIBLE" : "MISSING", result.priceScaleVisible],
-    ["CANDLES", result.candlesReadable ? "READABLE" : "UNCLEAR", result.candlesReadable],
-    ["HISTORY", result.enoughHistory ? "ENOUGH" : "LIMITED", result.enoughHistory],
-    ...(contextImage ? [["CHART MATCH", result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED", result.sameInstrument !== false] as const] : []),
-  ] as const;
+  const locked = status === "LOCKED";
+  const valid = instrument.trim().length > 1 && timeframe.trim().length > 0 && /^-?\d[\d,.]*$/.test(currentPrice.trim());
+  const lock = () => {
+    if (!valid || result.status === "RETAKE") return;
+    const confirmation: ChartConfirmation = {
+      instrument: instrument.trim().slice(0, 40),
+      timeframe: timeframe.trim().slice(0, 30),
+      currentPrice: currentPrice.trim().slice(0, 30),
+      contextMatch: contextImage ? "MATCHED" : "NOT_PROVIDED",
+    };
+    setStatus("LOCKED"); statusHandler.current("LOCKED"); confirmationHandler.current(confirmation);
+  };
+  const edit = () => { setStatus("AWAITING_CONFIRMATION"); statusHandler.current("AWAITING_CONFIRMATION"); confirmationHandler.current(null); };
 
-  return <section className="psPreflight" data-status={result.status}>
-    <header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>{result.status === "READY" ? "READY TO ANALYSE" : result.status === "LIMITED" ? "USABLE WITH LIMITS" : "RETAKE RECOMMENDED"}</strong></header>
-    <div className="psPreflightChecks">{checks.map(([label, value, pass]) => <article key={label} data-pass={pass}><i>{pass ? "✓" : "!"}</i><span>{label}</span><strong>{value}</strong></article>)}</div>
+  return <section className="psPreflight" data-status={result.status} data-locked={locked}>
+    <header><span>◉ PREFLIGHT CONFIRMATION LOCK</span><strong>{result.status === "RETAKE" ? "RETAKE RECOMMENDED" : locked ? "CHART FACTS LOCKED" : result.status === "LIMITED" ? "CHECK & CONFIRM" : "CONFIRM BEFORE ANALYSIS"}</strong></header>
+    <div className="psConfirmGrid">
+      <label><span>INSTRUMENT</span><input value={instrument} disabled={locked || result.status === "RETAKE"} maxLength={40} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
+      <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked || result.status === "RETAKE"} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
+      <label><span>CURRENT PRICE</span><input inputMode="decimal" value={currentPrice} disabled={locked || result.status === "RETAKE"} maxLength={30} placeholder="e.g. 7658.01" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
+      <article data-pass={!contextImage || result.sameInstrument === true}><span>CONTEXT CHART</span><strong>{!contextImage ? "NOT ADDED" : result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>
+    </div>
     {result.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
-    <p>{result.guidance}</p>
-    <footer>{result.status === "RETAKE" ? "FULL ANALYSIS PAUSED TO AVOID WASTING YOUR REQUEST" : "PREFLIGHT COMPLETE · FULL ANALYSIS HAS NOT STARTED"}</footer>
+    <p>{result.status === "RETAKE" ? result.guidance : "Check these detected facts against your broker chart. Correct anything wrong, then lock them for the analysis."}</p>
+    {result.status !== "RETAKE" ? <div className="psConfirmActions">{locked ? <><span>✓ CONFIRMED INPUTS WILL OVERRIDE AI LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM & LOCK CHART FACTS</button>}</div> : null}
+    <footer>{result.status === "RETAKE" ? "FULL ANALYSIS PAUSED TO AVOID WASTING YOUR REQUEST" : locked ? "LOCKED · READY FOR FULL ANALYSIS" : "FULL ANALYSIS WILL NOT START UNTIL CONFIRMED"}</footer>
   </section>;
 }
