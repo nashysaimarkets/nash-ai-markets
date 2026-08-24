@@ -26,6 +26,7 @@ import "./pocket-2.css";
 import "./pocket-level-verification.css";
 import "./pocket-preflight.css";
 import "./pocket-accuracy-feedback.css";
+import "./pocket-level-provenance.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
