@@ -257,7 +257,7 @@ export async function POST(request: Request) {
         "plotBounds must tightly enclose only the candle plotting rectangle. Exclude phone chrome, chart headers, order tickets, price-axis labels, dates, footer data, indicator panels and volume panels.",
         "Read 2-4 clearly printed prices from the visible price axis and return each exact numeric price with the y coordinate through the centre of its label. Higher prices must have smaller y coordinates. If fewer than two exact scale labels are readable, return no support or resistance levels.",
         "Return currentPrice only when the chart's current-price marker is clearly readable; otherwise return an empty string.",
-        "Return one or two support levels and one or two resistance levels only when repeated reactions or a major visible swing justify them. Every support/resistance must have an exact readable price and must lie inside plotBounds.",
+        "Return one or two structural levels below current price and one or two above it whenever the visible scale and candles support them. A defended swing, breakout shelf, prior range edge or repeated reaction area is sufficient; repeated touches are not mandatory. Classify every horizontal level by location: below current is support and above current is resistance.",
         "Return up to three conspicuous pivot swing highs or lows at the wick extremity. Pivot x/y and x2/y2 must be identical.",
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
@@ -284,8 +284,22 @@ export async function POST(request: Request) {
         const first = await requestPrecision(chartImage);
         try {
           const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
-          if (parsed && Array.isArray(parsed.levels) && parsed.levels.length === 0) {
-            return await requestPrecision(chartImage, true);
+          if (parsed && Array.isArray(parsed.levels)) {
+            const current = typeof parsed.currentPrice === "string" ? Number(parsed.currentPrice.replaceAll(",", "")) : NaN;
+            const prices = parsed.levels.flatMap((level) => {
+              if (!level || typeof level !== "object") return [];
+              const price = Number(String((level as Record<string, unknown>).price ?? "").replaceAll(",", ""));
+              return Number.isFinite(price) ? [price] : [];
+            });
+            const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
+            if (parsed.levels.length === 0 || missingSide) {
+              const rescue = await requestPrecision(chartImage, true);
+              const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
+              if (rescued) {
+                const merged = recoverPrecisionGeometry(parsed, rescued);
+                return { output_text: JSON.stringify(merged ?? rescued) };
+              }
+            }
           }
         } catch { /* The normal parse/fail-closed path below handles malformed output. */ }
         return first;

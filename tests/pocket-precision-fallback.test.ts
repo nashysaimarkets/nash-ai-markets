@@ -2,9 +2,20 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { recoverPrecisionGeometry } from "../app/api/pocket/precision-fallback.ts";
 
-test("retains precision levels when the dedicated pass found them", () => {
+test("merges distinct report structures when the dedicated pass found only one side", () => {
   const precision = { levels: [{ kind: "resistance", price: "7800" }], priceScaleAnchors: [{}, {}] };
-  assert.equal(recoverPrecisionGeometry({ levels: [{ kind: "support", price: "7600" }] }, precision), precision);
+  assert.deepEqual(recoverPrecisionGeometry({ levels: [{ kind: "support", price: "7600" }] }, precision)?.levels, [
+    { kind: "resistance", price: "7800" },
+    { kind: "support", price: "7600" },
+  ]);
+});
+
+test("does not duplicate the same price found by both vision passes", () => {
+  const recovered = recoverPrecisionGeometry(
+    { levels: [{ kind: "support", price: "7,800.5" }] },
+    { levels: [{ kind: "resistance", price: "7800" }], priceScaleAnchors: [{}, {}] },
+  );
+  assert.equal(Array.isArray(recovered?.levels) ? recovered.levels.length : 0, 1);
 });
 
 test("recovers report-pass structures when precision verified the scale but returned no levels", () => {
