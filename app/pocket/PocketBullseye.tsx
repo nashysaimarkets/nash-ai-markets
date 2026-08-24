@@ -472,10 +472,11 @@ function openVault() {
   });
 }
 
-type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: 1 };
+const POCKET_ANALYSIS_ENGINE_VERSION = 2 as const;
+type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention) {
-  const bytes = new TextEncoder().encode(`pocket-analysis-v1\n${intention}\n${image}\n${contextImage ?? ""}`);
+  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${intention}\n${image}\n${contextImage ?? ""}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -486,7 +487,7 @@ async function analysisCacheGet(key: string): Promise<Analysis | null> {
     const request = db.transaction("analyses", "readonly").objectStore("analyses").get(key);
     request.onsuccess = () => {
       const cached = request.result as CachedAnalysis | undefined;
-      resolve(cached?.version === 1 ? cached.analysis : null);
+      resolve(cached?.version === POCKET_ANALYSIS_ENGINE_VERSION ? cached.analysis : null);
     };
     request.onerror = () => reject(request.error);
   });
@@ -495,7 +496,7 @@ async function analysisCacheGet(key: string): Promise<Analysis | null> {
 async function analysisCacheSave(key: string, analysis: Analysis) {
   const db = await openVault();
   return new Promise<void>((resolve, reject) => {
-    const value: CachedAnalysis = { key, analysis, createdAt: new Date().toISOString(), version: 1 };
+    const value: CachedAnalysis = { key, analysis, createdAt: new Date().toISOString(), version: POCKET_ANALYSIS_ENGINE_VERSION };
     const request = db.transaction("analyses", "readwrite").objectStore("analyses").put(value);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
