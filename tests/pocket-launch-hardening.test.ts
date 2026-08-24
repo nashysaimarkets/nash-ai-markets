@@ -135,7 +135,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 2/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 3/);
   assert.match(client, /pocket-analysis-v\$\{POCKET_ANALYSIS_ENGINE_VERSION\}/);
   assert.match(client, /crypto\.subtle\.digest\("SHA-256"/);
   assert.match(client, /analysisCacheGet\(cacheKey\)/);

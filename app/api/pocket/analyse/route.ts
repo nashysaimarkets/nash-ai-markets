@@ -4,6 +4,7 @@ import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
+import { createPrecisionCrop } from "../precision-crop";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -262,7 +263,7 @@ export async function POST(request: Request) {
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
-    const requestPrecision = (chartImage: string, rescue = false) => client.responses.create({
+    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
       reasoning: { effort: "low" },
       store: false,
@@ -271,9 +272,10 @@ export async function POST(request: Request) {
         role: "user",
         content: [
           { type: "input_text", text: rescue
-            ? "Retry the chart carefully. Read the visible scale, current-price badge and major swing geometry. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high or breakout shelf is sufficient; repeated reactions are not mandatory. Never invent a hidden price."
+            ? `Retry the chart carefully. ${readingCrop ? "The second image is an enlarged reading crop of the first chart; use it to read candles and the right-hand price scale, but return coordinates relative to the complete first image." : ""} Read the visible scale, current-price badge and major swing geometry. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high, breakout shelf or prior range edge is sufficient; repeated reactions are not mandatory. Never invent a hidden price.`
             : "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
           { type: "input_image", image_url: chartImage, detail: "high" },
+          ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
         ],
       }],
       max_output_tokens: 1400,
@@ -293,7 +295,10 @@ export async function POST(request: Request) {
             });
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
             if (parsed.levels.length === 0 || missingSide) {
-              const rescue = await requestPrecision(chartImage, true);
+              const readingCrop = parsed.plotBounds && typeof parsed.plotBounds === "object"
+                ? await createPrecisionCrop(chartImage, parsed.plotBounds as Record<string, unknown>).catch(() => null)
+                : null;
+              const rescue = await requestPrecision(chartImage, true, readingCrop);
               const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
               if (rescued) {
                 const merged = recoverPrecisionGeometry(parsed, rescued);
