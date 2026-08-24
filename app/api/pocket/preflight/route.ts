@@ -1,0 +1,75 @@
+import { NextResponse } from "next/server";
+import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+
+export const runtime = "nodejs";
+export const maxDuration = 30;
+const MAX_DATA_URL_LENGTH = 11_000_000;
+
+const schema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    status: { type: "string", enum: ["READY", "LIMITED", "RETAKE"] },
+    instrument: { type: "string", maxLength: 40 },
+    instrumentConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+    timeframe: { type: "string", maxLength: 30 },
+    timeframeConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+    priceScaleVisible: { type: "boolean" },
+    candlesReadable: { type: "boolean" },
+    enoughHistory: { type: "boolean" },
+    sameInstrument: { type: ["boolean", "null"] },
+    issues: { type: "array", maxItems: 4, items: { type: "string", maxLength: 100 } },
+    guidance: { type: "string", maxLength: 180 },
+  },
+  required: ["status", "instrument", "instrumentConfidence", "timeframe", "timeframeConfidence", "priceScaleVisible", "candlesReadable", "enoughHistory", "sameInstrument", "issues", "guidance"],
+} as const;
+
+export async function POST(request: Request) {
+  let image = "";
+  let contextImage = "";
+  try {
+    const payload = await request.json() as { image?: unknown; contextImage?: unknown };
+    image = typeof payload.image === "string" ? payload.image : "";
+    contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
+  } catch {
+    return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
+  }
+  const valid = (value: string) => /^data:image\/(jpeg|png|webp);base64,/.test(value) && value.length <= MAX_DATA_URL_LENGTH;
+  if (!valid(image) || (contextImage && !valid(contextImage))) return NextResponse.json({ error: "Please use valid chart images under 8 MB." }, { status: 400 });
+
+  const budget = takePocketBudget(request, "preflight");
+  if (!budget.allowed) return NextResponse.json({ error: "Preflight needs a short reset. You may continue to analysis." }, { status: 429, headers: pocketBudgetHeaders(budget) });
+  const client = createOpenAIClient(undefined, 25_000);
+  if (!client) return NextResponse.json({ error: "Preflight is temporarily unavailable." }, { status: 503, headers: pocketBudgetHeaders(budget) });
+
+  try {
+    const response = await client.responses.create({
+      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      reasoning: { effort: "low" },
+      store: false,
+      instructions: [
+        "Perform a fast screenshot quality preflight only; do not analyse market direction and do not return trading advice.",
+        "Read the instrument and timeframe only when visibly printed. Otherwise return UNKNOWN with the correct confidence.",
+        "priceScaleVisible is true only when at least two right-side or left-side axis prices are legible.",
+        "candlesReadable requires discernible candle bodies and wicks. enoughHistory requires enough visible candles to judge repeated reactions or a meaningful swing.",
+        "When a second image is supplied, sameInstrument is true only when both visible labels clearly match, false when they clearly conflict, otherwise null.",
+        "Use RETAKE only when unreadable candles, missing price scale, severe cropping, or a confirmed instrument mismatch would make full analysis wasteful.",
+        "Use LIMITED when analysis remains useful but a label, history, or second-chart match is uncertain. Use READY when the required evidence is clear.",
+        "Give one short, precise retake instruction. Never invent a label hidden by cropping.",
+      ].join(" "),
+      input: [{ role: "user", content: [
+        { type: "input_text", text: `Check the primary chart${contextImage ? " and optional context chart" : ""} before full Pocket Bullseye analysis.` },
+        { type: "input_image", image_url: image, detail: "low" },
+        ...(contextImage ? [{ type: "input_image" as const, image_url: contextImage, detail: "low" as const }] : []),
+      ] }],
+      max_output_tokens: 800,
+      text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
+    });
+    const output = response.output_text?.trim();
+    if (!output) throw new Error("empty preflight");
+    return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
+  } catch {
+    return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
+  }
+}
