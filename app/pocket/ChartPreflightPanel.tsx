@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChartPreflight, PreflightStatus } from "./chart-preflight";
 
 export default function ChartPreflightPanel({ image, contextImage, onStatus }: {
@@ -10,24 +10,24 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus }: {
 }) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");\n  const statusHandler = useRef(onStatus);\n  useEffect(() => { statusHandler.current = onStatus; }, [onStatus]);
 
   useEffect(() => {
     const controller = new AbortController();
-    setStatus("CHECKING"); setResult(null); setMessage(""); onStatus("CHECKING");
+    setStatus("CHECKING"); setResult(null); setMessage(""); statusHandler.current("CHECKING");
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
-        setResult(payload.preflight); setStatus(payload.preflight.status); onStatus(payload.preflight.status);
+        setResult(payload.preflight); setStatus(payload.preflight.status); statusHandler.current(payload.preflight.status);
       } catch (error) {
         if (error instanceof Error && error.name === "AbortError") return;
-        setStatus("UNAVAILABLE"); onStatus("UNAVAILABLE"); setMessage(error instanceof Error ? error.message : "Preflight unavailable");
+        setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); setMessage(error instanceof Error ? error.message : "Preflight unavailable");
       }
     }, 300);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [image, contextImage, onStatus]);
+  }, [image, contextImage]);
 
   if (status === "CHECKING") return <section className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
   if (status === "UNAVAILABLE") return <section className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message} Full analysis remains available.</p></section>;
