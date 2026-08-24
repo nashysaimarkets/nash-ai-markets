@@ -4,7 +4,6 @@ import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
-import { createPrecisionCrop } from "../precision-crop";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -177,10 +176,14 @@ export async function POST(request: Request) {
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
   let contextImage = "";
+  let precisionImage = "";
+  let contextPrecisionImage = "";
   try {
-    const payload = await request.json() as { image?: unknown; contextImage?: unknown; intention?: unknown };
+    const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
+    precisionImage = typeof payload.precisionImage === "string" ? payload.precisionImage : "";
+    contextPrecisionImage = typeof payload.contextPrecisionImage === "string" ? payload.contextPrecisionImage : "";
     intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
       ? payload.intention as typeof INTENTIONS[number]
       : "UNSURE";
@@ -192,6 +195,9 @@ export async function POST(request: Request) {
   }
   if (contextImage && (!/^data:image\/(jpeg|png|webp);base64,/.test(contextImage) || contextImage.length > MAX_DATA_URL_LENGTH)) {
     return NextResponse.json({ error: "Please use a valid higher-timeframe chart under 8 MB." }, { status: 400 });
+  }
+  if ([precisionImage, contextPrecisionImage].some((value) => value && (!/^data:image\/(jpeg|png|webp);base64,/.test(value) || value.length > MAX_DATA_URL_LENGTH))) {
+    return NextResponse.json({ error: "The chart reading crop could not be prepared safely." }, { status: 400 });
   }
   const budget = takePocketBudget(request, "analyse");
   if (!budget.allowed) return NextResponse.json(
@@ -281,7 +287,7 @@ export async function POST(request: Request) {
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
     });
-    const safePrecision = async (chartImage: string, label: string) => {
+    const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
         const first = await requestPrecision(chartImage);
         try {
@@ -295,9 +301,6 @@ export async function POST(request: Request) {
             });
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
             if (parsed.levels.length === 0 || missingSide) {
-              const readingCrop = parsed.plotBounds && typeof parsed.plotBounds === "object"
-                ? await createPrecisionCrop(chartImage, parsed.plotBounds as Record<string, unknown>).catch(() => null)
-                : null;
               const rescue = await requestPrecision(chartImage, true, readingCrop);
               const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
               if (rescued) {
@@ -315,8 +318,8 @@ export async function POST(request: Request) {
     };
     const [response, precisionResult, contextPrecisionResult] = await Promise.all([
       analysisRequest,
-      safePrecision(image, "primary"),
-      contextImage ? safePrecision(contextImage, "context") : Promise.resolve(null),
+      safePrecision(image, "primary", precisionImage || null),
+      contextImage ? safePrecision(contextImage, "context", contextPrecisionImage || null) : Promise.resolve(null),
     ]);
     const output = response.output_text?.trim();
     if (!output) throw new Error(`Structured response was empty (${response.status ?? "unknown"}).`);
