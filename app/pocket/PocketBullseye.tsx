@@ -10,6 +10,7 @@ import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
 import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel, type ToolkitDirection } from "./pocket-chart-toolkit";
 import LevelVerificationPanel from "./LevelVerificationPanel";
 import ChartPreflightPanel from "./ChartPreflightPanel";
+import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
@@ -1090,6 +1091,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             {followUpError ? <p className="psAskError" role="alert">{followUpError}</p> : null}
             {followUpReply ? <article className="psAskReply"><strong>BULLSEYE ANSWER</strong><p>{followUpReply.answer}</p><ul>{followUpReply.evidence.map((item) => <li key={item}>{item}</li>)}</ul><small>CAUTION · {followUpReply.caution}</small><b>NEXT CHECK · {followUpReply.nextCheck}</b></article> : null}
           </section>
+
+          <AccuracyFeedbackPanel analysis={analysis} />
 
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
