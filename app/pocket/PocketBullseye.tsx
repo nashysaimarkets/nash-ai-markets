@@ -9,6 +9,8 @@ import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
 import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel, type ToolkitDirection } from "./pocket-chart-toolkit";
 import LevelVerificationPanel from "./LevelVerificationPanel";
+import ChartPreflightPanel from "./ChartPreflightPanel";
+import { preflightAllowsAnalysis, type PreflightStatus } from "./chart-preflight";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -582,6 +584,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [contextImage, setContextImage] = useState<string | null>(null);
   const [contextFileName, setContextFileName] = useState("");
   const [privacyChecked, setPrivacyChecked] = useState(false);
+  const [preflightStatus, setPreflightStatus] = useState<PreflightStatus>("IDLE");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -774,7 +777,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function analyse() {
-    if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
+    if (!image || !privacyChecked || busy || analysisRequestActive.current || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))) return;
     setError("");
     try {
       if (!reviewTarget) {
@@ -1154,12 +1157,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <div><span>② OPTIONAL CONTEXT CHART</span><strong>{contextImage ? "HIGHER TIMEFRAME LOADED" : "ADD HIGHER TIMEFRAME"}</strong><p>{contextImage ? contextFileName : "Add a 1-hour, 4-hour or daily view for alignment. Skip to keep analysis fast and data-light."}</p></div>
           {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
         </section> : null}
+        {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} /> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : (reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : "CHALLENGE MY SETUP")}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget && vault.length ? <section className="psFingerprint">
           <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
           <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>
