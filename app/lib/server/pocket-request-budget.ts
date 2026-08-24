@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 
-export type PocketBudgetAction = "analyse" | "review" | "follow-up";
+export type PocketBudgetAction = "preflight" | "analyse" | "review" | "follow-up";
 
 type BudgetRule = { limit: number; windowMs: number };
 type BudgetEntry = { count: number; resetAt: number };
 
-const RULES: Record<PocketBudgetAction, BudgetRule> = {
+const RULES: Record<PocketBudgetAction, BudgetRule> = {\n  preflight: { limit: 8, windowMs: 30 * 60_000 },
   analyse: { limit: 4, windowMs: 30 * 60_000 },
   review: { limit: 3, windowMs: 30 * 60_000 },
   "follow-up": { limit: 10, windowMs: 30 * 60_000 },
