@@ -496,7 +496,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 4 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 5 as const;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention) {

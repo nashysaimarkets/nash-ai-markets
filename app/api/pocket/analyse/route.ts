@@ -361,6 +361,13 @@ export async function POST(request: Request) {
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;
+    console.info("[pocket-bullseye] calibrated geometry", JSON.stringify({
+      primaryAnchors: Array.isArray(calibrated.priceScaleAnchors) ? calibrated.priceScaleAnchors.length : 0,
+      primaryLevels: Array.isArray(calibrated.levels) ? calibrated.levels.length : 0,
+      scaleReadable: (calibrated.evidenceQuality as Record<string, unknown> | undefined)?.scaleReadable ?? null,
+      precisionCrop: Boolean(precisionImage),
+      contextCrop: Boolean(contextPrecisionImage),
+    }));
     const contextBattlefield = calibrated?.contextBattlefield;
     if (contextBattlefield && typeof contextBattlefield === "object") {
       const context = contextBattlefield as Record<string, unknown>;
