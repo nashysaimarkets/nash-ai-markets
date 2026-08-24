@@ -46,3 +46,24 @@ export function benchmarkCandidates(items: AccuracyFeedback[]) {
     observed: item.snapshot,
   }));
 }
+
+export type AccuracyCorrectionPatch = {
+  instrument?: string;
+  timeframe?: string;
+  currentPrice?: string;
+  level?: { kind: "support" | "resistance"; price: string };
+};
+
+export function correctionPatch(feedback: AccuracyFeedback): AccuracyCorrectionPatch {
+  if (feedback.verdict !== "NEEDS_CORRECTION") return {};
+  const value = feedback.correction.trim();
+  if (!value) return {};
+  const numeric = value.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0];
+  const patch: AccuracyCorrectionPatch = {};
+  if (feedback.categories.includes("INSTRUMENT")) patch.instrument = value.slice(0, 40);
+  if (feedback.categories.includes("TIMEFRAME")) patch.timeframe = value.slice(0, 30);
+  if (feedback.categories.includes("CURRENT_PRICE") && numeric) patch.currentPrice = numeric;
+  if (feedback.categories.includes("SUPPORT") && numeric) patch.level = { kind: "support", price: numeric };
+  else if (feedback.categories.includes("RESISTANCE") && numeric) patch.level = { kind: "resistance", price: numeric };
+  return patch;
+}
