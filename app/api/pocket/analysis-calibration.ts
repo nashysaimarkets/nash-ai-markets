@@ -80,8 +80,11 @@ export function calibratePocketAnalysis(value: unknown): unknown {
         else if (price > currentPrice) kind = "resistance";
       }
       const horizontal = kind === "support" || kind === "resistance";
-      if (horizontal && (!calibratedScale || price === null || !low || !high || price < low.price || price > high.price)) return [];
       const scaledY = horizontal ? priceToY(level.price, modelY) : modelY;
+      // Axis anchors verify a linear scale, but the model often returns only
+      // middle labels. Permit a candidate outside the sampled price interval
+      // only when that scale still projects it inside the visible candle plot.
+      if (horizontal && (!calibratedScale || price === null || scaledY < top || scaledY > bottom)) return [];
       const y = Math.max(top, Math.min(bottom, scaledY));
       const key = `${String(kind)}:${Math.round(y * 2)}`;
       if (seen.has(key)) return [];
@@ -103,7 +106,17 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   }
   if (quality.instrumentConfidence !== "HIGH") calibrated.ticker = "UNKNOWN";
   if (quality.timeframeConfidence === "LOW" || quality.timeframeConfidence === "UNKNOWN") calibrated.timeframe = "UNKNOWN";
-  if (quality.scaleReadable === false) {
+  const verifiedAnchors = Array.isArray(calibrated.priceScaleAnchors)
+    ? calibrated.priceScaleAnchors.flatMap((item) => item && typeof item === "object"
+      ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }]
+      : []).filter((item) => item.price !== null && item.y !== null)
+    : [];
+  // The dedicated geometry pass is authoritative for numeric overlays. Do not
+  // erase its verified prices because the broader prose pass was conservative.
+  const hasVerifiedScale = verifiedAnchors.length >= 2;
+  if (hasVerifiedScale) {
+    calibrated.evidenceQuality = { ...quality, scaleReadable: true };
+  } else if (quality.scaleReadable === false) {
     calibrated.levels = Array.isArray(analysis.levels)
       ? analysis.levels.map((item) => item && typeof item === "object" ? { ...(item as JsonRecord), price: "" } : item)
       : [];
