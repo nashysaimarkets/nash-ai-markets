@@ -80,6 +80,30 @@ function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
 }
 
+function createPrecisionReadingCrop(dataUrl: string) {
+  return new Promise<string | null>((resolve) => {
+    const source = new Image();
+    source.onload = () => {
+      try {
+        // Preserve the full plot width (including the right-hand scale), while
+        // removing most phone chrome and the chart app's bottom controls.
+        const top = Math.round(source.naturalHeight * 0.06);
+        const height = Math.round(source.naturalHeight * 0.82);
+        const targetWidth = Math.min(1800, Math.max(1400, source.naturalWidth));
+        const canvas = document.createElement("canvas");
+        canvas.width = targetWidth;
+        canvas.height = Math.round(height * targetWidth / source.naturalWidth);
+        const context = canvas.getContext("2d");
+        if (!context) return resolve(null);
+        context.drawImage(source, 0, top, source.naturalWidth, height, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.92));
+      } catch { resolve(null); }
+    };
+    source.onerror = () => resolve(null);
+    source.src = dataUrl;
+  });
+}
+
 function numericLevel(value: string | undefined) {
   const parsed = Number(value?.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0]);
   return Number.isFinite(parsed) ? parsed : null;
@@ -472,10 +496,11 @@ function openVault() {
   });
 }
 
-type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: 1 };
+const POCKET_ANALYSIS_ENGINE_VERSION = 5 as const;
+type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention) {
-  const bytes = new TextEncoder().encode(`pocket-analysis-v1\n${intention}\n${image}\n${contextImage ?? ""}`);
+  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${intention}\n${image}\n${contextImage ?? ""}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -486,7 +511,7 @@ async function analysisCacheGet(key: string): Promise<Analysis | null> {
     const request = db.transaction("analyses", "readonly").objectStore("analyses").get(key);
     request.onsuccess = () => {
       const cached = request.result as CachedAnalysis | undefined;
-      resolve(cached?.version === 1 ? cached.analysis : null);
+      resolve(cached?.version === POCKET_ANALYSIS_ENGINE_VERSION ? cached.analysis : null);
     };
     request.onerror = () => reject(request.error);
   });
@@ -495,7 +520,7 @@ async function analysisCacheGet(key: string): Promise<Analysis | null> {
 async function analysisCacheSave(key: string, analysis: Analysis) {
   const db = await openVault();
   return new Promise<void>((resolve, reject) => {
-    const value: CachedAnalysis = { key, analysis, createdAt: new Date().toISOString(), version: 1 };
+    const value: CachedAnalysis = { key, analysis, createdAt: new Date().toISOString(), version: POCKET_ANALYSIS_ENGINE_VERSION };
     const request = db.transaction("analyses", "readwrite").objectStore("analyses").put(value);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
@@ -717,10 +742,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         if (cached) return cached;
       }
+      const [precisionImage, contextPrecisionImage] = await Promise.all([
+        createPrecisionReadingCrop(image),
+        selectedContext ? createPrecisionReadingCrop(selectedContext) : Promise.resolve(null),
+      ]);
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image, contextImage: selectedContext, intention }),
+        body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
