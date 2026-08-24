@@ -8,6 +8,7 @@ import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
 import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel, type ToolkitDirection } from "./pocket-chart-toolkit";
+import LevelVerificationPanel from "./LevelVerificationPanel";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -1016,6 +1017,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
             {battlefieldTabs}
             <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} onReanalyse={reanalyseResult} reanalysing={refinementStatus === "analysing"} />
+            {battlefieldChart === "primary" ? <LevelVerificationPanel key={`${analysis.currentPrice}-${analysis.levels.map((level) => `${level.kind}:${level.price}`).join("|")}`} currentPrice={analysis.currentPrice} anchors={analysis.priceScaleAnchors} levels={analysis.levels} onApply={(levels) => setAnalysis((current) => current ? ({ ...current, levels: [...current.levels.filter((level) => !["support", "resistance", "pivot"].includes(level.kind)), ...levels] }) : current)} /> : null}
             <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
           </section>
           <details id="bullseye-evidence" className="psAuditDrawer">
