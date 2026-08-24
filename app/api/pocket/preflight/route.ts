@@ -15,6 +15,8 @@ const schema = {
     instrumentConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
     timeframe: { type: "string", maxLength: 30 },
     timeframeConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+    currentPrice: { type: "string", maxLength: 30 },
+    currentPriceConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
     priceScaleVisible: { type: "boolean" },
     candlesReadable: { type: "boolean" },
     enoughHistory: { type: "boolean" },
@@ -22,7 +24,7 @@ const schema = {
     issues: { type: "array", maxItems: 4, items: { type: "string", maxLength: 100 } },
     guidance: { type: "string", maxLength: 180 },
   },
-  required: ["status", "instrument", "instrumentConfidence", "timeframe", "timeframeConfidence", "priceScaleVisible", "candlesReadable", "enoughHistory", "sameInstrument", "issues", "guidance"],
+  required: ["status", "instrument", "instrumentConfidence", "timeframe", "timeframeConfidence", "currentPrice", "currentPriceConfidence", "priceScaleVisible", "candlesReadable", "enoughHistory", "sameInstrument", "issues", "guidance"],
 } as const;
 
 export async function POST(request: Request) {
@@ -52,6 +54,7 @@ export async function POST(request: Request) {
         "Perform a fast screenshot quality preflight only; do not analyse market direction and do not return trading advice.",
         "Read the instrument and timeframe only when visibly printed. Otherwise return UNKNOWN with the correct confidence.",
         "priceScaleVisible is true only when at least two right-side or left-side axis prices are legible.",
+        "currentPrice is the exact visibly printed live/last-price marker nearest the latest candle. If it is absent or ambiguous return UNKNOWN and currentPriceConfidence UNKNOWN.",
         "candlesReadable requires discernible candle bodies and wicks. enoughHistory requires enough visible candles to judge repeated reactions or a meaningful swing.",
         "When a second image is supplied, sameInstrument is true only when both visible labels clearly match, false when they clearly conflict, otherwise null.",
         "Use RETAKE only when unreadable candles, missing price scale, severe cropping, or a confirmed instrument mismatch would make full analysis wasteful.",
