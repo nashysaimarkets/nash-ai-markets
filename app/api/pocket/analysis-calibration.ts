@@ -58,6 +58,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     const low = anchors[0];
     const high = anchors.at(-1);
     const calibratedScale = Boolean(low && high && low.price !== high.price && low.y > high.y);
+    const currentPrice = numericPrice(analysis.currentPrice);
     const priceToY = (price: unknown, fallback: number) => {
       const numeric = numericPrice(price);
       if (!low || !high || low.price === high.price || numeric === null) return fallback;
@@ -68,10 +69,17 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     calibrated.levels = analysis.levels.flatMap((item) => {
       if (!item || typeof item !== "object") return item;
       const level = item as JsonRecord;
-      const kind = level.kind;
+      let kind = level.kind;
       const modelY = boundedPercent(level.y, 50);
-      const horizontal = kind === "support" || kind === "resistance";
       const price = numericPrice(level.price);
+      // A vision pass can correctly read a horizontal price but invert its
+      // semantic label. Market location is deterministic: below current is
+      // support; above current is resistance.
+      if ((kind === "support" || kind === "resistance") && currentPrice !== null && price !== null) {
+        if (price < currentPrice) kind = "support";
+        else if (price > currentPrice) kind = "resistance";
+      }
+      const horizontal = kind === "support" || kind === "resistance";
       if (horizontal && (!calibratedScale || price === null || !low || !high || price < low.price || price > high.price)) return [];
       const scaledY = horizontal ? priceToY(level.price, modelY) : modelY;
       const y = Math.max(top, Math.min(bottom, scaledY));
@@ -80,6 +88,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       seen.add(key);
       return [{
         ...level,
+        kind,
         x: horizontal ? left : Math.max(left, Math.min(right, boundedPercent(level.x, left))),
         y,
         x2: horizontal ? right : Math.max(left, Math.min(right, boundedPercent(level.x2, right))),
