@@ -179,8 +179,9 @@ export async function POST(request: Request) {
   let precisionImage = "";
   let contextPrecisionImage = "";
   let chartConfirmation: { instrument: string; timeframe: string; currentPrice: string; contextMatch: "MATCHED" | "NOT_PROVIDED" } | null = null;
+  let accuracyCorrection: { categories: string[]; correction: string; note: string } | null = null;
   try {
-    const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown; chartConfirmation?: unknown };
+    const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
     precisionImage = typeof payload.precisionImage === "string" ? payload.precisionImage : "";
@@ -195,6 +196,14 @@ export async function POST(request: Request) {
       const currentPrice = typeof candidate.currentPrice === "string" ? candidate.currentPrice.trim().slice(0, 30) : "";
       const contextMatch = candidate.contextMatch === "MATCHED" ? "MATCHED" : "NOT_PROVIDED";
       if (instrument && timeframe && /^-?\\d[\\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
+    }
+    if (payload.accuracyCorrection && typeof payload.accuracyCorrection === "object") {
+      const candidate = payload.accuracyCorrection as Record<string, unknown>;
+      const allowed = new Set(["INSTRUMENT", "TIMEFRAME", "CURRENT_PRICE", "SUPPORT", "RESISTANCE", "CHART_READING"]);
+      const categories = Array.isArray(candidate.categories) ? candidate.categories.filter((value): value is string => typeof value === "string" && allowed.has(value)).slice(0, 6) : [];
+      const correction = typeof candidate.correction === "string" ? candidate.correction.trim().slice(0, 80) : "";
+      const note = typeof candidate.note === "string" ? candidate.note.trim().slice(0, 180) : "";
+      if (categories.length) accuracyCorrection = { categories, correction, note };
     }
   } catch {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
@@ -228,6 +237,7 @@ export async function POST(request: Request) {
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
         "When user-confirmed chart facts are provided, treat their instrument, timeframe and current-price marker as authoritative metadata. Do not override them with a visual label guess. Still derive all structure, levels and directional reasoning independently from visible chart evidence.",
+        "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified, preserve it in the returned levels/currentPrice, and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
         "Pattern labels must include status, visible evidence and invalidation. Prefer AMBIGUOUS over forcing a name. CONFIRMED requires visible completion; FORMING is incomplete; EXTENDED means the move is already mature.",
@@ -258,7 +268,7 @@ export async function POST(request: Request) {
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: `Pre-trade audit the first trading chart${contextImage ? " and compare the optional second higher-timeframe chart" : ""}. Trader-confirmed chart facts: ${chartConfirmation ? `instrument=${chartConfirmation.instrument}; timeframe=${chartConfirmation.timeframe}; current price=${chartConfirmation.currentPrice}; context=${chartConfirmation.contextMatch}` : "none"}. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, multi-timeframe alignment, pattern status, next-event sequence, only-material missing inputs, visible levels and risks.` },
+          { type: "input_text", text: `Pre-trade audit the first trading chart${contextImage ? " and compare the optional second higher-timeframe chart" : ""}. Trader-confirmed chart facts: ${chartConfirmation ? `instrument=${chartConfirmation.instrument}; timeframe=${chartConfirmation.timeframe}; current price=${chartConfirmation.currentPrice}; context=${chartConfirmation.contextMatch}` : "none"}. User correction replay: ${accuracyCorrection ? `categories=${accuracyCorrection.categories.join(",")}; corrected value=${accuracyCorrection.correction || "not supplied"}; note=${accuracyCorrection.note || "none"}` : "none"}. Trader is considering: ${intention}. Verified upcoming official events: ${verifiedEvents.length ? verifiedEvents.join("; ") : "none returned; treat event safety as unknown"}. Return a strict setup score, blunt verdict, multi-timeframe alignment, pattern status, next-event sequence, only-material missing inputs, visible levels and risks.` },
           { type: "input_image", image_url: image, detail: "high" },
           ...(contextImage ? [{ type: "input_image" as const, image_url: contextImage, detail: "high" as const }] : []),
         ],
