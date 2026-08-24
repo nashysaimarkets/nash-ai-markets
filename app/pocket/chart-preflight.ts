@@ -1,4 +1,4 @@
-export type PreflightStatus = "IDLE" | "CHECKING" | "READY" | "LIMITED" | "RETAKE" | "UNAVAILABLE";
+export type PreflightStatus = "IDLE" | "CHECKING" | "AWAITING_CONFIRMATION" | "LOCKED" | "READY" | "LIMITED" | "RETAKE" | "UNAVAILABLE";
 
 export type ChartPreflight = {
   status: Exclude<PreflightStatus, "IDLE" | "CHECKING" | "UNAVAILABLE">;
@@ -6,6 +6,8 @@ export type ChartPreflight = {
   instrumentConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
   timeframe: string;
   timeframeConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+  currentPrice: string;
+  currentPriceConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
   priceScaleVisible: boolean;
   candlesReadable: boolean;
   enoughHistory: boolean;
@@ -14,6 +16,13 @@ export type ChartPreflight = {
   guidance: string;
 };
 
+export type ChartConfirmation = {
+  instrument: string;
+  timeframe: string;
+  currentPrice: string;
+  contextMatch: "MATCHED" | "NOT_PROVIDED";
+};
+
 export function preflightAllowsAnalysis(status: PreflightStatus) {
-  return status === "READY" || status === "LIMITED" || status === "UNAVAILABLE";
+  return status === "LOCKED" || status === "UNAVAILABLE";
 }
