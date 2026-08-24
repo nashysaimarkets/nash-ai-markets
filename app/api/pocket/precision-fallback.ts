@@ -13,34 +13,45 @@ function numericPrice(value: unknown) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-/**
- * The report and geometry passes inspect the same chart independently. If the
- * precision pass reads the scale but omits all structures, retain report-pass
- * candidates and let the calibration layer reject anything off-scale.
- */
+function anchors(value: JsonRecord | null) {
+  return value && Array.isArray(value.priceScaleAnchors) ? value.priceScaleAnchors : [];
+}
+
+function hasVerifiedScale(value: JsonRecord | null) {
+  const readable = anchors(value).flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const record = item as JsonRecord;
+    const price = numericPrice(record.price);
+    const y = typeof record.y === "number" && Number.isFinite(record.y) ? record.y : null;
+    return price === null || y === null ? [] : [{ price, y }];
+  });
+  return readable.length >= 2 && readable.some((first, index) => readable.slice(index + 1).some((second) => first.price !== second.price && first.y !== second.y));
+}
+
+/** Merge independent passes without throwing away the best evidence from either. */
 export function recoverPrecisionGeometry(report: JsonRecord, precision: JsonRecord | null) {
   if (!precision) return null;
-  const anchors = Array.isArray(precision.priceScaleAnchors) ? precision.priceScaleAnchors : [];
-  const precisionLevels = populatedLevels(precision);
-  const reportLevels = populatedLevels(report);
-  if (anchors.length < 2 || !reportLevels.length) return precision;
+  const scaleSource = hasVerifiedScale(precision) ? precision : hasVerifiedScale(report) ? report : null;
+  if (!scaleSource) return precision;
 
-  // The geometry pass is deliberately sparse. Do not let one level found there
-  // erase a different, scale-verifiable structure found by the full chart pass.
-  // Calibration below still rejects off-scale or malformed candidates.
-  const merged = reportLevels.reduce<unknown[]>((levels, candidate) => {
+  const merged = [...populatedLevels(precision), ...populatedLevels(report)].reduce<unknown[]>((levels, candidate) => {
     if (!candidate || typeof candidate !== "object") return levels;
     const record = candidate as JsonRecord;
     const price = numericPrice(record.price);
-    const kind = record.kind;
-    if (price === null || !["support", "resistance", "pivot"].includes(String(kind))) return levels;
+    if (price === null || !["support", "resistance", "pivot"].includes(String(record.kind))) return levels;
     const duplicate = levels.some((item) => {
       if (!item || typeof item !== "object") return false;
       const existingPrice = numericPrice((item as JsonRecord).price);
       return existingPrice !== null && Math.abs(existingPrice - price) <= Math.max(Math.abs(price) * 0.0005, 0.01);
     });
     return duplicate ? levels : [...levels, candidate];
-  }, [...precisionLevels]);
+  }, []);
 
-  return { ...precision, levels: merged };
+  return {
+    ...precision,
+    plotBounds: scaleSource.plotBounds ?? precision.plotBounds,
+    priceScaleAnchors: scaleSource.priceScaleAnchors,
+    currentPrice: precision.currentPrice || report.currentPrice || "",
+    levels: merged,
+  };
 }
