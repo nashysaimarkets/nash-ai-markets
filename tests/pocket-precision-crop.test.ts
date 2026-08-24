@@ -1,6 +1,5 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-// @ts-ignore sharp ships declarations; the shared verification install uses a legacy exports map.
 import sharp from "sharp";
 import { createPrecisionCrop } from "../app/api/pocket/precision-crop.ts";
 
