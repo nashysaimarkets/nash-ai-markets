@@ -19,16 +19,17 @@ const categories: { value: AccuracyCategory; label: string }[] = [
   { value: "CHART_READING", label: "Chart reading" },
 ];
 
-export default function AccuracyFeedbackPanel({ analysis }: { analysis: AccuracyAnalysis }) {
+export default function AccuracyFeedbackPanel({ analysis, onApplyCorrection, onReanalyse, reanalysing = false }: { analysis: AccuracyAnalysis; onApplyCorrection: (feedback: AccuracyFeedback) => void; onReanalyse: () => void; reanalysing?: boolean }) {
   const fingerprint = useMemo(() => JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]), [analysis]);
   const [items, setItems] = useState<AccuracyFeedback[]>([]);
   const [mode, setMode] = useState<"IDLE" | "CORRECTING" | "SAVED">("IDLE");
   const [selected, setSelected] = useState<AccuracyCategory[]>([]);
   const [correction, setCorrection] = useState("");
   const [note, setNote] = useState("");
+  const [savedEntry, setSavedEntry] = useState<AccuracyFeedback | null>(null);
 
   useEffect(() => { setItems(readAccuracyFeedback(localStorage.getItem(ACCURACY_STORAGE_KEY))); }, []);
-  useEffect(() => { setMode("IDLE"); setSelected([]); setCorrection(""); setNote(""); }, [fingerprint]);
+  useEffect(() => { setMode("IDLE"); setSelected([]); setCorrection(""); setNote(""); setSavedEntry(null); }, [fingerprint]);
 
   const snapshot = () => ({
     instrument: analysis.instrument,
@@ -52,7 +53,8 @@ export default function AccuracyFeedbackPanel({ analysis }: { analysis: Accuracy
     const next = [entry, ...items].slice(0, 100);
     localStorage.setItem(ACCURACY_STORAGE_KEY, JSON.stringify(next));
     localStorage.setItem("pocket-bullseye-benchmark-candidates-v1", JSON.stringify(benchmarkCandidates(next)));
-    setItems(next); setMode("SAVED");
+    setItems(next); setSavedEntry(entry); setMode("SAVED");
+    if (verdict === "NEEDS_CORRECTION") onApplyCorrection(entry);
   };
 
   const toggle = (category: AccuracyCategory) => setSelected((current) => current.includes(category) ? current.filter((item) => item !== category) : [...current, category]);
@@ -68,7 +70,7 @@ export default function AccuracyFeedbackPanel({ analysis }: { analysis: Accuracy
       <label><span>WHAT SHOULD POCKET HAVE SEEN? <small>OPTIONAL</small></span><textarea value={note} maxLength={180} placeholder="One short observation…" onChange={(event) => setNote(event.target.value)} /></label>
       <div className="psAccuracyActions"><button type="button" onClick={() => setMode("IDLE")}>CANCEL</button><button type="button" disabled={!selected.length} onClick={() => save("NEEDS_CORRECTION")}>SAVE CORRECTION</button></div>
     </div> : null}
-    {mode === "SAVED" ? <div className="psAccuracySaved"><b>✓ PRIVATE FEEDBACK SAVED</b><p>This result is now stored as a device-only accuracy benchmark candidate.</p><button type="button" onClick={() => setMode("IDLE")}>RATE AGAIN</button></div> : null}
+    {mode === "SAVED" ? <div className="psAccuracySaved"><b>✓ {savedEntry?.verdict === "NEEDS_CORRECTION" ? "CORRECTION APPLIED TO DECISION MAP" : "PRIVATE FEEDBACK SAVED"}</b><p>{savedEntry?.verdict === "NEEDS_CORRECTION" ? "The original result is preserved and corrected facts are now marked as user verified." : "This rating is stored privately on this device."}</p>{savedEntry?.verdict === "NEEDS_CORRECTION" ? <div><button type="button" disabled={reanalysing} onClick={onReanalyse}>{reanalysing ? "REANALYSING…" : "↻ REANALYSE USING CORRECTION"}</button><button type="button" onClick={() => setMode("IDLE")}>ADD ANOTHER</button></div> : <button type="button" onClick={() => setMode("IDLE")}>RATE AGAIN</button>}</div> : null}
     {summary.corrections ? <footer><span>{summary.corrections} CORRECTION{summary.corrections === 1 ? "" : "S"} SAVED</span><strong>REPEATED WATCH · {summary.repeatedIssue.replaceAll("_", " ")}</strong></footer> : <footer>PRIVATE · SAVED ON THIS DEVICE · SCREENSHOT NOT COPIED</footer>}
   </section>;
 }
