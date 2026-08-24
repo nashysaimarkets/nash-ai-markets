@@ -496,8 +496,14 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 5 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 6 as const;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
+
+function hasVerifiedStructuralLevel(analysis: Analysis) {
+  return analysis.levels.some((level) =>
+    numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind),
+  );
+}
 
 async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention) {
   const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${intention}\n${image}\n${contextImage ?? ""}`);
@@ -740,7 +746,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const cacheKey = await analysisCacheKey(image, selectedContext, intention);
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
-        if (cached) return cached;
+        // A held/empty result must never become sticky. Only reuse evidence
+        // that contains an independently verified structural price level.
+        if (cached && hasVerifiedStructuralLevel(cached)) return cached;
       }
       const [precisionImage, contextPrecisionImage] = await Promise.all([
         createPrecisionReadingCrop(image),
@@ -754,7 +762,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
-      await analysisCacheSave(cacheKey, payload.analysis).catch(() => undefined);
+      if (hasVerifiedStructuralLevel(payload.analysis)) {
+        await analysisCacheSave(cacheKey, payload.analysis).catch(() => undefined);
+      }
       return payload.analysis;
     } finally {
       analysisRequestActive.current = false;

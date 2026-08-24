@@ -158,7 +158,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 5/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 6/);
+  assert.match(client, /hasVerifiedStructuralLevel\(cached\)/);
+  assert.match(client, /hasVerifiedStructuralLevel\(payload\.analysis\)/);
   assert.match(client, /createPrecisionReadingCrop/);
   assert.match(client, /precisionImage, contextPrecisionImage/);
   assert.match(client, /pocket-analysis-v\$\{POCKET_ANALYSIS_ENGINE_VERSION\}/);
