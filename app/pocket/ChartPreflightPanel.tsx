@@ -10,7 +10,9 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus }: {
 }) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
-  const [message, setMessage] = useState("");\n  const statusHandler = useRef(onStatus);\n  useEffect(() => { statusHandler.current = onStatus; }, [onStatus]);
+  const [message, setMessage] = useState("");
+  const statusHandler = useRef(onStatus);
+  useEffect(() => { statusHandler.current = onStatus; }, [onStatus]);
 
   useEffect(() => {
     const controller = new AbortController();
