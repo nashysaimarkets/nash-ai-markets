@@ -8,8 +8,8 @@ interface InstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 }
 
-const DISMISS_KEY = "nash-pwa-install-dismissed";
-const SESSION_KEY = "nash-pwa-install-session-shown";
+const DEFAULT_DISMISS_KEY = "nash-pwa-install-dismissed";
+const DEFAULT_SESSION_KEY = "nash-pwa-install-session-shown";
 const DISMISS_DAYS = 14;
 const INSTALL_DELAY_MS = 45_000;
 const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding", "/pocket"];
@@ -31,9 +31,9 @@ function isIosSafari(): boolean {
   return ios && webkit && !alternateBrowser;
 }
 
-function recentlyDismissed(): boolean {
+function recentlyDismissed(dismissKey: string): boolean {
   try {
-    const dismissedAt = Number(window.localStorage.getItem(DISMISS_KEY));
+    const dismissedAt = Number(window.localStorage.getItem(dismissKey));
     return Number.isFinite(dismissedAt)
       && Date.now() - dismissedAt < DISMISS_DAYS * 24 * 60 * 60 * 1_000;
   } catch {
@@ -41,25 +41,37 @@ function recentlyDismissed(): boolean {
   }
 }
 
-function sessionAlreadyShown(): boolean {
+function sessionAlreadyShown(sessionKey: string): boolean {
   try {
-    return window.sessionStorage.getItem(SESSION_KEY) === "1";
+    return window.sessionStorage.getItem(sessionKey) === "1";
   } catch {
     return false;
   }
 }
 
-function markSessionShown() {
+function markSessionShown(sessionKey: string) {
   try {
-    window.sessionStorage.setItem(SESSION_KEY, "1");
+    window.sessionStorage.setItem(sessionKey, "1");
   } catch {
     // Privacy modes may block sessionStorage; in-memory visibility still limits this render.
   }
 }
 
-export function PwaController() {
+type PwaControllerProps = {
+  appName?: string;
+  installDelayMs?: number;
+  storageNamespace?: string;
+};
+
+export function PwaController({
+  appName = "NASH AI Markets",
+  installDelayMs = INSTALL_DELAY_MS,
+  storageNamespace = "nash",
+}: PwaControllerProps = {}) {
   const pathname = usePathname();
   const installSurface = isMemberInstallPath(pathname);
+  const dismissKey = storageNamespace === "nash" ? DEFAULT_DISMISS_KEY : `${storageNamespace}-pwa-install-dismissed`;
+  const sessionKey = storageNamespace === "nash" ? DEFAULT_SESSION_KEY : `${storageNamespace}-pwa-install-session-shown`;
   const [promptEvent, setPromptEvent] = useState<InstallPromptEvent | null>(null);
   const [showIosHelp, setShowIosHelp] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -84,12 +96,12 @@ export function PwaController() {
     const canOfferInstall = () =>
       installSurface
       && !isStandalone()
-      && !recentlyDismissed()
-      && !sessionAlreadyShown();
+      && !recentlyDismissed(dismissKey)
+      && !sessionAlreadyShown(sessionKey);
 
     const revealInstall = () => {
       if (!canOfferInstall() || !installEligible.current) return;
-      markSessionShown();
+      markSessionShown(sessionKey);
       setVisible(true);
     };
 
@@ -141,12 +153,12 @@ export function PwaController() {
       setPromptEvent(event as InstallPromptEvent);
       installEligible.current = true;
       if (canOfferInstall()) {
-        installRevealTimer = window.setTimeout(revealInstall, INSTALL_DELAY_MS);
+        installRevealTimer = window.setTimeout(revealInstall, installDelayMs);
       }
     };
     const handleInstalled = () => {
       setVisible(false);
-      setStatus("NASH AI Markets is installed.");
+      setStatus(`${appName} is installed.`);
     };
 
     if (canOfferInstall()) {
@@ -155,7 +167,7 @@ export function PwaController() {
         iosPromptTimer = window.setTimeout(() => {
           setShowIosHelp(true);
           revealInstall();
-        }, INSTALL_DELAY_MS);
+        }, installDelayMs);
       }
       window.addEventListener("beforeinstallprompt", handleInstallPrompt, { signal });
       window.addEventListener("appinstalled", handleInstalled, { signal });
@@ -167,15 +179,15 @@ export function PwaController() {
       if (installRevealTimer !== undefined) window.clearTimeout(installRevealTimer);
       lifetime.abort();
     };
-  }, [installSurface]);
+  }, [appName, dismissKey, installDelayMs, installSurface, sessionKey]);
 
   const dismiss = () => {
     try {
-      window.localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      window.localStorage.setItem(dismissKey, String(Date.now()));
     } catch {
       // Storage can be unavailable in privacy modes; dismissal still works now.
     }
-    markSessionShown();
+    markSessionShown(sessionKey);
     setVisible(false);
   };
 
@@ -185,7 +197,7 @@ export function PwaController() {
     const choice = await promptEvent.userChoice;
     setPromptEvent(null);
     setVisible(false);
-    markSessionShown();
+    markSessionShown(sessionKey);
     setStatus(choice.outcome === "accepted" ? "Installation accepted." : "Installation dismissed.");
   };
 
@@ -213,9 +225,9 @@ export function PwaController() {
           Close
         </button>
         <div>
-          <span className="pwaInstallEyebrow">{waitingWorker ? "APPLICATION UPDATE" : "INSTALL NASH AI MARKETS"}</span>
+          <span className="pwaInstallEyebrow">{waitingWorker ? "APPLICATION UPDATE" : `INSTALL ${appName.toUpperCase()}`}</span>
           <strong id="pwa-install-title">
-            {waitingWorker ? "A secure update is ready." : "Keep NASH AI Markets within reach."}
+            {waitingWorker ? "A secure update is ready." : `Keep ${appName} within reach.`}
           </strong>
           <p>
             {waitingWorker
