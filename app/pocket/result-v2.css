@@ -1,0 +1,184 @@
+.psResults[data-immersive="true"] > header.psVerdict {
+  max-width: 900px;
+  margin: 12px 0 16px;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 4px solid var(--ps-gold);
+  background: linear-gradient(135deg, rgba(255, 176, 0, 0.08), rgba(255, 47, 61, 0.04));
+}
+
+.psVerdict h1 {
+  display: grid;
+  gap: 4px;
+  margin: 14px 0 12px;
+}
+
+.psVerdict h1 small {
+  color: #7f8984;
+  font: 800 8px var(--font-geist-mono), monospace;
+  letter-spacing: 0.16em;
+}
+
+.psVerdict h1 em {
+  font-size: clamp(54px, 15vw, 92px);
+  line-height: 0.9;
+}
+
+.psVerdict > b {
+  display: block;
+  margin-top: 14px;
+  color: #756e68;
+  font: 800 7px var(--font-geist-mono), monospace;
+  letter-spacing: 0.1em;
+}
+
+.psResultChart > header button {
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 47, 61, 0.65);
+  background: rgba(255, 47, 61, 0.08);
+  color: #ff7780;
+  font: 800 7px var(--font-geist-mono), monospace;
+  letter-spacing: 0.08em;
+}
+
+.psChartFocus {
+  position: fixed;
+  z-index: 90;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding-top: env(safe-area-inset-top);
+  background: radial-gradient(circle at 50% 0, rgba(255, 47, 61, 0.12), transparent 28%), #020203;
+}
+
+.psChartFocus > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(5, 3, 4, 0.95);
+}
+
+.psChartFocus > header span,
+.psChartFocus > header button,
+.psChartFocus footer small {
+  font: 800 8px var(--font-geist-mono), monospace;
+  letter-spacing: 0.11em;
+}
+
+.psChartFocus > header span { color: var(--ps-green); }
+
+.psChartFocus > header button {
+  padding: 9px 10px;
+  border: 1px solid var(--ps-red);
+  background: var(--ps-red);
+  color: #fff;
+}
+
+.psChartFocusCanvas {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.psChartFocusCanvas > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.psChartFocusCanvas > i {
+  position: absolute;
+  z-index: 2;
+  left: 4%;
+  right: 4%;
+  height: 3px;
+  background: var(--ps-green);
+  box-shadow: 0 0 13px rgba(183, 255, 42, 0.8);
+  transform: translateY(-50%);
+}
+
+.psChartFocusCanvas > i[data-tool="resistance"] {
+  background: var(--ps-red);
+  box-shadow: 0 0 13px rgba(255, 47, 61, 0.85);
+}
+
+.psChartFocusCanvas > i span {
+  position: absolute;
+  right: 0;
+  bottom: 7px;
+  padding: 5px 8px;
+  background: rgba(2, 2, 3, 0.94);
+  color: #fff;
+  font: 800 8px var(--font-geist-mono), monospace;
+  letter-spacing: 0.08em;
+}
+
+.psChartFocus > footer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  min-height: 104px;
+  padding: 14px 17px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: #080506;
+}
+
+.psChartFocus footer div { display: grid; gap: 3px; }
+.psChartFocus footer small { color: #767f7a; }
+.psChartFocus footer strong { font: 400 28px Impact, "Arial Narrow", sans-serif; letter-spacing: 0.03em; }
+.psChartFocus footer strong[data-direction="BEARISH"] { color: var(--ps-red); }
+.psChartFocus footer strong[data-direction="BULLISH"] { color: var(--ps-green); }
+.psChartFocus footer strong[data-direction="NEUTRAL"] { color: var(--ps-gold); }
+.psChartFocus footer p { margin: 0; color: #aeb5b1; font-size: 11px; line-height: 1.45; }
+
+@media (max-width: 680px) {
+  .psResults[data-immersive="true"] {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .psResults[data-immersive="true"] > header.psVerdict {
+    padding: 18px;
+  }
+
+  .psChartFocus > footer {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .psChartFocus footer p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}
+
+.psCorrectionDesk {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(255, 176, 0, 0.3);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255, 176, 0, 0.08), rgba(8, 5, 5, 0.96));
+}
+.psCorrectionDesk header { display: flex; justify-content: space-between; gap: 12px; color: var(--ps-gold); font-size: 0.72rem; letter-spacing: 0.12em; }
+.psCorrectionDesk header b { color: #8f7d79; }
+.psCorrectionDesk p, .psCorrectionDesk small { display: block; color: #c1aeaa; line-height: 1.5; }
+.psCorrectionTools { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin: 12px 0; }
+.psCorrectionTools button, .psReportBadScan { border: 1px solid #493635; background: #120a0b; color: #e9deda; padding: 11px 10px; font-weight: 800; letter-spacing: 0.06em; }
+.psCorrectionTools button[data-active="true"] { border-color: var(--ps-gold); color: var(--ps-gold); box-shadow: 0 0 18px rgba(255, 176, 0, 0.12); }
+.psCorrectionChart { position: relative; display: block; width: 100%; padding: 0; overflow: hidden; border: 1px solid #3f3030; background: #050303; }
+.psCorrectionChart img { display: block; width: 100%; height: auto; }
+.psCorrectionChart i { position: absolute; left: 0; right: 0; height: 2px; background: var(--ps-green); box-shadow: 0 0 10px currentColor; }
+.psCorrectionChart i[data-tool="resistance"] { background: var(--ps-red); }
+.psCorrectionChart i span { position: absolute; right: 6px; bottom: 5px; padding: 3px 6px; background: #080404; color: #fff; font-style: normal; font-size: 0.62rem; }
+.psReportBadScan { width: 100%; margin-top: 12px; border-color: var(--ps-gold); color: var(--ps-gold); }
+
+@media (max-width: 560px) {
+  .psCorrectionTools { grid-template-columns: 1fr 1fr; }
+  .psCorrectionTools button:last-child { grid-column: 1 / -1; }
+}

@@ -10,8 +10,29 @@ export type RankedChartLevel = NumericChartLevel & {
   distance: number | null;
   distancePercent: number | null;
   contextMatch: boolean;
-  verification: "HIGH" | "MEDIUM";
+  verification: "HIGH" | "MEDIUM" | "LOW";
+  reason: "USER_VERIFIED" | "MULTI_TIMEFRAME" | "SCALE_CALIBRATED" | "SINGLE_VIEW";
 };
+
+const levelTolerance = (price: number) => Math.max(Math.abs(price) * 0.0015, 0.01);
+const corroborationTolerance = (price: number) => Math.max(Math.abs(price) * 0.0005, 0.01);
+
+export function sanitizeChartLevels(levels: NumericChartLevel[], currentPrice: number | null) {
+  const usable = levels.filter((level) => {
+    if (!Number.isFinite(level.price) || level.price <= 0) return false;
+    if (currentPrice !== null && Math.abs(level.price - currentPrice) / Math.max(Math.abs(currentPrice), 1) > 0.2) return false;
+    if (level.kind === "support" && currentPrice !== null && level.price > currentPrice + levelTolerance(currentPrice)) return false;
+    if (level.kind === "resistance" && currentPrice !== null && level.price < currentPrice - levelTolerance(currentPrice)) return false;
+    return true;
+  });
+  return usable.reduce<NumericChartLevel[]>((clean, level) => {
+    const duplicateIndex = clean.findIndex((existing) => existing.kind === level.kind && Math.abs(existing.price - level.price) <= levelTolerance(level.price));
+    if (duplicateIndex < 0) return [...clean, level];
+    const existing = clean[duplicateIndex];
+    const preferIncoming = /USER VERIFIED/i.test(level.label) && !/USER VERIFIED/i.test(existing.label);
+    return preferIncoming ? clean.map((item, index) => index === duplicateIndex ? level : item) : clean;
+  }, []);
+}
 
 export function mergeCompatibleChartLevels(
   primaryLevels: NumericChartLevel[],
@@ -19,46 +40,49 @@ export function mergeCompatibleChartLevels(
   primaryCurrentPrice: number | null,
   contextCurrentPrice: number | null,
 ) {
-  if (!contextLevels.length) return primaryLevels;
+  const cleanPrimary = sanitizeChartLevels(primaryLevels, primaryCurrentPrice);
+  if (!contextLevels.length) return cleanPrimary;
 
   // A second screenshot may be a different instrument or contract. Never mix its
   // geometry into the decision map when the visible current prices disagree.
   if (primaryCurrentPrice !== null && contextCurrentPrice !== null) {
     const denominator = Math.max(Math.abs(primaryCurrentPrice), Math.abs(contextCurrentPrice), 1);
-    if (Math.abs(primaryCurrentPrice - contextCurrentPrice) / denominator > 0.05) return primaryLevels;
+    if (Math.abs(primaryCurrentPrice - contextCurrentPrice) / denominator > 0.05) return cleanPrimary;
   }
 
   const reference = primaryCurrentPrice ?? contextCurrentPrice;
-  const compatibleContext = contextLevels.filter((level) => {
-    if (!Number.isFinite(level.price) || level.price <= 0) return false;
-    // When only one image exposes the current-price badge, require the added
-    // level to remain reasonably close to that market's visible trading range.
-    return reference === null || Math.abs(level.price - reference) / Math.max(Math.abs(reference), 1) <= 0.2;
-  });
+  const compatibleContext = sanitizeChartLevels(contextLevels, reference);
 
   return compatibleContext.reduce<NumericChartLevel[]>((merged, level) => {
     const duplicate = merged.some((existing) => {
-      const tolerance = Math.max(Math.abs(level.price) * 0.0015, 0.01);
+      const tolerance = levelTolerance(level.price);
       return existing.kind === level.kind && Math.abs(existing.price - level.price) <= tolerance;
     });
     return duplicate ? merged : [...merged, level];
-  }, [...primaryLevels]);
+  }, [...cleanPrimary]);
 }
 
 export function rankChartLevels(levels: NumericChartLevel[], currentPrice: number | null, contextLevels: NumericChartLevel[], scaleReadable: boolean): RankedChartLevel[] {
-  return levels.map((level): RankedChartLevel => {
+  return sanitizeChartLevels(levels, currentPrice).map((level): RankedChartLevel => {
     const priceNow = currentPrice;
     const distance = priceNow === null ? null : Math.abs(level.price - priceNow);
     const contextMatch = contextLevels.some((context) => {
-      const tolerance = Math.max(Math.abs(level.price) * 0.0015, 0.01);
+      const tolerance = corroborationTolerance(level.price);
       return context.kind === level.kind && Math.abs(context.price - level.price) <= tolerance;
     });
+    const userVerified = /USER VERIFIED/i.test(level.label);
+    // AI agreement is useful corroboration, but only a trader-confirmed price
+    // deserves the word HIGH. This prevents two vision passes from validating
+    // the same shared misread.
+    const verification = userVerified ? "HIGH" : scaleReadable && contextMatch ? "MEDIUM" : scaleReadable ? "MEDIUM" : "LOW";
+    const reason = userVerified ? "USER_VERIFIED" : contextMatch ? "MULTI_TIMEFRAME" : scaleReadable ? "SCALE_CALIBRATED" : "SINGLE_VIEW";
     return {
       ...level,
       distance,
       distancePercent: distance === null || priceNow === null || priceNow === 0 ? null : distance / Math.abs(priceNow) * 100,
       contextMatch,
-      verification: scaleReadable && contextMatch ? "HIGH" : "MEDIUM",
+      verification,
+      reason,
     };
   }).sort((a, b) => {
     if (a.contextMatch !== b.contextMatch) return a.contextMatch ? -1 : 1;

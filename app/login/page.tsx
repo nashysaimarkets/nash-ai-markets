@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import LoginForm from "./StagingLoginForm";
 import { BrandLogo } from "../components/BrandLogo";
 import { createClient } from "../../utils/supabase/server";
+import { resolveSupabasePublicConfig } from "../../utils/supabase/config";
 
 export const metadata: Metadata = {
   title: "Secure Member Access",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Login() {
+  const publicAuthConfig = resolveSupabasePublicConfig();
   try {
     const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
@@ -56,7 +58,10 @@ export default async function Login() {
             <h2>Continue by email</h2>
             <p>Enter the email connected to your membership. We’ll send one link that returns you to your workspace.</p>
             <Suspense fallback={<p className="accessMessage" role="status">Preparing secure sign-in…</p>}>
-              <LoginForm />
+              <LoginForm
+                supabaseUrl={publicAuthConfig.url}
+                supabasePublishableKey={publicAuthConfig.key}
+              />
             </Suspense>
           </div>
           <footer>

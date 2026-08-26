@@ -16,8 +16,8 @@ test("uncalibrated AI levels are labelled approximate and low confidence", () =>
   assert.equal(result.precision, "APPROXIMATE");
 });
 
-test("three scale anchors make numeric AI levels high confidence", () => {
+test("three scale anchors keep numeric AI levels below user-confirmed confidence", () => {
   const result = deriveLevelProvenance({ kind: "resistance", label: "Repeated rejection", price: "7680" }, 3);
-  assert.equal(result.confidence, "HIGH");
+  assert.equal(result.confidence, "MEDIUM");
   assert.equal(result.precision, "EXACT");
 });

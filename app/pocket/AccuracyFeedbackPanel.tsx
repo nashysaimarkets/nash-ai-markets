@@ -60,8 +60,8 @@ export default function AccuracyFeedbackPanel({ analysis, onApplyCorrection, onR
   const toggle = (category: AccuracyCategory) => setSelected((current) => current.includes(category) ? current.filter((item) => item !== category) : [...current, category]);
   const summary = accuracySummary(items);
 
-  return <section className="psAccuracy" data-mode={mode}>
-    <header><div><span>◎ RESULT ACCURACY CHECK</span><strong>HELP BULLSEYE FIND ITS BLIND SPOTS</strong></div>{summary.total ? <b>{summary.rate}% <small>ACCURATE · {summary.total} RATED</small></b> : null}</header>
+  return <section id="bullseye-feedback" className="psAccuracy" data-mode={mode}>
+    <header><div><span>◎ RESULT ACCURACY CHECK</span><strong>HELP BULLSEYE FIND ITS BLIND SPOTS</strong></div><b data-review={mode === "SAVED" ? "complete" : "pending"}>{mode === "SAVED" ? (savedEntry?.verdict === "ACCURATE" ? "CONFIRMED" : "CORRECTED") : "AWAITING REVIEW"}<small>{summary.total ? `HISTORY · ${summary.rate}% FROM ${summary.total} RATED` : "RATE THIS RESULT BELOW"}</small></b></header>
     {mode === "IDLE" ? <><p>Did Pocket read this chart correctly?</p><div className="psAccuracyChoice"><button type="button" data-tone="good" onClick={() => save("ACCURATE")}>✓ ACCURATE</button><button type="button" data-tone="fix" onClick={() => setMode("CORRECTING")}>! NEEDS CORRECTION</button></div></> : null}
     {mode === "CORRECTING" ? <div className="psAccuracyForm">
       <p>What did Pocket get wrong?</p>

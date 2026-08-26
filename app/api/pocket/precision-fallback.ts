@@ -9,7 +9,10 @@ function populatedLevels(value: unknown) {
 function numericPrice(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value !== "string") return null;
-  const parsed = Number(value.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0]);
+  const source = value.replace(/[−–—]/g, "-").replace(/[’'\s]/g, "");
+  const commaDecimal = /^-?\d+,\d{1,2}(?:\D|$)/.test(source) && !source.includes(".");
+  const normalized = commaDecimal ? source.replace(",", ".") : source.replaceAll(",", "");
+  const parsed = Number(normalized.match(/-?\d+(?:\.\d+)?/)?.[0]);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -22,15 +25,36 @@ function hasVerifiedScale(value: JsonRecord | null) {
     if (!item || typeof item !== "object") return [];
     const record = item as JsonRecord;
     const price = numericPrice(record.price);
-    const y = typeof record.y === "number" && Number.isFinite(record.y) ? record.y : null;
-    return price === null || y === null ? [] : [{ price, y }];
+    const y = numericPrice(record.y);
+    return price === null || price <= 0 || y === null || y < 0 || y > 100 ? [] : [{ price, y }];
   });
-  return readable.length >= 2 && readable.some((first, index) => readable.slice(index + 1).some((second) => first.price !== second.price && first.y !== second.y));
+  const unique = readable.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
+  if (unique.length < 2) return false;
+  const ordered = [...unique].sort((a, b) => a.price - b.price);
+  if (!ordered.every((item, index) => index === 0 || item.y < ordered[index - 1].y)) return false;
+  const low = ordered[0];
+  const high = ordered.at(-1)!;
+  if (Math.abs(high.y - low.y) < (ordered.length === 2 ? 20 : 12)) return false;
+  const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
+  return ordered.length === 2 || ordered.every((item) => Math.abs(project(item.price) - item.y) <= 2.5);
 }
 
 /** Merge independent passes without throwing away the best evidence from either. */
 export function recoverPrecisionGeometry(report: JsonRecord, precision: JsonRecord | null) {
-  if (!precision) return null;
+  // The dedicated geometry call can occasionally fail even though the main
+  // structured pass returned a complete, internally verifiable scale. Keep
+  // that evidence instead of turning a clear chart into an empty precision
+  // hold. Two non-degenerate axis anchors are still mandatory, so this remains
+  // fail-closed for cropped or unreadable price scales.
+  if (!precision) {
+    if (!hasVerifiedScale(report)) return null;
+    return {
+      plotBounds: report.plotBounds,
+      priceScaleAnchors: report.priceScaleAnchors,
+      currentPrice: report.currentPrice || "",
+      levels: populatedLevels(report),
+    };
+  }
   const scaleSource = hasVerifiedScale(precision) ? precision : hasVerifiedScale(report) ? report : null;
   if (!scaleSource) return precision;
 

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { recoverPrecisionGeometry } from "../app/api/pocket/precision-fallback.ts";
 
-const scale = [{ price: 7800, y: 20 }, { price: 7500, y: 80 }];
+const scale = [{ price: 7800, y: 20 }, { price: 7650, y: 50 }, { price: 7500, y: 80 }];
 
 test("merges distinct structures from both passes", () => {
   const precision = { levels: [{ kind: "resistance", price: "7800" }], priceScaleAnchors: scale };
@@ -34,7 +34,87 @@ test("keeps first-pass scale when rescue finds levels but loses anchors", () => 
   assert.deepEqual(recovered?.levels, rescue.levels);
 });
 
-test("does not recover levels without a verified two-point scale", () => {
+test("does not recover levels without two usable scale labels", () => {
   const precision = { levels: [], priceScaleAnchors: [{ price: 7800, y: 20 }] };
   assert.equal(recoverPrecisionGeometry({ levels: [{ kind: "support", price: "7600" }] }, precision), precision);
+});
+
+test("accepts two widely separated exact scale labels", () => {
+  const report = {
+    currentPrice: "7658",
+    plotBounds: { left: 5, top: 10, right: 88, bottom: 88 },
+    priceScaleAnchors: [{ price: 7690, y: 34 }, { price: 7650, y: 74 }],
+    levels: [{ kind: "support", price: "7650", y: 74 }],
+  };
+  assert.deepEqual(recoverPrecisionGeometry(report, null)?.levels, report.levels);
+});
+
+test("rejects two scale labels that are too close to calibrate safely", () => {
+  const report = {
+    priceScaleAnchors: [{ price: 7690, y: 34 }, { price: 7680, y: 45 }],
+    levels: [{ kind: "support", price: "7680", y: 45 }],
+  };
+  assert.equal(recoverPrecisionGeometry(report, null), null);
+});
+
+test("a verified main-pass scale survives a transient precision-pass failure", () => {
+  const report = {
+    currentPrice: "7658",
+    plotBounds: { left: 5, top: 10, right: 88, bottom: 88 },
+    priceScaleAnchors: [{ price: 7690, y: 34 }, { price: 7670, y: 54 }, { price: 7650, y: 74 }],
+    levels: [
+      { kind: "support", label: "Defended shelf", price: "7650", y: 74 },
+      { kind: "resistance", label: "Prior rejection", price: "7680", y: 44 },
+    ],
+  };
+
+  assert.deepEqual(recoverPrecisionGeometry(report, null), {
+    currentPrice: "7658",
+    plotBounds: report.plotBounds,
+    priceScaleAnchors: report.priceScaleAnchors,
+    levels: report.levels,
+  });
+});
+
+test("a main-pass chart without two scale anchors still fails closed", () => {
+  const report = {
+    currentPrice: "7658",
+    priceScaleAnchors: [{ price: 7690, y: 34 }],
+    levels: [{ kind: "support", price: "7650" }],
+  };
+  assert.equal(recoverPrecisionGeometry(report, null), null);
+});
+
+test("an inverted price scale fails closed instead of drawing false levels", () => {
+  const report = {
+    currentPrice: "7658",
+    priceScaleAnchors: [{ price: 7500, y: 20 }, { price: 7800, y: 80 }],
+    levels: [{ kind: "support", price: "7600" }],
+  };
+  assert.equal(recoverPrecisionGeometry(report, null), null);
+});
+
+test("accepts equivalent string coordinates and common chart price formats", () => {
+  const report = {
+    currentPrice: "7 658,25",
+    priceScaleAnchors: [{ price: "7’800", y: "20" }, { price: "7,650", y: "50" }, { price: "7,500", y: "80" }],
+    levels: [{ kind: "support", price: "7 600,50" }],
+  };
+  assert.deepEqual(recoverPrecisionGeometry(report, null)?.levels, report.levels);
+});
+
+test("rejects scale coordinates outside the chart percentage range", () => {
+  const report = {
+    priceScaleAnchors: [{ price: 7800, y: -10 }, { price: 7500, y: 130 }],
+    levels: [{ kind: "support", price: "7600" }],
+  };
+  assert.equal(recoverPrecisionGeometry(report, null), null);
+});
+
+test("rejects a non-linear three-point scale", () => {
+  const report = {
+    priceScaleAnchors: [{ price: 7800, y: 20 }, { price: 7650, y: 37 }, { price: 7500, y: 80 }],
+    levels: [{ kind: "support", price: "7600", y: 60 }],
+  };
+  assert.equal(recoverPrecisionGeometry(report, null), null);
 });

@@ -17,8 +17,28 @@ function boundedPercent(value: unknown, fallback: number) {
 function numericPrice(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value !== "string") return null;
-  const parsed = Number(value.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0]);
+  const source = value.replace(/[−–—]/g, "-").replace(/[’'\s]/g, "");
+  const commaDecimal = /^-?\d+,\d{1,2}(?:\D|$)/.test(source) && !source.includes(".");
+  const normalized = commaDecimal ? source.replace(",", ".") : source.replaceAll(",", "");
+  const parsed = Number(normalized.match(/-?\d+(?:\.\d+)?/)?.[0]);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+type ScaleAnchor = { price: number; y: number };
+
+function verifiedLinearScale(items: ScaleAnchor[]) {
+  const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
+  if (unique.length < 2) return null;
+  const ordered = [...unique].sort((a, b) => a.price - b.price);
+  if (!ordered.every((item, index) => index === 0 || item.y < ordered[index - 1].y)) return null;
+  const low = ordered[0];
+  const high = ordered.at(-1)!;
+  // Two exact axis labels are sufficient only when they are widely separated;
+  // each proposed level is independently checked against its original row.
+  if (Math.abs(high.y - low.y) < (ordered.length === 2 ? 20 : 12)) return null;
+  const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
+  if (ordered.length >= 3 && ordered.some((item) => Math.abs(project(item.price) - item.y) > 2.5)) return null;
+  return { low, high, project, count: ordered.length };
 }
 
 /** Applies non-negotiable evidence rules after structured model output. */
@@ -52,12 +72,13 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     const right = Math.max(left + 1, boundedPercent(rawBounds.right, 96));
     const bottom = Math.max(top + 1, boundedPercent(rawBounds.bottom, 95));
     const anchors = Array.isArray(analysis.priceScaleAnchors) ? analysis.priceScaleAnchors
-      .flatMap((item) => item && typeof item === "object" ? [{ price: numericPrice((item as JsonRecord).price), y: boundedPercent((item as JsonRecord).y, 50) }] : [])
-      .filter((item): item is { price: number; y: number } => item.price !== null)
+      .flatMap((item) => item && typeof item === "object" ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
+      .filter((item): item is { price: number; y: number } => item.price !== null && item.price > 0 && item.y !== null && item.y >= 0 && item.y <= 100)
       .sort((a, b) => a.price - b.price) : [];
-    const low = anchors[0];
-    const high = anchors.at(-1);
-    const calibratedScale = Boolean(low && high && low.price !== high.price && low.y > high.y);
+    const scale = verifiedLinearScale(anchors);
+    const low = scale?.low;
+    const high = scale?.high;
+    const calibratedScale = Boolean(scale);
     const currentPrice = numericPrice(analysis.currentPrice);
     const priceToY = (price: unknown, fallback: number) => {
       const numeric = numericPrice(price);
@@ -70,6 +91,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       if (!item || typeof item !== "object") return item;
       const level = item as JsonRecord;
       let kind = level.kind;
+      const suppliedY = numericPrice(level.y);
       const modelY = boundedPercent(level.y, 50);
       const price = numericPrice(level.price);
       // A vision pass can correctly read a horizontal price but invert its
@@ -84,13 +106,21 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       // Axis anchors verify a linear scale, but the model often returns only
       // middle labels. Permit a candidate outside the sampled price interval
       // only when that scale still projects it inside the visible candle plot.
-      if (horizontal && (!calibratedScale || price === null || scaledY < top || scaledY > bottom)) return [];
-      const y = Math.max(top, Math.min(bottom, scaledY));
+      // Reading crops improve tiny price labels but introduce a few percentage
+      // points of full-image coordinate drift. The exact price is still
+      // independently projected through a verified linear axis, so tolerate
+      // that mobile crop offset while rejecting a genuinely different row.
+      const geometryTolerance = Math.max(4.5, (bottom - top) * 0.09);
+      const exactHorizontal = horizontal && calibratedScale && price !== null && suppliedY !== null && Math.abs(suppliedY - scaledY) <= geometryTolerance && scaledY >= top && scaledY <= bottom;
+      const visualHorizontal = horizontal && !calibratedScale && quality.candlesReadable !== false && suppliedY !== null && suppliedY >= top && suppliedY <= bottom;
+      if (horizontal && !exactHorizontal && !visualHorizontal) return [];
+      const y = Math.max(top, Math.min(bottom, visualHorizontal ? modelY : scaledY));
       const key = `${String(kind)}:${Math.round(y * 2)}`;
       if (seen.has(key)) return [];
       seen.add(key);
       return [{
         ...level,
+        price: visualHorizontal ? "" : level.price,
         kind,
         x: horizontal ? left : Math.max(left, Math.min(right, boundedPercent(level.x, left))),
         y,
@@ -113,12 +143,12 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     : [];
   // The dedicated geometry pass is authoritative for numeric overlays. Do not
   // erase its verified prices because the broader prose pass was conservative.
-  const hasVerifiedScale = verifiedAnchors.length >= 2;
+  const hasVerifiedScale = Boolean(verifiedLinearScale(verifiedAnchors as ScaleAnchor[]));
   if (hasVerifiedScale) {
     calibrated.evidenceQuality = { ...quality, scaleReadable: true };
   } else if (quality.scaleReadable === false) {
-    calibrated.levels = Array.isArray(analysis.levels)
-      ? analysis.levels.map((item) => item && typeof item === "object" ? { ...(item as JsonRecord), price: "" } : item)
+    calibrated.levels = Array.isArray(calibrated.levels)
+      ? calibrated.levels.map((item) => item && typeof item === "object" ? { ...(item as JsonRecord), price: "" } : item)
       : [];
     calibrated.fibLevels = [];
   }

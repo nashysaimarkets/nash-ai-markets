@@ -23,10 +23,16 @@ import "./pocket-launch-v16.css";
 import "./pocket-feedback.css";
 import "./pocket-cinema-pro.css";
 import "./pocket-2.css";
-import "./pocket-level-verification.css";
 import "./pocket-preflight.css";
 import "./pocket-accuracy-feedback.css";
 import "./pocket-level-provenance.css";
+import "./pocket-result-clarity.css";
+import "./pocket-consistency.css";
+import "./pocket-launch-v17.css";
+import "./pocket-lock-on.css";
+import "./pocket-command-arena.css";
+import "./pocket-bubble-lab.css";
+import "./pocket-pattern-watch.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",

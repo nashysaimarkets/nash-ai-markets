@@ -1,0 +1,110 @@
+.secondOpinionHero {
+  position: relative;
+  isolation: isolate;
+}
+
+.secondOpinionHero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: -16vw;
+  top: -7rem;
+  width: 48rem;
+  height: 28rem;
+  background: radial-gradient(circle, rgba(255, 98, 88, 0.12), transparent 66%);
+  pointer-events: none;
+}
+
+.secondOpinionStatus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 25px;
+}
+
+.secondOpinionStatus span {
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.025);
+  color: #8e9994;
+  font: 700 9px/1 var(--font-geist-mono), monospace;
+  letter-spacing: 0.1em;
+}
+
+.secondOpinionStatus span:first-child {
+  border-color: rgba(97, 201, 143, 0.32);
+  color: #7de0ad;
+}
+
+.secondOpinionStatus i {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #61c98f;
+  box-shadow: 0 0 10px #61c98f;
+}
+
+.secondOpinionRadar {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  margin: 0 0 22px auto;
+  border: 1px solid rgba(255, 113, 104, 0.32);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 113, 104, 0.16) 0 2px, transparent 3px),
+    linear-gradient(90deg, transparent 49%, rgba(255, 113, 104, 0.22) 50%, transparent 51%),
+    linear-gradient(transparent 49%, rgba(255, 113, 104, 0.22) 50%, transparent 51%);
+}
+
+.secondOpinionRadar::before,
+.secondOpinionRadar::after {
+  content: "";
+  position: absolute;
+  border: 1px solid rgba(255, 113, 104, 0.18);
+  border-radius: 50%;
+  inset: 18px;
+}
+
+.secondOpinionRadar::after { inset: 34px; }
+.secondOpinionRadar i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #ff7168; box-shadow: 0 0 9px #ff7168; }
+.secondOpinionRadar i:nth-child(1) { left: 24px; top: 27px; }
+.secondOpinionRadar i:nth-child(2) { right: 20px; top: 39px; }
+.secondOpinionRadar i:nth-child(3) { left: 41px; bottom: 15px; }
+
+.chartIntakeCard,
+.tradePlanCard { position: relative; }
+
+.chartIntakeCard::before,
+.tradePlanCard::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: -1px;
+  width: 58px;
+  height: 2px;
+  background: #ff7168;
+  box-shadow: 0 0 20px rgba(255, 113, 104, 0.5);
+}
+
+.secondOpinionSubmit {
+  border: 1px solid #ff7168;
+  background: linear-gradient(90deg, #f04f46, #ff675e);
+  box-shadow: 0 10px 30px rgba(240, 79, 70, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.secondOpinionSubmit:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px rgba(240, 79, 70, 0.3);
+}
+
+@media (max-width: 560px) {
+  .secondOpinionStatus { display: grid; }
+  .secondOpinionRadar { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .secondOpinionSubmit { transition: none; }
+}

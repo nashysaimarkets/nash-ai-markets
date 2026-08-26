@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, rankChartLevels } from "../app/pocket/pocket-chart-toolkit.ts";
+import { calculateRangePosition, calculateRTargets, mergeCompatibleChartLevels, rankChartLevels, sanitizeChartLevels } from "../app/pocket/pocket-chart-toolkit.ts";
 
 test("level ranking prioritises multi-timeframe agreement then proximity", () => {
   const levels = [{ kind: "support" as const, label: "near", price: 99 }, { kind: "resistance" as const, label: "matched", price: 104 }];
-  const ranked = rankChartLevels(levels, 100, [{ kind: "resistance", label: "context", price: 104.1 }], true);
+  const ranked = rankChartLevels(levels, 100, [{ kind: "resistance", label: "context", price: 104.04 }], true);
   assert.equal(ranked[0].label, "matched");
-  assert.equal(ranked[0].verification, "HIGH");
+  assert.equal(ranked[0].verification, "MEDIUM");
   assert.equal(ranked[1].distancePercent, 1);
 });
 
@@ -31,6 +31,36 @@ test("decision map deduplicates the same multi-timeframe level", () => {
   const primary = [{ kind: "support" as const, label: "primary support", price: 7600 }];
   const context = [{ kind: "support" as const, label: "context support", price: 7605 }];
   assert.deepEqual(mergeCompatibleChartLevels(primary, context, 7671.61, 7670.8), primary);
+});
+
+test("level sanitation rejects wrong-side and implausibly distant zones", () => {
+  const levels = [
+    { kind: "support" as const, label: "valid support", price: 98 },
+    { kind: "support" as const, label: "wrong side", price: 104 },
+    { kind: "resistance" as const, label: "too far", price: 140 },
+  ];
+  assert.deepEqual(sanitizeChartLevels(levels, 100), [levels[0]]);
+});
+
+test("level sanitation prefers a user-verified duplicate", () => {
+  const levels = [{ kind: "support" as const, label: "AI", price: 99 }, { kind: "support" as const, label: "USER VERIFIED", price: 99.1 }];
+  assert.equal(sanitizeChartLevels(levels, 100)[0].label, "USER VERIFIED");
+});
+
+test("single-view levels fall to low confidence when the price scale is unreadable", () => {
+  const ranked = rankChartLevels([{ kind: "support", label: "single", price: 99 }], 100, [], false);
+  assert.equal(ranked[0].verification, "LOW");
+  assert.equal(ranked[0].reason, "SINGLE_VIEW");
+});
+
+test("AI agreement never promotes an automatic level to high confidence", () => {
+  const ranked = rankChartLevels(
+    [{ kind: "support", label: "AI detected", price: 99 }],
+    100,
+    [{ kind: "support", label: "context", price: 99.02 }],
+    true,
+  );
+  assert.equal(ranked[0].verification, "MEDIUM");
 });
 
 test("R targets enforce direction and calculate exact multiples", () => {

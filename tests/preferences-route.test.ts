@@ -27,7 +27,7 @@ test("desktop and mobile member navigation both expose Preferences", async () =>
   assert.match(shell, /aria-label="Member navigation"/);
   assert.match(shell, /aria-label="Mobile member navigation"/);
   assert.equal((shell.match(/href: "\/preferences"/g) ?? []).length, 1);
-  assert.match(shell, /links\.map/);
+  assert.equal((shell.match(/links\.filter\([\s\S]*?\.map\(/g) ?? []).length, 2);
 });
 
 test("Profile routes members to Preferences without inventing a second membership system", async () => {

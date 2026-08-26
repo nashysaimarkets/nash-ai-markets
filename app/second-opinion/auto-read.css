@@ -1,0 +1,40 @@
+.autoReadIntro {
+  margin: -8px 0 18px;
+  color: #aaa49d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.autoReadReview {
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.autoReadReview summary {
+  padding: 14px 16px;
+  color: #d9d4cd;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.autoReadReview .secondOpinionGrid {
+  padding: 2px 16px 16px;
+}
+
+.autoReadResult {
+  margin: 14px 0;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-left: 3px solid #ff7168;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.autoReadResult[data-confidence="high"] { border-left-color: #61c98f; }
+.autoReadResult[data-confidence="medium"] { border-left-color: #e3b653; }
+.autoReadResult > div { display: flex; justify-content: space-between; gap: 12px; }
+.autoReadResult span { color: #ff7168; font: 700 11px/1.2 var(--font-geist-mono), monospace; letter-spacing: 0.14em; }
+.autoReadResult strong { text-transform: uppercase; font-size: 11px; }
+.autoReadResult p, .autoReadResult li, .autoReadResult small { color: #aaa49d; font-size: 12px; line-height: 1.5; }
+.autoReadResult ul { margin: 8px 0 0; padding-left: 18px; }

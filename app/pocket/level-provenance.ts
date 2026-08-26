@@ -8,7 +8,7 @@ export type LevelProvenance = {
 export function deriveLevelProvenance(level: ProvenanceLevel, anchorCount: number): LevelProvenance {
   const verified = /USER VERIFIED/i.test(level.label);
   const numeric = /^-?\d[\d,]*(?:\.\d+)?$/.test(level.price.trim());
-  const confidence = verified ? "HIGH" : anchorCount >= 3 && numeric ? "HIGH" : anchorCount >= 2 && numeric ? "MEDIUM" : "LOW";
+  const confidence = verified ? "HIGH" : anchorCount >= 2 && numeric ? "MEDIUM" : "LOW";
   return {
     kind: level.kind,
     price: level.price,

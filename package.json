@@ -20,6 +20,7 @@
     "ops:validate": "bash scripts/validate-operations-docs.sh",
     "ops:check-env": "bash scripts/check-production-env.sh",
     "verify:brief": "node --env-file-if-exists=.env --import tsx scripts/verify-brief.tsx",
+    "verify:pocket-goldens": "node --env-file-if-exists=.env --import tsx scripts/run-pocket-golden-regressions.ts",
     "diagnose:providers": "node --env-file-if-exists=.env --import tsx scripts/diagnose-providers.ts",
     "security:scan": "node scripts/check-secrets.mjs",
     "repair:native": "node scripts/repair-native-bindings.mjs",

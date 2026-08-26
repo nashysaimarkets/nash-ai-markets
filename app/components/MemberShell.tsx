@@ -10,6 +10,7 @@ import { PreviewNavigationGuard } from "../marketing-preview/components/PreviewN
 export type MemberShellActive =
   | "dashboard"
   | "brief"
+  | "second-opinion"
   | "terminal"
   | "ideas"
   | "profile"
@@ -35,6 +36,7 @@ type MemberShellProps = {
 const links = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard", previewView: "dashboard" },
   { href: "/brief", label: "Morning Brief", key: "brief", previewView: "brief" },
+  { href: "/second-opinion", label: "Second Opinion", key: "second-opinion", previewView: "dashboard", hideInPreview: true },
   { href: "/terminal", label: "Trading Desk", key: "terminal", previewView: "terminal" },
   { href: "/ideas", label: "Ideas", key: "ideas", previewView: "ideas" },
   { href: "/reviews", label: "Reviews", key: "review", previewView: "reviews" },
@@ -83,7 +85,7 @@ export function MemberShell({
         />
         <BullseyeLoginSting />
         <nav aria-label="Member navigation">
-          {links.map((link) => (
+          {links.filter((link) => !isolatedPreview || !("hideInPreview" in link && link.hideInPreview)).map((link) => (
             <Link
               key={link.key}
               href={resolveHref(link)}
@@ -102,7 +104,7 @@ export function MemberShell({
         </nav>
         <MemberMobileMenu key={`${active}:${isolatedPreview ? "preview" : "member"}`}>
           <nav aria-label="Mobile member navigation">
-            {links.map((link) => (
+            {links.filter((link) => !isolatedPreview || !("hideInPreview" in link && link.hideInPreview)).map((link) => (
               <Link
                 key={link.key}
                 href={resolveHref(link)}

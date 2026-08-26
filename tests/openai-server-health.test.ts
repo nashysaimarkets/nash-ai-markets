@@ -8,6 +8,12 @@ test("OpenAI client remains unconfigured when the server key is absent", () => {
   assert.equal(createOpenAIClient("   "), null);
 });
 
+test("OpenAI client accepts a longer timeout for chart vision without changing the health default", () => {
+  const client = createOpenAIClient("test-key", 30_000);
+  assert.ok(client);
+  assert.equal(client.timeout, 30_000);
+});
+
 test("OpenAI health check reports not configured without making a request", async () => {
   assert.deepEqual(await checkOpenAIConnection(null), {
     status: "not_configured",

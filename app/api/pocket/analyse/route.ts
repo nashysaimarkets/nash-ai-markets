@@ -51,10 +51,26 @@ const schema = {
         properties: {
           name: { type: "string", maxLength: 60 },
           status: { type: "string", enum: ["FORMING", "CONFIRMED", "FAILED", "AMBIGUOUS", "EXTENDED"] },
+          timeframe: { type: "string", maxLength: 20 },
+          confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
           evidence: { type: "string", maxLength: 180 },
+          confirmation: { type: "string", maxLength: 160 },
           invalidation: { type: "string", maxLength: 160 },
+          geometry: {
+            type: "object", additionalProperties: false,
+            properties: {
+              points: { type: "array", minItems: 2, maxItems: 10, items: {
+                type: "object", additionalProperties: false,
+                properties: { x: { type: "number", minimum: 0, maximum: 100 }, y: { type: "number", minimum: 0, maximum: 100 } },
+                required: ["x", "y"],
+              } },
+              labelX: { type: "number", minimum: 0, maximum: 100 },
+              labelY: { type: "number", minimum: 0, maximum: 100 },
+            },
+            required: ["points", "labelX", "labelY"],
+          },
         },
-        required: ["name", "status", "evidence", "invalidation"],
+        required: ["name", "status", "timeframe", "confidence", "evidence", "confirmation", "invalidation", "geometry"],
       },
     },
     nextSequence: {
@@ -240,7 +256,7 @@ export async function POST(request: Request) {
         "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified, preserve it in the returned levels/currentPrice, and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
-        "Pattern labels must include status, visible evidence and invalidation. Prefer AMBIGUOUS over forcing a name. CONFIRMED requires visible completion; FORMING is incomplete; EXTENDED means the move is already mature.",
+        "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
@@ -282,12 +298,12 @@ export async function POST(request: Request) {
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
         "plotBounds must tightly enclose only the candle plotting rectangle. Exclude phone chrome, chart headers, order tickets, price-axis labels, dates, footer data, indicator panels and volume panels.",
-        "Read 2-4 clearly printed prices from the visible price axis and return each exact numeric price with the y coordinate through the centre of its label. Higher prices must have smaller y coordinates. If fewer than two exact scale labels are readable, return no support or resistance levels.",
+        "Read 3-4 clearly printed prices from the visible price axis when possible and return each exact numeric price with the y coordinate through the centre of its label. Higher prices must have smaller y coordinates and all anchors must form one linear scale. Two exact labels are acceptable only when widely separated vertically and every returned level's visible reaction row agrees with the resulting projection. With fewer than two exact labels, return no support or resistance levels.",
         "Return currentPrice only when the chart's current-price marker is clearly readable; otherwise return an empty string.",
         "Return one or two structural levels below current price and one or two above it whenever the visible scale and candles support them. A defended swing, breakout shelf, prior range edge or repeated reaction area is sufficient; repeated touches are not mandatory. Classify every horizontal level by location: below current is support and above current is resistance.",
         "Return up to three conspicuous pivot swing highs or lows at the wick extremity. Pivot x/y and x2/y2 must be identical.",
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
-        "Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
+        "For every level, y must mark the actual visible candle reaction and must also agree with the price projected from the three-point scale. Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
     const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,

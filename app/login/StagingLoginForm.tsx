@@ -13,8 +13,6 @@ import {
 } from "../lib/auth/safe-auth-redirect";
 import { LOGIN_STING_PENDING_KEY } from "../components/BullseyeLoginSting";
 
-const SUPABASE_PUBLIC_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").trim();
-
 function resolveLoginRedirectTo(origin: string, search: string): { emailRedirectTo: string; next: string } {
   if (!isAllowedAuthOrigin(origin)) {
     throw new Error("Untrusted login origin");
@@ -59,7 +57,15 @@ function messageForOtpRequestError(error: { code?: string; message?: string; sta
   return "We could not request a sign-in link. Delivery may be temporarily delayed; wait for the retry timer, then try again.";
 }
 
-export default function StagingLoginForm() {
+type StagingLoginFormProps = {
+  supabaseUrl: string;
+  supabasePublishableKey: string;
+};
+
+export default function StagingLoginForm({
+  supabaseUrl,
+  supabasePublishableKey,
+}: StagingLoginFormProps) {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -90,7 +96,7 @@ export default function StagingLoginForm() {
     const form = formRef.current;
     if (!form) return;
     try {
-      if (!isAuthProviderCompatibleWithOrigin(window.location.origin, SUPABASE_PUBLIC_URL)) {
+      if (!isAuthProviderCompatibleWithOrigin(window.location.origin, supabaseUrl)) {
         throw new Error("Private authentication provider mismatch");
       }
       const { emailRedirectTo, next } = resolveLoginRedirectTo(
@@ -116,7 +122,7 @@ export default function StagingLoginForm() {
       form.setAttribute("data-auth-redirect-ready", "false");
       form.removeAttribute("data-email-redirect-to");
     }
-  }, []);
+  }, [supabaseUrl]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -131,7 +137,7 @@ export default function StagingLoginForm() {
         setMessage("This host is not authorized for member sign-in.");
         return;
       }
-      if (!isAuthProviderCompatibleWithOrigin(origin, SUPABASE_PUBLIC_URL)) {
+      if (!isAuthProviderCompatibleWithOrigin(origin, supabaseUrl)) {
         setMessageTone("error");
         setMessage("Private test authentication is unavailable. No sign-in email was sent.");
         formRef.current?.setAttribute("data-auth-provider-ready", "false");
@@ -142,7 +148,7 @@ export default function StagingLoginForm() {
       persistAuthNextCookie(next);
       formRef.current?.setAttribute("data-email-redirect-to", emailRedirectTo);
       formRef.current?.setAttribute("data-auth-next", next);
-      const supabase = createClient();
+      const supabase = createClient({ url: supabaseUrl, key: supabasePublishableKey });
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
