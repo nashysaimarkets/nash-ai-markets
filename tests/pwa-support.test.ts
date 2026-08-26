@@ -55,10 +55,11 @@ test("service worker caches only the application shell and safe static assets", 
 });
 
 test("offline state fails closed and install guidance is platform appropriate", async () => {
-  const [offline, controller, layout, memberShell] = await Promise.all([
+  const [offline, controller, layout, pocketLayout, memberShell] = await Promise.all([
     read("public/offline.html"),
     read("app/components/PwaController.tsx"),
     read("app/layout.tsx"),
+    read("app/pocket/layout.tsx"),
     read("app/components/MemberShell.tsx"),
   ]);
   assert.match(offline, /VERIFIED DATA UNAVAILABLE/);
@@ -79,6 +80,9 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.doesNotMatch(controller, /OPENAI_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE/);
   assert.doesNotMatch(layout, /PwaController/);
   assert.match(memberShell, /<PwaController \/>/);
+  assert.match(pocketLayout, /<PwaController appName="Pocket Bullseye" installDelayMs=\{8_000\} storageNamespace="pocket" \/>/);
+  assert.match(controller, /appName = "NASH AI Markets"/);
+  assert.match(controller, /INSTALL \$\{appName\.toUpperCase\(\)\}/);
 });
 
 test("install prompt styles stay non-blocking and respect reduced motion", async () => {
