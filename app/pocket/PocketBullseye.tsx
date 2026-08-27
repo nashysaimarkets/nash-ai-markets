@@ -14,6 +14,8 @@ import LevelProvenancePanel from "./LevelProvenancePanel";
 import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
+import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
+import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, type AppleAccessStatus } from "./apple-storekit";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -780,11 +782,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
   const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
+  const [appleAccess, setAppleAccess] = useState<AppleAccessStatus | null>(null);
+  const [showApplePaywall, setShowApplePaywall] = useState(false);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
+
+  useEffect(() => {
+    getAppleAccessStatus().then(setAppleAccess).catch(() => setAppleAccess(null));
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1026,6 +1034,15 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function analyse() {
     if (!image || !privacyChecked || busy || analysisRequestActive.current || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))) return;
+    if (!reviewTarget && isAppleNativeApp() && !appleAccess) {
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      getAppleAccessStatus().then(setAppleAccess).catch(() => undefined);
+      return;
+    }
+    if (!reviewTarget && appleAccess?.isNative && appleAccess.freeUseConsumed && !appleAccess.entitled) {
+      setShowApplePaywall(true);
+      return;
+    }
     setError("");
     try {
       if (!reviewTarget) {
@@ -1033,6 +1050,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         setStockEvents([]);
         setStockEventStatus(nextAnalysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
         setAnalysis(nextAnalysis);
+        if (appleAccess?.isNative && !appleAccess.entitled && !appleAccess.freeUseConsumed) {
+          await consumeAppleFreeUse();
+          setAppleAccess({ ...appleAccess, freeUseConsumed: true });
+        }
         setResultView("cinema");
         setImmersive(true);
         setShowResultReveal(true);
@@ -1358,6 +1379,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
       </section>
       <FeedbackButton />
+      {showApplePaywall && appleAccess ? <AppleSubscriptionPaywall status={appleAccess} onClose={() => setShowApplePaywall(false)} onUnlocked={(next) => { setAppleAccess(next); setShowApplePaywall(false); }} /> : null}
     </main>
   );
 }
