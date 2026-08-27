@@ -66,7 +66,12 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private func resolveStatus(_ call: CAPPluginCall, productId: String, product suppliedProduct: Product? = nil) async {
         guard !productId.isEmpty else { call.reject("Missing Apple product identifier."); return }
         do {
-            let product = suppliedProduct ?? (try await Product.products(for: [productId]).first)
+            let product: Product?
+            if let suppliedProduct {
+                product = suppliedProduct
+            } else {
+                product = try await Product.products(for: [productId]).first
+            }
             var active: Transaction?
             for await result in Transaction.currentEntitlements {
                 guard case .verified(let transaction) = result,
