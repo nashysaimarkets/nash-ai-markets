@@ -57,6 +57,44 @@ test("score and grade are made internally consistent for readable charts", () =>
   assert.equal(result.setupScore.grade, "A");
 });
 
+test("a confident narrative is forced to wait when exact price structure is not verified", () => {
+  const result = calibratePocketAnalysis({
+    confidence: "HIGH",
+    verdict: "WATCH",
+    contradictions: [],
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: false, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 88, grade: "A" },
+    plotBounds: { left: 10, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors: [],
+    levels: [{ kind: "support", label: "Visible shelf", price: "7600", y: 70 }],
+    fibLevels: [],
+  }) as { confidence: string; verdict: string; setupScore: { overall: number; grade: string }; trustGate: { status: string; scaleLocked: boolean } };
+  assert.equal(result.trustGate.status, "PARTIAL");
+  assert.equal(result.trustGate.scaleLocked, false);
+  assert.equal(result.confidence, "MEDIUM");
+  assert.equal(result.verdict, "WAIT");
+  assert.deepEqual(result.setupScore, { overall: 69, grade: "C" });
+});
+
+test("trust gate locks only when chart identity and exact scale geometry all pass", () => {
+  const result = calibratePocketAnalysis({
+    confidence: "HIGH",
+    verdict: "WATCH",
+    contradictions: [],
+    currentPrice: "7660",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 82, grade: "B" },
+    plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
+    priceScaleAnchors: [{ price: 7700, y: 25 }, { price: 7600, y: 75 }],
+    levels: [{ kind: "support", label: "Visible shelf", price: "7640", y: 55 }],
+    fibLevels: [],
+  }) as { trustGate: { status: string; exactLevelCount: number }; verdict: string; setupScore: { overall: number } };
+  assert.equal(result.trustGate.status, "LOCKED");
+  assert.equal(result.trustGate.exactLevelCount, 1);
+  assert.equal(result.verdict, "WATCH");
+  assert.equal(result.setupScore.overall, 82);
+});
+
 test("one-more-view prompts exclude trader plan fields", () => {
   const calibrated = calibratePocketAnalysis({
     evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
