@@ -4,6 +4,7 @@ import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
+import { choosePrecisionLiquidityShield, correctedCurrentPrice, insufficientLiquidityShield, isPlainNumericPrice, normalizePrecisionLiquidityShield, numericPrice } from "../liquidity-precision";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -182,10 +183,44 @@ const precisionOverlaySchema = {
     priceScaleAnchors: schema.properties.priceScaleAnchors,
     levels: schema.properties.levels,
     currentPrice: { type: "string", maxLength: 30 },
+    liquidityShield: {
+      type: "object", additionalProperties: false,
+      properties: {
+        status: { type: "string", enum: ["VISIBLE_RISK_ZONES", "NO_VISIBLE_RISK_ZONES", "INSUFFICIENT_EVIDENCE"] },
+        summary: { type: "string", maxLength: 220 },
+        zones: {
+          type: "array", maxItems: 4, items: {
+            type: "object", additionalProperties: false,
+            properties: {
+              side: { type: "string", enum: ["ABOVE_PRICE", "BELOW_PRICE"] },
+              pattern: { type: "string", enum: ["EQUAL_HIGHS", "EQUAL_LOWS", "SWING_CLUSTER", "RANGE_EDGE", "SESSION_EXTREME", "ROUND_NUMBER"] },
+              label: { type: "string", maxLength: 48 },
+              priceLow: { type: "number" },
+              priceHigh: { type: "number" },
+              confidence: { type: "string", enum: ["HIGH", "MEDIUM"] },
+              evidence: { type: "string", maxLength: 160 },
+              touchPoints: {
+                type: "array", minItems: 2, maxItems: 6, items: {
+                  type: "object", additionalProperties: false,
+                  properties: {
+                    x: { type: "number", minimum: 0, maximum: 100 },
+                    y: { type: "number", minimum: 0, maximum: 100 },
+                  },
+                  required: ["x", "y"],
+                },
+              },
+            },
+            required: ["side", "pattern", "label", "priceLow", "priceHigh", "confidence", "evidence", "touchPoints"],
+          },
+        },
+        stopGuidance: { type: "string", maxLength: 220 },
+      },
+      required: ["status", "summary", "zones", "stopGuidance"],
+    },
     confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] },
     limitation: { type: "string", maxLength: 160 },
   },
-  required: ["plotBounds", "priceScaleAnchors", "levels", "currentPrice", "confidence", "limitation"],
+  required: ["plotBounds", "priceScaleAnchors", "levels", "currentPrice", "liquidityShield", "confidence", "limitation"],
 } as const;
 
 export async function POST(request: Request) {
@@ -211,7 +246,7 @@ export async function POST(request: Request) {
       const timeframe = typeof candidate.timeframe === "string" ? candidate.timeframe.trim().slice(0, 30) : "";
       const currentPrice = typeof candidate.currentPrice === "string" ? candidate.currentPrice.trim().slice(0, 30) : "";
       const contextMatch = candidate.contextMatch === "MATCHED" ? "MATCHED" : "NOT_PROVIDED";
-      if (instrument && timeframe && /^-?\\d[\\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
+      if (instrument && timeframe && isPlainNumericPrice(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
     }
     if (payload.accuracyCorrection && typeof payload.accuracyCorrection === "object") {
       const candidate = payload.accuracyCorrection as Record<string, unknown>;
@@ -242,6 +277,9 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
 
   try {
+    // A current-price correction is the trader's newest explicit fact and takes
+    // precedence over preflight confirmation, which in turn outranks OCR.
+    const authoritativeCurrentPrice = correctedCurrentPrice(accuracyCorrection) ?? chartConfirmation?.currentPrice ?? null;
     const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse" });
     const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
@@ -253,7 +291,7 @@ export async function POST(request: Request) {
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
         "Use only evidence visibly present in the uploaded chart. Never invent prices, indicator values, instrument names, timeframes, calendar events, news, entries, stops or targets.",
         "When user-confirmed chart facts are provided, treat their instrument, timeframe and current-price marker as authoritative metadata. Do not override them with a visual label guess. Still derive all structure, levels and directional reasoning independently from visible chart evidence.",
-        "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified, preserve it in the returned levels/currentPrice, and rebuild the audit around it. Do not invent additional corrected levels.",
+        "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
         "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
@@ -304,8 +342,12 @@ export async function POST(request: Request) {
         "Return up to three conspicuous pivot swing highs or lows at the wick extremity. Pivot x/y and x2/y2 must be identical.",
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "For every level, y must mark the actual visible candle reaction and must also agree with the price projected from the three-point scale. Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
+        "Liquidity Guard identifies only visually inferred stop-risk clusters at equal highs, equal lows, clustered swing points, range edges, session extremes or an obviously respected round number. It never verifies resting orders, order-book liquidity or institutional intent.",
+        "For Liquidity Guard, require at least three consistent price-scale anchors and a readable current price. VISIBLE_RISK_ZONES requires at least one candidate with two or more genuinely visible, horizontally separated candle touchPoints. Otherwise return NO_VISIBLE_RISK_ZONES when the chart is readable and no cluster exists, or INSUFFICIENT_EVIDENCE when exact scale, current price or candle rows cannot be verified.",
+        "Each liquidity zone must use numeric priceLow and priceHigh from the visible scale. For one exact price set both equal. Every touchPoint must mark the actual full-image wick or candle reaction that creates the cluster, and each touchPoint y must agree with the price band projected through the returned scale. side is relative to currentPrice and the complete band must remain on that side. Never fabricate width, touches or price precision.",
+        "Liquidity confidence may be HIGH only for three or more clean aligned reactions with a consistent scale; use MEDIUM for two clear reactions. Low-confidence candidates must be omitted rather than drawn. stopGuidance must discuss structurally decisive invalidation without giving a personal stop price or promising a reversal.",
       ].join(" ");
-    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => client.responses.create({
+    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null, trustedCurrentPrice: string | null = null) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
       reasoning: { effort: "low" },
       store: false,
@@ -313,35 +355,41 @@ export async function POST(request: Request) {
       input: [{
         role: "user",
         content: [
-          { type: "input_text", text: rescue
-            ? `Retry the chart carefully. ${readingCrop ? "The second image is an enlarged reading crop of the first chart; use it to read candles and the right-hand price scale, but return coordinates relative to the complete first image." : ""} Read the visible scale, current-price badge and major swing geometry. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high, breakout shelf or prior range edge is sufficient; repeated reactions are not mandatory. Never invent a hidden price.`
-            : "Extract independently verifiable support, resistance and pivot geometry from this chart. Accuracy is more important than quantity." },
+          { type: "input_text", text: `${trustedCurrentPrice ? `The trader-verified current price is ${trustedCurrentPrice}; return it exactly and use it for every above/below classification. ` : ""}${rescue
+            ? `Retry the chart carefully. ${readingCrop ? "The second image is an enlarged reading crop of the first chart; use it to read candles and the right-hand price scale, but return coordinates relative to the complete first image." : ""} Read the visible scale, current-price badge, major swing geometry and only defensible Liquidity Guard touch clusters. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high, breakout shelf or prior range edge is sufficient; repeated reactions are not mandatory. Never invent a hidden price.`
+            : "Extract independently verifiable support, resistance, pivot and Liquidity Guard geometry from this chart. Accuracy is more important than quantity."}` },
           { type: "input_image", image_url: chartImage, detail: "high" },
           ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
         ],
       }],
-      max_output_tokens: 1400,
+      max_output_tokens: 2200,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
     });
-    const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
+    const safePrecision = async (chartImage: string, label: string, readingCrop: string | null, trustedCurrentPrice: string | null = null) => {
       try {
-        const first = await requestPrecision(chartImage);
+        const first = await requestPrecision(chartImage, false, null, trustedCurrentPrice);
         try {
           const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
           if (parsed && Array.isArray(parsed.levels)) {
-            const current = typeof parsed.currentPrice === "string" ? Number(parsed.currentPrice.replaceAll(",", "")) : NaN;
+            const currentSource = trustedCurrentPrice ?? (typeof parsed.currentPrice === "string" ? parsed.currentPrice : "");
+            const current = numericPrice(currentSource) ?? NaN;
             const prices = parsed.levels.flatMap((level) => {
               if (!level || typeof level !== "object") return [];
-              const price = Number(String((level as Record<string, unknown>).price ?? "").replaceAll(",", ""));
-              return Number.isFinite(price) ? [price] : [];
+              const price = numericPrice((level as Record<string, unknown>).price);
+              return price !== null ? [price] : [];
             });
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
-            if (parsed.levels.length === 0 || missingSide) {
-              const rescue = await requestPrecision(chartImage, true, readingCrop);
+            const shield = parsed.liquidityShield && typeof parsed.liquidityShield === "object" ? parsed.liquidityShield as Record<string, unknown> : null;
+            const missingLiquidity = !shield || shield.status === "INSUFFICIENT_EVIDENCE" || (shield.status === "VISIBLE_RISK_ZONES" && (!Array.isArray(shield.zones) || shield.zones.length === 0));
+            if (parsed.levels.length === 0 || missingSide || missingLiquidity) {
+              const rescue = await requestPrecision(chartImage, true, readingCrop, trustedCurrentPrice);
               const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
               if (rescued) {
                 const merged = recoverPrecisionGeometry(parsed, rescued);
-                return { output_text: JSON.stringify(merged ?? rescued) };
+                return { output_text: JSON.stringify({
+                  ...(merged ?? rescued),
+                  liquidityShield: choosePrecisionLiquidityShield(parsed.liquidityShield, rescued.liquidityShield),
+                }) };
               }
             }
           }
@@ -354,7 +402,7 @@ export async function POST(request: Request) {
     };
     const [response, precisionResult, contextPrecisionResult] = await Promise.all([
       analysisRequest,
-      safePrecision(image, "primary", precisionImage || null),
+      safePrecision(image, "primary", precisionImage || null, authoritativeCurrentPrice),
       contextImage ? safePrecision(contextImage, "context", contextPrecisionImage || null) : Promise.resolve(null),
     ]);
     const output = response.output_text?.trim();
@@ -375,7 +423,13 @@ export async function POST(request: Request) {
       precision = parsePrecision(precisionResult?.output_text);
       contextPrecision = parsePrecision(contextPrecisionResult?.output_text);
       const record = analysis as Record<string, unknown>;
-      precision = recoverPrecisionGeometry(record, precision && typeof precision === "object" ? precision as Record<string, unknown> : null);
+      const precisionRecord = precision && typeof precision === "object" ? precision as Record<string, unknown> : null;
+      const ocrCurrentPrice = typeof precisionRecord?.currentPrice === "string" && isPlainNumericPrice(precisionRecord.currentPrice)
+        ? precisionRecord.currentPrice
+        : "";
+      const resolvedCurrentPrice = authoritativeCurrentPrice ?? ocrCurrentPrice;
+      const liquidityShield = normalizePrecisionLiquidityShield(precisionRecord, resolvedCurrentPrice || null);
+      precision = recoverPrecisionGeometry(record, precisionRecord);
       if (precision && typeof precision === "object") {
         const geometry = precision as Record<string, unknown>;
         analysis = {
@@ -383,7 +437,8 @@ export async function POST(request: Request) {
           plotBounds: geometry.plotBounds,
           priceScaleAnchors: geometry.priceScaleAnchors,
           levels: geometry.levels,
-          currentPrice: geometry.currentPrice,
+          currentPrice: resolvedCurrentPrice,
+          liquidityShield,
           contextBattlefield: contextPrecision && typeof contextPrecision === "object" ? {
             levels: (contextPrecision as Record<string, unknown>).levels,
             currentPrice: (contextPrecision as Record<string, unknown>).currentPrice,
@@ -393,7 +448,13 @@ export async function POST(request: Request) {
         };
       } else {
         // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
-        analysis = { ...record, priceScaleAnchors: [], levels: [] };
+        analysis = {
+          ...record,
+          currentPrice: resolvedCurrentPrice,
+          priceScaleAnchors: [],
+          levels: [],
+          liquidityShield: insufficientLiquidityShield("The precision chart-reading pass did not complete, so no liquidity zone was drawn."),
+        };
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;

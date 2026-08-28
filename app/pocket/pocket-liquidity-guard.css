@@ -1,0 +1,123 @@
+.psLiquidityGuard {
+  --lg-above: #ff6277;
+  --lg-below: #55d9ff;
+  --lg-gold: #f3cf78;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid #3b4c55;
+  border-radius: 20px;
+  background: radial-gradient(circle at 86% 4%, #ff627718, transparent 29%), radial-gradient(circle at 10% 92%, #55d9ff16, transparent 34%), linear-gradient(145deg, #111d24, #070c10 74%);
+  box-shadow: 0 28px 72px #000a, inset 0 1px #ffffff10;
+}
+
+.psLiquidityGuard::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -45%;
+  background: conic-gradient(from 90deg at 50% 50%, transparent, #55d9ff0d, transparent, #ff62770d, transparent);
+  animation: psLiquidityAura 15s linear infinite;
+}
+
+.psLiquidityGuard > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 17px;
+  border-bottom: 1px solid #34444d;
+  background: #081015d9;
+  backdrop-filter: blur(18px);
+}
+
+.psLiquidityGuard > header div,
+.psLiquidityGuard > header span,
+.psLiquidityGuard > header h2,
+.psLiquidityGuard > header small { display: block; }
+.psLiquidityGuard > header span { color: #7cecff; font: 900 10px var(--font-geist-mono), monospace; letter-spacing: .12em; }
+.psLiquidityGuard > header h2 { margin: 6px 0 0; color: #f0f7f8; font: 900 21px/1 "Arial Narrow", Impact, sans-serif; letter-spacing: .05em; }
+.psLiquidityGuard > header small { margin-top: 6px; color: #83949d; font: 800 9px var(--font-geist-mono), monospace; letter-spacing: .07em; }
+.psLiquidityGuard > header button { min-height: 44px; padding: 0 14px; border: 1px solid #62def578; border-radius: 999px; background: linear-gradient(135deg, #17343e, #0c1b21); color: #b7f3ff; font: 900 10px var(--font-geist-mono), monospace; letter-spacing: .07em; box-shadow: inset 0 1px #ffffff17, 0 8px 24px #0006; }
+.psLiquidityGuard > header button:active { transform: scale(.98); }
+.psLiquidityGuard > header button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+.psLiquidityCanvas { position: relative; width: 100%; overflow: hidden; background: #020507; }
+.psLiquidityCanvas > img { display: block; width: 100%; height: auto; object-fit: contain; }
+.psLiquidityVector { position: absolute; z-index: 6; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.psLiquidityVector [data-side="ABOVE_PRICE"] line,
+.psLiquidityVector [data-side="ABOVE_PRICE"] path,
+.psLiquidityVector [data-side="ABOVE_PRICE"] circle { stroke: var(--lg-above); }
+.psLiquidityVector [data-side="BELOW_PRICE"] line,
+.psLiquidityVector [data-side="BELOW_PRICE"] path,
+.psLiquidityVector [data-side="BELOW_PRICE"] circle { stroke: var(--lg-below); }
+.psLiquidityVector [data-side] line,
+.psLiquidityVector [data-side] path { stroke-width: 1.5; filter: drop-shadow(0 0 3px currentColor); }
+.psLiquidityVector [data-confidence="MEDIUM"] { opacity: .72; }
+.psLiquidityVector [data-touch] circle { fill: #061015d9; stroke-width: 1.4; filter: drop-shadow(0 0 3px currentColor); }
+.psLiquidityVector [data-current] line { stroke: var(--lg-gold); stroke-width: 1; stroke-dasharray: 5 4; filter: drop-shadow(0 0 2px #f3cf78); }
+
+.psLiquidityLabels { position: absolute; z-index: 8; inset: 0; pointer-events: none; }
+.psLiquidityLabels > span { position: absolute; display: grid; grid-template-columns: auto 1fr; gap: 2px 7px; min-width: 160px; max-width: 48%; padding: 8px 10px; transform: translateY(-50%); border: 1px solid currentColor; border-radius: 9px; background: #04090cf0; box-shadow: 0 10px 28px #000a, 0 0 22px color-mix(in srgb, currentColor 22%, transparent); backdrop-filter: blur(12px); }
+.psLiquidityLabels > span i { grid-row: 1 / 3; align-self: center; font-style: normal; font-size: 14px; }
+.psLiquidityLabels > span b,
+.psLiquidityLabels > span small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-geist-mono), monospace; }
+.psLiquidityLabels > span b { color: #f4f8f6; font-size: 10px; letter-spacing: .06em; }
+.psLiquidityLabels > span small { font-size: 9px; letter-spacing: .04em; }
+.psLiquidityLabels > span[data-side="ABOVE_PRICE"] { color: var(--lg-above); }
+.psLiquidityLabels > span[data-side="BELOW_PRICE"] { color: var(--lg-below); }
+.psLiquidityLabels > em { position: absolute; transform: translateY(-50%); padding: 5px 7px; border: 1px solid #f3cf7888; border-radius: 6px; background: #211c0bf0; color: #f4d98f; font: 900 9px var(--font-geist-mono), monospace; font-style: normal; letter-spacing: .05em; box-shadow: 0 0 16px #f3cf7825; }
+.psLiquidityCanvas[data-landscape="true"] .psLiquidityLabels > span { display: none; }
+
+.psLiquidityCorners { position: absolute; z-index: 9; inset: 11px; pointer-events: none; }
+.psLiquidityCorners i { position: absolute; width: 24px; height: 24px; border-color: #83efff; border-style: solid; filter: drop-shadow(0 0 5px #55d9ff66); }
+.psLiquidityCorners i:nth-child(1) { left: 0; top: 0; border-width: 1px 0 0 1px; }
+.psLiquidityCorners i:nth-child(2) { right: 0; top: 0; border-width: 1px 1px 0 0; }
+.psLiquidityCorners i:nth-child(3) { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
+.psLiquidityCorners i:nth-child(4) { left: 0; bottom: 0; border-width: 0 0 1px 1px; }
+
+.psLiquidityHold { position: absolute; z-index: 9; left: 50%; top: 50%; width: min(82%, 410px); padding: 18px; transform: translate(-50%, -50%); border: 1px solid #ddbd6f88; border-radius: 15px; background: linear-gradient(145deg, #1d1a0ff2, #0a0e11f2); color: #e9cf81; text-align: center; box-shadow: 0 20px 60px #000b, 0 0 32px #d8b8671c; backdrop-filter: blur(14px); }
+.psLiquidityHold i,
+.psLiquidityHold strong { display: block; }
+.psLiquidityHold i { font-style: normal; font-size: 27px; }
+.psLiquidityHold strong { margin-top: 7px; font: 900 13px var(--font-geist-mono), monospace; letter-spacing: .1em; }
+.psLiquidityHold p { margin: 9px 0 0; color: #c2b797; font-size: 12px; line-height: 1.5; }
+
+.psLiquidityIntel { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 1px; background: #2f3c44; border-top: 1px solid #34434c; }
+.psLiquidityIntel > article,
+.psLiquidityIntel > ol { margin: 0; padding: 16px; background: #0a1217; }
+.psLiquidityIntel article small,
+.psLiquidityIntel article strong { display: block; }
+.psLiquidityIntel article small { color: #7cecff; font: 900 9px var(--font-geist-mono), monospace; letter-spacing: .08em; }
+.psLiquidityIntel article strong { margin-top: 8px; color: #edf4f1; font: 900 19px "Arial Narrow", Impact, sans-serif; letter-spacing: .04em; }
+.psLiquidityIntel article p { margin: 9px 0 0; color: #a0afb5; font-size: 12px; line-height: 1.5; }
+.psLiquidityIntel > ol { display: grid; gap: 8px; list-style: none; }
+.psLiquidityIntel li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 9px; padding: 9px; border: 1px solid #33434b; border-radius: 10px; background: #0d171c; }
+.psLiquidityIntel li > i { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid currentColor; border-radius: 50%; font: 900 10px var(--font-geist-mono), monospace; font-style: normal; }
+.psLiquidityIntel li strong,
+.psLiquidityIntel li span { display: block; }
+.psLiquidityIntel li strong { color: #dde7e2; font-size: 11px; }
+.psLiquidityIntel li span { margin-top: 4px; color: #8999a1; font: 800 9px var(--font-geist-mono), monospace; letter-spacing: .03em; }
+.psLiquidityIntel li > b { font: 900 9px var(--font-geist-mono), monospace; letter-spacing: .05em; }
+.psLiquidityIntel li[data-side="ABOVE_PRICE"] { color: var(--lg-above); }
+.psLiquidityIntel li[data-side="BELOW_PRICE"] { color: var(--lg-below); }
+
+.psLiquidityGuard > footer { padding: 14px 16px; border-top: 1px solid #34434c; background: #070d11; }
+.psLiquidityGuard > footer > div { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; }
+.psLiquidityGuard > footer span { color: #f0cd74; font: 900 10px var(--font-geist-mono), monospace; letter-spacing: .06em; }
+.psLiquidityGuard > footer p { margin: 0; color: #c2ccc7; font-size: 12px; line-height: 1.5; }
+.psLiquidityGuard > footer small { display: block; margin-top: 11px; color: #718087; font: 800 9px var(--font-geist-mono), monospace; line-height: 1.5; letter-spacing: .04em; text-align: center; }
+
+@keyframes psLiquidityAura { to { transform: rotate(360deg); } }
+
+@media (max-width: 560px) {
+  .psLiquidityGuard > header { align-items: flex-start; flex-direction: column; }
+  .psLiquidityGuard > header button { align-self: stretch; }
+  .psLiquidityLabels > span { min-width: 140px; max-width: 56%; padding: 7px 8px; }
+  .psLiquidityIntel { grid-template-columns: 1fr; }
+  .psLiquidityGuard > footer > div { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psLiquidityGuard::before { animation: none; }
+}

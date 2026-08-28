@@ -11,6 +11,8 @@ import { calculateRangePosition, mergeCompatibleChartLevels, rankChartLevels, ty
 import ChartPreflightPanel from "./ChartPreflightPanel";
 import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import LevelProvenancePanel from "./LevelProvenancePanel";
+import LiquidityGuardOverlay from "./LiquidityGuardOverlay";
+import type { LiquidityShield } from "./liquidity-guard";
 import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
@@ -69,6 +71,7 @@ type Analysis = {
   indicators: string[];
   checklist: string[];
   relevantEventTypes: string[];
+  liquidityShield?: LiquidityShield;
   plotBounds?: { left: number; top: number; right: number; bottom: number };
   priceScaleAnchors?: { price: number; y: number }[];
   currentPrice?: string;
@@ -559,9 +562,18 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
-type CommandDeckMode = "xray" | "patterns" | "scenarios" | "plan" | "risk" | "pulse";
+type CommandDeckMode = "xray" | "guard" | "patterns" | "scenarios" | "plan" | "risk" | "pulse";
 type RiskCurrency = "GBP" | "USD" | "EUR";
 type StoredRiskDesk = RiskDeskInput & { currency: RiskCurrency; version: 1 };
+const COMMAND_DECK_MODES: ReadonlyArray<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
+  { id: "xray", number: "01", label: "CHART X-RAY", detail: "SOURCE AUDIT" },
+  { id: "guard", number: "02", label: "LIQUIDITY GUARD", detail: "STOP-CLUSTER MAP" },
+  { id: "patterns", number: "03", label: "PATTERNS", detail: "FORMING SIGNALS" },
+  { id: "scenarios", number: "04", label: "SCENARIOS", detail: "IF / THEN PATHS" },
+  { id: "plan", number: "05", label: "PLAN", detail: "CLARITY LOCK" },
+  { id: "risk", number: "06", label: "RISK", detail: "PERSONAL LIMITS" },
+  { id: "pulse", number: "07", label: "SIGNAL PULSE", detail: "LIVE FORMATION" },
+];
 
 const EMPTY_RISK_DESK: RiskDeskInput = { accountValue: "", riskPercent: "0.5", stopDistance: "", valuePerPoint: "" };
 
@@ -629,20 +641,13 @@ function SignalPulse({ analysis }: { analysis: Analysis }) {
 
 function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [mode, setMode] = useState<CommandDeckMode>("xray");
-  const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
-    { id: "xray", number: "01", label: "CHART X-RAY", detail: "SOURCE AUDIT" },
-    { id: "patterns", number: "02", label: "PATTERNS", detail: "FORMING SIGNALS" },
-    { id: "scenarios", number: "03", label: "SCENARIOS", detail: "IF / THEN PATHS" },
-    { id: "plan", number: "04", label: "PLAN", detail: "CLARITY LOCK" },
-    { id: "risk", number: "05", label: "RISK", detail: "PERSONAL LIMITS" },
-    { id: "pulse", number: "06", label: "SIGNAL PULSE", detail: "LIVE FORMATION" },
-  ];
 
   return <section id="bullseye-evidence" className="psCommandDeck">
     <header><div><span>◎ POCKET BULLSEYE 2.0</span><strong>SCAN. UNDERSTAND. PLAN. REVIEW.</strong></div><b>COMMAND DECK</b></header>
-    <nav aria-label="Pocket Bullseye command deck">{modes.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
+    <nav aria-label="Pocket Bullseye command deck">{COMMAND_DECK_MODES.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
     <div className="psCommandStage" data-mode={mode}>
       {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
+      {mode === "guard" ? <LiquidityGuardOverlay analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
@@ -699,7 +704,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 8 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 9 as const;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 function hasVerifiedStructuralLevel(analysis: Analysis) {
@@ -959,6 +964,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         levels: payload.levels!.levels.map((level) => ({ ...level, y: clampY(level.y) })),
         currentPrice: payload.levels!.currentPrice || current.currentPrice,
         levelStory: payload.levels!.levelStory || current.levelStory,
+        liquidityShield: undefined,
       } : current);
       setBattlefieldChart("primary");
       setLevelLabStatus("updated");
@@ -1010,7 +1016,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           : { kind: patch.level.kind, label: `USER VERIFIED ${patch.level.kind.toUpperCase()}`, price: patch.level.price, x: 10, y: 50, x2: 90, y2: 50 };
         levels = index >= 0 ? levels.map((level, levelIndex) => levelIndex === index ? verified : level) : [...levels, verified];
       }
-      return { ...current, instrument: patch.instrument ?? current.instrument, timeframe: patch.timeframe ?? current.timeframe, currentPrice: patch.currentPrice ?? current.currentPrice, levels };
+      return { ...current, instrument: patch.instrument ?? current.instrument, timeframe: patch.timeframe ?? current.timeframe, currentPrice: patch.currentPrice ?? current.currentPrice, levels, liquidityShield: undefined };
     });
   }
 

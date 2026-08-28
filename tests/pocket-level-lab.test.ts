@@ -5,8 +5,9 @@ import { readFileSync } from "node:fs";
 const client = readFileSync("app/pocket/PocketBullseye.tsx", "utf8");
 const route = readFileSync("app/api/pocket/levels/route.ts", "utf8");
 
-test("the sixth command tile is a genuinely separate Signal Pulse", () => {
-  assert.match(client, /number: "06", label: "SIGNAL PULSE"/);
+test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
+  assert.match(client, /number: "02", label: "LIQUIDITY GUARD"/);
+  assert.match(client, /number: "07", label: "SIGNAL PULSE"/);
   assert.match(client, /WHAT IS DEVELOPING NOW/);
 });
 
@@ -20,6 +21,7 @@ test("Level Lab merges only price-map fields into the existing analysis", () => 
   const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
   assert.match(merge, /setAnalysis\(\(current\)/);
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
+  assert.match(merge, /liquidityShield: undefined/);
 });
 
 test("independent endpoint fails closed on prices but preserves visible reaction areas", () => {
