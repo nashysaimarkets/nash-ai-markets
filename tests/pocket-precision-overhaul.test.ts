@@ -41,6 +41,7 @@ test("overhaul preserves readable controls, focus visibility and reduced motion"
   assert.match(css, /:focus-visible/);
   assert.match(css, /min-height: 44px/);
   assert.match(css, /font-size: max\(\.83rem, 13px\)/);
+  assert.match(css, /\.psDataNote a \{[\s\S]*?min-height: 44px/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 });

@@ -20,6 +20,20 @@
   box-shadow: 0 0 0 6px rgba(78, 226, 255, .16);
 }
 
+.psDataNote {
+  font-size: max(.83rem, 13px);
+  line-height: 1.6;
+}
+
+.psDataNote a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: #c4e7f8;
+  font-weight: 800;
+  text-underline-offset: 4px;
+}
+
 .psResults,
 .psScanner {
   isolation: isolate;
