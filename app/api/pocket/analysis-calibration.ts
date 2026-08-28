@@ -153,5 +153,58 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     calibrated.fibLevels = [];
   }
 
+  const hasTrustInputs = Array.isArray(analysis.levels)
+    && Boolean(analysis.plotBounds && typeof analysis.plotBounds === "object")
+    && Array.isArray(analysis.priceScaleAnchors);
+  const structuralLevels = Array.isArray(calibrated.levels)
+    ? calibrated.levels.filter((item) => item && typeof item === "object" && ["support", "resistance", "pivot"].includes(String((item as JsonRecord).kind)))
+    : [];
+  const exactStructuralLevels = structuralLevels.filter((item) => numericPrice((item as JsonRecord).price) !== null);
+  const chartLocked = quality.chartReadability === "CLEAR" && quality.candlesReadable === true;
+  const identityLocked = quality.instrumentConfidence === "HIGH" && quality.timeframeConfidence === "HIGH";
+  const scaleLocked = hasVerifiedScale && exactStructuralLevels.length > 0;
+  const contradictions = Array.isArray(analysis.contradictions) ? analysis.contradictions.filter((item) => typeof item === "string" && item.trim()) : [];
+  const status = chartLocked && identityLocked && scaleLocked
+    ? "LOCKED"
+    : unreadable || !structuralLevels.length
+      ? "HOLD"
+      : "PARTIAL";
+  const trustReasons = [
+    chartLocked ? "Candles and structure are readable" : "Chart readability is incomplete",
+    identityLocked ? "Instrument and timeframe are verified" : "Instrument or timeframe needs confirmation",
+    scaleLocked ? `${exactStructuralLevels.length} exact structural level${exactStructuralLevels.length === 1 ? "" : "s"} passed scale checks` : structuralLevels.length ? "Reaction areas are visible but exact prices are withheld" : "No structural level passed verification",
+    contradictions.length ? `${contradictions.length} contradiction${contradictions.length === 1 ? "" : "s"} remain visible` : "No explicit contradiction was returned",
+  ];
+  if (hasTrustInputs) calibrated.trustGate = {
+    status,
+    chartLocked,
+    identityLocked,
+    scaleLocked,
+    exactLevelCount: exactStructuralLevels.length,
+    reasons: trustReasons,
+    nextAction: status === "LOCKED"
+      ? "Verify the marked prices on the original chart before acting."
+      : !identityLocked
+        ? "Confirm the instrument, timeframe and current price, then reanalyse."
+        : !scaleLocked
+          ? "Add a chart with a clear price scale or a supporting timeframe, then reanalyse."
+          : "Use a clearer chart before relying on this read.",
+  };
+
+  // A visually plausible narrative must never outrank the evidence gate.
+  // Without a locked chart identity and verified structural map, Bullseye may
+  // still explain what is visible but cannot present the result as trade-ready.
+  if (hasTrustInputs && status === "HOLD") {
+    calibrated.confidence = "LOW";
+    calibrated.verdict = "REVIEW_REQUIRED";
+    const heldOverall = Math.min(54, boundedScore((calibrated.setupScore as JsonRecord).overall));
+    calibrated.setupScore = { ...(calibrated.setupScore as JsonRecord), overall: heldOverall, grade: scoreGrade(heldOverall) };
+  } else if (hasTrustInputs && status === "PARTIAL") {
+    if (calibrated.confidence === "HIGH") calibrated.confidence = "MEDIUM";
+    if (calibrated.verdict === "WATCH") calibrated.verdict = "WAIT";
+    const partialOverall = Math.min(69, boundedScore((calibrated.setupScore as JsonRecord).overall));
+    calibrated.setupScore = { ...(calibrated.setupScore as JsonRecord), overall: partialOverall, grade: scoreGrade(partialOverall) };
+  }
+
   return calibrated;
 }
