@@ -75,11 +75,47 @@ type Analysis = {
   levels: Level[];
   contextBattlefield?: { currentPrice?: string; levels: Level[]; priceScaleAnchors?: { price: number; y: number }[]; plotBounds?: { left: number; top: number; right: number; bottom: number } } | null;
   fibLevels: FibLevel[];
+  trustGate?: {
+    status: "LOCKED" | "PARTIAL" | "HOLD";
+    chartLocked: boolean;
+    identityLocked: boolean;
+    scaleLocked: boolean;
+    exactLevelCount: number;
+    reasons: string[];
+    nextAction: string;
+  };
 };
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
 type LockedDecision = { id: string; createdAt: string; intention: Intention; image: string; analysis: Analysis };
 type FollowUpReply = { answer: string; evidence: string[]; caution: string; nextCheck: string };
 type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; lessons: string[]; behaviourTags: string[] };
+
+function decisionSignature(analysis: Analysis) {
+  return JSON.stringify([
+    analysis.instrument,
+    analysis.timeframe,
+    analysis.currentPrice ?? "",
+    analysis.direction,
+    analysis.verdict,
+    analysis.setupScore.overall,
+    analysis.verdictHeadline,
+  ]);
+}
+
+function TrustGateCard({ analysis }: { analysis: Analysis }) {
+  const gate = analysis.trustGate;
+  if (!gate) return null;
+  return <section className="psTrustGate" data-status={gate.status}>
+    <header><div><span>◉ BULLSEYE TRUST GATE</span><strong>{gate.status === "LOCKED" ? "EVIDENCE LOCKED" : gate.status === "PARTIAL" ? "PARTIAL EVIDENCE" : "PRECISION HOLD"}</strong></div><b>{gate.exactLevelCount}<small>EXACT LEVELS</small></b></header>
+    <div className="psTrustChecks">
+      <span data-pass={gate.chartLocked}>CHART <b>{gate.chartLocked ? "✓" : "!"}</b></span>
+      <span data-pass={gate.identityLocked}>IDENTITY <b>{gate.identityLocked ? "✓" : "!"}</b></span>
+      <span data-pass={gate.scaleLocked}>PRICE SCALE <b>{gate.scaleLocked ? "✓" : "!"}</b></span>
+    </div>
+    <ul>{gate.reasons.slice(0, 4).map((reason) => <li key={reason}>{reason}</li>)}</ul>
+    <footer><strong>NEXT SAFE ACTION</strong><span>{gate.nextAction}</span></footer>
+  </section>;
+}
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 function clampY(y: number) {
@@ -1134,8 +1170,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function lockDecision() {
     if (!analysis || !image) return;
+    const signature = decisionSignature(analysis);
+    if (vault.some((item) => decisionSignature(item.analysis) === signature)) {
+      setVaultMessage("This result is already saved in your private Decision Journal.");
+      return;
+    }
     const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis };
-    try { await vaultSave(decision); setVault((current) => [decision, ...current]); setVaultMessage("Saved privately on this device. Upload a later chart whenever you want Bullseye to review the decision process."); }
+    try { await vaultSave(decision); setVault((current) => [decision, ...current]); setVaultMessage("Saved to your private Decision Journal. Return with a later chart to review the process—not just the outcome."); }
     catch { setVaultMessage("This decision could not be saved on this device."); }
   }
 
@@ -1213,6 +1254,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return source ?? { kind: numeric.kind, label: numeric.label, price: String(numeric.price), x: 0, y: 0, x2: 0, y2: 0 };
     });
     const combinedAnalysis: Analysis = { ...analysis, levels: combinedLevels };
+    const currentDecisionSaved = vault.some((item) => decisionSignature(item.analysis) === decisionSignature(analysis));
     const battlefieldAnalysis: Analysis = battlefieldChart === "context" && contextBattlefield ? {
       ...analysis,
       levels: Array.isArray(contextBattlefield.levels) ? contextBattlefield.levels : [],
@@ -1240,6 +1282,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <TrustGateCard analysis={analysis} />
           <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "GENERAL MACRO CHECK · CONFIRM BEFORE TRADING"}</small></div>{isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
@@ -1274,6 +1317,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
           {correctionOriginal ? <section className="psCorrectionReplaySummary"><header><span>↻ CORRECTION REPLAY ACTIVE</span><strong>ORIGINAL RESULT PRESERVED</strong></header><div><article><small>ORIGINAL</small><b>{correctionOriginal.instrument} · {correctionOriginal.timeframe} · {correctionOriginal.currentPrice || "UNKNOWN"}</b></article><article><small>CORRECTED MAP</small><b>{analysis.instrument} · {analysis.timeframe} · {analysis.currentPrice || "UNKNOWN"}</b></article></div></section> : null}
           <div id="bullseye-feedback" className="psFeedbackTarget"><AccuracyFeedbackPanel analysis={analysis} onApplyCorrection={applyAccuracyCorrection} onReanalyse={reanalyseWithCorrection} reanalysing={busy} /></div>
+
+          <section className="psJournalCta" data-saved={currentDecisionSaved}>
+            <div><span>▣ PRIVATE DECISION JOURNAL</span><strong>{currentDecisionSaved ? "RESULT SAVED" : "MAKE THIS RESULT MORE VALUABLE LATER"}</strong><p>{currentDecisionSaved ? "Return with a later chart to compare what happened with the reasoning you locked today." : "Save the chart, evidence and verdict now. Later, Bullseye can grade whether the process was sound without judging it only by profit or loss."}</p></div>
+            <button type="button" disabled={currentDecisionSaved} onClick={lockDecision}>{currentDecisionSaved ? "✓ SAVED TO JOURNAL" : "SAVE TO MY JOURNAL"}</button>
+            <small>PRIVATE · STORED ON THIS DEVICE · NEVER SHARED WITH OTHER MEMBERS</small>
+          </section>
 
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
@@ -1349,6 +1398,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
+          <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
+          <div className="psJournalLoop"><span><i>1</i>SAVE TODAY'S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>
+          <p>{vault.length ? "Every saved decision improves your private trader fingerprint and exposes repeated risks." : "Your first saved result begins a private record that becomes more useful each time you return."}</p>
+        </section> : null}
         {!reviewTarget && vault.length ? <section className="psFingerprint">
           <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
           <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>
