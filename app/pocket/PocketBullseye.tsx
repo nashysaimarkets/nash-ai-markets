@@ -1143,7 +1143,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function rescanLevelsOnly() {
     if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
-    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     const primaryCurrentPrice = numericLevel(analysis.currentPrice);
     if (analysis.trustGate?.identityLocked !== true || primaryCurrentPrice === null) {
       setLevelLabStatus("error");

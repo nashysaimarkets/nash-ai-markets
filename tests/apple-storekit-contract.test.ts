@@ -40,12 +40,14 @@ test("every additional native AI request requires an Apple entitlement", async (
   const pocket = await readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8");
   assert.match(pocket, /async function requireAppleEntitlementForAdditionalRequest\(\)/);
   assert.match(pocket, /const latest = await refreshAppleAccess\(\)/);
-  for (const request of ["rescanLevelsOnly", "reanalyseResult", "reanalyseWithCorrection", "askBullseye"]) {
+  for (const request of ["reanalyseResult", "reanalyseWithCorrection", "askBullseye"]) {
     const start = pocket.indexOf(`async function ${request}`);
     assert.notEqual(start, -1, `${request} must exist`);
     const body = pocket.slice(start, start + 500);
     assert.match(body, /await requireAppleEntitlementForAdditionalRequest\(\)/, `${request} must refresh and gate before requesting`);
   }
+  const levelLab = pocket.slice(pocket.indexOf("async function rescanLevelsOnly"), pocket.indexOf("async function reanalyseResult"));
+  assert.doesNotMatch(levelLab, /requireAppleEntitlementForAdditionalRequest/, "Level Lab refines the current audit and must stay available on the free result");
   assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
   assert.match(pocket, /image && !reviewTarget \? <ChartPreflightPanel/);

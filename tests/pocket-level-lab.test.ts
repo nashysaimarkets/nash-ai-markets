@@ -15,6 +15,8 @@ test("Level Lab exposes a separate photo and levels-only rescan", () => {
   assert.match(client, /INDEPENDENT LEVEL LAB/);
   assert.match(client, /RESCAN LEVELS ONLY/);
   assert.match(client, /fetch\("\/api\/pocket\/levels"/);
+  const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
+  assert.doesNotMatch(merge, /requireAppleEntitlementForAdditionalRequest/);
 });
 
 test("Level Lab merges only price-map fields into the existing analysis", () => {
