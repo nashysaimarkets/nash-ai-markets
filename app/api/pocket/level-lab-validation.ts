@@ -4,12 +4,16 @@ import { instrumentIdentitiesMatch, structuralSideCoverage } from "./precision-s
 
 type JsonRecord = Record<string, unknown>;
 
+type ScaleAnchor = { price: number; y: number };
+
 export type LevelLabPrimaryProvenance = {
   instrument: string;
   ticker: string;
   timeframe: string;
   currentPrice: string;
   identityLocked: true;
+  plotBounds?: { left: number; top: number; right: number; bottom: number };
+  priceScaleAnchors?: ScaleAnchor[];
 };
 
 export type LevelLabRejection =
@@ -31,6 +35,13 @@ function text(value: unknown, max: number) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
 
+function parsePrimaryScale(record: JsonRecord) {
+  const bounds = strictBounds(record.plotBounds);
+  const anchors = strictAnchors(record.priceScaleAnchors, bounds);
+  if (!bounds || !verifiedLinearScale(anchors)) return null;
+  return { plotBounds: bounds, priceScaleAnchors: anchors };
+}
+
 export function validateLevelLabPrimaryProvenance(value: unknown): LevelLabPrimaryProvenance | null {
   if (!value || typeof value !== "object") return null;
   const record = value as JsonRecord;
@@ -40,7 +51,42 @@ export function validateLevelLabPrimaryProvenance(value: unknown): LevelLabPrima
   const currentPrice = text(record.currentPrice, 30);
   if (record.identityLocked !== true || !instrument || instrument === "UNKNOWN" || !timeframe || timeframe === "UNKNOWN") return null;
   if (!isPlainNumericPrice(currentPrice) || (numericPrice(currentPrice) ?? 0) <= 0) return null;
-  return { instrument, ticker, timeframe, currentPrice, identityLocked: true };
+  const scale = parsePrimaryScale(record);
+  return {
+    instrument,
+    ticker,
+    timeframe,
+    currentPrice,
+    identityLocked: true,
+    ...(scale ?? {}),
+  };
+}
+
+/** Level Lab accepts slightly tighter mobile axis reads before falling back to the primary scale. */
+function levelLabLinearScale(items: ScaleAnchor[]) {
+  const strict = verifiedLinearScale(items);
+  if (strict) return strict;
+  const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
+  if (unique.length < 2) return null;
+  const ordered = [...unique].sort((a, b) => a.price - b.price);
+  if (!ordered.every((item, index) => index === 0 || item.y <= ordered[index - 1].y)) return null;
+  const low = ordered[0];
+  const high = ordered.at(-1)!;
+  if (Math.abs(high.y - low.y) < 14) return null;
+  const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
+  if (ordered.length >= 3 && ordered.some((item) => Math.abs(project(item.price) - item.y) > 3.5)) return null;
+  return { low, high, project, count: ordered.length };
+}
+
+function resolveLevelLabScale(raw: JsonRecord, primary: LevelLabPrimaryProvenance) {
+  const labBounds = strictBounds(raw.plotBounds);
+  const labAnchors = strictAnchors(raw.priceScaleAnchors, labBounds);
+  const labScale = labBounds && levelLabLinearScale(labAnchors) ? { bounds: labBounds, anchors: labAnchors } : null;
+  if (labScale && raw.priceScaleReadable === true) return labScale;
+  if (primary.plotBounds && primary.priceScaleAnchors?.length) {
+    return { bounds: primary.plotBounds, anchors: primary.priceScaleAnchors };
+  }
+  return labScale;
 }
 
 function strictBounds(value: unknown) {
@@ -92,9 +138,9 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
   if (!currentPricesCompatible(primary.currentPrice, raw.currentPrice)) return { ok: false, reason: "CURRENT_PRICE_MISMATCH" };
   if (raw.candlesReadable !== true || raw.confidence === "LOW") return { ok: false, reason: "CANDLES_UNREADABLE" };
 
-  const bounds = strictBounds(raw.plotBounds);
-  const anchors = strictAnchors(raw.priceScaleAnchors, bounds);
-  if (raw.priceScaleReadable !== true || !bounds || !verifiedLinearScale(anchors)) return { ok: false, reason: "PRICE_SCALE_UNVERIFIED" };
+  const scaleFrame = resolveLevelLabScale(raw, primary);
+  if (!scaleFrame) return { ok: false, reason: "PRICE_SCALE_UNVERIFIED" };
+  const { bounds, anchors } = scaleFrame;
 
   const calibrated = calibratePocketAnalysis({
     ...raw,
@@ -166,7 +212,7 @@ export function levelLabRejectionMessage(reason: LevelLabRejection) {
   if (reason === "CURRENT_PRICE_UNREADABLE") return "The Level Lab chart current-price marker is not readable. Use a clearer price-scale screenshot.";
   if (reason === "CURRENT_PRICE_MISMATCH") return "The Level Lab chart price does not match the verified primary chart closely enough, so no levels were applied.";
   if (reason === "CANDLES_UNREADABLE") return "The Level Lab candle reactions are not clear enough to verify structure.";
-  if (reason === "PRICE_SCALE_UNVERIFIED") return "The Level Lab price scale could not be verified from consistent, separated axis labels.";
+  if (reason === "PRICE_SCALE_UNVERIFIED") return "The Level Lab price scale could not be verified. Use a screenshot with at least two clear price labels on the right-hand axis, or reuse the same chart that already passed the main read.";
   if (reason === "ONE_SIDED_STRUCTURE") return "Level Lab could not verify both support below and resistance above the current price.";
   return "Level Lab could not verify the level prices against the visible scale and candle rows.";
 }

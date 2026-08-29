@@ -1160,6 +1160,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         timeframe: analysis.timeframe,
         currentPrice: analysis.currentPrice,
         identityLocked: true as const,
+        ...(analysis.plotBounds && analysis.priceScaleAnchors?.length ? {
+          plotBounds: analysis.plotBounds,
+          priceScaleAnchors: analysis.priceScaleAnchors,
+        } : {}),
       };
       const response = await fetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage, primaryProvenance }) });
       const payload = await response.json() as {

@@ -126,6 +126,20 @@ test("Level Lab rejects unreadable candles and an unverified scale", () => {
   });
 });
 
+test("Level Lab can reuse a verified primary scale when the lab photo scale read is tight", () => {
+  const primaryWithScale = {
+    ...primary,
+    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors: [{ price: 110, y: 20 }, { price: 90, y: 80 }],
+  };
+  const tightLabScale = scan({
+    priceScaleReadable: false,
+    priceScaleAnchors: [{ price: 109, y: 22 }, { price: 91, y: 78 }],
+  });
+  const result = validateLevelLabScan(tightLabScale, primaryWithScale);
+  assert.equal(result.ok, true);
+});
+
 test("Level Lab rejects levels that do not align with verified candle rows", () => {
   const badGeometry = scan({
     levels: [
