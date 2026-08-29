@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 const MAX_DATA_URL_LENGTH = 11_000_000;
+const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 2 + 4_096;
 
 const schema = {
   type: "object",
   additionalProperties: false,
   properties: {
     status: { type: "string", enum: ["READY", "LIMITED", "RETAKE"] },
-    instrument: { type: "string", maxLength: 40 },
+    instrument: { type: "string", maxLength: 80 },
     instrumentConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
     timeframe: { type: "string", maxLength: 30 },
     timeframeConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
@@ -28,13 +31,18 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   let image = "";
   let contextImage = "";
   try {
-    const payload = await request.json() as { image?: unknown; contextImage?: unknown };
+    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json({ error: "The preflight request is too large." }, { status: 413 });
+    }
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
   const valid = (value: string) => /^data:image\/(jpeg|png|webp);base64,/.test(value) && value.length <= MAX_DATA_URL_LENGTH;

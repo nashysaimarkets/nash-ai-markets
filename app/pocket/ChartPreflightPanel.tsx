@@ -3,12 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
 
-export default function ChartPreflightPanel({ image, contextImage, onStatus, onConfirmation }: {
+type ChartPreflightPanelProps = {
   image: string;
   contextImage?: string | null;
   onStatus: (status: PreflightStatus) => void;
   onConfirmation: (confirmation: ChartConfirmation | null) => void;
-}) {
+};
+
+export default function ChartPreflightPanel(props: ChartPreflightPanelProps) {
+  return <ChartPreflightForImage key={props.image} {...props} />;
+}
+
+function ChartPreflightForImage(props: ChartPreflightPanelProps) {
+  return <ChartPreflightRequest key={props.contextImage ?? ""} {...props} />;
+}
+
+function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }: ChartPreflightPanelProps) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
   const [message, setMessage] = useState("");
@@ -22,7 +32,7 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus, onC
 
   useEffect(() => {
     const controller = new AbortController();
-    setStatus("CHECKING"); setResult(null); setMessage(""); statusHandler.current("CHECKING"); confirmationHandler.current(null);
+    statusHandler.current("CHECKING"); confirmationHandler.current(null);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
@@ -53,7 +63,7 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus, onC
   const lock = () => {
     if (!valid || result.status === "RETAKE") return;
     const confirmation: ChartConfirmation = {
-      instrument: instrument.trim().slice(0, 40),
+      instrument: instrument.trim().slice(0, 80),
       timeframe: timeframe.trim().slice(0, 30),
       currentPrice: currentPrice.trim().slice(0, 30),
       contextMatch: contextImage ? "MATCHED" : "NOT_PROVIDED",
@@ -65,7 +75,7 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus, onC
   return <section className="psPreflight" data-status={result.status} data-locked={locked}>
     <header><span>◉ PREFLIGHT CONFIRMATION LOCK</span><strong>{result.status === "RETAKE" ? "RETAKE RECOMMENDED" : locked ? "CHART FACTS LOCKED" : result.status === "LIMITED" ? "CHECK & CONFIRM" : "CONFIRM BEFORE ANALYSIS"}</strong></header>
     <div className="psConfirmGrid">
-      <label><span>INSTRUMENT</span><input value={instrument} disabled={locked || result.status === "RETAKE"} maxLength={40} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
+      <label><span>INSTRUMENT</span><input value={instrument} disabled={locked || result.status === "RETAKE"} maxLength={80} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
       <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked || result.status === "RETAKE"} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
       <label><span>CURRENT PRICE</span><input inputMode="decimal" value={currentPrice} disabled={locked || result.status === "RETAKE"} maxLength={30} placeholder="e.g. 7658.01" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
       <article data-pass={!contextImage || result.sameInstrument === true}><span>CONTEXT CHART</span><strong>{!contextImage ? "NOT ADDED" : result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>

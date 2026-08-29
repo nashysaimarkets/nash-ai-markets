@@ -1,3 +1,5 @@
+import { numericPrice } from "./liquidity-precision.ts";
+
 type JsonRecord = Record<string, unknown>;
 
 function populatedLevels(value: unknown) {
@@ -6,27 +8,21 @@ function populatedLevels(value: unknown) {
     : [];
 }
 
-function numericPrice(value: unknown) {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value !== "string") return null;
-  const source = value.replace(/[−–—]/g, "-").replace(/[’'\s]/g, "");
-  const commaDecimal = /^-?\d+,\d{1,2}(?:\D|$)/.test(source) && !source.includes(".");
-  const normalized = commaDecimal ? source.replace(",", ".") : source.replaceAll(",", "");
-  const parsed = Number(normalized.match(/-?\d+(?:\.\d+)?/)?.[0]);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
 function anchors(value: JsonRecord | null) {
   return value && Array.isArray(value.priceScaleAnchors) ? value.priceScaleAnchors : [];
 }
 
 function hasVerifiedScale(value: JsonRecord | null) {
+  const rawBounds = value?.plotBounds && typeof value.plotBounds === "object" ? value.plotBounds as JsonRecord : null;
+  const top = rawBounds ? numericPrice(rawBounds.top) : 0;
+  const bottom = rawBounds ? numericPrice(rawBounds.bottom) : 100;
+  if (top === null || bottom === null || top < 0 || bottom > 100 || bottom <= top) return false;
   const readable = anchors(value).flatMap((item) => {
     if (!item || typeof item !== "object") return [];
     const record = item as JsonRecord;
     const price = numericPrice(record.price);
     const y = numericPrice(record.y);
-    return price === null || price <= 0 || y === null || y < 0 || y > 100 ? [] : [{ price, y }];
+    return price === null || price <= 0 || y === null || y < top || y > bottom ? [] : [{ price, y }];
   });
   const unique = readable.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
   if (unique.length < 2) return false;
@@ -56,9 +52,15 @@ export function recoverPrecisionGeometry(report: JsonRecord, precision: JsonReco
     };
   }
   const scaleSource = hasVerifiedScale(precision) ? precision : hasVerifiedScale(report) ? report : null;
-  if (!scaleSource) return precision;
+  if (!scaleSource) return null;
 
-  const merged = [...populatedLevels(precision), ...populatedLevels(report)].reduce<unknown[]>((levels, candidate) => {
+  // Keep the candidates measured against the selected scale ahead of candidates
+  // from the other pass. Previously rescue candidates always won duplicate
+  // prices, even when the rescue scale was rejected and the first-pass scale was
+  // selected. That could replace a self-consistent row with crop-relative
+  // geometry which calibration then (correctly) removed.
+  const secondarySource = scaleSource === precision ? report : precision;
+  const merged = [...populatedLevels(scaleSource), ...populatedLevels(secondarySource)].reduce<unknown[]>((levels, candidate) => {
     if (!candidate || typeof candidate !== "object") return levels;
     const record = candidate as JsonRecord;
     const price = numericPrice(record.price);
@@ -75,7 +77,10 @@ export function recoverPrecisionGeometry(report: JsonRecord, precision: JsonReco
     ...precision,
     plotBounds: scaleSource.plotBounds ?? precision.plotBounds,
     priceScaleAnchors: scaleSource.priceScaleAnchors,
-    currentPrice: precision.currentPrice || report.currentPrice || "",
+    // Keep the current-price marker measured with the selected verified scale.
+    // An unscaled reading crop must not move the reference price and turn two
+    // same-sided levels into a false support/resistance bracket.
+    currentPrice: scaleSource.currentPrice || "",
     levels: merged,
   };
 }

@@ -76,12 +76,17 @@
 .psLiquidityCorners i:nth-child(3) { right: 0; bottom: 0; border-width: 0 1px 1px 0; }
 .psLiquidityCorners i:nth-child(4) { left: 0; bottom: 0; border-width: 0 0 1px 1px; }
 
-.psLiquidityHold { position: absolute; z-index: 9; left: 50%; top: 50%; width: min(82%, 410px); padding: 18px; transform: translate(-50%, -50%); border: 1px solid #ddbd6f88; border-radius: 15px; background: linear-gradient(145deg, #1d1a0ff2, #0a0e11f2); color: #e9cf81; text-align: center; box-shadow: 0 20px 60px #000b, 0 0 32px #d8b8671c; backdrop-filter: blur(14px); }
-.psLiquidityHold i,
-.psLiquidityHold strong { display: block; }
-.psLiquidityHold i { font-style: normal; font-size: 27px; }
-.psLiquidityHold strong { margin-top: 7px; font: 900 13px var(--font-geist-mono), monospace; letter-spacing: .1em; }
-.psLiquidityHold p { margin: 9px 0 0; color: #c2b797; font-size: 12px; line-height: 1.5; }
+.psLiquidityStatus { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 15px 16px; border-top: 1px solid #34434c; border-bottom: 1px solid #34434c; background: linear-gradient(135deg, #0d171c, #091116); }
+.psLiquidityStatus > i { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid currentColor; border-radius: 50%; font: 900 15px var(--font-geist-mono), monospace; font-style: normal; box-shadow: 0 0 22px color-mix(in srgb, currentColor 18%, transparent); }
+.psLiquidityStatus small,
+.psLiquidityStatus strong { display: block; font-family: var(--font-geist-mono), monospace; }
+.psLiquidityStatus small { color: currentColor; font-size: 8px; font-weight: 900; letter-spacing: .12em; }
+.psLiquidityStatus strong { margin-top: 5px; color: #edf4f1; font-size: 13px; font-weight: 900; letter-spacing: .07em; }
+.psLiquidityStatus p { margin: 7px 0 0; max-width: 620px; color: #a8b6bc; font-size: 12px; line-height: 1.5; }
+.psLiquidityStatus > span { padding: 7px 9px; border: 1px solid currentColor; border-radius: 999px; color: currentColor; font: 900 8px var(--font-geist-mono), monospace; letter-spacing: .06em; white-space: nowrap; }
+.psLiquidityStatus[data-state="verified-none"] { color: #72e6af; background: linear-gradient(135deg, #0c1d18, #091314); }
+.psLiquidityStatus[data-state="withheld"] { color: #f0cd74; background: linear-gradient(135deg, #201c0e, #101314); }
+.psLiquidityStatus[data-state="unavailable"] { color: #9aaab2; }
 
 .psLiquidityIntel { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 1px; background: #2f3c44; border-top: 1px solid #34434c; }
 .psLiquidityIntel > article,
@@ -115,6 +120,8 @@
   .psLiquidityGuard > header button { align-self: stretch; }
   .psLiquidityLabels > span { min-width: 140px; max-width: 56%; padding: 7px 8px; }
   .psLiquidityIntel { grid-template-columns: 1fr; }
+  .psLiquidityStatus { grid-template-columns: 40px minmax(0, 1fr); }
+  .psLiquidityStatus > span { grid-column: 1 / -1; justify-self: stretch; text-align: center; }
   .psLiquidityGuard > footer > div { grid-template-columns: 1fr; }
 }
 

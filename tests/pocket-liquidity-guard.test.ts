@@ -149,7 +149,7 @@ test("non-visible and insufficient statuses never produce overlays", () => {
   }
 });
 
-test("customer surface exposes a toggle, precision hold and explicit non-guarantee", async () => {
+test("customer surface exposes a toggle, distinct safe states and explicit non-guarantee", async () => {
   const [component, client, styles, route] = await Promise.all([
     readFile(new URL("../app/pocket/LiquidityGuardOverlay.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
@@ -158,11 +158,14 @@ test("customer surface exposes a toggle, precision hold and explicit non-guarant
   ]);
   assert.match(component, /LIQUIDITY GUARD/);
   assert.match(component, /HIDE OVERLAY/);
-  assert.match(component, /PRECISION HOLD/);
+  assert.match(component, /OVERLAY WITHHELD/);
+  assert.match(component, /NO CLEAR STOP-RISK CLUSTER/);
+  assert.match(component, /LIQUIDITY GUARD UNAVAILABLE/);
+  assert.doesNotMatch(component, /No candidate survived scale, side, candle-row and readability verification/);
   assert.match(component, /NOT GUARANTEED REVERSALS/);
   assert.match(component, /projectLiquidityZones/);
   assert.match(client, /id: "guard"/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 9/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 10/);
   assert.match(styles, /\.psLiquidityVector/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(route, /liquidityShield/);

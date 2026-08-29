@@ -5,6 +5,7 @@ import {
   correctedCurrentPrice,
   isPlainNumericPrice,
   normalizePrecisionLiquidityShield,
+  numericPrice,
 } from "../app/api/pocket/liquidity-precision.ts";
 
 const anchors = [{ price: 3000, y: 20 }, { price: 2900, y: 50 }, { price: 2800, y: 80 }];
@@ -36,8 +37,15 @@ function precision(overrides: Record<string, unknown> = {}) {
 test("confirmed and corrected prices accept strict broker numerics only", () => {
   assert.equal(isPlainNumericPrice("18,586.1"), true);
   assert.equal(isPlainNumericPrice("18586.1 approx"), false);
+  assert.equal(numericPrice("7 658,25"), 7658.25);
+  assert.equal(numericPrice("$7658"), null);
+  assert.equal(numericPrice("7658 USD"), null);
+  assert.equal(numericPrice("7.658e3"), null);
   assert.equal(correctedCurrentPrice({ categories: ["CURRENT_PRICE"], correction: "Current price: 18,586.1" }), "18,586.1");
   assert.equal(correctedCurrentPrice({ categories: ["SUPPORT"], correction: "18,586.1" }), null);
+  assert.equal(correctedCurrentPrice({ categories: ["INSTRUMENT", "CURRENT_PRICE"], correction: "US 500, current 7738" }), null);
+  assert.equal(correctedCurrentPrice({ categories: ["CURRENT_PRICE"], correction: "US 500, current 7738" }), null);
+  assert.equal(correctedCurrentPrice({ categories: ["CURRENT_PRICE"], correction: "Current price: 7738 and support 7700" }), null);
 });
 
 test("server normalizer keeps a scale, side and candle-row verified candidate", () => {
@@ -95,5 +103,39 @@ test("duplicate rows retain HIGH confidence even when MEDIUM arrives first", () 
 test("rescue selection prefers visible evidence with more observed touches", () => {
   const first = (precision().liquidityShield as Record<string, unknown>);
   const rescue = { ...first, zones: [{ ...(first.zones as Record<string, unknown>[])[0], touchPoints: [{ x: 20, y: 65 }, { x: 40, y: 65 }, { x: 60, y: 65 }, { x: 80, y: 65 }] }] };
-  assert.equal(choosePrecisionLiquidityShield(first, rescue), rescue);
+  assert.equal(choosePrecisionLiquidityShield(first, rescue, precision(), "2900"), rescue);
+});
+
+test("a richer raw rescue cannot replace a first-pass shield when its candle rows fail verification", () => {
+  const first = precision().liquidityShield as Record<string, unknown>;
+  const firstZone = (first.zones as Record<string, unknown>[])[0];
+  const rescue = {
+    ...first,
+    zones: [{
+      ...firstZone,
+      label: "Raw rescue with more touches on the wrong row",
+      touchPoints: [{ x: 20, y: 55 }, { x: 35, y: 55 }, { x: 50, y: 55 }, { x: 65, y: 55 }, { x: 80, y: 55 }],
+    }],
+  };
+
+  assert.equal(choosePrecisionLiquidityShield(first, rescue, precision(), "2900"), first);
+});
+
+test("a verified no-zone first pass survives an invalid visible rescue", () => {
+  const first = {
+    status: "NO_VISIBLE_RISK_ZONES",
+    summary: "No defensible cluster is visible.",
+    stopGuidance: "Use the setup invalidation.",
+    zones: [],
+  };
+  const visible = precision().liquidityShield as Record<string, unknown>;
+  const rescue = {
+    ...visible,
+    zones: (visible.zones as Record<string, unknown>[]).map((zone) => ({
+      ...zone,
+      touchPoints: [{ x: 25, y: 55 }, { x: 48, y: 55 }, { x: 70, y: 55 }],
+    })),
+  };
+
+  assert.equal(choosePrecisionLiquidityShield(first, rescue, precision(), "2900"), first);
 });

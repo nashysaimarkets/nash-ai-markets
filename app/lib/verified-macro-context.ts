@@ -101,6 +101,7 @@ function resolveStatus(input: {
 export async function getVerifiedMacroContext(input?: {
   now?: () => number;
   route?: string;
+  signal?: AbortSignal;
   providers?: {
     observationProviders?: readonly ScalarObservationProvider[];
     releaseProviders?: readonly EconomicReleaseProvider[];
@@ -134,9 +135,13 @@ export async function getVerifiedMacroContext(input?: {
     ];
 
     const [observationsResult, calendarResult] = await Promise.all([
-      aggregateOfficialObservations(observationProviders),
-      aggregateOfficialEconomicCalendar(releaseProviders, from, to),
+      aggregateOfficialObservations(observationProviders, input?.signal),
+      aggregateOfficialEconomicCalendar(releaseProviders, from, to, input?.signal),
     ]);
+
+    // A request/deadline abort is not an authoritative provider result and
+    // must never poison the shared 15-minute cache with an empty snapshot.
+    input?.signal?.throwIfAborted();
 
     const availableSources = new Set<string>();
     const unavailableSources = new Set<string>(EXCLUDED_SOURCES);

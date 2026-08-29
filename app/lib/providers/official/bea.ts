@@ -118,14 +118,14 @@ export function createBeaObservationProvider(options: BeaProviderOptions): Scala
   const now = options.now ?? Date.now;
   return {
     name: BEA_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       if (!options.apiKey.trim()) return [];
       const retrievedMs = now();
       const retrievedAt = new Date(retrievedMs).toISOString();
       const year = new Date(retrievedMs).getUTCFullYear();
 
       const load = async (url: URL): Promise<unknown> => {
-        const response = await fetchImpl(url, { headers: { Accept: "application/json" }, cache: "no-store" });
+        const response = await fetchImpl(url, { headers: { Accept: "application/json" }, cache: "no-store", signal });
         if (!response.ok) return null;
         return response.json().catch(() => null);
       };
@@ -188,11 +188,12 @@ export function createBeaReleaseCalendarProvider(
   const fetchImpl = options.fetchImpl ?? fetch;
   return {
     name: BEA_PROVIDER_NAME,
-    async fetchUpcomingReleases(from, to) {
+    async fetchUpcomingReleases(from, to, signal?: AbortSignal) {
       try {
         const response = await fetchImpl(BEA_RELEASE_DATES_ENDPOINT, {
           headers: { Accept: "application/json" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         return normalizeBeaReleaseDates(await response.json().catch(() => null), from, to);

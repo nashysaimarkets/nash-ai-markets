@@ -34,10 +34,10 @@ test("verified Liquidity Guard renders source chart, risk band, touch evidence a
   assert.match(html, /data-touch="true"/);
   assert.match(html, /BELOW CURRENT/);
   assert.match(html, /SCALE-CHECKED AREA/);
-  assert.doesNotMatch(html, /PRECISION HOLD/);
+  assert.doesNotMatch(html, /OVERLAY WITHHELD/);
 });
 
-test("poor evidence renders Precision Hold and no vector overlay", () => {
+test("poor evidence leaves the source chart unobstructed and explains the withheld overlay once", () => {
   const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
     ...base,
     evidenceQuality: { chartReadability: "POOR", candlesReadable: false },
@@ -57,8 +57,39 @@ test("poor evidence renders Precision Hold and no vector overlay", () => {
       }],
     },
   }}/>)
-  assert.match(html, /PRECISION HOLD/);
-  assert.match(html, /No candidate survived scale, side, candle-row and readability verification/);
+  assert.match(html, /data-status="withheld"/);
+  assert.match(html, /OVERLAY WITHHELD/);
+  assert.match(html, /Bullseye could not verify a stop-risk zone precisely enough/);
+  assert.equal(html.match(/Bullseye could not verify a stop-risk zone precisely enough/g)?.length, 1);
   assert.doesNotMatch(html, /psLiquidityVector/);
+  assert.doesNotMatch(html, /psLiquidityHold/);
+  assert.doesNotMatch(html, /HIDE OVERLAY/);
+  assert.doesNotMatch(html, /No candidate survived scale, side, candle-row and readability verification/);
   assert.doesNotMatch(html, /Untrusted guidance/);
+});
+
+test("a completed scan with no visible cluster is distinct from withheld evidence", () => {
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
+    ...base,
+    liquidityShield: {
+      status: "NO_VISIBLE_RISK_ZONES",
+      summary: "No cluster was visible.",
+      stopGuidance: "Use the setup invalidation.",
+      zones: [],
+    },
+  }}/>)
+  assert.match(html, /data-status="verified-none"/);
+  assert.match(html, /NO CLEAR STOP-RISK CLUSTER/);
+  assert.match(html, /Nothing has been added to your chart/);
+  assert.doesNotMatch(html, /OVERLAY WITHHELD/);
+  assert.doesNotMatch(html, /psLiquidityVector/);
+});
+
+test("a missing Liquidity Guard result reports unavailable without covering the chart", () => {
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base}/>)
+  assert.match(html, /data-status="unavailable"/);
+  assert.match(html, /LIQUIDITY GUARD UNAVAILABLE/);
+  assert.match(html, /Your chart remains unchanged/);
+  assert.doesNotMatch(html, /psLiquidityHold/);
+  assert.doesNotMatch(html, /psLiquidityVector/);
 });

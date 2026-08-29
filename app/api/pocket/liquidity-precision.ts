@@ -3,6 +3,7 @@ type JsonRecord = Record<string, unknown>;
 const SIDES = new Set(["ABOVE_PRICE", "BELOW_PRICE"]);
 const PATTERNS = new Set(["EQUAL_HIGHS", "EQUAL_LOWS", "SWING_CLUSTER", "RANGE_EDGE", "SESSION_EXTREME", "ROUND_NUMBER"]);
 const CONFIDENCE = new Set(["HIGH", "MEDIUM"]);
+const PLAIN_NUMERIC_PRICE = /^-?(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+,\d{1,2})$/;
 
 type Bounds = { left: number; top: number; right: number; bottom: number };
 type Anchor = { price: number; y: number };
@@ -19,7 +20,10 @@ export function numericPrice(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value !== "string") return null;
   const source = value.trim().replace(/[−–—]/g, "-").replace(/[’'\s]/g, "");
-  if (!source) return null;
+  // Parse the complete normalized value. Number() alone accepts exponent
+  // notation and the old fallback parser accepted numeric substrings inside
+  // annotations, neither of which is an exact price read from the chart.
+  if (!source || !PLAIN_NUMERIC_PRICE.test(source)) return null;
   const commaDecimal = /^-?\d+,\d{1,2}$/.test(source) && !source.includes(".");
   const normalized = commaDecimal ? source.replace(",", ".") : source.replaceAll(",", "");
   const parsed = Number(normalized);
@@ -27,12 +31,13 @@ export function numericPrice(value: unknown) {
 }
 
 export function isPlainNumericPrice(value: string) {
-  return /^-?(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+,\d{1,2})$/.test(value) && numericPrice(value) !== null;
+  return PLAIN_NUMERIC_PRICE.test(value) && numericPrice(value) !== null;
 }
 
 export function correctedCurrentPrice(correction: { categories: string[]; correction: string } | null) {
-  if (!correction?.categories.includes("CURRENT_PRICE")) return null;
-  const candidate = correction.correction.replace(/[−–—]/g, "-").match(/-?\d[\d,.]*/)?.[0] ?? "";
+  if (!correction || correction.categories.length !== 1 || correction.categories[0] !== "CURRENT_PRICE") return null;
+  const match = correction.correction.trim().replace(/[−–—]/g, "-").match(/^\s*(?:(?:current\s*price|price)\s*(?::|=)?\s*)?(-?(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?))\s*$/i);
+  const candidate = match?.[1] ?? "";
   return isPlainNumericPrice(candidate) ? candidate : null;
 }
 
@@ -82,9 +87,7 @@ function verifiedScale(value: unknown, bounds: Bounds) {
   return { project };
 }
 
-function rawShieldRank(value: unknown) {
-  if (!value || typeof value !== "object") return 0;
-  const shield = value as JsonRecord;
+function normalizedShieldRank(shield: { status: string; zones?: unknown[] }) {
   if (shield.status === "VISIBLE_RISK_ZONES" && Array.isArray(shield.zones)) {
     return 20 + shield.zones.reduce<number>((total, zone) => {
       const touchPoints = zone && typeof zone === "object" ? (zone as JsonRecord).touchPoints : null;
@@ -94,8 +97,25 @@ function rawShieldRank(value: unknown) {
   return shield.status === "NO_VISIBLE_RISK_ZONES" ? 10 : 1;
 }
 
-export function choosePrecisionLiquidityShield(first: unknown, rescue: unknown) {
-  return rawShieldRank(rescue) > rawShieldRank(first) ? rescue : first;
+export function choosePrecisionLiquidityShield(
+  first: unknown,
+  rescue: unknown,
+  geometry: JsonRecord | null,
+  currentPriceText: string | null = null,
+) {
+  // A retry can look richer in raw model output while failing the exact scale,
+  // side or candle-row checks. Rank only the candidates that survive against
+  // the geometry actually selected for the result, otherwise a bad retry can
+  // erase a valid first-pass Liquidity Guard zone.
+  const normalizedFirst = normalizePrecisionLiquidityShield(
+    geometry ? { ...geometry, liquidityShield: first } : null,
+    currentPriceText,
+  );
+  const normalizedRescue = normalizePrecisionLiquidityShield(
+    geometry ? { ...geometry, liquidityShield: rescue } : null,
+    currentPriceText,
+  );
+  return normalizedShieldRank(normalizedRescue) > normalizedShieldRank(normalizedFirst) ? rescue : first;
 }
 
 export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, currentPriceText: string | null) {

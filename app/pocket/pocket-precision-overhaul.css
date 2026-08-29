@@ -351,3 +351,131 @@
     transition-duration: .01ms !important;
   }
 }
+
+/* Strict Decision Map hold — rendered as a separate component so no current
+   price badge, route or level primitive can sit behind the customer message. */
+.psDecisionMapHold {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 250px;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .72rem;
+  padding: clamp(1.2rem, 4vw, 2.35rem);
+  border: 1px solid rgba(255, 211, 106, .36);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 86% 16%, rgba(255, 211, 106, .13), transparent 34%),
+    radial-gradient(circle at 8% 100%, rgba(72, 220, 255, .08), transparent 42%),
+    linear-gradient(145deg, rgba(14, 26, 35, .98), rgba(6, 13, 21, .99));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .045), 0 24px 65px rgba(0, 0, 0, .3);
+}
+
+.psDecisionMapHold::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -4rem;
+  bottom: -4rem;
+  width: 11rem;
+  height: 11rem;
+  border: 1px solid rgba(255, 211, 106, .1);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.7rem rgba(255, 211, 106, .025), 0 0 0 3.4rem rgba(89, 226, 255, .018);
+}
+
+.psDecisionMapHold > span,
+.psDecisionMapHold > small {
+  color: var(--ps-precision-gold);
+  font: 900 max(.65rem, 11px)/1.3 var(--font-geist-mono), monospace;
+  letter-spacing: .13em;
+}
+
+.psDecisionMapHold > strong {
+  max-width: 30ch;
+  color: #f7fbfd;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+
+.psDecisionMapHold > p {
+  max-width: 67ch;
+  margin: 0;
+  color: #b8c7cf;
+  font-size: max(.88rem, 14px);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.psDecisionMapHold > nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  width: 100%;
+}
+
+.psDecisionMapHold > :is(button, nav a) {
+  display: inline-flex;
+  min-height: 46px;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: .75rem 1rem;
+  border: 1px solid rgba(83, 243, 173, .45);
+  border-radius: .72rem;
+  background: linear-gradient(135deg, rgba(28, 91, 69, .42), rgba(11, 38, 36, .88));
+  color: #c8ffe2;
+  font: 900 max(.65rem, 11px)/1.25 var(--font-geist-mono), monospace;
+  letter-spacing: .075em;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+}
+
+.psDecisionMapHold > nav a:last-child {
+  border-color: rgba(255, 211, 106, .42);
+  background: linear-gradient(135deg, rgba(98, 75, 22, .4), rgba(40, 31, 13, .82));
+  color: #ffe5a1;
+}
+
+.psDecisionMapHold > :is(button, nav a):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+}
+
+.psDecisionMapHold > small {
+  color: #738995;
+  letter-spacing: .09em;
+}
+
+.psBattleFocus > .psDecisionMapHold {
+  flex: 0 0 auto;
+  margin: .8rem;
+}
+
+.psDecisionMapHoldExpanded {
+  min-height: 280px;
+}
+
+@media (max-width: 520px) {
+  .psDecisionMapHold,
+  .psDecisionMapHoldExpanded {
+    min-height: 0;
+    margin: 0;
+    padding: 1.25rem 1rem;
+    border-radius: .9rem;
+  }
+
+  .psBattleFocus > .psDecisionMapHold { margin: .65rem; }
+
+  .psDecisionMapHold > strong { font-size: 1.4rem; }
+
+  .psDecisionMapHold > nav { display: grid; grid-template-columns: 1fr; }
+
+  .psDecisionMapHold > :is(button, nav a) { width: 100%; }
+}
