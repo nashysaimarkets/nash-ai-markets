@@ -8,7 +8,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = CAPBridgeViewController()
+        // Always boot through the application bridge subclass. Creating a bare
+        // CAPBridgeViewController here silently skips PocketStoreKitPlugin
+        // registration even when Main.storyboard names the custom class.
+        window?.rootViewController = PocketBridgeViewController()
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)

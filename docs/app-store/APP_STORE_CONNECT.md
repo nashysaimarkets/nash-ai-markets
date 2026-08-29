@@ -65,36 +65,38 @@ Terms of Use: https://www.nashaimarkets.com/terms
 ### URLs
 
 - Support URL: `https://www.nashaimarkets.com/contact`
-- Marketing URL: `https://pocket.nashaimarkets.com/pocket/founding`
+- Marketing URL: `https://pocket.nashaimarkets.com/pocket`
 - Privacy Policy URL: `https://www.nashaimarkets.com/privacy`
 
 ## App review notes
 
 Pocket Bullseye analyses screenshots supplied by the reviewer. It does not place trades, connect to a broker or display live executable prices.
 
+The iOS Pocket Bullseye experience is accountless. No registration, login, reviewer credentials or developer user account are required. The app does not create an account, so an account-deletion flow is not applicable.
+
 Review flow:
 
-1. Create or use the supplied review account.
-2. Select a clear chart screenshot with an instrument label, timeframe, candles and price scale.
+1. Launch the app and select a clear chart screenshot with an instrument label, timeframe, candles and price scale.
+2. Confirm the chart facts presented by the automatic chart preflight.
 3. Confirm the on-screen Privacy Shield.
 4. Select LONG, SHORT or JUST ANALYSE and run the analysis.
-5. The first completed analysis is free. A second new analysis presents the native Apple subscription screen.
+5. The first completed analysis is free. Attempting another AI analysis presents the native Apple subscription screen.
+6. On the subscription screen, use the Apple purchase button or `RESTORE PURCHASES`.
 
-The app uses the photo library or camera only after the reviewer chooses to add a chart. Account deletion is available in the signed-in profile. Restore Purchases is available from the subscription screen.
+The app requests camera or photo access only after the reviewer chooses the corresponding chart-input control. User-selected chart images are private analysis inputs; they are not published to other users, and the app has no social or user-generated-content feed. The iOS build uses Apple StoreKit for its subscription and does not direct users to an external payment flow.
 
 ## App privacy — provisional declarations for final verification
 
 No data is used to track users across other companies' apps or websites.
 
-- Contact Info — Email Address: account management, linked to identity.
-- Purchases — Purchase History: subscription access and support, linked to identity.
-- Identifiers — User ID: authentication and entitlement, linked to identity.
+- The accountless iOS Pocket experience does not collect an email address or developer user ID for registration, login or entitlement.
+- Purchases — Purchase History: Apple StoreKit entitlement status is used to provide subscription access; confirm App Store Connect linkage classification against the shipping implementation.
 - User Content — Photos or Videos: a selected chart is transmitted for the requested analysis; not used for advertising.
 - User Content — Customer Support: support and feedback supplied by the user.
-- Usage Data — Product Interaction: service operation, security and feature improvement.
-- Diagnostics — Crash and performance data: app functionality and diagnostics.
+- Usage Data — Product Interaction: declare only if the shipping build records it for service operation, security or feature improvement.
+- Diagnostics — Crash and performance data: declare only if enabled in the shipping build or its production SDK configuration.
 
-Confirm actual production retention and diagnostics configuration before submitting the privacy questionnaire.
+These declarations remain provisional. Confirm the shipping build's actual collection, linkage, retention, processor configuration and diagnostics behaviour before submitting the App Privacy questionnaire.
 
 ## Screenshot plan
 
@@ -107,4 +109,3 @@ Use seven 6.9-inch iPhone portrait screenshots:
 5. `Spot patterns and risk`
 6. `Add higher-timeframe context`
 7. `Make the decision yours`
-

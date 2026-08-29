@@ -72,6 +72,10 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             } else {
                 product = try await Product.products(for: [productId]).first
             }
+            guard let product else {
+                call.reject("Pocket Bullseye Monthly is temporarily unavailable from Apple.")
+                return
+            }
             var active: Transaction?
             for await result in Transaction.currentEntitlements {
                 guard case .verified(let transaction) = result,
@@ -85,8 +89,8 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 "entitled": active != nil,
                 "freeUseConsumed": readKeychain() != nil,
                 "productId": productId,
-                "displayName": product?.displayName ?? "Pocket Bullseye Monthly",
-                "displayPrice": product?.displayPrice ?? "£4.99"
+                "displayName": product.displayName,
+                "displayPrice": product.displayPrice
             ]
             if let transaction = active {
                 payload["transactionId"] = String(transaction.id)

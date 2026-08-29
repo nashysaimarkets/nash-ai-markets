@@ -27,11 +27,9 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>Pocket Bullseye uses the camera only when you choose to photograph a chart for analysis.</string>
+	<string>Pocket Bullseye uses the camera only after you choose to photograph a chart and sends that selected image for your requested AI analysis.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Pocket Bullseye lets you select a chart screenshot for analysis.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Pocket Bullseye can save a result image to your photo library when you request it.</string>
+	<string>Pocket Bullseye lets you choose a chart screenshot and sends only that selected image for your requested AI analysis.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

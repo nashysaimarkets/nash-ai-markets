@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useSyncExternalStore, useState } from "react";
 import { ACCURACY_STORAGE_KEY, accuracySummary, benchmarkCandidates, readAccuracyFeedback, type AccuracyCategory, type AccuracyFeedback } from "./accuracy-feedback";
 
 type AccuracyAnalysis = {
@@ -19,17 +19,56 @@ const categories: { value: AccuracyCategory; label: string }[] = [
   { value: "CHART_READING", label: "Chart reading" },
 ];
 
-export default function AccuracyFeedbackPanel({ analysis, onApplyCorrection, onReanalyse, reanalysing = false }: { analysis: AccuracyAnalysis; onApplyCorrection: (feedback: AccuracyFeedback) => void; onReanalyse: () => void; reanalysing?: boolean }) {
-  const fingerprint = useMemo(() => JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]), [analysis]);
-  const [items, setItems] = useState<AccuracyFeedback[]>([]);
+type AccuracyFeedbackPanelProps = { analysis: AccuracyAnalysis; onApplyCorrection: (feedback: AccuracyFeedback) => void; onReanalyse: () => void; reanalysing?: boolean };
+
+const EMPTY_ACCURACY_FEEDBACK: AccuracyFeedback[] = [];
+const accuracyFeedbackListeners = new Set<() => void>();
+let cachedAccuracyFeedbackRaw: string | null | undefined;
+let cachedAccuracyFeedback = EMPTY_ACCURACY_FEEDBACK;
+
+function getAccuracyFeedbackSnapshot() {
+  if (typeof window === "undefined") return EMPTY_ACCURACY_FEEDBACK;
+  const raw = window.localStorage.getItem(ACCURACY_STORAGE_KEY);
+  if (raw !== cachedAccuracyFeedbackRaw) {
+    cachedAccuracyFeedbackRaw = raw;
+    cachedAccuracyFeedback = readAccuracyFeedback(raw);
+  }
+  return cachedAccuracyFeedback;
+}
+
+function getAccuracyFeedbackServerSnapshot() {
+  return EMPTY_ACCURACY_FEEDBACK;
+}
+
+function subscribeAccuracyFeedback(onStoreChange: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.storageArea === window.localStorage && (event.key === ACCURACY_STORAGE_KEY || event.key === null)) onStoreChange();
+  };
+  accuracyFeedbackListeners.add(onStoreChange);
+  window.addEventListener("storage", handleStorage);
+  return () => {
+    accuracyFeedbackListeners.delete(onStoreChange);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
+function notifyAccuracyFeedback() {
+  for (const listener of accuracyFeedbackListeners) listener();
+}
+
+export default function AccuracyFeedbackPanel(props: AccuracyFeedbackPanelProps) {
+  const { analysis } = props;
+  const fingerprint = JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]);
+  return <AccuracyFeedbackForAnalysis key={fingerprint} {...props} />;
+}
+
+function AccuracyFeedbackForAnalysis({ analysis, onApplyCorrection, onReanalyse, reanalysing = false }: AccuracyFeedbackPanelProps) {
+  const items = useSyncExternalStore(subscribeAccuracyFeedback, getAccuracyFeedbackSnapshot, getAccuracyFeedbackServerSnapshot);
   const [mode, setMode] = useState<"IDLE" | "CORRECTING" | "SAVED">("IDLE");
   const [selected, setSelected] = useState<AccuracyCategory[]>([]);
   const [correction, setCorrection] = useState("");
   const [note, setNote] = useState("");
   const [savedEntry, setSavedEntry] = useState<AccuracyFeedback | null>(null);
-
-  useEffect(() => { setItems(readAccuracyFeedback(localStorage.getItem(ACCURACY_STORAGE_KEY))); }, []);
-  useEffect(() => { setMode("IDLE"); setSelected([]); setCorrection(""); setNote(""); setSavedEntry(null); }, [fingerprint]);
 
   const snapshot = () => ({
     instrument: analysis.instrument,
@@ -51,9 +90,11 @@ export default function AccuracyFeedbackPanel({ analysis, onApplyCorrection, onR
       snapshot: snapshot(),
     };
     const next = [entry, ...items].slice(0, 100);
-    localStorage.setItem(ACCURACY_STORAGE_KEY, JSON.stringify(next));
+    const raw = JSON.stringify(next);
+    localStorage.setItem(ACCURACY_STORAGE_KEY, raw);
     localStorage.setItem("pocket-bullseye-benchmark-candidates-v1", JSON.stringify(benchmarkCandidates(next)));
-    setItems(next); setSavedEntry(entry); setMode("SAVED");
+    cachedAccuracyFeedbackRaw = raw; cachedAccuracyFeedback = next; notifyAccuracyFeedback();
+    setSavedEntry(entry); setMode("SAVED");
     if (verdict === "NEEDS_CORRECTION") onApplyCorrection(entry);
   };
 
