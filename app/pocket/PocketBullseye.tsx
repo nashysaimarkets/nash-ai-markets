@@ -980,9 +980,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     && appleAccess.freeUseConsumed
     && !appleAccess.entitled,
   );
-  const appleCanRunPreflight = !nativeAppleApp || Boolean(
-    appleAccess?.isNative && (appleAccess.entitled || !appleAccess.freeUseConsumed),
-  );
+  const appleCanRunPreflight = !nativeAppleApp || !appleNeedsSubscription;
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
