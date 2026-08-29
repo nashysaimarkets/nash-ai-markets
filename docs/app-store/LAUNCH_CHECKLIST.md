@@ -35,9 +35,9 @@
 - [ ] Add server-side StoreKit transaction/JWS verification, App Store Server Notifications and App Attest before relying on the public API as the entitlement security boundary. This requires real App Store Connect issuer/key material and must not be simulated in source.
 - [ ] Add server-side per-device/app-attestation rate controls for the public analysis endpoints. The current native gate is enforced in the client UI; direct API access remains a separate hardening item.
 - [ ] Test purchase, renewal, cancellation, billing retry, expiry and restore in Sandbox.
-- [ ] Push the final web revision and wait for its immutable Vercel deployment URL.
-- [ ] Verify that deployment end to end, then set `CAPACITOR_SERVER_URL` to its `/pocket` URL and `CAPACITOR_SERVER_REVISION` to the exact 40-character deployed Git SHA in Codemagic before starting the archive.
-- [ ] Retain the build-manifest verification output with the TestFlight evidence; never substitute the mutable production domain or a `-git-` branch alias.
+- [x] Push the final web revision and wait for its immutable Vercel deployment URL.
+- [x] Verify that deployment end to end, then pin `CAPACITOR_SERVER_URL` and `CAPACITOR_SERVER_REVISION` in `docs/app-store/release-pin.json` for Codemagic (`26c986eb…` at `https://nash-ai-markets-hhi4ared3-nash-ai-markets.vercel.app/pocket`, verified 29 August 2026).
+- [x] Retain the build-manifest verification output with the TestFlight evidence; never substitute the mutable production domain or a `-git-` branch alias.
 - [ ] Build and archive on a signed Mac/Xcode installation.
 - [ ] Upload to TestFlight and complete an iPhone regression pass.
 - [ ] Attach final screenshots, build and subscription to the App Store version.

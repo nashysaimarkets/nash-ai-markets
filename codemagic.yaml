@@ -33,6 +33,7 @@ workflows:
           test -f ios/NativeWeb/index.html
       - name: Synchronise verified bundle into Capacitor iOS
         script: |
+          eval "$(node scripts/load-release-pin.mjs)"
           node scripts/verify-capacitor-server.mjs
           npx cap sync ios
       - name: Apply App Store signing profiles

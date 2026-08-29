@@ -92,18 +92,21 @@ test("the app privacy manifest declares only the host UserDefaults reason", asyn
 });
 
 test("clean iOS CI builds dist before Capacitor sync", async () => {
-  const [pipeline, capacitor, fallback, verifier, manifest] = await Promise.all([
+  const [pipeline, capacitor, fallback, verifier, manifest, pinLoader, pin] = await Promise.all([
     readFile(new URL("codemagic.yaml", root), "utf8"),
     readFile(new URL("capacitor.config.ts", root), "utf8"),
     readFile(new URL("ios/NativeWeb/index.html", root), "utf8"),
     readFile(new URL("scripts/verify-capacitor-server.mjs", root), "utf8"),
     readFile(new URL("app/api/pocket/build-manifest/route.ts", root), "utf8"),
+    readFile(new URL("scripts/load-release-pin.mjs", root), "utf8"),
+    readFile(new URL("docs/app-store/release-pin.json", root), "utf8"),
   ]);
   const build = pipeline.indexOf("npm run build");
   const artifact = pipeline.indexOf("test -f dist/server/index.js");
+  const loadPin = pipeline.indexOf("load-release-pin.mjs");
   const verify = pipeline.indexOf("node scripts/verify-capacitor-server.mjs");
   const sync = pipeline.indexOf("npx cap sync ios");
-  assert.ok(build >= 0 && artifact > build && verify > artifact && sync > verify);
+  assert.ok(build >= 0 && artifact > build && loadPin > artifact && verify > loadPin && sync > verify);
   assert.match(capacitor, /webDir: "ios\/NativeWeb"/);
   assert.match(capacitor, /process\.env\.CAPACITOR_SERVER_URL/);
   assert.match(capacitor, /process\.env\.CAPACITOR_SERVER_REVISION/);
@@ -114,4 +117,9 @@ test("clean iOS CI builds dist before Capacitor sync", async () => {
   assert.match(manifest, /VERCEL_GIT_COMMIT_SHA/);
   assert.match(manifest, /cache-control": "no-store"/);
   assert.match(fallback, /No chart has been sent/);
+  assert.match(pinLoader, /release-pin\.json/);
+  const parsedPin = JSON.parse(pin);
+  assert.match(parsedPin.serverUrl, /^https:\/\//);
+  assert.match(parsedPin.revision, /^[a-f0-9]{40}$/i);
+  assert.doesNotMatch(parsedPin.serverUrl, /-git-/);
 });
