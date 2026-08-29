@@ -8,6 +8,8 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_MORNING_BRIEF_MODEL` — optional Morning Brief model override.
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
+- `OPENAI_SECOND_OPINION_MODEL` — optional Second Opinion workflow model override.
+- `SECOND_OPINION_PRIVATE_PILOT` — set to `enabled` to turn on the private Second Opinion AI pilot; otherwise the route fails closed.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
 
 ## Supabase
