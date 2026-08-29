@@ -33,11 +33,21 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   useEffect(() => {
     const controller = new AbortController();
     statusHandler.current("CHECKING"); confirmationHandler.current(null);
+    let finished = false;
+    const timeout = window.setTimeout(() => {
+      if (finished) return;
+      finished = true;
+      controller.abort();
+      setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); confirmationHandler.current(null);
+      setMessage("Preflight timed out. You may continue to analysis.");
+    }, 35_000);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
+        if (finished) return;
+        finished = true;
         const next = payload.preflight;
         setResult(next);
         setInstrument(next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument);
@@ -46,16 +56,18 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
         const nextStatus: PreflightStatus = next.status === "RETAKE" ? "RETAKE" : "AWAITING_CONFIRMATION";
         setStatus(nextStatus); statusHandler.current(nextStatus);
       } catch (error) {
+        if (finished) return;
         if (error instanceof Error && error.name === "AbortError") return;
+        finished = true;
         setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); confirmationHandler.current(null);
         setMessage(error instanceof Error ? error.message : "Preflight unavailable");
       }
     }, 300);
-    return () => { window.clearTimeout(timer); controller.abort(); };
+    return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); controller.abort(); };
   }, [image, contextImage]);
 
-  if (status === "CHECKING") return <section className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
-  if (status === "UNAVAILABLE") return <section className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message} Full analysis remains available.</p></section>;
+  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
+  if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message} Full analysis remains available.</p></section>;
   if (!result) return null;
 
   const locked = status === "LOCKED";
@@ -72,7 +84,7 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   };
   const edit = () => { setStatus("AWAITING_CONFIRMATION"); statusHandler.current("AWAITING_CONFIRMATION"); confirmationHandler.current(null); };
 
-  return <section className="psPreflight" data-status={result.status} data-locked={locked}>
+  return <section id="pocket-preflight-lock" className="psPreflight" data-status={result.status} data-locked={locked}>
     <header><span>◉ PREFLIGHT CONFIRMATION LOCK</span><strong>{result.status === "RETAKE" ? "RETAKE RECOMMENDED" : locked ? "CHART FACTS LOCKED" : result.status === "LIMITED" ? "CHECK & CONFIRM" : "CONFIRM BEFORE ANALYSIS"}</strong></header>
     <div className="psConfirmGrid">
       <label><span>INSTRUMENT</span><input value={instrument} disabled={locked || result.status === "RETAKE"} maxLength={80} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>

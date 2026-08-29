@@ -48,8 +48,8 @@ test("every additional native AI request requires an Apple entitlement", async (
   }
   assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
-  assert.match(pocket, /const appleCanRunPreflight = !nativeAppleApp \|\| !appleNeedsSubscription;/);
-  assert.match(pocket, /appleCanRunPreflight \? <ChartPreflightPanel/);
+  assert.match(pocket, /image && !reviewTarget \? <ChartPreflightPanel/);
+  assert.doesNotMatch(pocket, /appleCanRunPreflight/);
   assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*setShowApplePaywall\(true\)/);
 });
 

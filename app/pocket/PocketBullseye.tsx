@@ -980,8 +980,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     && appleAccess.freeUseConsumed
     && !appleAccess.entitled,
   );
-  const appleCanRunPreflight = !nativeAppleApp || !appleNeedsSubscription;
-
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
   useEffect(() => {
@@ -1044,6 +1042,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return () => { document.body.style.overflow = previous; };
   }, [immersive, chartFocus, showResultReveal, showResultCard]);
 
+  useEffect(() => {
+    if (!image || reviewTarget || preflightStatus === "IDLE") return;
+    const timer = window.setTimeout(() => {
+      document.getElementById("pocket-preflight-lock")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [image, reviewTarget, preflightStatus]);
+
   async function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -1060,6 +1066,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
     try {
       const prepared = await prepareImage(file);
+      setChartConfirmation(null);
+      setPreflightStatus("IDLE");
       setImage(prepared);
       setFileName(file.name);
     } catch { setError("That image could not be prepared safely."); }
@@ -1715,14 +1723,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <div><span>② OPTIONAL CONTEXT CHART</span><strong>{contextImage ? "HIGHER TIMEFRAME LOADED" : "ADD HIGHER TIMEFRAME"}</strong><p>{contextImage ? contextFileName : "Add a 1-hour, 4-hour or daily view for alignment. Skip to keep analysis fast and data-light."}</p></div>
           {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
         </section> : null}
-        {image && !reviewTarget && appleCanRunPreflight ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
-        {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple before Bullseye sends this chart for preflight.</p> : null}
+        {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
+        {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM & LOCK CHART FACTS BELOW" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>
