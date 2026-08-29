@@ -86,8 +86,15 @@ export function verifiedLinearScale(items: ScaleAnchor[]) {
   return { low, high, project, count: ordered.length };
 }
 
-/** Applies non-negotiable evidence rules after structured model output. */
-export function calibratePocketAnalysis(value: unknown): unknown {
+/**
+ * Re-apply evidence rules after structured model output.
+ * Callers such as Level Lab may supply a dedicated linear-scale checker;
+ * the default remains the global verifiedLinearScale used by the primary read.
+ */
+export function calibratePocketAnalysis(
+  value: unknown,
+  linearScale: typeof verifiedLinearScale = verifiedLinearScale,
+): unknown {
   if (!value || typeof value !== "object") return value;
   const analysis = value as JsonRecord;
   const quality = analysis.evidenceQuality && typeof analysis.evidenceQuality === "object"
@@ -120,7 +127,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       .flatMap((item) => item && typeof item === "object" ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
       .filter((item): item is { price: number; y: number } => item.price !== null && item.price > 0 && item.y !== null && item.y >= top && item.y <= bottom)
       .sort((a, b) => a.price - b.price) : [];
-    const scale = verifiedLinearScale(anchors);
+    const scale = linearScale(anchors);
     const low = scale?.low;
     const high = scale?.high;
     const calibratedScale = Boolean(scale);
@@ -193,7 +200,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     : [];
   // The dedicated geometry pass is authoritative for numeric overlays. Do not
   // erase its verified prices because the broader prose pass was conservative.
-  const hasVerifiedScale = Boolean(verifiedLinearScale(verifiedAnchors as ScaleAnchor[]));
+  const hasVerifiedScale = Boolean(linearScale(verifiedAnchors as ScaleAnchor[]));
   if (hasVerifiedScale) {
     calibrated.evidenceQuality = { ...quality, scaleReadable: true };
   } else if (quality.scaleReadable === false) {

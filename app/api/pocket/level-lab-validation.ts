@@ -161,7 +161,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
     contradictions: [],
     missingInputs: [],
     setupScore: { overall: 0, grade: "F" },
-  }) as JsonRecord;
+  }, levelLabLinearScale) as JsonRecord;
   const levels = Array.isArray(calibrated.levels)
     ? calibrated.levels.filter((level): level is JsonRecord => Boolean(level && typeof level === "object")
       && ["support", "resistance"].includes(String((level as JsonRecord).kind))

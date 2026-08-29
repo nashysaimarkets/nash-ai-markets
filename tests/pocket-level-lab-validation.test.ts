@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { calibratePocketAnalysis, verifiedLinearScale } from "../app/api/pocket/analysis-calibration.ts";
 import {
   validateLevelLabPrimaryProvenance,
   validateLevelLabScan,
@@ -138,6 +139,153 @@ test("Level Lab can reuse a verified primary scale when the lab photo scale read
   });
   const result = validateLevelLabScan(tightLabScale, primaryWithScale);
   assert.equal(result.ok, true);
+});
+
+const chartBenchmarkFixtures = [
+  {
+    name: "US500 30m range",
+    instrument: "US 500 (DFB)",
+    ticker: "US500",
+    timeframe: "30m",
+    current: "7658",
+    anchors: [{ price: 7690, y: 34 }, { price: 7670, y: 54 }, { price: 7650, y: 74 }],
+    levels: [
+      { kind: "support", label: "Visible floor", price: "7650", x: 5, y: 74, x2: 88, y2: 74 },
+      { kind: "resistance", label: "Visible ceiling", price: "7680", x: 5, y: 44, x2: 88, y2: 44 },
+    ],
+  },
+  {
+    name: "US500 4h structure",
+    instrument: "US 500 (DFB)",
+    ticker: "US500",
+    timeframe: "4h",
+    current: "7658",
+    anchors: [{ price: 7800, y: 22 }, { price: 7650, y: 46 }, { price: 7500, y: 70 }],
+    levels: [
+      { kind: "support", label: "Visible floor", price: "7600", x: 5, y: 54, x2: 88, y2: 54 },
+      { kind: "resistance", label: "Visible ceiling", price: "7800", x: 5, y: 22, x2: 88, y2: 22 },
+    ],
+  },
+  {
+    name: "decimal equity",
+    instrument: "AAPL",
+    ticker: "AAPL",
+    timeframe: "15m",
+    current: "123.45",
+    anchors: [{ price: 126, y: 20 }, { price: 123, y: 50 }, { price: 120, y: 80 }],
+    levels: [
+      { kind: "support", label: "Visible floor", price: "122.50", x: 5, y: 55, x2: 88, y2: 55 },
+      { kind: "resistance", label: "Visible ceiling", price: "125.25", x: 5, y: 27.5, x2: 88, y2: 27.5 },
+    ],
+  },
+] as const;
+
+for (const sample of chartBenchmarkFixtures) {
+  test(`Level Lab preserves both sides from the chart-benchmark fixture: ${sample.name}`, () => {
+    const result = validateLevelLabScan(scan({
+      instrumentIdentifier: sample.instrument,
+      plotBounds: { left: 5, top: 10, right: 88, bottom: 88 },
+      priceScaleAnchors: [...sample.anchors],
+      currentPrice: sample.current,
+      levels: sample.levels.map((level) => ({ ...level })),
+    }), {
+      instrument: sample.instrument,
+      ticker: sample.ticker,
+      timeframe: sample.timeframe,
+      currentPrice: sample.current,
+      identityLocked: true,
+    });
+    assert.equal(result.ok, true, `${sample.name} should still return a usable Level Lab map`);
+    if (!result.ok) return;
+    const levels = result.levels.levels as Array<{ kind: string; price: string }>;
+    assert.ok(levels.some((level) => level.kind === "support" && level.price === sample.levels[0].price));
+    assert.ok(levels.some((level) => level.kind === "resistance" && level.price === sample.levels[1].price));
+    assert.equal((result.levels.trustGate as { status?: string })?.status, "LOCKED");
+  });
+}
+
+test("a readable tight two-label mobile Level Lab scale still returns the US500 30m support and resistance", () => {
+  // Same prices as the US500 30m chart-benchmark fixture, with only the two
+  // outer axis labels visible 16% apart — typical of a zoomed mobile screenshot.
+  const tightAnchors = [{ price: 7690, y: 34 }, { price: 7650, y: 50 }];
+  assert.equal(verifiedLinearScale(tightAnchors), null, "the global primary-read checker must stay strict");
+  const global = calibratePocketAnalysis({
+    currentPrice: "7658",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    plotBounds: { left: 5, top: 10, right: 88, bottom: 88 },
+    priceScaleAnchors: tightAnchors,
+    levels: [
+      { kind: "support", price: "7650", y: 50 },
+      { kind: "resistance", price: "7680", y: 38 },
+    ],
+  }) as { levels: Array<{ price: string }>; trustGate?: { status?: string } };
+  assert.equal(global.levels.every((level) => !level.price), true, "global calibration must not keep unverified exact prices");
+  assert.notEqual(global.trustGate?.status, "LOCKED");
+
+  const result = validateLevelLabScan(scan({
+    instrumentIdentifier: "US 500 (DFB)",
+    plotBounds: { left: 5, top: 10, right: 88, bottom: 88 },
+    priceScaleAnchors: tightAnchors,
+    currentPrice: "7658",
+    levels: [
+      { kind: "support", label: "Visible floor", price: "7650", x: 5, y: 50, x2: 88, y2: 50 },
+      { kind: "resistance", label: "Visible ceiling", price: "7680", x: 5, y: 38, x2: 88, y2: 38 },
+    ],
+  }), {
+    instrument: "US 500 (DFB)",
+    ticker: "US500",
+    timeframe: "30m",
+    currentPrice: "7658",
+    identityLocked: true,
+  });
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const levels = result.levels.levels as Array<{ kind: string; price: string }>;
+  assert.deepEqual(levels.map((level) => [level.kind, level.price]), [
+    ["support", "7650"],
+    ["resistance", "7680"],
+  ]);
+});
+
+test("Level Lab keeps exact levels when a third axis label has small mobile vision jitter", () => {
+  const jittered = [{ price: 90, y: 80 }, { price: 100, y: 47 }, { price: 110, y: 20 }];
+  assert.equal(verifiedLinearScale(jittered), null, "3.0px axis jitter must still fail the global checker");
+  const result = validateLevelLabScan(scan({
+    priceScaleAnchors: jittered,
+    levels: [
+      { kind: "support", label: "Visible floor", price: "95", x: 5, y: 65, x2: 90, y2: 65 },
+      { kind: "resistance", label: "Visible ceiling", price: "105", x: 5, y: 35, x2: 90, y2: 35 },
+    ],
+  }), primary);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  const levels = result.levels.levels as Array<{ kind: string; price: string }>;
+  assert.deepEqual(levels.map((level) => [level.kind, level.price]), [
+    ["support", "95"],
+    ["resistance", "105"],
+  ]);
+});
+
+test("a clearly non-linear three-label scale still fails closed and does not invent prices", () => {
+  // Existing precision-fallback fixture: the middle label is 13% off a linear axis.
+  assert.deepEqual(validateLevelLabScan(scan({
+    plotBounds: { left: 5, top: 10, right: 88, bottom: 88 },
+    priceScaleAnchors: [{ price: 7800, y: 20 }, { price: 7650, y: 37 }, { price: 7500, y: 80 }],
+    currentPrice: "7658",
+    levels: [
+      { kind: "support", label: "Visible floor", price: "7600", x: 5, y: 60, x2: 88, y2: 60 },
+      { kind: "resistance", label: "Visible ceiling", price: "7750", x: 5, y: 30, x2: 88, y2: 30 },
+    ],
+  }), {
+    instrument: "US 500 (DFB)",
+    ticker: "US500",
+    timeframe: "30m",
+    currentPrice: "7658",
+    identityLocked: true,
+  }), {
+    ok: false,
+    reason: "PRICE_SCALE_UNVERIFIED",
+  });
 });
 
 test("Level Lab rejects levels that do not align with verified candle rows", () => {
