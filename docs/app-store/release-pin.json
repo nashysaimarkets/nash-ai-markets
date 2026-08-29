@@ -1,11 +1,11 @@
 {
-  "label": "Pocket Bullseye iOS TestFlight 1.0.0 build 5",
-  "revision": "d078b8f377c5cd89621f4619b965353c0fdb0ac2",
+  "label": "Pocket Bullseye iOS TestFlight 1.0.0 build 6",
+  "revision": "5239e41c2ece7be38cd0bc0b5b0cf9fd142234a3",
   "branch": "feat/pocket-app-store-candidate-2026-08-29",
-  "serverUrl": "https://nash-ai-markets-2kje2fp31-nash-ai-markets.vercel.app/pocket",
-  "deploymentId": "8abGXnwdhJaQ15PeX8PYG3mPxLuM",
-  "verifiedAt": "2026-08-29T16:02:00Z",
+  "serverUrl": "https://nash-ai-markets-bwhmrtk8c-nash-ai-markets.vercel.app/pocket",
+  "deploymentId": "7kXz99X9gc4WGLNctRLZ5QY8kXfE",
+  "verifiedAt": "2026-08-29T16:15:00Z",
   "iosTag": "ios-v1.0.0-testflight.1",
   "marketingVersion": "1.0",
-  "buildNumber": "5"
+  "buildNumber": "6"
 }
