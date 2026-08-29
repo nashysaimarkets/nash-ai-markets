@@ -65,39 +65,39 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
 
     private func resolveStatus(_ call: CAPPluginCall, productId: String, product suppliedProduct: Product? = nil) async {
         guard !productId.isEmpty else { call.reject("Missing Apple product identifier."); return }
-        do {
-            let product: Product?
-            if let suppliedProduct {
-                product = suppliedProduct
-            } else {
+
+        let product: Product?
+        if let suppliedProduct {
+            product = suppliedProduct
+        } else {
+            do {
                 product = try await Product.products(for: [productId]).first
+            } catch {
+                product = nil
             }
-            guard let product else {
-                call.reject("Pocket Bullseye Monthly is temporarily unavailable from Apple.")
-                return
-            }
-            var active: Transaction?
-            for await result in Transaction.currentEntitlements {
-                guard case .verified(let transaction) = result,
-                      transaction.productID == productId,
-                      transaction.revocationDate == nil else { continue }
-                active = transaction
-                break
-            }
-            var payload: [String: Any] = [
-                "isNative": true,
-                "entitled": active != nil,
-                "freeUseConsumed": readKeychain() != nil,
-                "productId": productId,
-                "displayName": product.displayName,
-                "displayPrice": product.displayPrice
-            ]
-            if let transaction = active {
-                payload["transactionId"] = String(transaction.id)
-                payload["originalTransactionId"] = String(transaction.originalID)
-            }
-            call.resolve(payload)
-        } catch { call.reject(error.localizedDescription) }
+        }
+
+        var active: Transaction?
+        for await result in Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result,
+                  transaction.productID == productId,
+                  transaction.revocationDate == nil else { continue }
+            active = transaction
+            break
+        }
+        var payload: [String: Any] = [
+            "isNative": true,
+            "entitled": active != nil,
+            "freeUseConsumed": readKeychain() != nil,
+            "productId": productId,
+            "displayName": product?.displayName ?? "Pocket Bullseye Monthly",
+            "displayPrice": product?.displayPrice ?? "£4.99"
+        ]
+        if let transaction = active {
+            payload["transactionId"] = String(transaction.id)
+            payload["originalTransactionId"] = String(transaction.originalID)
+        }
+        call.resolve(payload)
     }
 
     private func verified<T>(_ result: VerificationResult<T>) throws -> T {
