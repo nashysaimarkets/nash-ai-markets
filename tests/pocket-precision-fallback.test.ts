@@ -34,9 +34,76 @@ test("keeps first-pass scale when rescue finds levels but loses anchors", () => 
   assert.deepEqual(recovered?.levels, rescue.levels);
 });
 
+test("an unscaled rescue cannot replace the current price from the selected scale", () => {
+  const first = {
+    currentPrice: "7658",
+    priceScaleAnchors: scale,
+    levels: [{ kind: "support", price: "7600", y: 60 }],
+  };
+  const rescue = {
+    currentPrice: "7590",
+    priceScaleAnchors: [],
+    levels: [{ kind: "resistance", price: "7620", y: 55 }],
+  };
+  assert.equal(recoverPrecisionGeometry(first, rescue)?.currentPrice, first.currentPrice);
+});
+
+test("a selected scale without a current marker never borrows one from an unscaled pass", () => {
+  const first = {
+    currentPrice: "",
+    priceScaleAnchors: scale,
+    levels: [{ kind: "support", price: "7600", y: 60 }],
+  };
+  const rescue = {
+    currentPrice: "7590",
+    priceScaleAnchors: [],
+    levels: [{ kind: "resistance", price: "7620", y: 55 }],
+  };
+  assert.equal(recoverPrecisionGeometry(first, rescue)?.currentPrice, "");
+});
+
+test("annotated and exponent prices cannot enter recovered exact geometry", () => {
+  const precision = {
+    priceScaleAnchors: scale,
+    levels: [
+      { kind: "support", price: "$7600" },
+      { kind: "support", price: "7600 USD" },
+      { kind: "support", price: "7.6e3" },
+      { kind: "support", price: "7600" },
+    ],
+  };
+  assert.deepEqual(recoverPrecisionGeometry({}, precision)?.levels, [{ kind: "support", price: "7600" }]);
+});
+
+test("a duplicate from an unscaled rescue cannot displace first-pass geometry", () => {
+  const first = {
+    priceScaleAnchors: scale,
+    levels: [{ kind: "support", label: "first-pass row", price: "7600", y: 60 }],
+  };
+  const rescue = {
+    priceScaleAnchors: [],
+    levels: [{ kind: "support", label: "crop-relative row", price: "7600", y: 78 }],
+  };
+  assert.deepEqual(recoverPrecisionGeometry(first, rescue)?.levels, first.levels);
+});
+
 test("does not recover levels without two usable scale labels", () => {
   const precision = { levels: [], priceScaleAnchors: [{ price: 7800, y: 20 }] };
-  assert.equal(recoverPrecisionGeometry({ levels: [{ kind: "support", price: "7600" }] }, precision), precision);
+  assert.equal(recoverPrecisionGeometry({ levels: [{ kind: "support", price: "7600" }] }, precision), null);
+});
+
+test("a rejected raw precision scale cannot overwrite the verified report current price", () => {
+  const report = {
+    currentPrice: "100",
+    priceScaleAnchors: [{ price: 110, y: 20 }, { price: 100, y: 50 }, { price: 90, y: 80 }],
+    levels: [{ kind: "support", price: "85" }, { kind: "support", price: "95" }],
+  };
+  const rawPrecision = {
+    currentPrice: "90",
+    priceScaleAnchors: [{ price: 110, y: 20 }, { price: 90, y: 20 }],
+    levels: [{ kind: "support", price: "85" }, { kind: "resistance", price: "95" }],
+  };
+  assert.equal(recoverPrecisionGeometry(report, rawPrecision)?.currentPrice, "100");
 });
 
 test("accepts two widely separated exact scale labels", () => {

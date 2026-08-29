@@ -98,7 +98,7 @@ export function createCensusObservationProvider(options: CensusProviderOptions):
 
   return {
     name: CENSUS_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       if (!options.apiKey.trim()) return [];
       const retrievedMs = now();
       const retrievedAt = new Date(retrievedMs).toISOString();
@@ -108,6 +108,7 @@ export function createCensusObservationProvider(options: CensusProviderOptions):
         const response = await fetchImpl(queryUrl(options.apiKey, query, year), {
           headers: { Accept: "application/json" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         const payload: unknown = await response.json().catch(() => null);

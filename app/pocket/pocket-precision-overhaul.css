@@ -1,0 +1,481 @@
+/* Precision Overhaul — final presentation layer. Scanner/calibration logic is intentionally untouched. */
+.psApp {
+  --ps-precision-cyan: #7cf8ff;
+  --ps-precision-blue: #42a8ff;
+  --ps-precision-gold: #ffd36a;
+  --ps-precision-red: #ff6278;
+  --ps-precision-green: #53f3ad;
+  --ps-precision-panel: rgba(8, 16, 27, .9);
+  --ps-precision-line: rgba(156, 225, 255, .18);
+  color: #f4fbff;
+  background:
+    radial-gradient(circle at 12% 3%, rgba(40, 176, 255, .2), transparent 30rem),
+    radial-gradient(circle at 92% 18%, rgba(76, 255, 206, .1), transparent 25rem),
+    #030810;
+}
+
+.psApp :is(button, a, input, select, summary):focus-visible {
+  outline: 3px solid var(--ps-precision-cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(78, 226, 255, .16);
+}
+
+.psDataNote {
+  font-size: max(.83rem, 13px);
+  line-height: 1.6;
+}
+
+.psDataNote a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: #c4e7f8;
+  font-weight: 800;
+  text-underline-offset: 4px;
+}
+
+.psResults,
+.psScanner {
+  isolation: isolate;
+}
+
+.psWrittenReport {
+  position: relative;
+  width: min(100%, 1100px);
+  margin-inline: auto;
+  padding-bottom: max(5rem, env(safe-area-inset-bottom));
+}
+
+.psWrittenReport::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(103, 205, 255, .035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(103, 205, 255, .035) 1px, transparent 1px);
+  background-size: 36px 36px;
+  mask-image: linear-gradient(to bottom, #000, transparent 75%);
+}
+
+.psResultViewSwitch,
+.psReportRail {
+  scrollbar-width: none;
+}
+
+.psResultViewSwitch::-webkit-scrollbar,
+.psReportRail::-webkit-scrollbar {
+  display: none;
+}
+
+.psReportRail {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  gap: .45rem;
+  overflow-x: auto;
+  padding: .72rem max(.85rem, env(safe-area-inset-left));
+  background: rgba(3, 9, 17, .82);
+  border-block: 1px solid rgba(113, 218, 255, .13);
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+.psReportRail a {
+  flex: 0 0 auto;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .65rem .9rem;
+  border: 1px solid rgba(130, 223, 255, .16);
+  border-radius: 999px;
+  color: #c8deeb;
+  background: rgba(16, 33, 49, .66);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.psReportRail a:first-child {
+  color: #06121d;
+  background: linear-gradient(135deg, var(--ps-precision-cyan), #98ffdd);
+  border-color: transparent;
+  box-shadow: 0 0 24px rgba(80, 225, 255, .22);
+}
+
+.psResultTruthStrip {
+  margin: 1rem .85rem 0;
+  overflow: hidden;
+  border: 1px solid rgba(110, 225, 255, .24);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(145deg, rgba(15, 35, 53, .97), rgba(5, 12, 23, .98)),
+    var(--ps-precision-panel);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .3), inset 0 1px rgba(255, 255, 255, .06);
+}
+
+.psResultTruthStrip > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem 1rem;
+  border-bottom: 1px solid rgba(124, 232, 255, .13);
+  background: linear-gradient(90deg, rgba(39, 180, 235, .16), transparent);
+}
+
+.psResultTruthStrip > header span,
+.psResultTruthStrip > header strong {
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+
+.psResultTruthStrip > header span {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ps-precision-cyan);
+}
+
+.psResultTruthStrip > header i {
+  width: .58rem;
+  height: .58rem;
+  margin-right: .45rem;
+  border-radius: 50%;
+  background: var(--ps-precision-green);
+  box-shadow: 0 0 16px var(--ps-precision-green);
+}
+
+.psResultTruthStrip[data-status="PARTIAL"] > header i {
+  background: var(--ps-precision-gold);
+  box-shadow: 0 0 16px var(--ps-precision-gold);
+}
+
+.psResultTruthStrip[data-status="HOLD"] > header i {
+  background: var(--ps-precision-red);
+  box-shadow: 0 0 16px var(--ps-precision-red);
+}
+
+.psResultTruthStrip > header strong {
+  color: var(--ps-precision-green);
+  text-align: right;
+}
+
+.psResultTruthStrip[data-status="PARTIAL"] > header strong { color: var(--ps-precision-gold); }
+.psResultTruthStrip[data-status="HOLD"] > header strong { color: var(--ps-precision-red); }
+
+.psResultTruthStrip > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.psResultTruthStrip article {
+  min-width: 0;
+  padding: 1rem;
+  border-right: 1px solid rgba(124, 232, 255, .1);
+}
+
+.psResultTruthStrip article:last-child { border-right: 0; }
+
+.psResultTruthStrip article small,
+.psResultTruthStrip article span {
+  display: block;
+  font-size: .65rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+
+.psResultTruthStrip article small { color: #91aabd; }
+
+.psResultTruthStrip article b {
+  display: block;
+  overflow: hidden;
+  margin: .35rem 0;
+  color: #fff;
+  font-size: clamp(.92rem, 2.2vw, 1.18rem);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.psResultTruthStrip article span { color: var(--ps-precision-green); }
+.psResultTruthStrip article[data-verified="false"] span { color: var(--ps-precision-gold); }
+
+.psResultTruthStrip > footer {
+  padding: .75rem 1rem .9rem;
+  color: #b5cad7;
+  border-top: 1px solid rgba(124, 232, 255, .1);
+  font-size: .76rem;
+  line-height: 1.5;
+}
+
+.psReportTools,
+#bullseye-verdict,
+#bullseye-events,
+#bullseye-levels,
+#bullseye-ask,
+#bullseye-feedback {
+  scroll-margin-top: 5.5rem;
+}
+
+.psReportTools,
+.psDecisionEvents,
+.psResultChart,
+.psMissingInputs,
+.psAskBullseye,
+.psJournalCta,
+.psFeedbackTarget {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 650px;
+}
+
+.psWrittenReport :is(p, li, dd, footer) {
+  text-wrap: pretty;
+}
+
+.psWrittenReport :is(.psVerdict, .psDecisionEvents, .psResultChart, .psMissingInputs, .psAskBullseye, .psJournalCta) {
+  border-color: var(--ps-precision-line);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .22), inset 0 1px rgba(255, 255, 255, .035);
+}
+
+.psWrittenReport :is(button, label:has(input[type="file"]), summary) {
+  min-height: 44px;
+}
+
+.psWrittenReport :is(p, li, dd) {
+  font-size: max(.83rem, 13px);
+  line-height: 1.55;
+}
+
+.psWrittenReport :is(small, footer) {
+  line-height: 1.45;
+}
+
+.psLaunchHero {
+  background:
+    radial-gradient(circle at 76% 28%, rgba(81, 238, 255, .17), transparent 28%),
+    linear-gradient(155deg, rgba(14, 34, 54, .98), rgba(3, 9, 17, .98));
+  border-color: rgba(118, 228, 255, .2);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, .38), inset 0 1px rgba(255, 255, 255, .06);
+}
+
+.psLaunchHero .psCopy h1 {
+  color: #f7fcff;
+  text-shadow: 0 0 34px rgba(95, 215, 255, .15);
+}
+
+.psUpload {
+  min-height: 15rem;
+  border-width: 1px;
+  border-color: rgba(112, 226, 255, .34);
+  background:
+    linear-gradient(135deg, rgba(38, 126, 167, .12), transparent 45%),
+    rgba(4, 13, 23, .9);
+  box-shadow: inset 0 0 50px rgba(20, 135, 190, .08), 0 24px 70px rgba(0, 0, 0, .28);
+}
+
+.psUpload:hover {
+  border-color: var(--ps-precision-cyan);
+  box-shadow: inset 0 0 60px rgba(28, 180, 230, .12), 0 0 34px rgba(61, 207, 255, .12);
+}
+
+.psLegal {
+  max-width: 70ch;
+  margin-inline: auto;
+  color: #8fa7b8;
+  font-size: max(.72rem, 12px);
+  line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .psResultViewSwitch {
+    position: sticky;
+    top: 0;
+    z-index: 35;
+    padding-top: env(safe-area-inset-top);
+    background: rgba(2, 7, 13, .92);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .psReportRail { top: calc(44px + env(safe-area-inset-top)); }
+
+  .psResultTruthStrip > header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .4rem;
+  }
+
+  .psResultTruthStrip > header strong { text-align: left; }
+
+  .psResultTruthStrip > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .psResultTruthStrip article:nth-child(2) { border-right: 0; }
+  .psResultTruthStrip article:nth-child(-n + 2) { border-bottom: 1px solid rgba(124, 232, 255, .1); }
+
+  .psWrittenReport :is(.psVerdict, .psDecisionEvents, .psResultChart, .psMissingInputs, .psAskBullseye, .psJournalCta) {
+    margin-inline: .72rem;
+    border-radius: 1.1rem;
+  }
+
+  .psLaunchHero .psCopy h1 { font-size: clamp(2.35rem, 12vw, 4rem); }
+
+  .psLaunchHero .psCopy > span,
+  .psAutoPreview p,
+  .psDataNote {
+    font-size: max(.88rem, 14px);
+    line-height: 1.55;
+  }
+
+  .psOpeningRail { grid-template-columns: 1fr; }
+
+  .psOpeningRail article {
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .psApp *,
+  .psApp *::before,
+  .psApp *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Strict Decision Map hold — rendered as a separate component so no current
+   price badge, route or level primitive can sit behind the customer message. */
+.psDecisionMapHold {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 250px;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .72rem;
+  padding: clamp(1.2rem, 4vw, 2.35rem);
+  border: 1px solid rgba(255, 211, 106, .36);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 86% 16%, rgba(255, 211, 106, .13), transparent 34%),
+    radial-gradient(circle at 8% 100%, rgba(72, 220, 255, .08), transparent 42%),
+    linear-gradient(145deg, rgba(14, 26, 35, .98), rgba(6, 13, 21, .99));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .045), 0 24px 65px rgba(0, 0, 0, .3);
+}
+
+.psDecisionMapHold::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -4rem;
+  bottom: -4rem;
+  width: 11rem;
+  height: 11rem;
+  border: 1px solid rgba(255, 211, 106, .1);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.7rem rgba(255, 211, 106, .025), 0 0 0 3.4rem rgba(89, 226, 255, .018);
+}
+
+.psDecisionMapHold > span,
+.psDecisionMapHold > small {
+  color: var(--ps-precision-gold);
+  font: 900 max(.65rem, 11px)/1.3 var(--font-geist-mono), monospace;
+  letter-spacing: .13em;
+}
+
+.psDecisionMapHold > strong {
+  max-width: 30ch;
+  color: #f7fbfd;
+  font-size: clamp(1.3rem, 4vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+
+.psDecisionMapHold > p {
+  max-width: 67ch;
+  margin: 0;
+  color: #b8c7cf;
+  font-size: max(.88rem, 14px);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.psDecisionMapHold > nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .65rem;
+  width: 100%;
+}
+
+.psDecisionMapHold > :is(button, nav a) {
+  display: inline-flex;
+  min-height: 46px;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: .75rem 1rem;
+  border: 1px solid rgba(83, 243, 173, .45);
+  border-radius: .72rem;
+  background: linear-gradient(135deg, rgba(28, 91, 69, .42), rgba(11, 38, 36, .88));
+  color: #c8ffe2;
+  font: 900 max(.65rem, 11px)/1.25 var(--font-geist-mono), monospace;
+  letter-spacing: .075em;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+}
+
+.psDecisionMapHold > nav a:last-child {
+  border-color: rgba(255, 211, 106, .42);
+  background: linear-gradient(135deg, rgba(98, 75, 22, .4), rgba(40, 31, 13, .82));
+  color: #ffe5a1;
+}
+
+.psDecisionMapHold > :is(button, nav a):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+}
+
+.psDecisionMapHold > small {
+  color: #738995;
+  letter-spacing: .09em;
+}
+
+.psBattleFocus > .psDecisionMapHold {
+  flex: 0 0 auto;
+  margin: .8rem;
+}
+
+.psDecisionMapHoldExpanded {
+  min-height: 280px;
+}
+
+@media (max-width: 520px) {
+  .psDecisionMapHold,
+  .psDecisionMapHoldExpanded {
+    min-height: 0;
+    margin: 0;
+    padding: 1.25rem 1rem;
+    border-radius: .9rem;
+  }
+
+  .psBattleFocus > .psDecisionMapHold { margin: .65rem; }
+
+  .psDecisionMapHold > strong { font-size: 1.4rem; }
+
+  .psDecisionMapHold > nav { display: grid; grid-template-columns: 1fr; }
+
+  .psDecisionMapHold > :is(button, nav a) { width: 100%; }
+}

@@ -114,7 +114,7 @@ export function createBlsObservationProvider(options: BlsProviderOptions = {}): 
 
   return {
     name: BLS_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       const retrievedAt = new Date(now()).toISOString();
 
       try {
@@ -126,6 +126,7 @@ export function createBlsObservationProvider(options: BlsProviderOptions = {}): 
           },
           body: JSON.stringify({ seriesid: Object.values(BLS_SERIES) }),
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         const payload: unknown = await response.json().catch(() => null);
@@ -244,11 +245,12 @@ export function createBlsReleaseCalendarProvider(options: BlsProviderOptions = {
 
   return {
     name: BLS_PROVIDER_NAME,
-    async fetchUpcomingReleases(from: Date, to: Date) {
+    async fetchUpcomingReleases(from: Date, to: Date, signal?: AbortSignal) {
       try {
         const response = await fetchImpl(BLS_CALENDAR_ENDPOINT, {
           headers: { Accept: "text/calendar" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         return normalizeBlsCalendarIcs(await response.text(), from, to);

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { calibratePocketAnalysis } from "../app/api/pocket/analysis-calibration.ts";
+import { calibratePocketAnalysis, enforcePocketTrustGate } from "../app/api/pocket/analysis-calibration.ts";
 import { normalizeLockedDecision, normalizeLockedDecisions } from "../app/pocket/decision-compatibility.ts";
 import { resetPocketBudgetsForTesting, takePocketBudget } from "../app/lib/server/pocket-request-budget.ts";
 import { calculateRiskDesk } from "../app/pocket/pocket-risk-desk.ts";
@@ -55,6 +55,98 @@ test("score and grade are made internally consistent for readable charts", () =>
   const result = calibratePocketAnalysis({ evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" }, setupScore: { overall: 84.7, grade: "A" } }) as { setupScore: { overall: number; grade: string } };
   assert.equal(result.setupScore.overall, 85);
   assert.equal(result.setupScore.grade, "A");
+});
+
+test("a confident narrative is forced to wait when exact price structure is not verified", () => {
+  const result = calibratePocketAnalysis({
+    confidence: "HIGH",
+    verdict: "WATCH",
+    contradictions: [],
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: false, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 88, grade: "A" },
+    plotBounds: { left: 10, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors: [],
+    levels: [{ kind: "support", label: "Visible shelf", price: "7600", y: 70 }],
+    fibLevels: [],
+  }) as { confidence: string; verdict: string; setupScore: { overall: number; grade: string }; trustGate: { status: string; scaleLocked: boolean } };
+  assert.equal(result.trustGate.status, "PARTIAL");
+  assert.equal(result.trustGate.scaleLocked, false);
+  assert.equal(result.confidence, "MEDIUM");
+  assert.equal(result.verdict, "WAIT");
+  assert.deepEqual(result.setupScore, { overall: 69, grade: "C" });
+});
+
+test("a single exact side can never lock the two-sided trust gate", () => {
+  const result = calibratePocketAnalysis({
+    confidence: "HIGH",
+    verdict: "WATCH",
+    contradictions: [],
+    currentPrice: "7660",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 82, grade: "B" },
+    plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
+    priceScaleAnchors: [{ price: 7700, y: 25 }, { price: 7600, y: 75 }],
+    levels: [{ kind: "support", label: "Visible shelf", price: "7640", y: 55 }],
+    fibLevels: [],
+  }) as { trustGate: { status: string; exactLevelCount: number }; verdict: string; confidence: string; setupScore: { overall: number; grade: string } };
+  assert.equal(result.trustGate.status, "PARTIAL");
+  assert.equal(result.trustGate.exactLevelCount, 1);
+  assert.equal(result.verdict, "WAIT");
+  assert.equal(result.confidence, "MEDIUM");
+  assert.deepEqual(result.setupScore, { overall: 69, grade: "C" });
+});
+
+test("the final combined gate reapplies strict ceilings and preserves locked results", () => {
+  const report = { confidence: "HIGH", verdict: "WATCH", setupScore: { overall: 96, grade: "A" } };
+  const partial = enforcePocketTrustGate(report, { status: "PARTIAL" }) as typeof report;
+  assert.deepEqual(partial, { confidence: "MEDIUM", verdict: "WAIT", setupScore: { overall: 69, grade: "C" }, trustGate: { status: "PARTIAL" } });
+  const held = enforcePocketTrustGate(report, { status: "HOLD" }) as typeof report;
+  assert.deepEqual(held, { confidence: "LOW", verdict: "REVIEW_REQUIRED", setupScore: { overall: 54, grade: "D" }, trustGate: { status: "HOLD" } });
+  const locked = enforcePocketTrustGate(report, { status: "LOCKED" }) as typeof report;
+  assert.deepEqual(locked, { ...report, trustGate: { status: "LOCKED" } });
+});
+
+test("a verified two-sided map preserves a locked report", () => {
+  const result = calibratePocketAnalysis({
+    confidence: "HIGH",
+    verdict: "WATCH",
+    contradictions: [],
+    currentPrice: "7660",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 82, grade: "B" },
+    plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
+    priceScaleAnchors: [{ price: 7700, y: 25 }, { price: 7600, y: 75 }],
+    levels: [
+      { kind: "support", label: "Visible floor", price: "7640", y: 55 },
+      { kind: "resistance", label: "Visible ceiling", price: "7680", y: 35 },
+    ],
+    fibLevels: [],
+  }) as { trustGate: { status: string }; verdict: string; confidence: string; setupScore: { overall: number; grade: string } };
+  assert.equal(result.trustGate.status, "LOCKED");
+  assert.equal(result.verdict, "WATCH");
+  assert.equal(result.confidence, "HIGH");
+  assert.deepEqual(result.setupScore, { overall: 82, grade: "B" });
+});
+
+test("scale anchors outside the candle plot can never lock exact structure", () => {
+  const result = calibratePocketAnalysis({
+    confidence: "HIGH",
+    verdict: "WATCH",
+    contradictions: [],
+    currentPrice: "100",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 90, grade: "A" },
+    plotBounds: { left: 8, top: 30, right: 88, bottom: 70 },
+    priceScaleAnchors: [{ price: 110, y: 10 }, { price: 90, y: 90 }],
+    levels: [
+      { kind: "support", label: "floor", price: "95", y: 70 },
+      { kind: "resistance", label: "ceiling", price: "105", y: 30 },
+    ],
+    fibLevels: [],
+  }) as { trustGate: { status: string; scaleLocked: boolean }; verdict: string };
+  assert.equal(result.trustGate.scaleLocked, false);
+  assert.notEqual(result.trustGate.status, "LOCKED");
+  assert.notEqual(result.verdict, "WATCH");
 });
 
 test("one-more-view prompts exclude trader plan fields", () => {
@@ -210,9 +302,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 8/);
-  assert.match(client, /hasVerifiedStructuralLevel\(cached\)/);
-  assert.match(client, /hasVerifiedStructuralLevel\(payload\.analysis\)/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 10/);
+  assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
+  assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
+  assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
+  assert.match(client, /hasVerifiedTwoSidedAnalysis\(payload\.analysis, Boolean\(selectedContext\)\)/);
+  assert.match(client, /hasVerifiedTwoSidedStructure/);
   assert.match(client, /createPrecisionReadingCrop/);
   assert.match(client, /precisionImage, contextPrecisionImage/);
   assert.match(client, /pocket-analysis-v\$\{POCKET_ANALYSIS_ENGINE_VERSION\}/);
@@ -229,6 +324,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /SWING REFERENCE/);
   assert.match(client, /psRefineDelta/);
   assert.match(analyseRoute, /contextContribution/);
+  assert.match(analyseRoute, /instrumentIdentifier/);
+  assert.match(analyseRoute, /const userVerifiedInstrument = accuracyCorrection\?\.instrument \?\? chartConfirmation\?\.instrument/);
+  assert.match(analyseRoute, /const exactPrimaryInstrument = userVerifiedInstrument/);
+  assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
+  assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
   assert.match(analyseRoute, /max_output_tokens: 7000/);
   assert.match(analyseRoute, /analysis report was interrupted before it finished/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
@@ -295,15 +395,20 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /pocket-risk-desk-v1/);
   assert.match(client, /EVENT RISK CONTEXT/);
   assert.match(client, /psResultSupportInput/);
-  assert.match(client, /could not be verified safely/);
-  assert.match(client, /ADD ANOTHER PHOTO/);
+  assert.doesNotMatch(client, /could not be verified safely/);
+  assert.doesNotMatch(client, /ADD ANOTHER PHOTO/);
+  assert.match(client, /ADD ONE CLEARER PRICE-SCALE CHART/);
+  assert.match(client, /NO VERIFIED TWO-SIDED LEVELS/);
+  assert.match(client, /Bullseye checked both charts but could not verify support below and resistance above the current price\. The map is withheld rather than guessed\./);
+  assert.match(client, /VIEW BOTH SOURCE CHARTS/);
+  assert.match(client, /OPEN LEVEL LAB/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
   assert.match(client, /REANALYSE ALL CHARTS/);
   assert.match(client, /bypassCache: true/);
   assert.match(client, /SECOND VIEW ATTACHED/);
   assert.match(client, /FINDINGS UPDATED/);
-  assert.match(client, /SUPPORT AREA NOT VERIFIED/);
+  assert.doesNotMatch(client, /SUPPORT AREA NOT VERIFIED/);
   assert.match(client, /CLEARER VIEW NEEDED/);
   assert.match(client, /6000/);
   assert.match(client, /psCinemaFx/);
@@ -365,7 +470,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /psXRayPatternLabels/);
   assert.match(client, /1 FOCUSED TOOL/);
   assert.match(client, /drawablePatterns/);
-  assert.match(client, /visualAreas/);
+  assert.doesNotMatch(client, /visualAreas/);
   assert.match(client, /psClarityClassic/);
   assert.match(client, /psClarityBars/);
   assert.doesNotMatch(client, /psLockCore/);
@@ -397,6 +502,23 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
     assert.match(route, /store: false/);
     assert.match(route, /pocketBudgetHeaders/);
   }
+});
+
+test("Decision Map precision hold is compact, two-sided and free of hidden map primitives", async () => {
+  const [client, precisionStyles] = await Promise.all([
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-precision-overhaul.css", import.meta.url), "utf8"),
+  ]);
+  const decisionMap = client.slice(client.indexOf("function DecisionMap"), client.indexOf("function SourceChart"));
+  const earlyHold = decisionMap.indexOf("if (!hasVerifiedTwoSidedStructure");
+  const firstMapPrimitive = decisionMap.indexOf("psBattleCurrent");
+  assert.ok(earlyHold >= 0 && firstMapPrimitive > earlyHold, "the strict hold must return before map primitives render");
+  assert.match(decisionMap, /hasContext \? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"/);
+  assert.match(decisionMap, /NO ESTIMATED LEVELS · NO HIDDEN MAP/);
+  assert.doesNotMatch(decisionMap, /onReanalyse|reanalysing|ADD ANOTHER PHOTO/);
+  assert.match(precisionStyles, /\.psDecisionMapHold \{/);
+  assert.match(precisionStyles, /min-height: 250px/);
+  assert.match(precisionStyles, /@media \(max-width: 520px\)/);
 });
 
 test("server beta budgets stop duplicate cost before the provider is called", () => {

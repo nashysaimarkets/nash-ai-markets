@@ -107,6 +107,39 @@ test("getVerifiedMacroContext never throws when all providers fail", async () =>
   assert.deepEqual(context.releases, []);
 });
 
+test("getVerifiedMacroContext forwards cancellation to every provider and fails soft", async () => {
+  const controller = new AbortController();
+  const seenSignals: AbortSignal[] = [];
+  const waitForAbort = (signal?: AbortSignal) => new Promise<never>((_resolve, reject) => {
+    assert.ok(signal);
+    seenSignals.push(signal);
+    signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+  });
+  const pending = getVerifiedMacroContext({
+    now: () => Date.parse("2026-08-11T12:00:00.000Z"),
+    signal: controller.signal,
+    providers: {
+      observationProviders: [{
+        name: "U.S. Department of the Treasury",
+        fetchObservations: waitForAbort,
+      }],
+      releaseProviders: [{
+        name: "U.S. Bureau of Labor Statistics",
+        async fetchUpcomingReleases(_from, _to, signal) {
+          return waitForAbort(signal);
+        },
+      }],
+    },
+  });
+  controller.abort(new Error("route_deadline"));
+
+  const context = await pending;
+  assert.equal(context.status, "unavailable");
+  assert.deepEqual(context.observations, []);
+  assert.deepEqual(context.releases, []);
+  assert.deepEqual(seenSignals, [controller.signal, controller.signal]);
+});
+
 test("createUnavailableMacroContext never includes market snapshot metrics", () => {
   const context = createUnavailableMacroContext(Date.parse("2026-08-11T12:00:00.000Z"));
   assert.equal(context.status, "unavailable");

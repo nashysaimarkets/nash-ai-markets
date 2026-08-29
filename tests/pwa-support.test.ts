@@ -76,6 +76,9 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.match(controller, /INSTALL_DELAY_MS|45_000/);
   assert.match(controller, /DISMISS_DAYS|14/);
   assert.match(controller, /isStandalone/);
+  assert.match(controller, /Capacitor\.isNativePlatform\(\)/);
+  assert.match(controller, /nativeShell \|\| Capacitor\.isNativePlatform\(\)/);
+  assert.match(controller, /if \(nativeShell\) return null/);
   assert.match(controller, /pwaInstallClose|Close install prompt/);
   assert.doesNotMatch(controller, /OPENAI_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE/);
   assert.doesNotMatch(layout, /PwaController/);

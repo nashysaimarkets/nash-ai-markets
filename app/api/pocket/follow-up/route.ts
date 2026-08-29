@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 const MAX_CONTEXT_LENGTH = 36_000;
 const MAX_QUESTION_LENGTH = 180;
+const MAX_REQUEST_BYTES = MAX_CONTEXT_LENGTH + MAX_QUESTION_LENGTH + 4_096;
 
 const schema = {
   type: "object",
@@ -20,13 +23,18 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
   let question = "";
   let analysis: unknown;
   try {
-    const payload = await request.json() as { question?: unknown; analysis?: unknown };
+    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { question?: unknown; analysis?: unknown };
     question = typeof payload.question === "string" ? payload.question.trim() : "";
     analysis = payload.analysis;
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json({ error: "The follow-up request is too large." }, { status: 413 });
+    }
     return NextResponse.json({ error: "Invalid follow-up request." }, { status: 400 });
   }
 
