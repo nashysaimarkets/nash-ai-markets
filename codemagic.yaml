@@ -1,0 +1,52 @@
+workflows:
+  pocket-bullseye-ios-testflight:
+    name: Pocket Bullseye — iOS TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    environment:
+      node: 22.13.0
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.nashaimarkets.pocketbullseye
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "ios-v*"
+          include: true
+    scripts:
+      - name: Install JavaScript dependencies
+        script: npm ci
+      - name: Run Pocket Bullseye release checks
+        script: |
+          npm run typecheck
+          npm run test:unit
+          npm run security:scan
+      - name: Build verified Pocket Bullseye web bundle
+        script: |
+          npm run build
+          test -f dist/server/index.js
+          test -f dist/.openai/hosting.json
+          test -f ios/NativeWeb/index.html
+      - name: Synchronise verified bundle into Capacitor iOS
+        script: |
+          node scripts/verify-capacitor-server.mjs
+          npx cap sync ios
+      - name: Apply App Store signing profiles
+        script: xcode-project use-profiles
+      - name: Build signed App Store archive
+        script: |
+          xcode-project build-ipa \
+            --project ios/App/App.xcodeproj \
+            --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        expire_build_submitted_for_review: false

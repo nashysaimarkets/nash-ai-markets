@@ -17,6 +17,8 @@ import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
+import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
+import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, type AppleAccessStatus } from "./apple-storekit";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -403,6 +405,12 @@ function BubbleChartLab({ analysis, sourceImage, onOpenReport, onShare }: { anal
     <footer>AI CAN MISREAD SCREENSHOTS · CONFIRM EVERY LEVEL ON THE ORIGINAL CHART</footer>
   </section>;
 }
+
+// Retained presentation prototypes are deliberately excluded from the current
+// result flow while remaining type-checked for a future evidence-led decision.
+void LockOnReveal;
+void BullseyeCommandArena;
+void BubbleChartLab;
 
 function isListedEquityAnalysis(analysis: Analysis | null) {
   if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") return false;
@@ -960,11 +968,51 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
   const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
+  const [appleAccess, setAppleAccess] = useState<AppleAccessStatus | null>(null);
+  const [showApplePaywall, setShowApplePaywall] = useState(false);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
+  const nativeAppleApp = isAppleNativeApp();
+  const appleNeedsSubscription = Boolean(
+    nativeAppleApp
+    && appleAccess?.isNative
+    && appleAccess.freeUseConsumed
+    && !appleAccess.entitled,
+  );
+  const appleCanRunPreflight = !nativeAppleApp || Boolean(
+    appleAccess?.isNative && (appleAccess.entitled || !appleAccess.freeUseConsumed),
+  );
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
+
+  useEffect(() => {
+    getAppleAccessStatus().then(setAppleAccess).catch(() => setAppleAccess(null));
+  }, []);
+
+  async function refreshAppleAccess(): Promise<AppleAccessStatus | null> {
+    try {
+      const latest = await getAppleAccessStatus();
+      if (!latest.isNative) throw new Error("Native Apple purchase status was not returned.");
+      setAppleAccess(latest);
+      return latest;
+    } catch {
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      setAppleAccess(null);
+      return null;
+    }
+  }
+
+  async function requireAppleEntitlementForAdditionalRequest(): Promise<boolean> {
+    if (!isAppleNativeApp()) return true;
+    const latest = await refreshAppleAccess();
+    if (!latest) return false;
+    if (!latest.entitled) {
+      setShowApplePaywall(true);
+      return false;
+    }
+    return true;
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -1095,6 +1143,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setLevelLabError("Level Lab needs a verified primary instrument, timeframe and current price before it can replace the map.");
       return;
     }
+    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     levelLabRequestActive.current = true;
     setLevelLabStatus("scanning");
     setLevelLabError("");
@@ -1166,6 +1215,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function reanalyseResult() {
     if (!analysis || busy || analysisRequestActive.current) return;
+    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     const resultScroller = document.querySelector(".psResults") as HTMLElement | null;
     const savedScrollTop = resultScroller?.scrollTop ?? 0;
     setError("");
@@ -1219,6 +1269,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function reanalyseWithCorrection() {
     if (!accuracyCorrection || !image || busy) return;
+    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     setError("");
     try {
       const patch = correctionPatch(accuracyCorrection);
@@ -1273,13 +1324,34 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function analyse() {
-    if (!image || !privacyChecked || busy || analysisRequestActive.current || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))) return;
+    if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
+    let currentAppleAccess = appleAccess;
+    if (isAppleNativeApp()) {
+      currentAppleAccess = await refreshAppleAccess();
+      if (!currentAppleAccess) return;
+    }
+    if (reviewTarget && currentAppleAccess?.isNative && !currentAppleAccess.entitled) {
+      setShowApplePaywall(true);
+      return;
+    }
+    if (!reviewTarget && currentAppleAccess?.isNative && currentAppleAccess.freeUseConsumed && !currentAppleAccess.entitled) {
+      setShowApplePaywall(true);
+      return;
+    }
+    if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
     setError("");
     try {
       if (!reviewTarget) {
         const nextAnalysis = await requestPocketAnalysis(contextImage);
         setStockEvents([]);
         setStockEventStatus(nextAnalysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
+        if (currentAppleAccess?.isNative && !currentAppleAccess.entitled && !currentAppleAccess.freeUseConsumed) {
+          await consumeAppleFreeUse();
+          setAppleAccess({ ...currentAppleAccess, freeUseConsumed: true });
+        }
+        // Do not expose a completed free result until its device entitlement
+        // has been secured. If Keychain persistence fails, the request fails
+        // closed instead of allowing the free analysis to be replayed.
         setAnalysis(nextAnalysis);
         setResultView("cinema");
         setImmersive(true);
@@ -1306,6 +1378,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function askBullseye(question = followUpQuestion) {
     if (!analysis || !question.trim() || followUpBusy || followUpRequestActive.current) return;
+    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     followUpRequestActive.current = true;
     setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
     try {
@@ -1393,6 +1466,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function shareFoundingInvite() {
+    if (isAppleNativeApp()) {
+      setVaultMessage("Invites to web membership offers are unavailable in the iOS app.");
+      return;
+    }
     const url = `${window.location.origin}/join`;
     const text = "Try Pocket Bullseye — upload a chart and get an evidence-first second opinion before you trade. Founding 650 access is £4.99/month.";
     try {
@@ -1412,8 +1489,24 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
-  function startReview(decision: LockedDecision) {
+  async function startReview(decision: LockedDecision) {
+    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(false); setError("");
+  }
+
+  function startNewChart() {
+    setImmersive(false);
+    setAnalysis(null);
+    setImage(null);
+    setFileName("");
+    setContextImage(null);
+    setContextFileName("");
+    setChartConfirmation(null);
+    setPreflightStatus("IDLE");
+    setBattlefieldChart("primary");
+    setResultView("cinema");
+    setShowResultReveal(false);
+    if (appleNeedsSubscription) setShowApplePaywall(true);
   }
 
   const vaultStats = (() => {
@@ -1502,7 +1595,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
-            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setResultView("cinema"); setShowResultReveal(false); }}>NEW CHART</button>
+            <button type="button" onClick={startNewChart}>NEW CHART</button>
           </div>
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
           {resultView === "cinema" ? <MarketStory analysis={combinedAnalysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
@@ -1559,12 +1652,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {vaultMessage ? <p className="psVaultMessage" role="status">{vaultMessage}</p> : null}
           <p className="psLegal">AI can misread screenshots. Confirm instrument, timeframe, prices and levels on the original platform. Educational market preparation only.</p>
           <details className="psUtilityTray">
-            <summary><span>RESULT OPTIONS</span><small>SAVE · CHART · SHARE · INVITE</small><b>＋</b></summary>
+            <summary><span>RESULT OPTIONS</span><small>{appleAccess?.isNative ? "SAVE · CHART · SHARE" : "SAVE · CHART · SHARE · INVITE"}</small><b>＋</b></summary>
             <div>
               <button type="button" onClick={lockDecision}><i>▣</i><span><strong>SAVE</strong><small>Review this decision later</small></span></button>
               <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>DECISION MAP</strong><small>Open full screen</small></span></button>
               <button type="button" onClick={shareDecision}><i>↗</i><span><strong>SHARE</strong><small>Decision summary only</small></span></button>
-              <button type="button" onClick={shareFoundingInvite}><i>◎</i><span><strong>INVITE A TRADER</strong><small>Share the Founding 650 link</small></span></button>
+              {appleAccess && !appleAccess.isNative ? <button type="button" onClick={shareFoundingInvite}><i>◎</i><span><strong>INVITE A TRADER</strong><small>Share the Founding 650 link</small></span></button> : null}
             </div>
             <p>Saved decisions stay privately on this device. Shared summaries and invites never include the uploaded screenshot.</p>
           </details>
@@ -1592,6 +1685,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         )}
         {showResultCard ? <ResultCard analysis={combinedAnalysis} onClose={() => setShowResultCard(false)} onShare={shareResultCard} /> : null}
         <FeedbackButton />
+        {showApplePaywall && appleAccess?.isNative ? <AppleSubscriptionPaywall status={appleAccess} onClose={() => setShowApplePaywall(false)} onUnlocked={(next) => { setAppleAccess(next); setShowApplePaywall(false); }} /> : null}
       </main>
     );
   }
@@ -1623,13 +1717,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <div><span>② OPTIONAL CONTEXT CHART</span><strong>{contextImage ? "HIGHER TIMEFRAME LOADED" : "ADD HIGHER TIMEFRAME"}</strong><p>{contextImage ? contextFileName : "Add a 1-hour, 4-hour or daily view for alignment. Skip to keep analysis fast and data-light."}</p></div>
           {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
         </section> : null}
-        {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {image && !reviewTarget && appleCanRunPreflight ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple before Bullseye sends this chart for preflight.</p> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>
@@ -1644,6 +1739,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
       </section>
       <FeedbackButton />
+      {showApplePaywall && appleAccess ? <AppleSubscriptionPaywall status={appleAccess} onClose={() => setShowApplePaywall(false)} onUnlocked={(next) => { setAppleAccess(next); setShowApplePaywall(false); }} /> : null}
     </main>
   );
 }

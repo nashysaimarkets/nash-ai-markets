@@ -33,6 +33,7 @@ import "./pocket-pattern-watch.css";
 import "./pocket-trust-retention.css";
 import "./pocket-liquidity-guard.css";
 import "./pocket-precision-overhaul.css";
+import "./pocket-apple-paywall.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
