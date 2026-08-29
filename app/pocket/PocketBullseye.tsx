@@ -1137,13 +1137,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function rescanLevelsOnly() {
     if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
+    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     const primaryCurrentPrice = numericLevel(analysis.currentPrice);
     if (analysis.trustGate?.identityLocked !== true || primaryCurrentPrice === null) {
       setLevelLabStatus("error");
       setLevelLabError("Level Lab needs a verified primary instrument, timeframe and current price before it can replace the map.");
       return;
     }
-    if (!await requireAppleEntitlementForAdditionalRequest()) return;
     levelLabRequestActive.current = true;
     setLevelLabStatus("scanning");
     setLevelLabError("");
