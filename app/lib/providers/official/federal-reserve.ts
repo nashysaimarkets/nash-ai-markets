@@ -73,12 +73,13 @@ export function createFederalReserveDollarProvider(options: FedOptions = {}): Sc
   const now = options.now ?? Date.now;
   return {
     name: FED_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       const retrievedAt = new Date(now()).toISOString();
       try {
         const response = await fetchImpl(FED_H10_DAILY_INDEX_CSV, {
           headers: { Accept: "text/csv" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         return normalizeFedBroadDollarCsv(await response.text(), retrievedAt);
@@ -138,11 +139,12 @@ export function createFederalReserveReleaseProvider(options: Pick<FedOptions, "f
   const fetchImpl = options.fetchImpl ?? fetch;
   return {
     name: FED_PROVIDER_NAME,
-    async fetchUpcomingReleases(from, to) {
+    async fetchUpcomingReleases(from, to, signal?: AbortSignal) {
       try {
         const response = await fetchImpl(FED_MONETARY_POLICY_RSS, {
           headers: { Accept: "application/rss+xml, application/xml" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         return normalizeFedMonetaryPolicyRss(await response.text(), from, to);

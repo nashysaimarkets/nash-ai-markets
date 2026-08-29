@@ -49,11 +49,12 @@ export function createNewYorkFedRatesProvider(options: { fetchImpl?: FetchLike; 
   const now = options.now ?? Date.now;
   return {
     name: NEW_YORK_FED_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       try {
         const response = await fetchImpl(NEW_YORK_FED_RATES_ENDPOINT, {
           headers: { Accept: "application/json" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         return normalizeNewYorkFedRates(await response.json().catch(() => null), new Date(now()).toISOString());

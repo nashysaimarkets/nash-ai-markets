@@ -103,7 +103,7 @@ export function createTreasuryYieldProvider(
   return {
     name: TREASURY_PROVIDER_NAME,
 
-    async fetchObservations(): Promise<MacroObservation[]> {
+    async fetchObservations(signal?: AbortSignal): Promise<MacroObservation[]> {
       const retrievedAtMs = now();
       const retrievedAt = new Date(retrievedAtMs).toISOString();
       const year = new Date(retrievedAtMs).getUTCFullYear();
@@ -116,6 +116,7 @@ export function createTreasuryYieldProvider(
         const response = await fetchImpl(url, {
           headers: { Accept: "application/xml, text/xml;q=0.9" },
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
 

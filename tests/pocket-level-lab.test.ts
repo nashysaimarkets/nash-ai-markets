@@ -5,8 +5,9 @@ import { readFileSync } from "node:fs";
 const client = readFileSync("app/pocket/PocketBullseye.tsx", "utf8");
 const route = readFileSync("app/api/pocket/levels/route.ts", "utf8");
 
-test("the sixth command tile is a genuinely separate Signal Pulse", () => {
-  assert.match(client, /number: "06", label: "SIGNAL PULSE"/);
+test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
+  assert.match(client, /number: "02", label: "LIQUIDITY GUARD"/);
+  assert.match(client, /number: "07", label: "SIGNAL PULSE"/);
   assert.match(client, /WHAT IS DEVELOPING NOW/);
 });
 
@@ -20,11 +21,30 @@ test("Level Lab merges only price-map fields into the existing analysis", () => 
   const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
   assert.match(merge, /setAnalysis\(\(current\)/);
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
+  assert.match(merge, /liquidityShield: undefined/);
+  assert.match(merge, /primaryProvenance/);
+  assert.match(merge, /hasVerifiedTwoSidedStructure/);
+  assert.match(merge, /provenance\?\.source === "LEVEL_LAB"/);
+  assert.match(merge, /returnedTrustGate\?\.status === "LOCKED"/);
+  assert.match(merge, /returnedTrustGate\.scaleLocked === true/);
+  assert.match(merge, /stillBoundToPrimary/);
+  assert.match(merge, /current\.instrument === primaryProvenance\.instrument/);
+  assert.match(merge, /currentPrice: current\.currentPrice/);
+  assert.match(merge, /trustGate: returnedTrustGate/);
+  assert.doesNotMatch(merge, /payload\.levels!\.currentPrice \|\| current\.currentPrice/);
 });
 
-test("independent endpoint fails closed on prices but preserves visible reaction areas", () => {
+test("independent endpoint fails closed on identity, price, scale, geometry and structural sides", () => {
+  assert.match(route, /validateLevelLabPrimaryProvenance/);
+  assert.match(route, /validateLevelLabScan/);
+  assert.match(route, /instrumentIdentifier/);
+  assert.match(route, /candlesReadable/);
+  assert.match(route, /priceScaleReadable/);
   assert.match(route, /Exact numeric prices require at least two widely separated readable scale labels/);
-  assert.match(route, /empty price string/);
+  assert.match(route, /Never copy the expected identity from the prompt unless it is independently visible/);
+  assert.match(route, /never authorises replacing the verified primary price/);
+  assert.doesNotMatch(route, /still return the strongest visual support and resistance areas/);
+  assert.doesNotMatch(route, /JSON\.parse\(output\) \}/);
   assert.match(route, /Do not produce or change a verdict, pattern, scenario, score, direction, plan or risk assessment/);
 });
 

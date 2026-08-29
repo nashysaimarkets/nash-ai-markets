@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 // Match the 8 MB upload contract used by the Pocket UI and analysis route.
 // A base64 data URL can be roughly 4/3 larger than its original file.
 const MAX_IMAGE_LENGTH = 11_000_000;
+const MAX_REQUEST_BYTES = MAX_IMAGE_LENGTH * 2 + 20_000;
 
 const schema = {
   type: "object",
@@ -29,8 +32,18 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
+  let payload: { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown };
   try {
-    const payload = await request.json() as { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown };
+    payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as typeof payload;
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json({ error: "The review request is too large." }, { status: 413 });
+    }
+    return NextResponse.json({ error: "Invalid review request." }, { status: 400 });
+  }
+  try {
     const beforeImage = typeof payload.beforeImage === "string" ? payload.beforeImage : "";
     const afterImage = typeof payload.afterImage === "string" ? payload.afterImage : "";
     if (![beforeImage, afterImage].every((image) => /^data:image\/(jpeg|png|webp);base64,/.test(image) && image.length <= MAX_IMAGE_LENGTH)) {
