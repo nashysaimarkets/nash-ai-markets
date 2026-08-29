@@ -3,12 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
 
-export default function ChartPreflightPanel({ image, contextImage, onStatus, onConfirmation }: {
+type ChartPreflightPanelProps = {
   image: string;
   contextImage?: string | null;
   onStatus: (status: PreflightStatus) => void;
   onConfirmation: (confirmation: ChartConfirmation | null) => void;
-}) {
+};
+
+export default function ChartPreflightPanel(props: ChartPreflightPanelProps) {
+  return <ChartPreflightForImage key={props.image} {...props} />;
+}
+
+function ChartPreflightForImage(props: ChartPreflightPanelProps) {
+  return <ChartPreflightRequest key={props.contextImage ?? ""} {...props} />;
+}
+
+function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }: ChartPreflightPanelProps) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
   const [message, setMessage] = useState("");
@@ -22,7 +32,7 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus, onC
 
   useEffect(() => {
     const controller = new AbortController();
-    setStatus("CHECKING"); setResult(null); setMessage(""); statusHandler.current("CHECKING"); confirmationHandler.current(null);
+    statusHandler.current("CHECKING"); confirmationHandler.current(null);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
