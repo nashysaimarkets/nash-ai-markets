@@ -1,7 +1,7 @@
 workflows:
   pocket-bullseye-android-verify:
     name: Pocket Bullseye — Android Release Verification
-    instance_type: linux_x2
+    instance_type: linux
     max_build_duration: 120
     environment:
       node: 22.13.0
