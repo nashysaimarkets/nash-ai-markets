@@ -23,7 +23,11 @@ chart analysis,trading,technical analysis,support,resistance,trade plan,risk,mar
 
 ## What’s new in 1.1
 
-Pocket Bullseye now includes a visible Trust Gate for every analysis and a redesigned private Decision Journal. Unverified prices are withheld, weak evidence forces a Precision Hold, and saved decisions can be compared with later charts to review decision quality separately from profit or loss.
+Support, resistance and Level Lab scans are now more reliable across different chart sizes and price-scale layouts.
+
+Liquidity Guard has improved calibration and clearer evidence handling. Pattern Watch now lets you switch between supplied 30-minute, 1-hour and 4-hour chart views.
+
+This update also improves scanner recovery, safe navigation, modal controls and subscription-screen accessibility. Unverified levels remain withheld and partial evidence reduces confidence instead of filling gaps with guesses.
 
 ## Rating prompt rule
 
