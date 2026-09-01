@@ -29,6 +29,8 @@
     "audit:layout": "node scripts/layout-check.mjs",
     "preview:member": "node --import tsx scripts/preview-member-surfaces.tsx",
     "preview:shots": "npm run preview:member && node scripts/preview-screenshots.mjs",
+    "assets:native": "node scripts/generate-pocket-native-assets.mjs",
+    "assets:google-play": "node scripts/generate-google-play-assets.mjs",
     "visual-review": "node --env-file-if-exists=.env --import tsx scripts/visual-review.ts",
     "staging:export-storage": "node --env-file-if-exists=.env --import tsx scripts/export-storage-state.ts",
     "staging:auth-evidence": "node --env-file-if-exists=.env --import tsx scripts/staging-auth-evidence.ts",
@@ -44,6 +46,7 @@
     "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.1",
     "@capacitor/app": "^8.1.1",
     "@capacitor/camera": "^8.2.3",
     "@capacitor/cli": "^8.5.0",

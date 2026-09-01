@@ -1,4 +1,53 @@
 workflows:
+  pocket-bullseye-android-verify:
+    name: Pocket Bullseye — Android Release Verification
+    instance_type: linux_x2
+    max_build_duration: 120
+    environment:
+      node: 22.13.0
+      java: 17
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: "feat/pocket-android-worldwide-*"
+          include: true
+      tag_patterns:
+        - pattern: "android-verify-v*"
+          include: true
+    scripts:
+      - name: Install JavaScript dependencies
+        script: npm ci
+      - name: Run shared and Android release checks
+        script: |
+          npm run typecheck
+          node --import tsx --test \
+            tests/android-play-billing-contract.test.ts \
+            tests/apple-storekit-contract.test.ts \
+            tests/pwa-support.test.ts \
+            tests/app-store-review-contract.test.ts
+          npm run security:scan
+      - name: Build verified Pocket Bullseye web bundle
+        script: |
+          npm run build
+          test -f dist/server/index.js
+          test -f dist/.openai/hosting.json
+          test -f ios/NativeWeb/index.html
+      - name: Synchronise verified bundle into Capacitor Android
+        script: |
+          eval "$(node scripts/load-release-pin.mjs)"
+          node scripts/verify-capacitor-server.mjs
+          npx cap sync android
+      - name: Compile Android release bundle and lint
+        script: |
+          cd android
+          ./gradlew bundleRelease lintRelease testReleaseUnitTest
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/reports/lint-results-release.*
+      - android/app/build/reports/tests/**/*.html
+
   pocket-bullseye-ios-testflight:
     name: Pocket Bullseye — iOS TestFlight
     instance_type: mac_mini_m2

@@ -27,7 +27,9 @@
 .psFeedback[open] > summary { width: max-content; margin-left: auto; }
 
 .psFeedback > div {
-  width: min(290px, calc(100vw - 28px));
+  width: min(340px, calc(100vw - 28px));
+  max-height: min(720px, calc(100vh - 100px));
+  overflow: auto;
   margin: 8px 0 0 auto;
   padding: 12px;
   border: 1px solid #35434a;
@@ -58,14 +60,37 @@
 }
 
 .psFeedback > div a + a { margin-top: 7px; border-color: #55e99b55; background: #0b1914; }
+.psFeedback > div form + a { margin-top: 9px; border-color: #55e99b55; background: #0b1914; }
 .psFeedback > div a > b { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #ef667266; border-radius: 50%; color: #ef7b86; }
 .psFeedback > div a + a > b { border-color: #55e99b66; color: #64eba5; }
 .psFeedback > div a span, .psFeedback > div a strong, .psFeedback > div a small { display: block; }
 .psFeedback > div a strong { font-size: 7px; letter-spacing: .07em; }
 .psFeedback > div a small { margin-top: 4px; color: #87958e; font-size: 6px; letter-spacing: .04em; }
 
+.psFeedbackForm { display: grid; gap: 9px; }
+.psFeedbackForm label { display: grid; gap: 5px; }
+.psFeedbackForm label > span { color: #78efae; font-size: 7px; font-weight: 900; letter-spacing: .1em; }
+.psFeedbackForm select,
+.psFeedbackForm textarea {
+  width: 100%;
+  border: 1px solid #34454b;
+  border-radius: 8px;
+  outline: none;
+  background: #0c171b;
+  color: #edf4f0;
+  font: 600 11px/1.45 system-ui, sans-serif;
+}
+.psFeedbackForm select { min-height: 40px; padding: 0 10px; }
+.psFeedbackForm textarea { min-height: 96px; resize: vertical; padding: 10px; }
+.psFeedbackForm select:focus,
+.psFeedbackForm textarea:focus { border-color: #57eda0; box-shadow: 0 0 0 3px #57eda018; }
+.psFeedbackForm button { min-height: 42px; border: 1px solid #55e99b99; border-radius: 8px; background: linear-gradient(120deg,#39e58b,#8af0b8); color: #04100b; font: 900 8px/1 var(--font-geist-mono),monospace; letter-spacing: .09em; }
+.psFeedbackForm button:disabled { opacity: .48; }
+.psFeedbackForm > small { color: #74eaa9; font-size: 7px; line-height: 1.45; letter-spacing: .04em; }
+.psFeedbackForm > small[role="alert"] { color: #ffac75; }
+
 @media (max-width: 520px) {
   .psFeedback { right: 10px; bottom: max(10px, env(safe-area-inset-bottom)); }
   .psFeedback > summary { min-height: 42px; padding: 0 12px; }
-  .psFeedback > div { width: min(280px, calc(100vw - 20px)); }
+  .psFeedback > div { width: min(330px, calc(100vw - 20px)); }
 }

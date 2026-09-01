@@ -1,5 +1,5 @@
 export type LaunchEmailTemplate = {
-  template: "waitlist-confirmation" | "founding-member-welcome" | "pocket-founding-welcome" | "pocket-subscription-alert" | "membership-welcome" | "payment-successful" | "founding-100-confirmation" | "annual-renewal-reminder" | "subscription-cancellation";
+  template: "waitlist-confirmation" | "founding-member-welcome" | "pocket-founding-welcome" | "pocket-subscription-alert" | "pocket-feedback" | "membership-welcome" | "payment-successful" | "founding-100-confirmation" | "annual-renewal-reminder" | "subscription-cancellation";
   subject: string;
   text: string;
 };
