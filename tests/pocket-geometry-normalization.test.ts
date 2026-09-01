@@ -6,6 +6,16 @@ import { recoverPrecisionGeometry } from "../app/api/pocket/precision-fallback.t
 import { normalizePrecisionLiquidityShield } from "../app/api/pocket/liquidity-precision.ts";
 import { projectLiquidityZones, type LiquidityShield } from "../app/pocket/liquidity-guard.ts";
 
+type Bounds = { left: number; top: number; right: number; bottom: number };
+type NormalizedGeometryFixture = {
+  plotBounds: Bounds;
+  priceScaleAnchors: Array<{ y: number }>;
+  levels: Array<{ x: number; y: number }>;
+  fibLevels: Array<{ y: number }>;
+  patterns: Array<{ geometry: { points: Array<{ x: number; y: number }>; labelX: number; labelY: number } }>;
+  liquidityShield: { zones: Array<{ touchPoints: Array<{ y: number }> }> };
+};
+
 function fractionalPrecision() {
   return {
     currentPrice: "2900",
@@ -92,7 +102,7 @@ test("coordinate families normalize independently in both mixed-unit directions"
       { kind: "resistance", x: .05, y: .35, x2: .9, y2: .35 },
       { kind: "support", x: .05, y: .65, x2: .9, y2: .65 },
     ],
-  }) as Record<string, any>;
+  }) as NormalizedGeometryFixture;
   assert.deepEqual(percentFrame.plotBounds, { left: 5, top: 10, right: 90, bottom: 90 });
   assert.deepEqual(percentFrame.priceScaleAnchors.map((anchor: { y: number }) => anchor.y), [20, 50, 80]);
   assert.deepEqual(percentFrame.levels.map((level: { x: number; y: number }) => [level.x, level.y]), [[5, 35], [5, 65]]);
@@ -104,7 +114,7 @@ test("coordinate families normalize independently in both mixed-unit directions"
       { kind: "resistance", x: 5, y: 35, x2: 90, y2: 35 },
       { kind: "support", x: 5, y: 65, x2: 90, y2: 65 },
     ],
-  }) as Record<string, any>;
+  }) as NormalizedGeometryFixture;
   assert.deepEqual(fractionalFrame.plotBounds, { left: 5, top: 10, right: 90, bottom: 90 });
   assert.deepEqual(fractionalFrame.priceScaleAnchors.map((anchor: { y: number }) => anchor.y), [20, 50, 80]);
   assert.deepEqual(fractionalFrame.levels.map((level: { x: number; y: number }) => [level.x, level.y]), [[5, 35], [5, 65]]);
@@ -130,7 +140,7 @@ test("fractional fib and pattern geometry shares the same full-image frame", () 
     plotBounds: { left: .05, top: .1, right: .9, bottom: .9 },
     fibLevels: [{ ratio: "0.5", y: .4 }, { ratio: "0.618", y: .6 }],
     patterns: [{ name: "Triangle", geometry: { points: [{ x: .2, y: .3 }, { x: .8, y: .7 }], labelX: .5, labelY: .45 } }],
-  }) as Record<string, any>;
+  }) as NormalizedGeometryFixture;
   assert.deepEqual(normalized.fibLevels.map((fib: { y: number }) => fib.y), [40, 60]);
   assert.deepEqual(normalized.patterns[0].geometry, {
     points: [{ x: 20, y: 30 }, { x: 80, y: 70 }],
@@ -153,7 +163,7 @@ test("ambiguous percent coordinates near the image edge are never promoted into 
       zones: [{ side: "BELOW_PRICE", touchPoints: [{ x: 20, y: .8 }, { x: 50, y: 1 }, { x: 80, y: 1.1 }] }],
     },
   };
-  const normalized = canonicalizePocketGeometry(nearEdgePercent) as Record<string, any>;
+  const normalized = canonicalizePocketGeometry(nearEdgePercent) as NormalizedGeometryFixture;
   assert.deepEqual(normalized.priceScaleAnchors.map((anchor: { y: number }) => anchor.y), [.1, .5, .9]);
   assert.deepEqual(normalized.levels.map((level: { y: number }) => level.y), [.3, .7]);
   assert.deepEqual(normalized.liquidityShield.zones[0].touchPoints.map((point: { y: number }) => point.y), [.8, 1, 1.1]);
@@ -165,7 +175,7 @@ test("a mixed coordinate family is explicitly invalidated", () => {
   const normalized = canonicalizePocketGeometry({
     plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
     priceScaleAnchors: [{ price: 110, y: .2 }, { price: 100, y: 50 }, { price: 90, y: .8 }],
-  }) as Record<string, any>;
+  }) as NormalizedGeometryFixture;
   assert.ok(normalized.priceScaleAnchors.every((anchor: { y: number }) => Number.isNaN(anchor.y)));
 });
 
@@ -174,7 +184,7 @@ test("strict numeric-string coordinates normalize while degenerate bounds stay i
     plotBounds: { left: "0.05", top: "0.1", right: "0.9", bottom: "0.9" },
     priceScaleAnchors: [{ price: 110, y: "0.2" }, { price: 100, y: "0.5" }, { price: 90, y: "0.8" }],
     levels: [{ kind: "support", y: "0.65", y2: "0.65" }, { kind: "resistance", y: "0.35", y2: "0.35" }],
-  }) as Record<string, any>;
+  }) as NormalizedGeometryFixture;
   assert.deepEqual(normalized.plotBounds, { left: 5, top: 10, right: 90, bottom: 90 });
   assert.deepEqual(normalized.priceScaleAnchors.map((anchor: { y: number }) => anchor.y), [20, 50, 80]);
 
@@ -185,7 +195,7 @@ test("strict numeric-string coordinates normalize while degenerate bounds stay i
     levels: [],
     evidenceQuality: { chartReadability: "POOR", candlesReadable: false },
     setupScore: { overall: 0 },
-  }) as Record<string, any>;
+  }) as { plotBounds: Bounds };
   assert.deepEqual(calibrated.plotBounds, { left: 99, top: 99, right: 100, bottom: 100 });
 });
 
@@ -194,7 +204,7 @@ test("a slightly overshooting fractional frame is clamped to the full image", ()
     plotBounds: { left: .06, top: .08, right: 1.06, bottom: 1.08 },
     priceScaleAnchors: [{ price: 110, y: .2 }, { price: 100, y: .5 }, { price: 90, y: .8 }],
     levels: [{ kind: "resistance", price: "105", y: .35 }, { kind: "support", price: "95", y: .65 }],
-  }) as Record<string, any>;
+  }) as NormalizedGeometryFixture;
   assert.deepEqual(normalized.plotBounds, { left: 6, top: 8, right: 100, bottom: 100 });
   assert.deepEqual(normalized.priceScaleAnchors.map((anchor: { y: number }) => anchor.y), [20, 50, 80]);
 });

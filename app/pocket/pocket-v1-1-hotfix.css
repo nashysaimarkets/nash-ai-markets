@@ -24,6 +24,12 @@
   backdrop-filter: blur(12px);
 }
 .psBattleFocusBody > .psDecisionMapHold { margin: .8rem; }
+.psBattleFocusBody .psSourceChartExpanded img {
+  width: auto;
+  max-width: 100%;
+  max-height: min(68svh, 720px);
+  object-fit: contain;
+}
 .psBattleFocus > footer { position: relative; z-index: 22; bottom: auto; }
 .psBattleBackToResult {
   position: sticky;
@@ -40,6 +46,16 @@
   font: 900 9px var(--font-geist-mono), monospace;
   letter-spacing: .1em;
   box-shadow: 0 10px 28px #000a;
+}
+
+.psApplePaywallClose {
+  position: fixed;
+  z-index: 1210;
+  top: calc(12px + env(safe-area-inset-top));
+  right: calc(12px + env(safe-area-inset-right));
+  width: 44px;
+  height: 44px;
+  background: #111c18ee;
 }
 
 /* Full-image percentages must share the image's exact rendered box. */

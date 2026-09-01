@@ -25,8 +25,7 @@ export type LevelLabRejection =
   | "CURRENT_PRICE_MISMATCH"
   | "CANDLES_UNREADABLE"
   | "PRICE_SCALE_UNVERIFIED"
-  | "GEOMETRY_UNVERIFIED"
-  | "ONE_SIDED_STRUCTURE";
+  | "GEOMETRY_UNVERIFIED";
 
 export type LevelLabValidation =
   | { ok: true; levels: JsonRecord }
@@ -124,7 +123,7 @@ function currentPricesCompatible(primaryValue: unknown, levelLabValue: unknown) 
   const levelLab = numericPrice(levelLabValue);
   if (primary === null || levelLab === null || primary <= 0 || levelLab <= 0) return false;
   const denominator = Math.max(Math.abs(primary), Math.abs(levelLab), 1);
-  return Math.abs(primary - levelLab) / denominator <= 0.02;
+  return Math.abs(primary - levelLab) / denominator <= 0.005;
 }
 
 /**
@@ -173,15 +172,25 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
       && ["support", "resistance"].includes(String((level as JsonRecord).kind))
       && numericPrice((level as JsonRecord).price) !== null)
     : [];
-  if (levels.length < 2) return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
+  if (levels.length < 1) return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
   const coverage = structuralSideCoverage(levels, primary.currentPrice);
-  if (!coverage.twoSided) return { ok: false, reason: "ONE_SIDED_STRUCTURE" };
   const trustGate = calibrated.trustGate && typeof calibrated.trustGate === "object"
     ? calibrated.trustGate as JsonRecord
     : null;
-  if (trustGate?.status !== "LOCKED" || trustGate.scaleLocked !== true || trustGate.identityLocked !== true || trustGate.chartLocked !== true) {
+  const expectedStatus = coverage.twoSided ? "LOCKED" : "PARTIAL";
+  const validGate = trustGate?.status === expectedStatus
+    && trustGate.identityLocked === true
+    && trustGate.chartLocked === true
+    && Number(trustGate.exactLevelCount) >= 1
+    && (!coverage.twoSided || trustGate.scaleLocked === true);
+  if (!validGate) {
     return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
   }
+  const levelStory = coverage.twoSided
+    ? text(raw.levelStory, 260) || "Two-sided support and resistance passed Level Lab verification."
+    : coverage.supportBelow
+      ? "Level Lab verified support below current price. Resistance above current price remains unverified and has not been estimated."
+      : "Level Lab verified resistance above current price. Support below current price remains unverified and has not been estimated.";
 
   return {
     ok: true,
@@ -197,7 +206,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
       // earlier HOLD/PARTIAL gate would leave the map and its trust state in
       // contradiction.
       trustGate,
-      levelStory: text(raw.levelStory, 260) || "Two-sided support and resistance passed Level Lab verification.",
+      levelStory,
       confidence: raw.confidence === "HIGH" ? "HIGH" : "MEDIUM",
       limitation: text(raw.limitation, 160),
       provenance: {
@@ -218,7 +227,6 @@ export function levelLabRejectionMessage(reason: LevelLabRejection) {
   if (reason === "CURRENT_PRICE_UNREADABLE") return "The Level Lab chart current-price marker is not readable. Use a clearer price-scale screenshot.";
   if (reason === "CURRENT_PRICE_MISMATCH") return "The Level Lab chart price does not match the verified primary chart closely enough, so no levels were applied.";
   if (reason === "CANDLES_UNREADABLE") return "The Level Lab candle reactions are not clear enough to verify structure.";
-  if (reason === "PRICE_SCALE_UNVERIFIED") return "The Level Lab price scale could not be verified. Use a screenshot with at least two clear price labels on the right-hand axis, or reuse the same chart that already passed the main read.";
-  if (reason === "ONE_SIDED_STRUCTURE") return "Level Lab could not verify both support below and resistance above the current price.";
+  if (reason === "PRICE_SCALE_UNVERIFIED") return "The Level Lab price scale could not be verified. Use a screenshot with at least two clear, widely separated price labels on the right-hand axis.";
   return "Level Lab could not verify the level prices against the visible scale and candle rows.";
 }

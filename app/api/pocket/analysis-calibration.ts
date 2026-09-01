@@ -1,60 +1,10 @@
 import { structuralSideCoverage } from "./precision-structure.ts";
 import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
+import { boundedPocketScore as boundedScore, enforcePocketTrustGate, pocketScoreGrade as scoreGrade } from "../../lib/pocket-trust-gate.ts";
+
+export { enforcePocketTrustGate } from "../../lib/pocket-trust-gate.ts";
 
 type JsonRecord = Record<string, unknown>;
-
-function scoreGrade(score: number) {
-  return score >= 85 ? "A" : score >= 70 ? "B" : score >= 55 ? "C" : score >= 40 ? "D" : "F";
-}
-
-function boundedScore(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value)
-    ? Math.max(0, Math.min(100, Math.round(value)))
-    : 0;
-}
-
-/**
- * Reapply the customer-facing score, confidence and verdict ceilings after the
- * final structural trust gate has been calculated. The combined primary +
- * context battlefield is assembled after the broad report calibration, so the
- * route must run this guard once more with that final gate rather than leaving
- * an earlier HIGH/A narrative attached to a withheld map.
- */
-export function enforcePocketTrustGate(value: unknown, gateValue?: unknown): unknown {
-  if (!value || typeof value !== "object") return value;
-  const analysis = { ...(value as JsonRecord) };
-  const candidate = gateValue ?? analysis.trustGate;
-  if (!candidate || typeof candidate !== "object") return analysis;
-  const gate = candidate as JsonRecord;
-  const status = String(gate.status);
-  analysis.trustGate = gate;
-  if (status === "LOCKED") return analysis;
-
-  const score = analysis.setupScore && typeof analysis.setupScore === "object"
-    ? analysis.setupScore as JsonRecord
-    : {};
-  if (status === "PARTIAL") {
-    analysis.confidence = analysis.confidence === "HIGH" || analysis.confidence === "MEDIUM"
-      ? "MEDIUM"
-      : "LOW";
-    analysis.verdict = analysis.verdict === "WATCH"
-      ? "WAIT"
-      : ["WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"].includes(String(analysis.verdict))
-        ? analysis.verdict
-        : "REVIEW_REQUIRED";
-    const overall = Math.min(69, boundedScore(score.overall));
-    analysis.setupScore = { ...score, overall, grade: scoreGrade(overall) };
-    return analysis;
-  }
-
-  // HOLD is the current fail-closed state. Unknown future/non-locked states
-  // also take the same conservative ceiling until explicitly supported.
-  analysis.confidence = "LOW";
-  analysis.verdict = "REVIEW_REQUIRED";
-  const overall = Math.min(54, boundedScore(score.overall));
-  analysis.setupScore = { ...score, overall, grade: scoreGrade(overall) };
-  return analysis;
-}
 
 function boundedPercent(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : fallback;
@@ -162,10 +112,10 @@ export function calibratePocketAnalysis(
       // Axis anchors verify a linear scale, but the model often returns only
       // middle labels. Permit a candidate outside the sampled price interval
       // only when that scale still projects it inside the visible candle plot.
-      // Reading crops improve tiny price labels but introduce a few percentage
-      // points of full-image coordinate drift. The exact price is still
-      // independently projected through a verified linear axis, so tolerate
-      // that mobile crop offset while rejecting a genuinely different row.
+      // Mobile vision coordinates carry a few percentage points of row jitter.
+      // The exact price is still independently projected through a verified
+      // linear axis, so tolerate that bounded jitter while rejecting a
+      // genuinely different candle row.
       const geometryTolerance = Math.max(4.5, (bottom - top) * 0.09);
       const exactHorizontal = horizontal && calibratedScale && price !== null && suppliedY !== null && Math.abs(suppliedY - scaledY) <= geometryTolerance && scaledY >= top && scaledY <= bottom;
       const visualHorizontal = horizontal && !calibratedScale && quality.candlesReadable !== false && suppliedY !== null && suppliedY >= top && suppliedY <= bottom;

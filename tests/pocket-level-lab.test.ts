@@ -27,9 +27,12 @@ test("Level Lab merges only price-map fields into the existing analysis", () => 
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
   assert.doesNotMatch(merge, /liquidityShield:/);
   assert.match(merge, /primaryProvenance/);
+  assert.doesNotMatch(merge, /plotBounds: analysis\.plotBounds/);
+  assert.doesNotMatch(merge, /priceScaleAnchors: analysis\.priceScaleAnchors/);
   assert.match(merge, /hasVerifiedTwoSidedStructure/);
   assert.match(merge, /provenance\?\.source === "LEVEL_LAB"/);
-  assert.match(merge, /returnedTrustGate\?\.status === "LOCKED"/);
+  assert.match(merge, /returnedTwoSided && returnedTrustGate\.status === "LOCKED"/);
+  assert.match(merge, /!returnedTwoSided && returnedTrustGate\.status === "PARTIAL"/);
   assert.match(merge, /returnedTrustGate\.scaleLocked === true/);
   assert.match(merge, /stillBoundToPrimary/);
   assert.match(merge, /current\.instrument === primaryProvenance\.instrument/);
@@ -41,7 +44,7 @@ test("Level Lab merges only price-map fields into the existing analysis", () => 
   assert.doesNotMatch(merge, /payload\.levels!\.currentPrice \|\| current\.currentPrice/);
 });
 
-test("independent endpoint fails closed on identity, price, scale, geometry and structural sides", () => {
+test("independent endpoint fails closed on bad identity, price, scale and geometry while preserving an exact visible side", () => {
   assert.match(route, /validateLevelLabPrimaryProvenance/);
   assert.match(route, /validateLevelLabScan/);
   assert.match(route, /instrumentIdentifier/);
@@ -53,6 +56,9 @@ test("independent endpoint fails closed on identity, price, scale, geometry and 
   assert.doesNotMatch(route, /still return the strongest visual support and resistance areas/);
   assert.doesNotMatch(route, /JSON\.parse\(output\) \}/);
   assert.match(route, /Do not produce or change a verdict, pattern, scenario, score, direction, plan or risk assessment/);
+  assert.match(route, /if only one side is visible return that exact side and leave the missing side absent/i);
+  assert.match(client, /enforcePocketTrustGate\([\s\S]*returnedTrustGate/);
+  assert.match(client, /confidence, score and verdict are reduced safely/);
   assert.match(route, /inFlightLevelLabRequests\.set\(completedKey, providerWork\)/);
   assert.match(route, /rememberCompletedRequest\(completedKey, result\)/);
   assert.match(route, /inFlightLevelLabRequests\.delete\(completedKey\)/);

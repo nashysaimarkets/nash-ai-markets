@@ -38,6 +38,7 @@ export type ProjectedLiquidityZone = LiquidityZone & {
 
 const FULL_IMAGE_BOUNDS: LiquidityPlotBounds = { left: 0, top: 0, right: 100, bottom: 100 };
 const SCALE_RESIDUAL_TOLERANCE = 1.5;
+const MIN_TWO_ANCHOR_PLOT_RATIO = .28;
 const MAX_BAND_PLOT_RATIO = .08;
 const TOUCH_TOLERANCE_PLOT_RATIO = .02;
 const MIN_TOUCH_X_SEPARATION = .75;
@@ -87,16 +88,19 @@ function verifiedPercentLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?:
   const unique = valid.filter((anchor, index, all) =>
     all.findIndex((candidate) => candidate.price === anchor.price || candidate.y === anchor.y) === index,
   );
-  // Three points are the minimum that can distinguish a linear axis from a
-  // log/non-linear scale or a pair of coincidentally plausible OCR labels.
-  if (unique.length < 3) return null;
+  // Three labels remain preferred because they expose a non-linear or bad OCR
+  // fit. Two exact labels can still calibrate an ordinary mobile chart when
+  // they span a substantial part of the plot; every liquidity band and touch
+  // row is independently checked against the resulting projection below.
+  if (unique.length < 2) return null;
   const ordered = [...unique].sort((left, right) => left.price - right.price);
   if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return null;
   const low = ordered[0];
   const high = ordered.at(-1)!;
-  if (Math.abs(high.y - low.y) < 12) return null;
+  const minimumSpan = ordered.length === 2 ? (plot.bottom - plot.top) * MIN_TWO_ANCHOR_PLOT_RATIO : 12;
+  if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
   const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  if (ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_RESIDUAL_TOLERANCE)) return null;
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_RESIDUAL_TOLERANCE)) return null;
   return { project, low, high };
 }
 

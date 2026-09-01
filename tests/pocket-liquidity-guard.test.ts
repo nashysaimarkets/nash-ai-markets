@@ -46,9 +46,10 @@ test("strict price parser accepts exact broker grouping and rejects ambiguous or
   assert.deepEqual(parseLiquidityPriceRange("2850 (2 touches)"), []);
 });
 
-test("verified scale requires three monotonic, consistent anchors inside the candle plot", () => {
+test("verified scale accepts a widely separated two-label mobile axis and rejects tight or inconsistent fits", () => {
   assert.ok(verifiedLiquidityScale(anchors, bounds));
-  assert.equal(verifiedLiquidityScale(anchors.slice(0, 2), bounds), null);
+  assert.ok(verifiedLiquidityScale(anchors.slice(0, 2), bounds));
+  assert.equal(verifiedLiquidityScale([{ price: 3000, y: 35 }, { price: 2900, y: 50 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 2900, y: 45 }, { price: 2950, y: 50 }, { price: 3000, y: 55 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 2800, y: 80 }, { price: 2900, y: 55 }, { price: 3000, y: 15 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 3000, y: 5 }, { price: 2900, y: 50 }, { price: 2800, y: 95 }], bounds), null);
@@ -124,7 +125,8 @@ test("low confidence, unreadable charts and unreadable candles force precision h
   assert.deepEqual(projectLiquidityZones(shield([zone({ confidence: "LOW" })]), "2900", anchors, bounds), []);
   assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", anchors, bounds, { chartReadability: "POOR", candlesReadable: true }), []);
   assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", anchors, bounds, { chartReadability: "CLEAR", candlesReadable: false }), []);
-  assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", anchors.slice(0, 2), bounds), []);
+  assert.equal(projectLiquidityZones(shield([zone()]), "2900", anchors.slice(0, 2), bounds).length, 1);
+  assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", [{ price: 3000, y: 35 }, { price: 2900, y: 50 }], bounds), []);
 });
 
 test("duplicate rows keep the highest-confidence pool regardless of model order", () => {
@@ -157,7 +159,10 @@ test("customer surface exposes a toggle, distinct safe states and explicit non-g
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
   ]);
   assert.match(component, /LIQUIDITY GUARD/);
+  assert.match(component, /TWO-LABEL SCALE CHECK/);
+  assert.doesNotMatch(component, /THREE-ANCHOR SCALE/);
   assert.match(component, /HIDE OVERLAY/);
+  assert.match(component, /REANALYSE CHART/);
   assert.match(component, /OVERLAY WITHHELD/);
   assert.match(component, /NO CLEAR STOP-RISK CLUSTER/);
   assert.match(component, /LIQUIDITY GUARD UNAVAILABLE/);

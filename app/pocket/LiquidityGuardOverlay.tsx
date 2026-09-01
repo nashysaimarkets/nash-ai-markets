@@ -43,7 +43,7 @@ function sideLabel(side: "ABOVE_PRICE" | "BELOW_PRICE") {
   return side === "ABOVE_PRICE" ? "ABOVE CURRENT" : "BELOW CURRENT";
 }
 
-export default function LiquidityGuardOverlay({ analysis, sourceImage }: { analysis: LiquidityGuardAnalysis; sourceImage: string }) {
+export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan, rescanning = false }: { analysis: LiquidityGuardAnalysis; sourceImage: string; onRescan?: () => void; rescanning?: boolean }) {
   const [overlayVisible, setOverlayVisible] = useState(true);
   const [landscape, setLandscape] = useState(false);
   const instanceId = useId().replaceAll(":", "");
@@ -74,7 +74,8 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage }: { analy
       : shield.status === "NO_VISIBLE_RISK_ZONES"
         ? "verified-none"
         : "withheld";
-  const lockedSummary = shield?.summary || "Visible candle reactions align with independently calibrated price rows.";
+  const lockedSummary = shield?.summary || "Visible candle reactions align with the calibrated price rows.";
+  const scaleEvidenceLabel = anchors.length >= 3 ? "THREE-LABEL SCALE CHECK" : anchors.length === 2 ? "TWO-LABEL SCALE CHECK" : "PRICE SCALE CHECK";
   const emptyState = displayState === "verified-none"
     ? {
         eyebrow: "SCAN COMPLETE",
@@ -100,8 +101,9 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage }: { analy
 
   return <section className="psLiquidityGuard" data-visible={overlayVisible} data-status={displayState} aria-labelledby={headingId}>
     <header>
-      <div><span>◉ LIQUIDITY GUARD</span><h2 id={headingId}>VISUAL STOP-RISK MAP</h2><small>THREE-ANCHOR SCALE · MULTIPLE CANDLE TOUCHES</small></div>
-      {displayState === "locked" ? <button type="button" aria-pressed={overlayVisible} onClick={() => setOverlayVisible((visible) => !visible)}>{overlayVisible ? "HIDE OVERLAY" : "SHOW OVERLAY"}</button> : null}
+      <div><span>◉ LIQUIDITY GUARD</span><h2 id={headingId}>VISUAL STOP-RISK MAP</h2><small>{scaleEvidenceLabel} · MULTIPLE CANDLE TOUCHES</small></div>
+      {displayState === "locked" ? <button type="button" aria-pressed={overlayVisible} onClick={() => setOverlayVisible((visible) => !visible)}>{overlayVisible ? "HIDE OVERLAY" : "SHOW OVERLAY"}</button>
+        : displayState !== "verified-none" && onRescan ? <button type="button" disabled={rescanning} onClick={onRescan}>{rescanning ? "REANALYSING…" : "REANALYSE CHART"}</button> : null}
     </header>
     {displayState !== "locked" ? <div className="psLiquidityStatus" data-state={displayState} role="status" aria-live="polite"><i aria-hidden="true">{displayState === "verified-none" ? "✓" : displayState === "withheld" ? "🛡" : "!"}</i><div><small>{emptyState.eyebrow}</small><strong>{emptyState.title}</strong><p>{emptyState.detail}</p></div><span>ORIGINAL CHART UNCHANGED</span></div> : null}
     <div className="psLiquidityCanvas" data-landscape={landscape}>

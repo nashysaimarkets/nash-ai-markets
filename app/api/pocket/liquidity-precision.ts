@@ -76,16 +76,18 @@ function verifiedScale(value: unknown, bounds: Bounds) {
   const unique = anchors.filter((anchor, index, all) =>
     all.findIndex((candidate) => candidate.price === anchor.price || candidate.y === anchor.y) === index,
   );
-  // Liquidity markup is held to a higher standard than prose levels: three
-  // anchors are required so a bad two-point or logarithmic fit cannot pass.
-  if (unique.length < 3) return null;
+  // Prefer three labels so a non-linear fit can be detected. A widely
+  // separated two-label mobile scale is accepted only because every returned
+  // zone still has to pass side, band-width and observed touch-row checks.
+  if (unique.length < 2) return null;
   const ordered = [...unique].sort((left, right) => left.price - right.price);
   if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return null;
   const low = ordered[0];
   const high = ordered.at(-1)!;
-  if (Math.abs(high.y - low.y) < 12 || high.price === low.price) return null;
+  const minimumSpan = ordered.length === 2 ? (bounds.bottom - bounds.top) * .28 : 12;
+  if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
   const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  if (ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 1.5)) return null;
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 1.5)) return null;
   return { project };
 }
 

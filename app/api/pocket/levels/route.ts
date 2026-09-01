@@ -141,7 +141,7 @@ export async function POST(request: Request) {
           "candlesReadable is true only when the reaction candle bodies and wicks are discernible. priceScaleReadable is true only when multiple consistent axis labels are clearly legible.",
           "Use only visible candle reactions. Return full-image percentage coordinates. plotBounds encloses the candle plot only.",
           "Read 3-4 clearly printed price-axis labels where possible. Exact numeric prices require at least two widely separated readable scale labels that form a consistent linear scale.",
-          "Support and resistance lines span plotBounds left to right. Prefer one strong level on each side of current price; never use phone chrome, order tickets, footer values or the current-price guide as a structural level.",
+        "Support and resistance lines span plotBounds left to right. Prefer one strong level on each side of current price, but if only one side is visible return that exact side and leave the missing side absent. Never use phone chrome, order tickets, footer values or the current-price guide as a structural level.",
           "Return currentPrice only from the exact visibly printed live/last-price marker. It is a compatibility check and never authorises replacing the verified primary price.",
           "levelStory must briefly say what was verified and what still needs visual confirmation. Never invent hidden prices.",
         ].join(" "),

@@ -87,9 +87,10 @@ test("a completed scan with no visible cluster is distinct from withheld evidenc
 });
 
 test("a missing Liquidity Guard result reports unavailable without covering the chart", () => {
-  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base}/>)
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base} onRescan={() => undefined}/>)
   assert.match(html, /data-status="unavailable"/);
   assert.match(html, /LIQUIDITY GUARD UNAVAILABLE/);
+  assert.match(html, /REANALYSE CHART/);
   assert.match(html, /Your chart remains unchanged/);
   assert.doesNotMatch(html, /psLiquidityHold/);
   assert.doesNotMatch(html, /psLiquidityVector/);
