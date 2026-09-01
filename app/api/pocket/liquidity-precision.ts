@@ -1,3 +1,5 @@
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
+
 type JsonRecord = Record<string, unknown>;
 
 const SIDES = new Set(["ABOVE_PRICE", "BELOW_PRICE"]);
@@ -120,6 +122,7 @@ export function choosePrecisionLiquidityShield(
 
 export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, currentPriceText: string | null) {
   if (!precision) return insufficientLiquidityShield("The precision chart-reading pass did not complete, so no liquidity zone was drawn.");
+  precision = canonicalizePocketGeometry(precision) as JsonRecord;
   const shield = precision.liquidityShield;
   if (!shield || typeof shield !== "object") return insufficientLiquidityShield();
   const raw = shield as JsonRecord;

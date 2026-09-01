@@ -48,6 +48,18 @@ test("level sanitation rejects wrong-side and implausibly distant zones", () => 
   assert.deepEqual(sanitizeChartLevels(levels, 100), [levels[0]]);
 });
 
+test("level sanitation never certifies a wrong-side level as near-current evidence", () => {
+  const current = 7639.92;
+  const wrongSideLevels = [
+    { kind: "support" as const, label: "support above market", price: 7650 },
+    { kind: "resistance" as const, label: "resistance below market", price: 7630 },
+  ];
+
+  assert.deepEqual(sanitizeChartLevels(wrongSideLevels, current), []);
+  assert.equal(hasVerifiedTwoSidedStructure(wrongSideLevels, current), false);
+  assert.deepEqual(rankChartLevels(wrongSideLevels, current, [], true), []);
+});
+
 test("level sanitation prefers a user-verified duplicate", () => {
   const levels = [{ kind: "support" as const, label: "AI", price: 99 }, { kind: "support" as const, label: "USER VERIFIED", price: 99.1 }];
   assert.equal(sanitizeChartLevels(levels, 100)[0].label, "USER VERIFIED");

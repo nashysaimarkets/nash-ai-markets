@@ -228,6 +228,26 @@ test("mislabelled horizontal levels are classified by current market location", 
   ]);
 });
 
+test("a rounded near-current level is a pivot and cannot certify either structural side", () => {
+  const calibrated = calibratePocketAnalysis({
+    currentPrice: "7639.92",
+    contradictions: [],
+    confidence: "HIGH",
+    verdict: "WATCH",
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
+    setupScore: { overall: 80, grade: "B" },
+    plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
+    priceScaleAnchors: [{ price: 7680, y: 20 }, { price: 7640, y: 50 }, { price: 7600, y: 80 }],
+    levels: [
+      { kind: "support", label: "rounded current row", price: "7640", y: 50 },
+      { kind: "resistance", label: "ceiling", price: "7680", y: 20 },
+    ],
+  }) as { levels: Array<{ kind: string; price: string }>; trustGate: { status: string; exactLevelCount: number } };
+  assert.deepEqual(calibrated.levels.map((level) => [level.kind, level.price]), [["pivot", "7640"], ["resistance", "7680"]]);
+  assert.equal(calibrated.trustGate.status, "PARTIAL");
+  assert.equal(calibrated.trustGate.exactLevelCount, 1);
+});
+
 test("unverified levels retain visual geometry while out-of-scale verified claims fail closed", () => {
   const base = {
     evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH", scaleReadable: true },
@@ -302,7 +322,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 10/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 11/);
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
@@ -504,21 +524,42 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   }
 });
 
-test("Decision Map precision hold is compact, two-sided and free of hidden map primitives", async () => {
+test("Decision Map withholds absent structure but keeps one-sided evidence explicitly partial", async () => {
   const [client, precisionStyles] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-precision-overhaul.css", import.meta.url), "utf8"),
   ]);
   const decisionMap = client.slice(client.indexOf("function DecisionMap"), client.indexOf("function SourceChart"));
-  const earlyHold = decisionMap.indexOf("if (!hasVerifiedTwoSidedStructure");
+  const earlyHold = decisionMap.indexOf("if (current === null || !verifiedStructure.length)");
   const firstMapPrimitive = decisionMap.indexOf("psBattleCurrent");
-  assert.ok(earlyHold >= 0 && firstMapPrimitive > earlyHold, "the strict hold must return before map primitives render");
+  assert.ok(earlyHold >= 0 && firstMapPrimitive > earlyHold, "an empty exact map must return before map primitives render");
   assert.match(decisionMap, /hasContext \? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"/);
   assert.match(decisionMap, /NO ESTIMATED LEVELS · NO HIDDEN MAP/);
+  assert.match(decisionMap, /PARTIAL PRICE MAP/);
+  assert.match(decisionMap, /data-structure=\{twoSided \? "two-sided" : "partial"\}/);
+  assert.match(decisionMap, /support is verified; resistance still needs a clearer view/i);
   assert.doesNotMatch(decisionMap, /onReanalyse|reanalysing|ADD ANOTHER PHOTO/);
   assert.match(precisionStyles, /\.psDecisionMapHold \{/);
   assert.match(precisionStyles, /min-height: 250px/);
   assert.match(precisionStyles, /@media \(max-width: 520px\)/);
+});
+
+test("full-screen Decision Map keeps two independent exits inside the safe viewport", async () => {
+  const [client, page, hotfix] = await Promise.all([
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-v1-1-hotfix.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /viewportFit: "cover"/);
+  assert.match(client, /className="psBattleFocusBody" ref=\{chartFocusScroll\}/);
+  assert.match(client, /psBattleBackToResult/);
+  assert.match(client, /event\.key === "Escape"/);
+  assert.match(hotfix, /\.psBattleFocus \{ overflow: hidden; \}/);
+  assert.match(hotfix, /\.psBattleFocusBody[\s\S]*overflow: auto/);
+  assert.match(hotfix, /\.psBattleFocus > header button \{ min-width: 64px; min-height: 44px; \}/);
+  assert.match(client, /<main className="psApp" data-pocket-build="v3\.2" data-chart-focus=\{chartFocus \? "true" : "false"\}>/);
+  assert.match(hotfix, /\.psApp\[data-chart-focus="true"\],[\s\S]*\.psResults\[data-chart-focus="true"\] \{ perspective: none; \}/);
+  assert.match(hotfix, /\.psXRayCanvas > img[\s\S]*height: auto[\s\S]*object-fit: contain/);
 });
 
 test("server beta budgets stop duplicate cost before the provider is called", () => {

@@ -1,6 +1,7 @@
 import { calibratePocketAnalysis, verifiedLinearScale } from "./analysis-calibration.ts";
 import { isPlainNumericPrice, numericPrice } from "./liquidity-precision.ts";
 import { instrumentIdentitiesMatch, structuralSideCoverage } from "./precision-structure.ts";
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -45,6 +46,10 @@ function parsePrimaryScale(record: JsonRecord) {
 export function validateLevelLabPrimaryProvenance(value: unknown): LevelLabPrimaryProvenance | null {
   if (!value || typeof value !== "object") return null;
   const record = value as JsonRecord;
+  // The primary endpoint emits at most four anchors. Reject oversized caller
+  // input before de-duplication/scale checks so malformed public requests
+  // cannot turn provenance validation into unbounded quadratic work.
+  if (Array.isArray(record.priceScaleAnchors) && record.priceScaleAnchors.length > 4) return null;
   const instrument = text(record.instrument, 80);
   const ticker = text(record.ticker, 30);
   const timeframe = text(record.timeframe, 30);
@@ -62,7 +67,7 @@ export function validateLevelLabPrimaryProvenance(value: unknown): LevelLabPrima
   };
 }
 
-/** Level Lab accepts slightly tighter mobile axis reads before falling back to the primary scale. */
+/** Level Lab accepts slightly tighter mobile axis reads from its own image. */
 function levelLabLinearScale(items: ScaleAnchor[]) {
   const strict = verifiedLinearScale(items);
   if (strict) return strict;
@@ -78,14 +83,14 @@ function levelLabLinearScale(items: ScaleAnchor[]) {
   return { low, high, project, count: ordered.length };
 }
 
-function resolveLevelLabScale(raw: JsonRecord, primary: LevelLabPrimaryProvenance) {
+function resolveLevelLabScale(raw: JsonRecord) {
   const labBounds = strictBounds(raw.plotBounds);
   const labAnchors = strictAnchors(raw.priceScaleAnchors, labBounds);
   const labScale = labBounds && levelLabLinearScale(labAnchors) ? { bounds: labBounds, anchors: labAnchors } : null;
-  if (labScale && raw.priceScaleReadable === true) return labScale;
-  if (primary.plotBounds && primary.priceScaleAnchors?.length) {
-    return { bounds: primary.plotBounds, anchors: primary.priceScaleAnchors };
-  }
+  // A different Level Lab screenshot has a different plot rectangle. Never
+  // project its candle rows through coordinates copied from the primary image.
+  // Consistent visible anchors are authoritative even when the model's
+  // conservative boolean flag says the scale is tight.
   return labScale;
 }
 
@@ -104,6 +109,7 @@ function strictBounds(value: unknown) {
 
 function strictAnchors(value: unknown, bounds: ReturnType<typeof strictBounds>) {
   if (!bounds || !Array.isArray(value)) return [];
+  if (value.length > 4) return [];
   return value.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
     const record = item as JsonRecord;
@@ -129,7 +135,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
   const primary = validateLevelLabPrimaryProvenance(primaryValue);
   if (!primary) return { ok: false, reason: "PRIMARY_PROVENANCE_UNVERIFIED" };
   if (!rawValue || typeof rawValue !== "object") return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
-  const raw = rawValue as JsonRecord;
+  const raw = canonicalizePocketGeometry(rawValue) as JsonRecord;
 
   if (raw.instrumentConfidence !== "HIGH" || !text(raw.instrumentIdentifier, 80)) return { ok: false, reason: "INSTRUMENT_UNREADABLE" };
   const identityMatch = instrumentIdentitiesMatch([primary.instrument, primary.ticker], raw.instrumentIdentifier);
@@ -138,7 +144,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
   if (!currentPricesCompatible(primary.currentPrice, raw.currentPrice)) return { ok: false, reason: "CURRENT_PRICE_MISMATCH" };
   if (raw.candlesReadable !== true || raw.confidence === "LOW") return { ok: false, reason: "CANDLES_UNREADABLE" };
 
-  const scaleFrame = resolveLevelLabScale(raw, primary);
+  const scaleFrame = resolveLevelLabScale(raw);
   if (!scaleFrame) return { ok: false, reason: "PRICE_SCALE_UNVERIFIED" };
   const { bounds, anchors } = scaleFrame;
 

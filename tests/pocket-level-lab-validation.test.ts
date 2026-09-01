@@ -41,6 +41,17 @@ test("Level Lab requires locked primary identity and an exact numeric primary pr
   assert.equal(validateLevelLabPrimaryProvenance({ ...primary, timeframe: "UNKNOWN" }), null);
 });
 
+test("Level Lab rejects oversized primary provenance before scale de-duplication", () => {
+  const priceScaleAnchors = Array.from({ length: 90_000 }, (_, index) => ({ price: 100 + index, y: index % 100 }));
+  const startedAt = performance.now();
+  assert.equal(validateLevelLabPrimaryProvenance({
+    ...primary,
+    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors,
+  }), null);
+  assert.ok(performance.now() - startedAt < 100, "the oversized array must be rejected in constant time");
+});
+
 test("a matching independently verified two-sided scan preserves primary price and Level Lab provenance", () => {
   const result = validateLevelLabScan(scan(), primary);
   assert.equal(result.ok, true);
@@ -127,11 +138,24 @@ test("Level Lab rejects unreadable candles and an unverified scale", () => {
   });
 });
 
-test("Level Lab can reuse a verified primary scale when the lab photo scale read is tight", () => {
+test("Level Lab fails closed when one anchor is fractional and one is percentage-based", () => {
+  const result = validateLevelLabScan(scan({
+    plotBounds: { left: 0, top: 0, right: 100, bottom: 100 },
+    priceScaleAnchors: [{ price: 110, y: .2 }, { price: 90, y: 80 }],
+    levels: [
+      { kind: "support", label: "False floor", price: "95", x: 0, y: 60.05, x2: 100, y2: 60.05 },
+      { kind: "resistance", label: "False ceiling", price: "105", x: 0, y: 20.15, x2: 100, y2: 20.15 },
+    ],
+  }), primary);
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.reason, "PRICE_SCALE_UNVERIFIED");
+});
+
+test("Level Lab uses its own consistent scale when the model's readability flag is conservative", () => {
   const primaryWithScale = {
     ...primary,
-    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
-    priceScaleAnchors: [{ price: 110, y: 20 }, { price: 90, y: 80 }],
+    plotBounds: { left: 25, top: 10, right: 75, bottom: 90 },
+    priceScaleAnchors: [{ price: 1000, y: 20 }, { price: 900, y: 80 }],
   };
   const tightLabScale = scan({
     priceScaleReadable: false,

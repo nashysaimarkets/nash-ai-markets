@@ -66,6 +66,7 @@ test("poor evidence leaves the source chart unobstructed and explains the withhe
   assert.doesNotMatch(html, /HIDE OVERLAY/);
   assert.doesNotMatch(html, /No candidate survived scale, side, candle-row and readability verification/);
   assert.doesNotMatch(html, /Untrusted guidance/);
+  assert.ok(html.indexOf("psLiquidityStatus") < html.indexOf("psLiquidityCanvas"), "the withheld explanation must appear before the unmarked chart");
 });
 
 test("a completed scan with no visible cluster is distinct from withheld evidence", () => {

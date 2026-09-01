@@ -8,6 +8,7 @@ import { calibratePocketAnalysis, enforcePocketTrustGate } from "../analysis-cal
 import { recoverPrecisionGeometry } from "../precision-fallback";
 import { choosePrecisionLiquidityShield, correctedCurrentPrice, insufficientLiquidityShield, isPlainNumericPrice, normalizePrecisionLiquidityShield } from "../liquidity-precision";
 import { normalizeAccuracyCorrection, type NormalizedAccuracyCorrection } from "../../../pocket/accuracy-feedback";
+import { canonicalizePocketGeometry } from "../../../lib/pocket-geometry";
 import {
   bindUserVerifiedStructuralLevel,
   combineVerifiedBattlefield,
@@ -585,10 +586,14 @@ export async function POST(request: Request) {
         }
         record.evidenceQuality = quality;
       }
-      const precisionRecord = precision && typeof precision === "object" ? precision as Record<string, unknown> : null;
+      const precisionRecord = precision && typeof precision === "object"
+        ? canonicalizePocketGeometry(precision) as Record<string, unknown>
+        : null;
       primaryPrecisionInstrumentIdentifier = precisionRecord?.instrumentIdentifier;
       primaryPrecisionInstrumentConfidence = precisionRecord?.confidence;
-      const contextPrecisionRecord = contextPrecision && typeof contextPrecision === "object" ? contextPrecision as Record<string, unknown> : null;
+      const contextPrecisionRecord = contextPrecision && typeof contextPrecision === "object"
+        ? canonicalizePocketGeometry(contextPrecision) as Record<string, unknown>
+        : null;
       const contextBattlefield = contextBattlefieldFromPrecision(contextPrecisionRecord);
       precision = recoverPrecisionGeometry(record, precisionRecord);
       if (precision && typeof precision === "object") {

@@ -1,4 +1,5 @@
 import { structuralSideCoverage } from "./precision-structure.ts";
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -96,7 +97,7 @@ export function calibratePocketAnalysis(
   linearScale: typeof verifiedLinearScale = verifiedLinearScale,
 ): unknown {
   if (!value || typeof value !== "object") return value;
-  const analysis = value as JsonRecord;
+  const analysis = canonicalizePocketGeometry(value) as JsonRecord;
   const quality = analysis.evidenceQuality && typeof analysis.evidenceQuality === "object"
     ? analysis.evidenceQuality as JsonRecord
     : {};
@@ -119,10 +120,10 @@ export function calibratePocketAnalysis(
 
   if (Array.isArray(analysis.levels) && analysis.plotBounds && typeof analysis.plotBounds === "object") {
     const rawBounds = analysis.plotBounds as JsonRecord;
-    const left = boundedPercent(rawBounds.left, 4);
-    const top = boundedPercent(rawBounds.top, 5);
-    const right = Math.max(left + 1, boundedPercent(rawBounds.right, 96));
-    const bottom = Math.max(top + 1, boundedPercent(rawBounds.bottom, 95));
+    const left = Math.min(99, boundedPercent(rawBounds.left, 4));
+    const top = Math.min(99, boundedPercent(rawBounds.top, 5));
+    const right = Math.min(100, Math.max(left + 1, boundedPercent(rawBounds.right, 96)));
+    const bottom = Math.min(100, Math.max(top + 1, boundedPercent(rawBounds.bottom, 95)));
     const anchors = Array.isArray(analysis.priceScaleAnchors) ? analysis.priceScaleAnchors
       .flatMap((item) => item && typeof item === "object" ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
       .filter((item): item is { price: number; y: number } => item.price !== null && item.price > 0 && item.y !== null && item.y >= top && item.y <= bottom)
@@ -146,12 +147,15 @@ export function calibratePocketAnalysis(
       const suppliedY = numericPrice(level.y);
       const modelY = boundedPercent(level.y, 50);
       const price = numericPrice(level.price);
-      // A vision pass can correctly read a horizontal price but invert its
-      // semantic label. Market location is deterministic: below current is
-      // support; above current is resistance.
+      // Market location is deterministic. A rounded quote effectively on the
+      // current row is a pivot/at-market marker, not evidence for either side;
+      // otherwise a support just above market could be counted as resistance
+      // by one gate and displayed as support by another.
       if ((kind === "support" || kind === "resistance") && currentPrice !== null && price !== null) {
-        if (price < currentPrice) kind = "support";
-        else if (price > currentPrice) kind = "resistance";
+        const sideTolerance = Math.max(Math.abs(currentPrice) * .00015, .01);
+        if (price < currentPrice - sideTolerance) kind = "support";
+        else if (price > currentPrice + sideTolerance) kind = "resistance";
+        else kind = "pivot";
       }
       const horizontal = kind === "support" || kind === "resistance";
       const scaledY = horizontal ? priceToY(level.price, modelY) : modelY;
@@ -216,7 +220,8 @@ export function calibratePocketAnalysis(
   const structuralLevels = Array.isArray(calibrated.levels)
     ? calibrated.levels.filter((item) => item && typeof item === "object" && ["support", "resistance", "pivot"].includes(String((item as JsonRecord).kind)))
     : [];
-  const exactStructuralLevels = structuralLevels.filter((item) => numericPrice((item as JsonRecord).price) !== null);
+  const horizontalLevels = structuralLevels.filter((item) => ["support", "resistance"].includes(String((item as JsonRecord).kind)));
+  const exactStructuralLevels = horizontalLevels.filter((item) => numericPrice((item as JsonRecord).price) !== null);
   const chartLocked = quality.chartReadability === "CLEAR" && quality.candlesReadable === true;
   const identityLocked = quality.instrumentConfidence === "HIGH" && quality.timeframeConfidence === "HIGH";
   const structuralCoverage = structuralSideCoverage(exactStructuralLevels, calibrated.currentPrice);
@@ -224,13 +229,13 @@ export function calibratePocketAnalysis(
   const contradictions = Array.isArray(analysis.contradictions) ? analysis.contradictions.filter((item) => typeof item === "string" && item.trim()) : [];
   const status = chartLocked && identityLocked && scaleLocked
     ? "LOCKED"
-    : unreadable || !structuralLevels.length
+    : unreadable || !horizontalLevels.length
       ? "HOLD"
       : "PARTIAL";
   const trustReasons = [
     chartLocked ? "Candles and structure are readable" : "Chart readability is incomplete",
     identityLocked ? "Instrument and timeframe are verified" : "Instrument or timeframe needs confirmation",
-    scaleLocked ? `${exactStructuralLevels.length} exact structural levels bracket current price` : structuralLevels.length ? "Two-sided exact structure is not verified" : "No structural level passed verification",
+    scaleLocked ? `${exactStructuralLevels.length} exact structural levels bracket current price` : horizontalLevels.length ? "Two-sided exact structure is not verified" : "No structural level passed verification",
     contradictions.length ? `${contradictions.length} contradiction${contradictions.length === 1 ? "" : "s"} remain visible` : "No explicit contradiction was returned",
   ];
   if (hasTrustInputs) calibrated.trustGate = {

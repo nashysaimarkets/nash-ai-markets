@@ -34,6 +34,7 @@ import "./pocket-trust-retention.css";
 import "./pocket-liquidity-guard.css";
 import "./pocket-precision-overhaul.css";
 import "./pocket-apple-paywall.css";
+import "./pocket-v1-1-hotfix.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
@@ -46,6 +47,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
   themeColor: "#0a0e13",
 };
 

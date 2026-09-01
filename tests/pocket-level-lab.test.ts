@@ -14,7 +14,9 @@ test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
 test("Level Lab exposes a separate photo and levels-only rescan", () => {
   assert.match(client, /INDEPENDENT LEVEL LAB/);
   assert.match(client, /RESCAN LEVELS ONLY/);
-  assert.match(client, /fetch\("\/api\/pocket\/levels"/);
+  assert.match(client, /postLevelLabScan/);
+  assert.match(client, /createLevelLabScanImage/);
+  assert.match(client, /JSON\.stringify\(\{ image: scanImage, primaryProvenance \}\)/);
   const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
   assert.doesNotMatch(merge, /requireAppleEntitlementForAdditionalRequest/);
 });
@@ -23,7 +25,7 @@ test("Level Lab merges only price-map fields into the existing analysis", () => 
   const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
   assert.match(merge, /setAnalysis\(\(current\)/);
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
-  assert.match(merge, /liquidityShield: undefined/);
+  assert.doesNotMatch(merge, /liquidityShield:/);
   assert.match(merge, /primaryProvenance/);
   assert.match(merge, /hasVerifiedTwoSidedStructure/);
   assert.match(merge, /provenance\?\.source === "LEVEL_LAB"/);
@@ -33,6 +35,9 @@ test("Level Lab merges only price-map fields into the existing analysis", () => 
   assert.match(merge, /current\.instrument === primaryProvenance\.instrument/);
   assert.match(merge, /currentPrice: current\.currentPrice/);
   assert.match(merge, /trustGate: returnedTrustGate/);
+  assert.match(merge, /x: Number\.NaN/);
+  assert.doesNotMatch(merge, /plotBounds: payload\.levels/);
+  assert.doesNotMatch(merge, /priceScaleAnchors: payload\.levels/);
   assert.doesNotMatch(merge, /payload\.levels!\.currentPrice \|\| current\.currentPrice/);
 });
 
@@ -48,6 +53,12 @@ test("independent endpoint fails closed on identity, price, scale, geometry and 
   assert.doesNotMatch(route, /still return the strongest visual support and resistance areas/);
   assert.doesNotMatch(route, /JSON\.parse\(output\) \}/);
   assert.match(route, /Do not produce or change a verdict, pattern, scenario, score, direction, plan or risk assessment/);
+  assert.match(route, /inFlightLevelLabRequests\.set\(completedKey, providerWork\)/);
+  assert.match(route, /rememberCompletedRequest\(completedKey, result\)/);
+  assert.match(route, /inFlightLevelLabRequests\.delete\(completedKey\)/);
+  assert.match(route, /LEVEL_LAB_REPLAY_MAX_ENTRIES = 64/);
+  assert.match(route, /signal: providerController\.signal/);
+  assert.doesNotMatch(route, /signal: request\.signal/);
 });
 
 test("Pocket shows a same-day official macro calendar in UK time", () => {

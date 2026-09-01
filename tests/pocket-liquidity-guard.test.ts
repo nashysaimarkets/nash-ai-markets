@@ -165,7 +165,7 @@ test("customer surface exposes a toggle, distinct safe states and explicit non-g
   assert.match(component, /NOT GUARANTEED REVERSALS/);
   assert.match(component, /projectLiquidityZones/);
   assert.match(client, /id: "guard"/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 10/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 11/);
   assert.match(styles, /\.psLiquidityVector/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(route, /liquidityShield/);
