@@ -12,7 +12,7 @@
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "npm run test:unit && npm run test:render && npm run build && npm run test:rendered",
     "test:unit": "node --import tsx --test tests/*.test.ts",
-    "test:render": "node --import tsx --test tests/render/*.test.ts",
+    "test:render": "node --import tsx --test tests/render/*.test.ts tests/render/*.test.tsx",
     "test:rendered": "node --test tests/rendered-html.test.mjs",
     "simulate:production": "node --test tests/production-launch-simulation.test.ts",
     "typecheck": "tsc --noEmit --incremental false",

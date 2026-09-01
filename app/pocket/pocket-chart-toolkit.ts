@@ -24,8 +24,11 @@ export function sanitizeChartLevels(levels: NumericChartLevel[], currentPrice: n
   const usable = levels.filter((level) => {
     if (!Number.isFinite(level.price) || level.price <= 0) return false;
     if (currentPrice !== null && Math.abs(level.price - currentPrice) / Math.max(Math.abs(currentPrice), 1) > 0.2) return false;
-    if (level.kind === "support" && currentPrice !== null && level.price > currentPrice + levelTolerance(currentPrice)) return false;
-    if (level.kind === "resistance" && currentPrice !== null && level.price < currentPrice - levelTolerance(currentPrice)) return false;
+    // A level's role is directional evidence, so a tolerance must never move it
+    // across the market. Near-duplicate tolerance is useful for deduplication,
+    // but support must still be strictly below price and resistance above it.
+    if (level.kind === "support" && currentPrice !== null && level.price >= currentPrice) return false;
+    if (level.kind === "resistance" && currentPrice !== null && level.price <= currentPrice) return false;
     return true;
   });
   return usable.reduce<NumericChartLevel[]>((clean, level) => {

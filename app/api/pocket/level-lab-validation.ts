@@ -1,6 +1,7 @@
 import { calibratePocketAnalysis, verifiedLinearScale } from "./analysis-calibration.ts";
 import { isPlainNumericPrice, numericPrice } from "./liquidity-precision.ts";
 import { instrumentIdentitiesMatch, structuralSideCoverage } from "./precision-structure.ts";
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -24,8 +25,7 @@ export type LevelLabRejection =
   | "CURRENT_PRICE_MISMATCH"
   | "CANDLES_UNREADABLE"
   | "PRICE_SCALE_UNVERIFIED"
-  | "GEOMETRY_UNVERIFIED"
-  | "ONE_SIDED_STRUCTURE";
+  | "GEOMETRY_UNVERIFIED";
 
 export type LevelLabValidation =
   | { ok: true; levels: JsonRecord }
@@ -45,6 +45,10 @@ function parsePrimaryScale(record: JsonRecord) {
 export function validateLevelLabPrimaryProvenance(value: unknown): LevelLabPrimaryProvenance | null {
   if (!value || typeof value !== "object") return null;
   const record = value as JsonRecord;
+  // The primary endpoint emits at most four anchors. Reject oversized caller
+  // input before de-duplication/scale checks so malformed public requests
+  // cannot turn provenance validation into unbounded quadratic work.
+  if (Array.isArray(record.priceScaleAnchors) && record.priceScaleAnchors.length > 4) return null;
   const instrument = text(record.instrument, 80);
   const ticker = text(record.ticker, 30);
   const timeframe = text(record.timeframe, 30);
@@ -62,7 +66,7 @@ export function validateLevelLabPrimaryProvenance(value: unknown): LevelLabPrima
   };
 }
 
-/** Level Lab accepts slightly tighter mobile axis reads before falling back to the primary scale. */
+/** Level Lab accepts slightly tighter mobile axis reads from its own image. */
 function levelLabLinearScale(items: ScaleAnchor[]) {
   const strict = verifiedLinearScale(items);
   if (strict) return strict;
@@ -78,14 +82,14 @@ function levelLabLinearScale(items: ScaleAnchor[]) {
   return { low, high, project, count: ordered.length };
 }
 
-function resolveLevelLabScale(raw: JsonRecord, primary: LevelLabPrimaryProvenance) {
+function resolveLevelLabScale(raw: JsonRecord) {
   const labBounds = strictBounds(raw.plotBounds);
   const labAnchors = strictAnchors(raw.priceScaleAnchors, labBounds);
   const labScale = labBounds && levelLabLinearScale(labAnchors) ? { bounds: labBounds, anchors: labAnchors } : null;
-  if (labScale && raw.priceScaleReadable === true) return labScale;
-  if (primary.plotBounds && primary.priceScaleAnchors?.length) {
-    return { bounds: primary.plotBounds, anchors: primary.priceScaleAnchors };
-  }
+  // A different Level Lab screenshot has a different plot rectangle. Never
+  // project its candle rows through coordinates copied from the primary image.
+  // Consistent visible anchors are authoritative even when the model's
+  // conservative boolean flag says the scale is tight.
   return labScale;
 }
 
@@ -104,6 +108,7 @@ function strictBounds(value: unknown) {
 
 function strictAnchors(value: unknown, bounds: ReturnType<typeof strictBounds>) {
   if (!bounds || !Array.isArray(value)) return [];
+  if (value.length > 4) return [];
   return value.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
     const record = item as JsonRecord;
@@ -118,7 +123,7 @@ function currentPricesCompatible(primaryValue: unknown, levelLabValue: unknown) 
   const levelLab = numericPrice(levelLabValue);
   if (primary === null || levelLab === null || primary <= 0 || levelLab <= 0) return false;
   const denominator = Math.max(Math.abs(primary), Math.abs(levelLab), 1);
-  return Math.abs(primary - levelLab) / denominator <= 0.02;
+  return Math.abs(primary - levelLab) / denominator <= 0.005;
 }
 
 /**
@@ -129,7 +134,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
   const primary = validateLevelLabPrimaryProvenance(primaryValue);
   if (!primary) return { ok: false, reason: "PRIMARY_PROVENANCE_UNVERIFIED" };
   if (!rawValue || typeof rawValue !== "object") return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
-  const raw = rawValue as JsonRecord;
+  const raw = canonicalizePocketGeometry(rawValue) as JsonRecord;
 
   if (raw.instrumentConfidence !== "HIGH" || !text(raw.instrumentIdentifier, 80)) return { ok: false, reason: "INSTRUMENT_UNREADABLE" };
   const identityMatch = instrumentIdentitiesMatch([primary.instrument, primary.ticker], raw.instrumentIdentifier);
@@ -138,7 +143,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
   if (!currentPricesCompatible(primary.currentPrice, raw.currentPrice)) return { ok: false, reason: "CURRENT_PRICE_MISMATCH" };
   if (raw.candlesReadable !== true || raw.confidence === "LOW") return { ok: false, reason: "CANDLES_UNREADABLE" };
 
-  const scaleFrame = resolveLevelLabScale(raw, primary);
+  const scaleFrame = resolveLevelLabScale(raw);
   if (!scaleFrame) return { ok: false, reason: "PRICE_SCALE_UNVERIFIED" };
   const { bounds, anchors } = scaleFrame;
 
@@ -167,15 +172,25 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
       && ["support", "resistance"].includes(String((level as JsonRecord).kind))
       && numericPrice((level as JsonRecord).price) !== null)
     : [];
-  if (levels.length < 2) return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
+  if (levels.length < 1) return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
   const coverage = structuralSideCoverage(levels, primary.currentPrice);
-  if (!coverage.twoSided) return { ok: false, reason: "ONE_SIDED_STRUCTURE" };
   const trustGate = calibrated.trustGate && typeof calibrated.trustGate === "object"
     ? calibrated.trustGate as JsonRecord
     : null;
-  if (trustGate?.status !== "LOCKED" || trustGate.scaleLocked !== true || trustGate.identityLocked !== true || trustGate.chartLocked !== true) {
+  const expectedStatus = coverage.twoSided ? "LOCKED" : "PARTIAL";
+  const validGate = trustGate?.status === expectedStatus
+    && trustGate.identityLocked === true
+    && trustGate.chartLocked === true
+    && Number(trustGate.exactLevelCount) >= 1
+    && (!coverage.twoSided || trustGate.scaleLocked === true);
+  if (!validGate) {
     return { ok: false, reason: "GEOMETRY_UNVERIFIED" };
   }
+  const levelStory = coverage.twoSided
+    ? text(raw.levelStory, 260) || "Two-sided support and resistance passed Level Lab verification."
+    : coverage.supportBelow
+      ? "Level Lab verified support below current price. Resistance above current price remains unverified and has not been estimated."
+      : "Level Lab verified resistance above current price. Support below current price remains unverified and has not been estimated.";
 
   return {
     ok: true,
@@ -191,7 +206,7 @@ export function validateLevelLabScan(rawValue: unknown, primaryValue: unknown): 
       // earlier HOLD/PARTIAL gate would leave the map and its trust state in
       // contradiction.
       trustGate,
-      levelStory: text(raw.levelStory, 260) || "Two-sided support and resistance passed Level Lab verification.",
+      levelStory,
       confidence: raw.confidence === "HIGH" ? "HIGH" : "MEDIUM",
       limitation: text(raw.limitation, 160),
       provenance: {
@@ -212,7 +227,6 @@ export function levelLabRejectionMessage(reason: LevelLabRejection) {
   if (reason === "CURRENT_PRICE_UNREADABLE") return "The Level Lab chart current-price marker is not readable. Use a clearer price-scale screenshot.";
   if (reason === "CURRENT_PRICE_MISMATCH") return "The Level Lab chart price does not match the verified primary chart closely enough, so no levels were applied.";
   if (reason === "CANDLES_UNREADABLE") return "The Level Lab candle reactions are not clear enough to verify structure.";
-  if (reason === "PRICE_SCALE_UNVERIFIED") return "The Level Lab price scale could not be verified. Use a screenshot with at least two clear price labels on the right-hand axis, or reuse the same chart that already passed the main read.";
-  if (reason === "ONE_SIDED_STRUCTURE") return "Level Lab could not verify both support below and resistance above the current price.";
+  if (reason === "PRICE_SCALE_UNVERIFIED") return "The Level Lab price scale could not be verified. Use a screenshot with at least two clear, widely separated price labels on the right-hand axis.";
   return "Level Lab could not verify the level prices against the visible scale and candle rows.";
 }

@@ -4,6 +4,7 @@ import {
   combineVerifiedBattlefield,
   confirmContextCompatibility,
   contextBattlefieldFromPrecision,
+  hasViablePrecisionGeometry,
   hasReusableTwoSidedStructure,
   instrumentIdentitiesMatch,
   normalizeInstrumentIdentifier,
@@ -65,7 +66,7 @@ test("successful context geometry remains independently available", () => {
     instrumentIdentifier: "US 500 (DFB)",
     confidence: "HIGH",
     currentPrice: "101",
-    priceScaleAnchors: [{ price: 105, y: 20 }, { price: 95, y: 80 }],
+    priceScaleAnchors: [{ price: 105, y: 20 }, { price: 100, y: 50 }, { price: 95, y: 80 }],
     plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
     levels: [{ kind: "support", price: "95" }, { kind: "resistance", price: "105" }],
   });
@@ -90,6 +91,7 @@ test("pivots do not satisfy structural coverage on either side", () => {
 test("a liquidity-only retry cannot take ownership of structural geometry", () => {
   assert.equal(rescueShouldLeadGeometry(["LIQUIDITY_INCOMPLETE"]), false);
   assert.equal(rescueShouldLeadGeometry(["MISSING_STRUCTURAL_SIDE", "LIQUIDITY_INCOMPLETE"]), true);
+  assert.equal(rescueShouldLeadGeometry(["GEOMETRY_UNUSABLE"]), true);
 });
 
 test("only exact horizontal structure below and above current is two-sided", () => {
@@ -99,7 +101,64 @@ test("only exact horizontal structure below and above current is two-sided", () 
     { kind: "support", price: "100" },
   ], "100");
   assert.deepEqual(coverage, { currentPrice: 100, supportBelow: true, resistanceAbove: true, exactHorizontalLevels: 2, twoSided: true });
-  assert.deepEqual(precisionRescueReasons({ currentPrice: "100", levels: [{ kind: "support", price: "95" }, { kind: "resistance", price: "105" }], liquidityShield: completeShield }), []);
+  const viable = {
+    currentPrice: "100",
+    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors: [{ price: 105, y: 20 }, { price: 100, y: 50 }, { price: 95, y: 80 }],
+    levels: [{ kind: "support", price: "95", y: 80 }, { kind: "resistance", price: "105", y: 20 }],
+    liquidityShield: completeShield,
+  };
+  assert.equal(hasViablePrecisionGeometry(viable), true);
+  assert.deepEqual(precisionRescueReasons(viable), []);
+});
+
+test("two-sided prices with unusable scale geometry trigger the precision rescue", () => {
+  const unusable = {
+    currentPrice: "100",
+    plotBounds: { left: 0, top: 0, right: 100, bottom: 100 },
+    priceScaleAnchors: [{ price: 105, y: .1 }, { price: 100, y: .5 }, { price: 95, y: .9 }],
+    levels: [{ kind: "support", price: "95", y: .9 }, { kind: "resistance", price: "105", y: .1 }],
+    liquidityShield: completeShield,
+  };
+  assert.equal(hasViablePrecisionGeometry(unusable), false);
+  assert.deepEqual(precisionRescueReasons(unusable), ["GEOMETRY_UNUSABLE"]);
+});
+
+test("a raw liquidity zone that fails scale and touch-row validation triggers rescue", () => {
+  const value = {
+    currentPrice: "100",
+    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors: [{ price: 105, y: 20 }, { price: 100, y: 50 }, { price: 95, y: 80 }],
+    levels: [{ kind: "support", price: "95", y: 80 }, { kind: "resistance", price: "105", y: 20 }],
+    liquidityShield: {
+      status: "VISIBLE_RISK_ZONES",
+      zones: [{
+        side: "BELOW_PRICE",
+        pattern: "EQUAL_LOWS",
+        label: "wrong row",
+        priceLow: 95,
+        priceHigh: 95,
+        confidence: "HIGH",
+        evidence: "Claimed lows",
+        touchPoints: [{ x: 25, y: 20 }, { x: 70, y: 20 }],
+      }],
+    },
+  };
+  assert.deepEqual(precisionRescueReasons(value), ["LIQUIDITY_UNUSABLE"]);
+});
+
+test("a rounded at-market quote cannot satisfy a structural side", () => {
+  const coverage = structuralSideCoverage([
+    { kind: "support", price: "7640" },
+    { kind: "resistance", price: "7680" },
+  ], "7639.92");
+  assert.deepEqual(coverage, {
+    currentPrice: 7639.92,
+    supportBelow: false,
+    resistanceAbove: true,
+    exactHorizontalLevels: 1,
+    twoSided: false,
+  });
 });
 
 test("an explicit context match is still rejected when visible current prices conflict", () => {

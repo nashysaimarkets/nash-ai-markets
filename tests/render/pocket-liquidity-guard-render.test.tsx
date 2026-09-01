@@ -66,6 +66,7 @@ test("poor evidence leaves the source chart unobstructed and explains the withhe
   assert.doesNotMatch(html, /HIDE OVERLAY/);
   assert.doesNotMatch(html, /No candidate survived scale, side, candle-row and readability verification/);
   assert.doesNotMatch(html, /Untrusted guidance/);
+  assert.ok(html.indexOf("psLiquidityStatus") < html.indexOf("psLiquidityCanvas"), "the withheld explanation must appear before the unmarked chart");
 });
 
 test("a completed scan with no visible cluster is distinct from withheld evidence", () => {
@@ -86,9 +87,10 @@ test("a completed scan with no visible cluster is distinct from withheld evidenc
 });
 
 test("a missing Liquidity Guard result reports unavailable without covering the chart", () => {
-  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base}/>)
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base} onRescan={() => undefined}/>)
   assert.match(html, /data-status="unavailable"/);
   assert.match(html, /LIQUIDITY GUARD UNAVAILABLE/);
+  assert.match(html, /REANALYSE CHART/);
   assert.match(html, /Your chart remains unchanged/);
   assert.doesNotMatch(html, /psLiquidityHold/);
   assert.doesNotMatch(html, /psLiquidityVector/);

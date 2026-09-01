@@ -41,6 +41,17 @@ test("Level Lab requires locked primary identity and an exact numeric primary pr
   assert.equal(validateLevelLabPrimaryProvenance({ ...primary, timeframe: "UNKNOWN" }), null);
 });
 
+test("Level Lab rejects oversized primary provenance before scale de-duplication", () => {
+  const priceScaleAnchors = Array.from({ length: 90_000 }, (_, index) => ({ price: 100 + index, y: index % 100 }));
+  const startedAt = performance.now();
+  assert.equal(validateLevelLabPrimaryProvenance({
+    ...primary,
+    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
+    priceScaleAnchors,
+  }), null);
+  assert.ok(performance.now() - startedAt < 100, "the oversized array must be rejected in constant time");
+});
+
 test("a matching independently verified two-sided scan preserves primary price and Level Lab provenance", () => {
   const result = validateLevelLabScan(scan(), primary);
   assert.equal(result.ok, true);
@@ -108,6 +119,10 @@ test("Level Lab treats its current price as a compatibility check, never a repla
     ok: false,
     reason: "CURRENT_PRICE_MISMATCH",
   });
+  assert.deepEqual(validateLevelLabScan(scan({ currentPrice: "100.6" }), primary), {
+    ok: false,
+    reason: "CURRENT_PRICE_MISMATCH",
+  });
 });
 
 test("Level Lab rejects unreadable candles and an unverified scale", () => {
@@ -127,11 +142,24 @@ test("Level Lab rejects unreadable candles and an unverified scale", () => {
   });
 });
 
-test("Level Lab can reuse a verified primary scale when the lab photo scale read is tight", () => {
+test("Level Lab fails closed when one anchor is fractional and one is percentage-based", () => {
+  const result = validateLevelLabScan(scan({
+    plotBounds: { left: 0, top: 0, right: 100, bottom: 100 },
+    priceScaleAnchors: [{ price: 110, y: .2 }, { price: 90, y: 80 }],
+    levels: [
+      { kind: "support", label: "False floor", price: "95", x: 0, y: 60.05, x2: 100, y2: 60.05 },
+      { kind: "resistance", label: "False ceiling", price: "105", x: 0, y: 20.15, x2: 100, y2: 20.15 },
+    ],
+  }), primary);
+  assert.equal(result.ok, false);
+  if (!result.ok) assert.equal(result.reason, "PRICE_SCALE_UNVERIFIED");
+});
+
+test("Level Lab uses its own consistent scale when the model's readability flag is conservative", () => {
   const primaryWithScale = {
     ...primary,
-    plotBounds: { left: 5, top: 10, right: 90, bottom: 90 },
-    priceScaleAnchors: [{ price: 110, y: 20 }, { price: 90, y: 80 }],
+    plotBounds: { left: 25, top: 10, right: 75, bottom: 90 },
+    priceScaleAnchors: [{ price: 1000, y: 20 }, { price: 900, y: 80 }],
   };
   const tightLabScale = scan({
     priceScaleReadable: false,
@@ -288,28 +316,72 @@ test("a clearly non-linear three-label scale still fails closed and does not inv
   });
 });
 
-test("Level Lab rejects levels that do not align with verified candle rows", () => {
+test("Level Lab drops a misaligned row but preserves the independently verified side as PARTIAL", () => {
   const badGeometry = scan({
     levels: [
       { kind: "support", label: "Wrong row", price: "95", x: 5, y: 15, x2: 90, y2: 15 },
       { kind: "resistance", label: "Visible ceiling", price: "105", x: 5, y: 35, x2: 90, y2: 35 },
     ],
   });
-  assert.deepEqual(validateLevelLabScan(badGeometry, primary), {
-    ok: false,
-    reason: "GEOMETRY_UNVERIFIED",
-  });
+  const result = validateLevelLabScan(badGeometry, primary);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual((result.levels.levels as Array<{ kind: string; price: string }>).map((level) => [level.kind, level.price]), [["resistance", "105"]]);
+  assert.equal((result.levels.trustGate as Record<string, unknown>).status, "PARTIAL");
+  assert.equal((result.levels.trustGate as Record<string, unknown>).scaleLocked, false);
+  assert.equal((result.levels.trustGate as Record<string, unknown>).exactLevelCount, 1);
+  assert.match(String(result.levels.levelStory), /support below current price remains unverified/i);
 });
 
-test("Level Lab rejects one-sided structure even when multiple levels pass geometry", () => {
+test("Level Lab still rejects a scan when no horizontal row survives geometry", () => {
+  assert.deepEqual(validateLevelLabScan(scan({
+    levels: [
+      { kind: "support", label: "Wrong floor", price: "95", x: 5, y: 15, x2: 90, y2: 15 },
+      { kind: "resistance", label: "Wrong ceiling", price: "105", x: 5, y: 75, x2: 90, y2: 75 },
+    ],
+  }), primary), { ok: false, reason: "GEOMETRY_UNVERIFIED" });
+});
+
+test("Level Lab preserves multiple exact levels on one side as a PARTIAL map", () => {
   const oneSided = scan({
     levels: [
       { kind: "support", label: "Floor one", price: "95", x: 5, y: 65, x2: 90, y2: 65 },
       { kind: "support", label: "Floor two", price: "97", x: 5, y: 59, x2: 90, y2: 59 },
     ],
   });
-  assert.deepEqual(validateLevelLabScan(oneSided, primary), {
-    ok: false,
-    reason: "ONE_SIDED_STRUCTURE",
+  const result = validateLevelLabScan(oneSided, primary);
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual((result.levels.levels as Array<{ kind: string; price: string }>).map((level) => [level.kind, level.price]), [["support", "95"], ["support", "97"]]);
+  assert.deepEqual(result.levels.trustGate, {
+    status: "PARTIAL",
+    chartLocked: true,
+    identityLocked: true,
+    scaleLocked: false,
+    exactLevelCount: 2,
+    reasons: [
+      "Candles and structure are readable",
+      "Instrument and timeframe are verified",
+      "Two-sided exact structure is not verified",
+      "No explicit contradiction was returned",
+    ],
+    nextAction: "Add a chart with a clear price scale or a supporting timeframe, then reanalyse.",
   });
+  assert.match(String(result.levels.levelStory), /resistance above current price remains unverified/i);
+  assert.doesNotMatch(String(result.levels.levelStory), /both sides/i);
+});
+
+test("Level Lab accepts either single exact side without upgrading it to LOCKED", () => {
+  for (const level of [
+    { kind: "support", label: "Visible floor", price: "95", x: 5, y: 65, x2: 90, y2: 65 },
+    { kind: "resistance", label: "Visible ceiling", price: "105", x: 5, y: 35, x2: 90, y2: 35 },
+  ]) {
+    const result = validateLevelLabScan(scan({ levels: [level] }), primary);
+    assert.equal(result.ok, true);
+    if (!result.ok) continue;
+    const gate = result.levels.trustGate as Record<string, unknown>;
+    assert.equal(gate.status, "PARTIAL");
+    assert.equal(gate.exactLevelCount, 1);
+    assert.equal(gate.scaleLocked, false);
+  }
 });

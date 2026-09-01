@@ -1,4 +1,5 @@
 import { numericPrice } from "./liquidity-precision.ts";
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -37,6 +38,8 @@ function hasVerifiedScale(value: JsonRecord | null) {
 
 /** Merge independent passes without throwing away the best evidence from either. */
 export function recoverPrecisionGeometry(report: JsonRecord, precision: JsonRecord | null) {
+  report = canonicalizePocketGeometry(report) as JsonRecord;
+  precision = precision ? canonicalizePocketGeometry(precision) as JsonRecord : null;
   // The dedicated geometry call can occasionally fail even though the main
   // structured pass returned a complete, internally verifiable scale. Keep
   // that evidence instead of turning a clear chart into an empty precision

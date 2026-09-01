@@ -1,4 +1,5 @@
-import { numericPrice } from "./liquidity-precision.ts";
+import { normalizePrecisionLiquidityShield, numericPrice } from "./liquidity-precision.ts";
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -133,7 +134,7 @@ function exactLevels(value: unknown, currentPrice: number | null) {
     const userVerified = level.source === "USER_VERIFIED";
     if (price === null || price <= 0 || !["support", "resistance", "pivot"].includes(rawKind)) return [];
     if (!userVerified && currentPrice !== null && Math.abs(price - currentPrice) / Math.max(Math.abs(currentPrice), 1) > 0.2) return [];
-    if (rawKind !== "pivot" && currentPrice !== null && Math.abs(price - currentPrice) <= Math.max(Math.abs(currentPrice) * 1e-8, 1e-8)) return [];
+    if (rawKind !== "pivot" && currentPrice !== null && Math.abs(price - currentPrice) <= Math.max(Math.abs(currentPrice) * .00015, .01)) return [];
     const kind = userVerified || rawKind === "pivot" || currentPrice === null
       ? rawKind
       : price < currentPrice
@@ -199,22 +200,75 @@ export function structuralSideCoverage(levels: unknown, currentPriceValue: unkno
   };
 }
 
+/** A raw two-sided claim is useful only when both rows survive the same scale checks as calibration. */
+export function hasViablePrecisionGeometry(value: JsonRecord, trustedCurrentPrice: unknown = null) {
+  const normalized = canonicalizePocketGeometry(value) as JsonRecord;
+  const bounds = normalized.plotBounds && typeof normalized.plotBounds === "object" ? normalized.plotBounds as JsonRecord : null;
+  const left = numericPrice(bounds?.left);
+  const top = numericPrice(bounds?.top);
+  const right = numericPrice(bounds?.right);
+  const bottom = numericPrice(bounds?.bottom);
+  if (left === null || top === null || right === null || bottom === null
+    || left < 0 || top < 0 || right > 100 || bottom > 100 || right <= left || bottom <= top) return false;
+  const anchors = records(normalized.priceScaleAnchors).flatMap((anchor) => {
+    const price = numericPrice(anchor.price);
+    const y = numericPrice(anchor.y);
+    return price !== null && price > 0 && y !== null && y >= top && y <= bottom ? [{ price, y }] : [];
+  });
+  const unique = anchors.filter((anchor, index, all) =>
+    all.findIndex((candidate) => candidate.price === anchor.price || candidate.y === anchor.y) === index,
+  );
+  if (unique.length < 2) return false;
+  const ordered = [...unique].sort((a, b) => a.price - b.price);
+  if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return false;
+  const low = ordered[0];
+  const high = ordered.at(-1)!;
+  if (high.price === low.price || Math.abs(high.y - low.y) < (ordered.length === 2 ? 20 : 12)) return false;
+  const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 2.5)) return false;
+  const currentPrice = numericPrice(trustedCurrentPrice ?? normalized.currentPrice);
+  if (currentPrice === null || currentPrice <= 0) return false;
+  const currentY = project(currentPrice);
+  if (currentY < top || currentY > bottom) return false;
+  const rowTolerance = Math.max(4.5, (bottom - top) * .09);
+  const sideTolerance = Math.max(Math.abs(currentPrice) * .00015, .01);
+  const rows = records(normalized.levels).flatMap((level) => {
+    const price = numericPrice(level.price);
+    const y = numericPrice(level.y);
+    if (price === null || price <= 0 || y === null || !["support", "resistance"].includes(String(level.kind))) return [];
+    const projectedY = project(price);
+    if (projectedY < top || projectedY > bottom || Math.abs(y - projectedY) > rowTolerance) return [];
+    if (price < currentPrice - sideTolerance) return ["support" as const];
+    if (price > currentPrice + sideTolerance) return ["resistance" as const];
+    return [];
+  });
+  return rows.includes("support") && rows.includes("resistance");
+}
+
 export function precisionRescueReasons(value: JsonRecord | null, trustedCurrentPrice: unknown = null) {
   if (!value) return ["UNUSABLE_OUTPUT"];
   const coverage = structuralSideCoverage(value.levels, trustedCurrentPrice ?? value.currentPrice);
   const shield = value.liquidityShield && typeof value.liquidityShield === "object" ? value.liquidityShield as JsonRecord : null;
-  const missingLiquidity = !shield
+  const rawLiquidityIncomplete = !shield
     || shield.status === "INSUFFICIENT_EVIDENCE"
     || (shield.status === "VISIBLE_RISK_ZONES" && (!Array.isArray(shield.zones) || shield.zones.length === 0));
+  const geometryViable = coverage.twoSided && hasViablePrecisionGeometry(value, trustedCurrentPrice);
+  const normalizedShield = normalizePrecisionLiquidityShield(value, typeof trustedCurrentPrice === "string" ? trustedCurrentPrice : null);
+  const liquidityUnusable = geometryViable
+    && !rawLiquidityIncomplete
+    && shield?.status !== "INSUFFICIENT_EVIDENCE"
+    && normalizedShield.status === "INSUFFICIENT_EVIDENCE";
   return [
     !Array.isArray(value.levels) || value.levels.length === 0 ? "NO_LEVELS" : "",
     !coverage.twoSided ? "MISSING_STRUCTURAL_SIDE" : "",
-    missingLiquidity ? "LIQUIDITY_INCOMPLETE" : "",
+    coverage.twoSided && !geometryViable ? "GEOMETRY_UNUSABLE" : "",
+    rawLiquidityIncomplete ? "LIQUIDITY_INCOMPLETE" : "",
+    liquidityUnusable ? "LIQUIDITY_UNUSABLE" : "",
   ].filter(Boolean);
 }
 
 export function rescueShouldLeadGeometry(reasons: string[]) {
-  return reasons.some((reason) => ["UNUSABLE_OUTPUT", "NO_LEVELS", "MISSING_STRUCTURAL_SIDE"].includes(reason));
+  return reasons.some((reason) => ["UNUSABLE_OUTPUT", "NO_LEVELS", "MISSING_STRUCTURAL_SIDE", "GEOMETRY_UNUSABLE"].includes(reason));
 }
 
 function pricesCompatible(primaryCurrentPrice: unknown, contextCurrentPrice: unknown) {

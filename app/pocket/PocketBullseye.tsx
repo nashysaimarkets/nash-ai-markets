@@ -3,11 +3,11 @@
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
 
-import { ChangeEvent, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
-import { hasVerifiedTwoSidedStructure, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel } from "./pocket-chart-toolkit";
+import { hasVerifiedTwoSidedStructure, mergeCompatibleChartLevels, rankChartLevels, sanitizeChartLevels, type NumericChartLevel } from "./pocket-chart-toolkit";
 import ChartPreflightPanel from "./ChartPreflightPanel";
 import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import LevelProvenancePanel from "./LevelProvenancePanel";
@@ -19,6 +19,8 @@ import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus }
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
 import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, type AppleAccessStatus } from "./apple-storekit";
+import { postLevelLabScan } from "./level-lab-client";
+import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -153,7 +155,10 @@ function derivedTrustGate(analysis: Analysis) {
   // they must never upgrade an analysis the server held or marked partial.
   const identityLocked = derivedIdentityLocked && (analysis.trustGate?.identityLocked ?? true);
   const chartLocked = derivedChartLocked && (analysis.trustGate?.chartLocked ?? true);
-  const scaleLocked = analysis.evidenceQuality.scaleReadable && structure.currentPrice !== null && structure.twoSided;
+  const hasLevelLabPriceMap = analysis.levels.some((level) => level.source === "LEVEL_LAB" && numericLevel(level.price) !== null);
+  const priceMapLocked = (analysis.evidenceQuality.scaleReadable || hasLevelLabPriceMap) && structure.currentPrice !== null;
+  const structureLocked = structure.twoSided;
+  const scaleLocked = priceMapLocked && structureLocked;
   const derivedStatus: "LOCKED" | "PARTIAL" | "HOLD" = chartLocked && identityLocked && scaleLocked
     ? "LOCKED"
     : !chartLocked || structure.exactLevelCount === 0
@@ -174,6 +179,8 @@ function derivedTrustGate(analysis: Analysis) {
     status,
     chartLocked,
     identityLocked,
+    priceMapLocked,
+    structureLocked,
     scaleLocked,
     exactLevelCount: structure.exactLevelCount,
     reasons: [...structuralReasons, ...inheritedReasons].slice(0, 4),
@@ -191,7 +198,8 @@ function TrustGateCard({ analysis }: { analysis: Analysis }) {
     <div className="psTrustChecks">
       <span data-pass={gate.chartLocked}>CHART <b>{gate.chartLocked ? "✓" : "!"}</b></span>
       <span data-pass={gate.identityLocked}>IDENTITY <b>{gate.identityLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.scaleLocked}>PRICE SCALE <b>{gate.scaleLocked ? "✓" : "!"}</b></span>
+      <span data-pass={gate.priceMapLocked}>PRICE MAP <b>{gate.priceMapLocked ? "✓" : "!"}</b></span>
+      <span data-pass={gate.structureLocked}>S/R SIDES <b>{gate.structureLocked ? "✓" : "!"}</b></span>
     </div>
     <ul>{gate.reasons.slice(0, 4).map((reason) => <li key={reason}>{reason}</li>)}</ul>
     <footer><strong>NEXT SAFE ACTION</strong><span>{gate.nextAction}</span></footer>
@@ -224,23 +232,67 @@ function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
 }
 
-function createPrecisionReadingCrop(dataUrl: string) {
+const MAX_PROVIDER_SCAN_DATA_URL_CHARS = 1_900_000;
+function createProviderScanImage(dataUrl: string) {
+  if (/^data:image\/(?:jpeg|png|webp);base64,/.test(dataUrl) && dataUrl.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS) {
+    return Promise.resolve(dataUrl);
+  }
   return new Promise<string | null>((resolve) => {
     const source = new Image();
     source.onload = () => {
       try {
-        // Preserve the full plot width (including the right-hand scale), while
-        // removing most phone chrome and the chart app's bottom controls.
-        const top = Math.round(source.naturalHeight * 0.06);
-        const height = Math.round(source.naturalHeight * 0.82);
-        const targetWidth = Math.min(1800, Math.max(1400, source.naturalWidth));
-        const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = Math.round(height * targetWidth / source.naturalWidth);
-        const context = canvas.getContext("2d");
-        if (!context) return resolve(null);
-        context.drawImage(source, 0, top, source.naturalWidth, height, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.92));
+        // Keep the complete chart in the same coordinate frame as the first
+        // provider frame. The former fixed 6%/82% crop clipped lower support
+        // and made a crop-row percentage disagree with its full-image row.
+        const attempts = [
+          { maxWidth: 1800, maxHeight: 3000, quality: .88 },
+          { maxWidth: 1400, maxHeight: 2600, quality: .82 },
+          { maxWidth: 1100, maxHeight: 2200, quality: .76 },
+          { maxWidth: 800, maxHeight: 1600, quality: .68 },
+          { maxWidth: 600, maxHeight: 1200, quality: .58 },
+        ];
+        for (const attempt of attempts) {
+          const scale = Math.min(1, attempt.maxWidth / source.naturalWidth, attempt.maxHeight / source.naturalHeight);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
+          canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
+          const context = canvas.getContext("2d");
+          if (!context) return resolve(null);
+          context.drawImage(source, 0, 0, source.naturalWidth, source.naturalHeight, 0, 0, canvas.width, canvas.height);
+          const encoded = canvas.toDataURL("image/jpeg", attempt.quality);
+          if (encoded.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS) return resolve(encoded);
+        }
+        resolve(null);
+      } catch { resolve(null); }
+    };
+    source.onerror = () => resolve(null);
+    source.src = dataUrl;
+  });
+}
+
+const MAX_LEVEL_LAB_DATA_URL_CHARS = 3_600_000;
+function createLevelLabScanImage(dataUrl: string) {
+  return new Promise<string | null>((resolve) => {
+    const source = new Image();
+    source.onload = () => {
+      try {
+        const render = (width: number, quality: number) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = Math.max(1, Math.round(source.naturalHeight * width / source.naturalWidth));
+          const context = canvas.getContext("2d");
+          if (!context) return null;
+          context.drawImage(source, 0, 0, canvas.width, canvas.height);
+          return canvas.toDataURL("image/jpeg", quality);
+        };
+        // One complete, readable frame is more reliable in WKWebView than the
+        // previous original-plus-crop request. Keep the chart title, candles
+        // and price scale together while bounding the final JSON payload.
+        const targetWidth = Math.min(1600, source.naturalWidth);
+        const first = render(targetWidth, .88);
+        if (first && first.length <= MAX_LEVEL_LAB_DATA_URL_CHARS) return resolve(first);
+        const compact = render(Math.min(1100, targetWidth), .78);
+        resolve(compact && compact.length <= MAX_LEVEL_LAB_DATA_URL_CHARS ? compact : null);
       } catch { resolve(null); }
     };
     source.onerror = () => resolve(null);
@@ -268,7 +320,6 @@ function personalDailyMessage(analysis: Analysis, viewerName = "") {
 }
 
 // Retained temporarily for saved-result compatibility while its retired stylesheet no longer ships.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function LockOnReveal({ analysis, onEnter }: { analysis: Analysis; onEnter: () => void }) {
   const [stage, setStage] = useState(0);
   const balance = evidenceBalance(analysis);
@@ -312,7 +363,6 @@ function LockOnReveal({ analysis, onEnter }: { analysis: Analysis; onEnter: () =
 
 type ArenaMode = "command" | "levels" | "battle" | "risk";
 // Retained temporarily for saved-result compatibility while its retired stylesheet no longer ships.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BullseyeCommandArena({ analysis, sourceImage, onOpenReport, onShare }: { analysis: Analysis; sourceImage: string; onOpenReport: () => void; onShare: () => void }) {
   const [mode, setMode] = useState<ArenaMode>("command");
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -362,7 +412,6 @@ function BullseyeCommandArena({ analysis, sourceImage, onOpenReport, onShare }: 
 
 type ChartTool = "levels" | "swings" | "fib" | "rsi";
 // Retained temporarily for saved-result compatibility while its retired stylesheet no longer ships.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function BubbleChartLab({ analysis, sourceImage, onOpenReport, onShare }: { analysis: Analysis; sourceImage: string; onOpenReport: () => void; onShare: () => void }) {
   const [tools, setTools] = useState<Record<ChartTool, boolean>>({ levels: true, swings: false, fib: false, rsi: false });
   const toggle = (tool: ChartTool) => setTools((current) => ({ ...current, [tool]: !current[tool] }));
@@ -419,16 +468,20 @@ function isListedEquityAnalysis(analysis: Analysis | null) {
 }
 
 function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario, hasContext = false }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
-  const verified = analysis.levels.flatMap((level) => {
+  const candidates = analysis.levels.flatMap((level) => {
     const price = numericLevel(level.price);
     return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
   });
   const current = numericLevel(analysis.currentPrice);
-  const strictLevels: NumericChartLevel[] = verified.map((level) => ({ kind: level.kind as NumericChartLevel["kind"], label: level.label, price: level.numericPrice, source: level.source }));
+  const strictLevels: NumericChartLevel[] = sanitizeChartLevels(candidates.map((level) => ({ kind: level.kind as NumericChartLevel["kind"], label: level.label, price: level.numericPrice, source: level.source })), current);
+  const verified = candidates.filter((candidate) => strictLevels.some((level) => level.kind === candidate.kind && level.price === candidate.numericPrice));
+  const verifiedStructure = verified.filter((level) => level.kind === "support" || level.kind === "resistance");
+  const twoSided = hasVerifiedTwoSidedStructure(strictLevels, current);
 
-  // Fail closed before creating any map primitives. This prevents an unverified
-  // current-price badge or one-sided route from appearing behind the hold card.
-  if (!hasVerifiedTwoSidedStructure(strictLevels, current)) {
+  // Withhold the map only when there is no exact price evidence at all. A
+  // verified one-sided level remains useful as PARTIAL evidence, but it never
+  // upgrades the Trust Gate or pretends the missing side was found.
+  if (current === null || !verifiedStructure.length) {
     return <section className={`psDecisionMapHold${expanded ? " psDecisionMapHoldExpanded" : ""}`} aria-label="Bullseye Decision Map precision hold">
       <span>◎ PRECISION HOLD</span>
       <strong>{hasContext ? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"}</strong>
@@ -451,17 +504,28 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   const max = rawMax + padding;
   const position = (price: number) => 34 + ((max - price) / (max - min)) * 42;
   const ordered = [...verified].sort((a, b) => b.numericPrice - a.numericPrice);
-  const supports = ordered.filter((level) => level.kind === "support" && (current === null || level.numericPrice <= current));
-  const resistances = ordered.filter((level) => level.kind === "resistance" && (current === null || level.numericPrice >= current));
+  const nearCurrentTolerance = Math.max(Math.abs(current) * .0015, .01);
+  const supports = ordered.filter((level) => level.kind === "support" && level.numericPrice < current);
+  const resistances = ordered.filter((level) => level.kind === "resistance" && level.numericPrice > current);
   const nearestSupport = supports[0] ?? null;
   const nearestResistance = resistances.at(-1) ?? null;
-  const supportDistance = current !== null && nearestSupport ? current - nearestSupport.numericPrice : null;
-  const resistanceDistance = current !== null && nearestResistance ? nearestResistance.numericPrice - current : null;
+  const supportDistance = nearestSupport ? current - nearestSupport.numericPrice : null;
+  const resistanceDistance = nearestResistance ? nearestResistance.numericPrice - current : null;
+  const supportAtCurrent = supportDistance !== null && supportDistance <= nearCurrentTolerance;
+  const resistanceAtCurrent = resistanceDistance !== null && resistanceDistance <= nearCurrentTolerance;
   const formatDistance = (distance: number | null) => distance === null ? "—" : distance.toLocaleString("en-GB", { maximumFractionDigits: 2 });
   const formatPercent = (distance: number | null) => distance === null || current === null || current === 0 ? "" : `${(distance / current * 100).toFixed(2)}%`;
-  const proximity = supportDistance !== null && resistanceDistance !== null
-    ? "ABOVE SUPPORT · BELOW RESISTANCE"
-    : nearestSupport ? "ABOVE SUPPORT" : nearestResistance ? "BELOW RESISTANCE" : "LEVELS UNVERIFIED";
+  const proximity = supportAtCurrent && nearestResistance
+    ? "AT SUPPORT · BELOW RESISTANCE"
+    : resistanceAtCurrent && nearestSupport
+      ? "ABOVE SUPPORT · AT RESISTANCE"
+      : supportAtCurrent
+        ? "AT VERIFIED SUPPORT"
+        : resistanceAtCurrent
+          ? "AT VERIFIED RESISTANCE"
+          : supportDistance !== null && resistanceDistance !== null
+            ? "ABOVE SUPPORT · BELOW RESISTANCE"
+            : nearestSupport ? "ABOVE SUPPORT" : nearestResistance ? "BELOW RESISTANCE" : "LEVELS UNVERIFIED";
   const currentY = current === null ? 50 : position(current);
   const supportY = nearestSupport ? position(nearestSupport.numericPrice) : Math.min(88, currentY + 18);
   const resistanceY = nearestResistance ? position(nearestResistance.numericPrice) : Math.max(12, currentY - 18);
@@ -472,16 +536,28 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   });
   const rangeTop = Math.min(resistanceY, supportY);
   const rangeHeight = Math.abs(supportY - resistanceY);
-  const locationHeadline = current !== null && nearestSupport && nearestResistance && supportDistance !== null && resistanceDistance !== null
-    ? `Price is ${formatDistance(supportDistance)} above support and ${formatDistance(resistanceDistance)} below resistance.`
-    : current !== null && nearestSupport && supportDistance !== null
-    ? `Price is ${formatDistance(supportDistance)} above verified support.`
-    : current !== null && nearestResistance && resistanceDistance !== null
-      ? `Price is ${formatDistance(resistanceDistance)} below verified resistance.`
+  const locationHeadline = supportAtCurrent
+    ? `Price is testing verified support${nearestResistance && resistanceDistance !== null ? `, with resistance ${formatDistance(resistanceDistance)} above` : ""}.`
+    : resistanceAtCurrent
+      ? `Price is testing verified resistance${nearestSupport && supportDistance !== null ? `, with support ${formatDistance(supportDistance)} below` : ""}.`
+      : nearestSupport && nearestResistance && supportDistance !== null && resistanceDistance !== null
+        ? `Price is ${formatDistance(supportDistance)} above support and ${formatDistance(resistanceDistance)} below resistance.`
+        : nearestSupport && supportDistance !== null
+          ? `Price is ${formatDistance(supportDistance)} above verified support.`
+          : nearestResistance && resistanceDistance !== null
+            ? `Price is ${formatDistance(resistanceDistance)} below verified resistance.`
       : "Verified price location needs a clearer scale.";
 
-  return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} aria-label="Bullseye Decision Map">
-    <header className="psMapIntro"><div><small>YOU ARE HERE</small><strong>{locationHeadline}</strong><p>Nearest verified levels and the conditions that could change this read.</p></div>{sourceImage ? <figure><img src={sourceImage} alt="Selected source chart thumbnail" /><figcaption>{analysis.timeframe}</figcaption></figure> : null}</header>
+  const mapDetail = twoSided
+    ? "Nearest verified levels and the conditions that could change this read."
+    : nearestSupport
+      ? "Partial map: support is verified; resistance still needs a clearer view."
+      : nearestResistance
+        ? "Partial map: resistance is verified; support still needs a clearer view."
+        : "Partial map: one exact level is verified, but its market side still needs confirmation.";
+
+  return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} data-structure={twoSided ? "two-sided" : "partial"} aria-label="Bullseye Decision Map">
+    <header className="psMapIntro"><div><small>{twoSided ? "YOU ARE HERE" : "PARTIAL PRICE MAP"}</small><strong>{locationHeadline}</strong><p>{mapDetail}</p></div>{sourceImage ? <figure><img src={sourceImage} alt="Selected source chart thumbnail" /><figcaption>{analysis.timeframe}</figcaption></figure> : null}</header>
     <div className="psBattleGrid" aria-hidden="true" />
     {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Decision Map price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
     {nearestSupport && nearestResistance ? <div className="psDecisionRange" style={{ top: `${rangeTop}%`, height: `${rangeHeight}%` }} aria-label={`Active decision range from ${nearestSupport.price} to ${nearestResistance.price}`}><span>ACTIVE DECISION RANGE</span><i /><i /><i /></div> : null}
@@ -540,7 +616,10 @@ type XRayLayer = "patterns" | "levels" | "swings" | "fib" | "rsi";
 
 function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; primaryLevels: Level[]; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [layer] = useState<XRayLayer>("patterns");
-  const drawablePatterns = analysis.patterns.filter((pattern) => (pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length ?? 0) >= 2);
+  const normalizeFrame = (value: string | undefined) => (value ?? "").toUpperCase().replace(/MIN(?:UTE)?S?/g, "M").replace(/HOUR(?:S)?/g, "H").replace(/[^A-Z0-9]/g, "");
+  const primaryFrame = normalizeFrame(analysis.timeframe);
+  const drawablePatterns = analysis.patterns.filter((pattern) => normalizeFrame(pattern.timeframe) === primaryFrame
+    && (pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length ?? 0) >= 2);
   // X-Ray is drawn over the primary image. Context-only levels may corroborate
   // a primary price, but must never corroborate themselves or inherit geometry
   // from another crop.
@@ -595,7 +674,7 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
     verifiedLevels.map((level) => ({ kind: level.kind, label: level.label, price: level.price })),
     numericLevel(analysis.currentPrice),
   );
-  const storyLevels = storyHasTwoSidedStructure ? verifiedLevels : [];
+  const storyLevels = verifiedLevels;
   const balance = evidenceBalance(analysis);
   const dailyMessage = personalDailyMessage(analysis, viewerName);
   useEffect(() => {
@@ -617,7 +696,7 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
       <div className="psStoryScene" key={scene} aria-live="polite">
         {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · {viewerName ? `${viewerName.toUpperCase()}, YOUR ANALYSIS IS READY` : "YOUR ANALYSIS IS READY"}</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>Bullseye has challenged the chart, the opposing case and the conditions that could change this read.</p></article> : null}
         {scene === 1 ? <article className="psStoryEvidence"><small>CHAPTER 02 · VERIFIED EVIDENCE</small><h2>Evidence before opinion.</h2><ul>{analysis.observableFacts.slice(0, 2).map((fact) => <li key={fact}>{fact}</li>)}</ul><div><span>IMAGE {analysis.evidenceQuality.chartReadability}</span><span>SCALE {analysis.evidenceQuality.scaleReadable ? "VERIFIED" : "UNVERIFIED"}</span></div><section className="psEvidencePulse"><b>STRUCTURE</b><p>{analysis.marketStructure}</p><b>MOMENTUM</b><p>{analysis.momentum}</p></section><button type="button" onClick={() => openExplanation("bullseye-evidence")}>OPEN VERIFIED EVIDENCE ↓</button></article> : null}
-        {scene === 2 ? <article className="psStoryLevels"><small>CHAPTER 03 · THE PRICE BATTLEFIELD</small><h2>{storyLevels.length ? `${storyLevels.length} level${storyLevels.length === 1 ? "" : "s"} bracket current price.` : "Two-sided levels remain unverified."}</h2><div>{analysis.currentPrice ? <span><small>CURRENT · PRIMARY CHART</small><b>{analysis.currentPrice}</b></span> : null}{storyLevels.slice(0, 3).map((level) => <span key={`${level.kind}-${level.price}`} data-kind={level.kind} data-source={level.source ?? "PRIMARY"}><small>{level.kind.toUpperCase()} · {levelEvidenceSourceLabel(level.source)}</small><b>{level.price}</b></span>)}</div><p>{analysis.levelStory}</p><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}
+        {scene === 2 ? <article className="psStoryLevels"><small>CHAPTER 03 · THE PRICE BATTLEFIELD</small><h2>{storyHasTwoSidedStructure ? `${storyLevels.length} level${storyLevels.length === 1 ? "" : "s"} bracket current price.` : storyLevels.length ? `${storyLevels.length} exact level${storyLevels.length === 1 ? " is" : "s are"} verified; the opposite side is still missing.` : "Two-sided levels remain unverified."}</h2><div>{analysis.currentPrice ? <span><small>CURRENT · PRIMARY CHART</small><b>{analysis.currentPrice}</b></span> : null}{storyLevels.slice(0, 3).map((level) => <span key={`${level.kind}-${level.price}`} data-kind={level.kind} data-source={level.source ?? "PRIMARY"}><small>{level.kind.toUpperCase()} · {levelEvidenceSourceLabel(level.source)}</small><b>{level.price}</b></span>)}</div><p>{analysis.levelStory}</p><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}
         {scene === 3 ? <article className="psStoryBattle"><small>CHAPTER 04 · BULL VS BEAR</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
         {scene === 4 ? <article className="psStoryRisks psStoryRiskPro"><small>CHAPTER 05 · RISK CONTROL</small><h2>What could make this read wrong?</h2><div><section><b>⚡ CONTRADICTIONS</b><ul>{(analysis.contradictions.length ? analysis.contradictions : ["No clear contradiction is visible in this screenshot."]).slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section><section><b>⚠ RISK FLAGS</b><ul>{analysis.riskFlags.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section></div><div className="psEventSafety"><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY · CONFIRM THE LIVE CALENDAR</span></div><p>TRADER TRAP · {analysis.traderTrap}</p></article> : null}
         {scene === 5 ? <article className="psStoryTrigger psStoryDecisionPro"><small>CHAPTER 06 · DECISION CONDITIONS</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><p>STAND ASIDE · {analysis.noTradeCondition}</p><section className="psNextCheck"><b>RIGHT NOW</b><span>{analysis.nextSequence.now}</span><b>NEXT CHECK</b><span>{analysis.nextSequence.reassess}</span></section></article> : null}
@@ -673,10 +752,41 @@ const PATTERN_GUIDE = [
   { name: "BREAKOUT & RETEST", aliases: ["BREAKOUT-RETEST", "BREAKOUT AND RETEST", "BREAKOUT & RETEST", "BREAKDOWN-RETEST"], family: "LEVEL TRANSITION", path: "5,72 34,72 46,28 61,28 72,68 82,55 94,35", look: "Price clears a level, revisits it from the other side, then reacts.", confirms: "The old boundary holds on retest and price resumes away from it.", trap: "Calling the first return a successful retest before it reacts." },
 ] as const;
 
-function PatternWatch({ analysis }: { analysis: Analysis }) {
+const PATTERN_FRAMES = ["30M", "1H", "4H"] as const;
+type PatternFrame = typeof PATTERN_FRAMES[number];
+
+function normalizePatternFrame(value: string | undefined): PatternFrame | null {
+  const compact = (value ?? "")
+    .toUpperCase()
+    .replace(/MINUTES?|MINS?/g, "M")
+    .replace(/HOURS?|HRS?/g, "H")
+    .replace(/[^A-Z0-9]/g, "");
+  if (compact.startsWith("30M") || compact.startsWith("M30")) return "30M";
+  if (compact.startsWith("1H") || compact.startsWith("H1")) return "1H";
+  if (compact.startsWith("4H") || compact.startsWith("H4")) return "4H";
+  return null;
+}
+
+function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [guideOpen, setGuideOpen] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<string>(PATTERN_GUIDE[0].name);
-  const suppliedFrames = [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : ""].filter(Boolean);
+  const [selectedFrame, setSelectedFrame] = useState<PatternFrame>(() => normalizePatternFrame(analysis.timeframe) ?? "4H");
+  const [requestedFrame, setRequestedFrame] = useState<PatternFrame | null>(null);
+  const timeframeInput = useRef<HTMLInputElement>(null);
+  const suppliedFrames = useMemo(() => PATTERN_FRAMES.filter((frame) => [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : ""].some((value) => normalizePatternFrame(value) === frame)), [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe]);
+  const primaryFrame = normalizePatternFrame(analysis.timeframe);
+  const activeFrame = suppliedFrames.includes(selectedFrame) ? selectedFrame : primaryFrame && suppliedFrames.includes(primaryFrame) ? primaryFrame : suppliedFrames[0] ?? "4H";
+  const visiblePatterns = analysis.patterns.filter((pattern) => normalizePatternFrame(pattern.timeframe || analysis.timeframe) === activeFrame);
+  const contextPending = hasContext && !analysis.higherTimeframe.provided;
+  const selectFrame = (frame: PatternFrame) => {
+    if (suppliedFrames.includes(frame)) {
+      setSelectedFrame(frame);
+      setRequestedFrame(null);
+      return;
+    }
+    setRequestedFrame(frame);
+    timeframeInput.current?.click();
+  };
   const selectGuide = (name: string) => {
     const normalized = name.toUpperCase();
     const match = PATTERN_GUIDE
@@ -689,8 +799,13 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   const selected = PATTERN_GUIDE.find((item) => item.name === selectedGuide) ?? PATTERN_GUIDE[0];
   return <section className="psPatternWatch">
     <header><div><span>◫ PATTERN WATCH</span><small>30M · 1H · 4H STRUCTURE CHECK</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
-    <div className="psPatternFrames">{["30M","1H","4H"].map((frame) => <span key={frame} data-supplied={suppliedFrames.some((value) => value.toUpperCase().replace("MIN", "M").replace("HOUR", "H").includes(frame))}>{frame}<small>{suppliedFrames.some((value) => value.toUpperCase().replace("MIN", "M").replace("HOUR", "H").includes(frame)) ? "CHART READ" : "NOT SUPPLIED"}</small></span>)}</div>
-    {analysis.patterns.length ? <div className="psPatternSignals">{analysis.patterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || analysis.timeframe} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone"><strong>NO SIGNIFICANT PATTERN VERIFIED</strong><p>The chart does not currently show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
+    <div className="psPatternFrames" role="tablist" aria-label="Choose Pattern Watch timeframe">{PATTERN_FRAMES.map((frame) => {
+      const supplied = suppliedFrames.includes(frame);
+      return <button key={frame} type="button" role="tab" data-supplied={supplied} data-active={supplied && activeFrame === frame} aria-selected={supplied && activeFrame === frame} aria-label={supplied ? `Show ${frame} pattern analysis` : `Add a ${frame} chart`} onClick={() => selectFrame(frame)}>{frame}<small>{supplied ? activeFrame === frame ? "VIEWING" : "CHART READ" : "+ ADD CHART"}</small></button>;
+    })}</div>
+    <input ref={timeframeInput} className="psPatternFrameInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label={`Add ${requestedFrame ?? "another"} timeframe chart`} onChange={onAddChart}/>
+    {contextPending ? <div className="psPatternFrameAction" role="status"><span>{requestedFrame ?? "TIMEFRAME"} PHOTO READY</span><button type="button" disabled={reanalysing} onClick={onReanalyse}>{reanalysing ? "ANALYSING…" : "↻ REANALYSE TIMEFRAMES"}</button></div> : null}
+    {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>The supplied {activeFrame} chart does not currently show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
   </section>;
 }
@@ -780,8 +895,8 @@ function PocketCommandDeck({ analysis, primaryLevels, sourceImage, onResultCard,
     <nav aria-label="Pocket Bullseye command deck">{COMMAND_DECK_MODES.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
     <div className="psCommandStage" data-mode={mode}>
       {mode === "xray" ? <ChartXRay analysis={analysis} primaryLevels={primaryLevels} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
-      {mode === "guard" ? <LiquidityGuardOverlay analysis={analysis} sourceImage={sourceImage} /> : null}
-      {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
+      {mode === "guard" ? <LiquidityGuardOverlay analysis={analysis} sourceImage={sourceImage} onRescan={onReanalyse} rescanning={reanalysing} /> : null}
+      {mode === "patterns" ? <PatternWatch analysis={analysis} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}
@@ -840,7 +955,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 10 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 11 as const;
 const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
@@ -973,6 +1088,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
+  const chartFocusDialog = useRef<HTMLElement>(null);
+  const chartFocusScroll = useRef<HTMLDivElement>(null);
+  const chartFocusReturnFocus = useRef<HTMLElement | null>(null);
+  const applePaywallReturnFocus = useRef<HTMLElement | null>(null);
   const nativeAppleApp = isAppleNativeApp();
   const appleNeedsSubscription = Boolean(
     nativeAppleApp
@@ -999,15 +1118,39 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
+  function openApplePaywall() {
+    applePaywallReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setShowApplePaywall(true);
+  }
+
+  function closeApplePaywall() {
+    setShowApplePaywall(false);
+    window.requestAnimationFrame(() => {
+      const original = applePaywallReturnFocus.current;
+      const fallback = document.querySelector<HTMLElement>('[aria-label="Load chart photo, screenshot or camera roll image"]');
+      (original?.isConnected ? original : fallback)?.focus({ preventScroll: true });
+    });
+  }
+
   async function requireAppleEntitlementForAdditionalRequest(): Promise<boolean> {
     if (!isAppleNativeApp()) return true;
     const latest = await refreshAppleAccess();
     if (!latest) return false;
     if (!latest.entitled) {
-      setShowApplePaywall(true);
+      openApplePaywall();
       return false;
     }
     return true;
+  }
+
+  function openChartFocus(event: ReactMouseEvent<HTMLButtonElement>) {
+    chartFocusReturnFocus.current = event.currentTarget;
+    setChartFocus(true);
+  }
+
+  function closeChartFocus() {
+    setChartFocus(false);
+    window.requestAnimationFrame(() => chartFocusReturnFocus.current?.focus({ preventScroll: true }));
   }
 
   useEffect(() => {
@@ -1036,11 +1179,39 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [analysis]);
 
   useEffect(() => {
-    if (!immersive && !chartFocus && !showResultReveal && !showResultCard) return;
+    if (!immersive && !chartFocus && !showResultReveal && !showResultCard && !showApplePaywall) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
-  }, [immersive, chartFocus, showResultReveal, showResultCard]);
+  }, [immersive, chartFocus, showResultReveal, showResultCard, showApplePaywall]);
+
+  useEffect(() => {
+    if (!chartFocus) return;
+    chartFocusScroll.current?.scrollTo({ top: 0 });
+    const containFocus = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setChartFocus(false);
+        window.requestAnimationFrame(() => chartFocusReturnFocus.current?.focus({ preventScroll: true }));
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [...(chartFocusDialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])') ?? [])]
+        .filter((element) => !element.hasAttribute("hidden"));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", containFocus);
+    return () => document.removeEventListener("keydown", containFocus);
+  }, [chartFocus]);
 
   useEffect(() => {
     if (!image || reviewTarget || preflightStatus === "IDLE") return;
@@ -1153,44 +1324,41 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setLevelLabStatus("scanning");
     setLevelLabError("");
     try {
-      const precisionImage = await createPrecisionReadingCrop(levelLabImage);
+      const scanImage = await createLevelLabScanImage(levelLabImage);
+      if (!scanImage) throw new Error("That Level Lab photo is too large to send safely. Crop it to the chart and price scale, then try again.");
       const primaryProvenance = {
         instrument: analysis.instrument,
         ticker: analysis.ticker,
         timeframe: analysis.timeframe,
         currentPrice: analysis.currentPrice,
         identityLocked: true as const,
-        ...(analysis.plotBounds && analysis.priceScaleAnchors?.length ? {
-          plotBounds: analysis.plotBounds,
-          priceScaleAnchors: analysis.priceScaleAnchors,
-        } : {}),
       };
-      const response = await fetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage, primaryProvenance }) });
-      const payload = await response.json() as {
+      const { response, payload } = await postLevelLabScan<{
         levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory" | "trustGate"> & {
           provenance?: { source?: string; primaryInstrument?: string; primaryTimeframe?: string; primaryCurrentPrice?: string; levelLabInstrument?: string };
         };
         error?: string;
-      };
+      }>(JSON.stringify({ image: scanImage, primaryProvenance }));
       if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
       const returnedCurrentPrice = numericLevel(payload.levels.currentPrice);
       const returnedLevels = numericStructure(payload.levels.levels);
       const provenance = payload.levels.provenance;
       const provenancePrice = numericLevel(provenance?.primaryCurrentPrice);
       const returnedTrustGate = payload.levels.trustGate;
-      const validTrustGate = returnedTrustGate?.status === "LOCKED"
-        && returnedTrustGate.chartLocked === true
+      const returnedTwoSided = hasVerifiedTwoSidedStructure(returnedLevels, primaryCurrentPrice);
+      const validTrustGate = returnedTrustGate?.chartLocked === true
         && returnedTrustGate.identityLocked === true
-        && returnedTrustGate.scaleLocked === true
-        && returnedTrustGate.exactLevelCount >= 2;
+        && returnedTrustGate.exactLevelCount >= 1
+        && ((returnedTwoSided && returnedTrustGate.status === "LOCKED" && returnedTrustGate.scaleLocked === true)
+          || (!returnedTwoSided && returnedTrustGate.status === "PARTIAL"));
       const validProvenance = provenance?.source === "LEVEL_LAB"
         && provenance.primaryInstrument === analysis.instrument
         && provenance.primaryTimeframe === analysis.timeframe
         && provenancePrice === primaryCurrentPrice
         && returnedCurrentPrice === primaryCurrentPrice
         && payload.levels.levels.every((level) => level.source === "LEVEL_LAB");
-      if (!validProvenance || !validTrustGate || !hasVerifiedTwoSidedStructure(returnedLevels, primaryCurrentPrice)) {
-        throw new Error("Level Lab could not verify a matching two-sided map, so the existing analysis was left unchanged.");
+      if (!validProvenance || !validTrustGate) {
+        throw new Error("Level Lab could not verify a matching exact price map, so the existing analysis was left unchanged.");
       }
       setAnalysis((current) => {
         const currentPrice = numericLevel(current?.currentPrice);
@@ -1200,18 +1368,25 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           && current.timeframe === primaryProvenance.timeframe
           && currentPrice === primaryCurrentPrice;
         if (!current || !stillBoundToPrimary) return current;
-        return invalidateDerivedChartEvidence({
+        const rescanned = enforcePocketTrustGate({
           ...current,
-          plotBounds: payload.levels!.plotBounds,
-          priceScaleAnchors: payload.levels!.priceScaleAnchors,
-          levels: payload.levels!.levels.map((level) => ({ ...level, y: clampY(level.y) })),
+          // Level Lab may use a different crop or timeframe. Import its exact
+          // prices into the abstract Decision Map, but never draw its pixel
+          // coordinates over the original primary screenshot.
+          levels: payload.levels!.levels.map((level) => ({
+            ...level,
+            x: Number.NaN,
+            y: Number.NaN,
+            x2: Number.NaN,
+            y2: Number.NaN,
+          })),
           // The secondary scan verifies compatibility but can never replace
           // the already locked current-price provenance from the primary.
           currentPrice: current.currentPrice,
           trustGate: returnedTrustGate,
           levelStory: payload.levels!.levelStory || current.levelStory,
-          liquidityShield: undefined,
-        }, "PRIMARY_STRUCTURE_CHANGED");
+        }, returnedTrustGate) as Analysis;
+        return invalidateDerivedChartEvidence(rescanned, "PRIMARY_STRUCTURE_CHANGED");
       });
       setBattlefieldChart("primary");
       if (contextImage) setRefinementStatus("attached");
@@ -1305,14 +1480,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         // A second chart counts only after server-side compatibility checks.
         if (cached && hasVerifiedTwoSidedAnalysis(cached, Boolean(selectedContext))) return cached;
       }
-      const [precisionImage, contextPrecisionImage] = await Promise.all([
-        createPrecisionReadingCrop(image),
-        selectedContext ? createPrecisionReadingCrop(selectedContext) : Promise.resolve(null),
-      ]);
+      // Encode one chart at a time to avoid holding two large iOS canvases in
+      // memory. Already-bounded originals stay byte-for-byte unchanged.
+      const providerImage = await createProviderScanImage(image);
+      const providerContextImage = selectedContext ? await createProviderScanImage(selectedContext) : null;
+      if (!providerImage || (selectedContext && !providerContextImage)) {
+        throw new Error("That chart could not be prepared within the secure mobile upload limit. Crop it to the chart and price scale, then try again.");
+      }
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention, chartConfirmation, accuracyCorrection }),
+        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, intention, chartConfirmation, accuracyCorrection }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
@@ -1340,11 +1518,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       if (!currentAppleAccess) return;
     }
     if (reviewTarget && currentAppleAccess?.isNative && !currentAppleAccess.entitled) {
-      setShowApplePaywall(true);
+      openApplePaywall();
       return;
     }
     if (!reviewTarget && currentAppleAccess?.isNative && currentAppleAccess.freeUseConsumed && !currentAppleAccess.entitled) {
-      setShowApplePaywall(true);
+      openApplePaywall();
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
@@ -1500,7 +1678,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function startReview(decision: LockedDecision) {
     if (!await requireAppleEntitlementForAdditionalRequest()) return;
-    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(false); setError("");
+    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError(""); setImmersive(false); setError("");
   }
 
   function startNewChart() {
@@ -1510,12 +1688,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setFileName("");
     setContextImage(null);
     setContextFileName("");
+    setLevelLabImage(null);
+    setLevelLabFileName("");
+    setLevelLabStatus("idle");
+    setLevelLabError("");
     setChartConfirmation(null);
     setPreflightStatus("IDLE");
     setBattlefieldChart("primary");
     setResultView("cinema");
     setShowResultReveal(false);
-    if (appleNeedsSubscription) setShowApplePaywall(true);
+    if (appleNeedsSubscription) openApplePaywall();
   }
 
   const vaultStats = (() => {
@@ -1537,7 +1719,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
 
   if (review && reviewTarget) {
-    return <main className="psApp" data-pocket-build="v3.1"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section><FeedbackButton /></main>;
+    return <main className="psApp" data-pocket-build="v3.2"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section><FeedbackButton /></main>;
   }
 
   if (analysis) {
@@ -1600,8 +1782,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       <button type="button" disabled={!contextBattlefield} data-active={battlefieldChart === "context"} aria-pressed={battlefieldChart === "context"} onClick={() => setBattlefieldChart("context")}><span>②</span><strong>{contextBattlefield ? "CONTEXT" : "CONTEXT PENDING"}</strong><small>{contextBattlefield ? analysis.higherTimeframe.timeframe || "SECOND VIEW" : "REANALYSE TO VERIFY"}</small></button>
     </nav> : null;
     return (
-      <main className="psApp" data-pocket-build="v3.1">
-        <section className="psResults" data-immersive={immersive ? "true" : "false"}>
+      <main className="psApp" data-pocket-build="v3.2" data-chart-focus={chartFocus ? "true" : "false"}>
+        <section className="psResults" data-immersive={immersive ? "true" : "false"} data-chart-focus={chartFocus ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
             <button type="button" onClick={startNewChart}>NEW CHART</button>
@@ -1626,10 +1808,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <footer>Company dates are provider-scheduled and symbol-matched; they may be estimated or revised. Macro rows labelled official come from agency schedules. Always confirm with the issuer or exchange.</footer>
           </section>
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
-            <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
+            <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
             <section id="bullseye-level-lab" className="psLevelLab" data-status={levelLabStatus} aria-live="polite" aria-busy={levelLabStatus === "scanning"}>
               <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "MAP UPDATED" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
-              <p>Add a clearer price-scale photo, then rescan only this map. Your verdict, patterns, scenarios, score and Clarity Lock will not change.</p>
+              <p>Add a clearer price-scale photo, then rescan only this map. Patterns and scenarios stay unchanged; if the new map is partial, confidence, score and verdict are reduced safely.</p>
               {levelLabImage ? <div className="psLevelLabPhoto"><img src={levelLabImage} alt="Chart selected for independent support and resistance scan" /><span>{levelLabFileName}</span></div> : null}
               <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button></div>
               {levelLabError ? <small role="alert">{levelLabError}</small> : null}
@@ -1664,7 +1846,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <summary><span>RESULT OPTIONS</span><small>{appleAccess?.isNative ? "SAVE · CHART · SHARE" : "SAVE · CHART · SHARE · INVITE"}</small><b>＋</b></summary>
             <div>
               <button type="button" onClick={lockDecision}><i>▣</i><span><strong>SAVE</strong><small>Review this decision later</small></span></button>
-              <button type="button" onClick={() => setChartFocus(true)}><i>⛶</i><span><strong>DECISION MAP</strong><small>Open full screen</small></span></button>
+              <button type="button" onClick={openChartFocus}><i>⛶</i><span><strong>DECISION MAP</strong><small>Open full screen</small></span></button>
               <button type="button" onClick={shareDecision}><i>↗</i><span><strong>SHARE</strong><small>Decision summary only</small></span></button>
               {appleAccess && !appleAccess.isNative ? <button type="button" onClick={shareFoundingInvite}><i>◎</i><span><strong>INVITE A TRADER</strong><small>Share the Founding 650 link</small></span></button> : null}
             </div>
@@ -1673,11 +1855,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div>}
         </section>
         {chartFocus && (
-          <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye Decision Map">
-            <header><span>DECISION MAP · {analysis.instrument}</span><button type="button" onClick={() => setChartFocus(false)}>CLOSE</button></header>
-            {battlefieldTabs}
-            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} expanded scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
-            <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart(true) : sourceChart(true)}</details>
+          <section ref={chartFocusDialog} className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-labelledby="psDecisionMapDialogTitle">
+            <header><span id="psDecisionMapDialogTitle">DECISION MAP · {analysis.instrument}</span><button type="button" autoFocus aria-label="Close full-screen Decision Map" onClick={closeChartFocus}>CLOSE</button></header>
+            <div className="psBattleFocusBody" ref={chartFocusScroll}>
+              {battlefieldTabs}
+              <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} expanded scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
+              <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart(true) : sourceChart(true)}</details>
+              <button className="psBattleBackToResult" type="button" onClick={closeChartFocus}>← BACK TO RESULT</button>
+            </div>
             <footer><div><small>DIRECTIONAL READ</small><strong data-direction={analysis.direction}>{analysis.direction}</strong></div><p>{analysis.summary}</p></footer>
           </section>
         )}
@@ -1694,13 +1879,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         )}
         {showResultCard ? <ResultCard analysis={combinedAnalysis} onClose={() => setShowResultCard(false)} onShare={shareResultCard} /> : null}
         <FeedbackButton />
-        {showApplePaywall && appleAccess?.isNative ? <AppleSubscriptionPaywall status={appleAccess} onClose={() => setShowApplePaywall(false)} onUnlocked={(next) => { setAppleAccess(next); setShowApplePaywall(false); }} /> : null}
+        {showApplePaywall && appleAccess?.isNative ? <AppleSubscriptionPaywall status={appleAccess} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
       </main>
     );
   }
 
   return (
-    <main className="psApp" data-pocket-build="v3.1">
+    <main className="psApp" data-pocket-build="v3.2">
       <header className="psHeader">
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
         <div className="psHeaderActions"><span>BULLSEYE ENGINE · PRIVATE BETA</span></div>
@@ -1748,7 +1933,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
       </section>
       <FeedbackButton />
-      {showApplePaywall && appleAccess ? <AppleSubscriptionPaywall status={appleAccess} onClose={() => setShowApplePaywall(false)} onUnlocked={(next) => { setAppleAccess(next); setShowApplePaywall(false); }} /> : null}
+      {showApplePaywall && appleAccess ? <AppleSubscriptionPaywall status={appleAccess} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
     </main>
   );
 }

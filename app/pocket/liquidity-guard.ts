@@ -1,3 +1,5 @@
+import { canonicalizePocketGeometry } from "../lib/pocket-geometry";
+
 export type LiquidityZoneSide = "ABOVE_PRICE" | "BELOW_PRICE";
 export type LiquidityZoneConfidence = "HIGH" | "MEDIUM" | "LOW";
 export type LiquidityZonePattern = "EQUAL_HIGHS" | "EQUAL_LOWS" | "SWING_CLUSTER" | "RANGE_EDGE" | "SESSION_EXTREME" | "ROUND_NUMBER";
@@ -36,6 +38,7 @@ export type ProjectedLiquidityZone = LiquidityZone & {
 
 const FULL_IMAGE_BOUNDS: LiquidityPlotBounds = { left: 0, top: 0, right: 100, bottom: 100 };
 const SCALE_RESIDUAL_TOLERANCE = 1.5;
+const MIN_TWO_ANCHOR_PLOT_RATIO = .28;
 const MAX_BAND_PLOT_RATIO = .08;
 const TOUCH_TOLERANCE_PLOT_RATIO = .02;
 const MIN_TOUCH_X_SEPARATION = .75;
@@ -75,7 +78,7 @@ export function parseLiquidityPriceRange(value: string | undefined) {
   return values.every((price): price is number => price !== null) ? values : [];
 }
 
-export function verifiedLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?: LiquidityPlotBounds) {
+function verifiedPercentLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?: LiquidityPlotBounds) {
   const plot = validBounds(bounds) ?? (bounds === undefined ? FULL_IMAGE_BOUNDS : null);
   if (!plot) return null;
   const valid = anchors.filter((anchor) =>
@@ -85,22 +88,37 @@ export function verifiedLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?:
   const unique = valid.filter((anchor, index, all) =>
     all.findIndex((candidate) => candidate.price === anchor.price || candidate.y === anchor.y) === index,
   );
-  // Three points are the minimum that can distinguish a linear axis from a
-  // log/non-linear scale or a pair of coincidentally plausible OCR labels.
-  if (unique.length < 3) return null;
+  // Three labels remain preferred because they expose a non-linear or bad OCR
+  // fit. Two exact labels can still calibrate an ordinary mobile chart when
+  // they span a substantial part of the plot; every liquidity band and touch
+  // row is independently checked against the resulting projection below.
+  if (unique.length < 2) return null;
   const ordered = [...unique].sort((left, right) => left.price - right.price);
   if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return null;
   const low = ordered[0];
   const high = ordered.at(-1)!;
-  if (Math.abs(high.y - low.y) < 12) return null;
+  const minimumSpan = ordered.length === 2 ? (plot.bottom - plot.top) * MIN_TWO_ANCHOR_PLOT_RATIO : 12;
+  if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
   const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  if (ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_RESIDUAL_TOLERANCE)) return null;
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_RESIDUAL_TOLERANCE)) return null;
   return { project, low, high };
 }
 
+export function verifiedLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?: LiquidityPlotBounds) {
+  const geometry = canonicalizePocketGeometry({ plotBounds: bounds, priceScaleAnchors: anchors }) as {
+    plotBounds?: LiquidityPlotBounds;
+    priceScaleAnchors: LiquidityScaleAnchor[];
+  };
+  return verifiedPercentLiquidityScale(geometry.priceScaleAnchors, geometry.plotBounds);
+}
+
 export function projectLiquidityPrice(price: number, anchors: LiquidityScaleAnchor[], bounds: LiquidityPlotBounds | undefined) {
-  const plot = validBounds(bounds);
-  const scale = plot ? verifiedLiquidityScale(anchors, plot) : null;
+  const geometry = canonicalizePocketGeometry({ plotBounds: bounds, priceScaleAnchors: anchors }) as {
+    plotBounds?: LiquidityPlotBounds;
+    priceScaleAnchors: LiquidityScaleAnchor[];
+  };
+  const plot = validBounds(geometry.plotBounds);
+  const scale = plot ? verifiedPercentLiquidityScale(geometry.priceScaleAnchors, plot) : null;
   if (!scale || !plot || !Number.isFinite(price) || price <= 0) return null;
   const y = scale.project(price);
   return y >= plot.top && y <= plot.bottom ? y : null;
@@ -126,8 +144,14 @@ export function projectLiquidityZones(
 ) {
   if (!shield || shield.status !== "VISIBLE_RISK_ZONES" || !Array.isArray(shield.zones)) return [];
   if (readability?.chartReadability === "POOR" || readability?.candlesReadable === false) return [];
-  const plot = validBounds(bounds);
-  const scale = plot ? verifiedLiquidityScale(anchors, plot) : null;
+  const geometry = canonicalizePocketGeometry({ plotBounds: bounds, priceScaleAnchors: anchors, liquidityShield: shield }) as {
+    plotBounds?: LiquidityPlotBounds;
+    priceScaleAnchors: LiquidityScaleAnchor[];
+    liquidityShield: LiquidityShield;
+  };
+  const normalizedShield = geometry.liquidityShield;
+  const plot = validBounds(geometry.plotBounds);
+  const scale = plot ? verifiedPercentLiquidityScale(geometry.priceScaleAnchors, plot) : null;
   const current = parseLiquidityCurrentPrice(currentPrice);
   if (!plot || !scale || current === null) return [];
   // A numeric-looking badge is not enough. It must belong to the calibrated
@@ -140,7 +164,7 @@ export function projectLiquidityZones(
   const confidenceRank: Record<LiquidityZoneConfidence, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
   const seen = new Set<number>();
 
-  return [...shield.zones]
+  return [...normalizedShield.zones]
     .sort((left, right) => confidenceRank[left.confidence] - confidenceRank[right.confidence])
     .flatMap((zone): ProjectedLiquidityZone[] => {
       // LOW-confidence pools remain textual evidence only. They are never drawn

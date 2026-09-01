@@ -21,3 +21,19 @@ test("three scale anchors keep numeric AI levels below user-confirmed confidence
   assert.equal(result.confidence, "MEDIUM");
   assert.equal(result.precision, "EXACT");
 });
+
+test("Level Lab provenance never borrows primary-chart anchors or evidence", () => {
+  const result = deriveLevelProvenance({ kind: "support", label: "Independent floor", price: "7640", source: "LEVEL_LAB" }, 4);
+  assert.equal(result.source, "LEVEL_LAB_CHART");
+  assert.equal(result.confidence, "MEDIUM");
+  assert.equal(result.precision, "EXACT");
+  assert.match(result.evidence, /independent Level Lab scan/i);
+  assert.doesNotMatch(result.evidence, /4 readable scale anchors/i);
+});
+
+test("context provenance does not inherit primary-chart scale confidence", () => {
+  const result = deriveLevelProvenance({ kind: "resistance", label: "Context ceiling", price: "7680", source: "CONTEXT" }, 4);
+  assert.equal(result.source, "CONTEXT_CHART");
+  assert.equal(result.confidence, "LOW");
+  assert.equal(result.precision, "APPROXIMATE");
+});

@@ -54,11 +54,15 @@ test("every additional native AI request requires an Apple entitlement", async (
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
   assert.match(pocket, /image && !reviewTarget \? <ChartPreflightPanel/);
   assert.doesNotMatch(pocket, /appleCanRunPreflight/);
-  assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*setShowApplePaywall\(true\)/);
+  assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(\)/);
 });
 
 test("Apple paywall contains purchase, restore, renewal and legal disclosures", async () => {
-  const paywall = await readFile(new URL("app/pocket/AppleSubscriptionPaywall.tsx", root), "utf8");
+  const [paywall, hotfix, pocket] = await Promise.all([
+    readFile(new URL("app/pocket/AppleSubscriptionPaywall.tsx", root), "utf8"),
+    readFile(new URL("app/pocket/pocket-v1-1-hotfix.css", root), "utf8"),
+    readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8"),
+  ]);
   assert.match(paywall, /purchaseAppleSubscription/);
   assert.match(paywall, /restoreAppleSubscription/);
   assert.match(paywall, /renews automatically/);
@@ -66,6 +70,17 @@ test("Apple paywall contains purchase, restore, renewal and legal disclosures", 
   assert.match(paywall, /RESTORE PURCHASES/);
   assert.match(paywall, /href="\/terms"/);
   assert.match(paywall, /href="\/privacy"/);
+  assert.match(hotfix, /\.psApplePaywallClose[\s\S]*position: fixed/);
+  assert.match(hotfix, /top: calc\(12px \+ env\(safe-area-inset-top\)\)/);
+  assert.match(hotfix, /right: calc\(12px \+ env\(safe-area-inset-right\)\)/);
+  assert.match(hotfix, /width: 44px;[\s\S]*height: 44px/);
+  assert.match(paywall, /autoFocus/);
+  assert.match(paywall, /event\.key === "Escape"/);
+  assert.match(paywall, /querySelectorAll<HTMLElement>/);
+  assert.match(pocket, /applePaywallReturnFocus\.current = document\.activeElement/);
+  assert.match(pocket, /original\?\.isConnected \? original : fallback/);
+  assert.match(pocket, /onClose=\{closeApplePaywall\}/);
+  assert.match(pocket, /showApplePaywall\]\);/);
 });
 
 test("native Pocket does not render or share external web purchase paths", async () => {
