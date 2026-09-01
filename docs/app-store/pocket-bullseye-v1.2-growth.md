@@ -39,15 +39,15 @@ The rating request is never shown on the first free analysis, during an error, a
 
 ## Screenshot order
 
-1. Challenge the setup before you trade
-2. Map verified support and resistance
-3. See where liquidity may be clustered
-4. Switch between supplied timeframes
-5. Set a personal cash-risk ceiling
-6. Compare bull, wait and bear paths
-7. No guesses when evidence is incomplete
+1. Scan the chart. Challenge the setup.
+2. Rescan support + resistance
+3. Spot visible stop-risk clusters
+4. Switch the structure view
+5. Set the cash limit first
+6. Bull. Wait. Bear. Compare the paths.
+7. No evidence. No made-up levels.
 
-The first three assets are intentionally the clearest acquisition messages because they can appear directly in App Store search results.
+The first three assets are intentionally the strongest acquisition messages because they can appear directly in App Store search results. Every scanner visual depicts analysis of an uploaded chart screenshot, not a live market feed.
 
 ## Release guardrails
 
