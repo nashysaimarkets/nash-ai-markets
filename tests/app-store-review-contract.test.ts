@@ -30,11 +30,25 @@ test("Apple information-request response covers exactly the eight requested item
   assert.match(response, /Recording script/i);
 });
 
-test("terms distinguish Apple billing from web Stripe billing", async () => {
-  const terms = await readFile(new URL("app/terms/page.tsx", root), "utf8");
-  assert.match(terms, /Web memberships are billed through Stripe/);
+test("legal and support copy distinguish Apple billing from web Stripe billing", async () => {
+  const [terms, privacy, contact, founding] = await Promise.all([
+    readFile(new URL("app/terms/page.tsx", root), "utf8"),
+    readFile(new URL("app/privacy/page.tsx", root), "utf8"),
+    readFile(new URL("app/contact/page.tsx", root), "utf8"),
+    readFile(new URL("app/pocket/founding/FoundingWebOnly.tsx", root), "utf8"),
+  ]);
+
+  assert.match(terms, /Web memberships and Stripe billing/);
   assert.match(terms, /Pocket Bullseye subscriptions on iOS/);
   assert.match(terms, /one-month auto-renewable subscription/);
   assert.match(terms, /Restore Purchases/);
   assert.match(terms, /Apple Account subscription settings/);
+  assert.match(terms, /Separate purchase channels/);
+  assert.match(terms, /Web founding offers/);
+  assert.match(privacy, /Stripe processes web membership/);
+  assert.match(privacy, /Apple StoreKit processes iOS in-app purchases/);
+  assert.match(contact, /Apple App Store subscriptions/);
+  assert.match(contact, /Stripe web memberships/);
+  assert.match(founding, /Opening Pocket Bullseye for Apple subscription access/);
+  assert.doesNotMatch(`${terms}\n${privacy}`, /Founding 100|Pocket Bullseye beta|private[- ]beta/i);
 });
