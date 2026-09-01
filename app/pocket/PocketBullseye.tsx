@@ -18,7 +18,7 @@ import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
-import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, type AppleAccessStatus } from "./apple-storekit";
+import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
 import { postLevelLabScan } from "./level-lab-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
 
@@ -1543,6 +1543,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         setResultView("cinema");
         setImmersive(true);
         setShowResultReveal(true);
+        // Count only completed, newly uploaded chart analyses. Reanalysis,
+        // follow-ups and review workflows must not inflate review eligibility.
+        // The prompt itself is deferred until the customer leaves the result.
+        void recordAppleSuccessfulAnalysis().catch(() => undefined);
         return;
       }
       analysisRequestActive.current = true;
@@ -1697,6 +1701,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setBattlefieldChart("primary");
     setResultView("cinema");
     setShowResultReveal(false);
+    // This customer-controlled transition occurs after they have had time to
+    // inspect the result. StoreKit decides whether to display the prompt, and
+    // native persistence ensures it is requested at most once.
+    void requestAppleReviewIfEligible().catch(() => undefined);
     if (appleNeedsSubscription) openApplePaywall();
   }
 

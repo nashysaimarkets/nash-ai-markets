@@ -2,6 +2,7 @@ import Capacitor
 import Foundation
 import Security
 import StoreKit
+import UIKit
 
 @objc(PocketStoreKitPlugin)
 public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -11,10 +12,14 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "getStatus", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "purchase", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "restore", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "consumeFreeUse", returnType: CAPPluginReturnPromise)
+        CAPPluginMethod(name: "consumeFreeUse", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "recordSuccessfulAnalysis", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestReviewIfEligible", returnType: CAPPluginReturnPromise)
     ]
 
     private let freeUseKey = "com.nashaimarkets.pocketbullseye.free-use-consumed.v1"
+    private let successfulAnalysisCountKey = "com.nashaimarkets.pocketbullseye.successful-analysis-count.v1"
+    private let reviewRequestedKey = "com.nashaimarkets.pocketbullseye.review-requested.v1"
 
     @objc func getStatus(_ call: CAPPluginCall) {
         Task { await resolveStatus(call, productId: call.getString("productId") ?? "") }
@@ -61,6 +66,57 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
         call.resolve(["freeUseConsumed": true])
+    }
+
+    @objc func recordSuccessfulAnalysis(_ call: CAPPluginCall) {
+        let defaults = UserDefaults.standard
+        let count = defaults.integer(forKey: successfulAnalysisCountKey) + 1
+        defaults.set(count, forKey: successfulAnalysisCountKey)
+        call.resolve([
+            "successfulAnalysisCount": count,
+            "eligible": count >= 2 && !defaults.bool(forKey: reviewRequestedKey)
+        ])
+    }
+
+    @objc func requestReviewIfEligible(_ call: CAPPluginCall) {
+        let defaults = UserDefaults.standard
+        let count = defaults.integer(forKey: successfulAnalysisCountKey)
+        guard count >= 2, !defaults.bool(forKey: reviewRequestedKey) else {
+            call.resolve([
+                "successfulAnalysisCount": count,
+                "eligible": false,
+                "requested": false
+            ])
+            return
+        }
+
+        DispatchQueue.main.async {
+            guard let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }) else {
+                call.resolve([
+                    "successfulAnalysisCount": count,
+                    "eligible": true,
+                    "requested": false
+                ])
+                return
+            }
+
+            // Record the request before invoking StoreKit so repeated taps can
+            // never spam Apple's system-controlled review prompt. Apple alone
+            // decides whether the prompt is displayed.
+            defaults.set(true, forKey: self.reviewRequestedKey)
+            if #available(iOS 16.0, *) {
+                AppStore.requestReview(in: scene)
+            } else {
+                SKStoreReviewController.requestReview(in: scene)
+            }
+            call.resolve([
+                "successfulAnalysisCount": count,
+                "eligible": true,
+                "requested": true
+            ])
+        }
     }
 
     private func resolveStatus(_ call: CAPPluginCall, productId: String, product suppliedProduct: Product? = nil) async {
