@@ -3,7 +3,7 @@
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
 
-import { ChangeEvent, useEffect, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
 import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
@@ -752,10 +752,41 @@ const PATTERN_GUIDE = [
   { name: "BREAKOUT & RETEST", aliases: ["BREAKOUT-RETEST", "BREAKOUT AND RETEST", "BREAKOUT & RETEST", "BREAKDOWN-RETEST"], family: "LEVEL TRANSITION", path: "5,72 34,72 46,28 61,28 72,68 82,55 94,35", look: "Price clears a level, revisits it from the other side, then reacts.", confirms: "The old boundary holds on retest and price resumes away from it.", trap: "Calling the first return a successful retest before it reacts." },
 ] as const;
 
-function PatternWatch({ analysis }: { analysis: Analysis }) {
+const PATTERN_FRAMES = ["30M", "1H", "4H"] as const;
+type PatternFrame = typeof PATTERN_FRAMES[number];
+
+function normalizePatternFrame(value: string | undefined): PatternFrame | null {
+  const compact = (value ?? "")
+    .toUpperCase()
+    .replace(/MINUTES?|MINS?/g, "M")
+    .replace(/HOURS?|HRS?/g, "H")
+    .replace(/[^A-Z0-9]/g, "");
+  if (compact.startsWith("30M") || compact.startsWith("M30")) return "30M";
+  if (compact.startsWith("1H") || compact.startsWith("H1")) return "1H";
+  if (compact.startsWith("4H") || compact.startsWith("H4")) return "4H";
+  return null;
+}
+
+function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [guideOpen, setGuideOpen] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<string>(PATTERN_GUIDE[0].name);
-  const suppliedFrames = [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : ""].filter(Boolean);
+  const [selectedFrame, setSelectedFrame] = useState<PatternFrame>(() => normalizePatternFrame(analysis.timeframe) ?? "4H");
+  const [requestedFrame, setRequestedFrame] = useState<PatternFrame | null>(null);
+  const timeframeInput = useRef<HTMLInputElement>(null);
+  const suppliedFrames = useMemo(() => PATTERN_FRAMES.filter((frame) => [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : ""].some((value) => normalizePatternFrame(value) === frame)), [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe]);
+  const primaryFrame = normalizePatternFrame(analysis.timeframe);
+  const activeFrame = suppliedFrames.includes(selectedFrame) ? selectedFrame : primaryFrame && suppliedFrames.includes(primaryFrame) ? primaryFrame : suppliedFrames[0] ?? "4H";
+  const visiblePatterns = analysis.patterns.filter((pattern) => normalizePatternFrame(pattern.timeframe || analysis.timeframe) === activeFrame);
+  const contextPending = hasContext && !analysis.higherTimeframe.provided;
+  const selectFrame = (frame: PatternFrame) => {
+    if (suppliedFrames.includes(frame)) {
+      setSelectedFrame(frame);
+      setRequestedFrame(null);
+      return;
+    }
+    setRequestedFrame(frame);
+    timeframeInput.current?.click();
+  };
   const selectGuide = (name: string) => {
     const normalized = name.toUpperCase();
     const match = PATTERN_GUIDE
@@ -768,8 +799,13 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   const selected = PATTERN_GUIDE.find((item) => item.name === selectedGuide) ?? PATTERN_GUIDE[0];
   return <section className="psPatternWatch">
     <header><div><span>◫ PATTERN WATCH</span><small>30M · 1H · 4H STRUCTURE CHECK</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
-    <div className="psPatternFrames">{["30M","1H","4H"].map((frame) => <span key={frame} data-supplied={suppliedFrames.some((value) => value.toUpperCase().replace("MIN", "M").replace("HOUR", "H").includes(frame))}>{frame}<small>{suppliedFrames.some((value) => value.toUpperCase().replace("MIN", "M").replace("HOUR", "H").includes(frame)) ? "CHART READ" : "NOT SUPPLIED"}</small></span>)}</div>
-    {analysis.patterns.length ? <div className="psPatternSignals">{analysis.patterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || analysis.timeframe} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone"><strong>NO SIGNIFICANT PATTERN VERIFIED</strong><p>The chart does not currently show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
+    <div className="psPatternFrames" role="tablist" aria-label="Choose Pattern Watch timeframe">{PATTERN_FRAMES.map((frame) => {
+      const supplied = suppliedFrames.includes(frame);
+      return <button key={frame} type="button" role="tab" data-supplied={supplied} data-active={supplied && activeFrame === frame} aria-selected={supplied && activeFrame === frame} aria-label={supplied ? `Show ${frame} pattern analysis` : `Add a ${frame} chart`} onClick={() => selectFrame(frame)}>{frame}<small>{supplied ? activeFrame === frame ? "VIEWING" : "CHART READ" : "+ ADD CHART"}</small></button>;
+    })}</div>
+    <input ref={timeframeInput} className="psPatternFrameInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label={`Add ${requestedFrame ?? "another"} timeframe chart`} onChange={onAddChart}/>
+    {contextPending ? <div className="psPatternFrameAction" role="status"><span>{requestedFrame ?? "TIMEFRAME"} PHOTO READY</span><button type="button" disabled={reanalysing} onClick={onReanalyse}>{reanalysing ? "ANALYSING…" : "↻ REANALYSE TIMEFRAMES"}</button></div> : null}
+    {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>The supplied {activeFrame} chart does not currently show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
   </section>;
 }
@@ -860,7 +896,7 @@ function PocketCommandDeck({ analysis, primaryLevels, sourceImage, onResultCard,
     <div className="psCommandStage" data-mode={mode}>
       {mode === "xray" ? <ChartXRay analysis={analysis} primaryLevels={primaryLevels} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "guard" ? <LiquidityGuardOverlay analysis={analysis} sourceImage={sourceImage} onRescan={onReanalyse} rescanning={reanalysing} /> : null}
-      {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
+      {mode === "patterns" ? <PatternWatch analysis={analysis} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}

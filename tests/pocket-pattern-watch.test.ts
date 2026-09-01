@@ -16,11 +16,27 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(route, /return an empty array when none is defensible/);
   assert.match(client, /PATTERN WATCH/);
   assert.match(client, /30M · 1H · 4H STRUCTURE CHECK/);
-  assert.match(client, /NO SIGNIFICANT PATTERN VERIFIED/);
+  assert.match(client, /NO SIGNIFICANT.*PATTERN VERIFIED/);
   assert.match(client, /WHAT DOES THIS MEAN/);
+  assert.match(client, /Choose Pattern Watch timeframe/);
+  assert.match(client, /Show \$\{frame\} pattern analysis/);
+  assert.match(client, /Add a \$\{frame\} chart/);
+  assert.match(client, /visiblePatterns/);
+  assert.match(client, /REANALYSE TIMEFRAMES/);
   assert.match(client, /useState\(true\)/);
   assert.match(client, /HIDE GALLERY/);
   assert.match(styles, /\.psPatternGuide/);
+  assert.match(styles, /\.psPatternFrames>button\[data-active="true"\]/);
+  assert.match(styles, /\.psPatternFrameAction/);
+});
+
+test("Pattern Watch normalizes and switches only supplied 30M 1H and 4H evidence", async () => {
+  const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
+  assert.match(client, /const PATTERN_FRAMES = \["30M", "1H", "4H"\] as const/);
+  assert.match(client, /function normalizePatternFrame/);
+  assert.match(client, /normalizePatternFrame\(pattern\.timeframe \|\| analysis\.timeframe\) === activeFrame/);
+  assert.match(client, /if \(suppliedFrames\.includes\(frame\)\)/);
+  assert.match(client, /timeframeInput\.current\?\.click\(\)/);
 });
 
 test("the guide covers reversal, continuation and compression families", async () => {
