@@ -9,9 +9,9 @@ const readPlatform = () => Capacitor.isNativePlatform() ? "native" : "web";
 const readServerPlatform = () => "loading";
 
 /**
- * The founding checkout is a web-only Stripe offer. The native iOS build must
- * never render it: digital access inside Pocket Bullseye is sold exclusively
- * through the StoreKit paywall.
+ * The Stripe web-membership checkout must never render in the native iOS app.
+ * Pocket Bullseye access purchased in iOS is handled through StoreKit; web
+ * membership checkout remains handled by Stripe.
  */
 export default function FoundingWebOnly({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function FoundingWebOnly({ children }: { children: ReactNode }) {
   }, [platform, router]);
 
   if (platform !== "web") {
-    return <main className="pfLaunch" aria-busy="true"><p className="pfNativeRedirect">Opening Pocket Bullseye…</p></main>;
+    return <main className="pfLaunch" aria-busy="true"><p className="pfNativeRedirect">Opening Pocket Bullseye for Apple subscription access…</p></main>;
   }
 
   return children;
