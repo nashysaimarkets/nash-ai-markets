@@ -18,6 +18,14 @@ type AppleStoreKitPlugin = {
   purchase(options: { productId: string }): Promise<AppleAccessStatus>;
   restore(options: { productId: string }): Promise<AppleAccessStatus>;
   consumeFreeUse(): Promise<{ freeUseConsumed: boolean }>;
+  recordSuccessfulAnalysis(): Promise<AppleReviewPromptStatus>;
+  requestReviewIfEligible(): Promise<AppleReviewPromptStatus>;
+};
+
+export type AppleReviewPromptStatus = {
+  successfulAnalysisCount: number;
+  eligible: boolean;
+  requested?: boolean;
 };
 
 const NativeAppleStoreKit = registerPlugin<AppleStoreKitPlugin>("PocketStoreKit");
@@ -53,4 +61,14 @@ export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
 export async function consumeAppleFreeUse(): Promise<void> {
   if (!isAppleNativeApp()) return;
   await NativeAppleStoreKit.consumeFreeUse();
+}
+
+export async function recordAppleSuccessfulAnalysis(): Promise<AppleReviewPromptStatus | null> {
+  if (!isAppleNativeApp()) return null;
+  return NativeAppleStoreKit.recordSuccessfulAnalysis();
+}
+
+export async function requestAppleReviewIfEligible(): Promise<AppleReviewPromptStatus | null> {
+  if (!isAppleNativeApp()) return null;
+  return NativeAppleStoreKit.requestReviewIfEligible();
 }
