@@ -1,4 +1,118 @@
 workflows:
+  pocket-bullseye-android-verify:
+    name: Pocket Bullseye — Android Release Verification
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      node: 22.13.0
+      java: 21
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: "feat/pocket-android-worldwide-*"
+          include: true
+      tag_patterns:
+        - pattern: "android-verify-v*"
+          include: true
+    scripts:
+      - name: Install JavaScript dependencies
+        script: npm ci
+      - name: Build verified Pocket Bullseye web bundle
+        script: |
+          set -euo pipefail
+          npm run build
+          test -f dist/server/index.js
+          test -f dist/.openai/hosting.json
+          test -f ios/NativeWeb/index.html
+      - name: Synchronise verified bundle into Capacitor Android
+        script: |
+          set -euo pipefail
+          eval "$(node scripts/load-release-pin.mjs)"
+          node scripts/verify-capacitor-server.mjs
+          npx cap sync android
+      - name: Run shared and Android release checks
+        script: |
+          set -euo pipefail
+          npm run typecheck
+          node --import tsx --test \
+            tests/android-play-billing-contract.test.ts \
+            tests/apple-storekit-contract.test.ts \
+            tests/pwa-support.test.ts \
+            tests/app-store-review-contract.test.ts
+          npm run security:scan
+      - name: Compile Android release bundle and lint
+        script: |
+          set -euo pipefail
+          cd android
+          ./gradlew bundleRelease lintRelease testReleaseUnitTest
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/reports/lint-results-release.*
+      - android/app/build/reports/tests/**/*.html
+
+  pocket-bullseye-android-release:
+    name: Pocket Bullseye — Signed Android Release Bundle
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      node: 22.13.0
+      java: 21
+      android_signing:
+        - pocket_bullseye_upload
+      vars:
+        POCKET_ANDROID_SIGNED_RELEASE: "true"
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "android-release-v*"
+          include: true
+    scripts:
+      - name: Install JavaScript dependencies
+        script: npm ci
+      - name: Build verified Pocket Bullseye web bundle
+        script: |
+          set -euo pipefail
+          npm run build
+          test -f dist/server/index.js
+          test -f dist/.openai/hosting.json
+          test -f ios/NativeWeb/index.html
+      - name: Synchronise verified bundle into Capacitor Android
+        script: |
+          set -euo pipefail
+          eval "$(node scripts/load-release-pin.mjs)"
+          node scripts/verify-capacitor-server.mjs
+          npx cap sync android
+      - name: Run shared and Android release checks
+        script: |
+          set -euo pipefail
+          npm run typecheck
+          node --import tsx --test \
+            tests/android-play-billing-contract.test.ts \
+            tests/apple-storekit-contract.test.ts \
+            tests/pwa-support.test.ts \
+            tests/app-store-review-contract.test.ts
+          npm run security:scan
+      - name: Compile signed Android release bundle and lint
+        script: |
+          set -euo pipefail
+          cd android
+          ./gradlew bundleRelease lintRelease testReleaseUnitTest
+      - name: Verify Android release signature
+        script: |
+          set -euo pipefail
+          BUNDLE_PATH="$(find android/app/build/outputs/bundle/release -name '*.aab' -type f -print -quit)"
+          test -n "$BUNDLE_PATH"
+          jarsigner -verify -strict -verbose -certs "$BUNDLE_PATH"
+          keytool -printcert -jarfile "$BUNDLE_PATH" > "$CM_BUILD_DIR/android-signing-certificate.txt"
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/reports/lint-results-release.*
+      - android/app/build/reports/tests/**/*.html
+      - android-signing-certificate.txt
+
   pocket-bullseye-ios-testflight:
     name: Pocket Bullseye — iOS TestFlight
     instance_type: mac_mini_m2

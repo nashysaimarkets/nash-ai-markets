@@ -13,7 +13,7 @@ export default function Privacy() {
       <article>
         <span>LEGAL</span>
         <h1>Privacy Policy</h1>
-        <p className="updated">Last updated: 22 August 2026</p>
+        <p className="updated">Last updated: 1 September 2026</p>
 
         <h2>Who we are</h2>
         <p>
@@ -53,6 +53,12 @@ export default function Privacy() {
           decisions and their chart images are stored locally in that browser using device storage;
           they are not synchronised to a NASH AI Markets account. Clearing the browser&apos;s site data
           removes them. A shared text summary does not include the chart image.
+        </p>
+        <p>
+          In the native app, Apple or Google processes subscription purchases and returns the
+          product, price and entitlement state needed to unlock access. NASH AI Markets does not
+          receive or store your full App Store or Google Play payment details. The installed app
+          also keeps a local flag recording whether its included free analysis has been used.
         </p>
         <p>
           To protect the private beta from automated or excessive use, Pocket derives a

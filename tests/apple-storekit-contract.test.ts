@@ -27,46 +27,46 @@ test("the scene boots through the bridge that registers Pocket StoreKit", async 
   assert.match(bridge, /registerPluginInstance\(PocketStoreKitPlugin\(\)\)/);
 });
 
-test("one free completed analysis is enforced only inside the native Apple app", async () => {
+test("one free completed analysis stays enforced inside native iOS through the shared store gate", async () => {
   const pocket = await readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8");
-  assert.match(pocket, /appleAccess\.freeUseConsumed/);
-  assert.match(pocket, /!appleAccess\.entitled/);
-  assert.match(pocket, /await consumeAppleFreeUse\(\)/);
-  assert.match(pocket, /if \(isAppleNativeApp\(\)\)[\s\S]*await refreshAppleAccess\(\)/);
-  const consume = pocket.indexOf("await consumeAppleFreeUse()");
+  assert.match(pocket, /nativeAccess\.freeUseConsumed/);
+  assert.match(pocket, /!nativeAccess\.entitled/);
+  assert.match(pocket, /await consumeNativeFreeUse\(\)/);
+  assert.match(pocket, /if \(isNativePocketApp\(\)\)[\s\S]*await refreshNativeAccess\(\)/);
+  const consume = pocket.indexOf("await consumeNativeFreeUse()");
   const expose = pocket.indexOf("setAnalysis(nextAnalysis)");
   assert.ok(consume >= 0 && expose > consume, "the free result must not be exposed before Keychain persistence succeeds");
 });
 
-test("every additional native AI request requires an Apple entitlement", async () => {
+test("every additional native AI request requires the current app-store entitlement", async () => {
   const pocket = await readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8");
-  assert.match(pocket, /async function requireAppleEntitlementForAdditionalRequest\(\)/);
-  assert.match(pocket, /const latest = await refreshAppleAccess\(\)/);
+  assert.match(pocket, /async function requireNativeEntitlementForAdditionalRequest\(\)/);
+  assert.match(pocket, /const latest = await refreshNativeAccess\(\)/);
   for (const request of ["reanalyseResult", "reanalyseWithCorrection", "askBullseye"]) {
     const start = pocket.indexOf(`async function ${request}`);
     assert.notEqual(start, -1, `${request} must exist`);
     const body = pocket.slice(start, start + 500);
-    assert.match(body, /await requireAppleEntitlementForAdditionalRequest\(\)/, `${request} must refresh and gate before requesting`);
+    assert.match(body, /await requireNativeEntitlementForAdditionalRequest\(\)/, `${request} must refresh and gate before requesting`);
   }
   const levelLab = pocket.slice(pocket.indexOf("async function rescanLevelsOnly"), pocket.indexOf("async function reanalyseResult"));
-  assert.doesNotMatch(levelLab, /requireAppleEntitlementForAdditionalRequest/, "Level Lab refines the current audit and must stay available on the free result");
-  assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
-  assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
+  assert.doesNotMatch(levelLab, /requireNativeEntitlementForAdditionalRequest/, "Level Lab refines the current audit and must stay available on the free result");
+  assert.match(pocket, /currentNativeAccess = await refreshNativeAccess\(\)/);
+  assert.match(pocket, /reviewTarget && currentNativeAccess\?\.isNative && !currentNativeAccess\.entitled/);
   assert.match(pocket, /image && !reviewTarget \? <ChartPreflightPanel/);
-  assert.doesNotMatch(pocket, /appleCanRunPreflight/);
-  assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(\)/);
+  assert.doesNotMatch(pocket, /nativeCanRunPreflight/);
+  assert.match(pocket, /startNewChart[\s\S]*nativeNeedsSubscription[\s\S]*openSubscriptionPaywall\(\)/);
 });
 
-test("Apple paywall contains purchase, restore, renewal and legal disclosures", async () => {
+test("shared native paywall preserves Apple purchase, restore, renewal and legal disclosures", async () => {
   const [paywall, hotfix, pocket] = await Promise.all([
-    readFile(new URL("app/pocket/AppleSubscriptionPaywall.tsx", root), "utf8"),
+    readFile(new URL("app/pocket/NativeSubscriptionPaywall.tsx", root), "utf8"),
     readFile(new URL("app/pocket/pocket-v1-1-hotfix.css", root), "utf8"),
     readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8"),
   ]);
-  assert.match(paywall, /purchaseAppleSubscription/);
-  assert.match(paywall, /restoreAppleSubscription/);
+  assert.match(paywall, /purchaseNativeSubscription/);
+  assert.match(paywall, /restoreNativeSubscription/);
   assert.match(paywall, /renews automatically/);
-  assert.match(paywall, /one-month auto-renewable subscription/);
+  assert.match(paywall, /one-month auto-renewing subscription/);
   assert.match(paywall, /RESTORE PURCHASES/);
   assert.match(paywall, /href="\/terms"/);
   assert.match(paywall, /href="\/privacy"/);
@@ -77,10 +77,10 @@ test("Apple paywall contains purchase, restore, renewal and legal disclosures", 
   assert.match(paywall, /autoFocus/);
   assert.match(paywall, /event\.key === "Escape"/);
   assert.match(paywall, /querySelectorAll<HTMLElement>/);
-  assert.match(pocket, /applePaywallReturnFocus\.current = document\.activeElement/);
+  assert.match(pocket, /subscriptionPaywallReturnFocus\.current = document\.activeElement/);
   assert.match(pocket, /original\?\.isConnected \? original : fallback/);
-  assert.match(pocket, /onClose=\{closeApplePaywall\}/);
-  assert.match(pocket, /showApplePaywall\]\);/);
+  assert.match(pocket, /onClose=\{closeSubscriptionPaywall\}/);
+  assert.match(pocket, /showSubscriptionPaywall\]\);/);
 });
 
 test("native Pocket does not render or share external web purchase paths", async () => {
@@ -90,8 +90,8 @@ test("native Pocket does not render or share external web purchase paths", async
     readFile(new URL("app/pocket/founding/page.tsx", root), "utf8"),
     readFile(new URL("app/pocket/founding/FoundingWebOnly.tsx", root), "utf8"),
   ]);
-  assert.match(pocket, /if \(isAppleNativeApp\(\)\)[\s\S]*Invites to web membership offers are unavailable/);
-  assert.match(pocket, /appleAccess && !appleAccess\.isNative \? <button[^>]+onClick=\{shareFoundingInvite\}/);
+  assert.match(pocket, /if \(isNativePocketApp\(\)\)[\s\S]*Invites to web membership offers are unavailable/);
+  assert.match(pocket, /nativeAccess && !nativeAccess\.isNative \? <button[^>]+onClick=\{shareFoundingInvite\}/);
   assert.match(joinPage, /redirect\(`\/pocket\/founding/);
   assert.match(foundingPage, /<FoundingWebOnly><main/);
   assert.match(webOnly, /Capacitor\.isNativePlatform\(\)/);
