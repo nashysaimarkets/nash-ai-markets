@@ -1,5 +1,20 @@
 apply plugin: 'com.android.application'
 
+def releaseSigning = [
+    storeFile: System.getenv("CM_KEYSTORE_PATH"),
+    storePassword: System.getenv("CM_KEYSTORE_PASSWORD"),
+    keyAlias: System.getenv("CM_KEY_ALIAS"),
+    keyPassword: System.getenv("CM_KEY_PASSWORD"),
+]
+def releaseSigningRequested = System.getenv("POCKET_ANDROID_SIGNED_RELEASE") == "true"
+def releaseSigningConfigured = releaseSigning.values().every { value ->
+    value != null && !value.trim().isEmpty()
+}
+
+if (releaseSigningRequested && !releaseSigningConfigured) {
+    throw new GradleException("Signed Android release requested, but Codemagic signing variables are incomplete.")
+}
+
 android {
     namespace = "com.nashaimarkets.pocketbullseye"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +31,21 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            release {
+                storeFile file(releaseSigning.storeFile)
+                storePassword releaseSigning.storePassword
+                keyAlias releaseSigning.keyAlias
+                keyPassword releaseSigning.keyPassword
+            }
+        }
+    }
     buildTypes {
         release {
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

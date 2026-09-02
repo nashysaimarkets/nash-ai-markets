@@ -72,17 +72,50 @@ test("Android project contains adaptive icons, splash assets and the offline fal
   ]);
 });
 
-test("Codemagic has an isolated Android release verification workflow", async () => {
+test("Android release signing is secret-only and fails closed when requested", async () => {
+  const [appGradle, rootIgnore, androidIgnore, runbook] = await Promise.all([
+    read("android/app/build.gradle"),
+    read(".gitignore"),
+    read("android/.gitignore"),
+    read("docs/google-play/android-signing-runbook.md"),
+  ]);
+  for (const variable of ["CM_KEYSTORE_PATH", "CM_KEYSTORE_PASSWORD", "CM_KEY_ALIAS", "CM_KEY_PASSWORD"]) {
+    assert.match(appGradle, new RegExp(variable));
+  }
+  assert.match(appGradle, /POCKET_ANDROID_SIGNED_RELEASE/);
+  assert.match(appGradle, /throw new GradleException\("Signed Android release requested/);
+  assert.match(appGradle, /if \(releaseSigningConfigured\)[\s\S]*signingConfig signingConfigs\.release/);
+  assert.match(rootIgnore, /^\*\.jks$/m);
+  assert.match(rootIgnore, /^\*\.keystore$/m);
+  assert.match(androidIgnore, /^key\.properties$/m);
+  assert.match(androidIgnore, /^keystore\.properties$/m);
+  assert.match(runbook, /pocket_bullseye_upload/);
+  assert.match(runbook, /first signed AAB must be uploaded manually/i);
+  assert.doesNotMatch(runbook, /storePassword\s*=/);
+});
+
+test("Codemagic keeps unsigned verification separate from signed release", async () => {
   const pipeline = await read("codemagic.yaml");
-  const start = pipeline.indexOf("pocket-bullseye-android-verify:");
-  const end = pipeline.indexOf("pocket-bullseye-ios-testflight:");
-  assert.ok(start >= 0 && end > start);
-  const android = pipeline.slice(start, end);
-  assert.match(android, /android-verify-v\*/);
-  assert.match(android, /npm run typecheck/);
-  assert.match(android, /verify-capacitor-server\.mjs/);
-  assert.match(android, /npx cap sync android/);
-  assert.match(android, /\.\/gradlew bundleRelease lintRelease testReleaseUnitTest/);
-  assert.match(android, /\.aab/);
-  assert.doesNotMatch(android, /google_play:/);
+  const verifyStart = pipeline.indexOf("pocket-bullseye-android-verify:");
+  const releaseStart = pipeline.indexOf("pocket-bullseye-android-release:");
+  const iosStart = pipeline.indexOf("pocket-bullseye-ios-testflight:");
+  assert.ok(verifyStart >= 0 && releaseStart > verifyStart && iosStart > releaseStart);
+
+  const verify = pipeline.slice(verifyStart, releaseStart);
+  assert.match(verify, /android-verify-v\*/);
+  assert.match(verify, /npm run typecheck/);
+  assert.match(verify, /verify-capacitor-server\.mjs/);
+  assert.match(verify, /npx cap sync android/);
+  assert.match(verify, /\.\/gradlew bundleRelease lintRelease testReleaseUnitTest/);
+  assert.match(verify, /\.aab/);
+  assert.doesNotMatch(verify, /android_signing:/);
+  assert.doesNotMatch(verify, /google_play:/);
+
+  const release = pipeline.slice(releaseStart, iosStart);
+  assert.match(release, /android_signing:[\s\S]*pocket_bullseye_upload/);
+  assert.match(release, /POCKET_ANDROID_SIGNED_RELEASE: "true"/);
+  assert.match(release, /android-release-v\*/);
+  assert.match(release, /jarsigner -verify -strict/);
+  assert.match(release, /keytool -printcert -jarfile/);
+  assert.doesNotMatch(release, /google_play:/);
 });
