@@ -106,6 +106,8 @@ test("Codemagic keeps unsigned verification separate from signed release", async
   assert.match(verify, /npm run typecheck/);
   assert.match(verify, /verify-capacitor-server\.mjs/);
   assert.match(verify, /npx cap sync android/);
+  assert.ok(verify.indexOf("npx cap sync android") < verify.indexOf("Run shared and Android release checks"));
+  assert.match(verify, /Run shared and Android release checks[\s\S]*set -euo pipefail/);
   assert.match(verify, /\.\/gradlew bundleRelease lintRelease testReleaseUnitTest/);
   assert.match(verify, /\.aab/);
   assert.doesNotMatch(verify, /android_signing:/);
@@ -115,6 +117,8 @@ test("Codemagic keeps unsigned verification separate from signed release", async
   assert.match(release, /android_signing:[\s\S]*pocket_bullseye_upload/);
   assert.match(release, /POCKET_ANDROID_SIGNED_RELEASE: "true"/);
   assert.match(release, /android-release-v\*/);
+  assert.ok(release.indexOf("npx cap sync android") < release.indexOf("Run shared and Android release checks"));
+  assert.match(release, /Run shared and Android release checks[\s\S]*set -euo pipefail/);
   assert.match(release, /jarsigner -verify -strict/);
   assert.match(release, /keytool -printcert -jarfile/);
   assert.doesNotMatch(release, /google_play:/);

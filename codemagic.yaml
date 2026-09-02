@@ -19,8 +19,22 @@ workflows:
     scripts:
       - name: Install JavaScript dependencies
         script: npm ci
+      - name: Build verified Pocket Bullseye web bundle
+        script: |
+          set -euo pipefail
+          npm run build
+          test -f dist/server/index.js
+          test -f dist/.openai/hosting.json
+          test -f ios/NativeWeb/index.html
+      - name: Synchronise verified bundle into Capacitor Android
+        script: |
+          set -euo pipefail
+          eval "$(node scripts/load-release-pin.mjs)"
+          node scripts/verify-capacitor-server.mjs
+          npx cap sync android
       - name: Run shared and Android release checks
         script: |
+          set -euo pipefail
           npm run typecheck
           node --import tsx --test \
             tests/android-play-billing-contract.test.ts \
@@ -28,19 +42,9 @@ workflows:
             tests/pwa-support.test.ts \
             tests/app-store-review-contract.test.ts
           npm run security:scan
-      - name: Build verified Pocket Bullseye web bundle
-        script: |
-          npm run build
-          test -f dist/server/index.js
-          test -f dist/.openai/hosting.json
-          test -f ios/NativeWeb/index.html
-      - name: Synchronise verified bundle into Capacitor Android
-        script: |
-          eval "$(node scripts/load-release-pin.mjs)"
-          node scripts/verify-capacitor-server.mjs
-          npx cap sync android
       - name: Compile Android release bundle and lint
         script: |
+          set -euo pipefail
           cd android
           ./gradlew bundleRelease lintRelease testReleaseUnitTest
     artifacts:
@@ -68,8 +72,22 @@ workflows:
     scripts:
       - name: Install JavaScript dependencies
         script: npm ci
+      - name: Build verified Pocket Bullseye web bundle
+        script: |
+          set -euo pipefail
+          npm run build
+          test -f dist/server/index.js
+          test -f dist/.openai/hosting.json
+          test -f ios/NativeWeb/index.html
+      - name: Synchronise verified bundle into Capacitor Android
+        script: |
+          set -euo pipefail
+          eval "$(node scripts/load-release-pin.mjs)"
+          node scripts/verify-capacitor-server.mjs
+          npx cap sync android
       - name: Run shared and Android release checks
         script: |
+          set -euo pipefail
           npm run typecheck
           node --import tsx --test \
             tests/android-play-billing-contract.test.ts \
@@ -77,23 +95,14 @@ workflows:
             tests/pwa-support.test.ts \
             tests/app-store-review-contract.test.ts
           npm run security:scan
-      - name: Build verified Pocket Bullseye web bundle
-        script: |
-          npm run build
-          test -f dist/server/index.js
-          test -f dist/.openai/hosting.json
-          test -f ios/NativeWeb/index.html
-      - name: Synchronise verified bundle into Capacitor Android
-        script: |
-          eval "$(node scripts/load-release-pin.mjs)"
-          node scripts/verify-capacitor-server.mjs
-          npx cap sync android
       - name: Compile signed Android release bundle and lint
         script: |
+          set -euo pipefail
           cd android
           ./gradlew bundleRelease lintRelease testReleaseUnitTest
       - name: Verify Android release signature
         script: |
+          set -euo pipefail
           BUNDLE_PATH="$(find android/app/build/outputs/bundle/release -name '*.aab' -type f -print -quit)"
           test -n "$BUNDLE_PATH"
           jarsigner -verify -strict -verbose -certs "$BUNDLE_PATH"
