@@ -233,8 +233,8 @@ function clampY(y: number) {
 }
 
 const MAX_PROVIDER_SCAN_DATA_URL_CHARS = 1_900_000;
-function createProviderScanImage(dataUrl: string) {
-  if (/^data:image\/(?:jpeg|png|webp);base64,/.test(dataUrl) && dataUrl.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS) {
+function createProviderScanImage(dataUrl: string, forceDecode = false) {
+  if (!forceDecode && /^data:image\/(?:jpeg|png|webp);base64,/.test(dataUrl) && dataUrl.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS) {
     return Promise.resolve(dataUrl);
   }
   return new Promise<string | null>((resolve) => {
@@ -1021,14 +1021,20 @@ async function vaultSave(decision: LockedDecision) {
 }
 
 async function prepareImage(file: File): Promise<string> {
-  // Preserve every accepted chart byte-for-byte. Dark-mode labels, candles and
-  // fine grid detail must never be softened by a browser-side JPEG conversion.
-  return new Promise<string>((resolve, reject) => {
+  // Decode and bound the upload once, while the picker action is still in
+  // progress. Keeping an original multi-megapixel data URL in React state and
+  // allocating a second canvas only after Analyse can terminate WKWebView
+  // before the network request is sent. The provider frame remains large
+  // enough to preserve chart labels, candles and the visible price scale.
+  const original = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+  const prepared = await createProviderScanImage(original, true);
+  if (!prepared) throw new Error("The chart could not be prepared within the secure mobile upload limit.");
+  return prepared;
 }
 
 function FeedbackButton() {
@@ -1084,10 +1090,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [viewerName, setViewerName] = useState("");
   const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
   const [appleAccess, setAppleAccess] = useState<AppleAccessStatus | null>(null);
-  const [showApplePaywall, setShowApplePaywall] = useState(false);
+  const [applePaywallStatus, setApplePaywallStatus] = useState<AppleAccessStatus | null>(null);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
+  const appleAccessRequestActive = useRef<Promise<AppleAccessStatus> | null>(null);
   const chartFocusDialog = useRef<HTMLElement>(null);
   const chartFocusScroll = useRef<HTMLDivElement>(null);
   const chartFocusReturnFocus = useRef<HTMLElement | null>(null);
@@ -1101,13 +1108,27 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   );
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
+  function readAppleAccessStatus() {
+    if (appleAccessRequestActive.current) return appleAccessRequestActive.current;
+    const request = getAppleAccessStatus().finally(() => {
+      if (appleAccessRequestActive.current === request) appleAccessRequestActive.current = null;
+    });
+    appleAccessRequestActive.current = request;
+    return request;
+  }
+
   useEffect(() => {
-    getAppleAccessStatus().then(setAppleAccess).catch(() => setAppleAccess(null));
+    let active = true;
+    readAppleAccessStatus().then((latest) => { if (active) setAppleAccess(latest); }).catch(() => { if (active) setAppleAccess(null); });
+    return () => { active = false; };
   }, []);
 
   async function refreshAppleAccess(): Promise<AppleAccessStatus | null> {
     try {
-      const latest = await getAppleAccessStatus();
+      // Reuse an in-flight StoreKit lookup. The mount lookup and a quick tap on
+      // Analyse used to race; a late rejection could clear the status after
+      // the paywall opened and leave an empty, scroll-locked webview.
+      const latest = await readAppleAccessStatus();
       if (!latest.isNative) throw new Error("Native Apple purchase status was not returned.");
       setAppleAccess(latest);
       return latest;
@@ -1118,13 +1139,19 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
-  function openApplePaywall() {
+  function openApplePaywall(status: AppleAccessStatus | null) {
+    if (!status?.isNative) {
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      return;
+    }
     applePaywallReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setShowApplePaywall(true);
+    // Hold the verified status on the modal itself. A later background status
+    // refresh can no longer unmount the paywall while body scrolling is locked.
+    setApplePaywallStatus(status);
   }
 
   function closeApplePaywall() {
-    setShowApplePaywall(false);
+    setApplePaywallStatus(null);
     window.requestAnimationFrame(() => {
       const original = applePaywallReturnFocus.current;
       const fallback = document.querySelector<HTMLElement>('[aria-label="Load chart photo, screenshot or camera roll image"]');
@@ -1137,7 +1164,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const latest = await refreshAppleAccess();
     if (!latest) return false;
     if (!latest.entitled) {
-      openApplePaywall();
+      openApplePaywall(latest);
       return false;
     }
     return true;
@@ -1179,11 +1206,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [analysis]);
 
   useEffect(() => {
-    if (!immersive && !chartFocus && !showResultReveal && !showResultCard && !showApplePaywall) return;
+    if (!immersive && !chartFocus && !showResultReveal && !showResultCard && !applePaywallStatus) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
-  }, [immersive, chartFocus, showResultReveal, showResultCard, showApplePaywall]);
+  }, [immersive, chartFocus, showResultReveal, showResultCard, applePaywallStatus]);
 
   useEffect(() => {
     if (!chartFocus) return;
@@ -1518,11 +1545,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       if (!currentAppleAccess) return;
     }
     if (reviewTarget && currentAppleAccess?.isNative && !currentAppleAccess.entitled) {
-      openApplePaywall();
+      openApplePaywall(currentAppleAccess);
       return;
     }
     if (!reviewTarget && currentAppleAccess?.isNative && currentAppleAccess.freeUseConsumed && !currentAppleAccess.entitled) {
-      openApplePaywall();
+      openApplePaywall(currentAppleAccess);
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
@@ -1705,7 +1732,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     // inspect the result. StoreKit decides whether to display the prompt, and
     // native persistence ensures it is requested at most once.
     void requestAppleReviewIfEligible().catch(() => undefined);
-    if (appleNeedsSubscription) openApplePaywall();
+    if (appleNeedsSubscription) openApplePaywall(appleAccess);
   }
 
   const vaultStats = (() => {
@@ -1887,7 +1914,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         )}
         {showResultCard ? <ResultCard analysis={combinedAnalysis} onClose={() => setShowResultCard(false)} onShare={shareResultCard} /> : null}
         <FeedbackButton />
-        {showApplePaywall && appleAccess?.isNative ? <AppleSubscriptionPaywall status={appleAccess} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
+        {applePaywallStatus ? <AppleSubscriptionPaywall status={applePaywallStatus} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
       </main>
     );
   }
@@ -1941,7 +1968,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
       </section>
       <FeedbackButton />
-      {showApplePaywall && appleAccess ? <AppleSubscriptionPaywall status={appleAccess} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
+      {applePaywallStatus ? <AppleSubscriptionPaywall status={applePaywallStatus} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
     </main>
   );
 }
