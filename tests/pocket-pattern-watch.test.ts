@@ -49,11 +49,24 @@ test("the guide covers reversal, continuation and compression families", async (
 });
 
 test("the scanner is instructed to recognize the expanded guide without forcing a label", async () => {
-  const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
+  const [route, client, xrayStyles, launchStyles] = await Promise.all([
+    readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
+  ]);
   for (const name of ["ASCENDING TRIANGLE", "DESCENDING TRIANGLE", "PENNANT", "CUP & HANDLE", "RECTANGLE / RANGE", "TREND CHANNEL", "BREAKOUT & RETEST"]) {
     assert.match(route, new RegExp(name));
   }
   assert.match(route, /Prefer AMBIGUOUS over forcing a name/);
+  assert.match(route, /never extend a path into blank future space, invent a projected leg or draw a forecast/);
+  assert.match(route, /forming breakout\/retest must remain explicitly unconfirmed/);
+  assert.match(client, /VISIBLE HISTORY/);
+  assert.match(client, /NOT A FORECAST/);
+  assert.match(client, /WAITING FOR HOLD \/ REJECTION/);
+  assert.match(client, /The line joins swings already visible on your screenshot/);
+  assert.match(xrayStyles, /stroke-width:1\.35;stroke-dasharray:2\.5 2\.5;opacity:\.78/);
+  assert.match(launchStyles, /\.psXRayTraceKey/);
 });
 
 test("every written-report rail control has a real destination", async () => {
