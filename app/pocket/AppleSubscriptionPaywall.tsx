@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { AppleAccessStatus } from "./apple-storekit";
 import { purchaseAppleSubscription, restoreAppleSubscription } from "./apple-storekit";
 
@@ -55,7 +56,13 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
     } finally { setAction(null); }
   }
 
-  return <section ref={dialog} className="psApplePaywall" role="dialog" aria-modal="true" aria-label="Subscribe to Pocket Bullseye">
+  if (typeof document === "undefined") return null;
+
+  // .psApp intentionally uses CSS perspective for the scanner's depth effects.
+  // In WKWebView that makes fixed descendants use the full, scrolled app as
+  // their containing block. Portal the paywall to body so inset: 0 always
+  // covers the visible iPhone viewport, even when it opens far down the page.
+  return createPortal(<section ref={dialog} className="psApplePaywall" role="dialog" aria-modal="true" aria-label="Subscribe to Pocket Bullseye">
     <div className="psApplePaywallGlow" aria-hidden="true"><i/><i/><b>🎯</b></div>
     <button className="psApplePaywallClose" type="button" autoFocus onClick={onClose} aria-label="Close subscription screen">×</button>
     <small>YOUR FREE ANALYSIS IS COMPLETE</small>
@@ -70,5 +77,5 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
     <button className="psAppleRestore" type="button" disabled={action !== null} onClick={() => run("restore")}>{action === "restore" ? "CHECKING APPLE ACCOUNT…" : "RESTORE PURCHASES"}</button>
     {message ? <p className="psApplePaywallMessage" role="alert">{message}</p> : null}
     <footer>The displayed monthly price is charged to your Apple Account when you confirm. The one-month subscription renews automatically at the displayed price unless cancelled at least 24 hours before the end of the current period. Manage or cancel it in Apple Account settings, or use Restore Purchases above on another device. <a href="/terms" target="_blank" rel="noreferrer">Terms</a> · <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a></footer>
-  </section>;
+  </section>, document.body);
 }
