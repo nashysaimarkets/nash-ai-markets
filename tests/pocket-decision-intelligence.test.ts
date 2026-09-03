@@ -48,16 +48,15 @@ test("the map suite exposes every authorised view without fabricating missing in
 });
 
 test("the AI never receives the trader's long or short choice", async () => {
-  const [route, client, suite] = await Promise.all([
+  const [route, client] = await Promise.all([
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/pocket/DecisionIntelligenceSuite.tsx", import.meta.url), "utf8"),
   ]);
   assert.match(route, /intended direction is deliberately withheld/);
   assert.doesNotMatch(route, /Trader is considering/);
   assert.doesNotMatch(route, /payload\.intention/);
   assert.doesNotMatch(client, /body: JSON\.stringify\(\{ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention/);
-  assert.match(suite, /CHOICE WITHHELD FROM AI/);
+  assert.doesNotMatch(client, /BlindBiasReveal|TrustGateCard/);
 });
 
 test("decision autopsy persists the later evidence and fails closed on root cause", async () => {
