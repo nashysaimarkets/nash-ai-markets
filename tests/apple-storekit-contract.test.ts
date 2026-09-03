@@ -77,12 +77,23 @@ test("Apple paywall contains purchase, restore, renewal and legal disclosures", 
   assert.match(paywall, /autoFocus/);
   assert.match(paywall, /event\.key === "Escape"/);
   assert.match(paywall, /querySelectorAll<HTMLElement>/);
+  assert.match(paywall, /createPortal/);
+  assert.match(paywall, /document\.body/);
   assert.match(pocket, /applePaywallReturnFocus\.current = document\.activeElement/);
   assert.match(pocket, /original\?\.isConnected \? original : fallback/);
   assert.match(pocket, /onClose=\{closeApplePaywall\}/);
   assert.match(pocket, /applePaywallStatus \? <AppleSubscriptionPaywall status=\{applePaywallStatus\}/);
   assert.match(pocket, /setApplePaywallStatus\(status\)/);
   assert.doesNotMatch(pocket, /showApplePaywall && appleAccess/);
+});
+
+test("Apple paywall escapes Pocket's 3-D containing block on iPhone", async () => {
+  const [paywall, depth] = await Promise.all([
+    readFile(new URL("app/pocket/AppleSubscriptionPaywall.tsx", root), "utf8"),
+    readFile(new URL("app/pocket/pocket-launch-depth.css", root), "utf8"),
+  ]);
+  assert.match(depth, /\.psApp\{perspective:/);
+  assert.match(paywall, /return createPortal\(<section[\s\S]*document\.body\);/);
 });
 
 test("native Analyse cannot race the first StoreKit lookup into a blank paywall", async () => {
