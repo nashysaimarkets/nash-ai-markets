@@ -21,7 +21,7 @@ import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
 import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
 import { postLevelLabScan } from "./level-lab-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
-import DecisionIntelligenceSuite, { BlindBiasReveal } from "./DecisionIntelligenceSuite";
+import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -190,21 +190,6 @@ function derivedTrustGate(analysis: Analysis) {
       : "Add one clearer price-scale chart or use Level Lab. Bullseye will not guess the missing side.",
     structure,
   };
-}
-
-function TrustGateCard({ analysis }: { analysis: Analysis }) {
-  const gate = derivedTrustGate(analysis);
-  return <section className="psTrustGate" data-status={gate.status}>
-    <header><div><span>◉ BULLSEYE TRUST GATE</span><strong>{gate.status === "LOCKED" ? "EVIDENCE LOCKED" : gate.status === "PARTIAL" ? "PARTIAL EVIDENCE" : "PRECISION HOLD"}</strong></div><b>{gate.exactLevelCount}<small>EXACT LEVELS</small></b></header>
-    <div className="psTrustChecks">
-      <span data-pass={gate.chartLocked}>CHART <b>{gate.chartLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.identityLocked}>IDENTITY <b>{gate.identityLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.priceMapLocked}>PRICE MAP <b>{gate.priceMapLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.structureLocked}>S/R SIDES <b>{gate.structureLocked ? "✓" : "!"}</b></span>
-    </div>
-    <ul>{gate.reasons.slice(0, 4).map((reason) => <li key={reason}>{reason}</li>)}</ul>
-    <footer><strong>NEXT SAFE ACTION</strong><span>{gate.nextAction}</span></footer>
-  </section>;
 }
 
 function ResultTruthStrip({ analysis }: { analysis: Analysis }) {
@@ -1890,8 +1875,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <BlindBiasReveal intention={intention} analysis={combinedAnalysis} />
-          <TrustGateCard analysis={combinedAnalysis} />
           <div id="bullseye-tools" className="psReportTools"><PocketCommandDeck analysis={combinedAnalysis} primaryLevels={analysis.levels} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} /></div>
           <DecisionIntelligenceSuite analysis={combinedAnalysis} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
