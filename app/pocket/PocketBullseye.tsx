@@ -22,6 +22,7 @@ import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppl
 import { postLevelLabScan } from "./level-lab-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
 import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
+import { eventCoverageFor, isListedEquityEventInput } from "./event-coverage";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -56,6 +57,14 @@ type Analysis = {
   nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
   missingInputs: string[];
   contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
+  evidencePack?: {
+    received: number;
+    contributions: Array<{
+      role: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME";
+      used: boolean;
+      summary: string;
+    }>;
+  };
   summary: string;
   verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
   verdictHeadline: string;
@@ -448,9 +457,7 @@ void BullseyeCommandArena;
 void BubbleChartLab;
 
 function isListedEquityAnalysis(analysis: Analysis | null) {
-  if (!analysis || analysis.ticker === "UNKNOWN" || analysis.evidenceQuality.instrumentConfidence !== "HIGH") return false;
-  const identity = `${analysis.instrument} ${analysis.ticker}`.toUpperCase();
-  return !/(INDEX|DFB|FUTURE|FOREX|FX\b|CRYPTO|BITCOIN|COMMODIT|BOND|YIELD|VIX|ETF)/.test(identity);
+  return analysis ? isListedEquityEventInput(analysis) : false;
 }
 
 function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario, hasContext = false }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
@@ -955,7 +962,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 12 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 13 as const;
 const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
@@ -972,8 +979,8 @@ function hasVerifiedTwoSidedAnalysis(analysis: Analysis, contextProvided: boolea
     && hasVerifiedTwoSidedStructure(levels, currentPrice);
 }
 
-async function analysisCacheKey(image: string, contextImage: string | null, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
-  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}`);
+async function analysisCacheKey(image: string, contextImage: string | null, detailImage: string | null, indicatorImage: string | null, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
+  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}\n${detailImage ?? ""}\n${indicatorImage ?? ""}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -1052,10 +1059,15 @@ function FeedbackButton() {
 }
 
 export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
+  const [eventContext, setEventContext] = useState<VerifiedMacroContext>(macroContext);
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
   const [contextImage, setContextImage] = useState<string | null>(null);
   const [contextFileName, setContextFileName] = useState("");
+  const [detailImage, setDetailImage] = useState<string | null>(null);
+  const [detailFileName, setDetailFileName] = useState("");
+  const [indicatorImage, setIndicatorImage] = useState<string | null>(null);
+  const [indicatorFileName, setIndicatorFileName] = useState("");
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [preflightStatus, setPreflightStatus] = useState<PreflightStatus>("IDLE");
   const [chartConfirmation, setChartConfirmation] = useState<ChartConfirmation | null>(null);
@@ -1268,6 +1280,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setPreflightStatus("IDLE");
       setImage(prepared);
       setFileName(file.name);
+      setContextImage(null);
+      setContextFileName("");
+      setDetailImage(null);
+      setDetailFileName("");
+      setIndicatorImage(null);
+      setIndicatorFileName("");
     } catch { setError("That image could not be prepared safely."); }
   }
 
@@ -1287,6 +1305,39 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setContextImage(await prepareImage(file));
       setContextFileName(file.name);
     } catch { setError("That higher-timeframe image could not be prepared safely."); }
+    finally { event.currentTarget.value = ""; }
+  }
+
+  async function loadDetailFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
+      setError("Please choose a JPEG, PNG or WebP current-price close-up under 8 MB.");
+      event.currentTarget.value = "";
+      return;
+    }
+    try {
+      setDetailImage(await prepareImage(file));
+      setDetailFileName(file.name);
+    } catch { setError("That current-price close-up could not be prepared safely."); }
+    finally { event.currentTarget.value = ""; }
+  }
+
+  async function loadIndicatorFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
+      setError("Please choose a JPEG, PNG or WebP indicator or volume chart under 8 MB.");
+      event.currentTarget.value = "";
+      return;
+    }
+    try {
+      setIndicatorImage(await prepareImage(file));
+      setIndicatorFileName(file.name);
+    } catch { setError("That indicator or volume chart could not be prepared safely."); }
+    finally { event.currentTarget.value = ""; }
   }
 
   async function addResultContextFile(event: ChangeEvent<HTMLInputElement>) {
@@ -1500,7 +1551,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     analysisRequestActive.current = true;
     setBusy(true);
     try {
-      const cacheKey = await analysisCacheKey(image, selectedContext, chartConfirmation, accuracyCorrection);
+      const cacheKey = await analysisCacheKey(image, selectedContext, detailImage, indicatorImage, chartConfirmation, accuracyCorrection);
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         // Held, one-sided and pivot-only results must never become sticky.
@@ -1511,16 +1562,19 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       // memory. Already-bounded originals stay byte-for-byte unchanged.
       const providerImage = await createProviderScanImage(image);
       const providerContextImage = selectedContext ? await createProviderScanImage(selectedContext) : null;
-      if (!providerImage || (selectedContext && !providerContextImage)) {
+      const providerDetailImage = detailImage ? await createProviderScanImage(detailImage) : null;
+      const providerIndicatorImage = indicatorImage ? await createProviderScanImage(indicatorImage) : null;
+      if (!providerImage || (selectedContext && !providerContextImage) || (detailImage && !providerDetailImage) || (indicatorImage && !providerIndicatorImage)) {
         throw new Error("That chart could not be prepared within the secure mobile upload limit. Crop it to the chart and price scale, then try again.");
       }
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, chartConfirmation, accuracyCorrection }),
+        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection }),
       });
-      const payload = await response.json() as { analysis?: Analysis; error?: string };
+      const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
+      if (payload.macroContext) setEventContext(payload.macroContext);
       payload.analysis.levels = payload.analysis.levels.map((level) => {
         const drawable = [level.x, level.y, level.x2, level.y2].every(Number.isFinite);
         return level.source === "USER_VERIFIED" && !drawable
@@ -1718,11 +1772,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function startReview(decision: LockedDecision) {
     if (decision.review) {
-      setReviewTarget(decision); setReview(decision.review); setAnalysis(null); setImage(decision.afterImage ?? null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(true); setError("");
+      setReviewTarget(decision); setReview(decision.review); setAnalysis(null); setImage(decision.afterImage ?? null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setImmersive(true); setError("");
       return;
     }
     if (!await requireAppleEntitlementForAdditionalRequest()) return;
-    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError(""); setImmersive(false); setError("");
+    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError(""); setImmersive(false); setError("");
   }
 
   function startNewChart() {
@@ -1732,6 +1786,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setFileName("");
     setContextImage(null);
     setContextFileName("");
+    setDetailImage(null);
+    setDetailFileName("");
+    setIndicatorImage(null);
+    setIndicatorFileName("");
     setLevelLabImage(null);
     setLevelLabFileName("");
     setLevelLabStatus("idle");
@@ -1750,12 +1808,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   const vaultStats = (() => {
     const total = vault.length;
-    if (!total) return { total: 0, reviewed: 0, average: 0, patience: 0, challengeRate: 0, averageDecisionQuality: 0, commonRisk: "NOT ENOUGH HISTORY", commonBehaviour: "NO REVIEW HISTORY", commonRootCause: "NOT PROVEN", dominant: "NO PATTERN YET", insight: "Save decisions to begin building your private fingerprint." };
+    if (!total) return { total: 0, reviewed: 0, average: 0, patience: 0, averageDecisionQuality: 0, commonRisk: "NOT ENOUGH HISTORY", commonBehaviour: "NO REVIEW HISTORY", commonRootCause: "NOT PROVEN", dominant: "NO PATTERN YET", insight: "Save decisions to begin building your private fingerprint." };
     const average = Math.round(vault.reduce((sum, item) => sum + item.analysis.setupScore.overall, 0) / total);
     const patience = Math.round(vault.filter((item) => item.analysis.verdict !== "WATCH").length / total * 100);
-    const directional = vault.filter((item) => item.intention !== "UNSURE" && item.analysis.direction !== "NEUTRAL");
-    const challenged = directional.filter((item) => (item.intention === "LONG" && item.analysis.direction === "BEARISH") || (item.intention === "SHORT" && item.analysis.direction === "BULLISH")).length;
-    const challengeRate = directional.length ? Math.round(challenged / directional.length * 100) : 0;
     const reviewed = vault.filter((item) => item.review);
     const averageDecisionQuality = reviewed.length ? Math.round(reviewed.reduce((sum, item) => sum + (item.review?.decisionQuality ?? 0), 0) / reviewed.length) : 0;
     const risks = new Map<string, number>();
@@ -1775,12 +1830,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       ? `${3 - reviewed.length} more completed autops${3 - reviewed.length === 1 ? "y" : "ies"} will start exposing repeated decision mistakes.`
       : commonBehaviour !== "NO REVIEW HISTORY"
         ? `Your most repeated reviewed behaviour is ${commonBehaviour.toLowerCase()}. Challenge it before the next decision.`
-        : `${challengeRate}% of directional ideas were contradicted by the blind chart read.`;
-    return { total, reviewed: reviewed.length, average, patience, challengeRate, averageDecisionQuality, commonRisk: top(risks, "NO REPEATED RISK"), commonBehaviour, commonRootCause, dominant: top(instruments, "NO PATTERN YET"), insight };
+        : `${patience}% of saved reads advised waiting or standing aside.`;
+    return { total, reviewed: reviewed.length, average, patience, averageDecisionQuality, commonRisk: top(risks, "NO REPEATED RISK"), commonBehaviour, commonRootCause, dominant: top(instruments, "NO PATTERN YET"), insight };
   })();
 
   const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
+  const evidenceImageCount = [image, contextImage, detailImage, indicatorImage].filter(Boolean).length;
 
   if (review && reviewTarget) {
     return <main className="psApp" data-pocket-build="v3.2">
@@ -1800,8 +1856,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   if (analysis) {
+    const eventNow = Date.now();
     const todayInLondon = londonDay(new Date().toISOString());
-    const todayMacro = macroContext.releases.filter((event) => londonDay(event.scheduledAt) === todayInLondon).sort((a, b) => Date.parse(a.scheduledAt) - Date.parse(b.scheduledAt));
+    const scheduledMacro = [...eventContext.releases].sort((a, b) => Date.parse(a.scheduledAt) - Date.parse(b.scheduledAt));
+    const todayMacro = scheduledMacro.filter((event) => londonDay(event.scheduledAt) === todayInLondon);
+    const nextHighImpact = scheduledMacro.find((event) => event.risk === "HIGH" && Date.parse(event.scheduledAt) > eventNow);
+    const calendarUnavailable = eventContext.calendarSources?.unavailable ?? [];
+    const eventCoverage = eventCoverageFor(analysis);
     const contextBattlefield = analysis.contextBattlefield;
     const contextMergeConfirmed = Boolean(
       contextImage
@@ -1875,14 +1936,21 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          {analysis.evidencePack?.contributions?.length ? <section className="psEvidenceContribution">
+            <header><div><span>◎ EVIDENCE PACK USED</span><strong>{analysis.evidencePack.received}/4 IMAGES RECEIVED</strong></div><b>{analysis.evidencePack.contributions.filter((item) => item.used).length} CONTRIBUTED</b></header>
+            <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : "④"}</i><div><strong>{item.role.replaceAll("_", " ")}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
+            <footer>Every supporting image is assessed separately. A chart that adds nothing cannot inflate the score or confidence.</footer>
+          </section> : null}
           <div id="bullseye-tools" className="psReportTools"><PocketCommandDeck analysis={combinedAnalysis} primaryLevels={analysis.levels} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} /></div>
           <DecisionIntelligenceSuite analysis={combinedAnalysis} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
-            <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "GENERAL MACRO CHECK · CONFIRM BEFORE TRADING"}</small></div>{isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
-            <div className="psTodayCalendar"><header><div><span>📅 TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : "CLEAR"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>)}</ol> : <p>No scheduled BLS, BEA or Federal Reserve release was returned for today. Unscheduled news can still move price.</p>}</div>
-            {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
-            <details><summary>VIEW EVENT SOURCES <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 5).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · OFFICIAL SCHEDULE · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
-            <footer>Company dates are provider-scheduled and symbol-matched; they may be estimated or revised. Macro rows labelled official come from agency schedules. Always confirm with the issuer or exchange.</footer>
+            <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · ${eventCoverage.label}` : `${eventCoverage.label} · CONFIRM BEFORE TRADING`}</small></div>{nextHighImpact ? <strong className="psEventHighAlert">HIGH<small>EVENT AHEAD</small></strong> : isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
+            <div className="psEventScope" data-asset={eventCoverage.assetClass}><b>{eventCoverage.label}</b><span>{eventCoverage.summary}</span>{eventCoverage.limitation ? <small>NOT INCLUDED · {eventCoverage.limitation}</small> : null}</div>
+            <div className="psTodayCalendar"><header><div><span>📅 TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : calendarUnavailable.length === 3 ? "UNAVAILABLE" : "NO RELEASE"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => { const released = Date.parse(event.scheduledAt) <= eventNow; return <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT · {released ? "RELEASED" : "SCHEDULED"}</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>; })}</ol> : <p>{calendarUnavailable.length === 3 ? "The official schedule sources could not be reached. Treat event risk as unverified and check the linked agency calendars." : "No BLS, BEA or Federal Reserve release is listed for today in the connected official schedules. Unscheduled news can still move price."}</p>}</div>
+            {nextHighImpact ? <div className="psMacroNext" data-risk="HIGH"><b>NEXT HIGH IMPACT · {formatEventTime(nextHighImpact.scheduledAt)}</b><span>{nextHighImpact.name} · {nextHighImpact.agency} official schedule</span>{nextHighImpact.sourceUrl ? <a href={nextHighImpact.sourceUrl} target="_blank" rel="noreferrer">VERIFY SOURCE ↗</a> : null}</div> : <div className="psMacroNext"><b>NO UPCOMING HIGH-IMPACT ROW RETURNED</b><span>{calendarUnavailable.length ? `Schedule coverage unavailable: ${calendarUnavailable.join(" · ")}.` : "No high-impact row appears in the current 21-day official schedule window."}</span></div>}
+            {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>SYMBOL-SPECIFIC CALENDAR NOT ATTACHED</b><span>{eventCoverage.limitation ?? "This instrument uses the official macro schedule rather than a company calendar."}</span></div>}
+            <details><summary>VIEW EVENT SOURCES <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{scheduledMacro.length ? <ol>{scheduledMacro.slice(0, 8).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · OFFICIAL SCHEDULE · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
+            <footer>Schedule refreshed {formatEventTime(eventContext.generatedAt)} · {eventContext.calendarSources?.available.length ? `${eventContext.calendarSources.available.join(" · ")} connected` : "No official calendar source confirmed"}{calendarUnavailable.length ? ` · ${calendarUnavailable.join(" · ")} unavailable` : ""}. Company dates may be estimated or revised. Always verify before trading.</footer>
           </section>
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
@@ -1984,9 +2052,24 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <input aria-label="Load chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
-        {image && !reviewTarget ? <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
-          <div><span>② OPTIONAL CONTEXT CHART</span><strong>{contextImage ? "HIGHER TIMEFRAME LOADED" : "ADD HIGHER TIMEFRAME"}</strong><p>{contextImage ? contextFileName : "Add a 1-hour, 4-hour or daily view for alignment. Skip to keep analysis fast and data-light."}</p></div>
-          {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
+        {image && !reviewTarget ? <section className="psEvidencePack">
+          <header><div><span>◎ GUIDED EVIDENCE PACK</span><strong>{evidenceImageCount}/4 CHARTS READY</strong></div><b>PRIMARY + OPTIONAL PROOF</b></header>
+          <p>Each extra image has one job. Add only views that genuinely reveal more evidence.</p>
+          <div>
+            <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
+              <div><span>② HIGHER TIMEFRAME</span><strong>{contextImage ? "CONTEXT LOADED" : "ADD 1H · 4H · DAILY"}</strong><p>{contextImage ? contextFileName : "Shows the wider trend, major structure and alignment."}</p></div>
+              {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
+            </section>
+            <section className="psContextUpload" data-loaded={detailImage ? "true" : "false"}>
+              <div><span>③ CURRENT-PRICE CLOSE-UP</span><strong>{detailImage ? "PRICE DETAIL LOADED" : "ADD CLOSE VIEW"}</strong><p>{detailImage ? detailFileName : "Makes recent candles, reactions and the price scale easier to verify."}</p></div>
+              {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add current-price close-up chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
+            </section>
+            <section className="psContextUpload" data-loaded={indicatorImage ? "true" : "false"}>
+              <div><span>④ INDICATOR / VOLUME</span><strong>{indicatorImage ? "EXTRA EVIDENCE LOADED" : "ADD IF RELEVANT"}</strong><p>{indicatorImage ? indicatorFileName : "Optional RSI, VWAP, ATR, volume profile or session evidence."}</p></div>
+              {indicatorImage ? <button type="button" onClick={() => { setIndicatorImage(null); setIndicatorFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add indicator or volume chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadIndicatorFile} /></label>}
+            </section>
+          </div>
+          <footer>Primary chart required · Supporting charts must show the same instrument and decision window.</footer>
         </section> : null}
         {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
@@ -2003,7 +2086,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         </section> : null}
         {!reviewTarget && vault.length ? <section className="psFingerprint psFingerprintPro">
           <header><span>🧬 YOUR MISTAKE FINGERPRINT</span><b>{vaultStats.reviewed}/{vaultStats.total} AUTOPSIES</b></header>
-          <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>BIAS CHALLENGED</small><strong>{vaultStats.challengeRate}%</strong></article><article><small>DECISION QUALITY</small><strong>{vaultStats.reviewed ? `${vaultStats.averageDecisionQuality}/100` : "—"}</strong></article></div>
+          <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE RATE</small><strong>{vaultStats.patience}%</strong></article><article><small>DECISION QUALITY</small><strong>{vaultStats.reviewed ? `${vaultStats.averageDecisionQuality}/100` : "—"}</strong></article></div>
           <section className="psFingerprintSignals"><article><small>REPEATED BEHAVIOUR</small><strong>{vaultStats.commonBehaviour}</strong></article><article><small>REPEATED ROOT CAUSE</small><strong>{vaultStats.commonRootCause}</strong></article><article><small>REPEATED RISK WATCH</small><strong>{vaultStats.commonRisk}</strong></article></section>
           <p><strong>BULLSEYE COACH:</strong> {vaultStats.insight}</p>
           <footer>Built only from decisions and later-chart autopsies saved privately on this device. Profit alone never earns a good process grade.</footer>

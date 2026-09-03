@@ -91,5 +91,9 @@ export type VerifiedMacroContext = {
   filings: FilingActivity[];
   availableSources: string[];
   unavailableSources: string[];
+  calendarSources?: {
+    available: string[];
+    unavailable: string[];
+  };
   status: VerifiedMacroContextStatus;
 };

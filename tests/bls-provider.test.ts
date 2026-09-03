@@ -91,16 +91,16 @@ test("normalizes only relevant official BLS calendar releases and preserves time
   assert.equal(releases[0]?.sourceUrl, BLS_CALENDAR_ENDPOINT);
 });
 
-test("BLS calendar provider failure returns empty releases", async () => {
+test("BLS calendar provider exposes failure so schedule coverage is not called clear", async () => {
   const provider = createBlsReleaseCalendarProvider({
     fetchImpl: async () => new Response("no", { status: 500 }),
   });
-  assert.deepEqual(
-    await provider.fetchUpcomingReleases(
+  await assert.rejects(
+    provider.fetchUpcomingReleases(
       new Date("2026-08-11T00:00:00.000Z"),
       new Date("2026-09-05T00:00:00.000Z"),
     ),
-    [],
+    /BLS release schedule unavailable/,
   );
 });
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { blindBiasResult, deriveAnalysisMaps, type DecisionIntelligenceAnalysis } from "../app/pocket/pocket-decision-intelligence.ts";
+import { deriveAnalysisMaps, type DecisionIntelligenceAnalysis } from "../app/pocket/pocket-decision-intelligence.ts";
 
 const analysis: DecisionIntelligenceAnalysis = {
   direction: "BULLISH",
@@ -30,13 +30,6 @@ const analysis: DecisionIntelligenceAnalysis = {
   ],
 };
 
-test("blind bias comparison is independent and explicit", () => {
-  assert.equal(blindBiasResult("LONG", "BULLISH").state, "AGREEMENT");
-  assert.equal(blindBiasResult("LONG", "BEARISH").state, "CONFLICT");
-  assert.equal(blindBiasResult("SHORT", "NEUTRAL").state, "UNRESOLVED");
-  assert.equal(blindBiasResult("UNSURE", "BULLISH").state, "OPEN");
-});
-
 test("the map suite exposes every authorised view without fabricating missing inputs", () => {
   const maps = deriveAnalysisMaps(analysis);
   assert.deepEqual(maps.map((map) => map.id), ["liquidity", "structure", "timeframes", "momentum", "volatility", "sessions", "auction", "patterns", "confluence", "conditions"]);
@@ -57,6 +50,24 @@ test("the AI never receives the trader's long or short choice", async () => {
   assert.doesNotMatch(route, /payload\.intention/);
   assert.doesNotMatch(client, /body: JSON\.stringify\(\{ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention/);
   assert.doesNotMatch(client, /BlindBiasReveal|TrustGateCard/);
+});
+
+test("the guided evidence pack accepts four purpose-labelled charts without mixing coordinate systems", async () => {
+  const [route, client, styles] = await Promise.all([
+    readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-launch-v13.css", import.meta.url), "utf8"),
+  ]);
+  for (const label of ["HIGHER TIMEFRAME", "CURRENT-PRICE CLOSE-UP", "INDICATOR / VOLUME"]) assert.match(client, new RegExp(label));
+  assert.match(client, /detailImage: providerDetailImage, indicatorImage: providerIndicatorImage/);
+  assert.match(client, /\{evidenceImageCount\}\/4 CHARTS READY/);
+  assert.match(client, /Every supporting image is assessed separately/);
+  for (const role of ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"]) assert.match(route, new RegExp(role));
+  assert.match(route, /Supporting images can refine the written audit but must never replace image 1's coordinate system/);
+  assert.match(route, /never inflate score or confidence because more images were uploaded/);
+  assert.match(route, /expectedEvidenceRoles/);
+  assert.match(styles, /\.psEvidencePack/);
+  assert.match(styles, /\.psEvidenceContribution/);
 });
 
 test("decision autopsy persists the later evidence and fails closed on root cause", async () => {

@@ -246,17 +246,13 @@ export function createBlsReleaseCalendarProvider(options: BlsProviderOptions = {
   return {
     name: BLS_PROVIDER_NAME,
     async fetchUpcomingReleases(from: Date, to: Date, signal?: AbortSignal) {
-      try {
-        const response = await fetchImpl(BLS_CALENDAR_ENDPOINT, {
-          headers: { Accept: "text/calendar" },
-          cache: "no-store",
-          signal,
-        });
-        if (!response.ok) return [];
-        return normalizeBlsCalendarIcs(await response.text(), from, to);
-      } catch {
-        return [];
-      }
+      const response = await fetchImpl(BLS_CALENDAR_ENDPOINT, {
+        headers: { Accept: "text/calendar" },
+        cache: "no-store",
+        signal,
+      });
+      if (!response.ok) throw new Error(`BLS release schedule unavailable (${response.status}).`);
+      return normalizeBlsCalendarIcs(await response.text(), from, to);
     },
   };
 }

@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("analyse applies one remaining deadline and abort signal to macro, report and precision work", async () => {
+test("analyse reserves the main deadline for the report and gives optional precision a shorter boundary", async () => {
   const source = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
   assert.match(source, /const providerDeadlineAt = routeStartedAt \+ POCKET_PROVIDER_DEADLINE_MS/);
+  assert.match(source, /const precisionDeadlineAt = routeStartedAt \+ POCKET_PRECISION_DEADLINE_MS/);
   assert.match(source, /getVerifiedMacroContext\(\{ route: "\/api\/pocket\/analyse", signal: providerSignal \}\)/);
   assert.match(source, /timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs\)/);
-  assert.match(source, /const precisionCallBudget:[\s\S]*?deadlineAt: providerDeadlineAt,[\s\S]*?signal: providerSignal/);
-  assert.match(source, /\}, \{ signal: providerSignal, timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs\) \}\)/);
+  assert.match(source, /const precisionCallBudget:[\s\S]*?deadlineAt: precisionDeadlineAt,[\s\S]*?signal: precisionSignal/);
+  assert.match(source, /\}, \{ signal: precisionSignal, timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs\) \}\)/);
 });
 
 test("report failure aborts and drains precision work before the route returns", async () => {
@@ -21,7 +22,7 @@ test("report failure aborts and drains precision work before the route returns",
   assert.ok(reportFailureAbort >= 0 && reportFailureAbort < precisionStart);
   assert.ok(rescueGate > precisionStart && rescueGate < firstRescue);
   assert.ok(drain > precisionStart);
-  assert.match(source, /firstFailure: providerSignal\.aborted \? "REQUEST_ABORTED" : "REQUEST_FAILED"/);
+  assert.match(source, /firstFailure: precisionSignal\.aborted \? "REQUEST_ABORTED" : "REQUEST_FAILED"/);
 });
 
 test("analyse bounds the aggregate body before parsing fields or taking provider budget", async () => {

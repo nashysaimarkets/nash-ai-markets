@@ -40,6 +40,27 @@ const RELEASE_WINDOW_DAYS = 21;
 const MACRO_CACHE_TTL_MS = 15 * 60 * 1000;
 let defaultContextCache: { expiresAt: number; value: VerifiedMacroContext } | null = null;
 
+function startOfLondonDay(timestamp: number): Date {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(timestamp);
+  const value = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((part) => part.type === type)?.value ?? "0");
+  const nominalUtc = Date.UTC(value("year"), value("month") - 1, value("day"));
+  const offsetLabel = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/London",
+    timeZoneName: "shortOffset",
+    hour: "2-digit",
+  }).formatToParts(nominalUtc).find((part) => part.type === "timeZoneName")?.value ?? "GMT";
+  const offset = offsetLabel.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+  const offsetMinutes = offset
+    ? (offset[1] === "-" ? -1 : 1) * (Number(offset[2]) * 60 + Number(offset[3] ?? "0"))
+    : 0;
+  return new Date(nominalUtc - offsetMinutes * 60_000);
+}
+
 export const MACRO_METRIC_LABELS: Record<MacroMetric, string> = {
   US2Y: "US 2Y yield",
   US10Y: "US 10Y yield",
@@ -82,6 +103,7 @@ export function createUnavailableMacroContext(now = Date.now()): VerifiedMacroCo
     filings: [],
     availableSources: [],
     unavailableSources: [...EXCLUDED_SOURCES, "Treasury", "Federal Reserve", "New York Fed", "BLS", "BEA", "Census"],
+    calendarSources: { available: [], unavailable: ["BLS", "BEA", "Federal Reserve"] },
     status: "unavailable",
   };
 }
@@ -114,7 +136,9 @@ export async function getVerifiedMacroContext(input?: {
   if (useDefaultProviders && defaultContextCache && defaultContextCache.expiresAt > now) {
     return sanitizeForClient(defaultContextCache.value);
   }
-  const from = new Date(now);
+  // Keep releases from earlier today visible after they occur. Starting at
+  // request time made a valid morning release disappear from the evening card.
+  const from = startOfLondonDay(now);
   const to = new Date(now + RELEASE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   try {
@@ -180,6 +204,10 @@ export async function getVerifiedMacroContext(input?: {
       filings: [],
       availableSources: [...availableSources].sort(),
       unavailableSources: [...unavailableSources].sort(),
+      calendarSources: {
+        available: calendarResult.successfulProviders.map((name) => providerLabel(name, RELEASE_SOURCE_LABELS)).sort(),
+        unavailable: calendarResult.failedProviders.map((name) => providerLabel(name, RELEASE_SOURCE_LABELS)).sort(),
+      },
       status,
     };
 

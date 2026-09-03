@@ -12,6 +12,10 @@
 .psAnnotatedChart i[data-tool="zone"],.psChartFocusCanvas i[data-tool="zone"]{border-width:5px;border-color:#55bde355;color:#8bdcff;box-shadow:0 0 16px #55bde344}
 .psAnnotatedChart i[data-tool="gap"],.psChartFocusCanvas i[data-tool="gap"]{border-style:dashed;border-color:#e992e9;color:#f5b7f3}
 .psStockEvents>a{display:inline-flex;margin-top:10px;padding:11px 13px;border:1px solid #55e99b66;border-radius:9px;color:#9ff4c5;background:#3ce88b0c;font-size:12px;font-weight:900;letter-spacing:.07em;text-decoration:none}
+.psEventScope{display:grid;gap:7px;padding:17px 24px;border-top:1px solid #ffffff12;border-bottom:1px solid #ffffff12;background:linear-gradient(90deg,#49e69b0c,transparent)}
+.psEventScope b{color:#66e8ac;font:800 13px var(--font-geist-mono),monospace;letter-spacing:.11em}
+.psEventScope span{color:#c4cfca;font-size:15px;line-height:1.55}
+.psEventScope small{color:#d8b86d;font:700 11px/1.55 var(--font-geist-mono),monospace;letter-spacing:.05em}
 .psTickerHold{margin-top:14px;padding:14px;border:1px solid #d8b65f33;border-radius:11px;background:#d8b65f09}
 .psTickerHold strong{color:#d8b65f;font-size:12px;letter-spacing:.1em}
 .psTickerHold p{margin:7px 0 0;color:#aab5b0;font-size:clamp(14px,3.5vw,16px);line-height:1.5}

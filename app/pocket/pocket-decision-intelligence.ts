@@ -27,7 +27,6 @@ export type DecisionIntelligenceAnalysis = {
   levels: Array<{ kind: "support" | "resistance" | "trend" | "pivot" | "zone" | "gap"; label: string; price: string }>;
 };
 
-export type Intention = "LONG" | "SHORT" | "UNSURE";
 export type MapId = "liquidity" | "structure" | "timeframes" | "momentum" | "volatility" | "sessions" | "auction" | "patterns" | "confluence" | "conditions";
 type MapStatus = "EVIDENCE READY" | "CONDITIONAL" | "MORE INPUT NEEDED";
 type MapReading = { label: string; value: string; tone?: "bull" | "bear" | "wait" | "neutral" };
@@ -39,15 +38,6 @@ const concise = (value: string, fallback: string, limit = 170) => {
 };
 
 const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
-
-export function blindBiasResult(intention: Intention, direction: DecisionIntelligenceAnalysis["direction"]) {
-  if (intention === "UNSURE") return { state: "OPEN", label: "OPEN-MINDED READ", detail: "You asked Bullseye to analyse without a directional commitment." } as const;
-  if (direction === "NEUTRAL") return { state: "UNRESOLVED", label: "NO AGREEMENT YET", detail: "The visible chart evidence did not justify confirming or opposing your idea." } as const;
-  const agreed = (intention === "LONG" && direction === "BULLISH") || (intention === "SHORT" && direction === "BEARISH");
-  return agreed
-    ? { state: "AGREEMENT", label: "INDEPENDENT AGREEMENT", detail: `Your ${intention.toLowerCase()} idea matched Bullseye's blind ${direction.toLowerCase()} read.` } as const
-    : { state: "CONFLICT", label: "BIAS CONFLICT FOUND", detail: `Your ${intention.toLowerCase()} idea conflicts with Bullseye's blind ${direction.toLowerCase()} read.` } as const;
-}
 
 export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): AnalysisMap[] {
   const corpus = [analysis.marketStructure, analysis.momentum, analysis.traderTrap, ...analysis.observableFacts, ...analysis.indicators, ...analysis.riskFlags].join(" ").toLowerCase();

@@ -71,5 +71,7 @@ test("Pocket shows a same-day official macro calendar in UK time", () => {
   assert.match(client, /TODAY · UK TIME/);
   assert.match(client, /OFFICIAL US MACRO SCHEDULE/);
   assert.match(client, /Europe\/London/);
-  assert.match(client, /No scheduled BLS, BEA or Federal Reserve release was returned for today/);
+  assert.match(client, /No BLS, BEA or Federal Reserve release is listed for today/);
+  assert.match(client, /NEXT HIGH IMPACT/);
+  assert.match(client, /macroContext\?: VerifiedMacroContext/);
 });

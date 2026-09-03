@@ -59,15 +59,16 @@ test("BEA observation provider uses official API and fails closed on API failure
   assert.equal(urls.every((url) => url.startsWith(BEA_API_ENDPOINT)), true);
 });
 
-test("normalizes official BEA release-date JSON for GDP and Personal Income and Outlays", () => {
+test("normalizes official BEA release dates including trade with calibrated impact", () => {
   const rows = normalizeBeaReleaseDates(
     BEA_RELEASE_FIXTURE,
     new Date("2026-08-20T00:00:00Z"),
     new Date("2026-08-30T00:00:00Z"),
   );
-  assert.deepEqual(rows.map((row) => row.name), ["Gross Domestic Product", "Personal Income and Outlays"]);
+  assert.deepEqual(rows.map((row) => row.name), ["U.S. International Trade in Goods and Services", "Gross Domestic Product", "Personal Income and Outlays"]);
   assert.equal(rows.every((row) => row.agency === "BEA"), true);
-  assert.equal(rows.every((row) => row.scheduledAt === "2026-08-26T12:30:00.000Z"), true);
+  assert.equal(rows.find((row) => row.name.startsWith("U.S. International Trade"))?.risk, "MED");
+  assert.equal(rows.filter((row) => !row.name.startsWith("U.S. International Trade")).every((row) => row.risk === "HIGH"), true);
   assert.equal(rows.every((row) => row.sourceUrl === BEA_RELEASE_DATES_ENDPOINT), true);
 });
 

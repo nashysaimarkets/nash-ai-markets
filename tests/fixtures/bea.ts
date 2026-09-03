@@ -14,6 +14,7 @@ export const BEA_INCOME_FIXTURE = {
 };
 
 export const BEA_RELEASE_FIXTURE = {
+  "U.S. International Trade in Goods and Services": { release_dates: ["2026-08-25T12:30:00+00:00", "2026-09-03T12:30:00+00:00"] },
   "Gross Domestic Product": { release_dates: ["2026-08-26T12:30:00+00:00", "2026-09-30T12:30:00+00:00"] },
   "Personal Income and Outlays": { release_dates: ["2026-08-26T12:30:00+00:00", "2026-09-30T12:30:00+00:00"] },
   file_last_updated: "2026-07-13T08:00:42.402013",
