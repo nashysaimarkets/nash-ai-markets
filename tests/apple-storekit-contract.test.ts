@@ -54,7 +54,7 @@ test("every additional native AI request requires an Apple entitlement", async (
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
   assert.match(pocket, /image && !reviewTarget \? <ChartPreflightPanel/);
   assert.doesNotMatch(pocket, /appleCanRunPreflight/);
-  assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(\)/);
+  assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(appleAccess\)/);
 });
 
 test("Apple paywall contains purchase, restore, renewal and legal disclosures", async () => {
@@ -77,10 +77,46 @@ test("Apple paywall contains purchase, restore, renewal and legal disclosures", 
   assert.match(paywall, /autoFocus/);
   assert.match(paywall, /event\.key === "Escape"/);
   assert.match(paywall, /querySelectorAll<HTMLElement>/);
+  assert.match(paywall, /createPortal/);
+  assert.match(paywall, /document\.body/);
   assert.match(pocket, /applePaywallReturnFocus\.current = document\.activeElement/);
   assert.match(pocket, /original\?\.isConnected \? original : fallback/);
   assert.match(pocket, /onClose=\{closeApplePaywall\}/);
-  assert.match(pocket, /showApplePaywall\]\);/);
+  assert.match(pocket, /applePaywallStatus \? <AppleSubscriptionPaywall status=\{applePaywallStatus\}/);
+  assert.match(pocket, /setApplePaywallStatus\(status\)/);
+  assert.doesNotMatch(pocket, /showApplePaywall && appleAccess/);
+});
+
+test("Apple paywall escapes Pocket's 3-D containing block on iPhone", async () => {
+  const [paywall, depth] = await Promise.all([
+    readFile(new URL("app/pocket/AppleSubscriptionPaywall.tsx", root), "utf8"),
+    readFile(new URL("app/pocket/pocket-launch-depth.css", root), "utf8"),
+  ]);
+  assert.match(depth, /\.psApp\{perspective:/);
+  assert.match(paywall, /return createPortal\(<section[\s\S]*document\.body\);/);
+});
+
+test("native Analyse cannot race the first StoreKit lookup into a blank paywall", async () => {
+  const pocket = await readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8");
+  assert.match(pocket, /appleAccessRequestActive = useRef<Promise<AppleAccessStatus> \| null>/);
+  assert.match(pocket, /if \(appleAccessRequestActive\.current\) return appleAccessRequestActive\.current/);
+  assert.match(pocket, /const latest = await readAppleAccessStatus\(\)/);
+  assert.match(pocket, /function openApplePaywall\(status: AppleAccessStatus \| null\)/);
+  assert.match(pocket, /if \(!status\?\.isNative\)/);
+});
+
+test("iPhone chart uploads are bounded before Analyse can allocate another canvas", async () => {
+  const pocket = await readFile(new URL("app/pocket/PocketBullseye.tsx", root), "utf8");
+  assert.match(pocket, /function createProviderScanImage\(dataUrl: string, forceDecode = false\)/);
+  assert.match(pocket, /const prepared = await createProviderScanImage\(original, true\)/);
+  assert.match(pocket, /MAX_PROVIDER_SCAN_DATA_URL_CHARS = 1_900_000/);
+});
+
+test("Pocket has a route-local visible recovery instead of a blank screen", async () => {
+  const fallback = await readFile(new URL("app/pocket/error.tsx", root), "utf8");
+  assert.match(fallback, /POCKET BULLSEYE · SAFE RECOVERY/);
+  assert.match(fallback, /RELOAD POCKET BULLSEYE/);
+  assert.match(fallback, /onClick=\{reset\}/);
 });
 
 test("native Pocket does not render or share external web purchase paths", async () => {

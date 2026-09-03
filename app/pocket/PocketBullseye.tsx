@@ -21,6 +21,7 @@ import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
 import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
 import { postLevelLabScan } from "./level-lab-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
+import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -101,9 +102,9 @@ type Analysis = {
   };
 };
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
-type LockedDecision = { id: string; createdAt: string; intention: Intention; image: string; analysis: Analysis };
+type LockedDecision = { id: string; createdAt: string; intention: Intention; image: string; analysis: Analysis; review?: ProcessReview; afterImage?: string; reviewedAt?: string };
 type FollowUpReply = { answer: string; evidence: string[]; caution: string; nextCheck: string };
-type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; lessons: string[]; behaviourTags: string[] };
+type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; thesisStatus: "HELD" | "FAILED" | "CHANGED" | "NOT_PROVEN"; structureShift: "STRENGTHENED" | "WEAKENED" | "FLIPPED" | "UNCHANGED" | "UNCLEAR"; rootCause: "CHART_READ" | "ENTRY_TIMING" | "STOP_PLACEMENT" | "DISCIPLINE" | "MARKET_OUTCOME" | "NOT_PROVEN"; evidenceChanges: { before: string; after: string; impact: "STRENGTHENED" | "WEAKENED" | "INVALIDATED" | "UNCHANGED" | "UNCLEAR" }[]; nextRule: string; lessons: string[]; behaviourTags: string[] };
 
 function decisionSignature(analysis: Analysis) {
   return JSON.stringify([
@@ -191,21 +192,6 @@ function derivedTrustGate(analysis: Analysis) {
   };
 }
 
-function TrustGateCard({ analysis }: { analysis: Analysis }) {
-  const gate = derivedTrustGate(analysis);
-  return <section className="psTrustGate" data-status={gate.status}>
-    <header><div><span>◉ BULLSEYE TRUST GATE</span><strong>{gate.status === "LOCKED" ? "EVIDENCE LOCKED" : gate.status === "PARTIAL" ? "PARTIAL EVIDENCE" : "PRECISION HOLD"}</strong></div><b>{gate.exactLevelCount}<small>EXACT LEVELS</small></b></header>
-    <div className="psTrustChecks">
-      <span data-pass={gate.chartLocked}>CHART <b>{gate.chartLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.identityLocked}>IDENTITY <b>{gate.identityLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.priceMapLocked}>PRICE MAP <b>{gate.priceMapLocked ? "✓" : "!"}</b></span>
-      <span data-pass={gate.structureLocked}>S/R SIDES <b>{gate.structureLocked ? "✓" : "!"}</b></span>
-    </div>
-    <ul>{gate.reasons.slice(0, 4).map((reason) => <li key={reason}>{reason}</li>)}</ul>
-    <footer><strong>NEXT SAFE ACTION</strong><span>{gate.nextAction}</span></footer>
-  </section>;
-}
-
 function ResultTruthStrip({ analysis }: { analysis: Analysis }) {
   const identityVerified = analysis.instrument !== "UNKNOWN" && analysis.evidenceQuality.instrumentConfidence === "HIGH";
   const timeframeVerified = analysis.timeframe !== "UNKNOWN" && analysis.evidenceQuality.timeframeConfidence === "HIGH";
@@ -233,8 +219,8 @@ function clampY(y: number) {
 }
 
 const MAX_PROVIDER_SCAN_DATA_URL_CHARS = 1_900_000;
-function createProviderScanImage(dataUrl: string) {
-  if (/^data:image\/(?:jpeg|png|webp);base64,/.test(dataUrl) && dataUrl.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS) {
+function createProviderScanImage(dataUrl: string, forceDecode = false) {
+  if (!forceDecode && /^data:image\/(?:jpeg|png|webp);base64,/.test(dataUrl) && dataUrl.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS) {
     return Promise.resolve(dataUrl);
   }
   return new Promise<string | null>((resolve) => {
@@ -614,6 +600,20 @@ function ScenarioTheatre({ analysis }: { analysis: Analysis; sourceImage: string
 
 type XRayLayer = "patterns" | "levels" | "swings" | "fib" | "rsi";
 
+function patternStatusMeaning(status: Analysis["patterns"][number]["status"]) {
+  if (status === "CONFIRMED") return "REACTION CONFIRMED";
+  if (status === "FAILED") return "PATTERN FAILED";
+  if (status === "EXTENDED") return "MOVE ALREADY MATURE";
+  if (status === "AMBIGUOUS") return "NO CLEAN READ YET";
+  return "WAITING FOR HOLD / REJECTION";
+}
+
+function patternOverlayTitle(pattern: Analysis["patterns"][number]) {
+  return /BREAK(?:OUT|DOWN).*RETEST/i.test(pattern.name)
+    ? "BREAK + RETEST CHECK"
+    : pattern.name;
+}
+
 function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; primaryLevels: Level[]; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [layer] = useState<XRayLayer>("patterns");
   const normalizeFrame = (value: string | undefined) => (value ?? "").toUpperCase().replace(/MIN(?:UTE)?S?/g, "M").replace(/HOUR(?:S)?/g, "H").replace(/[^A-Z0-9]/g, "");
@@ -638,12 +638,12 @@ function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanaly
   return <section className="psChartXRay" data-layer={layer}>
     <header><div><span>⌖ BULLSEYE PATTERN X-RAY</span><small>VISIBLE FORMATIONS · DRAWN ON YOUR CHART</small></div><strong>1 FOCUSED TOOL</strong></header>
     <div className="psXRayCanvas"><img src={sourceImage} alt="Customer's uploaded source chart with verified Bullseye X-Ray overlays"/><div className="psXRayShade"/><div className="psXRayScan" aria-hidden="true"/>
-      {layer === "patterns" ? <><svg className="psXRayPatterns" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected chart pattern overlay">{drawablePatterns.flatMap((pattern, index) => {
+      {layer === "patterns" ? <><svg className="psXRayPatterns" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Visible historical candle-shape evidence; not a price forecast">{drawablePatterns.flatMap((pattern, index) => {
         const points = pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)) ?? [];
         if (points.length < 2) return [];
         const path = points.map((point) => `${point.x},${point.y}`).join(" ");
-        return [<g key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><polyline points={path} vectorEffect="non-scaling-stroke"/><circle cx={points[0].x} cy={points[0].y} r="1.2" vectorEffect="non-scaling-stroke"/><circle cx={points.at(-1)!.x} cy={points.at(-1)!.y} r="1.2" vectorEffect="non-scaling-stroke"/></g>];
-      })}</svg><div className="psXRayPatternLabels">{drawablePatterns.map((pattern, index) => { const points = pattern.geometry!.points; const left = Math.min(72, Math.max(3, pattern.geometry?.labelX ?? points[0].x)); const top = Math.min(88, Math.max(8, pattern.geometry?.labelY ?? points[0].y)); return <span key={`${pattern.name}-label-${index}`} data-status={pattern.status} style={{ left: `${left}%`, top: `${top}%` }}>{pattern.name}<b>{pattern.status}</b></span>; })}</div></> : null}
+        return [<g key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"} data-pattern={/BREAK(?:OUT|DOWN).*RETEST/i.test(pattern.name) ? "break-retest" : "structure"}><polyline points={path} vectorEffect="non-scaling-stroke"/>{points.map((point, pointIndex) => <circle key={`${point.x}-${point.y}-${pointIndex}`} cx={point.x} cy={point.y} r={pointIndex === points.length - 1 ? "1.35" : ".72"} vectorEffect="non-scaling-stroke"/>)}</g>];
+      })}</svg><div className="psXRayTraceKey"><i />VISIBLE HISTORY <b>NOT A FORECAST</b></div><div className="psXRayPatternLabels">{drawablePatterns.map((pattern, index) => { const points = pattern.geometry!.points; const left = Math.min(64, Math.max(3, pattern.geometry?.labelX ?? points[0].x)); const top = Math.min(82, Math.max(10, pattern.geometry?.labelY ?? points[0].y)); return <span key={`${pattern.name}-label-${index}`} data-status={pattern.status} style={{ left: `${left}%`, top: `${top}%` }}><small>{patternOverlayTitle(pattern)}</small><strong>{patternStatusMeaning(pattern.status)}</strong><b>{pattern.status === "FORMING" || pattern.status === "AMBIGUOUS" ? "UNCONFIRMED" : pattern.status}</b></span>; })}</div></> : null}
       {layer === "levels" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Verified chart level overlay">{drawableLevels.map((item, index) => <g key={`${item.kind}-${item.label}-${index}`} data-kind={item.kind}><line x1={item.x} y1={item.y} x2={item.x2} y2={item.y2} vectorEffect="non-scaling-stroke"/><circle cx={item.x} cy={item.y} r="1.15" vectorEffect="non-scaling-stroke"/><text x={Math.min(82, Math.max(3, item.x + 2))} y={Math.min(96, Math.max(5, item.y - 2))}>{numericLevel(item.price) !== null ? item.price : item.label}</text></g>)}</svg> : null}
       {layer === "swings" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected swing high and low overlay">{swingLevels.map((item, index) => <g key={`${item.label}-${index}`} data-kind="pivot"><circle cx={item.x} cy={item.y} r="2" vectorEffect="non-scaling-stroke"/><line x1={Math.max(1, item.x - 4)} y1={item.y} x2={Math.min(99, item.x + 4)} y2={item.y} vectorEffect="non-scaling-stroke"/><text x={Math.min(78, Math.max(3, item.x + 3))} y={Math.min(96, Math.max(6, item.y - 3))}>{item.label || "SWING"}</text></g>)}</svg> : null}
       {layer === "fib" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Fibonacci retracement overlay">{analysis.fibLevels.map((item, index) => <g key={`${item.ratio}-${index}`} data-kind="fib"><line x1="5" y1={item.y} x2="95" y2={item.y} vectorEffect="non-scaling-stroke"/><text x="6" y={Math.min(97, Math.max(5, item.y - 1.5))}>{item.ratio} · {item.price}</text></g>)}</svg> : null}
@@ -651,7 +651,7 @@ function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanaly
       <span className="psXRaySource">● SOURCE CHART</span><span className="psXRayLayerTag">{layer.toUpperCase()} LAYER</span></div>
     <div className="psXRayCounts psPatternOnlyCounts" aria-label="Pattern X-Ray summary"><article data-tone="verified"><strong>{drawablePatterns.filter((item) => item.confidence === "HIGH").length}</strong><span>HIGH-CONFIDENCE</span></article><article data-tone="uncertain"><strong>{drawablePatterns.length}</strong><span>VISIBLE PATTERNS</span></article><article data-tone="missing"><strong>{drawablePatterns.filter((item) => item.status === "FORMING" || item.status === "AMBIGUOUS").length}</strong><span>NEEDS CONFIRMING</span></article></div>
     <article className="psXRayRead" aria-live="polite">
-      {layer === "patterns" ? <><small>PATTERN SCAN · VISIBLE GEOMETRY ONLY</small>{drawablePatterns.length ? <div className="psPatternXRayRead">{drawablePatterns.map((pattern) => <section key={`${pattern.name}-${pattern.status}`} data-status={pattern.status}><div><strong>{pattern.name}</strong><b>{pattern.status}</b></div><p>{pattern.evidence}</p><span>CONFIRMS IF · {pattern.confirmation}</span></section>)}</div> : <div className="psToolkitEmpty"><strong>NO CLEAN PATTERN VISIBLE</strong><p>This chart does not contain enough defensible geometry for a gallery pattern.</p><span>Try a wider 30m, 1h or 4h chart showing more candles.</span></div>}</> : null}
+      {layer === "patterns" ? <><small>PATTERN SCAN · VISIBLE GEOMETRY ONLY</small>{drawablePatterns.length ? <><p className="psXRayPlainNote">The line joins swings already visible on your screenshot. It never predicts where price goes next.</p><div className="psPatternXRayRead">{drawablePatterns.map((pattern) => <section key={`${pattern.name}-${pattern.status}`} data-status={pattern.status}><div><strong>{patternOverlayTitle(pattern)}</strong><b>{patternStatusMeaning(pattern.status)}</b></div><p>{pattern.evidence}</p><span>ONLY CONFIRMS IF · {pattern.confirmation}</span></section>)}</div></> : <div className="psToolkitEmpty"><strong>NO CLEAN PATTERN VISIBLE</strong><p>This chart does not contain enough defensible geometry for a gallery pattern.</p><span>Try a wider 30m, 1h or 4h chart showing more candles.</span></div>}</> : null}
       {layer === "levels" ? <><small>SUPPORT + RESISTANCE · VERIFIED PRICE AREAS</small>{rankedLevels.filter((item) => item.kind !== "pivot").length ? <div className="psLevelRanking">{rankedLevels.filter((item) => item.kind !== "pivot").slice(0, 5).map((item, index) => <section key={`${item.kind}-${item.price}`} data-kind={item.kind} data-confidence={item.verification}><i>{index + 1}</i><div><span>{item.kind.toUpperCase()} · {item.verification} VERIFICATION</span><strong>{formatPrice(item.price)}</strong><small>{item.distance === null ? "DISTANCE NEEDS CURRENT PRICE" : `${formatPrice(item.distance)} PTS · ${item.distancePercent!.toFixed(2)}% AWAY`} · {item.reason.replaceAll("_", " ")}</small></div></section>)}</div> : <div className="psToolkitEmpty"><strong>EXACT LEVELS NOT VERIFIED</strong><p>{analysis.levelStory}</p><span>Attach a clearer price-scale chart, then reanalyse.</span></div>}</> : null}
       {layer === "swings" ? <><small>SWING MAP · VISIBLE TURNING POINTS</small>{swingLevels.length ? <ul>{swingLevels.slice(0, 5).map((item) => <li key={`${item.label}-${item.x}-${item.y}`}>{item.label}{item.price ? ` · ${item.price}` : ""}</li>)}</ul> : <div className="psToolkitEmpty"><strong>NO CLEAN SWINGS MARKED</strong><p>The screenshot did not provide a defensible swing point.</p></div>}</> : null}
       {layer === "fib" ? <><small>FIBONACCI · VERIFIED SWING ANCHORS ONLY</small>{analysis.fibLevels.length ? <div className="psFibXRayRead">{analysis.fibLevels.map((item) => <span key={`${item.ratio}-${item.price}`}><b>{item.ratio}</b><strong>{item.price}</strong></span>)}</div> : <div className="psToolkitEmpty"><strong>FIBONACCI NOT AVAILABLE</strong><p>Two reliable priced swing anchors were not visible.</p></div>}</> : null}
@@ -955,7 +955,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 11 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 12 as const;
 const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
@@ -972,8 +972,8 @@ function hasVerifiedTwoSidedAnalysis(analysis: Analysis, contextProvided: boolea
     && hasVerifiedTwoSidedStructure(levels, currentPrice);
 }
 
-async function analysisCacheKey(image: string, contextImage: string | null, intention: Intention, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
-  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${intention}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}`);
+async function analysisCacheKey(image: string, contextImage: string | null, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
+  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -1021,14 +1021,20 @@ async function vaultSave(decision: LockedDecision) {
 }
 
 async function prepareImage(file: File): Promise<string> {
-  // Preserve every accepted chart byte-for-byte. Dark-mode labels, candles and
-  // fine grid detail must never be softened by a browser-side JPEG conversion.
-  return new Promise<string>((resolve, reject) => {
+  // Decode and bound the upload once, while the picker action is still in
+  // progress. Keeping an original multi-megapixel data URL in React state and
+  // allocating a second canvas only after Analyse can terminate WKWebView
+  // before the network request is sent. The provider frame remains large
+  // enough to preserve chart labels, candles and the visible price scale.
+  const original = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+  const prepared = await createProviderScanImage(original, true);
+  if (!prepared) throw new Error("The chart could not be prepared within the secure mobile upload limit.");
+  return prepared;
 }
 
 function FeedbackButton() {
@@ -1084,10 +1090,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [viewerName, setViewerName] = useState("");
   const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
   const [appleAccess, setAppleAccess] = useState<AppleAccessStatus | null>(null);
-  const [showApplePaywall, setShowApplePaywall] = useState(false);
+  const [applePaywallStatus, setApplePaywallStatus] = useState<AppleAccessStatus | null>(null);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
+  const appleAccessRequestActive = useRef<Promise<AppleAccessStatus> | null>(null);
   const chartFocusDialog = useRef<HTMLElement>(null);
   const chartFocusScroll = useRef<HTMLDivElement>(null);
   const chartFocusReturnFocus = useRef<HTMLElement | null>(null);
@@ -1101,13 +1108,27 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   );
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
+  function readAppleAccessStatus() {
+    if (appleAccessRequestActive.current) return appleAccessRequestActive.current;
+    const request = getAppleAccessStatus().finally(() => {
+      if (appleAccessRequestActive.current === request) appleAccessRequestActive.current = null;
+    });
+    appleAccessRequestActive.current = request;
+    return request;
+  }
+
   useEffect(() => {
-    getAppleAccessStatus().then(setAppleAccess).catch(() => setAppleAccess(null));
+    let active = true;
+    readAppleAccessStatus().then((latest) => { if (active) setAppleAccess(latest); }).catch(() => { if (active) setAppleAccess(null); });
+    return () => { active = false; };
   }, []);
 
   async function refreshAppleAccess(): Promise<AppleAccessStatus | null> {
     try {
-      const latest = await getAppleAccessStatus();
+      // Reuse an in-flight StoreKit lookup. The mount lookup and a quick tap on
+      // Analyse used to race; a late rejection could clear the status after
+      // the paywall opened and leave an empty, scroll-locked webview.
+      const latest = await readAppleAccessStatus();
       if (!latest.isNative) throw new Error("Native Apple purchase status was not returned.");
       setAppleAccess(latest);
       return latest;
@@ -1118,13 +1139,19 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
-  function openApplePaywall() {
+  function openApplePaywall(status: AppleAccessStatus | null) {
+    if (!status?.isNative) {
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      return;
+    }
     applePaywallReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setShowApplePaywall(true);
+    // Hold the verified status on the modal itself. A later background status
+    // refresh can no longer unmount the paywall while body scrolling is locked.
+    setApplePaywallStatus(status);
   }
 
   function closeApplePaywall() {
-    setShowApplePaywall(false);
+    setApplePaywallStatus(null);
     window.requestAnimationFrame(() => {
       const original = applePaywallReturnFocus.current;
       const fallback = document.querySelector<HTMLElement>('[aria-label="Load chart photo, screenshot or camera roll image"]');
@@ -1137,7 +1164,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const latest = await refreshAppleAccess();
     if (!latest) return false;
     if (!latest.entitled) {
-      openApplePaywall();
+      openApplePaywall(latest);
       return false;
     }
     return true;
@@ -1179,11 +1206,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [analysis]);
 
   useEffect(() => {
-    if (!immersive && !chartFocus && !showResultReveal && !showResultCard && !showApplePaywall) return;
+    if (!immersive && !chartFocus && !showResultReveal && !showResultCard && !applePaywallStatus) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = previous; };
-  }, [immersive, chartFocus, showResultReveal, showResultCard, showApplePaywall]);
+  }, [immersive, chartFocus, showResultReveal, showResultCard, applePaywallStatus]);
 
   useEffect(() => {
     if (!chartFocus) return;
@@ -1473,7 +1500,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     analysisRequestActive.current = true;
     setBusy(true);
     try {
-      const cacheKey = await analysisCacheKey(image, selectedContext, intention, chartConfirmation, accuracyCorrection);
+      const cacheKey = await analysisCacheKey(image, selectedContext, chartConfirmation, accuracyCorrection);
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         // Held, one-sided and pivot-only results must never become sticky.
@@ -1490,7 +1517,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, intention, chartConfirmation, accuracyCorrection }),
+        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, chartConfirmation, accuracyCorrection }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
@@ -1518,11 +1545,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       if (!currentAppleAccess) return;
     }
     if (reviewTarget && currentAppleAccess?.isNative && !currentAppleAccess.entitled) {
-      openApplePaywall();
+      openApplePaywall(currentAppleAccess);
       return;
     }
     if (!reviewTarget && currentAppleAccess?.isNative && currentAppleAccess.freeUseConsumed && !currentAppleAccess.entitled) {
-      openApplePaywall();
+      openApplePaywall(currentAppleAccess);
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
@@ -1558,6 +1585,15 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       });
       const payload = await response.json() as { review?: ProcessReview; error?: string };
       if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
+      const completedDecision: LockedDecision = {
+        ...reviewTarget,
+        review: payload.review,
+        afterImage: image,
+        reviewedAt: new Date().toISOString(),
+      };
+      await vaultSave(completedDecision);
+      setVault((current) => current.map((decision) => decision.id === completedDecision.id ? completedDecision : decision));
+      setReviewTarget(completedDecision);
       setReview(payload.review); setImmersive(true);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
@@ -1681,6 +1717,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function startReview(decision: LockedDecision) {
+    if (decision.review) {
+      setReviewTarget(decision); setReview(decision.review); setAnalysis(null); setImage(decision.afterImage ?? null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(true); setError("");
+      return;
+    }
     if (!await requireAppleEntitlementForAdditionalRequest()) return;
     setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError(""); setImmersive(false); setError("");
   }
@@ -1705,29 +1745,58 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     // inspect the result. StoreKit decides whether to display the prompt, and
     // native persistence ensures it is requested at most once.
     void requestAppleReviewIfEligible().catch(() => undefined);
-    if (appleNeedsSubscription) openApplePaywall();
+    if (appleNeedsSubscription) openApplePaywall(appleAccess);
   }
 
   const vaultStats = (() => {
     const total = vault.length;
-    if (!total) return { total: 0, average: 0, patience: 0, commonRisk: "NOT ENOUGH HISTORY", dominant: "NO PATTERN YET" };
+    if (!total) return { total: 0, reviewed: 0, average: 0, patience: 0, challengeRate: 0, averageDecisionQuality: 0, commonRisk: "NOT ENOUGH HISTORY", commonBehaviour: "NO REVIEW HISTORY", commonRootCause: "NOT PROVEN", dominant: "NO PATTERN YET", insight: "Save decisions to begin building your private fingerprint." };
     const average = Math.round(vault.reduce((sum, item) => sum + item.analysis.setupScore.overall, 0) / total);
     const patience = Math.round(vault.filter((item) => item.analysis.verdict !== "WATCH").length / total * 100);
+    const directional = vault.filter((item) => item.intention !== "UNSURE" && item.analysis.direction !== "NEUTRAL");
+    const challenged = directional.filter((item) => (item.intention === "LONG" && item.analysis.direction === "BEARISH") || (item.intention === "SHORT" && item.analysis.direction === "BULLISH")).length;
+    const challengeRate = directional.length ? Math.round(challenged / directional.length * 100) : 0;
+    const reviewed = vault.filter((item) => item.review);
+    const averageDecisionQuality = reviewed.length ? Math.round(reviewed.reduce((sum, item) => sum + (item.review?.decisionQuality ?? 0), 0) / reviewed.length) : 0;
     const risks = new Map<string, number>();
     const instruments = new Map<string, number>();
+    const behaviours = new Map<string, number>();
+    const rootCauses = new Map<string, number>();
     vault.forEach((item) => {
       item.analysis.riskFlags.forEach((risk) => risks.set(risk, (risks.get(risk) ?? 0) + 1));
       instruments.set(item.analysis.instrument, (instruments.get(item.analysis.instrument) ?? 0) + 1);
+      item.review?.behaviourTags.forEach((tag) => behaviours.set(tag, (behaviours.get(tag) ?? 0) + 1));
+      if (item.review?.rootCause && item.review.rootCause !== "NOT_PROVEN") rootCauses.set(item.review.rootCause, (rootCauses.get(item.review.rootCause) ?? 0) + 1);
     });
     const top = (map: Map<string, number>, fallback: string) => [...map.entries()].sort((a,b) => b[1] - a[1])[0]?.[0] ?? fallback;
-    return { total, average, patience, commonRisk: top(risks, "NO REPEATED RISK"), dominant: top(instruments, "NO PATTERN YET") };
+    const commonBehaviour = top(behaviours, "NO REVIEW HISTORY");
+    const commonRootCause = top(rootCauses, "NOT PROVEN").replaceAll("_", " ");
+    const insight = reviewed.length < 3
+      ? `${3 - reviewed.length} more completed autops${3 - reviewed.length === 1 ? "y" : "ies"} will start exposing repeated decision mistakes.`
+      : commonBehaviour !== "NO REVIEW HISTORY"
+        ? `Your most repeated reviewed behaviour is ${commonBehaviour.toLowerCase()}. Challenge it before the next decision.`
+        : `${challengeRate}% of directional ideas were contradicted by the blind chart read.`;
+    return { total, reviewed: reviewed.length, average, patience, challengeRate, averageDecisionQuality, commonRisk: top(risks, "NO REPEATED RISK"), commonBehaviour, commonRootCause, dominant: top(instruments, "NO PATTERN YET"), insight };
   })();
 
   const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
 
   if (review && reviewTarget) {
-    return <main className="psApp" data-pocket-build="v3.2"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section><FeedbackButton /></main>;
+    return <main className="psApp" data-pocket-build="v3.2">
+      <section className="psResults psAutopsyResults" data-immersive="true">
+        <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
+        <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
+        <section className="psAutopsyCharts"><figure><img src={reviewTarget.image} alt="Original chart saved before the decision"/><figcaption>BEFORE · LOCKED AUDIT</figcaption></figure><i>→</i><figure><img src={reviewTarget.afterImage ?? image ?? ""} alt="Later chart used for the decision autopsy"/><figcaption>AFTER · LATER EVIDENCE</figcaption></figure></section>
+        <section className="psAutopsyStatus"><article><small>ORIGINAL THESIS</small><strong>{review.thesisStatus.replaceAll("_", " ")}</strong></article><article><small>STRUCTURE SHIFT</small><strong>{review.structureShift}</strong></article><article><small>ROOT CAUSE</small><strong>{review.rootCause.replaceAll("_", " ")}</strong></article></section>
+        <section className="psChangeLedger"><header><span>⌁ CHART CHANGE DETECTOR</span><b>{review.evidenceChanges.length} VISIBLE CHANGE{review.evidenceChanges.length === 1 ? "" : "S"}</b></header>{review.evidenceChanges.length ? review.evidenceChanges.map((change, index) => <article key={`${change.before}-${index}`} data-impact={change.impact}><i>{String(index + 1).padStart(2, "0")}</i><div><small>BEFORE</small><p>{change.before}</p><small>AFTER</small><p>{change.after}</p></div><b>{change.impact}</b></article>) : <p>No reliable structural change could be proven from the two screenshots.</p>}</section>
+        <section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section>
+        <section className="psNextRule"><span>NEXT DECISION RULE</span><strong>{review.nextRule}</strong></section>
+        <section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>
+        {review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}
+        <p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p>
+      </section><FeedbackButton />
+    </main>;
   }
 
   if (analysis) {
@@ -1798,7 +1867,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div>
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
           {resultView === "cinema" ? <MarketStory analysis={combinedAnalysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
-          <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-tools">TOOLS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-ask">ASK</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
+          <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-tools">TOOLS</a><a href="#bullseye-intelligence-maps">MAPS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-ask">ASK</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
           <ResultTruthStrip analysis={combinedAnalysis} />
           <header id="bullseye-verdict" className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
@@ -1806,8 +1875,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <TrustGateCard analysis={combinedAnalysis} />
           <div id="bullseye-tools" className="psReportTools"><PocketCommandDeck analysis={combinedAnalysis} primaryLevels={analysis.levels} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} /></div>
+          <DecisionIntelligenceSuite analysis={combinedAnalysis} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "GENERAL MACRO CHECK · CONFIRM BEFORE TRADING"}</small></div>{isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
             <div className="psTodayCalendar"><header><div><span>📅 TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : "CLEAR"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>)}</ol> : <p>No scheduled BLS, BEA or Federal Reserve release was returned for today. Unscheduled news can still move price.</p>}</div>
@@ -1887,7 +1956,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         )}
         {showResultCard ? <ResultCard analysis={combinedAnalysis} onClose={() => setShowResultCard(false)} onShare={shareResultCard} /> : null}
         <FeedbackButton />
-        {showApplePaywall && appleAccess?.isNative ? <AppleSubscriptionPaywall status={appleAccess} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
+        {applePaywallStatus ? <AppleSubscriptionPaywall status={applePaywallStatus} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
       </main>
     );
   }
@@ -1932,16 +2001,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>
           <p>{vault.length ? "Every saved decision improves your private trader fingerprint and exposes repeated risks." : "Your first saved result begins a private record that becomes more useful each time you return."}</p>
         </section> : null}
-        {!reviewTarget && vault.length ? <section className="psFingerprint">
-          <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
-          <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>
-          <p><strong>REPEATED RISK WATCH:</strong> {vaultStats.commonRisk}</p>
-          <footer>{vaultStats.total < 10 ? `${10 - vaultStats.total} more saved audits will make this fingerprint substantially more useful.` : "Your fingerprint is now using enough decisions to expose repeated tendencies."}</footer>
+        {!reviewTarget && vault.length ? <section className="psFingerprint psFingerprintPro">
+          <header><span>🧬 YOUR MISTAKE FINGERPRINT</span><b>{vaultStats.reviewed}/{vaultStats.total} AUTOPSIES</b></header>
+          <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>BIAS CHALLENGED</small><strong>{vaultStats.challengeRate}%</strong></article><article><small>DECISION QUALITY</small><strong>{vaultStats.reviewed ? `${vaultStats.averageDecisionQuality}/100` : "—"}</strong></article></div>
+          <section className="psFingerprintSignals"><article><small>REPEATED BEHAVIOUR</small><strong>{vaultStats.commonBehaviour}</strong></article><article><small>REPEATED ROOT CAUSE</small><strong>{vaultStats.commonRootCause}</strong></article><article><small>REPEATED RISK WATCH</small><strong>{vaultStats.commonRisk}</strong></article></section>
+          <p><strong>BULLSEYE COACH:</strong> {vaultStats.insight}</p>
+          <footer>Built only from decisions and later-chart autopsies saved privately on this device. Profit alone never earns a good process grade.</footer>
         </section> : null}
-        {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span></div><b>{decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>REVIEW LATER CHART</button></article>)}</section> : null}
+        {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}{decision.review ? " · AUTOPSY COMPLETE" : ""}</span></div><b>{decision.review?.processGrade ?? decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>{decision.review ? "VIEW DECISION AUTOPSY" : "REVIEW LATER CHART"}</button></article>)}</section> : null}
       </section>
       <FeedbackButton />
-      {showApplePaywall && appleAccess ? <AppleSubscriptionPaywall status={appleAccess} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
+      {applePaywallStatus ? <AppleSubscriptionPaywall status={applePaywallStatus} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
     </main>
   );
 }

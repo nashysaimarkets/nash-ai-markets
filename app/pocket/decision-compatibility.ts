@@ -1,10 +1,33 @@
 export type CompatibleIntention = "LONG" | "SHORT" | "UNSURE";
 
+export type CompatibleProcessReview = {
+  outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR";
+  processGrade: "A" | "B" | "C" | "D" | "F";
+  decisionQuality: number;
+  headline: string;
+  outcomeSummary: string;
+  confirmationReview: string;
+  invalidationReview: string;
+  timingReview: string;
+  disciplineReview: string;
+  goodDecisionBadOutcome: boolean;
+  thesisStatus: "HELD" | "FAILED" | "CHANGED" | "NOT_PROVEN";
+  structureShift: "STRENGTHENED" | "WEAKENED" | "FLIPPED" | "UNCHANGED" | "UNCLEAR";
+  rootCause: "CHART_READ" | "ENTRY_TIMING" | "STOP_PLACEMENT" | "DISCIPLINE" | "MARKET_OUTCOME" | "NOT_PROVEN";
+  evidenceChanges: Array<{ before: string; after: string; impact: "STRENGTHENED" | "WEAKENED" | "INVALIDATED" | "UNCHANGED" | "UNCLEAR" }>;
+  nextRule: string;
+  lessons: string[];
+  behaviourTags: string[];
+};
+
 export type CompatibleLockedDecision = {
   id: string;
   createdAt: string;
   intention: CompatibleIntention;
   image: string;
+  afterImage?: string;
+  reviewedAt?: string;
+  review?: CompatibleProcessReview;
   analysis: Record<string, unknown> & {
     instrument: string;
     verdict: string;
@@ -15,11 +38,60 @@ export type CompatibleLockedDecision = {
 
 const GRADES = new Set(["A", "B", "C", "D", "F"]);
 const INTENTIONS = new Set(["LONG", "SHORT", "UNSURE"]);
+const OUTCOMES = new Set(["PROFIT", "LOSS", "BREAKEVEN", "UNCLEAR"]);
+const THESIS_STATUSES = new Set(["HELD", "FAILED", "CHANGED", "NOT_PROVEN"]);
+const STRUCTURE_SHIFTS = new Set(["STRENGTHENED", "WEAKENED", "FLIPPED", "UNCHANGED", "UNCLEAR"]);
+const ROOT_CAUSES = new Set(["CHART_READ", "ENTRY_TIMING", "STOP_PLACEMENT", "DISCIPLINE", "MARKET_OUTCOME", "NOT_PROVEN"]);
+const CHANGE_IMPACTS = new Set(["STRENGTHENED", "WEAKENED", "INVALIDATED", "UNCHANGED", "UNCLEAR"]);
 
 function finiteScore(value: unknown) {
   return typeof value === "number" && Number.isFinite(value)
     ? Math.max(0, Math.min(100, Math.round(value)))
     : 0;
+}
+
+function safeText(value: unknown, fallback = "") {
+  return typeof value === "string" ? value.trim().slice(0, 320) : fallback;
+}
+
+function safeTexts(value: unknown, limit: number, maxLength: number) {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string").map((item) => item.trim().slice(0, maxLength)).filter(Boolean).slice(0, limit)
+    : [];
+}
+
+function normalizeProcessReview(value: unknown): CompatibleProcessReview | null {
+  if (!value || typeof value !== "object") return null;
+  const review = value as Record<string, unknown>;
+  if (typeof review.processGrade !== "string" || !GRADES.has(review.processGrade)) return null;
+  const impact = (value: unknown) => typeof value === "string" && CHANGE_IMPACTS.has(value)
+    ? value as CompatibleProcessReview["evidenceChanges"][number]["impact"]
+    : "UNCLEAR";
+  return {
+    outcome: typeof review.outcome === "string" && OUTCOMES.has(review.outcome) ? review.outcome as CompatibleProcessReview["outcome"] : "UNCLEAR",
+    processGrade: review.processGrade as CompatibleProcessReview["processGrade"],
+    decisionQuality: finiteScore(review.decisionQuality),
+    headline: safeText(review.headline, "Decision review complete."),
+    outcomeSummary: safeText(review.outcomeSummary, "The screenshots do not prove the financial outcome."),
+    confirmationReview: safeText(review.confirmationReview, "Confirmation could not be proven."),
+    invalidationReview: safeText(review.invalidationReview, "Invalidation could not be proven."),
+    timingReview: safeText(review.timingReview, "Timing could not be proven."),
+    disciplineReview: safeText(review.disciplineReview, "Discipline could not be proven."),
+    goodDecisionBadOutcome: review.goodDecisionBadOutcome === true,
+    thesisStatus: typeof review.thesisStatus === "string" && THESIS_STATUSES.has(review.thesisStatus) ? review.thesisStatus as CompatibleProcessReview["thesisStatus"] : "NOT_PROVEN",
+    structureShift: typeof review.structureShift === "string" && STRUCTURE_SHIFTS.has(review.structureShift) ? review.structureShift as CompatibleProcessReview["structureShift"] : "UNCLEAR",
+    rootCause: typeof review.rootCause === "string" && ROOT_CAUSES.has(review.rootCause) ? review.rootCause as CompatibleProcessReview["rootCause"] : "NOT_PROVEN",
+    evidenceChanges: Array.isArray(review.evidenceChanges) ? review.evidenceChanges.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const change = item as Record<string, unknown>;
+      const before = safeText(change.before).slice(0, 120);
+      const after = safeText(change.after).slice(0, 120);
+      return before && after ? [{ before, after, impact: impact(change.impact) }] : [];
+    }).slice(0, 4) : [],
+    nextRule: safeText(review.nextRule, "Wait for visible confirmation before changing the plan.").slice(0, 180),
+    lessons: safeTexts(review.lessons, 4, 150),
+    behaviourTags: safeTexts(review.behaviourTags, 5, 50),
+  };
 }
 
 /**
@@ -46,6 +118,7 @@ export function normalizeLockedDecision(value: unknown): CompatibleLockedDecisio
   const intention = typeof candidate.intention === "string" && INTENTIONS.has(candidate.intention)
     ? candidate.intention as CompatibleIntention
     : "UNSURE";
+  const review = normalizeProcessReview(candidate.review);
 
   return {
     id: typeof candidate.id === "string" && candidate.id ? candidate.id : `legacy-${String(candidate.createdAt ?? "unknown")}`,
@@ -54,6 +127,9 @@ export function normalizeLockedDecision(value: unknown): CompatibleLockedDecisio
       : new Date(0).toISOString(),
     intention,
     image: candidate.image,
+    ...(typeof candidate.afterImage === "string" && candidate.afterImage.startsWith("data:image/") ? { afterImage: candidate.afterImage } : {}),
+    ...(typeof candidate.reviewedAt === "string" && Number.isFinite(Date.parse(candidate.reviewedAt)) ? { reviewedAt: candidate.reviewedAt } : {}),
+    ...(review ? { review } : {}),
     analysis: {
       ...rawAnalysis,
       instrument: typeof rawAnalysis.instrument === "string" && rawAnalysis.instrument.trim()

@@ -25,10 +25,25 @@ const schema = {
     timingReview: { type: "string", maxLength: 260 },
     disciplineReview: { type: "string", maxLength: 260 },
     goodDecisionBadOutcome: { type: "boolean" },
+    thesisStatus: { type: "string", enum: ["HELD", "FAILED", "CHANGED", "NOT_PROVEN"] },
+    structureShift: { type: "string", enum: ["STRENGTHENED", "WEAKENED", "FLIPPED", "UNCHANGED", "UNCLEAR"] },
+    rootCause: { type: "string", enum: ["CHART_READ", "ENTRY_TIMING", "STOP_PLACEMENT", "DISCIPLINE", "MARKET_OUTCOME", "NOT_PROVEN"] },
+    evidenceChanges: {
+      type: "array", maxItems: 4, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          before: { type: "string", maxLength: 120 },
+          after: { type: "string", maxLength: 120 },
+          impact: { type: "string", enum: ["STRENGTHENED", "WEAKENED", "INVALIDATED", "UNCHANGED", "UNCLEAR"] },
+        },
+        required: ["before", "after", "impact"],
+      },
+    },
+    nextRule: { type: "string", maxLength: 180 },
     lessons: { type: "array", maxItems: 4, items: { type: "string", maxLength: 150 } },
     behaviourTags: { type: "array", maxItems: 5, items: { type: "string", maxLength: 50 } },
   },
-  required: ["outcome", "processGrade", "decisionQuality", "headline", "outcomeSummary", "confirmationReview", "invalidationReview", "timingReview", "disciplineReview", "goodDecisionBadOutcome", "lessons", "behaviourTags"],
+  required: ["outcome", "processGrade", "decisionQuality", "headline", "outcomeSummary", "confirmationReview", "invalidationReview", "timingReview", "disciplineReview", "goodDecisionBadOutcome", "thesisStatus", "structureShift", "rootCause", "evidenceChanges", "nextRule", "lessons", "behaviourTags"],
 } as const;
 
 export async function POST(request: Request) {
@@ -66,6 +81,10 @@ export async function POST(request: Request) {
         "Compare the locked before-chart and its original audit with the after-chart. Never invent entries, exits, profit, loss, prices or actions that are not visibly evidenced.",
         "Judge decision process separately from financial outcome. A disciplined plan may lose; a poor process may win. Mark outcome UNCLEAR when execution or P&L is not visible.",
         "Assess whether the original confirmation and invalidation conditions appear to have occurred, but say unknown when screenshots cannot prove timing or execution.",
+        "Build an evidence change ledger with only chart changes visibly supported across both screenshots. Mark unclear rather than inventing a change.",
+        "Classify the original thesis as HELD, FAILED, CHANGED or NOT_PROVEN and the visible structure shift as STRENGTHENED, WEAKENED, FLIPPED, UNCHANGED or UNCLEAR.",
+        "Use rootCause=NOT_PROVEN unless the two screenshots directly establish the cause. Never blame entry timing, stop placement or discipline without visible evidence of those actions.",
+        "Return one short nextRule that improves the decision process without giving a trade instruction.",
         "Be concise, constructive and blunt. This is educational process review, not personalised financial advice.",
       ].join(" "),
       input: [{ role: "user", content: [
