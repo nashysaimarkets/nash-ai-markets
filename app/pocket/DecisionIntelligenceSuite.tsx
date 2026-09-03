@@ -2,24 +2,12 @@
 
 import { useState } from "react";
 import {
-  blindBiasResult,
   deriveAnalysisMaps,
   type DecisionIntelligenceAnalysis,
-  type Intention,
   type MapId,
 } from "./pocket-decision-intelligence";
 
 export type { DecisionIntelligenceAnalysis } from "./pocket-decision-intelligence";
-
-export function BlindBiasReveal({ intention, analysis }: { intention: Intention; analysis: DecisionIntelligenceAnalysis }) {
-  const result = blindBiasResult(intention, analysis.direction);
-  return <section className="psBlindBias" data-state={result.state}>
-    <header><span>◉ BLIND BIAS CHALLENGE</span><b>CHOICE WITHHELD FROM AI</b></header>
-    <div><section><small>YOUR IDEA</small><strong>{intention === "UNSURE" ? "JUST ANALYSE" : intention}</strong></section><i aria-hidden="true">VS</i><section><small>INDEPENDENT READ</small><strong>{analysis.direction}</strong></section></div>
-    <article><b>{result.label}</b><p>{result.detail}</p></article>
-    <footer>Bullseye receives the chart evidence, not your direction choice. This reduces confirmation-bias pressure; it does not make the result certain.</footer>
-  </section>;
-}
 
 export default function DecisionIntelligenceSuite({ analysis }: { analysis: DecisionIntelligenceAnalysis }) {
   const maps = deriveAnalysisMaps(analysis);
