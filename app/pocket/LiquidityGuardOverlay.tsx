@@ -39,8 +39,8 @@ function patternLabel(pattern: string) {
   return pattern.replaceAll("_", " ");
 }
 
-function sideLabel(side: "ABOVE_PRICE" | "BELOW_PRICE") {
-  return side === "ABOVE_PRICE" ? "ABOVE CURRENT" : "BELOW CURRENT";
+function sideLabel(side: "ABOVE_PRICE" | "AT_PRICE" | "BELOW_PRICE") {
+  return side === "ABOVE_PRICE" ? "ABOVE CURRENT" : side === "BELOW_PRICE" ? "BELOW CURRENT" : "AT CURRENT PRICE";
 }
 
 export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan, rescanning = false }: { analysis: LiquidityGuardAnalysis; sourceImage: string; onRescan?: () => void; rescanning?: boolean }) {
@@ -49,6 +49,7 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
   const instanceId = useId().replaceAll(":", "");
   const headingId = `liquidity-guard-${instanceId}`;
   const aboveGradientId = `liquidity-above-${instanceId}`;
+  const atGradientId = `liquidity-at-${instanceId}`;
   const belowGradientId = `liquidity-below-${instanceId}`;
   const geometry = useMemo(() => canonicalizePocketGeometry({
     plotBounds: analysis.plotBounds,
@@ -112,10 +113,11 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
         <svg className="psLiquidityVector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <linearGradient id={aboveGradientId} x1="0" x2="1"><stop offset="0" stopColor="#ff6277" stopOpacity=".08"/><stop offset=".58" stopColor="#ff6277" stopOpacity=".28"/><stop offset="1" stopColor="#ffb35a" stopOpacity=".08"/></linearGradient>
+            <linearGradient id={atGradientId} x1="0" x2="1"><stop offset="0" stopColor="#ffc857" stopOpacity=".08"/><stop offset=".58" stopColor="#ffc857" stopOpacity=".32"/><stop offset="1" stopColor="#ff8f4d" stopOpacity=".08"/></linearGradient>
             <linearGradient id={belowGradientId} x1="0" x2="1"><stop offset="0" stopColor="#55d9ff" stopOpacity=".08"/><stop offset=".58" stopColor="#55d9ff" stopOpacity=".28"/><stop offset="1" stopColor="#8b7bff" stopOpacity=".08"/></linearGradient>
           </defs>
           {zones.map((zone, index) => <g key={`${zone.side}-${zone.pattern}-${zone.lineY}-${index}`} data-side={zone.side} data-confidence={zone.confidence}>
-            <rect x={zone.left} y={zone.top} width={zone.right - zone.left} height={zone.height} rx=".5" fill={zone.side === "ABOVE_PRICE" ? `url(#${aboveGradientId})` : `url(#${belowGradientId})`}/>
+            <rect x={zone.left} y={zone.top} width={zone.right - zone.left} height={zone.height} rx=".5" fill={zone.side === "ABOVE_PRICE" ? `url(#${aboveGradientId})` : zone.side === "BELOW_PRICE" ? `url(#${belowGradientId})` : `url(#${atGradientId})`}/>
             <line x1={zone.left} y1={zone.lineY} x2={zone.right} y2={zone.lineY} vectorEffect="non-scaling-stroke"/>
             <path d={`M ${zone.left} ${zone.lineY - 1.5} V ${zone.lineY + 1.5} M ${zone.right} ${zone.lineY - 1.5} V ${zone.lineY + 1.5}`} vectorEffect="non-scaling-stroke"/>
             <g data-touch>{zone.touchPoints.map((point, pointIndex) => <circle key={`${point.x}-${point.y}-${pointIndex}`} cx={point.x} cy={point.y} r=".72" vectorEffect="non-scaling-stroke"/>)}</g>
@@ -123,7 +125,7 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
           {currentY !== null ? <g data-current><line x1={plotBounds?.left ?? 4} y1={currentY} x2={plotBounds?.right ?? 96} y2={currentY} vectorEffect="non-scaling-stroke"/></g> : null}
         </svg>
         <div className="psLiquidityLabels" aria-hidden="true">
-          {zones.map((zone, index) => <span key={`${zone.label}-${zone.lineY}-${index}`} data-side={zone.side} data-confidence={zone.confidence} style={{ top: `clamp(34px, ${zone.lineY}%, calc(100% - 34px))`, left: `${Math.min(74, Math.max(3, zone.left + 1.5))}%` }}><i>{zone.side === "ABOVE_PRICE" ? "▲" : "▼"}</i><b>{zone.label || patternLabel(zone.pattern)}</b><small>{zonePriceLabel(zone.priceLow, zone.priceHigh)} · {sideLabel(zone.side)}</small></span>)}
+          {zones.map((zone, index) => <span key={`${zone.label}-${zone.lineY}-${index}`} data-side={zone.side} data-confidence={zone.confidence} style={{ top: `clamp(34px, ${zone.lineY}%, calc(100% - 34px))`, left: `${Math.min(74, Math.max(3, zone.left + 1.5))}%` }}><i>{zone.side === "ABOVE_PRICE" ? "▲" : zone.side === "BELOW_PRICE" ? "▼" : "◆"}</i><b>{zone.label || patternLabel(zone.pattern)}</b><small>{zonePriceLabel(zone.priceLow, zone.priceHigh)} · {sideLabel(zone.side)}</small></span>)}
           {currentY !== null ? <em style={{ top: `clamp(22px, ${currentY}%, calc(100% - 22px))`, right: `${Math.max(2, 100 - (plotBounds?.right ?? 96))}%` }}>CURRENT · {analysis.currentPrice}</em> : null}
         </div>
       </> : null}

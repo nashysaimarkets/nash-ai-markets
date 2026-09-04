@@ -103,6 +103,18 @@ test("every range endpoint must sit strictly on its declared side of current pri
   assert.deepEqual(projectLiquidityZones(shield([zone({ side: "BELOW_PRICE", priceLow: 2900, priceHigh: 2900 })]), "2900", anchors, bounds), []);
 });
 
+test("an explicitly labelled at-price cluster remains visible while price tests it", () => {
+  const result = projectLiquidityZones(shield([zone({
+    side: "AT_PRICE",
+    pattern: "EQUAL_HIGHS",
+    priceLow: 2898,
+    priceHigh: 2902,
+    touchPoints: [{ x: 30, y: 50 }, { x: 68, y: 49.7 }],
+  })]), "2900", anchors, bounds);
+  assert.equal(result.length, 1);
+  assert.equal(result[0].side, "AT_PRICE");
+});
+
 test("zones outside the visible candle plot or wider than a precise pool are withheld", () => {
   assert.deepEqual(projectLiquidityZones(shield([zone({ priceLow: 2700, priceHigh: 2700 })]), "2900", anchors, bounds), []);
   assert.deepEqual(projectLiquidityZones(shield([zone({

@@ -1,6 +1,6 @@
 import { canonicalizePocketGeometry } from "../lib/pocket-geometry";
 
-export type LiquidityZoneSide = "ABOVE_PRICE" | "BELOW_PRICE";
+export type LiquidityZoneSide = "ABOVE_PRICE" | "AT_PRICE" | "BELOW_PRICE";
 export type LiquidityZoneConfidence = "HIGH" | "MEDIUM" | "LOW";
 export type LiquidityZonePattern = "EQUAL_HIGHS" | "EQUAL_LOWS" | "SWING_CLUSTER" | "RANGE_EDGE" | "SESSION_EXTREME" | "ROUND_NUMBER";
 
@@ -172,10 +172,11 @@ export function projectLiquidityZones(
       if (zone.confidence === "LOW") return [];
       const { priceLow, priceHigh } = zone;
       if (![priceLow, priceHigh].every((price) => Number.isFinite(price) && price > 0) || priceHigh < priceLow) return [];
-      // A range that touches or straddles current price cannot truthfully be
-      // classified on either side and is withheld rather than clipped.
+      // A narrow range currently being tested is explicitly classified at
+      // price; it must not disappear merely because the live marker entered it.
       if (zone.side === "ABOVE_PRICE" && priceLow <= current) return [];
       if (zone.side === "BELOW_PRICE" && priceHigh >= current) return [];
+      if (zone.side === "AT_PRICE" && (current < priceLow || current > priceHigh)) return [];
       const lowY = scale.project(priceLow);
       const highY = scale.project(priceHigh);
       if (![lowY, highY].every((y) => y >= plot.top && y <= plot.bottom)) return [];

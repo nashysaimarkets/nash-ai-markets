@@ -2,7 +2,7 @@ import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
 
 type JsonRecord = Record<string, unknown>;
 
-const SIDES = new Set(["ABOVE_PRICE", "BELOW_PRICE"]);
+const SIDES = new Set(["ABOVE_PRICE", "AT_PRICE", "BELOW_PRICE"]);
 const PATTERNS = new Set(["EQUAL_HIGHS", "EQUAL_LOWS", "SWING_CLUSTER", "RANGE_EDGE", "SESSION_EXTREME", "ROUND_NUMBER"]);
 const CONFIDENCE = new Set(["HIGH", "MEDIUM"]);
 const PLAIN_NUMERIC_PRICE = /^-?(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+,\d{1,2})$/;
@@ -166,10 +166,11 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
     const priceLow = finiteNumber(zone.priceLow);
     const priceHigh = finiteNumber(zone.priceHigh);
     if (!side || !pattern || !rawConfidence || priceLow === null || priceHigh === null || priceLow <= 0 || priceHigh <= 0 || priceHigh < priceLow) return [];
-    // The complete range must be on the declared side of current price. A
-    // midpoint check could otherwise draw a band that straddles live price.
+    // Side labels must remain literal. A narrow cluster currently being
+    // tested is retained as AT_PRICE instead of being silently discarded.
     if (side === "ABOVE_PRICE" && priceLow <= currentPrice) return [];
     if (side === "BELOW_PRICE" && priceHigh >= currentPrice) return [];
+    if (side === "AT_PRICE" && (currentPrice < priceLow || currentPrice > priceHigh)) return [];
 
     const projectedLow = scale.project(priceLow);
     const projectedHigh = scale.project(priceHigh);

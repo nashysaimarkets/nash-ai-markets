@@ -62,7 +62,7 @@ test("a wide two-label scale works while tight, out-of-plot and off-chart eviden
   assert.equal(normalizePrecisionLiquidityShield(precision(), "3100").status, "INSUFFICIENT_EVIDENCE");
 });
 
-test("straddling, current-row and over-wide bands are rejected", () => {
+test("mislabelled current-row and over-wide bands are rejected", () => {
   const base = precision().liquidityShield as Record<string, unknown>;
   const candidate = (zone: Record<string, unknown>) => precision({ liquidityShield: { ...base, zones: [zone] } });
   const original = (base.zones as Record<string, unknown>[])[0];
@@ -71,6 +71,21 @@ test("straddling, current-row and over-wide bands are rejected", () => {
     { ...original, side: "BELOW_PRICE", priceLow: 2900, priceHigh: 2900 },
     { ...original, priceLow: 2800, priceHigh: 2860, touchPoints: [{ x: 25, y: 70 }, { x: 70, y: 74 }] },
   ]) assert.equal(normalizePrecisionLiquidityShield(candidate(zone), "2900").status, "INSUFFICIENT_EVIDENCE");
+});
+
+test("a narrow verified cluster being tested at current price is retained", () => {
+  const base = precision().liquidityShield as Record<string, unknown>;
+  const original = (base.zones as Record<string, unknown>[])[0];
+  const result = normalizePrecisionLiquidityShield(precision({ liquidityShield: { ...base, zones: [{
+    ...original,
+    side: "AT_PRICE",
+    pattern: "EQUAL_HIGHS",
+    priceLow: 2898,
+    priceHigh: 2902,
+    touchPoints: [{ x: 25, y: 50 }, { x: 70, y: 50.2 }],
+  }] } }), "2900");
+  assert.equal(result.status, "VISIBLE_RISK_ZONES");
+  assert.equal(result.zones[0].side, "AT_PRICE");
 });
 
 test("touch points must be distinct, inside the plot and agree with the projected band", () => {
