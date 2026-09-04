@@ -36,8 +36,24 @@ const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
 const POCKET_REPORT_MODEL = "gpt-6-astra";
 const POCKET_REPORT_FALLBACK_MODEL = "gpt-5.6-sol";
-const POCKET_ANNOTATION_MODEL = "gpt-5.6-sol";
+// The customer-facing report keeps the strongest available model. Supporting
+// geometry reads use Terra so one result does not multiply premium vision cost.
+const POCKET_SUPPORT_MODEL = "gpt-5.6-terra";
 export const maxDuration = 120;
+
+function logPocketAIUsage(stage: string, model: string, response: unknown) {
+  const usage = response && typeof response === "object" && "usage" in response
+    ? (response as { usage?: { input_tokens?: unknown; output_tokens?: unknown; total_tokens?: unknown } }).usage
+    : null;
+  if (!usage) return;
+  console.info("[pocket-ai-usage]", JSON.stringify({
+    stage,
+    model,
+    inputTokens: typeof usage.input_tokens === "number" ? usage.input_tokens : null,
+    outputTokens: typeof usage.output_tokens === "number" ? usage.output_tokens : null,
+    totalTokens: typeof usage.total_tokens === "number" ? usage.total_tokens : null,
+  }));
+}
 
 const schema = {
   type: "object",
@@ -503,10 +519,14 @@ export async function POST(request: Request) {
       max_output_tokens: 9000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     };
-    const createReport = (reportModel: string) => client.responses.create({ ...reportRequest, model: reportModel }, {
-      signal: providerSignal,
-      timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, remainingProviderMs()),
-    });
+    const createReport = async (reportModel: string) => {
+      const response = await client.responses.create({ ...reportRequest, model: reportModel }, {
+        signal: providerSignal,
+        timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, remainingProviderMs()),
+      });
+      logPocketAIUsage("report", reportModel, response);
+      return response;
+    };
     const analysisRequest = (async () => {
       try {
         return await createReport(model);
@@ -550,32 +570,37 @@ export async function POST(request: Request) {
       deadlineAt: precisionDeadlineAt,
       signal: precisionSignal,
     };
-    const requestPrecision = (
+    const requestPrecision = async (
       chartImage: string,
       rescue = false,
       readingCrop: string | null = null,
       trustedCurrentPrice: string | null = null,
       timeoutMs = POCKET_ANALYSIS_TIMEOUT_MS,
-    ) => client.responses.create({
-      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
-      // Keep the first geometry pass fast, then spend additional reasoning
-      // only when the deterministic verifier has requested a rescue.
-      reasoning: { effort: rescue ? "medium" : "low" },
-      store: false,
-      instructions: precisionInstructions,
-      input: [{
-        role: "user",
-        content: [
-          { type: "input_text", text: `${trustedCurrentPrice ? `The trader-verified current price is ${trustedCurrentPrice}; return it exactly and use it for every above/below classification. ` : ""}${rescue
-            ? `Retry the chart carefully. ${readingCrop ? "The second image is a clarity-optimised full-frame copy of the first chart. It uses the same complete-image percentage coordinate system; use it to read candles and the right-hand price scale." : ""} Read the visible scale, current-price badge, major swing geometry and only defensible Liquidity Guard touch clusters. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high, breakout shelf or prior range edge is sufficient; repeated reactions are not mandatory. Never invent a hidden price.`
-            : "Extract independently verifiable support, resistance, pivot and Liquidity Guard geometry from this chart. Accuracy is more important than quantity."}` },
-          { type: "input_image", image_url: chartImage, detail: "high" },
-          ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
-        ],
-      }],
-      max_output_tokens: 2200,
-      text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) });
+    ) => {
+      const supportModel = process.env.OPENAI_POCKET_SUPPORT_MODEL?.trim() || POCKET_SUPPORT_MODEL;
+      const response = await client.responses.create({
+        model: supportModel,
+        // Keep the first geometry pass fast, then spend additional reasoning
+        // only when the deterministic verifier has requested a rescue.
+        reasoning: { effort: rescue ? "medium" : "low" },
+        store: false,
+        instructions: precisionInstructions,
+        input: [{
+          role: "user",
+          content: [
+            { type: "input_text", text: `${trustedCurrentPrice ? `The trader-verified current price is ${trustedCurrentPrice}; return it exactly and use it for every above/below classification. ` : ""}${rescue
+              ? `Retry the chart carefully. ${readingCrop ? "The second image is a clarity-optimised full-frame copy of the first chart. It uses the same complete-image percentage coordinate system; use it to read candles and the right-hand price scale." : ""} Read the visible scale, current-price badge, major swing geometry and only defensible Liquidity Guard touch clusters. Return the nearest defensible structural level below current as support and above current as resistance when visible. A major defended swing low/high, breakout shelf or prior range edge is sufficient; repeated reactions are not mandatory. Never invent a hidden price.`
+              : "Extract independently verifiable support, resistance, pivot and Liquidity Guard geometry from this chart. Accuracy is more important than quantity."}` },
+            { type: "input_image", image_url: chartImage, detail: "high" },
+            ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
+          ],
+        }],
+        max_output_tokens: 2200,
+        text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
+      }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) });
+      logPocketAIUsage(rescue ? "precision_rescue" : "precision", supportModel, response);
+      return response;
+    };
     const parsePrecisionOutput = (outputText: string | undefined) => {
       try { return outputText ? JSON.parse(outputText) as Record<string, unknown> : null; }
       catch { return null; }

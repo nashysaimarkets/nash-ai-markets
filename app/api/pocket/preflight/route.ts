@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { classifyOpenAIUnavailableReason, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { classifyOpenAIUnavailableReason, createOpenAIClient } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
@@ -8,6 +8,7 @@ export const runtime = "nodejs";
 export const maxDuration = 30;
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 2 + 4_096;
+const POCKET_PREFLIGHT_MODEL = "gpt-5.6-terra";
 
 const schema = {
   type: "object",
@@ -54,8 +55,9 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "Preflight is temporarily unavailable." }, { status: 503, headers: pocketBudgetHeaders(budget) });
 
   try {
+    const model = process.env.OPENAI_POCKET_SUPPORT_MODEL?.trim() || POCKET_PREFLIGHT_MODEL;
     const response = await client.responses.create({
-      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      model,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -77,6 +79,14 @@ export async function POST(request: Request) {
       max_output_tokens: 800,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
     });
+    const usage = response.usage;
+    if (usage) console.info("[pocket-ai-usage]", JSON.stringify({
+      stage: "preflight",
+      model,
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+      totalTokens: usage.total_tokens,
+    }));
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty preflight");
     return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
