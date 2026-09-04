@@ -40,3 +40,17 @@ The build manifest returned the exact pinned revision and the deployment was Rea
 - TypeScript checks passed.
 - Production build passed.
 - Immutable build manifest matched the pinned Git revision.
+
+## Signed build and Apple submission
+
+| Field | Value |
+|---|---|
+| Codemagic workflow | `Pocket Bullseye — iOS TestFlight` |
+| Codemagic build ID | `6a9a69f27f534af98018c3ea` |
+| Build index | `13` |
+| App Store build | `1.2.2 (17)` |
+| Apple submission ID | `1ad589a9-558c-437b-880d-6aaf0972be2b` |
+| Submitted | `2026-09-04 08:03 BST` |
+| Status | `Waiting for Review` |
+
+Build 16 was withdrawn after build 17 had completed validation, signing, upload and App Store processing. The App Store release notes were updated for the live event refresh and all-image pattern-analysis changes. Automatic release after approval remains enabled, phased release is off, and the existing rating is retained.
