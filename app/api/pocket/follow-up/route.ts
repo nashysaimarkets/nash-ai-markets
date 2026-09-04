@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { createOpenAIClient } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
+import { pocketAIEnabled, pocketAIUsageRecord, pocketRequestId, pocketRequestIdentity, recordPocketAIUsage, type PocketAIUsageRecord } from "../../../lib/server/pocket-ai-commercial-guard";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -25,6 +26,10 @@ const schema = {
 export async function POST(request: Request) {
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
+  if (!pocketAIEnabled()) return NextResponse.json({ code: "AI_DISABLED", error: "AI tools are paused by the service owner. No provider request was sent." }, { status: 503 });
+  const identityHash = pocketRequestIdentity(request);
+  const requestId = pocketRequestId();
+  const usageRecords: PocketAIUsageRecord[] = [];
   let question = "";
   let analysis: unknown;
   try {
@@ -53,8 +58,9 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "Ask Bullseye is not connected in this environment." }, { status: 503 });
 
   try {
+    const model = process.env.OPENAI_POCKET_FOLLOW_UP_MODEL?.trim() || "gpt-5.6-luna";
     const response = await client.responses.create({
-      model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      model,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -67,10 +73,14 @@ export async function POST(request: Request) {
       max_output_tokens: 700,
       text: { format: { type: "json_schema", name: "pocket_follow_up", strict: true, schema } },
     });
+    const usage = pocketAIUsageRecord("follow_up", model, response);
+    if (usage) usageRecords.push(usage);
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty");
+    await recordPocketAIUsage(identityHash, requestId, false, usageRecords, "success");
     return NextResponse.json({ reply: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
   } catch {
+    await recordPocketAIUsage(identityHash, requestId, false, usageRecords, "failed");
     return NextResponse.json({ error: "Ask Bullseye could not answer safely. Please retry once." }, { status: 503 });
   }
 }

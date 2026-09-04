@@ -8,7 +8,15 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_MORNING_BRIEF_MODEL` — optional Morning Brief model override.
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
-- `OPENAI_POCKET_SUPPORT_MODEL` — optional lower-cost Pocket preflight and precision-model override.
+- `OPENAI_POCKET_SUPPORT_MODEL` — optional lower-cost Pocket preflight, first precision-pass and Level Lab model override; defaults to Luna.
+- `OPENAI_POCKET_RESCUE_MODEL` — optional precision-rescue override; defaults to Terra and is called only after deterministic verification requests a retry.
+- `OPENAI_POCKET_REVIEW_MODEL` — optional post-trade comparison override; defaults to Terra.
+- `OPENAI_POCKET_FOLLOW_UP_MODEL` — optional text-only Ask Bullseye override; defaults to Luna.
+- `POCKET_AI_ENABLED` — emergency owner kill switch for all paid Pocket AI routes. `false`, `off`, `0` or `disabled` rejects before any provider call.
+- `POCKET_AI_MONTHLY_LIMIT` — fresh full-analysis allowance per privacy-preserving device hash per UTC month; defaults to `30`, and `0` disables the per-device ceiling.
+- `POCKET_AI_GLOBAL_MONTHLY_LIMIT` — optional service-wide fresh-analysis ceiling per UTC month; defaults to `0` (disabled).
+- `POCKET_AI_ALLOWANCE_FAIL_OPEN` — whether new analysis may proceed if the durable allowance guard is unavailable; defaults to strict/fail-closed.
+- `POCKET_BUDGET_SALT` — long random server-only salt used before any request identifier is stored.
 - `OPENAI_SECOND_OPINION_MODEL` — optional Second Opinion workflow model override.
 - `SECOND_OPINION_PRIVATE_PILOT` — set to `enabled` to turn on the private Second Opinion AI pilot; otherwise the route fails closed.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.

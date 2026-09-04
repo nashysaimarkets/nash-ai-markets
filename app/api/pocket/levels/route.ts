@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { createOpenAIClient } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { levelLabRejectionMessage, validateLevelLabPrimaryProvenance, validateLevelLabScan } from "../level-lab-validation.ts";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 import { createHash } from "node:crypto";
+import { pocketAIEnabled, pocketAIUsageRecord, pocketRequestId, pocketRequestIdentity, recordPocketAIUsage, type PocketAIUsageRecord } from "../../../lib/server/pocket-ai-commercial-guard";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -78,6 +79,10 @@ export async function POST(request: Request) {
   const requestId = correlationId(request);
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
+  if (!pocketAIEnabled()) return NextResponse.json({ code: "AI_DISABLED", error: "AI tools are paused by the service owner. No provider request was sent." }, { status: 503 });
+  const identityHash = pocketRequestIdentity(request);
+  const telemetryRequestId = pocketRequestId();
+  const usageRecords: PocketAIUsageRecord[] = [];
   let image = "";
   let precisionImage = "";
   let rawPrimaryProvenance: unknown = null;
@@ -132,8 +137,9 @@ export async function POST(request: Request) {
   providerTimer.unref?.();
   const providerWork = (async (): Promise<LevelLabWorkResult> => {
     try {
+      const model = process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_SUPPORT_MODEL?.trim() || "gpt-5.6-luna";
       const response = await client.responses.create({
-        model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+        model,
         reasoning: { effort: "low" }, store: false,
         instructions: [
           "You are Pocket Bullseye Level Lab. Analyse support and resistance only. Do not produce or change a verdict, pattern, scenario, score, direction, plan or risk assessment.",
@@ -153,6 +159,8 @@ export async function POST(request: Request) {
         max_output_tokens: 1600,
         text: { format: { type: "json_schema", name: "pocket_bullseye_level_lab", strict: true, schema } },
       }, { signal: providerController.signal, timeout: LEVEL_LAB_PROVIDER_TIMEOUT_MS });
+      const usage = pocketAIUsageRecord("level_lab", model, response);
+      if (usage) usageRecords.push(usage);
       const output = response.output_text?.trim();
       if (!output) throw new Error("The level scan returned no result.");
       const validation = validateLevelLabScan(JSON.parse(output), primaryProvenance);
@@ -192,6 +200,7 @@ export async function POST(request: Request) {
     } else {
       console.info(`[pocket-bullseye] level lab ${result.outcome}`, JSON.stringify({ requestId, status: result.status, ...(result.reason ? { reason: result.reason } : {}), durationMs: Date.now() - startedAt }));
     }
+    await recordPocketAIUsage(identityHash, telemetryRequestId, false, usageRecords, result.outcome === "failed" ? "failed" : "success");
     return NextResponse.json(result.payload, {
       status: result.status,
       headers: { ...pocketBudgetHeaders(budget), "x-pocket-request-id": requestId },

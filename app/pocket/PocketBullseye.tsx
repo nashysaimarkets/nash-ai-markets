@@ -16,6 +16,7 @@ import type { LiquidityShield } from "./liquidity-guard";
 import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
+import { pocketClientHeaders } from "./pocket-client-id";
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
 import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
@@ -1016,8 +1017,8 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 15 as const;
-const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
+const POCKET_ANALYSIS_ENGINE_VERSION = 16 as const;
+const POCKET_ANALYSIS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 function hasVerifiedTwoSidedAnalysis(analysis: Analysis, contextProvided: boolean) {
@@ -1537,7 +1538,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       const response = await fetch("/api/pocket/analyse", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...pocketClientHeaders() },
         body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection }),
       });
       const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; error?: string };
@@ -1602,7 +1603,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setBusy(true);
       const response = await fetch("/api/pocket/review", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", ...pocketClientHeaders() },
         body: JSON.stringify({ beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis }),
       });
       const payload = await response.json() as { review?: ProcessReview; error?: string };
@@ -1632,7 +1633,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
     try {
       const response = await fetch("/api/pocket/follow-up", {
-        method: "POST", headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json", ...pocketClientHeaders() },
         body: JSON.stringify({ analysis, question: question.trim() }),
       });
       const payload = await response.json() as { reply?: FollowUpReply; error?: string };
@@ -2036,7 +2037,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
         {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
-        <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
+        <p className="psDataNote">Images are sent to our AI provider for this audit. Images are not kept in the duplicate-result cache; saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "SERVICE_UNAVAILABLE" ? "ANALYSIS TEMPORARILY UNAVAILABLE" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM & LOCK CHART FACTS BELOW" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>

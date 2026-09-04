@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { createOpenAIClient } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
+import { pocketAIEnabled, pocketAIUsageRecord, pocketRequestId, pocketRequestIdentity, recordPocketAIUsage, type PocketAIUsageRecord } from "../../../lib/server/pocket-ai-commercial-guard";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -49,6 +50,10 @@ const schema = {
 export async function POST(request: Request) {
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
+  if (!pocketAIEnabled()) return NextResponse.json({ code: "AI_DISABLED", error: "AI tools are paused by the service owner. No provider request was sent." }, { status: 503 });
+  const identityHash = pocketRequestIdentity(request);
+  const requestId = pocketRequestId();
+  const usageRecords: PocketAIUsageRecord[] = [];
   let payload: { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown };
   try {
     payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as typeof payload;
@@ -72,8 +77,9 @@ export async function POST(request: Request) {
     const client = createOpenAIClient(undefined, 55_000);
     if (!client) return NextResponse.json({ error: "AI review is not connected." }, { status: 503 });
     const lockedAnalysis = JSON.stringify(payload.lockedAnalysis ?? {}).slice(0, 12_000);
+    const model = process.env.OPENAI_POCKET_REVIEW_MODEL?.trim() || "gpt-5.6-terra";
     const response = await client.responses.create({
-      model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      model,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -97,11 +103,15 @@ export async function POST(request: Request) {
       max_output_tokens: 2200,
       text: { format: { type: "json_schema", name: "bullseye_process_review", strict: true, schema } },
     });
+    const usage = pocketAIUsageRecord("review", model, response);
+    if (usage) usageRecords.push(usage);
     const output = response.output_text?.trim();
     if (!output) throw new Error("Review response was empty.");
+    await recordPocketAIUsage(identityHash, requestId, false, usageRecords, "success");
     return NextResponse.json({ review: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     console.error("[pocket-bullseye] review unavailable", error instanceof Error ? error.name : "Error");
+    await recordPocketAIUsage(identityHash, requestId, false, usageRecords, "failed");
     return NextResponse.json({ error: "Bullseye could not complete the comparison safely." }, { status: 503 });
   }
 }

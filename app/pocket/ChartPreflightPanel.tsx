@@ -2,6 +2,36 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
+import { pocketClientCacheKey, pocketClientHeaders } from "./pocket-client-id";
+
+type PreflightPayload = { preflight?: ChartPreflight; error?: string; code?: string; responseOk: boolean };
+const PREFLIGHT_CACHE_TTL_MS = 24 * 60 * 60_000;
+const preflightRequests = new Map<string, Promise<PreflightPayload>>();
+
+async function requestPreflight(image: string, contextImage: string) {
+  const cacheKey = await pocketClientCacheKey("pocket-preflight-v1", [image, contextImage]);
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(`pocket-preflight:${cacheKey}`) ?? "null") as { payload?: PreflightPayload; createdAt?: number } | null;
+    if (stored?.payload?.preflight && typeof stored.createdAt === "number" && Date.now() - stored.createdAt < PREFLIGHT_CACHE_TTL_MS) return stored.payload;
+  } catch {}
+  const active = preflightRequests.get(cacheKey);
+  if (active) return active;
+  const pending = (async () => {
+    const response = await fetch("/api/pocket/preflight", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...pocketClientHeaders() },
+      body: JSON.stringify({ image, contextImage }),
+    });
+    const payload = await response.json() as Omit<PreflightPayload, "responseOk">;
+    const result = { ...payload, responseOk: response.ok };
+    if (response.ok && payload.preflight) {
+      try { sessionStorage.setItem(`pocket-preflight:${cacheKey}`, JSON.stringify({ payload: result, createdAt: Date.now() })); } catch {}
+    }
+    return result;
+  })().finally(() => preflightRequests.delete(cacheKey));
+  preflightRequests.set(cacheKey, pending);
+  return pending;
+}
 
 type ChartPreflightPanelProps = {
   image: string;
@@ -31,28 +61,25 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   useEffect(() => { confirmationHandler.current = onConfirmation; }, [onConfirmation]);
 
   useEffect(() => {
-    const controller = new AbortController();
     statusHandler.current("CHECKING"); confirmationHandler.current(null);
     let finished = false;
     const timeout = window.setTimeout(() => {
       if (finished) return;
       finished = true;
-      controller.abort();
       setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); confirmationHandler.current(null);
       setMessage("Preflight timed out. You may continue to analysis.");
     }, 35_000);
     const timer = window.setTimeout(async () => {
       try {
-        const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
-        const payload = await response.json() as { preflight?: ChartPreflight; error?: string; code?: string };
-        if (payload.code === "AI_CREDITS_UNAVAILABLE") {
+        const payload = await requestPreflight(image, contextImage || "");
+        if (["AI_CREDITS_UNAVAILABLE", "AI_DISABLED"].includes(payload.code ?? "")) {
           if (finished) return;
           finished = true;
           setStatus("SERVICE_UNAVAILABLE"); statusHandler.current("SERVICE_UNAVAILABLE"); confirmationHandler.current(null);
           setMessage(payload.error || "Analysis service is temporarily unavailable. Your chart has not been rejected.");
           return;
         }
-        if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
+        if (!payload.responseOk || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
         if (finished) return;
         finished = true;
         const next = payload.preflight;
@@ -64,13 +91,12 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
         setStatus(nextStatus); statusHandler.current(nextStatus);
       } catch (error) {
         if (finished) return;
-        if (error instanceof Error && error.name === "AbortError") return;
         finished = true;
         setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); confirmationHandler.current(null);
         setMessage(error instanceof Error ? error.message : "Preflight unavailable");
       }
     }, 300);
-    return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); controller.abort(); };
+    return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); };
   }, [image, contextImage]);
 
   if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;

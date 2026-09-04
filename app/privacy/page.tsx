@@ -55,11 +55,14 @@ export default function Privacy() {
           removes them. A shared text summary does not include the chart image.
         </p>
         <p>
-          To protect the private beta from automated or excessive use, Pocket derives a
-          pseudonymous request key from technical network information and keeps only a short-lived
-          request count in volatile server memory. The counter automatically expires and is not
-          used for advertising or profiling. Our hosting provider may separately process ordinary
-          technical request logs to operate and secure the service.
+          To prevent duplicate charges and protect the service from automated or excessive use,
+          Pocket creates a random device identifier and converts it to a salted one-way hash on the
+          server. We retain monthly request counts, model and token totals, and short-lived structured
+          audit results for cost control and service reliability. Uploaded chart images are not stored
+          in this cache. Cached audit results expire from use after 24 hours and are keyed only by a
+          one-way hash of the exact request. These records are not used for advertising or profiling.
+          Our hosting provider may separately process ordinary technical request logs to operate and
+          secure the service.
         </p>
 
         <h2>Retention and your rights</h2>

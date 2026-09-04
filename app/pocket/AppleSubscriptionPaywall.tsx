@@ -67,7 +67,7 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
     <button className="psApplePaywallClose" type="button" autoFocus onClick={onClose} aria-label="Close subscription screen">×</button>
     <small>YOUR FREE ANALYSIS IS COMPLETE</small>
     <h2>Keep Bullseye<br/><em>in your pocket.</em></h2>
-    <p>Unlock unlimited chart analysis, cinematic results and written decision support with a one-month auto-renewable subscription.</p>
+    <p>Unlock up to 30 fresh AI chart analyses each month, plus cached chart reopens, cinematic results and written decision support with a one-month auto-renewable subscription.</p>
     <div className="psApplePlan">
       <span>{status.displayName}</span>
       <strong>{status.displayPrice}<small>/ month</small></strong>

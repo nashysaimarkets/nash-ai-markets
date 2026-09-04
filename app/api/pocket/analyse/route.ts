@@ -4,6 +4,19 @@ import { classifyOpenAIUnavailableReason, createOpenAIClient } from "../../../li
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+import {
+  getPocketCachedResponse,
+  pocketAIEnabled,
+  pocketAIUsageRecord,
+  pocketRequestId,
+  pocketRequestIdentity,
+  pocketResponseCacheKey,
+  recordPocketAIUsage,
+  releasePocketMonthlyAnalysis,
+  reservePocketMonthlyAnalysis,
+  savePocketCachedResponse,
+  type PocketAIUsageRecord,
+} from "../../../lib/server/pocket-ai-commercial-guard";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 import { calibratePocketAnalysis, enforcePocketTrustGate } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
@@ -36,23 +49,17 @@ const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
 const POCKET_REPORT_MODEL = "gpt-6-astra";
 const POCKET_REPORT_FALLBACK_MODEL = "gpt-5.6-sol";
-// The customer-facing report keeps the strongest available model. Supporting
-// geometry reads use Terra so one result does not multiply premium vision cost.
-const POCKET_SUPPORT_MODEL = "gpt-5.6-terra";
+// The customer-facing report keeps the strongest available model. Routine
+// support reads use Luna; Terra is reserved for deterministic rescue only.
+const POCKET_SUPPORT_MODEL = "gpt-5.6-luna";
+const POCKET_SUPPORT_RESCUE_MODEL = "gpt-5.6-terra";
 export const maxDuration = 120;
 
 function logPocketAIUsage(stage: string, model: string, response: unknown) {
-  const usage = response && typeof response === "object" && "usage" in response
-    ? (response as { usage?: { input_tokens?: unknown; output_tokens?: unknown; total_tokens?: unknown } }).usage
-    : null;
+  const usage = pocketAIUsageRecord(stage, model, response);
   if (!usage) return;
-  console.info("[pocket-ai-usage]", JSON.stringify({
-    stage,
-    model,
-    inputTokens: typeof usage.input_tokens === "number" ? usage.input_tokens : null,
-    outputTokens: typeof usage.output_tokens === "number" ? usage.output_tokens : null,
-    totalTokens: typeof usage.total_tokens === "number" ? usage.total_tokens : null,
-  }));
+  console.info("[pocket-ai-usage]", JSON.stringify(usage));
+  return usage;
 }
 
 const schema = {
@@ -344,7 +351,16 @@ const precisionOverlaySchema = {
 export async function POST(request: Request) {
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
+  if (!pocketAIEnabled()) return NextResponse.json({
+    code: "AI_DISABLED",
+    error: "Analysis is paused by the service owner. No request was sent to the AI provider.",
+  }, { status: 503, headers: { "cache-control": "no-store" } });
   const routeStartedAt = Date.now();
+  const identityHash = pocketRequestIdentity(request);
+  const requestId = pocketRequestId();
+  const usageRecords: PocketAIUsageRecord[] = [];
+  let providerCallCount = 0;
+  let allowanceReserved = false;
   let image = "";
   let contextImage = "";
   let detailImage = "";
@@ -405,13 +421,54 @@ export async function POST(request: Request) {
   if ([precisionImage, contextPrecisionImage].some((value) => value && (!/^data:image\/(jpeg|png|webp);base64,/.test(value) || value.length > MAX_DATA_URL_LENGTH))) {
     return NextResponse.json({ error: "The chart reading crop could not be prepared safely." }, { status: 400 });
   }
+  const configuredReportModel = process.env.OPENAI_POCKET_MODEL?.trim() || POCKET_REPORT_MODEL;
+  const configuredSupportModel = process.env.OPENAI_POCKET_SUPPORT_MODEL?.trim() || POCKET_SUPPORT_MODEL;
+  const configuredRescueModel = process.env.OPENAI_POCKET_RESCUE_MODEL?.trim() || POCKET_SUPPORT_RESCUE_MODEL;
+  const cacheKey = pocketResponseCacheKey("analysis", [
+    configuredReportModel,
+    configuredSupportModel,
+    configuredRescueModel,
+    image,
+    contextImage,
+    detailImage,
+    indicatorImage,
+    JSON.stringify(chartConfirmation),
+    JSON.stringify(accuracyCorrection),
+  ]);
+  const cached = await getPocketCachedResponse(cacheKey, "analysis");
+  if (cached?.analysis) {
+    await recordPocketAIUsage(identityHash, requestId, true, [], "cache_hit");
+    return NextResponse.json(cached, { headers: { "cache-control": "no-store", "x-pocket-ai-cache": "HIT" } });
+  }
   const budget = takePocketBudget(request, "analyse");
   if (!budget.allowed) return NextResponse.json(
     { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
+  const allowance = await reservePocketMonthlyAnalysis(identityHash);
+  allowanceReserved = allowance.reserved;
+  const allowanceHeaders = {
+    "x-pocket-monthly-limit": String(allowance.limit),
+    "x-pocket-monthly-remaining": String(allowance.remaining),
+    "x-pocket-monthly-reset": allowance.resetAt,
+  };
+  if (!allowance.allowed) {
+    const globalStop = allowance.reason === "global_limit";
+    const guardUnavailable = allowance.reason === "guard_unavailable";
+    return NextResponse.json({
+      code: globalStop ? "AI_GLOBAL_LIMIT" : guardUnavailable ? "AI_ALLOWANCE_UNAVAILABLE" : "MONTHLY_ALLOWANCE_REACHED",
+      error: globalStop
+        ? "Analysis is paused because the service-wide AI allowance has been reached. No provider request was sent."
+        : guardUnavailable
+          ? "Analysis is temporarily paused because the usage guard could not be verified. No provider request was sent."
+          : `This device has used its ${allowance.limit} fresh AI analyses for this month. Cached chart results remain available.`,
+    }, { status: globalStop || guardUnavailable ? 503 : 429, headers: { ...pocketBudgetHeaders(budget), ...allowanceHeaders } });
+  }
   const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
-  if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
+  if (!client) {
+    if (allowanceReserved) await releasePocketMonthlyAnalysis(identityHash);
+    return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503, headers: allowanceHeaders });
+  }
   const providerDeadlineAt = routeStartedAt + POCKET_PROVIDER_DEADLINE_MS;
   const providerDeadlineSignal = AbortSignal.timeout(Math.max(1, providerDeadlineAt - Date.now()));
   const providerAbortController = new AbortController();
@@ -443,7 +500,7 @@ export async function POST(request: Request) {
     const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse", signal: providerSignal });
     providerSignal.throwIfAborted();
     const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
-    const model = process.env.OPENAI_POCKET_MODEL?.trim() || POCKET_REPORT_MODEL;
+    const model = configuredReportModel;
     const reportTimeoutMs = remainingProviderMs();
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
     const reportRequest: ResponseCreateParamsNonStreaming = {
@@ -520,11 +577,13 @@ export async function POST(request: Request) {
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     };
     const createReport = async (reportModel: string) => {
+      providerCallCount += 1;
       const response = await client.responses.create({ ...reportRequest, model: reportModel }, {
         signal: providerSignal,
         timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, remainingProviderMs()),
       });
-      logPocketAIUsage("report", reportModel, response);
+      const usage = logPocketAIUsage("report", reportModel, response);
+      if (usage) usageRecords.push(usage);
       return response;
     };
     const analysisRequest = (async () => {
@@ -577,7 +636,8 @@ export async function POST(request: Request) {
       trustedCurrentPrice: string | null = null,
       timeoutMs = POCKET_ANALYSIS_TIMEOUT_MS,
     ) => {
-      const supportModel = process.env.OPENAI_POCKET_SUPPORT_MODEL?.trim() || POCKET_SUPPORT_MODEL;
+      const supportModel = rescue ? configuredRescueModel : configuredSupportModel;
+      providerCallCount += 1;
       const response = await client.responses.create({
         model: supportModel,
         // Keep the first geometry pass fast, then spend additional reasoning
@@ -598,7 +658,8 @@ export async function POST(request: Request) {
         max_output_tokens: 2200,
         text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
       }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) });
-      logPocketAIUsage(rescue ? "precision_rescue" : "precision", supportModel, response);
+      const usage = logPocketAIUsage(rescue ? "precision_rescue" : "precision", supportModel, response);
+      if (usage) usageRecords.push(usage);
       return response;
     };
     const parsePrecisionOutput = (outputText: string | undefined) => {
@@ -967,11 +1028,17 @@ export async function POST(request: Request) {
       combinedCoverage: precisionCoverageDiagnostics(combinedBattlefield.coverage),
     };
     console.info("[pocket-bullseye] structural precision", JSON.stringify(finalAnalysis.precisionDiagnostics));
+    const responseBody = { analysis: finalAnalysis, macroContext } as Record<string, unknown>;
+    await Promise.all([
+      savePocketCachedResponse(cacheKey, "analysis", responseBody),
+      recordPocketAIUsage(identityHash, requestId, false, usageRecords, "success"),
+    ]);
+    console.info("[pocket-ai-cost-guard]", JSON.stringify({ requestId, providerCallCount, cacheHit: false, allowanceRemaining: allowance.remaining }));
     return NextResponse.json(
       // Return the same official schedule snapshot used by this analysis so a
       // long-open browser tab cannot show an older event calendar.
-      { analysis: finalAnalysis, macroContext },
-      { headers: pocketBudgetHeaders(budget) },
+      responseBody,
+      { headers: { ...pocketBudgetHeaders(budget), ...allowanceHeaders, "x-pocket-ai-cache": "MISS" } },
     );
   } catch (error) {
     const failure = error && typeof error === "object" ? error as {
@@ -990,6 +1057,11 @@ export async function POST(request: Request) {
     }));
     const message = typeof failure.message === "string" ? failure.message : "";
     const providerFailure = classifyOpenAIUnavailableReason(error);
+    if (allowanceReserved && (providerCallCount === 0 || providerFailure === "quota_exhausted")) {
+      await releasePocketMonthlyAnalysis(identityHash);
+      allowanceReserved = false;
+    }
+    await recordPocketAIUsage(identityHash, requestId, false, usageRecords, "failed");
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
     const incomplete = /structured response was (?:empty|incomplete)/i.test(message);
     return NextResponse.json({ error: providerFailure === "quota_exhausted"

@@ -1,3 +1,5 @@
+import { pocketClientHeaders } from "./pocket-client-id";
+
 const LEVEL_LAB_TIMEOUT_MS = 58_000;
 const TRANSIENT_HTTP_STATUSES = new Set([408, 502, 503, 504]);
 const LEVEL_LAB_TRANSPORT_MESSAGE = "Level Lab could not return the scan over this connection. Your selected photo and existing map are unchanged; tap Rescan Levels Only to try again.";
@@ -26,6 +28,7 @@ export async function postLevelLabScan<T extends Record<string, unknown>>(
         headers: {
           "content-type": "application/json",
           "x-pocket-request-id": correlationId,
+          ...pocketClientHeaders(),
         },
         body,
         cache: "no-store",
