@@ -358,7 +358,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(payload\.analysis, Boolean\(selectedContext\)\)/);
   assert.match(client, /hasVerifiedTwoSidedStructure/);
   assert.match(client, /createProviderScanImage/);
-  assert.match(client, /body: JSON\.stringify\(\{ image: providerImage, contextImage: providerContextImage/);
+  assert.match(client, /JSON\.stringify\(\{ image: providerImage, contextImage: providerContextImage/);
+  assert.match(client, /postPocketAnalysis/);
   assert.match(client, /MAX_PROVIDER_SCAN_DATA_URL_CHARS = 1_900_000/);
   assert.match(client, /data:image\\\/\(\?:jpeg\|png\|webp\);base64,[\s\S]*dataUrl\.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS/);
   assert.match(client, /Math\.min\(1, attempt\.maxWidth \/ source\.naturalWidth/);

@@ -8,7 +8,7 @@ test("Pocket reserves the premium model for the customer report", async () => {
     readFile(new URL("../app/api/pocket/preflight/route.ts", import.meta.url), "utf8"),
   ]);
 
-  assert.match(analysis, /const POCKET_REPORT_MODEL = "gpt-6-astra"/);
+  assert.match(analysis, /const POCKET_REPORT_MODEL = "gpt-5\.6-sol"/);
   assert.match(analysis, /const POCKET_REPORT_FALLBACK_MODEL = "gpt-5\.6-sol"/);
   assert.match(analysis, /const POCKET_SUPPORT_MODEL = "gpt-5\.6-luna"/);
   assert.match(analysis, /const POCKET_SUPPORT_RESCUE_MODEL = "gpt-5\.6-terra"/);
@@ -16,6 +16,20 @@ test("Pocket reserves the premium model for the customer report", async () => {
   assert.match(analysis, /OPENAI_POCKET_SUPPORT_MODEL/);
   assert.match(preflight, /OPENAI_POCKET_SUPPORT_MODEL/);
   assert.doesNotMatch(preflight, /OPENAI_POCKET_MODEL/);
+});
+
+test("Pocket recovers a completed report after Safari loses the POST response", async () => {
+  const [route, client] = await Promise.all([
+    readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(route, /export async function GET\(request: Request\)/);
+  assert.match(route, /x-pocket-delivery-id/);
+  assert.match(route, /DELIVERY_RECOVERY/);
+  assert.match(client, /recoverPocketAnalysisDelivery/);
+  assert.match(client, /method: "GET"/);
+  assert.match(client, /you will not be charged again/);
 });
 
 test("Pocket records token totals for every paid AI stage", async () => {

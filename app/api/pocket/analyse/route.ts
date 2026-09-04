@@ -47,7 +47,7 @@ const POCKET_PROVIDER_DEADLINE_MS = 112_000;
 const POCKET_PRECISION_DEADLINE_MS = 45_000;
 const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
-const POCKET_REPORT_MODEL = "gpt-6-astra";
+const POCKET_REPORT_MODEL = "gpt-5.6-sol";
 const POCKET_REPORT_FALLBACK_MODEL = "gpt-5.6-sol";
 // The customer-facing report keeps the strongest available model. Routine
 // support reads use Luna; Terra is reserved for deterministic rescue only.
@@ -60,6 +60,25 @@ function logPocketAIUsage(stage: string, model: string, response: unknown) {
   if (!usage) return;
   console.info("[pocket-ai-usage]", JSON.stringify(usage));
   return usage;
+}
+
+function deliveryCacheKey(request: Request, identityHash: string) {
+  const deliveryId = request.headers.get("x-pocket-delivery-id")?.trim() ?? "";
+  return /^[a-zA-Z0-9_-]{16,128}$/.test(deliveryId)
+    ? pocketResponseCacheKey("analysis", ["delivery-v1", identityHash, deliveryId])
+    : null;
+}
+
+export async function GET(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
+  const cached = await getPocketCachedResponse(
+    deliveryCacheKey(request, pocketRequestIdentity(request)) ?? "invalid-delivery-id",
+    "analysis",
+  );
+  return cached?.analysis
+    ? NextResponse.json(cached, { headers: { "cache-control": "no-store", "x-pocket-ai-cache": "DELIVERY_RECOVERY" } })
+    : NextResponse.json({ pending: true }, { status: 202, headers: { "cache-control": "no-store" } });
 }
 
 const schema = {
@@ -357,6 +376,7 @@ export async function POST(request: Request) {
   }, { status: 503, headers: { "cache-control": "no-store" } });
   const routeStartedAt = Date.now();
   const identityHash = pocketRequestIdentity(request);
+  const deliveryKey = deliveryCacheKey(request, identityHash);
   const requestId = pocketRequestId();
   const usageRecords: PocketAIUsageRecord[] = [];
   let providerCallCount = 0;
@@ -437,7 +457,10 @@ export async function POST(request: Request) {
   ]);
   const cached = await getPocketCachedResponse(cacheKey, "analysis");
   if (cached?.analysis) {
-    await recordPocketAIUsage(identityHash, requestId, true, [], "cache_hit");
+    await Promise.all([
+      deliveryKey ? savePocketCachedResponse(deliveryKey, "analysis", cached) : Promise.resolve(),
+      recordPocketAIUsage(identityHash, requestId, true, [], "cache_hit"),
+    ]);
     return NextResponse.json(cached, { headers: { "cache-control": "no-store", "x-pocket-ai-cache": "HIT" } });
   }
   const budget = takePocketBudget(request, "analyse");
@@ -1031,6 +1054,7 @@ export async function POST(request: Request) {
     const responseBody = { analysis: finalAnalysis, macroContext } as Record<string, unknown>;
     await Promise.all([
       savePocketCachedResponse(cacheKey, "analysis", responseBody),
+      deliveryKey ? savePocketCachedResponse(deliveryKey, "analysis", responseBody) : Promise.resolve(),
       recordPocketAIUsage(identityHash, requestId, false, usageRecords, "success"),
     ]);
     console.info("[pocket-ai-cost-guard]", JSON.stringify({ requestId, providerCallCount, cacheHit: false, allowanceRemaining: allowance.remaining }));

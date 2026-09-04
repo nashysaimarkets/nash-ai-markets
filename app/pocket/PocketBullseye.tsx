@@ -1065,6 +1065,48 @@ async function analysisCacheSave(key: string, analysis: Analysis) {
   });
 }
 
+function pocketDeliveryId() {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return `${Date.now().toString(36)}_${crypto.getRandomValues(new Uint32Array(4)).join("_")}`;
+}
+
+async function recoverPocketAnalysisDelivery(deliveryId: string) {
+  const delays = [0, 1_000, 2_000, 4_000, 8_000, 8_000];
+  for (const delay of delays) {
+    if (delay) await new Promise((resolve) => window.setTimeout(resolve, delay));
+    const response = await fetch("/api/pocket/analyse", {
+      method: "GET",
+      headers: { ...pocketClientHeaders(), "x-pocket-delivery-id": deliveryId },
+      cache: "no-store",
+    });
+    if (response.status === 202) continue;
+    const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; error?: string };
+    if (!response.ok || !payload.analysis) throw new Error(payload.error || "The finished report could not be recovered safely.");
+    return payload;
+  }
+  throw new Error("The analysis is still finishing safely. Tap once to recover it from cache; you will not be charged again.");
+}
+
+async function postPocketAnalysis(body: string, deliveryId: string) {
+  try {
+    const response = await fetch("/api/pocket/analyse", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...pocketClientHeaders(), "x-pocket-delivery-id": deliveryId },
+      body,
+    });
+    try {
+      const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; error?: string };
+      return { responseOk: response.ok, payload };
+    } catch (error) {
+      if (!response.ok) throw error;
+      return { responseOk: true, payload: await recoverPocketAnalysisDelivery(deliveryId) };
+    }
+  } catch (error) {
+    if (!(error instanceof TypeError)) throw error;
+    return { responseOk: true, payload: await recoverPocketAnalysisDelivery(deliveryId) };
+  }
+}
+
 async function vaultList(): Promise<LockedDecision[]> {
   const db = await openVault();
   return new Promise((resolve, reject) => {
@@ -1536,13 +1578,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       if (!providerImage || (selectedContext && !providerContextImage) || (detailImage && !providerDetailImage) || (indicatorImage && !providerIndicatorImage)) {
         throw new Error("That chart could not be prepared within the secure mobile upload limit. Crop it to the chart and price scale, then try again.");
       }
-      const response = await fetch("/api/pocket/analyse", {
-        method: "POST",
-        headers: { "content-type": "application/json", ...pocketClientHeaders() },
-        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection }),
-      });
-      const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; error?: string };
-      if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
+      const deliveryId = pocketDeliveryId();
+      const { responseOk, payload } = await postPocketAnalysis(
+        JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection }),
+        deliveryId,
+      );
+      if (!responseOk || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       if (payload.macroContext) setEventContext(payload.macroContext);
       payload.analysis.levels = payload.analysis.levels.map((level) => {
         const drawable = [level.x, level.y, level.x2, level.y2].every(Number.isFinite);
