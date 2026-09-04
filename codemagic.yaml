@@ -14,8 +14,12 @@ workflows:
     triggering:
       events:
         - tag
+        - push
       tag_patterns:
         - pattern: "ios-v*"
+          include: true
+      branch_patterns:
+        - pattern: "release/pocket-ios-*"
           include: true
     scripts:
       - name: Install JavaScript dependencies
