@@ -157,10 +157,27 @@ function normalizePatterns(value: unknown, xRange: AxisRange | null, yRange: Axi
     const pattern = item as JsonRecord;
     if (!pattern.geometry || typeof pattern.geometry !== "object") return item;
     const geometry = pattern.geometry as JsonRecord;
+    const patternFrameIsFractional = fractionalBounds(geometry.plotBounds);
+    const normalizedPlotBounds = geometry.plotBounds
+      ? normalizeBounds(geometry.plotBounds, patternFrameIsFractional)
+      : null;
+    const patternBounds = normalizedPlotBounds && typeof normalizedPlotBounds === "object" ? normalizedPlotBounds as JsonRecord : null;
+    const patternLeft = patternBounds ? finite(patternBounds.left) : null;
+    const patternRight = patternBounds ? finite(patternBounds.right) : null;
+    const patternTop = patternBounds ? finite(patternBounds.top) : null;
+    const patternBottom = patternBounds ? finite(patternBounds.bottom) : null;
+    const patternXRange = patternLeft !== null && patternRight !== null && patternRight > patternLeft
+      ? { min: patternLeft, max: patternRight }
+      : xRange;
+    const patternYRange = patternTop !== null && patternBottom !== null && patternBottom > patternTop
+      ? { min: patternTop, max: patternBottom }
+      : yRange;
     const points = records(geometry.points);
-    const xMode = coordinateMode([...points.map((point) => point.x), geometry.labelX], xRange, frameIsFractional);
-    const yMode = coordinateMode([...points.map((point) => point.y), geometry.labelY], yRange, frameIsFractional);
+    const patternCoordinateFrameIsFractional = geometry.plotBounds ? patternFrameIsFractional : frameIsFractional;
+    const xMode = coordinateMode([...points.map((point) => point.x), geometry.labelX], patternXRange, patternCoordinateFrameIsFractional);
+    const yMode = coordinateMode([...points.map((point) => point.y), geometry.labelY], patternYRange, patternCoordinateFrameIsFractional);
     const normalizedGeometry = { ...geometry };
+    if (normalizedPlotBounds) normalizedGeometry.plotBounds = normalizedPlotBounds;
     if ("labelX" in geometry) normalizedGeometry.labelX = scale(geometry.labelX, xMode);
     if ("labelY" in geometry) normalizedGeometry.labelY = scale(geometry.labelY, yMode);
     if (Array.isArray(geometry.points)) normalizedGeometry.points = geometry.points.map((point) => {

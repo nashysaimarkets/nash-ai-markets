@@ -37,7 +37,9 @@ const RELEASE_SOURCE_LABELS: Record<string, string> = {
 
 const EXCLUDED_SOURCES = ["SEC"] as const;
 const RELEASE_WINDOW_DAYS = 21;
-const MACRO_CACHE_TTL_MS = 15 * 60 * 1000;
+// Keep the shared cache short enough for revised official schedules to reach
+// an open mobile app promptly without hammering government endpoints.
+const MACRO_CACHE_TTL_MS = 5 * 60 * 1000;
 let defaultContextCache: { expiresAt: number; value: VerifiedMacroContext } | null = null;
 
 function startOfLondonDay(timestamp: number): Date {

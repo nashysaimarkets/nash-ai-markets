@@ -84,11 +84,22 @@ test("normalizes only relevant official BLS calendar releases and preserves time
     "Producer Price Index",
     "Job Openings and Labor Turnover Survey",
     "Employment Situation",
+    "Employment Situation",
   ]);
   assert.equal(releases[0]?.scheduledAt, "2026-08-12T12:30:00.000Z");
   assert.equal(releases[0]?.agency, "BLS");
   assert.equal(releases[0]?.risk, "HIGH");
   assert.equal(releases[0]?.sourceUrl, BLS_CALENDAR_ENDPOINT);
+});
+
+test("accepts the US-Eastern timezone alias used by the live BLS calendar", () => {
+  const releases = normalizeBlsCalendarIcs(
+    `BEGIN:VCALENDAR\nBEGIN:VEVENT\nUID:live-alias\nDTSTART;TZID=US-Eastern:20260904T083000\nSUMMARY:Employment Situation\nEND:VEVENT\nEND:VCALENDAR`,
+    new Date("2026-09-04T00:00:00.000Z"),
+    new Date("2026-09-05T00:00:00.000Z"),
+  );
+  assert.equal(releases.length, 1);
+  assert.equal(releases[0]?.scheduledAt, "2026-09-04T12:30:00.000Z");
 });
 
 test("BLS calendar provider exposes failure so schedule coverage is not called clear", async () => {

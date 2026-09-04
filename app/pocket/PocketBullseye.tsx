@@ -53,7 +53,7 @@ type Analysis = {
     alignment: "ALIGNED" | "CONFLICTING" | "MIXED" | "NOT_PROVIDED";
     summary: string;
   };
-  patterns: { name: string; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
+  patterns: { name: string; sourceRole?: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME"; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { plotBounds?: { left: number; top: number; right: number; bottom: number }; points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
   nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
   missingInputs: string[];
   contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
@@ -621,11 +621,18 @@ function patternOverlayTitle(pattern: Analysis["patterns"][number]) {
     : pattern.name;
 }
 
+function macroEventDisplayName(name: string) {
+  return name === "Employment Situation"
+    ? "US JOBS REPORT · NFP + UNEMPLOYMENT + WAGES"
+    : name;
+}
+
 function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; primaryLevels: Level[]; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [layer] = useState<XRayLayer>("patterns");
   const normalizeFrame = (value: string | undefined) => (value ?? "").toUpperCase().replace(/MIN(?:UTE)?S?/g, "M").replace(/HOUR(?:S)?/g, "H").replace(/[^A-Z0-9]/g, "");
   const primaryFrame = normalizeFrame(analysis.timeframe);
-  const drawablePatterns = analysis.patterns.filter((pattern) => normalizeFrame(pattern.timeframe) === primaryFrame
+  const drawablePatterns = analysis.patterns.filter((pattern) => (pattern.sourceRole ?? "PRIMARY") === "PRIMARY"
+    && normalizeFrame(pattern.timeframe) === primaryFrame
     && (pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length ?? 0) >= 2);
   // X-Ray is drawn over the primary image. Context-only levels may corroborate
   // a primary price, but must never corroborate themselves or inherit geometry
@@ -780,7 +787,7 @@ function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysi
   const [selectedFrame, setSelectedFrame] = useState<PatternFrame>(() => normalizePatternFrame(analysis.timeframe) ?? "4H");
   const [requestedFrame, setRequestedFrame] = useState<PatternFrame | null>(null);
   const timeframeInput = useRef<HTMLInputElement>(null);
-  const suppliedFrames = useMemo(() => PATTERN_FRAMES.filter((frame) => [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : ""].some((value) => normalizePatternFrame(value) === frame)), [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe]);
+  const suppliedFrames = useMemo(() => PATTERN_FRAMES.filter((frame) => [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : "", ...analysis.patterns.map((pattern) => pattern.timeframe ?? "")].some((value) => normalizePatternFrame(value) === frame)), [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe, analysis.patterns]);
   const primaryFrame = normalizePatternFrame(analysis.timeframe);
   const activeFrame = suppliedFrames.includes(selectedFrame) ? selectedFrame : primaryFrame && suppliedFrames.includes(primaryFrame) ? primaryFrame : suppliedFrames[0] ?? "4H";
   const visiblePatterns = analysis.patterns.filter((pattern) => normalizePatternFrame(pattern.timeframe || analysis.timeframe) === activeFrame);
@@ -812,7 +819,7 @@ function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysi
     })}</div>
     <input ref={timeframeInput} className="psPatternFrameInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label={`Add ${requestedFrame ?? "another"} timeframe chart`} onChange={onAddChart}/>
     {contextPending ? <div className="psPatternFrameAction" role="status"><span>{requestedFrame ?? "TIMEFRAME"} PHOTO READY</span><button type="button" disabled={reanalysing} onClick={onReanalyse}>{reanalysing ? "ANALYSING…" : "↻ REANALYSE TIMEFRAMES"}</button></div> : null}
-    {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>The supplied {activeFrame} chart does not currently show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
+    {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${pattern.sourceRole ?? "PRIMARY"}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {(pattern.sourceRole ?? "PRIMARY").replaceAll("_", " ")} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>None of the supplied images currently shows a clean named formation on this timeframe. Bullseye will not force a label onto ordinary price noise.</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
   </section>;
 }
@@ -1119,6 +1126,30 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     && !appleAccess.entitled,
   );
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    const refreshEvents = async () => {
+      try {
+        const response = await fetch("/api/pocket/events", { cache: "no-store" });
+        if (!response.ok) return;
+        const payload = await response.json() as { macroContext?: VerifiedMacroContext };
+        if (!cancelled && payload.macroContext) setEventContext(payload.macroContext);
+      } catch {
+        // Preserve the last verified schedule when a foreground refresh fails.
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void refreshEvents();
+    };
+    void refreshEvents();
+    const timer = window.setInterval(() => void refreshEvents(), 5 * 60 * 1000);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, []);
 
   function readAppleAccessStatus() {
     if (appleAccessRequestActive.current) return appleAccessRequestActive.current;
@@ -1946,7 +1977,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · ${eventCoverage.label}` : `${eventCoverage.label} · CONFIRM BEFORE TRADING`}</small></div>{nextHighImpact ? <strong className="psEventHighAlert">HIGH<small>EVENT AHEAD</small></strong> : isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
             <div className="psEventScope" data-asset={eventCoverage.assetClass}><b>{eventCoverage.label}</b><span>{eventCoverage.summary}</span>{eventCoverage.limitation ? <small>NOT INCLUDED · {eventCoverage.limitation}</small> : null}</div>
-            <div className="psTodayCalendar"><header><div><span>📅 TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : calendarUnavailable.length === 3 ? "UNAVAILABLE" : "NO RELEASE"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => { const released = Date.parse(event.scheduledAt) <= eventNow; return <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT · {released ? "RELEASED" : "SCHEDULED"}</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>; })}</ol> : <p>{calendarUnavailable.length === 3 ? "The official schedule sources could not be reached. Treat event risk as unverified and check the linked agency calendars." : "No BLS, BEA or Federal Reserve release is listed for today in the connected official schedules. Unscheduled news can still move price."}</p>}</div>
+            <div className="psTodayCalendar"><header><div><span>📅 TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE · AUTO-REFRESH</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : calendarUnavailable.length === 3 ? "UNAVAILABLE" : "NO RELEASE"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => { const released = Date.parse(event.scheduledAt) <= eventNow; return <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{macroEventDisplayName(event.name)}</strong><small>{event.agency} · {event.risk} IMPACT · {released ? "RELEASED" : "SCHEDULED"}</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>; })}</ol> : <p>{calendarUnavailable.length === 3 ? "The official schedule sources could not be reached. Treat event risk as unverified and check the linked agency calendars." : "No BLS, BEA or Federal Reserve release is listed for today in the connected official schedules. Unscheduled news can still move price."}</p>}</div>
             {nextHighImpact ? <div className="psMacroNext" data-risk="HIGH"><b>NEXT HIGH IMPACT · {formatEventTime(nextHighImpact.scheduledAt)}</b><span>{nextHighImpact.name} · {nextHighImpact.agency} official schedule</span>{nextHighImpact.sourceUrl ? <a href={nextHighImpact.sourceUrl} target="_blank" rel="noreferrer">VERIFY SOURCE ↗</a> : null}</div> : <div className="psMacroNext"><b>NO UPCOMING HIGH-IMPACT ROW RETURNED</b><span>{calendarUnavailable.length ? `Schedule coverage unavailable: ${calendarUnavailable.join(" · ")}.` : "No high-impact row appears in the current 21-day official schedule window."}</span></div>}
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>SYMBOL-SPECIFIC CALENDAR NOT ATTACHED</b><span>{eventCoverage.limitation ?? "This instrument uses the official macro schedule rather than a company calendar."}</span></div>}
             <details><summary>VIEW EVENT SOURCES <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{scheduledMacro.length ? <ol>{scheduledMacro.slice(0, 8).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · OFFICIAL SCHEDULE · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>

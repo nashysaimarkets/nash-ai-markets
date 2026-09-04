@@ -22,6 +22,70 @@ function numericPrice(value: unknown) {
 
 type ScaleAnchor = { price: number; y: number };
 
+const PATTERN_MIN_POINTS: Record<string, number> = {
+  "HEAD & SHOULDERS": 5,
+  "INVERSE H&S": 5,
+  "DOUBLE TOP": 5,
+  "DOUBLE BOTTOM": 5,
+  "CUP & HANDLE": 6,
+  "BREAKOUT & RETEST": 4,
+  "RECTANGLE / RANGE": 4,
+  "TREND CHANNEL": 4,
+  "ASCENDING TRIANGLE": 4,
+  "DESCENDING TRIANGLE": 4,
+  "TRIANGLE": 4,
+  "RISING WEDGE": 4,
+  "FALLING WEDGE": 4,
+  "BULL FLAG": 4,
+  "BEAR FLAG": 4,
+  "PENNANT": 4,
+};
+
+function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, candlesReadable: boolean) {
+  if (!Array.isArray(value) || !candlesReadable) return [];
+  const seenSources = new Set<string>();
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const pattern = item as JsonRecord;
+    const name = typeof pattern.name === "string" ? pattern.name : "";
+    const sourceRole = typeof pattern.sourceRole === "string" ? pattern.sourceRole : "";
+    if (!["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"].includes(sourceRole)) return [];
+    const minimum = PATTERN_MIN_POINTS[name];
+    const geometry = pattern.geometry && typeof pattern.geometry === "object" ? pattern.geometry as JsonRecord : null;
+    const returnedBounds = geometry?.plotBounds && typeof geometry.plotBounds === "object" ? geometry.plotBounds as JsonRecord : null;
+    const bounds = sourceRole === "PRIMARY" && primaryBounds ? primaryBounds : returnedBounds;
+    const left = numericPrice(bounds?.left);
+    const right = numericPrice(bounds?.right);
+    const top = numericPrice(bounds?.top);
+    const bottom = numericPrice(bounds?.bottom);
+    if (left === null || right === null || top === null || bottom === null || right <= left || bottom <= top) return [];
+    const points = Array.isArray(geometry?.points) ? geometry.points.flatMap((point) => {
+      if (!point || typeof point !== "object") return [];
+      const x = numericPrice((point as JsonRecord).x);
+      const y = numericPrice((point as JsonRecord).y);
+      return x === null || y === null ? [] : [{ x, y }];
+    }) : [];
+    if (!minimum || points.length < minimum) return [];
+    if (points.some((point) => point.x < left || point.x > right || point.y < top || point.y > bottom)) return [];
+    if (points.some((point, index) => index > 0 && point.x < points[index - 1]!.x - .5)) return [];
+    const xSpan = Math.max(...points.map((point) => point.x)) - Math.min(...points.map((point) => point.x));
+    const ySpan = Math.max(...points.map((point) => point.y)) - Math.min(...points.map((point) => point.y));
+    if (xSpan < (right - left) * .12 || ySpan < (bottom - top) * .05) return [];
+    if (typeof pattern.evidence !== "string" || pattern.evidence.trim().length < 24) return [];
+    if (typeof pattern.confirmation !== "string" || pattern.confirmation.trim().length < 12) return [];
+    if (typeof pattern.invalidation !== "string" || pattern.invalidation.trim().length < 12) return [];
+    const timeframe = typeof pattern.timeframe === "string" ? pattern.timeframe.trim().toUpperCase() : "";
+    const frameKey = timeframe.replace(/[^A-Z0-9]/g, "");
+    if (!frameKey || seenSources.has(sourceRole)) return [];
+    seenSources.add(sourceRole);
+    const status = pattern.status;
+    const confidence = pattern.confidence === "HIGH" && status !== "CONFIRMED" && status !== "EXTENDED"
+      ? "MEDIUM"
+      : pattern.confidence;
+    return [{ ...pattern, confidence }];
+  }).slice(0, 4);
+}
+
 export function verifiedLinearScale(items: ScaleAnchor[]) {
   const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
   if (unique.length < 2) return null;
@@ -61,6 +125,11 @@ export function calibratePocketAnalysis(
     ...analysis,
     setupScore: { ...score, overall, grade: scoreGrade(overall) },
   };
+
+  const initialBounds = analysis.plotBounds && typeof analysis.plotBounds === "object"
+    ? analysis.plotBounds as JsonRecord
+    : null;
+  calibrated.patterns = calibratePatterns(analysis.patterns, initialBounds, quality.candlesReadable === true);
 
   if (Array.isArray(analysis.missingInputs)) {
     calibrated.missingInputs = analysis.missingInputs.filter((item) =>

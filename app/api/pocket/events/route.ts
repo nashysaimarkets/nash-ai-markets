@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type ProviderRow = Record<string, unknown>;
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
@@ -15,18 +17,15 @@ function future(date: string) {
   return Number.isFinite(timestamp) && timestamp >= Date.now() - 86_400_000;
 }
 
-export async function GET(request: Request) {
-  const symbol = new URL(request.url).searchParams.get("symbol")?.trim().toUpperCase() ?? "";
+async function companyEvents(symbol: string) {
   if (!/^[A-Z][A-Z0-9.-]{0,14}$/.test(symbol)) return NextResponse.json({ error: "A valid listed-company ticker is required." }, { status: 400 });
   const apiKey = process.env.FMP_API_KEY?.trim();
   if (!apiKey) return NextResponse.json({ error: "Corporate events feed is not connected." }, { status: 503 });
-
   const endpoints = [
     ["EARNINGS", `https://financialmodelingprep.com/stable/earnings?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`],
     ["DIVIDEND", `https://financialmodelingprep.com/stable/dividends?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`],
     ["SPLIT", `https://financialmodelingprep.com/stable/splits?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`],
   ] as const;
-
   try {
     const responses = await Promise.all(endpoints.map(async ([type, url]) => {
       const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 21_600 } });
@@ -52,4 +51,11 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json({ error: "Corporate events are temporarily unavailable." }, { status: 503 });
   }
+}
+
+export async function GET(request: Request) {
+  const symbol = new URL(request.url).searchParams.get("symbol")?.trim().toUpperCase() ?? "";
+  if (symbol) return companyEvents(symbol);
+  const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/events" });
+  return NextResponse.json({ macroContext }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }

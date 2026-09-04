@@ -75,7 +75,8 @@ const schema = {
       type: "array", maxItems: 4, items: {
         type: "object", additionalProperties: false,
         properties: {
-          name: { type: "string", maxLength: 60 },
+          name: { type: "string", enum: ["HEAD & SHOULDERS", "INVERSE H&S", "RISING WEDGE", "FALLING WEDGE", "BULL FLAG", "BEAR FLAG", "DOUBLE TOP", "DOUBLE BOTTOM", "TRIANGLE", "ASCENDING TRIANGLE", "DESCENDING TRIANGLE", "PENNANT", "CUP & HANDLE", "RECTANGLE / RANGE", "TREND CHANNEL", "BREAKOUT & RETEST"] },
+          sourceRole: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"] },
           status: { type: "string", enum: ["FORMING", "CONFIRMED", "FAILED", "AMBIGUOUS", "EXTENDED"] },
           timeframe: { type: "string", maxLength: 20 },
           confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
@@ -85,6 +86,16 @@ const schema = {
           geometry: {
             type: "object", additionalProperties: false,
             properties: {
+              plotBounds: {
+                type: "object", additionalProperties: false,
+                properties: {
+                  left: { type: "number", minimum: 0, maximum: 100 },
+                  top: { type: "number", minimum: 0, maximum: 100 },
+                  right: { type: "number", minimum: 0, maximum: 100 },
+                  bottom: { type: "number", minimum: 0, maximum: 100 },
+                },
+                required: ["left", "top", "right", "bottom"],
+              },
               points: { type: "array", minItems: 2, maxItems: 10, items: {
                 type: "object", additionalProperties: false,
                 properties: { x: { type: "number", minimum: 0, maximum: 100 }, y: { type: "number", minimum: 0, maximum: 100 } },
@@ -93,10 +104,10 @@ const schema = {
               labelX: { type: "number", minimum: 0, maximum: 100 },
               labelY: { type: "number", minimum: 0, maximum: 100 },
             },
-            required: ["points", "labelX", "labelY"],
+            required: ["plotBounds", "points", "labelX", "labelY"],
           },
         },
-        required: ["name", "status", "timeframe", "confidence", "evidence", "confirmation", "invalidation", "geometry"],
+        required: ["name", "sourceRole", "status", "timeframe", "confidence", "evidence", "confirmation", "invalidation", "geometry"],
       },
     },
     nextSequence: {
@@ -388,9 +399,9 @@ export async function POST(request: Request) {
         "The uploaded evidence pack has fixed roles and order: image 1 is the required primary trading timeframe; image 2, when present, is higher-timeframe context; image 3, when present, is a close-up of current price and recent candles; image 4, when present, is an optional indicator or volume view.",
         "If a second image is supplied, re-evaluate and replace the entire audit using its higher-timeframe evidence, including support/resistance commentary, missing inputs, score and verdict. Verify that it appears to show the same instrument as image 1; if not, mark alignment CONFLICTING and explain.",
         "Use image 3 only to verify current-price text, recent candle geometry, reactions and scale detail. Use image 4 only for indicators, volume, profile, VWAP or explicitly labelled session evidence that is visibly shown. Never treat the mere presence of a supporting image as evidence and never inflate score or confidence because more images were uploaded.",
-        "All plotBounds, priceScaleAnchors, levels, fibLevels and pattern geometry must remain coordinates of image 1, the primary chart. Supporting images can refine the written audit but must never replace image 1's coordinate system or cause geometry from another crop to be drawn over it.",
+        "All plotBounds, priceScaleAnchors, levels and fibLevels must remain coordinates of image 1, the primary chart. Pattern geometry must use the full-image coordinate system of the image named by that pattern's sourceRole. Never copy geometry between images or draw evidence from one crop over another.",
         "evidencePack must contain exactly one contribution for every received image role, in upload order. Say precisely what each image contributed. PRIMARY must be used=true. For any supporting image that adds no defensible new evidence, set used=false and say why without penalising the primary chart merely for duplication.",
-        "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace only the actual historical swing path already visible on the full uploaded image: never extend a path into blank future space, invent a projected leg or draw a forecast. labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. A forming breakout/retest must remain explicitly unconfirmed until a visible hold or rejection occurs. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
+        "Pattern Watch must independently scan every supplied image for visible pattern evidence, including the current-price close-up and indicator/volume view when candles are present. Return at most the single strongest defensible pattern from each supplied image and set sourceRole to that exact image role; omit an image when it contains no clean pattern. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Test competing explanations before choosing a name. Require the defining geometry: H&S needs two shoulders, a distinct head and a visible neckline; double top/bottom needs two comparable extremes plus the intervening swing; flags/pennants need a clear impulse pole followed by a materially smaller pause; wedges need two converging boundaries both sloping in the named direction; triangles need at least two reactions on each boundary; ranges/channels need repeated reactions on both rails; cup-and-handle needs a rounded base, rim return and shallow handle; breakout-and-retest needs a visible boundary break, return to that same boundary and reaction away. Do not confuse a breakout without a return for a retest, or a single pullback for a flag. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and geometry relative only to its sourceRole image. geometry.plotBounds must tightly enclose that source image's candle plot; every point must fall inside those bounds. Geometry points must trace consecutive actual historical swing pivots already visible on that complete image, ordered left-to-right: never extend a path into blank future space, invent a projected leg or draw a forecast. labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. A forming breakout/retest must remain explicitly unconfirmed until a visible hold or rejection occurs. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",

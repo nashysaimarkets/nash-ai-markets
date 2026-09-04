@@ -57,6 +57,35 @@ test("score and grade are made internally consistent for readable charts", () =>
   assert.equal(result.setupScore.grade, "A");
 });
 
+test("pattern evidence is retained once per uploaded image and tied to its own geometry", () => {
+  const pattern = (sourceRole: string, timeframe: string, xOffset = 0) => ({
+    name: "BREAKOUT & RETEST",
+    sourceRole,
+    status: "FORMING",
+    timeframe,
+    confidence: "HIGH",
+    evidence: "Price visibly cleared a boundary and returned to test the same row.",
+    confirmation: "A visible reaction holds and moves away from the boundary.",
+    invalidation: "Price closes back through the boundary and remains inside the range.",
+    geometry: {
+      plotBounds: { left: 5, top: 10, right: 95, bottom: 90 },
+      points: [{ x: 10 + xOffset, y: 70 }, { x: 30 + xOffset, y: 68 }, { x: 48 + xOffset, y: 35 }, { x: 64 + xOffset, y: 56 }],
+      labelX: 68,
+      labelY: 45,
+    },
+  });
+  const result = calibratePocketAnalysis({
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: false, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 60, grade: "C" },
+    plotBounds: { left: 5, top: 10, right: 95, bottom: 90 },
+    patterns: [pattern("PRIMARY", "30M"), pattern("HIGHER_TIMEFRAME", "4H"), pattern("PRIMARY", "30M", 2)],
+  }) as { patterns: Array<{ sourceRole: string; confidence: string }> };
+  assert.deepEqual(result.patterns.map(({ sourceRole, confidence }) => ({ sourceRole, confidence })), [
+    { sourceRole: "PRIMARY", confidence: "MEDIUM" },
+    { sourceRole: "HIGHER_TIMEFRAME", confidence: "MEDIUM" },
+  ]);
+});
+
 test("a confident narrative is forced to wait when exact price structure is not verified", () => {
   const result = calibratePocketAnalysis({
     confidence: "HIGH",

@@ -190,7 +190,11 @@ function icsDateToIso(key: string, value: string): string | null {
   const second = Number(ss);
   if (z) return new Date(Date.UTC(year, month - 1, day, hour, minute, second)).toISOString();
 
-  const isEastern = /TZID=(?:America\/New_York|US\/Eastern)/i.test(key);
+  // The live BLS feed currently declares `TZID=US-Eastern` while older
+  // fixtures and some calendar clients use America/New_York or US/Eastern.
+  // Treat all three official aliases as Eastern rather than silently dropping
+  // every scheduled release in the feed.
+  const isEastern = /TZID=(?:America\/New_York|US[\/-]Eastern)/i.test(key);
   if (!isEastern) return null;
   const offsetHours = easternOffsetHours(year, month, day, hour, minute);
   return new Date(Date.UTC(year, month - 1, day, hour - offsetHours, minute, second)).toISOString();

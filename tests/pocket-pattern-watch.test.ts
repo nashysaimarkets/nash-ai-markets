@@ -14,6 +14,12 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(route, /geometry: \{/);
   assert.match(route, /points: \{ type: "array", minItems: 2, maxItems: 10/);
   assert.match(route, /return an empty array when none is defensible/);
+  assert.match(route, /Test competing explanations before choosing a name/);
+  assert.match(route, /triangles need at least two reactions on each boundary/);
+  assert.match(route, /independently scan every supplied image/);
+  assert.match(route, /single strongest defensible pattern from each supplied image/);
+  assert.match(route, /sourceRole/);
+  assert.match(route, /geometry\.plotBounds must tightly enclose that source image's candle plot/);
   assert.match(client, /PATTERN WATCH/);
   assert.match(client, /30M · 1H · 4H STRUCTURE CHECK/);
   assert.match(client, /NO SIGNIFICANT.*PATTERN VERIFIED/);
@@ -28,6 +34,15 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(styles, /\.psPatternGuide/);
   assert.match(styles, /\.psPatternFrames>button\[data-active="true"\]/);
   assert.match(styles, /\.psPatternFrameAction/);
+});
+
+test("Pattern Watch applies a deterministic geometry and confidence gate", async () => {
+  const calibration = await readFile(new URL("../app/api/pocket/analysis-calibration.ts", import.meta.url), "utf8");
+  assert.match(calibration, /PATTERN_MIN_POINTS/);
+  assert.match(calibration, /point\.x < points\[index - 1\]/);
+  assert.match(calibration, /xSpan < \(right - left\) \* \.12/);
+  assert.match(calibration, /status !== "CONFIRMED" && status !== "EXTENDED"/);
+  assert.match(calibration, /seenSources\.has\(sourceRole\)/);
 });
 
 test("Pattern Watch normalizes and switches only supplied 30M 1H and 4H evidence", async () => {
