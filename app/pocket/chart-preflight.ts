@@ -1,7 +1,7 @@
-export type PreflightStatus = "IDLE" | "CHECKING" | "AWAITING_CONFIRMATION" | "LOCKED" | "READY" | "LIMITED" | "RETAKE" | "UNAVAILABLE";
+export type PreflightStatus = "IDLE" | "CHECKING" | "AWAITING_CONFIRMATION" | "LOCKED" | "READY" | "LIMITED" | "RETAKE" | "UNAVAILABLE" | "SERVICE_UNAVAILABLE";
 
 export type ChartPreflight = {
-  status: Exclude<PreflightStatus, "IDLE" | "CHECKING" | "UNAVAILABLE">;
+  status: Exclude<PreflightStatus, "IDLE" | "CHECKING" | "UNAVAILABLE" | "SERVICE_UNAVAILABLE">;
   instrument: string;
   instrumentConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
   timeframe: string;

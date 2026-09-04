@@ -44,7 +44,14 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
-        const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
+        const payload = await response.json() as { preflight?: ChartPreflight; error?: string; code?: string };
+        if (payload.code === "AI_CREDITS_UNAVAILABLE") {
+          if (finished) return;
+          finished = true;
+          setStatus("SERVICE_UNAVAILABLE"); statusHandler.current("SERVICE_UNAVAILABLE"); confirmationHandler.current(null);
+          setMessage(payload.error || "Analysis service is temporarily unavailable. Your chart has not been rejected.");
+          return;
+        }
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
         if (finished) return;
         finished = true;
@@ -67,6 +74,7 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   }, [image, contextImage]);
 
   if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
+  if (status === "SERVICE_UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="SERVICE_UNAVAILABLE"><header><span>◉ ANALYSIS SERVICE</span><strong>TEMPORARILY UNAVAILABLE</strong></header><p>{message}</p></section>;
   if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message} Full analysis remains available.</p></section>;
   if (!result) return null;
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
-import { createOpenAIClient } from "../../../lib/server/openai";
+import { classifyOpenAIUnavailableReason, createOpenAIClient } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
@@ -964,12 +964,15 @@ export async function POST(request: Request) {
       message: typeof failure.message === "string" ? failure.message.slice(0, 240) : null,
     }));
     const message = typeof failure.message === "string" ? failure.message : "";
+    const providerFailure = classifyOpenAIUnavailableReason(error);
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
     const incomplete = /structured response was (?:empty|incomplete)/i.test(message);
-    return NextResponse.json({ error: timedOut
+    return NextResponse.json({ error: providerFailure === "quota_exhausted"
+      ? "Analysis service is temporarily unavailable. Your chart has not been rejected and remains loaded."
+      : timedOut
       ? "The chart analysis took too long to finish. Please retry once."
       : incomplete
         ? "The analysis report was interrupted before it finished. Your chart is still loaded—please retry once."
-        : "Bullseye could not verify enough chart detail safely. Please use a clearer screenshot." }, { status: 503 });
+        : "Analysis could not complete. Your chart remains loaded—please retry once." }, { status: 503 });
   }
 }

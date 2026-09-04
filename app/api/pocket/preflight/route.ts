@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { classifyOpenAIUnavailableReason, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
@@ -80,7 +80,15 @@ export async function POST(request: Request) {
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty preflight");
     return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
-  } catch {
+  } catch (error) {
+    const reason = classifyOpenAIUnavailableReason(error);
+    console.error("[pocket-preflight] unavailable", JSON.stringify({ reason }));
+    if (reason === "quota_exhausted") {
+      return NextResponse.json({
+        code: "AI_CREDITS_UNAVAILABLE",
+        error: "Analysis service is temporarily unavailable. Your chart has not been rejected.",
+      }, { status: 503, headers: pocketBudgetHeaders(budget) });
+    }
     return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
   }
 }

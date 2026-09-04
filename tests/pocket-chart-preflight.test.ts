@@ -10,4 +10,5 @@ test("preflight requires a confirmation lock before full analysis", () => {
   assert.equal(preflightAllowsAnalysis("LIMITED"), false);
   assert.equal(preflightAllowsAnalysis("LOCKED"), true);
   assert.equal(preflightAllowsAnalysis("UNAVAILABLE"), true);
+  assert.equal(preflightAllowsAnalysis("SERVICE_UNAVAILABLE"), false);
 });
