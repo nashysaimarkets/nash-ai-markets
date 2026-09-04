@@ -1,13 +1,25 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { classifyOpenAIUnavailableReason, createOpenAIClient } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+import {
+  getPocketCachedResponse,
+  pocketAIEnabled,
+  pocketAIUsageRecord,
+  pocketRequestId,
+  pocketRequestIdentity,
+  pocketResponseCacheKey,
+  recordPocketAIUsage,
+  savePocketCachedResponse,
+  type PocketAIUsageRecord,
+} from "../../../lib/server/pocket-ai-commercial-guard";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 2 + 4_096;
+const POCKET_PREFLIGHT_MODEL = "gpt-5.6-luna";
 
 const schema = {
   type: "object",
@@ -33,6 +45,13 @@ const schema = {
 export async function POST(request: Request) {
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
+  if (!pocketAIEnabled()) return NextResponse.json({
+    code: "AI_DISABLED",
+    error: "Analysis is paused by the service owner. No request was sent to the AI provider.",
+  }, { status: 503, headers: { "cache-control": "no-store" } });
+  const identityHash = pocketRequestIdentity(request);
+  const requestId = pocketRequestId();
+  const usageRecords: PocketAIUsageRecord[] = [];
   let image = "";
   let contextImage = "";
   try {
@@ -48,6 +67,14 @@ export async function POST(request: Request) {
   const valid = (value: string) => /^data:image\/(jpeg|png|webp);base64,/.test(value) && value.length <= MAX_DATA_URL_LENGTH;
   if (!valid(image) || (contextImage && !valid(contextImage))) return NextResponse.json({ error: "Please use valid chart images under 8 MB." }, { status: 400 });
 
+  const model = process.env.OPENAI_POCKET_SUPPORT_MODEL?.trim() || POCKET_PREFLIGHT_MODEL;
+  const cacheKey = pocketResponseCacheKey("preflight", [model, image, contextImage]);
+  const cached = await getPocketCachedResponse(cacheKey, "preflight");
+  if (cached?.preflight) {
+    await recordPocketAIUsage(identityHash, requestId, true, [], "cache_hit");
+    return NextResponse.json(cached, { headers: { "cache-control": "no-store", "x-pocket-ai-cache": "HIT" } });
+  }
+
   const budget = takePocketBudget(request, "preflight");
   if (!budget.allowed) return NextResponse.json({ error: "Preflight needs a short reset. You may continue to analysis." }, { status: 429, headers: pocketBudgetHeaders(budget) });
   const client = createOpenAIClient(undefined, 25_000);
@@ -55,7 +82,7 @@ export async function POST(request: Request) {
 
   try {
     const response = await client.responses.create({
-      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      model,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -77,10 +104,29 @@ export async function POST(request: Request) {
       max_output_tokens: 800,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
     });
+    const usage = pocketAIUsageRecord("preflight", model, response);
+    if (usage) {
+      usageRecords.push(usage);
+      console.info("[pocket-ai-usage]", JSON.stringify(usage));
+    }
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty preflight");
-    return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
-  } catch {
+    const result = { preflight: JSON.parse(output) } as Record<string, unknown>;
+    await Promise.all([
+      savePocketCachedResponse(cacheKey, "preflight", result),
+      recordPocketAIUsage(identityHash, requestId, false, usageRecords, "success"),
+    ]);
+    return NextResponse.json(result, { headers: { ...pocketBudgetHeaders(budget), "x-pocket-ai-cache": "MISS" } });
+  } catch (error) {
+    const reason = classifyOpenAIUnavailableReason(error);
+    console.error("[pocket-preflight] unavailable", JSON.stringify({ reason }));
+    await recordPocketAIUsage(identityHash, requestId, false, usageRecords, "failed");
+    if (reason === "quota_exhausted") {
+      return NextResponse.json({
+        code: "AI_CREDITS_UNAVAILABLE",
+        error: "Analysis service is temporarily unavailable. Your chart has not been rejected.",
+      }, { status: 503, headers: pocketBudgetHeaders(budget) });
+    }
     return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
   }
 }

@@ -11,6 +11,8 @@ export type OpenAIHealthStatus =
     reason: "authentication_rejected" | "quota_exhausted" | "rate_limited" | "model_unavailable" | "permission_denied" | "timeout" | "provider_unavailable";
   };
 
+export type OpenAIUnavailableReason = Extract<OpenAIHealthStatus, { status: "unavailable" }>["reason"];
+
 type OpenAIHealthClient = {
   responses: {
     create: (body: Record<string, unknown>) => Promise<unknown>;
@@ -29,11 +31,11 @@ export function createOpenAIClient(
   });
 }
 
-function safeFailureReason(error: unknown): Extract<OpenAIHealthStatus, { status: "unavailable" }>["reason"] {
+export function classifyOpenAIUnavailableReason(error: unknown): OpenAIUnavailableReason {
   if (!error || typeof error !== "object") return "provider_unavailable";
-  const candidate = error as { status?: unknown; code?: unknown; name?: unknown };
+  const candidate = error as { status?: unknown; code?: unknown; type?: unknown; name?: unknown };
   if (candidate.status === 401 || candidate.code === "invalid_api_key") return "authentication_rejected";
-  if (candidate.code === "insufficient_quota") return "quota_exhausted";
+  if (candidate.code === "insufficient_quota" || candidate.code === "credit_balance_exhausted" || candidate.type === "insufficient_quota") return "quota_exhausted";
   if (candidate.status === 403 || candidate.code === "permission_denied") return "permission_denied";
   if (candidate.status === 404 || candidate.code === "model_not_found") return "model_unavailable";
   if (candidate.status === 429 || candidate.code === "rate_limit_exceeded") return "rate_limited";
@@ -57,6 +59,6 @@ export async function checkOpenAIConnection(
     });
     return { status: "connected", reason: null };
   } catch (error) {
-    return { status: "unavailable", reason: safeFailureReason(error) };
+    return { status: "unavailable", reason: classifyOpenAIUnavailableReason(error) };
   }
 }

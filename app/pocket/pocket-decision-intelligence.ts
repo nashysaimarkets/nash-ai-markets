@@ -1,3 +1,5 @@
+import type { LiquidityShield } from "./liquidity-guard";
+
 export type DecisionIntelligenceAnalysis = {
   direction: "BULLISH" | "BEARISH" | "NEUTRAL";
   confidence: "LOW" | "MEDIUM" | "HIGH";
@@ -25,6 +27,22 @@ export type DecisionIntelligenceAnalysis = {
   riskFlags: string[];
   indicators: string[];
   levels: Array<{ kind: "support" | "resistance" | "trend" | "pivot" | "zone" | "gap"; label: string; price: string }>;
+  liquidityShield?: LiquidityShield;
+  timeframeAnalyses?: Array<{ sourceRole: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME"; timeframe: string; direction: "BULLISH" | "BEARISH" | "NEUTRAL" | "UNKNOWN"; chartReadable: boolean }>;
+  auctionProfile?: {
+    supplied: boolean;
+    sourceRole: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME" | "NONE";
+    timeframe: string;
+    volumeBarsVisible: boolean;
+    volumeProfileVisible: boolean;
+    valueAreaHigh: string;
+    valueAreaLow: string;
+    pointOfControl: string;
+    vwap: string;
+    volumeRead: string;
+    evidence: string;
+    limitation: string;
+  };
 };
 
 export type MapId = "liquidity" | "structure" | "timeframes" | "momentum" | "volatility" | "sessions" | "auction" | "patterns" | "confluence" | "conditions";
@@ -41,15 +59,35 @@ const includesAny = (text: string, terms: string[]) => terms.some((term) => text
 
 export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): AnalysisMap[] {
   const corpus = [analysis.marketStructure, analysis.momentum, analysis.traderTrap, ...analysis.observableFacts, ...analysis.indicators, ...analysis.riskFlags].join(" ").toLowerCase();
-  const support = analysis.levels.filter((level) => level.kind === "support");
-  const resistance = analysis.levels.filter((level) => level.kind === "resistance");
   const pivots = analysis.levels.filter((level) => level.kind === "pivot");
-  const imbalances = analysis.levels.filter((level) => level.kind === "gap" || level.kind === "zone");
-  const readablePrices = analysis.levels.filter((level) => /^-?\d[\d,.]*$/.test(level.price.trim()));
+  const liquidityShield = analysis.liquidityShield;
+  const liquidityZones = liquidityShield?.status === "VISIBLE_RISK_ZONES" ? liquidityShield.zones : [];
+  const liquidityAbove = liquidityZones.find((zone) => zone.side === "ABOVE_PRICE");
+  const liquidityAt = liquidityZones.find((zone) => zone.side === "AT_PRICE");
+  const liquidityBelow = liquidityZones.find((zone) => zone.side === "BELOW_PRICE");
+  const liquidityPrice = (zone: typeof liquidityAbove) => !zone
+    ? "NOT VERIFIED"
+    : zone.priceLow === zone.priceHigh
+      ? String(zone.priceLow)
+      : `${zone.priceLow}–${zone.priceHigh}`;
+  const liquidityStatus: MapStatus = liquidityShield?.status === "VISIBLE_RISK_ZONES" && liquidityZones.length
+    ? "EVIDENCE READY"
+    : liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+      ? "EVIDENCE READY"
+      : "MORE INPUT NEEDED";
+  const liquidityHeadline = liquidityZones.length
+    ? `${liquidityZones.length} VISIBLE STOP-RISK AREA${liquidityZones.length === 1 ? "" : "S"}`
+    : liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+      ? "NO CLEAR STOP-RISK CLUSTER"
+      : "STOP-RISK MAP WITHHELD";
   const visibleMomentumIndicator = includesAny(corpus, ["rsi", "macd", "stochastic", "momentum indicator"]);
   const visibleVolatility = includesAny(corpus, ["atr", "bollinger", "volatility", "compression", "expansion", "squeeze"]);
   const visibleSession = includesAny(corpus, ["london session", "new york session", "asia session", "opening range", "overnight range", "cash open", "rth"]);
-  const visibleAuction = includesAny(corpus, ["volume profile", "point of control", "poc", "value area", "vwap", "high-volume", "low-volume"]);
+  const auction = analysis.auctionProfile;
+  const visibleAuction = auction ? auction.supplied : includesAny(corpus, ["volume profile", "point of control", "poc", "value area", "vwap", "high-volume", "low-volume"]);
+  const volumeProfileVisible = auction?.volumeProfileVisible === true;
+  const volumeBarsVisible = auction?.volumeBarsVisible === true;
+  const timeframeReads = analysis.timeframeAnalyses?.filter((item) => item.chartReadable) ?? [];
   const confirmedPatterns = analysis.patterns.filter((pattern) => pattern.status === "CONFIRMED");
   const patternLead = analysis.patterns[0];
   const structureSequence = includesAny(corpus, ["higher high", "higher low"])
@@ -65,14 +103,18 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
 
   return [
     {
-      id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: readablePrices.length >= 2 ? "CONDITIONAL" : "MORE INPUT NEEDED",
-      headline: readablePrices.length >= 2 ? "TRAP EDGES MAPPED" : "EXACT TRAP PRICES WITHHELD",
-      summary: concise(analysis.traderTrap, "No defensible liquidity trap was visible. Bullseye will not manufacture a stop cluster."),
-      readings: [
-        { label: "BELOW PRICE", value: support[0]?.price || "NO VERIFIED SUPPORT", tone: "bull" },
-        { label: "ABOVE PRICE", value: resistance[0]?.price || "NO VERIFIED RESISTANCE", tone: "bear" },
-        { label: "IMBALANCE", value: imbalances[0]?.label || "NOT VISIBLY VERIFIED", tone: "wait" },
-      ],
+      id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: liquidityStatus,
+      headline: liquidityHeadline,
+      summary: concise(liquidityShield?.summary ?? "The Liquidity Guard scan did not return enough scale-checked evidence. Bullseye will not manufacture a stop cluster.", "No defensible liquidity trap was visible."),
+      readings: liquidityZones.length ? [
+        ...(liquidityBelow ? [{ label: "BELOW PRICE", value: liquidityPrice(liquidityBelow), tone: "bull" as const }] : []),
+        ...(liquidityAt ? [{ label: "AT PRICE", value: liquidityPrice(liquidityAt), tone: "wait" as const }] : []),
+        ...(liquidityAbove ? [{ label: "ABOVE PRICE", value: liquidityPrice(liquidityAbove), tone: "bear" as const }] : []),
+      ] : [{
+        label: "SCAN RESULT",
+        value: liquidityShield?.status === "NO_VISIBLE_RISK_ZONES" ? "NO DEFENSIBLE CLUSTER" : "NOT ENOUGH VERIFIED GEOMETRY",
+        tone: "wait",
+      }],
     },
     {
       id: "structure", icon: "◇", label: "STRUCTURE", status: analysis.evidenceQuality.candlesReadable ? "EVIDENCE READY" : "MORE INPUT NEEDED",
@@ -85,10 +127,10 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
       ],
     },
     {
-      id: "timeframes", icon: "≡", label: "TIMEFRAMES", status: analysis.higherTimeframe.provided ? "EVIDENCE READY" : "MORE INPUT NEEDED",
-      headline: analysis.higherTimeframe.provided ? `${analysis.higherTimeframe.alignment.replaceAll("_", " ")} TIMEFRAME READ` : "ONE TIMEFRAME ONLY",
-      summary: concise(analysis.higherTimeframe.summary, "Add a wider 1h, 4h or daily chart to expose alignment or conflict."),
-      readings: [
+      id: "timeframes", icon: "≡", label: "TIMEFRAMES", status: timeframeReads.length > 1 || analysis.higherTimeframe.provided ? "EVIDENCE READY" : "MORE INPUT NEEDED",
+      headline: timeframeReads.length ? `${timeframeReads.length} INDEPENDENT TIMEFRAME READ${timeframeReads.length === 1 ? "" : "S"}` : analysis.higherTimeframe.provided ? `${analysis.higherTimeframe.alignment.replaceAll("_", " ")} TIMEFRAME READ` : "ONE TIMEFRAME ONLY",
+      summary: concise(analysis.higherTimeframe.summary, "Add a wider chart to expose alignment or conflict."),
+      readings: timeframeReads.length ? timeframeReads.map((item) => ({ label: item.timeframe || item.sourceRole, value: item.direction, tone: item.direction === "BULLISH" ? "bull" as const : item.direction === "BEARISH" ? "bear" as const : "wait" as const })) : [
         { label: analysis.timeframe || "PRIMARY", value: analysis.direction, tone: analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait" },
         { label: analysis.higherTimeframe.timeframe || "HIGHER VIEW", value: analysis.higherTimeframe.direction, tone: analysis.higherTimeframe.direction === "BULLISH" ? "bull" : analysis.higherTimeframe.direction === "BEARISH" ? "bear" : "wait" },
         { label: "RELATIONSHIP", value: analysis.higherTimeframe.alignment.replaceAll("_", " "), tone: analysis.higherTimeframe.alignment === "CONFLICTING" ? "bear" : "neutral" },
@@ -126,12 +168,13 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
     },
     {
       id: "auction", icon: "▆", label: "AUCTION", status: visibleAuction ? "EVIDENCE READY" : "MORE INPUT NEEDED",
-      headline: visibleAuction ? "VALUE / REJECTION EVIDENCE FOUND" : "VOLUME PROFILE NOT SUPPLIED",
-      summary: visibleAuction ? "Only the auction references visibly present in the screenshot are used." : "Add a chart showing volume profile, value area, point of control or VWAP. Screenshot-only Bullseye will not invent order flow.",
+      headline: volumeProfileVisible ? "VOLUME PROFILE VERIFIED" : volumeBarsVisible ? "VOLUME EVIDENCE FOUND" : visibleAuction ? "AUCTION EVIDENCE FOUND" : "VOLUME EVIDENCE NOT SUPPLIED",
+      summary: visibleAuction ? concise(auction?.volumeRead || auction?.evidence || "Only visibly supplied volume evidence is used.", "Only visibly supplied volume evidence is used.") : "Add a chart with volume bars, volume profile, value area, point of control or VWAP. Bullseye will not invent order flow.",
       readings: [
-        { label: "VALUE AREA", value: includesAny(corpus, ["value area", "high-volume", "low-volume"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
-        { label: "POC", value: includesAny(corpus, ["point of control", "poc"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
-        { label: "VWAP", value: corpus.includes("vwap") ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "VOLUME BARS", value: volumeBarsVisible ? "VISIBLE" : "NOT VERIFIED", tone: volumeBarsVisible ? "bull" : "neutral" },
+        { label: "PROFILE / VALUE", value: volumeProfileVisible ? [auction?.valueAreaLow, auction?.valueAreaHigh].filter(Boolean).join(" – ") || "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "POC", value: auction?.pointOfControl || (!auction && includesAny(corpus, ["point of control", "poc"]) ? "VISIBLE" : "NOT VERIFIED"), tone: "neutral" },
+        { label: "VWAP", value: auction?.vwap || (!auction && corpus.includes("vwap") ? "VISIBLE" : "NOT VERIFIED"), tone: "neutral" },
       ],
     },
     {

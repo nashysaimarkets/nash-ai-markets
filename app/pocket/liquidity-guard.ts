@@ -37,10 +37,10 @@ export type ProjectedLiquidityZone = LiquidityZone & {
 };
 
 const FULL_IMAGE_BOUNDS: LiquidityPlotBounds = { left: 0, top: 0, right: 100, bottom: 100 };
-const SCALE_RESIDUAL_TOLERANCE = 1.5;
-const MIN_TWO_ANCHOR_PLOT_RATIO = .28;
+const SCALE_RESIDUAL_TOLERANCE = 2.5;
+const MIN_TWO_ANCHOR_PLOT_RATIO = .20;
 const MAX_BAND_PLOT_RATIO = .08;
-const TOUCH_TOLERANCE_PLOT_RATIO = .02;
+const TOUCH_TOLERANCE_PLOT_RATIO = .06;
 const MIN_TOUCH_X_SEPARATION = .75;
 
 function finitePercent(value: number) {
@@ -160,7 +160,7 @@ export function projectLiquidityZones(
   if (currentY < plot.top || currentY > plot.bottom) return [];
   const plotHeight = plot.bottom - plot.top;
   const maxBandHeight = plotHeight * MAX_BAND_PLOT_RATIO;
-  const touchTolerance = Math.min(1.5, Math.max(.6, plotHeight * TOUCH_TOLERANCE_PLOT_RATIO));
+  const touchTolerance = Math.min(4.5, Math.max(1.2, plotHeight * TOUCH_TOLERANCE_PLOT_RATIO));
   const confidenceRank: Record<LiquidityZoneConfidence, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
   const seen = new Set<number>();
 

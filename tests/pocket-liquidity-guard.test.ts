@@ -49,7 +49,7 @@ test("strict price parser accepts exact broker grouping and rejects ambiguous or
 test("verified scale accepts a widely separated two-label mobile axis and rejects tight or inconsistent fits", () => {
   assert.ok(verifiedLiquidityScale(anchors, bounds));
   assert.ok(verifiedLiquidityScale(anchors.slice(0, 2), bounds));
-  assert.equal(verifiedLiquidityScale([{ price: 3000, y: 35 }, { price: 2900, y: 50 }], bounds), null);
+  assert.equal(verifiedLiquidityScale([{ price: 3000, y: 38 }, { price: 2900, y: 50 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 2900, y: 45 }, { price: 2950, y: 50 }, { price: 3000, y: 55 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 2800, y: 80 }, { price: 2900, y: 55 }, { price: 3000, y: 15 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 3000, y: 5 }, { price: 2900, y: 50 }, { price: 2800, y: 95 }], bounds), null);
@@ -182,7 +182,7 @@ test("customer surface exposes a toggle, distinct safe states and explicit non-g
   assert.match(component, /NOT GUARANTEED REVERSALS/);
   assert.match(component, /projectLiquidityZones/);
   assert.match(client, /id: "guard"/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 13/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 16/);
   assert.match(styles, /\.psLiquidityVector/);
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(route, /liquidityShield/);

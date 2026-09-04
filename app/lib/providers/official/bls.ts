@@ -164,6 +164,11 @@ function parseIcsEvents(ics: string): Array<Record<string, string>> {
   return events;
 }
 
+function icsField(event: Record<string, string>, name: string): string | null {
+  const entry = Object.entries(event).find(([key]) => key === name || key.startsWith(`${name};`));
+  return entry?.[1]?.replace(/\\([,;])/g, "$1").replace(/\\n/gi, " ").trim() || null;
+}
+
 function easternOffsetHours(year: number, month: number, day: number, hour: number, minute: number): number {
   const approximateUtc = new Date(Date.UTC(year, month - 1, day, hour, minute));
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -218,7 +223,10 @@ export function normalizeBlsCalendarIcs(ics: string, from: Date, to: Date): Econ
 
   const releases: EconomicRelease[] = [];
   for (const event of parseIcsEvents(ics)) {
-    const summary = event.SUMMARY;
+    // Production calendars may attach LANGUAGE or other standard ICS
+    // parameters to SUMMARY/UID. Exact-key-only parsing silently erased valid
+    // releases such as Employment Situation from the Pocket calendar.
+    const summary = icsField(event, "SUMMARY");
     if (!summary) continue;
     const identity = calendarIdentity(summary);
     if (!identity) continue;
@@ -230,7 +238,7 @@ export function normalizeBlsCalendarIcs(ics: string, from: Date, to: Date): Econ
     const timestamp = Date.parse(scheduledAt);
     if (timestamp < fromMs || timestamp > toMs) continue;
 
-    const uid = event.UID?.trim();
+    const uid = icsField(event, "UID");
     releases.push({
       id: uid ? `bls-${uid}` : `bls-${identity.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${scheduledAt}`,
       name: identity.name,
@@ -251,7 +259,7 @@ export function createBlsReleaseCalendarProvider(options: BlsProviderOptions = {
     name: BLS_PROVIDER_NAME,
     async fetchUpcomingReleases(from: Date, to: Date, signal?: AbortSignal) {
       const response = await fetchImpl(BLS_CALENDAR_ENDPOINT, {
-        headers: { Accept: "text/calendar" },
+        headers: { Accept: "text/calendar", "User-Agent": "Pocket Bullseye/1.3 (+https://nashaimarkets.com)" },
         cache: "no-store",
         signal,
       });

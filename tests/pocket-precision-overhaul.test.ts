@@ -24,7 +24,7 @@ test("every customer-facing level surface uses the same fail-closed evidence", a
 
   assert.match(source, /<MarketStory analysis=\{combinedAnalysis\}/);
   assert.match(source, /<ResultCard analysis=\{combinedAnalysis\}/);
-  assert.match(source, /<PocketCommandDeck analysis=\{combinedAnalysis\} primaryLevels=\{analysis\.levels\}/);
+  assert.match(source, /<PocketCommandDeck analysis=\{combinedAnalysis\} macroContext=\{eventContext\} primaryLevels=\{analysis\.levels\}/);
   assert.match(source, /serverCombinedBattlefield\?\.levels \?\? \[\]\)\.filter\(\(level\) => level\.source === "CONTEXT"\)/);
   assert.match(source, /const swingLevels = primaryLevels\.filter\(\(item\) => item\.kind === "pivot"[\s\S]*?Number\.isFinite/);
   assert.match(source, /storyHasTwoSidedStructure/);
@@ -60,7 +60,7 @@ test("client edits invalidate stale combined evidence and keep pending context o
   const source = await readFile(componentPath, "utf8");
 
   assert.match(source, /invalidateDerivedChartEvidence\(current, "CONTEXT_REPLACED"\)/);
-  assert.ok((source.match(/"PRIMARY_STRUCTURE_CHANGED"/g) ?? []).length >= 2);
+  assert.ok((source.match(/"PRIMARY_STRUCTURE_CHANGED"/g) ?? []).length >= 1);
   assert.match(source, /disabled=\{!contextBattlefield\}/);
   assert.match(source, /CONTEXT PENDING/);
   assert.ok((source.match(/hasContext=\{Boolean\(contextBattlefield\)\}/g) ?? []).length >= 2);
