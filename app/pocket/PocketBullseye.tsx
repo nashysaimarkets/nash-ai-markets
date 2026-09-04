@@ -26,6 +26,31 @@ type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
 type Level = { kind: ToolKind; label: string; price: string; x: number; y: number; x2: number; y2: number; source?: LevelEvidenceSource };
 type FibLevel = { ratio: string; price: string; y: number };
+type TimeframeAnalysis = {
+  sourceRole: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME";
+  timeframe: string;
+  direction: Direction | "UNKNOWN";
+  confidence: "LOW" | "MEDIUM" | "HIGH";
+  chartReadable: boolean;
+  scaleReadable: boolean;
+  currentPrice: string;
+  summary: string;
+  levels: Array<{ kind: "support" | "resistance" | "pivot"; label: string; price: string }>;
+};
+type AuctionProfile = {
+  supplied: boolean;
+  sourceRole: TimeframeAnalysis["sourceRole"] | "NONE";
+  timeframe: string;
+  volumeBarsVisible: boolean;
+  volumeProfileVisible: boolean;
+  valueAreaHigh: string;
+  valueAreaLow: string;
+  pointOfControl: string;
+  vwap: string;
+  volumeRead: string;
+  evidence: string;
+  limitation: string;
+};
 type Intention = "LONG" | "SHORT" | "UNSURE";
 type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
 type Analysis = {
@@ -63,6 +88,8 @@ type Analysis = {
       summary: string;
     }>;
   };
+  timeframeAnalyses?: TimeframeAnalysis[];
+  auctionProfile?: AuctionProfile;
   summary: string;
   verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
   verdictHeadline: string;
@@ -765,41 +792,55 @@ const PATTERN_GUIDE = [
   { name: "BREAKOUT & RETEST", aliases: ["BREAKOUT-RETEST", "BREAKOUT AND RETEST", "BREAKOUT & RETEST", "BREAKDOWN-RETEST"], family: "LEVEL TRANSITION", path: "5,72 34,72 46,28 61,28 72,68 82,55 94,35", look: "Price clears a level, revisits it from the other side, then reacts.", confirms: "The old boundary holds on retest and price resumes away from it.", trap: "Calling the first return a successful retest before it reacts." },
 ] as const;
 
-const PATTERN_FRAMES = ["30M", "1H", "4H"] as const;
-type PatternFrame = typeof PATTERN_FRAMES[number];
-
-function normalizePatternFrame(value: string | undefined): PatternFrame | null {
+function normalizePatternFrame(value: string | undefined) {
   const compact = (value ?? "")
     .toUpperCase()
     .replace(/MINUTES?|MINS?/g, "M")
     .replace(/HOURS?|HRS?/g, "H")
     .replace(/[^A-Z0-9]/g, "");
-  if (compact.startsWith("30M") || compact.startsWith("M30")) return "30M";
-  if (compact.startsWith("1H") || compact.startsWith("H1")) return "1H";
-  if (compact.startsWith("4H") || compact.startsWith("H4")) return "4H";
-  return null;
+  if (compact.startsWith("M") && /^M\d+$/.test(compact)) return `${compact.slice(1)}M`;
+  if (compact.startsWith("H") && /^H\d+$/.test(compact)) return `${compact.slice(1)}H`;
+  return compact || "UNKNOWN";
 }
 
-function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+function independentTimeframes(analysis: Analysis): TimeframeAnalysis[] {
+  const returned = (analysis.timeframeAnalyses ?? []).filter((item) => item.chartReadable);
+  if (returned.length) return returned;
+  return [{ sourceRole: "PRIMARY", timeframe: analysis.timeframe || "UNKNOWN", direction: analysis.direction, confidence: analysis.confidence, chartReadable: analysis.evidenceQuality.candlesReadable, scaleReadable: analysis.evidenceQuality.scaleReadable, currentPrice: analysis.currentPrice ?? "", summary: analysis.marketStructure, levels: analysis.levels.flatMap((level) => ["support", "resistance", "pivot"].includes(level.kind) && numericLevel(level.price) !== null ? [{ kind: level.kind as "support" | "resistance" | "pivot", label: level.label, price: level.price }] : []) }];
+}
+
+function TimeframeLevelExplorer({ analysis }: { analysis: Analysis }) {
+  const frames = useMemo(() => independentTimeframes(analysis), [analysis]);
+  const [selectedRole, setSelectedRole] = useState<TimeframeAnalysis["sourceRole"]>("PRIMARY");
+  const active = frames.find((item) => item.sourceRole === selectedRole) ?? frames[0];
+  const levelKinds = ["support", "resistance", "pivot"] as const;
+  return <section className="psTimeframeLevels" aria-label="Independent timeframe level analysis">
+    <nav role="tablist" aria-label="Choose timeframe levels">{frames.map((frame) => {
+      const viewing = frame.sourceRole === active?.sourceRole;
+      return <button key={frame.sourceRole} role="tab" type="button" aria-selected={viewing} data-active={viewing} onClick={() => setSelectedRole(frame.sourceRole)}><strong>{normalizePatternFrame(frame.timeframe)}</strong><small>{viewing ? "VIEWING" : "ANALYSED"}</small><span>{frame.direction} · {frame.confidence}</span></button>;
+    })}</nav>
+    {active ? <article role="tabpanel" aria-label={`${active.timeframe} level analysis`}>
+      <header><div><small>{active.sourceRole.replaceAll("_", " ")}</small><strong>{active.timeframe} LEVEL READ</strong></div><b data-direction={active.direction}>{active.direction}</b></header>
+      <p>{active.summary}</p>
+      <div className="psTimeframeLevelGrid">{levelKinds.map((kind) => {
+        const levels = active.levels.filter((level) => level.kind === kind);
+        return <section key={kind} data-kind={kind}><small>{kind.toUpperCase()}</small>{levels.length ? levels.map((level, index) => <div key={`${kind}-${level.price}-${index}`}><strong>{level.price}</strong><span>{level.label}</span></div>) : <b>NOT VERIFIED</b>}</section>;
+      })}</div>
+      <footer><span>CURRENT PRICE · {active.currentPrice || "NOT VERIFIED"}</span><b>{active.scaleReadable ? `${active.levels.length} EXACT LEVEL${active.levels.length === 1 ? "" : "S"}` : "SCALE NOT READABLE"}</b></footer>
+    </article> : null}
+  </section>;
+}
+
+function PatternWatch({ analysis }: { analysis: Analysis }) {
   const [guideOpen, setGuideOpen] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<string>(PATTERN_GUIDE[0].name);
-  const [selectedFrame, setSelectedFrame] = useState<PatternFrame>(() => normalizePatternFrame(analysis.timeframe) ?? "4H");
-  const [requestedFrame, setRequestedFrame] = useState<PatternFrame | null>(null);
-  const timeframeInput = useRef<HTMLInputElement>(null);
-  const suppliedFrames = useMemo(() => PATTERN_FRAMES.filter((frame) => [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : "", ...analysis.patterns.map((pattern) => pattern.timeframe ?? "")].some((value) => normalizePatternFrame(value) === frame)), [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe, analysis.patterns]);
-  const primaryFrame = normalizePatternFrame(analysis.timeframe);
-  const activeFrame = suppliedFrames.includes(selectedFrame) ? selectedFrame : primaryFrame && suppliedFrames.includes(primaryFrame) ? primaryFrame : suppliedFrames[0] ?? "4H";
-  const visiblePatterns = analysis.patterns.filter((pattern) => normalizePatternFrame(pattern.timeframe || analysis.timeframe) === activeFrame);
-  const contextPending = hasContext && !analysis.higherTimeframe.provided;
-  const selectFrame = (frame: PatternFrame) => {
-    if (suppliedFrames.includes(frame)) {
-      setSelectedFrame(frame);
-      setRequestedFrame(null);
-      return;
-    }
-    setRequestedFrame(frame);
-    timeframeInput.current?.click();
-  };
+  const frames = useMemo(() => independentTimeframes(analysis), [analysis]);
+  const [selectedRole, setSelectedRole] = useState<TimeframeAnalysis["sourceRole"]>("PRIMARY");
+  const active = frames.find((item) => item.sourceRole === selectedRole) ?? frames[0];
+  const activeFrame = normalizePatternFrame(active?.timeframe);
+  const visiblePatterns = analysis.patterns.filter((pattern) => pattern.sourceRole
+    ? pattern.sourceRole === active?.sourceRole
+    : normalizePatternFrame(pattern.timeframe || analysis.timeframe) === activeFrame);
   const selectGuide = (name: string) => {
     const normalized = name.toUpperCase();
     const match = PATTERN_GUIDE
@@ -811,14 +852,12 @@ function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysi
   };
   const selected = PATTERN_GUIDE.find((item) => item.name === selectedGuide) ?? PATTERN_GUIDE[0];
   return <section className="psPatternWatch">
-    <header><div><span>◫ PATTERN WATCH</span><small>30M · 1H · 4H STRUCTURE CHECK</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
-    <div className="psPatternFrames" role="tablist" aria-label="Choose Pattern Watch timeframe">{PATTERN_FRAMES.map((frame) => {
-      const supplied = suppliedFrames.includes(frame);
-      return <button key={frame} type="button" role="tab" data-supplied={supplied} data-active={supplied && activeFrame === frame} aria-selected={supplied && activeFrame === frame} aria-label={supplied ? `Show ${frame} pattern analysis` : `Add a ${frame} chart`} onClick={() => selectFrame(frame)}>{frame}<small>{supplied ? activeFrame === frame ? "VIEWING" : "CHART READ" : "+ ADD CHART"}</small></button>;
+    <header><div><span>◫ PATTERN WATCH</span><small>{frames.length} INDEPENDENT TIMEFRAME {frames.length === 1 ? "READ" : "READS"}</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
+    <div className="psPatternFrames" style={{ gridTemplateColumns: `repeat(${Math.max(1, frames.length)}, minmax(0, 1fr))` }} role="tablist" aria-label="Choose Pattern Watch timeframe">{frames.map((frame) => {
+      const viewing = active?.sourceRole === frame.sourceRole;
+      return <button key={frame.sourceRole} type="button" role="tab" data-supplied="true" data-active={viewing} aria-selected={viewing} aria-label={`Show ${frame.timeframe} pattern analysis`} onClick={() => setSelectedRole(frame.sourceRole)}>{normalizePatternFrame(frame.timeframe)}<small>{viewing ? "VIEWING" : "ANALYSED"}</small></button>;
     })}</div>
-    <input ref={timeframeInput} className="psPatternFrameInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label={`Add ${requestedFrame ?? "another"} timeframe chart`} onChange={onAddChart}/>
-    {contextPending ? <div className="psPatternFrameAction" role="status"><span>{requestedFrame ?? "TIMEFRAME"} PHOTO READY</span><button type="button" disabled={reanalysing} onClick={onReanalyse}>{reanalysing ? "ANALYSING…" : "↻ REANALYSE TIMEFRAMES"}</button></div> : null}
-    {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${pattern.sourceRole ?? "PRIMARY"}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {(pattern.sourceRole ?? "PRIMARY").replaceAll("_", " ")} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>None of the supplied images currently shows a clean named formation on this timeframe. Bullseye will not force a label onto ordinary price noise.</p></div>}
+    {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${pattern.sourceRole ?? "PRIMARY"}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {(pattern.sourceRole ?? "PRIMARY").replaceAll("_", " ")} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>{active?.summary || "No clean named formation survived the visible-geometry checks for this chart."}</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
   </section>;
 }
@@ -918,7 +957,7 @@ function PocketCommandDeck({ analysis, macroContext, primaryLevels, sourceImage,
     <div className="psCommandStage" data-mode={mode}>
       {mode === "xray" ? <ChartXRay analysis={analysis} primaryLevels={primaryLevels} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "guard" ? <LiquidityGuardOverlay analysis={analysis} sourceImage={sourceImage} onRescan={onReanalyse} rescanning={reanalysing} /> : null}
-      {mode === "patterns" ? <PatternWatch analysis={analysis} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
+      {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}
@@ -977,7 +1016,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 14 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 15 as const;
 const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
@@ -1878,14 +1917,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <footer>Schedule refreshed {formatEventTime(eventContext.generatedAt)} · {eventContext.calendarSources?.available.length ? `${eventContext.calendarSources.available.join(" · ")} connected` : "No official calendar source confirmed"}{calendarUnavailable.length ? ` · ${calendarUnavailable.join(" · ")} unavailable` : ""}. Company dates may be estimated or revised. Always verify before trading.</footer>
           </section>
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
-            <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
+            <header><div><span>🗺️ LEVELS BY TIMEFRAME</span><small>EVERY SUPPLIED CHART ANALYSED SEPARATELY</small></div><button type="button" onClick={openChartFocus}>OPEN MAP</button></header>
             <section className="psVerifiedLevelSummary" aria-label="Verified price level summary">
-              <div><span>◎ VERIFIED LEVELS</span><small>FROM YOUR FOUR-PHOTO EVIDENCE PACK</small></div>
-              <strong>{combinedLevels.filter((level) => level.kind === "support").length} SUPPORT · {combinedLevels.filter((level) => level.kind === "resistance").length} RESISTANCE</strong>
+              <div><span>◎ INDEPENDENT TIMEFRAME READS</span><small>TOGGLE EACH BOX TO CHECK ITS OWN RESULT</small></div>
+              <strong>{independentTimeframes(analysis).length} ANALYSED</strong>
             </section>
-            {battlefieldTabs}
-            <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
-            {battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}
+            <TimeframeLevelExplorer analysis={analysis} />
+            <details className="psOptionalDecisionMap"><summary>OPTIONAL VISUAL DECISION MAP <b>⌄</b></summary>{battlefieldTabs}<DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />{battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}</details>
             <details id="bullseye-source-charts" className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
           </section>
           {analysis.missingInputs.length || refinementStatus !== "idle" || !structuralEvidence(combinedAnalysis).twoSided ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} data-status={refinementStatus} aria-busy={refinementStatus === "analysing"} aria-live="polite"><header><span>📷 {refinementStatus === "updated" ? "TWO CHARTS ANALYSED" : refinementStatus === "attached" ? "SECOND VIEW ATTACHED" : contextImage ? "TWO CHARTS LOADED · OPTIONAL FINAL CHECK" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "REANALYSING ALL CHARTS…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "FINDINGS UPDATED" : "READ CONFIRMED" : refinementStatus === "attached" ? "2 CHARTS READY" : contextImage ? "ONLY MISSING EVIDENCE" : "ONLY IF AVAILABLE"}</b></header>{contextImage && (refinementStatus === "attached" || refinementStatus === "updated") ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>PRIMARY</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting timeframe chart" /><figcaption>ADDED VIEW</figcaption></figure></div><p>{refinementStatus === "attached" ? "Your second timeframe is attached. Tap Reanalyse all charts to replace the findings using both images." : analysis.contextContribution?.summary || "Both charts were compared and the current findings were replaced."}</p>{refinementStatus === "updated" ? <><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>LEVELS</span><strong>{battlefieldChart === "context" ? "CONTEXT VIEW" : "PRIMARY VIEW"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="psPrecisionPrompt">Add a view with a clear price scale so Bullseye can retry exact support and resistance verification.</p>}<footer><div><strong>{refinementStatus === "analysing" ? "CHECKING BOTH CHARTS" : refinementStatus === "updated" ? "FINDINGS REPLACED" : refinementStatus === "attached" ? "PHOTO ADDED — READY" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Support, resistance and the written read are being checked again." : refinementStatus === "updated" ? "The decision map and report now use the latest two-chart analysis." : refinementStatus === "attached" ? contextFileName : contextImage ? (analysis.missingInputs.slice(0, 2).join(" · ") || "Two charts were analysed; add another image only if it contains the missing evidence above.") : "Add a clearer lower, upper or higher-timeframe view."}</span></div><div className="psRefineActions"><label>{contextImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input id="psResultSupportInput" disabled={refinementStatus === "analysing"} aria-label="Add another timeframe chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label><button type="button" disabled={!contextImage || refinementStatus === "analysing"} onClick={reanalyseResult}>{refinementStatus === "analysing" ? "REANALYSING…" : "↻ REANALYSE ALL CHARTS"}</button></div></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
@@ -1979,15 +2017,15 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <p>Each extra image has one job. Add only views that genuinely reveal more evidence.</p>
           <div>
             <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
-              <div><span>② HIGHER TIMEFRAME</span><strong>{contextImage ? "CONTEXT LOADED" : "ADD 1H · 4H · DAILY"}</strong><p>{contextImage ? contextFileName : "Shows the wider trend, major structure and alignment."}</p></div>
+              <div><span>② SECOND / HIGHER TIMEFRAME</span><strong>{contextImage ? "TIMEFRAME LOADED" : "ADD 1H · 4H · DAILY"}</strong><p>{contextImage ? contextFileName : "Gets its own structure, pattern and exact-level analysis."}</p></div>
               {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={detailImage ? "true" : "false"}>
-              <div><span>③ CURRENT-PRICE CLOSE-UP</span><strong>{detailImage ? "PRICE DETAIL LOADED" : "ADD CLOSE VIEW"}</strong><p>{detailImage ? detailFileName : "Makes recent candles, reactions and the price scale easier to verify."}</p></div>
+              <div><span>③ THIRD TIMEFRAME / PRICE DETAIL</span><strong>{detailImage ? "CHART LOADED" : "ADD ANOTHER VIEW"}</strong><p>{detailImage ? detailFileName : "Use another timeframe or a close view with clearer candles and scale."}</p></div>
               {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add current-price close-up chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={indicatorImage ? "true" : "false"}>
-              <div><span>④ INDICATOR / VOLUME</span><strong>{indicatorImage ? "EXTRA EVIDENCE LOADED" : "ADD IF RELEVANT"}</strong><p>{indicatorImage ? indicatorFileName : "Optional RSI, VWAP, ATR, volume profile or session evidence."}</p></div>
+              <div><span>④ VOLUME / INDICATOR / TIMEFRAME</span><strong>{indicatorImage ? "CHART LOADED" : "ADD IF RELEVANT"}</strong><p>{indicatorImage ? indicatorFileName : "Volume bars, profile, VWAP, indicators—or a fourth timeframe."}</p></div>
               {indicatorImage ? <button type="button" onClick={() => { setIndicatorImage(null); setIndicatorFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add indicator or volume chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadIndicatorFile} /></label>}
             </section>
           </div>

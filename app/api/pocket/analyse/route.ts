@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
 import { createOpenAIClient } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -28,14 +29,15 @@ import {
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 6 + 16_384;
-const POCKET_ANALYSIS_TIMEOUT_MS = 55_000;
-const POCKET_PROVIDER_DEADLINE_MS = 56_000;
-const POCKET_PRECISION_DEADLINE_MS = 30_000;
+const POCKET_ANALYSIS_TIMEOUT_MS = 105_000;
+const POCKET_PROVIDER_DEADLINE_MS = 112_000;
+const POCKET_PRECISION_DEADLINE_MS = 45_000;
 const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
-const POCKET_REPORT_MODEL = "gpt-5.6-sol";
-const POCKET_ANNOTATION_MODEL = "gpt-5.6-terra";
-export const maxDuration = 60;
+const POCKET_REPORT_MODEL = "gpt-6-astra";
+const POCKET_REPORT_FALLBACK_MODEL = "gpt-5.6-sol";
+const POCKET_ANNOTATION_MODEL = "gpt-5.6-sol";
+export const maxDuration = 120;
 
 const schema = {
   type: "object",
@@ -150,6 +152,51 @@ const schema = {
       },
       required: ["received", "contributions"],
     },
+    timeframeAnalyses: {
+      type: "array", minItems: 1, maxItems: 4, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          sourceRole: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"] },
+          timeframe: { type: "string", maxLength: 20 },
+          direction: { type: "string", enum: ["BULLISH", "BEARISH", "NEUTRAL", "UNKNOWN"] },
+          confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+          chartReadable: { type: "boolean" },
+          scaleReadable: { type: "boolean" },
+          currentPrice: { type: "string", maxLength: 30 },
+          summary: { type: "string", maxLength: 220 },
+          levels: {
+            type: "array", maxItems: 7, items: {
+              type: "object", additionalProperties: false,
+              properties: {
+                kind: { type: "string", enum: ["support", "resistance", "pivot"] },
+                label: { type: "string", maxLength: 50 },
+                price: { type: "string", maxLength: 30 },
+              },
+              required: ["kind", "label", "price"],
+            },
+          },
+        },
+        required: ["sourceRole", "timeframe", "direction", "confidence", "chartReadable", "scaleReadable", "currentPrice", "summary", "levels"],
+      },
+    },
+    auctionProfile: {
+      type: "object", additionalProperties: false,
+      properties: {
+        supplied: { type: "boolean" },
+        sourceRole: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME", "NONE"] },
+        timeframe: { type: "string", maxLength: 20 },
+        volumeBarsVisible: { type: "boolean" },
+        volumeProfileVisible: { type: "boolean" },
+        valueAreaHigh: { type: "string", maxLength: 30 },
+        valueAreaLow: { type: "string", maxLength: 30 },
+        pointOfControl: { type: "string", maxLength: 30 },
+        vwap: { type: "string", maxLength: 30 },
+        volumeRead: { type: "string", maxLength: 180 },
+        evidence: { type: "string", maxLength: 220 },
+        limitation: { type: "string", maxLength: 180 },
+      },
+      required: ["supplied", "sourceRole", "timeframe", "volumeBarsVisible", "volumeProfileVisible", "valueAreaHigh", "valueAreaLow", "pointOfControl", "vwap", "volumeRead", "evidence", "limitation"],
+    },
     summary: { type: "string", maxLength: 320 },
     verdict: { type: "string", enum: ["WATCH", "WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"] },
     verdictHeadline: { type: "string", maxLength: 100 },
@@ -226,7 +273,7 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "evidencePack", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "evidencePack", "timeframeAnalyses", "auctionProfile", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
 } as const;
 
 const precisionOverlaySchema = {
@@ -383,11 +430,11 @@ export async function POST(request: Request) {
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || POCKET_REPORT_MODEL;
     const reportTimeoutMs = remainingProviderMs();
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
-    const analysisRequest = client.responses.create({
+    const reportRequest: ResponseCreateParamsNonStreaming = {
       model,
-      // Sol remains the flagship report model. Low effort keeps this large,
-      // strict visual schema inside a mobile request's hard runtime window.
-      reasoning: { effort: "low" },
+      // Medium reasoning materially improves independent reads across a
+      // multi-image evidence pack without enabling speculative values.
+      reasoning: { effort: "medium" as const },
       store: false,
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
@@ -396,9 +443,11 @@ export async function POST(request: Request) {
         "When user-confirmed chart facts are provided, treat their instrument, timeframe and current-price marker as authoritative metadata. Do not override them with a visual label guess. Still derive all structure, levels and directional reasoning independently from visible chart evidence.",
         "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
-        "The uploaded evidence pack has fixed roles and order: image 1 is the required primary trading timeframe; image 2, when present, is higher-timeframe context; image 3, when present, is a close-up of current price and recent candles; image 4, when present, is an optional indicator or volume view.",
+        "The uploaded evidence pack has fixed source roles and order, but every image may also be a distinct chart timeframe: image 1 is PRIMARY; image 2 is HIGHER_TIMEFRAME; image 3 is PRICE_DETAIL; image 4 is INDICATOR_VOLUME. Read the visible timeframe label on every image independently. Never copy the primary timeframe onto another image.",
+        "timeframeAnalyses must contain exactly one independent result for every received image that visibly contains readable candles. Keep its sourceRole exact. Give that image its own timeframe, direction, confidence, current price, summary and scale-verified support/resistance/pivots. If its scale is unreadable, set scaleReadable=false and return no numeric levels. Do not merge or duplicate one image's findings into another timeframe box.",
         "If a second image is supplied, re-evaluate and replace the entire audit using its higher-timeframe evidence, including support/resistance commentary, missing inputs, score and verdict. Verify that it appears to show the same instrument as image 1; if not, mark alignment CONFLICTING and explain.",
-        "Use image 3 only to verify current-price text, recent candle geometry, reactions and scale detail. Use image 4 only for indicators, volume, profile, VWAP or explicitly labelled session evidence that is visibly shown. Never treat the mere presence of a supporting image as evidence and never inflate score or confidence because more images were uploaded.",
+        "Image 3 commonly supplies current-price detail but may be another timeframe; analyse its candles independently when present. Image 4 commonly supplies indicators or volume but may also contain candles; analyse its timeframe independently while separately auditing volume evidence. Never treat the mere presence of a supporting image as evidence and never inflate score or confidence because more images were uploaded.",
+        "auctionProfile is the dedicated volume-evidence audit. Set supplied=true when any uploaded image visibly contains ordinary vertical volume bars, a horizontal volume profile, value area, point of control or VWAP. Distinguish vertical volume bars from a horizontal volume profile. A supplied volume-bar chart is useful evidence even when value area, POC and VWAP remain unverified. Populate exact values only when their labels are clearly readable; otherwise use empty strings and state the limitation.",
         "All plotBounds, priceScaleAnchors, levels and fibLevels must remain coordinates of image 1, the primary chart. Pattern geometry must use the full-image coordinate system of the image named by that pattern's sourceRole. Never copy geometry between images or draw evidence from one crop over another.",
         "Supporting images can refine the written audit but must never replace image 1's coordinate system.",
         "evidencePack must contain exactly one contribution for every received image role, in upload order. Say precisely what each image contributed. PRIMARY must be used=true. For any supporting image that adds no defensible new evidence, set used=false and say why without penalising the primary chart merely for duplication.",
@@ -436,27 +485,42 @@ export async function POST(request: Request) {
           { type: "input_text", text: "IMAGE 1 ROLE: PRIMARY TRADING TIMEFRAME. This is the sole coordinate reference for all returned chart geometry." },
           { type: "input_image", image_url: image, detail: "high" },
           ...(contextImage ? [
-            { type: "input_text" as const, text: "IMAGE 2 ROLE: HIGHER TIMEFRAME. Use for wider trend, structure and alignment only." },
+            { type: "input_text" as const, text: "IMAGE 2 ROLE: HIGHER_TIMEFRAME. Independently analyse its visible timeframe, structure, levels and patterns." },
             { type: "input_image" as const, image_url: contextImage, detail: "high" as const },
           ] : []),
           ...(detailImage ? [
-            { type: "input_text" as const, text: "IMAGE 3 ROLE: CURRENT-PRICE CLOSE-UP. Use to verify recent candles, reactions and readable price detail; do not return its coordinates." },
+            { type: "input_text" as const, text: "IMAGE 3 ROLE: PRICE_DETAIL. Independently analyse its visible timeframe when candles are present; also use readable price detail." },
             { type: "input_image" as const, image_url: detailImage, detail: "high" as const },
           ] : []),
           ...(indicatorImage ? [
-            { type: "input_text" as const, text: "IMAGE 4 ROLE: INDICATOR / VOLUME. Use only evidence visibly present in this view; do not return its coordinates." },
+            { type: "input_text" as const, text: "IMAGE 4 ROLE: INDICATOR_VOLUME. Audit volume evidence explicitly and independently analyse its visible timeframe when candles are present." },
             { type: "input_image" as const, image_url: indicatorImage, detail: "high" as const },
           ] : []),
         ],
       }],
       // Structured reports can exceed the old cap when two charts contribute
       // distinct evidence. Reasoning tokens also count toward this allowance.
-      max_output_tokens: 7000,
+      max_output_tokens: 9000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
-    }, {
+    };
+    const createReport = (reportModel: string) => client.responses.create({ ...reportRequest, model: reportModel }, {
       signal: providerSignal,
-      timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs),
-    }).catch((error) => {
+      timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, remainingProviderMs()),
+    });
+    const analysisRequest = (async () => {
+      try {
+        return await createReport(model);
+      } catch (error) {
+        const status = typeof error === "object" && error && "status" in error ? Number((error as { status?: unknown }).status) : 0;
+        const message = error instanceof Error ? error.message : String(error);
+        const unavailable = [400, 403, 404].includes(status) && /model|access|permission|available|unsupported|not found/i.test(message);
+        if (model === POCKET_REPORT_MODEL && unavailable && remainingProviderMs() > 10_000) {
+          console.warn(`[pocket-bullseye] ${POCKET_REPORT_MODEL} unavailable; retrying with ${POCKET_REPORT_FALLBACK_MODEL}`);
+          return createReport(POCKET_REPORT_FALLBACK_MODEL);
+        }
+        throw error;
+      }
+    })().catch((error) => {
       // The precision passes are useful only when the report succeeds. Abort
       // their in-flight requests immediately and prevent any rescue calls.
       providerAbortController.abort(error);
@@ -784,6 +848,74 @@ export async function POST(request: Request) {
       calibratedContext = { ...context, levels: contextCalibrated.levels };
       calibrated.contextBattlefield = calibratedContext;
     }
+    const receivedRoles = new Set([
+      "PRIMARY",
+      ...(contextImage ? ["HIGHER_TIMEFRAME"] : []),
+      ...(detailImage ? ["PRICE_DETAIL"] : []),
+      ...(indicatorImage ? ["INDICATOR_VOLUME"] : []),
+    ]);
+    const returnedTimeframes = Array.isArray(calibrated.timeframeAnalyses)
+      ? calibrated.timeframeAnalyses.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === "object")
+      : [];
+    const exactTimeframeLevels = (levels: unknown) => Array.isArray(levels)
+      ? levels.flatMap((item) => {
+        if (!item || typeof item !== "object") return [];
+        const level = item as Record<string, unknown>;
+        const kind = level.kind;
+        const price = level.price;
+        if (!["support", "resistance", "pivot"].includes(String(kind)) || typeof price !== "string" || !isPlainNumericPrice(price)) return [];
+        return [{ kind, label: typeof level.label === "string" ? level.label.slice(0, 50) : String(kind).toUpperCase(), price: String(price) }];
+      })
+      : [];
+    const cleanTimeframe = (item: Record<string, unknown>) => ({
+      sourceRole: item.sourceRole,
+      timeframe: typeof item.timeframe === "string" && item.timeframe.trim() ? item.timeframe.trim().slice(0, 20) : "UNKNOWN",
+      direction: ["BULLISH", "BEARISH", "NEUTRAL", "UNKNOWN"].includes(String(item.direction)) ? item.direction : "UNKNOWN",
+      confidence: ["LOW", "MEDIUM", "HIGH"].includes(String(item.confidence)) ? item.confidence : "LOW",
+      chartReadable: item.chartReadable === true,
+      scaleReadable: item.scaleReadable === true,
+      currentPrice: typeof item.currentPrice === "string" && isPlainNumericPrice(item.currentPrice) ? item.currentPrice : "",
+      summary: typeof item.summary === "string" && item.summary.trim() ? item.summary.trim().slice(0, 220) : "No separate timeframe conclusion was returned safely.",
+      levels: item.scaleReadable === true ? exactTimeframeLevels(item.levels) : [],
+    });
+    const timeframeByRole = new Map<string, Record<string, unknown>>(returnedTimeframes
+      .filter((item) => receivedRoles.has(String(item.sourceRole)))
+      .map((item) => [String(item.sourceRole), cleanTimeframe(item)]));
+    const primaryQuality = calibrated.evidenceQuality && typeof calibrated.evidenceQuality === "object"
+      ? calibrated.evidenceQuality as Record<string, unknown>
+      : {};
+    const primaryReturned: Record<string, unknown> = timeframeByRole.get("PRIMARY") ?? {};
+    timeframeByRole.set("PRIMARY", {
+      ...primaryReturned,
+      sourceRole: "PRIMARY",
+      timeframe: typeof calibrated.timeframe === "string" ? calibrated.timeframe : typeof primaryReturned.timeframe === "string" ? primaryReturned.timeframe : "UNKNOWN",
+      direction: typeof calibrated.direction === "string" ? calibrated.direction : typeof primaryReturned.direction === "string" ? primaryReturned.direction : "UNKNOWN",
+      confidence: typeof calibrated.confidence === "string" ? calibrated.confidence : typeof primaryReturned.confidence === "string" ? primaryReturned.confidence : "LOW",
+      chartReadable: primaryQuality.candlesReadable === true,
+      scaleReadable: primaryQuality.scaleReadable === true,
+      currentPrice: typeof calibrated.currentPrice === "string" && isPlainNumericPrice(calibrated.currentPrice) ? calibrated.currentPrice : "",
+      summary: typeof primaryReturned.summary === "string" ? primaryReturned.summary : typeof calibrated.marketStructure === "string" ? calibrated.marketStructure : typeof calibrated.summary === "string" ? calibrated.summary : "Primary chart analysed independently.",
+      levels: primaryQuality.scaleReadable === true ? exactTimeframeLevels(calibrated.levels) : [],
+    });
+    if (contextImage) {
+      const contextReturned: Record<string, unknown> = timeframeByRole.get("HIGHER_TIMEFRAME") ?? {};
+      const higher = calibrated.higherTimeframe && typeof calibrated.higherTimeframe === "object" ? calibrated.higherTimeframe as Record<string, unknown> : {};
+      const contextScaleReadable = Boolean(calibratedContext && Array.isArray(calibratedContext.priceScaleAnchors) && calibratedContext.priceScaleAnchors.length >= 2);
+      timeframeByRole.set("HIGHER_TIMEFRAME", {
+        ...contextReturned,
+        sourceRole: "HIGHER_TIMEFRAME",
+        timeframe: typeof higher.timeframe === "string" ? higher.timeframe : typeof contextReturned.timeframe === "string" ? contextReturned.timeframe : "UNKNOWN",
+        direction: typeof higher.direction === "string" ? higher.direction : typeof contextReturned.direction === "string" ? contextReturned.direction : "UNKNOWN",
+        confidence: typeof contextReturned.confidence === "string" ? contextReturned.confidence : "LOW",
+        chartReadable: contextReturned.chartReadable === true || Boolean(calibratedContext),
+        scaleReadable: contextScaleReadable,
+        currentPrice: typeof calibratedContext?.currentPrice === "string" && isPlainNumericPrice(calibratedContext.currentPrice) ? calibratedContext.currentPrice : String(contextReturned.currentPrice ?? ""),
+        summary: typeof contextReturned.summary === "string" ? contextReturned.summary : typeof higher.summary === "string" ? higher.summary : "Higher-timeframe chart analysed independently.",
+        levels: contextScaleReadable && calibratedContext ? exactTimeframeLevels(calibratedContext.levels) : [],
+      });
+    }
+    calibrated.timeframeAnalyses = ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"]
+      .flatMap((role) => timeframeByRole.has(role) ? [timeframeByRole.get(role)] : []);
     const primaryInstrumentIdentity = precisionIdentityConflict ? "" : exactPrimaryInstrument ?? [calibrated.instrument, calibrated.ticker];
     const compatibility = confirmContextCompatibility(
       calibrated,

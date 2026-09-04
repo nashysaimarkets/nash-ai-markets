@@ -13,8 +13,9 @@ test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
 
 test("the redundant Level Lab upload is replaced by a compact verified summary", () => {
   assert.doesNotMatch(client, /INDEPENDENT LEVEL LAB|RESCAN LEVELS ONLY|postLevelLabScan|createLevelLabScanImage/);
-  assert.match(client, /VERIFIED LEVELS/);
-  assert.match(client, /FROM YOUR FOUR-PHOTO EVIDENCE PACK/);
+  assert.match(client, /INDEPENDENT TIMEFRAME READS/);
+  assert.match(client, /TOGGLE EACH BOX TO CHECK ITS OWN RESULT/);
+  assert.match(client, /function TimeframeLevelExplorer/);
 });
 
 test("independent endpoint fails closed on bad identity, price, scale and geometry while preserving an exact visible side", () => {

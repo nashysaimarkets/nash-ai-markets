@@ -21,19 +21,18 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(route, /sourceRole/);
   assert.match(route, /geometry\.plotBounds must tightly enclose that source image's candle plot/);
   assert.match(client, /PATTERN WATCH/);
-  assert.match(client, /30M · 1H · 4H STRUCTURE CHECK/);
+  assert.match(client, /INDEPENDENT TIMEFRAME/);
   assert.match(client, /NO SIGNIFICANT.*PATTERN VERIFIED/);
   assert.match(client, /WHAT DOES THIS MEAN/);
   assert.match(client, /Choose Pattern Watch timeframe/);
-  assert.match(client, /Show \$\{frame\} pattern analysis/);
-  assert.match(client, /Add a \$\{frame\} chart/);
+  assert.match(client, /Show \$\{frame\.timeframe\} pattern analysis/);
+  assert.match(client, /setSelectedRole\(frame\.sourceRole\)/);
   assert.match(client, /visiblePatterns/);
-  assert.match(client, /REANALYSE TIMEFRAMES/);
   assert.match(client, /useState\(true\)/);
   assert.match(client, /HIDE GALLERY/);
   assert.match(styles, /\.psPatternGuide/);
   assert.match(styles, /\.psPatternFrames>button\[data-active="true"\]/);
-  assert.match(styles, /\.psPatternFrameAction/);
+  assert.match(client, /ANALYSED/);
 });
 
 test("Pattern Watch applies a deterministic geometry and confidence gate", async () => {
@@ -45,13 +44,14 @@ test("Pattern Watch applies a deterministic geometry and confidence gate", async
   assert.match(calibration, /seenSources\.has\(sourceRole\)/);
 });
 
-test("Pattern Watch normalizes and switches only supplied 30M 1H and 4H evidence", async () => {
+test("Pattern Watch switches every independently analysed supplied timeframe", async () => {
   const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
-  assert.match(client, /const PATTERN_FRAMES = \["30M", "1H", "4H"\] as const/);
+  assert.doesNotMatch(client, /const PATTERN_FRAMES/);
   assert.match(client, /function normalizePatternFrame/);
-  assert.match(client, /normalizePatternFrame\(pattern\.timeframe \|\| analysis\.timeframe\) === activeFrame/);
-  assert.match(client, /if \(suppliedFrames\.includes\(frame\)\)/);
-  assert.match(client, /timeframeInput\.current\?\.click\(\)/);
+  assert.match(client, /function independentTimeframes/);
+  assert.match(client, /pattern\.sourceRole === active\?\.sourceRole/);
+  assert.match(client, /frames\.map\(\(frame\)/);
+  assert.doesNotMatch(client, /timeframeInput\.current\?\.click\(\)/);
 });
 
 test("the guide covers reversal, continuation and compression families", async () => {

@@ -351,7 +351,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 14/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 15/);
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
@@ -385,7 +385,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /reasoning: \{ effort: rescue \? "medium" : "low" \}/);
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
-  assert.match(analyseRoute, /max_output_tokens: 7000/);
+  assert.match(analyseRoute, /max_output_tokens: 9000/);
   assert.match(analyseRoute, /analysis report was interrupted before it finished/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
@@ -458,7 +458,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /Bullseye checked both charts but could not verify support below and resistance above the current price\. The map is withheld rather than guessed\./);
   assert.match(client, /VIEW BOTH SOURCE CHARTS/);
   assert.doesNotMatch(client, /OPEN LEVEL LAB/);
-  assert.match(client, /FROM YOUR FOUR-PHOTO EVIDENCE PACK/);
+  assert.match(client, /TOGGLE EACH BOX TO CHECK ITS OWN RESULT/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
   assert.match(client, /REANALYSE ALL CHARTS/);

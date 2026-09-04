@@ -84,7 +84,7 @@ test("the guided evidence pack accepts four purpose-labelled charts without mixi
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v13.css", import.meta.url), "utf8"),
   ]);
-  for (const label of ["HIGHER TIMEFRAME", "CURRENT-PRICE CLOSE-UP", "INDICATOR / VOLUME"]) assert.match(client, new RegExp(label));
+  for (const label of ["SECOND / HIGHER TIMEFRAME", "THIRD TIMEFRAME / PRICE DETAIL", "VOLUME / INDICATOR / TIMEFRAME"]) assert.match(client, new RegExp(label));
   assert.match(client, /detailImage: providerDetailImage, indicatorImage: providerIndicatorImage/);
   assert.match(client, /\{evidenceImageCount\}\/4 CHARTS READY/);
   assert.match(client, /Every supporting image is assessed separately/);
@@ -94,6 +94,55 @@ test("the guided evidence pack accepts four purpose-labelled charts without mixi
   assert.match(route, /expectedEvidenceRoles/);
   assert.match(styles, /\.psEvidencePack/);
   assert.match(styles, /\.psEvidenceContribution/);
+});
+
+test("structured volume evidence works without pretending volume bars are a full profile", () => {
+  const maps = deriveAnalysisMaps({
+    ...analysis,
+    auctionProfile: {
+      supplied: true,
+      sourceRole: "INDICATOR_VOLUME",
+      timeframe: "1H",
+      volumeBarsVisible: true,
+      volumeProfileVisible: false,
+      valueAreaHigh: "",
+      valueAreaLow: "",
+      pointOfControl: "",
+      vwap: "",
+      volumeRead: "Volume expands on the latest downside candle.",
+      evidence: "A separate vertical volume panel is clearly visible.",
+      limitation: "No horizontal profile, POC or value-area labels are visible.",
+    },
+  });
+  const auction = maps.find((map) => map.id === "auction");
+  assert.equal(auction?.status, "EVIDENCE READY");
+  assert.equal(auction?.headline, "VOLUME EVIDENCE FOUND");
+  assert.equal(auction?.readings.find((reading) => reading.label === "VOLUME BARS")?.value, "VISIBLE");
+  assert.equal(auction?.readings.find((reading) => reading.label === "PROFILE / VALUE")?.value, "NOT VERIFIED");
+});
+
+test("structured missing-volume result cannot be flipped by negative prose keywords", () => {
+  const maps = deriveAnalysisMaps({
+    ...analysis,
+    indicators: ["Volume profile not supplied; POC not verified."],
+    auctionProfile: {
+      supplied: false,
+      sourceRole: "NONE",
+      timeframe: "",
+      volumeBarsVisible: false,
+      volumeProfileVisible: false,
+      valueAreaHigh: "",
+      valueAreaLow: "",
+      pointOfControl: "",
+      vwap: "",
+      volumeRead: "",
+      evidence: "No volume panel is visible.",
+      limitation: "Volume evidence was not supplied.",
+    },
+  });
+  const auction = maps.find((map) => map.id === "auction");
+  assert.equal(auction?.status, "MORE INPUT NEEDED");
+  assert.equal(auction?.readings.find((reading) => reading.label === "POC")?.value, "NOT VERIFIED");
 });
 
 test("decision autopsy persists the later evidence and fails closed on root cause", async () => {

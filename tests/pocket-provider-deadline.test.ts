@@ -7,7 +7,8 @@ test("analyse reserves the main deadline for the report and gives optional preci
   assert.match(source, /const providerDeadlineAt = routeStartedAt \+ POCKET_PROVIDER_DEADLINE_MS/);
   assert.match(source, /const precisionDeadlineAt = routeStartedAt \+ POCKET_PRECISION_DEADLINE_MS/);
   assert.match(source, /getVerifiedMacroContext\(\{ route: "\/api\/pocket\/analyse", signal: providerSignal \}\)/);
-  assert.match(source, /timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs\)/);
+  assert.match(source, /timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, remainingProviderMs\(\)\)/);
+  assert.match(source, /retrying with \$\{POCKET_REPORT_FALLBACK_MODEL\}/);
   assert.match(source, /const precisionCallBudget:[\s\S]*?deadlineAt: precisionDeadlineAt,[\s\S]*?signal: precisionSignal/);
   assert.match(source, /\}, \{ signal: precisionSignal, timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs\) \}\)/);
 });
