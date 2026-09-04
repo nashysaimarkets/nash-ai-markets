@@ -48,7 +48,13 @@ function compactPair(ticker: string): [string, string] | null {
 export function classifyEventAsset(input: EventCoverageInput): EventAssetClass {
   if (input.evidenceQuality.instrumentConfidence !== "HIGH") return "UNKNOWN";
   const { identity, ticker } = normalized(input);
-  if (!ticker || ticker === "UNKNOWN") return "UNKNOWN";
+
+  // Broker display names are often the strongest available identity on a
+  // screenshot. A confirmed "US 500 (DFB)" must not be downgraded merely
+  // because the broker does not print an exchange ticker beside it.
+  const brokerIndexIdentity = /\b(?:US\s*500|S\s*&?\s*P\s*500|WALL\s+STREET|US\s*TECH\s*100|GERMANY\s*40|FTSE\s*100)\b/.test(identity)
+    || /\b(?:INDEX|INDICES|ETF|DFB|CASH INDEX)\b/.test(identity);
+  if (!ticker || ticker === "UNKNOWN") return brokerIndexIdentity ? "INDEX_OR_ETF" : "UNKNOWN";
 
   if (/\b(CRYPTO|BITCOIN|ETHEREUM|ALTCOIN)\b/.test(identity)) return "CRYPTO";
   const cryptoCompact = ticker.replace(/[^A-Z]/g, "");
@@ -58,7 +64,7 @@ export function classifyEventAsset(input: EventCoverageInput): EventAssetClass {
   if (/\b(FOREX|FX|CURRENCY)\b/.test(identity) || compactPair(ticker)) return "FOREX";
   if (/\b(FUTURE|FUTURES|CONTINUOUS CONTRACT)\b/.test(identity) || FUTURES_TICKERS.has(ticker)) return "FUTURES";
   if (/\b(BOND|BONDS|TREASURY|TREASURIES|YIELD|GILT|BUND)\b/.test(identity) || /^(US)?(?:2Y|5Y|10Y|30Y)$/.test(ticker)) return "RATES";
-  if (/\b(INDEX|INDICES|ETF|DFB|CASH INDEX)\b/.test(identity) || INDEX_TICKERS.has(ticker) || ETF_TICKERS.has(ticker)) return "INDEX_OR_ETF";
+  if (brokerIndexIdentity || INDEX_TICKERS.has(ticker) || ETF_TICKERS.has(ticker)) return "INDEX_OR_ETF";
 
   return /^[A-Z][A-Z0-9.-]{0,14}$/.test(ticker) ? "LISTED_COMPANY" : "UNKNOWN";
 }

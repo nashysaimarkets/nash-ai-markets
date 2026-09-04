@@ -19,8 +19,6 @@ import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus }
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
 import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
-import { postLevelLabScan } from "./level-lab-client";
-import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
 import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
 import { eventCoverageFor, isListedEquityEventInput } from "./event-coverage";
 
@@ -265,36 +263,6 @@ function createProviderScanImage(dataUrl: string, forceDecode = false) {
   });
 }
 
-const MAX_LEVEL_LAB_DATA_URL_CHARS = 3_600_000;
-function createLevelLabScanImage(dataUrl: string) {
-  return new Promise<string | null>((resolve) => {
-    const source = new Image();
-    source.onload = () => {
-      try {
-        const render = (width: number, quality: number) => {
-          const canvas = document.createElement("canvas");
-          canvas.width = width;
-          canvas.height = Math.max(1, Math.round(source.naturalHeight * width / source.naturalWidth));
-          const context = canvas.getContext("2d");
-          if (!context) return null;
-          context.drawImage(source, 0, 0, canvas.width, canvas.height);
-          return canvas.toDataURL("image/jpeg", quality);
-        };
-        // One complete, readable frame is more reliable in WKWebView than the
-        // previous original-plus-crop request. Keep the chart title, candles
-        // and price scale together while bounding the final JSON payload.
-        const targetWidth = Math.min(1600, source.naturalWidth);
-        const first = render(targetWidth, .88);
-        if (first && first.length <= MAX_LEVEL_LAB_DATA_URL_CHARS) return resolve(first);
-        const compact = render(Math.min(1100, targetWidth), .78);
-        resolve(compact && compact.length <= MAX_LEVEL_LAB_DATA_URL_CHARS ? compact : null);
-      } catch { resolve(null); }
-    };
-    source.onerror = () => resolve(null);
-    source.src = dataUrl;
-  });
-}
-
 function numericLevel(value: string | undefined) {
   return numericLevelPrice(value);
 }
@@ -483,7 +451,6 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
         : "Bullseye could not verify both support below and resistance above the current price from this chart. The map is withheld rather than guessed."}</p>
       {hasContext ? <nav aria-label="Precision hold actions">
         <a href="#bullseye-source-charts">VIEW BOTH SOURCE CHARTS</a>
-        <a href="#bullseye-level-lab">OPEN LEVEL LAB</a>
       </nav> : <button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD ONE CLEARER PRICE-SCALE CHART</button>}
       <small>NO ESTIMATED LEVELS · NO HIDDEN MAP</small>
     </section>;
@@ -502,6 +469,12 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   const resistances = ordered.filter((level) => level.kind === "resistance" && level.numericPrice > current);
   const nearestSupport = supports[0] ?? null;
   const nearestResistance = resistances.at(-1) ?? null;
+  const nearestPivot = ordered
+    .filter((level) => level.kind === "pivot")
+    .sort((left, right) => Math.abs(left.numericPrice - current) - Math.abs(right.numericPrice - current))[0] ?? null;
+  const displayedLevels = [nearestResistance, nearestSupport, nearestPivot].filter((level, index, all): level is typeof ordered[number] =>
+    Boolean(level) && all.findIndex((candidate) => candidate?.kind === level?.kind && candidate?.numericPrice === level?.numericPrice) === index,
+  );
   const supportDistance = nearestSupport ? current - nearestSupport.numericPrice : null;
   const resistanceDistance = nearestResistance ? nearestResistance.numericPrice - current : null;
   const supportAtCurrent = supportDistance !== null && supportDistance <= nearCurrentTolerance;
@@ -568,7 +541,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
     </svg> : null}
     {nearestResistance ? <div className="psRouteCue psRouteBull" style={{ top: `${Math.max(16, resistanceY + 4)}%` }}><b>↗</b><span>RECLAIM ROUTE</span></div> : null}
     {nearestSupport ? <div className="psRouteCue psRouteBear" style={{ top: `${Math.min(87, supportY + 7)}%` }}><b>↘</b><span>BREAK ROUTE</span></div> : null}
-    {ordered.map((level, index) => <button key={`${level.kind}-${level.numericPrice}-${index}`} type="button" className="psBattleLevel" data-kind={level.kind} data-source={level.source ?? "PRIMARY"} style={{ top: `${position(level.numericPrice)}%` }} aria-label={`${level.kind} at ${level.price} from the ${levelEvidenceSourceLabel(level.source).toLowerCase()}`}>
+    {displayedLevels.map((level, index) => <button key={`${level.kind}-${level.numericPrice}-${index}`} type="button" className="psBattleLevel" data-kind={level.kind} data-source={level.source ?? "PRIMARY"} style={{ top: `${position(level.numericPrice)}%` }} aria-label={`${level.kind} at ${level.price} from the ${levelEvidenceSourceLabel(level.source).toLowerCase()}`}>
       <span className="psBattleIcon">{level.kind === "support" ? "●" : level.kind === "resistance" ? "●" : "◆"}</span>
       <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "SWING REFERENCE" : level.kind.toUpperCase()} · {levelEvidenceSourceLabel(level.source)}</small><em>{current === null ? "" : formatPercent(Math.abs(level.numericPrice - current))}</em>
     </button>)}
@@ -1004,7 +977,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 13 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 14 as const;
 const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
@@ -1132,10 +1105,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpBusy, setFollowUpBusy] = useState(false);
   const [followUpError, setFollowUpError] = useState("");
   const [refinementStatus, setRefinementStatus] = useState<"idle" | "attached" | "analysing" | "updated" | "error">("idle");
-  const [levelLabImage, setLevelLabImage] = useState<string | null>(null);
-  const [levelLabFileName, setLevelLabFileName] = useState("");
-  const [levelLabStatus, setLevelLabStatus] = useState<"idle" | "attached" | "scanning" | "updated" | "error">("idle");
-  const [levelLabError, setLevelLabError] = useState("");
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
@@ -1147,7 +1116,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [applePaywallStatus, setApplePaywallStatus] = useState<AppleAccessStatus | null>(null);
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
-  const levelLabRequestActive = useRef(false);
   const appleAccessRequestActive = useRef<Promise<AppleAccessStatus> | null>(null);
   const chartFocusDialog = useRef<HTMLElement>(null);
   const chartFocusScroll = useRef<HTMLDivElement>(null);
@@ -1434,111 +1402,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } finally {
       event.currentTarget.value = "";
     }
-  }
-
-  async function addLevelLabFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setLevelLabError("");
-    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
-      setLevelLabStatus("error");
-      setLevelLabError("Please add a JPEG, PNG or WebP chart under 8 MB.");
-      event.currentTarget.value = "";
-      return;
-    }
-    try {
-      setLevelLabImage(await prepareImage(file));
-      setLevelLabFileName(file.name);
-      setLevelLabStatus("attached");
-    } catch {
-      setLevelLabStatus("error");
-      setLevelLabError("That chart could not be prepared safely.");
-    } finally { event.currentTarget.value = ""; }
-  }
-
-  async function rescanLevelsOnly() {
-    if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
-    const primaryCurrentPrice = numericLevel(analysis.currentPrice);
-    if (analysis.trustGate?.identityLocked !== true || primaryCurrentPrice === null) {
-      setLevelLabStatus("error");
-      setLevelLabError("Level Lab needs a verified primary instrument, timeframe and current price before it can replace the map.");
-      return;
-    }
-    levelLabRequestActive.current = true;
-    setLevelLabStatus("scanning");
-    setLevelLabError("");
-    try {
-      const scanImage = await createLevelLabScanImage(levelLabImage);
-      if (!scanImage) throw new Error("That Level Lab photo is too large to send safely. Crop it to the chart and price scale, then try again.");
-      const primaryProvenance = {
-        instrument: analysis.instrument,
-        ticker: analysis.ticker,
-        timeframe: analysis.timeframe,
-        currentPrice: analysis.currentPrice,
-        identityLocked: true as const,
-      };
-      const { response, payload } = await postLevelLabScan<{
-        levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory" | "trustGate"> & {
-          provenance?: { source?: string; primaryInstrument?: string; primaryTimeframe?: string; primaryCurrentPrice?: string; levelLabInstrument?: string };
-        };
-        error?: string;
-      }>(JSON.stringify({ image: scanImage, primaryProvenance }));
-      if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
-      const returnedCurrentPrice = numericLevel(payload.levels.currentPrice);
-      const returnedLevels = numericStructure(payload.levels.levels);
-      const provenance = payload.levels.provenance;
-      const provenancePrice = numericLevel(provenance?.primaryCurrentPrice);
-      const returnedTrustGate = payload.levels.trustGate;
-      const returnedTwoSided = hasVerifiedTwoSidedStructure(returnedLevels, primaryCurrentPrice);
-      const validTrustGate = returnedTrustGate?.chartLocked === true
-        && returnedTrustGate.identityLocked === true
-        && returnedTrustGate.exactLevelCount >= 1
-        && ((returnedTwoSided && returnedTrustGate.status === "LOCKED" && returnedTrustGate.scaleLocked === true)
-          || (!returnedTwoSided && returnedTrustGate.status === "PARTIAL"));
-      const validProvenance = provenance?.source === "LEVEL_LAB"
-        && provenance.primaryInstrument === analysis.instrument
-        && provenance.primaryTimeframe === analysis.timeframe
-        && provenancePrice === primaryCurrentPrice
-        && returnedCurrentPrice === primaryCurrentPrice
-        && payload.levels.levels.every((level) => level.source === "LEVEL_LAB");
-      if (!validProvenance || !validTrustGate) {
-        throw new Error("Level Lab could not verify a matching exact price map, so the existing analysis was left unchanged.");
-      }
-      setAnalysis((current) => {
-        const currentPrice = numericLevel(current?.currentPrice);
-        const stillBoundToPrimary = current
-          && current.trustGate?.identityLocked === true
-          && current.instrument === primaryProvenance.instrument
-          && current.timeframe === primaryProvenance.timeframe
-          && currentPrice === primaryCurrentPrice;
-        if (!current || !stillBoundToPrimary) return current;
-        const rescanned = enforcePocketTrustGate({
-          ...current,
-          // Level Lab may use a different crop or timeframe. Import its exact
-          // prices into the abstract Decision Map, but never draw its pixel
-          // coordinates over the original primary screenshot.
-          levels: payload.levels!.levels.map((level) => ({
-            ...level,
-            x: Number.NaN,
-            y: Number.NaN,
-            x2: Number.NaN,
-            y2: Number.NaN,
-          })),
-          // The secondary scan verifies compatibility but can never replace
-          // the already locked current-price provenance from the primary.
-          currentPrice: current.currentPrice,
-          trustGate: returnedTrustGate,
-          levelStory: payload.levels!.levelStory || current.levelStory,
-        }, returnedTrustGate) as Analysis;
-        return invalidateDerivedChartEvidence(rescanned, "PRIMARY_STRUCTURE_CHANGED");
-      });
-      setBattlefieldChart("primary");
-      if (contextImage) setRefinementStatus("attached");
-      setLevelLabStatus("updated");
-    } catch (caught) {
-      setLevelLabStatus("error");
-      setLevelLabError(caught instanceof Error ? caught.message : "The independent level scan could not complete.");
-    } finally { levelLabRequestActive.current = false; }
   }
 
   async function reanalyseResult() {
@@ -1842,7 +1705,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!await requireAppleEntitlementForAdditionalRequest()) return;
-    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError(""); setImmersive(false); setError("");
+    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setImmersive(false); setError("");
   }
 
   function startNewChart() {
@@ -1856,10 +1719,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setDetailFileName("");
     setIndicatorImage(null);
     setIndicatorFileName("");
-    setLevelLabImage(null);
-    setLevelLabFileName("");
-    setLevelLabStatus("idle");
-    setLevelLabError("");
     setChartConfirmation(null);
     setPreflightStatus("IDLE");
     setBattlefieldChart("primary");
@@ -2020,12 +1879,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </section>
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
-            <section id="bullseye-level-lab" className="psLevelLab" data-status={levelLabStatus} aria-live="polite" aria-busy={levelLabStatus === "scanning"}>
-              <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "MAP UPDATED" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
-              <p>Add a clearer price-scale photo, then rescan only this map. Patterns and scenarios stay unchanged; if the new map is partial, confidence, score and verdict are reduced safely.</p>
-              {levelLabImage ? <div className="psLevelLabPhoto"><img src={levelLabImage} alt="Chart selected for independent support and resistance scan" /><span>{levelLabFileName}</span></div> : null}
-              <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button></div>
-              {levelLabError ? <small role="alert">{levelLabError}</small> : null}
+            <section className="psVerifiedLevelSummary" aria-label="Verified price level summary">
+              <div><span>◎ VERIFIED LEVELS</span><small>FROM YOUR FOUR-PHOTO EVIDENCE PACK</small></div>
+              <strong>{combinedLevels.filter((level) => level.kind === "support").length} SUPPORT · {combinedLevels.filter((level) => level.kind === "resistance").length} RESISTANCE</strong>
             </section>
             {battlefieldTabs}
             <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />

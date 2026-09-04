@@ -20,6 +20,8 @@ test("event coverage classifies common cross-asset symbols conservatively", () =
   assert.equal(classifyEventAsset(verified("E-mini S&P 500 Futures", "ES")), "FUTURES");
   assert.equal(classifyEventAsset(verified("US 10Y Treasury Yield", "US10Y")), "RATES");
   assert.equal(classifyEventAsset(verified("Invesco QQQ Trust", "QQQ")), "INDEX_OR_ETF");
+  assert.equal(classifyEventAsset(verified("US 500 (DFB)", "UNKNOWN")), "INDEX_OR_ETF");
+  assert.equal(eventCoverageFor(verified("US 500 (DFB)", "UNKNOWN")).label, "US MACRO MARKET CONTEXT");
 });
 
 test("every symbol receives truthful US macro coverage with explicit gaps", () => {

@@ -1,0 +1,20 @@
+.psVerifiedLevelSummary{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px;padding:12px 14px;border:1px solid #3adf9166;border-radius:11px;background:linear-gradient(135deg,#0b2018,#0a1417);font-family:var(--font-geist-mono),monospace}
+.psVerifiedLevelSummary span,.psVerifiedLevelSummary small{display:block}.psVerifiedLevelSummary span{color:#64e9a4;font-size:8px;font-weight:900;letter-spacing:.1em}.psVerifiedLevelSummary small{margin-top:4px;color:#788983;font-size:6px;font-weight:800;letter-spacing:.06em}.psVerifiedLevelSummary strong{flex:0 0 auto;color:#dce9e2;font-size:8px;letter-spacing:.06em}
+
+@media(max-width:520px){
+  .psVerifiedLevelSummary{margin:9px;padding:10px 11px}.psVerifiedLevelSummary small{display:none}.psVerifiedLevelSummary strong{font-size:7px}
+  .psDecisionMap{height:470px!important}
+  .psDecisionMap .psMapIntro{height:64px;grid-template-columns:1fr;padding:8px 10px;overflow:hidden}
+  .psDecisionMap .psMapIntro p,.psDecisionMap .psMapIntro figure{display:none}
+  .psDecisionMap .psMapIntro strong{font-size:10px;line-height:1.2}
+  .psDecisionMap .psBattleIntel{top:80px}
+  .psDecisionMap .psBattleLevel{left:5%;right:5%;height:32px}
+  .psDecisionMap .psBattleLevel small{left:26px;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:5.5px}
+  .psDecisionMap .psBattleLevel strong{font-size:8px;padding:4px 5px}
+  .psDecisionMap .psBattleLevel em{display:none}
+  .psDecisionMap .psBattleIcon{width:20px;height:20px;font-size:8px}
+  .psDecisionMap .psBattleCurrent{height:36px}
+  .psDecisionMap .psBattleCurrent span,.psDecisionMap .psBattleCurrent strong{padding:5px 7px;font-size:8px}
+  .psFeedback>summary{width:44px;min-width:44px;padding:0;justify-content:center}
+  .psFeedback>summary strong{display:none}
+}

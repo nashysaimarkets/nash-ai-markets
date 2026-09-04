@@ -87,12 +87,15 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
       id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: liquidityStatus,
       headline: liquidityHeadline,
       summary: concise(liquidityShield?.summary ?? "The Liquidity Guard scan did not return enough scale-checked evidence. Bullseye will not manufacture a stop cluster.", "No defensible liquidity trap was visible."),
-      readings: [
-        { label: "BELOW PRICE", value: liquidityPrice(liquidityBelow), tone: "bull" },
-        { label: "AT PRICE", value: liquidityPrice(liquidityAt), tone: "wait" },
-        { label: "ABOVE PRICE", value: liquidityPrice(liquidityAbove), tone: "bear" },
-        { label: "GUARD RESULT", value: liquidityShield?.status.replaceAll("_", " ") ?? "SCAN UNAVAILABLE", tone: "wait" },
-      ],
+      readings: liquidityZones.length ? [
+        ...(liquidityBelow ? [{ label: "BELOW PRICE", value: liquidityPrice(liquidityBelow), tone: "bull" as const }] : []),
+        ...(liquidityAt ? [{ label: "AT PRICE", value: liquidityPrice(liquidityAt), tone: "wait" as const }] : []),
+        ...(liquidityAbove ? [{ label: "ABOVE PRICE", value: liquidityPrice(liquidityAbove), tone: "bear" as const }] : []),
+      ] : [{
+        label: "SCAN RESULT",
+        value: liquidityShield?.status === "NO_VISIBLE_RISK_ZONES" ? "NO DEFENSIBLE CLUSTER" : "NOT ENOUGH VERIFIED GEOMETRY",
+        tone: "wait",
+      }],
     },
     {
       id: "structure", icon: "◇", label: "STRUCTURE", status: analysis.evidenceQuality.candlesReadable ? "EVIDENCE READY" : "MORE INPUT NEEDED",

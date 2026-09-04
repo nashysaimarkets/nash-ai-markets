@@ -494,7 +494,9 @@ export async function POST(request: Request) {
       timeoutMs = POCKET_ANALYSIS_TIMEOUT_MS,
     ) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
-      reasoning: { effort: "low" },
+      // Keep the first geometry pass fast, then spend additional reasoning
+      // only when the deterministic verifier has requested a rescue.
+      reasoning: { effort: rescue ? "medium" : "low" },
       store: false,
       instructions: precisionInstructions,
       input: [{
@@ -734,7 +736,16 @@ export async function POST(request: Request) {
       && reportPrecisionIdentityAgreement !== true;
     const exactPrimaryInstrument = userVerifiedInstrument
       ?? (reportPrecisionIdentityAgreement === true ? verifiedPrecisionInstrument : null);
-    if (exactPrimaryInstrument) calibrated.instrument = exactPrimaryInstrument;
+    if (exactPrimaryInstrument) {
+      calibrated.instrument = exactPrimaryInstrument;
+      const quality = calibrated.evidenceQuality && typeof calibrated.evidenceQuality === "object"
+        ? calibrated.evidenceQuality as Record<string, unknown>
+        : {};
+      // Preflight confirmation is explicit customer-verified metadata. Keep it
+      // authoritative through calibration so downstream macro classification
+      // sees US 500 (DFB) as an index even when no exchange ticker is printed.
+      if (userVerifiedInstrument) calibrated.evidenceQuality = { ...quality, instrumentConfidence: "HIGH" };
+    }
     if (precisionIdentityConflict) {
       const quality = calibrated.evidenceQuality && typeof calibrated.evidenceQuality === "object"
         ? calibrated.evidenceQuality as Record<string, unknown>

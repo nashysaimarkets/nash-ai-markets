@@ -57,7 +57,7 @@ test("server normalizer keeps a scale, side and candle-row verified candidate", 
 
 test("a wide two-label scale works while tight, out-of-plot and off-chart evidence fails closed", () => {
   assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: anchors.slice(0, 2) }), "2900").status, "VISIBLE_RISK_ZONES");
-  assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: [{ price: 3000, y: 35 }, { price: 2900, y: 50 }] }), "2900").status, "INSUFFICIENT_EVIDENCE");
+  assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: [{ price: 3000, y: 38 }, { price: 2900, y: 50 }] }), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: [{ price: 3000, y: 5 }, anchors[1], { price: 2800, y: 95 }] }), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(precision(), "3100").status, "INSUFFICIENT_EVIDENCE");
 });
@@ -95,6 +95,16 @@ test("touch points must be distinct, inside the plot and agree with the projecte
   assert.equal(normalizePrecisionLiquidityShield(candidate([{ x: 25, y: 55 }, { x: 70, y: 55 }]), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(candidate([{ x: 25, y: 65 }, { x: 25.2, y: 65.1 }]), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(candidate([{ x: 2, y: 65 }, { x: 70, y: 65 }]), "2900").status, "INSUFFICIENT_EVIDENCE");
+});
+
+test("mobile wick jitter does not withhold an otherwise scale-verified zone", () => {
+  const base = precision().liquidityShield as Record<string, unknown>;
+  const original = (base.zones as Record<string, unknown>[])[0];
+  const result = normalizePrecisionLiquidityShield(precision({ liquidityShield: { ...base, zones: [{
+    ...original,
+    touchPoints: [{ x: 25, y: 61.2 }, { x: 70, y: 68.8 }],
+  }] } }), "2900");
+  assert.equal(result.status, "VISIBLE_RISK_ZONES");
 });
 
 test("two verified touches downgrade HIGH to MEDIUM", () => {

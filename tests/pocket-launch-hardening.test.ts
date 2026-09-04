@@ -351,7 +351,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 13/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 14/);
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
@@ -381,6 +381,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /instrumentIdentifier/);
   assert.match(analyseRoute, /const userVerifiedInstrument = accuracyCorrection\?\.instrument \?\? chartConfirmation\?\.instrument/);
   assert.match(analyseRoute, /const exactPrimaryInstrument = userVerifiedInstrument/);
+  assert.match(analyseRoute, /userVerifiedInstrument\) calibrated\.evidenceQuality = \{ \.\.\.quality, instrumentConfidence: "HIGH" \}/);
+  assert.match(analyseRoute, /reasoning: \{ effort: rescue \? "medium" : "low" \}/);
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
   assert.match(analyseRoute, /max_output_tokens: 7000/);
@@ -455,7 +457,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /NO VERIFIED TWO-SIDED LEVELS/);
   assert.match(client, /Bullseye checked both charts but could not verify support below and resistance above the current price\. The map is withheld rather than guessed\./);
   assert.match(client, /VIEW BOTH SOURCE CHARTS/);
-  assert.match(client, /OPEN LEVEL LAB/);
+  assert.doesNotMatch(client, /OPEN LEVEL LAB/);
+  assert.match(client, /FROM YOUR FOUR-PHOTO EVIDENCE PACK/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
   assert.match(client, /REANALYSE ALL CHARTS/);

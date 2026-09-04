@@ -84,10 +84,10 @@ function verifiedScale(value: unknown, bounds: Bounds) {
   if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return null;
   const low = ordered[0];
   const high = ordered.at(-1)!;
-  const minimumSpan = ordered.length === 2 ? (bounds.bottom - bounds.top) * .28 : 12;
+  const minimumSpan = ordered.length === 2 ? (bounds.bottom - bounds.top) * .20 : 10;
   if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
   const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 1.5)) return null;
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 2.5)) return null;
   return { project };
 }
 
@@ -151,7 +151,10 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
   const seen = new Set<number>();
   const plotHeight = bounds.bottom - bounds.top;
   const maxBandHeight = plotHeight * .08;
-  const rowTolerance = Math.min(1.5, Math.max(.6, plotHeight * .02));
+  // Mobile screenshots regularly introduce 2–4 percentage points of model
+  // jitter between a wick tip and its price-band projection. Keep exact
+  // scale/side checks, but use the same bounded tolerance as structure scans.
+  const rowTolerance = Math.min(4.5, Math.max(1.2, plotHeight * .06));
   const confidenceRank: Record<string, number> = { HIGH: 0, MEDIUM: 1 };
   const zones = [...raw.zones].sort((left, right) => {
     const leftConfidence = left && typeof left === "object" ? String((left as JsonRecord).confidence) : "";
