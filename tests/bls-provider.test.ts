@@ -102,6 +102,19 @@ test("accepts the US-Eastern timezone alias used by the live BLS calendar", () =
   assert.equal(releases[0]?.scheduledAt, "2026-09-04T12:30:00.000Z");
 });
 
+test("accepts standard ICS field parameters used by the live BLS calendar", () => {
+  const releases = normalizeBlsCalendarIcs(`BEGIN:VCALENDAR
+BEGIN:VEVENT
+DTSTART;TZID=America/New_York:20260904T083000
+UID;VALUE=TEXT:payrolls-2026-09
+SUMMARY;LANGUAGE=en-US:Employment Situation for August 2026
+END:VEVENT
+END:VCALENDAR`, new Date("2026-09-04T00:00:00.000Z"), new Date("2026-09-05T00:00:00.000Z"));
+  assert.equal(releases.length, 1);
+  assert.equal(releases[0]?.name, "Employment Situation");
+  assert.equal(releases[0]?.scheduledAt, "2026-09-04T12:30:00.000Z");
+});
+
 test("BLS calendar provider exposes failure so schedule coverage is not called clear", async () => {
   const provider = createBlsReleaseCalendarProvider({
     fetchImpl: async () => new Response("no", { status: 500 }),

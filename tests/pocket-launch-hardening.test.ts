@@ -435,7 +435,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /<ChartXRay analysis=/);
   assert.match(client, /MarketStory/);
   assert.match(client, /BULLSEYE MARKET STORY/);
-  assert.match(client, /CHAPTER 04 · BULL VS BEAR/);
+  assert.match(client, /CHAPTER 05 · BULL VS BEAR/);
   assert.match(client, /FINAL CHAPTER ·/);
   assert.match(client, /BULLSEYE"/);
   assert.match(client, /STORY, NOT CERTAINTY/);

@@ -1,0 +1,43 @@
+.psScanSummary{position:relative;z-index:3;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;padding:1px;background:#34423f}
+.psScanSummary button{min-height:92px;padding:13px 11px;border:0;background:linear-gradient(150deg,#0c171a,#071013);color:#dce7e1;text-align:left}
+.psScanSummary button small,.psScanSummary button strong,.psScanSummary button span{display:block;font-family:var(--font-geist-mono),monospace}
+.psScanSummary button small{color:#6be9a7;font-size:6px;font-weight:900;letter-spacing:.1em}
+.psScanSummary button strong{margin-top:8px;font-size:9px;line-height:1.35}
+.psScanSummary button span{margin-top:9px;color:#71817a;font-size:5.5px;font-weight:800;letter-spacing:.06em}
+.psScanSummary button[data-state="withheld"],.psScanSummary button[data-state="unavailable"],.psScanSummary button[data-state="none"]{background:linear-gradient(150deg,#21190e,#0e1011)}
+.psScanSummary button[data-state="withheld"] small,.psScanSummary button[data-state="unavailable"] small,.psScanSummary button[data-state="none"] small{color:#e5be5e}
+.psScanSummary button:active{background:#153025}
+.psStoryProgress{grid-template-columns:repeat(8,1fr)}
+
+.psStoryScans>div{display:grid;gap:7px;margin-top:15px}
+.psStoryScans>div section{padding:11px 12px;border:1px solid #3a494f;border-left:3px solid #55e99b;border-radius:10px;background:#071014e8;backdrop-filter:blur(9px)}
+.psStoryScans>div section[data-state="withheld"],.psStoryScans>div section[data-state="unavailable"],.psStoryScans>div section[data-state="none"]{border-left-color:#e2bd62;background:#19160de8}
+.psStoryScans section b,.psStoryScans section strong{display:block;font-family:var(--font-geist-mono),monospace}
+.psStoryScans section b{color:#68eca7;font-size:6px;letter-spacing:.09em}
+.psStoryScans section strong{margin-top:5px;color:#edf4f0;font-size:9px;line-height:1.3}
+.psStoryScans section p{margin:5px 0 0;color:#9eaca5;font-size:9px;line-height:1.35}
+
+.psMarketStory[data-scene="6"] .psStoryStage{height:650px;background:#020507}
+.psMarketStory[data-scene="6"] .psStoryStage>img{opacity:1;filter:contrast(1.16) brightness(.62) saturate(.8)}
+.psMarketStory[data-scene="6"] .psStoryShade{background:linear-gradient(180deg,#02050728,#03070882 58%,#05090cf2),radial-gradient(circle at 50% 42%,transparent,#030709c9 78%)}
+.psMarketStory[data-scene="6"] .psStoryScene{align-items:flex-end;padding:38px 34px}
+.psMarketStory[data-scene="7"] .psStoryStage{height:780px;background:radial-gradient(circle at 50% 20%,#173d2d,#071014 32%,#030608 72%)}
+.psMarketStory[data-scene="7"] .psStoryStage>img{opacity:.08;filter:grayscale(1) contrast(1.4)}
+.psMarketStory[data-scene="7"] .psStoryShade{background:radial-gradient(circle at 50% 20%,transparent,#030608d9 58%)}
+.psMarketStory[data-scene="7"] .psStoryScene{align-items:center;padding:28px 32px}
+.psStoryRisks .psEventSafety strong{font-size:24px!important;color:#d9b45b!important}
+.psStoryRisks .psEventSafety strong:after{content:none!important}
+.psStoryRisks .psEventSafety strong small{display:inline!important;font-size:8px}
+.psTodayCalendar[data-feed="unavailable"]{border-color:#d9b45b88}
+
+@media(max-width:520px){
+  .psScanSummary{grid-template-columns:1fr}
+  .psScanSummary button{min-height:72px}
+  .psStoryProgress{grid-template-columns:repeat(4,1fr)}
+  .psStoryScans>div{gap:5px}
+  .psStoryScans>div section{padding:9px 10px}
+  .psMarketStory[data-scene="6"] .psStoryStage{height:660px}
+  .psMarketStory[data-scene="6"] .psStoryScene{padding:24px 18px}
+  .psMarketStory[data-scene="7"] .psStoryStage{height:760px}
+  .psMarketStory[data-scene="7"] .psStoryScene{padding:18px}
+}

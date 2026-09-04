@@ -1,3 +1,5 @@
+import type { LiquidityShield } from "./liquidity-guard";
+
 export type DecisionIntelligenceAnalysis = {
   direction: "BULLISH" | "BEARISH" | "NEUTRAL";
   confidence: "LOW" | "MEDIUM" | "HIGH";
@@ -25,6 +27,7 @@ export type DecisionIntelligenceAnalysis = {
   riskFlags: string[];
   indicators: string[];
   levels: Array<{ kind: "support" | "resistance" | "trend" | "pivot" | "zone" | "gap"; label: string; price: string }>;
+  liquidityShield?: LiquidityShield;
 };
 
 export type MapId = "liquidity" | "structure" | "timeframes" | "momentum" | "volatility" | "sessions" | "auction" | "patterns" | "confluence" | "conditions";
@@ -41,11 +44,27 @@ const includesAny = (text: string, terms: string[]) => terms.some((term) => text
 
 export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): AnalysisMap[] {
   const corpus = [analysis.marketStructure, analysis.momentum, analysis.traderTrap, ...analysis.observableFacts, ...analysis.indicators, ...analysis.riskFlags].join(" ").toLowerCase();
-  const support = analysis.levels.filter((level) => level.kind === "support");
-  const resistance = analysis.levels.filter((level) => level.kind === "resistance");
   const pivots = analysis.levels.filter((level) => level.kind === "pivot");
-  const imbalances = analysis.levels.filter((level) => level.kind === "gap" || level.kind === "zone");
-  const readablePrices = analysis.levels.filter((level) => /^-?\d[\d,.]*$/.test(level.price.trim()));
+  const liquidityShield = analysis.liquidityShield;
+  const liquidityZones = liquidityShield?.status === "VISIBLE_RISK_ZONES" ? liquidityShield.zones : [];
+  const liquidityAbove = liquidityZones.find((zone) => zone.side === "ABOVE_PRICE");
+  const liquidityAt = liquidityZones.find((zone) => zone.side === "AT_PRICE");
+  const liquidityBelow = liquidityZones.find((zone) => zone.side === "BELOW_PRICE");
+  const liquidityPrice = (zone: typeof liquidityAbove) => !zone
+    ? "NOT VERIFIED"
+    : zone.priceLow === zone.priceHigh
+      ? String(zone.priceLow)
+      : `${zone.priceLow}–${zone.priceHigh}`;
+  const liquidityStatus: MapStatus = liquidityShield?.status === "VISIBLE_RISK_ZONES" && liquidityZones.length
+    ? "EVIDENCE READY"
+    : liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+      ? "EVIDENCE READY"
+      : "MORE INPUT NEEDED";
+  const liquidityHeadline = liquidityZones.length
+    ? `${liquidityZones.length} VISIBLE STOP-RISK AREA${liquidityZones.length === 1 ? "" : "S"}`
+    : liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+      ? "NO CLEAR STOP-RISK CLUSTER"
+      : "STOP-RISK MAP WITHHELD";
   const visibleMomentumIndicator = includesAny(corpus, ["rsi", "macd", "stochastic", "momentum indicator"]);
   const visibleVolatility = includesAny(corpus, ["atr", "bollinger", "volatility", "compression", "expansion", "squeeze"]);
   const visibleSession = includesAny(corpus, ["london session", "new york session", "asia session", "opening range", "overnight range", "cash open", "rth"]);
@@ -65,13 +84,14 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
 
   return [
     {
-      id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: readablePrices.length >= 2 ? "CONDITIONAL" : "MORE INPUT NEEDED",
-      headline: readablePrices.length >= 2 ? "TRAP EDGES MAPPED" : "EXACT TRAP PRICES WITHHELD",
-      summary: concise(analysis.traderTrap, "No defensible liquidity trap was visible. Bullseye will not manufacture a stop cluster."),
+      id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: liquidityStatus,
+      headline: liquidityHeadline,
+      summary: concise(liquidityShield?.summary ?? "The Liquidity Guard scan did not return enough scale-checked evidence. Bullseye will not manufacture a stop cluster.", "No defensible liquidity trap was visible."),
       readings: [
-        { label: "BELOW PRICE", value: support[0]?.price || "NO VERIFIED SUPPORT", tone: "bull" },
-        { label: "ABOVE PRICE", value: resistance[0]?.price || "NO VERIFIED RESISTANCE", tone: "bear" },
-        { label: "IMBALANCE", value: imbalances[0]?.label || "NOT VISIBLY VERIFIED", tone: "wait" },
+        { label: "BELOW PRICE", value: liquidityPrice(liquidityBelow), tone: "bull" },
+        { label: "AT PRICE", value: liquidityPrice(liquidityAt), tone: "wait" },
+        { label: "ABOVE PRICE", value: liquidityPrice(liquidityAbove), tone: "bear" },
+        { label: "GUARD RESULT", value: liquidityShield?.status.replaceAll("_", " ") ?? "SCAN UNAVAILABLE", tone: "wait" },
       ],
     },
     {
