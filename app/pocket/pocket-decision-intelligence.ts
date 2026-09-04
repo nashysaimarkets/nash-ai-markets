@@ -25,9 +25,19 @@ export type DecisionIntelligenceAnalysis = {
   riskFlags: string[];
   indicators: string[];
   levels: Array<{ kind: "support" | "resistance" | "trend" | "pivot" | "zone" | "gap"; label: string; price: string }>;
+  liquidityShield?: {
+    status: "VISIBLE_RISK_ZONES" | "NO_VISIBLE_RISK_ZONES" | "INSUFFICIENT_EVIDENCE";
+    summary: string;
+    zones: Array<{
+      side: "ABOVE_PRICE" | "BELOW_PRICE";
+      label: string;
+      priceLow: number;
+      priceHigh: number;
+      confidence: "LOW" | "MEDIUM" | "HIGH";
+    }>;
+  };
 };
 
-export type Intention = "LONG" | "SHORT" | "UNSURE";
 export type MapId = "liquidity" | "structure" | "timeframes" | "momentum" | "volatility" | "sessions" | "auction" | "patterns" | "confluence" | "conditions";
 type MapStatus = "EVIDENCE READY" | "CONDITIONAL" | "MORE INPUT NEEDED";
 type MapReading = { label: string; value: string; tone?: "bull" | "bear" | "wait" | "neutral" };
@@ -40,22 +50,28 @@ const concise = (value: string, fallback: string, limit = 170) => {
 
 const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
 
-export function blindBiasResult(intention: Intention, direction: DecisionIntelligenceAnalysis["direction"]) {
-  if (intention === "UNSURE") return { state: "OPEN", label: "OPEN-MINDED READ", detail: "You asked Bullseye to analyse without a directional commitment." } as const;
-  if (direction === "NEUTRAL") return { state: "UNRESOLVED", label: "NO AGREEMENT YET", detail: "The visible chart evidence did not justify confirming or opposing your idea." } as const;
-  const agreed = (intention === "LONG" && direction === "BULLISH") || (intention === "SHORT" && direction === "BEARISH");
-  return agreed
-    ? { state: "AGREEMENT", label: "INDEPENDENT AGREEMENT", detail: `Your ${intention.toLowerCase()} idea matched Bullseye's blind ${direction.toLowerCase()} read.` } as const
-    : { state: "CONFLICT", label: "BIAS CONFLICT FOUND", detail: `Your ${intention.toLowerCase()} idea conflicts with Bullseye's blind ${direction.toLowerCase()} read.` } as const;
-}
-
 export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): AnalysisMap[] {
   const corpus = [analysis.marketStructure, analysis.momentum, analysis.traderTrap, ...analysis.observableFacts, ...analysis.indicators, ...analysis.riskFlags].join(" ").toLowerCase();
-  const support = analysis.levels.filter((level) => level.kind === "support");
-  const resistance = analysis.levels.filter((level) => level.kind === "resistance");
   const pivots = analysis.levels.filter((level) => level.kind === "pivot");
-  const imbalances = analysis.levels.filter((level) => level.kind === "gap" || level.kind === "zone");
-  const readablePrices = analysis.levels.filter((level) => /^-?\d[\d,.]*$/.test(level.price.trim()));
+  const liquidityShield = analysis.liquidityShield;
+  const liquidityZones = liquidityShield?.status === "VISIBLE_RISK_ZONES" ? liquidityShield.zones : [];
+  const liquidityAbove = liquidityZones.find((zone) => zone.side === "ABOVE_PRICE");
+  const liquidityBelow = liquidityZones.find((zone) => zone.side === "BELOW_PRICE");
+  const liquidityPrice = (zone: typeof liquidityAbove) => !zone
+    ? "NOT VERIFIED"
+    : zone.priceLow === zone.priceHigh
+      ? String(zone.priceLow)
+      : `${zone.priceLow}–${zone.priceHigh}`;
+  const liquidityStatus: MapStatus = liquidityShield?.status === "VISIBLE_RISK_ZONES" && liquidityZones.length
+    ? "EVIDENCE READY"
+    : liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+      ? "EVIDENCE READY"
+      : "MORE INPUT NEEDED";
+  const liquidityHeadline = liquidityZones.length
+    ? `${liquidityZones.length} VISIBLE STOP-RISK AREA${liquidityZones.length === 1 ? "" : "S"}`
+    : liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+      ? "NO CLEAR STOP-RISK CLUSTER"
+      : "STOP-RISK MAP WITHHELD";
   const visibleMomentumIndicator = includesAny(corpus, ["rsi", "macd", "stochastic", "momentum indicator"]);
   const visibleVolatility = includesAny(corpus, ["atr", "bollinger", "volatility", "compression", "expansion", "squeeze"]);
   const visibleSession = includesAny(corpus, ["london session", "new york session", "asia session", "opening range", "overnight range", "cash open", "rth"]);
@@ -75,13 +91,13 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
 
   return [
     {
-      id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: readablePrices.length >= 2 ? "CONDITIONAL" : "MORE INPUT NEEDED",
-      headline: readablePrices.length >= 2 ? "TRAP EDGES MAPPED" : "EXACT TRAP PRICES WITHHELD",
-      summary: concise(analysis.traderTrap, "No defensible liquidity trap was visible. Bullseye will not manufacture a stop cluster."),
+      id: "liquidity", icon: "⌖", label: "LIQUIDITY", status: liquidityStatus,
+      headline: liquidityHeadline,
+      summary: concise(liquidityShield?.summary ?? "The Liquidity Guard scan did not return enough scale-checked evidence. Bullseye will not manufacture a stop cluster.", "No defensible liquidity trap was visible."),
       readings: [
-        { label: "BELOW PRICE", value: support[0]?.price || "NO VERIFIED SUPPORT", tone: "bull" },
-        { label: "ABOVE PRICE", value: resistance[0]?.price || "NO VERIFIED RESISTANCE", tone: "bear" },
-        { label: "IMBALANCE", value: imbalances[0]?.label || "NOT VISIBLY VERIFIED", tone: "wait" },
+        { label: "BELOW PRICE", value: liquidityPrice(liquidityBelow), tone: "bull" },
+        { label: "ABOVE PRICE", value: liquidityPrice(liquidityAbove), tone: "bear" },
+        { label: "GUARD RESULT", value: liquidityShield?.status.replaceAll("_", " ") ?? "SCAN UNAVAILABLE", tone: "wait" },
       ],
     },
     {

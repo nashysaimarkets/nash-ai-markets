@@ -705,7 +705,7 @@ export async function POST(request: Request) {
     };
     console.info("[pocket-bullseye] structural precision", JSON.stringify(finalAnalysis.precisionDiagnostics));
     return NextResponse.json(
-      { analysis: finalAnalysis },
+      { analysis: finalAnalysis, macroContext },
       { headers: pocketBudgetHeaders(budget) },
     );
   } catch (error) {

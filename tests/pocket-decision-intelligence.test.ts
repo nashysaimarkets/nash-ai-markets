@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { blindBiasResult, deriveAnalysisMaps, type DecisionIntelligenceAnalysis } from "../app/pocket/pocket-decision-intelligence.ts";
+import { deriveAnalysisMaps, type DecisionIntelligenceAnalysis } from "../app/pocket/pocket-decision-intelligence.ts";
 
 const analysis: DecisionIntelligenceAnalysis = {
   direction: "BULLISH",
@@ -28,14 +28,12 @@ const analysis: DecisionIntelligenceAnalysis = {
     { kind: "resistance", label: "Range high", price: "6040" },
     { kind: "pivot", label: "Swing low", price: "5960" },
   ],
+  liquidityShield: {
+    status: "VISIBLE_RISK_ZONES",
+    summary: "Repeated highs form a visible stop-risk area above current price.",
+    zones: [{ side: "ABOVE_PRICE", label: "Equal highs", priceLow: 6040, priceHigh: 6044, confidence: "HIGH" }],
+  },
 };
-
-test("blind bias comparison is independent and explicit", () => {
-  assert.equal(blindBiasResult("LONG", "BULLISH").state, "AGREEMENT");
-  assert.equal(blindBiasResult("LONG", "BEARISH").state, "CONFLICT");
-  assert.equal(blindBiasResult("SHORT", "NEUTRAL").state, "UNRESOLVED");
-  assert.equal(blindBiasResult("UNSURE", "BULLISH").state, "OPEN");
-});
 
 test("the map suite exposes every authorised view without fabricating missing inputs", () => {
   const maps = deriveAnalysisMaps(analysis);
@@ -43,7 +41,8 @@ test("the map suite exposes every authorised view without fabricating missing in
   assert.equal(maps.find((map) => map.id === "sessions")?.status, "MORE INPUT NEEDED");
   assert.equal(maps.find((map) => map.id === "auction")?.status, "MORE INPUT NEEDED");
   assert.equal(maps.find((map) => map.id === "volatility")?.status, "MORE INPUT NEEDED");
-  assert.match(maps.find((map) => map.id === "liquidity")?.summary ?? "", /buying directly into resistance/i);
+  assert.equal(maps.find((map) => map.id === "liquidity")?.headline, "1 VISIBLE STOP-RISK AREA");
+  assert.equal(maps.find((map) => map.id === "liquidity")?.readings.find((reading) => reading.label === "ABOVE PRICE")?.value, "6040–6044");
   assert.equal(maps.find((map) => map.id === "timeframes")?.headline, "CONFLICTING TIMEFRAME READ");
 });
 
@@ -57,6 +56,25 @@ test("the AI never receives the trader's long or short choice", async () => {
   assert.doesNotMatch(route, /payload\.intention/);
   assert.doesNotMatch(client, /body: JSON\.stringify\(\{ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention/);
   assert.doesNotMatch(client, /BlindBiasReveal|TrustGateCard/);
+  assert.doesNotMatch(client, /BLIND BIAS CHALLENGE/);
+});
+
+test("visible result surfaces expose liquidity, pattern and macro outcomes before opening individual tools", async () => {
+  const [route, client, styles] = await Promise.all([
+    readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-v1-3-visible-scans.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(route, /\{ analysis: finalAnalysis, macroContext \}/);
+  assert.match(client, /THREE CHECKS COMPLETED/);
+  assert.match(client, /className="psScanSummary"/);
+  assert.match(client, /LIQUIDITY GUARD/);
+  assert.match(client, /PATTERN WATCH/);
+  assert.match(client, /MACRO CHECK/);
+  assert.match(client, /FEED UNAVAILABLE/);
+  assert.match(client, /NONE RETURNED/);
+  assert.match(styles, /\.psScanSummary/);
+  assert.match(styles, /\.psStoryScans/);
 });
 
 test("decision autopsy persists the later evidence and fails closed on root cause", async () => {

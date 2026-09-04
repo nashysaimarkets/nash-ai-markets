@@ -24,7 +24,7 @@ test("every customer-facing level surface uses the same fail-closed evidence", a
 
   assert.match(source, /<MarketStory analysis=\{combinedAnalysis\}/);
   assert.match(source, /<ResultCard analysis=\{combinedAnalysis\}/);
-  assert.match(source, /<PocketCommandDeck analysis=\{combinedAnalysis\} primaryLevels=\{analysis\.levels\}/);
+  assert.match(source, /<PocketCommandDeck analysis=\{combinedAnalysis\} macroContext=\{activeMacroContext\} primaryLevels=\{analysis\.levels\}/);
   assert.match(source, /serverCombinedBattlefield\?\.levels \?\? \[\]\)\.filter\(\(level\) => level\.source === "CONTEXT"\)/);
   assert.match(source, /const swingLevels = primaryLevels\.filter\(\(item\) => item\.kind === "pivot"[\s\S]*?Number\.isFinite/);
   assert.match(source, /storyHasTwoSidedStructure/);
