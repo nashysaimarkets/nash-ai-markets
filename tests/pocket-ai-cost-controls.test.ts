@@ -55,6 +55,7 @@ test("Pocket blocks provider calls behind owner, allowance and cache guards", as
   assert.match(analysis, /getPocketCachedResponse/);
   assert.match(analysis, /savePocketCachedResponse/);
   assert.match(analysis, /x-pocket-ai-cache/);
+  assert.match(analysis, /legacyAstraCacheKey/);
   assert.match(preflight, /pocketAIEnabled\(\)/);
   assert.match(preflight, /getPocketCachedResponse/);
   assert.match(client, /preflightRequests/);

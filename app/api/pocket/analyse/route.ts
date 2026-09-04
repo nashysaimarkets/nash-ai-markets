@@ -455,7 +455,23 @@ export async function POST(request: Request) {
     JSON.stringify(chartConfirmation),
     JSON.stringify(accuracyCorrection),
   ]);
-  const cached = await getPocketCachedResponse(cacheKey, "analysis");
+  // Reports completed immediately before Astra was removed remain recoverable
+  // for their full TTL, so a customer never pays again for a lost response.
+  const legacyAstraCacheKey = configuredReportModel === POCKET_REPORT_MODEL
+    ? pocketResponseCacheKey("analysis", [
+        "gpt-6-astra",
+        configuredSupportModel,
+        configuredRescueModel,
+        image,
+        contextImage,
+        detailImage,
+        indicatorImage,
+        JSON.stringify(chartConfirmation),
+        JSON.stringify(accuracyCorrection),
+      ])
+    : null;
+  const cached = await getPocketCachedResponse(cacheKey, "analysis")
+    ?? (legacyAstraCacheKey ? await getPocketCachedResponse(legacyAstraCacheKey, "analysis") : null);
   if (cached?.analysis) {
     await Promise.all([
       deliveryKey ? savePocketCachedResponse(deliveryKey, "analysis", cached) : Promise.resolve(),
