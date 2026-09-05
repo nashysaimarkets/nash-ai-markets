@@ -56,6 +56,25 @@ test("verified scale accepts a widely separated two-label mobile axis and reject
   assert.equal(verifiedLiquidityScale([{ price: 3000, y: 5 }, { price: 2900, y: 50 }, { price: 2800, y: 95 }], bounds), null);
 });
 
+test("deployed tall-mobile anchor jitter preserves zones that pass every touch check", () => {
+  const mobileBounds = { left: 2.5, top: 5.5, right: 92, bottom: 88 };
+  const mobileAnchors = [
+    { price: 7730, y: 7.5 },
+    { price: 7722, y: 26.5 },
+    { price: 7714, y: 52 },
+    { price: 7706, y: 80 },
+  ];
+  const mobileShield = shield([
+    zone({ side: "AT_PRICE", pattern: "RANGE_EDGE", priceLow: 7706, priceHigh: 7709, touchPoints: [{ x: 65, y: 80.5 }, { x: 45, y: 81 }, { x: 20, y: 82 }] }),
+    zone({ side: "ABOVE_PRICE", pattern: "EQUAL_HIGHS", priceLow: 7718, priceHigh: 7720.5, touchPoints: [{ x: 60, y: 44.5 }, { x: 36, y: 40.5 }, { x: 15, y: 37.5 }] }),
+  ]);
+  const precision = { plotBounds: mobileBounds, priceScaleAnchors: mobileAnchors, liquidityShield: mobileShield };
+  const normalized = normalizePrecisionLiquidityShield(precision, "7708.49");
+  assert.equal(normalized.status, "VISIBLE_RISK_ZONES");
+  assert.equal(normalized.zones.length, 2);
+  assert.equal(projectLiquidityZones(normalized as LiquidityShield, "7708.49", mobileAnchors, mobileBounds).length, 2);
+});
+
 test("single-price pools project to the exact verified price row", () => {
   const result = projectLiquidityZones(shield([zone()]), "2900", anchors, bounds);
   assert.equal(result.length, 1);
