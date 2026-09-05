@@ -27,6 +27,29 @@ export type LiquidityShield = {
 export type LiquidityPlotBounds = { left: number; top: number; right: number; bottom: number };
 export type LiquidityScaleAnchor = { price: number; y: number };
 export type LiquidityReadability = { chartReadability?: string; candlesReadable?: boolean };
+export type LiquidityGeometrySource = {
+  plotBounds?: LiquidityPlotBounds;
+  priceScaleAnchors?: LiquidityScaleAnchor[];
+  liquidityShield?: LiquidityShield;
+  evidenceQuality?: LiquidityReadability;
+  liquidityGeometry?: {
+    plotBounds?: LiquidityPlotBounds;
+    priceScaleAnchors?: LiquidityScaleAnchor[];
+    liquidityShield?: LiquidityShield;
+    evidenceQuality?: LiquidityReadability;
+  };
+};
+
+/** One source of truth for the Guard card, overlay and summary tile. */
+export function effectiveLiquidityGeometry(source: LiquidityGeometrySource) {
+  const dedicated = source.liquidityGeometry;
+  return {
+    plotBounds: dedicated?.plotBounds ?? source.plotBounds,
+    priceScaleAnchors: dedicated?.priceScaleAnchors ?? source.priceScaleAnchors ?? [],
+    liquidityShield: dedicated?.liquidityShield ?? source.liquidityShield,
+    evidenceQuality: dedicated?.evidenceQuality ?? source.evidenceQuality,
+  };
+}
 
 export type ProjectedLiquidityZone = LiquidityZone & {
   lineY: number;
@@ -37,10 +60,13 @@ export type ProjectedLiquidityZone = LiquidityZone & {
 };
 
 const FULL_IMAGE_BOUNDS: LiquidityPlotBounds = { left: 0, top: 0, right: 100, bottom: 100 };
-const SCALE_RESIDUAL_TOLERANCE = 1.5;
+// Keep these acceptance bounds identical to the server normalizer. Mobile
+// screenshot vision routinely carries 2-3 percentage points of row jitter;
+// a server-approved zone must not be silently withheld by a stricter UI pass.
+const SCALE_RESIDUAL_TOLERANCE = 3.5;
 const MIN_TWO_ANCHOR_PLOT_RATIO = .28;
 const MAX_BAND_PLOT_RATIO = .08;
-const TOUCH_TOLERANCE_PLOT_RATIO = .02;
+const TOUCH_TOLERANCE_PLOT_RATIO = .045;
 const MIN_TOUCH_X_SEPARATION = .75;
 
 function finitePercent(value: number) {
@@ -160,7 +186,7 @@ export function projectLiquidityZones(
   if (currentY < plot.top || currentY > plot.bottom) return [];
   const plotHeight = plot.bottom - plot.top;
   const maxBandHeight = plotHeight * MAX_BAND_PLOT_RATIO;
-  const touchTolerance = Math.min(1.5, Math.max(.6, plotHeight * TOUCH_TOLERANCE_PLOT_RATIO));
+  const touchTolerance = Math.min(3.5, Math.max(1.25, plotHeight * TOUCH_TOLERANCE_PLOT_RATIO));
   const confidenceRank: Record<LiquidityZoneConfidence, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
   const seen = new Set<number>();
 
