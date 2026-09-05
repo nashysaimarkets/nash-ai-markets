@@ -60,11 +60,9 @@ export type ProjectedLiquidityZone = LiquidityZone & {
 };
 
 const FULL_IMAGE_BOUNDS: LiquidityPlotBounds = { left: 0, top: 0, right: 100, bottom: 100 };
-// Keep these acceptance bounds identical to the server normalizer. Mobile
-// screenshot vision routinely carries 2-3 percentage points of row jitter;
-// a server-approved zone must not be silently withheld by a stricter UI pass.
-const SCALE_RESIDUAL_TOLERANCE = 6.5;
-const MIN_TWO_ANCHOR_PLOT_RATIO = .28;
+// Keep these acceptance bounds identical to the server normalizer. A scale
+// needs three consistent printed labels; one bad OCR label may be excluded.
+const SCALE_RESIDUAL_TOLERANCE = 2.25;
 const MAX_BAND_PLOT_RATIO = .12;
 const TOUCH_TOLERANCE_PLOT_RATIO = .045;
 const MIN_TOUCH_X_SEPARATION = .75;
@@ -114,20 +112,27 @@ function verifiedPercentLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?:
   const unique = valid.filter((anchor, index, all) =>
     all.findIndex((candidate) => candidate.price === anchor.price || candidate.y === anchor.y) === index,
   );
-  // Three labels remain preferred because they expose a non-linear or bad OCR
-  // fit. Two exact labels can still calibrate an ordinary mobile chart when
-  // they span a substantial part of the plot; every liquidity band and touch
-  // row is independently checked against the resulting projection below.
-  if (unique.length < 2) return null;
-  const ordered = [...unique].sort((left, right) => left.price - right.price);
-  if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return null;
-  const low = ordered[0];
-  const high = ordered.at(-1)!;
-  const minimumSpan = ordered.length === 2 ? (plot.bottom - plot.top) * MIN_TWO_ANCHOR_PLOT_RATIO : 12;
-  if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
-  const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_RESIDUAL_TOLERANCE)) return null;
-  return { project, low, high };
+  if (unique.length < 3) return null;
+  const candidates: Array<{ project: (price: number) => number; inliers: LiquidityScaleAnchor[]; span: number; residual: number }> = [];
+  for (let leftIndex = 0; leftIndex < unique.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < unique.length; rightIndex += 1) {
+      const left = unique[leftIndex], right = unique[rightIndex];
+      if (left.price === right.price) continue;
+      const project = (price: number) => left.y + ((price - left.price) / (right.price - left.price)) * (right.y - left.y);
+      const inliers = unique.filter((anchor) => Math.abs(project(anchor.price) - anchor.y) <= SCALE_RESIDUAL_TOLERANCE)
+        .sort((a, b) => a.price - b.price);
+      if (inliers.length < 3 || !inliers.every((anchor, index) => index === 0 || anchor.y < inliers[index - 1].y)) continue;
+      const span = Math.abs(inliers.at(-1)!.y - inliers[0].y);
+      if (span < 12) continue;
+      const residual = inliers.reduce((total, anchor) => total + Math.abs(project(anchor.price) - anchor.y), 0);
+      candidates.push({ project, inliers, span, residual });
+    }
+  }
+  candidates.sort((a, b) => b.inliers.length - a.inliers.length || b.span - a.span || a.residual - b.residual);
+  const best = candidates[0];
+  if (!best) return null;
+  const ordered = [...best.inliers].sort((a, b) => a.price - b.price);
+  return { project: best.project, low: ordered[0], high: ordered.at(-1)! };
 }
 
 export function verifiedLiquidityScale(anchors: LiquidityScaleAnchor[], bounds?: LiquidityPlotBounds) {
