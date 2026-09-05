@@ -1,0 +1,727 @@
+{
+  "note": "Robustness variants of the same public sample; not an independent labelled AI benchmark.",
+  "summary": [
+    {
+      "version": "before",
+      "truePositives": 12,
+      "positives": 12,
+      "falsePositives": 9,
+      "negatives": 27,
+      "invalidConfidences": 0,
+      "medianMs": 25.787037000000055
+    },
+    {
+      "version": "after",
+      "truePositives": 12,
+      "positives": 12,
+      "falsePositives": 4,
+      "negatives": 27,
+      "invalidConfidences": 0,
+      "medianMs": 23.83866100000023
+    }
+  ],
+  "rows": [
+    {
+      "file": "metatrader5-dukascopy.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 47.22880000000001
+    },
+    {
+      "file": "metatrader5-dukascopy.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 38.906053000000014
+    },
+    {
+      "file": "metatrader5-dukascopy.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 44.00739400000003
+    },
+    {
+      "file": "metatrader5-dukascopy.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 40.81517199999996
+    },
+    {
+      "file": "metatrader5-dukascopy.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 19.214734999999962
+    },
+    {
+      "file": "metatrader5-dukascopy.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 16.00012899999996
+    },
+    {
+      "file": "tradingview-webull.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 16.988999999999976
+    },
+    {
+      "file": "tradingview-webull.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 17.400626999999986
+    },
+    {
+      "file": "tradingview-webull.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 17.49373499999996
+    },
+    {
+      "file": "tradingview-webull.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 18.511646999999925
+    },
+    {
+      "file": "tradingview-webull.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 13.715806999999927
+    },
+    {
+      "file": "tradingview-webull.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 13.484496000000036
+    },
+    {
+      "file": "thinkorswim-navigator.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 29.498096000000032
+    },
+    {
+      "file": "thinkorswim-navigator.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 27.022320000000036
+    },
+    {
+      "file": "thinkorswim-navigator.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 29.44456600000001
+    },
+    {
+      "file": "thinkorswim-navigator.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 27.917993000000024
+    },
+    {
+      "file": "thinkorswim-navigator.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 18.017807999999945
+    },
+    {
+      "file": "thinkorswim-navigator.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 17.007155999999895
+    },
+    {
+      "file": "webull-mobile.jpg",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 23.078729000000067
+    },
+    {
+      "file": "webull-mobile.jpg",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 19.754953
+    },
+    {
+      "file": "webull-mobile.jpg",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 25.25114599999995
+    },
+    {
+      "file": "webull-mobile.jpg",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 23.30483300000003
+    },
+    {
+      "file": "webull-mobile.jpg",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 12.654390000000149
+    },
+    {
+      "file": "webull-mobile.jpg",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 11.89974600000005
+    },
+    {
+      "file": "robinhood-candlestick.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 38.35841499999992
+    },
+    {
+      "file": "robinhood-candlestick.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 35.193142999999964
+    },
+    {
+      "file": "robinhood-candlestick.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 27.635987000000114
+    },
+    {
+      "file": "robinhood-candlestick.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 29.592384000000038
+    },
+    {
+      "file": "robinhood-candlestick.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 18.213588000000072
+    },
+    {
+      "file": "robinhood-candlestick.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 16.313362000000097
+    },
+    {
+      "file": "coinbase-advanced.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 69.2822749999998
+    },
+    {
+      "file": "coinbase-advanced.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 60.93635500000005
+    },
+    {
+      "file": "coinbase-advanced.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 49.76572400000009
+    },
+    {
+      "file": "coinbase-advanced.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 46.50527099999999
+    },
+    {
+      "file": "coinbase-advanced.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 37.521360000000186
+    },
+    {
+      "file": "coinbase-advanced.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 33.315020000000004
+    },
+    {
+      "file": "coinbase-advanced-2.webp",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 32.78529800000001
+    },
+    {
+      "file": "coinbase-advanced-2.webp",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 28.848416000000043
+    },
+    {
+      "file": "coinbase-advanced-2.webp",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 30.051823000000013
+    },
+    {
+      "file": "coinbase-advanced-2.webp",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 27.05585999999994
+    },
+    {
+      "file": "coinbase-advanced-2.webp",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 25.291646000000128
+    },
+    {
+      "file": "coinbase-advanced-2.webp",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 23.38833599999998
+    },
+    {
+      "file": "ninjatrader-tradovate.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 29.38957500000015
+    },
+    {
+      "file": "ninjatrader-tradovate.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 26.09860700000013
+    },
+    {
+      "file": "ninjatrader-tradovate.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 30.90541300000018
+    },
+    {
+      "file": "ninjatrader-tradovate.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 27.777955999999904
+    },
+    {
+      "file": "ninjatrader-tradovate.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 23.200358999999935
+    },
+    {
+      "file": "ninjatrader-tradovate.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 18.99274800000012
+    },
+    {
+      "file": "saxotradergo.png",
+      "variant": "original",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 11.606383000000278
+    },
+    {
+      "file": "saxotradergo.png",
+      "variant": "original",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 9.845164000000295
+    },
+    {
+      "file": "saxotradergo.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 10.655569999999898
+    },
+    {
+      "file": "saxotradergo.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 10.250882999999703
+    },
+    {
+      "file": "saxotradergo.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 10.293375000000196
+    },
+    {
+      "file": "saxotradergo.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": false,
+      "detected": false,
+      "confidenceValid": true,
+      "durationMs": 11.841280000000097
+    },
+    {
+      "file": "volume-tradingview-auction.png",
+      "variant": "original",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 26.214136999999937
+    },
+    {
+      "file": "volume-tradingview-auction.png",
+      "variant": "original",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 22.653551999999763
+    },
+    {
+      "file": "volume-tradingview-auction.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 25.54636100000016
+    },
+    {
+      "file": "volume-tradingview-auction.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 23.83866100000023
+    },
+    {
+      "file": "volume-tradingview-auction.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 21.65810199999987
+    },
+    {
+      "file": "volume-tradingview-auction.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 19.60135500000024
+    },
+    {
+      "file": "volume-tradingview-zones.png",
+      "variant": "original",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 30.200251999999637
+    },
+    {
+      "file": "volume-tradingview-zones.png",
+      "variant": "original",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 28.381687000000056
+    },
+    {
+      "file": "volume-tradingview-zones.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 28.472851999999875
+    },
+    {
+      "file": "volume-tradingview-zones.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 27.87386800000013
+    },
+    {
+      "file": "volume-tradingview-zones.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 21.59167400000024
+    },
+    {
+      "file": "volume-tradingview-zones.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 20.6635339999998
+    },
+    {
+      "file": "volume-ninjatrader.png",
+      "variant": "original",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 28.54589999999962
+    },
+    {
+      "file": "volume-ninjatrader.png",
+      "variant": "original",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 27.32199300000002
+    },
+    {
+      "file": "volume-ninjatrader.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 25.787037000000055
+    },
+    {
+      "file": "volume-ninjatrader.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 24.498795999999857
+    },
+    {
+      "file": "volume-ninjatrader.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 22.134676000000127
+    },
+    {
+      "file": "volume-ninjatrader.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 20.00025400000004
+    },
+    {
+      "file": "volume-metatrader4.png",
+      "variant": "original",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 29.512877000000117
+    },
+    {
+      "file": "volume-metatrader4.png",
+      "variant": "original",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 27.62733399999979
+    },
+    {
+      "file": "volume-metatrader4.png",
+      "variant": "jpeg85",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 28.015957999999955
+    },
+    {
+      "file": "volume-metatrader4.png",
+      "variant": "jpeg85",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 24.543361000000004
+    },
+    {
+      "file": "volume-metatrader4.png",
+      "variant": "720px",
+      "version": "before",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 19.78673899999967
+    },
+    {
+      "file": "volume-metatrader4.png",
+      "variant": "720px",
+      "version": "after",
+      "expected": true,
+      "detected": true,
+      "confidenceValid": true,
+      "durationMs": 22.713370000000396
+    }
+  ]
+}

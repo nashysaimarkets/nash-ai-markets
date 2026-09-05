@@ -50,3 +50,12 @@ The real Level Lab replay `req_4774185a08674898` failed in 1,584ms with the safe
 An untracked phone-width QA HTML file was unexpectedly present in the version 127 archive despite removal before the build. It contains only a local rendering harness, no credentials or user charts. It has been removed from source and build output; the next archive must be built from a clean tracked checkout and explicitly checked for its absence.
 
 Apple build 20 was uploaded and processed by App Store Connect as `bd595895-0002-46f6-af70-1e3b67e0e71c`, app `6806004581`. Codemagic build `6a9c8d3452f435e837b2c1fb` failed only at beta review submission: Apple returned 422 because another build in the same version train is already in beta review. App Store Connect's browser session is logged out. Do not describe this as an App Store release or cancel the existing review without a reason.
+
+## Latest durable checkpoint
+
+- Capacity handling repair source: `4048b43358a14de6bdd29a22e83aa10fd8251e84`, pushed to the Pocket Sites source main branch. Full suite: 949/949 passed; typecheck and secret-pattern scan passed.
+- Equivalent application repairs also saved to GitHub branch `fix/pocket-final-release-2026-09-05`, source `479b2459d5c2344e04a8f8dda61822271346a1c2`.
+- Vercel built that branch successfully: `dpl_G1gVyPCphxZ8mAbtj9YUtC1yDqFU`, https://nash-ai-markets-mj2yvwoqn-nash-ai-markets.vercel.app. Main production has not yet been advanced to this revision; Apple build 20 is still pinned to its older immutable deployment.
+- Clean Sites build checkout: `/workspace/scratch/c5ade6897288/pocket-clean-build`; build log `/workspace/scratch/c5ade6897288/qa/clean-v128-build.log`. Check completion before packaging; no saved version 128 exists yet. Version 127 remains live.
+- OpenAI billing browser access reached the login screen. No balance, exact limit, account identifier or payment amount was established. User needs to sign into the API billing account or provide screenshots of billing balance and Limits before a precise restoration action can be taken. No purchase or limit increase is authorized by an invented amount.
+- The latest ChatGPT screenshot says "Streaming interrupted. Waiting for the complete message...". It establishes an interrupted reply stream, not its cause; there is no evidence connecting it to Pocket's API quota.

@@ -69,19 +69,19 @@ function levels(image: PixelImage, plot: Box, items: Candle[]) {
 
 function profile(image: PixelImage, plot: Box, role: ChartEvidenceRole) {
   const bandWidth = Math.max(10, Math.round((plot.right - plot.left) * .22));
-  const inspect = (side: "left" | "right") => { const x0 = side === "left" ? plot.left : plot.right - bandWidth, x1 = side === "left" ? plot.left + bandWidth : plot.right, rows: number[] = []; for (let y = plot.top; y <= plot.bottom; y++) { let run = 0, longest = 0; for (let x = x0; x <= x1; x++) { const p = pixel(image, x, y); const active = p.chroma > 24 && p.light > 55; run = active ? run + 1 : 0; longest = Math.max(longest, run); } rows.push(longest); } const peak = Math.max(...rows, 0), denseRows = rows.filter((run) => run / bandWidth >= .3 && run / bandWidth <= .88).length; let clusters = 0, active = false; for (const run of rows) { const dense = run / bandWidth >= .3 && run / bandWidth <= .88; if (dense && !active) clusters++; active = dense; } return { side, rows, peak, index: rows.indexOf(peak), ratio: peak / bandWidth, denseRows, clusters }; };
+  const inspect = (side: "left" | "right") => { const x0 = side === "left" ? plot.left : plot.right - bandWidth, x1 = side === "left" ? plot.left + bandWidth : plot.right, rows: number[] = []; for (let y = plot.top; y <= plot.bottom; y++) { let run = 0, longest = 0; for (let x = x0; x <= x1; x++) { const p = pixel(image, x, y); const active = p.chroma > 38 && p.light > 55; run = active ? run + 1 : 0; longest = Math.max(longest, run); } rows.push(longest); } const peak = Math.max(...rows, 0), denseRows = rows.filter((run) => run / bandWidth >= .3 && run / bandWidth <= .88).length; let clusters = 0, active = false; for (const run of rows) { const dense = run / bandWidth >= .3 && run / bandWidth <= .88; if (dense && !active) clusters++; active = dense; } return { side, rows, peak, index: rows.indexOf(peak), ratio: peak / bandWidth, denseRows, clusters }; };
   const best = [inspect("left"), inspect("right")].sort((a, b) => b.ratio - a.ratio)[0]!;
   const sideVisible = best.ratio >= .48 && best.denseRows / Math.max(1, plot.bottom - plot.top + 1) >= .025 && best.clusters >= 10;
   // The dedicated indicator/volume slot may contain profiles drawn through
   // the middle of the plot (session profiles), not only on an outer edge.
-  // Scan for many thick horizontal histogram rows. Sparse order lines and
-  // ordinary vertical volume bars cannot pass the row-density requirement.
+  // Require saturated histogram rows so tinted controls are not counted as
+  // profile bars. Geometry remains evidence requiring independent corroboration.
   const width = Math.max(1, plot.right - plot.left + 1), rowRuns: number[] = [];
   for (let y = plot.top; y <= plot.bottom; y++) {
     let run = 0, longest = 0;
     for (let x = plot.left; x <= plot.right; x++) {
       const p = pixel(image, x, y);
-      const active = p.chroma > 28 && p.light > 48;
+      const active = p.chroma > 38 && p.light > 48;
       run = active ? run + 1 : 0;
       longest = Math.max(longest, run);
     }
@@ -92,7 +92,7 @@ function profile(image: PixelImage, plot: Box, role: ChartEvidenceRole) {
   // Primary charts require the stricter edge shape. Dedicated indicator
   // images may use either edge or session-profile geometry.
   if (!(role === "INDICATOR_VOLUME" ? sideVisible || fullPlotVisible : sideVisible && histogramRows / Math.max(1, rowRuns.length) >= .055)) {
-    return { status: "not-detected" as const, confidence: Number(Math.min(.8, 1 - best.ratio).toFixed(2)) };
+    return { status: "not-detected" as const, confidence: Number(clamp(1 - best.ratio, 0, .8).toFixed(2)) };
   }
   const index = fullPlotVisible ? rowRuns.indexOf(Math.max(...rowRuns)) : best.index;
   return { status: "visible" as const, side: best.side, pointOfControlY: Number((100 * (plot.top + index) / image.height).toFixed(2)), confidence: Number(Math.min(.95, Math.max(best.ratio, histogramRows / Math.max(1, rowRuns.length))).toFixed(2)) };
