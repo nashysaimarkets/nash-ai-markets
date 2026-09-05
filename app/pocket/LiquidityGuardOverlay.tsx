@@ -6,6 +6,7 @@
 import { useId, useMemo, useState, type SyntheticEvent } from "react";
 import {
   parseLiquidityCurrentPrice,
+  effectiveLiquidityGeometry,
   projectLiquidityPrice,
   projectLiquidityZones,
   type LiquidityPlotBounds,
@@ -21,6 +22,12 @@ type LiquidityGuardAnalysis = {
   plotBounds?: LiquidityPlotBounds;
   priceScaleAnchors?: LiquidityScaleAnchor[];
   liquidityShield?: LiquidityShield;
+  liquidityGeometry?: {
+    plotBounds?: LiquidityPlotBounds;
+    priceScaleAnchors?: LiquidityScaleAnchor[];
+    liquidityShield?: LiquidityShield;
+    evidenceQuality?: { chartReadability?: string; candlesReadable?: boolean };
+  };
 };
 
 type LiquidityGuardDisplayState = "locked" | "verified-none" | "withheld" | "unavailable";
@@ -43,7 +50,7 @@ function sideLabel(side: "ABOVE_PRICE" | "AT_PRICE" | "BELOW_PRICE") {
   return side === "ABOVE_PRICE" ? "ABOVE CURRENT" : side === "BELOW_PRICE" ? "BELOW CURRENT" : "AT CURRENT PRICE";
 }
 
-export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan, rescanning = false }: { analysis: LiquidityGuardAnalysis; sourceImage: string; onRescan?: () => void; rescanning?: boolean }) {
+export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan, rescanning = false, errorMessage = "" }: { analysis: LiquidityGuardAnalysis; sourceImage: string; onRescan?: () => void; rescanning?: boolean; errorMessage?: string }) {
   const [overlayVisible, setOverlayVisible] = useState(true);
   const [landscape, setLandscape] = useState(false);
   const instanceId = useId().replaceAll(":", "");
@@ -51,11 +58,12 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
   const aboveGradientId = `liquidity-above-${instanceId}`;
   const atGradientId = `liquidity-at-${instanceId}`;
   const belowGradientId = `liquidity-below-${instanceId}`;
+  const scanGeometry = effectiveLiquidityGeometry(analysis);
   const geometry = useMemo(() => canonicalizePocketGeometry({
-    plotBounds: analysis.plotBounds,
-    priceScaleAnchors: analysis.priceScaleAnchors,
-    liquidityShield: analysis.liquidityShield,
-  }) as Pick<LiquidityGuardAnalysis, "plotBounds" | "priceScaleAnchors" | "liquidityShield">, [analysis.liquidityShield, analysis.plotBounds, analysis.priceScaleAnchors]);
+    plotBounds: scanGeometry.plotBounds,
+    priceScaleAnchors: scanGeometry.priceScaleAnchors,
+    liquidityShield: scanGeometry.liquidityShield,
+  }) as Pick<LiquidityGuardAnalysis, "plotBounds" | "priceScaleAnchors" | "liquidityShield">, [scanGeometry.liquidityShield, scanGeometry.plotBounds, scanGeometry.priceScaleAnchors]);
   const anchors = geometry.priceScaleAnchors ?? EMPTY_ANCHORS;
   const plotBounds = geometry.plotBounds;
   const zones = useMemo(() => projectLiquidityZones(
@@ -63,8 +71,8 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
     analysis.currentPrice,
     anchors,
     plotBounds,
-    analysis.evidenceQuality,
-  ), [analysis.currentPrice, analysis.evidenceQuality, geometry.liquidityShield, plotBounds, anchors]);
+    scanGeometry.evidenceQuality,
+  ), [analysis.currentPrice, geometry.liquidityShield, plotBounds, anchors, scanGeometry.evidenceQuality]);
   const currentPrice = parseLiquidityCurrentPrice(analysis.currentPrice);
   const currentY = currentPrice === null ? null : projectLiquidityPrice(currentPrice, anchors, plotBounds);
   const shield = geometry.liquidityShield;
@@ -106,6 +114,7 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
       {displayState === "locked" ? <button type="button" aria-pressed={overlayVisible} onClick={() => setOverlayVisible((visible) => !visible)}>{overlayVisible ? "HIDE OVERLAY" : "SHOW OVERLAY"}</button>
         : displayState !== "verified-none" && onRescan ? <button type="button" disabled={rescanning} onClick={onRescan}>{rescanning ? "REANALYSING…" : "REANALYSE CHART"}</button> : null}
     </header>
+    {errorMessage ? <p className="psLiquidityError" role="alert">{errorMessage}</p> : null}
     {displayState !== "locked" ? <div className="psLiquidityStatus" data-state={displayState} role="status" aria-live="polite"><i aria-hidden="true">{displayState === "verified-none" ? "✓" : displayState === "withheld" ? "🛡" : "!"}</i><div><small>{emptyState.eyebrow}</small><strong>{emptyState.title}</strong><p>{emptyState.detail}</p></div><span>ORIGINAL CHART UNCHANGED</span></div> : null}
     <div className="psLiquidityCanvas" data-landscape={landscape}>
       <img src={sourceImage} alt="Uploaded trading chart" onLoad={recordAspect} />
