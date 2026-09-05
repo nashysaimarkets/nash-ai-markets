@@ -73,3 +73,22 @@
   .psXRayCanvas > img { height: auto; min-height: 0; }
   .psBattleFocusBody > .psDecisionMapHold { margin: .65rem; }
 }
+/* Decision Map mobile copy is content-sized. Reserve its full header band so
+   the intelligence strip and verified price labels can never render beneath
+   it on narrow iPhone viewports. */
+.psDecisionMap .psMapIntro { min-height: 108px; }
+.psDecisionMap .psBattleIntel { top: 142px; }
+.psLiquidityCanvas::after { position: absolute; inset: 0; }
+
+@media (max-width: 520px) {
+  .psDecisionMap .psMapIntro strong,
+  .psDecisionMap .psMapIntro p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+  }
+  .psDecisionMap .psMapIntro strong { -webkit-line-clamp: 2; }
+  .psDecisionMap .psMapIntro p { -webkit-line-clamp: 2; }
+  .psDecisionMap .psBattleLevel em { display: none; }
+  .psDecisionMap .psBattleLevel small { right: 96px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+}
