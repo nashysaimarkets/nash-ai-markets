@@ -31,14 +31,18 @@ import {
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 7 + 20_480;
-const POCKET_ANALYSIS_TIMEOUT_MS = 82_000;
-const POCKET_PROVIDER_DEADLINE_MS = 86_000;
-const POCKET_PRECISION_DEADLINE_MS = 82_000;
+// A four-chart, high-detail structured audit is materially heavier than the
+// former one/two-chart request. Keep the provider boundary below Vercel's
+// function boundary, but do not terminate a healthy report at the old 82s
+// single-chart budget.
+const POCKET_ANALYSIS_TIMEOUT_MS = 165_000;
+const POCKET_PROVIDER_DEADLINE_MS = 168_000;
+const POCKET_PRECISION_DEADLINE_MS = 165_000;
 const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
 const POCKET_REPORT_MODEL = "gpt-5.6-sol";
 const POCKET_ANNOTATION_MODEL = "gpt-5.6-terra";
-export const maxDuration = 90;
+export const maxDuration = 180;
 
 const schema = {
   type: "object",
@@ -372,6 +376,11 @@ export async function POST(request: Request) {
     providerAbortController.signal,
   ]);
   const remainingProviderMs = () => Math.max(0, Math.floor(providerDeadlineAt - Date.now()));
+  console.info("[pocket-bullseye] analysis started", JSON.stringify({
+    chartCount: 4 + Number(Boolean(indicatorImage)),
+    requestBytes: [image, contextImage, detailImage, fourHourImage, indicatorImage].reduce((total, value) => total + value.length, 0),
+    elapsedMs: Date.now() - routeStartedAt,
+  }));
 
   try {
     // A valid current-price correction is the trader's newest explicit fact.
@@ -482,6 +491,12 @@ export async function POST(request: Request) {
     }, {
       signal: providerSignal,
       timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs),
+    }).then((response) => {
+      console.info("[pocket-bullseye] report completed", JSON.stringify({
+        status: response.status ?? "unknown",
+        elapsedMs: Date.now() - routeStartedAt,
+      }));
+      return response;
     }).catch((error) => {
       // The precision passes are useful only when the report succeeds. Abort
       // their in-flight requests immediately and prevent any rescue calls.
@@ -619,25 +634,27 @@ export async function POST(request: Request) {
       }
     };
     const precisionWork = (async () => {
-      // Keep the indispensable report and primary geometry as the only
-      // simultaneous provider calls. Four-chart packs previously started a
-      // third context request at once, increasing timeout pressure without
-      // improving the report itself.
-      const primaryFirst = await firstPrecision(image, "primary", authoritativeCurrentPrice);
-      // Context precision and every rescue are allowed only after the report
-      // succeeds. A failed report therefore cannot fan out another request.
+      // The report is indispensable; precision is an enhancement. Running a
+      // second high-detail model call beside a four/five-chart report caused
+      // the report to hit its SDK timeout on the deployed tier. Give the
+      // report exclusive provider capacity, then spend only the time left on
+      // precision geometry.
       await analysisRequest;
-      // Reserve the second-chart initial pass before spending the shared retry
-      // on primary geometry. The former ordering could consume the 58-second
-      // precision window and silently reduce a valid two-chart pack to one
-      // chart even after preflight confirmed both images matched.
-      const contextFirst = contextImage ? await firstPrecision(contextImage, "context") : null;
+      const [primaryFirst, contextFirst] = await Promise.all([
+        firstPrecision(image, "primary", authoritativeCurrentPrice),
+        contextImage ? firstPrecision(contextImage, "context") : Promise.resolve(null),
+      ]);
       // The single remaining retry stays primary-first, but only after every
       // supplied chart has received its mandatory initial precision pass.
       const primary = await finishPrecision(primaryFirst, image, "primary", precisionImage || null, authoritativeCurrentPrice);
       const context = contextFirst
         ? await finishPrecision(contextFirst, contextImage, "context", contextPrecisionImage || null)
         : null;
+      console.info("[pocket-bullseye] precision completed", JSON.stringify({
+        primary: Boolean(primary.output_text),
+        context: Boolean(context?.output_text),
+        elapsedMs: Date.now() - routeStartedAt,
+      }));
       return [primary, context] as const;
     })();
     let response: Awaited<typeof analysisRequest>;
@@ -889,7 +906,7 @@ export async function POST(request: Request) {
         ? "AI analysis is temporarily busy. Your charts are still loaded—please retry in a minute."
         : "AI analysis is temporarily unavailable. Your charts are still loaded—please try again later.";
     return NextResponse.json({ error: timedOut
-      ? "The chart analysis took too long to finish. Please retry once."
+      ? "The AI service did not finish this scan. Your charts are still loaded—please try again."
       : incomplete
         ? "The analysis report was interrupted before it finished. Your chart is still loaded—please retry once."
         : providerMessage }, { status: 503 });
