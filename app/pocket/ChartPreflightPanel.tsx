@@ -53,8 +53,16 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
         setInstrument(next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument);
         setTimeframe(next.timeframeConfidence === "UNKNOWN" ? "" : next.timeframe);
         setCurrentPrice(next.currentPriceConfidence === "UNKNOWN" ? "" : next.currentPrice);
-        const nextStatus: PreflightStatus = next.status === "RETAKE" ? "RETAKE" : "AWAITING_CONFIRMATION";
+        const nextStatus: PreflightStatus = next.status;
         setStatus(nextStatus); statusHandler.current(nextStatus);
+        const detectedInstrument = next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument.trim();
+        const detectedTimeframe = next.timeframeConfidence === "UNKNOWN" ? "" : next.timeframe.trim();
+        confirmationHandler.current(detectedInstrument && detectedTimeframe ? {
+          instrument: detectedInstrument,
+          timeframe: detectedTimeframe,
+          currentPrice: next.currentPriceConfidence === "UNKNOWN" ? "" : next.currentPrice.trim(),
+          contextMatch: contextImage && next.sameInstrument === true ? "MATCHED" : "NOT_PROVIDED",
+        } : null);
       } catch (error) {
         if (finished) return;
         if (error instanceof Error && error.name === "AbortError") return;
@@ -71,9 +79,9 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   if (!result) return null;
 
   const locked = status === "LOCKED";
-  const valid = instrument.trim().length > 1 && timeframe.trim().length > 0 && /^-?\d[\d,.]*$/.test(currentPrice.trim());
+  const valid = instrument.trim().length > 1 && timeframe.trim().length > 0 && (!currentPrice.trim() || /^-?\d[\d,.]*$/.test(currentPrice.trim()));
   const lock = () => {
-    if (!valid || result.status === "RETAKE") return;
+    if (!valid) return;
     const confirmation: ChartConfirmation = {
       instrument: instrument.trim().slice(0, 80),
       timeframe: timeframe.trim().slice(0, 30),
@@ -84,17 +92,21 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   };
   const edit = () => { setStatus("AWAITING_CONFIRMATION"); statusHandler.current("AWAITING_CONFIRMATION"); confirmationHandler.current(null); };
 
-  return <section id="pocket-preflight-lock" className="psPreflight" data-status={result.status} data-locked={locked}>
-    <header><span>◉ PREFLIGHT CONFIRMATION LOCK</span><strong>{result.status === "RETAKE" ? "RETAKE RECOMMENDED" : locked ? "CHART FACTS LOCKED" : result.status === "LIMITED" ? "CHECK & CONFIRM" : "CONFIRM BEFORE ANALYSIS"}</strong></header>
-    <div className="psConfirmGrid">
-      <label><span>INSTRUMENT</span><input value={instrument} disabled={locked || result.status === "RETAKE"} maxLength={80} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
-      <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked || result.status === "RETAKE"} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
-      <label><span>CURRENT PRICE</span><input inputMode="decimal" value={currentPrice} disabled={locked || result.status === "RETAKE"} maxLength={30} placeholder="e.g. 7658.01" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
-      <article data-pass={!contextImage || result.sameInstrument === true}><span>CONTEXT CHART</span><strong>{!contextImage ? "NOT ADDED" : result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>
-    </div>
-    {result.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
-    <p>{result.status === "RETAKE" ? result.guidance : "Check these detected facts against your broker chart. Correct anything wrong, then lock them for the analysis."}</p>
-    {result.status !== "RETAKE" ? <div className="psConfirmActions">{locked ? <><span>✓ CONFIRMED INPUTS WILL OVERRIDE AI LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM & LOCK CHART FACTS</button>}</div> : null}
-    <footer>{result.status === "RETAKE" ? "FULL ANALYSIS PAUSED TO AVOID WASTING YOUR REQUEST" : locked ? "LOCKED · READY FOR FULL ANALYSIS" : "FULL ANALYSIS WILL NOT START UNTIL CONFIRMED"}</footer>
+  return <section id="pocket-preflight-lock" className="psPreflight psPreflightCompact" data-status={result.status} data-locked={locked}>
+    <header><span>◉ CHART READ</span><strong>{result.status === "RETAKE" ? "LIMITED · ANALYSIS STILL AVAILABLE" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "READY"}</strong></header>
+    <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
+    <details className="psConfirmDetails">
+      <summary>CHECK OR EDIT DETECTED DETAILS</summary>
+      <div className="psConfirmGrid">
+        <label><span>INSTRUMENT</span><input value={instrument} disabled={locked} maxLength={80} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
+        <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
+        <label><span>CURRENT PRICE · OPTIONAL</span><input inputMode="decimal" value={currentPrice} disabled={locked} maxLength={30} placeholder="Leave blank if unclear" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
+        <article data-pass={!contextImage || result.sameInstrument === true}><span>CONTEXT CHART</span><strong>{!contextImage ? "NOT ADDED" : result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>
+      </div>
+      {result.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
+      <p>{result.status === "RETAKE" ? result.guidance : "Correct only what is wrong. An unreadable live-price label withholds exact prices; it does not stop the analysis."}</p>
+      <div className="psConfirmActions">{locked ? <><span>✓ YOUR CORRECTIONS OVERRIDE LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM DETAILS</button>}</div>
+    </details>
+    <footer>ANALYSIS CAN CONTINUE · UNVERIFIED NUMBERS ARE WITHHELD</footer>
   </section>;
 }
