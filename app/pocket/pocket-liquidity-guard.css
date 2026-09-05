@@ -41,6 +41,7 @@
 .psLiquidityGuard > header button { min-height: 44px; padding: 0 14px; border: 1px solid #62def578; border-radius: 999px; background: linear-gradient(135deg, #17343e, #0c1b21); color: #b7f3ff; font: 900 10px var(--font-geist-mono), monospace; letter-spacing: .07em; box-shadow: inset 0 1px #ffffff17, 0 8px 24px #0006; }
 .psLiquidityGuard > header button:active { transform: scale(.98); }
 .psLiquidityGuard > header button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.psLiquidityError { margin: 0; padding: 11px 16px; border-block: 1px solid #ff687052; background: #351218a8; color: #ffc0c5; font-size: 12px; line-height: 1.45; }
 
 .psLiquidityCanvas { position: relative; width: 100%; overflow: hidden; background: #020507; }
 .psLiquidityCanvas > img { display: block; width: 100%; height: auto; object-fit: contain; }
