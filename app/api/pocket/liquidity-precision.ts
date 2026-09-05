@@ -9,6 +9,7 @@ const PLAIN_NUMERIC_PRICE = /^-?(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d
 
 type Bounds = { left: number; top: number; right: number; bottom: number };
 type Anchor = { price: number; y: number };
+const SCALE_ANCHOR_RESIDUAL_TOLERANCE = 6.5;
 
 function finiteNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -90,7 +91,10 @@ function verifiedScale(value: unknown, bounds: Bounds) {
   // Vision coordinates on tall mobile screenshots routinely carry two to
   // three percentage points of row jitter. Monotonic labels plus the later
   // candle-row checks remain the stronger evidence than pixel-perfect OCR.
-  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 3.5)) return null;
+  // Tall mobile screenshots can shift an otherwise monotonic OCR label row by
+  // roughly six full-image percentage points. The zone is still required to
+  // pass narrow-band, literal-side and independent candle-touch checks below.
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_ANCHOR_RESIDUAL_TOLERANCE)) return null;
   return { project };
 }
 
@@ -153,7 +157,9 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
 
   const seen = new Set<number>();
   const plotHeight = bounds.bottom - bounds.top;
-  const maxBandHeight = plotHeight * .08;
+  // A narrow price cluster can occupy up to twelve percent of a tightly
+  // cropped mobile plot; it must still have multiple scale-aligned touches.
+  const maxBandHeight = plotHeight * .12;
   const rowTolerance = Math.min(3.5, Math.max(1.25, plotHeight * .045));
   const confidenceRank: Record<string, number> = { HIGH: 0, MEDIUM: 1 };
   const zones = [...raw.zones].sort((left, right) => {
