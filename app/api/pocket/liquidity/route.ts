@@ -149,6 +149,16 @@ export async function POST(request: Request) {
         return { expiresAt: Date.now() + REPLAY_TTL_MS, status: 422, payload: { error: "Liquidity Guard needs clearer candles and at least two readable price-axis labels." } };
       }
       const liquidityShield = normalizePrecisionLiquidityShield(raw, provenance.currentPrice);
+      const rawShield = raw.liquidityShield && typeof raw.liquidityShield === "object"
+        ? raw.liquidityShield as Record<string, unknown>
+        : null;
+      console.info("[pocket-bullseye] liquidity evidence", JSON.stringify({
+        rawStatus: rawShield?.status ?? "missing",
+        rawZones: Array.isArray(rawShield?.zones) ? rawShield.zones.length : 0,
+        anchors: Array.isArray(raw.priceScaleAnchors) ? raw.priceScaleAnchors.length : 0,
+        normalizedStatus: liquidityShield.status,
+        normalizedZones: liquidityShield.zones.length,
+      }));
       const result = canonicalizePocketGeometry({
         plotBounds: raw.plotBounds,
         priceScaleAnchors: raw.priceScaleAnchors,
