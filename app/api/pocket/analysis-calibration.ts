@@ -25,10 +25,10 @@ type ScaleAnchor = { price: number; y: number };
 const PATTERN_MIN_POINTS: Record<string, number> = {
   "HEAD & SHOULDERS": 5,
   "INVERSE H&S": 5,
-  "DOUBLE TOP": 5,
-  "DOUBLE BOTTOM": 5,
+  "DOUBLE TOP": 3,
+  "DOUBLE BOTTOM": 3,
   "CUP & HANDLE": 6,
-  "BREAKOUT & RETEST": 4,
+  "BREAKOUT & RETEST": 3,
   "RECTANGLE / RANGE": 4,
   "TREND CHANNEL": 4,
   "ASCENDING TRIANGLE": 4,
@@ -40,6 +40,12 @@ const PATTERN_MIN_POINTS: Record<string, number> = {
   "BEAR FLAG": 4,
   "PENNANT": 4,
 };
+
+function patternSpanThreshold(name: string) {
+  if (["BULL FLAG", "BEAR FLAG", "PENNANT", "BREAKOUT & RETEST"].includes(name)) return { x: .055, y: .03 };
+  if (["RECTANGLE / RANGE", "TREND CHANNEL"].includes(name)) return { x: .08, y: .035 };
+  return { x: .1, y: .04 };
+}
 
 function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, candlesReadable: boolean) {
   if (!Array.isArray(value) || !candlesReadable) return [];
@@ -70,7 +76,8 @@ function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, can
     if (points.some((point, index) => index > 0 && point.x < points[index - 1]!.x - .5)) return [];
     const xSpan = Math.max(...points.map((point) => point.x)) - Math.min(...points.map((point) => point.x));
     const ySpan = Math.max(...points.map((point) => point.y)) - Math.min(...points.map((point) => point.y));
-    if (xSpan < (right - left) * .12 || ySpan < (bottom - top) * .05) return [];
+    const span = patternSpanThreshold(name);
+    if (xSpan < (right - left) * span.x || ySpan < (bottom - top) * span.y) return [];
     if (typeof pattern.evidence !== "string" || pattern.evidence.trim().length < 24) return [];
     if (typeof pattern.confirmation !== "string" || pattern.confirmation.trim().length < 12) return [];
     if (typeof pattern.invalidation !== "string" || pattern.invalidation.trim().length < 12) return [];
