@@ -24,5 +24,5 @@ export type ChartConfirmation = {
 };
 
 export function preflightAllowsAnalysis(status: PreflightStatus) {
-  return status === "LOCKED" || status === "UNAVAILABLE";
+  return !["IDLE", "CHECKING"].includes(status);
 }
