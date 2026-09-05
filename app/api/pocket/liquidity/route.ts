@@ -158,6 +158,21 @@ export async function POST(request: Request) {
         anchors: Array.isArray(raw.priceScaleAnchors) ? raw.priceScaleAnchors.length : 0,
         normalizedStatus: liquidityShield.status,
         normalizedZones: liquidityShield.zones.length,
+        rejectionProbe: liquidityShield.zones.length === 0 && Array.isArray(rawShield?.zones) ? {
+          plotBounds: raw.plotBounds,
+          anchors: raw.priceScaleAnchors,
+          currentPrice: raw.currentPrice,
+          zones: rawShield.zones.map((item) => {
+            const zone = item && typeof item === "object" ? item as Record<string, unknown> : {};
+            return {
+              side: zone.side,
+              pattern: zone.pattern,
+              priceLow: zone.priceLow,
+              priceHigh: zone.priceHigh,
+              touchPoints: zone.touchPoints,
+            };
+          }),
+        } : null,
       }));
       const result = canonicalizePocketGeometry({
         plotBounds: raw.plotBounds,
