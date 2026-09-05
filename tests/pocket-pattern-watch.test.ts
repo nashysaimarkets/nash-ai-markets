@@ -40,7 +40,8 @@ test("Pattern Watch applies a deterministic geometry and confidence gate", async
   const calibration = await readFile(new URL("../app/api/pocket/analysis-calibration.ts", import.meta.url), "utf8");
   assert.match(calibration, /PATTERN_MIN_POINTS/);
   assert.match(calibration, /point\.x < points\[index - 1\]/);
-  assert.match(calibration, /xSpan < \(right - left\) \* \.12/);
+  assert.match(calibration, /patternSpanThreshold\(name\)/);
+  assert.match(calibration, /"BULL FLAG", "BEAR FLAG", "PENNANT", "BREAKOUT & RETEST"/);
   assert.match(calibration, /status !== "CONFIRMED" && status !== "EXTENDED"/);
   assert.match(calibration, /seenSources\.has\(sourceRole\)/);
 });
