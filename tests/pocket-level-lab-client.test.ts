@@ -37,3 +37,15 @@ test("Level Lab does not retry a parsed validation response", async () => {
   assert.equal(result.response.status, 422);
   assert.equal(result.payload.error, "Use a clearer scale.");
 });
+
+test("Level Lab preserves the capacity message without retrying exhausted provider quota", async () => {
+  let attempts = 0;
+  const message = "AI level scanning is unavailable because service capacity has been reached.";
+  const result = await postLevelLabScan<{ error: string }>("{}", async () => {
+    attempts += 1;
+    return new Response(JSON.stringify({ error: message }), { status: 402 });
+  });
+  assert.equal(attempts, 1);
+  assert.equal(result.response.status, 402);
+  assert.equal(result.payload.error, message);
+});

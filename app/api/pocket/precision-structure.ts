@@ -74,6 +74,14 @@ function records(value: unknown) {
 
 const UNKNOWN_IDENTITIES = new Set(["", "UNKNOWN", "UNREADABLE", "NOTVISIBLE", "NOTPROVIDED", "NA", "NONE"]);
 
+// The recorded IG pack was read as "US 500 USD" by preflight and
+// "US 500 (DFB)" by precision. USD is its native quote label, not a
+// different market. Keep this exact allowlist narrow: do not strip currencies
+// from FX pairs, converted products, ETFs or futures contracts.
+const INSTRUMENT_DISPLAY_ALIASES: Readonly<Record<string, string>> = {
+  US500USD: "US500",
+};
+
 /** Normalize only display noise; do not equate merely correlated instruments. */
 export function normalizeInstrumentIdentifier(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -103,7 +111,7 @@ function normalizedInstrumentSet(value: unknown): Set<string> {
   const candidates = Array.isArray(value) ? value : [value];
   return new Set(candidates.flatMap((candidate) => {
     const normalized = normalizeInstrumentIdentifier(candidate);
-    return normalized ? [normalized] : [];
+    return normalized ? [INSTRUMENT_DISPLAY_ALIASES[normalized] ?? normalized] : [];
   }));
 }
 

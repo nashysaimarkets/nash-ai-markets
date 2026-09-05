@@ -43,7 +43,7 @@
   border-radius: 10px;
   background: #c52132;
   color: #fff;
-  font: 900 9px var(--font-geist-mono), monospace;
+  font: 900 11px var(--font-geist-mono), monospace;
   letter-spacing: .1em;
   box-shadow: 0 10px 28px #000a;
 }

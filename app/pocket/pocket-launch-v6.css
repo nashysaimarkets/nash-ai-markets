@@ -169,7 +169,7 @@
   .psApp .psAnnotatedChart{height:min(58dvh,520px)}
   .psApp .psResultChart>div{height:min(68dvh,680px)}
   .psApp .psCopy>span{font-size:16px!important}
-  .psApp .psHeader::after{font-size:9px}
+  .psApp .psHeader::after{font-size:11px}
 }
 
 @media(prefers-reduced-motion:reduce){

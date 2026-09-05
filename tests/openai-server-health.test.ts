@@ -85,6 +85,14 @@ test("OpenAI spend-limit failures are never mistaken for ordinary rate limiting"
     message: "organization has reached its configured enforced spend limit",
   }), "quota_exhausted");
   assert.equal(classifyOpenAIFailure({ status: 429, code: "rate_limit_exceeded" }), "rate_limited");
+  for (const code of ["credit_balance_exhausted", "project_spend_limit_exceeded", "organization_usage_limit_exceeded"]) {
+    assert.equal(classifyOpenAIFailure({ status: 429, code }), "quota_exhausted");
+  }
+});
+
+test("OpenAI SDK timeout and abort errors are distinguished from an outage", () => {
+  assert.equal(classifyOpenAIFailure({ name: "APIConnectionTimeoutError" }), "timeout");
+  assert.equal(classifyOpenAIFailure({ name: "APIUserAbortError" }), "timeout");
 });
 
 test("OpenAI health route requires authentication and never serializes credentials or raw errors", async () => {

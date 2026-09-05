@@ -38,14 +38,17 @@ export function classifyOpenAIFailure(error: unknown): OpenAIFailureReason {
   if (candidate.status === 401 || candidate.code === "invalid_api_key") return "authentication_rejected";
   if (
     candidate.code === "insufficient_quota"
+    || candidate.code === "credit_balance_exhausted"
     || candidate.code === "organization_spend_limit_exceeded"
+    || candidate.code === "project_spend_limit_exceeded"
+    || candidate.code === "organization_usage_limit_exceeded"
     || candidate.type === "insufficient_quota"
     || message.includes("spend limit")
   ) return "quota_exhausted";
   if (candidate.status === 403 || candidate.code === "permission_denied") return "permission_denied";
   if (candidate.status === 404 || candidate.code === "model_not_found") return "model_unavailable";
   if (candidate.status === 429 || candidate.code === "rate_limit_exceeded") return "rate_limited";
-  if (candidate.name === "AbortError" || candidate.code === "ETIMEDOUT") return "timeout";
+  if (candidate.name === "AbortError" || candidate.name === "APIUserAbortError" || candidate.name === "APIConnectionTimeoutError" || candidate.code === "ETIMEDOUT") return "timeout";
   return "provider_unavailable";
 }
 

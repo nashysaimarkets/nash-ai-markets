@@ -27,7 +27,14 @@ export type ChartConfirmation = {
   timeframe: string;
   currentPrice: string;
   contextMatch: "MATCHED" | "NOT_PROVIDED";
+  source?: "PREFLIGHT" | "USER_CONFIRMED";
 };
+
+/** Older clients also auto-filled this object. Missing provenance is a hint,
+ * never evidence that a trader explicitly confirmed an OCR reading. */
+export function confirmedChartFacts(facts: ChartConfirmation | null): ChartConfirmation | null {
+  return facts?.source === "USER_CONFIRMED" ? facts : null;
+}
 
 export function preflightAllowsAnalysis(status: PreflightStatus) {
   return !["IDLE", "CHECKING", "RETAKE"].includes(status);

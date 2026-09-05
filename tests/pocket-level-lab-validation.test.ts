@@ -110,6 +110,26 @@ test("Level Lab rejects an unreadable or mismatched instrument", () => {
   });
 });
 
+test("Level Lab accepts the recorded native-currency title without weakening other checks", () => {
+  const recordedPrimary = { ...primary, instrument: "US 500 USD", ticker: "UNKNOWN" };
+  const result = validateLevelLabScan(scan(), recordedPrimary);
+  assert.equal(result.ok, true);
+  if (result.ok) {
+    assert.equal((result.levels.provenance as Record<string, unknown>).primaryInstrument, "US 500 USD");
+    assert.equal(result.levels.currentPrice, primary.currentPrice);
+    assert.equal((result.levels.trustGate as Record<string, unknown>).status, "LOCKED");
+  }
+  for (const [overrides, reason] of [
+    [{ instrumentIdentifier: "US Tech 100 (DFB)" }, "INSTRUMENT_MISMATCH"],
+    [{ instrumentIdentifier: "US 500 EUR" }, "INSTRUMENT_MISMATCH"],
+    [{ instrumentConfidence: "LOW" }, "INSTRUMENT_UNREADABLE"],
+    [{ currentPrice: "120" }, "CURRENT_PRICE_MISMATCH"],
+    [{ priceScaleAnchors: [] }, "PRICE_SCALE_UNVERIFIED"],
+  ] as const) {
+    assert.deepEqual(validateLevelLabScan(scan(overrides), recordedPrimary), { ok: false, reason });
+  }
+});
+
 test("Level Lab treats its current price as a compatibility check, never a replacement", () => {
   assert.deepEqual(validateLevelLabScan(scan({ currentPrice: "100-ish" }), primary), {
     ok: false,

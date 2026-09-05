@@ -60,6 +60,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
         const detectedInstrument = next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument.trim();
         const detectedTimeframe = next.timeframeConfidence === "UNKNOWN" ? "" : next.timeframe.trim();
         confirmationHandler.current(detectedInstrument && detectedTimeframe ? {
+          source: "PREFLIGHT",
           instrument: detectedInstrument,
           timeframe: detectedTimeframe,
           currentPrice: next.currentPriceConfidence === "UNKNOWN" ? "" : next.currentPrice.trim(),
@@ -85,6 +86,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
   const lock = () => {
     if (!valid) return;
     const confirmation: ChartConfirmation = {
+      source: "USER_CONFIRMED",
       instrument: instrument.trim().slice(0, 80),
       timeframe: timeframe.trim().slice(0, 30),
       currentPrice: currentPrice.trim().slice(0, 30),

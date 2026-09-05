@@ -77,6 +77,7 @@ export async function POST(request: Request) {
       instructions: [
         "Perform a fast screenshot quality preflight only; do not analyse market direction and do not return trading advice.",
         "Read the top-level instrument, timeframe and currentPrice from image 1 only. The top-level timeframe must be the exact visibly printed image-1 label (for example 5m), never a list, requested sequence, expected slot, or inferred value. Otherwise return UNKNOWN with the correct confidence.",
+        "Copy the instrument title exactly as printed, including broker qualifiers. Do not add a currency, ticker, or market name that is not visible.",
         "priceScaleVisible is true only when at least two right-side or left-side axis prices are legible.",
         "currentPrice is the exact visibly printed live/last-price marker nearest the latest candle. If it is absent or ambiguous return UNKNOWN and currentPriceConfidence UNKNOWN.",
         "candlesReadable requires discernible candle bodies and wicks. enoughHistory requires enough visible candles to judge repeated reactions or a meaningful swing.",
@@ -89,7 +90,7 @@ export async function POST(request: Request) {
       ].join(" "),
       input: [{ role: "user", content: [
         { type: "input_text", text: "Check this required four-timeframe Pocket Bullseye pack. IMAGE 1: 5 MINUTES." },
-        { type: "input_image", image_url: image, detail: "low" },
+        { type: "input_image", image_url: image, detail: "high" },
         { type: "input_text", text: "IMAGE 2: 30 MINUTES." },
         { type: "input_image", image_url: contextImage, detail: "low" },
         { type: "input_text", text: "IMAGE 3: 1 HOUR." },

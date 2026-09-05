@@ -1,13 +1,14 @@
-/* Futuristic depth layer. Visual treatment only: no layout geometry changes. */
+/* Orbital glass: paint and decorative motion only. Keep all layout geometry,
+   evidence colours, chart pixels and scan behaviour owned by the existing UI. */
 .psApp {
   --ps-future-cyan: rgba(73, 214, 255, .24);
   --ps-future-green: rgba(85, 233, 155, .2);
   --ps-future-gold: rgba(217, 180, 91, .16);
   background:
-    radial-gradient(ellipse at 50% -12%, rgba(44, 164, 220, .2), transparent 35rem),
-    radial-gradient(ellipse at -12% 38%, rgba(85, 233, 155, .1), transparent 31rem),
-    radial-gradient(ellipse at 112% 76%, rgba(217, 180, 91, .08), transparent 28rem),
-    linear-gradient(180deg, #02070d, #050b12 42%, #020509);
+    radial-gradient(ellipse at 50% -12%, rgba(44, 164, 220, .26), transparent 35rem),
+    radial-gradient(ellipse at -12% 38%, rgba(58, 202, 197, .13), transparent 31rem),
+    radial-gradient(ellipse at 112% 76%, rgba(97, 104, 224, .1), transparent 28rem),
+    linear-gradient(180deg, #02060d, #040a14 42%, #010408);
 }
 
 .psApp::before {
@@ -22,21 +23,55 @@
 
 .psApp::after {
   background:
-    linear-gradient(112deg, transparent 20%, rgba(103, 229, 255, .035) 44%, transparent 62%),
-    radial-gradient(circle at 82% 16%, rgba(85, 233, 155, .09), transparent 16rem);
+    radial-gradient(ellipse at 85% 12%, rgba(67, 219, 235, .17), transparent 34%),
+    radial-gradient(ellipse at 8% 72%, rgba(97, 107, 245, .12), transparent 32%),
+    linear-gradient(112deg, transparent 20%, rgba(103, 229, 255, .045) 44%, transparent 62%);
+  background-repeat: no-repeat;
   opacity: .8;
 }
 
 .psApp .psHeader {
-  background: linear-gradient(180deg, rgba(8, 17, 27, .96), rgba(3, 9, 15, .88));
-  border-bottom-color: rgba(96, 224, 255, .16);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, .48), 0 1px 0 rgba(109, 232, 255, .06);
+  background:
+    linear-gradient(110deg, transparent 20%, rgba(165, 236, 255, .07) 48%, transparent 72%),
+    linear-gradient(180deg, rgba(12, 25, 38, .95), rgba(3, 9, 17, .91));
+  background-size: 240% 100%, auto;
+  border-bottom-color: rgba(96, 224, 255, .24);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .55), 0 1px 0 rgba(109, 232, 255, .1), inset 0 1px rgba(234, 251, 255, .06);
   backdrop-filter: blur(22px) saturate(145%);
   -webkit-backdrop-filter: blur(22px) saturate(145%);
 }
 
 .psApp .psLogoMark {
   filter: drop-shadow(0 0 10px rgba(85, 233, 155, .28));
+}
+
+/* Keep the larger footer caption on one line inside the existing mobile
+   header band. Tracking changes only; the header geometry stays intact. */
+.psApp .psHeader::after {
+  letter-spacing: .01em;
+}
+
+.psApp .psLaunchHero {
+  background:
+    radial-gradient(ellipse at 79% 28%, rgba(73, 222, 240, .23), transparent 29%),
+    radial-gradient(ellipse at 0% 100%, rgba(111, 116, 238, .09), transparent 48%),
+    linear-gradient(135deg, #102a3e, #06111e 46%, #02070e);
+  border-color: rgba(126, 226, 255, .3);
+  box-shadow: 0 38px 90px rgba(0, 0, 0, .65), 0 0 48px rgba(61, 202, 231, .06), inset 0 1px rgba(225, 248, 255, .18), inset 1px 0 rgba(172, 233, 255, .05), inset 0 -35px 70px rgba(0, 0, 0, .22);
+}
+
+.psApp .psLaunchHero::before {
+  background: repeating-conic-gradient(from 0deg at 78% 42%, rgba(115, 229, 255, .065) 0 1deg, transparent 1deg 14deg);
+}
+
+.psApp .psLaunchHero::after {
+  background: linear-gradient(90deg, transparent, #76ecff, #a8ffdb, transparent);
+  box-shadow: 0 0 16px rgba(105, 236, 255, .65);
+}
+
+.psApp .psLaunchTarget > i {
+  border-color: rgba(126, 237, 255, .32);
+  box-shadow: 0 0 22px rgba(82, 214, 245, .1), inset 0 0 15px rgba(88, 216, 246, .05);
 }
 
 .psApp :is(
@@ -55,35 +90,38 @@
   .psResultChart,
   .psAskBullseye,
   .psRiskDesk,
-  .psSignalPulse
+  .psSignalPulse,
+  .psMarketStory
 ) {
-  border-color: rgba(112, 220, 255, .17);
+  border-color: rgba(112, 220, 255, .24);
   box-shadow:
-    0 24px 58px rgba(0, 0, 0, .43),
-    0 0 0 1px rgba(85, 233, 155, .025),
-    inset 0 1px 0 rgba(214, 247, 255, .055),
-    inset 0 -26px 70px rgba(0, 0, 0, .1);
-  backdrop-filter: blur(14px) saturate(125%);
-  -webkit-backdrop-filter: blur(14px) saturate(125%);
+    0 28px 64px rgba(0, 0, 0, .55),
+    0 5px 14px rgba(0, 0, 0, .38),
+    0 0 30px rgba(71, 209, 244, .025),
+    inset 0 1px 0 rgba(214, 247, 255, .12),
+    inset 1px 0 0 rgba(214, 247, 255, .035),
+    inset 0 -26px 70px rgba(0, 0, 0, .17);
+  /* Opaque glass shading gives depth without repeatedly blurring scrolling
+     charts underneath every card, especially on phones. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-.psApp :is(.psEvidencePack, .psCommandDeck, .psPatternWatch, .psDecisionEvents, .psResultChart) > header {
+.psApp :is(.psEvidencePack, .psCommandDeck, .psCoreScans, .psPatternWatch, .psDecisionEvents, .psResultChart, .psMarketStory) > header {
   background:
-    linear-gradient(90deg, rgba(58, 187, 233, .1), transparent 48%, rgba(85, 233, 155, .045)),
-    rgba(8, 17, 25, .66);
-  box-shadow: inset 0 -1px 0 rgba(113, 224, 255, .08);
+    linear-gradient(115deg, rgba(178, 237, 255, .08), transparent 32%, rgba(85, 233, 155, .035) 75%),
+    linear-gradient(180deg, rgba(14, 32, 46, .92), rgba(6, 16, 25, .96));
+  box-shadow: inset 0 1px rgba(214, 247, 255, .065), inset 0 -1px 0 rgba(113, 224, 255, .12);
 }
 
 .psApp :is(.psOpeningRail article, .psContextUpload, .psCoreScans article, .psMapConsole, .psPatternSignals article) {
   box-shadow:
-    0 14px 34px rgba(0, 0, 0, .3),
-    inset 0 1px 0 rgba(220, 249, 255, .05),
-    inset 0 0 30px rgba(55, 183, 225, .018);
+    0 16px 36px rgba(0, 0, 0, .42),
+    inset 0 1px 0 rgba(220, 249, 255, .1),
+    inset 0 -16px 30px rgba(0, 0, 0, .12);
 }
 
-/* The Decision Map header is content-sized, while the legacy intelligence
-   strip used a fixed 91px offset. Reserve a deterministic mobile header band
-   so long, real market copy cannot overlap the strip or price map. */
+/* Preserve the existing content-sized map header and all price coordinates. */
 .psApp .psDecisionMap .psMapIntro {
   background:
     radial-gradient(circle at 88% 12%, rgba(89, 224, 255, .13), transparent 32%),
@@ -102,24 +140,34 @@
   box-shadow: inset 0 0 70px rgba(40, 192, 230, .055), 0 24px 62px rgba(0, 0, 0, .5);
 }
 
-.psApp .psLiquidityCanvas::after {
-  content: "";
-  pointer-events: none;
-  background: linear-gradient(110deg, transparent 18%, rgba(102, 232, 255, .07) 48%, transparent 76%);
-  mix-blend-mode: screen;
-  transform: translateX(-105%);
-}
-
 .psApp .psUpload {
   background:
-    radial-gradient(circle at 50% 45%, rgba(85, 233, 155, .075), transparent 34%),
-    linear-gradient(145deg, rgba(16, 31, 42, .97), rgba(5, 11, 18, .99) 68%);
-  border-color: rgba(92, 218, 255, .2);
+    radial-gradient(circle at 50% 45%, rgba(86, 229, 208, .12), transparent 34%),
+    linear-gradient(145deg, #132c3b, #07121e 48%, #02070d);
+  border-color: rgba(116, 229, 255, .3);
   box-shadow:
     0 32px 78px rgba(0, 0, 0, .55),
     0 0 45px rgba(54, 177, 222, .045),
-    inset 0 1px 0 rgba(226, 250, 255, .07),
+    inset 0 1px 0 rgba(226, 250, 255, .17),
     inset 0 -44px 90px rgba(0, 0, 0, .24);
+}
+
+/* The existing non-interactive pane shines only before a chart is loaded. */
+.psApp .psUpload[data-loaded="false"]::after {
+  background: linear-gradient(115deg, transparent 30%, rgba(147, 234, 255, .085) 48%, rgba(236, 253, 255, .13) 50%, transparent 65%);
+  background-size: 250% 100%;
+  opacity: .65;
+}
+
+.psApp :is(.psContextUpload, .psBattleTabs button, .psCaptureRow label) {
+  transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+
+@media (hover: hover) {
+  .psApp :is(.psContextUpload, .psCaptureRow label):hover {
+    border-color: rgba(135, 238, 255, .52);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .42), 0 0 22px rgba(82, 220, 255, .1), inset 0 1px rgba(235, 253, 255, .16);
+  }
 }
 
 .psApp .psAnalyse[data-busy="true"] > span > small[role="timer"] {
@@ -130,14 +178,14 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .psApp::before { animation: psFutureGridDrift 24s linear infinite; }
-  .psApp::after { animation: psFutureLightSweep 11s ease-in-out infinite; }
+  .psApp::after { animation: psFutureLightSweep 19s ease-in-out infinite; }
+  .psApp .psHeader { animation: psFutureGlassSheen 16s ease-in-out infinite; }
   .psApp .psLogoMark { animation: psFutureLogoFloat 4.8s ease-in-out infinite; }
   .psApp :is(.psTrustPulse span, .psOpeningRail article > i) { animation: psFutureSignalPulse 3.6s ease-in-out infinite; }
   .psApp :is(.psTrustPulse span, .psOpeningRail article > i):nth-child(2) { animation-delay: .55s; }
   .psApp :is(.psTrustPulse span, .psOpeningRail article > i):nth-child(3) { animation-delay: 1.1s; }
-  .psApp :is(.psEvidencePack, .psJournalHome, .psAutoPreview, .psPreflight) { animation: psFutureSurfaceReveal .58s cubic-bezier(.2,.8,.2,1) both; }
-  .psApp .psLiquidityCanvas::after { animation: psFutureChartSweep 7s ease-in-out infinite; }
-  .psApp .psDecisionMap { animation: psFutureMapGlow 6s ease-in-out infinite; }
+  .psApp :is(.psEvidencePack, .psJournalHome, .psAutoPreview, .psPreflight) { animation: psFutureSurfaceReveal .65s ease-out; }
+  .psApp .psUpload[data-loaded="false"]::after { animation: psFutureGlassSheen 8s ease-in-out infinite; }
 }
 
 @keyframes psFutureGridDrift {
@@ -145,8 +193,13 @@
 }
 
 @keyframes psFutureLightSweep {
-  0%, 100% { background-position: -8vw 0, 82% 16%; opacity: .52; }
-  50% { background-position: 8vw 0, 82% 16%; opacity: .9; }
+  0%, 100% { background-position: -3vw 0, 2vw 0, center; opacity: .48; }
+  50% { background-position: 3vw 0, -2vw 0, center; opacity: .88; }
+}
+
+@keyframes psFutureGlassSheen {
+  0%, 20% { background-position: 100% 0, center; }
+  70%, 100% { background-position: -100% 0, center; }
 }
 
 @keyframes psFutureLogoFloat {
@@ -160,29 +213,22 @@
 }
 
 @keyframes psFutureSurfaceReveal {
-  from { opacity: 0; transform: translateY(7px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes psFutureChartSweep {
-  0%, 58% { transform: translateX(-105%); opacity: 0; }
-  70% { opacity: .9; }
-  88%, 100% { transform: translateX(105%); opacity: 0; }
-}
-
-@keyframes psFutureMapGlow {
-  0%, 100% { box-shadow: inset 0 0 55px rgba(40, 192, 230, .04), 0 24px 62px rgba(0, 0, 0, .5); }
-  50% { box-shadow: inset 0 0 82px rgba(40, 192, 230, .09), 0 24px 72px rgba(0, 0, 0, .58); }
+  from { opacity: .5; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .psApp::before,
   .psApp::after,
+  .psApp .psHeader,
   .psApp .psLogoMark,
   .psApp :is(.psTrustPulse span, .psOpeningRail article > i),
   .psApp :is(.psEvidencePack, .psJournalHome, .psAutoPreview, .psPreflight),
-  .psApp .psLiquidityCanvas::after,
-  .psApp .psDecisionMap {
+  .psApp .psUpload[data-loaded="false"]::after {
     animation: none;
+  }
+
+  .psApp :is(.psContextUpload, .psBattleTabs button, .psCaptureRow label) {
+    transition: none;
   }
 }

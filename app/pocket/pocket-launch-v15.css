@@ -13,12 +13,12 @@
 .psUtilityTray summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;min-height:54px;padding:0 15px;color:#aeb9b4}
 .psUtilityTray summary::-webkit-details-marker{display:none}
 .psUtilityTray summary span{color:#8eeeb9;font-size:12px;font-weight:900;letter-spacing:.12em}
-.psUtilityTray summary small{color:#75818a;font-size:10px;font-weight:800;letter-spacing:.1em}
+.psUtilityTray summary small{color:#75818a;font-size:11px;font-weight:800;letter-spacing:.1em}
 .psUtilityTray summary b{color:#d9b45b;font-size:22px;font-weight:400;transition:transform .22s ease}
 .psUtilityTray[open] summary{border-bottom:1px solid #28333d;background:#0e1715}.psUtilityTray[open] summary b{transform:rotate(45deg)}
 .psUtilityTray>div{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px}
 .psUtilityTray button{min-width:0;min-height:64px;padding:10px;border:1px solid #2d3943;border-radius:10px;background:#0f161c;color:#b8c3bd;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:9px;text-align:left}
-.psUtilityTray button>i{font-style:normal;color:#d9b45b;font-size:21px}.psUtilityTray button strong{display:block;color:#dce5e0;font-size:11px;letter-spacing:.08em}.psUtilityTray button small{display:block;margin-top:4px;color:#78858c;font-size:10px;line-height:1.25}
+.psUtilityTray button>i{font-style:normal;color:#d9b45b;font-size:21px}.psUtilityTray button strong{display:block;color:#dce5e0;font-size:11px;letter-spacing:.08em}.psUtilityTray button small{display:block;margin-top:4px;color:#78858c;font-size:11px;line-height:1.25}
 .psUtilityTray>p{margin:0;padding:0 13px 13px;color:#77848b;font-size:12px;line-height:1.45}
 @keyframes psChallengeSweep{55%,100%{transform:translateX(135%)}}
 @keyframes psChallengeProgress{0%{width:8%;transform:translateX(-20%)}65%{width:72%}100%{width:25%;transform:translateX(390%)}}

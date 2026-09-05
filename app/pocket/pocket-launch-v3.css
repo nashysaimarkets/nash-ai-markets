@@ -21,23 +21,23 @@
 
 /* v3.1 mobile presentation fix — intentionally CSS-only and data-free. */
 .psHeader{height:76px;padding-inline:18px;border-bottom:1px solid rgba(183,255,42,.16);background:linear-gradient(180deg,rgba(5,8,12,.97),rgba(5,8,12,.88))}
-.psHeader::after{content:"V3.1 · PRIVATE BETA";position:absolute;right:18px;bottom:7px;color:rgba(183,255,42,.48);font:800 5px var(--font-geist-mono),monospace;letter-spacing:.14em}
-.psLogo strong{font-size:11px;letter-spacing:.17em}.psLogo small{font-size:6px;color:#89968e}
+.psHeader::after{content:"V3.1 · PRIVATE BETA";position:absolute;right:18px;bottom:7px;color:rgba(183,255,42,.48);font:800 11px var(--font-geist-mono),monospace;letter-spacing:.14em}
+.psLogo strong{font-size:11px;letter-spacing:.17em}.psLogo small{font-size:11px;color:#89968e}
 .psScanner{width:min(calc(100% - 24px),620px)}
 .psCopy,.psResults>header{padding:34px 2px 18px}
-.psCopy>p,.psResults>header>p{font-size:8px;letter-spacing:.16em;color:#9eaaa4}
+.psCopy>p,.psResults>header>p{font-size:11px;letter-spacing:.16em;color:#9eaaa4}
 .psCopy h1,.psResults h1{margin:15px 0 12px;font-size:clamp(40px,12.5vw,58px);line-height:.9;letter-spacing:-.035em}
 .psCopy>span,.psResults>header>span{max-width:560px;color:#a9b1ad;font-size:14px;line-height:1.55}
 .psUpload{height:410px;margin-top:4px;border-radius:22px;border-color:rgba(183,255,42,.28);background:radial-gradient(circle at 50% 42%,rgba(183,255,42,.075),transparent 34%),linear-gradient(145deg,rgba(22,28,34,.98),rgba(6,9,13,.98));box-shadow:0 22px 65px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08)}
-.psUpload::before{content:"CHART INPUT · READY";position:absolute;z-index:3;top:14px;left:15px;padding:6px 8px;border:1px solid rgba(183,255,42,.18);border-radius:999px;background:rgba(5,8,11,.68);color:rgba(183,255,42,.8);font:800 6px var(--font-geist-mono),monospace;letter-spacing:.12em}
+.psUpload::before{content:"CHART INPUT · READY";position:absolute;z-index:3;top:14px;left:15px;padding:6px 8px;border:1px solid rgba(183,255,42,.18);border-radius:999px;background:rgba(5,8,11,.68);color:rgba(183,255,42,.8);font:800 11px var(--font-geist-mono),monospace;letter-spacing:.12em}
 .psUpload::after{border-radius:21px;background:linear-gradient(135deg,rgba(255,255,255,.07),transparent 22%,transparent 68%,rgba(183,255,42,.035))}
 .psTarget{width:132px;height:132px;border-color:rgba(183,255,42,.58);box-shadow:0 0 70px rgba(183,255,42,.12),0 18px 38px rgba(0,0,0,.45)}
 .psTarget:before{border-color:rgba(183,255,42,.22)}.psTarget:after{background:var(--ps-green);box-shadow:0 0 28px rgba(183,255,42,.7)}
 .psTarget i:first-child{height:158px;background:linear-gradient(transparent,rgba(183,255,42,.75),transparent)}.psTarget i:nth-child(2){width:158px;background:linear-gradient(90deg,transparent,rgba(183,255,42,.75),transparent)}
 .psScanLine{display:block;background:rgba(183,255,42,.55);box-shadow:0 0 15px rgba(183,255,42,.3)}
 .psUpload>strong{margin-top:30px;font-size:24px;letter-spacing:-.02em;text-shadow:0 0 24px rgba(183,255,42,.18)}
-.psUpload>small{color:#8b9790;font-size:7px}
-.psCaptureRow{margin-top:11px}.psCaptureRow label{border-color:rgba(183,255,42,.55);color:var(--ps-green);background:rgba(183,255,42,.04);border-radius:10px;padding:12px 14px}.psCaptureRow span{font-size:6px;color:#7c8982}
+.psUpload>small{color:#8b9790;font-size:11px}
+.psCaptureRow{margin-top:11px}.psCaptureRow label{border-color:rgba(183,255,42,.55);color:var(--ps-green);background:rgba(183,255,42,.04);border-radius:10px;padding:12px 14px}.psCaptureRow span{font-size:11px;color:#7c8982}
 .psPrivacy{border-color:rgba(255,255,255,.1);border-radius:12px;background:rgba(15,20,25,.78);padding:13px}
 .psAnalyse{margin-top:10px;border-radius:12px;border-color:rgba(183,255,42,.55);background:linear-gradient(100deg,#89c91c,#b7ff2a 58%,#d4ff74);color:#071006;box-shadow:0 14px 34px rgba(183,255,42,.16),inset 0 1px 0 rgba(255,255,255,.45);font-size:11px}
 .psAnalyse b{font-size:20px}

@@ -45,7 +45,7 @@
   display:block;
   margin-top:8px;
   color:#8d9994;
-  font:700 9px/1.2 var(--font-geist-mono),"Courier New",monospace;
+  font:700 11px/1.2 var(--font-geist-mono),"Courier New",monospace;
   letter-spacing:.16em;
   opacity:.9;
 }
@@ -107,10 +107,10 @@
   padding:6px 9px;
   background:#38f28e14;
   color:#38f28e;
-  font:800 8px/1 var(--font-geist-mono),monospace;
+  font:800 11px/1 var(--font-geist-mono),monospace;
   letter-spacing:.16em;
 }
-.psApp .psIntent header b{font-size:10px}
+.psApp .psIntent header b{font-size:11px}
 .psApp .psIntent button{min-height:46px;font-weight:800;letter-spacing:.06em}
 
 /* Make the annotated chart feel like a living instrument, not a static screenshot. */
@@ -132,7 +132,7 @@
   border-radius:5px;
   background:#06100dcc;
   color:#c9d3ce;
-  font:800 8px/1 var(--font-geist-mono),monospace;
+  font:800 11px/1 var(--font-geist-mono),monospace;
   letter-spacing:.12em;
   backdrop-filter:blur(8px);
 }

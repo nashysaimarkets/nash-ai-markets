@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { levelLabRejectionMessage, validateLevelLabPrimaryProvenance, validateLevelLabScan } from "../level-lab-validation.ts";
@@ -150,10 +150,17 @@ export async function POST(request: Request) {
           { type: "input_image", image_url: image, detail: "high" },
           ...(precisionImage ? [{ type: "input_image" as const, image_url: precisionImage, detail: "high" as const }] : []),
         ] }],
-        max_output_tokens: 1600,
+        max_output_tokens: 2400,
         text: { format: { type: "json_schema", name: "pocket_bullseye_level_lab", strict: true, schema } },
       }, { signal: providerController.signal, timeout: LEVEL_LAB_PROVIDER_TIMEOUT_MS });
       const output = response.output_text?.trim();
+      console.info("[pocket-bullseye] level lab provider completion", JSON.stringify({
+        requestId,
+        status: response.status,
+        incompleteReason: response.incomplete_details?.reason ?? null,
+        outputChars: output?.length ?? 0,
+        outputTokens: response.usage?.output_tokens ?? null,
+      }));
       if (!output) throw new Error("The level scan returned no result.");
       const validation = validateLevelLabScan(JSON.parse(output), primaryProvenance);
       if (!validation.ok) {
@@ -172,11 +179,20 @@ export async function POST(request: Request) {
         outcome: "complete",
       };
     } catch (error) {
+      const reason = classifyOpenAIFailure(error);
       return {
         expiresAt: Date.now(),
-        status: 502,
-        payload: { error: "The independent level scan could not complete. Please retry with a clearer price scale." },
+        // Exhausted account capacity cannot recover through a transport retry.
+        status: reason === "quota_exhausted" ? 402 : reason === "rate_limited" ? 429 : 502,
+        payload: { error: reason === "quota_exhausted"
+          ? "AI level scanning is unavailable because service capacity has been reached. Your photo and existing map are unchanged; scanning can resume when service is restored."
+          : reason === "rate_limited"
+          ? "The level scanner is temporarily busy. Your photo and existing map are unchanged; please retry in a minute."
+          : reason === "timeout"
+          ? "The level scanner took too long to respond. Your photo and existing map are unchanged; please retry."
+          : "The level scanner could not return a complete result. Your photo and existing map are unchanged; please retry shortly." },
         outcome: "failed",
+        reason,
         errorName: error instanceof Error ? error.name : "unknown",
       };
     } finally {
@@ -188,7 +204,7 @@ export async function POST(request: Request) {
     const result = await providerWork;
     if (completedKey && result.status !== 502) rememberCompletedRequest(completedKey, result);
     if (result.outcome === "failed") {
-      console.error("[pocket-bullseye] independent level scan failed", JSON.stringify({ requestId, error: result.errorName, durationMs: Date.now() - startedAt }));
+      console.error("[pocket-bullseye] independent level scan failed", JSON.stringify({ requestId, error: result.errorName, reason: result.reason, durationMs: Date.now() - startedAt }));
     } else {
       console.info(`[pocket-bullseye] level lab ${result.outcome}`, JSON.stringify({ requestId, status: result.status, ...(result.reason ? { reason: result.reason } : {}), durationMs: Date.now() - startedAt }));
     }

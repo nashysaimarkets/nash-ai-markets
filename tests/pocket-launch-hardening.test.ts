@@ -370,7 +370,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 14/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 15/);
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
@@ -398,7 +398,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /psRefineDelta/);
   assert.match(analyseRoute, /contextContribution/);
   assert.match(analyseRoute, /instrumentIdentifier/);
-  assert.match(analyseRoute, /const userVerifiedInstrument = accuracyCorrection\?\.instrument \?\? chartConfirmation\?\.instrument/);
+  assert.match(analyseRoute, /const userVerifiedInstrument = accuracyCorrection\?\.instrument \?\? userConfirmedChart\?\.instrument/);
   assert.match(analyseRoute, /const exactPrimaryInstrument = userVerifiedInstrument/);
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);

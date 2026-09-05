@@ -201,6 +201,19 @@ test("a high-confidence precision read preserves the complete visible instrument
   assert.equal(verifiedPrecisionInstrumentIdentifier("UNKNOWN", "HIGH"), null);
 });
 
+test("the recorded US 500 USD preflight title matches the IG DFB chart and context", () => {
+  assert.equal(instrumentIdentitiesMatch("US 500 USD", "US 500 (DFB)"), true);
+  assert.equal(instrumentIdentitiesMatch("US 500 (DFB)", "US 500 USD"), true);
+  assert.deepEqual(
+    confirmContextCompatibility({}, true, "7709.19", "7708.49", true, "US 500 USD", "US 500 (DFB)"),
+    { compatible: true, reason: "EXPLICIT_MATCH" },
+  );
+  for (const other of ["US 500 EUR", "US Tech 100 (DFB)", "SPY", "ES Sep 2026", "US 500 Futures", "EUR/USD", "USD/JPY"]) {
+    assert.equal(instrumentIdentitiesMatch("US 500 USD", other), false, other);
+  }
+  assert.equal(instrumentIdentitiesMatch("EUR/USD", "EUR"), false);
+});
+
 test("combined battlefield fills a missing side without copying image geometry", () => {
   const combined = combineVerifiedBattlefield(
     [{ kind: "support", label: "4h floor", price: "95", x: 4, y: 80, x2: 90, y2: 80 }],
