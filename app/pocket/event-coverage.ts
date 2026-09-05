@@ -45,9 +45,21 @@ function compactPair(ticker: string): [string, string] | null {
   return CURRENCY_CODES.has(base) && CURRENCY_CODES.has(quote) ? [base, quote] : null;
 }
 
+function knownInstrumentAssetClass(identity: string): EventAssetClass | null {
+  // Broker display names are often the only exact identifier visible in a
+  // screenshot. They are still sufficient to classify the calendar scope,
+  // even when there is deliberately no exchange ticker in the image.
+  if (/\b(?:US\s*500|S\s*&\s*P\s*500|SPX|UK\s*100|GERMANY\s*40|WALL\s*STREET|US\s*TECH\s*100)\b/.test(identity)) return "INDEX_OR_ETF";
+  if (/\b(?:INDEX|INDICES|ETF|DFB|CASH INDEX)\b/.test(identity)) return "INDEX_OR_ETF";
+  return null;
+}
+
 export function classifyEventAsset(input: EventCoverageInput): EventAssetClass {
-  if (input.evidenceQuality.instrumentConfidence !== "HIGH") return "UNKNOWN";
   const { identity, ticker } = normalized(input);
+  if (/\b(FUTURE|FUTURES|CONTINUOUS CONTRACT)\b/.test(identity) || FUTURES_TICKERS.has(ticker)) return "FUTURES";
+  const knownInstrument = knownInstrumentAssetClass(identity);
+  if (knownInstrument && ["HIGH", "MEDIUM"].includes(input.evidenceQuality.instrumentConfidence)) return knownInstrument;
+  if (input.evidenceQuality.instrumentConfidence !== "HIGH") return "UNKNOWN";
   if (!ticker || ticker === "UNKNOWN") return "UNKNOWN";
 
   if (/\b(CRYPTO|BITCOIN|ETHEREUM|ALTCOIN)\b/.test(identity)) return "CRYPTO";
@@ -56,9 +68,8 @@ export function classifyEventAsset(input: EventCoverageInput): EventAssetClass {
 
   if (/\b(COMMODIT(?:Y|IES)|GOLD|SILVER|COPPER|CRUDE|BRENT|WTI|NATURAL GAS)\b/.test(identity) || /^(XAU|XAG|XPT|XPD)(USD)?$/.test(cryptoCompact)) return "COMMODITY";
   if (/\b(FOREX|FX|CURRENCY)\b/.test(identity) || compactPair(ticker)) return "FOREX";
-  if (/\b(FUTURE|FUTURES|CONTINUOUS CONTRACT)\b/.test(identity) || FUTURES_TICKERS.has(ticker)) return "FUTURES";
   if (/\b(BOND|BONDS|TREASURY|TREASURIES|YIELD|GILT|BUND)\b/.test(identity) || /^(US)?(?:2Y|5Y|10Y|30Y)$/.test(ticker)) return "RATES";
-  if (/\b(INDEX|INDICES|ETF|DFB|CASH INDEX)\b/.test(identity) || INDEX_TICKERS.has(ticker) || ETF_TICKERS.has(ticker)) return "INDEX_OR_ETF";
+  if (knownInstrument || INDEX_TICKERS.has(ticker) || ETF_TICKERS.has(ticker)) return "INDEX_OR_ETF";
 
   return /^[A-Z][A-Z0-9.-]{0,14}$/.test(ticker) ? "LISTED_COMPANY" : "UNKNOWN";
 }
