@@ -63,6 +63,24 @@ const schema = {
   required: ["instrumentIdentifier", "instrumentConfidence", "timeframe", "timeframeConfidence", "currentPrice", "candlesReadable", "priceScaleReadable", "plotBounds", "priceScaleAnchors", "liquidityShield", "confidence", "limitation"],
 } as const;
 
+const calibrationSchema = {
+  type: "object", additionalProperties: false,
+  properties: {
+    instrumentIdentifier: { type: "string", maxLength: 80 },
+    instrumentConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+    timeframe: { type: "string", maxLength: 30 },
+    timeframeConfidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+    currentPrice: { type: "string", maxLength: 30 },
+    candlesReadable: { type: "boolean" },
+    priceScaleReadable: { type: "boolean" },
+    plotBounds: geometry.plotBounds,
+    priceScaleAnchors: geometry.priceScaleAnchors,
+    confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] },
+    limitation: { type: "string", maxLength: 160 },
+  },
+  required: ["instrumentIdentifier", "instrumentConfidence", "timeframe", "timeframeConfidence", "currentPrice", "candlesReadable", "priceScaleReadable", "plotBounds", "priceScaleAnchors", "confidence", "limitation"],
+} as const;
+
 function requestKey(request: Request, image: string, provenance: unknown) {
   const id = request.headers.get("x-pocket-request-id")?.trim() ?? "";
   if (!/^[a-zA-Z0-9_-]{8,80}$/.test(id)) return null;
@@ -116,7 +134,11 @@ export async function POST(request: Request) {
   console.info("[pocket-bullseye] liquidity rescan start", JSON.stringify({ imageChars: image.length }));
   const work = (async (): Promise<CachedResult> => {
     try {
-      const response = await client.responses.create({
+      const sharedInput = [{ role: "user" as const, content: [
+        { type: "input_text" as const, text: `Verify Liquidity Guard for the primary chart. Expected identity=${provenance.instrument}; ticker=${provenance.ticker || "not supplied"}; timeframe=${provenance.timeframe}; current-price reference=${provenance.currentPrice}. These expected values are compatibility checks only.` },
+        { type: "input_image" as const, image_url: image, detail: "high" as const },
+      ] }];
+      const [response, calibrationResponse] = await Promise.all([client.responses.create({
         model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
         reasoning: { effort: "low" }, store: false,
         instructions: [
@@ -130,40 +152,58 @@ export async function POST(request: Request) {
           "Use ABOVE_PRICE, BELOW_PRICE or AT_PRICE literally relative to the visible current-price marker. Prefer one or two strong zones over weak clutter.",
           "NO_VISIBLE_RISK_ZONES means the scan completed with a verified scale but no repeated cluster. INSUFFICIENT_EVIDENCE means identity, price, scale or candle rows could not be verified.",
         ].join(" "),
-        input: [{ role: "user", content: [
-          { type: "input_text", text: `Verify Liquidity Guard for the primary chart. Expected identity=${provenance.instrument}; ticker=${provenance.ticker || "not supplied"}; timeframe=${provenance.timeframe}; current-price reference=${provenance.currentPrice}. These expected values are compatibility checks only.` },
-          { type: "input_image", image_url: image, detail: "high" },
-        ] }],
+        input: sharedInput,
         max_output_tokens: 1500,
         text: { format: { type: "json_schema", name: "pocket_liquidity_guard_rescan", strict: true, schema } },
-      }, { timeout: PROVIDER_TIMEOUT_MS });
+      }, { timeout: PROVIDER_TIMEOUT_MS }), client.responses.create({
+        model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+        reasoning: { effort: "low" }, store: false,
+        instructions: [
+          "Independently calibrate only the uploaded chart's visible candle plot and printed price axis.",
+          "Read the instrument, timeframe and current-price marker from the image. Expected values are compatibility checks only.",
+          "Return full-image percentage coordinates. plotBounds encloses only the candle plot, excluding phone chrome, headers, axes, tickets, dates and footer statistics.",
+          "Return 3-4 widely separated printed price-axis labels with the y coordinate through the vertical centre of each printed number. Never infer missing labels or reuse coordinates from another response.",
+          "priceScaleReadable is false and confidence LOW unless at least three printed labels can be independently located.",
+        ].join(" "),
+        input: sharedInput,
+        max_output_tokens: 700,
+        text: { format: { type: "json_schema", name: "pocket_liquidity_axis_calibration", strict: true, schema: calibrationSchema } },
+      }, { timeout: PROVIDER_TIMEOUT_MS })]);
       const output = response.output_text?.trim();
-      if (!output) throw new Error("empty_liquidity_result");
+      const calibrationOutput = calibrationResponse.output_text?.trim();
+      if (!output || !calibrationOutput) throw new Error("empty_liquidity_result");
       const raw = canonicalizePocketGeometry(JSON.parse(output)) as Record<string, unknown>;
+      const calibration = canonicalizePocketGeometry(JSON.parse(calibrationOutput)) as Record<string, unknown>;
       const identityMatch = raw.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], raw.instrumentIdentifier) === true;
       const timeframeMatch = raw.timeframeConfidence === "HIGH" && compatibleTimeframe(provenance.timeframe, raw.timeframe);
-      if (!identityMatch || !timeframeMatch || !compatiblePrice(provenance.currentPrice, raw.currentPrice)) {
+      const calibrationIdentityMatch = calibration.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], calibration.instrumentIdentifier) === true;
+      const calibrationTimeframeMatch = calibration.timeframeConfidence === "HIGH" && compatibleTimeframe(provenance.timeframe, calibration.timeframe);
+      if (!identityMatch || !timeframeMatch || !compatiblePrice(provenance.currentPrice, raw.currentPrice)
+        || !calibrationIdentityMatch || !calibrationTimeframeMatch || !compatiblePrice(provenance.currentPrice, calibration.currentPrice)) {
         return { expiresAt: Date.now() + REPLAY_TTL_MS, status: 422, payload: { error: "Liquidity Guard could not verify that this is the same primary chart." } };
       }
-      if (raw.candlesReadable !== true || raw.priceScaleReadable !== true || raw.confidence === "LOW") {
+      if (raw.candlesReadable !== true || raw.priceScaleReadable !== true || raw.confidence === "LOW"
+        || calibration.candlesReadable !== true || calibration.priceScaleReadable !== true || calibration.confidence === "LOW") {
         return { expiresAt: Date.now() + REPLAY_TTL_MS, status: 422, payload: { error: "Liquidity Guard needs clearer candles and at least two readable price-axis labels." } };
       }
       const normalizationDiagnostics: string[] = [];
-      const liquidityShield = normalizePrecisionLiquidityShield(raw, provenance.currentPrice, normalizationDiagnostics);
+      const independentGeometry = { ...raw, plotBounds: calibration.plotBounds, priceScaleAnchors: calibration.priceScaleAnchors };
+      const liquidityShield = normalizePrecisionLiquidityShield(independentGeometry, provenance.currentPrice, normalizationDiagnostics);
       const rawShield = raw.liquidityShield && typeof raw.liquidityShield === "object"
         ? raw.liquidityShield as Record<string, unknown>
         : null;
       console.info("[pocket-bullseye] liquidity evidence", JSON.stringify({
         rawStatus: rawShield?.status ?? "missing",
         rawZones: Array.isArray(rawShield?.zones) ? rawShield.zones.length : 0,
-        anchors: Array.isArray(raw.priceScaleAnchors) ? raw.priceScaleAnchors.length : 0,
+        anchors: Array.isArray(calibration.priceScaleAnchors) ? calibration.priceScaleAnchors.length : 0,
+        independentCalibration: true,
         normalizedStatus: liquidityShield.status,
         normalizedZones: liquidityShield.zones.length,
         rejectionReasons: [...new Set(normalizationDiagnostics)],
       }));
       const result = canonicalizePocketGeometry({
-        plotBounds: raw.plotBounds,
-        priceScaleAnchors: raw.priceScaleAnchors,
+        plotBounds: calibration.plotBounds,
+        priceScaleAnchors: calibration.priceScaleAnchors,
         liquidityShield,
         evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true },
       }) as Record<string, unknown>;
