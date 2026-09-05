@@ -9,7 +9,7 @@ const PLAIN_NUMERIC_PRICE = /^-?(?:\d+(?:\.\d+)?|\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d
 
 type Bounds = { left: number; top: number; right: number; bottom: number };
 type Anchor = { price: number; y: number };
-const SCALE_ANCHOR_RESIDUAL_TOLERANCE = 6.5;
+const SCALE_ANCHOR_RESIDUAL_TOLERANCE = 2.25;
 
 function finiteNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
@@ -77,25 +77,24 @@ function verifiedScale(value: unknown, bounds: Bounds) {
   const unique = anchors.filter((anchor, index, all) =>
     all.findIndex((candidate) => candidate.price === anchor.price || candidate.y === anchor.y) === index,
   );
-  // Prefer three labels so a non-linear fit can be detected. A widely
-  // separated two-label mobile scale is accepted only because every returned
-  // zone still has to pass side, band-width and observed touch-row checks.
-  if (unique.length < 2) return null;
-  const ordered = [...unique].sort((left, right) => left.price - right.price);
-  if (!ordered.every((anchor, index) => index === 0 || anchor.y < ordered[index - 1].y)) return null;
-  const low = ordered[0];
-  const high = ordered.at(-1)!;
-  const minimumSpan = ordered.length === 2 ? (bounds.bottom - bounds.top) * .28 : 12;
-  if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
-  const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  // Vision coordinates on tall mobile screenshots routinely carry two to
-  // three percentage points of row jitter. Monotonic labels plus the later
-  // candle-row checks remain the stronger evidence than pixel-perfect OCR.
-  // Tall mobile screenshots can shift an otherwise monotonic OCR label row by
-  // roughly six full-image percentage points. The zone is still required to
-  // pass narrow-band, literal-side and independent candle-touch checks below.
-  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > SCALE_ANCHOR_RESIDUAL_TOLERANCE)) return null;
-  return { project };
+  if (unique.length < 3) return null;
+  const candidates: Array<{ project: (price: number) => number; inliers: Anchor[]; span: number; residual: number }> = [];
+  for (let leftIndex = 0; leftIndex < unique.length; leftIndex += 1) {
+    for (let rightIndex = leftIndex + 1; rightIndex < unique.length; rightIndex += 1) {
+      const left = unique[leftIndex], right = unique[rightIndex];
+      if (left.price === right.price) continue;
+      const project = (price: number) => left.y + ((price - left.price) / (right.price - left.price)) * (right.y - left.y);
+      const inliers = unique.filter((anchor) => Math.abs(project(anchor.price) - anchor.y) <= SCALE_ANCHOR_RESIDUAL_TOLERANCE)
+        .sort((a, b) => a.price - b.price);
+      if (inliers.length < 3 || !inliers.every((anchor, index) => index === 0 || anchor.y < inliers[index - 1].y)) continue;
+      const span = Math.abs(inliers.at(-1)!.y - inliers[0].y);
+      if (span < 12) continue;
+      const residual = inliers.reduce((total, anchor) => total + Math.abs(project(anchor.price) - anchor.y), 0);
+      candidates.push({ project, inliers, span, residual });
+    }
+  }
+  candidates.sort((a, b) => b.inliers.length - a.inliers.length || b.span - a.span || a.residual - b.residual);
+  return candidates[0] ? { project: candidates[0].project } : null;
 }
 
 function normalizedShieldRank(shield: { status: string; zones?: unknown[] }) {
