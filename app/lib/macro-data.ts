@@ -72,6 +72,14 @@ export type EconomicRelease = {
   sourceUrl?: string;
 };
 
+export type SupplementalMarketEvent = {
+  id: string;
+  name: string;
+  scheduledAt: string;
+  risk: "HIGH" | "MED";
+  source: string;
+};
+
 export type FilingActivity = {
   id: string;
   companyName: string;
