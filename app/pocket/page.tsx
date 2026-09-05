@@ -39,6 +39,7 @@ import "./pocket-v1-1-hotfix.css";
 import "./pocket-decision-intelligence.css";
 import "./pocket-decision-autopsy.css";
 import "./pocket-core-scans.css";
+import "./pocket-future-depth.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",

@@ -25,6 +25,7 @@ import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
 import { eventCoverageFor, isListedEquityEventInput } from "./event-coverage";
 import { measureChart } from "./browser-chart-extractor";
 import type { ChartEvidenceRole, DeterministicChartEvidence } from "../lib/deterministic-chart-evidence";
+import { POCKET_ANALYSIS_CLIENT_TIMEOUT_MS, pocketAnalysisCountdownLabel, postPocketAnalysis } from "./analysis-request";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -1116,6 +1117,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [preflightStatus, setPreflightStatus] = useState<PreflightStatus>("IDLE");
   const [chartConfirmation, setChartConfirmation] = useState<ChartConfirmation | null>(null);
   const [busy, setBusy] = useState(false);
+  const [analysisSecondsRemaining, setAnalysisSecondsRemaining] = useState(Math.ceil(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS / 1000));
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [accuracyCorrection, setAccuracyCorrection] = useState<AccuracyFeedback | null>(null);
@@ -1146,6 +1148,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const interval = window.setInterval(refresh, 60_000);
     return () => { window.clearTimeout(initial); window.clearInterval(interval); };
   }, []);
+  useEffect(() => {
+    if (!busy || reviewTarget) return;
+    const startedAt = Date.now();
+    const totalSeconds = Math.ceil(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS / 1000);
+    const update = () => setAnalysisSecondsRemaining(Math.max(0, totalSeconds - Math.floor((Date.now() - startedAt) / 1000)));
+    const interval = window.setInterval(update, 250);
+    return () => window.clearInterval(interval);
+  }, [busy, reviewTarget]);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
@@ -1654,11 +1664,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       // Decode one chart at a time. Four simultaneous canvases can terminate
       // WKWebView on older iPhones before the analysis request is sent.
       for (const [source, role] of evidenceInputs) deterministicEvidence.push(await measureChart(source, role));
-      const response = await fetch("/api/pocket/analyse", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }),
-      });
+      const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }));
       const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       if (payload.macroContext) setEventContext(payload.macroContext);
@@ -1695,6 +1701,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
+    if (!reviewTarget) setAnalysisSecondsRemaining(Math.ceil(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS / 1000));
     setError("");
     try {
       if (!reviewTarget) {
@@ -2177,7 +2184,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "MEASURING CHART · CHALLENGING SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>MEASURING STRUCTURE · VERIFYING LEVELS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "MEASURING CHART · CHALLENGING SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small role="timer">{pocketAnalysisCountdownLabel(analysisSecondsRemaining)}</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>

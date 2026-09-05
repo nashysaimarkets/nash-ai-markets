@@ -618,17 +618,18 @@ export async function POST(request: Request) {
       }
     };
     const precisionWork = (async () => {
-      const [primaryFirst, contextFirst] = await Promise.all([
-        firstPrecision(image, "primary", authoritativeCurrentPrice),
-        contextImage ? firstPrecision(contextImage, "context") : Promise.resolve(null),
-      ]);
-      // Initial precision reads run concurrently with the report, but optional
-      // rescue fan-out is allowed only after the indispensable report succeeds.
-      // A failed report therefore cannot trigger a new provider request.
+      // Keep the indispensable report and primary geometry as the only
+      // simultaneous provider calls. Four-chart packs previously started a
+      // third context request at once, increasing timeout pressure without
+      // improving the report itself.
+      const primaryFirst = await firstPrecision(image, "primary", authoritativeCurrentPrice);
+      // Context precision and every rescue are allowed only after the report
+      // succeeds. A failed report therefore cannot fan out another request.
       await analysisRequest;
       // Allocate the single shared retry to the primary chart first. Context
       // receives it only when primary needs no rescue.
       const primary = await finishPrecision(primaryFirst, image, "primary", precisionImage || null, authoritativeCurrentPrice);
+      const contextFirst = contextImage ? await firstPrecision(contextImage, "context") : null;
       const context = contextFirst
         ? await finishPrecision(contextFirst, contextImage, "context", contextPrecisionImage || null)
         : null;
