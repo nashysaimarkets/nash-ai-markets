@@ -24,6 +24,7 @@ import "./pocket-feedback.css";
 import "./pocket-cinema-pro.css";
 import "./pocket-2.css";
 import "./pocket-preflight.css";
+import "./pocket-preflight-compact.css";
 import "./pocket-accuracy-feedback.css";
 import "./pocket-level-provenance.css";
 import "./pocket-result-clarity.css";
@@ -37,6 +38,7 @@ import "./pocket-apple-paywall.css";
 import "./pocket-v1-1-hotfix.css";
 import "./pocket-decision-intelligence.css";
 import "./pocket-decision-autopsy.css";
+import "./pocket-core-scans.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
