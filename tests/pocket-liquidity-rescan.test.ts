@@ -40,6 +40,13 @@ test("a completed main scan automatically invokes independent recovery when prec
   assert.doesNotMatch(request, /setLevelLabImage|setLevelLabFileName/);
 });
 
+test("async chart uploads retain the input before React releases the event", () => {
+  const uploads = client.slice(client.indexOf("async function loadContextFile"), client.indexOf("async function rescanLevelsOnly"));
+  assert.match(uploads, /const input = event\.currentTarget/);
+  assert.match(uploads, /finally \{ input\.value = ""; \}/);
+  assert.doesNotMatch(uploads, /event\.currentTarget\.value/);
+});
+
 test("new chart and review transitions cannot reuse a prior four-hour upload", () => {
   const review = client.slice(client.indexOf("async function startReview"), client.indexOf("function startNewChart"));
   const next = client.slice(client.indexOf("function startNewChart"), client.indexOf("const sourceChart"));

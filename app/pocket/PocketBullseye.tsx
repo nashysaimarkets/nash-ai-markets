@@ -1453,7 +1453,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function loadContextFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setError("");
     if (!file.type.startsWith("image/")) {
@@ -1468,61 +1469,65 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setContextImage(await prepareImage(file));
       setContextFileName(file.name);
     } catch { setError("That 30-minute chart could not be prepared safely."); }
-    finally { event.currentTarget.value = ""; }
+    finally { input.value = ""; }
   }
 
   async function loadDetailFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setError("");
     if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
       setError("Please choose a JPEG, PNG or WebP 1-hour chart under 8 MB.");
-      event.currentTarget.value = "";
+      input.value = "";
       return;
     }
     try {
       setDetailImage(await prepareImage(file));
       setDetailFileName(file.name);
     } catch { setError("That 1-hour chart could not be prepared safely."); }
-    finally { event.currentTarget.value = ""; }
+    finally { input.value = ""; }
   }
 
   async function loadFourHourFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setError("");
     if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
       setError("Please choose a JPEG, PNG or WebP 4-hour chart under 8 MB.");
-      event.currentTarget.value = "";
+      input.value = "";
       return;
     }
     try {
       setFourHourImage(await prepareImage(file));
       setFourHourFileName(file.name);
     } catch { setError("That 4-hour chart could not be prepared safely."); }
-    finally { event.currentTarget.value = ""; }
+    finally { input.value = ""; }
   }
 
   async function loadIndicatorFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setError("");
     if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
       setError("Please choose a JPEG, PNG or WebP indicator or volume chart under 8 MB.");
-      event.currentTarget.value = "";
+      input.value = "";
       return;
     }
     try {
       setIndicatorImage(await prepareImage(file));
       setIndicatorFileName(file.name);
     } catch { setError("That indicator or volume chart could not be prepared safely."); }
-    finally { event.currentTarget.value = ""; }
+    finally { input.value = ""; }
   }
 
   async function addResultContextFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
-    const resultScroller = event.currentTarget.closest(".psResults") as HTMLElement | null;
+    const resultScroller = input.closest(".psResults") as HTMLElement | null;
     const savedScrollTop = resultScroller?.scrollTop ?? 0;
     setError("");
     if (!file.type.startsWith("image/")) {
@@ -1545,18 +1550,19 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setRefinementStatus("error");
       setError(caught instanceof Error ? caught.message : "That supporting chart could not be attached safely.");
     } finally {
-      event.currentTarget.value = "";
+      input.value = "";
     }
   }
 
   async function addLevelLabFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setLevelLabError("");
     if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
       setLevelLabStatus("error");
       setLevelLabError("Please add a JPEG, PNG or WebP chart under 8 MB.");
-      event.currentTarget.value = "";
+      input.value = "";
       return;
     }
     try {
@@ -1566,7 +1572,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } catch {
       setLevelLabStatus("error");
       setLevelLabError("That chart could not be prepared safely.");
-    } finally { event.currentTarget.value = ""; }
+    } finally { input.value = ""; }
   }
 
   async function rescanLevelsOnly() {
