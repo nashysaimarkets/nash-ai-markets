@@ -85,7 +85,7 @@ export async function POST(request: Request) {
         "sameInstrument is true only when every readable instrument label matches image 1, false when any clearly conflicts, otherwise null.",
         "Use RETAKE when candles are unreadable, the price scale is missing, cropping is severe, an instrument mismatch is confirmed, or any timeframe is visibly in the wrong slot.",
         "Use LIMITED when analysis remains useful but a label, history, or second-chart match is uncertain. Use READY when the required evidence is clear.",
-        "Give one short, precise retake instruction. Never invent a label hidden by cropping.",
+        "Give one complete retake instruction under 140 characters. Never end mid-sentence and never invent a label hidden by cropping.",
       ].join(" "),
       input: [{ role: "user", content: [
         { type: "input_text", text: "Check this required four-timeframe Pocket Bullseye pack. IMAGE 1: 5 MINUTES." },

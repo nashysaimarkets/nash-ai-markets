@@ -66,6 +66,7 @@ test("the ordered evidence pack requires 5m, 30m, 1h and 4h with an optional ind
   for (const role of ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"]) assert.match(route, new RegExp(role));
   for (const expected of ["EXPECTED TIMEFRAME: 5 MINUTES", "EXPECTED TIMEFRAME: 30 MINUTES", "EXPECTED TIMEFRAME: 1 HOUR", "EXPECTED TIMEFRAME: 4 HOURS"]) assert.match(route, new RegExp(expected));
   assert.match(await readFile(new URL("../app/api/pocket/preflight/route.ts", import.meta.url), "utf8"), /top-level timeframe must be the exact visibly printed image-1 label/);
+  assert.match(await readFile(new URL("../app/api/pocket/preflight/route.ts", import.meta.url), "utf8"), /complete retake instruction under 140 characters/);
   assert.match(route, /Supporting images can refine the written audit but must never replace image 1's coordinate system/);
   assert.match(route, /never inflate score or confidence because more images were uploaded/);
   assert.match(route, /expectedEvidenceRoles/);
