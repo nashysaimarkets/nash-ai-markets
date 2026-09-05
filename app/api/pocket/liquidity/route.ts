@@ -154,7 +154,7 @@ export async function POST(request: Request) {
         ].join(" "),
         input: sharedInput,
         max_output_tokens: 1500,
-        text: { format: { type: "json_schema", name: "pocket_liquidity_guard_rescan", strict: true, schema } },
+        text: { verbosity: "low", format: { type: "json_schema", name: "pocket_liquidity_guard_rescan", strict: true, schema } },
       }, { timeout: PROVIDER_TIMEOUT_MS }), client.responses.create({
         model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
         reasoning: { effort: "low" }, store: false,
@@ -166,12 +166,18 @@ export async function POST(request: Request) {
           "priceScaleReadable is false and confidence LOW unless at least three printed labels can be independently located.",
         ].join(" "),
         input: sharedInput,
-        max_output_tokens: 700,
-        text: { format: { type: "json_schema", name: "pocket_liquidity_axis_calibration", strict: true, schema: calibrationSchema } },
+        max_output_tokens: 1200,
+        text: { verbosity: "low", format: { type: "json_schema", name: "pocket_liquidity_axis_calibration", strict: true, schema: calibrationSchema } },
       }, { timeout: PROVIDER_TIMEOUT_MS })]);
       const output = response.output_text?.trim();
       const calibrationOutput = calibrationResponse.output_text?.trim();
-      if (!output || !calibrationOutput) throw new Error("empty_liquidity_result");
+      console.info("[pocket-bullseye] liquidity provider completion", JSON.stringify({
+        evidenceStatus: response.status,
+        evidenceChars: output?.length ?? 0,
+        calibrationStatus: calibrationResponse.status,
+        calibrationChars: calibrationOutput?.length ?? 0,
+      }));
+      if (response.status !== "completed" || calibrationResponse.status !== "completed" || !output || !calibrationOutput) throw new Error("incomplete_liquidity_result");
       const raw = canonicalizePocketGeometry(JSON.parse(output)) as Record<string, unknown>;
       const calibration = canonicalizePocketGeometry(JSON.parse(calibrationOutput)) as Record<string, unknown>;
       const identityMatch = raw.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], raw.instrumentIdentifier) === true;
