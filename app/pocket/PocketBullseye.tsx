@@ -270,7 +270,13 @@ function createProviderScanImage(dataUrl: string, forceDecode = false) {
         resolve(null);
       } catch { resolve(null); }
     };
-    source.onerror = () => resolve(null);
+    source.onerror = () => {
+      console.error("[pocket:prepare-image] browser could not decode the selected image", {
+        dataUrlLength: dataUrl.length,
+        mediaType: dataUrl.slice(0, dataUrl.indexOf(",") + 1),
+      });
+      resolve(null);
+    };
     source.src = dataUrl;
   });
 }
@@ -1422,17 +1428,20 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [image, reviewTarget, preflightStatus]);
 
   async function loadFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
     setError("");
     setAnalysis(null);
     setBattlefieldChart("primary");
     if (!file.type.startsWith("image/")) {
       setError("Please choose a JPEG, PNG or WebP chart image.");
+      input.value = "";
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
       setError("That image is too large. Please use a chart screenshot under 8 MB.");
+      input.value = "";
       return;
     }
     try {
@@ -1449,7 +1458,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setFourHourFileName("");
       setIndicatorImage(null);
       setIndicatorFileName("");
-    } catch { setError("That image could not be prepared safely."); }
+    } catch (caught) {
+      console.error("[pocket:upload] primary chart preparation failed", caught);
+      setError("That image could not be prepared safely.");
+    }
+    finally { input.value = ""; }
   }
 
   async function loadContextFile(event: ChangeEvent<HTMLInputElement>) {
@@ -1459,10 +1472,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setError("");
     if (!file.type.startsWith("image/")) {
       setError("Please choose a JPEG, PNG or WebP 30-minute chart.");
+      input.value = "";
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
       setError("That 30-minute chart is too large. Please use a screenshot under 8 MB.");
+      input.value = "";
       return;
     }
     try {
@@ -1532,10 +1547,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setError("");
     if (!file.type.startsWith("image/")) {
       setError("Please choose a JPEG, PNG or WebP supporting chart.");
+      input.value = "";
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
       setError("That supporting chart is too large. Please use a screenshot under 8 MB.");
+      input.value = "";
       return;
     }
     try {

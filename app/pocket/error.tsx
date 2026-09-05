@@ -10,11 +10,12 @@ export default function PocketError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[pocket:error]", {
+    const detail = {
       digest: error.digest ?? null,
       name: error.name,
       message: error.message,
-    });
+    };
+    console.error(`[pocket:error] ${JSON.stringify(detail)}`);
   }, [error]);
 
   return (
