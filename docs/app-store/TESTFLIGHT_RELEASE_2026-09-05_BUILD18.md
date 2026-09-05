@@ -17,7 +17,7 @@ The build manifest returned the exact pinned revision and the deployment was Rea
 
 | Field | Value |
 |---|---|
-| Pipeline trigger | Release branch push |
+| Pipeline trigger | Release branch push (configuration enabled before this build) |
 | Bundle ID | `com.nashaimarkets.pocketbullseye` |
 | Marketing version | `1.2.4` |
 | Build number | `18` |
