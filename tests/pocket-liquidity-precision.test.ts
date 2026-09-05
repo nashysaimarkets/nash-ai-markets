@@ -97,6 +97,16 @@ test("touch points must be distinct, inside the plot and agree with the projecte
   assert.equal(normalizePrecisionLiquidityShield(candidate([{ x: 2, y: 65 }, { x: 70, y: 65 }]), "2900").status, "INSUFFICIENT_EVIDENCE");
 });
 
+test("mobile vision row jitter does not erase an otherwise calibrated cluster", () => {
+  const base = precision().liquidityShield as Record<string, unknown>;
+  const original = (base.zones as Record<string, unknown>[])[0];
+  const result = normalizePrecisionLiquidityShield(precision({ liquidityShield: { ...base, zones: [{
+    ...original,
+    touchPoints: [{ x: 25, y: 62.2 }, { x: 70, y: 67.6 }],
+  }] } }), "2900");
+  assert.equal(result.status, "VISIBLE_RISK_ZONES");
+});
+
 test("two verified touches downgrade HIGH to MEDIUM", () => {
   const base = precision().liquidityShield as Record<string, unknown>;
   const original = (base.zones as Record<string, unknown>[])[0];
