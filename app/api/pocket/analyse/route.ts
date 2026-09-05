@@ -27,6 +27,7 @@ import {
   verifiedPrecisionInstrumentIdentifier,
   type PrecisionProviderCallBudget,
 } from "../precision-structure";
+import { completedPocketReportOutput } from "../report-completion";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -415,9 +416,8 @@ export async function POST(request: Request) {
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
     const analysisRequest = client.responses.create({
       model,
-      // This is a dense multi-timeframe visual judgment. Medium reasoning is
-      // intentional: the prior low-effort pass repeatedly returned empty
-      // pattern arrays despite readable defining geometry.
+      // Preserve the demanding multi-timeframe judgment. The strict report
+      // is kept terse below so its visible JSON does not waste output budget.
       reasoning: { effort: "medium" },
       store: false,
       instructions: [
@@ -484,18 +484,26 @@ export async function POST(request: Request) {
           ] : []),
         ],
       }],
-      // Structured reports can exceed the old cap when two charts contribute
-      // distinct evidence. Reasoning tokens also count toward this allowance.
-      max_output_tokens: 7000,
-      text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
+      // Reasoning tokens and visible JSON share this allowance. Five-chart
+      // reports exhausted the former 7k cap before the closing JSON fields.
+      max_output_tokens: 14000,
+      text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     }, {
       signal: providerSignal,
       timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs),
     }).then((response) => {
+      const reportOutput = response.output_text?.trim() ?? "";
+      const incompleteReason = response.incomplete_details?.reason ?? null;
+      const reasoningTokens = response.usage?.output_tokens_details?.reasoning_tokens ?? null;
       console.info("[pocket-bullseye] report completed", JSON.stringify({
         status: response.status ?? "unknown",
+        incompleteReason,
+        outputChars: reportOutput.length,
+        outputTokens: response.usage?.output_tokens ?? null,
+        reasoningTokens,
         elapsedMs: Date.now() - routeStartedAt,
       }));
+      completedPocketReportOutput(response);
       return response;
     }).catch((error) => {
       // The precision passes are useful only when the report succeeds. Abort
