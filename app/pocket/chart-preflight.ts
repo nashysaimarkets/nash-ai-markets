@@ -12,6 +12,12 @@ export type ChartPreflight = {
   candlesReadable: boolean;
   enoughHistory: boolean;
   sameInstrument: boolean | null;
+  timeframeChecks: Array<{
+    slot: "5M" | "30M" | "1H" | "4H";
+    detected: string;
+    confidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+    matchesExpected: boolean | null;
+  }>;
   issues: string[];
   guidance: string;
 };
@@ -24,5 +30,5 @@ export type ChartConfirmation = {
 };
 
 export function preflightAllowsAnalysis(status: PreflightStatus) {
-  return !["IDLE", "CHECKING"].includes(status);
+  return !["IDLE", "CHECKING", "RETAKE"].includes(status);
 }

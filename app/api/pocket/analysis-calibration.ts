@@ -55,7 +55,7 @@ function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, can
     const pattern = item as JsonRecord;
     const name = typeof pattern.name === "string" ? pattern.name : "";
     const sourceRole = typeof pattern.sourceRole === "string" ? pattern.sourceRole : "";
-    if (!["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"].includes(sourceRole)) return [];
+    if (!["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"].includes(sourceRole)) return [];
     const minimum = PATTERN_MIN_POINTS[name];
     const geometry = pattern.geometry && typeof pattern.geometry === "object" ? pattern.geometry as JsonRecord : null;
     const returnedBounds = geometry?.plotBounds && typeof geometry.plotBounds === "object" ? geometry.plotBounds as JsonRecord : null;

@@ -1,4 +1,4 @@
-export type ChartEvidenceRole = "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME";
+export type ChartEvidenceRole = "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR" | "INDICATOR_VOLUME";
 
 export type DeterministicChartEvidence = {
   version: "pocket-cv-v1";
@@ -24,7 +24,7 @@ export function normalizeDeterministicEvidence(value: unknown): DeterministicCha
     if (!item || typeof item !== "object") return [];
     const source = item as Record<string, unknown>;
     const role = source.role as ChartEvidenceRole;
-    if (!["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"].includes(role) || roles.has(role)) return [];
+    if (!["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"].includes(role) || roles.has(role)) return [];
     const plotSource = source.plot && typeof source.plot === "object" ? source.plot as Record<string, unknown> : {};
     const left = percent(plotSource.left), top = percent(plotSource.top), right = percent(plotSource.right), bottom = percent(plotSource.bottom);
     if (left === null || top === null || right === null || bottom === null || right <= left || bottom <= top) return [];

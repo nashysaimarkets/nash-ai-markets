@@ -52,7 +52,7 @@ test("every additional native AI request requires an Apple entitlement", async (
   assert.doesNotMatch(levelLab, /requireAppleEntitlementForAdditionalRequest/, "Level Lab refines the current audit and must stay available on the free result");
   assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
-  assert.match(pocket, /image && !reviewTarget \? <ChartPreflightPanel/);
+  assert.match(pocket, /requiredTimeframesReady && !reviewTarget \? <ChartPreflightPanel/);
   assert.doesNotMatch(pocket, /appleCanRunPreflight/);
   assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(appleAccess\)/);
 });

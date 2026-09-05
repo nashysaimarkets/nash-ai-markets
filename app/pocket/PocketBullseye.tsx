@@ -56,14 +56,14 @@ type Analysis = {
     alignment: "ALIGNED" | "CONFLICTING" | "MIXED" | "NOT_PROVIDED";
     summary: string;
   };
-  patterns: { name: string; sourceRole?: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME"; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { plotBounds?: { left: number; top: number; right: number; bottom: number }; points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
+  patterns: { name: string; sourceRole?: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR" | "INDICATOR_VOLUME"; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { plotBounds?: { left: number; top: number; right: number; bottom: number }; points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
   nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
   missingInputs: string[];
   contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
   evidencePack?: {
     received: number;
     contributions: Array<{
-      role: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "INDICATOR_VOLUME";
+      role: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR" | "INDICATOR_VOLUME";
       used: boolean;
       summary: string;
     }>;
@@ -1022,8 +1022,8 @@ function hasVerifiedTwoSidedAnalysis(analysis: Analysis, contextProvided: boolea
     && hasVerifiedTwoSidedStructure(levels, currentPrice);
 }
 
-async function analysisCacheKey(image: string, contextImage: string | null, detailImage: string | null, indicatorImage: string | null, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
-  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}\n${detailImage ?? ""}\n${indicatorImage ?? ""}`);
+async function analysisCacheKey(image: string, contextImage: string | null, detailImage: string | null, fourHourImage: string | null, indicatorImage: string | null, confirmation: ChartConfirmation | null = null, correction: AccuracyFeedback | null = null) {
+  const bytes = new TextEncoder().encode(`pocket-analysis-v${POCKET_ANALYSIS_ENGINE_VERSION}\n${JSON.stringify(confirmation)}\n${JSON.stringify(correction)}\n${image}\n${contextImage ?? ""}\n${detailImage ?? ""}\n${fourHourImage ?? ""}\n${indicatorImage ?? ""}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
@@ -1111,6 +1111,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [contextFileName, setContextFileName] = useState("");
   const [detailImage, setDetailImage] = useState<string | null>(null);
   const [detailFileName, setDetailFileName] = useState("");
+  const [fourHourImage, setFourHourImage] = useState<string | null>(null);
+  const [fourHourFileName, setFourHourFileName] = useState("");
   const [indicatorImage, setIndicatorImage] = useState<string | null>(null);
   const [indicatorFileName, setIndicatorFileName] = useState("");
   const [privacyChecked, setPrivacyChecked] = useState(false);
@@ -1253,7 +1255,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setApplePaywallStatus(null);
     window.requestAnimationFrame(() => {
       const original = applePaywallReturnFocus.current;
-      const fallback = document.querySelector<HTMLElement>('[aria-label="Load chart photo, screenshot or camera roll image"]');
+      const fallback = document.querySelector<HTMLElement>('[aria-label="Load 5-minute chart photo, screenshot or camera roll image"]');
       (original?.isConnected ? original : fallback)?.focus({ preventScroll: true });
     });
   }
@@ -1371,6 +1373,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setContextFileName("");
       setDetailImage(null);
       setDetailFileName("");
+      setFourHourImage(null);
+      setFourHourFileName("");
       setIndicatorImage(null);
       setIndicatorFileName("");
     } catch { setError("That image could not be prepared safely."); }
@@ -1381,17 +1385,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!file) return;
     setError("");
     if (!file.type.startsWith("image/")) {
-      setError("Please choose a JPEG, PNG or WebP higher-timeframe chart.");
+      setError("Please choose a JPEG, PNG or WebP 30-minute chart.");
       return;
     }
     if (file.size > MAX_IMAGE_BYTES) {
-      setError("That higher-timeframe image is too large. Please use a screenshot under 8 MB.");
+      setError("That 30-minute chart is too large. Please use a screenshot under 8 MB.");
       return;
     }
     try {
       setContextImage(await prepareImage(file));
       setContextFileName(file.name);
-    } catch { setError("That higher-timeframe image could not be prepared safely."); }
+    } catch { setError("That 30-minute chart could not be prepared safely."); }
     finally { event.currentTarget.value = ""; }
   }
 
@@ -1400,14 +1404,30 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!file) return;
     setError("");
     if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
-      setError("Please choose a JPEG, PNG or WebP current-price close-up under 8 MB.");
+      setError("Please choose a JPEG, PNG or WebP 1-hour chart under 8 MB.");
       event.currentTarget.value = "";
       return;
     }
     try {
       setDetailImage(await prepareImage(file));
       setDetailFileName(file.name);
-    } catch { setError("That current-price close-up could not be prepared safely."); }
+    } catch { setError("That 1-hour chart could not be prepared safely."); }
+    finally { event.currentTarget.value = ""; }
+  }
+
+  async function loadFourHourFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
+      setError("Please choose a JPEG, PNG or WebP 4-hour chart under 8 MB.");
+      event.currentTarget.value = "";
+      return;
+    }
+    try {
+      setFourHourImage(await prepareImage(file));
+      setFourHourFileName(file.name);
+    } catch { setError("That 4-hour chart could not be prepared safely."); }
     finally { event.currentTarget.value = ""; }
   }
 
@@ -1623,7 +1643,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     try {
       const patch = correctionPatch(accuracyCorrection);
       const identityChanged = Boolean(patch.instrument || patch.timeframe);
-      const corrected = await requestPocketAnalysis(identityChanged ? null : contextImage, { bypassCache: true });
+      const corrected = await requestPocketAnalysis(contextImage, { bypassCache: true });
       setAnalysis(corrected);
       setBattlefieldChart("primary");
       if (contextImage) setRefinementStatus(identityChanged ? "attached" : "updated");
@@ -1638,7 +1658,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     analysisRequestActive.current = true;
     setBusy(true);
     try {
-      const cacheKey = await analysisCacheKey(image, selectedContext, detailImage, indicatorImage, chartConfirmation, accuracyCorrection);
+      const cacheKey = await analysisCacheKey(image, selectedContext, detailImage, fourHourImage, indicatorImage, chartConfirmation, accuracyCorrection);
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         // Held, one-sided and pivot-only results must never become sticky.
@@ -1650,21 +1670,23 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const providerImage = await createProviderScanImage(image);
       const providerContextImage = selectedContext ? await createProviderScanImage(selectedContext) : null;
       const providerDetailImage = detailImage ? await createProviderScanImage(detailImage) : null;
+      const providerFourHourImage = fourHourImage ? await createProviderScanImage(fourHourImage) : null;
       const providerIndicatorImage = indicatorImage ? await createProviderScanImage(indicatorImage) : null;
-      if (!providerImage || (selectedContext && !providerContextImage) || (detailImage && !providerDetailImage) || (indicatorImage && !providerIndicatorImage)) {
+      if (!providerImage || (selectedContext && !providerContextImage) || (detailImage && !providerDetailImage) || (fourHourImage && !providerFourHourImage) || (indicatorImage && !providerIndicatorImage)) {
         throw new Error("That chart could not be prepared within the secure mobile upload limit. Crop it to the chart and price scale, then try again.");
       }
       const evidenceInputs: Array<[string, ChartEvidenceRole]> = [
         [providerImage, "PRIMARY"],
         ...(providerContextImage ? [[providerContextImage, "HIGHER_TIMEFRAME"] as [string, ChartEvidenceRole]] : []),
         ...(providerDetailImage ? [[providerDetailImage, "PRICE_DETAIL"] as [string, ChartEvidenceRole]] : []),
+        ...(providerFourHourImage ? [[providerFourHourImage, "FOUR_HOUR"] as [string, ChartEvidenceRole]] : []),
         ...(providerIndicatorImage ? [[providerIndicatorImage, "INDICATOR_VOLUME"] as [string, ChartEvidenceRole]] : []),
       ];
       const deterministicEvidence: DeterministicChartEvidence[] = [];
       // Decode one chart at a time. Four simultaneous canvases can terminate
       // WKWebView on older iPhones before the analysis request is sent.
       for (const [source, role] of evidenceInputs) deterministicEvidence.push(await measureChart(source, role));
-      const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }));
+      const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }));
       const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       if (payload.macroContext) setEventContext(payload.macroContext);
@@ -1686,7 +1708,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function analyse() {
-    if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
+    if (!image || (!reviewTarget && (!contextImage || !detailImage || !fourHourImage)) || !privacyChecked || busy || analysisRequestActive.current) return;
     let currentAppleAccess = appleAccess;
     if (isAppleNativeApp()) {
       currentAppleAccess = await refreshAppleAccess();
@@ -1931,7 +1953,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
-  const evidenceImageCount = [image, contextImage, detailImage, indicatorImage].filter(Boolean).length;
+  const evidenceImageCount = [image, contextImage, detailImage, fourHourImage, indicatorImage].filter(Boolean).length;
+  const requiredTimeframesReady = Boolean(image && contextImage && detailImage && fourHourImage);
 
   if (review && reviewTarget) {
     return <main className="psApp" data-pocket-build="v3.2">
@@ -2043,8 +2066,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
           {analysis.evidencePack?.contributions?.length ? <section className="psEvidenceContribution">
-            <header><div><span>◎ EVIDENCE PACK USED</span><strong>{analysis.evidencePack.received}/4 IMAGES RECEIVED</strong></div><b>{analysis.evidencePack.contributions.filter((item) => item.used).length} CONTRIBUTED</b></header>
-            <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : "④"}</i><div><strong>{item.role.replaceAll("_", " ")}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
+            <header><div><span>◎ EVIDENCE PACK USED</span><strong>{analysis.evidencePack.received}/5 IMAGES RECEIVED</strong></div><b>{analysis.evidencePack.contributions.filter((item) => item.used).length} CONTRIBUTED</b></header>
+            <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : item.role === "FOUR_HOUR" ? "④" : "⑤"}</i><div><strong>{item.role === "PRIMARY" ? "5 MINUTES" : item.role === "HIGHER_TIMEFRAME" ? "30 MINUTES" : item.role === "PRICE_DETAIL" ? "1 HOUR" : item.role === "FOUR_HOUR" ? "4 HOURS" : "INDICATOR / VOLUME"}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
             <footer>Every supporting image is assessed separately. A chart that adds nothing cannot inflate the score or confidence.</footer>
           </section> : null}
           <div id="bullseye-tools" className="psReportTools"><PocketCommandDeck analysis={combinedAnalysis} primaryLevels={analysis.levels} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} mode={commandDeckMode} onMode={setCommandDeckMode} /></div>
@@ -2154,37 +2177,41 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {image ? <>
             <img src={image} alt="Selected chart preview" />
           </> : <div className="psTarget psTargetLarge" aria-hidden="true"><i /><i /><b /><b /></div>}
-          <div className="psScanLine" aria-hidden="true" /><strong>{image ? "CHART LOADED" : "LOAD CHART"}</strong><small>{image ? fileName : "PHOTO · SCREENSHOT · CAMERA ROLL"}</small>
-          <input aria-label="Load chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
+          <div className="psScanLine" aria-hidden="true" /><strong>{image ? "① 5-MINUTE CHART LOADED" : "① LOAD 5-MINUTE CHART"}</strong><small>{image ? fileName : "FIRST · PHOTO · SCREENSHOT · CAMERA ROLL"}</small>
+          <input aria-label="Load 5-minute chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
         {image && !reviewTarget ? <section className="psEvidencePack">
-          <header><div><span>◎ GUIDED EVIDENCE PACK</span><strong>{evidenceImageCount}/4 CHARTS READY</strong></div><b>PRIMARY + OPTIONAL PROOF</b></header>
-          <p>Each extra image has one job. Add only views that genuinely reveal more evidence.</p>
+          <header><div><span>◎ ORDERED EVIDENCE PACK</span><strong>{evidenceImageCount}/5 CHARTS LOADED</strong></div><b>{requiredTimeframesReady ? "4 TIMEFRAMES READY" : "COMPLETE IN ORDER"}</b></header>
+          <p>Work down the list: 5m → 30m → 1h → 4h. Your preferred indicator chart is optional.</p>
           <div>
             <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
-              <div><span>② HIGHER TIMEFRAME</span><strong>{contextImage ? "CONTEXT LOADED" : "ADD 1H · 4H · DAILY"}</strong><p>{contextImage ? contextFileName : "Shows the wider trend, major structure and alignment."}</p></div>
-              {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
+              <div><span>② 30 MINUTES</span><strong>{contextImage ? "30M LOADED ✓" : "ADD 30M CHART"}</strong><p>{contextImage ? contextFileName : "Second chart · same instrument."}</p></div>
+              {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD 30M<input aria-label="Add 30-minute chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={detailImage ? "true" : "false"}>
-              <div><span>③ CURRENT-PRICE CLOSE-UP</span><strong>{detailImage ? "PRICE DETAIL LOADED" : "ADD CLOSE VIEW"}</strong><p>{detailImage ? detailFileName : "Makes recent candles, reactions and the price scale easier to verify."}</p></div>
-              {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add current-price close-up chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
+              <div><span>③ 1 HOUR</span><strong>{detailImage ? "1H LOADED ✓" : "ADD 1H CHART"}</strong><p>{detailImage ? detailFileName : "Third chart · same instrument."}</p></div>
+              {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD 1H<input aria-label="Add 1-hour chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
+            </section>
+            <section className="psContextUpload" data-loaded={fourHourImage ? "true" : "false"}>
+              <div><span>④ 4 HOURS</span><strong>{fourHourImage ? "4H LOADED ✓" : "ADD 4H CHART"}</strong><p>{fourHourImage ? fourHourFileName : "Fourth chart · same instrument."}</p></div>
+              {fourHourImage ? <button type="button" onClick={() => { setFourHourImage(null); setFourHourFileName(""); }}>REMOVE</button> : <label>ADD 4H<input aria-label="Add 4-hour chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFourHourFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={indicatorImage ? "true" : "false"}>
-              <div><span>④ INDICATOR / VOLUME</span><strong>{indicatorImage ? "EXTRA EVIDENCE LOADED" : "ADD IF RELEVANT"}</strong><p>{indicatorImage ? indicatorFileName : "Optional RSI, VWAP, ATR, volume profile or session evidence."}</p></div>
-              {indicatorImage ? <button type="button" onClick={() => { setIndicatorImage(null); setIndicatorFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add indicator or volume chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadIndicatorFile} /></label>}
+              <div><span>⑤ YOUR INDICATOR · OPTIONAL</span><strong>{indicatorImage ? "INDICATOR LOADED ✓" : "ADD YOUR PREFERENCE"}</strong><p>{indicatorImage ? indicatorFileName : "RSI, VWAP, ATR, volume profile, volume or another preferred indicator."}</p></div>
+              {indicatorImage ? <button type="button" onClick={() => { setIndicatorImage(null); setIndicatorFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add preferred indicator or volume chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadIndicatorFile} /></label>}
             </section>
           </div>
-          <footer>Primary chart required · Supporting charts must show the same instrument and decision window.</footer>
+          <footer>Required: 5m + 30m + 1h + 4h · Optional: one indicator chart · Every chart must show the same instrument.</footer>
         </section> : null}
         {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
-        {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {requiredTimeframesReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "MEASURING CHART · CHALLENGING SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small role="timer">{pocketAnalysisCountdownLabel(analysisSecondsRemaining)}</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || (!reviewTarget && !requiredTimeframesReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "MEASURING CHART · CHALLENGING SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !requiredTimeframesReady ? "ADD 5M · 30M · 1H · 4H" : preflightStatus === "CHECKING" ? "CHECKING ALL FOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small role="timer">{pocketAnalysisCountdownLabel(analysisSecondsRemaining)}</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>

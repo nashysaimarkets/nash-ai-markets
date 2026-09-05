@@ -7,7 +7,7 @@ import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 const MAX_DATA_URL_LENGTH = 11_000_000;
-const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 2 + 4_096;
+const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 4 + 8_192;
 
 const schema = {
   type: "object",
@@ -24,10 +24,22 @@ const schema = {
     candlesReadable: { type: "boolean" },
     enoughHistory: { type: "boolean" },
     sameInstrument: { type: ["boolean", "null"] },
+    timeframeChecks: {
+      type: "array", minItems: 4, maxItems: 4, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          slot: { type: "string", enum: ["5M", "30M", "1H", "4H"] },
+          detected: { type: "string", maxLength: 30 },
+          confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
+          matchesExpected: { type: ["boolean", "null"] },
+        },
+        required: ["slot", "detected", "confidence", "matchesExpected"],
+      },
+    },
     issues: { type: "array", maxItems: 4, items: { type: "string", maxLength: 100 } },
     guidance: { type: "string", maxLength: 180 },
   },
-  required: ["status", "instrument", "instrumentConfidence", "timeframe", "timeframeConfidence", "currentPrice", "currentPriceConfidence", "priceScaleVisible", "candlesReadable", "enoughHistory", "sameInstrument", "issues", "guidance"],
+  required: ["status", "instrument", "instrumentConfidence", "timeframe", "timeframeConfidence", "currentPrice", "currentPriceConfidence", "priceScaleVisible", "candlesReadable", "enoughHistory", "sameInstrument", "timeframeChecks", "issues", "guidance"],
 } as const;
 
 export async function POST(request: Request) {
@@ -35,10 +47,14 @@ export async function POST(request: Request) {
   if (crossOrigin) return crossOrigin;
   let image = "";
   let contextImage = "";
+  let detailImage = "";
+  let fourHourImage = "";
   try {
-    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown };
+    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown; detailImage?: unknown; fourHourImage?: unknown };
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
+    detailImage = typeof payload.detailImage === "string" ? payload.detailImage : "";
+    fourHourImage = typeof payload.fourHourImage === "string" ? payload.fourHourImage : "";
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) {
       return NextResponse.json({ error: "The preflight request is too large." }, { status: 413 });
@@ -46,7 +62,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
   const valid = (value: string) => /^data:image\/(jpeg|png|webp);base64,/.test(value) && value.length <= MAX_DATA_URL_LENGTH;
-  if (!valid(image) || (contextImage && !valid(contextImage))) return NextResponse.json({ error: "Please use valid chart images under 8 MB." }, { status: 400 });
+  if (![image, contextImage, detailImage, fourHourImage].every(valid)) return NextResponse.json({ error: "Please add valid 5m, 30m, 1h and 4h chart images under 8 MB." }, { status: 400 });
 
   const budget = takePocketBudget(request, "preflight");
   if (!budget.allowed) return NextResponse.json({ error: "Preflight needs a short reset. You may continue to analysis." }, { status: 429, headers: pocketBudgetHeaders(budget) });
@@ -64,17 +80,24 @@ export async function POST(request: Request) {
         "priceScaleVisible is true only when at least two right-side or left-side axis prices are legible.",
         "currentPrice is the exact visibly printed live/last-price marker nearest the latest candle. If it is absent or ambiguous return UNKNOWN and currentPriceConfidence UNKNOWN.",
         "candlesReadable requires discernible candle bodies and wicks. enoughHistory requires enough visible candles to judge repeated reactions or a meaningful swing.",
-        "When a second image is supplied, sameInstrument is true only when both visible labels clearly match, false when they clearly conflict, otherwise null.",
-        "Use RETAKE only when unreadable candles, missing price scale, severe cropping, or a confirmed instrument mismatch would make full analysis wasteful.",
+        "The four images are supplied in a fixed order: image 1 must be 5m, image 2 must be 30m, image 3 must be 1h, and image 4 must be 4h.",
+        "Return exactly four timeframeChecks in that order. matchesExpected is true only when the visible timeframe label matches the slot, false only when it visibly conflicts, and null when unreadable.",
+        "sameInstrument is true only when every readable instrument label matches image 1, false when any clearly conflicts, otherwise null.",
+        "Use RETAKE when candles are unreadable, the price scale is missing, cropping is severe, an instrument mismatch is confirmed, or any timeframe is visibly in the wrong slot.",
         "Use LIMITED when analysis remains useful but a label, history, or second-chart match is uncertain. Use READY when the required evidence is clear.",
         "Give one short, precise retake instruction. Never invent a label hidden by cropping.",
       ].join(" "),
       input: [{ role: "user", content: [
-        { type: "input_text", text: `Check the primary chart${contextImage ? " and optional context chart" : ""} before full Pocket Bullseye analysis.` },
+        { type: "input_text", text: "Check this required four-timeframe Pocket Bullseye pack. IMAGE 1: 5 MINUTES." },
         { type: "input_image", image_url: image, detail: "low" },
-        ...(contextImage ? [{ type: "input_image" as const, image_url: contextImage, detail: "low" as const }] : []),
+        { type: "input_text", text: "IMAGE 2: 30 MINUTES." },
+        { type: "input_image", image_url: contextImage, detail: "low" },
+        { type: "input_text", text: "IMAGE 3: 1 HOUR." },
+        { type: "input_image", image_url: detailImage, detail: "low" },
+        { type: "input_text", text: "IMAGE 4: 4 HOURS." },
+        { type: "input_image", image_url: fourHourImage, detail: "low" },
       ] }],
-      max_output_tokens: 800,
+      max_output_tokens: 1200,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
     });
     const output = response.output_text?.trim();

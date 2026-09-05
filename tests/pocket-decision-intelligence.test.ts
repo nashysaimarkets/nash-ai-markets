@@ -52,17 +52,19 @@ test("the AI never receives the trader's long or short choice", async () => {
   assert.doesNotMatch(client, /BlindBiasReveal|TrustGateCard/);
 });
 
-test("the guided evidence pack accepts four purpose-labelled charts without mixing coordinate systems", async () => {
+test("the ordered evidence pack requires 5m, 30m, 1h and 4h with an optional indicator", async () => {
   const [route, client, styles] = await Promise.all([
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v13.css", import.meta.url), "utf8"),
   ]);
-  for (const label of ["HIGHER TIMEFRAME", "CURRENT-PRICE CLOSE-UP", "INDICATOR / VOLUME"]) assert.match(client, new RegExp(label));
-  assert.match(client, /detailImage: providerDetailImage, indicatorImage: providerIndicatorImage/);
-  assert.match(client, /\{evidenceImageCount\}\/4 CHARTS READY/);
-  assert.match(client, /Every supporting image is assessed separately/);
-  for (const role of ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "INDICATOR_VOLUME"]) assert.match(route, new RegExp(role));
+  for (const label of ["① 5-MINUTE", "② 30 MINUTES", "③ 1 HOUR", "④ 4 HOURS", "⑤ YOUR INDICATOR"]) assert.match(client, new RegExp(label));
+  assert.match(client, /detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage/);
+  assert.match(client, /\{evidenceImageCount\}\/5 CHARTS LOADED/);
+  assert.match(client, /requiredTimeframesReady/);
+  assert.match(client, /ADD 5M · 30M · 1H · 4H/);
+  for (const role of ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"]) assert.match(route, new RegExp(role));
+  for (const expected of ["EXPECTED TIMEFRAME: 5 MINUTES", "EXPECTED TIMEFRAME: 30 MINUTES", "EXPECTED TIMEFRAME: 1 HOUR", "EXPECTED TIMEFRAME: 4 HOURS"]) assert.match(route, new RegExp(expected));
   assert.match(route, /Supporting images can refine the written audit but must never replace image 1's coordinate system/);
   assert.match(route, /never inflate score or confidence because more images were uploaded/);
   assert.match(route, /expectedEvidenceRoles/);

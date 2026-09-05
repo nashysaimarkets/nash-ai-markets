@@ -6,6 +6,8 @@ import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart
 type ChartPreflightPanelProps = {
   image: string;
   contextImage?: string | null;
+  detailImage?: string | null;
+  fourHourImage?: string | null;
   onStatus: (status: PreflightStatus) => void;
   onConfirmation: (confirmation: ChartConfirmation | null) => void;
 };
@@ -15,10 +17,10 @@ export default function ChartPreflightPanel(props: ChartPreflightPanelProps) {
 }
 
 function ChartPreflightForImage(props: ChartPreflightPanelProps) {
-  return <ChartPreflightRequest key={props.contextImage ?? ""} {...props} />;
+  return <ChartPreflightRequest key={`${props.contextImage ?? ""}:${props.detailImage ?? ""}:${props.fourHourImage ?? ""}`} {...props} />;
 }
 
-function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }: ChartPreflightPanelProps) {
+function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage, onStatus, onConfirmation }: ChartPreflightPanelProps) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
   const [message, setMessage] = useState("");
@@ -43,7 +45,7 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
     }, 35_000);
     const timer = window.setTimeout(async () => {
       try {
-        const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
+        const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "", detailImage: detailImage || "", fourHourImage: fourHourImage || "" }), signal: controller.signal });
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
         if (finished) return;
@@ -72,14 +74,14 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
       }
     }, 300);
     return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); controller.abort(); };
-  }, [image, contextImage]);
+  }, [image, contextImage, detailImage, fourHourImage]);
 
-  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
+  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING ALL FOUR CHARTS…</strong></header><div className="psPreflightScan"><i /></div><p>Verifying 5m → 30m → 1h → 4h order, instrument, scale and candles.</p></section>;
   if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message}</p></section>;
   if (!result) return null;
 
   const locked = status === "LOCKED";
-  const valid = instrument.trim().length > 1 && timeframe.trim().length > 0 && (!currentPrice.trim() || /^-?\d[\d,.]*$/.test(currentPrice.trim()));
+  const valid = result.status !== "RETAKE" && instrument.trim().length > 1 && timeframe.trim().length > 0 && (!currentPrice.trim() || /^-?\d[\d,.]*$/.test(currentPrice.trim()));
   const lock = () => {
     if (!valid) return;
     const confirmation: ChartConfirmation = {
@@ -93,7 +95,7 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   const edit = () => { setStatus("AWAITING_CONFIRMATION"); statusHandler.current("AWAITING_CONFIRMATION"); confirmationHandler.current(null); };
 
   return <section id="pocket-preflight-lock" className="psPreflight psPreflightCompact" data-status={result.status} data-locked={locked}>
-    <header><span>◉ CHART READ</span><strong>{result.status === "RETAKE" ? "LIMITED · ANALYSIS STILL AVAILABLE" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "READY"}</strong></header>
+    <header><span>◉ FOUR-CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "ORDER VERIFIED"}</strong></header>
     <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
     <details className="psConfirmDetails">
       <summary>CHECK OR EDIT DETECTED DETAILS</summary>
@@ -101,12 +103,13 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
         <label><span>INSTRUMENT</span><input value={instrument} disabled={locked} maxLength={80} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
         <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
         <label><span>CURRENT PRICE · OPTIONAL</span><input inputMode="decimal" value={currentPrice} disabled={locked} maxLength={30} placeholder="Leave blank if unclear" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
-        <article data-pass={!contextImage || result.sameInstrument === true}><span>CONTEXT CHART</span><strong>{!contextImage ? "NOT ADDED" : result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>
+        <article data-pass={result.sameInstrument === true}><span>ALL INSTRUMENTS</span><strong>{result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>
+        {(result.timeframeChecks ?? []).map((check) => <article key={check.slot} data-pass={check.matchesExpected === true}><span>{check.slot} SLOT</span><strong>{check.matchesExpected === true ? "MATCHED" : check.matchesExpected === false ? `WRONG · ${check.detected}` : "UNCONFIRMED"}</strong></article>)}
       </div>
       {result.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
       <p>{result.status === "RETAKE" ? result.guidance : "Correct only what is wrong. An unreadable live-price label withholds exact prices; it does not stop the analysis."}</p>
       <div className="psConfirmActions">{locked ? <><span>✓ YOUR CORRECTIONS OVERRIDE LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM DETAILS</button>}</div>
     </details>
-    <footer>ANALYSIS CAN CONTINUE · UNVERIFIED NUMBERS ARE WITHHELD</footer>
+    <footer>{result.status === "RETAKE" ? "ANALYSIS PAUSED · REPLACE THE WRONG CHART" : "FOUR TIMEFRAMES CHECKED · UNVERIFIED NUMBERS ARE WITHHELD"}</footer>
   </section>;
 }
