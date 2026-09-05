@@ -26,6 +26,9 @@ test("report runs alone before optional precision and failures drain all work", 
   const firstRescue = source.indexOf("finishPrecision(primaryFirst", precisionStart);
   const drain = source.indexOf("await Promise.allSettled([analysisRequest, precisionWork])");
   assert.ok(reportFailureAbort >= 0 && reportFailureAbort < precisionStart);
+  const incompleteReportGuard = source.indexOf("completedPocketReportOutput(response)", source.indexOf("const analysisRequest"));
+  assert.ok(incompleteReportGuard >= 0 && incompleteReportGuard < precisionStart, "an incomplete report must fail before precision starts");
+  assert.match(source, /incompleteReason,[\s\S]*?outputChars:[\s\S]*?outputTokens:[\s\S]*?reasoningTokens/);
   assert.ok(rescueGate > precisionStart && rescueGate < primaryStart);
   assert.ok(primaryStart > rescueGate, "primary precision must not compete with the report");
   assert.ok(contextStart > rescueGate, "context precision must not compete with the report");
