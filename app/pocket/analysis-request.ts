@@ -1,4 +1,6 @@
-export const POCKET_ANALYSIS_CLIENT_TIMEOUT_MS = 95_000;
+// Stay just beyond the server's 180-second function boundary so the browser
+// receives the server's specific outcome instead of aborting a valid request.
+export const POCKET_ANALYSIS_CLIENT_TIMEOUT_MS = 185_000;
 
 export const POCKET_ANALYSIS_TIMEOUT_MESSAGE =
   "The chart analysis timed out. Your charts are still loaded—tap again to retry.";
