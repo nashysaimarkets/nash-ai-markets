@@ -180,10 +180,6 @@ export async function POST(request: Request) {
       if (response.status !== "completed" || calibrationResponse.status !== "completed" || !output || !calibrationOutput) throw new Error("incomplete_liquidity_result");
       const raw = canonicalizePocketGeometry(JSON.parse(output)) as Record<string, unknown>;
       const calibration = canonicalizePocketGeometry(JSON.parse(calibrationOutput)) as Record<string, unknown>;
-      console.info("[pocket-bullseye] liquidity calibration probe", JSON.stringify({
-        plotBounds: calibration.plotBounds,
-        priceScaleAnchors: calibration.priceScaleAnchors,
-      }));
       const identityMatch = raw.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], raw.instrumentIdentifier) === true;
       const timeframeMatch = raw.timeframeConfidence === "HIGH" && compatibleTimeframe(provenance.timeframe, raw.timeframe);
       const calibrationIdentityMatch = calibration.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], calibration.instrumentIdentifier) === true;
@@ -194,7 +190,7 @@ export async function POST(request: Request) {
       }
       if (raw.candlesReadable !== true || raw.priceScaleReadable !== true || raw.confidence === "LOW"
         || calibration.candlesReadable !== true || calibration.priceScaleReadable !== true || calibration.confidence === "LOW") {
-        return { expiresAt: Date.now() + REPLAY_TTL_MS, status: 422, payload: { error: "Liquidity Guard needs clearer candles and at least two readable price-axis labels." } };
+        return { expiresAt: Date.now() + REPLAY_TTL_MS, status: 422, payload: { error: "Liquidity Guard needs clearer candles and at least three readable price-axis labels." } };
       }
       const normalizationDiagnostics: string[] = [];
       const independentGeometry = { ...raw, plotBounds: calibration.plotBounds, priceScaleAnchors: calibration.priceScaleAnchors };
