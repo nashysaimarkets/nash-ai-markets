@@ -363,6 +363,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
     readFile(new URL("../app/api/pocket/events/route.ts", import.meta.url), "utf8"),
   ]);
   assert.match(client, /analysisRequestActive\.current/);
+  assert.match(client, /postPocketAnalysis/);
+  assert.match(client, /pocketAnalysisCountdownLabel\(analysisSecondsRemaining\)/);
+  assert.match(client, /small role="timer"/);
   assert.match(client, /followUpRequestActive\.current/);
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
@@ -374,7 +377,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(payload\.analysis, Boolean\(selectedContext\)\)/);
   assert.match(client, /hasVerifiedTwoSidedStructure/);
   assert.match(client, /createProviderScanImage/);
-  assert.match(client, /body: JSON\.stringify\(\{ image: providerImage, contextImage: providerContextImage/);
+  assert.match(client, /postPocketAnalysis\(JSON\.stringify\(\{ image: providerImage, contextImage: providerContextImage/);
   assert.match(client, /MAX_PROVIDER_SCAN_DATA_URL_CHARS = 1_900_000/);
   assert.match(client, /data:image\\\/\(\?:jpeg\|png\|webp\);base64,[\s\S]*dataUrl\.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS/);
   assert.match(client, /Math\.min\(1, attempt\.maxWidth \/ source\.naturalWidth/);
@@ -401,6 +404,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
   assert.match(analyseRoute, /max_output_tokens: 7000/);
   assert.match(analyseRoute, /analysis report was interrupted before it finished/);
+  assert.match(analyseRoute, /service capacity has been reached/);
+  assert.doesNotMatch(analyseRoute, /Bullseye could not verify enough chart detail safely/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /DecisionMap/);
@@ -572,6 +577,17 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
     assert.match(route, /store: false/);
     assert.match(route, /pocketBudgetHeaders/);
   }
+});
+
+test("the futuristic depth layer changes presentation without changing layout geometry", async () => {
+  const [page, futureDepth] = await Promise.all([
+    readFile(new URL("../app/pocket/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-future-depth.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /import "\.\/pocket-future-depth\.css"/);
+  assert.match(futureDepth, /prefers-reduced-motion: reduce/);
+  assert.match(futureDepth, /psFutureGridDrift/);
+  assert.doesNotMatch(futureDepth, /(?:^|[;{])\s*(?:margin|padding|width|height|min-width|min-height|max-width|max-height|position|inset|top|right|bottom|left|display|grid|grid-template|flex|gap)\s*:/m);
 });
 
 test("Decision Map withholds absent structure but keeps one-sided evidence explicitly partial", async () => {

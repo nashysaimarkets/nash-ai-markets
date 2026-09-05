@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { rejectCrossOrigin } from "../../../lib/server/same-origin";
@@ -80,7 +80,12 @@ export async function POST(request: Request) {
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty preflight");
     return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
-  } catch {
-    return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
+  } catch (error) {
+    const reason = classifyOpenAIFailure(error);
+    console.warn("[pocket-preflight] unavailable", JSON.stringify({ reason }));
+    const message = reason === "quota_exhausted"
+      ? "AI checks are temporarily unavailable because service capacity has been reached. Your chart is saved, but full analysis cannot run until service is restored."
+      : "Preflight could not complete. You may continue to analysis.";
+    return NextResponse.json({ error: message }, { status: 503, headers: pocketBudgetHeaders(budget) });
   }
 }

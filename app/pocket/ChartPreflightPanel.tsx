@@ -75,7 +75,7 @@ function ChartPreflightRequest({ image, contextImage, onStatus, onConfirmation }
   }, [image, contextImage]);
 
   if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
-  if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message} Full analysis remains available.</p></section>;
+  if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message}</p></section>;
   if (!result) return null;
 
   const locked = status === "LOCKED";

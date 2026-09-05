@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { checkOpenAIConnection, createOpenAIClient } from "../app/lib/server/openai.ts";
+import { checkOpenAIConnection, classifyOpenAIFailure, createOpenAIClient } from "../app/lib/server/openai.ts";
 
 test("OpenAI client remains unconfigured when the server key is absent", () => {
   assert.equal(createOpenAIClient(""), null);
@@ -75,6 +75,16 @@ test("OpenAI health check exposes only safe operational failure categories", asy
   assert.deepEqual(permission, { status: "unavailable", reason: "permission_denied" });
   assert.deepEqual(model, { status: "unavailable", reason: "model_unavailable" });
   assert.doesNotMatch(JSON.stringify([authentication, rateLimit, quota, timeout, permission, model]), /credential|account detail|billing detail|request URL|project detail|model detail/);
+});
+
+test("OpenAI spend-limit failures are never mistaken for ordinary rate limiting", () => {
+  assert.equal(classifyOpenAIFailure({
+    status: 429,
+    code: "organization_spend_limit_exceeded",
+    type: "insufficient_quota",
+    message: "organization has reached its configured enforced spend limit",
+  }), "quota_exhausted");
+  assert.equal(classifyOpenAIFailure({ status: 429, code: "rate_limit_exceeded" }), "rate_limited");
 });
 
 test("OpenAI health route requires authentication and never serializes credentials or raw errors", async () => {
