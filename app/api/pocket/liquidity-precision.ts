@@ -87,7 +87,10 @@ function verifiedScale(value: unknown, bounds: Bounds) {
   const minimumSpan = ordered.length === 2 ? (bounds.bottom - bounds.top) * .28 : 12;
   if (Math.abs(high.y - low.y) < minimumSpan || high.price === low.price) return null;
   const project = (price: number) => low.y + ((price - low.price) / (high.price - low.price)) * (high.y - low.y);
-  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 1.5)) return null;
+  // Vision coordinates on tall mobile screenshots routinely carry two to
+  // three percentage points of row jitter. Monotonic labels plus the later
+  // candle-row checks remain the stronger evidence than pixel-perfect OCR.
+  if (ordered.length >= 3 && ordered.some((anchor) => Math.abs(project(anchor.price) - anchor.y) > 3.5)) return null;
   return { project };
 }
 
@@ -151,7 +154,7 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
   const seen = new Set<number>();
   const plotHeight = bounds.bottom - bounds.top;
   const maxBandHeight = plotHeight * .08;
-  const rowTolerance = Math.min(1.5, Math.max(.6, plotHeight * .02));
+  const rowTolerance = Math.min(3.5, Math.max(1.25, plotHeight * .045));
   const confidenceRank: Record<string, number> = { HIGH: 0, MEDIUM: 1 };
   const zones = [...raw.zones].sort((left, right) => {
     const leftConfidence = left && typeof left === "object" ? String((left as JsonRecord).confidence) : "";
