@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
+import { loadFmpEconomicCalendar } from "../../../lib/providers/fmp-economic-calendar";
+import type { SupplementalMarketEvent } from "../../../lib/macro-data";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,6 +58,17 @@ async function companyEvents(symbol: string) {
 export async function GET(request: Request) {
   const symbol = new URL(request.url).searchParams.get("symbol")?.trim().toUpperCase() ?? "";
   if (symbol) return companyEvents(symbol);
-  const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/events" });
-  return NextResponse.json({ macroContext }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+  const apiKey = process.env.FMP_API_KEY?.trim() ?? "";
+  const [macroContext, providerRows] = await Promise.all([
+    getVerifiedMacroContext({ route: "/api/pocket/events", signal: request.signal }),
+    loadFmpEconomicCalendar({ apiKey, baseUrl: process.env.FMP_API_BASE_URL?.trim(), signal: request.signal }),
+  ]);
+  const marketEvents: SupplementalMarketEvent[] = providerRows.map((event, index) => ({
+    id: `fmp-${event.at}-${index}`,
+    name: event.name,
+    scheduledAt: event.at ?? "",
+    risk: event.risk,
+    source: "Financial Modeling Prep",
+  })).filter((event) => Boolean(event.scheduledAt));
+  return NextResponse.json({ macroContext, marketEvents }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }
