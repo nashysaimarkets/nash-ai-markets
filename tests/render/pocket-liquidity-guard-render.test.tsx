@@ -95,3 +95,30 @@ test("a missing Liquidity Guard result reports unavailable without covering the 
   assert.doesNotMatch(html, /psLiquidityHold/);
   assert.doesNotMatch(html, /psLiquidityVector/);
 });
+
+test("a Liquidity Guard request failure remains visible on the result screen", () => {
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base} onRescan={() => undefined} errorMessage="The chart check timed out. Please retry."/>);
+  assert.match(html, /role="alert"/);
+  assert.match(html, /The chart check timed out/);
+});
+
+test("a dedicated verified Guard rescan is not vetoed by stale report readability", () => {
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
+    ...base,
+    evidenceQuality: { chartReadability: "POOR", candlesReadable: false },
+    liquidityGeometry: {
+      plotBounds: base.plotBounds,
+      priceScaleAnchors: base.priceScaleAnchors,
+      evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true },
+      liquidityShield: {
+        status: "VISIBLE_RISK_ZONES",
+        summary: "Dedicated chart check verified the repeated lows.",
+        stopGuidance: "Verify on the original chart.",
+        zones: [{ side: "BELOW_PRICE", pattern: "EQUAL_LOWS", label: "Repeated lows", priceLow: 2850, priceHigh: 2850, confidence: "HIGH", evidence: "Three lows align.", touchPoints: [{ x: 25, y: 65 }, { x: 48, y: 65.2 }, { x: 70, y: 64.8 }] }],
+      },
+    },
+  }}/>);
+  assert.match(html, /data-status="locked"/);
+  assert.match(html, /SCALE-CHECKED AREA/);
+  assert.doesNotMatch(html, /OVERLAY WITHHELD/);
+});
