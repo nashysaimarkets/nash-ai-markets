@@ -55,8 +55,8 @@ test("server normalizer keeps a scale, side and candle-row verified candidate", 
   assert.equal(shield.zones[0].confidence, "HIGH");
 });
 
-test("a wide two-label scale works while tight, out-of-plot and off-chart evidence fails closed", () => {
-  assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: anchors.slice(0, 2) }), "2900").status, "VISIBLE_RISK_ZONES");
+test("fewer than three labels, tight scales, out-of-plot anchors and off-chart evidence fail closed", () => {
+  assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: anchors.slice(0, 2) }), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: [{ price: 3000, y: 35 }, { price: 2900, y: 50 }] }), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(precision({ priceScaleAnchors: [{ price: 3000, y: 5 }, anchors[1], { price: 2800, y: 95 }] }), "2900").status, "INSUFFICIENT_EVIDENCE");
   assert.equal(normalizePrecisionLiquidityShield(precision(), "3100").status, "INSUFFICIENT_EVIDENCE");
