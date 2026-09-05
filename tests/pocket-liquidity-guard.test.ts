@@ -9,6 +9,7 @@ import {
   verifiedLiquidityScale,
   type LiquidityShield,
 } from "../app/pocket/liquidity-guard.ts";
+import { normalizePrecisionLiquidityShield } from "../app/api/pocket/liquidity-precision.ts";
 
 const bounds = { left: 8, top: 12, right: 88, bottom: 86 };
 const anchors = [{ price: 3000, y: 20 }, { price: 2900, y: 50 }, { price: 2800, y: 80 }];
@@ -187,4 +188,35 @@ test("customer surface exposes a toggle, distinct safe states and explicit non-g
   assert.match(styles, /prefers-reduced-motion/);
   assert.match(route, /liquidityShield/);
   assert.match(route, /order-book liquidity/);
+});
+
+test("a server-approved mobile zone survives the identical UI projection gate", () => {
+  const raw = {
+    plotBounds: { left: 8, top: 10, right: 88, bottom: 90 },
+    priceScaleAnchors: [
+      { price: 3000, y: 20 },
+      { price: 2900, y: 52.5 },
+      { price: 2800, y: 80 },
+    ],
+    currentPrice: "2900",
+    liquidityShield: {
+      status: "VISIBLE_RISK_ZONES",
+      summary: "Repeated lows are visible.",
+      stopGuidance: "Verify the marked row on the original chart.",
+      zones: [{
+        side: "BELOW_PRICE",
+        pattern: "EQUAL_LOWS",
+        label: "Repeated lows",
+        priceLow: 2850,
+        priceHigh: 2850,
+        confidence: "HIGH",
+        evidence: "Three distinct lows align within mobile vision tolerance.",
+        touchPoints: [{ x: 24, y: 67.4 }, { x: 47, y: 64.1 }, { x: 72, y: 66.2 }],
+      }],
+    },
+  };
+  const normalized = normalizePrecisionLiquidityShield(raw, "2900");
+  assert.equal(normalized.status, "VISIBLE_RISK_ZONES");
+  const projected = projectLiquidityZones(normalized as import("../app/pocket/liquidity-guard.ts").LiquidityShield, "2900", raw.priceScaleAnchors, raw.plotBounds, { chartReadability: "CLEAR", candlesReadable: true });
+  assert.equal(projected.length, 1, "the browser must draw every zone accepted by the server under the same geometry policy");
 });
