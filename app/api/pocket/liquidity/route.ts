@@ -148,7 +148,8 @@ export async function POST(request: Request) {
       if (raw.candlesReadable !== true || raw.priceScaleReadable !== true || raw.confidence === "LOW") {
         return { expiresAt: Date.now() + REPLAY_TTL_MS, status: 422, payload: { error: "Liquidity Guard needs clearer candles and at least two readable price-axis labels." } };
       }
-      const liquidityShield = normalizePrecisionLiquidityShield(raw, provenance.currentPrice);
+      const normalizationDiagnostics: string[] = [];
+      const liquidityShield = normalizePrecisionLiquidityShield(raw, provenance.currentPrice, normalizationDiagnostics);
       const rawShield = raw.liquidityShield && typeof raw.liquidityShield === "object"
         ? raw.liquidityShield as Record<string, unknown>
         : null;
@@ -158,6 +159,7 @@ export async function POST(request: Request) {
         anchors: Array.isArray(raw.priceScaleAnchors) ? raw.priceScaleAnchors.length : 0,
         normalizedStatus: liquidityShield.status,
         normalizedZones: liquidityShield.zones.length,
+        rejectionReasons: [...new Set(normalizationDiagnostics)],
       }));
       const result = canonicalizePocketGeometry({
         plotBounds: raw.plotBounds,
