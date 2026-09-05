@@ -38,3 +38,5 @@ The build manifest returned the exact pinned revision and the deployment was Rea
 - Secret-pattern security scan passed across 898 version-control candidates.
 - Verified production build and Sites artifact checks passed.
 - Immutable Vercel build manifest matched the pinned Git revision.
+
+The release branch was pushed only after all gates above completed successfully.
