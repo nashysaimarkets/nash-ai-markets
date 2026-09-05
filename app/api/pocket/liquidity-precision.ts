@@ -129,18 +129,22 @@ export function choosePrecisionLiquidityShield(
   return normalizedShieldRank(normalizedRescue) > normalizedShieldRank(normalizedFirst) ? rescue : first;
 }
 
-export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, currentPriceText: string | null) {
-  if (!precision) return insufficientLiquidityShield("The precision chart-reading pass did not complete, so no liquidity zone was drawn.");
+export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, currentPriceText: string | null, diagnostics: string[] = []) {
+  const reject = (reason: string) => { diagnostics.push(reason); return []; };
+  if (!precision) { diagnostics.push("NO_PRECISION"); return insufficientLiquidityShield("The precision chart-reading pass did not complete, so no liquidity zone was drawn."); }
   precision = canonicalizePocketGeometry(precision) as JsonRecord;
   const shield = precision.liquidityShield;
-  if (!shield || typeof shield !== "object") return insufficientLiquidityShield();
+  if (!shield || typeof shield !== "object") { diagnostics.push("MISSING_SHIELD"); return insufficientLiquidityShield(); }
   const raw = shield as JsonRecord;
   const bounds = verifiedBounds(precision.plotBounds);
   const scale = bounds ? verifiedScale(precision.priceScaleAnchors, bounds) : null;
   const currentPrice = numericPrice(currentPriceText ?? precision.currentPrice);
-  if (!bounds || !scale || currentPrice === null || currentPrice <= 0) return insufficientLiquidityShield();
+  if (!bounds || !scale || currentPrice === null || currentPrice <= 0) {
+    diagnostics.push(!bounds ? "INVALID_BOUNDS" : !scale ? "INVALID_SCALE" : "INVALID_CURRENT_PRICE");
+    return insufficientLiquidityShield();
+  }
   const currentY = scale.project(currentPrice);
-  if (currentY < bounds.top || currentY > bounds.bottom) return insufficientLiquidityShield();
+  if (currentY < bounds.top || currentY > bounds.bottom) { diagnostics.push("CURRENT_OUTSIDE_PLOT"); return insufficientLiquidityShield(); }
 
   if (raw.status === "INSUFFICIENT_EVIDENCE") {
     return insufficientLiquidityShield(boundedText(raw.summary, 220) || undefined);
@@ -153,7 +157,7 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
       stopGuidance: boundedText(raw.stopGuidance, 220) || "Use the invalidation defined by your setup; no chart-derived stop-risk zone was verified.",
     };
   }
-  if (raw.status !== "VISIBLE_RISK_ZONES" || !Array.isArray(raw.zones)) return insufficientLiquidityShield();
+  if (raw.status !== "VISIBLE_RISK_ZONES" || !Array.isArray(raw.zones)) { diagnostics.push("INVALID_SHIELD_STATUS"); return insufficientLiquidityShield(); }
 
   const seen = new Set<number>();
   const plotHeight = bounds.bottom - bounds.top;
@@ -167,26 +171,26 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
     const rightConfidence = right && typeof right === "object" ? String((right as JsonRecord).confidence) : "";
     return (confidenceRank[leftConfidence] ?? 2) - (confidenceRank[rightConfidence] ?? 2);
   }).flatMap((item) => {
-    if (!item || typeof item !== "object") return [];
+    if (!item || typeof item !== "object") return reject("INVALID_ZONE");
     const zone = item as JsonRecord;
     const side = typeof zone.side === "string" && SIDES.has(zone.side) ? zone.side : null;
     const pattern = typeof zone.pattern === "string" && PATTERNS.has(zone.pattern) ? zone.pattern : null;
     const rawConfidence = typeof zone.confidence === "string" && CONFIDENCE.has(zone.confidence) ? zone.confidence : null;
     const priceLow = finiteNumber(zone.priceLow);
     const priceHigh = finiteNumber(zone.priceHigh);
-    if (!side || !pattern || !rawConfidence || priceLow === null || priceHigh === null || priceLow <= 0 || priceHigh <= 0 || priceHigh < priceLow) return [];
+    if (!side || !pattern || !rawConfidence || priceLow === null || priceHigh === null || priceLow <= 0 || priceHigh <= 0 || priceHigh < priceLow) return reject("INVALID_ZONE_FIELDS");
     // Side labels must remain literal. A narrow cluster currently being
     // tested is retained as AT_PRICE instead of being silently discarded.
-    if (side === "ABOVE_PRICE" && priceLow <= currentPrice) return [];
-    if (side === "BELOW_PRICE" && priceHigh >= currentPrice) return [];
-    if (side === "AT_PRICE" && (currentPrice < priceLow || currentPrice > priceHigh)) return [];
+    if (side === "ABOVE_PRICE" && priceLow <= currentPrice) return reject("SIDE_MISMATCH");
+    if (side === "BELOW_PRICE" && priceHigh >= currentPrice) return reject("SIDE_MISMATCH");
+    if (side === "AT_PRICE" && (currentPrice < priceLow || currentPrice > priceHigh)) return reject("SIDE_MISMATCH");
 
     const projectedLow = scale.project(priceLow);
     const projectedHigh = scale.project(priceHigh);
     const bandTop = Math.min(projectedLow, projectedHigh);
     const bandBottom = Math.max(projectedLow, projectedHigh);
-    if (bandTop < bounds.top || bandBottom > bounds.bottom) return [];
-    if (bandBottom - bandTop > maxBandHeight) return [];
+    if (bandTop < bounds.top || bandBottom > bounds.bottom) return reject("BAND_OUTSIDE_PLOT");
+    if (bandBottom - bandTop > maxBandHeight) return reject("BAND_TOO_WIDE");
 
     const touchPoints = Array.isArray(zone.touchPoints) ? zone.touchPoints.flatMap((point) => {
       if (!point || typeof point !== "object") return [];
@@ -195,12 +199,12 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
       const y = finiteNumber(record.y);
       return x !== null && y !== null && x >= bounds.left && x <= bounds.right && y >= bounds.top && y <= bounds.bottom ? [{ x, y }] : [];
     }).filter((point, index, all) => all.findIndex((candidate) => Math.abs(candidate.x - point.x) < .75) === index) : [];
-    if (touchPoints.length < 2) return [];
-    if (!touchPoints.every((point) => point.y >= bandTop - rowTolerance && point.y <= bandBottom + rowTolerance)) return [];
+    if (touchPoints.length < 2) return reject("TOUCH_COUNT");
+    if (!touchPoints.every((point) => point.y >= bandTop - rowTolerance && point.y <= bandBottom + rowTolerance)) return reject("TOUCH_ROW_MISMATCH");
     const confidence = rawConfidence === "HIGH" && touchPoints.length < 3 ? "MEDIUM" : rawConfidence;
 
     const key = Math.round(((bandTop + bandBottom) / 2) * 2);
-    if (seen.has(key)) return [];
+    if (seen.has(key)) return reject("DUPLICATE_ROW");
     seen.add(key);
     return [{
       side,
@@ -214,7 +218,7 @@ export function normalizePrecisionLiquidityShield(precision: JsonRecord | null, 
     }];
   }).slice(0, 4);
 
-  if (!zones.length) return insufficientLiquidityShield("No candidate liquidity zone survived price-scale, side and candle-row verification.");
+  if (!zones.length) { diagnostics.push("NO_ACCEPTED_ZONES"); return insufficientLiquidityShield("No candidate liquidity zone survived price-scale, side and candle-row verification."); }
   return {
     status: "VISIBLE_RISK_ZONES",
     summary: `${zones.length} visually inferred stop-risk zone${zones.length === 1 ? "" : "s"} passed scale, side and candle-row checks.`,
