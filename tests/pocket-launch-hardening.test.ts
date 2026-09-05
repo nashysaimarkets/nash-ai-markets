@@ -86,6 +86,22 @@ test("pattern evidence is retained once per uploaded image and tied to its own g
   ]);
 });
 
+test("compact forming flags at the edge of a wide chart survive calibration", () => {
+  const result = calibratePocketAnalysis({
+    evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, scaleReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+    setupScore: { overall: 64, grade: "C" },
+    plotBounds: { left: 6, top: 10, right: 92, bottom: 90 },
+    patterns: [{
+      name: "BULL FLAG", sourceRole: "PRIMARY", status: "FORMING", timeframe: "30M", confidence: "MEDIUM",
+      evidence: "A strong visible impulse is followed by a compact multi-candle pause near the high.",
+      confirmation: "Price clears and holds above the pause high.",
+      invalidation: "Price loses the impulse base and remains below it.",
+      geometry: { plotBounds: { left: 6, top: 10, right: 92, bottom: 90 }, points: [{ x: 82, y: 70 }, { x: 86, y: 28 }, { x: 89, y: 34 }, { x: 91, y: 30 }], labelX: 88, labelY: 22 },
+    }],
+  }) as { patterns: Array<{ name: string }> };
+  assert.deepEqual(result.patterns.map((pattern) => pattern.name), ["BULL FLAG"]);
+});
+
 test("a confident narrative is forced to wait when exact price structure is not verified", () => {
   const result = calibratePocketAnalysis({
     confidence: "HIGH",
@@ -351,7 +367,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 13/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 14/);
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
