@@ -23,6 +23,10 @@ test("Liquidity Guard has a dedicated bounded primary-chart rescan", () => {
   assert.match(route, /classifyOpenAIFailure/);
   assert.match(client, /activePrimaryImage\.current !== sourceImageRevision/);
   assert.match(client, /const effectiveLiquidity = effectiveLiquidityGeometry\(analysis\)/);
+  assert.match(client, /createMeasuredScanImage/);
+  assert.match(client, /measuredScanImage/);
+  assert.match(route, /cyan pixel-locked ruler/);
+  assert.match(route, /independentCalibration: true/);
 });
 
 test("new chart and review transitions cannot reuse a prior four-hour upload", () => {
