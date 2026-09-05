@@ -1812,10 +1812,80 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           ? { ...level, x: Number.NaN, y: Number.NaN, x2: Number.NaN, y2: Number.NaN }
           : { ...level, y: clampY(level.y) };
       });
-      if (hasVerifiedTwoSidedAnalysis(payload.analysis, Boolean(selectedContext))) {
-        await analysisCacheSave(cacheKey, payload.analysis).catch(() => undefined);
+      let completedAnalysis = payload.analysis;
+      const verifiedCurrentPrice = numericLevel(completedAnalysis.currentPrice);
+      const canRunIndependentScanners = completedAnalysis.trustGate?.identityLocked === true && verifiedCurrentPrice !== null;
+      if (canRunIndependentScanners) {
+        const primaryProvenance = {
+          instrument: completedAnalysis.instrument,
+          ticker: completedAnalysis.ticker,
+          timeframe: completedAnalysis.timeframe,
+          currentPrice: completedAnalysis.currentPrice,
+          identityLocked: true as const,
+        };
+        const needsLevelRecovery = !hasVerifiedTwoSidedStructure(numericStructure(completedAnalysis.levels), verifiedCurrentPrice);
+        const needsLiquidityRecovery = completedAnalysis.liquidityShield?.status !== "VISIBLE_RISK_ZONES";
+        const [levelScanImage, liquidityScanImage] = await Promise.all([
+          needsLevelRecovery ? createLevelLabScanImage(providerImage) : Promise.resolve(null),
+          needsLiquidityRecovery ? createMeasuredScanImage(providerImage) : Promise.resolve(null),
+        ]);
+        const [levelRecovery, liquidityRecovery] = await Promise.all([
+          needsLevelRecovery && levelScanImage
+            ? postLevelLabScan<{
+                levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory" | "trustGate"> & {
+                  provenance?: { source?: string; primaryInstrument?: string; primaryTimeframe?: string; primaryCurrentPrice?: string };
+                };
+                error?: string;
+              }>(JSON.stringify({ image: levelScanImage, primaryProvenance })).catch(() => null)
+            : Promise.resolve(null),
+          needsLiquidityRecovery && liquidityScanImage
+            ? postLiquidityRescan<{ liquidity?: NonNullable<Analysis["liquidityGeometry"]>; error?: string }>(
+                JSON.stringify({ image: liquidityScanImage, primaryProvenance }),
+              ).catch(() => null)
+            : Promise.resolve(null),
+        ]);
+        if (levelRecovery?.response.ok && levelRecovery.payload.levels) {
+          const recovered = levelRecovery.payload.levels;
+          const provenance = recovered.provenance;
+          const returnedLevels = numericStructure(recovered.levels);
+          const returnedCurrentPrice = numericLevel(recovered.currentPrice);
+          const returnedTwoSided = hasVerifiedTwoSidedStructure(returnedLevels, verifiedCurrentPrice);
+          const validTrustGate = recovered.trustGate?.chartLocked === true
+            && recovered.trustGate.identityLocked === true
+            && recovered.trustGate.scaleLocked === true
+            && recovered.trustGate.status === "LOCKED"
+            && recovered.trustGate.exactLevelCount >= 2
+            && returnedTwoSided;
+          const validProvenance = provenance?.source === "LEVEL_LAB"
+            && provenance.primaryInstrument === primaryProvenance.instrument
+            && provenance.primaryTimeframe === primaryProvenance.timeframe
+            && numericLevel(provenance.primaryCurrentPrice) === verifiedCurrentPrice
+            && returnedCurrentPrice === verifiedCurrentPrice
+            && recovered.levels.every((level) => level.source === "LEVEL_LAB");
+          if (validTrustGate && validProvenance) {
+            completedAnalysis = invalidateDerivedChartEvidence(enforcePocketTrustGate({
+              ...completedAnalysis,
+              levels: recovered.levels.map((level) => ({
+                ...level,
+                x: Number.NaN,
+                y: Number.NaN,
+                x2: Number.NaN,
+                y2: Number.NaN,
+              })),
+              currentPrice: completedAnalysis.currentPrice,
+              trustGate: recovered.trustGate,
+              levelStory: recovered.levelStory || completedAnalysis.levelStory,
+            }, recovered.trustGate) as Analysis, "PRIMARY_STRUCTURE_CHANGED");
+          }
+        }
+        if (liquidityRecovery?.response.ok && liquidityRecovery.payload.liquidity) {
+          completedAnalysis = { ...completedAnalysis, liquidityGeometry: liquidityRecovery.payload.liquidity };
+        }
       }
-      return payload.analysis;
+      if (hasVerifiedTwoSidedAnalysis(completedAnalysis, Boolean(selectedContext))) {
+        await analysisCacheSave(cacheKey, completedAnalysis).catch(() => undefined);
+      }
+      return completedAnalysis;
     } finally {
       analysisRequestActive.current = false;
       setBusy(false);

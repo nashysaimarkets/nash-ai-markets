@@ -374,7 +374,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
-  assert.match(client, /hasVerifiedTwoSidedAnalysis\(payload\.analysis, Boolean\(selectedContext\)\)/);
+  assert.match(client, /hasVerifiedTwoSidedAnalysis\(completedAnalysis, Boolean\(selectedContext\)\)/);
   assert.match(client, /hasVerifiedTwoSidedStructure/);
   assert.match(client, /createProviderScanImage/);
   assert.match(client, /postPocketAnalysis\(JSON\.stringify\(\{ image: providerImage, contextImage: providerContextImage/);
@@ -386,7 +386,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /pocket-analysis-v\$\{POCKET_ANALYSIS_ENGINE_VERSION\}/);
   assert.match(client, /crypto\.subtle\.digest\("SHA-256"/);
   assert.match(client, /analysisCacheGet\(cacheKey\)/);
-  assert.match(client, /analysisCacheSave\(cacheKey, payload\.analysis\)/);
+  assert.match(client, /analysisCacheSave\(cacheKey, completedAnalysis\)/);
   assert.match(client, /addResultContextFile/);
   assert.match(client, /Add another timeframe chart photo/);
   assert.match(client, /requestPocketAnalysis\(contextImage, \{ bypassCache: true \}\)/);

@@ -29,6 +29,17 @@ test("Liquidity Guard has a dedicated bounded primary-chart rescan", () => {
   assert.match(route, /independentCalibration: true/);
 });
 
+test("a completed main scan automatically invokes independent recovery when precision was withheld", () => {
+  const request = client.slice(client.indexOf("async function requestPocketAnalysis"), client.indexOf("async function analyse()"));
+  assert.match(request, /needsLevelRecovery = !hasVerifiedTwoSidedStructure/);
+  assert.match(request, /needsLiquidityRecovery = completedAnalysis\.liquidityShield\?\.status !== "VISIBLE_RISK_ZONES"/);
+  assert.match(request, /postLevelLabScan/);
+  assert.match(request, /postLiquidityRescan/);
+  assert.match(request, /const \[levelRecovery, liquidityRecovery\] = await Promise\.all/);
+  assert.match(request, /liquidityGeometry: liquidityRecovery\.payload\.liquidity/);
+  assert.doesNotMatch(request, /setLevelLabImage|setLevelLabFileName/);
+});
+
 test("new chart and review transitions cannot reuse a prior four-hour upload", () => {
   const review = client.slice(client.indexOf("async function startReview"), client.indexOf("function startNewChart"));
   const next = client.slice(client.indexOf("function startNewChart"), client.indexOf("const sourceChart"));

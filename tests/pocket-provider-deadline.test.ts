@@ -37,6 +37,19 @@ test("report runs alone before optional precision and failures drain all work", 
   assert.match(source, /firstFailure: precisionSignal\.aborted \? "REQUEST_ABORTED" : "REQUEST_FAILED"/);
 });
 
+test("real-chart precision exhaustion cannot starve context recovery or return an unlabeled incomplete response", async () => {
+  const source = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
+  assert.match(source, /remainingCalls: contextImage \? 4 : 2/);
+  assert.match(source, /reasoning: \{ effort: "low" \}/);
+  assert.match(source, /max_output_tokens: 5000/);
+  assert.match(source, /first\.status !== "completed" \|\| !output/);
+  assert.match(source, /rescue\.status !== "completed" \|\| !rescueOutput/);
+  assert.match(source, /\$\{label\} precision provider completion/);
+  assert.match(source, /phase: "initial"/);
+  assert.match(source, /phase: "rescue"/);
+  assert.match(source, /const \[primary, context\] = await Promise\.all/);
+});
+
 test("analyse bounds the aggregate body before parsing fields or taking provider budget", async () => {
   const source = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
   const boundedRead = source.indexOf("readBoundedJsonBody(request, MAX_REQUEST_BYTES)");

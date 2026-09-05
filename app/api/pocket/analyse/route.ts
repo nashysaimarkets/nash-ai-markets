@@ -528,10 +528,10 @@ export async function POST(request: Request) {
         "Liquidity confidence may be HIGH only for three or more clean aligned reactions with a consistent scale; use MEDIUM for two clear reactions. Low-confidence candidates must be omitted rather than drawn. stopGuidance must discuss structurally decisive invalidation without giving a personal stop price or promising a reversal.",
       ].join(" ");
     const precisionCallBudget: PrecisionProviderCallBudget = {
-      // One initial pass per supplied chart plus one shared, primary-first
-      // rescue. Including the report call, one analysis fans out to at most
-      // four provider requests instead of five.
-      remainingCalls: contextImage ? 3 : 2,
+      // Each supplied geometry chart gets one initial pass and one bounded
+      // rescue. The former three-call budget deterministically starved the
+      // context rescue whenever primary needed a retry.
+      remainingCalls: contextImage ? 4 : 2,
       deadlineAt: precisionDeadlineAt,
       signal: precisionSignal,
     };
@@ -543,7 +543,9 @@ export async function POST(request: Request) {
       timeoutMs = POCKET_ANALYSIS_TIMEOUT_MS,
     ) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
-      reasoning: { effort: "medium" },
+      // Precision is a constrained extraction task. Low reasoning preserves
+      // the visible JSON allowance and reduces long-tail mobile latency.
+      reasoning: { effort: "low" },
       store: false,
       instructions: precisionInstructions,
       input: [{
@@ -556,7 +558,9 @@ export async function POST(request: Request) {
           ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
         ],
       }],
-      max_output_tokens: 2200,
+      // Reasoning and schema JSON share this allowance. At 2.2k, real charts
+      // could end with status=incomplete and no parseable JSON at all.
+      max_output_tokens: 5000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
     }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) });
     const parsePrecisionOutput = (outputText: string | undefined) => {
@@ -580,6 +584,18 @@ export async function POST(request: Request) {
       if (!reservation.allowed) return { output_text: undefined, firstFailure: reservation.reason };
       try {
         const first = await requestPrecision(chartImage, false, null, trustedCurrentPrice, reservation.timeoutMs);
+        const output = first.output_text?.trim() ?? "";
+        console.info(`[pocket-bullseye] ${label} precision provider completion`, JSON.stringify({
+          phase: "initial",
+          status: first.status ?? "unknown",
+          incompleteReason: first.incomplete_details?.reason ?? null,
+          outputChars: output.length,
+          outputTokens: first.usage?.output_tokens ?? null,
+          reasoningTokens: first.usage?.output_tokens_details?.reasoning_tokens ?? null,
+        }));
+        if (first.status !== "completed" || !output) {
+          return { output_text: undefined, firstFailure: "REQUEST_FAILED" };
+        }
         return { output_text: first.output_text, firstFailure: null };
       } catch (error) {
         console.error(`[pocket-bullseye] ${label} precision pass unavailable`, error instanceof Error ? error.name : "unknown");
@@ -613,6 +629,18 @@ export async function POST(request: Request) {
       }
       try {
         const rescue = await requestPrecision(chartImage, true, readingCrop, trustedCurrentPrice, reservation.timeoutMs);
+        const rescueOutput = rescue.output_text?.trim() ?? "";
+        console.info(`[pocket-bullseye] ${label} precision provider completion`, JSON.stringify({
+          phase: "rescue",
+          status: rescue.status ?? "unknown",
+          incompleteReason: rescue.incomplete_details?.reason ?? null,
+          outputChars: rescueOutput.length,
+          outputTokens: rescue.usage?.output_tokens ?? null,
+          reasoningTokens: rescue.usage?.output_tokens_details?.reasoning_tokens ?? null,
+        }));
+        if (rescue.status !== "completed" || !rescueOutput) {
+          return { output_text: first.output_text, diagnostics: { firstParsed: Boolean(parsed), rescueAttempted: true, rescueParsed: false, rescueReasons } };
+        }
         const rescued = parsePrecisionOutput(rescue.output_text);
         if (rescued) {
           // A Liquidity Guard-only retry must not replace an already valid
@@ -652,12 +680,15 @@ export async function POST(request: Request) {
         firstPrecision(image, "primary", authoritativeCurrentPrice),
         contextImage ? firstPrecision(contextImage, "context") : Promise.resolve(null),
       ]);
-      // The single remaining retry stays primary-first, but only after every
-      // supplied chart has received its mandatory initial precision pass.
-      const primary = await finishPrecision(primaryFirst, image, "primary", precisionImage || null, authoritativeCurrentPrice);
-      const context = contextFirst
-        ? await finishPrecision(contextFirst, contextImage, "context", contextPrecisionImage || null)
-        : null;
+      // Rescue both supplied charts in parallel. Serial rescue previously
+      // consumed the request deadline and made context success depend on
+      // primary latency.
+      const [primary, context] = await Promise.all([
+        finishPrecision(primaryFirst, image, "primary", precisionImage || null, authoritativeCurrentPrice),
+        contextFirst
+          ? finishPrecision(contextFirst, contextImage, "context", contextPrecisionImage || null)
+          : Promise.resolve(null),
+      ]);
       console.info("[pocket-bullseye] precision completed", JSON.stringify({
         primary: Boolean(primary.output_text),
         context: Boolean(context?.output_text),
