@@ -47,9 +47,9 @@ The app addresses a common problem: traders can become anchored to one direction
 No special setup, organisation access, registration, login or credentials are required.
 
 1. Launch the app.
-2. Tap the chart upload area or `USE CAMERA`.
-3. Select `[RIGHTS-CLEARED-SAMPLE-CHART-FILENAME]`, attached in App Store Connect. The sample must visibly include an instrument label, timeframe, candles and price scale.
-4. Confirm the detected chart facts.
+2. Tap the chart upload area or `USE CAMERA` and select `[RIGHTS-CLEARED-5M-CHART]`.
+3. Add `[RIGHTS-CLEARED-30M-CHART]`, `[RIGHTS-CLEARED-1H-CHART]` and `[RIGHTS-CLEARED-4H-CHART]` in that order. All four samples must show the same instrument and visibly include their timeframe, candles and price scale. `[RIGHTS-CLEARED-INDICATOR-CHART]` is optional.
+4. Confirm that every required slot is loaded and that the automatic preflight verifies the instrument, 5m primary timeframe and visible current price.
 5. Tick `PRIVACY SHIELD` after confirming the image contains no name, account number, balance or notifications.
 6. Select LONG, SHORT or JUST ANALYSE.
 7. Tap `CHALLENGE MY SETUP`.
@@ -111,7 +111,7 @@ Chris Nash
 - [ ] Confirm the Codemagic archive log shows `Verified immutable Pocket web revision` and that the reported SHA matches the final reviewed web commit.
 - [ ] Install the exact submitted `[BUILD NUMBER]` on a physical `[IPHONE MODEL]` running the latest publicly available `[IOS VERSION]` supported at submission time.
 - [ ] Keep a physical `[IPAD MODEL]` on `[IPADOS VERSION]` available for the separate compatibility test record.
-- [ ] Attach a rights-cleared chart named `[RIGHTS-CLEARED-SAMPLE-CHART-FILENAME]`; verify that its instrument, timeframe, candle area and right-side price scale are legible.
+- [ ] Attach a rights-cleared same-instrument pack named `[RIGHTS-CLEARED-5M-CHART]`, `[RIGHTS-CLEARED-30M-CHART]`, `[RIGHTS-CLEARED-1H-CHART]` and `[RIGHTS-CLEARED-4H-CHART]`; verify each timeframe, candle area and right-side price scale is legible. `[RIGHTS-CLEARED-INDICATOR-CHART]` is optional.
 - [ ] Remove names, account numbers, balances, notifications and other personal information from the chart and device.
 - [ ] Use an Apple sandbox account and a StoreKit state that can demonstrate the paywall, purchase sheet and restore result truthfully.
 - [ ] Reinstall the app or reset only the relevant test-device privacy permission if necessary to show the first-use camera permission. Do not simulate a permission prompt that the OS does not present.
@@ -124,11 +124,11 @@ Chris Nash
 2. Tap Pocket Bullseye so the recording includes cold launch.
 3. Briefly show that the first screen has no registration or login requirement.
 4. Tap `USE CAMERA` and show the genuine iOS camera permission when applicable; cancel back to the app after permission is resolved.
-5. Tap the chart upload area and select `[RIGHTS-CLEARED-SAMPLE-CHART-FILENAME]` through the native picker.
-6. Show the selected chart and the automatic chart preflight. Confirm the detected instrument, timeframe and current visible price against the screenshot.
+5. Tap the chart upload area and select `[RIGHTS-CLEARED-5M-CHART]` through the native picker, then add `[RIGHTS-CLEARED-30M-CHART]`, `[RIGHTS-CLEARED-1H-CHART]` and `[RIGHTS-CLEARED-4H-CHART]` in the displayed order. Optionally add `[RIGHTS-CLEARED-INDICATOR-CHART]`.
+6. Show all required loaded slots and the automatic chart preflight. Confirm the detected instrument, 5m primary timeframe and current visible price against the screenshots.
 7. Tick `PRIVACY SHIELD`, choose JUST ANALYSE and tap `CHALLENGE MY SETUP`.
 8. Keep the recording continuous while analysis completes. Show the result's instrument, timeframe, exact visible current price, two-sided structural levels and conditional verdict.
-9. Return to the chart input, select another rights-cleared sample and request another AI analysis.
+9. Return to the chart input, load a second rights-cleared four-timeframe pack and request another AI analysis.
 10. Show the native subscription screen, localized monthly price, one-month auto-renewal disclosure, Terms link and Privacy link.
 11. Tap the subscribe button and show Apple's system purchase sheet. Complete or cancel only according to the prepared sandbox test state, and keep the result visible.
 12. Return to the subscription screen and tap `RESTORE PURCHASES`; show the resulting entitlement or no-active-subscription message.

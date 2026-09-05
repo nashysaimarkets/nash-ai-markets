@@ -32,13 +32,13 @@
 
 ### Promotional text
 
-`Upload a chart screenshot and challenge your setup with structured support, resistance, pattern, risk and scenario analysis.`
+`Upload an ordered multi-timeframe chart pack and challenge your setup with structured support, resistance, pattern, risk and scenario analysis.`
 
 ### Description
 
 Pocket Bullseye is a mobile-first chart-reading assistant built to help traders slow down, challenge a setup and see what they may be missing.
 
-Upload a clear chart screenshot and receive a structured second opinion covering visible market structure, support and resistance, bullish and bearish scenarios, invalidation evidence, pattern context, setup quality and reasons to wait.
+Upload clear 5-minute, 30-minute, 1-hour and 4-hour screenshots of the same instrument, with an optional indicator chart, and receive a structured second opinion covering visible market structure, support and resistance, bullish and bearish scenarios, invalidation evidence, pattern context, setup quality and reasons to wait.
 
 Key features:
 
@@ -47,7 +47,7 @@ Key features:
 - Bullish, bearish and wait scenarios
 - Pattern Watch and chart-quality checks
 - Setup score, risk flags and invalidation evidence
-- Optional higher-timeframe comparison
+- Required 5m → 30m → 1h → 4h evidence order, plus an optional indicator chart
 - Reanalysis and user correction tools
 - A clean, mobile-first result experience
 
@@ -76,8 +76,8 @@ The iOS Pocket Bullseye experience is accountless. No registration, login, revie
 
 Review flow:
 
-1. Launch the app and select a clear chart screenshot with an instrument label, timeframe, candles and price scale.
-2. Confirm the chart facts presented by the automatic chart preflight.
+1. Launch the app and add clear screenshots of the same instrument in this order: 5m, 30m, 1h and 4h. An indicator chart is optional.
+2. Confirm that every required slot is marked loaded and that the automatic chart preflight verifies the instrument, 5m primary timeframe and visible current price.
 3. Confirm the on-screen Privacy Shield.
 4. Select LONG, SHORT or JUST ANALYSE and run the analysis.
 5. The first completed analysis is free. Attempting another AI analysis presents the native Apple subscription screen.
