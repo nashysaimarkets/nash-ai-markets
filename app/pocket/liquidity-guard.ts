@@ -63,9 +63,9 @@ const FULL_IMAGE_BOUNDS: LiquidityPlotBounds = { left: 0, top: 0, right: 100, bo
 // Keep these acceptance bounds identical to the server normalizer. Mobile
 // screenshot vision routinely carries 2-3 percentage points of row jitter;
 // a server-approved zone must not be silently withheld by a stricter UI pass.
-const SCALE_RESIDUAL_TOLERANCE = 3.5;
+const SCALE_RESIDUAL_TOLERANCE = 6.5;
 const MIN_TWO_ANCHOR_PLOT_RATIO = .28;
-const MAX_BAND_PLOT_RATIO = .08;
+const MAX_BAND_PLOT_RATIO = .12;
 const TOUCH_TOLERANCE_PLOT_RATIO = .045;
 const MIN_TOUCH_X_SEPARATION = .75;
 
