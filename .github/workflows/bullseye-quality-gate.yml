@@ -3,10 +3,15 @@ name: Bullseye quality gate
 on:
   push:
     branches:
+      - main
       - release/bullseye-launch-candidate
+      - "release/pocket-ios-*"
+      - "test/pocket-*"
   pull_request:
     branches:
       - main
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:
@@ -54,6 +59,16 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
+
+      - name: Recheck current Pocket scanner incident paths
+        run: >-
+          node --import tsx --test
+          tests/pocket-chart-preflight.test.ts
+          tests/pocket-provider-deadline.test.ts
+          tests/pocket-report-completion.test.ts
+          tests/pocket-liquidity-guard.test.ts
+          tests/pocket-liquidity-rescan.test.ts
+          tests/render/pocket-liquidity-guard-render.test.tsx
 
       - name: Run component render tests
         run: npm run test:render
