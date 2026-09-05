@@ -180,6 +180,10 @@ export async function POST(request: Request) {
       if (response.status !== "completed" || calibrationResponse.status !== "completed" || !output || !calibrationOutput) throw new Error("incomplete_liquidity_result");
       const raw = canonicalizePocketGeometry(JSON.parse(output)) as Record<string, unknown>;
       const calibration = canonicalizePocketGeometry(JSON.parse(calibrationOutput)) as Record<string, unknown>;
+      console.info("[pocket-bullseye] liquidity calibration probe", JSON.stringify({
+        plotBounds: calibration.plotBounds,
+        priceScaleAnchors: calibration.priceScaleAnchors,
+      }));
       const identityMatch = raw.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], raw.instrumentIdentifier) === true;
       const timeframeMatch = raw.timeframeConfidence === "HIGH" && compatibleTimeframe(provenance.timeframe, raw.timeframe);
       const calibrationIdentityMatch = calibration.instrumentConfidence === "HIGH" && instrumentIdentitiesMatch([provenance.instrument, provenance.ticker], calibration.instrumentIdentifier) === true;
