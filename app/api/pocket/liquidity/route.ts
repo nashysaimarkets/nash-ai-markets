@@ -146,6 +146,7 @@ export async function POST(request: Request) {
           "Read the exact instrument title and current-price marker independently. Never copy them from the expected values unless visible.",
           "Return timeframe exactly as visibly printed on this chart and timeframeConfidence HIGH only when that label is clear.",
           "candlesReadable is true only when the relevant wick and candle reactions are discernible. priceScaleReadable is true only when multiple consistent printed axis labels are legible.",
+          "The image contains a cyan pixel-locked ruler: horizontal Y labels mark exact full-image percentages and vertical lines mark ten-percent X intervals. Use that ruler for every coordinate; interpolate between its lines.",
           "Return full-image percentage coordinates. plotBounds encloses the candle plot only. Read 3-4 widely separated printed price-axis labels when possible.",
           "A visible risk zone requires at least two distinct candle or wick reactions on the same narrow price row. Equal highs, equal lows, a repeated swing cluster or a well-tested range edge qualify. A single wick, forecast or merely plausible area does not.",
           "Every touchPoint must sit on an actual visible wick or candle reaction and agree with the price band projected through the returned scale.",
@@ -161,6 +162,7 @@ export async function POST(request: Request) {
         instructions: [
           "Independently calibrate only the uploaded chart's visible candle plot and printed price axis.",
           "Read the instrument, timeframe and current-price marker from the image. Expected values are compatibility checks only.",
+          "The image contains a cyan pixel-locked ruler: horizontal Y labels mark exact full-image percentages and vertical lines mark ten-percent X intervals. Use that ruler for every coordinate; interpolate between its lines.",
           "Return full-image percentage coordinates. plotBounds encloses only the candle plot, excluding phone chrome, headers, axes, tickets, dates and footer statistics.",
           "Return 3-4 widely separated printed price-axis labels with the y coordinate through the vertical centre of each printed number. Never infer missing labels or reuse coordinates from another response.",
           "priceScaleReadable is false and confidence LOW unless at least three printed labels can be independently located.",
