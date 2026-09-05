@@ -5,6 +5,7 @@ declare module "sharp" {
     clone(): SharpInstance;
     metadata(): Promise<{ width?: number; height?: number }>;
     removeAlpha(): SharpInstance;
+    ensureAlpha(alpha?: number): SharpInstance;
     extract(options: { left: number; top: number; width: number; height: number }): SharpInstance;
     resize(options: { width: number }): SharpInstance;
     grayscale(): SharpInstance;
@@ -15,6 +16,7 @@ declare module "sharp" {
     toFile(path: string): Promise<unknown>;
     raw(): SharpInstance;
     png(): SharpInstance;
+    jpeg(options?: { quality?: number }): SharpInstance;
     toBuffer(options: { resolveWithObject: true }): Promise<BufferResult>;
     toBuffer(): Promise<Buffer>;
   }
