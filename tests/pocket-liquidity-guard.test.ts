@@ -47,32 +47,45 @@ test("strict price parser accepts exact broker grouping and rejects ambiguous or
   assert.deepEqual(parseLiquidityPriceRange("2850 (2 touches)"), []);
 });
 
-test("verified scale accepts a widely separated two-label mobile axis and rejects tight or inconsistent fits", () => {
+test("verified scale requires three consistent labels and rejects tight or inconsistent fits", () => {
   assert.ok(verifiedLiquidityScale(anchors, bounds));
-  assert.ok(verifiedLiquidityScale(anchors.slice(0, 2), bounds));
+  assert.equal(verifiedLiquidityScale(anchors.slice(0, 2), bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 3000, y: 35 }, { price: 2900, y: 50 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 2900, y: 45 }, { price: 2950, y: 50 }, { price: 3000, y: 55 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 2800, y: 80 }, { price: 2900, y: 55 }, { price: 3000, y: 15 }], bounds), null);
   assert.equal(verifiedLiquidityScale([{ price: 3000, y: 5 }, { price: 2900, y: 50 }, { price: 2800, y: 95 }], bounds), null);
 });
 
-test("deployed tall-mobile anchor jitter preserves zones that pass every touch check", () => {
+test("pixel-grounded mobile anchors preserve zones that pass every touch check", () => {
   const mobileBounds = { left: 2.5, top: 5.5, right: 92, bottom: 88 };
   const mobileAnchors = [
-    { price: 7730, y: 7.5 },
-    { price: 7722, y: 26.5 },
-    { price: 7714, y: 52 },
-    { price: 7706, y: 80 },
+    { price: 7730, y: 12.715 },
+    { price: 7722, y: 35.955 },
+    { price: 7714, y: 59.194 },
+    { price: 7706, y: 82.316 },
   ];
   const mobileShield = shield([
-    zone({ side: "AT_PRICE", pattern: "RANGE_EDGE", priceLow: 7706, priceHigh: 7709, touchPoints: [{ x: 65, y: 80.5 }, { x: 45, y: 81 }, { x: 20, y: 82 }] }),
-    zone({ side: "ABOVE_PRICE", pattern: "EQUAL_HIGHS", priceLow: 7718, priceHigh: 7720.5, touchPoints: [{ x: 60, y: 44.5 }, { x: 36, y: 40.5 }, { x: 15, y: 37.5 }] }),
+    zone({ side: "AT_PRICE", pattern: "RANGE_EDGE", priceLow: 7706, priceHigh: 7709, touchPoints: [{ x: 65, y: 82 }, { x: 45, y: 81 }, { x: 20, y: 82.5 }] }),
+    zone({ side: "ABOVE_PRICE", pattern: "EQUAL_HIGHS", priceLow: 7718, priceHigh: 7720.5, touchPoints: [{ x: 60, y: 46 }, { x: 36, y: 41 }, { x: 15, y: 40 }] }),
   ]);
   const precision = { plotBounds: mobileBounds, priceScaleAnchors: mobileAnchors, liquidityShield: mobileShield };
   const normalized = normalizePrecisionLiquidityShield(precision, "7708.49");
   assert.equal(normalized.status, "VISIBLE_RISK_ZONES");
   assert.equal(normalized.zones.length, 2);
   assert.equal(projectLiquidityZones(normalized as LiquidityShield, "7708.49", mobileAnchors, mobileBounds).length, 2);
+});
+
+test("internally plausible but pixel-wrong anchors cannot approve actual candle rows", () => {
+  const mobileBounds = { left: 2.5, top: 5.5, right: 92, bottom: 88 };
+  const wrongAnchors = [
+    { price: 7730, y: 7.5 }, { price: 7722, y: 26.5 }, { price: 7714, y: 52 }, { price: 7706, y: 80 },
+  ];
+  const actualRows = shield([
+    zone({ side: "ABOVE_PRICE", pattern: "EQUAL_HIGHS", priceLow: 7718, priceHigh: 7720.5, touchPoints: [{ x: 60, y: 46 }, { x: 36, y: 41 }, { x: 15, y: 40 }] }),
+  ]);
+  const normalized = normalizePrecisionLiquidityShield({ plotBounds: mobileBounds, priceScaleAnchors: wrongAnchors, liquidityShield: actualRows }, "7708.49");
+  assert.equal(normalized.status, "INSUFFICIENT_EVIDENCE");
+  assert.deepEqual(projectLiquidityZones(actualRows, "7708.49", wrongAnchors, mobileBounds), []);
 });
 
 test("single-price pools project to the exact verified price row", () => {
@@ -157,7 +170,7 @@ test("low confidence, unreadable charts and unreadable candles force precision h
   assert.deepEqual(projectLiquidityZones(shield([zone({ confidence: "LOW" })]), "2900", anchors, bounds), []);
   assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", anchors, bounds, { chartReadability: "POOR", candlesReadable: true }), []);
   assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", anchors, bounds, { chartReadability: "CLEAR", candlesReadable: false }), []);
-  assert.equal(projectLiquidityZones(shield([zone()]), "2900", anchors.slice(0, 2), bounds).length, 1);
+  assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", anchors.slice(0, 2), bounds), []);
   assert.deepEqual(projectLiquidityZones(shield([zone()]), "2900", [{ price: 3000, y: 35 }, { price: 2900, y: 50 }], bounds), []);
 });
 
@@ -214,7 +227,7 @@ test("a server-approved mobile zone survives the identical UI projection gate", 
     plotBounds: { left: 8, top: 10, right: 88, bottom: 90 },
     priceScaleAnchors: [
       { price: 3000, y: 20 },
-      { price: 2900, y: 52.5 },
+      { price: 2900, y: 51.5 },
       { price: 2800, y: 80 },
     ],
     currentPrice: "2900",
