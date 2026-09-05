@@ -275,6 +275,49 @@ function createProviderScanImage(dataUrl: string, forceDecode = false) {
   });
 }
 
+function createMeasuredScanImage(dataUrl: string) {
+  return new Promise<string | null>((resolve) => {
+    const source = new Image();
+    source.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = source.naturalWidth;
+        canvas.height = source.naturalHeight;
+        const context = canvas.getContext("2d");
+        if (!context) return resolve(null);
+        context.drawImage(source, 0, 0);
+        const lineWidth = Math.max(1, Math.round(canvas.width / 800));
+        const fontSize = Math.max(11, Math.round(canvas.width * .018));
+        context.save();
+        context.lineWidth = lineWidth;
+        context.font = `700 ${fontSize}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        context.textBaseline = "middle";
+        for (let percent = 5; percent < 100; percent += 5) {
+          const y = Math.round(canvas.height * percent / 100);
+          context.strokeStyle = percent % 10 === 0 ? "rgba(0, 229, 255, .34)" : "rgba(0, 229, 255, .18)";
+          context.beginPath(); context.moveTo(0, y); context.lineTo(canvas.width, y); context.stroke();
+          if (percent % 10 === 0) {
+            const label = `Y${String(percent).padStart(2, "0")}`;
+            const width = context.measureText(label).width + 8;
+            context.fillStyle = "rgba(0, 12, 18, .78)"; context.fillRect(0, y - fontSize * .7, width, fontSize * 1.4);
+            context.fillStyle = "rgba(194, 250, 255, .98)"; context.fillText(label, 4, y);
+          }
+        }
+        for (let percent = 10; percent < 100; percent += 10) {
+          const x = Math.round(canvas.width * percent / 100);
+          context.strokeStyle = "rgba(0, 229, 255, .18)";
+          context.beginPath(); context.moveTo(x, 0); context.lineTo(x, canvas.height); context.stroke();
+        }
+        context.restore();
+        const encoded = canvas.toDataURL("image/jpeg", .9);
+        resolve(encoded.length <= MAX_PROVIDER_SCAN_DATA_URL_CHARS ? encoded : null);
+      } catch { resolve(null); }
+    };
+    source.onerror = () => resolve(null);
+    source.src = dataUrl;
+  });
+}
+
 const MAX_LEVEL_LAB_DATA_URL_CHARS = 3_600_000;
 function createLevelLabScanImage(dataUrl: string) {
   return new Promise<string | null>((resolve) => {
@@ -1649,6 +1692,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const sourceImageRevision = image;
       const scanImage = await createProviderScanImage(image);
       if (!scanImage) throw new Error("That primary chart is too large to scan safely. Crop it to the chart and price scale, then try again.");
+      const measuredScanImage = await createMeasuredScanImage(scanImage);
+      if (!measuredScanImage) throw new Error("Liquidity Guard could not prepare the chart measurement layer. Your existing analysis is unchanged.");
       const primaryProvenance = {
         instrument: analysis.instrument,
         ticker: analysis.ticker,
@@ -1659,7 +1704,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const { response, payload } = await postLiquidityRescan<{
         liquidity?: NonNullable<Analysis["liquidityGeometry"]>;
         error?: string;
-      }>(JSON.stringify({ image: scanImage, primaryProvenance }));
+      }>(JSON.stringify({ image: measuredScanImage, primaryProvenance }));
       if (!response.ok || !payload.liquidity) throw new Error(payload.error || "Liquidity Guard could not verify this chart.");
       setAnalysis((current) => {
         if (!current || activePrimaryImage.current !== sourceImageRevision || current.instrument !== primaryProvenance.instrument || current.timeframe !== primaryProvenance.timeframe || numericLevel(current.currentPrice) !== primaryCurrentPrice) return current;
