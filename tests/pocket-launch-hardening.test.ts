@@ -402,7 +402,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /const exactPrimaryInstrument = userVerifiedInstrument/);
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
-  assert.match(analyseRoute, /max_output_tokens: 7000/);
+  assert.match(analyseRoute, /reasoning: \{ effort: "medium" \}/);
+  assert.match(analyseRoute, /max_output_tokens: 14000/);
+  assert.match(analyseRoute, /text: \{ verbosity: "low", format:/);
   assert.match(analyseRoute, /analysis report was interrupted before it finished/);
   assert.match(analyseRoute, /service capacity has been reached/);
   assert.doesNotMatch(analyseRoute, /Bullseye could not verify enough chart detail safely/);
