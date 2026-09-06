@@ -1,11 +1,11 @@
 {
-  "label": "Pocket Bullseye iOS TestFlight 1.2.5 build 21",
+  "label": "Pocket Bullseye iOS TestFlight 1.2.6 build 22",
   "revision": "1e102bc7855a1d706c9d37cf720e36863c66b732",
-  "branch": "release/pocket-ios-1.2.5-build21",
+  "branch": "release/pocket-ios-1.2.6-build22",
   "serverUrl": "https://nash-ai-markets-z47fdj7in-nash-ai-markets.vercel.app/pocket",
   "deploymentId": "dpl_5NeoFbg4gBxp1inn9dW2HM4vceiA",
   "verifiedAt": "2026-09-06T08:55:02.037Z",
-  "iosTag": "ios-v1.2.5-testflight.3",
-  "marketingVersion": "1.2.5",
-  "buildNumber": "21"
+  "iosTag": "ios-v1.2.6-testflight.1",
+  "marketingVersion": "1.2.6",
+  "buildNumber": "22"
 }
