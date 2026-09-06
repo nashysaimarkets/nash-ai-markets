@@ -4,11 +4,18 @@ export type PocketReportResponse = {
   incomplete_details?: { reason?: string | null } | null;
 };
 
+export class PocketReportCompletionError extends Error {
+  constructor(public readonly reason: string, outputLength: number) {
+    super(`Structured response did not complete (${reason}; ${outputLength} chars).`);
+    this.name = "PocketReportCompletionError";
+  }
+}
+
 export function completedPocketReportOutput(response: PocketReportResponse) {
   const output = response.output_text?.trim() ?? "";
   const incompleteReason = response.incomplete_details?.reason ?? null;
   if (response.status !== "completed") {
-    throw new Error(`Structured response did not complete (${incompleteReason ?? response.status ?? "unknown"}; ${output.length} chars).`);
+    throw new PocketReportCompletionError(incompleteReason ?? response.status ?? "unknown", output.length);
   }
   if (!output) throw new Error("Structured response was empty (completed).");
   let parsed: unknown;

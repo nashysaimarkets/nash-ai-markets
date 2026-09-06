@@ -1,14 +1,20 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { POCKET_ANALYSIS_CLIENT_TIMEOUT_MS } from "../app/pocket/analysis-request.ts";
 
 test("analyse gives a four-chart report a bounded long-running window", async () => {
   const source = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
   assert.match(source, /const providerDeadlineAt = routeStartedAt \+ POCKET_PROVIDER_DEADLINE_MS/);
-  assert.match(source, /const POCKET_ANALYSIS_TIMEOUT_MS = 165_000/);
-  assert.match(source, /const POCKET_PROVIDER_DEADLINE_MS = 168_000/);
-  assert.match(source, /const POCKET_PRECISION_DEADLINE_MS = 165_000/);
-  assert.match(source, /export const maxDuration = 180/);
+  const number = (name: string) => Number(source.match(new RegExp(`const ${name} = ([\\d_]+)`))?.[1].replaceAll("_", ""));
+  const report = number("POCKET_ANALYSIS_TIMEOUT_MS");
+  const precision = number("POCKET_PRECISION_DEADLINE_MS");
+  const provider = number("POCKET_PROVIDER_DEADLINE_MS");
+  const platform = number("maxDuration") * 1000;
+  assert.ok(report > 165_000, "the expanded report must not retain the failing deadline");
+  assert.ok(precision - report >= 40_000, "leave time for independent precision after a slow report");
+  assert.ok(provider > precision && platform > provider, "serialize before the platform deadline");
+  assert.ok(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS > platform, "the phone must wait for the server outcome");
   assert.match(source, /const precisionDeadlineAt = routeStartedAt \+ POCKET_PRECISION_DEADLINE_MS/);
   assert.match(source, /getVerifiedMacroContext\(\{ route: "\/api\/pocket\/analyse", signal: providerSignal \}\)/);
   assert.match(source, /timeout: Math\.min\(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs\)/);

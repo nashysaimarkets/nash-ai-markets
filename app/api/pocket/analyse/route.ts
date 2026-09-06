@@ -27,24 +27,23 @@ import {
   verifiedPrecisionInstrumentIdentifier,
   type PrecisionProviderCallBudget,
 } from "../precision-structure";
-import { completedPocketReportOutput } from "../report-completion";
+import { completedPocketReportOutput, PocketReportCompletionError } from "../report-completion";
 import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/chart-preflight";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 7 + 20_480;
-// A four-chart, high-detail structured audit is materially heavier than the
-// former one/two-chart request. Keep the provider boundary below Vercel's
-// function boundary, but do not terminate a healthy report at the old 82s
-// single-chart budget.
-const POCKET_ANALYSIS_TIMEOUT_MS = 165_000;
-const POCKET_PROVIDER_DEADLINE_MS = 168_000;
-const POCKET_PRECISION_DEADLINE_MS = 165_000;
+// Five-chart reports exhausted 14k output tokens in live iPhone scans. The
+// larger output allowance needs a matching report window, with time reserved
+// for the subsequent precision passes and final response serialization.
+const POCKET_ANALYSIS_TIMEOUT_MS = 240_000;
+const POCKET_PROVIDER_DEADLINE_MS = 288_000;
+const POCKET_PRECISION_DEADLINE_MS = 285_000;
 const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
 const POCKET_REPORT_MODEL = "gpt-5.6-sol";
 const POCKET_ANNOTATION_MODEL = "gpt-5.6-terra";
-export const maxDuration = 180;
+export const maxDuration = 300;
 
 const schema = {
   type: "object",
@@ -487,9 +486,10 @@ export async function POST(request: Request) {
           ] : []),
         ],
       }],
-      // Reasoning tokens and visible JSON share this allowance. Five-chart
-      // reports exhausted the former 7k cap before the closing JSON fields.
-      max_output_tokens: 14000,
+      // Reasoning, visible JSON and non-visible formatting share this cap.
+      // Live five-chart responses exhausted 14k despite low verbosity. Keep
+      // every evidence field and medium reasoning; allow the report to close.
+      max_output_tokens: 28000,
       text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     }, {
       signal: providerSignal,
@@ -941,7 +941,8 @@ export async function POST(request: Request) {
     const message = typeof failure.message === "string" ? failure.message : "";
     const providerFailure = classifyOpenAIFailure(error);
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
-    const incomplete = /structured response was (?:empty|incomplete)/i.test(message);
+    const incomplete = error instanceof PocketReportCompletionError
+      || /structured response was (?:empty|incomplete|invalid JSON)/i.test(message);
     const providerMessage = providerFailure === "quota_exhausted"
       ? "AI analysis is temporarily unavailable because its service capacity has been reached. Your charts are still loaded—please try again after service is restored."
       : providerFailure === "rate_limited"
@@ -950,7 +951,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: timedOut
       ? "The AI service did not finish this scan. Your charts are still loaded—please try again."
       : incomplete
-        ? "The analysis report was interrupted before it finished. Your chart is still loaded—please retry once."
+        ? "The AI returned an unfinished report. Your charts are still loaded; no partial analysis has been used."
         : providerMessage }, { status: 503 });
   }
 }

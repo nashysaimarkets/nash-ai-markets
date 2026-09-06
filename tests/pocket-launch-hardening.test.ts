@@ -403,9 +403,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
   assert.match(analyseRoute, /reasoning: \{ effort: "medium" \}/);
-  assert.match(analyseRoute, /max_output_tokens: 14000/);
+  const reportOutputCap = Number(analyseRoute.match(/max_output_tokens: (\d+)/)?.[1]);
+  assert.ok(reportOutputCap > 14000, "a five-chart report needs headroom beyond the observed truncated output");
   assert.match(analyseRoute, /text: \{ verbosity: "low", format:/);
-  assert.match(analyseRoute, /analysis report was interrupted before it finished/);
+  assert.match(analyseRoute, /error instanceof PocketReportCompletionError/);
+  assert.match(analyseRoute, /AI returned an unfinished report/);
   assert.match(analyseRoute, /service capacity has been reached/);
   assert.doesNotMatch(analyseRoute, /Bullseye could not verify enough chart detail safely/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
