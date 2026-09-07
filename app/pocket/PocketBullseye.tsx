@@ -26,7 +26,9 @@ import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
 import { eventCoverageFor, isListedEquityEventInput } from "./event-coverage";
 import { measureChart } from "./browser-chart-extractor";
 import type { ChartEvidenceRole, DeterministicChartEvidence } from "../lib/deterministic-chart-evidence";
-import { POCKET_ANALYSIS_CLIENT_TIMEOUT_MS, pocketAnalysisCountdownLabel, postPocketAnalysis } from "./analysis-request";
+import { postPocketAnalysis } from "./analysis-request";
+import { POCKET_SCAN_STAGES, formatPocketElapsed, pocketScanStageCopy, pocketScanStageIndex, type PocketScanStage } from "./scan-progress";
+import { buildDecisionTimeline } from "./decision-timeline";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
@@ -1174,6 +1176,21 @@ function FeedbackButton() {
   </details>;
 }
 
+function notifyPocketAnalysisReady(instrument: string) {
+  if (typeof document === "undefined" || document.visibilityState !== "hidden") return;
+  try {
+    if (typeof navigator.vibrate === "function") navigator.vibrate([80, 50, 80]);
+    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+      new Notification("Pocket Bullseye result ready", {
+        body: `${instrument === "UNKNOWN" ? "Your chart" : instrument} has passed the final trust check.`,
+        tag: "pocket-bullseye-result",
+      });
+    }
+  } catch {
+    // Completion alerts are a convenience. They must never block the result.
+  }
+}
+
 export default function PocketBullseye({ macroContext }: { macroContext: VerifiedMacroContext }) {
   const [eventContext, setEventContext] = useState<VerifiedMacroContext>(macroContext);
   const [eventClock, setEventClock] = useState({ now: 0, iso: "1970-01-01T00:00:00.000Z" });
@@ -1192,7 +1209,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [preflightStatus, setPreflightStatus] = useState<PreflightStatus>("IDLE");
   const [chartConfirmation, setChartConfirmation] = useState<ChartConfirmation | null>(null);
   const [busy, setBusy] = useState(false);
-  const [analysisSecondsRemaining, setAnalysisSecondsRemaining] = useState(Math.ceil(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS / 1000));
+  const [scanStage, setScanStage] = useState<PocketScanStage>("PREPARING");
+  const [analysisElapsedSeconds, setAnalysisElapsedSeconds] = useState(0);
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [accuracyCorrection, setAccuracyCorrection] = useState<AccuracyFeedback | null>(null);
@@ -1228,8 +1246,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   useEffect(() => {
     if (!busy || reviewTarget) return;
     const startedAt = Date.now();
-    const totalSeconds = Math.ceil(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS / 1000);
-    const update = () => setAnalysisSecondsRemaining(Math.max(0, totalSeconds - Math.floor((Date.now() - startedAt) / 1000)));
+    const update = () => setAnalysisElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    update();
     const interval = window.setInterval(update, 250);
     return () => window.clearInterval(interval);
   }, [busy, reviewTarget]);
@@ -1795,13 +1813,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     analysisRequestActive.current = true;
     setBusy(true);
+    setScanStage("PREPARING");
     try {
       const cacheKey = await analysisCacheKey(image, selectedContext, detailImage, fourHourImage, indicatorImage, chartConfirmation, accuracyCorrection);
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         // Held, one-sided and pivot-only results must never become sticky.
         // A second chart counts only after server-side compatibility checks.
-        if (cached && hasVerifiedTwoSidedAnalysis(cached, Boolean(selectedContext))) return cached;
+        if (cached && hasVerifiedTwoSidedAnalysis(cached, Boolean(selectedContext))) {
+          setScanStage("FINALISING");
+          return cached;
+        }
       }
       // Encode one chart at a time to avoid holding two large iOS canvases in
       // memory. Already-bounded originals stay byte-for-byte unchanged.
@@ -1823,7 +1845,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const deterministicEvidence: DeterministicChartEvidence[] = [];
       // Decode one chart at a time. Four simultaneous canvases can terminate
       // WKWebView on older iPhones before the analysis request is sent.
+      setScanStage("MEASURING");
       for (const [source, role] of evidenceInputs) deterministicEvidence.push(await measureChart(source, role));
+      setScanStage("SECOND_OPINION");
       const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }));
       const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
@@ -1836,6 +1860,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           : { ...level, y: clampY(level.y) };
       });
       let completedAnalysis = payload.analysis;
+      setScanStage("VERIFYING");
       const verifiedCurrentPrice = numericLevel(completedAnalysis.currentPrice);
       const canRunIndependentScanners = completedAnalysis.trustGate?.identityLocked === true && verifiedCurrentPrice !== null;
       if (canRunIndependentScanners) {
@@ -1905,6 +1930,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           completedAnalysis = { ...completedAnalysis, liquidityGeometry: liquidityRecovery.payload.liquidity };
         }
       }
+      setScanStage("FINALISING");
       if (hasVerifiedTwoSidedAnalysis(completedAnalysis, Boolean(selectedContext))) {
         await analysisCacheSave(cacheKey, completedAnalysis).catch(() => undefined);
       }
@@ -1931,7 +1957,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
-    if (!reviewTarget) setAnalysisSecondsRemaining(Math.ceil(POCKET_ANALYSIS_CLIENT_TIMEOUT_MS / 1000));
+    if (!reviewTarget) setAnalysisElapsedSeconds(0);
     setError("");
     try {
       if (!reviewTarget) {
@@ -1946,6 +1972,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         // has been secured. If Keychain persistence fails, the request fails
         // closed instead of allowing the free analysis to be replayed.
         setAnalysis(nextAnalysis);
+        notifyPocketAnalysisReady(nextAnalysis.instrument);
         setResultView("cinema");
         setImmersive(true);
         setShowResultReveal(true);
@@ -2168,10 +2195,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const requiredTimeframesReady = Boolean(image && contextImage && detailImage && fourHourImage);
 
   if (review && reviewTarget) {
+    const decisionTimeline = buildDecisionTimeline(reviewTarget);
     return <main className="psApp" data-pocket-build="v3.2">
       <section className="psResults psAutopsyResults" data-immersive="true">
         <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
         <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
+        <section className="psDecisionTimeline" aria-label="Decision timeline"><header><span>⌁ DECISION TIMELINE</span><b>ORIGINAL → CHANGE → OUTCOME</b></header><ol>{decisionTimeline.map((event, index) => <li key={event.id} data-state={event.state}><i>{index + 1}</i><div><small>{event.label}{event.timestamp ? ` · ${new Date(event.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}</small><strong>{event.headline}</strong><p>{event.detail}</p></div><b>{event.state === "COMPLETE" ? "✓" : "○"}</b></li>)}</ol></section>
         <section className="psAutopsyCharts"><figure><img src={reviewTarget.image} alt="Original chart saved before the decision"/><figcaption>BEFORE · LOCKED AUDIT</figcaption></figure><i>→</i><figure><img src={reviewTarget.afterImage ?? image ?? ""} alt="Later chart used for the decision autopsy"/><figcaption>AFTER · LATER EVIDENCE</figcaption></figure></section>
         <section className="psAutopsyStatus"><article><small>ORIGINAL THESIS</small><strong>{review.thesisStatus.replaceAll("_", " ")}</strong></article><article><small>STRUCTURE SHIFT</small><strong>{review.structureShift}</strong></article><article><small>ROOT CAUSE</small><strong>{review.rootCause.replaceAll("_", " ")}</strong></article></section>
         <section className="psChangeLedger"><header><span>⌁ CHART CHANGE DETECTOR</span><b>{review.evidenceChanges.length} VISIBLE CHANGE{review.evidenceChanges.length === 1 ? "" : "S"}</b></header>{review.evidenceChanges.length ? review.evidenceChanges.map((change, index) => <article key={`${change.before}-${index}`} data-impact={change.impact}><i>{String(index + 1).padStart(2, "0")}</i><div><small>BEFORE</small><p>{change.before}</p><small>AFTER</small><p>{change.after}</p></div><b>{change.impact}</b></article>) : <p>No reliable structural change could be proven from the two screenshots.</p>}</section>
@@ -2422,7 +2451,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || (!reviewTarget && !requiredTimeframesReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "MEASURING CHART · CHALLENGING SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !requiredTimeframesReady ? "ADD 5M · 30M · 1H · 4H" : preflightStatus === "CHECKING" ? "CHECKING ALL FOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small role="timer">{pocketAnalysisCountdownLabel(analysisSecondsRemaining)}</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || (!reviewTarget && !requiredTimeframesReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !requiredTimeframesReady ? "ADD 5M · 30M · 1H · 4H" : preflightStatus === "CHECKING" ? "CHECKING ALL FOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small role="timer">ELAPSED {formatPocketElapsed(analysisElapsedSeconds)} · ACCURACY FIRST</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        {busy && !reviewTarget ? <section className="psScanProgress" aria-live="polite"><header><div><span>LIVE ANALYSIS PROGRESS</span><strong>{pocketScanStageCopy(scanStage).title}</strong></div><b>{pocketScanStageIndex(scanStage) + 1}/{POCKET_SCAN_STAGES.length}</b></header><p>{pocketScanStageCopy(scanStage).detail}</p><ol>{POCKET_SCAN_STAGES.map((stage, index) => { const activeIndex = pocketScanStageIndex(scanStage); const state = index < activeIndex ? "complete" : index === activeIndex ? "current" : "upcoming"; return <li key={stage} data-state={state}><i>{state === "complete" ? "✓" : index + 1}</i><span>{pocketScanStageCopy(stage).title}</span></li>; })}</ol><footer>Only a trust-gated result will be shown. This is elapsed time—not a guessed countdown.</footer></section> : null}
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>
@@ -2435,7 +2465,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <p><strong>BULLSEYE COACH:</strong> {vaultStats.insight}</p>
           <footer>Built only from decisions and later-chart autopsies saved privately on this device. Profit alone never earns a good process grade.</footer>
         </section> : null}
-        {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}{decision.review ? " · AUTOPSY COMPLETE" : ""}</span></div><b>{decision.review?.processGrade ?? decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>{decision.review ? "VIEW DECISION AUTOPSY" : "REVIEW LATER CHART"}</button></article>)}</section> : null}
+        {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span><small>{decision.review ? "4/4 TIMELINE COMPLETE · VIEW CHANGE + OUTCOME" : "1/4 LOCKED · ADD A LATER CHART"}</small></div><b>{decision.review?.processGrade ?? decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>{decision.review ? "VIEW DECISION TIMELINE" : "ADD LATER CHART"}</button></article>)}</section> : null}
       </section>
       <FeedbackButton />
       {applePaywallStatus ? <AppleSubscriptionPaywall status={applePaywallStatus} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
