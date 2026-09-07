@@ -7,22 +7,22 @@ workflows:
       app_store_connect: Pocket Bullseye App Store
     environment:
       xcode: latest
-      vars:
-        # This signed package has already been accepted by Apple. Reuse it.
-        APP_STORE_CONNECT_SKIP_PACKAGE_UPLOAD: "true"
     scripts:
-      - name: Retrieve the signed and uploaded build 23
+      - name: Submit Apple's existing version 1.2.7 build 23 for review
         script: |
           set -euo pipefail
-          mkdir -p review-artifacts
-          curl --fail --location --retry 2 --output review-artifacts/App.ipa \
-            'https://api.codemagic.io/artifacts/86487b1c-e3b4-4168-80a9-0f3653f1e55b/0873c6df-c470-444b-97c1-6fd9ce4f168f/App.ipa'
-          python3 scripts/verify-ios-review-artifact.py review-artifacts/App.ipa
-    artifacts:
-      - review-artifacts/App.ipa
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_app_store: true
-        cancel_previous_submissions: true
-        release_type: AFTER_APPROVAL
+          python3 -c 'import json; from pathlib import Path; notes = json.loads(Path("release_notes.json").read_text()); Path("/tmp/pocket-whats-new.txt").write_text(next(item["text"] for item in notes if item["language"] == "en-GB"))'
+          # Apple build resource ID confirmed in the successful upload job's
+          # App Store Connect post-processing log. This submits that existing
+          # binary without downloading, rebuilding, or re-uploading it.
+          # Replacing pending submissions and automatic release were explicitly
+          # approved by the owner on 7 September 2026.
+          app-store-connect builds submit-to-app-store \
+            bd3b3e73-cfb4-4641-8f26-56089fec7744 \
+            --version-string 1.2.7 \
+            --platform IOS \
+            --locale en-GB \
+            --whats-new @file:/tmp/pocket-whats-new.txt \
+            --cancel-previous-submissions \
+            --release-type AFTER_APPROVAL \
+            --max-build-processing-wait 5
