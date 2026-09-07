@@ -1,3 +1,4 @@
+import { observePocketUsage } from "../../../lib/server/pocket-ai-usage";
 import { NextResponse } from "next/server";
 import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
   providerTimer.unref?.();
   const providerWork = (async (): Promise<LevelLabWorkResult> => {
     try {
-      const response = await client.responses.create({
+      const response = await observePocketUsage("levels", client.responses.create({
         model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
         reasoning: { effort: "low" }, store: false,
         instructions: [
@@ -152,7 +153,7 @@ export async function POST(request: Request) {
         ] }],
         max_output_tokens: 2400,
         text: { format: { type: "json_schema", name: "pocket_bullseye_level_lab", strict: true, schema } },
-      }, { signal: providerController.signal, timeout: LEVEL_LAB_PROVIDER_TIMEOUT_MS });
+      }, { signal: providerController.signal, timeout: LEVEL_LAB_PROVIDER_TIMEOUT_MS }));
       const output = response.output_text?.trim();
       console.info("[pocket-bullseye] level lab provider completion", JSON.stringify({
         requestId,

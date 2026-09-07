@@ -1,0 +1,11 @@
+{
+  "label": "Pocket Bullseye Android 1.2.7 candidate — awaiting deployment verification",
+  "platform": "android",
+  "revision": null,
+  "serverUrl": null,
+  "deploymentId": null,
+  "verifiedAt": null,
+  "marketingVersion": "1.2.7",
+  "versionCode": 23,
+  "playVersionCodeVerified": false
+}

@@ -1,3 +1,4 @@
+import { observePocketUsage } from "../../../lib/server/pocket-ai-usage";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "Ask Bullseye is not connected in this environment." }, { status: 503 });
 
   try {
-    const response = await client.responses.create({
+    const response = await observePocketUsage("follow-up", client.responses.create({
       model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
       reasoning: { effort: "low" },
       store: false,
@@ -66,7 +67,7 @@ export async function POST(request: Request) {
       input: `AUDIT: ${context}\n\nQUESTION: ${question}`,
       max_output_tokens: 700,
       text: { format: { type: "json_schema", name: "pocket_follow_up", strict: true, schema } },
-    });
+    }));
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty");
     return NextResponse.json({ reply: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });

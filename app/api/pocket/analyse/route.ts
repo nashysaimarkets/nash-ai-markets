@@ -1,3 +1,4 @@
+import { observePocketUsage } from "../../../lib/server/pocket-ai-usage";
 import { NextResponse } from "next/server";
 import { classifyOpenAIFailure, createOpenAIClient } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
@@ -416,7 +417,7 @@ export async function POST(request: Request) {
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || POCKET_REPORT_MODEL;
     const reportTimeoutMs = remainingProviderMs();
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
-    const analysisRequest = client.responses.create({
+    const analysisRequest = observePocketUsage("report", client.responses.create({
       model,
       // Preserve the demanding multi-timeframe judgment. The strict report
       // is kept terse below so its visible JSON does not waste output budget.
@@ -494,7 +495,7 @@ export async function POST(request: Request) {
     }, {
       signal: providerSignal,
       timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs),
-    }).then((response) => {
+    })).then((response) => {
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
       const reasoningTokens = response.usage?.output_tokens_details?.reasoning_tokens ?? null;
@@ -544,7 +545,7 @@ export async function POST(request: Request) {
       readingCrop: string | null = null,
       trustedCurrentPrice: string | null = null,
       timeoutMs = POCKET_ANALYSIS_TIMEOUT_MS,
-    ) => client.responses.create({
+    ) => observePocketUsage(rescue ? "precision-rescue" : "precision", client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
       // Precision is a constrained extraction task. Low reasoning preserves
       // the visible JSON allowance and reduces long-tail mobile latency.
@@ -565,7 +566,7 @@ export async function POST(request: Request) {
       // could end with status=incomplete and no parseable JSON at all.
       max_output_tokens: 5000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) });
+    }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) }));
     const parsePrecisionOutput = (outputText: string | undefined) => {
       try { return outputText ? JSON.parse(outputText) as Record<string, unknown> : null; }
       catch { return null; }
