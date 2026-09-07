@@ -1,3 +1,4 @@
+import { observePocketUsage } from "../../../lib/server/pocket-ai-usage";
 import { NextResponse } from "next/server";
 import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
   if (!client) return NextResponse.json({ error: "Preflight is temporarily unavailable." }, { status: 503, headers: pocketBudgetHeaders(budget) });
 
   try {
-    const response = await client.responses.create({
+    const response = await observePocketUsage("preflight", client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
       reasoning: { effort: "low" },
       store: false,
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
       ] }],
       max_output_tokens: 1200,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
-    });
+    }));
     const output = response.output_text?.trim();
     if (!output) throw new Error("empty preflight");
     return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });

@@ -1,3 +1,4 @@
+import { observePocketUsage } from "../../../lib/server/pocket-ai-usage";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     const client = createOpenAIClient(undefined, 55_000);
     if (!client) return NextResponse.json({ error: "AI review is not connected." }, { status: 503 });
     const lockedAnalysis = JSON.stringify(payload.lockedAnalysis ?? {}).slice(0, 12_000);
-    const response = await client.responses.create({
+    const response = await observePocketUsage("review", client.responses.create({
       model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
       reasoning: { effort: "low" },
       store: false,
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
       ] }],
       max_output_tokens: 2200,
       text: { format: { type: "json_schema", name: "bullseye_process_review", strict: true, schema } },
-    });
+    }));
     const output = response.output_text?.trim();
     if (!output) throw new Error("Review response was empty.");
     return NextResponse.json({ review: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });

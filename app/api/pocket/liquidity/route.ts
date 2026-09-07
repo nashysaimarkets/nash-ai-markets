@@ -1,3 +1,4 @@
+import { observePocketUsage } from "../../../lib/server/pocket-ai-usage";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { canonicalizePocketGeometry } from "../../../lib/pocket-geometry";
@@ -138,7 +139,7 @@ export async function POST(request: Request) {
         { type: "input_text" as const, text: `Verify Liquidity Guard for the primary chart. Expected identity=${provenance.instrument}; ticker=${provenance.ticker || "not supplied"}; timeframe=${provenance.timeframe}; current-price reference=${provenance.currentPrice}. These expected values are compatibility checks only.` },
         { type: "input_image" as const, image_url: image, detail: "high" as const },
       ] }];
-      const [response, calibrationResponse] = await Promise.all([client.responses.create({
+      const [response, calibrationResponse] = await Promise.all([observePocketUsage("liquidity", client.responses.create({
         model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
         reasoning: { effort: "low" }, store: false,
         instructions: [
@@ -156,7 +157,7 @@ export async function POST(request: Request) {
         input: sharedInput,
         max_output_tokens: 1500,
         text: { verbosity: "low", format: { type: "json_schema", name: "pocket_liquidity_guard_rescan", strict: true, schema } },
-      }, { timeout: PROVIDER_TIMEOUT_MS }), client.responses.create({
+      }, { timeout: PROVIDER_TIMEOUT_MS })), observePocketUsage("liquidity-calibration", client.responses.create({
         model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
         reasoning: { effort: "low" }, store: false,
         instructions: [
@@ -170,7 +171,7 @@ export async function POST(request: Request) {
         input: sharedInput,
         max_output_tokens: 1200,
         text: { verbosity: "low", format: { type: "json_schema", name: "pocket_liquidity_axis_calibration", strict: true, schema: calibrationSchema } },
-      }, { timeout: PROVIDER_TIMEOUT_MS })]);
+      }, { timeout: PROVIDER_TIMEOUT_MS }))]);
       const output = response.output_text?.trim();
       const calibrationOutput = calibrationResponse.output_text?.trim();
       console.info("[pocket-bullseye] liquidity provider completion", JSON.stringify({

@@ -4,7 +4,7 @@ const rawServerUrl = process.env.CAPACITOR_SERVER_URL?.trim() ?? "";
 const serverRevision = process.env.CAPACITOR_SERVER_REVISION?.trim() ?? "";
 
 if (!rawServerUrl) {
-  throw new Error("CAPACITOR_SERVER_URL is required. Pin the reviewed iOS build to an immutable verified preview; no production URL is assumed.");
+  throw new Error("CAPACITOR_SERVER_URL is required. Pin the reviewed native build to an immutable verified preview; no production URL is assumed.");
 }
 if (!/^[a-f0-9]{40}$/i.test(serverRevision)) {
   throw new Error("CAPACITOR_SERVER_REVISION must be the exact 40-character Git revision served by CAPACITOR_SERVER_URL.");
@@ -31,6 +31,10 @@ const config: CapacitorConfig = {
     url: serverUrl.toString(),
     cleartext: false,
     allowNavigation: [serverUrl.hostname],
+  },
+  android: {
+    backgroundColor: "#070b10",
+    allowMixedContent: false,
   },
   ios: {
     contentInset: "never",

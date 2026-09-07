@@ -40,6 +40,12 @@ visual-review/
 audit/.env
 audit/.env.local
 
+# Android release signing material (never commit)
+*.jks
+*.keystore
+**/key.properties
+**/keystore.properties
+
 # iCloud conflict / placeholder stubs
 *.icloud
 **/* 2.*
