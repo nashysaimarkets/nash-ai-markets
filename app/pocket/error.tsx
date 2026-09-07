@@ -36,7 +36,7 @@ export default function PocketError({
         <small style={{ color: "#5ceba5", fontWeight: 800, letterSpacing: ".13em" }}>POCKET BULLSEYE · SAFE RECOVERY</small>
         <h1 style={{ margin: "14px 0 10px", fontSize: 28, lineHeight: 1.05 }}>The analysis screen needs to reload.</h1>
         <p style={{ margin: 0, color: "#a7b4ad", fontSize: 15, lineHeight: 1.55 }}>
-          Your Apple subscription is unaffected and no trade guidance has been shown. Reload Pocket Bullseye, then choose the chart again.
+          Your subscription is unaffected and no trade guidance has been shown. Reload Pocket Bullseye, then choose the chart again.
         </p>
         <button
           type="button"
