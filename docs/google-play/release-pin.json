@@ -1,11 +1,12 @@
 {
-  "label": "Pocket Bullseye Android 1.2.7 candidate — awaiting deployment verification",
-  "platform": "android",
-  "revision": null,
-  "serverUrl": null,
-  "deploymentId": null,
-  "verifiedAt": null,
+  "deploymentId": "dpl_AfKt7LBnzCWLiyXJdZhHNACsdxQx",
+  "label": "Pocket Bullseye Android 1.2.7 — source verified; native device tests pending",
   "marketingVersion": "1.2.7",
-  "versionCode": 23,
-  "playVersionCodeVerified": false
+  "platform": "android",
+  "playVersionCodeVerified": false,
+  "revision": "1910054be660e3e21f1722e91de50a1de3e76934",
+  "serverUrl": "https://nash-ai-markets-bzlm3v8pb-nash-ai-markets.vercel.app/pocket",
+  "verificationScope": "Build manifest and hosted initial upload screen; no native purchase or full scan verification.",
+  "verifiedAt": "2026-09-07T16:59:34Z",
+  "versionCode": 23
 }
