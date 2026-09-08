@@ -52,19 +52,19 @@ test("the AI never receives the trader's long or short choice", async () => {
   assert.doesNotMatch(client, /BlindBiasReveal|TrustGateCard/);
 });
 
-test("the ordered evidence pack requires 5m, 30m, 1h and 4h with an optional indicator", async () => {
+test("one primary chart enables analysis and supporting views stay optional", async () => {
   const [route, client, styles] = await Promise.all([
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v13.css", import.meta.url), "utf8"),
   ]);
-  for (const label of ["① 5-MINUTE", "② 30 MINUTES", "③ 1 HOUR", "④ 4 HOURS", "⑤ YOUR INDICATOR"]) assert.match(client, new RegExp(label));
+  for (const label of ["① UPLOAD ONE CHART", "② SECOND CHART · OPTIONAL", "③ THIRD CHART · OPTIONAL", "④ FOURTH CHART · OPTIONAL", "⑤ YOUR INDICATOR"]) assert.match(client, new RegExp(label));
   assert.match(client, /detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage/);
   assert.match(client, /\{evidenceImageCount\}\/5 CHARTS LOADED/);
-  assert.match(client, /requiredTimeframesReady/);
-  assert.match(client, /ADD 5M · 30M · 1H · 4H/);
+  assert.match(client, /const primaryChartReady = Boolean\(image\)/);
+  assert.match(client, /UPLOAD ONE CHART/);
   for (const role of ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"]) assert.match(route, new RegExp(role));
-  for (const expected of ["EXPECTED TIMEFRAME: 5 MINUTES", "EXPECTED TIMEFRAME: 30 MINUTES", "EXPECTED TIMEFRAME: 1 HOUR", "EXPECTED TIMEFRAME: 4 HOURS"]) assert.match(route, new RegExp(expected));
+  assert.doesNotMatch(route, /EXPECTED TIMEFRAME|four required timeframe/);
   assert.match(await readFile(new URL("../app/api/pocket/preflight/route.ts", import.meta.url), "utf8"), /top-level timeframe must be the exact visibly printed image-1 label/);
   assert.match(await readFile(new URL("../app/api/pocket/preflight/route.ts", import.meta.url), "utf8"), /complete retake instruction under 140 characters/);
   assert.match(route, /Supporting images can refine the written audit but must never replace image 1's coordinate system/);

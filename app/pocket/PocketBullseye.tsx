@@ -1,5 +1,7 @@
 "use client";
 
+import { normalizePatternFrame } from "./chart-images";
+
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
 
@@ -844,33 +846,22 @@ const PATTERN_GUIDE = [
 ] as const;
 
 const PATTERN_FRAMES = ["30M", "1H", "4H"] as const;
-type PatternFrame = typeof PATTERN_FRAMES[number];
-
-function normalizePatternFrame(value: string | undefined): PatternFrame | null {
-  const compact = (value ?? "")
-    .toUpperCase()
-    .replace(/MINUTES?|MINS?/g, "M")
-    .replace(/HOURS?|HRS?/g, "H")
-    .replace(/[^A-Z0-9]/g, "");
-  if (compact.startsWith("30M") || compact.startsWith("M30")) return "30M";
-  if (compact.startsWith("1H") || compact.startsWith("H1")) return "1H";
-  if (compact.startsWith("4H") || compact.startsWith("H4")) return "4H";
-  return null;
-}
+type PatternFrame = string;
 
 function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [guideOpen, setGuideOpen] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<string>(PATTERN_GUIDE[0].name);
-  const [selectedFrame, setSelectedFrame] = useState<PatternFrame>(() => normalizePatternFrame(analysis.timeframe) ?? "4H");
+  const [selectedFrame, setSelectedFrame] = useState<PatternFrame>(() => normalizePatternFrame(analysis.timeframe) ?? "CHART");
   const [requestedFrame, setRequestedFrame] = useState<PatternFrame | null>(null);
   const timeframeInput = useRef<HTMLInputElement>(null);
-  const suppliedFrames = useMemo(() => PATTERN_FRAMES.filter((frame) => [analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : "", ...analysis.patterns.map((pattern) => pattern.timeframe ?? "")].some((value) => normalizePatternFrame(value) === frame)), [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe, analysis.patterns]);
+  const suppliedFrames = useMemo(() => [...new Set([analysis.timeframe, analysis.higherTimeframe.provided ? analysis.higherTimeframe.timeframe : "", ...analysis.patterns.map((pattern) => pattern.timeframe ?? "")].map(normalizePatternFrame).filter((frame): frame is string => Boolean(frame)))], [analysis.timeframe, analysis.higherTimeframe.provided, analysis.higherTimeframe.timeframe, analysis.patterns]);
+  const patternFrames = [...new Set([...(suppliedFrames.length ? suppliedFrames : ["CHART"]), ...PATTERN_FRAMES])];
   const primaryFrame = normalizePatternFrame(analysis.timeframe);
-  const activeFrame = suppliedFrames.includes(selectedFrame) ? selectedFrame : primaryFrame && suppliedFrames.includes(primaryFrame) ? primaryFrame : suppliedFrames[0] ?? "4H";
-  const visiblePatterns = analysis.patterns.filter((pattern) => normalizePatternFrame(pattern.timeframe || analysis.timeframe) === activeFrame);
+  const activeFrame = suppliedFrames.includes(selectedFrame) ? selectedFrame : primaryFrame && suppliedFrames.includes(primaryFrame) ? primaryFrame : suppliedFrames[0] ?? "CHART";
+  const visiblePatterns = analysis.patterns.filter((pattern) => (normalizePatternFrame(pattern.timeframe || analysis.timeframe) ?? "CHART") === activeFrame);
   const contextPending = hasContext && !analysis.higherTimeframe.provided;
   const selectFrame = (frame: PatternFrame) => {
-    if (suppliedFrames.includes(frame)) {
+    if (suppliedFrames.includes(frame) || frame === "CHART") {
       setSelectedFrame(frame);
       setRequestedFrame(null);
       return;
@@ -889,9 +880,9 @@ function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysi
   };
   const selected = PATTERN_GUIDE.find((item) => item.name === selectedGuide) ?? PATTERN_GUIDE[0];
   return <section className="psPatternWatch">
-    <header><div><span>◫ PATTERN WATCH</span><small>30M · 1H · 4H STRUCTURE CHECK</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
-    <div className="psPatternFrames" role="tablist" aria-label="Choose Pattern Watch timeframe">{PATTERN_FRAMES.map((frame) => {
-      const supplied = suppliedFrames.includes(frame);
+    <header><div><span>◫ PATTERN WATCH</span><small>SUPPLIED CHART STRUCTURE</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
+    <div className="psPatternFrames" role="tablist" aria-label="Choose Pattern Watch timeframe">{patternFrames.map((frame) => {
+      const supplied = suppliedFrames.includes(frame) || frame === "CHART";
       return <button key={frame} type="button" role="tab" data-supplied={supplied} data-active={supplied && activeFrame === frame} aria-selected={supplied && activeFrame === frame} aria-label={supplied ? `Show ${frame} pattern analysis` : `Add a ${frame} chart`} onClick={() => selectFrame(frame)}>{frame}<small>{supplied ? activeFrame === frame ? "VIEWING" : "CHART READ" : "+ ADD CHART"}</small></button>;
     })}</div>
     <input ref={timeframeInput} className="psPatternFrameInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label={`Add ${requestedFrame ?? "another"} timeframe chart`} onChange={onAddChart}/>
@@ -1080,7 +1071,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 15 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 16 as const;
 const POCKET_ANALYSIS_CACHE_TTL_MS = 15 * 60 * 1000;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
@@ -1351,7 +1342,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setApplePaywallStatus(null);
     window.requestAnimationFrame(() => {
       const original = applePaywallReturnFocus.current;
-      const fallback = document.querySelector<HTMLElement>('[aria-label="Load 5-minute chart photo, screenshot or camera roll image"]');
+      const fallback = document.querySelector<HTMLElement>('[aria-label="Upload one chart photo, screenshot or camera roll image"]');
       (original?.isConnected ? original : fallback)?.focus({ preventScroll: true });
     });
   }
@@ -1942,7 +1933,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function analyse() {
-    if (!image || (!reviewTarget && (!contextImage || !detailImage || !fourHourImage)) || !privacyChecked || busy || analysisRequestActive.current) return;
+    if (!image || !privacyChecked || busy || analysisRequestActive.current) return;
     let currentAppleAccess = appleAccess;
     if (isAppleNativeApp()) {
       currentAppleAccess = await refreshAppleAccess();
@@ -2192,7 +2183,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
   const evidenceImageCount = [image, contextImage, detailImage, fourHourImage, indicatorImage].filter(Boolean).length;
-  const requiredTimeframesReady = Boolean(image && contextImage && detailImage && fourHourImage);
+  const primaryChartReady = Boolean(image);
 
   if (review && reviewTarget) {
     const decisionTimeline = buildDecisionTimeline(reviewTarget);
@@ -2307,7 +2298,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </header>
           {analysis.evidencePack?.contributions?.length ? <section className="psEvidenceContribution">
             <header><div><span>◎ EVIDENCE PACK USED</span><strong>{analysis.evidencePack.received}/5 IMAGES RECEIVED</strong></div><b>{analysis.evidencePack.contributions.filter((item) => item.used).length} CONTRIBUTED</b></header>
-            <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : item.role === "FOUR_HOUR" ? "④" : "⑤"}</i><div><strong>{item.role === "PRIMARY" ? "5 MINUTES" : item.role === "HIGHER_TIMEFRAME" ? "30 MINUTES" : item.role === "PRICE_DETAIL" ? "1 HOUR" : item.role === "FOUR_HOUR" ? "4 HOURS" : "INDICATOR / VOLUME"}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
+            <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : item.role === "FOUR_HOUR" ? "④" : "⑤"}</i><div><strong>{item.role === "PRIMARY" ? "PRIMARY CHART" : item.role === "HIGHER_TIMEFRAME" ? "SUPPORTING CHART 2" : item.role === "PRICE_DETAIL" ? "SUPPORTING CHART 3" : item.role === "FOUR_HOUR" ? "SUPPORTING CHART 4" : "INDICATOR / VOLUME"}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
             <footer>Every supporting image is assessed separately. A chart that adds nothing cannot inflate the score or confidence.</footer>
           </section> : null}
           <div id="bullseye-tools" className="psReportTools"><PocketCommandDeck analysis={combinedAnalysis} primaryLevels={analysis.levels} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} onLiquidityRescan={rescanLiquidityOnly} liquidityError={liquidityError} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} liquidityRescanning={liquidityRescanning} mode={commandDeckMode} onMode={setCommandDeckMode} /></div>
@@ -2417,41 +2408,41 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {image ? <>
             <img src={image} alt="Selected chart preview" />
           </> : <div className="psTarget psTargetLarge" aria-hidden="true"><i /><i /><b /><b /></div>}
-          <div className="psScanLine" aria-hidden="true" /><strong>{image ? "① 5-MINUTE CHART LOADED" : "① LOAD 5-MINUTE CHART"}</strong><small>{image ? fileName : "FIRST · PHOTO · SCREENSHOT · CAMERA ROLL"}</small>
-          <input aria-label="Load 5-minute chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
+          <div className="psScanLine" aria-hidden="true" /><strong>{image ? "① CHART LOADED" : "① UPLOAD ONE CHART"}</strong><small>{image ? fileName : "ANY TIMEFRAME · SCREENSHOT · CAMERA ROLL"}</small>
+          <input aria-label="Upload one chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
         </label>
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
         {image && !reviewTarget ? <section className="psEvidencePack">
-          <header><div><span>◎ ORDERED EVIDENCE PACK</span><strong>{evidenceImageCount}/5 CHARTS LOADED</strong></div><b>{requiredTimeframesReady ? "4 TIMEFRAMES READY" : "COMPLETE IN ORDER"}</b></header>
-          <p>Work down the list: 5m → 30m → 1h → 4h. Your preferred indicator chart is optional.</p>
+          <header><div><span>◎ OPTIONAL SUPPORTING CHARTS</span><strong>{evidenceImageCount}/5 CHARTS LOADED</strong></div><b>{primaryChartReady ? "ONE CHART IS ENOUGH" : "ADD YOUR FIRST CHART"}</b></header>
+          <p>You can analyse now. Optional views of the same instrument can add context.</p>
           <div>
             <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
-              <div><span>② 30 MINUTES</span><strong>{contextImage ? "30M LOADED ✓" : "ADD 30M CHART"}</strong><p>{contextImage ? contextFileName : "Second chart · same instrument."}</p></div>
-              {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD 30M<input aria-label="Add 30-minute chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
+              <div><span>② SECOND CHART · OPTIONAL</span><strong>{contextImage ? "CHART LOADED ✓" : "ADD ANOTHER VIEW"}</strong><p>{contextImage ? contextFileName : "Second chart · same instrument."}</p></div>
+              {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add optional second chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={detailImage ? "true" : "false"}>
-              <div><span>③ 1 HOUR</span><strong>{detailImage ? "1H LOADED ✓" : "ADD 1H CHART"}</strong><p>{detailImage ? detailFileName : "Third chart · same instrument."}</p></div>
-              {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD 1H<input aria-label="Add 1-hour chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
+              <div><span>③ THIRD CHART · OPTIONAL</span><strong>{detailImage ? "CHART LOADED ✓" : "ADD ANOTHER VIEW"}</strong><p>{detailImage ? detailFileName : "Third chart · same instrument."}</p></div>
+              {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add optional third chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={fourHourImage ? "true" : "false"}>
-              <div><span>④ 4 HOURS</span><strong>{fourHourImage ? "4H LOADED ✓" : "ADD 4H CHART"}</strong><p>{fourHourImage ? fourHourFileName : "Fourth chart · same instrument."}</p></div>
-              {fourHourImage ? <button type="button" onClick={() => { setFourHourImage(null); setFourHourFileName(""); }}>REMOVE</button> : <label>ADD 4H<input aria-label="Add 4-hour chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFourHourFile} /></label>}
+              <div><span>④ FOURTH CHART · OPTIONAL</span><strong>{fourHourImage ? "CHART LOADED ✓" : "ADD ANOTHER VIEW"}</strong><p>{fourHourImage ? fourHourFileName : "Fourth chart · same instrument."}</p></div>
+              {fourHourImage ? <button type="button" onClick={() => { setFourHourImage(null); setFourHourFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add optional fourth chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFourHourFile} /></label>}
             </section>
             <section className="psContextUpload" data-loaded={indicatorImage ? "true" : "false"}>
               <div><span>⑤ YOUR INDICATOR · OPTIONAL</span><strong>{indicatorImage ? "INDICATOR LOADED ✓" : "ADD YOUR PREFERENCE"}</strong><p>{indicatorImage ? indicatorFileName : "RSI, VWAP, ATR, volume profile, volume or another preferred indicator."}</p></div>
               {indicatorImage ? <button type="button" onClick={() => { setIndicatorImage(null); setIndicatorFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add preferred indicator or volume chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadIndicatorFile} /></label>}
             </section>
           </div>
-          <footer>Required: 5m + 30m + 1h + 4h · Optional: one indicator chart · Every chart must show the same instrument.</footer>
+          <footer>Start with one clear chart. Add up to four optional images of the same instrument; only visible evidence is analysed.</footer>
         </section> : null}
         {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
-        {requiredTimeframesReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {primaryChartReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || (!reviewTarget && !requiredTimeframesReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !requiredTimeframesReady ? "ADD 5M · 30M · 1H · 4H" : preflightStatus === "CHECKING" ? "CHECKING ALL FOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small role="timer">ELAPSED {formatPocketElapsed(analysisElapsedSeconds)} · ACCURACY FIRST</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong>{busy && !reviewTarget ? <small role="timer">ELAPSED {formatPocketElapsed(analysisElapsedSeconds)} · ACCURACY FIRST</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
         {busy && !reviewTarget ? <section className="psScanProgress" aria-live="polite"><header><div><span>LIVE ANALYSIS PROGRESS</span><strong>{pocketScanStageCopy(scanStage).title}</strong></div><b>{pocketScanStageIndex(scanStage) + 1}/{POCKET_SCAN_STAGES.length}</b></header><p>{pocketScanStageCopy(scanStage).detail}</p><ol>{POCKET_SCAN_STAGES.map((stage, index) => { const activeIndex = pocketScanStageIndex(scanStage); const state = index < activeIndex ? "complete" : index === activeIndex ? "current" : "upcoming"; return <li key={stage} data-state={state}><i>{state === "complete" ? "✓" : index + 1}</i><span>{pocketScanStageCopy(stage).title}</span></li>; })}</ol><footer>Only a trust-gated result will be shown. This is elapsed time—not a guessed countdown.</footer></section> : null}
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
