@@ -21,7 +21,7 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(route, /sourceRole/);
   assert.match(route, /geometry\.plotBounds must tightly enclose that source image's candle plot/);
   assert.match(client, /PATTERN WATCH/);
-  assert.match(client, /30M · 1H · 4H STRUCTURE CHECK/);
+  assert.match(client, /SUPPLIED CHART STRUCTURE/);
   assert.match(client, /NO SIGNIFICANT.*PATTERN VERIFIED/);
   assert.match(client, /WHAT DOES THIS MEAN/);
   assert.match(client, /Choose Pattern Watch timeframe/);
@@ -46,12 +46,12 @@ test("Pattern Watch applies a deterministic geometry and confidence gate", async
   assert.match(calibration, /seenSources\.has\(sourceRole\)/);
 });
 
-test("Pattern Watch normalizes and switches only supplied 30M 1H and 4H evidence", async () => {
+test("Pattern Watch includes the primary chart timeframe alongside optional timeframe shortcuts", async () => {
   const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
   assert.match(client, /const PATTERN_FRAMES = \["30M", "1H", "4H"\] as const/);
-  assert.match(client, /function normalizePatternFrame/);
-  assert.match(client, /normalizePatternFrame\(pattern\.timeframe \|\| analysis\.timeframe\) === activeFrame/);
-  assert.match(client, /if \(suppliedFrames\.includes\(frame\)\)/);
+  assert.match(client, /import \{ normalizePatternFrame \} from/);
+  assert.match(client, /normalizePatternFrame\(pattern\.timeframe \|\| analysis\.timeframe\)/);
+  assert.match(client, /if \(suppliedFrames\.includes\(frame\)/);
   assert.match(client, /timeframeInput\.current\?\.click\(\)/);
 });
 

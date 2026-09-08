@@ -13,7 +13,7 @@ export type ChartPreflight = {
   enoughHistory: boolean;
   sameInstrument: boolean | null;
   timeframeChecks: Array<{
-    slot: "5M" | "30M" | "1H" | "4H";
+    slot: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR";
     detected: string;
     confidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
     matchesExpected: boolean | null;

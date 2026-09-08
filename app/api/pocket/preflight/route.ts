@@ -1,3 +1,4 @@
+import { pocketImageContent, validatePocketImages } from "../../../pocket/chart-images";
 import { NextResponse } from "next/server";
 import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -25,10 +26,10 @@ const schema = {
     enoughHistory: { type: "boolean" },
     sameInstrument: { type: ["boolean", "null"] },
     timeframeChecks: {
-      type: "array", minItems: 4, maxItems: 4, items: {
+      type: "array", minItems: 1, maxItems: 4, items: {
         type: "object", additionalProperties: false,
         properties: {
-          slot: { type: "string", enum: ["5M", "30M", "1H", "4H"] },
+          slot: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR"] },
           detected: { type: "string", maxLength: 30 },
           confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW", "UNKNOWN"] },
           matchesExpected: { type: ["boolean", "null"] },
@@ -51,6 +52,8 @@ export async function POST(request: Request) {
   let fourHourImage = "";
   try {
     const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown; detailImage?: unknown; fourHourImage?: unknown };
+    const imageError = validatePocketImages(payload);
+    if (imageError) return NextResponse.json({ error: imageError }, { status: 400 });
     image = typeof payload.image === "string" ? payload.image : "";
     contextImage = typeof payload.contextImage === "string" ? payload.contextImage : "";
     detailImage = typeof payload.detailImage === "string" ? payload.detailImage : "";
@@ -61,8 +64,6 @@ export async function POST(request: Request) {
     }
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
-  const valid = (value: string) => /^data:image\/(jpeg|png|webp);base64,/.test(value) && value.length <= MAX_DATA_URL_LENGTH;
-  if (![image, contextImage, detailImage, fourHourImage].every(valid)) return NextResponse.json({ error: "Please add valid 5m, 30m, 1h and 4h chart images under 8 MB." }, { status: 400 });
 
   const budget = takePocketBudget(request, "preflight");
   if (!budget.allowed) return NextResponse.json({ error: "Preflight needs a short reset. You may continue to analysis." }, { status: 429, headers: pocketBudgetHeaders(budget) });
@@ -81,23 +82,14 @@ export async function POST(request: Request) {
         "priceScaleVisible is true only when at least two right-side or left-side axis prices are legible.",
         "currentPrice is the exact visibly printed live/last-price marker nearest the latest candle. If it is absent or ambiguous return UNKNOWN and currentPriceConfidence UNKNOWN.",
         "candlesReadable requires discernible candle bodies and wicks. enoughHistory requires enough visible candles to judge repeated reactions or a meaningful swing.",
-        "The four images are supplied in a fixed order: image 1 must be 5m, image 2 must be 30m, image 3 must be 1h, and image 4 must be 4h.",
-        "Return exactly four timeframeChecks in that order. Each detected value must be the exact label visibly printed on that image, never the expected slot. matchesExpected is true only when that visible label matches the slot, false only when it visibly conflicts, and null when unreadable.",
-        "sameInstrument is true only when every readable instrument label matches image 1, false when any clearly conflicts, otherwise null.",
-        "Use RETAKE when candles are unreadable, the price scale is missing, cropping is severe, an instrument mismatch is confirmed, or any timeframe is visibly in the wrong slot.",
-        "Use LIMITED when analysis remains useful but a label, history, or second-chart match is uncertain. Use READY when the required evidence is clear.",
+        "One primary chart is required; up to three supporting charts are optional. Any visible timeframe is valid. Internal role names are source identifiers, not expected timeframe labels.",
+        "Return exactly one timeframeChecks item per supplied chart, using its labelled ROLE as slot. detected is the exact visibly printed timeframe, never inferred from the role. matchesExpected is true for a readable timeframe and null when unreadable; no particular timeframe is required.",
+        "With only one chart sameInstrument is null. With supporting charts it is true only when their readable instrument labels match the primary chart, false when any clearly conflicts, otherwise null.",
+        "Use RETAKE when candles are unreadable, cropping prevents a useful chart read, or an instrument mismatch is confirmed. A missing price scale allows LIMITED relative-structure analysis with numeric prices withheld. Never request a retake merely because optional charts are absent or a timeframe differs from a role name.",
+        "Use LIMITED when analysis remains useful but a supplied label, history, scale, or supporting-chart match is uncertain. Use READY when the primary chart is clear; one chart alone is sufficient.",
         "Give one complete retake instruction under 140 characters. Never end mid-sentence and never invent a label hidden by cropping.",
       ].join(" "),
-      input: [{ role: "user", content: [
-        { type: "input_text", text: "Check this required four-timeframe Pocket Bullseye pack. IMAGE 1: 5 MINUTES." },
-        { type: "input_image", image_url: image, detail: "high" },
-        { type: "input_text", text: "IMAGE 2: 30 MINUTES." },
-        { type: "input_image", image_url: contextImage, detail: "low" },
-        { type: "input_text", text: "IMAGE 3: 1 HOUR." },
-        { type: "input_image", image_url: detailImage, detail: "low" },
-        { type: "input_text", text: "IMAGE 4: 4 HOURS." },
-        { type: "input_image", image_url: fourHourImage, detail: "low" },
-      ] }],
+      input: [{ role: "user", content: pocketImageContent({ image, contextImage, detailImage, fourHourImage }, "low") }],
       max_output_tokens: 1200,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
     });

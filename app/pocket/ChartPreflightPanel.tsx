@@ -77,7 +77,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
     return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); controller.abort(); };
   }, [image, contextImage, detailImage, fourHourImage]);
 
-  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING ALL FOUR CHARTS…</strong></header><div className="psPreflightScan"><i /></div><p>Verifying 5m → 30m → 1h → 4h order, instrument, scale and candles.</p></section>;
+  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING YOUR CHARTS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading the visible instrument, timeframe, scale and candles in your supplied charts.</p></section>;
   if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message}</p></section>;
   if (!result) return null;
 
@@ -97,7 +97,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
   const edit = () => { setStatus("AWAITING_CONFIRMATION"); statusHandler.current("AWAITING_CONFIRMATION"); confirmationHandler.current(null); };
 
   return <section id="pocket-preflight-lock" className="psPreflight psPreflightCompact" data-status={result.status} data-locked={locked}>
-    <header><span>◉ FOUR-CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "ORDER VERIFIED"}</strong></header>
+    <header><span>◉ CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "CHART CHECKED"}</strong></header>
     <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
     <details className="psConfirmDetails">
       <summary>CHECK OR EDIT DETECTED DETAILS</summary>
@@ -105,13 +105,13 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
         <label><span>INSTRUMENT</span><input value={instrument} disabled={locked} maxLength={80} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
         <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
         <label><span>CURRENT PRICE · OPTIONAL</span><input inputMode="decimal" value={currentPrice} disabled={locked} maxLength={30} placeholder="Leave blank if unclear" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
-        <article data-pass={result.sameInstrument === true}><span>ALL INSTRUMENTS</span><strong>{result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article>
-        {(result.timeframeChecks ?? []).map((check) => <article key={check.slot} data-pass={check.matchesExpected === true}><span>{check.slot} SLOT</span><strong>{check.matchesExpected === true ? "MATCHED" : check.matchesExpected === false ? `WRONG · ${check.detected}` : "UNCONFIRMED"}</strong></article>)}
+        {contextImage || detailImage || fourHourImage ? <article data-pass={result.sameInstrument === true}><span>ALL INSTRUMENTS</span><strong>{result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article> : null}
+        {(result.timeframeChecks ?? []).map((check) => <article key={check.slot} data-pass={check.matchesExpected === true}><span>{check.slot === "PRIMARY" ? "PRIMARY" : check.slot === "HIGHER_TIMEFRAME" ? "CHART 2" : check.slot === "PRICE_DETAIL" ? "CHART 3" : "CHART 4"}</span><strong>{check.matchesExpected === true ? check.detected : check.matchesExpected === false ? `WRONG · ${check.detected}` : "UNCONFIRMED"}</strong></article>)}
       </div>
       {result.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
       <p>{result.status === "RETAKE" ? result.guidance : "Correct only what is wrong. An unreadable live-price label withholds exact prices; it does not stop the analysis."}</p>
       <div className="psConfirmActions">{locked ? <><span>✓ YOUR CORRECTIONS OVERRIDE LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM DETAILS</button>}</div>
     </details>
-    <footer>{result.status === "RETAKE" ? "ANALYSIS PAUSED · REPLACE THE WRONG CHART" : "FOUR TIMEFRAMES CHECKED · UNVERIFIED NUMBERS ARE WITHHELD"}</footer>
+    <footer>{result.status === "RETAKE" ? "ANALYSIS PAUSED · REPLACE THE WRONG CHART" : "SUPPLIED CHARTS CHECKED · UNVERIFIED NUMBERS ARE WITHHELD"}</footer>
   </section>;
 }
