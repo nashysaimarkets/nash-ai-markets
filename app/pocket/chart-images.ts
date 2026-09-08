@@ -9,6 +9,30 @@ export const POCKET_IMAGE_SLOTS = [
 type ImageField = typeof POCKET_IMAGE_SLOTS[number][0];
 type Images = Partial<Record<ImageField, unknown>>;
 
+/** Strict provider output must describe exactly the images actually sent. */
+export function pocketEvidencePackSchema(images: Images) {
+  const roles = POCKET_IMAGE_SLOTS.filter(([field]) => Boolean(images[field])).map(([, role]) => role);
+  return {
+    type: "object", additionalProperties: false,
+    properties: {
+      received: { type: "integer", enum: [roles.length] },
+      contributions: {
+        type: "array", minItems: roles.length, maxItems: roles.length,
+        items: {
+          type: "object", additionalProperties: false,
+          properties: {
+            role: { type: "string", enum: roles },
+            used: { type: "boolean" },
+            summary: { type: "string", maxLength: 180 },
+          },
+          required: ["role", "used", "summary"],
+        },
+      },
+    },
+    required: ["received", "contributions"],
+  } as const;
+}
+
 export function validatePocketImages(images: Images, maxLength = 11_000_000): string | null {
   for (const [field, , label] of POCKET_IMAGE_SLOTS) {
     const value = images[field];

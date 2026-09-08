@@ -32,7 +32,7 @@ test("Liquidity Guard has a dedicated bounded primary-chart rescan", () => {
 test("a completed main scan automatically invokes independent recovery when precision was withheld", () => {
   const request = client.slice(client.indexOf("async function requestPocketAnalysis"), client.indexOf("async function analyse()"));
   assert.match(request, /needsLevelRecovery = !hasVerifiedTwoSidedStructure/);
-  assert.match(request, /needsLiquidityRecovery = completedAnalysis\.liquidityShield\?\.status !== "VISIBLE_RISK_ZONES"/);
+  assert.match(request, /needsLiquidityRecovery = needsPocketLiquidityRecovery\(completedAnalysis\.liquidityShield\?\.status\)/);
   assert.match(request, /postLevelLabScan/);
   assert.match(request, /postLiquidityRescan/);
   assert.match(request, /const \[levelRecovery, liquidityRecovery\] = await Promise\.all/);

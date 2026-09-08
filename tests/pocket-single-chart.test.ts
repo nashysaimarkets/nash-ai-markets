@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { POCKET_IMAGE_SLOTS, normalizePatternFrame, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../app/pocket/chart-images.ts";
+import { POCKET_IMAGE_SLOTS, pocketEvidencePackSchema, normalizePatternFrame, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../app/pocket/chart-images.ts";
 
 const chart = "data:image/png;base64,aGVsbG8=";
 
@@ -9,6 +9,12 @@ test("every combination of optional charts accepts a primary image and sends onl
     const images: Record<string, string | null> = { image: chart };
     POCKET_IMAGE_SLOTS.slice(1).forEach(([field], index) => { images[field] = mask & (1 << index) ? chart : null; });
     assert.equal(validatePocketImages(images), null);
+    const outputSchema = pocketEvidencePackSchema(images);
+    const suppliedRoles = POCKET_IMAGE_SLOTS.filter(([field]) => Boolean(images[field])).map(([, role]) => role);
+    assert.deepEqual(outputSchema.properties.received.enum, [suppliedRoles.length]);
+    assert.equal(outputSchema.properties.contributions.minItems, suppliedRoles.length);
+    assert.equal(outputSchema.properties.contributions.maxItems, suppliedRoles.length);
+    assert.deepEqual(outputSchema.properties.contributions.items.properties.role.enum, suppliedRoles);
     const content = pocketImageContent(images);
     const uploaded = Object.values(images).filter(Boolean).length;
     assert.equal(content.filter((item) => item.type === "input_image").length, uploaded);
