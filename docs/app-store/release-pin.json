@@ -1,11 +1,11 @@
 {
-  "label": "Pocket Bullseye iOS App Store 1.2.8 build 24",
-  "revision": "59a359ab02c6f0b2078e6361171f78b3089f22a3",
-  "branch": "feat/pocket-single-chart-2026-09-08",
-  "serverUrl": "https://nash-ai-markets-ptgj57pjr-nash-ai-markets.vercel.app/pocket",
-  "deploymentId": "dpl_DKcbWPuierGYfawYhTSkMAz51Lyq",
-  "verifiedAt": "2026-09-08T18:36:54.481857+00:00",
-  "iosTag": "ios-v1.2.8-appstore.1",
+  "label": "Pocket Bullseye iOS App Store 1.2.8 build 25",
+  "revision": "788152ad9e8ff0e0167fb526d8a7b92c26601635",
+  "branch": "fix/pocket-single-chart-latency-2026-09-08",
+  "serverUrl": "https://nash-ai-markets-dqchmdi9d-nash-ai-markets.vercel.app/pocket",
+  "deploymentId": "dpl_ELWjhWxzA8x6aDGHosvtof9qtinq",
+  "verifiedAt": "2026-09-08T20:40:16.309703+00:00",
+  "iosTag": "ios-v1.2.8-appstore.2",
   "marketingVersion": "1.2.8",
-  "buildNumber": "24"
+  "buildNumber": "25"
 }
