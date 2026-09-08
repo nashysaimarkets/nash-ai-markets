@@ -1,3 +1,4 @@
+import { pocketAnalysisPolicy } from "../app/pocket/analysis-policy.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
@@ -404,7 +405,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
   assert.match(analyseRoute, /reasoning: \{ effort: "medium" \}/);
-  const reportOutputCap = Number(analyseRoute.match(/max_output_tokens: (\d+)/)?.[1]);
+  const reportOutputCap = pocketAnalysisPolicy({ image: true, contextImage: true, detailImage: true, fourHourImage: true, indicatorImage: true }).reportOutputTokens;
+  assert.match(analyseRoute, /max_output_tokens: policy.reportOutputTokens/);
   assert.ok(reportOutputCap > 14000, "a five-chart report needs headroom beyond the observed truncated output");
   assert.match(analyseRoute, /text: \{ verbosity: "low", format:/);
   assert.match(analyseRoute, /error instanceof PocketReportCompletionError/);

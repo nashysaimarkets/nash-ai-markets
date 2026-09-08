@@ -11,15 +11,18 @@ function requestId() {
 export async function postLevelLabScan<T extends Record<string, unknown>>(
   body: string,
   fetcher: FetchLike = globalThis.fetch.bind(globalThis),
+  options: { deadlineAt?: number } = {},
 ): Promise<{ response: Response; payload: T }> {
   const correlationId = requestId();
   for (let attempt = 0; attempt < 2; attempt += 1) {
+    const remainingMs = options.deadlineAt === undefined ? LEVEL_LAB_TIMEOUT_MS : options.deadlineAt - Date.now();
+    if (remainingMs <= 0) throw new Error("The automatic chart-check window has ended. Your verified analysis is retained.");
     const controller = new AbortController();
     let timedOut = false;
     const timer = globalThis.setTimeout(() => {
       timedOut = true;
       controller.abort();
-    }, LEVEL_LAB_TIMEOUT_MS);
+    }, Math.min(LEVEL_LAB_TIMEOUT_MS, remainingMs));
     try {
       const response = await fetcher("/api/pocket/levels", {
         method: "POST",

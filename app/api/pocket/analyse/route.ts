@@ -1,4 +1,5 @@
-import { pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../../../pocket/chart-images";
+import { pocketEvidencePackSchema, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../../../pocket/chart-images";
+import { pocketAnalysisPolicy } from "../../../pocket/analysis-policy";
 import { NextResponse } from "next/server";
 import { classifyOpenAIFailure, createOpenAIClient } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
@@ -34,12 +35,6 @@ import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/cha
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
 const MAX_REQUEST_BYTES = MAX_DATA_URL_LENGTH * 7 + 20_480;
-// Five-chart reports exhausted 14k output tokens in live iPhone scans. The
-// larger output allowance needs a matching report window, with time reserved
-// for the subsequent precision passes and final response serialization.
-const POCKET_ANALYSIS_TIMEOUT_MS = 240_000;
-const POCKET_PROVIDER_DEADLINE_MS = 288_000;
-const POCKET_PRECISION_DEADLINE_MS = 285_000;
 const POCKET_PRECISION_INITIAL_MIN_REMAINING_MS = 1_000;
 const POCKET_PRECISION_RETRY_MIN_REMAINING_MS = 8_000;
 const POCKET_REPORT_MODEL = "gpt-5.6-sol";
@@ -141,24 +136,7 @@ const schema = {
       },
       required: ["used", "materialChange", "summary", "resolvedInputs"],
     },
-    evidencePack: {
-      type: "object", additionalProperties: false,
-      properties: {
-        received: { type: "integer", minimum: 4, maximum: 5 },
-        contributions: {
-          type: "array", minItems: 4, maxItems: 5, items: {
-            type: "object", additionalProperties: false,
-            properties: {
-              role: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"] },
-              used: { type: "boolean" },
-              summary: { type: "string", maxLength: 180 },
-            },
-            required: ["role", "used", "summary"],
-          },
-        },
-      },
-      required: ["received", "contributions"],
-    },
+    evidencePack: pocketEvidencePackSchema({ image: true }),
     summary: { type: "string", maxLength: 320 },
     verdict: { type: "string", enum: ["WATCH", "WAIT", "STAND_ASIDE", "REVIEW_REQUIRED"] },
     verdictHeadline: { type: "string", maxLength: 100 },
@@ -343,9 +321,12 @@ export async function POST(request: Request) {
     { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
-  const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
+  const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
+  const policy = pocketAnalysisPolicy(suppliedImages);
+  const reportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
+  const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
-  const providerDeadlineAt = routeStartedAt + POCKET_PROVIDER_DEADLINE_MS;
+  const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
   const providerDeadlineSignal = AbortSignal.timeout(Math.max(1, providerDeadlineAt - Date.now()));
   const providerAbortController = new AbortController();
   const providerSignal = AbortSignal.any([
@@ -356,7 +337,7 @@ export async function POST(request: Request) {
   // Geometry is valuable but must never consume the full report window. A
   // separate deadline lets the written Sol audit complete even when the
   // Terra annotation pass is temporarily slow.
-  const precisionDeadlineAt = routeStartedAt + POCKET_PRECISION_DEADLINE_MS;
+  const precisionDeadlineAt = routeStartedAt + policy.precisionDeadlineMs;
   const precisionDeadlineSignal = AbortSignal.timeout(Math.max(1, precisionDeadlineAt - Date.now()));
   const precisionSignal = AbortSignal.any([
     request.signal,
@@ -365,7 +346,8 @@ export async function POST(request: Request) {
   ]);
   const remainingProviderMs = () => Math.max(0, Math.floor(providerDeadlineAt - Date.now()));
   console.info("[pocket-bullseye] analysis started", JSON.stringify({
-    chartCount: 4 + Number(Boolean(indicatorImage)),
+    chartCount: policy.imageCount,
+    parallelPrecision: policy.parallelPrecision,
     requestBytes: [image, contextImage, detailImage, fourHourImage, indicatorImage].reduce((total, value) => total + value.length, 0),
     elapsedMs: Date.now() - routeStartedAt,
   }));
@@ -457,14 +439,13 @@ export async function POST(request: Request) {
           ...pocketImageContent({ image, contextImage, detailImage, fourHourImage, indicatorImage }),
         ],
       }],
-      // Reasoning, visible JSON and non-visible formatting share this cap.
-      // Live five-chart responses exhausted 14k despite low verbosity. Keep
-      // every evidence field and medium reasoning; allow the report to close.
-      max_output_tokens: 28000,
-      text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
+      // Keep the same report model, medium reasoning and every evidence field.
+      // The larger allowance is needed only for multiple supplied charts.
+      max_output_tokens: policy.reportOutputTokens,
+      text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema: reportSchema } },
     }, {
       signal: providerSignal,
-      timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, reportTimeoutMs),
+      timeout: Math.min(policy.reportTimeoutMs, reportTimeoutMs),
     }).then((response) => {
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
@@ -514,7 +495,7 @@ export async function POST(request: Request) {
       rescue = false,
       readingCrop: string | null = null,
       trustedCurrentPrice: string | null = null,
-      timeoutMs = POCKET_ANALYSIS_TIMEOUT_MS,
+      timeoutMs = policy.precisionCallTimeoutMs,
     ) => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
       // Precision is a constrained extraction task. Low reasoning preserves
@@ -536,7 +517,7 @@ export async function POST(request: Request) {
       // could end with status=incomplete and no parseable JSON at all.
       max_output_tokens: 5000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    }, { signal: precisionSignal, timeout: Math.min(POCKET_ANALYSIS_TIMEOUT_MS, timeoutMs) });
+    }, { signal: precisionSignal, timeout: Math.min(policy.precisionCallTimeoutMs, timeoutMs) });
     const parsePrecisionOutput = (outputText: string | undefined) => {
       try { return outputText ? JSON.parse(outputText) as Record<string, unknown> : null; }
       catch { return null; }
@@ -644,12 +625,9 @@ export async function POST(request: Request) {
       }
     };
     const precisionWork = (async () => {
-      // The report is indispensable; precision is an enhancement. Running a
-      // second high-detail model call beside a four/five-chart report caused
-      // the report to hit its SDK timeout on the deployed tier. Give the
-      // report exclusive provider capacity, then spend only the time left on
-      // precision geometry.
-      await analysisRequest;
+      // One-image requests can extract geometry independently while the
+      // report runs. Preserve exclusive report capacity for larger packs.
+      if (!policy.parallelPrecision) await analysisRequest;
       const [primaryFirst, contextFirst] = await Promise.all([
         firstPrecision(image, "primary", authoritativeCurrentPrice),
         contextImage ? firstPrecision(contextImage, "context") : Promise.resolve(null),
@@ -909,6 +887,8 @@ export async function POST(request: Request) {
       code: typeof failure.code === "string" ? failure.code : null,
       type: typeof failure.type === "string" ? failure.type : null,
       message: typeof failure.message === "string" ? failure.message.slice(0, 240) : null,
+      elapsedMs: Date.now() - routeStartedAt,
+      chartCount: policy.imageCount,
     }));
     const message = typeof failure.message === "string" ? failure.message : "";
     const providerFailure = classifyOpenAIFailure(error);

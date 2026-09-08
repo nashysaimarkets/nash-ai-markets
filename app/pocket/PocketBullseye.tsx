@@ -29,6 +29,7 @@ import { eventCoverageFor, isListedEquityEventInput } from "./event-coverage";
 import { measureChart } from "./browser-chart-extractor";
 import type { ChartEvidenceRole, DeterministicChartEvidence } from "../lib/deterministic-chart-evidence";
 import { postPocketAnalysis } from "./analysis-request";
+import { needsPocketLiquidityRecovery, pocketAnalysisPolicy } from "./analysis-policy";
 import { POCKET_SCAN_STAGES, formatPocketElapsed, pocketScanStageCopy, pocketScanStageIndex, type PocketScanStage } from "./scan-progress";
 import { buildDecisionTimeline } from "./decision-timeline";
 
@@ -1803,6 +1804,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   async function requestPocketAnalysis(selectedContext: string | null, options: { bypassCache?: boolean } = {}): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     analysisRequestActive.current = true;
+    const requestPolicy = pocketAnalysisPolicy({ image, contextImage: selectedContext, detailImage, fourHourImage, indicatorImage });
+    const deadlineAt = Date.now() + requestPolicy.clientTimeoutMs;
     setBusy(true);
     setScanStage("PREPARING");
     try {
@@ -1839,7 +1842,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setScanStage("MEASURING");
       for (const [source, role] of evidenceInputs) deterministicEvidence.push(await measureChart(source, role));
       setScanStage("SECOND_OPINION");
-      const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }));
+      const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation, accuracyCorrection, deterministicEvidence }), { timeoutMs: Math.max(1, deadlineAt - Date.now()) });
       const payload = await response.json() as { analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       if (payload.macroContext) setEventContext(payload.macroContext);
@@ -1854,7 +1857,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setScanStage("VERIFYING");
       const verifiedCurrentPrice = numericLevel(completedAnalysis.currentPrice);
       const canRunIndependentScanners = completedAnalysis.trustGate?.identityLocked === true && verifiedCurrentPrice !== null;
-      if (canRunIndependentScanners) {
+      if (canRunIndependentScanners && deadlineAt - Date.now() >= 15_000) {
         const primaryProvenance = {
           instrument: completedAnalysis.instrument,
           ticker: completedAnalysis.ticker,
@@ -1863,7 +1866,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           identityLocked: true as const,
         };
         const needsLevelRecovery = !hasVerifiedTwoSidedStructure(numericStructure(completedAnalysis.levels), verifiedCurrentPrice);
-        const needsLiquidityRecovery = completedAnalysis.liquidityShield?.status !== "VISIBLE_RISK_ZONES";
+        const needsLiquidityRecovery = needsPocketLiquidityRecovery(completedAnalysis.liquidityShield?.status);
         const [levelScanImage, liquidityScanImage] = await Promise.all([
           needsLevelRecovery ? createLevelLabScanImage(providerImage) : Promise.resolve(null),
           needsLiquidityRecovery ? createMeasuredScanImage(providerImage) : Promise.resolve(null),
@@ -1875,11 +1878,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
                   provenance?: { source?: string; primaryInstrument?: string; primaryTimeframe?: string; primaryCurrentPrice?: string };
                 };
                 error?: string;
-              }>(JSON.stringify({ image: levelScanImage, primaryProvenance })).catch(() => null)
+              }>(JSON.stringify({ image: levelScanImage, primaryProvenance }), undefined, { deadlineAt }).catch(() => null)
             : Promise.resolve(null),
           needsLiquidityRecovery && liquidityScanImage
             ? postLiquidityRescan<{ liquidity?: NonNullable<Analysis["liquidityGeometry"]>; error?: string }>(
-                JSON.stringify({ image: liquidityScanImage, primaryProvenance }),
+                JSON.stringify({ image: liquidityScanImage, primaryProvenance }), undefined, { deadlineAt },
               ).catch(() => null)
             : Promise.resolve(null),
         ]);
