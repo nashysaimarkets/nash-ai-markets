@@ -100,6 +100,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
   return <section id="pocket-preflight-lock" className="psPreflight psPreflightCompact" data-status={result.status} data-locked={locked}>
     <header><span>◉ CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "CHART CHECKED"}</strong></header>
     <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
+      {result.captureAlignment === "MIXED" ? <p role="alert">Visible timestamps suggest these charts were captured at different times. Refresh the older screenshot before comparing their current setups.</p> : null}
     <details className="psConfirmDetails">
       <summary>CHECK OR EDIT DETECTED DETAILS</summary>
       <div className="psConfirmGrid">
@@ -109,7 +110,6 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
         {contextImage || detailImage || fourHourImage || indicatorImage ? <article data-pass={result.sameInstrument === true}><span>ALL INSTRUMENTS</span><strong>{result.sameInstrument === true ? "MATCHED" : result.sameInstrument === false ? "MISMATCH" : "UNCONFIRMED"}</strong></article> : null}
         {(result.timeframeChecks ?? []).map((check) => <article key={check.slot} data-pass={check.matchesExpected === true}><span>{check.slot === "PRIMARY" ? "PRIMARY" : check.slot === "HIGHER_TIMEFRAME" ? "CHART 2" : check.slot === "PRICE_DETAIL" ? "CHART 3" : check.slot === "FOUR_HOUR" ? "CHART 4" : "CHART 5"}</span><strong>{check.matchesExpected === true ? check.detected : check.matchesExpected === false ? `WRONG · ${check.detected}` : "UNCONFIRMED"}</strong></article>)}
       </div>
-      {result.captureAlignment === "MIXED" ? <p role="alert">Visible timestamps suggest these charts were captured at different times. Refresh the older screenshot before comparing their current setups.</p> : null}
       {result.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
       <p>{result.status === "RETAKE" ? result.guidance : "Correct only what is wrong. An unreadable live-price label withholds exact prices; it does not stop the analysis."}</p>
       <div className="psConfirmActions">{locked ? <><span>✓ YOUR CORRECTIONS OVERRIDE LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM DETAILS</button>}</div>
