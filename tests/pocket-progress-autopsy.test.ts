@@ -54,6 +54,7 @@ test("the client advances progress at actual processing boundaries and alerts on
   assert.match(client, /notifyPocketAnalysisReady\(nextAnalysis\.instrument\)/);
   assert.match(client, /Notification\.permission === "granted"/);
   assert.doesNotMatch(client, /Notification\.requestPermission/);
-  assert.match(client, /This is elapsed time—not a guessed countdown/);
+  assert.match(client, /role="progressbar"/);
+  assert.doesNotMatch(client, /role="timer"|analysisSecondsRemaining|aria-valuenow/);
 });
 

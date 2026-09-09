@@ -12,7 +12,9 @@ test("analyse gives a four-chart report a bounded long-running window", async ()
   assert.ok(policy.clientTimeoutMs > 300_000);
   assert.match(source, /const providerDeadlineAt = routeStartedAt \+ policy.providerDeadlineMs/);
   assert.match(source, /const precisionDeadlineAt = routeStartedAt \+ policy.precisionDeadlineMs/);
-  assert.match(source, /timeout: Math\.min\(policy.reportTimeoutMs, reportTimeoutMs\)/);
+  assert.ok(policy.reportAttemptTimeoutMs + policy.reportRecoveryTimeoutMs <= policy.reportTimeoutMs);
+  assert.ok(policy.precisionDeadlineMs - policy.reportTimeoutMs >= 75_000);
+  assert.match(source, /deadlineAt: Math\.min\(providerDeadlineAt, Date.now\(\) \+ policy.reportTimeoutMs\)/);
   assert.match(source, /const precisionCallBudget:[\s\S]*?deadlineAt: precisionDeadlineAt,[\s\S]*?signal: precisionSignal/);
   assert.match(source, /\}, \{ signal: precisionSignal, timeout: Math\.min\(policy.precisionCallTimeoutMs, timeoutMs\) \}\)/);
 });

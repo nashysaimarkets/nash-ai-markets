@@ -17,7 +17,8 @@ test("one chart has an overlapping bounded budget; adding any optional slot pres
     const multi = pocketAnalysisPolicy({ image: "chart", [slot]: "extra" });
     assert.equal(multi.imageCount, 2);
     assert.equal(multi.parallelPrecision, false);
-    assert.equal(multi.reportTimeoutMs, 240_000);
+    assert.equal(multi.reportTimeoutMs, multi.reportAttemptTimeoutMs + multi.reportRecoveryTimeoutMs);
+    assert.ok(multi.precisionDeadlineMs - multi.reportTimeoutMs >= 75_000);
     assert.equal(multi.reportOutputTokens, 28_000);
   }
 });

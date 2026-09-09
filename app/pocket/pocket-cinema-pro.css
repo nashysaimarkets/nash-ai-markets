@@ -11,7 +11,7 @@
 }
 
 .psStoryProgress { grid-template-columns: repeat(7, 1fr); }
-.psStoryProgress button > i { animation-duration: 6s; }
+.psStoryProgress button > i { animation-duration: var(--ps-story-duration, 12s); }
 .psStoryStage { height: 680px; isolation: isolate; background: #030608; }
 .psStoryStage::before, .psStoryStage::after {
   content: "";
@@ -27,7 +27,7 @@
 .psStoryStage::after { bottom: 0; transform: rotate(180deg); }
 
 .psStoryStage > img {
-  animation: psProChartDrift 6s ease-out both;
+  animation: psProChartDrift var(--ps-story-duration, 12s) ease-out both;
   filter: saturate(.82) contrast(1.12) brightness(.65);
 }
 
