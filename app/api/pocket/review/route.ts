@@ -1,3 +1,4 @@
+import { comparisonIdentity } from "../../../pocket/chart-session";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
@@ -49,7 +50,7 @@ const schema = {
 export async function POST(request: Request) {
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
-  let payload: { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown };
+  let payload: { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown; currentAnalysis?: unknown; mode?: unknown };
   try {
     payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as typeof payload;
   } catch (error) {
@@ -64,6 +65,12 @@ export async function POST(request: Request) {
     if (![beforeImage, afterImage].every((image) => /^data:image\/(jpeg|png|webp);base64,/.test(image) && image.length <= MAX_IMAGE_LENGTH)) {
       return NextResponse.json({ error: "Both chart screenshots are required." }, { status: 400 });
     }
+    const changesOnly = payload.mode === "CHART_CHANGES";
+    const before = payload.lockedAnalysis && typeof payload.lockedAnalysis === "object" ? payload.lockedAnalysis as { instrument?: string; ticker?: string; timeframe?: string } : {};
+    const after = payload.currentAnalysis && typeof payload.currentAnalysis === "object" ? payload.currentAnalysis as { instrument?: string; ticker?: string; timeframe?: string } : {};
+    if (changesOnly && (!comparisonIdentity(before) || comparisonIdentity(before) !== comparisonIdentity(after) || beforeImage === afterImage)) {
+      return NextResponse.json({ error: "Choose two different screenshots of the same verified instrument and timeframe." }, { status: 400 });
+    }
     const budget = takePocketBudget(request, "review");
     if (!budget.allowed) return NextResponse.json(
       { error: "Your beta review allowance needs a short reset. No request was sent to the AI provider." },
@@ -72,12 +79,18 @@ export async function POST(request: Request) {
     const client = createOpenAIClient(undefined, 55_000);
     if (!client) return NextResponse.json({ error: "AI review is not connected." }, { status: 503 });
     const lockedAnalysis = JSON.stringify(payload.lockedAnalysis ?? {}).slice(0, 12_000);
+    const reviewSchema = changesOnly ? { ...schema, properties: { ...schema.properties, comparisonCheck: {
+      type: "object", additionalProperties: false,
+      properties: { sameInstrument: { type: "boolean" }, sameTimeframe: { type: "boolean" }, chronology: { type: "string", enum: ["LATER", "SAME_OR_EARLIER", "UNKNOWN"] }, reason: { type: "string", maxLength: 240 } },
+      required: ["sameInstrument", "sameTimeframe", "chronology", "reason"],
+    } }, required: [...schema.required, "comparisonCheck"] } : schema;
     const response = await client.responses.create({
       model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
-        "You are Bullseye's post-trade process auditor.",
+        changesOnly ? "You compare the current chart with a previous saved chart. Describe visible chart changes only; do not assess the user's execution, behaviour or trading performance." : "You are Bullseye's post-trade process auditor.",
+        "First verify the screenshots show the same instrument and timeframe and that the AFTER screenshot shows later market evidence. If identity, timeframe or chronological order conflicts or cannot be verified, return thesisStatus NOT_PROVEN, structureShift UNCLEAR, rootCause NOT_PROVEN, empty evidenceChanges and explain the limitation. Upload order alone does not prove chronological order.",
         "Compare the locked before-chart and its original audit with the after-chart. Never invent entries, exits, profit, loss, prices or actions that are not visibly evidenced.",
         "Judge decision process separately from financial outcome. A disciplined plan may lose; a poor process may win. Mark outcome UNCLEAR when execution or P&L is not visible.",
         "Assess whether the original confirmation and invalidation conditions appear to have occurred, but say unknown when screenshots cannot prove timing or execution.",
@@ -95,11 +108,20 @@ export async function POST(request: Request) {
         { type: "input_image", image_url: afterImage, detail: "high" },
       ] }],
       max_output_tokens: 2200,
-      text: { format: { type: "json_schema", name: "bullseye_process_review", strict: true, schema } },
-    });
+      text: { format: { type: "json_schema", name: "bullseye_process_review", strict: true, schema: reviewSchema } },
+    }, { signal: AbortSignal.any([request.signal, AbortSignal.timeout(55_000)]) });
+    if (response.status !== "completed") throw new Error("The comparison response was incomplete.");
     const output = response.output_text?.trim();
     if (!output) throw new Error("Review response was empty.");
-    return NextResponse.json({ review: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
+    const review = JSON.parse(output);
+    if (changesOnly && (review.comparisonCheck?.sameInstrument !== true || review.comparisonCheck?.sameTimeframe !== true || review.comparisonCheck?.chronology !== "LATER")) {
+      review.evidenceChanges = []; review.thesisStatus = "NOT_PROVEN"; review.structureShift = "UNCLEAR";
+      review.headline = "A reliable change comparison could not be verified";
+      review.outcomeSummary = review.comparisonCheck?.reason || "The screenshots do not establish the same market, timeframe and later evidence.";
+      review.nextRule = "Use a later chart of the same instrument and timeframe with readable dates or times.";
+    }
+    if (changesOnly) { review.outcome = "UNCLEAR"; review.rootCause = "NOT_PROVEN"; review.behaviourTags = []; review.goodDecisionBadOutcome = false; }
+    return NextResponse.json({ review }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     console.error("[pocket-bullseye] review unavailable", error instanceof Error ? error.name : "Error");
     return NextResponse.json({ error: "Bullseye could not complete the comparison safely." }, { status: 503 });

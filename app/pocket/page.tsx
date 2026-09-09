@@ -43,6 +43,8 @@ import "./pocket-future-depth.css";
 import "./pocket-progress-autopsy.css";
 import "./pocket-chart-captions.css";
 
+import "./pocket-timeframes.css";
+
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
   description: "Private mobile-first AI chart analysis for NASH AI Markets.",

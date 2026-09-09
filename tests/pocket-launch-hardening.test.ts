@@ -365,14 +365,13 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   ]);
   assert.match(client, /analysisRequestActive\.current/);
   assert.match(client, /postPocketAnalysis/);
-  assert.match(client, /pocketScanStageCopy\(scanStage\)\.title/);
+  assert.match(client, /psScanActivityTrack/);
   assert.match(client, /role="progressbar"/);
-  assert.doesNotMatch(client, /role="timer"|analysisSecondsRemaining/);
   assert.match(client, /followUpRequestActive\.current/);
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 16/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 17/);
   assert.match(client, /POCKET_ANALYSIS_CACHE_TTL_MS = 15 \* 60 \* 1000/);
   assert.match(client, /ageMs >= 0 && ageMs < POCKET_ANALYSIS_CACHE_TTL_MS/);
   assert.match(client, /hasVerifiedTwoSidedAnalysis\(cached, Boolean\(selectedContext\)\)/);
@@ -436,7 +435,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /IF \/ THEN DECISION PATHS/);
   assert.doesNotMatch(client, /SHOW ON DECISION MAP/);
   assert.match(client, /battlefieldChart/);
-  assert.match(client, /Choose chart for Bullseye Decision Map/);
+  assert.match(client, /ChartTimeframePicker/);
   assert.match(client, /contextBattlefield/);
   assert.match(client, /Calibrated Decision Map price ladder/);
   assert.doesNotMatch(client, /FULL EVIDENCE AUDIT/);

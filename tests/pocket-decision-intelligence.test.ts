@@ -58,7 +58,7 @@ test("one primary chart enables analysis and supporting views stay optional", as
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v13.css", import.meta.url), "utf8"),
   ]);
-  for (const label of ["① UPLOAD ONE CHART", "ADD PICTURES TOGETHER", "CHOOSE PICTURES", "CHANGE"]) assert.match(client, new RegExp(label));
+  for (const label of ["① UPLOAD ONE CHART", "OPTIONAL SUPPORTING CHARTS", "ADD PICTURES TOGETHER", "CHANGE"]) assert.match(client, new RegExp(label));
   assert.match(client, /detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage/);
   assert.match(client, /\{evidenceImageCount\}\/5 CHARTS LOADED/);
   assert.match(client, /const primaryChartReady = Boolean\(image\)/);

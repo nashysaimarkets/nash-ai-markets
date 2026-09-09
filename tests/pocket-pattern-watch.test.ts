@@ -24,11 +24,7 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(client, /SUPPLIED CHART STRUCTURE/);
   assert.match(client, /NO SIGNIFICANT.*PATTERN VERIFIED/);
   assert.match(client, /WHAT DOES THIS MEAN/);
-  assert.match(client, /Choose Pattern Watch timeframe/);
-  assert.match(client, /Show \$\{frame\} pattern analysis/);
-  assert.match(client, /Add a \$\{frame\} chart/);
   assert.match(client, /visiblePatterns/);
-  assert.match(client, /REANALYSE TIMEFRAMES/);
   assert.match(client, /useState\(true\)/);
   assert.match(client, /HIDE GALLERY/);
   assert.match(styles, /\.psPatternGuide/);
@@ -46,13 +42,11 @@ test("Pattern Watch applies a deterministic geometry and confidence gate", async
   assert.match(calibration, /seenSources\.has\(sourceRole\)/);
 });
 
-test("Pattern Watch includes the primary chart timeframe alongside optional timeframe shortcuts", async () => {
+test("Pattern Watch follows the shared selected-chart report instead of maintaining independent source labels", async () => {
   const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
-  assert.match(client, /const PATTERN_FRAMES = \["30M", "1H", "4H"\] as const/);
-  assert.match(client, /import \{ normalizePatternFrame \} from/);
-  assert.match(client, /normalizePatternFrame\(pattern\.timeframe \|\| analysis\.timeframe\)/);
-  assert.match(client, /if \(suppliedFrames\.includes\(frame\)/);
-  assert.match(client, /timeframeInput\.current\?\.click\(\)/);
+  assert.match(client, /selectedChartReport\(analysis\)/);
+  assert.match(client, /Use the chart selector to change timeframe/);
+  assert.doesNotMatch(client, /setSelectedFrame/);
 });
 
 test("the guide covers reversal, continuation and compression families", async () => {

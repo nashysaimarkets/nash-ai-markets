@@ -42,7 +42,7 @@ test("a completed main scan automatically invokes independent recovery when prec
 
 test("async chart uploads retain the input before React releases the event", () => {
   const uploads = client.slice(client.indexOf("async function loadFile"), client.indexOf("async function rescanLevelsOnly"));
-  for (const handler of ["loadFile", "loadSupportingFiles", "replaceSupportingFile", "addResultContextFile", "addLevelLabFile"]) {
+  for (const handler of ["loadFile", "replaceSupportingFile", "loadSupportingFiles", "addResultContextFile", "addLevelLabFile"]) {
     const start = uploads.indexOf(`async function ${handler}`);
     const next = uploads.indexOf("\n  async function ", start + 1);
     const body = uploads.slice(start, next === -1 ? undefined : next);

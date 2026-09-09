@@ -22,10 +22,10 @@ test("written results expose a precision-first evidence summary before the verdi
 test("every customer-facing level surface uses the same fail-closed evidence", async () => {
   const source = await readFile(componentPath, "utf8");
 
-  assert.match(source, /<MarketStory analysis=\{combinedAnalysis\}/);
+  assert.match(source, /<MarketStory[^>]*analysis=\{combinedAnalysis\}/);
   assert.match(source, /<ResultCard analysis=\{combinedAnalysis\}/);
-  assert.match(source, /<PocketCommandDeck analysis=\{combinedAnalysis\} primaryLevels=\{analysis\.levels\}/);
-  assert.match(source, /serverCombinedBattlefield\?\.levels \?\? \[\]\)\.filter\(\(level\) => level\.source === "CONTEXT"\)/);
+  assert.match(source, /<PocketCommandDeck[^>]*analysis=\{combinedAnalysis\} primaryLevels=\{analysis\.levels\}/);
+  assert.match(source, /selectedChartReport\(analysis\)/);
   assert.match(source, /const swingLevels = primaryLevels\.filter\(\(item\) => item\.kind === "pivot"[\s\S]*?Number\.isFinite/);
   assert.match(source, /storyHasTwoSidedStructure/);
   assert.match(source, /Two-sided levels remain unverified/);
@@ -47,10 +47,10 @@ test("independent instrument disagreement forces an identity hold", async () => 
   assert.match(route, /Independent instrument reads conflict/);
 });
 
-test("combined levels retain visible chart provenance on the map, cinema and result card", async () => {
+test("selected-chart levels retain visible provenance on the map, cinema and result card", async () => {
   const source = await readFile(componentPath, "utf8");
 
-  assert.match(source, /const source = numeric\.source \?\? \(primarySource \? "PRIMARY" : "CONTEXT"\)/);
+  assert.match(source, /enforcePocketTrustGate\(scopedAnalysis, derivedTrustGate\(scopedAnalysis\)\)/);
   assert.ok((source.match(/levelEvidenceSourceLabel\(level\.source\)/g) ?? []).length >= 3);
   assert.ok((source.match(/data-source=\{level\.source \?\? "PRIMARY"\}/g) ?? []).length >= 3);
   assert.match(source, /CURRENT · PRIMARY CHART/);
@@ -61,8 +61,8 @@ test("client edits invalidate stale combined evidence and keep pending context o
 
   assert.match(source, /invalidateDerivedChartEvidence\(current, "CONTEXT_REPLACED"\)/);
   assert.ok((source.match(/"PRIMARY_STRUCTURE_CHANGED"/g) ?? []).length >= 2);
-  assert.match(source, /disabled=\{!contextBattlefield\}/);
-  assert.match(source, /CONTEXT PENDING/);
+  assert.match(source, /if \(revision !== sessionRevision\.current\) return/);
+  assert.match(source, /resetChartSession\(\)/);
   assert.ok((source.match(/hasContext=\{Boolean\(contextBattlefield\)\}/g) ?? []).length >= 2);
 });
 
