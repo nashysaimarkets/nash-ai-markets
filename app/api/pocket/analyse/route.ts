@@ -1,3 +1,4 @@
+import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../precision-receipt";
 import { scanProfile, compactReportSchema, compactReportInstruction, expandCompactReport } from "../scan-profile";
 import { createScanMetrics } from "../scan-metrics";
 import { pocketEvidencePackSchema, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../../../pocket/chart-images";
@@ -279,11 +280,12 @@ export async function POST(request: Request) {
   let indicatorImage = "";
   let precisionImage = "";
   let contextPrecisionImage = "";
+  let precisionReceipts: unknown = [];
   let deterministicEvidence: DeterministicChartEvidence[] = [];
   let chartConfirmation: ChartConfirmation | null = null;
   let accuracyCorrection: NormalizedAccuracyCorrection | null = null;
   try {
-    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown; detailImage?: unknown; fourHourImage?: unknown; indicatorImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown; deterministicEvidence?: unknown };
+    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown; detailImage?: unknown; fourHourImage?: unknown; indicatorImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown; deterministicEvidence?: unknown; precisionReceipts?: unknown };
     const imageError = validatePocketImages(payload);
     if (imageError) return NextResponse.json({ error: imageError }, { status: 400 });
     image = typeof payload.image === "string" ? payload.image : "";
@@ -294,6 +296,7 @@ export async function POST(request: Request) {
     precisionImage = typeof payload.precisionImage === "string" ? payload.precisionImage : "";
     contextPrecisionImage = typeof payload.contextPrecisionImage === "string" ? payload.contextPrecisionImage : "";
     deterministicEvidence = normalizeDeterministicEvidence(payload.deterministicEvidence);
+    precisionReceipts = payload.precisionReceipts;
     if (payload.chartConfirmation && typeof payload.chartConfirmation === "object") {
       const candidate = payload.chartConfirmation as Record<string, unknown>;
       const instrument = typeof candidate.instrument === "string" ? candidate.instrument.trim().slice(0, 80) : "";
@@ -326,10 +329,11 @@ export async function POST(request: Request) {
   );
   const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
   const profile = scanProfile(request);
-  const compact = profile !== "baseline";
-  const fast = profile === "fast" || profile === "overlap";
+  const compact = ["compact", "fast", "overlap"].includes(profile);
+  const fast = ["fast", "overlap", "full-fast", "full-parallel"].includes(profile);
+  const fastPrecision = profile === "full-fast" || profile === "full-parallel";
   const policy = { ...pocketAnalysisPolicy(suppliedImages) };
-  if (profile === "overlap") policy.parallelPrecision = true;
+  if (profile === "overlap" || profile === "full-parallel") policy.parallelPrecision = true;
   const metrics = createScanMetrics(policy.imageCount, (record) => console.info("[pocket-metrics]", JSON.stringify(record)));
   const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
   const reportSchema = compact ? compactReportSchema(fullReportSchema) : fullReportSchema;
@@ -523,6 +527,7 @@ export async function POST(request: Request) {
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
       // Precision is a constrained extraction task. Low reasoning preserves
       // the visible JSON allowance and reduces long-tail mobile latency.
+      ...(fastPrecision ? { service_tier: "priority" as const } : {}),
       reasoning: { effort: "low" },
       store: false,
       instructions: precisionInstructions,
@@ -547,6 +552,7 @@ export async function POST(request: Request) {
     };
     type InitialPrecisionResult = {
       output_text: string | undefined;
+      reused?: boolean;
       firstFailure: "CALL_BUDGET" | "TIME_BUDGET" | "REQUEST_ABORTED" | "REQUEST_FAILED" | null;
     };
     const firstPrecision = async (
@@ -554,6 +560,13 @@ export async function POST(request: Request) {
       label: string,
       trustedCurrentPrice: string | null = null,
     ): Promise<InitialPrecisionResult> => {
+      const crop = label === "primary" ? precisionImage : contextPrecisionImage;
+      const key = receiptKey(chartImage, trustedCurrentPrice);
+      const reused = !accuracyCorrection && !crop ? readPrecisionReceipt(precisionReceipts, key, process.env.OPENAI_API_KEY) : null;
+      if (reused && !precisionRescueReasons(parsePrecisionOutput(reused), trustedCurrentPrice).length) {
+        console.info("[pocket-bullseye] precision reused", JSON.stringify({ source: label }));
+        return { output_text: reused, firstFailure: null, reused: true };
+      }
       const reservation = reservePrecisionProviderCall(
         precisionCallBudget,
         Date.now(),
@@ -593,7 +606,7 @@ export async function POST(request: Request) {
         ? [first.firstFailure]
         : precisionRescueReasons(parsed, trustedCurrentPrice);
       if (!rescueReasons.length) {
-        return { output_text: first.output_text, diagnostics: { firstParsed: true, rescueAttempted: false, rescueParsed: false, rescueReasons: [] } };
+        return { output_text: first.output_text, diagnostics: { firstParsed: true, rescueAttempted: false, rescueParsed: false, rescueReasons: [], reused: first.reused === true } };
       }
       const reservation = reservePrecisionProviderCall(
         precisionCallBudget,
@@ -649,6 +662,8 @@ export async function POST(request: Request) {
         return { output_text: first.output_text, diagnostics: { firstParsed: Boolean(parsed), rescueAttempted: true, rescueParsed: false, rescueReasons } };
       }
     };
+    const receiptModel = process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL;
+    const receiptKey = (source: string, price: string | null) => precisionReceiptKey(source, receiptModel, price, precisionInstructions + JSON.stringify(precisionOverlaySchema));
     const precisionWork = (async () => {
       // One-image requests can extract geometry independently while the
       // report runs. Preserve exclusive report capacity for larger packs.
@@ -892,11 +907,19 @@ export async function POST(request: Request) {
       combinedCoverage: precisionCoverageDiagnostics(combinedBattlefield.coverage),
     };
     console.info("[pocket-bullseye] structural precision", JSON.stringify(finalAnalysis.precisionDiagnostics));
+    const verifiedReceipts: string[] = [];
+    if (finalGate.identityLocked && !accuracyCorrection) {
+      for (const [source, result, price, crop] of [[image, precisionResult, authoritativeCurrentPrice, precisionImage], [contextImage, contextPrecisionResult, null, contextPrecisionImage]] as const) {
+        if (!source || crop || !result?.output_text || precisionRescueReasons(parsePrecisionOutput(result.output_text), price).length) continue;
+        const token = signPrecisionReceipt(receiptKey(source, price), result.output_text, process.env.OPENAI_API_KEY);
+        if (token) verifiedReceipts.push(token);
+      }
+    }
     metrics.finish(finalGate.chartLocked ? "completed" : "inconclusive");
     return NextResponse.json(
       // Return the same official schedule snapshot used by this analysis so a
       // long-open browser tab cannot show an older event calendar.
-      { analysis: finalAnalysis, macroContext, marketEvents },
+      { analysis: finalAnalysis, macroContext, marketEvents, precisionReceipts: verifiedReceipts },
       { headers: { ...pocketBudgetHeaders(budget), "x-pocket-scan-id": metrics.scanId } },
     );
   } catch (error) {
