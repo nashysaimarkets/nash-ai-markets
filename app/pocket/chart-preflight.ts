@@ -12,8 +12,9 @@ export type ChartPreflight = {
   candlesReadable: boolean;
   enoughHistory: boolean;
   sameInstrument: boolean | null;
+  captureAlignment?: "ALIGNED" | "MIXED" | "UNKNOWN";
   timeframeChecks: Array<{
-    slot: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR";
+    slot: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR" | "INDICATOR_VOLUME";
     detected: string;
     confidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
     matchesExpected: boolean | null;
