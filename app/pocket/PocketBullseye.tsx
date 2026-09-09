@@ -1109,6 +1109,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [pendingChartId, setPendingChartId] = useState<string | null>(null);
   const [sampleMode, setSampleMode] = useState(false);
   const selectionActive = useRef(false);
+  const selectionRevision = useRef(0);
   const sessionRevision = useRef(0);
   const resultRevision = useRef(0);
   const currentImages: ChartBundle = { image, contextImage, detailImage, fourHourImage, indicatorImage };
@@ -1373,6 +1374,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setFourHourImage(images.fourHourImage); setFourHourFileName(names[3] ?? "");
     setIndicatorImage(images.indicatorImage); setIndicatorFileName(names[4] ?? "");
     setResultCharts(charts.map((chart) => chart.id === id ? { ...chart, report, sourceImages: images, sourceNames: names, timeframe: normalizePatternFrame(report.timeframe) ?? "TIMEFRAME UNCONFIRMED" } : chart));
+    setError("");
     setActiveChartId(id); setAnalysis(report); setBattlefieldChart("primary");
     setChartConfirmation(null); setAccuracyCorrection(null); setCorrectionOriginal(null);
     setFollowUpReply(null); setFollowUpQuestion(""); setFollowUpError("");
@@ -1391,25 +1393,30 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function selectResultChart(id: string) {
-    if (id === activeChartId || selectionActive.current || busy || followUpBusy || liquidityRescanning || levelLabRequestActive.current) return;
+    if ((id === activeChartId && !selectionActive.current) || followUpBusy || liquidityRescanning || levelLabRequestActive.current) return;
     const charts = resultCharts.map((chart) => chart.id === activeChartId && analysis ? { ...chart, report: analysis } : chart);
     const selected = charts.find((chart) => chart.id === id);
     if (!selected) return;
-    if (selected.report) { activateResultChart(charts, id, selected.report); return; }
+    if (selected.report) {
+      if (selectionActive.current) { selectionRevision.current += 1; chartWork.current.clear(); selectionActive.current = false; setPendingChartId(null); }
+      activateResultChart(charts, id, selected.report); return;
+    }
+    if (selectionActive.current || busy) return;
+    const selection = ++selectionRevision.current;
     selectionActive.current = true;
     const revision = sessionRevision.current;
     setPendingChartId(id); setError("");
     try {
       if (!await requireAppleEntitlementForAdditionalRequest()) return;
-      if (revision !== sessionRevision.current) return;
+      if (revision !== sessionRevision.current || selection !== selectionRevision.current) return;
       const { images } = bundleForChart(charts, id);
       const report = await requestPocketAnalysis(null, { images });
-      if (revision !== sessionRevision.current) return;
+      if (revision !== sessionRevision.current || selection !== selectionRevision.current) return;
       activateResultChart(charts, id, report);
       void rememberScan(report, selected.image);
     } catch (caught) {
-      if (revision === sessionRevision.current) setError(caught instanceof Error ? caught.message : "This timeframe could not finish. Your previous result and all uploads are still available.");
-    } finally { selectionActive.current = false; if (revision === sessionRevision.current) setPendingChartId(null); }
+      if (revision === sessionRevision.current && selection === selectionRevision.current) setError(caught instanceof Error ? caught.message : "This timeframe could not finish. Your previous result and all uploads are still available.");
+    } finally { if (selection === selectionRevision.current) { selectionActive.current = false; if (revision === sessionRevision.current) setPendingChartId(null); } }
   }
 
   function openSample() {

@@ -23,7 +23,7 @@ function harness() {
   const context: Record<string, any> = {
     resultCharts: charts, analysis: samples[0].report, image: samples[0].image, activeChartId: charts[0].id,
     busy: false, followUpBusy: false, liquidityRescanning: false,
-    selectionActive: { current: false }, analysisRequestActive: { current: false }, levelLabRequestActive: { current: false }, activePrimaryImage: { current: samples[0].image },
+    selectionActive: { current: false }, selectionRevision: { current: 0 }, chartWork: { current: { clear: () => { context.cancelled = true; } } }, analysisRequestActive: { current: false }, levelLabRequestActive: { current: false }, activePrimaryImage: { current: samples[0].image },
     sessionRevision: { current: 1 }, resultRevision: { current: 0 },
     Error, Promise, calls: [], remembered: [], bundleForChart, normalizePatternFrame,
     requireAppleEntitlementForAdditionalRequest: async () => { context.entitlements = (context.entitlements ?? 0) + 1; return true; },
@@ -177,4 +177,17 @@ test("leaving What changed during the access check never starts a stale comparis
   vm.runInContext(ts.transpile(fn, { target: ts.ScriptTarget.ES2022 }), vm.createContext(h));
   const pending = h.compare(); h.controller.current.abort(); finish(true); await pending;
   assert.equal(h.calls, 0); assert.equal(h.requestActive.current, false);
+});
+
+test("a ready timeframe remains usable during a stalled switch and late work cannot replace it", async () => {
+  const h = harness(); let finish!: (value: unknown) => void;
+  h.requestPocketAnalysis = () => new Promise(resolve => { finish = resolve; });
+  const pending = h.selectResultChart(samples[2].id);
+  await new Promise(setImmediate);
+  h.busy = true; h.error = "old failure";
+  await h.selectResultChart(samples[0].id);
+  assert.equal(h.cancelled, true); assert.equal(h.error, ""); assert.equal(h.pendingChartId, null);
+  finish(samples[2].report); await pending;
+  assert.equal(h.activeChartId, samples[0].id); assert.equal(h.analysis, samples[0].report);
+  assert.equal(h.remembered.length, 0);
 });

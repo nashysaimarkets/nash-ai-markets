@@ -1,6 +1,14 @@
 import { classifyOpenAIFailure } from "../../lib/server/openai";
 import { PocketReportCompletionError } from "./report-completion";
 
+export class PocketReportTimeoutError extends Error {
+  constructor() { super("Pocket report timed out after its bounded recovery."); this.name = "PocketReportTimeoutError"; }
+}
+
+export function reportServiceTier(fast: boolean, recovery: boolean): "priority" | "default" {
+  return fast && !recovery ? "priority" : "default";
+}
+
 type Attempt = { signal: AbortSignal; timeoutMs: number; recovery: boolean };
 type Options = {
   signal: AbortSignal;
@@ -43,7 +51,10 @@ export async function runPocketReport<T>(run: (attempt: Attempt) => Promise<T>, 
     } catch (error) {
       options.signal.throwIfAborted();
       const reason = controller.signal.aborted ? "timeout" : recoveryReason(error);
-      if (attempt > 0 || !options.recoveryTimeoutMs || !reason || options.deadlineAt - Date.now() < 1_000) throw error;
+      if (attempt > 0 || !options.recoveryTimeoutMs || !reason || options.deadlineAt - Date.now() < 1_000) {
+        if (reason === "timeout") throw new PocketReportTimeoutError();
+        throw error;
+      }
       options.onRecovery?.(reason);
     } finally {
       clearTimeout(timer);

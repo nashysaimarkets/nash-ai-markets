@@ -33,7 +33,7 @@ import {
   verifiedPrecisionInstrumentIdentifier,
   type PrecisionProviderCallBudget,
 } from "../precision-structure";
-import { runPocketReport } from "../report-recovery";
+import { runPocketReport, reportServiceTier } from "../report-recovery";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../report-completion";
 import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/chart-preflight";
 
@@ -337,6 +337,11 @@ export async function POST(request: Request) {
   const fastPrecision = profile === "full-fast" || profile === "full-parallel";
   const policy = { ...pocketAnalysisPolicy(suppliedImages) };
   if (profile === "overlap" || profile === "full-parallel") policy.parallelPrecision = true;
+  if (fast) {
+    policy.reportAttemptTimeoutMs = 75_000;
+    policy.reportRecoveryTimeoutMs = policy.imageCount === 1 ? 35_000 : 90_000;
+    policy.reportTimeoutMs = policy.reportAttemptTimeoutMs + policy.reportRecoveryTimeoutMs;
+  }
   const metrics = createScanMetrics(policy.imageCount, (record) => console.info("[pocket-metrics]", JSON.stringify(record)));
   const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
   const reportSchema = compact ? compactReportSchema(fullReportSchema) : fullReportSchema;
@@ -402,9 +407,9 @@ export async function POST(request: Request) {
     const reportTimeoutMs = remainingProviderMs();
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
     const analysisRequest = runPocketReport(async ({ signal, timeoutMs, recovery }) => {
-      const response = await client.responses.create({
+      const stream = client.responses.stream({
       model,
-      ...(fast ? { service_tier: "priority" as const } : {}),
+      service_tier: reportServiceTier(fast, recovery),
       // Preserve the demanding multi-timeframe judgment. The strict report
       // is kept terse below so its visible JSON does not waste output budget.
       reasoning: { effort: recovery ? "low" : "medium" },
@@ -469,6 +474,12 @@ export async function POST(request: Request) {
       signal,
       timeout: timeoutMs,
     });
+      let firstOutput = false;
+      stream.on("response.created", () => console.info("[pocket-bullseye] report stream started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })));
+      stream.on("response.output_text.delta", () => {
+        if (!firstOutput) { firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
+      });
+      const response = await stream.finalResponse();
       metrics.usage(recovery ? "report_recovery" : "report", model, response.usage, response.service_tier ?? "unknown");
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;

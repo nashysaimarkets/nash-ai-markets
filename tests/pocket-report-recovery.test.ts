@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runPocketReport } from "../app/api/pocket/report-recovery.ts";
+import { runPocketReport, PocketReportTimeoutError, reportServiceTier } from "../app/api/pocket/report-recovery.ts";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../app/api/pocket/report-completion.ts";
 
 const options = () => ({ signal: new AbortController().signal, deadlineAt: Date.now() + 5_000, attemptTimeoutMs: 20, recoveryTimeoutMs: 100 });
@@ -67,4 +67,18 @@ test("recovery cannot exceed the remaining total budget", async () => {
     return "complete";
   }, { ...options(), deadlineAt: Date.now() + 2_000, recoveryTimeoutMs: 10_000 });
   assert.equal(calls, 2);
+});
+
+test("exhausted timers remain a typed timeout even when the SDK says only aborted", async () => {
+  let calls = 0;
+  await assert.rejects(runPocketReport(async ({ signal }) => {
+    calls++;
+    return new Promise((_, reject) => signal.addEventListener("abort", () => reject(new Error("Request was aborted.")), { once: true }));
+  }, { ...options(), recoveryTimeoutMs: 20 }), PocketReportTimeoutError);
+  assert.equal(calls, 2);
+});
+test("recovery leaves the stalled priority tier without changing the report model", () => {
+  assert.equal(reportServiceTier(true, false), "priority");
+  assert.equal(reportServiceTier(true, true), "default");
+  assert.equal(reportServiceTier(false, false), "default");
 });
