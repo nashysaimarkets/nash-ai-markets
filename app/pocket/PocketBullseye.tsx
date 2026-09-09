@@ -2,6 +2,7 @@
 
 import { normalizePatternFrame } from "./chart-images";
 import { bundleForChart, createChartSession, previousComparableScan, selectedChartReport, type ChartBundle, type UploadedChart } from "./chart-session";
+import UploadGuide from "./UploadGuide";
 import ChartTimeframePicker from "./ChartTimeframePicker";
 import ScanChanges from "./ScanChanges";
 import { createSampleCharts } from "./sample-analysis";
@@ -2339,6 +2340,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget ? <div className="psTrustPulse"><span>🔒 PRIVATE IMAGE</span><span>◉ EVIDENCE FIRST</span><span>✕ NO ORDER CONNECTION</span></div> : null}
         {!reviewTarget ? <label className="psPersonalTouch"><span><strong>MAKE BULLSEYE YOURS</strong><small>OPTIONAL · STAYS ON THIS DEVICE</small></span><input value={viewerName} maxLength={24} autoComplete="given-name" placeholder="What should Bullseye call you?" onChange={(event) => { const value = event.target.value; setViewerName(value); try { localStorage.setItem("pocket-bullseye-viewer-name", value); } catch {} }} /></label> : null}
         {!image && !reviewTarget ? <button className="psSampleButton" type="button" onClick={openSample}>EXPLORE A SAMPLE ANALYSIS<small>Five fictional timeframes · no upload or subscription needed</small></button> : null}
+        {!reviewTarget ? <UploadGuide detected={chartConfirmation?.timeframe} /> : null}
         <label id="pocket-chart-upload" className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>
             <img src={image} alt="Selected chart preview" />
@@ -2366,7 +2368,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
-        {primaryChartReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {primaryChartReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} indicatorImage={indicatorImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Successful scans are saved privately in this browser for comparison. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}

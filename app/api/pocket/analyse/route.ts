@@ -1,3 +1,4 @@
+import { scanProfile, compactReportSchema, compactReportInstruction, expandCompactReport } from "../scan-profile";
 import { createScanMetrics } from "../scan-metrics";
 import { pocketEvidencePackSchema, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../../../pocket/chart-images";
 import { pocketAnalysisPolicy } from "../../../pocket/analysis-policy";
@@ -324,9 +325,14 @@ export async function POST(request: Request) {
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
   const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
-  const policy = pocketAnalysisPolicy(suppliedImages);
+  const profile = scanProfile(request);
+  const compact = profile !== "baseline";
+  const fast = profile === "fast" || profile === "overlap";
+  const policy = { ...pocketAnalysisPolicy(suppliedImages) };
+  if (profile === "overlap") policy.parallelPrecision = true;
   const metrics = createScanMetrics(policy.imageCount, (record) => console.info("[pocket-metrics]", JSON.stringify(record)));
-  const reportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
+  const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
+  const reportSchema = compact ? compactReportSchema(fullReportSchema) : fullReportSchema;
   const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
   if (!client) { metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
   const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
@@ -349,6 +355,7 @@ export async function POST(request: Request) {
   ]);
   const remainingProviderMs = () => Math.max(0, Math.floor(providerDeadlineAt - Date.now()));
   console.info("[pocket-bullseye] analysis started", JSON.stringify({
+    profile,
     chartCount: policy.imageCount,
     parallelPrecision: policy.parallelPrecision,
     requestBytes: [image, contextImage, detailImage, fourHourImage, indicatorImage].reduce((total, value) => total + value.length, 0),
@@ -390,6 +397,7 @@ export async function POST(request: Request) {
     const analysisRequest = runPocketReport(async ({ signal, timeoutMs, recovery }) => {
       const response = await client.responses.create({
       model,
+      ...(fast ? { service_tier: "priority" as const } : {}),
       // Preserve the demanding multi-timeframe judgment. The strict report
       // is kept terse below so its visible JSON does not waste output budget.
       reasoning: { effort: recovery ? "low" : "medium" },
@@ -437,6 +445,7 @@ export async function POST(request: Request) {
         "Return Fibonacci levels only when two reliable visible swing anchors and readable prices allow calculation; otherwise return an empty fibLevels array. Never claim RSI is visible when it is not.",
         "Never estimate a hidden RSI, EMA, MACD, Bollinger Band, VWAP or ATR from pixels. Mention an indicator only when it is already clearly visible and readable in the screenshot.",
         "Name relevant event categories for the identified instrument, but never invent event names, dates or times. Keep summary, scenarios and invalidation under 40 words each.",
+        ...(compact ? [compactReportInstruction] : []),
       ].join(" "),
       input: [{
         role: "user",
@@ -453,7 +462,7 @@ export async function POST(request: Request) {
       signal,
       timeout: timeoutMs,
     });
-      metrics.usage(recovery ? "report_recovery" : "report", model, response.usage);
+      metrics.usage(recovery ? "report_recovery" : "report", model, response.usage, response.service_tier ?? "unknown");
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
       const reasoningTokens = response.usage?.output_tokens_details?.reasoning_tokens ?? null;
@@ -553,7 +562,7 @@ export async function POST(request: Request) {
       if (!reservation.allowed) return { output_text: undefined, firstFailure: reservation.reason };
       try {
         const first = await requestPrecision(chartImage, false, null, trustedCurrentPrice, reservation.timeoutMs);
-        metrics.usage(`${label}_precision`, process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL, first.usage);
+        metrics.usage(`${label}_precision`, process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL, first.usage, first.service_tier ?? "unknown");
         const output = first.output_text?.trim() ?? "";
         console.info(`[pocket-bullseye] ${label} precision provider completion`, JSON.stringify({
           phase: "initial",
@@ -599,7 +608,7 @@ export async function POST(request: Request) {
       }
       try {
         const rescue = await requestPrecision(chartImage, true, readingCrop, trustedCurrentPrice, reservation.timeoutMs);
-        metrics.usage(`${label}_precision_recovery`, process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL, rescue.usage);
+        metrics.usage(`${label}_precision_recovery`, process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL, rescue.usage, rescue.service_tier ?? "unknown");
         const rescueOutput = rescue.output_text?.trim() ?? "";
         console.info(`[pocket-bullseye] ${label} precision provider completion`, JSON.stringify({
           phase: "rescue",
@@ -681,7 +690,7 @@ export async function POST(request: Request) {
     let primaryPrecisionInstrumentIdentifier: unknown = null;
     let primaryPrecisionInstrumentConfidence: unknown = null;
     try {
-      analysis = JSON.parse(output);
+      analysis = compact ? expandCompactReport(JSON.parse(output)) : JSON.parse(output);
     } catch {
       throw new Error(`Structured response was incomplete (${response.status ?? "unknown"}; ${output.length} chars).`);
     }

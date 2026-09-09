@@ -1,0 +1,9 @@
+.psUploadGuide{margin:14px 0;padding:14px;border:1px solid #34515d;border-radius:14px;background:#101d26;color:#ecf3f5}
+.psUploadGuide header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.875rem}
+.psUploadGuide header strong{color:#8ce3c4}.psUploadGuide header span{color:#bbced7}
+.psUploadGuide nav{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.psUploadGuide button{flex:1 1 100px;min-height:44px;padding:10px;border:1px solid #47606e;border-radius:8px;background:#172b37;color:#e7f0f4;font:inherit;font-size:.875rem;cursor:pointer}
+.psUploadGuide button[aria-pressed=true]{border-color:#74e0b8;background:#163d38}
+.psUploadGuide button:focus-visible,.psUploadGuide summary:focus-visible{outline:3px solid #f7ce71;outline-offset:2px}
+.psUploadGuide ol{display:grid;gap:8px;list-style:none;padding:0;margin:0}.psUploadGuide li{display:flex;justify-content:space-between;gap:12px;font-size:.875rem;line-height:1.5}.psUploadGuide li b{font-size:.75rem;color:#bbced7}
+.psUploadGuide p{font-size:.875rem;line-height:1.5;margin:10px 0}.psUploadGuide summary{font-size:.875rem;cursor:pointer;padding:10px 0;min-height:44px}

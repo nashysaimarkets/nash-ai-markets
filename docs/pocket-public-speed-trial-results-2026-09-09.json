@@ -1,0 +1,289 @@
+{
+  "testedCommit": "b24e7bc1b1149a40aafae9151ea5ecb8bf13fd0d",
+  "fixture": "Public fictional DEMO INDEX 5M and 1H images from createSampleCharts; no private customer images.",
+  "measurement": "Main API POST round trip; excludes customer upload/preflight/recovery scanners/display. One run per mode; fixed order; cache warmth and provider variability are confounders.",
+  "results": [
+    {
+      "profile": "baseline",
+      "started": "2026-09-09T21:11:39.045448+00:00",
+      "elapsedSeconds": 150.51,
+      "httpStatus": 200,
+      "scanId": "488f07bb-fbae-4a3f-aa36-805634c9b1e9",
+      "instrument": "FICTIONAL SAMPLE \u00b7 DEMO INDEX",
+      "timeframe": "5M",
+      "currentPrice": "",
+      "trustGate": {
+        "status": "HOLD",
+        "chartLocked": true,
+        "identityLocked": true,
+        "scaleLocked": false,
+        "exactLevelCount": 0,
+        "reasons": [
+          "Candles and structure are readable",
+          "Instrument and timeframe are verified",
+          "No exact support/resistance pair brackets current price",
+          "2 contradictions remain visible"
+        ],
+        "nextAction": "Use a chart with a readable price scale and visible structure on both sides of current price."
+      },
+      "error": null,
+      "serverElapsedMs": 135354,
+      "providerCalls": [
+        {
+          "cachedInputTokens": 0,
+          "inputTokens": 5487,
+          "model": "gpt-5.6-sol",
+          "outputTokens": 4582,
+          "phase": "report",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 0,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 819,
+          "phase": "primary_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1232,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 2014,
+          "phase": "context_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1232,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 696,
+          "phase": "primary_precision_recovery",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1232,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 1733,
+          "phase": "context_precision_recovery",
+          "serviceTier": "default"
+        }
+      ],
+      "recordedTokenCostUSD": 0.183279,
+      "costIncomplete": false,
+      "reportRecovery": false
+    },
+    {
+      "profile": "fast",
+      "started": "2026-09-09T21:14:09.555830+00:00",
+      "elapsedSeconds": 87.15,
+      "httpStatus": 200,
+      "scanId": "ca222497-c682-46f4-b8be-6e8a5af1b3d5",
+      "instrument": "FICTIONAL SAMPLE \u00b7 DEMO INDEX",
+      "timeframe": "5M",
+      "currentPrice": "",
+      "trustGate": {
+        "status": "HOLD",
+        "chartLocked": true,
+        "identityLocked": true,
+        "scaleLocked": false,
+        "exactLevelCount": 0,
+        "reasons": [
+          "Candles and structure are readable",
+          "Instrument and timeframe are verified",
+          "No exact support/resistance pair brackets current price",
+          "2 contradictions remain visible"
+        ],
+        "nextAction": "Use a chart with a readable price scale and visible structure on both sides of current price."
+      },
+      "error": null,
+      "serverElapsedMs": 71299,
+      "providerCalls": [
+        {
+          "cachedInputTokens": 0,
+          "inputTokens": 5530,
+          "model": "gpt-5.6-sol",
+          "outputTokens": 3642,
+          "phase": "report",
+          "serviceTier": "priority"
+        },
+        {
+          "cachedInputTokens": 1622,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 828,
+          "phase": "primary_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1622,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 1199,
+          "phase": "context_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1672,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 507,
+          "phase": "primary_precision_recovery",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1672,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 964,
+          "phase": "context_precision_recovery",
+          "serviceTier": "default"
+        }
+      ],
+      "recordedTokenCostUSD": 0.233238,
+      "costIncomplete": false,
+      "reportRecovery": false
+    },
+    {
+      "profile": "compact",
+      "started": "2026-09-09T21:15:36.707694+00:00",
+      "elapsedSeconds": 96.12,
+      "httpStatus": 200,
+      "scanId": "c0991755-d309-4930-bac9-8e3ecbb8d988",
+      "instrument": "FICTIONAL SAMPLE \u00b7 DEMO INDEX",
+      "timeframe": "5M",
+      "currentPrice": "",
+      "trustGate": {
+        "status": "HOLD",
+        "chartLocked": true,
+        "identityLocked": false,
+        "scaleLocked": false,
+        "exactLevelCount": 0,
+        "reasons": [
+          "Independent instrument reads conflict; identity is not verified.",
+          "Instrument or timeframe needs confirmation",
+          "No exact support/resistance pair brackets current price"
+        ],
+        "nextAction": "Confirm the instrument, timeframe and current price, then reanalyse."
+      },
+      "error": null,
+      "serverElapsedMs": 85687,
+      "providerCalls": [
+        {
+          "cachedInputTokens": 0,
+          "inputTokens": 5530,
+          "model": "gpt-5.6-sol",
+          "outputTokens": 4075,
+          "phase": "report",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1622,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 814,
+          "phase": "context_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1622,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 883,
+          "phase": "primary_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1672,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 388,
+          "phase": "primary_precision_recovery",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1672,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 603,
+          "phase": "context_precision_recovery",
+          "serviceTier": "default"
+        }
+      ],
+      "recordedTokenCostUSD": 0.137218,
+      "costIncomplete": false,
+      "reportRecovery": false
+    },
+    {
+      "profile": "overlap",
+      "started": "2026-09-09T21:17:12.829522+00:00",
+      "elapsedSeconds": 144.53,
+      "httpStatus": 200,
+      "scanId": "c0aa6f2b-5ef2-41e7-a92f-86c47e27f027",
+      "instrument": "FICTIONAL SAMPLE \u00b7 DEMO INDEX",
+      "timeframe": "5M",
+      "currentPrice": "",
+      "trustGate": {
+        "status": "HOLD",
+        "chartLocked": true,
+        "identityLocked": false,
+        "scaleLocked": false,
+        "exactLevelCount": 0,
+        "reasons": [
+          "Independent instrument reads conflict; identity is not verified.",
+          "Instrument or timeframe needs confirmation",
+          "No exact support/resistance pair brackets current price"
+        ],
+        "nextAction": "Confirm the instrument, timeframe and current price, then reanalyse."
+      },
+      "error": null,
+      "serverElapsedMs": 133117,
+      "providerCalls": [
+        {
+          "cachedInputTokens": 1622,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 557,
+          "phase": "context_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1622,
+          "inputTokens": 1625,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 756,
+          "phase": "primary_precision",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1672,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 442,
+          "phase": "primary_precision_recovery",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 1672,
+          "inputTokens": 1675,
+          "model": "gpt-5.6-terra",
+          "outputTokens": 468,
+          "phase": "context_precision_recovery",
+          "serviceTier": "default"
+        },
+        {
+          "cachedInputTokens": 0,
+          "inputTokens": 5530,
+          "model": "gpt-5.6-sol",
+          "outputTokens": 2124,
+          "phase": "report_recovery",
+          "serviceTier": "priority"
+        }
+      ],
+      "recordedTokenCostUSD": 0.157218,
+      "costIncomplete": true,
+      "reportRecovery": true
+    }
+  ]
+}

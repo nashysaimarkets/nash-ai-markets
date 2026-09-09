@@ -5,13 +5,13 @@ export type ScanOutcome = "completed" | "inconclusive" | "failed";
 export function createScanMetrics(chartCount: number, emit: (record: Record<string, unknown>) => void, now = Date.now) {
   const started = now();
   const scanId = crypto.randomUUID();
-  const calls: Array<{ phase: string; model: string; inputTokens: number; cachedInputTokens: number; outputTokens: number }> = [];
+  const calls: Array<{ phase: string; model: string; serviceTier: string; inputTokens: number; cachedInputTokens: number; outputTokens: number }> = [];
   let finished = false;
   return {
     scanId,
-    usage(phase: string, model: string, usage: Usage | undefined) {
+    usage(phase: string, model: string, usage: Usage | undefined, serviceTier = "default") {
       const count = (n: number | undefined) => Number.isFinite(n) && n! >= 0 ? n! : 0;
-      calls.push({ phase, model, inputTokens: count(usage?.input_tokens), cachedInputTokens: count(usage?.input_tokens_details?.cached_tokens), outputTokens: count(usage?.output_tokens) });
+      calls.push({ phase, model, serviceTier, inputTokens: count(usage?.input_tokens), cachedInputTokens: count(usage?.input_tokens_details?.cached_tokens), outputTokens: count(usage?.output_tokens) });
     },
     finish(outcome: ScanOutcome, failure: string | null = null) {
       if (finished) return;
