@@ -26,14 +26,3 @@ test("the actual precision path accepts signed reuse before reserving provider c
   const correction = await context.action("exact-image", "primary", null);
   assert.equal(correction.firstFailure, "CALL_BUDGET"); assert.equal(reservations, 1);
 });
-
-test("the actual warming effect protects free Apple access and reserves a foreground scan", async () => {
-  const source = expression("../app/pocket/PocketBullseye.tsx", (node) => ts.isArrowFunction(node) && ts.isCallExpression(node.parent) && node.parent.expression.getText() === "useEffect" && node.getText().includes("Reserve one normal request"));
-  for (const [native, entitled, remaining, expected] of [[true, false, 3, 0], [true, true, 3, 1], [false, false, 1, 0], [false, false, 2, 1]] as const) {
-    let timer: (() => void) | undefined, calls = 0, saved = false;
-    const context: any = { busy: false, sampleMode: false, reviewTarget: null, selectionActive: { current: false }, document: { visibilityState: "visible" }, scanAllowance: { current: remaining }, sessionRevision: { current: 1 }, resultCharts: [{ id: "supporting", image: "pixels", timeframe: "1H" }], warmAttempts: { current: new Set() }, window: { setTimeout: (fn: () => void) => { timer = fn; return 1; }, clearTimeout: () => undefined }, isAppleNativeApp: () => native, readAppleAccessStatus: async () => ({ entitled }), bundleForChart: () => ({ images: { image: "pixels" } }), requestPocketAnalysis: async (_: unknown, options: { background: boolean }) => { assert.equal(options.background, true); calls++; return { timeframe: "1H" }; }, normalizePatternFrame: (value: string) => value, setResultCharts: (update: (rows: any[]) => any[]) => { saved = Boolean(update(context.resultCharts)[0].report); } };
-    vm.runInContext(source, vm.createContext(context)); context.action(); timer?.();
-    await new Promise(setImmediate);
-    assert.equal(calls, expected); assert.equal(saved, expected === 1);
-  }
-});

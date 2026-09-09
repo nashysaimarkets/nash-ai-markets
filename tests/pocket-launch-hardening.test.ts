@@ -410,7 +410,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /text: \{ verbosity: "low", format:/);
   assert.match(analyseRoute, /error instanceof PocketReportCompletionError/);
   assert.match(analyseRoute, /AI returned an unfinished report/);
-  assert.match(analyseRoute, /service capacity has been reached/);
+  assert.match(analyseRoute, /POCKET_CAPACITY_MESSAGE/);
   assert.doesNotMatch(analyseRoute, /Bullseye could not verify enough chart detail safely/);
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
@@ -650,11 +650,11 @@ test("precision rescue keeps the complete screenshot coordinate frame", async ()
 test("server beta budgets stop duplicate cost before the provider is called", () => {
   resetPocketBudgetsForTesting();
   const request = new Request("https://example.test/api/pocket/analyse", { headers: { "x-forwarded-for": "192.0.2.10" } });
-  const results = Array.from({ length: 5 }, () => takePocketBudget(request, "analyse", 1_000));
-  assert.deepEqual(results.slice(0, 4).map((result) => result.allowed), [true, true, true, true]);
-  assert.equal(results[4].allowed, false);
-  assert.equal(results[4].remaining, 0);
-  assert.ok(results[4].retryAfterSeconds > 0);
+  const results = Array.from({ length: 11 }, () => takePocketBudget(request, "analyse", 1_000));
+  assert.deepEqual(results.slice(0, 10).every((result) => result.allowed), true);
+  assert.equal(results[10].allowed, false);
+  assert.equal(results[10].remaining, 0);
+  assert.ok(results[10].retryAfterSeconds > 0);
 });
 
 test("beta budgets are isolated by action and requester and reset after the window", () => {

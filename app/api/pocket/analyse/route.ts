@@ -1,3 +1,4 @@
+import { capacityRetrySeconds, noteCapacityExhausted, POCKET_CAPACITY_MESSAGE } from "../../../lib/server/pocket-provider-capacity";
 import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../precision-receipt";
 import { scanProfile, compactReportSchema, compactReportInstruction, expandCompactReport } from "../scan-profile";
 import { createScanMetrics } from "../scan-metrics";
@@ -322,9 +323,11 @@ export async function POST(request: Request) {
   if ([precisionImage, contextPrecisionImage].some((value) => value && (!/^data:image\/(jpeg|png|webp);base64,/.test(value) || value.length > MAX_DATA_URL_LENGTH))) {
     return NextResponse.json({ error: "The chart reading crop could not be prepared safely." }, { status: 400 });
   }
+  const capacityWait = capacityRetrySeconds();
+  if (capacityWait) return NextResponse.json({ error: POCKET_CAPACITY_MESSAGE, code: "quota_exhausted" }, { status: 503, headers: { "cache-control": "no-store", "retry-after": String(capacityWait) } });
   const budget = takePocketBudget(request, "analyse");
   if (!budget.allowed) return NextResponse.json(
-    { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
+    { error: `Analysis limit reached. Try again in ${Math.ceil(budget.retryAfterSeconds / 60)} minutes. Saved timeframe results remain available. No request was sent to the AI provider.` },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
   const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
@@ -338,7 +341,7 @@ export async function POST(request: Request) {
   const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
   const reportSchema = compact ? compactReportSchema(fullReportSchema) : fullReportSchema;
   const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
-  if (!client) { metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
+  if (!client) { budget.release?.(); metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
   const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
   const providerDeadlineSignal = AbortSignal.timeout(Math.max(1, providerDeadlineAt - Date.now()));
   const providerAbortController = new AbortController();
@@ -590,6 +593,7 @@ export async function POST(request: Request) {
         }
         return { output_text: first.output_text, firstFailure: null };
       } catch (error) {
+        if (["quota_exhausted", "authentication_rejected", "permission_denied", "rate_limited"].includes(classifyOpenAIFailure(error))) throw error;
         console.error(`[pocket-bullseye] ${label} precision pass unavailable`, error instanceof Error ? error.name : "unknown");
         return { output_text: undefined, firstFailure: precisionSignal.aborted ? "REQUEST_ABORTED" : "REQUEST_FAILED" };
       }
@@ -940,20 +944,22 @@ export async function POST(request: Request) {
       chartCount: policy.imageCount,
     }));
     const message = typeof failure.message === "string" ? failure.message : "";
+    budget.release?.();
     const providerFailure = classifyOpenAIFailure(error);
+    if (providerFailure === "quota_exhausted") noteCapacityExhausted();
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
     const incomplete = error instanceof PocketReportCompletionError
       || /structured response was (?:empty|incomplete|invalid JSON)/i.test(message);
     metrics.finish("failed", timedOut ? "timeout" : incomplete ? "incomplete_report" : providerFailure);
     const providerMessage = providerFailure === "quota_exhausted"
-      ? "AI analysis is temporarily unavailable because its service capacity has been reached. Your charts are still loaded—please try again after service is restored."
+      ? POCKET_CAPACITY_MESSAGE
       : providerFailure === "rate_limited"
         ? "AI analysis is temporarily busy. Your charts are still loaded—please retry in a minute."
         : "AI analysis is temporarily unavailable. Your charts are still loaded—please try again later.";
-    return NextResponse.json({ error: timedOut
+    return NextResponse.json({ code: providerFailure, error: timedOut
       ? "The AI service did not finish this scan. Your charts are still loaded—please try again."
       : incomplete
         ? "The AI returned an unfinished report. Your charts are still loaded; no partial analysis has been used."
-        : providerMessage }, { status: 503, headers: { "x-pocket-scan-id": metrics.scanId } });
+        : providerMessage }, { status: 503, headers: { "x-pocket-scan-id": metrics.scanId, "cache-control": "no-store", ...(providerFailure === "quota_exhausted" ? { "retry-after": "60" } : {}) } });
   } finally { providerAbortController.abort(); }
 }

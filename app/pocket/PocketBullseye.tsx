@@ -1157,8 +1157,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const precisionReceiptCache = useRef<string[]>([]);
   const evidenceCacheEpoch = useRef("");
   const measuredCharts = useRef(new Map<string, DeterministicChartEvidence>());
-  const warmAttempts = useRef(new Set<string>());
-  const scanAllowance = useRef(0);
+  const providerPauseUntil = useRef(0);
+  const providerPauseMessage = useRef("");
   useEffect(() => () => chartWork.current.clear(), []);
 
   const followUpRequestActive = useRef(false);
@@ -1348,35 +1348,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   function resetChartSession() {
     sessionRevision.current += 1;
-    chartWork.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear(); warmAttempts.current.clear();
+    chartWork.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear();
     setResultCharts([]); setActiveChartId("image"); setPendingChartId(null); setSampleMode(false);
   }
 
-  useEffect(() => {
-    if (busy || sampleMode || reviewTarget || selectionActive.current || document.visibilityState !== "visible") return;
-    // Reserve one normal request for an explicit customer action. Never bypass the service allowance.
-    if (scanAllowance.current <= 1) return;
-    const revision = sessionRevision.current;
-    const next = resultCharts.find((chart) => !chart.report && !warmAttempts.current.has(chart.id));
-    if (!next) return;
-    const timer = window.setTimeout(() => {
-      void (async () => {
-        if (isAppleNativeApp()) {
-          const access = await readAppleAccessStatus().catch(() => null);
-          if (!access?.entitled) return;
-        }
-        if (revision !== sessionRevision.current || scanAllowance.current <= 1 || document.visibilityState !== "visible") return;
-        warmAttempts.current.add(next.id);
-        const { images } = bundleForChart(resultCharts, next.id);
-        try {
-          const report = await requestPocketAnalysis(null, { images, background: true });
-          if (revision !== sessionRevision.current) return;
-          setResultCharts((current) => current.map((chart) => chart.id === next.id ? { ...chart, report, timeframe: normalizePatternFrame(report.timeframe) ?? chart.timeframe } : chart));
-        } catch { /* Keep the current page and its verified report. Explicit selection can retry. */ }
-      })();
-    }, 750);
-    return () => window.clearTimeout(timer);
-  }, [resultCharts, busy, sampleMode, reviewTarget, appleAccess]);
+  // Reports are generated on explicit selection; never spend on speculative background scans.
 
   function initialiseChartSession(report: Analysis) {
     resultRevision.current += 1;
@@ -1803,7 +1779,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const correction = options.images ? null : accuracyCorrection;
     if (!images.image) throw new Error("Choose a chart first.");
     const revision = sessionRevision.current;
-    if (options.bypassCache || correction) { evidenceCacheEpoch.current = crypto.randomUUID(); chartWork.current.clear(); precisionReceiptCache.current = []; warmAttempts.current.clear(); setResultCharts((current) => current.map((chart) => ({ ...chart, report: undefined }))); }
+    if (options.bypassCache || correction) { evidenceCacheEpoch.current = crypto.randomUUID(); chartWork.current.clear(); precisionReceiptCache.current = []; setResultCharts((current) => current.map((chart) => ({ ...chart, report: undefined }))); }
     const epoch = evidenceCacheEpoch.current;
     const cacheKey = (await analysisCacheKey(images.image, images.contextImage, images.detailImage, images.fourHourImage, images.indicatorImage, confirmation, correction)) + (epoch ? `:${epoch}` : "");
     if (revision !== sessionRevision.current || epoch !== evidenceCacheEpoch.current) throw new DOMException("Chart session changed", "AbortError");
@@ -1831,6 +1807,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           return cached;
         }
       }
+      if (Date.now() < providerPauseUntil.current) throw new Error(providerPauseMessage.current);
       // Encode one chart at a time to avoid holding two large iOS canvases in
       // memory. Already-bounded originals stay byte-for-byte unchanged.
       const providerImage = await createProviderScanImage(image);
@@ -1861,10 +1838,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       if (!options.background) setScanStage("SECOND_OPINION");
       const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation: requestConfirmation, accuracyCorrection: requestCorrection, deterministicEvidence, precisionReceipts: options.bypassCache || requestCorrection ? [] : precisionReceiptCache.current }), { timeoutMs: Math.max(1, deadlineAt - Date.now()), signal: options.signal });
-      scanAllowance.current = Math.max(0, Number(response.headers.get("x-ratelimit-remaining")) || 0);
-      const payload = await response.json() as { precisionReceipts?: string[]; analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string };
+      const payload = await response.json() as { precisionReceipts?: string[]; analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string; code?: string };
       options.signal.throwIfAborted();
-      if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
+      if (!response.ok || !payload.analysis) {
+        if (payload.code === "quota_exhausted") {
+          providerPauseUntil.current = Date.now() + 60_000;
+          providerPauseMessage.current = payload.error || "Chart analysis is unavailable while service credits are restored.";
+        }
+        throw new Error(payload.error || "Analysis is temporarily unavailable.");
+      }
+      providerPauseUntil.current = 0;
       if (Array.isArray(payload.precisionReceipts)) precisionReceiptCache.current = [...new Set([...precisionReceiptCache.current, ...payload.precisionReceipts.filter((token) => typeof token === "string" && token.length <= 60_000)])].slice(-10);
       if (!options.background && payload.macroContext) setEventContext(payload.macroContext);
       if (!options.background && Array.isArray(payload.marketEvents)) setMarketEvents(payload.marketEvents);

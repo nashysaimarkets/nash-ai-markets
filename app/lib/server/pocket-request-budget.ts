@@ -3,11 +3,11 @@ import { createHash } from "node:crypto";
 export type PocketBudgetAction = "preflight" | "analyse" | "levels" | "liquidity" | "review" | "follow-up";
 
 type BudgetRule = { limit: number; windowMs: number };
-type BudgetEntry = { count: number; resetAt: number };
+type BudgetEntry = { count: number; attempts: number; resetAt: number };
 
 const RULES: Record<PocketBudgetAction, BudgetRule> = {
   preflight: { limit: 8, windowMs: 30 * 60_000 },
-  analyse: { limit: 4, windowMs: 30 * 60_000 },
+  analyse: { limit: 10, windowMs: 30 * 60_000 },
   levels: { limit: 6, windowMs: 30 * 60_000 },
   liquidity: { limit: 6, windowMs: 30 * 60_000 },
   review: { limit: 3, windowMs: 30 * 60_000 },
@@ -29,6 +29,7 @@ export type PocketBudgetDecision = {
   remaining: number;
   resetAt: number;
   retryAfterSeconds: number;
+  release?: () => void;
 };
 
 export function takePocketBudget(
@@ -40,10 +41,10 @@ export function takePocketBudget(
   const key = requesterKey(request, action);
   const current = entries.get(key);
   const entry = !current || current.resetAt <= now
-    ? { count: 0, resetAt: now + rule.windowMs }
+    ? { count: 0, attempts: 0, resetAt: now + rule.windowMs }
     : current;
 
-  if (entry.count >= rule.limit) {
+  if (entry.count >= rule.limit || (action === "analyse" && entry.attempts >= 20)) {
     return {
       allowed: false,
       limit: rule.limit,
@@ -54,6 +55,8 @@ export function takePocketBudget(
   }
 
   entry.count += 1;
+  entry.attempts += 1;
+  let released = false;
   entries.set(key, entry);
   return {
     allowed: true,
@@ -61,6 +64,11 @@ export function takePocketBudget(
     remaining: Math.max(0, rule.limit - entry.count),
     resetAt: entry.resetAt,
     retryAfterSeconds: 0,
+    // Release only this reservation, once; never credit a newer window.
+    release: () => {
+      if (!released && entries.get(key) === entry) entry.count = Math.max(0, entry.count - 1);
+      released = true;
+    },
   };
 }
 
