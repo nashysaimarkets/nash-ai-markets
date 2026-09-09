@@ -53,3 +53,15 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
+
+  pocket-apple-release-status:
+    name: Pocket Bullseye — Apple release status
+    instance_type: mac_mini_m2
+    max_build_duration: 10
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    scripts:
+      - name: Read current Apple versions and latest build
+        script: |
+          app-store-connect apps app-store-versions 6806004581 --platform IOS --json
+          app-store-connect get-latest-build-number 6806004581 --include-version
