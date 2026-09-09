@@ -759,6 +759,8 @@ function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanaly
 function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName, intention }: { analysis: Analysis; sourceImage: string; onShare: () => void; onOpenReport: (target?: string) => void; viewerName: string; intention: Intention }) {
   const [scene, setScene] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [sceneDuration, setSceneDuration] = useState(12000);
+  const sceneContent = useRef<HTMLDivElement>(null);
   const sceneNames = ["OPEN", "EVIDENCE", "LEVELS", "BATTLE", "RISK", "DECISION", "BULLSEYE"];
   const verifiedLevels = rankChartLevels(analysis.levels.flatMap((level) => {
     const price = numericLevel(level.price);
@@ -773,13 +775,18 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
   const dailyMessage = personalDailyMessage(analysis, viewerName);
   useEffect(() => {
     if (paused) return;
-    const timer = window.setTimeout(() => setScene((current) => (current + 1) % sceneNames.length), 6000);
+    // Pace only the rendered story: allow 180 words/minute plus two seconds
+    // to settle into each scene. This never changes or requests analysis.
+    const words = (sceneContent.current?.innerText ?? "").trim().split(/\s+/).filter(Boolean).length;
+    const duration = Math.max(12000, Math.ceil(words / 3) * 1000 + 2000);
+    setSceneDuration(duration);
+    const timer = window.setTimeout(() => setScene((current) => (current + 1) % sceneNames.length), duration);
     return () => window.clearTimeout(timer);
   }, [scene, paused, sceneNames.length]);
   const previous = () => setScene((current) => (current + sceneNames.length - 1) % sceneNames.length);
   const next = () => setScene((current) => (current + 1) % sceneNames.length);
   const openExplanation = (id: string) => { setPaused(true); onOpenReport(id); };
-  return <section className="psMarketStory" data-scene={scene} data-direction={analysis.direction}>
+  return <section className="psMarketStory" data-scene={scene} data-direction={analysis.direction} style={{ "--ps-story-duration": `${sceneDuration}ms` } as CSSProperties}>
     <header><div><span>◈ {viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"} BULLSEYE MARKET STORY</span><small>BUILT FROM YOUR CHART · {intention === "UNSURE" ? "OPEN-MINDED READ" : `${intention} IDEA CHALLENGED`}</small></div><button type="button" onClick={() => setPaused((value) => !value)}>{paused ? "▶ PLAY" : "Ⅱ PAUSE"}</button></header>
     <div className="psStoryProgress" aria-label={`Scene ${scene + 1} of ${sceneNames.length}`}>{sceneNames.map((name, index) => <button key={name} type="button" data-complete={index < scene} data-active={index === scene} onClick={() => setScene(index)} aria-label={`Open ${name.toLowerCase()} scene`}><span/><small>{name}</small>{index === scene && !paused ? <i key={`${scene}-${paused}`}/> : null}</button>)}</div>
     <div className="psStoryStage">
@@ -787,7 +794,7 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
       <div className="psStoryShade"/><div className="psStoryScan" aria-hidden="true"/>
       <div className="psCinemaFx" aria-hidden="true"><i/><i/><i/><b>{String(scene + 1).padStart(2, "0")}</b></div>
       <button type="button" className="psStoryPrevious" onClick={previous} aria-label="Previous story scene">‹</button><button type="button" className="psStoryNext" onClick={next} aria-label="Next story scene">›</button>
-      <div className="psStoryScene" key={scene} aria-live="polite">
+      <div className="psStoryScene" key={scene} ref={sceneContent} aria-live="polite">
         {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · {viewerName ? `${viewerName.toUpperCase()}, YOUR ANALYSIS IS READY` : "YOUR ANALYSIS IS READY"}</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>Bullseye has challenged the chart, the opposing case and the conditions that could change this read.</p></article> : null}
         {scene === 1 ? <article className="psStoryEvidence"><small>CHAPTER 02 · VERIFIED EVIDENCE</small><h2>Evidence before opinion.</h2><ul>{analysis.observableFacts.slice(0, 2).map((fact) => <li key={fact}>{fact}</li>)}</ul><div><span>IMAGE {analysis.evidenceQuality.chartReadability}</span><span>SCALE {analysis.evidenceQuality.scaleReadable ? "VERIFIED" : "UNVERIFIED"}</span></div><section className="psEvidencePulse"><b>STRUCTURE</b><p>{analysis.marketStructure}</p><b>MOMENTUM</b><p>{analysis.momentum}</p></section><button type="button" onClick={() => openExplanation("bullseye-evidence")}>OPEN VERIFIED EVIDENCE ↓</button></article> : null}
         {scene === 2 ? <article className="psStoryLevels"><small>CHAPTER 03 · THE PRICE BATTLEFIELD</small><h2>{storyHasTwoSidedStructure ? `${storyLevels.length} level${storyLevels.length === 1 ? "" : "s"} bracket current price.` : storyLevels.length ? `${storyLevels.length} exact level${storyLevels.length === 1 ? " is" : "s are"} verified; the opposite side is still missing.` : "Two-sided levels remain unverified."}</h2><div>{analysis.currentPrice ? <span><small>CURRENT · PRIMARY CHART</small><b>{analysis.currentPrice}</b></span> : null}{storyLevels.slice(0, 3).map((level) => <span key={`${level.kind}-${level.price}`} data-kind={level.kind} data-source={level.source ?? "PRIMARY"}><small>{level.kind.toUpperCase()} · {levelEvidenceSourceLabel(level.source)}</small><b>{level.price}</b></span>)}</div><p>{analysis.levelStory}</p><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}

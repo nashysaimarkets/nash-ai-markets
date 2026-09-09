@@ -492,7 +492,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /FINDINGS UPDATED/);
   assert.doesNotMatch(client, /SUPPORT AREA NOT VERIFIED/);
   assert.match(client, /CLEARER VIEW NEEDED/);
-  assert.match(client, /6000/);
+  assert.match(client, /Math\.max\(12000,/);
   assert.match(client, /psCinemaFx/);
   assert.match(client, /bullseye-events/);
   assert.match(client, /bullseye-levels/);
