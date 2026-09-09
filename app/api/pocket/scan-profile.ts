@@ -1,5 +1,5 @@
-export type ScanProfile = "baseline" | "compact" | "fast" | "overlap" | "full-fast" | "full-parallel";
-const profiles = new Set<ScanProfile>(["baseline", "compact", "fast", "overlap", "full-fast", "full-parallel"]);
+export type ScanProfile = "baseline" | "compact" | "fast" | "overlap" | "full-fast" | "full-parallel" | "focused";
+const profiles = new Set<ScanProfile>(["baseline", "compact", "fast", "overlap", "full-fast", "full-parallel", "focused"]);
 
 /** Trials are restricted to the dedicated preview branch and the normal request budget. */
 export function scanProfile(request: Request, env: Record<string, string | undefined> = process.env): ScanProfile {
@@ -23,4 +23,11 @@ export function expandCompactReport(value: unknown): unknown {
   if (!Array.isArray(report.riskFlags) || report.riskFlags.some((flag) => typeof flag !== "string")) throw new Error("The compact report is missing its risk evidence.");
   const relevantCase = report.direction === "BULLISH" ? report.bullishCase : report.direction === "BEARISH" ? report.bearishCase : null;
   return { ...report, bullConfirmation: report.bullishCase, bearConfirmation: report.bearishCase, improvesSetup: relevantCase ? [relevantCase] : [report.bullishCase, report.bearishCase], killsSetup: [report.invalidation], whatYouMayBeMissing: [...report.riskFlags] };
+}
+
+/** The UI displays patterns only from PRIMARY; other charts still contribute
+ * identity, alignment, structure and indicator context through evidencePack. */
+export function selectedPatternSchema<T extends { properties: { patterns: { items: { properties: { sourceRole: object } } } } }>(schema: T) {
+  const patterns = schema.properties.patterns;
+  return { ...schema, properties: { ...schema.properties, patterns: { ...patterns, maxItems: 1, items: { ...patterns.items, properties: { ...patterns.items.properties, sourceRole: { type: "string", enum: ["PRIMARY"] } } } } } };
 }

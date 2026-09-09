@@ -41,3 +41,15 @@ test("usage records actual returned service tiers including fallback", () => {
   metrics.finish("completed");
   assert.deepEqual((output[0].calls as { serviceTier: string }[]).map((c) => c.serviceTier), ["default", "priority"]);
 });
+
+test("selected pattern scan retains every independent report field and limits geometry to the selected source", async () => {
+  const { selectedPatternSchema } = await import("../app/api/pocket/scan-profile");
+  const original = { properties: { patterns: { maxItems: 5, items: { properties: { sourceRole: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME"] }, geometry: { type: "object" } }, required: ["sourceRole", "geometry"] } }, evidencePack: { allUploads: true }, levels: {}, indicators: {}, higherTimeframe: {} }, required: ["patterns", "evidencePack", "levels", "indicators", "higherTimeframe"] };
+  const selected = selectedPatternSchema(original);
+  assert.equal(selected.properties.patterns.maxItems, 1);
+  assert.deepEqual(selected.properties.patterns.items.properties.sourceRole.enum, ["PRIMARY"]);
+  assert.deepEqual(selected.required, original.required);
+  assert.equal(selected.properties.evidencePack, original.properties.evidencePack);
+  assert.equal(selected.properties.patterns.items.properties.geometry, original.properties.patterns.items.properties.geometry);
+  assert.equal(original.properties.patterns.maxItems, 5);
+});
