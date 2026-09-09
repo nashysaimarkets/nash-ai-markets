@@ -1,3 +1,4 @@
+import { createScanMetrics } from "../scan-metrics";
 import { pocketEvidencePackSchema, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../../../pocket/chart-images";
 import { pocketAnalysisPolicy } from "../../../pocket/analysis-policy";
 import { NextResponse } from "next/server";
@@ -324,9 +325,10 @@ export async function POST(request: Request) {
   );
   const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
   const policy = pocketAnalysisPolicy(suppliedImages);
+  const metrics = createScanMetrics(policy.imageCount, (record) => console.info("[pocket-metrics]", JSON.stringify(record)));
   const reportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
   const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
-  if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
+  if (!client) { metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
   const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
   const providerDeadlineSignal = AbortSignal.timeout(Math.max(1, providerDeadlineAt - Date.now()));
   const providerAbortController = new AbortController();
@@ -402,6 +404,8 @@ export async function POST(request: Request) {
         "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "The primary chart may use any visibly labelled timeframe. Supporting charts and indicator/volume images are optional. Internal image roles identify source uploads and never prove a timeframe; read every timeframe from its image.",
+        "The customer switches the whole report to the selected image, which is always PRIMARY. Ground direction, setupScore, summary, marketStructure, momentum, indicators, scenarios, nextSequence, liquidity and chart-specific findings in PRIMARY. Keep other images' indicators and geometry out of these fields. Describe supporting evidence separately in evidencePack and higherTimeframe; label any cross-timeframe contradiction explicitly. Never imply an indicator or pattern exists in PRIMARY merely because it appears in another image.",
+        "In every evidencePack contribution, return that source image's visibly labelled timeframe or UNKNOWN. Never infer a timeframe from an upload role or position.",
         "Read every supplied chart and verify that readable instrument labels match the primary chart. Report confirmed instrument conflicts prominently, mark alignment CONFLICTING and use REVIEW_REQUIRED. Different timeframes are expected and are not themselves contradictions. Never claim to have inspected an absent image.",
         "Analyse the primary chart at its actual visible timeframe. Compare supporting views only when present and readable. With only one chart, higherTimeframe.provided must be false, timeframe UNKNOWN and alignment NOT_PROVIDED; describe the available structure without inventing cross-timeframe confirmation. Only mark a higher timeframe provided if a supplied image visibly establishes one. Do not lower the chart-readability assessment solely because optional charts are absent. Never treat the mere presence of an image as evidence and never inflate score or confidence because more images were uploaded.",
         "All plotBounds, priceScaleAnchors, levels and fibLevels must remain coordinates of image 1, the primary chart. Pattern geometry must use the full-image coordinate system of the image named by that pattern's sourceRole. Never copy geometry between images or draw evidence from one crop over another.",
@@ -449,6 +453,7 @@ export async function POST(request: Request) {
       signal,
       timeout: timeoutMs,
     });
+      metrics.usage(recovery ? "report_recovery" : "report", model, response.usage);
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
       const reasoningTokens = response.usage?.output_tokens_details?.reasoning_tokens ?? null;
@@ -548,6 +553,7 @@ export async function POST(request: Request) {
       if (!reservation.allowed) return { output_text: undefined, firstFailure: reservation.reason };
       try {
         const first = await requestPrecision(chartImage, false, null, trustedCurrentPrice, reservation.timeoutMs);
+        metrics.usage(`${label}_precision`, process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL, first.usage);
         const output = first.output_text?.trim() ?? "";
         console.info(`[pocket-bullseye] ${label} precision provider completion`, JSON.stringify({
           phase: "initial",
@@ -593,6 +599,7 @@ export async function POST(request: Request) {
       }
       try {
         const rescue = await requestPrecision(chartImage, true, readingCrop, trustedCurrentPrice, reservation.timeoutMs);
+        metrics.usage(`${label}_precision_recovery`, process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL, rescue.usage);
         const rescueOutput = rescue.output_text?.trim() ?? "";
         console.info(`[pocket-bullseye] ${label} precision provider completion`, JSON.stringify({
           phase: "rescue",
@@ -708,7 +715,7 @@ export async function POST(request: Request) {
           const summary = typeof returned?.summary === "string" && returned.summary.trim()
             ? returned.summary.trim().slice(0, 180)
             : fallbackSummary;
-          return { role, used: role === "PRIMARY" ? true : typeof returned?.used === "boolean" ? returned.used : fallbackUsed, summary };
+          return { role, used: role === "PRIMARY" ? true : typeof returned?.used === "boolean" ? returned.used : fallbackUsed, summary, timeframe: typeof returned?.timeframe === "string" ? returned.timeframe.trim().slice(0, 40) : "UNKNOWN" };
         }),
       };
       if (accuracyCorrection?.instrument || accuracyCorrection?.timeframe) {
@@ -876,11 +883,12 @@ export async function POST(request: Request) {
       combinedCoverage: precisionCoverageDiagnostics(combinedBattlefield.coverage),
     };
     console.info("[pocket-bullseye] structural precision", JSON.stringify(finalAnalysis.precisionDiagnostics));
+    metrics.finish(finalGate.chartLocked ? "completed" : "inconclusive");
     return NextResponse.json(
       // Return the same official schedule snapshot used by this analysis so a
       // long-open browser tab cannot show an older event calendar.
       { analysis: finalAnalysis, macroContext, marketEvents },
-      { headers: pocketBudgetHeaders(budget) },
+      { headers: { ...pocketBudgetHeaders(budget), "x-pocket-scan-id": metrics.scanId } },
     );
   } catch (error) {
     const failure = error && typeof error === "object" ? error as {
@@ -904,6 +912,7 @@ export async function POST(request: Request) {
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
     const incomplete = error instanceof PocketReportCompletionError
       || /structured response was (?:empty|incomplete|invalid JSON)/i.test(message);
+    metrics.finish("failed", timedOut ? "timeout" : incomplete ? "incomplete_report" : providerFailure);
     const providerMessage = providerFailure === "quota_exhausted"
       ? "AI analysis is temporarily unavailable because its service capacity has been reached. Your charts are still loaded—please try again after service is restored."
       : providerFailure === "rate_limited"
@@ -913,6 +922,6 @@ export async function POST(request: Request) {
       ? "The AI service did not finish this scan. Your charts are still loaded—please try again."
       : incomplete
         ? "The AI returned an unfinished report. Your charts are still loaded; no partial analysis has been used."
-        : providerMessage }, { status: 503 });
-  }
+        : providerMessage }, { status: 503, headers: { "x-pocket-scan-id": metrics.scanId } });
+  } finally { providerAbortController.abort(); }
 }

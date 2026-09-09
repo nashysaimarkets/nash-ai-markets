@@ -1,0 +1,100 @@
+import type { LevelEvidenceSource } from "./pocket-derived-evidence";
+import type { LiquidityShield } from "./liquidity-guard";
+
+export type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
+export type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
+export type Level = { kind: ToolKind; label: string; price: string; x: number; y: number; x2: number; y2: number; source?: LevelEvidenceSource };
+export type FibLevel = { ratio: string; price: string; y: number };
+export type Intention = "LONG" | "SHORT" | "UNSURE";
+export type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
+export type Analysis = {
+  direction: Direction;
+  confidence: "LOW" | "MEDIUM" | "HIGH";
+  instrument: string;
+  ticker: string;
+  timeframe: string;
+  evidenceQuality: {
+    chartReadability: "CLEAR" | "PARTIAL" | "POOR";
+    instrumentConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+    timeframeConfidence: "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+    scaleReadable: boolean;
+    candlesReadable: boolean;
+    limitations: string[];
+  };
+  observableFacts: string[];
+  contradictions: string[];
+  higherTimeframe: {
+    provided: boolean;
+    timeframe: string;
+    direction: Direction | "UNKNOWN";
+    alignment: "ALIGNED" | "CONFLICTING" | "MIXED" | "NOT_PROVIDED";
+    summary: string;
+  };
+  patterns: { name: string; sourceRole?: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR" | "INDICATOR_VOLUME"; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { plotBounds?: { left: number; top: number; right: number; bottom: number }; points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
+  nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
+  missingInputs: string[];
+  contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
+  evidencePack?: {
+    received: number;
+    contributions: Array<{
+      role: "PRIMARY" | "HIGHER_TIMEFRAME" | "PRICE_DETAIL" | "FOUR_HOUR" | "INDICATOR_VOLUME";
+      used: boolean;
+      summary: string;
+      timeframe?: string;
+    }>;
+  };
+  summary: string;
+  verdict: "WATCH" | "WAIT" | "STAND_ASIDE" | "REVIEW_REQUIRED";
+  verdictHeadline: string;
+  setupScore: SetupScore;
+  whatYouMayBeMissing: string[];
+  improvesSetup: string[];
+  killsSetup: string[];
+  traderTrap: string;
+  bullishCase: string;
+  bearishCase: string;
+  invalidation: string;
+  marketStructure: string;
+  levelStory: string;
+  momentum: string;
+  bullConfirmation: string;
+  bearConfirmation: string;
+  noTradeCondition: string;
+  riskFlags: string[];
+  indicators: string[];
+  checklist: string[];
+  relevantEventTypes: string[];
+  liquidityShield?: LiquidityShield;
+  liquidityGeometry?: {
+    plotBounds?: { left: number; top: number; right: number; bottom: number };
+    priceScaleAnchors?: { price: number; y: number }[];
+    liquidityShield?: LiquidityShield;
+    evidenceQuality?: { chartReadability?: string; candlesReadable?: boolean };
+  };
+  plotBounds?: { left: number; top: number; right: number; bottom: number };
+  priceScaleAnchors?: { price: number; y: number }[];
+  currentPrice?: string;
+  levels: Level[];
+  contextBattlefield?: { currentPrice?: string; levels: Level[]; priceScaleAnchors?: { price: number; y: number }[]; plotBounds?: { left: number; top: number; right: number; bottom: number } } | null;
+  combinedBattlefield?: {
+    currentPrice: string;
+    levels: Array<{ kind: "support" | "resistance" | "pivot"; label: string; price: string; source: "PRIMARY" | "CONTEXT" | "USER_VERIFIED" }>;
+    contextCompatible: boolean;
+    compatibilityReason: "NO_CONTEXT" | "IDENTITY_MISSING" | "IDENTITY_MISMATCH" | "PRICE_MISMATCH" | "EXPLICIT_MATCH" | "REPORT_AND_PRICE_MATCH" | "NOT_CONFIRMED";
+    coverage: { currentPrice: number | null; supportBelow: boolean; resistanceAbove: boolean; exactHorizontalLevels: number; twoSided: boolean };
+  };
+  fibLevels: FibLevel[];
+  trustGate?: {
+    status: "LOCKED" | "PARTIAL" | "HOLD";
+    chartLocked: boolean;
+    identityLocked: boolean;
+    scaleLocked: boolean;
+    exactLevelCount: number;
+    reasons: string[];
+    nextAction: string;
+  };
+};
+export type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
+export type LockedDecision = { id: string; createdAt: string; intention: Intention; image: string; analysis: Analysis; review?: ProcessReview; afterImage?: string; reviewedAt?: string };
+export type FollowUpReply = { answer: string; evidence: string[]; caution: string; nextCheck: string };
+export type ProcessReview = { outcome: "PROFIT" | "LOSS" | "BREAKEVEN" | "UNCLEAR"; processGrade: "A" | "B" | "C" | "D" | "F"; decisionQuality: number; headline: string; outcomeSummary: string; confirmationReview: string; invalidationReview: string; timingReview: string; disciplineReview: string; goodDecisionBadOutcome: boolean; thesisStatus: "HELD" | "FAILED" | "CHANGED" | "NOT_PROVEN"; structureShift: "STRENGTHENED" | "WEAKENED" | "FLIPPED" | "UNCHANGED" | "UNCLEAR"; rootCause: "CHART_READ" | "ENTRY_TIMING" | "STOP_PLACEMENT" | "DISCIPLINE" | "MARKET_OUTCOME" | "NOT_PROVEN"; evidenceChanges: { before: string; after: string; impact: "STRENGTHENED" | "WEAKENED" | "INVALIDATED" | "UNCHANGED" | "UNCLEAR" }[]; nextRule: string; lessons: string[]; behaviourTags: string[] };

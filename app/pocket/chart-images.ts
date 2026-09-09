@@ -24,8 +24,9 @@ export function pocketEvidencePackSchema(images: Images) {
             role: { type: "string", enum: roles },
             used: { type: "boolean" },
             summary: { type: "string", maxLength: 180 },
+            timeframe: { type: "string", maxLength: 40 },
           },
-          required: ["role", "used", "summary"],
+          required: ["role", "used", "summary", "timeframe"],
         },
       },
     },
@@ -76,6 +77,13 @@ export function scopePocketImageEvidence(analysis: Record<string, unknown>, imag
 }
 
 export function normalizePatternFrame(value: string | undefined): string | null {
+  const label = (value ?? "").trim().toUpperCase();
+  if (label === "MONTHLY") return "1MO";
+  if (label === "YEARLY" || label === "ANNUAL") return "1Y";
+  const months = label.match(/^(\d+)\s*(?:MONTHS?|MO|MN)$/) ?? label.match(/^MN(\d+)$/);
+  if (months) return `${months[1]}MO`;
+  const years = label.match(/^(\d+)\s*(?:YEARS?|Y)$/);
+  if (years) return `${years[1]}Y`;
   const compact = (value ?? "").trim().toUpperCase()
     .replace(/MINUTES?|MINS?/g, "M").replace(/HOURS?|HRS?/g, "H")
     .replace(/DAILY/g, "1D").replace(/WEEKLY/g, "1W").replace(/DAYS?/g, "D").replace(/WEEKS?/g, "W").replace(/\s+/g, "");
