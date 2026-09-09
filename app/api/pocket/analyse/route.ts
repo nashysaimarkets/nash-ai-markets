@@ -29,6 +29,7 @@ import {
   verifiedPrecisionInstrumentIdentifier,
   type PrecisionProviderCallBudget,
 } from "../precision-structure";
+import { runPocketReport } from "../report-recovery";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../report-completion";
 import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/chart-preflight";
 
@@ -384,11 +385,12 @@ export async function POST(request: Request) {
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || POCKET_REPORT_MODEL;
     const reportTimeoutMs = remainingProviderMs();
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
-    const analysisRequest = client.responses.create({
+    const analysisRequest = runPocketReport(async ({ signal, timeoutMs, recovery }) => {
+      const response = await client.responses.create({
       model,
       // Preserve the demanding multi-timeframe judgment. The strict report
       // is kept terse below so its visible JSON does not waste output budget.
-      reasoning: { effort: "medium" },
+      reasoning: { effort: recovery ? "low" : "medium" },
       store: false,
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
@@ -441,17 +443,18 @@ export async function POST(request: Request) {
       }],
       // Keep the same report model, medium reasoning and every evidence field.
       // The larger allowance is needed only for multiple supplied charts.
-      max_output_tokens: policy.reportOutputTokens,
+      max_output_tokens: recovery ? 20_000 : policy.reportOutputTokens,
       text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema: reportSchema } },
     }, {
-      signal: providerSignal,
-      timeout: Math.min(policy.reportTimeoutMs, reportTimeoutMs),
-    }).then((response) => {
+      signal,
+      timeout: timeoutMs,
+    });
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
       const reasoningTokens = response.usage?.output_tokens_details?.reasoning_tokens ?? null;
       console.info("[pocket-bullseye] report completed", JSON.stringify({
         status: response.status ?? "unknown",
+        recovery,
         incompleteReason,
         outputChars: reportOutput.length,
         outputTokens: response.usage?.output_tokens ?? null,
@@ -460,6 +463,12 @@ export async function POST(request: Request) {
       }));
       completedPocketReportOutput(response);
       return response;
+    }, {
+      signal: providerSignal,
+      deadlineAt: Math.min(providerDeadlineAt, Date.now() + policy.reportTimeoutMs),
+      attemptTimeoutMs: policy.reportAttemptTimeoutMs,
+      recoveryTimeoutMs: policy.reportRecoveryTimeoutMs,
+      onRecovery: (reason) => console.warn("[pocket-bullseye] report recovery", JSON.stringify({ reason, chartCount: policy.imageCount, elapsedMs: Date.now() - routeStartedAt })),
     }).catch((error) => {
       // The precision passes are useful only when the report succeeds. Abort
       // their in-flight requests immediately and prevent any rescue calls.

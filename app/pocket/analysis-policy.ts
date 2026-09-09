@@ -9,7 +9,9 @@ export function pocketAnalysisPolicy(images: Images) {
   return {
     imageCount,
     parallelPrecision: singleChart,
-    reportTimeoutMs: singleChart ? 110_000 : 240_000,
+    reportTimeoutMs: singleChart ? 110_000 : 205_000,
+    reportAttemptTimeoutMs: 110_000,
+    reportRecoveryTimeoutMs: singleChart ? 0 : 95_000,
     providerDeadlineMs: singleChart ? 120_000 : 288_000,
     precisionDeadlineMs: singleChart ? 100_000 : 285_000,
     precisionCallTimeoutMs: singleChart ? 50_000 : 240_000,
