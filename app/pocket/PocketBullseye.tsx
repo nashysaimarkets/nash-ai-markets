@@ -1155,6 +1155,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const analysisRequestActive = useRef(false);
   const chartWork = useRef(new ChartWorkQueue<Analysis>());
   const precisionReceiptCache = useRef<string[]>([]);
+  const evidenceCacheEpoch = useRef("");
   const measuredCharts = useRef(new Map<string, DeterministicChartEvidence>());
   const warmAttempts = useRef(new Set<string>());
   const scanAllowance = useRef(0);
@@ -1802,9 +1803,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const correction = options.images ? null : accuracyCorrection;
     if (!images.image) throw new Error("Choose a chart first.");
     const revision = sessionRevision.current;
-    if (options.bypassCache || correction) { chartWork.current.clear(); precisionReceiptCache.current = []; warmAttempts.current.clear(); setResultCharts((current) => current.map((chart) => ({ ...chart, report: undefined }))); }
-    const cacheKey = await analysisCacheKey(images.image, images.contextImage, images.detailImage, images.fourHourImage, images.indicatorImage, confirmation, correction);
-    if (revision !== sessionRevision.current) throw new DOMException("Chart session changed", "AbortError");
+    if (options.bypassCache || correction) { evidenceCacheEpoch.current = crypto.randomUUID(); chartWork.current.clear(); precisionReceiptCache.current = []; warmAttempts.current.clear(); setResultCharts((current) => current.map((chart) => ({ ...chart, report: undefined }))); }
+    const epoch = evidenceCacheEpoch.current;
+    const cacheKey = (await analysisCacheKey(images.image, images.contextImage, images.detailImage, images.fourHourImage, images.indicatorImage, confirmation, correction)) + (epoch ? `:${epoch}` : "");
+    if (revision !== sessionRevision.current || epoch !== evidenceCacheEpoch.current) throw new DOMException("Chart session changed", "AbortError");
     return chartWork.current.request(`${revision}:${cacheKey}`, (signal) => executePocketAnalysis({ ...options, images, confirmation, correction, signal, cacheKey }), options.background);
   }
 

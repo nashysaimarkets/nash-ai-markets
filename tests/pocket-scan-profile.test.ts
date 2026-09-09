@@ -3,12 +3,14 @@ import assert from "node:assert/strict";
 import { scanProfile, compactReportSchema, expandCompactReport } from "../app/api/pocket/scan-profile";
 import { createScanMetrics } from "../app/api/pocket/scan-metrics";
 
-test("trial headers cannot select paid processing outside the dedicated preview", () => {
+test("trial headers cannot override configured processing outside the dedicated preview", () => {
   const request = new Request("https://example.test", { headers: { "x-pocket-trial-profile": "fast" } });
   const branch = "feat/pocket-guided-speed-trial-2026-09-09";
-  assert.equal(scanProfile(request, { VERCEL_ENV: "production", VERCEL_GIT_COMMIT_REF: branch }), "baseline");
-  assert.equal(scanProfile(request, { VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "another-branch" }), "baseline");
+  assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "baseline", VERCEL_ENV: "production", VERCEL_GIT_COMMIT_REF: branch }), "baseline");
+  assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "baseline", VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "another-branch" }), "baseline");
   assert.equal(scanProfile(request, { VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: branch }), "fast");
+  assert.equal(scanProfile(request, {}), "full-parallel");
+  assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "baseline" }), "baseline");
   assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "compact" }), "compact");
   assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "invalid" }), "baseline");
 });
