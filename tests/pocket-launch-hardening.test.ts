@@ -404,9 +404,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /const exactPrimaryInstrument = userVerifiedInstrument/);
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
-  assert.match(analyseRoute, /reasoning: \{ effort: "medium" \}/);
+  assert.match(analyseRoute, /reasoning: \{ effort: recovery \? "low" : "medium" \}/);
   const reportOutputCap = pocketAnalysisPolicy({ image: true, contextImage: true, detailImage: true, fourHourImage: true, indicatorImage: true }).reportOutputTokens;
-  assert.match(analyseRoute, /max_output_tokens: policy.reportOutputTokens/);
+  assert.match(analyseRoute, /max_output_tokens: recovery \? 20_000 : policy.reportOutputTokens/);
   assert.ok(reportOutputCap > 14000, "a five-chart report needs headroom beyond the observed truncated output");
   assert.match(analyseRoute, /text: \{ verbosity: "low", format:/);
   assert.match(analyseRoute, /error instanceof PocketReportCompletionError/);

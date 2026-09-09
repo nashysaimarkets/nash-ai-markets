@@ -1,11 +1,11 @@
 {
-  "label": "Pocket Bullseye iOS App Store 1.2.9 build 27",
-  "revision": "1df3c9514fdc898e44560cdc16533b76fcf996f4",
+  "label": "Pocket Bullseye iOS App Store 1.2.9 build 28",
+  "revision": "b7585ad441273c06b9f8c10f79634669c37234af",
   "branch": "feat/pocket-cosmic-cinema-2026-09-09",
-  "serverUrl": "https://nash-ai-markets-5lejur27m-nash-ai-markets.vercel.app/pocket",
-  "deploymentId": "dpl_QoTZHrUrukoxJNceUZF95oVZLHnc",
-  "iosTag": "ios-v1.2.9-appstore.1",
+  "serverUrl": "https://nash-ai-markets-652o2jxkd-nash-ai-markets.vercel.app/pocket",
+  "deploymentId": "dpl_8d1FNV4XTuxtiftEbxEMC5jfuBR7",
+  "iosTag": "ios-v1.2.9-appstore.2",
   "marketingVersion": "1.2.9",
-  "buildNumber": "27",
-  "verifiedAt": "2026-09-09T15:38:09.836422+00:00"
+  "buildNumber": "28",
+  "verifiedAt": "2026-09-09T19:26:28Z"
 }
