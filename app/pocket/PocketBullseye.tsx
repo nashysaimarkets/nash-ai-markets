@@ -30,7 +30,7 @@ import { measureChart } from "./browser-chart-extractor";
 import type { ChartEvidenceRole, DeterministicChartEvidence } from "../lib/deterministic-chart-evidence";
 import { postPocketAnalysis } from "./analysis-request";
 import { needsPocketLiquidityRecovery, pocketAnalysisPolicy } from "./analysis-policy";
-import { POCKET_SCAN_STAGES, formatPocketElapsed, pocketScanStageCopy, pocketScanStageIndex, type PocketScanStage } from "./scan-progress";
+import { pocketScanStageCopy, type PocketScanStage } from "./scan-progress";
 import { buildDecisionTimeline } from "./decision-timeline";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
@@ -1197,6 +1197,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [marketEvents, setMarketEvents] = useState<SupplementalMarketEvent[]>([]);
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
+  const [groupUploading, setGroupUploading] = useState(false);
   const [contextImage, setContextImage] = useState<string | null>(null);
   const [contextFileName, setContextFileName] = useState("");
   const [detailImage, setDetailImage] = useState<string | null>(null);
@@ -1210,7 +1211,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [chartConfirmation, setChartConfirmation] = useState<ChartConfirmation | null>(null);
   const [busy, setBusy] = useState(false);
   const [scanStage, setScanStage] = useState<PocketScanStage>("PREPARING");
-  const [analysisElapsedSeconds, setAnalysisElapsedSeconds] = useState(0);
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [accuracyCorrection, setAccuracyCorrection] = useState<AccuracyFeedback | null>(null);
@@ -1243,14 +1243,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const interval = window.setInterval(refresh, 60_000);
     return () => { window.clearTimeout(initial); window.clearInterval(interval); };
   }, []);
-  useEffect(() => {
-    if (!busy || reviewTarget) return;
-    const startedAt = Date.now();
-    const update = () => setAnalysisElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
-    update();
-    const interval = window.setInterval(update, 250);
-    return () => window.clearInterval(interval);
-  }, [busy, reviewTarget]);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
@@ -1483,77 +1475,57 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     finally { input.value = ""; }
   }
 
-  async function loadContextFile(event: ChangeEvent<HTMLInputElement>) {
+  async function replaceSupportingFile(event: ChangeEvent<HTMLInputElement>, index: number) {
     const input = event.currentTarget;
     const file = input.files?.[0];
-    if (!file) return;
+    input.value = "";
+    if (!file || groupUploading) return;
     setError("");
-    if (!file.type.startsWith("image/")) {
-      setError("Please choose a JPEG, PNG or WebP 30-minute chart.");
-      input.value = "";
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > MAX_IMAGE_BYTES) {
+      setError("Please choose a JPEG, PNG or WebP image under 8 MB.");
       return;
     }
-    if (file.size > MAX_IMAGE_BYTES) {
-      setError("That 30-minute chart is too large. Please use a screenshot under 8 MB.");
-      input.value = "";
-      return;
-    }
+    setGroupUploading(true);
     try {
-      setContextImage(await prepareImage(file));
-      setContextFileName(file.name);
-    } catch { setError("That 30-minute chart could not be prepared safely."); }
-    finally { input.value = ""; }
+      const prepared = await prepareImage(file);
+      [setContextImage, setDetailImage, setFourHourImage, setIndicatorImage][index](prepared);
+      [setContextFileName, setDetailFileName, setFourHourFileName, setIndicatorFileName][index](file.name);
+    } catch {
+      setError("That picture could not be prepared. Your original picture is still loaded.");
+    } finally { setGroupUploading(false); }
   }
 
-  async function loadDetailFile(event: ChangeEvent<HTMLInputElement>) {
+  async function loadSupportingFiles(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
-    const file = input.files?.[0];
-    if (!file) return;
+    const files = Array.from(input.files ?? []);
+    input.value = "";
+    if (!files.length || groupUploading) return;
+    const slots = [
+      { image: contextImage, setImage: setContextImage, setName: setContextFileName },
+      { image: detailImage, setImage: setDetailImage, setName: setDetailFileName },
+      { image: fourHourImage, setImage: setFourHourImage, setName: setFourHourFileName },
+      { image: indicatorImage, setImage: setIndicatorImage, setName: setIndicatorFileName },
+    ].filter((slot) => !slot.image);
     setError("");
-    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
-      setError("Please choose a JPEG, PNG or WebP 1-hour chart under 8 MB.");
-      input.value = "";
+    if (files.length > slots.length) {
+      setError(`Choose up to ${slots.length} more pictures. Five pictures maximum, including your main chart.`);
       return;
     }
-    try {
-      setDetailImage(await prepareImage(file));
-      setDetailFileName(file.name);
-    } catch { setError("That 1-hour chart could not be prepared safely."); }
-    finally { input.value = ""; }
-  }
-
-  async function loadFourHourFile(event: ChangeEvent<HTMLInputElement>) {
-    const input = event.currentTarget;
-    const file = input.files?.[0];
-    if (!file) return;
-    setError("");
-    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
-      setError("Please choose a JPEG, PNG or WebP 4-hour chart under 8 MB.");
-      input.value = "";
+    if (files.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > MAX_IMAGE_BYTES)) {
+      setError("Please choose JPEG, PNG or WebP images, each under 8 MB.");
       return;
     }
+    setGroupUploading(true);
     try {
-      setFourHourImage(await prepareImage(file));
-      setFourHourFileName(file.name);
-    } catch { setError("That 4-hour chart could not be prepared safely."); }
-    finally { input.value = ""; }
-  }
-
-  async function loadIndicatorFile(event: ChangeEvent<HTMLInputElement>) {
-    const input = event.currentTarget;
-    const file = input.files?.[0];
-    if (!file) return;
-    setError("");
-    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
-      setError("Please choose a JPEG, PNG or WebP indicator or volume chart under 8 MB.");
-      input.value = "";
-      return;
-    }
-    try {
-      setIndicatorImage(await prepareImage(file));
-      setIndicatorFileName(file.name);
-    } catch { setError("That indicator or volume chart could not be prepared safely."); }
-    finally { input.value = ""; }
+      const prepared: string[] = [];
+      for (const file of files) prepared.push(await prepareImage(file));
+      prepared.forEach((image, index) => {
+        slots[index].setImage(image);
+        slots[index].setName(files[index].name);
+      });
+    } catch {
+      setError("Those pictures could not be prepared. Please try again; your existing charts are still loaded.");
+    } finally { setGroupUploading(false); }
   }
 
   async function addResultContextFile(event: ChangeEvent<HTMLInputElement>) {
@@ -1959,7 +1931,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
-    if (!reviewTarget) setAnalysisElapsedSeconds(0);
     setError("");
     try {
       if (!reviewTarget) {
@@ -2420,30 +2391,23 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <img src={image} alt="Selected chart preview" />
           </> : <div className="psTarget psTargetLarge" aria-hidden="true"><i /><i /><b /><b /></div>}
           <div className="psScanLine" aria-hidden="true" /><strong>{image ? "① CHART LOADED" : "① UPLOAD ONE CHART"}</strong><small>{image ? fileName : "ANY TIMEFRAME · SCREENSHOT · CAMERA ROLL"}</small>
-          <input aria-label="Upload one chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFile} />
+          <input aria-label="Upload one chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" disabled={groupUploading} onChange={loadFile} />
         </label>
-        <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
+        <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" disabled={groupUploading} onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
         {image && !reviewTarget ? <section className="psEvidencePack">
           <header><div><span>◎ OPTIONAL SUPPORTING CHARTS</span><strong>{evidenceImageCount}/5 CHARTS LOADED</strong></div><b>{primaryChartReady ? "ONE CHART IS ENOUGH" : "ADD YOUR FIRST CHART"}</b></header>
-          <p>You can analyse now. Optional views of the same instrument can add context.</p>
-          <div>
-            <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
-              <div><span>② SECOND CHART · OPTIONAL</span><strong>{contextImage ? "CHART LOADED ✓" : "ADD ANOTHER VIEW"}</strong><p>{contextImage ? contextFileName : "Second chart · same instrument."}</p></div>
-              {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add optional second chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
-            </section>
-            <section className="psContextUpload" data-loaded={detailImage ? "true" : "false"}>
-              <div><span>③ THIRD CHART · OPTIONAL</span><strong>{detailImage ? "CHART LOADED ✓" : "ADD ANOTHER VIEW"}</strong><p>{detailImage ? detailFileName : "Third chart · same instrument."}</p></div>
-              {detailImage ? <button type="button" onClick={() => { setDetailImage(null); setDetailFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add optional third chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadDetailFile} /></label>}
-            </section>
-            <section className="psContextUpload" data-loaded={fourHourImage ? "true" : "false"}>
-              <div><span>④ FOURTH CHART · OPTIONAL</span><strong>{fourHourImage ? "CHART LOADED ✓" : "ADD ANOTHER VIEW"}</strong><p>{fourHourImage ? fourHourFileName : "Fourth chart · same instrument."}</p></div>
-              {fourHourImage ? <button type="button" onClick={() => { setFourHourImage(null); setFourHourFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add optional fourth chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadFourHourFile} /></label>}
-            </section>
-            <section className="psContextUpload" data-loaded={indicatorImage ? "true" : "false"}>
-              <div><span>⑤ YOUR INDICATOR · OPTIONAL</span><strong>{indicatorImage ? "INDICATOR LOADED ✓" : "ADD YOUR PREFERENCE"}</strong><p>{indicatorImage ? indicatorFileName : "RSI, VWAP, ATR, volume profile, volume or another preferred indicator."}</p></div>
-              {indicatorImage ? <button type="button" onClick={() => { setIndicatorImage(null); setIndicatorFileName(""); }}>REMOVE</button> : <label>ADD OPTIONAL<input aria-label="Add preferred indicator or volume chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadIndicatorFile} /></label>}
-            </section>
-          </div>
+          <p>You can analyse now, or select up to four extra pictures together.</p>
+          {evidenceImageCount < 5 ? <section className="psContextUpload">
+            <div><strong>{groupUploading ? "PREPARING PICTURES…" : "ADD PICTURES TOGETHER"}</strong><p>{5 - evidenceImageCount} spaces available · same instrument.</p></div>
+            <label>CHOOSE PICTURES<input aria-label={`Choose up to ${5 - evidenceImageCount} supporting pictures`} accept="image/jpeg,image/png,image/webp" type="file" multiple disabled={groupUploading} onChange={loadSupportingFiles} /></label>
+          </section> : null}
+          {evidenceImageCount > 1 ? <div className="psGroupedPictures" aria-label="Your supporting pictures" aria-busy={groupUploading}>
+            {[{ image: contextImage, name: contextFileName }, { image: detailImage, name: detailFileName }, { image: fourHourImage, name: fourHourFileName }, { image: indicatorImage, name: indicatorFileName }].map((picture, index) => picture.image ? <div className="psGroupedPicture" key={index}>
+              <img src={picture.image} alt={`Supporting chart ${index + 1}`} />
+              <span title={picture.name}>{picture.name}</span>
+              <label aria-disabled={groupUploading}>CHANGE<input type="file" accept="image/jpeg,image/png,image/webp" aria-label={`Change supporting picture ${index + 1}: ${picture.name}`} disabled={groupUploading} onChange={(event) => replaceSupportingFile(event, index)} /></label>
+            </div> : null)}
+          </div> : null}
           <footer>Start with one clear chart. Add up to four optional images of the same instrument; only visible evidence is analysed.</footer>
         </section> : null}
         {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
@@ -2453,8 +2417,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong>{busy && !reviewTarget ? <small role="timer">ELAPSED {formatPocketElapsed(analysisElapsedSeconds)} · ACCURACY FIRST</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
-        {busy && !reviewTarget ? <section className="psScanProgress" aria-live="polite"><header><div><span>LIVE ANALYSIS PROGRESS</span><strong>{pocketScanStageCopy(scanStage).title}</strong></div><b>{pocketScanStageIndex(scanStage) + 1}/{POCKET_SCAN_STAGES.length}</b></header><p>{pocketScanStageCopy(scanStage).detail}</p><ol>{POCKET_SCAN_STAGES.map((stage, index) => { const activeIndex = pocketScanStageIndex(scanStage); const state = index < activeIndex ? "complete" : index === activeIndex ? "current" : "upcoming"; return <li key={stage} data-state={state}><i>{state === "complete" ? "✓" : index + 1}</i><span>{pocketScanStageCopy(stage).title}</span></li>; })}</ol><footer>Only a trust-gated result will be shown. This is elapsed time—not a guessed countdown.</footer></section> : null}
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={groupUploading || !image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong></span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        {busy ? <div className="psScanActivity">
+          <span role="status">{reviewTarget ? "Comparing your charts…" : "Analysing your charts…"}</span>
+          <div className="psScanActivityTrack" role="progressbar" aria-label={reviewTarget ? "Chart comparison in progress" : "Chart analysis in progress"}><span /></div>
+        </div> : null}
         {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
           <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
           <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>

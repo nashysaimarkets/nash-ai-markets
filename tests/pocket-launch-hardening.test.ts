@@ -366,8 +366,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /analysisRequestActive\.current/);
   assert.match(client, /postPocketAnalysis/);
   assert.match(client, /pocketScanStageCopy\(scanStage\)\.title/);
-  assert.match(client, /formatPocketElapsed\(analysisElapsedSeconds\)/);
-  assert.match(client, /small role="timer"/);
+  assert.match(client, /role="progressbar"/);
+  assert.doesNotMatch(client, /role="timer"|analysisSecondsRemaining/);
   assert.match(client, /followUpRequestActive\.current/);
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
