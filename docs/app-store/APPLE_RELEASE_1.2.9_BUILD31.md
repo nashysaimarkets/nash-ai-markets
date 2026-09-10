@@ -1,4 +1,4 @@
-# Pocket Bullseye 1.2.9 build 31 — release workflow queued
+# Pocket Bullseye 1.2.9 build 31 — uploaded; review submission processing
 
 Verified 10 September 2026. The user approved opening Codemagic, replacing the pending Apple submission, and automatic release after Apple approval.
 
@@ -34,6 +34,8 @@ https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa2dc06b63daf86992dad05
 
 It confirmed version 1.2.9 was IN_REVIEW with build 30 as the latest build and release type AFTER_APPROVAL. Version ID: `e84630c1-fac3-4229-b5e6-fe47ef722dd6`. Build 30 ID: `8253432b-54b1-4474-a78f-6a7efc19fd47`.
 
-Build 31 release run `6aa2dfe401c07ed7df662080` is queued at the exact native revision above. Do not claim an App Store upload, acceptance, new review submission, or public release until its publishing and App Store distribution logs confirm them.
+Build 31 release run `6aa2dfe401c07ed7df662080` completed the native checks, archive and upload successfully. Apple reported `UPLOAD SUCCEEDED with no errors` at 2026-09-10 17:17:27.830 UTC. Delivery UUID: `680ca521-a205-4e91-8e26-9817a6731f3d`; uploaded archive: 1,571,911 bytes. Native build duration was 19m 3s, including a 15m 7s publishing step. The uploader buffers detailed output until completion; the quiet interval did not require a restart.
+
+Codemagic App Store distribution is waiting for the newly uploaded build to become visible through Apple's API. A new review submission, cancellation of build 30's review, and public release are not yet confirmed. The existing publishing configuration will perform the authorized replacement and automatic release setting after processing.
 
 The earlier Codemagic access hold was superseded by explicit user approval. A later automatic-review objection to the workflow display name was resolved by reading the exact release branch configuration and verifying its App Store publishing settings before the successful start.
