@@ -46,3 +46,11 @@ Apple build 31 is pinned to immutable web revision `51c260fa80d40e47f94d1d9796f0
 4. OpenAI, [Latency optimization](https://developers.openai.com/api/docs/guides/latency-optimization), output generation, request reduction and parallel execution; accessed 10 September 2026.
 5. MDN, [AbortSignal.timeout](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static), active-time suspension behaviour; accessed 10 September 2026.
 6. Private Vercel project runtime logs, deployment `dpl_2xDyeUVFwbwRptPuBd8THAggvGoz`, 10 September 2026, request `b0ef19c7-48da-44be-99d0-1fe63053d307`; authenticated access required.
+
+## Live five-chart acceptance check
+
+On 10 September 2026, the deployed repair `0b0d0c61d1fc3a9ba461b14929b85574c98eb376` (`dpl_GkS4uLr7rLyb3FCMkPaKDJR5vJ3Z`) was tested through the normal browser upload and Analyse flow with five clearly labelled fictional chart fixtures: 1D, 30M, 1H, 4H and 5M. This used the live provider, not the built-in sample result mode.
+
+The main report completed in 52.1 seconds. All four background reports completed; their server durations were 41.7, 45.4, 142.9 and 152.0 seconds. Two exercised report recovery after a slow initial provider response. Including the main request before background work, server timings put the complete set at approximately 206 seconds; the browser observed all five ready by its next check at 225 seconds. All five analysis endpoints returned HTTP 200.
+
+Every timeframe was selected and the corresponding result appeared. Visible pattern summaries changed from the daily range to the 30M, 1H and 5M trend channels; the 4H result explicitly withheld an unverified pattern. Repeated switching left the analysis request count at exactly five. Browser automation acknowledgement overhead is not an app-render latency measurement. No physical-iPhone or force-quit-resume claim follows from this test.
