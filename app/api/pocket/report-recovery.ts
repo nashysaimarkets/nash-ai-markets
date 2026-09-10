@@ -18,6 +18,7 @@ type Options = {
   progressIdleTimeoutMs?: number;
   progressExtensionMs?: number;
   onRecovery?: (reason: string) => void;
+  hedgeAfterMs?: number;
 };
 
 function recoveryReason(error: unknown): string | null {
@@ -38,6 +39,7 @@ function recoveryReason(error: unknown): string | null {
  * authentication, content filtering, or user cancellation.
  */
 export async function runPocketReport<T>(run: (attempt: Attempt) => Promise<T>, options: Options): Promise<T> {
+  if (options.hedgeAfterMs && options.recoveryTimeoutMs) return runOverlappingReport(run, options);
   for (let attempt = 0; attempt < 2; attempt += 1) {
     options.signal.throwIfAborted();
     const remainingMs = options.deadlineAt - Date.now();
@@ -80,4 +82,58 @@ export async function runPocketReport<T>(run: (attempt: Attempt) => Promise<T>, 
     }
   }
   throw new Error("Pocket report recovery exhausted.");
+}
+
+/** Slow-but-active output must not postpone recovery indefinitely. Keep the
+ * original running until one complete, validated report wins, and never start
+ * more than the same two attempts allowed by sequential recovery. */
+function runOverlappingReport<T>(run: (attempt: Attempt) => Promise<T>, options: Options): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const controllers = [new AbortController(), new AbortController()];
+    let settled = false, recoveryStarted = false, firstFailed = false, recoveryFailed = false;
+    let lastError: unknown;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (error: unknown, value?: T) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      options.signal.removeEventListener("abort", cancelled);
+      controllers.forEach(controller => controller.abort());
+      if (error) reject(error); else resolve(value as T);
+    };
+    const cancelled = () => finish(options.signal.reason ?? new DOMException("Cancelled", "AbortError"));
+    const launch = (recovery: boolean) => {
+      const controller = controllers[recovery ? 1 : 0];
+      const attemptOptions = {
+        ...options, hedgeAfterMs: undefined, recoveryTimeoutMs: 0,
+        attemptTimeoutMs: recovery ? options.recoveryTimeoutMs : options.attemptTimeoutMs,
+        progressExtensionMs: recovery ? 0 : options.progressExtensionMs,
+        signal: AbortSignal.any([options.signal, controller.signal]),
+      };
+      void runPocketReport(attempt => run({ ...attempt, recovery }), attemptOptions).then(
+        value => finish(null, value),
+        error => {
+          if (settled) return;
+          lastError = error;
+          if (recovery) recoveryFailed = true; else firstFailed = true;
+          // Quota, authentication, filtering and user cancellation never cause another request.
+          if (!recoveryReason(error)) { finish(error); return; }
+          if (!recoveryStarted) startRecovery(recoveryReason(error)!);
+          else if (firstFailed && recoveryFailed) finish(lastError);
+        },
+      );
+    };
+    const startRecovery = (reason: string) => {
+      if (settled || recoveryStarted) return;
+      clearTimeout(timer);
+      if (options.deadlineAt - Date.now() < 1000) { if (firstFailed) finish(lastError); return; }
+      recoveryStarted = true;
+      options.onRecovery?.(reason);
+      launch(true);
+    };
+    if (options.signal.aborted) { cancelled(); return; }
+    options.signal.addEventListener("abort", cancelled, { once: true });
+    timer = setTimeout(() => startRecovery("slow_report"), options.hedgeAfterMs);
+    launch(false);
+  });
 }

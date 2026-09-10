@@ -131,3 +131,62 @@ test("an early output stall recovers after the idle budget instead of waiting fo
   assert.equal(calls, 2, "recover at 250ms, before the 750ms initial deadline");
   assert.equal(await result, "recovered");
 });
+
+test("slow continuous output starts one recovery at 60 seconds without killing the original", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  const attempts: Array<{ signal: AbortSignal; recovery: boolean; noteOutputProgress: () => void; finish: (value: string) => void }> = [];
+  const result = runPocketReport(attempt => new Promise<string>((resolve, reject) => {
+    attempts.push({...attempt, finish: resolve});
+    attempt.signal.addEventListener("abort", () => reject(attempt.signal.reason), {once: true});
+  }), { ...options(), deadlineAt: 201000, attemptTimeoutMs: 75000, recoveryTimeoutMs: 90000, progressIdleTimeoutMs: 15000, progressExtensionMs: 30000, hedgeAfterMs: 60000 });
+  for (let i = 0; i < 6; i++) { t.mock.timers.tick(10000); attempts[0].noteOutputProgress(); }
+  assert.equal(attempts.length, 2); assert.equal(attempts[0].signal.aborted, false); assert.equal(attempts[1].recovery, true);
+  t.mock.timers.tick(10000); attempts[1].finish("complete backup");
+  assert.equal(await result, "complete backup"); assert.equal(attempts[0].signal.aborted, true);
+  t.mock.timers.tick(200000); assert.equal(attempts.length, 2);
+});
+
+test("a healthy report finishing before 60 seconds never spends on a recovery", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let calls = 0, finish!: (value: string) => void;
+  const result = runPocketReport(() => { calls++; return new Promise<string>(resolve => { finish = resolve; }); }, {...options(), deadlineAt: 201000, attemptTimeoutMs: 75000, hedgeAfterMs: 60000});
+  t.mock.timers.tick(59000); finish("complete");
+  assert.equal(await result, "complete"); t.mock.timers.tick(200000); assert.equal(calls, 1);
+});
+
+test("the original can win after a recovery starts and the unfinished duplicate is cancelled", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  const attempts: Array<{signal: AbortSignal; finish: (value: string) => void}> = [];
+  const result = runPocketReport(({signal}) => new Promise<string>((resolve, reject) => {
+    attempts.push({signal, finish: resolve}); signal.addEventListener("abort", () => reject(signal.reason), {once:true});
+  }), {...options(), deadlineAt: 201000, attemptTimeoutMs: 75000, recoveryTimeoutMs: 90000, hedgeAfterMs: 60000});
+  t.mock.timers.tick(60000); attempts[0].finish("original completed");
+  assert.equal(await result, "original completed"); assert.equal(attempts[1].signal.aborted, true);
+});
+
+test("an early retryable error recovers immediately and never starts a third attempt", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let calls = 0;
+  const result = await runPocketReport(async ({recovery}) => { calls++; if (!recovery) throw new Error("Request timed out."); return "complete"; }, {...options(), hedgeAfterMs: 1000});
+  assert.equal(result, "complete"); t.mock.timers.tick(5000); assert.equal(calls, 2);
+});
+
+test("overlapping report attempts retain complete-response validation and stop after two failures", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let calls = 0;
+  await assert.rejects(runPocketReport(async () => {
+    calls++; completedPocketReportOutput({status: "incomplete", output_text: '{"plausible":"but incomplete"}', incomplete_details: {reason: "max_output_tokens"}});
+  }, {...options(), hedgeAfterMs: 1000}), PocketReportCompletionError);
+  t.mock.timers.tick(5000); assert.equal(calls, 2);
+});
+
+test("quota failures and cancellation cannot launch an overlapping recovery", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let calls = 0;
+  await assert.rejects(runPocketReport(async () => { calls++; throw {status:429, code:"insufficient_quota"}; }, {...options(), hedgeAfterMs:1000}));
+  t.mock.timers.tick(5000); assert.equal(calls, 1);
+  const controller = new AbortController();
+  const result = runPocketReport(({signal}) => { calls++; return new Promise((_,reject) => signal.addEventListener("abort",()=>reject(signal.reason),{once:true})); }, {...options(), signal:controller.signal, hedgeAfterMs:1000});
+  const check = assert.rejects(result); controller.abort(); await check;
+  t.mock.timers.tick(5000); assert.equal(calls, 2);
+});
