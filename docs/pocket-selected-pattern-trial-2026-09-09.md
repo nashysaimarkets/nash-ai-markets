@@ -17,3 +17,12 @@ Five source screenshots were inspected and measured locally. They contain four t
 ## Validation
 
 1,002 unit tests, 12 rendering tests, TypeScript, secret scan and Sites artifact build passed. No app/pocket component, stylesheet or public asset changed in this iteration. iOS build 29 pins the verified web revision above and keeps AFTER_APPROVAL release behavior; see the native App Store release record for actual submission outcome.
+
+
+## Local follow-up — 10 September 2026
+
+The owner renewed the instruction to continue autonomously with the supplied charts. The attempt to send those five files to the previously linked preview was again blocked by automatic approval review: explicit destination approval is required. No alternative transport or destination was used.
+
+Local decoding/resizing and the existing deterministic measurement function completed across all five original PNGs in 286.18 ms in the workspace container. This is not an iPhone benchmark, a server/AI timing, or evidence of price/pattern accuracy. It supports the existing runtime traces identifying report generation as the dominant delay rather than local image measurement. The source images total 936,646 bytes; they are already within the current byte-preserving upload limit individually. No lossy image optimization, precision-setting change or layout change is justified by this result.
+
+The live comparison remains pending for the exact linked preview https://nash-ai-markets-im4cgwoig-nash-ai-markets.vercel.app/pocket and its existing AI provider. Build 29 was already submitted on 9 September with AFTER_APPROVAL; no duplicate build or review withdrawal was initiated for this documentation-only follow-up.
