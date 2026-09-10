@@ -19,6 +19,7 @@ type Options = {
   progressExtensionMs?: number;
   onRecovery?: (reason: string) => void;
   hedgeAfterMs?: number;
+  preserveInitialWindow?: boolean;
 };
 
 function recoveryReason(error: unknown): string | null {
@@ -61,8 +62,11 @@ export async function runPocketReport<T>(run: (attempt: Attempt) => Promise<T>, 
     arm(firstDeadline);
     const noteOutputProgress = () => {
       if (signal.aborted || !extensionMs || !options.progressIdleTimeoutMs) return;
-      // Once output begins, detect inactivity even before the initial reasoning deadline.
-      arm(Math.min(hardDeadline, Date.now() + options.progressIdleTimeoutMs));
+      // Sequential recovery can reclaim a stalled first attempt early. When
+      // attempts overlap, recovery already starts independently: a pause in
+      // structured output must not shorten the original completion window.
+      const idleDeadline = Date.now() + options.progressIdleTimeoutMs;
+      arm(Math.min(hardDeadline, options.preserveInitialWindow ? Math.max(firstDeadline, idleDeadline) : idleDeadline));
     };
     try {
       const result = await run({ signal, timeoutMs, recovery: attempt > 0, noteOutputProgress });
@@ -107,7 +111,11 @@ function runOverlappingReport<T>(run: (attempt: Attempt) => Promise<T>, options:
       const attemptOptions = {
         ...options, hedgeAfterMs: undefined, recoveryTimeoutMs: 0,
         attemptTimeoutMs: recovery ? options.recoveryTimeoutMs : options.attemptTimeoutMs,
-        progressExtensionMs: recovery ? 0 : options.progressExtensionMs,
+        // Either active stream may finish within the existing total budget.
+        // Previously recovery ignored progress and died at 90 seconds even
+        // while producing the final report. No third attempt is permitted.
+        progressExtensionMs: options.progressExtensionMs,
+        preserveInitialWindow: true,
         signal: AbortSignal.any([options.signal, controller.signal]),
       };
       void runPocketReport(attempt => run({ ...attempt, recovery }), attemptOptions).then(

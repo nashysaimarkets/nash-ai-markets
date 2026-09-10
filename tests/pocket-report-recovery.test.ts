@@ -190,3 +190,48 @@ test("quota failures and cancellation cannot launch an overlapping recovery", as
   const check = assert.rejects(result); controller.abort(); await check;
   t.mock.timers.tick(5000); assert.equal(calls, 2);
 });
+
+test("a report pauses at 47 seconds and can still complete after recovery starts at 60", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  const attempts: Array<{ signal: AbortSignal; noteOutputProgress: () => void; finish: (value: string) => void }> = [];
+  const result = runPocketReport(attempt => new Promise<string>((resolve, reject) => {
+    attempts.push({ ...attempt, finish: resolve });
+    attempt.signal.addEventListener("abort", () => reject(attempt.signal.reason), { once: true });
+  }), { ...options(), deadlineAt: 166000, attemptTimeoutMs: 75000, recoveryTimeoutMs: 90000, hedgeAfterMs: 60000, progressIdleTimeoutMs: 15000, progressExtensionMs: 30000 });
+  t.mock.timers.tick(47000); attempts[0].noteOutputProgress();
+  t.mock.timers.tick(15000);
+  assert.equal(attempts.length, 2);
+  assert.equal(attempts[0].signal.aborted, false, "the 15-second output gap must not discard the original at 62 seconds");
+  t.mock.timers.tick(8000); attempts[0].noteOutputProgress(); attempts[0].finish("complete original");
+  assert.equal(await result, "complete original");
+  assert.equal(attempts[1].signal.aborted, true);
+});
+
+test("a recovery writing after 125 seconds may complete at 157 within the original 165-second budget", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  const attempts: Array<{ signal: AbortSignal; timeoutMs: number; noteOutputProgress: () => void; finish: (value: string) => void }> = [];
+  const result = runPocketReport(attempt => new Promise<string>((resolve, reject) => {
+    attempts.push({ ...attempt, finish: resolve });
+    attempt.signal.addEventListener("abort", () => reject(attempt.signal.reason), { once: true });
+  }), { ...options(), deadlineAt: 166000, attemptTimeoutMs: 75000, recoveryTimeoutMs: 90000, hedgeAfterMs: 60000, progressIdleTimeoutMs: 15000, progressExtensionMs: 30000 });
+  t.mock.timers.tick(60000);
+  t.mock.timers.tick(65000); attempts[1].noteOutputProgress();
+  assert.equal(attempts[1].timeoutMs, 105000, "SDK body budget reaches the unchanged total deadline");
+  for (let i = 0; i < 3; i++) { t.mock.timers.tick(10000); attempts[1].noteOutputProgress(); }
+  assert.equal(attempts[1].signal.aborted, false, "active recovery must survive its old 150-second cutoff");
+  t.mock.timers.tick(2000); attempts[1].finish("complete recovery");
+  assert.equal(await result, "complete recovery"); assert.equal(attempts.length, 2);
+});
+
+test("active recovery still stops at the unchanged total deadline with no third call", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  const attempts: Array<{ signal: AbortSignal; noteOutputProgress: () => void }> = [];
+  const result = runPocketReport(attempt => new Promise<string>((_, reject) => {
+    attempts.push(attempt); attempt.signal.addEventListener("abort", () => reject(attempt.signal.reason), { once: true });
+  }), { ...options(), deadlineAt: 166000, attemptTimeoutMs: 75000, recoveryTimeoutMs: 90000, hedgeAfterMs: 60000, progressIdleTimeoutMs: 15000, progressExtensionMs: 30000 });
+  const rejected = assert.rejects(result, PocketReportTimeoutError);
+  t.mock.timers.tick(60000); t.mock.timers.tick(65000); attempts[1].noteOutputProgress();
+  for (let i = 0; i < 3; i++) { t.mock.timers.tick(10000); attempts[1].noteOutputProgress(); }
+  t.mock.timers.tick(10000); await rejected;
+  assert.ok(attempts.every(attempt => attempt.signal.aborted)); assert.equal(attempts.length, 2);
+});

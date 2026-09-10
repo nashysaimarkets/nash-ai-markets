@@ -45,6 +45,7 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
   let image = "";
@@ -73,9 +74,15 @@ export async function POST(request: Request) {
   const client = createOpenAIClient(undefined, 25_000);
   if (!client) return NextResponse.json({ error: "Preflight is temporarily unavailable." }, { status: 503, headers: pocketBudgetHeaders(budget) });
 
+  // The SDK transport timeout ends when response headers arrive. Bound the
+  // whole body as well and cancel superseded uploads at the provider.
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(new Error("Preflight timed out.")), 25_000);
+  const signal = AbortSignal.any([request.signal, deadline.signal]);
   try {
     const response = await client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
+      service_tier: "priority",
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -94,20 +101,23 @@ export async function POST(request: Request) {
         "Give one complete retake instruction under 140 characters. Never end mid-sentence and never invent a label hidden by cropping.",
       ].join(" "),
       input: [{ role: "user", content: pocketImageContent({ image, contextImage, detailImage, fourHourImage, indicatorImage }, "low") }],
-      max_output_tokens: 1200,
+      max_output_tokens: 2400,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
-    });
+    }, { signal, timeout: 25_000 });
+    signal.throwIfAborted();
     const output = response.output_text?.trim();
     if (response.status !== "completed" || !output) throw new Error("incomplete preflight");
     const preflight = JSON.parse(output);
     if (preflight.sameInstrument === false) preflight.status = "RETAKE";
+    console.info("[pocket-preflight] completed", JSON.stringify({ elapsedMs: Date.now() - startedAt, status: preflight.status }));
     return NextResponse.json({ preflight }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     const reason = classifyOpenAIFailure(error);
-    console.warn("[pocket-preflight] unavailable", JSON.stringify({ reason }));
+    budget.release?.();
+    console.warn("[pocket-preflight] unavailable", JSON.stringify({ reason, elapsedMs: Date.now() - startedAt, cancelled: request.signal.aborted, deadline: deadline.signal.aborted }));
     const message = reason === "quota_exhausted"
       ? "AI checks are temporarily unavailable because service capacity has been reached. Your chart is saved, but full analysis cannot run until service is restored."
       : "Preflight could not complete. You may continue to analysis.";
     return NextResponse.json({ error: message }, { status: 503, headers: pocketBudgetHeaders(budget) });
-  }
+  } finally { clearTimeout(timer); deadline.abort(); }
 }

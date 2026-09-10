@@ -502,16 +502,17 @@ export async function POST(request: Request) {
     });
       let firstOutput = false;
       let outputChars = 0;
+      let lastOutputAt: number | null = null;
       stream.on("response.created", () => console.info("[pocket-bullseye] report stream started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })));
       stream.on("response.output_text.delta", (event) => {
         outputChars += event.delta.length;
-        if (event.delta.trim().length) noteOutputProgress();
+        if (event.delta.trim().length) { lastOutputAt = Date.now(); noteOutputProgress(); }
         if (!firstOutput) { firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
       });
       let response;
       try { response = await stream.finalResponse(); }
       catch (error) {
-        console.warn("[pocket-bullseye] report attempt ended", JSON.stringify({ recovery, outputChars, elapsedMs: Date.now() - routeStartedAt }));
+        console.warn("[pocket-bullseye] report attempt ended", JSON.stringify({ recovery, outputChars, elapsedMs: Date.now() - routeStartedAt, outputIdleMs: lastOutputAt === null ? null : Date.now() - lastOutputAt, cancelled: signal.aborted, cause: signal.aborted && signal.reason instanceof Error ? signal.reason.message : classifyOpenAIFailure(error) }));
         throw error;
       }
       metrics.usage(recovery ? "report_recovery" : "report", model, response.usage, response.service_tier ?? "unknown");
