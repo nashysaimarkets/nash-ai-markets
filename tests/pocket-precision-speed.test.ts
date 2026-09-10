@@ -29,14 +29,17 @@ test("selecting a warming timeframe shares its work instead of starting another 
   assert.equal(await selected, 7); assert.equal(count, 1);
 });
 
-test("foreground work cancels another background request and runs before queued warming", async () => {
+test("a selection preserves active background work and runs before other queued charts", async () => {
   const queue = new ChartWorkQueue<string>(); const order: string[] = [];
-  const background = queue.request("old", (signal) => new Promise<string>((_, reject) => { order.push("old"); signal.addEventListener("abort", () => reject(new DOMException("Cancelled", "AbortError")), { once: true }); }), true);
-  const rejected = assert.rejects(background, { name: "AbortError" });
+  let finish!: (value: string) => void;
+  let activeSignal!: AbortSignal;
+  const background = queue.request("old", (signal) => new Promise<string>((resolve) => { order.push("old"); activeSignal = signal; finish = resolve; }), true);
   await Promise.resolve();
   const later = queue.request("later", async () => { order.push("later"); return "later"; }, true);
   const chosen = queue.request("chosen", async () => { order.push("chosen"); return "chosen"; });
-  assert.equal(await chosen, "chosen"); await later; await rejected;
+  assert.equal(activeSignal.aborted, false);
+  finish("old"); assert.equal(await background, "old");
+  assert.equal(await chosen, "chosen"); await later;
   assert.deepEqual(order, ["old", "chosen", "later"]);
 });
 
@@ -46,4 +49,14 @@ test("reset rejects queued work and aborts the active session", async () => {
   const pending = queue.request("b", async () => "must not run");
   const checks = [assert.rejects(active, { name: "AbortError" }), assert.rejects(pending, { name: "AbortError" })];
   await Promise.resolve(); queue.clear(); await Promise.all(checks);
+});
+
+test("a click arriving just after completion reuses that report until the session is cleared", async () => {
+  const queue = new ChartWorkQueue<number>(); let calls = 0;
+  const run = async () => ++calls;
+  assert.equal(await queue.request("chart", run, true), 1);
+  await new Promise(setImmediate);
+  assert.equal(await queue.request("chart", run), 1);
+  queue.clear();
+  assert.equal(await queue.request("chart", run), 2);
 });

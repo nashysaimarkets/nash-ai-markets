@@ -1160,6 +1160,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const measuredCharts = useRef(new Map<string, DeterministicChartEvidence>());
   const providerPauseUntil = useRef(0);
   const providerPauseMessage = useRef("");
+  const scanAllowance = useRef<{ remaining: number; resetAt: number } | null>(null);
+  const backgroundActive = useRef(false);
+  const [backgroundWake, setBackgroundWake] = useState(0);
   useEffect(() => () => chartWork.current.clear(), []);
 
   const followUpRequestActive = useRef(false);
@@ -1349,13 +1352,63 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   function resetChartSession() {
     sessionRevision.current += 1;
+    selectionRevision.current += 1; selectionActive.current = false;
     chartWork.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear();
     setResultCharts([]); setActiveChartId("image"); setPendingChartId(null); setSampleMode(false);
   }
 
-  // Reports are generated on explicit selection; never spend on speculative background scans.
+  // Prepare every remaining upload while the customer reads the first result.
+  // One pack at a time also bounds iOS canvas memory and provider concurrency.
+  useEffect(() => {
+    const wake = () => { if (document.visibilityState === "visible") setBackgroundWake((value) => value + 1); };
+    document.addEventListener("visibilitychange", wake);
+    return () => document.removeEventListener("visibilitychange", wake);
+  }, []);
+
+  useEffect(() => {
+    const allowance = scanAllowance.current;
+    const resumeAt = Math.max(providerPauseUntil.current, allowance?.remaining === 0 ? allowance.resetAt : 0);
+    const timer = window.setTimeout(() => void prepareNextChart(), Math.max(0, resumeAt - Date.now()));
+    return () => window.clearTimeout(timer);
+  }, [analysis, resultCharts, sampleMode, busy, pendingChartId, followUpBusy, liquidityRescanning, levelLabStatus, appleAccess, backgroundWake]);
+
+  async function prepareNextChart() {
+    if (!analysis || sampleMode || busy || pendingChartId || selectionActive.current || backgroundActive.current
+      || analysisRequestActive.current || followUpBusy || liquidityRescanning || levelLabRequestActive.current
+      || document.visibilityState !== "visible" || Date.now() < providerPauseUntil.current) return;
+    if (nativeAppleApp && !appleAccess?.entitled) return;
+    const allowance = scanAllowance.current;
+    if (allowance && allowance.remaining === 0 && Date.now() < allowance.resetAt) return;
+    const chart = resultCharts.find((item) => !item.report && !item.preparation);
+    if (!chart) return;
+    const revision = sessionRevision.current;
+    const epoch = evidenceCacheEpoch.current;
+    backgroundActive.current = true;
+    try {
+      // A background scan never opens a paywall or consumes the free Apple use.
+      if (nativeAppleApp) {
+        const latest = await readAppleAccessStatus().catch(() => null);
+        if (!latest?.entitled) { setAppleAccess(latest); return; }
+      }
+      if (revision !== sessionRevision.current || epoch !== evidenceCacheEpoch.current || document.visibilityState !== "visible") return;
+      const { images } = bundleForChart(resultCharts, chart.id);
+      await requestPocketAnalysis(null, { images, chartId: chart.id, background: true });
+    } catch (caught) {
+      if (revision === sessionRevision.current && epoch === evidenceCacheEpoch.current) {
+        // Do not repeatedly spend on an upload that failed. A customer can retry it.
+        setResultCharts((current) => current.map((item) => item.id === chart.id && !item.report
+          ? { ...item, preparation: caught instanceof DOMException && caught.name === "AbortError" ? undefined : "failed" } : item));
+      }
+    } finally {
+      backgroundActive.current = false;
+      setBackgroundWake((value) => value + 1);
+    }
+  }
 
   function initialiseChartSession(report: Analysis) {
+    // Reanalysis and replacement uploads invalidate all earlier background work.
+    sessionRevision.current += 1;
+    chartWork.current.clear();
     resultRevision.current += 1;
     setResultCharts(createChartSession(currentImages, currentNames, report));
     setActiveChartId("image");
@@ -1373,7 +1426,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setDetailImage(images.detailImage); setDetailFileName(names[2] ?? "");
     setFourHourImage(images.fourHourImage); setFourHourFileName(names[3] ?? "");
     setIndicatorImage(images.indicatorImage); setIndicatorFileName(names[4] ?? "");
-    setResultCharts(charts.map((chart) => chart.id === id ? { ...chart, report, sourceImages: images, sourceNames: names, timeframe: normalizePatternFrame(report.timeframe) ?? "TIMEFRAME UNCONFIRMED" } : chart));
+    setResultCharts((current) => (current.length ? current : charts).map((chart) => chart.id === id
+      ? { ...chart, report, preparation: undefined, sourceImages: images, sourceNames: names, timeframe: normalizePatternFrame(report.timeframe) ?? "TIMEFRAME UNCONFIRMED" }
+      : chart.id === activeChartId ? (charts.find((item) => item.id === chart.id) ?? chart) : chart));
     setError("");
     setActiveChartId(id); setAnalysis(report); setBattlefieldChart("primary");
     setChartConfirmation(null); setAccuracyCorrection(null); setCorrectionOriginal(null);
@@ -1398,7 +1453,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const selected = charts.find((chart) => chart.id === id);
     if (!selected) return;
     if (selected.report) {
-      if (selectionActive.current) { selectionRevision.current += 1; chartWork.current.clear(); selectionActive.current = false; setPendingChartId(null); }
+      if (selectionActive.current) { selectionRevision.current += 1; selectionActive.current = false; setPendingChartId(null); }
       activateResultChart(charts, id, selected.report); return;
     }
     if (selectionActive.current || busy) return;
@@ -1410,7 +1465,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       if (!await requireAppleEntitlementForAdditionalRequest()) return;
       if (revision !== sessionRevision.current || selection !== selectionRevision.current) return;
       const { images } = bundleForChart(charts, id);
-      const report = await requestPocketAnalysis(null, { images });
+      const report = await requestPocketAnalysis(null, { images, chartId: id });
       if (revision !== sessionRevision.current || selection !== selectionRevision.current) return;
       activateResultChart(charts, id, report);
       void rememberScan(report, selected.image);
@@ -1780,17 +1835,35 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
-  async function requestPocketAnalysis(contextForRequest: string | null, options: { bypassCache?: boolean; images?: ChartBundle; background?: boolean } = {}): Promise<Analysis> {
+  async function requestPocketAnalysis(contextForRequest: string | null, options: { bypassCache?: boolean; images?: ChartBundle; chartId?: string; background?: boolean } = {}): Promise<Analysis> {
     const images = options.images ?? { ...currentImages, contextImage: contextForRequest };
     const confirmation = options.images ? null : chartConfirmation;
     const correction = options.images ? null : accuracyCorrection;
     if (!images.image) throw new Error("Choose a chart first.");
     const revision = sessionRevision.current;
-    if (options.bypassCache || correction) { evidenceCacheEpoch.current = crypto.randomUUID(); chartWork.current.clear(); precisionReceiptCache.current = []; setResultCharts((current) => current.map((chart) => ({ ...chart, report: undefined }))); }
+    if (options.bypassCache || correction) { evidenceCacheEpoch.current = crypto.randomUUID(); chartWork.current.clear(); precisionReceiptCache.current = []; setResultCharts((current) => current.map((chart) => ({ ...chart, report: undefined, preparation: undefined }))); }
     const epoch = evidenceCacheEpoch.current;
     const cacheKey = (await analysisCacheKey(images.image, images.contextImage, images.detailImage, images.fourHourImage, images.indicatorImage, confirmation, correction)) + (epoch ? `:${epoch}` : "");
     if (revision !== sessionRevision.current || epoch !== evidenceCacheEpoch.current) throw new DOMException("Chart session changed", "AbortError");
-    return chartWork.current.request(`${revision}:${cacheKey}`, (signal) => executePocketAnalysis({ ...options, images, confirmation, correction, signal, cacheKey }), options.background);
+    const updateChart = (patch: Partial<UploadedChart>) => {
+      if (revision === sessionRevision.current && epoch === evidenceCacheEpoch.current && options.chartId) {
+        setResultCharts((current) => current.map((chart) => chart.id === options.chartId && chart.image === images.image
+          ? { ...chart, ...patch, preparation: patch.preparation === "queued" && chart.preparation === "analysing" ? "analysing" : patch.preparation } : chart));
+      }
+    };
+    updateChart({ preparation: "queued" });
+    try {
+      const report = await chartWork.current.request(`${revision}:${cacheKey}`, (signal) => {
+        updateChart({ preparation: "analysing" });
+        return executePocketAnalysis({ ...options, background: options.background || Boolean(options.chartId), images, confirmation, correction, signal, cacheKey });
+      }, options.background);
+      // Save even if the customer has returned to a different ready chart.
+      updateChart({ report, preparation: undefined, sourceImages: images, timeframe: normalizePatternFrame(report.timeframe) ?? "TIMEFRAME UNCONFIRMED" });
+      return report;
+    } catch (caught) {
+      updateChart({ preparation: "failed" });
+      throw caught;
+    }
   }
 
   async function executePocketAnalysis(options: { bypassCache?: boolean; images: ChartBundle; background?: boolean; confirmation: ChartConfirmation | null; correction: typeof accuracyCorrection; signal: AbortSignal; cacheKey: string }): Promise<Analysis> {
@@ -1845,9 +1918,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       if (!options.background) setScanStage("SECOND_OPINION");
       const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation: requestConfirmation, accuracyCorrection: requestCorrection, deterministicEvidence, precisionReceipts: options.bypassCache || requestCorrection ? [] : precisionReceiptCache.current }), { timeoutMs: Math.max(1, deadlineAt - Date.now()), signal: options.signal });
+      const remaining = Number(response.headers.get("x-ratelimit-remaining"));
+      const resetAt = Number(response.headers.get("x-ratelimit-reset")) * 1000;
+      if (response.headers.has("x-ratelimit-remaining") && Number.isFinite(remaining) && remaining >= 0 && resetAt > Date.now()) scanAllowance.current = { remaining, resetAt };
       const payload = await response.json() as { precisionReceipts?: string[]; analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string; code?: string };
       options.signal.throwIfAborted();
       if (!response.ok || !payload.analysis) {
+        if (response.status === 429) {
+          providerPauseUntil.current = Date.now() + Math.max(1, Number(response.headers.get("retry-after")) || 60) * 1000;
+          providerPauseMessage.current = payload.error || "Chart preparation is paused until the scan allowance resets.";
+        }
         if (payload.code === "quota_exhausted") {
           providerPauseUntil.current = Date.now() + 60_000;
           providerPauseMessage.current = payload.error || "Chart analysis is unavailable while service credits are restored.";
@@ -2256,7 +2336,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div>
           {sampleMode ? <p className="psSampleBanner" role="status"><strong>FICTIONAL SAMPLE</strong> · These charts and results demonstrate the app. No live prices, AI scan or free-use charge. Choose NEW CHART to try your own.</p> : null}
           <div className="psTimeframeSticky">{timeframePicker(true)}</div>
-          {resultCharts.some((chart) => !chart.report) ? <p className="psTimeframeHelp">First selection analyses that view. Returning to a ready view uses its saved result.</p> : null}
+          {resultCharts.some((chart) => !chart.report) ? <p className="psTimeframeHelp">{nativeAppleApp && !appleAccess?.entitled ? "Ready charts switch instantly. A subscription is needed to analyse other views." : "Other charts prepare in the background. Ready charts switch instantly."}</p> : null}
           {error ? <p className="psMessage" role="alert">{error}</p> : null}
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
           <CoreScanSummary

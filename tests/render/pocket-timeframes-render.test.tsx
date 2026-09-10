@@ -28,3 +28,11 @@ test("the sample covers every analysis map and each source has distinct structur
   assert.notEqual(charts[0].report!.direction, charts[2].report!.direction);
   assert.notEqual(charts[0].report!.levels[0].price, charts[2].report!.levels[0].price);
 });
+
+test("background status stays visible without blocking ready chart buttons", () => {
+  const charts = createSampleCharts().map((chart, index) => ({ ...chart, report: index < 2 ? chart.report : undefined,
+    preparation: index === 2 ? "analysing" as const : index === 3 ? "failed" as const : undefined }));
+  const html = renderToStaticMarkup(<ChartTimeframePicker charts={charts} activeId={charts[0].id} pendingId={null} disabled={false} onSelect={() => undefined}/>);
+  for (const label of ["READY", "ANALYSING…", "TAP TO RETRY", "WAITING", "background"]) assert.ok(html.includes(label), label);
+  assert.ok(!html.includes('disabled=""'));
+});

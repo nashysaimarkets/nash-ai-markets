@@ -30,7 +30,7 @@ function harness() {
     requestPocketAnalysis: async (_: unknown, options: any) => { context.calls.push(options); return samples.find((chart) => chart.image === options.images.image)!.report; },
     rememberScan: async (report: unknown, image: string) => context.remembered.push({ report, image }),
   };
-  for (const name of ["Image", "FileName", "ContextImage", "ContextFileName", "DetailImage", "DetailFileName", "FourHourImage", "FourHourFileName", "IndicatorImage", "IndicatorFileName", "ResultCharts", "ActiveChartId", "Analysis", "BattlefieldChart", "ChartConfirmation", "AccuracyCorrection", "CorrectionOriginal", "FollowUpReply", "FollowUpQuestion", "FollowUpError", "LevelLabImage", "LevelLabFileName", "LevelLabStatus", "LevelLabError", "LiquidityError", "RefinementBefore", "RefinementStatus", "SelectedScenario", "PendingChartId", "Error"]) context[`set${name}`] = (value: unknown) => { context[name[0].toLowerCase() + name.slice(1)] = value; };
+  for (const name of ["Image", "FileName", "ContextImage", "ContextFileName", "DetailImage", "DetailFileName", "FourHourImage", "FourHourFileName", "IndicatorImage", "IndicatorFileName", "ResultCharts", "ActiveChartId", "Analysis", "BattlefieldChart", "ChartConfirmation", "AccuracyCorrection", "CorrectionOriginal", "FollowUpReply", "FollowUpQuestion", "FollowUpError", "LevelLabImage", "LevelLabFileName", "LevelLabStatus", "LevelLabError", "LiquidityError", "RefinementBefore", "RefinementStatus", "SelectedScenario", "PendingChartId", "Error"]) context[`set${name}`] = (value: any) => { const key = name[0].toLowerCase() + name.slice(1); context[key] = typeof value === "function" ? value(context[key]) : value; };
   const sandbox = vm.createContext(context);
   vm.runInContext(actualFunction("activateResultChart") + actualFunction("selectResultChart"), sandbox);
   return context;
@@ -186,7 +186,7 @@ test("a ready timeframe remains usable during a stalled switch and late work can
   await new Promise(setImmediate);
   h.busy = true; h.error = "old failure";
   await h.selectResultChart(samples[0].id);
-  assert.equal(h.cancelled, true); assert.equal(h.error, ""); assert.equal(h.pendingChartId, null);
+  assert.equal(h.cancelled, undefined); assert.equal(h.error, ""); assert.equal(h.pendingChartId, null);
   finish(samples[2].report); await pending;
   assert.equal(h.activeChartId, samples[0].id); assert.equal(h.analysis, samples[0].report);
   assert.equal(h.remembered.length, 0);
