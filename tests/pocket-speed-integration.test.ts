@@ -18,7 +18,7 @@ test("the actual precision path accepts signed reuse before reserving provider c
   const source = expression("../app/api/pocket/analyse/route.ts", (node) => ts.isArrowFunction(node) && ts.isVariableDeclaration(node.parent) && node.parent.name.getText() === "firstPrecision");
   const output = '{"levels":[]}';
   let reservations = 0;
-  const context: any = { precisionImage: "", contextPrecisionImage: "", accuracyCorrection: null, receiptKey: () => "verified-key", readPrecisionReceipt, precisionReceipts: [signPrecisionReceipt("verified-key", output, "test-only")], process: { env: { OPENAI_API_KEY: "test-only" } }, precisionRescueReasons: () => [], parsePrecisionOutput: JSON.parse, console: { info: () => undefined }, precisionCallBudget: {}, POCKET_PRECISION_INITIAL_MIN_REMAINING_MS: 1, reservePrecisionProviderCall: () => { reservations++; return { allowed: false, reason: "CALL_BUDGET" }; } };
+  const context: vm.Context = { precisionImage: "", contextPrecisionImage: "", accuracyCorrection: null, receiptKey: () => "verified-key", readPrecisionReceipt, precisionReceipts: [signPrecisionReceipt("verified-key", output, "test-only")], process: { env: { OPENAI_API_KEY: "test-only" } }, precisionRescueReasons: () => [], parsePrecisionOutput: JSON.parse, console: { info: () => undefined }, precisionCallBudget: {}, POCKET_PRECISION_INITIAL_MIN_REMAINING_MS: 1, reservePrecisionProviderCall: () => { reservations++; return { allowed: false, reason: "CALL_BUDGET" }; } };
   vm.runInContext(source, vm.createContext(context));
   const reused = await context.action("exact-image", "primary", null);
   assert.equal(reused.output_text, output); assert.equal(reused.reused, true); assert.equal(reservations, 0);
