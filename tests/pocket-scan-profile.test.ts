@@ -3,12 +3,14 @@ import assert from "node:assert/strict";
 import { scanProfile, compactReportSchema, expandCompactReport } from "../app/api/pocket/scan-profile";
 import { createScanMetrics } from "../app/api/pocket/scan-metrics";
 
-test("trial headers cannot select paid processing outside the dedicated preview", () => {
+test("trial headers cannot override configured processing outside the dedicated preview", () => {
   const request = new Request("https://example.test", { headers: { "x-pocket-trial-profile": "fast" } });
   const branch = "feat/pocket-guided-speed-trial-2026-09-09";
-  assert.equal(scanProfile(request, { VERCEL_ENV: "production", VERCEL_GIT_COMMIT_REF: branch }), "baseline");
-  assert.equal(scanProfile(request, { VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "another-branch" }), "baseline");
+  assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "baseline", VERCEL_ENV: "production", VERCEL_GIT_COMMIT_REF: branch }), "baseline");
+  assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "baseline", VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "another-branch" }), "baseline");
   assert.equal(scanProfile(request, { VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: branch }), "fast");
+  assert.equal(scanProfile(request, {}), "full-parallel");
+  assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "baseline" }), "baseline");
   assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "compact" }), "compact");
   assert.equal(scanProfile(request, { POCKET_SCAN_PROFILE: "invalid" }), "baseline");
 });
@@ -38,4 +40,16 @@ test("usage records actual returned service tiers including fallback", () => {
   metrics.usage("precision", "model", { input_tokens: 30, output_tokens: 40 }, "priority");
   metrics.finish("completed");
   assert.deepEqual((output[0].calls as { serviceTier: string }[]).map((c) => c.serviceTier), ["default", "priority"]);
+});
+
+test("selected pattern scan retains every independent report field and limits geometry to the selected source", async () => {
+  const { selectedPatternSchema } = await import("../app/api/pocket/scan-profile");
+  const original = { properties: { patterns: { maxItems: 5, items: { properties: { sourceRole: { type: "string", enum: ["PRIMARY", "HIGHER_TIMEFRAME"] }, geometry: { type: "object" } }, required: ["sourceRole", "geometry"] } }, evidencePack: { allUploads: true }, levels: {}, indicators: {}, higherTimeframe: {} }, required: ["patterns", "evidencePack", "levels", "indicators", "higherTimeframe"] };
+  const selected = selectedPatternSchema(original);
+  assert.equal(selected.properties.patterns.maxItems, 1);
+  assert.deepEqual(selected.properties.patterns.items.properties.sourceRole.enum, ["PRIMARY"]);
+  assert.deepEqual(selected.required, original.required);
+  assert.equal(selected.properties.evidencePack, original.properties.evidencePack);
+  assert.equal(selected.properties.patterns.items.properties.geometry, original.properties.patterns.items.properties.geometry);
+  assert.equal(original.properties.patterns.maxItems, 5);
 });

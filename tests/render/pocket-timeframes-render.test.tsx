@@ -7,11 +7,11 @@ import { createSampleCharts } from "../../app/pocket/sample-analysis";
 import { deriveAnalysisMaps } from "../../app/pocket/pocket-decision-intelligence";
 
 test("five timeframes render as accessible source buttons and expose pending analysis", () => {
-  const charts = createSampleCharts();
+  const charts = createSampleCharts().map((chart, index) => ({ ...chart, report: index === 0 ? chart.report : undefined }));
   const html = renderToStaticMarkup(<ChartTimeframePicker charts={charts} activeId={charts[0].id} pendingId={charts[2].id} disabled onSelect={() => undefined}/>);
   for (const chart of charts) assert.ok(html.includes(chart.timeframe));
   assert.equal(html.match(/aria-pressed="true"/g)?.length, 1);
-  assert.equal(html.match(/disabled=""/g)?.length, 5);
+  assert.equal(html.match(/disabled=""/g)?.length, 4);
   assert.ok(html.includes('role="progressbar"'));
   assert.ok(!html.includes("aria-valuenow"), "the activity bar does not invent progress");
 });

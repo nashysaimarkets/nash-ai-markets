@@ -1,4 +1,6 @@
-import { scanProfile, compactReportSchema, compactReportInstruction, expandCompactReport } from "../scan-profile";
+import { capacityRetrySeconds, noteCapacityExhausted, POCKET_CAPACITY_MESSAGE } from "../../../lib/server/pocket-provider-capacity";
+import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../precision-receipt";
+import { scanProfile, selectedPatternSchema, compactReportSchema, compactReportInstruction, expandCompactReport } from "../scan-profile";
 import { createScanMetrics } from "../scan-metrics";
 import { pocketEvidencePackSchema, pocketImageContent, scopePocketImageEvidence, validatePocketImages } from "../../../pocket/chart-images";
 import { pocketAnalysisPolicy } from "../../../pocket/analysis-policy";
@@ -31,7 +33,7 @@ import {
   verifiedPrecisionInstrumentIdentifier,
   type PrecisionProviderCallBudget,
 } from "../precision-structure";
-import { runPocketReport } from "../report-recovery";
+import { runPocketReport, reportServiceTier } from "../report-recovery";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../report-completion";
 import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/chart-preflight";
 
@@ -279,11 +281,12 @@ export async function POST(request: Request) {
   let indicatorImage = "";
   let precisionImage = "";
   let contextPrecisionImage = "";
+  let precisionReceipts: unknown = [];
   let deterministicEvidence: DeterministicChartEvidence[] = [];
   let chartConfirmation: ChartConfirmation | null = null;
   let accuracyCorrection: NormalizedAccuracyCorrection | null = null;
   try {
-    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown; detailImage?: unknown; fourHourImage?: unknown; indicatorImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown; deterministicEvidence?: unknown };
+    const payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as { image?: unknown; contextImage?: unknown; detailImage?: unknown; fourHourImage?: unknown; indicatorImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown; deterministicEvidence?: unknown; precisionReceipts?: unknown };
     const imageError = validatePocketImages(payload);
     if (imageError) return NextResponse.json({ error: imageError }, { status: 400 });
     image = typeof payload.image === "string" ? payload.image : "";
@@ -294,6 +297,7 @@ export async function POST(request: Request) {
     precisionImage = typeof payload.precisionImage === "string" ? payload.precisionImage : "";
     contextPrecisionImage = typeof payload.contextPrecisionImage === "string" ? payload.contextPrecisionImage : "";
     deterministicEvidence = normalizeDeterministicEvidence(payload.deterministicEvidence);
+    precisionReceipts = payload.precisionReceipts;
     if (payload.chartConfirmation && typeof payload.chartConfirmation === "object") {
       const candidate = payload.chartConfirmation as Record<string, unknown>;
       const instrument = typeof candidate.instrument === "string" ? candidate.instrument.trim().slice(0, 80) : "";
@@ -319,22 +323,30 @@ export async function POST(request: Request) {
   if ([precisionImage, contextPrecisionImage].some((value) => value && (!/^data:image\/(jpeg|png|webp);base64,/.test(value) || value.length > MAX_DATA_URL_LENGTH))) {
     return NextResponse.json({ error: "The chart reading crop could not be prepared safely." }, { status: 400 });
   }
+  const capacityWait = capacityRetrySeconds();
+  if (capacityWait) return NextResponse.json({ error: POCKET_CAPACITY_MESSAGE, code: "quota_exhausted" }, { status: 503, headers: { "cache-control": "no-store", "retry-after": String(capacityWait) } });
   const budget = takePocketBudget(request, "analyse");
   if (!budget.allowed) return NextResponse.json(
-    { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
+    { error: `Analysis limit reached. Try again in ${Math.ceil(budget.retryAfterSeconds / 60)} minutes. Saved timeframe results remain available. No request was sent to the AI provider.` },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
   const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
   const profile = scanProfile(request);
-  const compact = profile !== "baseline";
-  const fast = profile === "fast" || profile === "overlap";
+  const compact = ["compact", "fast", "overlap"].includes(profile);
+  const fast = ["fast", "overlap", "full-fast", "full-parallel", "focused"].includes(profile);
+  const fastPrecision = profile === "full-fast" || profile === "full-parallel" || profile === "focused";
   const policy = { ...pocketAnalysisPolicy(suppliedImages) };
-  if (profile === "overlap") policy.parallelPrecision = true;
+  if (profile === "overlap" || profile === "full-parallel" || profile === "focused") policy.parallelPrecision = true;
+  if (fast) {
+    policy.reportAttemptTimeoutMs = 75_000;
+    policy.reportRecoveryTimeoutMs = policy.imageCount === 1 ? 35_000 : 90_000;
+    policy.reportTimeoutMs = policy.reportAttemptTimeoutMs + policy.reportRecoveryTimeoutMs;
+  }
   const metrics = createScanMetrics(policy.imageCount, (record) => console.info("[pocket-metrics]", JSON.stringify(record)));
   const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
-  const reportSchema = compact ? compactReportSchema(fullReportSchema) : fullReportSchema;
+  const reportSchema = compact ? compactReportSchema(fullReportSchema) : profile === "focused" ? selectedPatternSchema(fullReportSchema) : fullReportSchema;
   const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
-  if (!client) { metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
+  if (!client) { budget.release?.(); metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
   const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
   const providerDeadlineSignal = AbortSignal.timeout(Math.max(1, providerDeadlineAt - Date.now()));
   const providerAbortController = new AbortController();
@@ -394,10 +406,10 @@ export async function POST(request: Request) {
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || POCKET_REPORT_MODEL;
     const reportTimeoutMs = remainingProviderMs();
     if (reportTimeoutMs <= 0) throw new Error("Pocket provider deadline timed out before the report started.");
-    const analysisRequest = runPocketReport(async ({ signal, timeoutMs, recovery }) => {
-      const response = await client.responses.create({
+    const analysisRequest = runPocketReport(async ({ signal, timeoutMs, recovery, noteOutputProgress }) => {
+      const stream = client.responses.stream({
       model,
-      ...(fast ? { service_tier: "priority" as const } : {}),
+      service_tier: reportServiceTier(fast, recovery),
       // Preserve the demanding multi-timeframe judgment. The strict report
       // is kept terse below so its visible JSON does not waste output budget.
       reasoning: { effort: recovery ? "low" : "medium" },
@@ -419,7 +431,7 @@ export async function POST(request: Request) {
         "All plotBounds, priceScaleAnchors, levels and fibLevels must remain coordinates of image 1, the primary chart. Pattern geometry must use the full-image coordinate system of the image named by that pattern's sourceRole. Never copy geometry between images or draw evidence from one crop over another.",
         "Supporting images can refine the written audit but must never replace image 1's coordinate system.",
         "evidencePack must contain exactly one contribution for every received image role, in upload order. Say precisely what each image contributed. PRIMARY is the first uploaded chart; HIGHER_TIMEFRAME, PRICE_DETAIL and FOUR_HOUR are optional supporting-image identifiers with no implied timeframe; INDICATOR_VOLUME is the optional indicator chart. PRIMARY must be used=true. For any supporting image that adds no defensible new evidence, set used=false and say why without penalising the pack merely for duplication.",
-        "Pattern Watch must independently scan every supplied image, including optional supporting charts and the optional indicator/volume chart when candles are present. Return at most the single strongest defensible pattern from each supplied image and set sourceRole to that exact image role; omit an image only when even a FORMING or AMBIGUOUS structure lacks defining geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Test competing explanations before choosing a name. Require the defining geometry: H&S needs two shoulders, a distinct head and a visible neckline; double top/bottom needs two comparable extremes plus the intervening swing; flags/pennants need a clear impulse pole followed by a materially smaller multi-candle pause; wedges need two converging boundaries both sloping in the named direction; triangles need at least two reactions on each boundary; ranges/channels need repeated reactions on both rails; cup-and-handle needs a rounded base, rim return and shallow handle; breakout-and-retest needs a visible boundary break, return to that same boundary and reaction away. A compact pause at the far right of a chart may still be a valid FORMING flag or pennant; do not reject it merely because it occupies a small fraction of a wide historical view. A broad higher-timeframe range is valid when both rails have repeated visible reactions. Do not confuse a breakout without a return for a retest, or a single pullback for a flag. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and geometry relative only to its sourceRole image. geometry.plotBounds must tightly enclose that source image's candle plot; every point must fall inside those bounds. Geometry points must trace consecutive actual historical swing pivots already visible on that complete image, ordered left-to-right: never extend a path into blank future space, invent a projected leg or draw a forecast. labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. A forming breakout/retest must remain explicitly unconfirmed until a visible hold or rejection occurs. Do not call ordinary noise a pattern; return an empty array when none is defensible.",
+        (profile === "focused" ? "Pattern Watch belongs to the selected PRIMARY image. Scan PRIMARY for the strongest defensible pattern; output at most one with sourceRole PRIMARY. The customer receives a new pattern scan when selecting another uploaded image. Inspect all supporting images for identity, timeframe, structure, visible indicators and conflicts in evidencePack and higherTimeframe, but do not generate their unused pattern geometry. Omit PRIMARY when even a FORMING or AMBIGUOUS structure lacks defining geometry. " : "Pattern Watch must independently scan every supplied image, including optional supporting charts and the optional indicator/volume chart when candles are present. Return at most the single strongest defensible pattern from each supplied image and set sourceRole to that exact image role; omit an image only when even a FORMING or AMBIGUOUS structure lacks defining geometry. ") + "Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Test competing explanations before choosing a name. Require the defining geometry: H&S needs two shoulders, a distinct head and a visible neckline; double top/bottom needs two comparable extremes plus the intervening swing; flags/pennants need a clear impulse pole followed by a materially smaller multi-candle pause; wedges need two converging boundaries both sloping in the named direction; triangles need at least two reactions on each boundary; ranges/channels need repeated reactions on both rails; cup-and-handle needs a rounded base, rim return and shallow handle; breakout-and-retest needs a visible boundary break, return to that same boundary and reaction away. A compact pause at the far right of a chart may still be a valid FORMING flag or pennant; do not reject it merely because it occupies a small fraction of a wide historical view. A broad higher-timeframe range is valid when both rails have repeated visible reactions. Do not confuse a breakout without a return for a retest, or a single pullback for a flag. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and geometry relative only to its sourceRole image. geometry.plotBounds must tightly enclose that source image's candle plot; every point must fall inside those bounds. Geometry points must trace consecutive actual historical swing pivots already visible on that complete image, ordered left-to-right: never extend a path into blank future space, invent a projected leg or draw a forecast. labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. A forming breakout/retest must remain explicitly unconfirmed until a visible hold or rejection occurs. Do not call ordinary noise a pattern; return an empty array when none is defensible.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
@@ -462,6 +474,13 @@ export async function POST(request: Request) {
       signal,
       timeout: timeoutMs,
     });
+      let firstOutput = false;
+      stream.on("response.created", () => console.info("[pocket-bullseye] report stream started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })));
+      stream.on("response.output_text.delta", (event) => {
+        if (event.delta.length) noteOutputProgress();
+        if (!firstOutput) { firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
+      });
+      const response = await stream.finalResponse();
       metrics.usage(recovery ? "report_recovery" : "report", model, response.usage, response.service_tier ?? "unknown");
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
@@ -482,6 +501,8 @@ export async function POST(request: Request) {
       deadlineAt: Math.min(providerDeadlineAt, Date.now() + policy.reportTimeoutMs),
       attemptTimeoutMs: policy.reportAttemptTimeoutMs,
       recoveryTimeoutMs: policy.reportRecoveryTimeoutMs,
+      progressIdleTimeoutMs: 15_000,
+      progressExtensionMs: fast ? 30_000 : 0,
       onRecovery: (reason) => console.warn("[pocket-bullseye] report recovery", JSON.stringify({ reason, chartCount: policy.imageCount, elapsedMs: Date.now() - routeStartedAt })),
     }).catch((error) => {
       // The precision passes are useful only when the report succeeds. Abort
@@ -523,6 +544,7 @@ export async function POST(request: Request) {
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL,
       // Precision is a constrained extraction task. Low reasoning preserves
       // the visible JSON allowance and reduces long-tail mobile latency.
+      ...(fastPrecision ? { service_tier: "priority" as const } : {}),
       reasoning: { effort: "low" },
       store: false,
       instructions: precisionInstructions,
@@ -547,6 +569,7 @@ export async function POST(request: Request) {
     };
     type InitialPrecisionResult = {
       output_text: string | undefined;
+      reused?: boolean;
       firstFailure: "CALL_BUDGET" | "TIME_BUDGET" | "REQUEST_ABORTED" | "REQUEST_FAILED" | null;
     };
     const firstPrecision = async (
@@ -554,6 +577,13 @@ export async function POST(request: Request) {
       label: string,
       trustedCurrentPrice: string | null = null,
     ): Promise<InitialPrecisionResult> => {
+      const crop = label === "primary" ? precisionImage : contextPrecisionImage;
+      const key = receiptKey(chartImage, trustedCurrentPrice);
+      const reused = !accuracyCorrection && !crop ? readPrecisionReceipt(precisionReceipts, key, process.env.OPENAI_API_KEY) : null;
+      if (reused && !precisionRescueReasons(parsePrecisionOutput(reused), trustedCurrentPrice).length) {
+        console.info("[pocket-bullseye] precision reused", JSON.stringify({ source: label }));
+        return { output_text: reused, firstFailure: null, reused: true };
+      }
       const reservation = reservePrecisionProviderCall(
         precisionCallBudget,
         Date.now(),
@@ -577,6 +607,7 @@ export async function POST(request: Request) {
         }
         return { output_text: first.output_text, firstFailure: null };
       } catch (error) {
+        if (["quota_exhausted", "authentication_rejected", "permission_denied", "rate_limited"].includes(classifyOpenAIFailure(error))) throw error;
         console.error(`[pocket-bullseye] ${label} precision pass unavailable`, error instanceof Error ? error.name : "unknown");
         return { output_text: undefined, firstFailure: precisionSignal.aborted ? "REQUEST_ABORTED" : "REQUEST_FAILED" };
       }
@@ -593,7 +624,7 @@ export async function POST(request: Request) {
         ? [first.firstFailure]
         : precisionRescueReasons(parsed, trustedCurrentPrice);
       if (!rescueReasons.length) {
-        return { output_text: first.output_text, diagnostics: { firstParsed: true, rescueAttempted: false, rescueParsed: false, rescueReasons: [] } };
+        return { output_text: first.output_text, diagnostics: { firstParsed: true, rescueAttempted: false, rescueParsed: false, rescueReasons: [], reused: first.reused === true } };
       }
       const reservation = reservePrecisionProviderCall(
         precisionCallBudget,
@@ -649,6 +680,8 @@ export async function POST(request: Request) {
         return { output_text: first.output_text, diagnostics: { firstParsed: Boolean(parsed), rescueAttempted: true, rescueParsed: false, rescueReasons } };
       }
     };
+    const receiptModel = process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || POCKET_ANNOTATION_MODEL;
+    const receiptKey = (source: string, price: string | null) => precisionReceiptKey(source, receiptModel, price, precisionInstructions + JSON.stringify(precisionOverlaySchema));
     const precisionWork = (async () => {
       // One-image requests can extract geometry independently while the
       // report runs. Preserve exclusive report capacity for larger packs.
@@ -892,11 +925,19 @@ export async function POST(request: Request) {
       combinedCoverage: precisionCoverageDiagnostics(combinedBattlefield.coverage),
     };
     console.info("[pocket-bullseye] structural precision", JSON.stringify(finalAnalysis.precisionDiagnostics));
+    const verifiedReceipts: string[] = [];
+    if (finalGate.identityLocked && !accuracyCorrection) {
+      for (const [source, result, price, crop] of [[image, precisionResult, authoritativeCurrentPrice, precisionImage], [contextImage, contextPrecisionResult, null, contextPrecisionImage]] as const) {
+        if (!source || crop || !result?.output_text || precisionRescueReasons(parsePrecisionOutput(result.output_text), price).length) continue;
+        const token = signPrecisionReceipt(receiptKey(source, price), result.output_text, process.env.OPENAI_API_KEY);
+        if (token) verifiedReceipts.push(token);
+      }
+    }
     metrics.finish(finalGate.chartLocked ? "completed" : "inconclusive");
     return NextResponse.json(
       // Return the same official schedule snapshot used by this analysis so a
       // long-open browser tab cannot show an older event calendar.
-      { analysis: finalAnalysis, macroContext, marketEvents },
+      { analysis: finalAnalysis, macroContext, marketEvents, precisionReceipts: verifiedReceipts },
       { headers: { ...pocketBudgetHeaders(budget), "x-pocket-scan-id": metrics.scanId } },
     );
   } catch (error) {
@@ -917,20 +958,22 @@ export async function POST(request: Request) {
       chartCount: policy.imageCount,
     }));
     const message = typeof failure.message === "string" ? failure.message : "";
+    budget.release?.();
     const providerFailure = classifyOpenAIFailure(error);
+    if (providerFailure === "quota_exhausted") noteCapacityExhausted();
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
     const incomplete = error instanceof PocketReportCompletionError
       || /structured response was (?:empty|incomplete|invalid JSON)/i.test(message);
     metrics.finish("failed", timedOut ? "timeout" : incomplete ? "incomplete_report" : providerFailure);
     const providerMessage = providerFailure === "quota_exhausted"
-      ? "AI analysis is temporarily unavailable because its service capacity has been reached. Your charts are still loaded—please try again after service is restored."
+      ? POCKET_CAPACITY_MESSAGE
       : providerFailure === "rate_limited"
         ? "AI analysis is temporarily busy. Your charts are still loaded—please retry in a minute."
         : "AI analysis is temporarily unavailable. Your charts are still loaded—please try again later.";
-    return NextResponse.json({ error: timedOut
+    return NextResponse.json({ code: providerFailure, error: timedOut
       ? "The AI service did not finish this scan. Your charts are still loaded—please try again."
       : incomplete
         ? "The AI returned an unfinished report. Your charts are still loaded; no partial analysis has been used."
-        : providerMessage }, { status: 503, headers: { "x-pocket-scan-id": metrics.scanId } });
+        : providerMessage }, { status: 503, headers: { "x-pocket-scan-id": metrics.scanId, "cache-control": "no-store", ...(providerFailure === "quota_exhausted" ? { "retry-after": "60" } : {}) } });
   } finally { providerAbortController.abort(); }
 }

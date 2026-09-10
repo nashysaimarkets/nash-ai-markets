@@ -1,12 +1,22 @@
 import { classifyOpenAIFailure } from "../../lib/server/openai";
 import { PocketReportCompletionError } from "./report-completion";
 
-type Attempt = { signal: AbortSignal; timeoutMs: number; recovery: boolean };
+export class PocketReportTimeoutError extends Error {
+  constructor() { super("Pocket report timed out after its bounded recovery."); this.name = "PocketReportTimeoutError"; }
+}
+
+export function reportServiceTier(fast: boolean, recovery: boolean): "priority" | "default" {
+  return fast && !recovery ? "priority" : "default";
+}
+
+type Attempt = { signal: AbortSignal; timeoutMs: number; recovery: boolean; noteOutputProgress: () => void };
 type Options = {
   signal: AbortSignal;
   deadlineAt: number;
   attemptTimeoutMs: number;
   recoveryTimeoutMs: number;
+  progressIdleTimeoutMs?: number;
+  progressExtensionMs?: number;
   onRecovery?: (reason: string) => void;
 };
 
@@ -32,18 +42,36 @@ export async function runPocketReport<T>(run: (attempt: Attempt) => Promise<T>, 
     options.signal.throwIfAborted();
     const remainingMs = options.deadlineAt - Date.now();
     if (remainingMs <= 0) throw new Error("Pocket report deadline timed out.");
-    const timeoutMs = Math.min(remainingMs, attempt === 0 ? options.attemptTimeoutMs : options.recoveryTimeoutMs);
+    const firstWindowMs = Math.min(remainingMs, attempt === 0 ? options.attemptTimeoutMs : options.recoveryTimeoutMs);
+    const startsAt = Date.now();
+    const firstDeadline = startsAt + firstWindowMs;
+    // Only real output may extend a progressing first attempt. Keep the total deadline fixed.
+    const extensionMs = attempt === 0 ? Math.max(0, options.progressExtensionMs ?? 0) : 0;
+    const hardDeadline = Math.min(options.deadlineAt, firstDeadline + extensionMs);
+    const timeoutMs = Math.max(1, hardDeadline - startsAt);
     const controller = new AbortController();
     const signal = AbortSignal.any([options.signal, controller.signal]);
-    const timer = setTimeout(() => controller.abort(new Error("Pocket report attempt timed out.")), timeoutMs);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const arm = (deadline: number) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => controller.abort(new Error("Pocket report attempt timed out.")), Math.max(0, deadline - Date.now()));
+    };
+    arm(firstDeadline);
+    const noteOutputProgress = () => {
+      if (signal.aborted || !extensionMs || !options.progressIdleTimeoutMs) return;
+      arm(Math.min(hardDeadline, Math.max(firstDeadline, Date.now() + options.progressIdleTimeoutMs)));
+    };
     try {
-      const result = await run({ signal, timeoutMs, recovery: attempt > 0 });
+      const result = await run({ signal, timeoutMs, recovery: attempt > 0, noteOutputProgress });
       signal.throwIfAborted();
       return result;
     } catch (error) {
       options.signal.throwIfAborted();
       const reason = controller.signal.aborted ? "timeout" : recoveryReason(error);
-      if (attempt > 0 || !options.recoveryTimeoutMs || !reason || options.deadlineAt - Date.now() < 1_000) throw error;
+      if (attempt > 0 || !options.recoveryTimeoutMs || !reason || options.deadlineAt - Date.now() < 1_000) {
+        if (reason === "timeout") throw new PocketReportTimeoutError();
+        throw error;
+      }
       options.onRecovery?.(reason);
     } finally {
       clearTimeout(timer);

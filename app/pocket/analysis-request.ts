@@ -21,7 +21,7 @@ type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Respo
 
 export async function postPocketAnalysis(
   body: string,
-  options: { fetchImpl?: FetchLike; timeoutMs?: number } = {},
+  options: { fetchImpl?: FetchLike; timeoutMs?: number; signal?: AbortSignal } = {},
 ): Promise<Response> {
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? POCKET_ANALYSIS_CLIENT_TIMEOUT_MS;
@@ -32,7 +32,7 @@ export async function postPocketAnalysis(
     method: "POST",
     headers: { "content-type": "application/json" },
     body,
-    signal: controller.signal,
+    signal: options.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
   }).catch((error: unknown) => {
     if (controller.signal.aborted) throw new Error(POCKET_ANALYSIS_TIMEOUT_MESSAGE);
     throw error;

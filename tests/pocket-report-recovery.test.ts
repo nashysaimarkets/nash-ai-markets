@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runPocketReport } from "../app/api/pocket/report-recovery.ts";
+import { runPocketReport, PocketReportTimeoutError, reportServiceTier } from "../app/api/pocket/report-recovery.ts";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../app/api/pocket/report-completion.ts";
 
 const options = () => ({ signal: new AbortController().signal, deadlineAt: Date.now() + 5_000, attemptTimeoutMs: 20, recoveryTimeoutMs: 100 });
@@ -67,4 +67,52 @@ test("recovery cannot exceed the remaining total budget", async () => {
     return "complete";
   }, { ...options(), deadlineAt: Date.now() + 2_000, recoveryTimeoutMs: 10_000 });
   assert.equal(calls, 2);
+});
+
+test("exhausted timers remain a typed timeout even when the SDK says only aborted", async () => {
+  let calls = 0;
+  await assert.rejects(runPocketReport(async ({ signal }) => {
+    calls++;
+    return new Promise((_, reject) => signal.addEventListener("abort", () => reject(new Error("Request was aborted.")), { once: true }));
+  }, { ...options(), recoveryTimeoutMs: 20 }), PocketReportTimeoutError);
+  assert.equal(calls, 2);
+});
+test("recovery leaves the stalled priority tier without changing the report model", () => {
+  assert.equal(reportServiceTier(true, false), "priority");
+  assert.equal(reportServiceTier(true, true), "default");
+  assert.equal(reportServiceTier(false, false), "default");
+});
+
+test("real output keeps a progressing report past its soft timer without a second paid attempt", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let progress!: () => void, finish!: (s: string) => void, calls = 0;
+  const result = runPocketReport(({ signal, noteOutputProgress }) => {
+    calls++; progress = noteOutputProgress;
+    return new Promise<string>((resolve, reject) => { finish = resolve; signal.addEventListener("abort", () => reject(signal.reason), { once: true }); });
+  }, { ...options(), attemptTimeoutMs: 50, progressIdleTimeoutMs: 50, progressExtensionMs: 100 });
+  t.mock.timers.tick(40); progress(); t.mock.timers.tick(40); progress(); t.mock.timers.tick(20);
+  finish("complete verified report");
+  assert.equal(await result, "complete verified report"); assert.equal(calls, 1);
+});
+test("output that stops still triggers bounded recovery", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let progress!: () => void, calls = 0;
+  const result = runPocketReport(({ signal, recovery, noteOutputProgress }) => {
+    calls++; progress = noteOutputProgress;
+    if (recovery) return Promise.resolve("recovered");
+    return new Promise<string>((_, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
+  }, { ...options(), attemptTimeoutMs: 50, progressIdleTimeoutMs: 50, progressExtensionMs: 100 });
+  t.mock.timers.tick(40); progress(); t.mock.timers.tick(50);
+  assert.equal(await result, "recovered"); assert.equal(calls, 2);
+});
+test("continuous output cannot extend the total deadline", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let progress!: () => void;
+  const result = runPocketReport(({ signal, noteOutputProgress }) => {
+    progress = noteOutputProgress;
+    return new Promise<string>((_, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
+  }, { ...options(), deadlineAt: 1120, attemptTimeoutMs: 50, progressIdleTimeoutMs: 50, progressExtensionMs: 100 });
+  const rejected = assert.rejects(result, PocketReportTimeoutError);
+  for (let i = 0; i < 3; i++) { t.mock.timers.tick(30); progress(); }
+  t.mock.timers.tick(30); await rejected;
 });
