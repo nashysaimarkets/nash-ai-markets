@@ -28,3 +28,19 @@ The release lint check identified a timer declaration and existing untyped VM fi
 ## Signed build started
 
 Codemagic build `6aa2599f31dc328597b912c1` (workflow run 27) started from native revision `84751c855c9f63d5c25ab16a40e6e17c01b0c790`. The complete GitHub quality gate [34448964261](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/34448964261) passed, including lint, unit/render tests, incident regressions, production safeguards, operations validation, production build and rendered artifact tests.
+
+## Confirmed Apple submission
+
+Apple accepted the new review submission at **2026-09-10T07:25:16.514Z**.
+
+- Version **1.2.9**, build **30**.
+- Apple build ID: `8253432b-54b1-4474-a78f-6a7efc19fd47`.
+- App Store version ID: `e84630c1-fac3-4229-b5e6-fe47ef722dd6`.
+- Review submission: `e7c59899-7f6c-4f2f-b582-5729eaf8a8b1`.
+- Confirmed state: **WAITING_FOR_REVIEW**.
+- Release policy: **AFTER_APPROVAL**.
+- The previous build 29 review submission `ae526d36-266f-48b7-8be8-e83810d838e4` was replaced after build 30 uploaded and finished processing.
+- Codemagic finished successfully: https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa2599f31dc328597b912c1
+- Apple review details: https://appstoreconnect.apple.com/apps/6806004581/appstore/reviewsubmissions/details/e7c59899-7f6c-4f2f-b582-5729eaf8a8b1
+
+The update is submitted; customer availability follows Apple's approval. No App Store release date is guaranteed.
