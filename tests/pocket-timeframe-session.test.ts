@@ -20,17 +20,17 @@ function actualFunction(name: string) {
 
 function harness() {
   const charts = samples.map((chart, index) => ({ ...chart, report: index === 0 ? chart.report : undefined }));
-  const context: Record<string, any> = {
+  const context: vm.Context = {
     resultCharts: charts, analysis: samples[0].report, image: samples[0].image, activeChartId: charts[0].id,
     busy: false, followUpBusy: false, liquidityRescanning: false,
     selectionActive: { current: false }, selectionRevision: { current: 0 }, chartWork: { current: { clear: () => { context.cancelled = true; } } }, analysisRequestActive: { current: false }, levelLabRequestActive: { current: false }, activePrimaryImage: { current: samples[0].image },
     sessionRevision: { current: 1 }, resultRevision: { current: 0 },
     Error, Promise, calls: [], remembered: [], bundleForChart, normalizePatternFrame,
     requireAppleEntitlementForAdditionalRequest: async () => { context.entitlements = (context.entitlements ?? 0) + 1; return true; },
-    requestPocketAnalysis: async (_: unknown, options: any) => { context.calls.push(options); return samples.find((chart) => chart.image === options.images.image)!.report; },
+    requestPocketAnalysis: async (_: unknown, options: { images: ReturnType<typeof bundleForChart>["images"] }) => { context.calls.push(options); return samples.find((chart) => chart.image === options.images.image)!.report; },
     rememberScan: async (report: unknown, image: string) => context.remembered.push({ report, image }),
   };
-  for (const name of ["Image", "FileName", "ContextImage", "ContextFileName", "DetailImage", "DetailFileName", "FourHourImage", "FourHourFileName", "IndicatorImage", "IndicatorFileName", "ResultCharts", "ActiveChartId", "Analysis", "BattlefieldChart", "ChartConfirmation", "AccuracyCorrection", "CorrectionOriginal", "FollowUpReply", "FollowUpQuestion", "FollowUpError", "LevelLabImage", "LevelLabFileName", "LevelLabStatus", "LevelLabError", "LiquidityError", "RefinementBefore", "RefinementStatus", "SelectedScenario", "PendingChartId", "Error"]) context[`set${name}`] = (value: any) => { const key = name[0].toLowerCase() + name.slice(1); context[key] = typeof value === "function" ? value(context[key]) : value; };
+  for (const name of ["Image", "FileName", "ContextImage", "ContextFileName", "DetailImage", "DetailFileName", "FourHourImage", "FourHourFileName", "IndicatorImage", "IndicatorFileName", "ResultCharts", "ActiveChartId", "Analysis", "BattlefieldChart", "ChartConfirmation", "AccuracyCorrection", "CorrectionOriginal", "FollowUpReply", "FollowUpQuestion", "FollowUpError", "LevelLabImage", "LevelLabFileName", "LevelLabStatus", "LevelLabError", "LiquidityError", "RefinementBefore", "RefinementStatus", "SelectedScenario", "PendingChartId", "Error"]) context[`set${name}`] = (value: unknown) => { const key = name[0].toLowerCase() + name.slice(1); context[key] = typeof value === "function" ? value(context[key]) : value; };
   const sandbox = vm.createContext(context);
   vm.runInContext(actualFunction("activateResultChart") + actualFunction("selectResultChart"), sandbox);
   return context;
@@ -100,7 +100,7 @@ test("source roles never invent timeframe labels, and duplicate timeframe crops 
 test("all optional-slot combinations preserve each uploaded source exactly once", () => {
   for (let mask = 0; mask < 16; mask++) {
     const values = ["a", ...["b", "c", "d", "e"].map((value, index) => mask & (1 << index) ? value : null)];
-    const images = Object.fromEntries(["image", "contextImage", "detailImage", "fourHourImage", "indicatorImage"].map((field, index) => [field, values[index]])) as any;
+    const images = Object.fromEntries(["image", "contextImage", "detailImage", "fourHourImage", "indicatorImage"].map((field, index) => [field, values[index]])) as Parameters<typeof createChartSession>[0];
     const charts = createChartSession(images, [], samples[0].report!);
     for (const chart of charts) { const { images: selected } = bundleForChart(charts, chart.id); assert.equal(selected.image, chart.image); assert.deepEqual(Object.values(selected).filter(Boolean).sort(), values.filter(Boolean).sort()); }
   }
@@ -125,7 +125,7 @@ test("comparison requires same instrument and timeframe, a different screenshot,
   ];
   assert.equal(previousComparableScan(history, analysis, "current")?.id, "match");
   assert.equal(previousComparableScan(history, { ...analysis, instrument: "UNKNOWN" }, "current"), null);
-  assert.equal(comparisonIdentity({ instrument: 55 as any, timeframe: {} as any }), null);
+  assert.equal(comparisonIdentity({ instrument: 55 as unknown as string, timeframe: {} as unknown as string }), null);
 });
 
 test("reliability metrics record one terminal outcome and both report attempts without chart data", () => {
@@ -149,7 +149,7 @@ test("the actual initial scan consumes a free use only after a readable result",
     const report = structuredClone(samples[0].report!);
     if (outcome === "poor") report.evidenceQuality.chartReadability = "POOR";
     if (outcome === "unreadable") report.evidenceQuality.candlesReadable = false;
-    const h: Record<string, any> = { Error, image: "chart", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, sessionRevision: { current: 1 }, appleAccess: { isNative: true, entitled: false, freeUseConsumed: false }, reviewTarget: null, preflightStatus: "READY", contextImage: null, consumed: 0, published: null,
+    const h: vm.Context = { Error, image: "chart", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, sessionRevision: { current: 1 }, appleAccess: { isNative: true, entitled: false, freeUseConsumed: false }, reviewTarget: null, preflightStatus: "READY", contextImage: null, consumed: 0, published: null,
       isAppleNativeApp: () => true, refreshAppleAccess: async () => h.appleAccess,
       preflightAllowsAnalysis: () => true, requestPocketAnalysis: async () => { if (outcome === "failed") throw new Error("timeout"); return report; },
       consumeAppleFreeUse: async () => { h.consumed++; }, setAnalysis: (value: unknown) => { h.published = value; },
@@ -170,7 +170,7 @@ test("leaving What changed during the access check never starts a stale comparis
   function visit(node: ts.Node) { if (ts.isFunctionDeclaration(node) && node.name?.text === "compare") fn = node.getText(tree); ts.forEachChild(node, visit); }
   visit(tree); assert.ok(fn);
   let finish!: (allowed: boolean) => void;
-  const h: Record<string, any> = { previous: { image: "old" }, sample: false, requestActive: { current: false }, controller: { current: null }, AbortController,
+  const h: vm.Context = { previous: { image: "old" }, sample: false, requestActive: { current: false }, controller: { current: null }, AbortController,
     setBusy: () => undefined, setError: () => undefined, canCompare: () => new Promise((resolve) => { finish = resolve; }),
     calls: 0, fetch: async () => { h.calls++; throw new Error("must not start"); },
   };

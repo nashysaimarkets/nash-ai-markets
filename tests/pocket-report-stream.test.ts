@@ -4,7 +4,7 @@ import OpenAI from "openai";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../app/api/pocket/report-completion";
 for (const status of ["completed", "incomplete"] as const) {
   test(`the installed SDK retains strict report validation for a ${status} stream`, async () => {
-    let body: any;
+    let body!: { stream: boolean; store: boolean; text: { format: { strict: boolean } } };
     const output = [{ type: "message", id: "test-message", role: "assistant", status: "completed", content: [{ type: "output_text", text: status === "completed" ? '{"ok":true}' : '{"ok":', annotations: [] }] }];
     const base = { id: "test-response", object: "response", created_at: 1, model: "test", output: [], status: "in_progress" };
     const final = { ...base, status, output, incomplete_details: status === "incomplete" ? { reason: "max_output_tokens" } : null };

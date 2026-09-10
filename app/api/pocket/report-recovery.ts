@@ -92,11 +92,11 @@ function runOverlappingReport<T>(run: (attempt: Attempt) => Promise<T>, options:
     const controllers = [new AbortController(), new AbortController()];
     let settled = false, recoveryStarted = false, firstFailed = false, recoveryFailed = false;
     let lastError: unknown;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timer: { current?: ReturnType<typeof setTimeout> } = {};
     const finish = (error: unknown, value?: T) => {
       if (settled) return;
       settled = true;
-      clearTimeout(timer);
+      clearTimeout(timer.current);
       options.signal.removeEventListener("abort", cancelled);
       controllers.forEach(controller => controller.abort());
       if (error) reject(error); else resolve(value as T);
@@ -125,7 +125,7 @@ function runOverlappingReport<T>(run: (attempt: Attempt) => Promise<T>, options:
     };
     const startRecovery = (reason: string) => {
       if (settled || recoveryStarted) return;
-      clearTimeout(timer);
+      clearTimeout(timer.current);
       if (options.deadlineAt - Date.now() < 1000) { if (firstFailed) finish(lastError); return; }
       recoveryStarted = true;
       options.onRecovery?.(reason);
@@ -133,7 +133,7 @@ function runOverlappingReport<T>(run: (attempt: Attempt) => Promise<T>, options:
     };
     if (options.signal.aborted) { cancelled(); return; }
     options.signal.addEventListener("abort", cancelled, { once: true });
-    timer = setTimeout(() => startRecovery("slow_report"), options.hedgeAfterMs);
+    timer.current = setTimeout(() => startRecovery("slow_report"), options.hedgeAfterMs);
     launch(false);
   });
 }
