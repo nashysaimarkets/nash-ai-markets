@@ -1,4 +1,4 @@
-# Pocket Bullseye 1.2.9 build 31 — uploaded; review submission processing
+# Pocket Bullseye 1.2.9 build 31 — submitted; waiting for Apple review
 
 Verified 10 September 2026. The user approved opening Codemagic, replacing the pending Apple submission, and automatic release after Apple approval.
 
@@ -36,6 +36,12 @@ It confirmed version 1.2.9 was IN_REVIEW with build 30 as the latest build and r
 
 Build 31 release run `6aa2dfe401c07ed7df662080` completed the native checks, archive and upload successfully. Apple reported `UPLOAD SUCCEEDED with no errors` at 2026-09-10 17:17:27.830 UTC. Delivery UUID: `680ca521-a205-4e91-8e26-9817a6731f3d`; uploaded archive: 1,571,911 bytes. Native build duration was 19m 3s, including a 15m 7s publishing step. The uploader buffers detailed output until completion; the quiet interval did not require a restart.
 
-Codemagic App Store distribution is waiting for the newly uploaded build to become visible through Apple's API. A new review submission, cancellation of build 30's review, and public release are not yet confirmed. The existing publishing configuration will perform the authorized replacement and automatic release setting after processing.
+Codemagic completed App Store distribution in 4m 59s. Apple finished processing build `680ca521-a205-4e91-8e26-9817a6731f3d` (build 31). The full distribution log confirms previous review submission `e7c59899-7f6c-4f2f-b582-5729eaf8a8b1` was successfully cancelled, version 1.2.9 was updated to build 31 with release type AFTER_APPROVAL, and phased release is disabled.
+
+New review submission `d8fa1d97-fce2-4079-a8df-134a6401c4f9` was submitted at `2026-09-10T17:22:26.583Z` and returned state `WAITING_FOR_REVIEW`.
+
+Apple review: https://appstoreconnect.apple.com/apps/6806004581/appstore/reviewsubmissions/details/d8fa1d97-fce2-4079-a8df-134a6401c4f9
+
+Review submission and replacement are confirmed. Apple approval and public release remain pending; release is configured automatically after approval.
 
 The earlier Codemagic access hold was superseded by explicit user approval. A later automatic-review objection to the workflow display name was resolved by reading the exact release branch configuration and verifying its App Store publishing settings before the successful start.
