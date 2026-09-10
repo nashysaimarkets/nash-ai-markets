@@ -1,3 +1,4 @@
+import { withDeadline } from "../app/pocket/async-deadline";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -24,7 +25,7 @@ function actualFunction(name: string) {
 
 function harness() {
   const h: vm.Context = {
-    Error, DOMException, Promise, Date, crypto, normalizePatternFrame, bundleForChart,
+    Error, DOMException, AbortSignal, Promise, Date, crypto, withDeadline, normalizePatternFrame, bundleForChart,
     image: samples[0].image, analysis: samples[0].report, resultCharts: samples.map((chart, index) => ({ ...chart, report: index === 0 ? chart.report : undefined })),
     activeChartId: samples[0].id, pendingChartId: null, sampleMode: false, busy: false, followUpBusy: false, liquidityRescanning: false,
     nativeAppleApp: false, appleAccess: { entitled: true }, document: { visibilityState: "visible" },
@@ -71,7 +72,7 @@ test("selecting the preparing chart shares one scan; returning to a ready view p
   const background = h.prepareNextChart(); await tick();
   const selected = h.selectResultChart(samples[1].id); await tick();
   assert.equal(h.calls.length, 1);
-  assert.equal(h.resultCharts[1].preparation, "analysing");
+  assert.equal(h.resultCharts[1].preparation, "preparing");
   await h.selectResultChart(samples[0].id);
   assert.equal(h.calls[0].signal.aborted, false);
   finish(samples[1].report); await Promise.all([background, selected]);
@@ -166,7 +167,7 @@ test("the real request executor overlaps provider calls while keeping all canvas
     Number, JSON, Set, Map, pocketAnalysisPolicy, needsPocketLiquidityRecovery, hasVerifiedTwoSidedStructure, selectedChartReport,
     chartImageWork: {current: new ChartWorkQueue()}, measuredCharts: {current: new Map()}, providerPauseMessage: {current: "paused"},
     numericLevel: (n: string) => Number(n), clampY: (y: number) => y,
-    analysisCacheGet: async () => null, analysisCacheSave: async () => undefined,
+    analysisCacheGet: async () => null, analysisCacheSave: async () => new Promise(() => {}),
     hasVerifiedTwoSidedAnalysis: () => true, derivedTrustGate: (r: NonNullable<(typeof samples)[number]["report"]>) => r.trustGate,
     enforcePocketTrustGate: (r: unknown) => r,
     createProviderScanImage: async (image: string) => { peakCanvases = Math.max(peakCanvases, ++canvases); await tick(); canvases--; return image; },

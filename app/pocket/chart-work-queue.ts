@@ -1,3 +1,5 @@
+import { withDeadline } from "./async-deadline";
+
 type Job<T> = { key: string; background: boolean; run: (signal: AbortSignal) => Promise<T>; controller: AbortController; promise: Promise<T>; resolve: (value: T) => void; reject: (error: unknown) => void };
 
 /** Bounded concurrency, shared requests and selection priority without discarding paid work. */
@@ -6,7 +8,7 @@ export class ChartWorkQueue<T> {
   private active = new Set<Job<T>>();
   private completed = new Map<string, T>();
 
-  constructor(private readonly concurrency = 1) {
+  constructor(private readonly concurrency = 1, private readonly timeoutMs = 305_000) {
     if (!Number.isInteger(concurrency) || concurrency < 1) throw new Error("Invalid chart concurrency");
   }
 
@@ -39,7 +41,7 @@ export class ChartWorkQueue<T> {
     while (this.active.size < this.concurrency && this.jobs.length) {
       const job = this.jobs.shift()!;
       this.active.add(job);
-      Promise.resolve().then(() => { job.controller.signal.throwIfAborted(); return job.run(job.controller.signal); }).then((value) => {
+      withDeadline(job.run, this.timeoutMs, "This chart could not finish. Your other results are still available; tap this chart to retry.", job.controller.signal).then((value) => {
         job.controller.signal.throwIfAborted();
         if (this.completed.size >= 5) this.completed.delete(this.completed.keys().next().value!);
         this.completed.set(job.key, value);

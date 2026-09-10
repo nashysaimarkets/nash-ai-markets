@@ -1,3 +1,5 @@
+import { withDeadline } from "./async-deadline";
+
 // Stay just beyond the server's 300-second function boundary so the browser
 // receives the server's specific outcome instead of aborting a valid request.
 export const POCKET_ANALYSIS_CLIENT_TIMEOUT_MS = 305_000;
@@ -24,30 +26,16 @@ export async function postPocketAnalysis(
   options: { fetchImpl?: FetchLike; timeoutMs?: number; signal?: AbortSignal } = {},
 ): Promise<Response> {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const timeoutMs = options.timeoutMs ?? POCKET_ANALYSIS_CLIENT_TIMEOUT_MS;
-  const controller = new AbortController();
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-  const request = fetchImpl("/api/pocket/analyse", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body,
-    signal: options.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
-  }).catch((error: unknown) => {
-    if (controller.signal.aborted) throw new Error(POCKET_ANALYSIS_TIMEOUT_MESSAGE);
-    throw error;
-  });
-
-  const deadline = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      controller.abort();
-      reject(new Error(POCKET_ANALYSIS_TIMEOUT_MESSAGE));
-    }, timeoutMs);
-  });
-
-  try {
-    return await Promise.race([request, deadline]);
-  } finally {
-    if (timeoutId !== undefined) clearTimeout(timeoutId);
-  }
+  return withDeadline(async (signal) => {
+    const response = await fetchImpl("/api/pocket/analyse", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+      signal,
+    });
+    // fetch() resolves at headers. Keep the deadline until ALL bytes arrive.
+    const text = await response.text();
+    signal.throwIfAborted();
+    return new Response(text, { status: response.status, statusText: response.statusText, headers: response.headers });
+  }, options.timeoutMs ?? POCKET_ANALYSIS_CLIENT_TIMEOUT_MS, POCKET_ANALYSIS_TIMEOUT_MESSAGE, options.signal);
 }

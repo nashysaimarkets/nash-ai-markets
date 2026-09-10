@@ -60,3 +60,29 @@ test("a click arriving just after completion reuses that report until the sessio
   queue.clear();
   assert.equal(await queue.request("chart", run), 2);
 });
+
+
+test("a cancelled non-cooperative image job cannot block the next session", async () => {
+  const queue = new ChartWorkQueue<string>();
+  const old = queue.request("old", () => new Promise(() => {}));
+  const cancelled = assert.rejects(old, { name: "AbortError" });
+  await new Promise(setImmediate);
+  queue.clear();
+  const next = queue.request("new", async () => "ready");
+  await cancelled;
+  assert.equal(await next, "ready");
+});
+
+test("a timed-out chart releases its lane and its late result cannot replace a retry", async () => {
+  const queue = new ChartWorkQueue<string>(1, 10);
+  let finish!: (value: string) => void;
+  const stuck = queue.request("one", () => new Promise(resolve => { finish = resolve; }));
+  const failed = assert.rejects(stuck, /could not finish/);
+  const sibling = queue.request("two", async () => "second ready");
+  await failed;
+  assert.equal(await sibling, "second ready");
+  assert.equal(await queue.request("one", async () => "retry ready"), "retry ready");
+  finish("stale");
+  await new Promise(setImmediate);
+  assert.equal(await queue.request("one", async () => "unexpected"), "retry ready");
+});

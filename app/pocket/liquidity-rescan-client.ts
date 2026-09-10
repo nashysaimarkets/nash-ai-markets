@@ -11,8 +11,9 @@ function requestId() {
 export async function postLiquidityRescan<T extends Record<string, unknown>>(
   body: string,
   fetcher: FetchLike = globalThis.fetch.bind(globalThis),
-  options: { deadlineAt?: number } = {},
+  options: { deadlineAt?: number; signal?: AbortSignal } = {},
 ): Promise<{ response: Response; payload: T }> {
+  options.signal?.throwIfAborted();
   const correlationId = requestId();
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const remainingMs = options.deadlineAt === undefined ? LIQUIDITY_RESCAN_TIMEOUT_MS : options.deadlineAt - Date.now();
@@ -30,7 +31,7 @@ export async function postLiquidityRescan<T extends Record<string, unknown>>(
         body,
         cache: "no-store",
         credentials: "same-origin",
-        signal: controller.signal,
+        signal: options.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
       });
       const responseText = await response.text();
       let payload: T;
@@ -43,6 +44,7 @@ export async function postLiquidityRescan<T extends Record<string, unknown>>(
       if (TRANSIENT_HTTP_STATUSES.has(response.status) && attempt === 0) continue;
       return { response, payload };
     } catch (error) {
+      options.signal?.throwIfAborted();
       if (timedOut) throw new Error("Liquidity Guard took too long to verify this chart. Your existing analysis is unchanged; tap Reanalyse Chart to try again.");
       if (error instanceof Error && error.message === TRANSPORT_MESSAGE) throw error;
       if (attempt === 0) continue;

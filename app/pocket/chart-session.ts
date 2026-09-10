@@ -2,7 +2,7 @@ import { normalizePatternFrame, POCKET_IMAGE_SLOTS } from "./chart-images";
 import type { Analysis } from "./analysis-types";
 
 export type ChartBundle = Record<typeof POCKET_IMAGE_SLOTS[number][0], string | null>;
-export type UploadedChart = { id: string; image: string; name: string; timeframe: string; report?: Analysis; sourceImages?: ChartBundle; sourceNames?: string[]; preparation?: "queued" | "analysing" | "failed" };
+export type UploadedChart = { id: string; image: string; name: string; timeframe: string; report?: Analysis; sourceImages?: ChartBundle; sourceNames?: string[]; preparation?: "queued" | "preparing" | "analysing" | "verifying" | "failed" };
 
 /** Source IDs are upload identities, not timeframes: two 1h crops stay separate. */
 export function createChartSession(images: ChartBundle, names: string[], report: Analysis): UploadedChart[] {
