@@ -75,7 +75,7 @@ test("rapid taps share the in-flight request and an unentitled request never run
   const h = harness(); let finish!: (value: unknown) => void; let calls = 0;
   h.requestPocketAnalysis = () => { calls++; return new Promise((resolve) => { finish = resolve; }); };
   const pending = h.selectResultChart(samples[1].id); await new Promise((resolve) => setImmediate(resolve));
-  await h.selectResultChart(samples[2].id); assert.equal(calls, 1);
+  await h.selectResultChart(samples[1].id); assert.equal(calls, 1);
   finish(samples[1].report); await pending;
   h.requireAppleEntitlementForAdditionalRequest = async () => false;
   await h.selectResultChart(samples[2].id); assert.equal(calls, 1); assert.equal(h.pendingChartId, null);

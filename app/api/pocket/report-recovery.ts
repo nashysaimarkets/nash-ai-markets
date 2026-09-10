@@ -59,7 +59,8 @@ export async function runPocketReport<T>(run: (attempt: Attempt) => Promise<T>, 
     arm(firstDeadline);
     const noteOutputProgress = () => {
       if (signal.aborted || !extensionMs || !options.progressIdleTimeoutMs) return;
-      arm(Math.min(hardDeadline, Math.max(firstDeadline, Date.now() + options.progressIdleTimeoutMs)));
+      // Once output begins, detect inactivity even before the initial reasoning deadline.
+      arm(Math.min(hardDeadline, Date.now() + options.progressIdleTimeoutMs));
     };
     try {
       const result = await run({ signal, timeoutMs, recovery: attempt > 0, noteOutputProgress });

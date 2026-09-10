@@ -6,6 +6,10 @@ import ts from "typescript";
 import { bundleForChart } from "../app/pocket/chart-session";
 import { ChartWorkQueue } from "../app/pocket/chart-work-queue";
 import { createSampleCharts } from "../app/pocket/sample-analysis";
+import { pocketAnalysisPolicy, needsPocketLiquidityRecovery } from "../app/pocket/analysis-policy";
+import { hasVerifiedTwoSidedStructure } from "../app/pocket/pocket-chart-toolkit";
+import { selectedChartReport } from "../app/pocket/chart-session";
+import { postPocketAnalysis } from "../app/pocket/analysis-request";
 import { normalizePatternFrame } from "../app/pocket/chart-images";
 
 const samples = createSampleCharts();
@@ -25,8 +29,8 @@ function harness() {
     activeChartId: samples[0].id, pendingChartId: null, sampleMode: false, busy: false, followUpBusy: false, liquidityRescanning: false,
     nativeAppleApp: false, appleAccess: { entitled: true }, document: { visibilityState: "visible" },
     selectionActive: { current: false }, selectionRevision: { current: 0 }, sessionRevision: { current: 1 }, resultRevision: { current: 0 },
-    analysisRequestActive: { current: false }, levelLabRequestActive: { current: false }, backgroundActive: { current: false },
-    chartWork: { current: new ChartWorkQueue() }, evidenceCacheEpoch: { current: "" }, precisionReceiptCache: { current: [] },
+    analysisRequestActive: { current: false }, levelLabRequestActive: { current: false }, backgroundActive: { current: new Set() },
+    chartWork: { current: new ChartWorkQueue(4) }, evidenceCacheEpoch: { current: "" }, precisionReceiptCache: { current: [] },
     providerPauseUntil: { current: 0 }, scanAllowance: { current: null }, activePrimaryImage: { current: samples[0].image },
     calls: [], wakes: 0, remembered: [],
     analysisCacheKey: async (...images: unknown[]) => JSON.stringify(images),
@@ -82,7 +86,7 @@ test("selecting another chart retains the report that finished while the selecti
   h.executePocketAnalysis = (options: any) => { h.calls.push(options); return h.calls.length === 1 ? new Promise(resolve => { finish = resolve; }) : Promise.resolve(samples[2].report); };
   const background = h.prepareNextChart(); await tick();
   const selection = h.selectResultChart(samples[2].id); await tick();
-  assert.equal(h.calls.length, 1); assert.equal(h.calls[0].signal.aborted, false);
+  assert.equal(h.calls.length, 2); assert.equal(h.calls[0].signal.aborted, false);
   finish(samples[1].report); await Promise.all([background, selection]);
   assert.equal(h.activeChartId, samples[2].id);
   assert.equal(h.resultCharts[1].report, samples[1].report);
@@ -126,6 +130,72 @@ test("a reset or corrected evidence cannot receive a late background report", as
     finish(samples[1].report); await background;
     assert.equal(h.resultCharts[1].report, undefined);
     assert.equal(h.analysis, samples[0].report);
-    assert.equal(h.backgroundActive.current, false);
+    assert.equal(h.backgroundActive.current.size, 0);
   }
+});
+
+// Exercise the real effect entrypoint with overlapping work, including a stalled first chart.
+test("all remaining reports start while one is stalled and a newer selection can finish first", async () => {
+  const h = harness(); const finishes = new Map<string, (report: unknown) => void>();
+  h.executePocketAnalysis = (options: any) => { h.calls.push(options); return new Promise(resolve => finishes.set(options.images.image, resolve)); };
+  const jobs = [];
+  for (let i = 0; i < 4; i++) { jobs.push(h.prepareNextChart()); await tick(); }
+  assert.equal(h.calls.length, 4);
+  assert.equal(h.backgroundActive.current.size, 4);
+  const oldSelection = h.selectResultChart(samples[1].id); await tick();
+  const newSelection = h.selectResultChart(samples[2].id); await tick();
+  assert.equal(h.pendingChartId, samples[2].id);
+  for (const chart of samples.slice(2)) finishes.get(chart.image)!(chart.report);
+  await newSelection; await tick();
+  assert.equal(h.resultCharts.filter((chart: any) => chart.report).length, 4);
+  assert.equal(h.analysis, samples[2].report);
+  assert.equal(h.calls.length, 4, "selections share background requests");
+  finishes.get(samples[1].image)!(samples[1].report);
+  await Promise.all([...jobs, oldSelection]);
+  assert.equal(h.analysis, samples[2].report, "late completion cannot reverse the latest choice");
+  assert.equal(h.resultCharts.filter((chart: any) => chart.report).length, 5);
+});
+
+
+test("the real request executor overlaps provider calls while keeping all canvas work serial", async () => {
+  const h = harness();
+  let canvases = 0, peakCanvases = 0;
+  const allowanceReset = String(Math.ceil(Date.now()/1000)+1800);
+  const finishes = new Map<string, () => void>();
+  Object.assign(h, {
+    Number, JSON, Set, Map, pocketAnalysisPolicy, needsPocketLiquidityRecovery, hasVerifiedTwoSidedStructure, selectedChartReport,
+    chartImageWork: {current: new ChartWorkQueue()}, measuredCharts: {current: new Map()}, providerPauseMessage: {current: "paused"},
+    numericLevel: (n: string) => Number(n), clampY: (y: number) => y,
+    analysisCacheGet: async () => null, analysisCacheSave: async () => undefined,
+    hasVerifiedTwoSidedAnalysis: () => true, derivedTrustGate: (r: any) => r.trustGate,
+    enforcePocketTrustGate: (r: unknown) => r,
+    createProviderScanImage: async (image: string) => { peakCanvases = Math.max(peakCanvases, ++canvases); await tick(); canvases--; return image; },
+    measureChart: async (source: string, role: string) => { peakCanvases = Math.max(peakCanvases, ++canvases); await tick(); canvases--; return {source, role}; },
+    postPocketAnalysis: (body: string, options: any) => postPocketAnalysis(body, {...options, fetchImpl: async (_url, init) => {
+      const payload = JSON.parse(String(init?.body)); h.calls.push(payload);
+      const chart = samples.find(chart => chart.image === payload.image)!;
+      await new Promise<void>(resolve => finishes.set(chart.image, resolve));
+      return Response.json({analysis: chart.report}, {headers: {"x-ratelimit-remaining": String(chart === samples[1] ? 8 : 5), "x-ratelimit-reset": allowanceReset}});
+    }}),
+  });
+  vm.runInContext(["numericStructure", "withChartImages", "executePocketAnalysis"].map(actualFunction).join("\n"), vm.createContext(h));
+  const jobs = samples.slice(1).map(chart => h.requestPocketAnalysis(null, {images: bundleForChart(h.resultCharts, chart.id).images, chartId: chart.id, background: true}));
+  // Wait only for the deterministic canvas/encoding work, never for a provider response.
+  for (let i = 0; i < 100 && h.calls.length < 4; i++) await tick();
+  assert.equal(h.calls.length, 4, "the executor must not reject siblings as already running");
+  assert.equal(peakCanvases, 1);
+  assert.equal(h.analysisRequestActive.current, false, "background work must not occupy the initial-scan UI lock");
+  for (const call of h.calls) {
+    assert.equal(new Set([call.image, call.contextImage, call.detailImage, call.fourHourImage, call.indicatorImage]).size, 5);
+    assert.equal(call.deterministicEvidence[0].source, call.image);
+    assert.equal(call.deterministicEvidence[0].role, "PRIMARY");
+  }
+  for (const chart of samples.slice(2)) finishes.get(chart.image)!();
+  await Promise.all(jobs.slice(1));
+  assert.equal(h.resultCharts.filter((chart: any) => chart.report).length, 4);
+  h.providerPauseUntil.current = Date.now() + 60_000;
+  finishes.get(samples[1].image)!(); await jobs[0];
+  assert.equal(h.scanAllowance.current.remaining, 5, "older responses must not restore spent scans");
+  assert.ok(h.providerPauseUntil.current > Date.now(), "a late success must not clear a newer quota pause");
+  assert.equal(h.resultCharts.filter((chart: any) => chart.report).length, 5);
 });

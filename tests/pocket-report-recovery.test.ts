@@ -116,3 +116,18 @@ test("continuous output cannot extend the total deadline", async (t) => {
   for (let i = 0; i < 3; i++) { t.mock.timers.tick(30); progress(); }
   t.mock.timers.tick(30); await rejected;
 });
+
+
+test("an early output stall recovers after the idle budget instead of waiting for the initial deadline", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 1000 });
+  let progress!: () => void, calls = 0;
+  const result = runPocketReport(({ signal, recovery, noteOutputProgress }) => {
+    calls++; progress = noteOutputProgress;
+    if (recovery) return Promise.resolve("recovered");
+    return new Promise<string>((_, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
+  }, { ...options(), attemptTimeoutMs: 750, progressIdleTimeoutMs: 150, progressExtensionMs: 300 });
+  t.mock.timers.tick(100); progress(); t.mock.timers.tick(150);
+  await Promise.resolve();
+  assert.equal(calls, 2, "recover at 250ms, before the 750ms initial deadline");
+  assert.equal(await result, "recovered");
+});
