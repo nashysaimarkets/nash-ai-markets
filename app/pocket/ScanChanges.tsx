@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { withDeadline } from "./async-deadline";
 import type { Analysis, LockedDecision, ProcessReview } from "./analysis-types";
 
 export default function ScanChanges({ previous, analysis, image, sample, canCompare }: {
@@ -19,12 +20,15 @@ export default function ScanChanges({ previous, analysis, image, sample, canComp
     setBusy(true); setError("");
     try {
       if (!await canCompare() || requestController.signal.aborted) return;
-      const response = await fetch("/api/pocket/review", {
-        method: "POST", headers: { "content-type": "application/json" },
-        signal: AbortSignal.any([requestController.signal, AbortSignal.timeout(60_000)]),
-        body: JSON.stringify({ beforeImage: previous.image, afterImage: image, lockedAnalysis: previous.analysis, currentAnalysis: analysis, mode: "CHART_CHANGES" }),
-      });
-      const payload = await response.json() as { review?: ProcessReview; error?: string };
+      const { response, payload } = await withDeadline(async (signal) => {
+        const response = await fetch("/api/pocket/review", {
+          method: "POST", headers: { "content-type": "application/json" },
+          signal,
+          body: JSON.stringify({ beforeImage: previous.image, afterImage: image, lockedAnalysis: previous.analysis, currentAnalysis: analysis, mode: "CHART_CHANGES" }),
+        });
+        const payload = await response.json() as { review?: ProcessReview; error?: string };
+        return { response, payload };
+      }, 60_000, "The comparison timed out. Both scans are still saved; you can retry.", requestController.signal);
       if (!response.ok || !payload.review) throw new Error(payload.error || "The comparison did not finish. Both scans are still saved.");
       if (!requestController.signal.aborted) setResult(payload.review);
     } catch (caught) {

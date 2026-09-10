@@ -36,7 +36,17 @@ The native source was merged onto the latest build-31 application variant, prese
 
 ## Release distinction
 
+The final compatibility review also removed client dependence on `AbortSignal.any()`, `AbortSignal.timeout()` and `throwIfAborted()`. WebKit added `AbortSignal.any()` in Safari 17.4, later than this app's iOS deployment target. Cancellation now uses ordinary abort events, supports multiple parent signals, and preserves timeout errors even when the native signal does not expose a reason. The same bounded response-body handling covers optional levels, liquidity and chart-comparison requests. Three extra regressions cover a legacy WebView API surface and stalled recovery bodies.
+
 Apple build 31 is pinned to immutable web revision `51c260fa80d40e47f94d1d9796f0eff2e0b94a16`. Updating the Sites URL cannot change that installed binary's pin. A matching native update must pass its own build and Apple review flow. Release status and any live verification results must be recorded after their outcomes are confirmed.
+
+## Live five-chart acceptance check
+
+On 10 September 2026, deployed repair `0b0d0c61d1fc3a9ba461b14929b85574c98eb376` was tested through normal browser uploads and Analyse with five clearly labelled fictional fixtures: 1D, 30M, 1H, 4H and 5M. This used the live provider, not sample-result mode.
+
+The main report completed in 52.1 seconds. Background report durations were 41.7, 45.4, 142.9 and 152.0 seconds. Two exercised slow-report recovery. Server timings put the complete set at approximately 206 seconds; the next browser check observed all five ready at 225 seconds. All five analysis endpoints returned HTTP 200.
+
+Every timeframe was selected and displayed its corresponding result. Repeated switching left the analysis request count at exactly five. Browser automation acknowledgement overhead is not an app-render latency measurement. This does not establish physical-iPhone or force-quit-resume behaviour.
 
 ## Sources
 
@@ -46,11 +56,4 @@ Apple build 31 is pinned to immutable web revision `51c260fa80d40e47f94d1d9796f0
 4. OpenAI, [Latency optimization](https://developers.openai.com/api/docs/guides/latency-optimization), output generation, request reduction and parallel execution; accessed 10 September 2026.
 5. MDN, [AbortSignal.timeout](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal/timeout_static), active-time suspension behaviour; accessed 10 September 2026.
 6. Private Vercel project runtime logs, deployment `dpl_2xDyeUVFwbwRptPuBd8THAggvGoz`, 10 September 2026, request `b0ef19c7-48da-44be-99d0-1fe63053d307`; authenticated access required.
-
-## Live five-chart acceptance check
-
-On 10 September 2026, the deployed repair `0b0d0c61d1fc3a9ba461b14929b85574c98eb376` (`dpl_GkS4uLr7rLyb3FCMkPaKDJR5vJ3Z`) was tested through the normal browser upload and Analyse flow with five clearly labelled fictional chart fixtures: 1D, 30M, 1H, 4H and 5M. This used the live provider, not the built-in sample result mode.
-
-The main report completed in 52.1 seconds. All four background reports completed; their server durations were 41.7, 45.4, 142.9 and 152.0 seconds. Two exercised report recovery after a slow initial provider response. Including the main request before background work, server timings put the complete set at approximately 206 seconds; the browser observed all five ready by its next check at 225 seconds. All five analysis endpoints returned HTTP 200.
-
-Every timeframe was selected and the corresponding result appeared. Visible pattern summaries changed from the daily range to the 30M, 1H and 5M trend channels; the 4H result explicitly withheld an unverified pattern. Repeated switching left the analysis request count at exactly five. Browser automation acknowledgement overhead is not an app-render latency measurement. No physical-iPhone or force-quit-resume claim follows from this test.
+7. WebKit, [WebKit Features in Safari 17.4](https://webkit.org/blog/15063/webkit-features-in-safari-17-4/), `AbortSignal.any()` support; accessed 10 September 2026.

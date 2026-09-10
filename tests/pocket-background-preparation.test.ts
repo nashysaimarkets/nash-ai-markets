@@ -1,4 +1,4 @@
-import { withDeadline } from "../app/pocket/async-deadline";
+import { withDeadline, throwIfCancelled } from "../app/pocket/async-deadline";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -25,7 +25,7 @@ function actualFunction(name: string) {
 
 function harness() {
   const h: vm.Context = {
-    Error, DOMException, AbortSignal, Promise, Date, crypto, withDeadline, normalizePatternFrame, bundleForChart,
+    Error, DOMException, AbortSignal, Promise, Date, crypto, withDeadline, throwIfCancelled, normalizePatternFrame, bundleForChart,
     image: samples[0].image, analysis: samples[0].report, resultCharts: samples.map((chart, index) => ({ ...chart, report: index === 0 ? chart.report : undefined })),
     activeChartId: samples[0].id, pendingChartId: null, sampleMode: false, busy: false, followUpBusy: false, liquidityRescanning: false,
     nativeAppleApp: false, appleAccess: { entitled: true }, document: { visibilityState: "visible" },
