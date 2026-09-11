@@ -8,4 +8,10 @@ See ../pocket-speed-verification-2026-09-11.md for measured performance and limi
 
 Release notes: Faster preparation of uploaded charts, earlier preparation of supporting timeframe reports, and improved reliability when switching between completed chart analyses. Existing evidence checks remain in place.
 
-The user authorized completion and publication of the recommendations. Build, Apple upload, processing and submission are pending until the workflow explicitly confirms them. No competitor-parity or real-chart accuracy claim is made by this release.
+The user authorized completion and publication of the recommendations. Build, upload, processing and review submission are confirmed below. No competitor-parity or real-chart accuracy claim is made by this release.
+
+## Completed build and upload
+
+Codemagic run 6aa488f63c485dbe0c4ce02e built exact revision 05fa8055e9c7f618cfdd5f5aa7f6c8be51672c84. All 1,037 unit tests passed with zero failures or skips; TypeScript, security scan, web build, immutable server validation and signed Xcode archive succeeded.
+
+Apple accepted the upload with no errors at 2026-09-11T23:08:19Z. Build/delivery UUID: 2aa80341-804e-4f67-8f9c-3c190b36ec70. Apple completed processing, created version 1.2.10 (App Store version 6a29c7da-602b-4465-ade2-df79efb57b17), and created review submission 2cc3a9e2-c2a3-4475-aab0-c76ce89b83e3. Release is configured AFTER_APPROVAL with phased release disabled. The completed workflow confirmed WAITING_FOR_REVIEW at 2026-09-11T23:11:18.116Z. Review details: https://appstoreconnect.apple.com/apps/6806004581/appstore/reviewsubmissions/details/2cc3a9e2-c2a3-4475-aab0-c76ce89b83e3. Apple approval and public availability of 1.2.10 remain pending; no rebuild or resubmission is needed for this release.
