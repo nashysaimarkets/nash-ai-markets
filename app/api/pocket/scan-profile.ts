@@ -1,10 +1,10 @@
-export type ScanProfile = "baseline" | "compact" | "fast" | "overlap" | "full-fast" | "full-parallel" | "focused";
-const profiles = new Set<ScanProfile>(["baseline", "compact", "fast", "overlap", "full-fast", "full-parallel", "focused"]);
+export type ScanProfile = "baseline" | "compact" | "fast" | "overlap" | "full-fast" | "full-parallel" | "focused" | "lossless" | "lossless-low";
+const profiles = new Set<ScanProfile>(["baseline", "compact", "fast", "overlap", "full-fast", "full-parallel", "focused", "lossless", "lossless-low"]);
 
 /** Trials are restricted to the dedicated preview branch and the normal request budget. */
 export function scanProfile(request: Request, env: Record<string, string | undefined> = process.env): ScanProfile {
   const configured = env.POCKET_SCAN_PROFILE ?? "full-parallel";
-  const trial = env.VERCEL_ENV === "preview" && ["feat/pocket-guided-speed-trial-2026-09-09", "feat/pocket-precision-speed-2026-09-09"].includes(env.VERCEL_GIT_COMMIT_REF ?? "");
+  const trial = env.VERCEL_ENV === "preview" && ["feat/pocket-guided-speed-trial-2026-09-09", "feat/pocket-precision-speed-2026-09-09", "feat/pocket-evidence-speed-2026-09-11"].includes(env.VERCEL_GIT_COMMIT_REF ?? "");
   const value = trial ? request.headers.get("x-pocket-trial-profile") || configured : configured;
   return profiles.has(value as ScanProfile) ? value as ScanProfile : "baseline";
 }

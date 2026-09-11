@@ -403,7 +403,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /const exactPrimaryInstrument = userVerifiedInstrument/);
   assert.match(analyseRoute, /verifiedPrecisionInstrumentIdentifier\(primaryPrecisionInstrumentIdentifier, primaryPrecisionInstrumentConfidence\)/);
   assert.match(analyseRoute, /enforcePocketTrustGate\(calibrated, finalGate\)/);
-  assert.match(analyseRoute, /reasoning: \{ effort: "medium" \}/);
+  assert.match(analyseRoute, /reasoning: \{ effort: profile === "lossless-low" \? "low" : "medium" \}/);
   assert.match(analyseRoute, /hedgeAfterMs: fast \? 60_000 : undefined/);
   const reportOutputCap = pocketAnalysisPolicy({ image: true, contextImage: true, detailImage: true, fourHourImage: true, indicatorImage: true }).reportOutputTokens;
   assert.match(analyseRoute, /max_output_tokens: recovery \? 20_000 : policy.reportOutputTokens/);

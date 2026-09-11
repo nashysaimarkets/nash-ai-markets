@@ -1,7 +1,7 @@
 "use client";
 
 import { normalizePatternFrame } from "./chart-images";
-import { bundleForChart, createChartSession, previousComparableScan, selectedChartReport, type ChartBundle, type UploadedChart } from "./chart-session";
+import { bundleForChart, createChartSession, mergeChartSession, previousComparableScan, selectedChartReport, type ChartBundle, type UploadedChart } from "./chart-session";
 import UploadGuide from "./UploadGuide";
 import { ChartWorkQueue } from "./chart-work-queue";
 import ChartTimeframePicker from "./ChartTimeframePicker";
@@ -1180,6 +1180,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const scanAllowance = useRef<{ remaining: number; resetAt: number } | null>(null);
   const backgroundActive = useRef(new Set<string>());
   const [backgroundWake, setBackgroundWake] = useState(0);
+  const [mainReportInFlight, setMainReportInFlight] = useState(false);
+  const preparedCharts = useRef(new Map<string, string>());
   useEffect(() => () => { chartWork.current.clear(); chartImageWork.current.clear(); }, []);
 
   const followUpRequestActive = useRef(false);
@@ -1370,7 +1372,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   function resetChartSession() {
     sessionRevision.current += 1;
     selectionRevision.current += 1; selectionActive.current = false;
-    chartWork.current.clear(); chartImageWork.current.clear(); backgroundActive.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear();
+    chartWork.current.clear(); chartImageWork.current.clear(); backgroundActive.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear(); preparedCharts.current.clear(); setMainReportInFlight(false);
     setResultCharts([]); setActiveChartId("image"); setPendingChartId(null); setSampleMode(false);
   }
 
@@ -1387,11 +1389,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const resumeAt = Math.max(providerPauseUntil.current, allowance?.remaining === 0 ? allowance.resetAt : 0);
     const timer = window.setTimeout(() => void prepareNextChart(), Math.max(0, resumeAt - Date.now()));
     return () => window.clearTimeout(timer);
-  }, [analysis, resultCharts, sampleMode, busy, pendingChartId, followUpBusy, liquidityRescanning, levelLabStatus, appleAccess, backgroundWake]);
+  }, [analysis, resultCharts, sampleMode, busy, pendingChartId, followUpBusy, liquidityRescanning, levelLabStatus, appleAccess, backgroundWake, mainReportInFlight]);
 
   async function prepareNextChart() {
-    if (!analysis || sampleMode || busy || backgroundActive.current.size >= 4
-      || analysisRequestActive.current || followUpBusy || liquidityRescanning || levelLabRequestActive.current
+    if ((!resultCharts[0]?.report && !mainReportInFlight) || sampleMode || (busy && !mainReportInFlight) || backgroundActive.current.size >= (mainReportInFlight ? 1 : 4)
+      || (analysisRequestActive.current && !mainReportInFlight) || followUpBusy || liquidityRescanning || levelLabRequestActive.current
       || document.visibilityState !== "visible" || Date.now() < providerPauseUntil.current) return;
     if (nativeAppleApp && !appleAccess?.entitled) return;
     const allowance = scanAllowance.current;
@@ -1399,7 +1401,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const revision = sessionRevision.current;
     const epoch = evidenceCacheEpoch.current;
     const jobKey = (id: string) => `${revision}:${epoch}:${id}`;
-    const chart = resultCharts.find((item) => !item.report && !item.preparation && !backgroundActive.current.has(jobKey(item.id)));
+    const chart = resultCharts.find((item) => !(mainReportInFlight && item.id === "image") && !item.report && !item.preparation && !backgroundActive.current.has(jobKey(item.id)));
     if (!chart) return;
     const key = jobKey(chart.id);
     backgroundActive.current.add(key);
@@ -1426,7 +1428,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
-  function initialiseChartSession(report: Analysis) {
+  function initialiseChartSession(report: Analysis, preservePrepared = false) {
+    if (preservePrepared) {
+      resultRevision.current += 1;
+      setResultCharts((current) => mergeChartSession(current, currentImages, currentNames, report));
+      setActiveChartId("image");
+      return;
+    }
     // Reanalysis and replacement uploads invalidate all earlier background work.
     sessionRevision.current += 1;
     chartWork.current.clear(); chartImageWork.current.clear(); backgroundActive.current.clear();
@@ -1898,7 +1906,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!image || (!options.background && analysisRequestActive.current)) throw new Error("An analysis is already running.");
     if (!options.background) analysisRequestActive.current = true;
     const requestPolicy = pocketAnalysisPolicy({ image, contextImage: selectedContext, detailImage, fourHourImage, indicatorImage });
-    const deadlineAt = Date.now() + requestPolicy.clientTimeoutMs;
+    const startedAt = Date.now();
+    const elapsed: Record<string, number> = {};
+    let outcome = "failed";
+    const mark = (stage: string) => { elapsed[stage] = Date.now() - startedAt; };
+    const deadlineAt = startedAt + requestPolicy.clientTimeoutMs;
     if (!options.background) { setBusy(true); setScanStage("PREPARING"); }
     try {
       const cacheKey = options.cacheKey;
@@ -1908,24 +1920,33 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         throwIfCancelled(options.signal);
         // Held, one-sided and pivot-only results must never become sticky.
         // A second chart counts only after server-side compatibility checks.
-        if (cached && hasVerifiedTwoSidedAnalysis(cached, Boolean(selectedContext))) {
-          if (!options.background) setScanStage("FINALISING");
-          return cached;
-        }
+        if (cached && hasVerifiedTwoSidedAnalysis(cached, Boolean(selectedContext))) { outcome = "cached"; mark("cache"); if (!options.background) setScanStage("FINALISING"); return cached; }
       }
       if (Date.now() < providerPauseUntil.current) throw new Error(providerPauseMessage.current);
+      mark("cache");
       const prepared = await withChartImages(`report:${cacheKey}`, async (signal) => {
         // This queue serialises canvas work across all concurrently running reports.
         // Already-bounded originals stay byte-for-byte unchanged.
-        const providerImage = await createProviderScanImage(image);
+        const prepareOnce = async (source: string) => {
+          const cached = preparedCharts.current.get(source);
+          if (cached) return cached;
+          const value = await createProviderScanImage(source);
+          throwIfCancelled(signal);
+          if (value) {
+            if (preparedCharts.current.size >= 5) preparedCharts.current.delete(preparedCharts.current.keys().next().value!);
+            preparedCharts.current.set(source, value);
+          }
+          return value;
+        };
+        const providerImage = await prepareOnce(image);
         throwIfCancelled(signal);
-        const providerContextImage = selectedContext ? await createProviderScanImage(selectedContext) : null;
+        const providerContextImage = selectedContext ? await prepareOnce(selectedContext) : null;
         throwIfCancelled(signal);
-        const providerDetailImage = detailImage ? await createProviderScanImage(detailImage) : null;
+        const providerDetailImage = detailImage ? await prepareOnce(detailImage) : null;
         throwIfCancelled(signal);
-        const providerFourHourImage = fourHourImage ? await createProviderScanImage(fourHourImage) : null;
+        const providerFourHourImage = fourHourImage ? await prepareOnce(fourHourImage) : null;
         throwIfCancelled(signal);
-        const providerIndicatorImage = indicatorImage ? await createProviderScanImage(indicatorImage) : null;
+        const providerIndicatorImage = indicatorImage ? await prepareOnce(indicatorImage) : null;
         throwIfCancelled(signal);
         if (!providerImage || (selectedContext && !providerContextImage) || (detailImage && !providerDetailImage) || (fourHourImage && !providerFourHourImage) || (indicatorImage && !providerIndicatorImage)) {
           throw new Error("That chart could not be prepared within the secure mobile upload limit. Crop it to the chart and price scale, then try again.");
@@ -1943,10 +1964,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         if (!options.background) setScanStage("MEASURING");
         for (const [source, role] of evidenceInputs) {
           throwIfCancelled(signal);
-          const measured = measuredCharts.current.get(source) ?? await measureChart(source, role);
-          if (measuredCharts.current.size >= 5 && !measuredCharts.current.has(source)) measuredCharts.current.delete(measuredCharts.current.keys().next().value!);
+          // The dedicated volume slot uses a different detection policy. Never
+          // relabel a cached result produced under the other policy.
+          const measurementKey = `${role === "INDICATOR_VOLUME" ? "volume" : "chart"}:${source}`;
+          const measured = measuredCharts.current.get(measurementKey) ?? await measureChart(source, role);
+          if (measuredCharts.current.size >= 10 && !measuredCharts.current.has(measurementKey)) measuredCharts.current.delete(measuredCharts.current.keys().next().value!);
           throwIfCancelled(signal);
-          measuredCharts.current.set(source, measured);
+          measuredCharts.current.set(measurementKey, measured);
           deterministicEvidence.push({ ...measured, role });
         }
         return { images: { image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage }, deterministicEvidence };
@@ -1956,8 +1980,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const { image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage } = prepared.images;
       if (!providerImage) throw new Error("Choose a chart first.");
       const { deterministicEvidence } = prepared;
+      mark("prepared");
       if (!options.background) setScanStage("SECOND_OPINION");
       options.onPhase?.("analysing");
+      if (!options.background) setMainReportInFlight(true);
       const response = await postPocketAnalysis(JSON.stringify({ image: providerImage, contextImage: providerContextImage, detailImage: providerDetailImage, fourHourImage: providerFourHourImage, indicatorImage: providerIndicatorImage, chartConfirmation: requestConfirmation, accuracyCorrection: requestCorrection, deterministicEvidence, precisionReceipts: options.bypassCache || requestCorrection ? [] : precisionReceiptCache.current }), { timeoutMs: Math.max(1, deadlineAt - Date.now()), signal: options.signal });
       throwIfCancelled(options.signal);
       const remaining = Number(response.headers.get("x-ratelimit-remaining"));
@@ -1969,6 +1995,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           remaining: previous?.resetAt === resetAt ? Math.min(previous.remaining, remaining) : remaining, resetAt,
         };
       }
+      mark("response");
       options.onPhase?.("verifying");
       const payload = await response.json() as { precisionReceipts?: string[]; analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string; code?: string };
       throwIfCancelled(options.signal);
@@ -2078,9 +2105,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         // persistence must never keep a validated chart stuck on Analysing.
         void withDeadline(() => analysisCacheSave(cacheKey, completedAnalysis), 1500, "Cache save unavailable").catch(() => undefined);
       }
+      outcome = "completed";
+      mark("verified");
       return completedAnalysis;
     } finally {
-      if (!options.background) { analysisRequestActive.current = false; setBusy(false); }
+      console.info("[pocket-client-timing]", JSON.stringify({ chartCount: requestPolicy.imageCount, background: Boolean(options.background), outcome, elapsedMs: Date.now() - startedAt, milestones: elapsed }));
+      if (!options.background) { analysisRequestActive.current = false; setMainReportInFlight(false); setBusy(false); }
     }
   }
 
@@ -2103,7 +2133,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setError("");
     try {
       if (!reviewTarget) {
+        resetChartSession();
         const revision = sessionRevision.current;
+        setResultCharts(createChartSession(currentImages, currentNames));
         const nextAnalysis = await requestPocketAnalysis(contextImage);
         if (revision !== sessionRevision.current) return;
         setStockEvents([]);
@@ -2117,7 +2149,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         // has been secured. If Keychain persistence fails, the request fails
         // closed instead of allowing the free analysis to be replayed.
         setAnalysis(nextAnalysis);
-        initialiseChartSession(nextAnalysis);
+        initialiseChartSession(nextAnalysis, true);
         void rememberScan(nextAnalysis, image);
         notifyPocketAnalysisReady(nextAnalysis.instrument);
         setResultView("cinema");

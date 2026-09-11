@@ -1,4 +1,4 @@
-import { withDeadline } from "./async-deadline";
+import { withDeadline, throwIfCancelled } from "./async-deadline";
 
 type Job<T> = { key: string; background: boolean; run: (signal: AbortSignal) => Promise<T>; controller: AbortController; promise: Promise<T>; resolve: (value: T) => void; reject: (error: unknown) => void };
 
@@ -42,7 +42,7 @@ export class ChartWorkQueue<T> {
       const job = this.jobs.shift()!;
       this.active.add(job);
       withDeadline(job.run, this.timeoutMs, "This chart could not finish. Your other results are still available; tap this chart to retry.", job.controller.signal).then((value) => {
-        job.controller.signal.throwIfAborted();
+        throwIfCancelled(job.controller.signal);
         if (this.completed.size >= 5) this.completed.delete(this.completed.keys().next().value!);
         this.completed.set(job.key, value);
         return value;

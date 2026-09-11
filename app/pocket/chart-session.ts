@@ -5,13 +5,25 @@ export type ChartBundle = Record<typeof POCKET_IMAGE_SLOTS[number][0], string | 
 export type UploadedChart = { id: string; image: string; name: string; timeframe: string; report?: Analysis; sourceImages?: ChartBundle; sourceNames?: string[]; preparation?: "queued" | "preparing" | "analysing" | "verifying" | "failed" };
 
 /** Source IDs are upload identities, not timeframes: two 1h crops stay separate. */
-export function createChartSession(images: ChartBundle, names: string[], report: Analysis): UploadedChart[] {
+export function createChartSession(images: ChartBundle, names: string[], report?: Analysis): UploadedChart[] {
   return POCKET_IMAGE_SLOTS.flatMap(([field, role], index) => {
     const image = images[field];
     if (!image) return [];
-    const contribution = report.evidencePack?.contributions.find((item) => item.role === role);
-    const timeframe = index === 0 ? report.timeframe : contribution?.timeframe;
-    return [{ id: field, image, name: names[index] || `Chart ${index + 1}`, timeframe: normalizePatternFrame(timeframe) ?? "READ FROM CHART", ...(index === 0 ? { report, sourceImages: images, sourceNames: names } : {}) }];
+    const contribution = report?.evidencePack?.contributions.find((item) => item.role === role);
+    const timeframe = index === 0 ? report?.timeframe : contribution?.timeframe;
+    return [{ id: field, image, name: names[index] || `Chart ${index + 1}`, timeframe: normalizePatternFrame(timeframe) ?? "READ FROM CHART", ...(index === 0 && report ? { report, sourceImages: images, sourceNames: names } : {}) }];
+  });
+}
+
+/** Attach the main result without cancelling or overwriting prepared siblings.
+ * An exact pack match is mandatory: every report used all supplied screenshots. */
+export function mergeChartSession(current: UploadedChart[], images: ChartBundle, names: string[], report: Analysis): UploadedChart[] {
+  const next = createChartSession(images, names, report);
+  const samePack = current.length === next.length && next.every((chart, i) => chart.id === current[i]?.id && chart.image === current[i]?.image);
+  if (!samePack) return next;
+  return next.map((chart, i) => i === 0 ? chart : {
+    ...chart, ...current[i],
+    timeframe: current[i].report ? current[i].timeframe : chart.timeframe,
   });
 }
 

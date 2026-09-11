@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import ts from "typescript";
-import { bundleForChart, createChartSession, previousComparableScan, selectedChartReport, comparisonIdentity } from "../app/pocket/chart-session";
+import { bundleForChart, createChartSession, mergeChartSession, previousComparableScan, selectedChartReport, comparisonIdentity } from "../app/pocket/chart-session";
 import { createSampleCharts } from "../app/pocket/sample-analysis";
 import { normalizePatternFrame } from "../app/pocket/chart-images";
 import { createScanMetrics } from "../app/api/pocket/scan-metrics";
@@ -149,7 +149,7 @@ test("the actual initial scan consumes a free use only after a readable result",
     const report = structuredClone(samples[0].report!);
     if (outcome === "poor") report.evidenceQuality.chartReadability = "POOR";
     if (outcome === "unreadable") report.evidenceQuality.candlesReadable = false;
-    const h: vm.Context = { Error, image: "chart", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, sessionRevision: { current: 1 }, appleAccess: { isNative: true, entitled: false, freeUseConsumed: false }, reviewTarget: null, preflightStatus: "READY", contextImage: null, consumed: 0, published: null,
+    const h: vm.Context = { Error, createChartSession, currentImages: {image: "chart", contextImage: null, detailImage: null, fourHourImage: null, indicatorImage: null}, currentNames: [], resetChartSession: () => undefined, setResultCharts: () => undefined, image: "chart", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, sessionRevision: { current: 1 }, appleAccess: { isNative: true, entitled: false, freeUseConsumed: false }, reviewTarget: null, preflightStatus: "READY", contextImage: null, consumed: 0, published: null,
       isAppleNativeApp: () => true, refreshAppleAccess: async () => h.appleAccess,
       preflightAllowsAnalysis: () => true, requestPocketAnalysis: async () => { if (outcome === "failed") throw new Error("timeout"); return report; },
       consumeAppleFreeUse: async () => { h.consumed++; }, setAnalysis: (value: unknown) => { h.published = value; },
@@ -190,4 +190,20 @@ test("a ready timeframe remains usable during a stalled switch and late work can
   finish(samples[2].report); await pending;
   assert.equal(h.activeChartId, samples[0].id); assert.equal(h.analysis, samples[0].report);
   assert.equal(h.remembered.length, 0);
+});
+
+
+test("main completion preserves warmed siblings only for the exact same evidence pack", () => {
+  const images = {image: "a", contextImage: "b", detailImage: "c", fourHourImage: null, indicatorImage: null};
+  const pending = createChartSession(images, []);
+  pending[1].report = samples[1].report;
+  pending[1].timeframe = "30M";
+  pending[2].preparation = "analysing";
+  const merged = mergeChartSession(pending, images, [], samples[0].report!);
+  assert.equal(merged[0].report, samples[0].report);
+  assert.equal(merged[1].report, samples[1].report);
+  assert.equal(merged[2].preparation, "analysing");
+  const changed = mergeChartSession(pending, {...images, detailImage: "replacement"}, [], samples[0].report!);
+  assert.equal(changed[1].report, undefined);
+  assert.equal(changed[2].preparation, undefined);
 });

@@ -32,8 +32,11 @@ function locatePlot(image: PixelImage) {
   const rowScores: number[] = [], colScores: number[] = [];
   for (let y = 1; y < image.height - 1; y += 2) { let transitions = 0; for (let x = 2; x < image.width - 2; x += 3) if (Math.abs(pixel(image, x - 2, y).light - pixel(image, x + 2, y).light) > 24) transitions++; rowScores.push(transitions); }
   for (let x = 1; x < image.width - 1; x += 2) { let transitions = 0; for (let y = 2; y < image.height - 2; y += 3) if (Math.abs(pixel(image, x, y - 2).light - pixel(image, x, y + 2).light) > 24) transitions++; colScores.push(transitions); }
-  const activeRows = rowScores.flatMap((score, index) => score >= percentile(rowScores, .58) ? [index * 2] : []);
-  const activeCols = colScores.flatMap((score, index) => score >= percentile(colScores, .58) ? [index * 2] : []);
+  // Thresholds are invariant. Sorting the same array once per row/column
+  // unnecessarily blocked the phone's main thread hundreds of times.
+  const rowThreshold = percentile(rowScores, .58), colThreshold = percentile(colScores, .58);
+  const activeRows = rowScores.flatMap((score, index) => score >= rowThreshold ? [index * 2] : []);
+  const activeCols = colScores.flatMap((score, index) => score >= colThreshold ? [index * 2] : []);
   if (activeRows.length < 8 || activeCols.length < 8) return { left: image.width * .04, top: image.height * .08, right: image.width * .86, bottom: image.height * .9, confidence: .2 };
   return { left: percentile(activeCols, .05), top: percentile(activeRows, .05), right: percentile(activeCols, .95), bottom: percentile(activeRows, .95), confidence: .55 };
 }

@@ -3,6 +3,13 @@ import assert from "node:assert/strict";
 import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../app/api/pocket/precision-receipt";
 import { ChartWorkQueue } from "../app/pocket/chart-work-queue";
 
+test("completed queue work supports WebViews without throwIfAborted", async () => {
+  const descriptor = Object.getOwnPropertyDescriptor(AbortSignal.prototype, "throwIfAborted");
+  Object.defineProperty(AbortSignal.prototype, "throwIfAborted", { configurable: true, value: undefined });
+  try { assert.equal(await new ChartWorkQueue<string>().request("chart", async () => "ready"), "ready"); }
+  finally { if (descriptor) Object.defineProperty(AbortSignal.prototype, "throwIfAborted", descriptor); }
+});
+
 test("signed evidence is bound to exact pixels, model, corrections, prompt and expiry", () => {
   const secret = "test-secret-only";
   const key = precisionReceiptKey("pixels-a", "model-a", null, "instructions-a");

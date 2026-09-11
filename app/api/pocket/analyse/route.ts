@@ -1,3 +1,4 @@
+import { createReportTransport, reportTransportInstruction } from "../report-transport";
 import { capacityRetrySeconds, noteCapacityExhausted, POCKET_CAPACITY_MESSAGE } from "../../../lib/server/pocket-provider-capacity";
 import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../precision-receipt";
 import { cachedReportMeasurements } from "../report-measurements";
@@ -334,10 +335,10 @@ export async function POST(request: Request) {
   const suppliedImages = { image, contextImage, detailImage, fourHourImage, indicatorImage };
   const profile = scanProfile(request);
   const compact = ["compact", "fast", "overlap"].includes(profile);
-  const fast = ["fast", "overlap", "full-fast", "full-parallel", "focused"].includes(profile);
-  const fastPrecision = profile === "full-fast" || profile === "full-parallel" || profile === "focused";
+  const fast = ["fast", "overlap", "full-fast", "full-parallel", "focused", "lossless", "lossless-low"].includes(profile);
+  const fastPrecision = fast && !compact;
   const policy = { ...pocketAnalysisPolicy(suppliedImages) };
-  if (profile === "overlap" || profile === "full-parallel" || profile === "focused") policy.parallelPrecision = true;
+  if (profile === "overlap" || profile === "full-parallel" || profile === "focused" || profile.startsWith("lossless")) policy.parallelPrecision = true;
   if (fast) {
     policy.reportAttemptTimeoutMs = 75_000;
     policy.reportRecoveryTimeoutMs = policy.imageCount === 1 ? 35_000 : 90_000;
@@ -345,7 +346,8 @@ export async function POST(request: Request) {
   }
   const metrics = createScanMetrics(policy.imageCount, (record) => console.info("[pocket-metrics]", JSON.stringify(record)));
   const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
-  const reportSchema = compact ? compactReportSchema(fullReportSchema) : profile === "focused" ? selectedPatternSchema(fullReportSchema) : fullReportSchema;
+  const transport = profile.startsWith("lossless") ? createReportTransport(fullReportSchema) : null;
+  const reportSchema = transport ? transport.schema : compact ? compactReportSchema(fullReportSchema) : profile === "focused" ? selectedPatternSchema(fullReportSchema) : fullReportSchema;
   const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
   if (!client) { budget.release?.(); metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
   const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
@@ -393,6 +395,7 @@ export async function POST(request: Request) {
       }),
     ]);
     providerSignal.throwIfAborted();
+    metrics.mark("context_ready");
     const marketEvents: SupplementalMarketEvent[] = providerRows.map((event, index) => ({
       id: `fmp-${event.at}-${index}`,
       name: event.name,
@@ -431,12 +434,13 @@ export async function POST(request: Request) {
       ? readPrecisionReceipt(precisionReceipts, receiptKey(contextImage, null), process.env.OPENAI_API_KEY) : null;
     const reportMeasurements = cachedReportMeasurements(cachedPrimary, cachedContext, authoritativeCurrentPrice);
     const analysisRequest = runPocketReport(async ({ signal, timeoutMs, recovery, noteOutputProgress }) => {
+      metrics.mark("report_started");
       const stream = client.responses.stream({
       model,
       service_tier: reportServiceTier(fast, recovery),
       // Preserve the demanding multi-timeframe judgment. The strict report
       // is kept terse below so its visible JSON does not waste output budget.
-      reasoning: { effort: "medium" },
+      reasoning: { effort: profile === "lossless-low" ? "low" : "medium" },
       store: false,
       instructions: [
         "You are Pocket Bullseye, a cautious chart-reading assistant.",
@@ -483,6 +487,7 @@ export async function POST(request: Request) {
         "Never estimate a hidden RSI, EMA, MACD, Bollinger Band, VWAP or ATR from pixels. Mention an indicator only when it is already clearly visible and readable in the screenshot.",
         "Name relevant event categories for the identified instrument, but never invent event names, dates or times. Keep summary, scenarios and invalidation under 40 words each.",
         ...(compact ? [compactReportInstruction] : []),
+        ...(transport ? [reportTransportInstruction] : []),
       ].join(" "),
       input: [{
         role: "user",
@@ -507,7 +512,7 @@ export async function POST(request: Request) {
       stream.on("response.output_text.delta", (event) => {
         outputChars += event.delta.length;
         if (event.delta.trim().length) { lastOutputAt = Date.now(); noteOutputProgress(); }
-        if (!firstOutput) { firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
+        if (!firstOutput) { metrics.mark("first_output"); firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
       });
       let response;
       try { response = await stream.finalResponse(); }
@@ -529,7 +534,8 @@ export async function POST(request: Request) {
         elapsedMs: Date.now() - routeStartedAt,
       }));
       completedPocketReportOutput(response);
-      return response;
+      metrics.mark("report_ready");
+      return transport ? { ...response, output_text: JSON.stringify(transport.decode(JSON.parse(response.output_text))) } : response;
     }, {
       signal: providerSignal,
       deadlineAt: Math.min(providerDeadlineAt, Date.now() + policy.reportTimeoutMs),
@@ -716,6 +722,7 @@ export async function POST(request: Request) {
           ? finishPrecision(contextFirst, contextImage, "context", contextPrecisionImage || null)
           : Promise.resolve(null),
       ]);
+      metrics.mark("precision_ready");
       console.info("[pocket-bullseye] precision completed", JSON.stringify({
         primary: Boolean(primary.output_text),
         context: Boolean(context?.output_text),
@@ -950,12 +957,13 @@ export async function POST(request: Request) {
         if (token) verifiedReceipts.push(token);
       }
     }
+    metrics.mark("validated");
     metrics.finish(finalGate.chartLocked ? "completed" : "inconclusive");
     return NextResponse.json(
       // Return the same official schedule snapshot used by this analysis so a
       // long-open browser tab cannot show an older event calendar.
       { analysis: finalAnalysis, macroContext, marketEvents, precisionReceipts: verifiedReceipts },
-      { headers: { ...pocketBudgetHeaders(budget), "x-pocket-scan-id": metrics.scanId } },
+      { headers: { ...pocketBudgetHeaders(budget), "x-pocket-scan-id": metrics.scanId, "server-timing": metrics.timingHeader() } },
     );
   } catch (error) {
     const failure = error && typeof error === "object" ? error as {

@@ -26,6 +26,7 @@ function actualFunction(name: string) {
 function harness() {
   const h: vm.Context = {
     Error, DOMException, AbortSignal, Promise, Date, crypto, withDeadline, throwIfCancelled, normalizePatternFrame, bundleForChart,
+    mainReportInFlight: false, setMainReportInFlight: () => undefined, preparedCharts: {current: new Map()},
     image: samples[0].image, analysis: samples[0].report, resultCharts: samples.map((chart, index) => ({ ...chart, report: index === 0 ? chart.report : undefined })),
     activeChartId: samples[0].id, pendingChartId: null, sampleMode: false, busy: false, followUpBusy: false, liquidityRescanning: false,
     nativeAppleApp: false, appleAccess: { entitled: true }, document: { visibilityState: "visible" },
@@ -49,6 +50,31 @@ function harness() {
   return h;
 }
 const tick = () => new Promise(setImmediate);
+
+test("one supporting chart starts during the main report, without resubmitting the primary", async () => {
+  const h = harness();
+  h.mainReportInFlight = true; h.busy = true; h.analysis = null; h.analysisRequestActive.current = true;
+  h.resultCharts = h.resultCharts.map((chart: (typeof samples)[number], index: number) => ({ ...chart, id: index === 0 ? "image" : chart.id, report: undefined }));
+  let finish!: (report: unknown) => void;
+  h.executePocketAnalysis = (options: unknown) => { h.calls.push(options); return new Promise(resolve => { finish = resolve; }); };
+  const first = h.prepareNextChart(); await tick();
+  await h.prepareNextChart();
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.calls[0].images.image, samples[1].image);
+  assert.equal(new Set(Object.values(h.calls[0].images)).size, 5);
+  finish(samples[1].report); await first;
+  assert.equal(h.analysis, null);
+  assert.equal(h.resultCharts[1].report, samples[1].report);
+});
+
+test("early preparation never consumes a native free use or starts after a failed main report", async () => {
+  const h = harness(); h.analysis = null; h.mainReportInFlight = true; h.busy = true;
+  h.nativeAppleApp = true; h.appleAccess = { entitled: false };
+  await h.prepareNextChart(); assert.equal(h.calls.length, 0);
+  h.nativeAppleApp = false; h.mainReportInFlight = false; h.busy = false;
+  h.resultCharts[0].report = undefined;
+  await h.prepareNextChart(); assert.equal(h.calls.length, 0);
+});
 
 test("opening the result prepares all four other charts without selecting them; all five then switch without scans", async () => {
   const h = harness();
