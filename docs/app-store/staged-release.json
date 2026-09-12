@@ -4,7 +4,9 @@
   "revision": "5ca5c0ab21a1f12303a53e5c25670c7a2fc87385",
   "appId": "6806004581",
   "predecessorVersion": "1.2.10",
-  "appleBuildId": null,
+  "appleBuildId": "6fe28ee2-f9d7-4683-883b-f131c201106f",
   "buildCommit": "deb0535a4fda1e49a6f4335f711f77cfdc3e53d0",
-  "codemagicBuildId": "6aa57b5103ab16d8826853b7"
+  "codemagicBuildId": "6aa57b5103ab16d8826853b7",
+  "processingState": "VALID",
+  "verifiedAt": "2026-09-12T16:28:37.922771+00:00"
 }

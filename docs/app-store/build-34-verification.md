@@ -38,7 +38,7 @@ Build 34 must initially use `pocket-bullseye-ios-stage-next`, which uploads the 
 - Upload delivery UUID: `6fe28ee2-f9d7-4683-883b-f131c201106f`.
 - Archive: 1,571,907 bytes, version 1.2.11 (34), iPhoneOS, minimum iOS 15.0.
 
-Uploading, processing, submission, and public availability are separate states. Apple processing confirmation and the exact Apple build resource ID are recorded in `staged-release.json` once verified.
+Uploading, processing, submission, and public availability are separate states. The read-only Apple verification run confirmed build 34 is `VALID`, unexpired, and belongs to app `6806004581` / iOS version `1.2.11`. Apple build ID: `6fe28ee2-f9d7-4683-883b-f131c201106f`. Version 1.2.10 remained `IN_REVIEW`; version 1.2.11 had not been submitted. Evidence: <https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa57d32697f36360a96d71f>.
 
 ## Deferred submission
 
