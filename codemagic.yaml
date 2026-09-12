@@ -72,8 +72,6 @@ workflows:
         auth: integration
         # Upload the next binary without disturbing a version already in review.
         submit_to_app_store: false
-        cancel_previous_submissions: false
-        release_type: AFTER_APPROVAL
 
   pocket-apple-release-status:
     name: Pocket Bullseye — Apple release status
