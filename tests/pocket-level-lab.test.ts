@@ -11,37 +11,29 @@ test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
   assert.match(client, /WHAT IS DEVELOPING NOW/);
 });
 
-test("Level Lab exposes a separate photo and levels-only rescan", () => {
-  assert.match(client, /INDEPENDENT LEVEL LAB/);
-  assert.match(client, /RESCAN LEVELS ONLY/);
+test("automatic level recovery remains while the duplicate manual scanner is removed", () => {
+  assert.doesNotMatch(client, /INDEPENDENT LEVEL LAB/);
+  assert.doesNotMatch(client, /RESCAN LEVELS ONLY/);
+  assert.doesNotMatch(client, /async function rescanLevelsOnly/);
+  assert.doesNotMatch(client, /bullseye-level-lab/);
   assert.match(client, /postLevelLabScan/);
   assert.match(client, /createLevelLabScanImage/);
-  assert.match(client, /JSON\.stringify\(\{ image: scanImage, primaryProvenance \}\)/);
-  const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
-  assert.doesNotMatch(merge, /requireAppleEntitlementForAdditionalRequest/);
+  assert.match(client, /JSON\.stringify\(\{ image: levelScanImage, primaryProvenance \}\)/);
 });
 
-test("Level Lab merges only price-map fields into the existing analysis", () => {
-  const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
-  assert.match(merge, /setAnalysis\(\(current\)/);
+test("automatic level recovery merges only price-map fields into the completed analysis", () => {
+  const merge = client.slice(client.indexOf("if (levelRecovery?.response.ok"), client.indexOf("if (liquidityRecovery?.response.ok"));
+  assert.match(merge, /completedAnalysis = invalidateDerivedChartEvidence/);
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
   assert.doesNotMatch(merge, /liquidityShield:/);
   assert.match(merge, /primaryProvenance/);
-  assert.doesNotMatch(merge, /plotBounds: analysis\.plotBounds/);
-  assert.doesNotMatch(merge, /priceScaleAnchors: analysis\.priceScaleAnchors/);
   assert.match(merge, /hasVerifiedTwoSidedStructure/);
   assert.match(merge, /provenance\?\.source === "LEVEL_LAB"/);
-  assert.match(merge, /returnedTwoSided && returnedTrustGate\.status === "LOCKED"/);
-  assert.match(merge, /!returnedTwoSided && returnedTrustGate\.status === "PARTIAL"/);
-  assert.match(merge, /returnedTrustGate\.scaleLocked === true/);
-  assert.match(merge, /stillBoundToPrimary/);
-  assert.match(merge, /current\.instrument === primaryProvenance\.instrument/);
-  assert.match(merge, /currentPrice: current\.currentPrice/);
-  assert.match(merge, /trustGate: returnedTrustGate/);
+  assert.match(merge, /returnedTwoSided/);
+  assert.match(merge, /recovered\.trustGate\.scaleLocked === true/);
+  assert.match(merge, /currentPrice: completedAnalysis\.currentPrice/);
+  assert.match(merge, /trustGate: recovered\.trustGate/);
   assert.match(merge, /x: Number\.NaN/);
-  assert.doesNotMatch(merge, /plotBounds: payload\.levels/);
-  assert.doesNotMatch(merge, /priceScaleAnchors: payload\.levels/);
-  assert.doesNotMatch(merge, /payload\.levels!\.currentPrice \|\| current\.currentPrice/);
 });
 
 test("independent endpoint fails closed on bad identity, price, scale and geometry while preserving an exact visible side", () => {
@@ -57,8 +49,7 @@ test("independent endpoint fails closed on bad identity, price, scale and geomet
   assert.doesNotMatch(route, /JSON\.parse\(output\) \}/);
   assert.match(route, /Do not produce or change a verdict, pattern, scenario, score, direction, plan or risk assessment/);
   assert.match(route, /if only one side is visible return that exact side and leave the missing side absent/i);
-  assert.match(client, /enforcePocketTrustGate\([\s\S]*returnedTrustGate/);
-  assert.match(client, /confidence, score and verdict are reduced safely/);
+  assert.match(client, /enforcePocketTrustGate\([\s\S]*recovered\.trustGate/);
   assert.match(route, /inFlightLevelLabRequests\.set\(completedKey, providerWork\)/);
   assert.match(route, /rememberCompletedRequest\(completedKey, result\)/);
   assert.match(route, /inFlightLevelLabRequests\.delete\(completedKey\)/);

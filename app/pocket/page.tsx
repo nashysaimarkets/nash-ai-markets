@@ -37,6 +37,7 @@ import "./pocket-precision-overhaul.css";
 import "./pocket-apple-paywall.css";
 import "./pocket-v1-1-hotfix.css";
 import "./pocket-decision-intelligence.css";
+import "./pocket-decision-engine.css";
 import "./pocket-decision-autopsy.css";
 import "./pocket-core-scans.css";
 import "./pocket-future-depth.css";

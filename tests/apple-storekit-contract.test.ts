@@ -48,8 +48,7 @@ test("every additional native AI request requires an Apple entitlement", async (
     const body = pocket.slice(start, start + 500);
     assert.match(body, /await requireAppleEntitlementForAdditionalRequest\(\)/, `${request} must refresh and gate before requesting`);
   }
-  const levelLab = pocket.slice(pocket.indexOf("async function rescanLevelsOnly"), pocket.indexOf("async function reanalyseResult"));
-  assert.doesNotMatch(levelLab, /requireAppleEntitlementForAdditionalRequest/, "Level Lab refines the current audit and must stay available on the free result");
+  assert.doesNotMatch(pocket, /async function rescanLevelsOnly/, "the duplicate manual level scanner is no longer a separate chargeable action");
   assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
   assert.match(pocket, /primaryChartReady && !reviewTarget \? <ChartPreflightPanel/);

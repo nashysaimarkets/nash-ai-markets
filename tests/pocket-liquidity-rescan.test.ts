@@ -41,8 +41,8 @@ test("a completed main scan automatically invokes independent recovery when prec
 });
 
 test("async chart uploads retain the input before React releases the event", () => {
-  const uploads = client.slice(client.indexOf("async function loadFile"), client.indexOf("async function rescanLevelsOnly"));
-  for (const handler of ["loadFile", "replaceSupportingFile", "loadSupportingFiles", "addResultContextFile", "addLevelLabFile"]) {
+  const uploads = client.slice(client.indexOf("async function loadFile"), client.indexOf("async function reanalyseResult"));
+  for (const handler of ["loadFile", "replaceSupportingFile", "loadSupportingFiles", "addResultContextFile"]) {
     const start = uploads.indexOf(`async function ${handler}`);
     const next = uploads.indexOf("\n  async function ", start + 1);
     const body = uploads.slice(start, next === -1 ? undefined : next);
@@ -52,6 +52,7 @@ test("async chart uploads retain the input before React releases the event", () 
     assert.doesNotMatch(body, /event\.target/, `${handler} must not use an unretained event target`);
     assert.match(body, /input\.value = "";/, `${handler} must release same-file selection`);
   }
+  assert.doesNotMatch(client, /async function addLevelLabFile|async function rescanLevelsOnly/);
 });
 
 test("new chart and review transitions cannot reuse a prior four-hour upload", () => {

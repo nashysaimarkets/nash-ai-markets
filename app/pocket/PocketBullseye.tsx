@@ -39,6 +39,7 @@ import { postPocketAnalysis } from "./analysis-request";
 import { needsPocketLiquidityRecovery, pocketAnalysisPolicy } from "./analysis-policy";
 import { pocketScanStageCopy, type PocketScanStage } from "./scan-progress";
 import { buildDecisionTimeline } from "./decision-timeline";
+import BullseyeDecisionEngine, { type ScanPerformance } from "./BullseyeDecisionEngine";
 
 import type { Direction, ToolKind, Level, FibLevel, Intention, SetupScore, Analysis, StockEvent, LockedDecision, FollowUpReply, ProcessReview } from "./analysis-types";
 
@@ -82,7 +83,7 @@ function derivedTrustGate(analysis: Analysis) {
   const structure = structuralEvidence(analysis);
   // Mirror the server's fail-closed identity/readability thresholds exactly.
   // A merely medium-confidence label or limited chart must not be promoted to
-  // LOCKED by the client after a correction or Level Lab update.
+  // LOCKED by the client after a correction or automatic level recovery.
   const derivedIdentityLocked = analysis.instrument !== "UNKNOWN"
     && analysis.timeframe !== "UNKNOWN"
     && analysis.evidenceQuality.instrumentConfidence === "HIGH"
@@ -123,7 +124,7 @@ function derivedTrustGate(analysis: Analysis) {
     reasons: [...structuralReasons, ...inheritedReasons].slice(0, 4),
     nextAction: structure.twoSided
       ? analysis.trustGate?.nextAction ?? "Confirm the marked levels on the source platform before acting."
-      : "Add one clearer price-scale chart or use Level Lab. Bullseye will not guess the missing side.",
+      : "Add one clearer price-scale chart. Bullseye will not guess the missing side.",
     structure,
   };
 }
@@ -459,7 +460,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
         : "Bullseye could not verify both support below and resistance above the current price from this chart. The map is withheld rather than guessed."}</p>
       {hasContext ? <nav aria-label="Precision hold actions">
         <a href="#bullseye-source-charts">VIEW BOTH SOURCE CHARTS</a>
-        <a href="#bullseye-level-lab">OPEN LEVEL LAB</a>
+        <button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD CLEARER CHART</button>
       </nav> : <button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD ONE CLEARER PRICE-SCALE CHART</button>}
       <small>NO ESTIMATED LEVELS · NO HIDDEN MAP</small>
     </section>;
@@ -1146,13 +1147,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [followUpBusy, setFollowUpBusy] = useState(false);
   const [followUpError, setFollowUpError] = useState("");
   const [refinementStatus, setRefinementStatus] = useState<"idle" | "attached" | "analysing" | "updated" | "error">("idle");
-  const [levelLabImage, setLevelLabImage] = useState<string | null>(null);
-  const [levelLabFileName, setLevelLabFileName] = useState("");
-  const [levelLabStatus, setLevelLabStatus] = useState<"idle" | "attached" | "scanning" | "updated" | "error">("idle");
-  const [levelLabError, setLevelLabError] = useState("");
   const [liquidityRescanning, setLiquidityRescanning] = useState(false);
   const [liquidityError, setLiquidityError] = useState("");
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
+  const [lastScanPerformance, setLastScanPerformance] = useState<ScanPerformance | null>(null);
 
   useEffect(() => {
     const refresh = () => { const now = new Date(); setEventClock({ now: now.getTime(), iso: now.toISOString() }); };
@@ -1185,7 +1183,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   useEffect(() => () => { chartWork.current.clear(); chartImageWork.current.clear(); }, []);
 
   const followUpRequestActive = useRef(false);
-  const levelLabRequestActive = useRef(false);
   const liquidityRequestActive = useRef(false);
   const activePrimaryImage = useRef<string | null>(image);
   const appleAccessRequestActive = useRef<Promise<AppleAccessStatus> | null>(null);
@@ -1374,6 +1371,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     selectionRevision.current += 1; selectionActive.current = false;
     chartWork.current.clear(); chartImageWork.current.clear(); backgroundActive.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear(); preparedCharts.current.clear(); setMainReportInFlight(false);
     setResultCharts([]); setActiveChartId("image"); setPendingChartId(null); setSampleMode(false);
+    setLastScanPerformance(null);
   }
 
   // Prepare every remaining upload while the customer reads the first result.
@@ -1389,11 +1387,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const resumeAt = Math.max(providerPauseUntil.current, allowance?.remaining === 0 ? allowance.resetAt : 0);
     const timer = window.setTimeout(() => void prepareNextChart(), Math.max(0, resumeAt - Date.now()));
     return () => window.clearTimeout(timer);
-  }, [analysis, resultCharts, sampleMode, busy, pendingChartId, followUpBusy, liquidityRescanning, levelLabStatus, appleAccess, backgroundWake, mainReportInFlight]);
+  }, [analysis, resultCharts, sampleMode, busy, pendingChartId, followUpBusy, liquidityRescanning, appleAccess, backgroundWake, mainReportInFlight]);
 
   async function prepareNextChart() {
     if ((!resultCharts[0]?.report && !mainReportInFlight) || sampleMode || (busy && !mainReportInFlight) || backgroundActive.current.size >= (mainReportInFlight ? 1 : 4)
-      || (analysisRequestActive.current && !mainReportInFlight) || followUpBusy || liquidityRescanning || levelLabRequestActive.current
+      || (analysisRequestActive.current && !mainReportInFlight) || followUpBusy || liquidityRescanning
       || document.visibilityState !== "visible" || Date.now() < providerPauseUntil.current) return;
     if (nativeAppleApp && !appleAccess?.entitled) return;
     const allowance = scanAllowance.current;
@@ -1462,7 +1460,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setActiveChartId(id); setAnalysis(report); setBattlefieldChart("primary");
     setChartConfirmation(null); setAccuracyCorrection(null); setCorrectionOriginal(null);
     setFollowUpReply(null); setFollowUpQuestion(""); setFollowUpError("");
-    setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError("");
     setLiquidityError(""); setRefinementBefore(null); setRefinementStatus("idle"); setSelectedScenario(null);
   }
 
@@ -1477,7 +1474,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function selectResultChart(id: string) {
-    if ((id === activeChartId && !selectionActive.current) || followUpBusy || liquidityRescanning || levelLabRequestActive.current) return;
+    if ((id === activeChartId && !selectionActive.current) || followUpBusy || liquidityRescanning) return;
     const charts = resultCharts.map((chart) => chart.id === activeChartId && analysis ? { ...chart, report: analysis } : chart);
     const selected = charts.find((chart) => chart.id === id);
     if (!selected) return;
@@ -1635,113 +1632,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } finally {
       input.value = "";
     }
-  }
-
-  async function addLevelLabFile(event: ChangeEvent<HTMLInputElement>) {
-    const input = event.currentTarget;
-    const file = input.files?.[0];
-    if (!file) return;
-    setLevelLabError("");
-    if (!file.type.startsWith("image/") || file.size > MAX_IMAGE_BYTES) {
-      setLevelLabStatus("error");
-      setLevelLabError("Please add a JPEG, PNG or WebP chart under 8 MB.");
-      input.value = "";
-      return;
-    }
-    try {
-      setLevelLabImage(await prepareImage(file));
-      setLevelLabFileName(file.name);
-      setLevelLabStatus("attached");
-    } catch {
-      setLevelLabStatus("error");
-      setLevelLabError("That chart could not be prepared safely.");
-    } finally { input.value = ""; }
-  }
-
-  async function rescanLevelsOnly() {
-    if (sampleMode) { setError("The sample uses fictional data. Upload your own chart to run a scan."); return; }
-    if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
-    const primaryCurrentPrice = numericLevel(analysis.currentPrice);
-    if (analysis.trustGate?.identityLocked !== true || primaryCurrentPrice === null) {
-      setLevelLabStatus("error");
-      setLevelLabError("Level Lab needs a verified primary instrument, timeframe and current price before it can replace the map.");
-      return;
-    }
-    levelLabRequestActive.current = true;
-    setLevelLabStatus("scanning");
-    setLevelLabError("");
-    try {
-      const scanImage = await createLevelLabScanImage(levelLabImage);
-      if (!scanImage) throw new Error("That Level Lab photo is too large to send safely. Crop it to the chart and price scale, then try again.");
-      const primaryProvenance = {
-        instrument: analysis.instrument,
-        ticker: analysis.ticker,
-        timeframe: analysis.timeframe,
-        currentPrice: analysis.currentPrice,
-        identityLocked: true as const,
-      };
-      const { response, payload } = await postLevelLabScan<{
-        levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory" | "trustGate"> & {
-          provenance?: { source?: string; primaryInstrument?: string; primaryTimeframe?: string; primaryCurrentPrice?: string; levelLabInstrument?: string };
-        };
-        error?: string;
-      }>(JSON.stringify({ image: scanImage, primaryProvenance }));
-      if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
-      const returnedCurrentPrice = numericLevel(payload.levels.currentPrice);
-      const returnedLevels = numericStructure(payload.levels.levels);
-      const provenance = payload.levels.provenance;
-      const provenancePrice = numericLevel(provenance?.primaryCurrentPrice);
-      const returnedTrustGate = payload.levels.trustGate;
-      const returnedTwoSided = hasVerifiedTwoSidedStructure(returnedLevels, primaryCurrentPrice);
-      const validTrustGate = returnedTrustGate?.chartLocked === true
-        && returnedTrustGate.identityLocked === true
-        && returnedTrustGate.exactLevelCount >= 1
-        && ((returnedTwoSided && returnedTrustGate.status === "LOCKED" && returnedTrustGate.scaleLocked === true)
-          || (!returnedTwoSided && returnedTrustGate.status === "PARTIAL"));
-      const validProvenance = provenance?.source === "LEVEL_LAB"
-        && provenance.primaryInstrument === analysis.instrument
-        && provenance.primaryTimeframe === analysis.timeframe
-        && provenancePrice === primaryCurrentPrice
-        && returnedCurrentPrice === primaryCurrentPrice
-        && payload.levels.levels.every((level) => level.source === "LEVEL_LAB");
-      if (!validProvenance || !validTrustGate) {
-        throw new Error("Level Lab could not verify a matching exact price map, so the existing analysis was left unchanged.");
-      }
-      setAnalysis((current) => {
-        const currentPrice = numericLevel(current?.currentPrice);
-        const stillBoundToPrimary = current
-          && current.trustGate?.identityLocked === true
-          && current.instrument === primaryProvenance.instrument
-          && current.timeframe === primaryProvenance.timeframe
-          && currentPrice === primaryCurrentPrice;
-        if (!current || !stillBoundToPrimary) return current;
-        const rescanned = enforcePocketTrustGate({
-          ...current,
-          // Level Lab may use a different crop or timeframe. Import its exact
-          // prices into the abstract Decision Map, but never draw its pixel
-          // coordinates over the original primary screenshot.
-          levels: payload.levels!.levels.map((level) => ({
-            ...level,
-            x: Number.NaN,
-            y: Number.NaN,
-            x2: Number.NaN,
-            y2: Number.NaN,
-          })),
-          // The secondary scan verifies compatibility but can never replace
-          // the already locked current-price provenance from the primary.
-          currentPrice: current.currentPrice,
-          trustGate: returnedTrustGate,
-          levelStory: payload.levels!.levelStory || current.levelStory,
-        }, returnedTrustGate) as Analysis;
-        return invalidateDerivedChartEvidence(rescanned, "PRIMARY_STRUCTURE_CHANGED");
-      });
-      setBattlefieldChart("primary");
-      if (contextImage) setRefinementStatus("attached");
-      setLevelLabStatus("updated");
-    } catch (caught) {
-      setLevelLabStatus("error");
-      setLevelLabError(caught instanceof Error ? caught.message : "The independent level scan could not complete.");
-    } finally { levelLabRequestActive.current = false; }
   }
 
   async function reanalyseResult() {
@@ -1908,7 +1798,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const requestPolicy = pocketAnalysisPolicy({ image, contextImage: selectedContext, detailImage, fourHourImage, indicatorImage });
     const startedAt = Date.now();
     const elapsed: Record<string, number> = {};
-    let outcome = "failed";
+    let outcome: ScanPerformance["outcome"] = "failed";
     const mark = (stage: string) => { elapsed[stage] = Date.now() - startedAt; };
     const deadlineAt = startedAt + requestPolicy.clientTimeoutMs;
     if (!options.background) { setBusy(true); setScanStage("PREPARING"); }
@@ -2109,7 +1999,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       mark("verified");
       return completedAnalysis;
     } finally {
-      console.info("[pocket-client-timing]", JSON.stringify({ chartCount: requestPolicy.imageCount, background: Boolean(options.background), outcome, elapsedMs: Date.now() - startedAt, milestones: elapsed }));
+      const elapsedMs = Date.now() - startedAt;
+      console.info("[pocket-client-timing]", JSON.stringify({ chartCount: requestPolicy.imageCount, background: Boolean(options.background), outcome, elapsedMs, milestones: elapsed }));
+      if (!options.background) setLastScanPerformance({ elapsedMs, outcome, chartCount: requestPolicy.imageCount });
       if (!options.background) { analysisRequestActive.current = false; setMainReportInFlight(false); setBusy(false); }
     }
   }
@@ -2309,7 +2201,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!await requireAppleEntitlementForAdditionalRequest()) return;
-    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setFourHourImage(null); setFourHourFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setLevelLabImage(null); setLevelLabFileName(""); setLevelLabStatus("idle"); setLevelLabError(""); setImmersive(false); setError("");
+    setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setFourHourImage(null); setFourHourFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setImmersive(false); setError("");
   }
 
   function startNewChart() {
@@ -2326,10 +2218,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setFourHourFileName("");
     setIndicatorImage(null);
     setIndicatorFileName("");
-    setLevelLabImage(null);
-    setLevelLabFileName("");
-    setLevelLabStatus("idle");
-    setLevelLabError("");
     setLiquidityError("");
     setChartConfirmation(null);
     setPreflightStatus("IDLE");
@@ -2378,7 +2266,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   if (review && reviewTarget) {
     const decisionTimeline = buildDecisionTimeline(reviewTarget);
-    return <main className="psApp" data-pocket-build="v3.2">
+    return <main className="psApp" data-pocket-build="v3.3">
       <section className="psResults psAutopsyResults" data-immersive="true">
         <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
         <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
@@ -2411,11 +2299,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const combinedAnalysis = enforcePocketTrustGate(scopedAnalysis, derivedTrustGate(scopedAnalysis)) as Analysis;
     const currentDecisionSaved = vault.some((item) => item.image === image && decisionSignature(item.analysis) === decisionSignature(analysis));
     const battlefieldAnalysis = combinedAnalysis;
-    const timeframePicker = (compact = false) => <ChartTimeframePicker charts={resultCharts} activeId={activeChartId} pendingId={pendingChartId} disabled={busy || followUpBusy || liquidityRescanning || levelLabStatus === "scanning"} onSelect={selectResultChart} compact={compact} />;
+    const timeframePicker = (compact = false) => <ChartTimeframePicker charts={resultCharts} activeId={activeChartId} pendingId={pendingChartId} disabled={busy || followUpBusy || liquidityRescanning} onSelect={selectResultChart} compact={compact} />;
     const battlefieldTabs = timeframePicker(true);
     const previousScan = previousComparableScan(vault, analysis, image ?? "");
     return (
-      <main className="psApp" data-pocket-build="v3.2" data-chart-focus={chartFocus ? "true" : "false"}>
+      <main className="psApp" data-pocket-build="v3.3" data-chart-focus={chartFocus ? "true" : "false"}>
         <section className="psResults" data-immersive={immersive ? "true" : "false"} data-chart-focus={chartFocus ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
@@ -2443,6 +2331,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <BullseyeDecisionEngine key={`decision-engine-${activeChartId}`} analysis={combinedAnalysis} charts={resultCharts} performance={lastScanPerformance} />
           {analysis.evidencePack?.contributions?.length ? <section className="psEvidenceContribution">
             <header><div><span>◎ EVIDENCE PACK USED</span><strong>{analysis.evidencePack.received}/5 IMAGES RECEIVED</strong></div><b>{analysis.evidencePack.contributions.filter((item) => item.used).length} CONTRIBUTED</b></header>
             <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : item.role === "FOUR_HOUR" ? "④" : "⑤"}</i><div><strong>{item.role === "PRIMARY" ? "PRIMARY CHART" : item.role === "HIGHER_TIMEFRAME" ? "SUPPORTING CHART 2" : item.role === "PRICE_DETAIL" ? "SUPPORTING CHART 3" : item.role === "FOUR_HOUR" ? "SUPPORTING CHART 4" : "INDICATOR / VOLUME"}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
@@ -2465,13 +2354,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </>}
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>SELECTED UPLOADED TIMEFRAME</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
-            <section id="bullseye-level-lab" className="psLevelLab" data-status={levelLabStatus} aria-live="polite" aria-busy={levelLabStatus === "scanning"}>
-              <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "MAP UPDATED" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
-              <p>Add a clearer price-scale photo, then rescan only this map. Patterns and scenarios stay unchanged; if the new map is partial, confidence, score and verdict are reduced safely.</p>
-              {levelLabImage ? <div className="psLevelLabPhoto"><img src={levelLabImage} alt="Chart selected for independent support and resistance scan" /><span>{levelLabFileName}</span></div> : null}
-              <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button></div>
-              {levelLabError ? <small role="alert">{levelLabError}</small> : null}
-            </section>
             {battlefieldTabs}
             <DecisionMap analysis={battlefieldAnalysis} sourceImage={image} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
             {battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}
@@ -2541,7 +2423,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   return (
-    <main className="psApp" data-pocket-build="v3.2">
+    <main className="psApp" data-pocket-build="v3.3">
       <header className="psHeader">
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
         <div className="psHeaderActions"><span>BULLSEYE ENGINE · PRIVATE BETA</span></div>
@@ -2612,4 +2494,3 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     </main>
   );
 }
-

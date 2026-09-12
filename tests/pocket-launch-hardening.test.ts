@@ -483,7 +483,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /NO VERIFIED TWO-SIDED LEVELS/);
   assert.match(client, /Bullseye checked both charts but could not verify support below and resistance above the current price\. The map is withheld rather than guessed\./);
   assert.match(client, /VIEW BOTH SOURCE CHARTS/);
-  assert.match(client, /OPEN LEVEL LAB/);
+  assert.match(client, /＋ ADD CLEARER CHART/);
+  assert.doesNotMatch(client, /OPEN LEVEL LAB/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
   assert.match(client, /REANALYSE ALL CHARTS/);
@@ -635,7 +636,7 @@ test("full-screen Decision Map keeps two independent exits inside the safe viewp
   assert.match(hotfix, /\.psBattleFocusBody[\s\S]*overflow: auto/);
   assert.match(hotfix, /\.psBattleFocusBody \.psSourceChartExpanded img[\s\S]*max-height: min\(68svh, 720px\)/);
   assert.match(hotfix, /\.psBattleFocus > header button \{ min-width: 64px; min-height: 44px; \}/);
-  assert.match(client, /<main className="psApp" data-pocket-build="v3\.2" data-chart-focus=\{chartFocus \? "true" : "false"\}>/);
+  assert.match(client, /<main className="psApp" data-pocket-build="v3\.3" data-chart-focus=\{chartFocus \? "true" : "false"\}>/);
   assert.match(hotfix, /\.psApp\[data-chart-focus="true"\],[\s\S]*\.psResults\[data-chart-focus="true"\] \{ perspective: none; \}/);
   assert.match(hotfix, /\.psXRayCanvas > img[\s\S]*height: auto[\s\S]*object-fit: contain/);
 });
