@@ -1,0 +1,10 @@
+{
+  "marketingVersion": "1.2.11",
+  "buildNumber": "34",
+  "revision": "5ca5c0ab21a1f12303a53e5c25670c7a2fc87385",
+  "appId": "6806004581",
+  "predecessorVersion": "1.2.10",
+  "appleBuildId": null,
+  "buildCommit": "deb0535a4fda1e49a6f4335f711f77cfdc3e53d0",
+  "codemagicBuildId": "6aa57b5103ab16d8826853b7"
+}

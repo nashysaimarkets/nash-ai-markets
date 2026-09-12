@@ -84,3 +84,16 @@ workflows:
         script: |
           app-store-connect apps app-store-versions 6806004581 --platform IOS --json
           app-store-connect get-latest-build-number 6806004581 --include-version
+          app-store-connect builds list --app-id 6806004581 --platform IOS --pre-release-version 1.2.11 --build-version-number 34 --json
+
+  pocket-apple-submit-staged:
+    name: Pocket Bullseye — Submit staged iPhone release
+    instance_type: mac_mini_m2
+    max_build_duration: 10
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    scripts:
+      - name: Verify review-preservation guard
+        script: python3 -m unittest discover -s scripts/tests -p 'test_submit_staged_iphone.py'
+      - name: Submit verified candidate after the preceding release completes
+        script: python3 scripts/submit-staged-iphone.py --submit

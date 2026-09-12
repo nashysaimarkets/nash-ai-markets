@@ -29,4 +29,19 @@ Status evidence: <https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa577
 
 Build 34 must initially use `pocket-bullseye-ios-stage-next`, which uploads the signed binary without submitting it for App Review. It must not cancel or modify build 33's submission. The regular release workflow retains automatic submission, `cancel_previous_submissions: false`, and release after approval.
 
-Uploading, processing, submission, and public availability must be recorded separately. At preparation time, build 34 has not yet been uploaded or submitted.
+## Signed build and upload
+
+- Native build source: `deb0535a4fda1e49a6f4335f711f77cfdc3e53d0`.
+- Codemagic run: <https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa57b5103ab16d8826853b7>.
+- All release checks, web build, revision verification, Capacitor sync, signing, and archive gates passed.
+- Apple upload succeeded with no errors on 12 September 2026 at 16:22:49 UTC.
+- Upload delivery UUID: `6fe28ee2-f9d7-4683-883b-f131c201106f`.
+- Archive: 1,571,907 bytes, version 1.2.11 (34), iPhoneOS, minimum iOS 15.0.
+
+Uploading, processing, submission, and public availability are separate states. Apple processing confirmation and the exact Apple build resource ID are recorded in `staged-release.json` once verified.
+
+## Deferred submission
+
+The manual `pocket-apple-submit-staged` workflow submits the already uploaded binary after the preceding release completes. It checks the exact Apple build ID, version and processing state; preserves all active review submissions; stops on unknown/rejected states or another draft; and avoids resubmitting a candidate that is already in review. It rechecks Apple immediately before submission, never passes a cancellation option, and requests release after approval. Run only one instance at a time. If submission fails or confirmation is incomplete, investigate before retrying.
+
+The guard has nine tests covering review preservation, pending release, rejections, unknown states, idempotence, newer releases, exact build identity, and CLI JSON parsing. The hourly release watch may invoke this workflow after confirming there is no run already active.
