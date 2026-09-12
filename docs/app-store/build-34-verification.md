@@ -45,3 +45,11 @@ Uploading, processing, submission, and public availability are separate states. 
 The manual `pocket-apple-submit-staged` workflow submits the already uploaded binary after the preceding release completes. It checks the exact Apple build ID, version and processing state; preserves all active review submissions; stops on unknown/rejected states or another draft; and avoids resubmitting a candidate that is already in review. It rechecks Apple immediately before submission, never passes a cancellation option, and requests release after approval. Run only one instance at a time. If submission fails or confirmation is incomplete, investigate before retrying.
 
 The guard has nine tests covering review preservation, pending release, rejections, unknown states, idempotence, newer releases, exact build identity, and CLI JSON parsing. The hourly release watch may invoke this workflow after confirming there is no run already active.
+
+### Live guard and automation confirmation
+
+The guarded workflow passed its tests and completed successfully in 34 seconds on 12 September 2026 at approximately 16:30 UTC. It confirmed the exact VALID build 34 and returned `STATUS: DEFERRED — Preserving 1.2.10: IN_REVIEW`. No App Review submission was changed. Evidence: <https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa57e18ec072f7bdbf95219>.
+
+The existing ChatGPT release watch was updated and enabled at 16:31 UTC with an hourly condition check in Europe/London. It uses only the guarded workflow, checks for overlapping runs, reports submission/release or blockers, and pauses after confirmed public release or a failure requiring attention. Automation ID: `6a9c7ef7946081919e4367a81692ff2c`.
+
+At handoff: build 34 is uploaded and Apple-validated, build 33 remains in review, and the new iPhone functionality is awaiting its subsequent App Review submission and approval.
