@@ -5,6 +5,7 @@ import { bundleForChart, createChartSession, mergeChartSession, previousComparab
 import UploadGuide from "./UploadGuide";
 import { ChartWorkQueue } from "./chart-work-queue";
 import ChartTimeframePicker from "./ChartTimeframePicker";
+import TimeframeEvidenceStrip from "./TimeframeEvidenceStrip";
 import ScanChanges from "./ScanChanges";
 import { createSampleCharts } from "./sample-analysis";
 
@@ -2310,7 +2311,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <button type="button" onClick={startNewChart}>NEW CHART</button>
           </div>
           {sampleMode ? <p className="psSampleBanner" role="status"><strong>FICTIONAL SAMPLE</strong> · These charts and results demonstrate the app. No live prices, AI scan or free-use charge. Choose NEW CHART to try your own.</p> : null}
-          <div className="psTimeframeSticky">{timeframePicker(true)}</div>
+          <TimeframeEvidenceStrip charts={resultCharts.map((chart) => chart.id === activeChartId ? { ...chart, report: analysis } : chart)} activeId={activeChartId} pendingId={pendingChartId} disabled={busy || followUpBusy || liquidityRescanning} onSelect={selectResultChart} />
           {resultCharts.some((chart) => !chart.report) ? <p className="psTimeframeHelp">{nativeAppleApp && !appleAccess?.entitled ? "Ready charts switch instantly. A subscription is needed to analyse other views." : "Other charts prepare in the background. Ready charts switch instantly."}</p> : null}
           {error ? <p className="psMessage" role="alert">{error}</p> : null}
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>

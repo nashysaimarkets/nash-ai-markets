@@ -29,3 +29,33 @@
 .psScanChanges .psChangeLedger article{display:block}
 .psScanChanges details summary{cursor:pointer;padding:10px 0}
 @media(max-width:430px){.psTimeframePicker{padding:10px}.psTimeframePicker>div:first-child>span{font-size:.75rem}.psComparisonImages{grid-template-columns:1fr}.psComparisonImages img{height:240px}}
+
+/* The comparison scrolls with the page; tall evidence cards never cover a chart. */
+.psTimeframeEvidence{margin:12px 0;padding:14px;border:1px solid #34515d;border-radius:16px;background:#101d26;color:#ecf3f5;min-width:0}
+.psTimeframeEvidence header,.psTimeframeEvidence header>div{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.psTimeframeEvidence header>div{justify-content:flex-start;gap:8px 14px}
+.psTimeframeEvidence header strong{font-size:.875rem;letter-spacing:.04em;color:#8ce3c4}
+.psTimeframeEvidence header span,.psTimeframeEvidence p{font-size:.875rem;line-height:1.5;color:#bbced7}
+.psTimeframeEvidence header button{min-height:44px;padding:6px 8px;background:transparent;border:1px solid #47606e;border-radius:8px;color:#ecf3f5;font:inherit;font-size:.875rem;cursor:pointer}
+.psTimeframeEvidence nav{display:flex;gap:10px;overflow-x:auto;padding:10px 2px 8px;scrollbar-width:thin;scroll-snap-type:x proximity}
+.psTimeframeEvidence .psEvidenceCard{flex:1 0 196px;min-width:0;display:flex;flex-direction:column;gap:10px;text-align:left;padding:12px;border:1px solid #47606e;border-radius:12px;background:#142630;color:#ecf3f5;font:inherit;cursor:pointer;scroll-snap-align:start}
+.psTimeframeEvidence .psEvidenceCard[data-active=true]{border-color:#8ce3c4;box-shadow:inset 0 3px #8ce3c4;background:#17332f}
+.psEvidenceSource{display:flex;align-items:center;gap:8px;min-width:0}
+.psEvidenceSource img{flex:0 0 56px;width:56px;height:44px;object-fit:contain;background:#071018;border-radius:4px}
+.psEvidenceSource>span:not(.psEvidenceNumber){display:flex;flex-direction:column;gap:3px;min-width:0;overflow-wrap:anywhere}
+.psEvidenceSource b{font-size:1.125rem;line-height:1.3}
+.psEvidenceSource small,.psEvidenceNumber{font-size:.75rem;line-height:1.4;color:#bbced7}
+.psEvidenceNumber{margin-left:auto;align-self:flex-start}
+.psEvidenceMetric{display:flex;flex-direction:column;gap:3px;font-size:.875rem;line-height:1.5;overflow-wrap:anywhere}
+.psEvidenceMetric:not(.psEvidenceCopy){flex-direction:row;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.psEvidenceMetric>span:first-child{color:#a9becb}
+.psEvidenceMetric b{font-weight:600}
+.psEvidenceCopy>span:last-child{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:3em}
+.psTimeframeEvidence[data-expanded=true] .psEvidenceCopy>span:last-child{display:block;overflow:visible}
+.psEvidenceAgreement{margin-top:auto;padding-top:9px;border-top:1px solid #47606e;font-size:.875rem;line-height:1.5}
+.psEvidencePending{display:grid;place-content:center;flex:1;min-height:140px;font-size:.875rem;line-height:1.5;color:#bbced7}
+.psTimeframeEvidence [data-tone=bullish]{color:#8ce3c4}.psTimeframeEvidence [data-tone=bearish],.psTimeframeEvidence [data-tone=conflict]{color:#ffa4ae}.psTimeframeEvidence [data-tone=neutral]{color:#f4d28a}.psTimeframeEvidence [data-tone=muted]{color:#bbced7}
+.psTimeframeEvidence button:focus-visible{outline:3px solid #f7ce71;outline-offset:2px}
+.psTimeframeEvidence button:disabled{cursor:wait;opacity:.7}
+.psTimeframeEvidence p{margin:6px 0 0}
+@media(max-width:430px){.psTimeframeEvidence{padding:10px}.psTimeframeEvidence .psEvidenceCard{flex-basis:182px;padding:10px}.psTimeframeEvidence header{align-items:flex-start}.psTimeframeEvidence header>div{flex:1;flex-direction:column;align-items:flex-start;gap:4px}}
