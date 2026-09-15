@@ -27,7 +27,32 @@ Native StoreKit device checks remain pending and are not implied by these automa
 - Finished staging run: https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa97cee48382671285799f9
 - Finished read-only verification: https://codemagic.io/app/6a90a2752815719e2161c656/build/6aa9800f284f8dfd188e8920
 
-The verification used the pinned candidate and found exactly one matching build. Apple still listed 1.2.11 as READY_FOR_DISTRIBUTION / READY_FOR_SALE; no 1.2.12 App Store version appeared. The staging workflow uploaded this binary without submitting it to App Review. Automatic release after approval and preservation of existing submissions remain configured.
+The verification used the pinned candidate and found exactly one matching build. Apple listed 1.2.11 as READY_FOR_DISTRIBUTION / READY_FOR_SALE. At that earlier check there was no 1.2.12 App Store draft; the authenticated continuation below subsequently created it. The staging workflow uploaded this binary without submitting it to App Review.
+
+## App Store preparation completed
+
+Apple account access succeeded on 15 September 2026. At 18:22 UTC the saved [1.2.12 draft](https://appstoreconnect.apple.com/apps/6806004581/distribution/ios/version/inflight) showed **Prepare for Submission** with build **35**, whose link identifies the exact Apple build ID above. The English (U.K.) What's New field matches `release_notes.json`. Existing screenshots, description and review information were inherited. **Automatically release this version** is selected, with immediate availability to all users after approval and existing ratings retained. Save was disabled after completion; Add for Review was available but was not selected.
+
+The App Review page showed the latest 1.2.11 submission as **Review Completed**, with no active review displayed. Version 1.2.11 remains the released version. The new draft is not an App Review submission or a release.
+
+### Published privacy declarations
+
+At approximately 18:14 UTC, [App Privacy](https://appstoreconnect.apple.com/apps/6806004581/distribution/privacy) showed the update as published by Chris Nash, with eight configured data types and no incomplete-setup warning.
+
+| Data type | Purpose | Linked to identity | Tracking | Change |
+| --- | --- | --- | --- | --- |
+| Product Interaction | Analytics | No | No | Added and published |
+| Performance Data | Analytics | No | No | Added and published |
+| Email Address, Customer Support, User ID, Purchase History | App Functionality | Yes | Existing answers preserved | Preserved |
+| Photos or Videos, Other Diagnostic Data | App Functionality | No | Existing answers preserved | Preserved |
+
+The new aggregate events contain no customer, device or session identifiers. This does not describe all collection by the app; existing chart, account and purchase disclosures remain in place. The privacy-policy URL remains `https://www.nashaimarkets.com/privacy`.
+
+### TestFlight preparation
+
+[Build 35](https://appstoreconnect.apple.com/teams/e94ce30a-fffc-4aaa-b644-f23c6759fd7a/apps/6806004581/testflight/ios/e57995be-c2f3-429c-b24d-d43b6b35da5c) was already assigned to Pocket Bullseye Internal Testers, containing one existing tester. No invitations or access changes were made. Apple showed **1.2.11 (34)** installed on that tester's iPhone 16, iOS 26.6.2; this does not verify installation or testing of 35.
+
+The build's What to Test field was saved with the exact checklist in `TESTFLIGHT_1_2_12.txt`. It asks for device and iOS details, sandbox purchase checks, persistent opt-out before the remaining activity, and explicit not-tested results where existing allowance or subscription state prevents a check. Do not reset customer data to force a test. TestFlight alone does not automatically mark aggregate events as tests.
 
 ## Production reporting verified
 
@@ -48,10 +73,9 @@ The migration creates reporting objects and does not delete or rewrite existing 
 Before any App Store submission:
 
 1. Complete the actual iPhone/TestFlight checks below on **1.2.12 (35)** and record the device, iOS version, date, and observed results.
-2. Reconcile App Store Connect privacy answers with actual collection, including Product Interaction and Performance Data for Analytics, unlinked and not used for tracking. These new totals contain no customer/device/session identifiers. Preserve accurate disclosures for existing chart, account and purchase processing. App Store Connect remained signed out at the latest check; the earlier secure sign-in attempt failed and a manual browser handoff was requested. No privacy update has been made.
-3. Refresh Apple's current version and review state immediately before submission and preserve any active review.
-4. Reconcile the historical `staged-release.json` only after the device and privacy gates pass, using the verified build ID above and predecessor 1.2.11. Until then it intentionally does not match the new candidate pin, so submission fails closed.
-5. Submit the verified existing candidate using automatic release after approval; record Apple's submission and release states separately.
+2. Refresh Apple's current version and review state immediately before submission and preserve any active review. The privacy gate above is complete.
+3. Reconcile the historical `staged-release.json` only after the device checks pass, using the verified build ID above and predecessor 1.2.11. Until then it intentionally does not match the new candidate pin, so the submission workflow fails closed.
+4. Submit the verified existing candidate using automatic release after approval; record Apple's submission and release states separately.
 
 | Device check | Required result | Status |
 | --- | --- | --- |
@@ -66,4 +90,4 @@ Before any App Store submission:
 
 Apple's privacy guidance: https://developer.apple.com/app-store/app-privacy-details/
 
-An uploaded binary, passing unit tests, or an in-app purchase event is not evidence of an App Store release or a paying customer. Native device and privacy checks are not established by browser or mocked tests.
+An uploaded binary, saved App Store draft, passing unit tests, or an in-app purchase event is not evidence of an App Store release or a paying customer. Native device behavior is not established by browser or mocked tests.

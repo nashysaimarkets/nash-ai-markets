@@ -1,0 +1,14 @@
+Pocket Bullseye 1.2.12 (35) — iPhone checks
+
+Please run these checks in this TestFlight build and report the device, iOS version and result for each item. Use sandbox purchases for the purchase checks.
+
+1. Open the fictional sample: it should open without waiting for the live calendar.
+2. Turn anonymous usage counts off, close and reopen the app, and confirm the choice stays off. Leave counts off during the remaining test activity.
+3. Where a free allowance is available, confirm one completed analysis uses it and a failed analysis leaves it available.
+4. After free use, open the subscription screen directly.
+5. Repeatedly tap purchase or restore: only one operation should run at a time.
+6. Cancel a purchase: paid access must not be granted and the screen should remain usable.
+7. Complete a sandbox purchase and confirm paid analysis access.
+8. Use Restore Purchases and confirm the existing test purchase restores access.
+
+If an existing allowance or subscription prevents a check, report it as not tested. Do not reset customer data to force a test. Include any error text or a screen recording for failures.
