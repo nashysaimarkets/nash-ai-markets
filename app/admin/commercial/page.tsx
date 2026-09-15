@@ -24,7 +24,7 @@ export default async function CommercialAdminPage() {
     loadWaitlistMetrics(),
     loadPocketLaunchReport(),
   ]);
-  return <main className="foundingAdminPage launchDashboard"><header><div><span>OWNER ONLY · LIVE STRIPE REPORT</span><h1>Pocket launch control</h1><p>Verified subscription and payment information from Stripe. Figures refresh whenever this page is opened.</p></div><div><Link href="/admin/founding-100">Founding register</Link><br /><Link href="/dashboard">Main dashboard</Link></div></header>
+  return <main className="foundingAdminPage launchDashboard"><header><div><span>OWNER ONLY · LIVE STRIPE REPORT</span><h1>Pocket web subscriptions</h1><p>Stripe web billing only, including owner and trial subscriptions. Apple App Store purchases are reported separately in App Store Connect.</p></div><div><Link href="/admin/pocket-growth">Customer journey and promotion</Link><br /><Link href="/admin/founding-100">Founding register</Link><br /><Link href="/dashboard">Main dashboard</Link></div></header>
     {pocket.status === "unavailable" ? <section className="foundingAdminUnavailable" role="alert"><h2>Live Pocket figures temporarily unavailable</h2><p>Nothing has been estimated. Retry shortly or review Stripe directly.</p></section> : <>
       <section className="launchStatus"><i></i><span>LIVE CONNECTION</span><strong>Stripe reporting verified</strong><small>Last checked {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/London" }).format(new Date())}</small></section>
       <section className="foundingAdminSummary launchMetrics" aria-label="Pocket launch metrics">

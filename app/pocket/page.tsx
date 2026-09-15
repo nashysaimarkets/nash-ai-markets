@@ -44,6 +44,7 @@ import "./pocket-future-depth.css";
 import "./pocket-chart-captions.css";
 import "./pocket-timeframes.css";
 import "./upload-guide.css";
+import "./pocket-growth.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
@@ -60,7 +61,9 @@ export const viewport: Viewport = {
   themeColor: "#0a0e13",
 };
 
-export default async function PocketPage() {
-  const macroContext = await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
+export default async function PocketPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sample = (await searchParams).demo === "1";
+  // Fictional samples have no live events and must not wait for calendar providers.
+  const macroContext = sample ? createUnavailableMacroContext() : await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
   return <PocketBullseye macroContext={macroContext} />;
 }
