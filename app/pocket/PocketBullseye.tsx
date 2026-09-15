@@ -7,6 +7,8 @@ import { ChartWorkQueue } from "./chart-work-queue";
 import ChartTimeframePicker from "./ChartTimeframePicker";
 import ScanChanges from "./ScanChanges";
 import { createSampleCharts } from "./sample-analysis";
+import { AppStoreLink, UsageControl } from "./GrowthControls";
+import { trackGrowth } from "./growth-client";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -1125,6 +1127,21 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [activeChartId, setActiveChartId] = useState("image");
   const [pendingChartId, setPendingChartId] = useState<string | null>(null);
   const [sampleMode, setSampleMode] = useState(false);
+  const initialEntryHandled = useRef(false);
+  const lastCountedUpload = useRef<string | null>(null);
+  useEffect(() => {
+    if (initialEntryHandled.current) return;
+    initialEntryHandled.current = true;
+    trackGrowth("app_opened", { once: "app_opened" });
+    if (new URLSearchParams(window.location.search).get("demo") === "1") openSample();
+  }, []);
+  useEffect(() => {
+    if (!image) { lastCountedUpload.current = null; return; }
+    if (!analysis && !sampleMode && image !== lastCountedUpload.current) {
+      lastCountedUpload.current = image;
+      trackGrowth("chart_uploaded", { flow: isAppleNativeApp() ? "browse" : "web" });
+    }
+  }, [image, analysis, sampleMode]);
   const selectionActive = useRef(false);
   const selectionRevision = useRef(0);
   const sessionRevision = useRef(0);
@@ -1501,6 +1518,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   function openSample() {
+    trackGrowth("sample_viewed", { flow: "sample" });
     const charts = createSampleCharts();
     resetChartSession(); setSampleMode(true);
     activateResultChart(charts, charts[0].id, charts[0].report!);
@@ -2022,6 +2040,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
+    const activityStartedAt = Date.now();
+    const activityFlow = currentAppleAccess?.isNative ? (currentAppleAccess.entitled ? "paid" : "free") : "web";
+    if (!reviewTarget) trackGrowth("scan_started", { flow: activityFlow });
     setError("");
     try {
       if (!reviewTarget) {
@@ -2041,6 +2062,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         // has been secured. If Keychain persistence fails, the request fails
         // closed instead of allowing the free analysis to be replayed.
         setAnalysis(nextAnalysis);
+        trackGrowth("scan_completed", { flow: activityFlow, durationMs: Date.now() - activityStartedAt });
         initialiseChartSession(nextAnalysis, true);
         void rememberScan(nextAnalysis, image);
         notifyPocketAnalysisReady(nextAnalysis.instrument);
@@ -2073,6 +2095,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setReviewTarget(completedDecision);
       setReview(payload.review); setImmersive(true);
     } catch (caught) {
+      if (!reviewTarget) trackGrowth("scan_failed", { flow: activityFlow, durationMs: Date.now() - activityStartedAt });
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
       analysisRequestActive.current = false;
@@ -2310,6 +2333,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <button type="button" onClick={startNewChart}>NEW CHART</button>
           </div>
           {sampleMode ? <p className="psSampleBanner" role="status"><strong>FICTIONAL SAMPLE</strong> · These charts and results demonstrate the app. No live prices, AI scan or free-use charge. Choose NEW CHART to try your own.</p> : null}
+          {sampleMode && !nativeAppleApp ? <div className="psAppStoreEntry"><AppStoreLink>Try your own chart free on iPhone or iPad</AppStoreLink><span>One complete analysis free. Then £4.99/month in the UK; regional pricing varies.</span><UsageControl /></div> : null}
+          {!sampleMode && appleNeedsSubscription && appleAccess ? <div className="psAppStoreEntry"><button type="button" onClick={() => openApplePaywall(appleAccess)}>Continue with more analyses · {appleAccess.displayPrice}/month</button><span>Renews automatically. Cancel in Apple settings.</span></div> : null}
           <div className="psTimeframeSticky">{timeframePicker(true)}</div>
           {resultCharts.some((chart) => !chart.report) ? <p className="psTimeframeHelp">{nativeAppleApp && !appleAccess?.entitled ? "Ready charts switch instantly. A subscription is needed to analyse other views." : "Other charts prepare in the background. Ready charts switch instantly."}</p> : null}
           {error ? <p className="psMessage" role="alert">{error}</p> : null}
@@ -2426,11 +2451,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     <main className="psApp" data-pocket-build="v3.3">
       <header className="psHeader">
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
-        <div className="psHeaderActions"><span>BULLSEYE ENGINE · PRIVATE BETA</span></div>
+        <div className="psHeaderActions"><span>POCKET BULLSEYE · CHART ANALYSIS</span></div>
       </header>
       <section className="psScanner">
         <section className="psLaunchHero">
-          <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "PRIVATE PRE-TRADE AUDIT"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>
+          <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "YOUR PRE-TRADE REVIEW"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>
           {!reviewTarget ? <div className="psLaunchTarget" aria-hidden="true"><i /><i /><i /><b>🎯</b><span>SCANNING<br />FOR CLARITY</span></div> : null}
           {!reviewTarget ? <div className="psLaunchSignals" aria-label="Bullseye decision perspectives"><article data-tone="bull"><b>🐂</b><span>BULL CASE</span></article><article data-tone="wait"><b>🛡️</b><span>PATIENCE</span></article><article data-tone="bear"><b>🐻</b><span>BEAR CASE</span></article></div> : null}
         </section>
@@ -2438,6 +2463,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         {!reviewTarget ? <div className="psTrustPulse"><span>🔒 PRIVATE IMAGE</span><span>◉ EVIDENCE FIRST</span><span>✕ NO ORDER CONNECTION</span></div> : null}
         {!reviewTarget ? <label className="psPersonalTouch"><span><strong>MAKE BULLSEYE YOURS</strong><small>OPTIONAL · STAYS ON THIS DEVICE</small></span><input value={viewerName} maxLength={24} autoComplete="given-name" placeholder="What should Bullseye call you?" onChange={(event) => { const value = event.target.value; setViewerName(value); try { localStorage.setItem("pocket-bullseye-viewer-name", value); } catch {} }} /></label> : null}
         {!image && !reviewTarget ? <button className="psSampleButton" type="button" onClick={openSample}>EXPLORE A SAMPLE ANALYSIS<small>Five fictional timeframes · no upload or subscription needed</small></button> : null}
+        {!image && !reviewTarget && !nativeAppleApp ? <div className="psAppStoreEntry"><AppStoreLink>Get Pocket Bullseye for iPhone & iPad</AppStoreLink><span>One complete analysis free in the app. Then £4.99/month in the UK; regional pricing varies.</span></div> : null}
+        {!image && !reviewTarget && appleNeedsSubscription && appleAccess ? <button className="psSampleButton" type="button" onClick={() => openApplePaywall(appleAccess)}>CONTINUE WITH A SUBSCRIPTION<small>{appleAccess.displayPrice}/month · renews automatically · cancel in Apple settings</small></button> : null}
+        {!image && !reviewTarget ? <UsageControl /> : null}
         {!reviewTarget ? <UploadGuide detected={chartConfirmation?.timeframe} /> : null}
         <label id="pocket-chart-upload" className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>

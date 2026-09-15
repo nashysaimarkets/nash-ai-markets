@@ -154,12 +154,14 @@ test("the actual initial scan consumes a free use only after a readable result",
       preflightAllowsAnalysis: () => true, requestPocketAnalysis: async () => { if (outcome === "failed") throw new Error("timeout"); return report; },
       consumeAppleFreeUse: async () => { h.consumed++; }, setAnalysis: (value: unknown) => { h.published = value; },
       recordAppleSuccessfulAnalysis: async () => undefined, rememberScan: async () => undefined,
+      activity: [] as string[], trackGrowth: (event: string) => h.activity.push(event),
     };
     for (const name of ["setError", "setStockEvents", "setStockEventStatus", "setAppleAccess", "initialiseChartSession", "setResultView", "setImmersive", "setShowResultReveal", "setBusy", "notifyPocketAnalysisReady"]) h[name] = () => undefined;
     vm.runInContext(actualFunction("analyse"), vm.createContext(h));
     await h.analyse();
     assert.equal(h.consumed, outcome === "ready" ? 1 : 0, outcome);
     assert.equal(Boolean(h.published), outcome === "ready", outcome);
+    assert.deepEqual(h.activity, ["scan_started", outcome === "ready" ? "scan_completed" : "scan_failed"], outcome);
   }
 });
 

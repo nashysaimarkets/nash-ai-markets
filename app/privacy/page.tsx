@@ -62,6 +62,9 @@ export default function Privacy() {
           technical request logs to operate and secure the service.
         </p>
 
+        <h2 id="usage-counts">Anonymous usage counts</h2>
+        <p>We count introduction views, sample use, App Store link clicks, uploads, completed or failed analyses, and subscription-screen actions to improve the service. Only daily totals are retained, grouped by web or iPhone app, a fixed campaign category and feature. These totals contain no names, email addresses, account or device identifiers, individual browsing history, chart contents or prices. They are not used for advertising profiles. Sample and test activity are counted separately from real analysis.</p>
+        <p>No analytics cookie or persistent analytics identifier is created. You can turn these counts off using the usage control on the introduction, app entry or subscription screen. Your choice is saved only on this device. We also respect browser Do Not Track and Global Privacy Control signals. Existing hosting security logs are separate from these statistics.</p>
         <h2>Retention and your rights</h2>
         <p>
           We retain information only as long as reasonably necessary. UK data-protection law may
