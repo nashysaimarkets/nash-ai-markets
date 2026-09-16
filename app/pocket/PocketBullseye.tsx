@@ -9,6 +9,7 @@ import ScanChanges from "./ScanChanges";
 import { createSampleCharts } from "./sample-analysis";
 import { AppStoreLink, UsageControl } from "./GrowthControls";
 import { trackGrowth } from "./growth-client";
+import PocketDepthMark, { PocketGlyph } from "./PocketDepthMark";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -2289,7 +2290,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   if (review && reviewTarget) {
     const decisionTimeline = buildDecisionTimeline(reviewTarget);
-    return <main className="psApp" data-pocket-build="v3.3">
+    return <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous">
       <section className="psResults psAutopsyResults" data-immersive="true">
         <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
         <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
@@ -2326,7 +2327,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const battlefieldTabs = timeframePicker(true);
     const previousScan = previousComparableScan(vault, analysis, image ?? "");
     return (
-      <main className="psApp" data-pocket-build="v3.3" data-chart-focus={chartFocus ? "true" : "false"}>
+      <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous" data-chart-focus={chartFocus ? "true" : "false"}>
         <section className="psResults" data-immersive={immersive ? "true" : "false"} data-chart-focus={chartFocus ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
@@ -2431,7 +2432,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         )}
         {showResultReveal && (
           <section className="psResultReveal" role="dialog" aria-modal="true" aria-label="Pocket Bullseye result ready">
-            <div className="psRevealRadar" aria-hidden="true"><i /><i /><i /><b>🎯</b></div>
+            <div className="psRevealRadar" aria-hidden="true"><i /><i /><i /><b><PocketGlyph /></b></div>
             <p>BULLSEYE ANALYSIS COMPLETE</p>
             <div className="psRevealScore"><span>SETUP GRADE</span><strong data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</strong><b>{analysis.setupScore.overall}<small>/100</small></b></div>
             <div className="psRevealVerdict"><span data-direction={analysis.direction}>{analysis.direction}</span><strong>{analysis.verdict.replaceAll("_", " ")}</strong></div>
@@ -2448,16 +2449,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   return (
-    <main className="psApp" data-pocket-build="v3.3">
+    <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous">
       <header className="psHeader">
-        <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
+        <div className="psLogo"><span className="psLogoMark"><PocketGlyph /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
         <div className="psHeaderActions"><span>POCKET BULLSEYE · CHART ANALYSIS</span></div>
       </header>
       <section className="psScanner">
         <section className="psLaunchHero">
           <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "YOUR PRE-TRADE REVIEW"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>
-          {!reviewTarget ? <div className="psLaunchTarget" aria-hidden="true"><i /><i /><i /><b>🎯</b><span>SCANNING<br />FOR CLARITY</span></div> : null}
-          {!reviewTarget ? <div className="psLaunchSignals" aria-label="Bullseye decision perspectives"><article data-tone="bull"><b>🐂</b><span>BULL CASE</span></article><article data-tone="wait"><b>🛡️</b><span>PATIENCE</span></article><article data-tone="bear"><b>🐻</b><span>BEAR CASE</span></article></div> : null}
+          {!reviewTarget ? <PocketDepthMark scanning={busy} /> : null}
+          {!reviewTarget ? <div className="psLaunchSignals" aria-label="Bullseye decision perspectives"><article data-tone="bull"><b><PocketGlyph kind="up" /></b><span>BULL CASE</span></article><article data-tone="wait"><b><PocketGlyph kind="shield" /></b><span>PATIENCE</span></article><article data-tone="bear"><b><PocketGlyph kind="down" /></b><span>BEAR CASE</span></article></div> : null}
         </section>
         {!reviewTarget ? <section className="psOpeningRail" aria-label="How Bullseye works"><article><i>01</i><div><strong>READ</strong><span>Structure and levels</span></div></article><article><i>02</i><div><strong>CHALLENGE</strong><span>Bias and contradictions</span></div></article><article><i>03</i><div><strong>PROTECT</strong><span>Patience and risk</span></div></article></section> : null}
         {!reviewTarget ? <div className="psTrustPulse"><span>🔒 PRIVATE IMAGE</span><span>◉ EVIDENCE FIRST</span><span>✕ NO ORDER CONNECTION</span></div> : null}
@@ -2498,7 +2499,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Successful scans are saved privately in this browser for comparison. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={groupUploading || !image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong></span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={groupUploading || !image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong></span><b><PocketGlyph /></b>{busy ? <i aria-hidden="true" /> : null}</button>
         {busy ? <div className="psScanActivity">
           <span role="status">{reviewTarget ? "Comparing your charts…" : "Analysing your charts…"}</span>
           <div className="psScanActivityTrack" role="progressbar" aria-label={reviewTarget ? "Chart comparison in progress" : "Chart analysis in progress"}><span /></div>

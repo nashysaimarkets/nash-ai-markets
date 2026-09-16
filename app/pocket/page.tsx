@@ -45,6 +45,7 @@ import "./pocket-chart-captions.css";
 import "./pocket-timeframes.css";
 import "./upload-guide.css";
 import "./pocket-growth.css";
+import "./pocket-luminous.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",

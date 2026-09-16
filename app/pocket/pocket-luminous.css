@@ -1,0 +1,242 @@
+/* Titanium / emerald visual layer. Charts, price coordinates and result order
+   remain owned by the existing components. No canvas or background render loop. */
+.psApp[data-visual-style="luminous"] {
+  --ps-bg: #080d12;
+  --ps-panel: #10191f;
+  --ps-line: #d1e4ef24;
+  --ps-green: #6aefb9;
+  --ps-red: #ff8393;
+  --ps-gold: #ffc184;
+  --ps-text: #eef6f4;
+  --ps-surface: linear-gradient(145deg, #18232b, #0e161d 55%, #0a1117);
+  --ps-shadow: 0 16px 36px #0005, 0 3px 8px #0003, inset 0 1px #e0f5ff16, inset 0 -1px #0008;
+  background: radial-gradient(ellipse at 75% 0, #174a3d24, transparent 45rem), #080d12;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color-scheme: dark;
+}
+.psApp[data-visual-style="luminous"]::before,
+.psApp[data-visual-style="luminous"]::after { display: none; }
+.psApp[data-visual-style="luminous"] :is(button, input, select, textarea) { font-family: inherit; }
+.psApp[data-visual-style="luminous"] :is(button, a, summary, input):focus-visible {
+  outline: 2px solid #a2fbd4; outline-offset: 4px;
+}
+.psApp[data-visual-style="luminous"] .psHeader {
+  height: 76px; padding: 12px 20px; background: #0b1218f5;
+  border-bottom: 1px solid #d1e4ef18; box-shadow: 0 8px 24px #0003;
+  backdrop-filter: none; -webkit-backdrop-filter: none; animation: none;
+}
+.psApp[data-visual-style="luminous"] .psHeader::after { display: none; }
+.psApp[data-visual-style="luminous"] .psLogo { gap: 12px; }
+.psApp[data-visual-style="luminous"] .psLogoMark {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px;
+  border: 1px solid #a6d5c44a; border-radius: 13px;
+  background: linear-gradient(145deg,#243a36,#0c1b19);
+  color: #8ff1c8; box-shadow: inset 0 1px #d1ffee33, 0 5px 12px #0005;
+  animation: none; filter: none;
+}
+.psApp[data-visual-style="luminous"] .psLogoMark::before,
+.psApp[data-visual-style="luminous"] .psLogoMark::after { display: none; }
+.psApp[data-visual-style="luminous"] .psLogoMark svg { width: 26px; height: 26px; }
+.psApp[data-visual-style="luminous"] .psLogo strong {
+  font: 700 16px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: .08em;
+  color: #f1f6f4; background: none; -webkit-text-fill-color: currentColor; animation: none;
+}
+.psApp[data-visual-style="luminous"] .psLogo small { font: 500 12px/1.5 sans-serif; color: #a1b3bc; letter-spacing: .1em; }
+.psApp[data-visual-style="luminous"] .psHeaderActions span { border: 0; color: #a5bbb5; font: 600 12px/1.4 sans-serif; letter-spacing: .1em; }
+.psApp[data-visual-style="luminous"] .psScanner { padding-top: 20px; }
+.psApp[data-visual-style="luminous"] .psLaunchHero {
+  display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 0 8px;
+  min-height: 0; padding: 28px; border: 1px solid #b6d9ce30; border-radius: 26px;
+  background: radial-gradient(ellipse at 95% 0,#1f604230,transparent 55%),linear-gradient(145deg,#152027,#080d12 60%);
+  box-shadow: 0 24px 58px #0006,inset 0 1px #eafff126;
+}
+.psApp[data-visual-style="luminous"] .psLaunchHero::before { display: none; }
+.psApp[data-visual-style="luminous"] .psLaunchHero::after {
+  height: 1px; left: 12%; right: 12%; background: linear-gradient(90deg,transparent,#76bb9a70,transparent); box-shadow: none; animation: none;
+}
+.psApp[data-visual-style="luminous"] .psLaunchHero .psCopy { max-width: none; padding: 8px 0 20px; align-self: center; }
+.psApp[data-visual-style="luminous"] .psCopy > p { margin: 0; color: #b0c4bc; font: 650 12px/1.5 sans-serif; letter-spacing: .12em; }
+.psApp[data-visual-style="luminous"] .psCopy > p > i { width: 5px; height: 5px; box-shadow: none; }
+.psApp[data-visual-style="luminous"] .psLaunchHero .psCopy h1 {
+  margin: 16px 0; font-size: clamp(36px,6.5vw,44px) !important;
+  line-height: 1.09 !important; letter-spacing: -.045em !important;
+  font-weight: 650; color: #eff8f4; text-shadow: none; text-wrap: balance;
+}
+.psApp[data-visual-style="luminous"] .psLaunchHero .psCopy h1 em { color: #8bedc0; font-style: normal; text-shadow: none; }
+.psApp[data-visual-style="luminous"] .psLaunchHero .psCopy > span {
+  margin-top: 16px; color: #adc0c5; font-size: 16px; line-height: 1.65; max-width: 36ch;
+}
+.psDepthScene { position: relative; align-self: center; min-width: 0; perspective: 800px; }
+.psDepthObject { transform: rotateX(var(--depth-y,0deg)) rotateY(var(--depth-x,0deg)); transition: transform .25s ease-out; }
+.psDepthImage {
+  display: block; width: 100%; height: auto; aspect-ratio: 1;
+  object-fit: contain; mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at 50% 49%,#000 47%,#000c 61%,transparent 75%);
+}
+.psDepthCaption { display: flex; align-items: center; justify-content: center; gap: 7px; color: #a2b9b1; font-size: 12px; letter-spacing: .035em; white-space: nowrap; }
+.psDepthCaption i { width: 6px; height: 6px; border-radius: 50%; background: #74dab1; box-shadow: 0 0 12px #6ceab655; }
+.psApp[data-visual-style="luminous"] .psLaunchSignals {
+  position: static; grid-column: 1/-1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 6px;
+}
+.psApp[data-visual-style="luminous"] .psLaunchSignals article {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: auto; padding: 12px 5px;
+  background: linear-gradient(160deg,#e0ffef08,#0002); border: 1px solid #dae8f01a; border-radius: 12px;
+  backdrop-filter: none; -webkit-backdrop-filter: none; animation: none; box-shadow: inset 0 1px #ffffff0c;
+}
+.psApp[data-visual-style="luminous"] .psLaunchSignals b { display: flex; color: #8bf0bc; }
+.psApp[data-visual-style="luminous"] .psLaunchSignals svg { width: 22px; height: 22px; }
+.psApp[data-visual-style="luminous"] .psLaunchSignals span { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .045em; color: #c9d8d6; }
+.psApp[data-visual-style="luminous"] .psLaunchSignals [data-tone="wait"] b { color: #ffd095; }
+.psApp[data-visual-style="luminous"] .psLaunchSignals [data-tone="bear"] b { color: #ff91a0; }
+.psApp[data-visual-style="luminous"] :is(.psOpeningRail article, .psPersonalTouch, .psUploadGuide, .psAppStoreEntry, .psSampleButton) {
+  border-color: #cfebdf24; border-radius: 16px; background: var(--ps-surface); box-shadow: var(--ps-shadow);
+}
+.psApp[data-visual-style="luminous"] .psOpeningRail article { gap: 10px; padding: 14px; }
+.psApp[data-visual-style="luminous"] .psOpeningRail article::after { animation: none; display: none; }
+.psApp[data-visual-style="luminous"] .psOpeningRail i { color: #9cbaaf; font-weight: 500; animation: none; }
+.psApp[data-visual-style="luminous"] .psOpeningRail strong { color: #dfece7; font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+.psApp[data-visual-style="luminous"] .psOpeningRail span { color: #a3b3bb; font-size: 13px; line-height: 1.5; }
+.psApp[data-visual-style="luminous"] .psTrustPulse span { font: 500 12px/1.5 sans-serif; letter-spacing: .02em; color: #a2b6b2; border: 0; background: transparent; animation: none; }
+.psApp[data-visual-style="luminous"] .psPersonalTouch { gap: 14px; padding: 16px; }
+.psApp[data-visual-style="luminous"] .psPersonalTouch strong { color: #c4dfd3; font: 600 13px/1.5 sans-serif; letter-spacing: .03em; }
+.psApp[data-visual-style="luminous"] .psPersonalTouch small { color: #9bb0b5; font: 500 12px/1.5 sans-serif; letter-spacing: .02em; }
+.psApp[data-visual-style="luminous"] .psPersonalTouch input { font-size: 16px; min-height: 46px; border-color: #b5d9c831; background: #080e14; border-radius: 10px; }
+.psApp[data-visual-style="luminous"] .psSampleButton { padding: 19px; font-size: 14px; font-weight: 650; letter-spacing: .025em; border-color: #76ecb945; color: #c0f7dc; }
+.psApp[data-visual-style="luminous"] .psSampleButton small { font-size: 14px; font-weight: 400; letter-spacing: 0; color: #a8beb8; }
+.psApp[data-visual-style="luminous"] .psUpload {
+  border-radius: 24px; border: 1px solid #b7d7c947;
+  background: radial-gradient(ellipse at 50% 38%,#2a5a492c,transparent 65%),var(--ps-surface);
+  box-shadow: var(--ps-shadow); transform: none;
+}
+.psApp[data-visual-style="luminous"] .psUpload::before { color: #96b6a7; font-size: 12px; letter-spacing: .07em; }
+.psApp[data-visual-style="luminous"] .psUpload::after { animation: none; opacity: .18; }
+.psApp[data-visual-style="luminous"] .psUpload strong { font-size: 18px; color: #e2f9ec; letter-spacing: .035em; text-shadow: none; }
+.psApp[data-visual-style="luminous"] .psUpload small { font-size: 12px; color: #a9bdb5; letter-spacing: .04em; line-height: 1.5; }
+.psApp[data-visual-style="luminous"] .psTarget { border-color: #8eb2a24d; box-shadow: inset 0 2px 8px #ffffff10,0 12px 24px #0005; }
+.psApp[data-visual-style="luminous"] .psTarget i { border-color: #83caac6b; }
+.psApp[data-visual-style="luminous"] .psTarget b { background: #8cdeb7; }
+.psApp[data-visual-style="luminous"] .psScanLine { display: none; }
+.psApp[data-visual-style="luminous"] .psCaptureRow label { border-radius: 10px; border-color: #b1cdbc33; font-size: 13px; }
+.psApp[data-visual-style="luminous"] .psPrivacy { border-color: #c3daca2b; background: #101b19; border-radius: 14px; }
+.psApp[data-visual-style="luminous"] .psPrivacy span { font-size: 14px; line-height: 1.6; color: #b6c8c1; }
+.psApp[data-visual-style="luminous"] .psPrivacy strong { color: #dcece2; font-size: 13px; }
+.psApp[data-visual-style="luminous"] .psDataNote { font-size: 13px; line-height: 1.65; color: #9eb0b6; }
+.psApp[data-visual-style="luminous"] .psAnalyse {
+  min-height: 68px; border-radius: 16px; border: 1px solid #ffc68970;
+  color: #ffd2a3; background: linear-gradient(165deg,#5a3924,#312216 56%,#241a13);
+  box-shadow: 0 10px 22px #0005,inset 0 1px #ffdeb552,inset 0 -2px #0008; transform: none;
+}
+.psApp[data-visual-style="luminous"] .psAnalyse strong { color: #ffcf9c; font-size: 15px; letter-spacing: .065em; }
+.psApp[data-visual-style="luminous"] .psAnalyse > b { display: flex; color: #ffcc93; }
+.psApp[data-visual-style="luminous"] .psAnalyse svg { width: 28px; height: 28px; }
+.psApp[data-visual-style="luminous"] .psAnalyse:disabled { opacity: .5; filter: none; }
+.psApp[data-visual-style="luminous"] .psAnalyse[data-busy="true"] { opacity: 1; }
+.psApp[data-visual-style="luminous"] .psAnalyse::before,
+.psApp[data-visual-style="luminous"] .psAnalyse::after { animation: none; }
+.psApp[data-visual-style="luminous"] .psScanActivity { border: 1px solid #9aecc131; padding: 18px; border-radius: 16px; background: #101e1b; }
+.psApp[data-visual-style="luminous"] .psScanActivity > span { font-size: 16px; color: #c6efd9; }
+.psApp[data-visual-style="luminous"] .psScanActivityTrack { height: 5px; border-radius: 10px; background: #334c40; }
+.psApp[data-visual-style="luminous"] .psScanActivityTrack > span { background: linear-gradient(90deg,transparent,#82efbc,#f4ffe9); box-shadow: 0 0 14px #7df2b777; }
+/* Match the established result surfaces; never transform a chart or overlay. */
+.psApp[data-visual-style="luminous"] .psResults[data-immersive="true"] { background: transparent; }
+.psApp[data-visual-style="luminous"] :is(.psImmersiveBar, .psChartFocus > header) { background: #0b1218f5; border-color: #c4e0d529; color: #bfd3c9; }
+.psApp[data-visual-style="luminous"] .psImmersiveBar { min-height: 62px; gap: 12px; }
+.psApp[data-visual-style="luminous"] .psImmersiveBar > span { color: #a8c8b9; font: 600 12px/1.5 sans-serif; letter-spacing: .07em; }
+.psApp[data-visual-style="luminous"] .psImmersiveBar button { min-height: 44px; background: #14231d; border-color: #81cda754; color: #b6efd0; border-radius: 11px; font: 600 13px/1.4 sans-serif; }
+.psApp[data-visual-style="luminous"] :is(.psEvidencePack, .psJournalHome, .psFingerprint, .psVault, .psAutoPreview, .psPreflight, .psCommandDeck, .psCoreScans, .psIntelligenceSuite, .psPatternWatch, .psLiquidityGuard, .psDecisionEvents, .psResultChart, .psAskBullseye, .psRiskDesk, .psSignalPulse, .psMarketStory, .psDecisionEngine, .psScanChanges) {
+  border-color: #d3ebdf28; border-radius: 20px; background: var(--ps-surface); box-shadow: var(--ps-shadow);
+  backdrop-filter: none; -webkit-backdrop-filter: none; animation: none;
+}
+.psApp[data-visual-style="luminous"] :is(.psEvidencePack, .psJournalHome, .psCommandDeck, .psCoreScans, .psDecisionEvents, .psResultChart, .psDecisionEngine) > header {
+  background: linear-gradient(110deg,#22382d70,#132129 80%); border-color: #d3ebdf24;
+  box-shadow: inset 0 1px #effff510;
+}
+.psApp[data-visual-style="luminous"] .psTimeframeSticky { background: #0b1218; box-shadow: 0 8px 24px #0005; border-radius: 16px; }
+.psApp[data-visual-style="luminous"] .psTimeframePicker { border-color: #c1dbc42b; background: linear-gradient(155deg,#1a272b,#101a20); box-shadow: inset 0 1px #e3fbee17; border-radius: 16px; }
+.psApp[data-visual-style="luminous"] .psTimeframePicker strong { color: #accfc0; font-size: 13px; font-weight: 600; letter-spacing: .07em; }
+.psApp[data-visual-style="luminous"] .psTimeframePicker button { background: linear-gradient(160deg,#24343b,#131e25); border-color: #b7d0d127; border-radius: 12px; box-shadow: inset 0 1px #edffff14,0 3px 6px #0004; }
+.psApp[data-visual-style="luminous"] .psTimeframePicker button > span { font-size: 16px; font-weight: 650; }
+.psApp[data-visual-style="luminous"] .psTimeframePicker button[data-active="true"] { background: linear-gradient(145deg,#30604a,#163a2b); border-color: #9befbd88; color: #c7ffdf; box-shadow: inset 0 1px #deffe247,0 5px 16px #0004; }
+.psApp[data-visual-style="luminous"] .psTimeframePicker button[data-active="true"] small { color: #b9e4cc; }
+.psApp[data-visual-style="luminous"] .psResultViewSwitch { background: #0a1117; border-bottom-color: #adc9b932; gap: 6px; padding: 8px 0; }
+.psApp[data-visual-style="luminous"] .psResultViewSwitch button { font: 650 13px/1.4 sans-serif; letter-spacing: .035em; color: #a7bbb6; border: 1px solid #d3ebdf24; border-radius: 12px; background: #111e24; box-shadow: inset 0 1px #eafff00c; }
+.psApp[data-visual-style="luminous"] .psResultViewSwitch button[data-active="true"] { color: #c6fbdc; border-color: #8eeab74a; background: #1b322a; box-shadow: inset 0 -2px #7ce3af; }
+.psApp[data-visual-style="luminous"] .psCoreScans { width: min(100% - 28px,1100px); }
+.psApp[data-visual-style="luminous"] .psCoreScans button { padding: 18px; background: linear-gradient(160deg,#1c2b30,#101b20); }
+.psApp[data-visual-style="luminous"] .psCoreScans button strong { font-size: 14px; line-height: 1.45; }
+.psApp[data-visual-style="luminous"] .psCoreScans button span { color: #b3c2c7; font-size: 14px; line-height: 1.6; }
+.psApp[data-visual-style="luminous"] .psCoreScans button :is(b, small, em) { font-family: inherit; font-size: 12px; line-height: 1.5; letter-spacing: .035em; }
+.psApp[data-visual-style="luminous"] .psCoreScans button[data-state="warning"] { background: linear-gradient(155deg,#332b1f,#121b20 75%); }
+.psApp[data-visual-style="luminous"] .psCoreScans button[data-state="withheld"] { background: linear-gradient(155deg,#33242b,#121b20 75%); }
+.psApp[data-visual-style="luminous"] .psCoreScans > footer { color: #a0b1b8; font-size: 12px; line-height: 1.6; }
+.psApp[data-visual-style="luminous"] .psReportRail { background: #0c161de8; border-color: #d4efdf21; gap: 7px; }
+.psApp[data-visual-style="luminous"] .psReportRail a { color: #b2c8bd; font: 600 12px/1.4 sans-serif; letter-spacing: .04em; background: #17242b; border-color: #d4efdf24; box-shadow: inset 0 1px #ffffff0e; }
+.psApp[data-visual-style="luminous"] .psReportRail a:first-child { color: #c9f6db; background: #284d3c; border-color: #97e5b764; }
+.psApp[data-visual-style="luminous"] .psWrittenReport > .psVerdict { background: radial-gradient(ellipse at 100% 0,#396e462e,transparent 60%),var(--ps-surface); border-color: #b0d9bd3b; border-radius: 22px; box-shadow: var(--ps-shadow); }
+.psApp[data-visual-style="luminous"] .psWrittenReport > .psVerdict::before { display: none; }
+.psApp[data-visual-style="luminous"] .psWrittenReport > .psVerdict::after { animation: none; filter: none; height: 1px; opacity: .5; }
+.psApp[data-visual-style="luminous"] .psVerdictTop h1 em { text-shadow: 0 2px #dfffef35,0 7px 18px #0006; }
+.psApp[data-visual-style="luminous"] .psVerdict > h2 { font-size: clamp(21px,4vw,28px); line-height: 1.3; letter-spacing: -.025em; }
+.psApp[data-visual-style="luminous"] .psVerdict > span { color: #b4c9c1; font-size: 16px; line-height: 1.65; }
+.psApp[data-visual-style="luminous"] .psVerdict > b { color: #a0b5ac; font-size: 12px; line-height: 1.5; }
+.psApp[data-visual-style="luminous"] :is(.psDecisionBias,.psSetupQuality,.psDecisionFactors article,.psMindChange,.psTrapRadar,.psPrecisionMeter,.psTimeframeConflict,.psTradeReview) { border-color: #d0eada24; background: linear-gradient(150deg,#18292a,#0c181e); box-shadow: inset 0 1px #dfffea0a,0 6px 14px #0002; }
+.psApp[data-visual-style="luminous"] .psSetupQuality > div { width: 88px; height: 88px; box-shadow: 0 8px 15px #0006,inset 0 2px #dfffe62b,0 0 0 4px #0a1319,0 0 0 5px #b4d4c826; }
+.psApp[data-visual-style="luminous"] .psSetupQuality > div strong { font: 650 29px/1 sans-serif; }
+.psApp[data-visual-style="luminous"] .psDecisionBias > div { height: 16px; border: 1px solid #ffffff15; box-shadow: inset 0 2px 4px #0005,0 2px 0 #ffffff0b; }
+.psApp[data-visual-style="luminous"] .psDecisionBias > div b { background: linear-gradient(180deg,#a1f3c8,#3fa277); box-shadow: inset 0 1px #e2ffdcaa; }
+.psApp[data-visual-style="luminous"] .psDecisionBias > div i { background: linear-gradient(180deg,#ffb1b9,#c76173); box-shadow: inset 0 1px #ffe0d6aa; }
+.psApp[data-visual-style="luminous"] .psDecisionBias header { flex-wrap: wrap; }
+.psApp[data-visual-style="luminous"] .psDecisionBias footer { flex-wrap: wrap; }
+.psApp[data-visual-style="luminous"] .psDecisionBias footer strong { font: 650 16px/1.5 sans-serif; }
+.psApp[data-visual-style="luminous"] :is(.psMindChange strong,.psTrapRadar > p,.psPrecisionMeter > p) { font-size: 16px; line-height: 1.6; }
+.psApp[data-visual-style="luminous"] :is(.psMindChange small,.psTrapRadar > small,.psPrecisionMeter > small,.psDecisionFactors span,.psTimeframeConflict > p) { color: #a6bdb3; font-size: 12px; line-height: 1.5; }
+.psApp[data-visual-style="luminous"] .psDecisionFactors span { white-space: normal; overflow-wrap: anywhere; }
+.psApp[data-visual-style="luminous"] .psDecisionFactors strong { font-size: 16px; }
+.psApp[data-visual-style="luminous"] .psCommandDeck > nav button { background: linear-gradient(150deg,#203036,#101d23); border-color: #c5e4d528; border-radius: 12px; }
+.psApp[data-visual-style="luminous"] .psCommandDeck > nav button[data-active="true"] { background: linear-gradient(145deg,#294b3e,#142c23); border-color: #8ae7b65c; transform: none; box-shadow: inset 0 1px #e3ffe822,inset 0 -2px #70c99d; }
+.psApp[data-visual-style="luminous"] .psCommandDeck > nav button :is(strong,span) { font-family: inherit; font-size: 13px; line-height: 1.5; }
+.psApp[data-visual-style="luminous"] .psMarketStory { border-color: #a7ceba35; }
+.psApp[data-visual-style="luminous"] .psStoryStage::after { display: none; }
+.psApp[data-visual-style="luminous"] .psJournalHome p { color: #aec0b7; font-size: 14px; line-height: 1.6; }
+.psApp[data-visual-style="luminous"] .psSampleBanner { background: #30291b; color: #f2d6a5; border-color: #dfc18c66; }
+.psApp[data-visual-style="luminous"] .psRevealRadar > b { display: flex; color: #8aefbd; }
+.psApp[data-visual-style="luminous"] .psRevealRadar svg { width: 50px; height: 50px; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .psApp[data-visual-style="luminous"] :is(.psSampleButton,.psTimeframePicker button,.psAnalyse,.psLaunchSignals article) { transition: transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+  .psApp[data-visual-style="luminous"] :is(.psSampleButton,.psTimeframePicker button:not(:disabled),.psAnalyse:not(:disabled)):hover { transform: translateY(-2px); border-color: #bbebcf99; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .psDepthImage { animation: psDepthArrival 1.4s ease-out both; }
+  .psDepthScene[data-scanning="true"] .psDepthCaption i { animation: psDepthBreathing 2s ease-in-out infinite; }
+}
+@keyframes psDepthArrival { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes psDepthBreathing { 50% { opacity: .4; transform: scale(.75); } }
+@media (max-width: 700px) {
+  .psApp[data-visual-style="luminous"] .psLaunchHero { grid-template-columns: minmax(0,1fr); padding: 24px; }
+  .psApp[data-visual-style="luminous"] .psLaunchHero .psCopy { padding: 0; }
+  .psApp[data-visual-style="luminous"] .psLaunchHero .psCopy h1 { font-size: clamp(34px,8.6vw,44px) !important; max-width: 17ch; margin-bottom: 12px; }
+  .psApp[data-visual-style="luminous"] .psLaunchHero .psCopy > span { margin-top: 0; }
+  .psDepthScene { width: min(70%,240px); justify-self: center; margin: -5px 0 18px; }
+  .psDepthCaption { margin-top: -16px; }
+  .psApp[data-visual-style="luminous"] .psOpeningRail article { min-height: 58px; }
+}
+@media (max-width: 430px) {
+  .psApp[data-visual-style="luminous"] .psHeader { height: 70px; padding-inline: 16px; }
+  .psApp[data-visual-style="luminous"] .psScanner { padding-inline: 0; width: calc(100% - 28px); }
+  .psApp[data-visual-style="luminous"] .psLaunchHero { padding: 20px; border-radius: 22px; }
+  .psApp[data-visual-style="luminous"] .psLaunchHero .psCopy > span { font-size: 15px; line-height: 1.6; }
+  .psApp[data-visual-style="luminous"] .psLaunchSignals article { flex-direction: column; gap: 6px; padding: 10px 4px; }
+  .psApp[data-visual-style="luminous"] .psLaunchSignals span { font-size: 12px; letter-spacing: 0; }
+  .psApp[data-visual-style="luminous"] .psPersonalTouch { flex-wrap: wrap; }
+  .psApp[data-visual-style="luminous"] .psPersonalTouch input { width: 100%; min-width: 0; }
+  .psApp[data-visual-style="luminous"] .psImmersiveBar > span { max-width: 62%; font-size: 12px; }
+  .psApp[data-visual-style="luminous"] .psTimeframePicker button { flex-basis: 76px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .psApp[data-visual-style="luminous"],
+  .psApp[data-visual-style="luminous"] *,
+  .psApp[data-visual-style="luminous"] *::before,
+  .psApp[data-visual-style="luminous"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .psDepthObject { transform: none; }
+}
