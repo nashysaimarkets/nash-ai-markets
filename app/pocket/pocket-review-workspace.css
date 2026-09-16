@@ -39,3 +39,23 @@
 @media(max-width:520px){.psApp .pbResearchPanel{padding:17px;border-radius:20px}.psApp .pbSnapshot{padding:12px}.pbSnapshotImages[data-paired=true]{grid-template-columns:1fr}.pbNotebookFilters{grid-template-columns:1fr 1fr}.pbNotebookFilters>label:last-child{grid-column:1/-1}.psApp .pbFrameRows>button{grid-template-columns:54px minmax(0,1fr) 12px;gap:9px;padding:12px}.pbSnapshot>nav{grid-template-columns:1fr 1fr}.pbNotebookEntries>article{padding:14px}}
 
 .pbPinnedRules{margin:18px 0;padding:16px 16px 16px 38px;border:1px solid #b9e6cd55;border-radius:16px;background:linear-gradient(130deg,#254c4988,#0b242c);color:#d5f5e9}.pbPinnedRules li{padding:5px 0;line-height:1.5;font-size:1rem}.pbReviewPatterns{border-bottom:1px solid #7796af33;padding:6px 0 14px}.pbReviewPatterns li{font-size:1rem;line-height:1.5;padding:5px 0}
+
+/* Secondary detail stays available without repeating the main decision surface. */
+.psApp[data-spatial][data-visual-style] .pbReportFold{margin:16px 0;border:1px solid #91c2d247;border-radius:18px;background:linear-gradient(140deg,#18354be6,#081625f0);box-shadow:inset 0 1px 1px #d4f6ff24,0 10px 28px #0004;min-width:0;overflow:hidden}
+.psApp[data-spatial][data-visual-style] .pbReportFold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px;min-height:52px;cursor:pointer;list-style:none;color:#e0f6ff;font:600 1rem/1.45 var(--font-geist-sans),sans-serif;text-transform:none;letter-spacing:0}
+.pbReportFold>summary::-webkit-details-marker{display:none}.pbReportFold>summary::after{content:"+";font-size:1.4rem;color:#9ae7de;flex:none}.pbReportFold[open]>summary::after{content:"−"}
+.psApp[data-spatial][data-visual-style] .pbReportFold>summary>span{margin-left:auto;color:#a9c4d4;font-size:.875rem;font-weight:400;text-align:right}
+.psApp[data-spatial][data-visual-style] .pbReportFold>summary:focus-visible{outline:3px solid #9ae7de;outline-offset:-5px;border-radius:18px}
+.psApp[data-spatial][data-visual-style] .pbReportFold[open]>summary{border-bottom:1px solid #8cbbc82b}
+.psApp[data-spatial][data-visual-style] .pbAssessment{margin:14px}.psApp[data-spatial][data-visual-style] .pbAssessment>p{padding:0 16px;font-size:1rem;line-height:1.55;color:#b7ccda}
+.psApp[data-spatial][data-visual-style] .pbAssessment .psDecisionFactors{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 14px 14px}
+.psApp[data-spatial][data-visual-style] .pbAssessment .psDecisionFactors p{font-size:1rem;line-height:1.5;color:#b7ccda;margin:12px 0 0;overflow-wrap:anywhere}
+.psApp[data-spatial][data-visual-style] .psDecisionEngine>.psMindChange{margin-top:14px}
+.psApp[data-spatial][data-visual-style] .psMindChange :is(small,header span,header b){font-size:.875rem;line-height:1.5}
+.psApp[data-spatial][data-visual-style] .psMindChange strong{font-size:1rem;line-height:1.5}
+.psApp[data-spatial][data-visual-style] .pbDirectionalCards strong{font-size:clamp(1.15rem,4vw,2rem);line-height:1.2;white-space:normal;overflow-wrap:anywhere}
+.psApp[data-spatial][data-visual-style] .pbAssessmentNote{font-size:.875rem;line-height:1.5;color:#bdd5df;max-width:100%;margin:16px auto;text-transform:none;letter-spacing:0}
+.psApp[data-spatial][data-visual-style] .psEventSafety button{font:600 1rem/1.4 var(--font-geist-sans),sans-serif;color:#bcf4e9;background:#193b45;border:1px solid #6daea5;border-radius:10px;min-height:44px;padding:10px 14px}
+.psApp[data-spatial][data-visual-style] .pbPersonalise .psPersonalTouch{margin:0;border:0;box-shadow:none}
+.psApp[data-spatial][data-visual-style] .psLiquidityIntel li span{overflow-wrap:anywhere}
+@media(max-width:520px){.psApp[data-spatial][data-visual-style] .pbReportFold>summary{flex-wrap:wrap;padding:15px;gap:8px}.psApp[data-spatial][data-visual-style] .pbReportFold>summary>span{font-size:.875rem;max-width:100%;text-align:left;margin-left:0}.psApp[data-spatial][data-visual-style] .pbReportFold>summary::after{margin-left:auto}.psApp[data-spatial][data-visual-style] .pbAssessment .psDecisionFactors{grid-template-columns:1fr}.psApp[data-spatial][data-visual-style] .psMindChange>header{align-items:flex-start;flex-wrap:wrap}}

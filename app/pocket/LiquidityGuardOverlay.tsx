@@ -16,6 +16,7 @@ import {
   type LiquidityShield,
 } from "./liquidity-guard";
 import { canonicalizePocketGeometry } from "../lib/pocket-geometry";
+import { evidencePriceRange as zonePriceLabel } from "./evidence-price";
 
 type LiquidityGuardAnalysis = {
   currentPrice?: string;
@@ -35,14 +36,6 @@ type LiquidityGuardAnalysis = {
 type LiquidityGuardDisplayState = "locked" | "verified-none" | "withheld" | "unavailable";
 
 const EMPTY_ANCHORS: LiquidityScaleAnchor[] = [];
-
-function formatPrice(value: number) {
-  return new Intl.NumberFormat("en-GB", { maximumFractionDigits: 6 }).format(value);
-}
-
-function zonePriceLabel(priceLow: number, priceHigh: number) {
-  return priceLow === priceHigh ? formatPrice(priceLow) : `${formatPrice(priceLow)}–${formatPrice(priceHigh)}`;
-}
 
 function patternLabel(pattern: string) {
   return pattern.replaceAll("_", " ");

@@ -29,12 +29,12 @@ test("one synthesis surface contains the requested decision controls", async () 
     readFile(new URL("../app/pocket/BullseyeDecisionEngine.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
   ]);
-  for (const label of ["BULLSEYE DECISION ENGINE", "EVIDENCE BALANCE", "WHAT CHANGES MY MIND", "TRAP RADAR", "TimeframeComparison", "ANALYSE MY TRADE", "SETUP QUALITY"]) {
+  for (const label of ["Decision conditions", "What changes this read", "STRENGTHENS THIS READ", "Why this setup grade", "TimeframeComparison", "ANALYSE MY TRADE"]) {
     assert.match(component, new RegExp(label));
   }
   assert.match(pocket, /Other charts prepare in the background\. Ready charts switch instantly\./);
   assert.match(pocket, /setLastScanPerformance/);
-  assert.doesNotMatch(component, /SCREENSHOT PRECISION|psPrecisionMeter|chartEvidenceScore/);
+  assert.doesNotMatch(component, /SCREENSHOT PRECISION|psPrecisionMeter|chartEvidenceScore|TRAP RADAR|EVIDENCE BALANCE|evidenceBalance/);
   assert.doesNotMatch(pocket, /YOU ARE HERE|className="psMapIntro"/);
   assert.doesNotMatch(pocket, /INDEPENDENT LEVEL LAB|RESCAN LEVELS ONLY|bullseye-level-lab/);
 });
