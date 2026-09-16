@@ -4,11 +4,12 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import type { Analysis } from "./analysis-types";
 import { levelEvidenceSourceLabel } from "./pocket-derived-evidence";
 import { buildLevelScanner, scannerDistance, scannerPercent, scannerView } from "./level-scanner-model";
+import SourceEvidence from "./SourceEvidence";
 
 type Scenario = "bull" | "wait" | "bear";
-type Props = { analysis: Analysis; expanded?: boolean; scenario?: Scenario | null; onScenario?: (scenario: Scenario) => void; hasContext?: boolean };
+export type ScannerProps = { analysis: Analysis; expanded?: boolean; scenario?: Scenario | null; onScenario?: (scenario: Scenario) => void; hasContext?: boolean; sourceImage?: string; contextImage?: string | null; sourceAnalysis?: Analysis };
 
-export default function InteractiveLevelScanner({ analysis, expanded = false, scenario = null, onScenario, hasContext = false }: Props) {
+export default function InteractiveLevelScanner({ analysis, expanded = false, scenario = null, onScenario, hasContext = false, sourceImage, contextImage, sourceAnalysis }: ScannerProps) {
   const model = buildLevelScanner(analysis);
   const { current, support, resistance, twoSided } = model;
   const [selection, setSelection] = useState<string>("current");
@@ -95,6 +96,7 @@ export default function InteractiveLevelScanner({ analysis, expanded = false, sc
         <div className="psScannerDetailHeading"><div><span>{title}</span><strong>{selected?.price ?? model.currentLabel}</strong></div><b>{selected ? `${scannerPercent(distance, current)} ${selected.value >= current ? "above" : "below"}` : `${directionLabel} read`}</b></div>
         <p>{selected ? selected.label : "Select a support, resistance or swing reference to inspect its source and distance."}</p>
         <footer><span>{sourceLabel}</span>{selected ? <span>{distanceLabel} from chart price</span> : <span>Snapshot · not a live feed</span>}</footer>
+        {selected && sourceImage ? <SourceEvidence key={selected.id} level={selected} analysis={sourceAnalysis ?? analysis} image={sourceImage} contextImage={contextImage} /> : null}
       </div>
     </div>
 

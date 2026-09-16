@@ -29,7 +29,7 @@ test("one synthesis surface contains the requested decision controls", async () 
     readFile(new URL("../app/pocket/BullseyeDecisionEngine.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
   ]);
-  for (const label of ["BULLSEYE DECISION ENGINE", "EVIDENCE BALANCE", "WHAT CHANGES MY MIND", "TRAP RADAR", "MULTI-TIMEFRAME CHECK", "ANALYSE MY TRADE", "SETUP QUALITY"]) {
+  for (const label of ["BULLSEYE DECISION ENGINE", "EVIDENCE BALANCE", "WHAT CHANGES MY MIND", "TRAP RADAR", "TimeframeComparison", "ANALYSE MY TRADE", "SETUP QUALITY"]) {
     assert.match(component, new RegExp(label));
   }
   assert.match(pocket, /Other charts prepare in the background\. Ready charts switch instantly\./);

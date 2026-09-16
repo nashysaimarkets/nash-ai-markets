@@ -48,6 +48,7 @@ import "./pocket-growth.css";
 import "./pocket-luminous.css";
 import "./pocket-observatory.css";
 import "./pocket-level-scanner.css";
+import "./pocket-review-workspace.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
@@ -59,7 +60,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
   themeColor: "#030914",
 };

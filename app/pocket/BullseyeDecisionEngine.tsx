@@ -1,15 +1,16 @@
 "use client";
 
 import OrbitalInstrument from "./OrbitalInstrument";
+import TimeframeComparison from "./TimeframeComparison";
 
-import { useMemo, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import type { Analysis } from "./analysis-types";
 import type { UploadedChart } from "./chart-session";
 import { effectiveLiquidityGeometry, projectLiquidityZones } from "./liquidity-guard";
 import { evaluateTradePlan, type TradePlanEvaluation, type TradeSide } from "./trade-plan-evaluator";
 
 export type ScanPerformance = { elapsedMs: number; outcome: "cached" | "completed" | "failed"; chartCount: number };
-type TimeframeRead = { id: string; label: string; direction: Analysis["direction"] | null; state: "READY" | "PREPARING" | "RETRY" };
+
 
 function evidenceBalance(analysis: Analysis) {
   if (analysis.direction === "NEUTRAL") return { long: 50, short: 50 };
@@ -18,22 +19,15 @@ function evidenceBalance(analysis: Analysis) {
   return { long, short: 100 - long };
 }
 
-function sameDirection(left: Analysis["direction"], right: Analysis["direction"]) {
-  return left !== "NEUTRAL" && right !== "NEUTRAL" && left === right;
-}
-
-function opposingDirection(left: Analysis["direction"], right: Analysis["direction"]) {
-  return left !== "NEUTRAL" && right !== "NEUTRAL" && left !== right;
-}
-
 export function factorScore(value: number) {
   return Math.max(0, Math.min(10, Math.round(value)));
 }
 
-export default function BullseyeDecisionEngine({ analysis, charts, performance }: {
+export default function BullseyeDecisionEngine({ analysis, charts, performance, activeId = "image", onSelectChart = () => {}, switchingDisabled = false }: {
   analysis: Analysis;
   charts: UploadedChart[];
   performance: ScanPerformance | null;
+  activeId?: string; onSelectChart?: (id: string) => void; switchingDisabled?: boolean;
 }) {
   const balance = evidenceBalance(analysis);
   const [side, setSide] = useState<TradeSide>(analysis.direction === "BEARISH" ? "SHORT" : "LONG");
@@ -56,26 +50,6 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance }
   const trapRegion = liquidityZones[0]
     ? `${liquidityZones[0].priceLow.toLocaleString("en-GB")}–${liquidityZones[0].priceHigh.toLocaleString("en-GB")}`
     : "NO EXACT REGION VERIFIED";
-
-  const timeframeReads = useMemo(() => {
-    const ready: TimeframeRead[] = charts.map((chart, index) => chart.report ? {
-      id: chart.id,
-      label: chart.timeframe === "READ FROM CHART" ? `CHART ${index + 1}` : chart.timeframe,
-      direction: chart.report.direction,
-      state: "READY",
-    } : {
-      id: chart.id,
-      label: chart.timeframe === "READ FROM CHART" ? `CHART ${index + 1}` : chart.timeframe,
-      direction: null,
-      state: chart.preparation === "failed" ? "RETRY" : "PREPARING",
-    });
-    if (!ready.length) return [{ id: "active", label: analysis.timeframe, direction: analysis.direction, state: "READY" as const }];
-    return ready;
-  }, [analysis.direction, analysis.timeframe, charts]);
-  const readyReads = timeframeReads.filter((read) => read.direction !== null);
-  const aligned = readyReads.filter((read) => sameDirection(read.direction!, analysis.direction)).length;
-  const conflicting = readyReads.filter((read) => opposingDirection(read.direction!, analysis.direction)).length;
-  const overallAlignment = conflicting ? "CONFLICT DETECTED" : readyReads.length > 1 && aligned === readyReads.length ? "ALL READY VIEWS AGREE" : readyReads.length > 1 ? "MIXED / NEUTRAL" : "ONE VIEW READY";
 
   const factors = [
     { label: "STRUCTURE", score: factorScore(analysis.setupScore.structure), detail: analysis.marketStructure },
@@ -125,11 +99,7 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance }
       </section>
     </div>
 
-    <section className="psTimeframeConflict" data-conflict={conflicting > 0}>
-      <header><span>≡ MULTI-TIMEFRAME CHECK</span><strong>{overallAlignment}</strong></header>
-      <div>{timeframeReads.map((read) => <article key={read.id} data-direction={read.direction ?? read.state}><small>{read.label}</small><b>{read.direction ?? read.state}</b></article>)}</div>
-      <p>{conflicting ? `${conflicting} ready view${conflicting === 1 ? " conflicts" : "s conflict"} with the active ${analysis.timeframe} read. Treat the setup as counter-trend until the conflict resolves.` : readyReads.length > 1 ? `${aligned}/${readyReads.length} ready directional views agree with the active read.` : "Other uploaded charts are prepared automatically; this check updates as each one becomes ready."}</p>
-    </section>
+    <TimeframeComparison charts={charts} analysis={analysis} activeId={activeId} onSelect={onSelectChart} disabled={switchingDisabled} />
 
     <details className="psTradeReview">
       <summary><span>🎯 ANALYSE MY TRADE</span><strong>ENTRY · STOP · TARGET</strong><b>＋</b></summary>

@@ -28,6 +28,8 @@ export type CompatibleLockedDecision = {
   afterImage?: string;
   reviewedAt?: string;
   review?: CompatibleProcessReview;
+  notebook?: { lesson: string; tags: string[]; updatedAt: string };
+  sourceImages?: Record<string, string | null>;
   analysis: Record<string, unknown> & {
     instrument: string;
     verdict: string;
@@ -119,6 +121,8 @@ export function normalizeLockedDecision(value: unknown): CompatibleLockedDecisio
     ? candidate.intention as CompatibleIntention
     : "UNSURE";
   const review = normalizeProcessReview(candidate.review);
+  const note = candidate.notebook && typeof candidate.notebook === "object" ? candidate.notebook as Record<string, unknown> : null;
+  const sourceImages = candidate.sourceImages && typeof candidate.sourceImages === "object" ? candidate.sourceImages as Record<string, unknown> : null;
 
   return {
     id: typeof candidate.id === "string" && candidate.id ? candidate.id : `legacy-${String(candidate.createdAt ?? "unknown")}`,
@@ -130,6 +134,8 @@ export function normalizeLockedDecision(value: unknown): CompatibleLockedDecisio
     ...(typeof candidate.afterImage === "string" && candidate.afterImage.startsWith("data:image/") ? { afterImage: candidate.afterImage } : {}),
     ...(typeof candidate.reviewedAt === "string" && Number.isFinite(Date.parse(candidate.reviewedAt)) ? { reviewedAt: candidate.reviewedAt } : {}),
     ...(review ? { review } : {}),
+    ...(note ? { notebook: { lesson: typeof note.lesson === "string" ? note.lesson.slice(0, 1500) : "", tags: safeTexts(note.tags, 8, 40), updatedAt: typeof note.updatedAt === "string" ? note.updatedAt : new Date(0).toISOString() } } : {}),
+    ...(sourceImages ? { sourceImages: Object.fromEntries(["image", "contextImage", "detailImage", "fourHourImage", "indicatorImage"].map((key) => [key, typeof sourceImages[key] === "string" && String(sourceImages[key]).startsWith("data:image/") ? sourceImages[key] : null])) as Record<string, string | null> } : {}),
     analysis: {
       ...rawAnalysis,
       instrument: typeof rawAnalysis.instrument === "string" && rawAnalysis.instrument.trim()

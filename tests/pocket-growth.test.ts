@@ -1,6 +1,18 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { growthAttribution, normaliseGrowthPayload } from "../app/lib/pocket-growth.ts";
+import { timingSummaries } from "../app/lib/pocket-experience-metrics";
+
+test("focused pages retain only allowlisted campaign names", () => {
+  assert.deepEqual(growthAttribution(new URLSearchParams(), "/pocket-bullseye/indices"), { source: "direct", campaign: "indices" });
+  assert.deepEqual(growthAttribution(new URLSearchParams("utm_campaign=first10"), "/pocket-bullseye/forex"), { source: "direct", campaign: "first10" });
+});
+
+test("bucket summaries report weighted upper bounds without inventing history", () => {
+  assert.deepEqual(timingSummaries([]), []);
+  const sample = timingSummaries([{ event: "scan_completed", platform: "web", flow: "web", bucket_ms: 60000, total: 8 }, { event: "scan_completed", platform: "web", flow: "web", bucket_ms: 120000, total: 2 }])[0];
+  assert.equal(sample.total, 10); assert.equal(sample.p50UpperMs, 60000); assert.equal(sample.p90UpperMs, 120000);
+});
 
 test("activity recording never forwards arbitrary properties or campaign personal data", () => {
   const result = normaliseGrowthPayload({ event: "scan_completed", platform: "web", flow: "web", source: "email@example.com", campaign: "private_account_123", email: "secret@example.com", image: "data:image/png;base64,secret", duration_ms: 15 });

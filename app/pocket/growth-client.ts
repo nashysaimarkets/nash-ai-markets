@@ -23,7 +23,7 @@ export function trackGrowth(event: GrowthEvent, options: { flow?: GrowthFlow; du
     if (usageDisabled() || (options.once && recorded.has(options.once))) return;
     if (options.once) { if (recorded.size >= 200) recorded.clear(); recorded.add(options.once); }
     const params = new URLSearchParams(window.location.search);
-    const body = { event, platform: isAppleNativeApp() ? "apple" : "web", ...growthAttribution(params), flow: options.flow ?? "browse", duration_ms: options.durationMs ?? 0, is_test: params.get("pb_test") === "1" || /^(localhost|127\.0\.0\.1|terminal\.local)$/.test(window.location.hostname) };
+    const body = { event, platform: isAppleNativeApp() ? "apple" : "web", ...growthAttribution(params, window.location.pathname), flow: options.flow ?? "browse", duration_ms: options.durationMs ?? 0, is_test: params.get("pb_test") === "1" || /^(localhost|127\.0\.0\.1|terminal\.local)$/.test(window.location.hostname) };
     // One attempt, no retry or await: measurements never hold up a scan or navigation.
     void fetch("/api/pocket/activity", { method: "POST", headers: { "content-type": "application/json" }, credentials: "omit", keepalive: true, body: JSON.stringify(body) }).catch(() => undefined);
   } catch { /* Optional statistics cannot interrupt the product. */ }
@@ -32,7 +32,7 @@ export function trackGrowth(event: GrowthEvent, options: { flow?: GrowthFlow; du
 export function sampleDestination() {
   if (typeof window === "undefined") return "/pocket?demo=1";
   const current = new URLSearchParams(window.location.search);
-  const params = new URLSearchParams({ demo: "1", utm_source: growthAttribution(current).source, utm_campaign: growthAttribution(current).campaign });
+  const params = new URLSearchParams({ demo: "1", utm_source: growthAttribution(current, window.location.pathname).source, utm_campaign: growthAttribution(current, window.location.pathname).campaign });
   if (current.get("pb_test") === "1") params.set("pb_test", "1");
   return `/pocket?${params}`;
 }

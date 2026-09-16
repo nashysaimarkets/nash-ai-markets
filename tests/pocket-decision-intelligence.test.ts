@@ -108,7 +108,8 @@ test("decision autopsy persists the later evidence and fails closed on root caus
   assert.match(route, /rootCause=NOT_PROVEN unless/);
   assert.match(client, /await vaultSave\(completedDecision\)/);
   assert.match(client, /CHART CHANGE DETECTOR/);
-  assert.match(client, /YOUR MISTAKE FINGERPRINT/);
+  assert.match(client, /SetupNotebook/);
+  assert.match(await readFile(new URL("../app/pocket/SetupNotebook.tsx", import.meta.url), "utf8"), /Patterns in my reviews/);
   assert.match(compatibility, /afterImage/);
   assert.match(compatibility, /reviewedAt/);
 });

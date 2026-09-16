@@ -12,7 +12,10 @@ import { trackGrowth } from "./growth-client";
 import PocketDepthMark, { PocketGlyph } from "./PocketDepthMark";
 import PocketSpatialExperience from "./PocketSpatialExperience";
 import OrbitalInstrument from "./OrbitalInstrument";
-import InteractiveLevelScanner from "./InteractiveLevelScanner";
+import InteractiveLevelScanner, { type ScannerProps } from "./InteractiveLevelScanner";
+import SnapshotReview from "./SnapshotReview";
+import SetupNotebook from "./SetupNotebook";
+import { mergeNotebook } from "./notebook";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -443,7 +446,7 @@ function isListedEquityAnalysis(analysis: Analysis | null) {
   return analysis ? isListedEquityEventInput(analysis) : false;
 }
 
-function DecisionMap(props: { analysis: Analysis; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
+function DecisionMap(props: ScannerProps) {
   // A different source/timeframe starts a fresh inspection; external scenario controls stay shared.
   const { analysis } = props;
   const key = JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]);
@@ -917,8 +920,8 @@ async function vaultList(): Promise<LockedDecision[]> {
   const db = await openVault();
   return new Promise((resolve, reject) => {
     const request = db.transaction("decisions", "readonly").objectStore("decisions").getAll();
-    request.onsuccess = () => resolve((normalizeLockedDecisions(request.result) as unknown as LockedDecision[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
-    request.onerror = () => reject(request.error);
+    request.onsuccess = () => { db.close(); resolve((normalizeLockedDecisions(request.result) as unknown as LockedDecision[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt))); };
+    request.onerror = () => { db.close(); reject(request.error); };
   });
 }
 
@@ -929,6 +932,49 @@ async function vaultSave(decision: LockedDecision) {
     transaction.objectStore("decisions").put(decision);
     transaction.oncomplete = () => { db.close(); resolve(); };
     transaction.onerror = transaction.onabort = () => { db.close(); reject(transaction.error); };
+  });
+}
+
+const NOTEBOOK_RULES_KEY = "notebook-personal-rules-v1";
+async function vaultLoadRules(): Promise<string[]> {
+  const db = await openVault();
+  return new Promise((resolve, reject) => {
+    const request = db.transaction("analyses", "readonly").objectStore("analyses").get(NOTEBOOK_RULES_KEY);
+    request.onsuccess = () => { db.close(); resolve(Array.isArray(request.result?.rules) ? request.result.rules.filter((rule: unknown) => typeof rule === "string").slice(0,3) : []); };
+    request.onerror = () => { db.close(); reject(request.error); };
+  });
+}
+async function vaultSaveRules(rules: string[]) {
+  const db = await openVault();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction("analyses", "readwrite");
+    tx.objectStore("analyses").put({ key: NOTEBOOK_RULES_KEY, rules: rules.slice(0,3) });
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = tx.onabort = () => { db.close(); reject(tx.error); };
+  });
+}
+async function vaultRestoreNotebook(backup: { decisions: LockedDecision[]; rules: string[] }) {
+  const db = await openVault();
+  return new Promise<string>((resolve, reject) => {
+    const tx = db.transaction(["decisions", "analyses"], "readwrite");
+    const records = tx.objectStore("decisions").getAll();
+    const rules = tx.objectStore("analyses").get(NOTEBOOK_RULES_KEY);
+    let recordsReady = false; let rulesReady = false; let result = "";
+    const write = () => {
+      if (!recordsReady || !rulesReady) return;
+      try {
+        const existing = normalizeLockedDecisions(records.result) as unknown as LockedDecision[];
+        const merged = mergeNotebook(existing, backup.decisions, () => crypto.randomUUID());
+        merged.added.forEach((entry) => tx.objectStore("decisions").put(entry));
+        const existingRules = Array.isArray(rules.result?.rules) ? rules.result.rules : [];
+        tx.objectStore("analyses").put({ key: NOTEBOOK_RULES_KEY, rules: [...new Set([...existingRules, ...backup.rules])].slice(0,3) });
+        result = `Restored ${merged.added.length} decisions. ${merged.skipped} identical records skipped. Existing decisions were preserved.`;
+      } catch { tx.abort(); }
+    };
+    records.onsuccess = () => { recordsReady = true; write(); };
+    rules.onsuccess = () => { rulesReady = true; write(); };
+    tx.oncomplete = () => { db.close(); resolve(result); };
+    tx.onerror = tx.onabort = () => { db.close(); reject(tx.error ?? new Error("Restore failed.")); };
   });
 }
 
@@ -1360,9 +1406,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   async function rememberScan(report: Analysis, source: string) {
     // Extend the existing explicitly device-private journal. Failed/sample scans never enter history.
     if (vault.some((entry) => entry.image === source && decisionSignature(entry.analysis) === decisionSignature(report))) return;
-    const record: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image: source, analysis: report };
+    const sources = source === image ? { image: source, contextImage, detailImage, fourHourImage, indicatorImage } : resultCharts.find((chart) => chart.image === source)?.sourceImages;
+    const record: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image: source, analysis: report, ...(sources ? { sourceImages: sources } : {}) };
     try {
       await vaultSave(record);
+      trackGrowth("decision_saved");
       setVault((current) => current.some((entry) => entry.image === source && decisionSignature(entry.analysis) === decisionSignature(report)) ? current : [record, ...current]);
     } catch { setVaultMessage("Your analysis is ready, but could not be saved on this device. Keep this result open if you need it."); }
   }
@@ -1896,6 +1944,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     } finally {
       const elapsedMs = Date.now() - startedAt;
       console.info("[pocket-client-timing]", JSON.stringify({ chartCount: requestPolicy.imageCount, background: Boolean(options.background), outcome, elapsedMs, milestones: elapsed }));
+      if (!options.background && outcome === "completed") {
+        const pack = requestPolicy.imageCount === 1 ? "single" : "multi";
+        const flow = appleAccess?.isNative ? (appleAccess.entitled ? "paid" : "free") : "web";
+        if (Number.isFinite(elapsed.prepared)) trackGrowth(`scan_prepared_${pack}`, { flow, durationMs: elapsed.prepared - (elapsed.cache ?? 0) });
+        if (Number.isFinite(elapsed.response)) trackGrowth(`scan_response_${pack}`, { flow, durationMs: elapsed.response - elapsed.prepared });
+        if (Number.isFinite(elapsed.verified)) trackGrowth(`scan_verified_${pack}`, { flow, durationMs: elapsed.verified - elapsed.response });
+      }
       if (!options.background) setLastScanPerformance({ elapsedMs, outcome, chartCount: requestPolicy.imageCount });
       if (!options.background) { analysisRequestActive.current = false; setMainReportInFlight(false); setBusy(false); }
     }
@@ -1920,6 +1975,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const activityStartedAt = Date.now();
     const activityFlow = currentAppleAccess?.isNative ? (currentAppleAccess.entitled ? "paid" : "free") : "web";
     if (!reviewTarget) trackGrowth("scan_started", { flow: activityFlow });
+    else trackGrowth("review_started", { flow: activityFlow });
     setError("");
     try {
       if (!reviewTarget) {
@@ -1961,6 +2017,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       });
       const payload = await response.json() as { review?: ProcessReview; error?: string };
       if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
+      trackGrowth("review_completed", { flow: activityFlow, durationMs: Date.now() - activityStartedAt });
       const completedDecision: LockedDecision = {
         ...reviewTarget,
         review: payload.review,
@@ -2065,8 +2122,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setVaultMessage("This result is already saved in your private Decision Journal.");
       return;
     }
-    const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis };
-    try { await vaultSave(decision); setVault((current) => [decision, ...current]); setVaultMessage("Saved to your private Decision Journal. Return with a later chart to review the process—not just the outcome."); }
+    const decision: LockedDecision = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), intention, image, analysis, sourceImages: { image, contextImage, detailImage, fourHourImage, indicatorImage } };
+    try { await vaultSave(decision); trackGrowth("decision_saved"); setVault((current) => [decision, ...current]); setVaultMessage("Saved to your private Decision Journal. Return with a later chart to review the process—not just the outcome."); }
     catch { setVaultMessage("This decision could not be saved on this device."); }
   }
 
@@ -2092,6 +2149,20 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       setVaultMessage("The invite could not open automatically. Visit the Founding 650 page and copy its address.");
     }
+  }
+
+  async function saveNotebookDecision(decision: LockedDecision) {
+    await vaultSave(decision);
+    setVault((current) => current.map((entry) => entry.id === decision.id ? decision : entry));
+  }
+  async function restoreNotebook(backup: { decisions: LockedDecision[]; rules: string[] }) {
+    const message = await vaultRestoreNotebook(backup);
+    setVault(await vaultList());
+    return message;
+  }
+  function openNotebook() {
+    startNewChart();
+    requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("bullseye-notebook")?.scrollIntoView({ block: "start" })));
   }
 
   async function startReview(decision: LockedDecision) {
@@ -2131,33 +2202,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (appleNeedsSubscription) openApplePaywall(appleAccess);
   }
 
-  const vaultStats = (() => {
-    const total = vault.length;
-    if (!total) return { total: 0, reviewed: 0, average: 0, patience: 0, averageDecisionQuality: 0, commonRisk: "NOT ENOUGH HISTORY", commonBehaviour: "NO REVIEW HISTORY", commonRootCause: "NOT PROVEN", dominant: "NO PATTERN YET", insight: "Save decisions to begin building your private fingerprint." };
-    const average = Math.round(vault.reduce((sum, item) => sum + item.analysis.setupScore.overall, 0) / total);
-    const patience = Math.round(vault.filter((item) => item.analysis.verdict !== "WATCH").length / total * 100);
-    const reviewed = vault.filter((item) => item.review);
-    const averageDecisionQuality = reviewed.length ? Math.round(reviewed.reduce((sum, item) => sum + (item.review?.decisionQuality ?? 0), 0) / reviewed.length) : 0;
-    const risks = new Map<string, number>();
-    const instruments = new Map<string, number>();
-    const behaviours = new Map<string, number>();
-    const rootCauses = new Map<string, number>();
-    vault.forEach((item) => {
-      item.analysis.riskFlags.forEach((risk) => risks.set(risk, (risks.get(risk) ?? 0) + 1));
-      instruments.set(item.analysis.instrument, (instruments.get(item.analysis.instrument) ?? 0) + 1);
-      item.review?.behaviourTags.forEach((tag) => behaviours.set(tag, (behaviours.get(tag) ?? 0) + 1));
-      if (item.review?.rootCause && item.review.rootCause !== "NOT_PROVEN") rootCauses.set(item.review.rootCause, (rootCauses.get(item.review.rootCause) ?? 0) + 1);
-    });
-    const top = (map: Map<string, number>, fallback: string) => [...map.entries()].sort((a,b) => b[1] - a[1])[0]?.[0] ?? fallback;
-    const commonBehaviour = top(behaviours, "NO REVIEW HISTORY");
-    const commonRootCause = top(rootCauses, "NOT PROVEN").replaceAll("_", " ");
-    const insight = reviewed.length < 3
-      ? `${3 - reviewed.length} more completed autops${3 - reviewed.length === 1 ? "y" : "ies"} will start exposing repeated decision mistakes.`
-      : commonBehaviour !== "NO REVIEW HISTORY"
-        ? `Your most repeated reviewed behaviour is ${commonBehaviour.toLowerCase()}. Challenge it before the next decision.`
-        : `${patience}% of saved reads advised waiting or standing aside.`;
-    return { total, reviewed: reviewed.length, average, patience, averageDecisionQuality, commonRisk: top(risks, "NO REPEATED RISK"), commonBehaviour, commonRootCause, dominant: top(instruments, "NO PATTERN YET"), insight };
-  })();
+
 
   const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
@@ -2172,7 +2217,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
         <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
         <section className="psDecisionTimeline" aria-label="Decision timeline"><header><span>⌁ DECISION TIMELINE</span><b>ORIGINAL → CHANGE → OUTCOME</b></header><ol>{decisionTimeline.map((event, index) => <li key={event.id} data-state={event.state}><i>{index + 1}</i><div><small>{event.label}{event.timestamp ? ` · ${new Date(event.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}</small><strong>{event.headline}</strong><p>{event.detail}</p></div><b>{event.state === "COMPLETE" ? "✓" : "○"}</b></li>)}</ol></section>
-        <section className="psAutopsyCharts"><figure><img src={reviewTarget.image} alt="Original chart saved before the decision"/><figcaption>BEFORE · LOCKED AUDIT</figcaption></figure><i>→</i><figure><img src={reviewTarget.afterImage ?? image ?? ""} alt="Later chart used for the decision autopsy"/><figcaption>AFTER · LATER EVIDENCE</figcaption></figure></section>
+        <SnapshotReview before={reviewTarget.image} after={reviewTarget.afterImage ?? image ?? ""} review={review} />
+        <button className="pbReturnNotebook" type="button" onClick={() => { setReview(null); setReviewTarget(null); openNotebook(); }}>Back to my notebook</button>
         <section className="psAutopsyStatus"><article><small>ORIGINAL THESIS</small><strong>{review.thesisStatus.replaceAll("_", " ")}</strong></article><article><small>STRUCTURE SHIFT</small><strong>{review.structureShift}</strong></article><article><small>ROOT CAUSE</small><strong>{review.rootCause.replaceAll("_", " ")}</strong></article></section>
         <section className="psChangeLedger"><header><span>⌁ CHART CHANGE DETECTOR</span><b>{review.evidenceChanges.length} VISIBLE CHANGE{review.evidenceChanges.length === 1 ? "" : "S"}</b></header>{review.evidenceChanges.length ? review.evidenceChanges.map((change, index) => <article key={`${change.before}-${index}`} data-impact={change.impact}><i>{String(index + 1).padStart(2, "0")}</i><div><small>BEFORE</small><p>{change.before}</p><small>AFTER</small><p>{change.after}</p></div><b>{change.impact}</b></article>) : <p>No reliable structural change could be proven from the two screenshots.</p>}</section>
         <section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section>
@@ -2226,6 +2272,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             onOpenTool={(mode) => { setCommandDeckMode(mode); openResultReport("bullseye-tools"); }}
             onOpenMacro={() => openResultReport("bullseye-events")}
           />
+          <nav className="pbResultActions" aria-label="Explore this result"><button type="button" onClick={() => openResultReport("bullseye-levels")}>Inspect price levels ↗</button><button type="button" onClick={() => openResultReport("bullseye-timeframe-comparison")}>Compare timeframes ↗</button><button type="button" onClick={openNotebook}>My notebook ↗</button></nav>
           {resultView === "cinema" ? <MarketStory key={activeChartId} analysis={combinedAnalysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
           <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-tools">TOOLS</a><a href="#bullseye-intelligence-maps">MAPS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-ask">ASK</a><a href="#bullseye-changes">WHAT CHANGED?</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
           <ResultTruthStrip analysis={combinedAnalysis} />
@@ -2235,7 +2282,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <BullseyeDecisionEngine key={`decision-engine-${activeChartId}`} analysis={combinedAnalysis} charts={resultCharts} performance={lastScanPerformance} />
+          <BullseyeDecisionEngine key={`decision-engine-${activeChartId}`} analysis={combinedAnalysis} charts={resultCharts} performance={lastScanPerformance} activeId={activeChartId} onSelectChart={selectResultChart} switchingDisabled={busy || followUpBusy || liquidityRescanning} />
           {analysis.evidencePack?.contributions?.length ? <section className="psEvidenceContribution">
             <header><div><span>◎ EVIDENCE PACK USED</span><strong>{analysis.evidencePack.received}/5 IMAGES RECEIVED</strong></div><b>{analysis.evidencePack.contributions.filter((item) => item.used).length} CONTRIBUTED</b></header>
             <div>{analysis.evidencePack.contributions.map((item) => <article key={item.role} data-used={item.used ? "true" : "false"}><i>{item.role === "PRIMARY" ? "①" : item.role === "HIGHER_TIMEFRAME" ? "②" : item.role === "PRICE_DETAIL" ? "③" : item.role === "FOUR_HOUR" ? "④" : "⑤"}</i><div><strong>{item.role === "PRIMARY" ? "PRIMARY CHART" : item.role === "HIGHER_TIMEFRAME" ? "SUPPORTING CHART 2" : item.role === "PRICE_DETAIL" ? "SUPPORTING CHART 3" : item.role === "FOUR_HOUR" ? "SUPPORTING CHART 4" : "INDICATOR / VOLUME"}</strong><p>{item.summary}</p></div><b>{item.used ? "USED" : "NO NEW EVIDENCE"}</b></article>)}</div>
@@ -2244,7 +2291,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <div id="bullseye-tools" className="psReportTools"><PocketCommandDeck key={activeChartId} analysis={combinedAnalysis} primaryLevels={analysis.levels} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} onLiquidityRescan={rescanLiquidityOnly} liquidityError={liquidityError} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} liquidityRescanning={liquidityRescanning} mode={commandDeckMode} onMode={setCommandDeckMode} /></div>
           {timeframePicker(true)}
           <DecisionIntelligenceSuite key={activeChartId} analysis={combinedAnalysis} />
-          <ScanChanges key={`${activeChartId}-${resultRevision.current}`} previous={previousScan} analysis={analysis} image={image ?? ""} sample={sampleMode} canCompare={requireAppleEntitlementForAdditionalRequest} />
+          <ScanChanges key={`${activeChartId}-${resultRevision.current}`} previous={previousScan} analysis={analysis} image={image ?? ""} sample={sampleMode} canCompare={requireAppleEntitlementForAdditionalRequest} onCompared={saveNotebookDecision} />
           {sampleMode ? <section id="bullseye-events" className="psSampleBanner">SAMPLE EVENT CONTEXT · Your own analysis displays the verified calendar for its instrument. No event is attached to this fictional chart.</section> : <>
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header className="psInstrumentHeader"><OrbitalInstrument kind="macro" /><div><span>EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · ${eventCoverage.label}` : `${eventCoverage.label} · CONFIRM BEFORE TRADING`}</small></div>{nextHighImpact ? <strong className="psEventHighAlert">HIGH<small>EVENT AHEAD</small></strong> : isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
@@ -2259,7 +2306,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header className="psInstrumentHeader"><OrbitalInstrument kind="levels" /><div><span>Explore price levels</span><small>Tap into your chart’s structure</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
             {battlefieldTabs}
-            <DecisionMap analysis={battlefieldAnalysis} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
+            <DecisionMap analysis={battlefieldAnalysis} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} sourceImage={image ?? ""} contextImage={contextImage} sourceAnalysis={analysis} />
             {battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}
             <details id="bullseye-source-charts" className="psSourceEvidence"><summary>VIEW {analysis.timeframe} SOURCE CHART <b>⌄</b></summary>{sourceChart()}</details>
           </section>
@@ -2301,7 +2348,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <header><span id="psDecisionMapDialogTitle">DECISION MAP · {analysis.instrument}</span><button type="button" autoFocus aria-label="Close full-screen Decision Map" onClick={closeChartFocus}>CLOSE</button></header>
             <div className="psBattleFocusBody" ref={chartFocusScroll}>
               {battlefieldTabs}
-              <DecisionMap analysis={battlefieldAnalysis} expanded scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
+              <DecisionMap analysis={battlefieldAnalysis} expanded scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} sourceImage={image ?? ""} contextImage={contextImage} sourceAnalysis={analysis} />
               <details className="psSourceEvidence"><summary>VIEW {analysis.timeframe} SOURCE CHART <b>⌄</b></summary>{sourceChart(true)}</details>
               <button className="psBattleBackToResult" type="button" onClick={closeChartFocus}>← BACK TO RESULT</button>
             </div>
@@ -2383,19 +2430,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <span role="status">{reviewTarget ? "Comparing your charts…" : "Analysing your charts…"}</span>
           <div className="psScanActivityTrack" role="progressbar" aria-label={reviewTarget ? "Chart comparison in progress" : "Chart analysis in progress"}><span /></div>
         </div> : null}
-        {!reviewTarget ? <section className="psJournalHome" data-empty={!vault.length}>
-          <header><div><span>▣ YOUR DECISION JOURNAL</span><strong>{vault.length ? `${vault.length} SAVED AUDIT${vault.length === 1 ? "" : "S"}` : "START YOUR PRIVATE HISTORY"}</strong></div><b>{Math.min(100, vault.length * 10)}<small>% PROFILE BUILT</small></b></header>
-          <div className="psJournalLoop"><span><i>1</i>SAVE TODAY&apos;S READ</span><span><i>2</i>RETURN WITH A LATER CHART</span><span><i>3</i>REVIEW THE PROCESS</span></div>
-          <p>{vault.length ? "Every saved decision improves your private trader fingerprint and exposes repeated risks." : "Your first saved result begins a private record that becomes more useful each time you return."}</p>
-        </section> : null}
-        {!reviewTarget && vault.length ? <section className="psFingerprint psFingerprintPro">
-          <header><span>🧬 YOUR MISTAKE FINGERPRINT</span><b>{vaultStats.reviewed}/{vaultStats.total} AUTOPSIES</b></header>
-          <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE RATE</small><strong>{vaultStats.patience}%</strong></article><article><small>DECISION QUALITY</small><strong>{vaultStats.reviewed ? `${vaultStats.averageDecisionQuality}/100` : "—"}</strong></article></div>
-          <section className="psFingerprintSignals"><article><small>REPEATED BEHAVIOUR</small><strong>{vaultStats.commonBehaviour}</strong></article><article><small>REPEATED ROOT CAUSE</small><strong>{vaultStats.commonRootCause}</strong></article><article><small>REPEATED RISK WATCH</small><strong>{vaultStats.commonRisk}</strong></article></section>
-          <p><strong>BULLSEYE COACH:</strong> {vaultStats.insight}</p>
-          <footer>Built only from decisions and later-chart autopsies saved privately on this device. Profit alone never earns a good process grade.</footer>
-        </section> : null}
-        {!reviewTarget && vault.length ? <section className="psVault"><header><span>SAVED DECISIONS</span><b>PRIVATE · THIS DEVICE</b></header>{vault.slice(0,5).map((decision) => <article key={decision.id}><div><strong>{decision.analysis.instrument}</strong><span>{new Date(decision.createdAt).toLocaleString("en-GB", { day:"numeric", month:"short", hour:"2-digit", minute:"2-digit" })} · {decision.intention}</span><small>{decision.review ? "4/4 TIMELINE COMPLETE · VIEW CHANGE + OUTCOME" : "1/4 LOCKED · ADD A LATER CHART"}</small></div><b>{decision.review?.processGrade ?? decision.analysis.setupScore.grade}</b><button type="button" onClick={() => startReview(decision)}>{decision.review ? "VIEW DECISION TIMELINE" : "ADD LATER CHART"}</button></article>)}</section> : null}
+        {!reviewTarget ? <SetupNotebook decisions={vault} onReview={startReview} onSave={saveNotebookDecision} loadRules={vaultLoadRules} saveRules={vaultSaveRules} onRestore={restoreNotebook} /> : null}
       </section>
       <FeedbackButton />
       {applePaywallStatus ? <AppleSubscriptionPaywall status={applePaywallStatus} onClose={closeApplePaywall} onUnlocked={(next) => { setAppleAccess(next); closeApplePaywall(); }} /> : null}
