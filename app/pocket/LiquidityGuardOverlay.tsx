@@ -1,5 +1,7 @@
 "use client";
 
+import OrbitalInstrument from "./OrbitalInstrument";
+
 /* Uploaded charts are private data URLs and intentionally bypass next/image. */
 /* eslint-disable @next/next/no-img-element */
 
@@ -109,7 +111,7 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
   };
 
   return <section className="psLiquidityGuard" data-visible={overlayVisible} data-status={displayState} aria-labelledby={headingId}>
-    <header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="liquidity" />
       <div><span>◉ LIQUIDITY GUARD</span><h2 id={headingId}>VISUAL STOP-RISK MAP</h2><small>{scaleEvidenceLabel} · MULTIPLE CANDLE TOUCHES</small></div>
       {displayState === "locked" ? <button type="button" aria-pressed={overlayVisible} onClick={() => setOverlayVisible((visible) => !visible)}>{overlayVisible ? "HIDE OVERLAY" : "SHOW OVERLAY"}</button>
         : displayState !== "verified-none" && onRescan ? <button type="button" disabled={rescanning} onClick={onRescan}>{rescanning ? "REANALYSING…" : "REANALYSE CHART"}</button> : null}

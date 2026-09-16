@@ -10,6 +10,8 @@ import { createSampleCharts } from "./sample-analysis";
 import { AppStoreLink, UsageControl } from "./GrowthControls";
 import { trackGrowth } from "./growth-client";
 import PocketDepthMark, { PocketGlyph } from "./PocketDepthMark";
+import PocketSpatialExperience from "./PocketSpatialExperience";
+import OrbitalInstrument from "./OrbitalInstrument";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -595,7 +597,7 @@ function ScenarioTheatre({ analysis }: { analysis: Analysis; sourceImage: string
   ];
   const chosen = scenarios.find((scenario) => scenario.kind === selected) ?? scenarios[1];
   return <section className="psScenarioTheatre" data-selected={selected}>
-    <header><div><span>◈ IF / THEN DECISION PATHS</span><small>NO FORECAST CANDLES · ONLY CONDITIONS PRICE CAN PROVE</small></div><strong>{active.toUpperCase()}<br/>ACTIVE READ</strong></header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="levels" /><div><span>◈ IF / THEN DECISION PATHS</span><small>NO FORECAST CANDLES · ONLY CONDITIONS PRICE CAN PROVE</small></div><strong>{active.toUpperCase()}<br/>ACTIVE READ</strong></header>
     <nav className="psConditionChoices" role="group" aria-label="Choose a conditional market path">{scenarios.map((scenario) => <button key={scenario.kind} type="button" data-kind={scenario.kind} data-active={selected === scenario.kind} data-read={active === scenario.kind} aria-pressed={selected === scenario.kind} onClick={() => setSelected(scenario.kind)}><b>{scenario.icon}</b><span>{scenario.title}</span><small>{active === scenario.kind ? "● CURRENT READ" : "○ ALTERNATE"}</small></button>)}</nav>
     <article className="psConditionBoard" data-kind={selected} aria-live="polite"><header><span>{chosen.title}</span><strong>{chosen.status}</strong></header><div><section><small>ACTIVATES ONLY IF</small><p>{chosen.trigger}</p></section><i>→</i><section><small>WEAKENS / FAILS IF</small><p>{chosen.failure}</p></section></div><footer><b>NO PROOF, NO TRADE</b><span>This path stays inactive until the chart confirms it.</span></footer></article>
   </section>;
@@ -646,7 +648,7 @@ function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanaly
   const rsi = rsiMatch ? Math.max(0, Math.min(100, Number(rsiMatch[1]))) : null;
   const formatPrice = (value: number) => new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(value);
   return <section className="psChartXRay" data-layer={layer}>
-    <header><div><span>⌖ BULLSEYE PATTERN X-RAY</span><small>VISIBLE FORMATIONS · DRAWN ON YOUR CHART</small></div><strong>1 FOCUSED TOOL</strong></header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="patterns" /><div><span>⌖ BULLSEYE PATTERN X-RAY</span><small>VISIBLE FORMATIONS · DRAWN ON YOUR CHART</small></div><strong>1 FOCUSED TOOL</strong></header>
     <div className="psXRayCanvas"><img src={sourceImage} alt="Customer's uploaded source chart with verified Bullseye X-Ray overlays"/><div className="psXRayShade"/><div className="psXRayScan" aria-hidden="true"/>
       {layer === "patterns" ? <><svg className="psXRayPatterns" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Visible historical candle-shape evidence; not a price forecast">{drawablePatterns.flatMap((pattern, index) => {
         const points = pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)) ?? [];
@@ -718,7 +720,7 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
         {scene === 3 ? <article className="psStoryBattle"><small>CHAPTER 04 · BULL VS BEAR</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
         {scene === 4 ? <article className="psStoryRisks psStoryRiskPro"><small>CHAPTER 05 · RISK CONTROL</small><h2>What could make this read wrong?</h2><div><section><b>⚡ CONTRADICTIONS</b><ul>{(analysis.contradictions.length ? analysis.contradictions : ["No clear contradiction is visible in this screenshot."]).slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section><section><b>⚠ RISK FLAGS</b><ul>{analysis.riskFlags.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section></div><div className="psEventSafety"><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY · CONFIRM THE LIVE CALENDAR</span></div><p>TRADER TRAP · {analysis.traderTrap}</p></article> : null}
         {scene === 5 ? <article className="psStoryTrigger psStoryDecisionPro"><small>CHAPTER 06 · DECISION CONDITIONS</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><p>STAND ASIDE · {analysis.noTradeCondition}</p><section className="psNextCheck"><b>RIGHT NOW</b><span>{analysis.nextSequence.now}</span><b>NEXT CHECK</b><span>{analysis.nextSequence.reassess}</span></section></article> : null}
-        {scene === 6 ? <article className="psStoryVerdict psStoryFinale psFinalePage"><small>FINAL CHAPTER · PERSONAL RESULT</small><div className="psFinaleTarget psLaunchTarget" aria-hidden="true"><i/><i/><i/><b>🎯</b><span>LOCKING<br/>EVIDENCE</span></div><div className="psFinaleLogo"><span className="psLogoMark"><i/></span><strong>BULLSEYE</strong></div><h1>{viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"}<span>EVIDENCE BALANCE</span></h1><div className="psFinaleRatioCards" aria-label={`Bull ${balance.bull} percent, bear ${balance.bear} percent evidence balance`}><section data-side="bull"><i>🐂</i><span>BULL CASE</span><strong>{balance.bull}<small>%</small></strong></section><b>VS</b><section data-side="bear"><i>🐻</i><span>BEAR CASE</span><strong>{balance.bear}<small>%</small></strong></section></div><div className="psFinaleBalanceBar"><i style={{ width: `${balance.bull}%` }}/><b/><span>EVIDENCE BALANCE · NOT PROBABILITY</span></div><div className="psFinaleScore"><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b></div><h2>{analysis.verdictHeadline}</h2><p className="psDailyMessage"><span>YOUR MESSAGE FOR TODAY</span>{dailyMessage}</p><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
+        {scene === 6 ? <article className="psStoryVerdict psStoryFinale psFinalePage"><small>FINAL CHAPTER · PERSONAL RESULT</small><div className="psFinaleSculpture"><OrbitalInstrument size="large" /></div><div className="psFinaleLogo"><span className="psLogoMark"><PocketGlyph /></span><strong>BULLSEYE</strong></div><h1>{viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"}<span>EVIDENCE BALANCE</span></h1><div className="psFinaleRatioCards" aria-label={`Bull ${balance.bull} percent, bear ${balance.bear} percent evidence balance`}><section data-side="bull"><i><PocketGlyph kind="up" /></i><span>BULL CASE</span><strong>{balance.bull}<small>%</small></strong></section><b>VS</b><section data-side="bear"><i><PocketGlyph kind="down" /></i><span>BEAR CASE</span><strong>{balance.bear}<small>%</small></strong></section></div><div className="psFinaleBalanceBar"><i style={{ width: `${balance.bull}%` }}/><b/><span>EVIDENCE BALANCE · NOT PROBABILITY</span></div><div className="psFinaleScore"><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b></div><h2>{analysis.verdictHeadline}</h2><p className="psDailyMessage"><span>YOUR MESSAGE FOR TODAY</span>{dailyMessage}</p><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
       </div>
     </div>
     <nav className="psStoryLinks" aria-label="Open the solid-state explanation"><button type="button" onClick={() => openExplanation("bullseye-events")}><b>01</b><span>EVENTS</span></button><button type="button" onClick={() => openExplanation("bullseye-levels")}><b>02</b><span>PRICE LEVELS</span></button><button type="button" onClick={() => openExplanation("bullseye-evidence")}><b>03</b><span>EVIDENCE</span></button></nav>
@@ -787,7 +789,7 @@ function PatternWatch({ analysis, onAddChart, onReanalyse, hasContext, reanalysi
   };
   const selected = PATTERN_GUIDE.find((item) => item.name === selectedGuide) ?? PATTERN_GUIDE[0];
   return <section className="psPatternWatch">
-    <header><div><span>◫ PATTERN WATCH</span><small>SUPPLIED CHART STRUCTURE</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="patterns" /><div><span>◫ PATTERN WATCH</span><small>SUPPLIED CHART STRUCTURE</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
     <p className="psSelectedFrameLabel">{activeFrame} · Selected uploaded chart. Use the chart selector to change timeframe.</p>
     {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${pattern.sourceRole ?? "PRIMARY"}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {(pattern.sourceRole ?? "PRIMARY").replaceAll("_", " ")} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>This selected chart does not show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
@@ -838,7 +840,7 @@ function RiskDesk() {
   };
 
   return <section className="psRiskDesk">
-    <header><div><span>🛡 PERSONAL RISK DESK</span><small>YOUR LIMITS · YOUR DEVICE · NO ORDER CONNECTION</small></div><strong>{calculation.riskPercent !== null && calculation.riskPercent > 2 ? "HIGH LIMIT" : "PRIVATE"}</strong></header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="risk" /><div><span>🛡 PERSONAL RISK DESK</span><small>YOUR LIMITS · YOUR DEVICE · NO ORDER CONNECTION</small></div><strong>{calculation.riskPercent !== null && calculation.riskPercent > 2 ? "HIGH LIMIT" : "PRIVATE"}</strong></header>
     <div className="psRiskDeskBody">
       <form onSubmit={(event) => { event.preventDefault(); save(); }}>
         <label><span>ACCOUNT VALUE</span><div><select aria-label="Account currency" value={currency} onChange={(event) => setCurrency(event.target.value as RiskCurrency)}><option value="GBP">GBP</option><option value="USD">USD</option><option value="EUR">EUR</option></select><input aria-label="Account value" inputMode="decimal" value={input.accountValue} onChange={(event) => update("accountValue", event.target.value)} placeholder="10,000" /></div></label>
@@ -864,8 +866,8 @@ function SignalPulse({ analysis }: { analysis: Analysis }) {
   const state = signal ? signal.status : visibleLevels.length >= 2 ? "LEVELS ACTIVE" : "NO CLEAN SIGNAL";
   const tone = signal?.status === "CONFIRMED" ? "strong" : signal?.status === "FAILED" ? "weak" : "watch";
   return <section className="psSignalPulse" data-tone={tone}>
-    <header><div><span>◉ SIGNAL PULSE</span><small>WHAT IS DEVELOPING NOW</small></div><b>{state}</b></header>
-    <div className="psPulseCore"><i /><i /><i /><strong>{signal?.name ?? "MARKET STRUCTURE"}</strong><span>{signal ? `${signal.timeframe || analysis.timeframe} · ${signal.confidence ?? "LOW"} CONFIDENCE` : `${visibleLevels.length} VISIBLE LEVEL${visibleLevels.length === 1 ? "" : "S"}`}</span></div>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="patterns" /><div><span>◉ SIGNAL PULSE</span><small>WHAT IS DEVELOPING NOW</small></div><b>{state}</b></header>
+    <div className="psPulseCore"><OrbitalInstrument kind="patterns" size="large" /><strong>{signal?.name ?? "MARKET STRUCTURE"}</strong><span>{signal ? `${signal.timeframe || analysis.timeframe} · ${signal.confidence ?? "LOW"} CONFIDENCE` : `${visibleLevels.length} VISIBLE LEVEL${visibleLevels.length === 1 ? "" : "S"}`}</span></div>
     <div className="psPulseRead"><article><small>FORMING</small><strong>{signal?.evidence ?? "No gallery pattern is clean enough to name yet."}</strong></article><article><small>WAKES UP IF</small><strong>{signal?.confirmation ?? analysis.nextSequence.confirmation}</strong></article><article><small>FAILS IF</small><strong>{signal?.invalidation ?? analysis.nextSequence.failure}</strong></article></div>
     <footer>Signal Pulse reports visible development — it does not turn an unfinished shape into a trade signal.</footer>
   </section>;
@@ -916,9 +918,9 @@ function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macro
   return <section className="psCoreScans" aria-label="Core AI scan results">
     <header><div><span>◎ CORE AI CHECKS</span><strong>LIQUIDITY · PATTERNS · MACRO</strong></div><b>ALWAYS VISIBLE</b></header>
     <div>
-      <button type="button" data-scan="liquidity" data-state={liquidityState.state} onClick={() => onOpenTool("guard")}><small>LIQUIDITY GUARD</small><b>{liquidityState.badge}</b><strong>{liquidityState.title}</strong><span>{liquidityState.detail}</span><em>OPEN MAP →</em></button>
-      <button type="button" data-scan="patterns" data-state={patternState.state} onClick={() => onOpenTool("patterns")}><small>PATTERN SCAN</small><b>{patternState.badge}</b><strong>{patternState.title}</strong><span>{patternState.detail}</span><em>OPEN PATTERN FINDER →</em></button>
-      <button type="button" data-scan="macro" data-state={macroState.state} onClick={onOpenMacro}><small>MACRO CHECK</small><b>{macroState.badge}</b><strong>{macroState.title}</strong><span>{macroState.detail}</span><em>OPEN EVENT TIMES →</em></button>
+      <button type="button" data-scan="liquidity" data-state={liquidityState.state} onClick={() => onOpenTool("guard")}><OrbitalInstrument kind="liquidity" size="large" /><small>LIQUIDITY GUARD</small><b>{liquidityState.badge}</b><strong>{liquidityState.title}</strong><span>{liquidityState.detail}</span><em>OPEN MAP →</em></button>
+      <button type="button" data-scan="patterns" data-state={patternState.state} onClick={() => onOpenTool("patterns")}><OrbitalInstrument kind="patterns" size="large" /><small>PATTERN SCAN</small><b>{patternState.badge}</b><strong>{patternState.title}</strong><span>{patternState.detail}</span><em>OPEN PATTERN FINDER →</em></button>
+      <button type="button" data-scan="macro" data-state={macroState.state} onClick={onOpenMacro}><OrbitalInstrument kind="macro" size="large" /><small>MACRO CHECK</small><b>{macroState.badge}</b><strong>{macroState.title}</strong><span>{macroState.detail}</span><em>OPEN EVENT TIMES →</em></button>
     </div>
     <footer>The chart supplies technical evidence. Macro Check refreshes separately from connected schedules because future events cannot be read from a chart picture.</footer>
   </section>;
@@ -2290,7 +2292,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   if (review && reviewTarget) {
     const decisionTimeline = buildDecisionTimeline(reviewTarget);
-    return <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous">
+    return <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous" data-spatial="true">
+      <PocketSpatialExperience scanning={busy} />
       <section className="psResults psAutopsyResults" data-immersive="true">
         <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
         <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
@@ -2327,7 +2330,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const battlefieldTabs = timeframePicker(true);
     const previousScan = previousComparableScan(vault, analysis, image ?? "");
     return (
-      <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous" data-chart-focus={chartFocus ? "true" : "false"}>
+      <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous" data-chart-focus={chartFocus ? "true" : "false"} data-spatial="true">
+      <PocketSpatialExperience scanning={busy} />
         <section className="psResults" data-immersive={immersive ? "true" : "false"} data-chart-focus={chartFocus ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
@@ -2379,7 +2383,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </section>
           </>}
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
-            <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>SELECTED UPLOADED TIMEFRAME</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
+            <header className="psInstrumentHeader"><OrbitalInstrument kind="levels" /><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>SELECTED UPLOADED TIMEFRAME</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
             {battlefieldTabs}
             <DecisionMap analysis={battlefieldAnalysis} sourceImage={image} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
             {battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}
@@ -2449,7 +2453,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   return (
-    <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous">
+    <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous" data-spatial="true">
+      <PocketSpatialExperience scanning={busy} />
       <header className="psHeader">
         <div className="psLogo"><span className="psLogoMark"><PocketGlyph /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
         <div className="psHeaderActions"><span>POCKET BULLSEYE · CHART ANALYSIS</span></div>
@@ -2471,7 +2476,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <label id="pocket-chart-upload" className="psUpload" data-loaded={image ? "true" : "false"}>
           {image ? <>
             <img src={image} alt="Selected chart preview" />
-          </> : <div className="psTarget psTargetLarge" aria-hidden="true"><i /><i /><b /><b /></div>}
+          </> : <OrbitalInstrument size="large" />}
           <div className="psScanLine" aria-hidden="true" /><strong>{image ? "① CHART LOADED" : "① UPLOAD ONE CHART"}</strong><small>{image ? fileName : "ANY TIMEFRAME · SCREENSHOT · CAMERA ROLL"}</small>
           <input aria-label="Upload one chart photo, screenshot or camera roll image" accept="image/jpeg,image/png,image/webp" type="file" disabled={groupUploading} onChange={loadFile} />
         </label>
@@ -2500,7 +2505,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <p className="psDataNote">Images are sent to our AI provider for this audit. Successful scans are saved privately in this browser for comparison. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={groupUploading || !image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong></span><b><PocketGlyph /></b>{busy ? <i aria-hidden="true" /> : null}</button>
-        {busy ? <div className="psScanActivity">
+        {busy ? <div className="psScanActivity"><OrbitalInstrument kind="patterns" />
           <span role="status">{reviewTarget ? "Comparing your charts…" : "Analysing your charts…"}</span>
           <div className="psScanActivityTrack" role="progressbar" aria-label={reviewTarget ? "Chart comparison in progress" : "Chart analysis in progress"}><span /></div>
         </div> : null}

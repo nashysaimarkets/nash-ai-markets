@@ -1,5 +1,7 @@
 "use client";
 
+import OrbitalInstrument from "./OrbitalInstrument";
+
 import { useEffect, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
 
@@ -78,7 +80,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
     return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); controller.abort(); };
   }, [image, contextImage, detailImage, fourHourImage, indicatorImage]);
 
-  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING YOUR CHARTS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading the visible instrument, timeframe, scale and candles in your supplied charts.</p></section>;
+  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING YOUR CHARTS…</strong></header><div className="psPreflightSculpture"><OrbitalInstrument kind="patterns" size="large" /></div><p>Reading the visible instrument, timeframe, scale and candles in your supplied charts.</p></section>;
   if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message}</p></section>;
   if (!result) return null;
 

@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
+import OrbitalInstrument from "./OrbitalInstrument";
 import type { PointerEvent } from "react";
 
-/** Decorative only. No timers, market inputs or animation-library dependency. */
+/** Decorative orbital sculpture with a small pointer response. */
 export default function PocketDepthMark({ scanning = false }: { scanning?: boolean }) {
   const move = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== "mouse" || scanning || !window.matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches) return;
+    if (event.currentTarget.closest<HTMLElement>(".psApp")?.dataset.spatialMotion === "off" || event.pointerType !== "mouse" || scanning || !window.matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches) return;
     const { left, top, width, height } = event.currentTarget.getBoundingClientRect();
     if (!width || !height) return;
     const x = Math.max(-1, Math.min(1, (event.clientX - left) / width * 2 - 1));
@@ -21,7 +21,7 @@ export default function PocketDepthMark({ scanning = false }: { scanning?: boole
 
   return <div className="psDepthScene" aria-hidden="true" data-scanning={scanning} onPointerMove={move} onPointerLeave={reset} onPointerCancel={reset}>
     <div className="psDepthObject">
-      <Image className="psDepthImage" src="/pocket-visuals/bullseye-titanium.webp" alt="" width={640} height={640} unoptimized loading="eager" />
+      <OrbitalInstrument size="hero" />
     </div>
     <div className="psDepthCaption"><i /><span>{scanning ? "READING YOUR CHART" : "EVIDENCE. THEN ACTION."}</span></div>
   </div>;

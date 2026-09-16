@@ -1,5 +1,7 @@
 "use client";
 
+import OrbitalInstrument from "./OrbitalInstrument";
+
 import { useMemo, useState, type CSSProperties } from "react";
 import type { Analysis } from "./analysis-types";
 import type { UploadedChart } from "./chart-session";
@@ -96,7 +98,7 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance }
   const analyseTrade = () => setTradeReview(evaluateTradePlan({ side, entry, stop, target }, analysis));
 
   return <section className="psDecisionEngine" aria-labelledby="bullseye-decision-engine-title">
-    <header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="target" />
       <div><span>◎ BULLSEYE DECISION ENGINE</span><h2 id="bullseye-decision-engine-title">One decision from every verified check</h2></div>
       <b data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</b>
     </header>

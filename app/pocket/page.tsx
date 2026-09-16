@@ -46,6 +46,7 @@ import "./pocket-timeframes.css";
 import "./upload-guide.css";
 import "./pocket-growth.css";
 import "./pocket-luminous.css";
+import "./pocket-observatory.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",
@@ -59,7 +60,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0e13",
+  themeColor: "#030914",
 };
 
 export default async function PocketPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
