@@ -266,3 +266,118 @@
 .psApplePaywall .psApplePlan b,.psApplePaywall footer { color:#a0b8c8; }
 .psApplePaywall .psAppleSubscribe { border:1px solid #c0ffee91; border-radius:14px; background:linear-gradient(165deg,#94f9d4,#3dab87 55%,#267765); box-shadow:inset 0 1px #f5fffec9,0 4px 0 #0b4538,0 5px 0 #78f3c63b,0 14px 26px #0008; }
 body:has(.psApp[data-spatial-motion="off"]) .psApplePaywallGlow i { animation-play-state:paused; }
+
+/* Spatial typography: the same precise, polished lettering in every panel.
+   Use the existing bundled font; headings carry depth, reading copy stays crisp. */
+.psApp[data-spatial][data-visual-style], .psApplePaywall {
+  --ps-font-ui: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ps-font-ui); font-kerning: normal; text-rendering: optimizeLegibility;
+}
+.psApp[data-spatial][data-visual-style] :is(h1,h2,h3,h4,p,a,b,strong,small,span,em,button,label,summary,dt,dd,time,li,input,select,textarea),
+.psApplePaywall :is(h2,p,a,b,strong,small,span,em,button) { font-family: var(--ps-font-ui) !important; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEvents,.psCommandDeck,.psIntelligenceSuite,.psDecisionEngine,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psJournalHome,.psVault,.psFingerprint,.psEvidencePack,.psEvidenceContribution,.psScanChanges,.psPreflight,.psResultChart,.psLiquidityGuard,.psChartXRay,.psBullseyePlan,.psClarityLock,.psScenarioTheatre,.psAskBullseye) > header :is(span,small) {
+  font-weight: 600; letter-spacing: .08em; line-height: 1.5;
+}
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEvents,.psCommandDeck,.psIntelligenceSuite,.psDecisionEngine,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psJournalHome,.psVault,.psEvidencePack,.psScanChanges,.psPreflight,.psResultChart,.psLiquidityGuard,.psChartXRay,.psBullseyePlan,.psClarityLock,.psAskBullseye) > header span {
+  color: #c4ecf3; font-size: 12px; text-shadow: 0 1px #356176,0 3px 5px #0009,0 0 18px #89dce626;
+}
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEvents,.psCommandDeck,.psIntelligenceSuite,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psResultChart,.psLiquidityGuard,.psChartXRay,.psBullseyePlan,.psClarityLock) > header :is(small,strong) { letter-spacing: .025em; }
+.psApp[data-spatial][data-visual-style] :is(.psCommandDeck,.psIntelligenceSuite,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psResultChart,.psLiquidityGuard,.psChartXRay) > header small { color: #9db6c8; font-size: 11px; font-weight: 450; line-height: 1.6; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEngine > header h2,.psMapConsole h2,.psJournalHome header strong,.psEvidencePack header strong,.psFingerprint header span) {
+  font-weight: 650; letter-spacing: -.025em; line-height: 1.25; color: #e7f7ff;
+  text-shadow: 0 1px #779bb0,0 2px #2e5069,0 7px 16px #0008;
+}
+.psApp[data-spatial][data-visual-style] :is(.psDecisionFactors,.psTimeframeConflict,.psTrapRadar,.psMindChange,.psTradeReview,.psResultTruthStrip,.psEvidenceContribution,.psLevelProvenance,.psAccuracyFeedback,.psDecisionTimeline,.psChangeLedger,.psRiskDesk,.psBullseyePlan,.psClarityLock) :is(small,dt) { font-weight: 550; letter-spacing: .025em; line-height: 1.5; }
+.psApp[data-spatial][data-visual-style] :is(.psMindChange,.psTrapRadar,.psTimeframeConflict,.psResultTruthStrip,.psTradeReview) > header :is(span,b,strong),
+.psApp[data-spatial][data-visual-style] .psDecisionFactors span { font-weight: 600; letter-spacing: .045em; line-height: 1.5; }
+.psApp[data-spatial][data-visual-style] :is(.psMapReadings strong,.psDecisionFactors strong,.psTimeframeConflict article b,.psRiskDesk article strong,.psFingerprint article strong,.psVault article > b) { font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; }
+.psApp[data-spatial][data-visual-style] :is(.psPatternGuide nav button,.psCommandDeck nav button,.psIntelligenceSuite nav button,.psReportRail a,.psQuickQuestions button,.psSourceEvidence summary,.psTradeReview summary,.psUtilityTray summary) { font-weight: 550; letter-spacing: .035em; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionFactors span,.psTimeframeConflict article small,.psMapReadings small,.psEvidenceContribution article strong,.psJournalLoop span,.psOpeningRail strong) { font-weight: 600; letter-spacing: .055em; }
+.psApp[data-spatial][data-visual-style] :is(.psPreflight,.psEvidenceContribution,.psLevelProvenance,.psAccuracyFeedback,.psPatternGuide,.psRiskDesk,.psBullseyePlan,.psScanChanges) :is(p,dd) { font-weight: 400; letter-spacing: .005em; line-height: 1.65; }
+.psApp[data-spatial][data-visual-style] :is(.psCoreScans,.psCommandDeck,.psIntelligenceSuite,.psDecisionEngine,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psJournalHome,.psEvidencePack,.psEvidenceContribution,.psPreflight,.psLiquidityGuard,.psChartXRay) > footer { color: #9eb4c5; font-size: 12px; font-weight: 400; letter-spacing: .01em; line-height: 1.6; }
+.psApp[data-spatial][data-visual-style] :is(.psBattleCurrent strong,.psBattleLevel strong,.psPriceLadder small,.psSetupQuality strong,.psShareScore strong,.psFinaleRatioCards strong) { font-variant-numeric: tabular-nums lining-nums; }
+
+/* Calendar: luminous titles, a precise clock and separate source/risk labels. */
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > header { padding: 20px; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > header > strong { padding: 8px 11px; border: 1px solid #e5be7b4a; border-radius: 11px; background: linear-gradient(145deg,#65492e4d,#1e2334a6); font-size: 16px; font-weight: 650; line-height: 1.25; letter-spacing: .035em; box-shadow: inset 0 1px #ffe2ad36,0 4px 12px #0004; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > header > strong small { font-size: 9px; font-weight: 550; letter-spacing: .07em; margin-top: 4px; color: #d0bfa2; }
+.psApp[data-spatial][data-visual-style] .psEventScope { padding: 18px 22px; gap: 8px; background: linear-gradient(110deg,#6cdac510,transparent); border-color: #92c9dc25; }
+.psApp[data-spatial][data-visual-style] .psEventScope b { color: #c4eee5; font-size: 12px; font-weight: 600; letter-spacing: .055em; text-shadow: 0 1px #335061,0 3px 7px #0008; }
+.psApp[data-spatial][data-visual-style] .psEventScope span { font-size: 15px; font-weight: 400; line-height: 1.6; color: #c4d4df; }
+.psApp[data-spatial][data-visual-style] .psEventScope small { font-size: 12px; font-weight: 450; line-height: 1.6; letter-spacing: .01em; color: #d0bfa2; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar { margin: 16px; padding: 22px; border: 1px solid #93d8e340; border-radius: 20px; background: radial-gradient(ellipse at 95% 0,#2b869a26,transparent 55%),linear-gradient(150deg,#122f42d9,#071629ed); box-shadow: inset 0 1px #cdf8ff45,0 4px 0 #020b18a8,0 5px 0 #8fd8e21c,0 18px 36px #0005; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header { gap: 14px; align-items: flex-start; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header > div { min-width: 0; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header small { margin: 0; font-size: 10px; font-weight: 550; letter-spacing: .075em; color: #9bbccc; line-height: 1.5; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar h3 { margin: 7px 0 9px; font-size: clamp(22px,4.6vw,29px); font-weight: 650; line-height: 1.2; letter-spacing: -.035em; color: #e0fbff; text-shadow: 0 1px #8bbac8,0 2px #30536e,0 7px 16px #0009; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header .psCalendarRefresh { display: inline-flex; align-items: center; gap: 6px; color: #a2d7c9; font-size: 11px; font-weight: 450; letter-spacing: .025em; }
+.psApp[data-spatial][data-visual-style] .psCalendarRefresh i { width: 5px; height: 5px; border-radius: 50%; background: #8ff0c9; box-shadow: 0 0 8px #84edba77; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header > b { max-width: 90px; flex: 0 0 auto; padding: 8px 10px; border-radius: 11px; border: 1px solid #a0d9e35c; background: linear-gradient(150deg,#3c677957,#0e293cb3); color: #c9ecf4; font-size: 11px; font-weight: 550; line-height: 1.4; letter-spacing: .015em; box-shadow: inset 0 1px #d0f7ff57,0 3px 8px #0005; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar ol { margin: 21px 0 0; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar li { grid-template-columns: 76px minmax(0,1fr) auto; gap: 12px 16px; align-items: start; padding: 20px 0; border-color: #9edbea28; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar li:last-child { padding-bottom: 0; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar li > time { display: grid; place-content: center; min-height: 62px; padding: 10px 8px; color: #daf9ff; border: 1px solid #a6ddea50; border-radius: 12px; background: radial-gradient(ellipse at 30% 0,#c2f2ff24,transparent 65%),linear-gradient(155deg,#22465b,#0b2035); font-size: 20px; font-weight: 550; letter-spacing: -.035em; font-variant-numeric: tabular-nums lining-nums; text-shadow: 0 1px #44677d,0 3px 7px #000b; box-shadow: inset 0 1px #d3f7ff66,0 3px 0 #02101f,0 4px 0 #9fdaed29,0 10px 20px #0005; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar li > time::after { content: 'UK TIME'; margin-top: 4px; font-size: 8px; font-weight: 500; letter-spacing: .12em; color: #94bbcb; text-shadow: none; text-align: center; }
+.psApp[data-spatial][data-visual-style] .psCalendarEvent { min-width: 0; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar .psCalendarEvent > strong { color: #eef9ff; font-size: 19px; font-weight: 650; line-height: 1.3; letter-spacing: -.025em; text-shadow: 0 1px #3c5b71,0 4px 9px #0007; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar .psCalendarEvent > .psCalendarSource { margin-top: 7px; color: #a6bfce; font-size: 10px; font-weight: 500; line-height: 1.55; letter-spacing: .04em; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid #8abbcb29; border-radius: 7px; font-size: 10px; font-weight: 500; line-height: 1.4; letter-spacing: .02em; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventImpact { color: #b4ccd9; background: #829ecb12; }
+.psApp[data-spatial][data-visual-style] .psEventImpact i { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventImpact[data-risk="HIGH"] { color: #ffd39b; border-color: #ffc1804d; background: linear-gradient(150deg,#94613b33,#66452826); box-shadow: inset 0 1px #ffe5ad1c; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventImpact[data-risk="MED"] { color: #c4d7fd; border-color: #a9c6ff4d; background: #7a9dde17; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventStage { color: #b0c5d5; background: #829ecb0c; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents a { min-height: 40px; padding: 9px 13px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #8cdfcc5c; background: linear-gradient(155deg,#28574f73,#0c2832a6); color: #c1f8e6; font-size: 12px; font-weight: 550; letter-spacing: .025em; box-shadow: inset 0 1px #bdffeb36,0 3px 0 #05151f,0 7px 15px #0004; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar a { margin: 0; padding: 8px 12px; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > p { color: #b8cddd; font-size: 14px; font-weight: 400; line-height: 1.7; margin-top: 18px; }
+.psApp[data-spatial][data-visual-style] .psMacroNext { margin: 20px 16px 16px; padding: 21px; border: 1px solid #89c5dc33; border-radius: 18px; background: linear-gradient(135deg,#20384b9c,#0a182bd9); box-shadow: inset 0 1px #d3f7ff29,0 9px 20px #0005; }
+.psApp[data-spatial][data-visual-style] .psMacroNext[data-risk="HIGH"] { border-color: #d3ad6e52; background: radial-gradient(ellipse at 0 0,#d2933d1f,transparent 65%),linear-gradient(135deg,#302c26bf,#102034d9); box-shadow: inset 0 1px #ffe0a94a,inset 3px 0 #e9bc745c,0 9px 20px #0005; }
+.psApp[data-spatial][data-visual-style] .psEventMilestone { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.psApp[data-spatial][data-visual-style] .psMacroNext b { color: #bdd2df; font-size: 12px; font-weight: 600; line-height: 1.45; letter-spacing: .025em; }
+.psApp[data-spatial][data-visual-style] .psMacroNext[data-risk="HIGH"] b { color: #ffda9f; text-shadow: 0 1px #71533f,0 4px 8px #0007; }
+.psApp[data-spatial][data-visual-style] .psEventMilestone > time { font-size: 12px; font-weight: 450; line-height: 1.5; letter-spacing: .015em; color: #d9c7ac; font-variant-numeric: tabular-nums; }
+.psApp[data-spatial][data-visual-style] .psMacroNext > strong { display: block; margin-top: 13px; font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: -.025em; color: #fff2df; text-shadow: 0 1px #685947,0 4px 10px #0008; }
+.psApp[data-spatial][data-visual-style] .psMacroNext > span { margin-top: 8px; font-size: 12px; font-weight: 450; line-height: 1.6; letter-spacing: .02em; color: #c5c4bd; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psMacroNext a { margin-top: 16px; }
+.psApp[data-spatial][data-visual-style] .psEventHeadline { margin: 16px; padding: 18px 20px; border: 1px solid #96bdcd29; border-radius: 16px; background: linear-gradient(130deg,#233d513b,#0a1a2b80); box-shadow: inset 0 1px #c7ecff17; }
+.psApp[data-spatial][data-visual-style] .psEventHeadline b { color: #d2e5ef; font-size: 14px; font-weight: 550; line-height: 1.5; letter-spacing: -.01em; text-shadow: 0 1px #2d4a60,0 3px 7px #0006; }
+.psApp[data-spatial][data-visual-style] .psWrittenReport .psEventHeadline span { margin-top: 8px; color: #b1c6d6; font-size: 14px !important; font-weight: 400; line-height: 1.65; letter-spacing: 0; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > details { margin: 0 16px; border-color: #b1dfea28; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents summary { min-height: 52px; align-items: center; padding: 16px 4px; color: #c4dfed; font-size: 13px; font-weight: 550; letter-spacing: .015em; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details > div { padding: 0 4px 16px; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details p { font-size: 13px; font-weight: 400; line-height: 1.65; color: #abc0d0; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details li { padding: 14px 0; gap: 7px; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details li strong { color: #d9edf7; font-size: 15px; font-weight: 550; line-height: 1.4; letter-spacing: -.015em; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details :is(time,li span) { color: #a4bfce; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: .01em; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > footer { padding: 16px 20px; color: #99b1c4; font-size: 12px; font-weight: 400; line-height: 1.7; letter-spacing: .005em; border-color: #92c5d626; }
+
+/* A solid frosted base keeps scrolled report text out of the selector labels. */
+.psApp[data-spatial][data-visual-style] .psTimeframeSticky { background: #071426; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 18px; }
+.psApp[data-spatial][data-visual-style] .psTimeframeSticky .psTimeframePicker { background: linear-gradient(145deg,#173346,#08172b 75%); box-shadow: inset 0 1px #b5edee4a,0 10px 28px #0006; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker > div > strong { color: #c8eff0; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-shadow: 0 1px #416577,0 4px 10px #0006; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker > div > span { color: #b6c9d9; font-size: 12px; font-weight: 400; letter-spacing: .01em; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button > span { color: #e5f5ff; font-size: 20px; font-weight: 600; line-height: 1.25; letter-spacing: -.025em; font-variant-numeric: tabular-nums; text-shadow: 0 1px #54788e,0 3px #163346,0 6px 10px #0006; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button small { color: #acc5d6; font-size: 10px; font-weight: 450; letter-spacing: .065em; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button[aria-pressed="true"] > span { color: #d4fff2; text-shadow: 0 1px #4d9c91,0 3px #163b43,0 0 18px #6df1d13b; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button[aria-pressed="true"] > small { color: #c0e9dc; }
+@media (max-width:620px) {
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents > header { padding: 17px; }
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar li { grid-template-columns: 64px minmax(0,1fr); column-gap: 12px; }
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar a { grid-column: 2; justify-self: start; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar { margin: 12px; padding: 18px 16px; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar li > time { font-size: 18px; padding-inline: 6px; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar .psCalendarEvent > strong { font-size: 18px; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar > header > b { max-width: 74px; padding: 7px 8px; font-size: 10px; }
+  .psApp[data-spatial][data-visual-style] .psMacroNext { margin: 18px 12px 12px; padding: 18px; }
+  .psApp[data-spatial][data-visual-style] .psEventHeadline { margin: 12px; padding: 16px; }
+  .psApp[data-spatial][data-visual-style] .psEventMilestone { display: grid; gap: 7px; }
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents > details { margin-inline: 16px; }
+}
+@media (max-width:360px) {
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar > header { flex-wrap: wrap; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar > header > b { max-width: none; }
+}
+@media (forced-colors:active) {
+  .psApp[data-spatial][data-visual-style] :is(h1,h2,h3,strong,b,time) { text-shadow: none; }
+}
