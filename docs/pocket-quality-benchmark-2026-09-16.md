@@ -6,7 +6,7 @@ Reviewed 16 September 2026. Scope: ten representative charting, automated analys
 
 Keep the cosmic depth, moving background and tactile scanner. Make the first screen answer four questions: what chart is this, what is actually visible, what would change the interpretation, and what should I inspect next? Put deeper tools one tap away. The differentiation to pursue is an engaging screenshot-to-evidence-to-review workflow whose uncertainty is easy to understand.
 
-Trying to match a professional terminal feature for feature would dilute Pocket. Screenshot analysis cannot recreate an exchange data feed, invisible indicator values, order-book liquidity or subsequent price movement. A attractive interface becomes a quality advantage when every interaction helps inspect the evidence.
+Trying to match a professional terminal feature for feature would dilute Pocket. Screenshot analysis cannot recreate an exchange data feed, invisible indicator values, order-book liquidity or subsequent price movement. An attractive interface becomes a quality advantage when every interaction helps inspect the evidence.
 
 ## Competitive findings
 
@@ -35,6 +35,8 @@ Trying to match a professional terminal feature for feature would dilute Pocket.
 8. Report navigation now opens enclosing disclosures, moves keyboard focus and accounts for the measured height of the sticky timeframe bar. Snapshot wording replaces “live formation” wording in the signal tool.
 
 Progressive disclosure is supported by [Nielsen Norman Group’s guidance](https://www.nngroup.com/articles/progressive-disclosure/): present important choices first and retain advanced options on demand. Existing background motion controls and reduced-motion support remain; [W3C interaction animation guidance](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html) supports user control without requiring removal of the visual character.
+
+9. Browser pointer testing found that the global button press transform replaced the scanner card’s centering transform, moving its hit area away before click release. The scanner now uses independent layout translation, retaining the tactile press effect without losing the tap. Pointer selection is rechecked in the browser.
 
 ## Evidence needed before claiming greater precision
 
