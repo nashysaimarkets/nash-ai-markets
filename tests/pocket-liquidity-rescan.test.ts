@@ -6,7 +6,7 @@ import { postLiquidityRescan } from "../app/pocket/liquidity-rescan-client.ts";
 const route = readFileSync("app/api/pocket/liquidity/route.ts", "utf8");
 const client = readFileSync("app/pocket/PocketBullseye.tsx", "utf8");
 const depth = readFileSync("app/pocket/pocket-future-depth.css", "utf8");
-const hotfix = readFileSync("app/pocket/pocket-v1-1-hotfix.css", "utf8");
+
 
 test("Liquidity Guard has a dedicated bounded primary-chart rescan", () => {
   assert.match(client, /async function rescanLiquidityOnly/);
@@ -85,13 +85,15 @@ test("Liquidity rescan retries a transient response with one correlation id", as
   assert.equal(ids[0], ids[1]);
 });
 
-test("mobile Decision Map uses the removed header space and avoids colliding labels", () => {
-  assert.match(client, /Math\.abs\(y - currentY\) < 8/);
-  assert.match(client, /visible\.some\(\(candidate\) => Math\.abs\(position\(candidate\.numericPrice\) - y\) < 8\)/);
-  assert.doesNotMatch(client, /className="psMapIntro"/);
-  assert.match(hotfix, /\.psDecisionMap \.psBattleIntel \{ top: 14px; \}/);
-  assert.match(hotfix, /\.psDecisionMap \.psBattleLevel em \{ display: none; \}/);
-  assert.match(hotfix, /\.psDecisionMap \.psBattleLevel small \{ right: 96px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; \}/);
-  assert.match(client, /`\$\{nearestSupport\.price\} · \$\{formatPercent\(supportDistance\)\}`/);
+test("mobile level scanner has independent label slots and motion controls", () => {
+  const scanner = readFileSync("app/pocket/InteractiveLevelScanner.tsx", "utf8");
+  const styles = readFileSync("app/pocket/pocket-level-scanner.css", "utf8");
+  assert.doesNotMatch(client + scanner, /className="psMapIntro"/);
+  assert.match(scanner, /entry\.labelY/);
+  assert.match(scanner, /entry\.y/);
+  assert.match(scanner, /aria-pressed=\{selection === entry\.id\}/);
+  assert.match(styles, /--scanner-count/);
+  assert.match(styles, /prefers-reduced-motion/);
+  assert.match(styles, /data-spatial-motion="off"/);
   assert.doesNotMatch(depth, /min-height: 108px|\.psDecisionMap \.psBattleIntel \{ top:/);
 });

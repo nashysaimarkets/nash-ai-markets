@@ -12,6 +12,7 @@ import { trackGrowth } from "./growth-client";
 import PocketDepthMark, { PocketGlyph } from "./PocketDepthMark";
 import PocketSpatialExperience from "./PocketSpatialExperience";
 import OrbitalInstrument from "./OrbitalInstrument";
+import InteractiveLevelScanner from "./InteractiveLevelScanner";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -442,117 +443,11 @@ function isListedEquityAnalysis(analysis: Analysis | null) {
   return analysis ? isListedEquityEventInput(analysis) : false;
 }
 
-function DecisionMap({ analysis, expanded = false, scenario = null, onScenario, hasContext = false }: { analysis: Analysis; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
-  const candidates = analysis.levels.flatMap((level) => {
-    const price = numericLevel(level.price);
-    return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
-  });
-  const current = numericLevel(analysis.currentPrice);
-  const strictLevels: NumericChartLevel[] = sanitizeChartLevels(candidates.map((level) => ({ kind: level.kind as NumericChartLevel["kind"], label: level.label, price: level.numericPrice, source: level.source })), current);
-  const verified = candidates.filter((candidate) => strictLevels.some((level) => level.kind === candidate.kind && level.price === candidate.numericPrice));
-  const verifiedStructure = verified.filter((level) => level.kind === "support" || level.kind === "resistance");
-  const twoSided = hasVerifiedTwoSidedStructure(strictLevels, current);
-
-  // Withhold the map only when there is no exact price evidence at all. A
-  // verified one-sided level remains useful as PARTIAL evidence, but it never
-  // upgrades the Trust Gate or pretends the missing side was found.
-  if (current === null || !verifiedStructure.length) {
-    return <section className={`psDecisionMapHold${expanded ? " psDecisionMapHoldExpanded" : ""}`} aria-label="Bullseye Decision Map precision hold">
-      <span>◎ PRECISION HOLD</span>
-      <strong>{hasContext ? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"}</strong>
-      <p>{hasContext
-        ? "Bullseye checked both charts but could not verify support below and resistance above the current price. The map is withheld rather than guessed."
-        : "Bullseye could not verify both support below and resistance above the current price from this chart. The map is withheld rather than guessed."}</p>
-      {hasContext ? <nav aria-label="Precision hold actions">
-        <a href="#bullseye-source-charts">VIEW BOTH SOURCE CHARTS</a>
-        <button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD CLEARER CHART</button>
-      </nav> : <button type="button" onClick={() => document.getElementById("psResultSupportInput")?.click()}>＋ ADD ONE CLEARER PRICE-SCALE CHART</button>}
-      <small>NO ESTIMATED LEVELS · NO HIDDEN MAP</small>
-    </section>;
-  }
-
-  const values = [...verified.map((level) => level.numericPrice), ...(current !== null ? [current] : [])];
-  const rawMin = values.length ? Math.min(...values) : 0;
-  const rawMax = values.length ? Math.max(...values) : 1;
-  const padding = Math.max((rawMax - rawMin) * .16, Math.abs(rawMax || 1) * .0025, 1);
-  const min = rawMin - padding;
-  const max = rawMax + padding;
-  // Reserve the top band for the intelligence strip and the final 22%
-  // for direction/scenario controls; the removed intro leaves more map space.
-  const mapTop = 22;
-  const mapSpan = 56;
-  const position = (price: number) => mapTop + ((max - price) / (max - min)) * mapSpan;
-  const ordered = [...verified].sort((a, b) => b.numericPrice - a.numericPrice);
-  const nearCurrentTolerance = Math.max(Math.abs(current) * .0015, .01);
-  const supports = ordered.filter((level) => level.kind === "support" && level.numericPrice < current);
-  const resistances = ordered.filter((level) => level.kind === "resistance" && level.numericPrice > current);
-  const nearestSupport = supports[0] ?? null;
-  const nearestResistance = resistances.at(-1) ?? null;
-  const supportDistance = nearestSupport ? current - nearestSupport.numericPrice : null;
-  const resistanceDistance = nearestResistance ? nearestResistance.numericPrice - current : null;
-  const supportAtCurrent = supportDistance !== null && supportDistance <= nearCurrentTolerance;
-  const resistanceAtCurrent = resistanceDistance !== null && resistanceDistance <= nearCurrentTolerance;
-  const formatDistance = (distance: number | null) => distance === null ? "—" : distance.toLocaleString("en-GB", { maximumFractionDigits: 2 });
-  const formatPercent = (distance: number | null) => distance === null || current === null || current === 0 ? "" : `${(distance / current * 100).toFixed(2)}%`;
-  const proximity = supportAtCurrent && nearestResistance
-    ? "AT SUPPORT · BELOW RESISTANCE"
-    : resistanceAtCurrent && nearestSupport
-      ? "ABOVE SUPPORT · AT RESISTANCE"
-      : supportAtCurrent
-        ? "AT VERIFIED SUPPORT"
-        : resistanceAtCurrent
-          ? "AT VERIFIED RESISTANCE"
-          : supportDistance !== null && resistanceDistance !== null
-            ? "ABOVE SUPPORT · BELOW RESISTANCE"
-            : nearestSupport ? "ABOVE SUPPORT" : nearestResistance ? "BELOW RESISTANCE" : "LEVELS UNVERIFIED";
-  const currentY = current === null ? 50 : position(current);
-  const supportY = nearestSupport ? position(nearestSupport.numericPrice) : Math.min(88, currentY + 18);
-  const resistanceY = nearestResistance ? position(nearestResistance.numericPrice) : Math.max(12, currentY - 18);
-  // The evidence list retains every verified level. The compact visual map
-  // shows a collision-free subset so nearby primary/context prices and the
-  // current-price badge cannot cover one another on an iPhone-sized screen.
-  const mapLevels = [nearestResistance, nearestSupport, ...ordered]
-    .filter((level): level is typeof ordered[number] => Boolean(level))
-    .filter((level, index, all) => all.findIndex((candidate) => candidate.kind === level.kind && candidate.numericPrice === level.numericPrice && candidate.source === level.source) === index)
-    .reduce<typeof ordered>((visible, level) => {
-      const y = position(level.numericPrice);
-      if (Math.abs(y - currentY) < 8 || visible.some((candidate) => Math.abs(position(candidate.numericPrice) - y) < 8)) return visible;
-      return visible.length < 4 ? [...visible, level] : visible;
-    }, [])
-    .sort((left, right) => right.numericPrice - left.numericPrice);
-  const priceDecimals = values.some((value) => Math.abs(value - Math.round(value)) > .001) ? 2 : 0;
-  const scaleTicks = Array.from({ length: 7 }, (_, index) => {
-    const fraction = index / 6;
-    return { price: max - (max - min) * fraction, top: mapTop + mapSpan * fraction };
-  });
-  const rangeTop = Math.min(resistanceY, supportY);
-  const rangeHeight = Math.abs(supportY - resistanceY);
-  return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} data-structure={twoSided ? "two-sided" : "partial"} aria-label="Bullseye Decision Map">
-    <div className="psBattleGrid" aria-hidden="true" />
-    {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Decision Map price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
-    {nearestSupport && nearestResistance ? <div className="psDecisionRange" style={{ top: `${rangeTop}%`, height: `${rangeHeight}%` }} aria-label={`Active decision range from ${nearestSupport.price} to ${nearestResistance.price}`}><span>ACTIVE DECISION RANGE</span><i /><i /><i /></div> : null}
-    {current !== null ? <div className="psPressureContours" style={{ top: `${currentY}%` }} aria-hidden="true"><i /><i /><i /></div> : null}
-    <div className="psBattleIntel">
-      <article data-tone="support"><span>TO SUPPORT</span><strong>{nearestSupport ? formatDistance(supportDistance) : "NOT VERIFIED"}</strong><small>{nearestSupport ? `${nearestSupport.price} · ${formatPercent(supportDistance)}` : "CLEARER VIEW NEEDED"}</small></article>
-      <article data-tone="location"><span>MARKET LOCATION</span><strong>{proximity}</strong><small>{analysis.timeframe}</small></article>
-      <article data-tone="resistance"><span>TO RESISTANCE</span><strong>{nearestResistance ? formatDistance(resistanceDistance) : "NOT VERIFIED"}</strong><small>{nearestResistance ? `${nearestResistance.price} · ${formatPercent(resistanceDistance)}` : "CLEARER VIEW NEEDED"}</small></article>
-    </div>
-    <div className="psBattleScan" aria-hidden="true" />
-    <div className="psBattleAxis" aria-hidden="true"><i /><i /><i /></div>
-    {current !== null && verified.length ? <svg className="psBattleRoutes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      {nearestResistance ? <path data-route="bull" d={`M 50 ${currentY} C 68 ${currentY - 4}, 67 ${resistanceY + 6}, 82 ${resistanceY}`} /> : null}
-      {nearestSupport ? <path data-route="bear" d={`M 50 ${currentY} C 32 ${currentY + 4}, 33 ${supportY - 5}, 18 ${Math.min(93, supportY + 7)}`} /> : null}
-    </svg> : null}
-    {nearestResistance ? <div className="psRouteCue psRouteBull" style={{ top: `${Math.max(16, resistanceY + 4)}%` }}><b>↗</b><span>RECLAIM ROUTE</span></div> : null}
-    {nearestSupport ? <div className="psRouteCue psRouteBear" style={{ top: `${Math.min(87, supportY + 7)}%` }}><b>↘</b><span>BREAK ROUTE</span></div> : null}
-    {mapLevels.map((level, index) => <button key={`${level.kind}-${level.numericPrice}-${index}`} type="button" className="psBattleLevel" data-kind={level.kind} data-source={level.source ?? "PRIMARY"} style={{ top: `${position(level.numericPrice)}%` }} aria-label={`${level.kind} at ${level.price} from the ${levelEvidenceSourceLabel(level.source).toLowerCase()}`}>
-      <span className="psBattleIcon">{level.kind === "support" ? "●" : level.kind === "resistance" ? "●" : "◆"}</span>
-      <i /><strong>{level.price}</strong><small>{level.kind === "pivot" ? "SWING REFERENCE" : level.kind.toUpperCase()} · {levelEvidenceSourceLabel(level.source)}</small><em>{current === null ? "" : formatPercent(Math.abs(level.numericPrice - current))}</em>
-    </button>)}
-    {current !== null ? <div className="psBattleCurrent" style={{ top: `${position(current)}%` }}><i /><span><b>◎</b> CURRENT</span><strong>{analysis.currentPrice}</strong></div> : null}
-    <div className="psBattleDirection" data-direction={analysis.direction}><span>BEAR PRESSURE</span><strong>{analysis.direction}</strong><span>BULL PRESSURE</span></div>
-    <nav className="psMapActions" aria-label="Explore Decision Map scenarios"><button type="button" data-tone="bull" onClick={() => onScenario?.("bull")}>WHAT IF PRICE RISES?</button><button type="button" data-tone="wait" onClick={() => onScenario?.("wait")}>WHY WAIT?</button><button type="button" data-tone="bear" onClick={() => onScenario?.("bear")}>WHAT IF PRICE FALLS?</button></nav>
-  </div>;
+function DecisionMap(props: { analysis: Analysis; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
+  // A different source/timeframe starts a fresh inspection; external scenario controls stay shared.
+  const { analysis } = props;
+  const key = JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]);
+  return <InteractiveLevelScanner key={key} {...props} />;
 }
 
 function SourceChart({ image, expanded = false }: { image: string; expanded?: boolean }) {
@@ -2362,7 +2257,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </section>
           </>}
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
-            <header className="psInstrumentHeader"><OrbitalInstrument kind="levels" /><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>SELECTED UPLOADED TIMEFRAME</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
+            <header className="psInstrumentHeader"><OrbitalInstrument kind="levels" /><div><span>Explore price levels</span><small>Tap into your chart’s structure</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
             {battlefieldTabs}
             <DecisionMap analysis={battlefieldAnalysis} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
             {battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}

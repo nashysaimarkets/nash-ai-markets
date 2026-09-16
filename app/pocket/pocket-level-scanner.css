@@ -1,0 +1,116 @@
+/* The dimensional frame is decorative; the SVG price plane stays linear. */
+.psApp[data-spatial][data-visual-style] .psLevelScanner {
+  --scanner-ice: #a2dfff;
+  --scanner-mint: #7af1c8;
+  --scanner-gold: #ffdc8b;
+  --scanner-red: #ffa1b5;
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  margin: 12px;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid #97d5ef55;
+  border-radius: 26px;
+  background: radial-gradient(ellipse at 0 0, #284e6475, transparent 65%), linear-gradient(155deg, #101f35, #061222 65%, #0c2330);
+  box-shadow: inset 0 1px 1px #dcf8ff75, inset 0 -2px 1px #000b, 0 0 0 4px #06101c, 0 0 0 5px #8ab6d226, 0 20px 40px #0007;
+  color: #e6f5fd;
+  text-align: left;
+}
+.psLevelScanner *, .psLevelScanner *::before, .psLevelScanner *::after { box-sizing: border-box; }
+.psLevelScanner .psScannerTopline { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.psLevelScanner .psScannerTopline > span { font-size: 1rem; font-weight: 650; letter-spacing: -.02em; color: #ecf9ff; }
+.psLevelScanner .psScannerTopline b { display: inline-block; margin-left: 8px; padding: 4px 8px; border-radius: 7px; background: #82c9e818; color: #afdfff; font-size: .8125rem; font-weight: 550; }
+.psLevelScanner .psScannerTopline > small { color: #9fb5c8; font-size: .75rem; }
+.psLevelScanner[data-structure="partial"] .psScannerTopline > small { color: var(--scanner-gold); }
+.psLevelScanner .psScannerToolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; }
+.psLevelScanner .psScannerToolbar p { color: #b9cfde; font-size: .875rem; line-height: 1.4; margin: 0; }
+.psLevelScanner .psScannerScope { display: flex; gap: 3px; padding: 3px; flex-shrink: 0; border: 1px solid #9fc2df27; border-radius: 13px; background: #0006; box-shadow: inset 0 2px 4px #0006; }
+.psLevelScanner .psScannerScope button { min-height: 44px; padding: 8px 13px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #adc1d2; font-size: .875rem; font-weight: 550; cursor: pointer; transition: background .2s, box-shadow .2s, color .2s; }
+.psLevelScanner .psScannerScope button[aria-pressed="true"] { color: #dffaff; border-color: #c2f2ff42; background: linear-gradient(145deg, #3d6b7d, #173143); box-shadow: inset 0 1px #dbfaff65, 0 3px 8px #0008; }
+.psLevelScanner .psScannerPartial { color: #eed398; font-size: .875rem; line-height: 1.5; margin: 13px 0 0; }
+.psLevelScanner .psScannerStage { position: relative; height: max(var(--scanner-height), calc(var(--scanner-count) * 6.25rem + 3rem)); margin: 18px 0 12px; perspective: 650px; border: 1px solid #a8d9ef20; border-radius: 20px; background: linear-gradient(100deg, #0b20377a, #030b16c9); overflow: hidden; box-shadow: inset 0 1px 20px #0008, 0 1px #def7ff18; }
+.psLevelScanner .psScannerStage::before { content: ""; position: absolute; inset: 0; background: url('/pocket-visuals/observatory-nebula.webp') 45% 45% / cover; opacity: .16; pointer-events: none; }
+.psLevelScanner .psScannerDepth { position: absolute; inset: 8% 2%; transform-style: preserve-3d; transform: rotateX(17deg) rotateY(-14deg); pointer-events: none; }
+.psLevelScanner .psScannerDepth i { position: absolute; inset: 6%; border: 1px solid #9ae2ff22; border-radius: 16px; background: linear-gradient(135deg, #72c6fa06, transparent); box-shadow: 0 0 18px #58c8ed0c; }
+.psLevelScanner .psScannerDepth i:nth-child(1) { transform: translateZ(-28px); }
+.psLevelScanner .psScannerDepth i:nth-child(2) { transform: translateZ(-62px); }
+.psLevelScanner .psScannerDepth i:nth-child(3) { transform: translateZ(-98px); }
+.psLevelScanner .psScannerOrbit { position: absolute; left: 25%; top: 50%; width: 220px; height: 220px; transform: translate(-50%, -50%); perspective: 400px; pointer-events: none; opacity: .65; }
+.psLevelScanner .psScannerOrbit i { position: absolute; inset: 0; border: 1px solid #85d9fb35; border-radius: 50%; box-shadow: inset 0 0 24px #6dd8ff06, 0 0 16px #6dd8ff0d; transform: rotateX(62deg) rotateY(-12deg); }
+.psLevelScanner .psScannerOrbit i:nth-child(2) { inset: 23px; border-style: dashed; border-color: #bcefff45; animation: psScannerOrbitTurn 30s linear infinite; }
+.psLevelScanner .psScannerOrbit i:nth-child(3) { inset: 50px; transform: rotateY(62deg) rotateX(-15deg); }
+.psLevelScanner .psScannerSweep { position: absolute; inset: -20%; width: 26%; background: linear-gradient(90deg, transparent, #b0efff0c, #bdffff20, transparent); transform: translateX(-150%) rotate(-15deg); animation: psScannerSweepPass 9s ease-in-out infinite; pointer-events: none; }
+.psLevelScanner .psScannerGeometry { position: absolute; inset: 16px 0 32px; width: 100%; height: calc(100% - 48px); overflow: visible; fill: none; pointer-events: none; }
+.psScannerGeometry path { vector-effect: non-scaling-stroke; }
+.psScannerGeometry .psScannerGridline { stroke: #b0defc12; stroke-width: 1; }
+.psScannerGeometry .psScannerSpine { stroke: #adebff38; stroke-width: 1; stroke-dasharray: 2 7; }
+.psScannerGeometry g, .psLevelScanner [data-kind="resistance"] { --scanner-tone: var(--scanner-red); --scanner-wash: #e5577730; }
+.psLevelScanner [data-kind="support"] { --scanner-tone: var(--scanner-mint); --scanner-wash: #3bcea42c; }
+.psLevelScanner [data-kind="pivot"] { --scanner-tone: var(--scanner-ice); --scanner-wash: #53bfee2a; }
+.psLevelScanner [data-kind="current"] { --scanner-tone: var(--scanner-gold); --scanner-wash: #dcac4833; }
+.psScannerGeometry .psScannerPriceBeam { stroke: var(--scanner-tone); stroke-width: 1.5; opacity: .65; }
+.psScannerGeometry .psScannerLeader { stroke: var(--scanner-tone); stroke-width: 1; opacity: .38; transition: opacity .25s, stroke-width .25s; }
+.psScannerGeometry g[data-selected="true"] .psScannerPriceBeam { stroke-width: 2.5; opacity: 1; filter: drop-shadow(0 0 4px var(--scanner-tone)); }
+.psScannerGeometry g[data-selected="true"] .psScannerLeader { stroke-width: 1.5; opacity: .9; }
+.psLevelScanner .psScannerAnchors, .psLevelScanner .psScannerLabels { position: absolute; inset: 16px 0 32px; pointer-events: none; }
+.psLevelScanner .psScannerAnchors i { position: absolute; left: 25%; width: 10px; height: 10px; border: 2px solid var(--scanner-tone); border-radius: 50%; background: #081322; transform: translate(-50%, -50%); box-shadow: 0 0 12px var(--scanner-wash); transition: box-shadow .25s, background .25s; }
+.psLevelScanner .psScannerAnchors i[data-selected="true"] { background: var(--scanner-tone); box-shadow: 0 0 0 5px var(--scanner-wash), 0 0 20px var(--scanner-tone); }
+.psLevelScanner .psScannerLevel { position: absolute; left: 47%; width: 50%; min-height: 72px; transform: translateY(-50%); padding: 8px 11px; text-align: left; border: 1px solid #9fc9dd35; border-left: 2px solid var(--scanner-tone); border-radius: 13px; background: linear-gradient(120deg, #254055ee, #0c1b2bee 72%); box-shadow: inset 0 1px #ddf6ff2b, 0 6px 0 -3px #030913, 0 9px 14px #0007; cursor: pointer; pointer-events: auto; transition: border-color .2s, box-shadow .2s, background .2s; }
+.psLevelScanner .psScannerLevel:hover, .psLevelScanner .psScannerLevel[aria-pressed="true"] { border-color: var(--scanner-tone); background: linear-gradient(120deg, var(--scanner-wash), #102238 80%), #0a1928; box-shadow: inset 0 1px #e3fbff8a, inset 0 0 15px var(--scanner-wash), 0 5px 0 -2px #020913, 0 10px 18px #0008, 0 0 15px var(--scanner-wash); }
+.psLevelScanner .psScannerLevel > span { display: flex; justify-content: space-between; gap: 4px; color: var(--scanner-tone); font-size: .875rem; font-weight: 550; line-height: 1.2; }
+.psLevelScanner .psScannerLevel > span i { font-size: .875rem; font-style: normal; opacity: .8; }
+.psLevelScanner .psScannerLevel > strong { display: block; color: #f0faff; font-size: clamp(1.1rem, 3.9vw, 1.65rem); line-height: 1.2; letter-spacing: -.025em; font-weight: 650; font-variant-numeric: tabular-nums; margin-top: 3px; overflow-wrap: anywhere; text-shadow: 0 2px 0 #0008, 0 0 12px var(--scanner-wash); }
+.psLevelScanner .psScannerLevel > small { display: block; margin-top: 3px; color: #abc0d0; font-size: .75rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.psLevelScanner .psScannerScaleNote { position: absolute; bottom: 10px; left: 12px; right: 12px; display: flex; gap: 5px; flex-wrap: wrap; color: #9cafc1; font-size: .75rem; line-height: 1.2; }
+.psLevelScanner .psScannerScaleNote > span { color: #bdeaf9; }
+.psLevelScanner .psScannerInspector { position: relative; padding: 15px; border: 1px solid #b6dcef30; border-radius: 16px; background: linear-gradient(145deg, #163349, #091724); box-shadow: inset 0 1px #cef3ff2b, 0 8px 15px #0003; }
+.psLevelScanner .psScannerDetailHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.psLevelScanner .psScannerDetailHeading > div { min-width: 0; }
+.psLevelScanner .psScannerDetailHeading span { color: var(--scanner-tone); font-size: .875rem; }
+.psLevelScanner .psScannerDetailHeading strong { display: block; margin-top: 3px; color: #f0f9ff; font-size: 1.65rem; font-weight: 650; letter-spacing: -.035em; line-height: 1.15; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.psLevelScanner .psScannerDetailHeading > b { padding: 8px 10px; border: 1px solid var(--scanner-tone); border-radius: 10px; background: var(--scanner-wash); color: var(--scanner-tone); font-size: .8125rem; font-weight: 550; text-align: center; }
+.psLevelScanner .psScannerInspector p { margin: 11px 0; color: #c2d5e2; font-size: 1rem; line-height: 1.5; overflow-wrap: anywhere; }
+.psLevelScanner .psScannerInspector footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; margin: 0; padding: 9px 0 0; border-top: 1px solid #c0dcf018; color: #9db4c6; font-size: .75rem; line-height: 1.5; background: none; text-transform: none; letter-spacing: 0; }
+.psLevelScanner .psScannerInspector footer > span:first-child { text-transform: capitalize; }
+.psLevelScanner .psScannerScenarios { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 17px; }
+.psLevelScanner .psScannerScenarios button { --scanner-tone: var(--scanner-gold); --scanner-wash: #d8a6442c; position: relative; min-width: 0; min-height: 68px; padding: 8px 5px; border: 1px solid #b2d6ef35; border-radius: 13px; background: linear-gradient(145deg, #223649, #0a1728); box-shadow: inset 0 1px #d2edff30, 0 4px 0 -1px #030a15, 0 5px 9px #0005; color: #b9cddb; cursor: pointer; transition: box-shadow .2s, border-color .2s, color .2s; }
+.psLevelScanner .psScannerScenarios [data-kind="bull"] { --scanner-tone: var(--scanner-mint); --scanner-wash: #3bcea42c; }
+.psLevelScanner .psScannerScenarios [data-kind="bear"] { --scanner-tone: var(--scanner-red); --scanner-wash: #e5577730; }
+.psLevelScanner .psScannerScenarios button i { display: block; font-size: 1.4rem; line-height: 1; margin-bottom: 5px; font-style: normal; color: var(--scanner-tone); }
+.psLevelScanner .psScannerScenarios button span { font-size: .875rem; font-weight: 550; }
+.psLevelScanner .psScannerScenarios button[aria-pressed="true"] { border-color: var(--scanner-tone); color: #f3fbff; box-shadow: inset 0 1px #e3f8ff6b, inset 0 0 24px var(--scanner-wash), 0 4px 0 -1px #030a15, 0 0 14px var(--scanner-wash); }
+.psLevelScanner .psScannerScenarioDetail { margin-top: 16px; padding: 0 3px 2px; }
+.psLevelScanner .psScannerScenarioDetail > div > span { display: block; font-size: 1rem; font-weight: 600; color: var(--scanner-gold); }
+.psLevelScanner .psScannerScenarioDetail[data-kind="bull"] > div > span { color: var(--scanner-mint); }
+.psLevelScanner .psScannerScenarioDetail[data-kind="bear"] > div > span { color: var(--scanner-red); }
+.psLevelScanner .psScannerScenarioDetail p { margin: 7px 0 8px; font-size: 1rem; line-height: 1.55; color: #c4d7e5; }
+.psLevelScanner .psScannerScenarioDetail details { margin: 0; padding: 0; border: 0; background: none; box-shadow: none; }
+.psLevelScanner .psScannerScenarioDetail summary { min-height: 44px; padding: 12px 0; cursor: pointer; color: #badcea; font-size: .875rem; list-style-position: inside; }
+.psLevelScanner .psScannerScenarioDetail small { display: block; margin-top: 4px; color: #9bb1c4; font-size: .75rem; line-height: 1.4; }
+.psLevelScanner .psScannerDetailReveal { animation: psScannerDetailIn .28s ease-out both; }
+.psLevelScanner button:focus-visible, .psLevelScanner summary:focus-visible { outline: 2px solid #dcf7ff; outline-offset: 3px; }
+.psLevelScanner button:active { filter: brightness(1.12); }
+.psLevelScanner[data-visible="false"] *, .psLevelScanner[data-visible="false"] *::before { animation-play-state: paused !important; }
+.psApp[data-spatial-motion="off"] .psLevelScanner *, .psApp[data-spatial-motion="off"] .psLevelScanner *::before { animation: none !important; transition: none !important; }
+@keyframes psScannerSweepPass { 0%, 12% { transform: translateX(-150%) rotate(-15deg); opacity: 0; } 30% { opacity: 1; } 70%, 100% { transform: translateX(600%) rotate(-15deg); opacity: 0; } }
+@keyframes psScannerOrbitTurn { from { transform: rotateX(62deg) rotateY(-12deg) rotateZ(0); } to { transform: rotateX(62deg) rotateY(-12deg) rotateZ(360deg); } }
+@keyframes psScannerDetailIn { from { opacity: .35; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 420px) {
+  .psApp[data-spatial][data-visual-style] .psLevelScanner { padding: 13px; margin: 10px; border-radius: 22px; }
+  .psLevelScanner .psScannerToolbar { gap: 8px; }
+  .psLevelScanner .psScannerToolbar p { max-width: 110px; }
+  .psLevelScanner .psScannerScope button { padding-inline: 10px; }
+  .psLevelScanner .psScannerLevel { left: 42%; width: 55%; padding-inline: 9px; }
+  .psLevelScanner .psScannerScenarios { gap: 6px; }
+  .psLevelScanner .psScannerScenarios button span { font-size: .8125rem; }
+}
+@media (min-width: 700px) {
+  .psApp[data-spatial][data-visual-style] .psLevelScanner { padding: 24px; margin: 18px; }
+  .psLevelScanner .psScannerLevel { left: 49%; width: 47%; min-height: 76px; padding: 10px 16px; }
+  .psLevelScanner .psScannerLevel > strong { font-size: 1.7rem; }
+  .psLevelScanner .psScannerOrbit { width: 310px; height: 310px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .psLevelScanner *, .psLevelScanner *::before { animation: none !important; transition: none !important; }
+}
