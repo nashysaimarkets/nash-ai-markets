@@ -33,11 +33,35 @@ const analysis: DecisionIntelligenceAnalysis = {
 test("the map suite exposes every authorised view without fabricating missing inputs", () => {
   const maps = deriveAnalysisMaps(analysis);
   assert.deepEqual(maps.map((map) => map.id), ["liquidity", "structure", "timeframes", "momentum", "volatility", "sessions", "auction", "patterns", "confluence", "conditions"]);
+  assert.equal(maps.find((map) => map.id === "structure")?.headline, "HIGHER-HIGH / HIGHER-LOW SEQUENCE");
   assert.equal(maps.find((map) => map.id === "sessions")?.status, "MORE INPUT NEEDED");
   assert.equal(maps.find((map) => map.id === "auction")?.status, "MORE INPUT NEEDED");
   assert.equal(maps.find((map) => map.id === "volatility")?.status, "MORE INPUT NEEDED");
   assert.match(maps.find((map) => map.id === "liquidity")?.summary ?? "", /buying directly into resistance/i);
   assert.equal(maps.find((map) => map.id === "timeframes")?.headline, "CONFLICTING TIMEFRAME READ");
+});
+
+test("missing indicators and suggested uploads never become visible evidence", () => {
+  const maps = deriveAnalysisMaps({ ...analysis, observableFacts: [], indicators: [],
+    marketStructure: "No opening range or overnight range is visible.",
+    momentum: "No RSI or MACD indicator is visible. ATR and Bollinger Bands are not supplied. No compression or expansion is confirmed.",
+    traderTrap: "VWAP would help identify a trap.", riskFlags: ["Add volume profile, point of control and value area."] });
+  for (const id of ["volatility", "sessions", "auction"]) assert.equal(maps.find((map) => map.id === id)?.status, "MORE INPUT NEEDED");
+  assert.equal(maps.find((map) => map.id === "momentum")?.readings.find((reading) => reading.label === "VISIBLE INDICATOR")?.value, "NOT VERIFIED");
+  for (const id of ["volatility", "auction"]) assert.ok(maps.find((map) => map.id === id)?.readings.every((reading) => reading.value === "NOT VERIFIED"));
+});
+
+test("affirmative observations survive separately from negative and conditional clauses", () => {
+  const maps = deriveAnalysisMaps({ ...analysis, observableFacts: ["RSI 58 is visible, but MACD is not supplied.", "Bollinger Bands are plotted.", "The London session opening range is marked.", "VWAP and the volume profile point of control are visible."],
+    indicators: [], momentum: "ATR might reveal expansion if supplied.", marketStructure: "A range is visible." });
+  for (const id of ["volatility", "sessions", "auction"]) assert.equal(maps.find((map) => map.id === id)?.status, "EVIDENCE READY");
+  assert.equal(maps.find((map) => map.id === "momentum")?.readings.find((reading) => reading.label === "VISIBLE INDICATOR")?.value, "PRESENT");
+  assert.equal(maps.find((map) => map.id === "volatility")?.readings.find((reading) => reading.label === "EXPANSION")?.value, "NOT VERIFIED");
+});
+
+test("unrelated words do not match short indicator abbreviations", () => {
+  const maps = deriveAnalysisMaps({ ...analysis, observableFacts: ["A matrix of candles is visible."], indicators: [], momentum: "Sideways movement.", marketStructure: "Range.", traderTrap: "Wait.", riskFlags: [] });
+  assert.equal(maps.find((map) => map.id === "volatility")?.status, "MORE INPUT NEEDED", "matrix must not match ATR");
 });
 
 test("the AI never receives the trader's long or short choice", async () => {
@@ -87,4 +111,9 @@ test("decision autopsy persists the later evidence and fails closed on root caus
   assert.match(client, /YOUR MISTAKE FINGERPRINT/);
   assert.match(compatibility, /afterImage/);
   assert.match(compatibility, /reviewedAt/);
+});
+
+test("a partial swing description cannot certify the complete sequence", () => {
+  const maps = deriveAnalysisMaps({ ...analysis, marketStructure: "Higher highs are visible but higher lows are not confirmed.", observableFacts: [] });
+  assert.equal(maps.find((map) => map.id === "structure")?.headline, "SWING SEQUENCE NOT LABELLED");
 });

@@ -37,29 +37,39 @@ const concise = (value: string, fallback: string, limit = 170) => {
   return clean.length > limit ? `${clean.slice(0, limit - 1).trim()}…` : clean;
 };
 
-const includesAny = (text: string, terms: string[]) => terms.some((term) => text.includes(term));
+// These cards summarise observations; a missing-input sentence or suggested
+// indicator is not evidence that the indicator was visible. Ambiguous prose
+// stays unverified until the report provides an affirmative observation.
+function hasObservedMention(statements: string[], terms: string[]) {
+  const excluded = /\b(?:no|not|never|without|missing|unavailable|unverified|unconfirmed|unclear|unreadable|absent|insufficient|cannot|can't|isn't|aren't|wasn't|weren't|could|should|would|will|may|might|expected|if|add|upload|need(?:s|ed)?|require(?:s|d)?|check|verify)\b/i;
+  return statements.some((statement) => statement.replace(/[’‘]/g, "\'").split(/[.!?;\n]|\b(?:but|however|whereas)\b/i).some((clause) => {
+    if (excluded.test(clause)) return false;
+    return terms.some((term) => new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(clause));
+  }));
+}
 
 export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): AnalysisMap[] {
-  const corpus = [analysis.marketStructure, analysis.momentum, analysis.traderTrap, ...analysis.observableFacts, ...analysis.indicators, ...analysis.riskFlags].join(" ").toLowerCase();
+  const observations = [analysis.marketStructure, analysis.momentum, ...analysis.observableFacts, ...analysis.indicators];
+  const observed = (terms: string[]) => hasObservedMention(observations, terms);
   const support = analysis.levels.filter((level) => level.kind === "support");
   const resistance = analysis.levels.filter((level) => level.kind === "resistance");
   const pivots = analysis.levels.filter((level) => level.kind === "pivot");
   const imbalances = analysis.levels.filter((level) => level.kind === "gap" || level.kind === "zone");
   const readablePrices = analysis.levels.filter((level) => /^-?\d[\d,.]*$/.test(level.price.trim()));
-  const visibleMomentumIndicator = includesAny(corpus, ["rsi", "macd", "stochastic", "momentum indicator"]);
-  const visibleVolatility = includesAny(corpus, ["atr", "bollinger", "volatility", "compression", "expansion", "squeeze"]);
-  const visibleSession = includesAny(corpus, ["london session", "new york session", "asia session", "opening range", "overnight range", "cash open", "rth"]);
-  const visibleAuction = includesAny(corpus, ["volume profile", "point of control", "poc", "value area", "vwap", "high-volume", "low-volume"]);
+  const visibleMomentumIndicator = observed(["rsi", "macd", "stochastic", "stochastics", "momentum indicator"]);
+  const visibleVolatility = observed(["atr", "bollinger", "volatility", "compression", "expansion", "squeeze"]);
+  const visibleSession = observed(["london session", "new york session", "asia session", "opening range", "overnight range", "cash open", "rth"]);
+  const visibleAuction = observed(["volume profile", "point of control", "poc", "value area", "vwap", "high-volume", "low-volume"]);
   const confirmedPatterns = analysis.patterns.filter((pattern) => pattern.status === "CONFIRMED");
   const patternLead = analysis.patterns[0];
-  const structureSequence = includesAny(corpus, ["higher high", "higher low"])
+  const structureSequence = observed(["higher high", "higher highs"]) && observed(["higher low", "higher lows"])
     ? "HIGHER-HIGH / HIGHER-LOW SEQUENCE"
-    : includesAny(corpus, ["lower high", "lower low"])
+    : observed(["lower high", "lower highs"]) && observed(["lower low", "lower lows"])
       ? "LOWER-HIGH / LOWER-LOW SEQUENCE"
       : "SWING SEQUENCE NOT LABELLED";
-  const momentumTone = includesAny(analysis.momentum.toLowerCase(), ["weak", "fading", "diverg", "exhaust"])
+  const momentumTone = hasObservedMention([analysis.momentum], ["weak", "weakening", "fading", "divergence", "diverging", "exhaustion", "exhausted"])
     ? "EXHAUSTION WATCH"
-    : includesAny(analysis.momentum.toLowerCase(), ["strong", "accelerat", "expan"])
+    : hasObservedMention([analysis.momentum], ["strong", "strengthening", "accelerating", "acceleration", "expanding", "expansion"])
       ? "MOMENTUM BUILDING"
       : "MOMENTUM MIXED";
 
@@ -100,7 +110,7 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
       summary: concise(analysis.momentum, "Momentum cannot be judged safely from this image."),
       readings: [
         { label: "MOMENTUM SCORE", value: `${analysis.setupScore.momentum}/10`, tone: "neutral" },
-        { label: "VISIBLE INDICATOR", value: visibleMomentumIndicator ? "PRESENT" : "NOT SUPPLIED", tone: visibleMomentumIndicator ? "bull" : "wait" },
+        { label: "VISIBLE INDICATOR", value: visibleMomentumIndicator ? "PRESENT" : "NOT VERIFIED", tone: visibleMomentumIndicator ? "bull" : "wait" },
         { label: "CONTRADICTIONS", value: String(analysis.contradictions.length), tone: analysis.contradictions.length ? "bear" : "neutral" },
       ],
     },
@@ -109,9 +119,9 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
       headline: visibleVolatility ? "VISIBLE REGIME EVIDENCE FOUND" : "VOLATILITY PANEL NOT VERIFIED",
       summary: visibleVolatility ? concise(analysis.momentum, "Visible volatility evidence is present.") : "Add ATR, Bollinger Bands or enough clearly visible compression/expansion structure. Bullseye will not estimate hidden volatility.",
       readings: [
-        { label: "COMPRESSION", value: includesAny(corpus, ["compression", "squeeze"]) ? "VISIBLE" : "NOT VERIFIED", tone: "wait" },
-        { label: "EXPANSION", value: includesAny(corpus, ["expansion", "volatility expansion"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
-        { label: "ATR / BANDS", value: includesAny(corpus, ["atr", "bollinger"]) ? "SUPPLIED" : "NOT SUPPLIED", tone: "neutral" },
+        { label: "COMPRESSION", value: observed(["compression", "squeeze"]) ? "VISIBLE" : "NOT VERIFIED", tone: "wait" },
+        { label: "EXPANSION", value: observed(["expansion", "volatility expansion"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "ATR / BANDS", value: observed(["atr", "bollinger"]) ? "SUPPLIED" : "NOT VERIFIED", tone: "neutral" },
       ],
     },
     {
@@ -119,19 +129,19 @@ export function deriveAnalysisMaps(analysis: DecisionIntelligenceAnalysis): Anal
       headline: visibleSession ? "SESSION LANDMARKS DETECTED" : "TIME AXIS NOT VERIFIED",
       summary: visibleSession ? "Bullseye found a visible session or opening-range reference in the supplied chart." : "Show readable times and session boundaries to map Asia, London, New York, overnight and opening-range levels without guessing.",
       readings: [
-        { label: "OPENING RANGE", value: includesAny(corpus, ["opening range", "cash open"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
-        { label: "OVERNIGHT", value: corpus.includes("overnight range") ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "OPENING RANGE", value: observed(["opening range", "cash open"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "OVERNIGHT", value: observed(["overnight range"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
         { label: "SESSION LABEL", value: visibleSession ? "READABLE" : "MISSING", tone: visibleSession ? "bull" : "wait" },
       ],
     },
     {
       id: "auction", icon: "▆", label: "AUCTION", status: visibleAuction ? "EVIDENCE READY" : "MORE INPUT NEEDED",
-      headline: visibleAuction ? "VALUE / REJECTION EVIDENCE FOUND" : "VOLUME PROFILE NOT SUPPLIED",
+      headline: visibleAuction ? "VALUE / REJECTION EVIDENCE FOUND" : "VOLUME PROFILE NOT VERIFIED",
       summary: visibleAuction ? "Only the auction references visibly present in the screenshot are used." : "Add a chart showing volume profile, value area, point of control or VWAP. Screenshot-only Bullseye will not invent order flow.",
       readings: [
-        { label: "VALUE AREA", value: includesAny(corpus, ["value area", "high-volume", "low-volume"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
-        { label: "POC", value: includesAny(corpus, ["point of control", "poc"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
-        { label: "VWAP", value: corpus.includes("vwap") ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "VALUE AREA", value: observed(["value area", "high-volume", "low-volume"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "POC", value: observed(["point of control", "poc"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
+        { label: "VWAP", value: observed(["vwap"]) ? "VISIBLE" : "NOT VERIFIED", tone: "neutral" },
       ],
     },
     {

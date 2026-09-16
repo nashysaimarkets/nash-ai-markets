@@ -9,7 +9,6 @@
   .psApp .psIntel article>span::before,
   .psApp .psEventDeck header>span::before,
   .psApp .psLevelDeck header>span::before,
-  .psApp .psResultChart header>span::before,
   .psApp .psEvents header>span::before,
   .psApp .psVault header>span::before{
     transform-origin:center;
@@ -42,7 +41,6 @@
   .psApp .psIntel article:hover>span::before,
   .psApp .psEventDeck:hover header>span::before,
   .psApp .psLevelDeck:hover header>span::before,
-  .psApp .psResultChart:hover header>span::before,
   .psApp .psEvents:hover header>span::before,
   .psApp .psVault:hover header>span::before{
     animation-duration:2.4s!important;
@@ -57,7 +55,6 @@
   .psApp .psIntel article>span::before,
   .psApp .psEventDeck header>span::before,
   .psApp .psLevelDeck header>span::before,
-  .psApp .psResultChart header>span::before,
   .psApp .psEvents header>span::before,
   .psApp .psVault header>span::before{animation:none!important}
 }

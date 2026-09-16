@@ -102,7 +102,6 @@
 .psApp .psIntel article>span::before,
 .psApp .psEventDeck header>span::before,
 .psApp .psLevelDeck header>span::before,
-.psApp .psResultChart header>span::before,
 .psApp .psEvents header>span::before,
 .psApp .psVault header>span::before{
   width:30px!important;
@@ -125,7 +124,6 @@
 .psApp .psIntel article[data-risk]>span::before{content:"🛡️"}
 .psApp .psEventDeck header>span::before,.psApp .psEvents header>span::before{content:"📅"}
 .psApp .psLevelDeck header>span::before{content:"📍"}
-.psApp .psResultChart header>span::before{content:"🎯"}
 .psApp .psVault header>span::before{content:"🔒"}
 
 /* Bull and bear are calm directional guides, not arcade mascots. */
