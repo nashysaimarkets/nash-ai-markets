@@ -180,7 +180,7 @@
 .psApp[data-visual-style="luminous"] .psVerdict > h2 { font-size: clamp(21px,4vw,28px); line-height: 1.3; letter-spacing: -.025em; }
 .psApp[data-visual-style="luminous"] .psVerdict > span { color: #b4c9c1; font-size: 16px; line-height: 1.65; }
 .psApp[data-visual-style="luminous"] .psVerdict > b { color: #a0b5ac; font-size: 12px; line-height: 1.5; }
-.psApp[data-visual-style="luminous"] :is(.psDecisionBias,.psSetupQuality,.psDecisionFactors article,.psMindChange,.psTrapRadar,.psPrecisionMeter,.psTimeframeConflict,.psTradeReview) { border-color: #d0eada24; background: linear-gradient(150deg,#18292a,#0c181e); box-shadow: inset 0 1px #dfffea0a,0 6px 14px #0002; }
+.psApp[data-visual-style="luminous"] :is(.psDecisionBias,.psSetupQuality,.psDecisionFactors article,.psMindChange,.psTrapRadar,.psTimeframeConflict,.psTradeReview) { border-color: #d0eada24; background: linear-gradient(150deg,#18292a,#0c181e); box-shadow: inset 0 1px #dfffea0a,0 6px 14px #0002; }
 .psApp[data-visual-style="luminous"] .psSetupQuality > div { width: 88px; height: 88px; box-shadow: 0 8px 15px #0006,inset 0 2px #dfffe62b,0 0 0 4px #0a1319,0 0 0 5px #b4d4c826; }
 .psApp[data-visual-style="luminous"] .psSetupQuality > div strong { font: 650 29px/1 sans-serif; }
 .psApp[data-visual-style="luminous"] .psDecisionBias > div { height: 16px; border: 1px solid #ffffff15; box-shadow: inset 0 2px 4px #0005,0 2px 0 #ffffff0b; }
@@ -189,8 +189,8 @@
 .psApp[data-visual-style="luminous"] .psDecisionBias header { flex-wrap: wrap; }
 .psApp[data-visual-style="luminous"] .psDecisionBias footer { flex-wrap: wrap; }
 .psApp[data-visual-style="luminous"] .psDecisionBias footer strong { font: 650 16px/1.5 sans-serif; }
-.psApp[data-visual-style="luminous"] :is(.psMindChange strong,.psTrapRadar > p,.psPrecisionMeter > p) { font-size: 16px; line-height: 1.6; }
-.psApp[data-visual-style="luminous"] :is(.psMindChange small,.psTrapRadar > small,.psPrecisionMeter > small,.psDecisionFactors span,.psTimeframeConflict > p) { color: #a6bdb3; font-size: 12px; line-height: 1.5; }
+.psApp[data-visual-style="luminous"] :is(.psMindChange strong,.psTrapRadar > p) { font-size: 16px; line-height: 1.6; }
+.psApp[data-visual-style="luminous"] :is(.psMindChange small,.psTrapRadar > small,.psDecisionFactors span,.psTimeframeConflict > p) { color: #a6bdb3; font-size: 12px; line-height: 1.5; }
 .psApp[data-visual-style="luminous"] .psDecisionFactors span { white-space: normal; overflow-wrap: anywhere; }
 .psApp[data-visual-style="luminous"] .psDecisionFactors strong { font-size: 16px; }
 .psApp[data-visual-style="luminous"] .psCommandDeck > nav button { background: linear-gradient(150deg,#203036,#101d23); border-color: #c5e4d528; border-radius: 12px; }

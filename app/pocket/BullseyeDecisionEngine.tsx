@@ -11,15 +11,6 @@ import { evaluateTradePlan, type TradePlanEvaluation, type TradeSide } from "./t
 export type ScanPerformance = { elapsedMs: number; outcome: "cached" | "completed" | "failed"; chartCount: number };
 type TimeframeRead = { id: string; label: string; direction: Analysis["direction"] | null; state: "READY" | "PREPARING" | "RETRY" };
 
-export function chartEvidenceScore(analysis: Analysis) {
-  const readability = analysis.evidenceQuality.chartReadability === "CLEAR" ? 35 : analysis.evidenceQuality.chartReadability === "PARTIAL" ? 20 : 5;
-  const candles = analysis.evidenceQuality.candlesReadable ? 20 : 0;
-  const scale = analysis.evidenceQuality.scaleReadable ? 20 : 0;
-  const instrument = analysis.evidenceQuality.instrumentConfidence === "HIGH" ? 12 : analysis.evidenceQuality.instrumentConfidence === "MEDIUM" ? 7 : 0;
-  const timeframe = analysis.evidenceQuality.timeframeConfidence === "HIGH" ? 13 : analysis.evidenceQuality.timeframeConfidence === "MEDIUM" ? 7 : 0;
-  return Math.max(0, Math.min(100, readability + candles + scale + instrument + timeframe));
-}
-
 function evidenceBalance(analysis: Analysis) {
   if (analysis.direction === "NEUTRAL") return { long: 50, short: 50 };
   const strength = Math.max(5, Math.min(28, Math.round((analysis.setupScore.overall - 50) * .32 + (analysis.setupScore.confirmation - 5) * 1.6 + 6)));
@@ -45,7 +36,6 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance }
   performance: ScanPerformance | null;
 }) {
   const balance = evidenceBalance(analysis);
-  const precision = chartEvidenceScore(analysis);
   const [side, setSide] = useState<TradeSide>(analysis.direction === "BEARISH" ? "SHORT" : "LONG");
   const [entry, setEntry] = useState(analysis.currentPrice && /^\s*[£$€¥]?[\d\s,'’.]+\s*$/.test(analysis.currentPrice) ? analysis.currentPrice : "");
   const [stop, setStop] = useState("");
@@ -132,12 +122,6 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance }
         <b>{trapRegion}</b>
         <p>{effectiveLiquidity.liquidityShield?.summary || analysis.traderTrap}</p>
         <small>{effectiveLiquidity.liquidityShield?.stopGuidance || "Confirm any stop against the original chart and invalidation."}</small>
-      </section>
-      <section className="psPrecisionMeter" data-score={precision >= 85 ? "high" : precision >= 60 ? "medium" : "low"}>
-        <header><span>◉ SCREENSHOT PRECISION</span><strong>{precision}%</strong></header>
-        <i><b style={{ width: `${precision}%` }} /></i>
-        <p>{precision >= 85 ? "Precision analysis available." : precision >= 60 ? "Useful read, but check the highlighted evidence gaps." : "Upload a clearer, wider chart before relying on exact levels."}</p>
-        <small>{analysis.evidenceQuality.limitations.slice(0, 2).join(" · ") || "Instrument, timeframe, candles and price scale checked."}</small>
       </section>
     </div>
 

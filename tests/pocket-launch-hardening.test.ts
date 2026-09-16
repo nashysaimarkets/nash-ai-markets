@@ -535,7 +535,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psBattleTabs/);
   assert.match(styles, /\.psPriceLadder/);
   assert.match(styles, /\.psDecisionRange/);
-  assert.match(styles, /\.psMapIntro/);
+  assert.doesNotMatch(client, /className="psMapIntro"/);
   assert.match(styles, /\.psAuditDrawer/);
   assert.match(styles, /\.psClarityLock/);
   assert.match(styles, /\.psBullseyePlan/);
@@ -609,9 +609,9 @@ test("Decision Map withholds absent structure but keeps one-sided evidence expli
   assert.ok(earlyHold >= 0 && firstMapPrimitive > earlyHold, "an empty exact map must return before map primitives render");
   assert.match(decisionMap, /hasContext \? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"/);
   assert.match(decisionMap, /NO ESTIMATED LEVELS · NO HIDDEN MAP/);
-  assert.match(decisionMap, /PARTIAL PRICE MAP/);
+  assert.doesNotMatch(decisionMap, /YOU ARE HERE|psMapIntro/);
   assert.match(decisionMap, /data-structure=\{twoSided \? "two-sided" : "partial"\}/);
-  assert.match(decisionMap, /support is verified; resistance still needs a clearer view/i);
+  assert.match(decisionMap, /nearestResistance \? formatDistance\(resistanceDistance\) : "NOT VERIFIED"/);
   assert.doesNotMatch(decisionMap, /onReanalyse|reanalysing|ADD ANOTHER PHOTO/);
   assert.match(precisionStyles, /\.psDecisionMapHold \{/);
   assert.match(precisionStyles, /min-height: 250px/);
@@ -636,7 +636,7 @@ test("full-screen Decision Map keeps two independent exits inside the safe viewp
   assert.match(hotfix, /\.psBattleFocusBody[\s\S]*overflow: auto/);
   assert.match(hotfix, /\.psBattleFocusBody \.psSourceChartExpanded img[\s\S]*max-height: min\(68svh, 720px\)/);
   assert.match(hotfix, /\.psBattleFocus > header button \{ min-width: 64px; min-height: 44px; \}/);
-  assert.match(client, /<main className="psApp" data-pocket-build="v3\.3" data-chart-focus=\{chartFocus \? "true" : "false"\}>/);
+  assert.match(client, /<main className="psApp"[^>]*data-chart-focus=\{chartFocus \? "true" : "false"\}/);
   assert.match(hotfix, /\.psApp\[data-chart-focus="true"\],[\s\S]*\.psResults\[data-chart-focus="true"\] \{ perspective: none; \}/);
   assert.match(hotfix, /\.psXRayCanvas > img[\s\S]*height: auto[\s\S]*object-fit: contain/);
 });

@@ -442,7 +442,7 @@ function isListedEquityAnalysis(analysis: Analysis | null) {
   return analysis ? isListedEquityEventInput(analysis) : false;
 }
 
-function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null, onScenario, hasContext = false }: { analysis: Analysis; sourceImage?: string | null; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
+function DecisionMap({ analysis, expanded = false, scenario = null, onScenario, hasContext = false }: { analysis: Analysis; expanded?: boolean; scenario?: "bull" | "wait" | "bear" | null; onScenario?: (scenario: "bull" | "wait" | "bear") => void; hasContext?: boolean }) {
   const candidates = analysis.levels.flatMap((level) => {
     const price = numericLevel(level.price);
     return price !== null && ["support", "resistance", "pivot"].includes(level.kind) ? [{ ...level, numericPrice: price }] : [];
@@ -477,10 +477,10 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   const padding = Math.max((rawMax - rawMin) * .16, Math.abs(rawMax || 1) * .0025, 1);
   const min = rawMin - padding;
   const max = rawMax + padding;
-  // The first 42% is reserved for the intrinsic intro and intelligence strip;
-  // the final 22% is reserved for direction/scenario controls.
-  const mapTop = 42;
-  const mapSpan = 36;
+  // Reserve the top band for the intelligence strip and the final 22%
+  // for direction/scenario controls; the removed intro leaves more map space.
+  const mapTop = 22;
+  const mapSpan = 56;
   const position = (price: number) => mapTop + ((max - price) / (max - min)) * mapSpan;
   const ordered = [...verified].sort((a, b) => b.numericPrice - a.numericPrice);
   const nearCurrentTolerance = Math.max(Math.abs(current) * .0015, .01);
@@ -527,28 +527,7 @@ function DecisionMap({ analysis, sourceImage, expanded = false, scenario = null,
   });
   const rangeTop = Math.min(resistanceY, supportY);
   const rangeHeight = Math.abs(supportY - resistanceY);
-  const locationHeadline = supportAtCurrent
-    ? `Price is testing verified support${nearestResistance && resistanceDistance !== null ? `, with resistance ${formatDistance(resistanceDistance)} above` : ""}.`
-    : resistanceAtCurrent
-      ? `Price is testing verified resistance${nearestSupport && supportDistance !== null ? `, with support ${formatDistance(supportDistance)} below` : ""}.`
-      : nearestSupport && nearestResistance && supportDistance !== null && resistanceDistance !== null
-        ? `Price is ${formatDistance(supportDistance)} above support and ${formatDistance(resistanceDistance)} below resistance.`
-        : nearestSupport && supportDistance !== null
-          ? `Price is ${formatDistance(supportDistance)} above verified support.`
-          : nearestResistance && resistanceDistance !== null
-            ? `Price is ${formatDistance(resistanceDistance)} below verified resistance.`
-      : "Verified price location needs a clearer scale.";
-
-  const mapDetail = twoSided
-    ? "Nearest verified levels and the conditions that could change this read."
-    : nearestSupport
-      ? "Partial map: support is verified; resistance still needs a clearer view."
-      : nearestResistance
-        ? "Partial map: resistance is verified; support still needs a clearer view."
-        : "Partial map: one exact level is verified, but its market side still needs confirmation.";
-
   return <div className={`psBattlefield psDecisionMap${expanded ? " psBattlefieldExpanded" : ""}`} data-scenario={scenario ?? "all"} data-structure={twoSided ? "two-sided" : "partial"} aria-label="Bullseye Decision Map">
-    <header className="psMapIntro"><div><small>{twoSided ? "YOU ARE HERE" : "PARTIAL PRICE MAP"}</small><strong>{locationHeadline}</strong><p>{mapDetail}</p></div>{sourceImage ? <figure><img src={sourceImage} alt="Selected source chart thumbnail" /><figcaption>{analysis.timeframe}</figcaption></figure> : null}</header>
     <div className="psBattleGrid" aria-hidden="true" />
     {verified.length ? <div className="psPriceLadder" aria-label="Calibrated Decision Map price ladder">{scaleTicks.map((tick) => <span key={`${tick.price}-${tick.top}`} style={{ top: `${tick.top}%` }}><i /><small>{tick.price.toLocaleString("en-GB", { minimumFractionDigits: priceDecimals, maximumFractionDigits: priceDecimals })}</small></span>)}</div> : null}
     {nearestSupport && nearestResistance ? <div className="psDecisionRange" style={{ top: `${rangeTop}%`, height: `${rangeHeight}%` }} aria-label={`Active decision range from ${nearestSupport.price} to ${nearestResistance.price}`}><span>ACTIVE DECISION RANGE</span><i /><i /><i /></div> : null}
@@ -2385,7 +2364,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header className="psInstrumentHeader"><OrbitalInstrument kind="levels" /><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>SELECTED UPLOADED TIMEFRAME</small></div><button type="button" onClick={openChartFocus}>EXPAND</button></header>
             {battlefieldTabs}
-            <DecisionMap analysis={battlefieldAnalysis} sourceImage={image} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
+            <DecisionMap analysis={battlefieldAnalysis} scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
             {battlefieldChart === "primary" ? <LevelProvenancePanel levels={analysis.levels} anchors={analysis.priceScaleAnchors} /> : null}
             <details id="bullseye-source-charts" className="psSourceEvidence"><summary>VIEW {analysis.timeframe} SOURCE CHART <b>⌄</b></summary>{sourceChart()}</details>
           </section>
@@ -2427,7 +2406,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <header><span id="psDecisionMapDialogTitle">DECISION MAP · {analysis.instrument}</span><button type="button" autoFocus aria-label="Close full-screen Decision Map" onClick={closeChartFocus}>CLOSE</button></header>
             <div className="psBattleFocusBody" ref={chartFocusScroll}>
               {battlefieldTabs}
-              <DecisionMap analysis={battlefieldAnalysis} sourceImage={image} expanded scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
+              <DecisionMap analysis={battlefieldAnalysis} expanded scenario={selectedScenario} onScenario={setSelectedScenario} hasContext={Boolean(contextBattlefield)} />
               <details className="psSourceEvidence"><summary>VIEW {analysis.timeframe} SOURCE CHART <b>⌄</b></summary>{sourceChart(true)}</details>
               <button className="psBattleBackToResult" type="button" onClick={closeChartFocus}>← BACK TO RESULT</button>
             </div>

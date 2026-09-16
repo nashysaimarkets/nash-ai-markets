@@ -85,11 +85,11 @@ test("Liquidity rescan retries a transient response with one correlation id", as
   assert.equal(ids[0], ids[1]);
 });
 
-test("mobile Decision Map reserves its content header and removes colliding labels", () => {
+test("mobile Decision Map uses the removed header space and avoids colliding labels", () => {
   assert.match(client, /Math\.abs\(y - currentY\) < 8/);
   assert.match(client, /visible\.some\(\(candidate\) => Math\.abs\(position\(candidate\.numericPrice\) - y\) < 8\)/);
-  assert.match(hotfix, /\.psDecisionMap \.psMapIntro \{ min-height: 108px; \}/);
-  assert.match(hotfix, /\.psDecisionMap \.psBattleIntel \{ top: 142px; \}/);
+  assert.doesNotMatch(client, /className="psMapIntro"/);
+  assert.match(hotfix, /\.psDecisionMap \.psBattleIntel \{ top: 14px; \}/);
   assert.match(hotfix, /\.psDecisionMap \.psBattleLevel em \{ display: none; \}/);
   assert.match(hotfix, /\.psDecisionMap \.psBattleLevel small \{ right: 96px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; \}/);
   assert.match(client, /`\$\{nearestSupport\.price\} · \$\{formatPercent\(supportDistance\)\}`/);
