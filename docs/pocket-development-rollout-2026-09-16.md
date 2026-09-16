@@ -24,7 +24,9 @@ All stored chart and notebook content remains on the device unless the customer 
 
 The current Sites website uses Supabase project `pxlqvaddvghjjhenqmdh`. Its analytics migration was applied and checked with a rollback-only test: the 19,234 ms test event entered the 20,000 ms bucket, test events remained excluded from reporting, anonymous access remained disabled, and service-role execution remained enabled.
 
-Automatic approval review rejected the matching migration on the separate production-linked Supabase project `opmgzchnmcgnsfwpmysc`. The stated reason was its persistent changes to production constraints and reporting functions and the wider operational impact. No alternate route was used. The exact proposed migration is `docs/pocket-experience-schema.sql`; it requires explicit approval before application to that separate project. Core notebook, source evidence and comparison features do not depend on these optional analytics writes. New analytics on the native-linked environment remain incomplete until that migration is approved and applied.
+Automatic approval review initially rejected the matching migration on the separate production-linked Supabase project `opmgzchnmcgnsfwpmysc` because it changes production constraints and reporting functions. Chris subsequently approved that specific migration. The exact SQL in `docs/pocket-experience-schema.sql` was applied successfully on 16 September 2026 as migration `20260916185140_pocket_experience_counts_and_timing_buckets`.
+
+Production verification ran as `service_role` inside a rolled-back transaction. New and legacy events recorded successfully; repeated timing aggregation selected the correct bucket; zero-duration events did not add a timing sample; test events stayed excluded from reporting; and the report retained its existing fields alongside `timings`. Anonymous and authenticated table/report access remained blocked, service-role reporting remained enabled, and row-level security remained enabled. Test events were rolled back. The production analytics schema blocker is resolved; native feature availability still depends on the separate app release.
 
 The 53 focused model, render, timeframe, review and activity tests and TypeScript check passed. The production build and Sites deployment are recorded in the publication result and PR. Browser visual QA was previously blocked by the managed preview environment; no completed physical-phone test or battery measurement is claimed.
 
@@ -40,7 +42,7 @@ Native changes belong to the existing draft PR #84, stacked on the customer-jour
 | Acquisition experiment | Three focused pages and campaign attribution | Begin with the indices message; inspect qualified visits and successful scans. Low counts cannot establish a conversion winner. |
 | App Store campaign | Copy and screenshot storyboard below | Capture the features from the Apple-available version, check current Apple state, then prepare the next appropriate release/campaign. |
 | Unit economics | Calculation worksheet below | Actual subscription receipts, provider usage/invoices, retries and infrastructure costs for the same period. No price change is justified yet. |
-| Production analytics | Concrete SQL migration and current-site verification | Approval for the separate production database migration described above. |
+| Production analytics | Applied to both databases; production service-role recording, reporting and access checks passed | Database dependency complete. Native clients begin sending new event types when the compatible app update is released. |
 
 ## Accuracy annotation and release gate
 
