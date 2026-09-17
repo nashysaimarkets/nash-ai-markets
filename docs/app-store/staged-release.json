@@ -5,17 +5,23 @@
   "buildNumber": "40",
   "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
   "processingState": "VALID",
-  "physicalDeviceValidation": "PENDING: build 40 is VALID and active in internal TestFlight. This diagnostic candidate does not establish a purchase fix. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out must all be verified on this exact build before App Review.",
+  "physicalDeviceValidation": "PARTIAL: Chris reports the purchase now works after build 40 instructions. Purchase is owner-reported passed. Cancellation, active-purchase restore, free-use consumption and analytics opt-out remain not-tested for this exact candidate. Final App Review submission is gated on those checks.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "40",
     "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
     "checks": {
-      "purchase": "not-tested",
+      "purchase": "passed",
       "cancellation": "not-tested",
       "restore": "not-tested",
       "freeUse": "not-tested",
       "analyticsOptOut": "not-tested"
+    },
+    "purchaseEvidence": {
+      "source": "owner confirmation in this conversation",
+      "reportedAt": "2026-09-17T20:15:34Z",
+      "statement": "It works!!!🎉 Update Apple AppStore and release to all possible platforms except instagram and Snapchat",
+      "scope": "Owner-reported purchase success following the instruction to update to build 40 and tap Subscribe. Other device checks are not established by this message."
     }
   },
   "supersedesBuildNumber": "39",
@@ -93,14 +99,14 @@
   ],
   "appleDraft": {
     "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
-    "buildNumber": "39",
-    "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
+    "buildNumber": "40",
+    "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
     "state": "PREPARE_FOR_SUBMISSION",
     "releaseType": "AFTER_APPROVAL",
     "locale": "en-GB",
     "releaseNotesVerified": true,
-    "preparationRun": "6aac3bc5d2ea6c284fcfc693",
-    "preparationCommit": "72d09a1f6c32cbb41c9ba654ad79156a952dc08d",
+    "preparationRun": "6aac4998ac33d9335348772e",
+    "preparationCommit": "86ad0c8c538fee8bbfaf9632431b0cbeeaac7200",
     "submitted": false
   },
   "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",

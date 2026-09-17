@@ -37,3 +37,9 @@ Staging-only workflow `6aac43159fdc32ad3d4f990b` ran from native source `bc7eb41
 Read-only workflow `6aac44a96145703c9436e5b4` ran from `bc7eb41300c3a78e37f4b5bb70e9eae20ccb5b1a` at 20:51 BST, finishing in 31 seconds. It confirmed exact build 1.2.12 (40), Apple ID `0397facd-949e-4bac-bf87-7b429d0bdc4e`, VALID and unexpired, internal IN_BETA_TESTING and external READY_FOR_BETA_SUBMISSION. Version 1.2.12 remains PREPARE_FOR_SUBMISSION and public version remains 1.2.11. The existing draft still selects 39; it was not modified during this diagnostic task. No App Review submission or review cancellation occurred.
 
 Next phone check: update to 1.2.12 (40) in TestFlight, tap Subscribe once and complete any Apple prompt privately. If it fails, expand Apple error details · Subscribe and capture that panel. The screenshot will identify the operation, native codes and returned storefront/currency without credentials. All five device checks remain not-tested for build 40.
+
+## Owner confirmation and Apple draft update
+
+Chris subsequently reported “It works!!!” and requested Apple and other-platform release, excluding Instagram and Snapchat. This confirms the requested purchase test as owner-reported success after the build 40 instructions, not an independent observation or evidence of the other four checks. The candidate records purchase passed, with cancellation, restore, free-use and opt-out still not-tested. No guard was bypassed or check invented.
+
+Guarded draft preparation `6aac4998ac33d9335348772e` ran from `86ad0c8c538fee8bbfaf9632431b0cbeeaac7200` at 21:12 BST and finished in 46 seconds. It rechecked actual Apple version/review state, attached exact valid build 40 and saved/read back en-GB notes. Apple reported DRAFT VERIFIED: 1.2.12 (40); en-GB notes saved; AFTER_APPROVAL. The draft remains PREPARE_FOR_SUBMISSION. It explicitly reported NOT SUBMITTED pending physical customer-journey validation.
