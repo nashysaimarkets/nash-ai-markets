@@ -147,14 +147,14 @@
   ],
   "appleDraft": {
     "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
-    "buildNumber": "40",
-    "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
+    "buildNumber": "41",
+    "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
     "state": "PREPARE_FOR_SUBMISSION",
     "releaseType": "AFTER_APPROVAL",
     "locale": "en-GB",
     "releaseNotesVerified": true,
-    "preparationRun": "6aac4998ac33d9335348772e",
-    "preparationCommit": "86ad0c8c538fee8bbfaf9632431b0cbeeaac7200",
+    "preparationRun": "6aac553ec4068f7444dda646",
+    "preparationCommit": "9d65df523a8994728d238ad17d513c0bd74c3961",
     "submitted": false
   },
   "buildCommit": "292637011733caac5b37bcb0c5ce719b3ff78d55",
