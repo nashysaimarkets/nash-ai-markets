@@ -37,6 +37,7 @@ import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
+import AppleAccessControls from "./AppleAccessControls";
 import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, watchAppleAccess, type AppleAccessStatus } from "./apple-storekit";
 import { postLevelLabScan } from "./level-lab-client";
 import { postLiquidityRescan } from "./liquidity-rescan-client";
@@ -2172,6 +2173,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
             <button type="button" onClick={startNewChart}>NEW CHART</button>
           </div>
+          {nativeAppleApp ? <AppleAccessControls status={appleAccess} onStatus={setAppleAccess} /> : null}
           {sampleMode ? <p className="psSampleBanner" role="status"><strong>FICTIONAL SAMPLE</strong> · These charts and results demonstrate the app. No live prices, AI scan or free-use charge. Choose NEW CHART to try your own.</p> : null}
           {sampleMode && !nativeAppleApp ? <div className="psAppStoreEntry"><AppStoreLink>Try your own chart free on iPhone or iPad</AppStoreLink><span>One complete analysis free. Then £4.99/month in the UK; regional pricing varies.</span><UsageControl /></div> : null}
           {!sampleMode && appleNeedsSubscription && appleAccess ? <div className="psAppStoreEntry"><button type="button" onClick={() => openApplePaywall(appleAccess)}>Continue with more analyses · {appleAccess.displayPrice}/month</button><span>Renews automatically. Cancel in Apple settings.</span></div> : null}
@@ -2288,6 +2290,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psHeaderActions"><span>POCKET BULLSEYE · CHART ANALYSIS</span></div>
       </header>
       <section className="psScanner">
+        {nativeAppleApp ? <AppleAccessControls status={appleAccess} onStatus={setAppleAccess} /> : null}
         <section className="psLaunchHero">
           <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "YOUR PRE-TRADE REVIEW"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>
           {!reviewTarget ? <PocketDepthMark scanning={busy} /> : null}

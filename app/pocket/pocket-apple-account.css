@@ -1,0 +1,32 @@
+.psApp .psAppleAccount {
+  margin: 16px 0;
+  padding: 15px 17px;
+  border: 1px solid #9ad7e13b;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #173747e8, #081725f2);
+  box-shadow: inset 0 1px 0 #c4f5ff24, 0 12px 30px #0004;
+  color: #e4f5fa;
+}
+.psAppleAccountRow { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.psAppleAccountRow > div { display: grid; gap: 5px; }
+.psAppleAccountRow small { color: #93c9d6; font-size: .67rem; font-weight: 700; letter-spacing: .1em; }
+.psAppleAccountRow strong { font-size: .95rem; line-height: 1.35; }
+.psAppleAccountRow button {
+  min-height: 44px;
+  padding: 10px 13px;
+  border: 1px solid #91e6d66b;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #20534e, #102c35);
+  box-shadow: inset 0 1px 0 #c0fff02e, 0 4px 0 #030e16;
+  color: #caffed;
+  font-family: inherit;
+  font-size: .72rem;
+  font-weight: 750;
+  line-height: 1.3;
+  cursor: pointer;
+}
+.psAppleAccountRow button:disabled { opacity: .65; cursor: progress; }
+.psAppleAccountRow button:focus-visible, .psAppleAccount summary:focus-visible { outline: 2px solid #b5ffed; outline-offset: 4px; }
+.psAppleAccount > p { margin: 12px 0 0; color: #b8cbd7; font-size: .85rem; line-height: 1.5; }
+.psAppleAccount .psAppleErrorDetails { margin-top: 12px; }
+.psAppleAccount .psAppleErrorDetails pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .75rem; }

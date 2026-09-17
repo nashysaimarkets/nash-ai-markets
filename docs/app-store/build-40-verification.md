@@ -43,3 +43,12 @@ Next phone check: update to 1.2.12 (40) in TestFlight, tap Subscribe once and co
 Chris subsequently reported “It works!!!” and requested Apple and other-platform release, excluding Instagram and Snapchat. This confirms the requested purchase test as owner-reported success after the build 40 instructions, not an independent observation or evidence of the other four checks. The candidate records purchase passed, with cancellation, restore, free-use and opt-out still not-tested. No guard was bypassed or check invented.
 
 Guarded draft preparation `6aac4998ac33d9335348772e` ran from `86ad0c8c538fee8bbfaf9632431b0cbeeaac7200` at 21:12 BST and finished in 46 seconds. It rechecked actual Apple version/review state, attached exact valid build 40 and saved/read back en-GB notes. Apple reported DRAFT VERIFIED: 1.2.12 (40); en-GB notes saved; AFTER_APPROVAL. The draft remains PREPARE_FOR_SUBMISSION. It explicitly reported NOT SUBMITTED pending physical customer-journey validation.
+
+
+## Follow-up checklist and restore reachability
+
+Chris reported usage-count opt-out passed; he did not recall receiving a free analysis and thought he had to subscribe; purchase cancellation and Restore were not available. Only analyticsOptOut is newly marked passed. The other checks remain not-tested.
+
+Source inspection confirms the device free-use flag uses the same Keychain key across builds and is written only after a readable completed free analysis. Updating TestFlight does not grant another allowance. Earlier use could explain this phone’s subscription gate, but that is not proof of a fresh-device test. The existing executable initial-scan test passed for readable, unreadable, poor and failed outcomes.
+
+The restore button was only inside the paywall, whose entry points disappear when access is active. A compact Apple subscription panel now keeps Restore reachable on native home/results screens, including with active access or unused free allowance. It calls the existing StoreKit restore flow; there is no purchase, free-use reset, entitlement bypass or forced currency. It displays active/free-used/free-available state, a restore result, cancellation, slow-response help and the same bounded private error details. This source change requires a new immutable web pin and native candidate before it reaches the installed app.
