@@ -23,6 +23,52 @@ def review(state):
 
 
 class ReviewPreservationTests(unittest.TestCase):
+    def test_only_all_passed_device_checks_for_this_exact_build_allow_submission(self):
+        candidate = {**CANDIDATE, 'revision': 'verified-revision'}
+        with self.assertRaises(RuntimeError):
+            release.verify_device_validation(candidate)
+        good = {'status': 'passed', 'buildNumber': '34', 'revision': 'verified-revision',
+                'verifiedBy': 'Device tester', 'verifiedAt': '2026-09-17',
+                'checks': dict.fromkeys(['purchase', 'cancellation', 'restore', 'freeUse', 'analyticsOptOut'], 'passed')}
+        release.verify_device_validation({**candidate, 'deviceValidation': good})
+        for change in [{'status': 'failed'}, {'buildNumber': '33'}, {'revision': 'other'},
+                       {'verifiedBy': ''}, {'checks': {**good['checks'], 'restore': 'not-tested'}}]:
+            with self.assertRaises(RuntimeError):
+                release.verify_device_validation({**candidate, 'deviceValidation': {**good, **change}})
+
+    def test_owner_exception_is_bound_to_build_41_and_never_marks_tests_passed(self):
+        import copy
+        identity = {'marketingVersion': '1.2.12', 'buildNumber': '41',
+                    'revision': '77850015745fdc375b50812afca47b7d68f332bf',
+                    'appleBuildId': '4731641e-3416-485d-823a-3dc3bcffab35'}
+        candidate = {**identity, 'deviceValidation': {
+            'status': 'pending', 'buildNumber': '41', 'revision': identity['revision'],
+            'subscribedAnalysis': 'passed', 'checks': {
+                'purchase': 'not-tested', 'cancellation': 'not-tested', 'freeUse': 'not-tested',
+                'restore': 'passed', 'analyticsOptOut': 'passed'}},
+            'manualTestException': {**identity, 'authorizedBy': 'Chris Nash',
+                'instruction': 'No. Can you release it anyway?', 'recordedAt': '2026-09-17',
+                'untestedChecks': ['purchase', 'cancellation', 'freeUse']}}
+        original = copy.deepcopy(candidate)
+        release.verify_device_validation(candidate)
+        self.assertEqual(candidate, original)
+        for key in identity:
+            changed = copy.deepcopy(candidate)
+            changed[key] = 'other'
+            changed['manualTestException'][key] = 'other'
+            with self.subTest(key=key), self.assertRaises(RuntimeError):
+                release.verify_device_validation(changed)
+        for key in ['authorizedBy', 'instruction', 'recordedAt', 'untestedChecks']:
+            changed = copy.deepcopy(candidate)
+            changed['manualTestException'].pop(key)
+            with self.subTest(key=key), self.assertRaises(RuntimeError):
+                release.verify_device_validation(changed)
+        for check in candidate['deviceValidation']['checks']:
+            changed = copy.deepcopy(candidate)
+            changed['deviceValidation']['checks'][check] = 'failed'
+            with self.subTest(check=check), self.assertRaises(RuntimeError):
+                release.verify_device_validation(changed)
+
     def test_active_review_and_pending_release_are_preserved(self):
         for state in release.PROTECTED:
             with self.subTest(state=state):

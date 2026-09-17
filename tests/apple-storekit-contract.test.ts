@@ -11,9 +11,9 @@ test("Apple subscription identifiers stay aligned across TypeScript and StoreKit
   assert.match(native, /Transaction\.currentEntitlements/);
   assert.match(native, /AppStore\.sync\(\)/);
   assert.match(native, /transaction\.finish\(\)/);
-  assert.match(native, /guard let product = try await Product\.products/);
+  assert.match(native, /guard let product = loadedProduct/);
   assert.match(native, /product\?\.displayName \?\? "Pocket Bullseye Monthly"/);
-  assert.match(native, /product\?\.displayPrice \?\? "£4\.99"/);
+  assert.match(native, /product\?\.displayPrice \?\? ""/);
   assert.doesNotMatch(native, /guard let product else[\s\S]{0,120}temporarily unavailable from Apple/);
 });
 
@@ -51,7 +51,7 @@ test("every additional native AI request requires an Apple entitlement", async (
   assert.doesNotMatch(pocket, /async function rescanLevelsOnly/, "the duplicate manual level scanner is no longer a separate chargeable action");
   assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
-  assert.match(pocket, /primaryChartReady && !reviewTarget \? <ChartPreflightPanel/);
+  assert.match(pocket, /primaryChartReady && !reviewTarget && !appleNeedsSubscription \? <ChartPreflightPanel/);
   assert.doesNotMatch(pocket, /appleCanRunPreflight/);
   assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(appleAccess\)/);
 });

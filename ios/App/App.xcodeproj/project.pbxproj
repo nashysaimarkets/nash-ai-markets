@@ -18,6 +18,8 @@
 		9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9582B6822FE993A50072D4E8 /* SceneDelegate.swift */; };
 		A10000012FE993A70072D4E8 /* PocketStoreKitPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000022FE993A70072D4E8 /* PocketStoreKitPlugin.swift */; };
 		A10000032FE993A70072D4E8 /* PocketBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000042FE993A70072D4E8 /* PocketBridgeViewController.swift */; };
+		A10000072FE993A70072D4E8 /* PocketPurchaseState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000082FE993A70072D4E8 /* PocketPurchaseState.swift */; };
+		A10000092FE993A70072D4E8 /* PocketStoreDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000A2FE993A70072D4E8 /* PocketStoreDiagnostics.swift */; };
 		A10000052FE993A70072D4E8 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A10000062FE993A70072D4E8 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +37,8 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A10000022FE993A70072D4E8 /* PocketStoreKitPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketStoreKitPlugin.swift; sourceTree = "<group>"; };
 		A10000042FE993A70072D4E8 /* PocketBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketBridgeViewController.swift; sourceTree = "<group>"; };
+		A10000082FE993A70072D4E8 /* PocketPurchaseState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketPurchaseState.swift; sourceTree = "<group>"; };
+		A100000A2FE993A70072D4E8 /* PocketStoreDiagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PocketStoreDiagnostics.swift; sourceTree = "<group>"; };
 		A10000062FE993A70072D4E8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -72,6 +76,8 @@
 			children = (
 				A10000022FE993A70072D4E8 /* PocketStoreKitPlugin.swift */,
 				A10000042FE993A70072D4E8 /* PocketBridgeViewController.swift */,
+				A10000082FE993A70072D4E8 /* PocketPurchaseState.swift */,
+				A100000A2FE993A70072D4E8 /* PocketStoreDiagnostics.swift */,
 				A10000062FE993A70072D4E8 /* PrivacyInfo.xcprivacy */,
 				9582B6822FE993A50072D4E8 /* SceneDelegate.swift */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
@@ -172,6 +178,8 @@
 				9582B6832FE993A70072D4E8 /* SceneDelegate.swift in Sources */,
 				A10000012FE993A70072D4E8 /* PocketStoreKitPlugin.swift in Sources */,
 				A10000032FE993A70072D4E8 /* PocketBridgeViewController.swift in Sources */,
+				A10000072FE993A70072D4E8 /* PocketPurchaseState.swift in Sources */,
+				A10000092FE993A70072D4E8 /* PocketStoreDiagnostics.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,7 +320,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 41;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -334,7 +342,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 41;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (

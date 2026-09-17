@@ -1,14 +1,209 @@
 {
   "marketingVersion": "1.2.12",
-  "buildNumber": "36",
-  "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
   "appId": "6806004581",
   "predecessorVersion": "1.2.11",
-  "appleBuildId": "b88d0cc0-f0ba-43be-b41c-69bc29c3c618",
-  "buildCommit": "6eab8f533258bf1a6034a2a7fa62edf84b9ff023",
-  "codemagicBuildId": "6aabac25628e157fb1f8e449",
+  "buildNumber": "41",
+  "revision": "77850015745fdc375b50812afca47b7d68f332bf",
   "processingState": "VALID",
-  "verifiedAt": "2026-09-17T09:27:54.550963+00:00",
-  "physicalDeviceValidation": "PENDING: purchase, cancellation, restore, free-use consumption and analytics opt-out; see CUSTOMER_JOURNEY_BATCH.md.",
-  "statusCheckCodemagicBuildId": "6aabb15c6d7a3277fbd1a812"
+  "physicalDeviceValidation": "PARTIAL / OWNER-AUTHORIZED EXCEPTION: Restore, subscribed analysis and opt-out passed on build 41. Purchase, cancellation and free-use remain not-tested. Owner explicitly requested release anyway; exception applies only to this exact candidate.",
+  "deviceValidation": {
+    "status": "pending",
+    "buildNumber": "41",
+    "revision": "77850015745fdc375b50812afca47b7d68f332bf",
+    "checks": {
+      "purchase": "not-tested",
+      "cancellation": "not-tested",
+      "restore": "passed",
+      "freeUse": "not-tested",
+      "analyticsOptOut": "passed"
+    },
+    "restoreEvidence": {
+      "source": "owner confirmation in this conversation after build 41 Restore instructions",
+      "recordedAt": "2026-09-17T21:10:14.766204+00:00",
+      "statement": "Restore complete. Your subscription is active.",
+      "scope": "Owner-reported active-purchase Restore pass on build 41. Does not establish a new purchase, purchase-sheet cancellation, fresh free-use or analytics opt-out on this candidate."
+    },
+    "subscribedAnalysis": "passed",
+    "subscribedAnalysisAndOptOutEvidence": {
+      "source": "owner confirmation following build 41 chart-analysis and usage-count instructions",
+      "recordedAt": "2026-09-17T21:15:37.493384+00:00",
+      "statement": "1 & 2: thumbs up",
+      "scope": "Owner confirms a chart analysis completes without another subscription prompt and usage counts remain off. This verifies subscribed analysis access and opt-out persistence, not a new purchase or fresh free allowance."
+    }
+  },
+  "supersedesBuildNumber": "40",
+  "historicalCandidates": [
+    {
+      "marketingVersion": "1.2.12",
+      "appId": "6806004581",
+      "predecessorVersion": "1.2.11",
+      "buildNumber": "40",
+      "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+      "processingState": "VALID",
+      "physicalDeviceValidation": "PARTIAL: owner-reported purchase and usage-count opt-out passed after build 40 instructions. Free-use behaviour is uncertain on the previously tested device; cancellation and active-purchase Restore are unavailable after subscription and remain not-tested. Final App Review submission remains gated.",
+      "deviceValidation": {
+        "status": "pending",
+        "buildNumber": "40",
+        "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+        "checks": {
+          "purchase": "passed",
+          "cancellation": "not-tested",
+          "restore": "not-tested",
+          "freeUse": "not-tested",
+          "analyticsOptOut": "passed"
+        },
+        "purchaseEvidence": {
+          "source": "owner confirmation in this conversation",
+          "reportedAt": "2026-09-17T20:15:34Z",
+          "statement": "It works!!!\ud83c\udf89 Update Apple AppStore and release to all possible platforms except instagram and Snapchat",
+          "scope": "Owner-reported purchase success following the instruction to update to build 40 and tap Subscribe. Other device checks are not established by this message."
+        },
+        "followUpEvidence": {
+          "source": "owner results after the build 40 checklist in this conversation",
+          "reportedAt": "2026-09-17T20:41:22.713551+00:00",
+          "analyticsOptOut": "Owner replied 1: thumbs up to turning usage counts off and checking persistence.",
+          "freeUse": "Owner replied: I don\u2019t think so. I\u2019m sure I had to subscribe. Fresh-device allowance remains unverified; no failure is inferred solely from a previously tested device.",
+          "cancellation": "Owner reports not available after successful subscription; not tested.",
+          "restore": "Owner reports not available after successful subscription; not tested.",
+          "scope": "Purchase and usage-count opt-out are owner-reported passed. Other checks remain not-tested. No unavailable check is counted as passed."
+        }
+      },
+      "appleDraft": {
+        "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
+        "buildNumber": "40",
+        "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
+        "state": "PREPARE_FOR_SUBMISSION",
+        "releaseType": "AFTER_APPROVAL",
+        "locale": "en-GB",
+        "releaseNotesVerified": true,
+        "preparationRun": "6aac4998ac33d9335348772e",
+        "preparationCommit": "86ad0c8c538fee8bbfaf9632431b0cbeeaac7200",
+        "submitted": false
+      },
+      "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
+      "buildCommit": "bc7eb41300c3a78e37f4b5bb70e9eae20ccb5b1a",
+      "codemagicBuildId": "6aac43159fdc32ad3d4f990b",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac44a96145703c9436e5b4"
+    },
+    {
+      "marketingVersion": "1.2.12",
+      "buildNumber": "39",
+      "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
+      "processingState": "VALID",
+      "physicalDeviceValidation": "Incomplete: owner manually cancelled Restore sign-in in the 20:18 recording. The 20:27 screenshot shows Unable to Complete Request but does not identify the action or native error code. Successful purchase and active-purchase restore remain unverified.",
+      "deviceValidation": {
+        "status": "pending",
+        "buildNumber": "39",
+        "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
+        "checks": {
+          "purchase": "not-tested",
+          "cancellation": "not-tested",
+          "restore": "not-tested",
+          "freeUse": "not-tested",
+          "analyticsOptOut": "not-tested"
+        }
+      },
+      "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
+      "buildCommit": "2cfa1ea428a1e7bc77be544dd5eb31c3dc8558db",
+      "codemagicBuildId": "6aac378569aec796c74123fa",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac38fe35c948ed346cfd2b",
+      "appleDraft": {
+        "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
+        "buildNumber": "39",
+        "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
+        "state": "PREPARE_FOR_SUBMISSION",
+        "releaseType": "AFTER_APPROVAL",
+        "locale": "en-GB",
+        "releaseNotesVerified": true,
+        "preparationRun": "6aac3bc5d2ea6c284fcfc693",
+        "preparationCommit": "72d09a1f6c32cbb41c9ba654ad79156a952dc08d",
+        "submitted": false
+      }
+    },
+    {
+      "buildNumber": "38",
+      "revision": "fea69217e6855ba6c161a782ae8027f953682c31",
+      "processingState": "VALID",
+      "appleBuildId": "1ba601b6-8de1-4200-84c6-0fba538ddb1e",
+      "buildCommit": "493c347fd4a53bc87e389fa7a110a6279919bca6",
+      "codemagicBuildId": "6aac2b7d8631ce102a5d2a44",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac2cf56cc33efcef3a6270",
+      "physicalDeviceValidation": "FAILED purchase: owner recording of 1.2.12 (38) shows Subscribe returning inactive access without a purchase confirmation. Restore reached Apple sign-in and was cancelled; active-purchase restore remains unverified."
+    },
+    {
+      "buildNumber": "37",
+      "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
+      "processingState": "VALID",
+      "appleBuildId": "d1da87e2-4316-415a-ac17-c12d9a795024",
+      "buildCommit": "dfb4fbf27a68004c3df001e9cc72ceedb09aae3d",
+      "codemagicBuildId": "6aac15fa6e9523665071695c",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac2a4ea07116fe7f0f0c76",
+      "physicalDeviceValidation": "Incomplete; not evidence of build 38 validation.",
+      "observations": [
+        "IMG_7532 Small.jpeg shows the build 37 paywall, Apple test environment, USD 4.99 and a completed no-active-entitlement message. This is not proof of a successful purchase or restoration of an existing entitlement.",
+        "ScreenRecording_09-17-2026 18-30-22_1.mp4 shows build 37 installation, chart upload and an AI preflight capacity error. The 2026-09-17T17:30:59Z Vercel log confirms /api/pocket/preflight 503 with reason quota_exhausted. No Apple purchase confirmation appears in the recording.",
+        "At 2026-09-17T17:58:26Z, a synthetic chart submitted through the normal web UI on build 37's pinned deployment returned /api/pocket/preflight HTTP 200, READY, in 5585 ms. This demonstrates preflight service recovery for one test; it is not a physical purchase test or a complete analysis accuracy benchmark."
+      ]
+    },
+    {
+      "buildNumber": "36",
+      "physicalDeviceValidation": "Owner reported purchase and restore failures; superseded by build 37 without App Review submission."
+    }
+  ],
+  "appleDraft": {
+    "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
+    "buildNumber": "41",
+    "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+    "state": "WAITING_FOR_REVIEW",
+    "releaseType": "AFTER_APPROVAL",
+    "locale": "en-GB",
+    "releaseNotesVerified": true,
+    "preparationRun": "6aac553ec4068f7444dda646",
+    "preparationCommit": "9d65df523a8994728d238ad17d513c0bd74c3961",
+    "submitted": true
+  },
+  "buildCommit": "292637011733caac5b37bcb0c5ce719b3ff78d55",
+  "codemagicBuildId": "6aac529bf2361f8c4a9a6de3",
+  "stagingStatus": "SUCCEEDED",
+  "applePreflightRun": "6aac51a72622d87f8ba76715",
+  "appleUploadDeliveryId": "4731641e-3416-485d-823a-3dc3bcffab35",
+  "uploadedAt": "2026-09-17T20:56:43.957Z",
+  "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+  "testFlightInternalState": "IN_BETA_TESTING",
+  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+  "appleStatusVerificationRun": "6aac54784515b5cc087e3ae7",
+  "manualTestException": {
+    "marketingVersion": "1.2.12",
+    "buildNumber": "41",
+    "revision": "77850015745fdc375b50812afca47b7d68f332bf",
+    "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+    "authorizedBy": "Chris Nash",
+    "instruction": "No. Can you release it anyway?",
+    "recordedAt": "2026-09-17T21:18:31.382685+00:00",
+    "untestedChecks": [
+      "purchase",
+      "cancellation",
+      "freeUse"
+    ],
+    "scope": "Explicit owner authorization to submit this exact candidate despite remaining manual checks. Results remain not-tested. Apple review, processed-build identity and review-preservation gates remain required."
+  },
+  "appleSubmission": {
+    "state": "WAITING_FOR_REVIEW",
+    "releaseType": "AFTER_APPROVAL",
+    "submissionId": "01a0473e-5ead-4855-82be-b6894f33b508",
+    "submittedAt": "2026-09-17T21:23:44.21Z",
+    "buildNumber": "41",
+    "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+    "run": "6aac5a314d28ef86d18ccd43",
+    "commit": "7de679e69fa68fdad2960e277f7c00a568fbfe15",
+    "url": "https://appstoreconnect.apple.com/apps/6806004581/appstore/reviewsubmissions/details/01a0473e-5ead-4855-82be-b6894f33b508"
+  }
 }

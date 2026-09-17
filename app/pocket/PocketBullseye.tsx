@@ -37,7 +37,8 @@ import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
-import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
+import AppleAccessControls from "./AppleAccessControls";
+import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, watchAppleAccess, type AppleAccessStatus } from "./apple-storekit";
 import { postLevelLabScan } from "./level-lab-client";
 import { postLiquidityRescan } from "./liquidity-rescan-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
@@ -1001,6 +1002,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     && appleAccess.freeUseConsumed
     && !appleAccess.entitled,
   );
+  const showAppleSubscriptionAction = appleNeedsSubscription && !reviewTarget;
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
   useEffect(() => {
     let cancelled = false;
@@ -1043,6 +1045,22 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const listener = watchAppleAccess((latest) => {
+      if (!active || !latest.isNative) return;
+      setAppleAccess(latest);
+    }).catch(() => null);
+    return () => {
+      active = false;
+      void listener.then((handle) => handle?.remove()).catch(() => {});
+    };
+  }, []);
+
+  useEffect(() => {
+    if (applePaywallStatus && appleAccess?.entitled) closeApplePaywall();
+  }, [applePaywallStatus, appleAccess?.entitled]);
+
   async function refreshAppleAccess(): Promise<AppleAccessStatus | null> {
     try {
       // Reuse an in-flight StoreKit lookup. The mount lookup and a quick tap on
@@ -1053,7 +1071,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setAppleAccess(latest);
       return latest;
     } catch {
-      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again.");
       setAppleAccess(null);
       return null;
     }
@@ -1061,7 +1079,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   function openApplePaywall(status: AppleAccessStatus | null) {
     if (!status?.isNative) {
-      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again.");
       return;
     }
     applePaywallReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -2155,6 +2173,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
             <button type="button" onClick={startNewChart}>NEW CHART</button>
           </div>
+          {nativeAppleApp ? <AppleAccessControls status={appleAccess} onStatus={setAppleAccess} /> : null}
           {sampleMode ? <p className="psSampleBanner" role="status"><strong>FICTIONAL SAMPLE</strong> · These charts and results demonstrate the app. No live prices, AI scan or free-use charge. Choose NEW CHART to try your own.</p> : null}
           {sampleMode && !nativeAppleApp ? <div className="psAppStoreEntry"><AppStoreLink>Try your own chart free on iPhone or iPad</AppStoreLink><span>One complete analysis free. Then £4.99/month in the UK; regional pricing varies.</span><UsageControl /></div> : null}
           {!sampleMode && appleNeedsSubscription && appleAccess ? <div className="psAppStoreEntry"><button type="button" onClick={() => openApplePaywall(appleAccess)}>Continue with more analyses · {appleAccess.displayPrice}/month</button><span>Renews automatically. Cancel in Apple settings.</span></div> : null}
@@ -2271,6 +2290,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psHeaderActions"><span>POCKET BULLSEYE · CHART ANALYSIS</span></div>
       </header>
       <section className="psScanner">
+        {nativeAppleApp ? <AppleAccessControls status={appleAccess} onStatus={setAppleAccess} /> : null}
         <section className="psLaunchHero">
           <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "YOUR PRE-TRADE REVIEW"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>
           {!reviewTarget ? <PocketDepthMark scanning={busy} /> : null}
@@ -2308,14 +2328,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div> : null}
           <footer>Start with one clear chart. Add up to four optional images of the same instrument; only visible evidence is analysed.</footer>
         </section> : null}
-        {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
+        {image && !reviewTarget && appleNeedsSubscription ? <div className="psMessage" role="status"><p>Your free analysis is complete. Open Apple subscription options to continue or restore your access.</p><button className="psAppleAccessButton" type="button" onClick={() => openApplePaywall(appleAccess)}>OPEN APPLE SUBSCRIPTION OPTIONS →</button></div> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
-        {primaryChartReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} indicatorImage={indicatorImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {primaryChartReady && !reviewTarget && !appleNeedsSubscription ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} indicatorImage={indicatorImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Successful scans are saved privately in this browser for comparison. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={groupUploading || !image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !appleNeedsSubscription && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : appleNeedsSubscription ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong></span><b><PocketGlyph /></b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!showAppleSubscriptionAction && (groupUploading || !image || (!reviewTarget && !primaryChartReady) || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)))} onClick={showAppleSubscriptionAction ? () => openApplePaywall(appleAccess) : analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : pocketScanStageCopy(scanStage).title) : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : showAppleSubscriptionAction ? "UNLOCK ANOTHER ANALYSIS" : !primaryChartReady ? "UPLOAD ONE CHART" : preflightStatus === "CHECKING" ? "CHECKING YOUR CHARTS…" : preflightStatus === "RETAKE" ? "REPLACE THE WRONG CHART" : "ANALYSE CHART"}</strong></span><b><PocketGlyph /></b>{busy ? <i aria-hidden="true" /> : null}</button>
         {busy ? <div className="psScanActivity"><OrbitalInstrument kind="patterns" />
           <span role="status">{reviewTarget ? "Comparing your charts…" : "Analysing your charts…"}</span>
           <div className="psScanActivityTrack" role="progressbar" aria-label={reviewTarget ? "Chart comparison in progress" : "Chart analysis in progress"}><span /></div>

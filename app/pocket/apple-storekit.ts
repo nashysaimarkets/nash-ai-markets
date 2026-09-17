@@ -1,4 +1,5 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
+import { createAppleActionCoordinator } from "./apple-purchase-flow";
 
 export const APPLE_MONTHLY_PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly";
 
@@ -9,11 +10,16 @@ export type AppleAccessStatus = {
   productId: string;
   displayName: string;
   displayPrice: string;
+  productAvailable?: boolean;
+  currencyCode?: string;
+  storefrontCountryCode?: string;
+  isSandbox?: boolean;
   transactionId?: string;
   originalTransactionId?: string;
 };
 
 type AppleStoreKitPlugin = {
+  addListener(event: "accessChanged", listener: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle>;
   getStatus(options: { productId: string }): Promise<AppleAccessStatus>;
   purchase(options: { productId: string }): Promise<AppleAccessStatus>;
   restore(options: { productId: string }): Promise<AppleAccessStatus>;
@@ -48,15 +54,19 @@ export async function getAppleAccessStatus(): Promise<AppleAccessStatus> {
   return NativeAppleStoreKit.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID });
 }
 
-export async function purchaseAppleSubscription(): Promise<AppleAccessStatus> {
-  if (!isAppleNativeApp()) return webStatus;
-  return NativeAppleStoreKit.purchase({ productId: APPLE_MONTHLY_PRODUCT_ID });
+export async function watchAppleAccess(listener: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle | null> {
+  if (!isAppleNativeApp()) return null;
+  return NativeAppleStoreKit.addListener("accessChanged", listener);
 }
 
-export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
-  if (!isAppleNativeApp()) return webStatus;
-  return NativeAppleStoreKit.restore({ productId: APPLE_MONTHLY_PRODUCT_ID });
-}
+const appleActions = createAppleActionCoordinator<AppleAccessStatus>({
+  purchase: () => isAppleNativeApp() ? NativeAppleStoreKit.purchase({ productId: APPLE_MONTHLY_PRODUCT_ID }) : Promise.reject(new Error("Open the iPhone app to subscribe through Apple.")),
+  restore: () => isAppleNativeApp() ? NativeAppleStoreKit.restore({ productId: APPLE_MONTHLY_PRODUCT_ID }) : Promise.reject(new Error("Open the iPhone app to restore Apple purchases.")),
+});
+
+export const pendingAppleAction = appleActions.pending;
+export const purchaseAppleSubscription = () => appleActions.run("purchase");
+export const restoreAppleSubscription = () => appleActions.run("restore");
 
 export async function consumeAppleFreeUse(): Promise<void> {
   if (!isAppleNativeApp()) return;
