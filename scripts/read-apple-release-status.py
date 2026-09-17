@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Read Apple release status for the pinned candidate without changing Apple state."""
+import importlib.util
 import json
 import re
 import subprocess
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location("release_guard", root / "scripts/submit-staged-iphone.py")
+guard = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(guard)
 pin = json.loads((root / "docs/app-store/release-pin.json").read_text())
 version = str(pin["marketingVersion"])
 build = str(pin["buildNumber"])
@@ -21,4 +25,14 @@ commands = [
 ]
 print(f"Reading Apple status for candidate {version} ({build})", flush=True)
 for command in commands:
-    subprocess.run(["app-store-connect", *command], check=True, timeout=180)
+    result = subprocess.run(["app-store-connect", *command], check=True, timeout=180,
+                            text=True, capture_output=True)
+    print(result.stdout, end="", flush=True)
+
+# The final command lists the exact pinned build. Read TestFlight readiness
+# separately; a VALID upload alone does not establish tester availability.
+for build in guard.parse_cli_json(result.stdout):
+    if build.get("type") != "builds":
+        raise RuntimeError("Unexpected resource returned for the pinned build.")
+    subprocess.run(["app-store-connect", "builds", "beta-details", build["id"], "--json"],
+                   check=True, timeout=180)
