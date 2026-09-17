@@ -6,6 +6,7 @@ Chris reported that Subscribe and Restore did not work in the phone test flow an
 
 - Run StoreKit purchase and restore tasks on the main actor. Pass the bridge window scene to Apple's purchase confirmation API on iOS 17+, retaining the earlier API on older iOS.
 - Reuse the loaded product at purchase, and resolve a restore from verified entitlements without a second product lookup. A verified purchase result is accepted even before the entitlement stream updates.
+- Preserve Apple's current entitlements during Billing Grace Period; an elapsed transaction expiry must not override that authoritative entitlement stream.
 - Serialize native requests and reconnect the paywall to a still-pending request on reopening. Do not retry or falsely declare an unconfirmed payment cancelled.
 - Show slow-request guidance and a bounded, read-only Check Apple Access action. Preserve native error details, move feedback above the buttons, and stop flex layout shrinking the controls.
 - Add a direct subscription entry beside the consumed-free-use notice.

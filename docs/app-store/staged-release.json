@@ -1,28 +1,22 @@
 {
   "marketingVersion": "1.2.12",
-  "buildNumber": "36",
-  "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
   "appId": "6806004581",
   "predecessorVersion": "1.2.11",
-  "appleBuildId": "b88d0cc0-f0ba-43be-b41c-69bc29c3c618",
-  "buildCommit": "6eab8f533258bf1a6034a2a7fa62edf84b9ff023",
-  "codemagicBuildId": "6aabac25628e157fb1f8e449",
-  "processingState": "VALID",
-  "verifiedAt": "2026-09-17T09:27:54.550963+00:00",
-  "physicalDeviceValidation": "BLOCKED: Chris reports Subscribe and Restore do not work in the iPhone test flow; 17 September 2026. Do not submit build 36.",
-  "statusCheckCodemagicBuildId": "6aabb15c6d7a3277fbd1a812",
+  "buildNumber": "37",
+  "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
+  "processingState": "NOT_UPLOADED",
+  "physicalDeviceValidation": "PENDING: retest purchase, cancellation, restore, free-use and analytics opt-out on build 37. Build 36 had owner-reported purchase/restore failures.",
   "deviceValidation": {
-    "status": "failed",
-    "buildNumber": "36",
-    "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
+    "status": "pending",
+    "buildNumber": "37",
+    "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
     "checks": {
-      "purchase": "failed",
+      "purchase": "not-tested",
       "cancellation": "not-tested",
-      "restore": "failed",
-      "freeUse": "reported-consumed",
+      "restore": "not-tested",
+      "freeUse": "not-tested",
       "analyticsOptOut": "not-tested"
-    },
-    "reportedBy": "Chris Nash",
-    "reportedOn": "2026-09-17"
-  }
+    }
+  },
+  "replacesFailedDeviceBuild": "36"
 }

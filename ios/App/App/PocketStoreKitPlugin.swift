@@ -187,10 +187,11 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 && (transaction.expirationDate.map { $0 > Date() } ?? true) ? transaction : nil
         }
         for await result in Transaction.currentEntitlements {
+            // StoreKit includes subscriptions in Billing Grace Period here,
+            // even when their last paid transaction has expired.
             guard case .verified(let transaction) = result,
                   transaction.productID == productId,
-                  transaction.revocationDate == nil,
-                  transaction.expirationDate.map({ $0 > Date() }) ?? true else { continue }
+                  transaction.revocationDate == nil else { continue }
             active = transaction
             break
         }
