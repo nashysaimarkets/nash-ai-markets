@@ -14,7 +14,7 @@ export default function InteractiveLevelScanner({ analysis, expanded = false, sc
   const { current, support, resistance, twoSided } = model;
   const [selection, setSelection] = useState<string>("current");
   const [all, setAll] = useState(false);
-  const [depth, setDepth] = useState(78);
+  const depth = 78;
   const [localScenario, setLocalScenario] = useState<Scenario>("wait");
   const root = useRef<HTMLElement>(null);
   const detailId = useId();
@@ -110,7 +110,6 @@ export default function InteractiveLevelScanner({ analysis, expanded = false, sc
       <div className="psScannerScaleNote"><i aria-hidden="true"/>Linear price scale <span>·</span> Snapshot</div>
     </div>
 
-    <label className="psHoloDepthControl"><span><i aria-hidden="true">◇</i> View depth</span><input type="range" min="0" max="100" step="1" value={depth} aria-label="Scanner view depth" aria-valuetext={depth === 0 ? "Flat" : `${depth}% depth`} onChange={(event) => setDepth(Number(event.target.value))}/><b aria-hidden="true">3D</b></label>
 
     <div className="psScannerInspector" id={detailId} aria-live="polite" aria-atomic="true" data-kind={selected?.kind ?? "current"}>
       <div key={selection} className="psScannerDetailReveal">
