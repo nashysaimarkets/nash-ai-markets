@@ -1,11 +1,11 @@
 {
   "branch": "fix/pocket-apple-purchases-2026-09-17",
-  "buildNumber": "39",
-  "deploymentId": "dpl_EmjS25nuAQE6i7kDPA9BMPtaowb4",
+  "buildNumber": "40",
+  "deploymentId": "dpl_AwEYLDNAhnxC2eixpkJM74BZgzAW",
   "iosBranch": "fix/pocket-apple-purchases-2026-09-17",
-  "label": "Pocket Bullseye iOS App Store 1.2.12 build 39 \u2014 verified transaction recovery",
+  "label": "Pocket Bullseye iOS App Store 1.2.12 build 40 \u2014 private Apple error diagnostics",
   "marketingVersion": "1.2.12",
-  "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
-  "serverUrl": "https://nash-ai-markets-q9jd3ysxt-nash-ai-markets.vercel.app/pocket",
-  "verifiedAt": "2026-09-17T18:53:30Z"
+  "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+  "serverUrl": "https://nash-ai-markets-qj5du30qn-nash-ai-markets.vercel.app/pocket",
+  "verifiedAt": "2026-09-17T19:42:53Z"
 }

@@ -2,14 +2,14 @@
   "marketingVersion": "1.2.12",
   "appId": "6806004581",
   "predecessorVersion": "1.2.11",
-  "buildNumber": "39",
-  "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
-  "processingState": "VALID",
-  "physicalDeviceValidation": "PENDING: build 39 is VALID and active in internal TestFlight. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out remain unverified on this exact build. Build 38 purchase failure is documented; no App Review submission until all five checks pass.",
+  "buildNumber": "40",
+  "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+  "processingState": "NOT_UPLOADED",
+  "physicalDeviceValidation": "PENDING: build 40 is a diagnostic candidate. Purchase failure remains unresolved. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out must be verified on this exact build before App Review.",
   "deviceValidation": {
     "status": "pending",
-    "buildNumber": "39",
-    "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
+    "buildNumber": "40",
+    "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
     "checks": {
       "purchase": "not-tested",
       "cancellation": "not-tested",
@@ -18,8 +18,45 @@
       "analyticsOptOut": "not-tested"
     }
   },
-  "supersedesBuildNumber": "38",
+  "supersedesBuildNumber": "39",
   "historicalCandidates": [
+    {
+      "marketingVersion": "1.2.12",
+      "buildNumber": "39",
+      "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
+      "processingState": "VALID",
+      "physicalDeviceValidation": "Incomplete: owner manually cancelled Restore sign-in in the 20:18 recording. The 20:27 screenshot shows Unable to Complete Request but does not identify the action or native error code. Successful purchase and active-purchase restore remain unverified.",
+      "deviceValidation": {
+        "status": "pending",
+        "buildNumber": "39",
+        "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
+        "checks": {
+          "purchase": "not-tested",
+          "cancellation": "not-tested",
+          "restore": "not-tested",
+          "freeUse": "not-tested",
+          "analyticsOptOut": "not-tested"
+        }
+      },
+      "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
+      "buildCommit": "2cfa1ea428a1e7bc77be544dd5eb31c3dc8558db",
+      "codemagicBuildId": "6aac378569aec796c74123fa",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac38fe35c948ed346cfd2b",
+      "appleDraft": {
+        "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
+        "buildNumber": "39",
+        "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
+        "state": "PREPARE_FOR_SUBMISSION",
+        "releaseType": "AFTER_APPROVAL",
+        "locale": "en-GB",
+        "releaseNotesVerified": true,
+        "preparationRun": "6aac3bc5d2ea6c284fcfc693",
+        "preparationCommit": "72d09a1f6c32cbb41c9ba654ad79156a952dc08d",
+        "submitted": false
+      }
+    },
     {
       "buildNumber": "38",
       "revision": "fea69217e6855ba6c161a782ae8027f953682c31",
@@ -54,12 +91,6 @@
       "physicalDeviceValidation": "Owner reported purchase and restore failures; superseded by build 37 without App Review submission."
     }
   ],
-  "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
-  "buildCommit": "2cfa1ea428a1e7bc77be544dd5eb31c3dc8558db",
-  "codemagicBuildId": "6aac378569aec796c74123fa",
-  "testFlightInternalState": "IN_BETA_TESTING",
-  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
-  "appleStatusVerificationRun": "6aac38fe35c948ed346cfd2b",
   "appleDraft": {
     "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
     "buildNumber": "39",

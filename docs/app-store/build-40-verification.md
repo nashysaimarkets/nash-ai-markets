@@ -21,3 +21,9 @@ An independent developer [reports the same AppStore.sync error on iOS 26.6.2](ht
 Twenty-two focused purchase/contract/review tests, TypeScript checking, secret-pattern scan and diff checks passed locally. Three new JS tests cover diagnostic parsing, malformed/error payloads, privacy, bounded chains and honest unknown-error messages. Ten native Foundation checks are added to the existing Mac release gate to verify nested errors, associated errors, negative codes, privacy and serialization. Native execution and upload status must be recorded after staging; these tests cannot verify an actual Apple purchase.
 
 Build 39 remains the installed, unsubmitted candidate until this build is uploaded and available. Build 40 is diagnostic; no successful purchase or active-purchase restore has been demonstrated. All five phone checks must pass on the eventual release candidate before App Review.
+
+## Staging source and preflight
+
+The immutable web deployment `dpl_AwEYLDNAhnxC2eixpkJM74BZgzAW` is READY at https://nash-ai-markets-qj5du30qn-nash-ai-markets.vercel.app/pocket and its manifest verifies source `6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d`. Build 40 pins that verified revision.
+
+Read-only Apple workflow `6aac41737992a5c0dfbef8c3` ran from that source at 20:37 BST on 17 September: 1.2.12 remains PREPARE_FOR_SUBMISSION, 1.2.11 is READY_FOR_DISTRIBUTION, and candidate 39 remains VALID / IN_BETA_TESTING. The existing Apple draft still selects build 39; changing the repository candidate to 40 does not change the Apple draft. No review submission is being replaced.
