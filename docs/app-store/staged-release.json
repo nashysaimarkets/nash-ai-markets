@@ -1,12 +1,13 @@
 {
-  "marketingVersion": "1.2.11",
-  "buildNumber": "34",
-  "revision": "5ca5c0ab21a1f12303a53e5c25670c7a2fc87385",
+  "marketingVersion": "1.2.12",
+  "buildNumber": "36",
+  "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
   "appId": "6806004581",
-  "predecessorVersion": "1.2.10",
-  "appleBuildId": "6fe28ee2-f9d7-4683-883b-f131c201106f",
-  "buildCommit": "deb0535a4fda1e49a6f4335f711f77cfdc3e53d0",
-  "codemagicBuildId": "6aa57b5103ab16d8826853b7",
-  "processingState": "VALID",
-  "verifiedAt": "2026-09-12T16:28:37.922771+00:00"
+  "predecessorVersion": "1.2.11",
+  "appleBuildId": null,
+  "buildCommit": null,
+  "codemagicBuildId": null,
+  "processingState": "NOT_UPLOADED",
+  "verifiedAt": null,
+  "physicalDeviceValidation": "PENDING: purchase, cancellation, restore, free-use consumption and analytics opt-out; see CUSTOMER_JOURNEY_BATCH.md."
 }
