@@ -162,13 +162,13 @@
     "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
     "buildNumber": "41",
     "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
-    "state": "PREPARE_FOR_SUBMISSION",
+    "state": "WAITING_FOR_REVIEW",
     "releaseType": "AFTER_APPROVAL",
     "locale": "en-GB",
     "releaseNotesVerified": true,
     "preparationRun": "6aac553ec4068f7444dda646",
     "preparationCommit": "9d65df523a8994728d238ad17d513c0bd74c3961",
-    "submitted": false
+    "submitted": true
   },
   "buildCommit": "292637011733caac5b37bcb0c5ce719b3ff78d55",
   "codemagicBuildId": "6aac529bf2361f8c4a9a6de3",
@@ -194,5 +194,16 @@
       "freeUse"
     ],
     "scope": "Explicit owner authorization to submit this exact candidate despite remaining manual checks. Results remain not-tested. Apple review, processed-build identity and review-preservation gates remain required."
+  },
+  "appleSubmission": {
+    "state": "WAITING_FOR_REVIEW",
+    "releaseType": "AFTER_APPROVAL",
+    "submissionId": "01a0473e-5ead-4855-82be-b6894f33b508",
+    "submittedAt": "2026-09-17T21:23:44.21Z",
+    "buildNumber": "41",
+    "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+    "run": "6aac5a314d28ef86d18ccd43",
+    "commit": "7de679e69fa68fdad2960e277f7c00a568fbfe15",
+    "url": "https://appstoreconnect.apple.com/apps/6806004581/appstore/reviewsubmissions/details/01a0473e-5ead-4855-82be-b6894f33b508"
   }
 }

@@ -58,3 +58,9 @@ The owner replied “1 & 2: thumbs up” to completing a chart analysis without 
 ## Explicit owner release exception
 
 Chris replied “No. Can you release it anyway?” after being told that fresh-user free-analysis, new purchase and purchase-sheet cancellation checks remained unverified. This explicitly authorizes submission of build 41 without those remaining manual checks. They stay recorded as not-tested. The exception is bound to version 1.2.12, build 41, its exact web revision and Apple build ID; it cannot authorize a future candidate or override a failed test. Apple processing/identity and active-review preservation checks remain enforced. Automatic release remains AFTER_APPROVAL.
+
+Pre-submission read-only run `6aac599c6f72b8c78585b092` completed in 38 seconds. Apple again confirmed 1.2.12 PREPARE_FOR_SUBMISSION, public 1.2.11 READY_FOR_DISTRIBUTION and the exact build 41 VALID and unexpired. Eleven submission-guard tests passed locally, including scope and failure checks for the owner exception.
+
+## Submitted to App Review
+
+Submission run `6aac5a314d28ef86d18ccd43` completed successfully in 41 seconds from exception commit `7de679e69fa68fdad2960e277f7c00a568fbfe15`. Apple verified the exact build and absence of an active review, accepted review submission `01a0473e-5ead-4855-82be-b6894f33b508` at `2026-09-17T21:23:44.21Z`, and returned **WAITING_FOR_REVIEW** for 1.2.12 (41). The run explicitly logged the owner exception with unfinished checks still UNTESTED. Release remains AFTER_APPROVAL. No existing review was cancelled or withdrawn. This is confirmed submission, not public availability; the last verified public version remains 1.2.11.
