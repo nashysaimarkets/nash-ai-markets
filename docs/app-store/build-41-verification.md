@@ -50,3 +50,7 @@ The upload and draft work are complete. The project gate in `docs/app-store/CUST
 ## Owner Restore confirmation
 
 Following the build 41 instructions, the owner reported: “Restore complete. Your subscription is active.” The active-purchase Restore check is now passed on this candidate. This is owner-reported physical-device evidence. New purchase, purchase-sheet cancellation, fresh free-use and analytics opt-out remain unverified on build 41. No App Review submission has been performed based on this single pass.
+
+## Owner subscribed-analysis and opt-out confirmation
+
+The owner replied “1 & 2: thumbs up” to completing a chart analysis without another subscription prompt and checking that usage counts remain off on build 41. Recorded subscribed-analysis access and analytics opt-out persistence as passed. Together with the earlier Restore pass, this establishes the reported returning-subscriber flow. New purchase, purchase-sheet cancellation and fresh-user free-use remain unverified; no historical purchase pass is relabelled as a new build 41 transaction. App Review submission remains pending those checks under the existing project release gate.

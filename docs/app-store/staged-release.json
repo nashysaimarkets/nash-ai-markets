@@ -5,7 +5,7 @@
   "buildNumber": "41",
   "revision": "77850015745fdc375b50812afca47b7d68f332bf",
   "processingState": "VALID",
-  "physicalDeviceValidation": "PARTIAL: owner confirmed build 41 Restore completed with active subscription. Purchase, cancellation, fresh free-use and analytics opt-out remain unverified on this exact candidate. Build 40 purchase and opt-out evidence remains preserved separately.",
+  "physicalDeviceValidation": "PARTIAL: owner confirmed Restore with active subscription, a completed subscribed chart analysis without another subscription prompt, and usage-count opt-out persistence on build 41. Fresh-user free-use, new purchase and purchase-sheet cancellation remain unverified. No App Review submission made.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "41",
@@ -15,13 +15,20 @@
       "cancellation": "not-tested",
       "restore": "passed",
       "freeUse": "not-tested",
-      "analyticsOptOut": "not-tested"
+      "analyticsOptOut": "passed"
     },
     "restoreEvidence": {
       "source": "owner confirmation in this conversation after build 41 Restore instructions",
       "recordedAt": "2026-09-17T21:10:14.766204+00:00",
       "statement": "Restore complete. Your subscription is active.",
       "scope": "Owner-reported active-purchase Restore pass on build 41. Does not establish a new purchase, purchase-sheet cancellation, fresh free-use or analytics opt-out on this candidate."
+    },
+    "subscribedAnalysis": "passed",
+    "subscribedAnalysisAndOptOutEvidence": {
+      "source": "owner confirmation following build 41 chart-analysis and usage-count instructions",
+      "recordedAt": "2026-09-17T21:15:37.493384+00:00",
+      "statement": "1 & 2: thumbs up",
+      "scope": "Owner confirms a chart analysis completes without another subscription prompt and usage counts remain off. This verifies subscribed analysis access and opt-out persistence, not a new purchase or fresh free allowance."
     }
   },
   "supersedesBuildNumber": "40",
