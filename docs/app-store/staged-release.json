@@ -4,7 +4,7 @@
   "predecessorVersion": "1.2.11",
   "buildNumber": "41",
   "revision": "77850015745fdc375b50812afca47b7d68f332bf",
-  "processingState": "NOT_UPLOADED",
+  "processingState": "VALID",
   "physicalDeviceValidation": "PENDING: build 41 adds accessible Restore controls. Build 40 owner purchase and opt-out evidence is preserved in historicalCandidates, not promoted to a new candidate. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out remain to be verified on this exact candidate.",
   "deviceValidation": {
     "status": "pending",
@@ -156,5 +156,15 @@
     "preparationRun": "6aac4998ac33d9335348772e",
     "preparationCommit": "86ad0c8c538fee8bbfaf9632431b0cbeeaac7200",
     "submitted": false
-  }
+  },
+  "buildCommit": "292637011733caac5b37bcb0c5ce719b3ff78d55",
+  "codemagicBuildId": "6aac529bf2361f8c4a9a6de3",
+  "stagingStatus": "SUCCEEDED",
+  "applePreflightRun": "6aac51a72622d87f8ba76715",
+  "appleUploadDeliveryId": "4731641e-3416-485d-823a-3dc3bcffab35",
+  "uploadedAt": "2026-09-17T20:56:43.957Z",
+  "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+  "testFlightInternalState": "IN_BETA_TESTING",
+  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+  "appleStatusVerificationRun": "6aac54784515b5cc087e3ae7"
 }

@@ -26,3 +26,17 @@ The change reuses the existing StoreKit restore operation. It does not initiate 
 - The local mobile-layout fixture could not be opened in the cloud browser (connection refused), so visual inspection is not claimed. Static render and interaction-handler checks are automated evidence only, not physical StoreKit or iPhone evidence.
 
 No build 41 physical-device checks, upload, processing or App Review submission are established by preparation alone. Those states must be recorded from actual results below.
+
+## Apple preflight and signed staging
+
+Read-only Apple status run `6aac51a72622d87f8ba76715` succeeded in 41 seconds before build 41 staging. It confirmed that 1.2.12 was PREPARE_FOR_SUBMISSION, public 1.2.11 was READY_FOR_DISTRIBUTION / READY_FOR_SALE and build 40 was VALID, unexpired and IN_BETA_TESTING internally. The preflight did not change Apple records.
+
+TestFlight-only run `6aac529bf2361f8c4a9a6de3` started on 17 September at 21:50 BST from native commit `292637011733caac5b37bcb0c5ce719b3ff78d55`, using `pocket-bullseye-ios-stage-next` with `submit_to_app_store: false`.
+
+The remote release checks passed all 1,076 unit tests with zero failures, cancellations or skips, along with type checking and the secret-pattern scan. Native checks passed 15 purchase-state cases and 10 bounded diagnostic cases. Web production build, verified revision synchronization and signing-profile application also completed. Archive/export, upload and Apple processing results are recorded below only after verification.
+
+Apple accepted the signed 1.2.12 (41) upload at `2026-09-17T20:56:43.957Z` with no errors. Delivery UUID: `4731641e-3416-485d-823a-3dc3bcffab35`. Native archive/export succeeded. The staging run reported build completed successfully and entered post-processing for TestFlight notes. This upload receipt alone does not establish Apple processing or tester availability.
+
+Read-only Apple run `6aac54784515b5cc087e3ae7` finished successfully in 39 seconds from the same native source. It verified exact build ID `4731641e-3416-485d-823a-3dc3bcffab35`, version 41, processingState VALID and expired false. Internal TestFlight state is IN_BETA_TESTING; external state is READY_FOR_BETA_SUBMISSION. This establishes internal TestFlight availability, not the individual tester's installation or a physical transaction.
+
+The same read confirmed 1.2.12 PREPARE_FOR_SUBMISSION with AFTER_APPROVAL and public 1.2.11 READY_FOR_DISTRIBUTION / READY_FOR_SALE. The build-41 device checks remain pending. The next direct owner check is TestFlight 1.2.12 (41) → open the app → Apple subscription → Restore Purchases. Expected active-entitlement message: “Restore complete. Your subscription is active.” Purchase cancellation and fresh free-use checks require an unsubscribed test session; the existing working subscription should not be cancelled or repurchased to exercise Restore.
