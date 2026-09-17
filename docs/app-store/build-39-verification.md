@@ -1,4 +1,4 @@
-# Pocket Bullseye purchase recovery — build 39 preparation
+# Pocket Bullseye 1.2.12 (39) — transaction recovery verification
 
 ## Device evidence
 
@@ -18,9 +18,9 @@ Apple's [transaction updates documentation](https://developer.apple.com/document
 
 ## Verification boundary
 
-The 19 existing focused purchase/review tests pass. Native policy tests cover 15 active, expired, expiry-boundary, revoked, replaced, mismatched, missing-expiry and current-entitlement cases; they must execute on the Mac build runner. Typecheck, security, full release gates, signed native compilation and Apple processing remain to be recorded. These checks do not simulate a real App Store purchase.
+The 19 existing focused purchase/review tests pass. The Mac runner passed all 15 native policy cases covering active, expired, expiry-boundary, revoked, replaced, mismatched, missing-expiry and current entitlements. All 1,068 unit tests, typecheck, security, web build, immutable-pin verification, Capacitor synchronization, signing and native archive passed. These checks do not simulate a real App Store purchase.
 
-Build 39 is not yet uploaded or submitted. Record the exact web deployment, native build commit, Apple build identifier and TestFlight state only after verification. All five physical-device release checks remain required before App Review, as specified by CUSTOMER_JOURNEY_BATCH.md.
+Apple accepted build 39 without upload errors at 18:58:56 UTC on 17 September. Read-only verification confirms VALID and active in internal TestFlight. It has not been submitted to App Review. All five physical-device release checks remain required before App Review, as specified by CUSTOMER_JOURNEY_BATCH.md.
 
 ## Pinned candidate
 
@@ -29,3 +29,11 @@ Build 39 is not yet uploaded or submitted. Record the exact web deployment, nati
 - Web URL: https://nash-ai-markets-q9jd3ysxt-nash-ai-markets.vercel.app/pocket.
 - Type checking and the secret-pattern scan passed locally.
 - Read-only Apple preflight: `6aac36b79b5911cdc535057e`, completed in 29 seconds from the repair revision. Build 38 remains VALID and in internal TestFlight; 1.2.12 is an editable draft, and 1.2.11 remains public.
+
+## Native upload
+
+- Native source: `2cfa1ea428a1e7bc77be544dd5eb31c3dc8558db`.
+- Staging run: `6aac378569aec796c74123fa`, started from that exact source.
+- Apple upload accepted at 18:58:56 UTC; delivery UUID `691ad00d-2939-4300-a2ba-488770e1debc`.
+- Read-only status run `6aac38fe35c948ed346cfd2b` finished in 30 seconds from the exact native source: Apple build `691ad00d-2939-4300-a2ba-488770e1debc`, version 1.2.12 (39), VALID, unexpired, internal IN_BETA_TESTING and external READY_FOR_BETA_SUBMISSION.
+- Actual purchase and active-purchase restore on build 39 remain unverified. No review was cancelled or submitted; public version remains 1.2.11. The existing App Store draft has not been reattached from build 38 during this verification task.
