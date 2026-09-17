@@ -1,0 +1,304 @@
+{
+  "schemaVersion": 1,
+  "scope": "Real-image pixel-extractor regression corpus, not a labelled full-AI accuracy corpus. No gold, oil or non-IG platform coverage. Original files remain in the owner archive; they are not published with the app.",
+  "holdout": false,
+  "cases": [
+    {
+      "file": "IMG_6272.PNG",
+      "sha256": "595ee2e251a48bb70245c67a6e5e2c45ef1c59ba696839ffeb2d2ee59fa1a7b2",
+      "instrument": "US 500",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6273.PNG",
+      "sha256": "af2fcda7cfc1366572de9355b1926a08082f4727509e061f044e9384a727fea3",
+      "instrument": "US Tech 100",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6274.PNG",
+      "sha256": "14850fc162a6ea291eb4154ac06f53b09cb713ba039c226cede0eaf70a1af22b",
+      "instrument": "Japan 225",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6276.PNG",
+      "sha256": "1a4e6bff8f2c51957de11bec727078663e8f5c960e6afd72d6f207a509684a84",
+      "instrument": "US Russell 2000",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6277.PNG",
+      "sha256": "cbeea1eaddd52481c272e6331014b5adb812bfe82e2f0746f77c66c435ce1969",
+      "instrument": "China A50",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6278.PNG",
+      "sha256": "b4412498079a2f29b8790e28f28f0448269054dda4b87e6be75e9032cc5a1eee",
+      "instrument": "China A50",
+      "timeframe": "3h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6279.PNG",
+      "sha256": "beddb35ae9a2076545bf9aef922cb8ce12f4132e4218b55abf3a6a20fce98cc1",
+      "instrument": "China A50",
+      "timeframe": "5m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6280.PNG",
+      "sha256": "563accf79926d65307ffd07e1e0a217fac223ecf209bf2011698d03f261e25a1",
+      "instrument": "FTSE 100",
+      "timeframe": "15m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6281.PNG",
+      "sha256": "3e3c98a0f6c580a74aac64602afa3458c3c894bb66da9e956a39de7bd72a699e",
+      "instrument": "AI Index",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6282.PNG",
+      "sha256": "0c73a8aa010919225384d631c859d8a097b4d9756de982b5cf05a000379352d4",
+      "instrument": "EU Volatility Index",
+      "timeframe": "1h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6283.PNG",
+      "sha256": "1f4aa9d54d6f6a8f2c0291cb63d858dde1cfb6fd903a230af0a9d0983a79c857",
+      "instrument": "Crypto Stocks Index",
+      "timeframe": "3h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6284.PNG",
+      "sha256": "5dda9addbc51e42b2968142c9fed940e978c87f42f2b2095997ac0eadfb202e2",
+      "instrument": "USD/JPY",
+      "timeframe": "3h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6285.PNG",
+      "sha256": "490ac93a452b8615d9a954d95b342f7d119eccf4904b12e54a442694d63caa21",
+      "instrument": "USD/JPY",
+      "timeframe": "3m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6286.PNG",
+      "sha256": "1f7206aa43a28480f85d2a2f147c17f3cfe7f1acb90a594178de7ae2dc13a054",
+      "instrument": "EUR/USD",
+      "timeframe": "15m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6287.PNG",
+      "sha256": "06ca1aeef1d0004875071d00dc2855bd56ad637dbdac1d8733b254c73dc57a6b",
+      "instrument": "CHF/JPY",
+      "timeframe": "5m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6288.PNG",
+      "sha256": "bffdb1f3117827acc36674def0ffdbf3f423db11c0347c97cc283200450a1be5",
+      "instrument": "EUR/GBP",
+      "timeframe": "1d",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6289.PNG",
+      "sha256": "ede8ed080ad1afb2432c6d5673ab9b6113f09bff460df5c4cf0a46bb5f35a39d",
+      "instrument": "US Dollar Basket",
+      "timeframe": "2h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6290.PNG",
+      "sha256": "1c34ef7ff655ad2793416588f94cc183552db023fdeb0f414bc39e412b014333",
+      "instrument": "Bitcoin",
+      "timeframe": "3m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6293.PNG",
+      "sha256": "80f298b5c90694031350ef0fb8d90b8ab22915fce779308dc7e0785d9228b6ba",
+      "instrument": "SpaceX (24 Hours)",
+      "timeframe": "15m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6295.PNG",
+      "sha256": "7ac4d0f8ead9a29d17a5e9670aa63eccd9d9c6f2cbd473b57905af291268df76",
+      "instrument": "Tesla Motors Inc (24 Hours)",
+      "timeframe": "10m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6320.png",
+      "sha256": "21666de76bd3176ef0f7abc70aeb7c72bdf911aade6f44e30336e05ec427392a",
+      "instrument": "US 500",
+      "timeframe": "5m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6321.png",
+      "sha256": "1473783e06c57408c5aab60dc12583dabf9da6a845c647721ec0e5c373fcc2cf",
+      "instrument": "US 500",
+      "timeframe": "30m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6322.png",
+      "sha256": "fef160281420aa7aa746c8bfd0a2416dbd2c25b47a88b78648cc7ae64cb96775",
+      "instrument": "US 500",
+      "timeframe": "1h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6323.png",
+      "sha256": "0ef32e944e5b10a8fb83b1ad625a4d6b29cd0896e6bffdd53a67c4d2db0a7e4f",
+      "instrument": "US 500",
+      "timeframe": "4h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6325.png",
+      "sha256": "a7620b2b4bf1810e39c077ef97f3ef97f52bb7f8e42c34d22e13a7c982566044",
+      "instrument": "US 500",
+      "timeframe": "1d",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6430.png",
+      "sha256": "fcb4148d52f0754231c609ef8c4098b60b8101bdf663a618cbc40288298c2546",
+      "instrument": "US 500",
+      "timeframe": "1d",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6431.png",
+      "sha256": "0043332e9db6e422aa63860c99ee8299dfd1d73fb9e4e4c03170a41277716fd5",
+      "instrument": "US 500",
+      "timeframe": "1d",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_5947.png",
+      "sha256": "8625f519c6d9f70c97159de020d9f5ec0423b5c9fee299eb45da74ab2daa785d",
+      "instrument": "US 500",
+      "timeframe": "1h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6191.png",
+      "sha256": "ba69adbcf8d330177ad46e654751a09b41de7ee9c1eb8008310e0483e07fb5de",
+      "instrument": "US 500",
+      "timeframe": "4h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6613.png",
+      "sha256": "0abf8a600721fda737fc5bafe56a34fdd3d9327de2012348a40223a35fd63260",
+      "instrument": "FTSE 100",
+      "timeframe": "1d",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6140.png",
+      "sha256": "0c61c8d523f482833208f76c2736895a2d554a3f9f7ee4a32aff5755cfcd9e59",
+      "instrument": "US 500",
+      "timeframe": "2h",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6070(2).png",
+      "sha256": "73e16be9dea0dd2bf4ea00618b6462a3fb093f92e04e590dccacb04739a74b54",
+      "instrument": "Roundhill Memory ETF (24 Hours)",
+      "timeframe": "10m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    },
+    {
+      "file": "IMG_6067(1).png",
+      "sha256": "5e62ffb3cf49d30a538dfbf34fd47e1b9d11b6745299c2a890a41347ad868365",
+      "instrument": "EUR/JPY",
+      "timeframe": "3m",
+      "platform": "IG",
+      "consent": "owner-supplied for Pocket testing",
+      "privacyInspection": "Codex visual inspection 2026-09-16: chart and quote screen; no account number, balance, holdings or notification content observed."
+    }
+  ]
+}

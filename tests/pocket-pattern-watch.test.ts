@@ -81,10 +81,13 @@ test("the scanner is instructed to recognize the expanded guide without forcing 
 
 test("every written-report rail control has a real destination", async () => {
   const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
-  for (const id of ["bullseye-verdict", "bullseye-events", "bullseye-levels", "bullseye-evidence", "bullseye-feedback"]) {
-    assert.match(client, new RegExp(`id=["']${id}["']`));
-    assert.match(client, new RegExp(`href=["']#${id}["']`));
+  const related = await Promise.all(["DecisionIntelligenceSuite.tsx", "ScanChanges.tsx", "AccuracyFeedbackPanel.tsx"].map((file) => readFile(new URL(`../app/pocket/${file}`, import.meta.url), "utf8")));
+  const sources = [client, ...related].join("\n");
+  for (const id of ["bullseye-verdict", "bullseye-tools", "bullseye-intelligence-maps", "bullseye-levels", "bullseye-events", "bullseye-ask", "bullseye-changes", "bullseye-feedback"]) {
+    assert.ok(sources.includes(`id="${id}"`), `missing target ${id}`);
+    assert.ok(client.includes(`href="#${id}"`), `missing link ${id}`);
   }
+  assert.match(client, /id="bullseye-tools"[^>]*><PocketCommandDeck/);
 });
 
 test("trade-intention choices use distinct green red and orange text", async () => {

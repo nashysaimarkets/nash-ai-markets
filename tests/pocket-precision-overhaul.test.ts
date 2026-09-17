@@ -51,8 +51,16 @@ test("selected-chart levels retain visible provenance on the map, cinema and res
   const source = await readFile(componentPath, "utf8");
 
   assert.match(source, /enforcePocketTrustGate\(scopedAnalysis, derivedTrustGate\(scopedAnalysis\)\)/);
-  assert.ok((source.match(/levelEvidenceSourceLabel\(level\.source\)/g) ?? []).length >= 3);
-  assert.ok((source.match(/data-source=\{level\.source \?\? "PRIMARY"\}/g) ?? []).length >= 3);
+  const cinema = source.slice(source.indexOf("function MarketStory("), source.indexOf("function ClarityLock("));
+  const card = source.slice(source.indexOf("function ResultCard("), source.indexOf("function formatEventTime("));
+  for (const surface of [cinema, card]) {
+    assert.match(surface, /levelEvidenceSourceLabel\(level\.source\)/);
+    assert.match(surface, /data-source=\{level\.source \?\? "PRIMARY"\}/);
+  }
+  const scanner = await readFile(new URL("../app/pocket/InteractiveLevelScanner.tsx", import.meta.url), "utf8");
+  assert.match(scanner, /levelEvidenceSourceLabel\(selected\.source\)/);
+  assert.match(scanner, /<footer><span>\{sourceLabel\}<\/span>/);
+  assert.match(scanner, /levelEvidenceSourceLabel\(entry\.level\.source\)/);
   assert.match(source, /CURRENT · PRIMARY CHART/);
 });
 
@@ -68,7 +76,7 @@ test("client edits invalidate stale combined evidence and keep pending context o
 
 test("mobile report rail reaches every decision-critical section", async () => {
   const source = await readFile(componentPath, "utf8");
-  for (const target of ["#bullseye-verdict", "#bullseye-tools", "#bullseye-levels", "#bullseye-events", "#bullseye-evidence", "#bullseye-ask", "#bullseye-feedback"]) {
+  for (const target of ["#bullseye-verdict", "#bullseye-tools", "#bullseye-levels", "#bullseye-events", "#bullseye-intelligence-maps", "#bullseye-changes", "#bullseye-ask", "#bullseye-feedback"]) {
     assert.ok(source.includes(`href="${target}"`), `missing report destination ${target}`);
   }
   assert.ok(source.indexOf('href="#bullseye-levels"') < source.indexOf('href="#bullseye-events"'));

@@ -1,5 +1,7 @@
 "use client";
 
+import OrbitalInstrument from "./OrbitalInstrument";
+
 /* Uploaded charts are private data URLs and intentionally bypass next/image. */
 /* eslint-disable @next/next/no-img-element */
 
@@ -14,6 +16,7 @@ import {
   type LiquidityShield,
 } from "./liquidity-guard";
 import { canonicalizePocketGeometry } from "../lib/pocket-geometry";
+import { evidencePriceRange as zonePriceLabel } from "./evidence-price";
 
 type LiquidityGuardAnalysis = {
   currentPrice?: string;
@@ -33,14 +36,6 @@ type LiquidityGuardAnalysis = {
 type LiquidityGuardDisplayState = "locked" | "verified-none" | "withheld" | "unavailable";
 
 const EMPTY_ANCHORS: LiquidityScaleAnchor[] = [];
-
-function formatPrice(value: number) {
-  return new Intl.NumberFormat("en-GB", { maximumFractionDigits: 6 }).format(value);
-}
-
-function zonePriceLabel(priceLow: number, priceHigh: number) {
-  return priceLow === priceHigh ? formatPrice(priceLow) : `${formatPrice(priceLow)}–${formatPrice(priceHigh)}`;
-}
 
 function patternLabel(pattern: string) {
   return pattern.replaceAll("_", " ");
@@ -109,7 +104,7 @@ export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan,
   };
 
   return <section className="psLiquidityGuard" data-visible={overlayVisible} data-status={displayState} aria-labelledby={headingId}>
-    <header>
+    <header className="psInstrumentHeader"><OrbitalInstrument kind="liquidity" />
       <div><span>◉ LIQUIDITY GUARD</span><h2 id={headingId}>VISUAL STOP-RISK MAP</h2><small>{scaleEvidenceLabel} · MULTIPLE CANDLE TOUCHES</small></div>
       {displayState === "locked" ? <button type="button" aria-pressed={overlayVisible} onClick={() => setOverlayVisible((visible) => !visible)}>{overlayVisible ? "HIDE OVERLAY" : "SHOW OVERLAY"}</button>
         : displayState !== "verified-none" && onRescan ? <button type="button" disabled={rescanning} onClick={onRescan}>{rescanning ? "REANALYSING…" : "REANALYSE CHART"}</button> : null}

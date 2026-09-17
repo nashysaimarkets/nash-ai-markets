@@ -1,5 +1,7 @@
 "use client";
 
+import OrbitalInstrument from "./OrbitalInstrument";
+
 import { useEffect, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
 
@@ -78,7 +80,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
     return () => { finished = true; window.clearTimeout(timer); window.clearTimeout(timeout); controller.abort(); };
   }, [image, contextImage, detailImage, fourHourImage, indicatorImage]);
 
-  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING YOUR CHARTS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading the visible instrument, timeframe, scale and candles in your supplied charts.</p></section>;
+  if (status === "CHECKING") return <section id="pocket-preflight-lock" className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING YOUR CHARTS…</strong></header><div className="psPreflightSculpture"><OrbitalInstrument kind="patterns" size="large" /></div><p>Reading the visible instrument, timeframe, scale and candles in your supplied charts.</p></section>;
   if (status === "UNAVAILABLE") return <section id="pocket-preflight-lock" className="psPreflight" data-status="UNAVAILABLE"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECK UNAVAILABLE</strong></header><p>{message}</p></section>;
   if (!result) return null;
 
@@ -101,6 +103,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
     <header><span>◉ CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "CHART CHECKED"}</strong></header>
     <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
       {result.captureAlignment === "MIXED" ? <p role="alert">Visible timestamps suggest these charts were captured at different times. Refresh the older screenshot before comparing their current setups.</p> : null}
+    {result.status === "RETAKE" ? <div className="pbCaptureRepair" role="alert"><strong>Before you retry</strong><p>{result.guidance || result.issues[0] || "Replace the unclear screenshot with the full chart, symbol, timeframe and price scale visible."}</p><a href="#pocket-chart-upload">Review uploaded charts ↑</a></div> : null}
     <details className="psConfirmDetails">
       <summary>CHECK OR EDIT DETECTED DETAILS</summary>
       <div className="psConfirmGrid">

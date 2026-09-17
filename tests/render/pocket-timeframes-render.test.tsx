@@ -22,7 +22,7 @@ test("the sample covers every analysis map and each source has distinct structur
     assert.equal(deriveAnalysisMaps(chart.report!).length, 10);
     assert.ok(decodeURIComponent(chart.image).includes("FICTIONAL SAMPLE"));
     assert.equal(chart.report!.timeframe, chart.timeframe);
-    const html = renderToStaticMarkup(<ScanChanges previous={null} analysis={chart.report!} image={chart.image} sample canCompare={async () => { throw new Error("sample must not request access"); }}/>);
+    const html = renderToStaticMarkup(<ScanChanges previous={null} analysis={chart.report!} image={chart.image} sample onCompared={async () => { throw new Error("sample must not persist"); }} canCompare={async () => { throw new Error("sample must not request access"); }}/>);
     assert.ok(html.includes("WHAT CHANGED?")); assert.ok(!html.includes("<button"));
   }
   assert.notEqual(charts[0].report!.direction, charts[2].report!.direction);

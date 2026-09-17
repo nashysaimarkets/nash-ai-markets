@@ -8,7 +8,9 @@ const route = readFileSync("app/api/pocket/levels/route.ts", "utf8");
 test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
   assert.match(client, /number: "02", label: "LIQUIDITY GUARD"/);
   assert.match(client, /number: "07", label: "SIGNAL PULSE"/);
-  assert.match(client, /WHAT IS DEVELOPING NOW/);
+  assert.match(client, /mode === "guard" \? <LiquidityGuardOverlay/);
+  assert.match(client, /mode === "pulse" \? <SignalPulse analysis=\{analysis\}/);
+  assert.match(client, /VISIBLE IN THIS SNAPSHOT/);
 });
 
 test("automatic level recovery remains while the duplicate manual scanner is removed", () => {
@@ -59,10 +61,10 @@ test("independent endpoint fails closed on bad identity, price, scale and geomet
 });
 
 test("Pocket shows a same-day sourced macro calendar in UK time", () => {
-  assert.match(client, /TODAY · UK TIME/);
-  assert.match(client, /US MACRO \+ MARKET CALENDAR/);
+  assert.match(client, /Today · UK time/i);
+  assert.match(client, /US macro \+ market calendar/i);
   assert.match(client, /Europe\/London/);
   assert.match(client, /No medium or high-impact US release is listed for today/);
-  assert.match(client, /NEXT HIGH IMPACT/);
+  assert.match(client, /Next high impact/i);
   assert.match(client, /macroContext\?: VerifiedMacroContext/);
 });

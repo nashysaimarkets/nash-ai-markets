@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { PocketGlyph } from "./PocketDepthMark";
 import type { AppleAccessStatus } from "./apple-storekit";
 import { purchaseAppleSubscription, restoreAppleSubscription } from "./apple-storekit";
 import { trackGrowth } from "./growth-client";
@@ -73,12 +74,10 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
 
   if (typeof document === "undefined") return null;
 
-  // .psApp intentionally uses CSS perspective for the scanner's depth effects.
-  // In WKWebView that makes fixed descendants use the full, scrolled app as
-  // their containing block. Portal the paywall to body so inset: 0 always
-  // covers the visible iPhone viewport, even when it opens far down the page.
+  // Keep the sheet outside the app stacking context so it always covers the
+  // visible iPhone viewport, even when opened far down a dimensional result.
   return createPortal(<section ref={dialog} className="psApplePaywall" role="dialog" aria-modal="true" aria-label="Subscribe to Pocket Bullseye">
-    <div className="psApplePaywallGlow" aria-hidden="true"><i/><i/><b>🎯</b></div>
+    <div className="psApplePaywallGlow" aria-hidden="true"><i/><i/><b><PocketGlyph /></b></div>
     <button className="psApplePaywallClose" type="button" autoFocus onClick={onClose} aria-label="Close subscription screen">×</button>
     <small>YOUR FREE ANALYSIS IS COMPLETE</small>
     <h2>Keep Bullseye<br/><em>in your pocket.</em></h2>

@@ -352,6 +352,7 @@ test("the personal risk desk calculates from explicit customer inputs only", () 
 });
 
 test("the complete Pocket journey retains privacy, failure and duplicate-request safeguards", async () => {
+  const scanner = await readFile(new URL("../app/pocket/InteractiveLevelScanner.tsx", import.meta.url), "utf8");
   const [client, styles, commandStyles, feedbackStyles, cinemaStyles, analyseRoute, reviewRoute, followUpRoute, eventsRoute] = await Promise.all([
     readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
@@ -395,7 +396,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /TWO CHARTS ANALYSED/);
   assert.match(client, /TWO CHARTS LOADED · OPTIONAL FINAL CHECK/);
   assert.match(client, /NO VERIFIED SCORE/);
-  assert.match(client, /SWING REFERENCE/);
+  assert.match(scanner, /Swing reference/);
   assert.match(client, /psRefineDelta/);
   assert.match(analyseRoute, /contextContribution/);
   assert.match(analyseRoute, /instrumentIdentifier/);
@@ -416,7 +417,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /Never request entry, stop, target/);
   assert.doesNotMatch(client, /setAnalysis\(null\)[\s\S]{0,120}Supporting chart added/);
   assert.match(client, /DecisionMap/);
-  assert.match(client, /Bullseye Decision Map/);
+  assert.match(scanner, /Bullseye Decision Map/);
   assert.doesNotMatch(client, /LevelVerificationPanel/);
   assert.match(client, /SOURCE CHART/);
   assert.match(styles, /\.psBattlefield\{/);
@@ -427,21 +428,22 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(analyseRoute, /Promise\.all/);
   assert.match(analyseRoute, /Fail closed/);
   assert.match(client, /numericLevel/);
-  assert.match(client, /psBattleCurrent/);
+  assert.match(scanner, /Chart price/);
   assert.match(client, /psSourceEvidence/);
-  assert.match(client, /MARKET LOCATION/);
-  assert.match(client, /RECLAIM ROUTE/);
-  assert.match(client, /BREAK ROUTE/);
-  assert.match(client, /WHY WAIT\?/);
+  assert.match(scanner, /Tap a level to explore/);
+  assert.match(scanner, /If price rises/);
+  assert.match(scanner, /If price falls/);
+  assert.match(scanner, /Why wait\?/);
   assert.match(client, /IF \/ THEN DECISION PATHS/);
   assert.doesNotMatch(client, /SHOW ON DECISION MAP/);
   assert.match(client, /battlefieldChart/);
   assert.match(client, /ChartTimeframePicker/);
   assert.match(client, /contextBattlefield/);
-  assert.match(client, /Calibrated Decision Map price ladder/);
+  assert.match(scanner, /Linear price scale/);
   assert.doesNotMatch(client, /FULL EVIDENCE AUDIT/);
   assert.doesNotMatch(client, /DETAILED MARKET AUDIT/);
-  assert.match(client, /ACTIVE DECISION RANGE/);
+  assert.match(scanner, /aria-pressed=\{!all\} onClick=\{\(\) => changeView\(false\)\}>Nearby/);
+  assert.match(scanner, /aria-pressed=\{all\} onClick=\{\(\) => changeView\(true\)\}>All/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /START MY CINEMATIC RESULT/);
   assert.match(client, /ClarityLock/);
@@ -454,7 +456,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /ScenarioTheatre/);
   assert.match(client, /NO FORECAST CANDLES/);
   assert.doesNotMatch(client, /NEXT-CANDLE LAB/);
-  assert.match(client, /ABOVE SUPPORT · BELOW RESISTANCE/);
+  assert.match(scanner, /Two-sided structure/);
   assert.match(client, /<ScenarioTheatre analysis=/);
   assert.match(client, /ChartXRay/);
   assert.match(client, /BULLSEYE PATTERN X-RAY/);
@@ -479,11 +481,11 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /psResultSupportInput/);
   assert.doesNotMatch(client, /could not be verified safely/);
   assert.doesNotMatch(client, /ADD ANOTHER PHOTO/);
-  assert.match(client, /ADD ONE CLEARER PRICE-SCALE CHART/);
-  assert.match(client, /NO VERIFIED TWO-SIDED LEVELS/);
-  assert.match(client, /Bullseye checked both charts but could not verify support below and resistance above the current price\. The map is withheld rather than guessed\./);
-  assert.match(client, /VIEW BOTH SOURCE CHARTS/);
-  assert.match(client, /＋ ADD CLEARER CHART/);
+  assert.match(scanner, /ADD ONE CLEARER PRICE-SCALE CHART/);
+  assert.match(scanner, /NO VERIFIED TWO-SIDED LEVELS/);
+  assert.match(scanner, /Bullseye checked both charts but could not verify support below and resistance above the current price\. The map is withheld rather than guessed\./);
+  assert.match(scanner, /VIEW BOTH SOURCE CHARTS/);
+  assert.match(scanner, /＋ ADD CLEARER CHART/);
   assert.doesNotMatch(client, /OPEN LEVEL LAB/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
@@ -492,7 +494,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /SECOND VIEW ATTACHED/);
   assert.match(client, /FINDINGS UPDATED/);
   assert.doesNotMatch(client, /SUPPORT AREA NOT VERIFIED/);
-  assert.match(client, /CLEARER VIEW NEEDED/);
+  assert.match(scanner, /Support not verified/);
   assert.match(client, /Math\.max\(12000,/);
   assert.match(client, /psCinemaFx/);
   assert.match(client, /bullseye-events/);
@@ -508,12 +510,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /THE PRICE BATTLEFIELD/);
   assert.match(client, /OPEN FULL WRITTEN REPORT/);
   assert.match(client, /psStoryFinale/);
-  assert.match(client, /EVIDENCE BALANCE · NOT PROBABILITY/);
+  assert.match(client, /aria-label="Directional interpretation, not a probability"/);
   assert.match(client, /personalDailyMessage/);
   assert.match(client, /YOUR MESSAGE FOR TODAY/);
   assert.doesNotMatch(client, /CinematicTranscript/);
   assert.match(client, /psFinaleRatioCards/);
-  assert.match(client, /EVIDENCE BALANCE/);
+  assert.match(client, /AI interpretation · not a probability or measured win rate/);
   assert.match(client, /REPORT A PROBLEM/);
   assert.match(client, /SUGGEST AN IDEA/);
   assert.match(client, /mailto:hello@nashaimarkets\.com/);
@@ -535,7 +537,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(styles, /\.psBattleTabs/);
   assert.match(styles, /\.psPriceLadder/);
   assert.match(styles, /\.psDecisionRange/);
-  assert.match(styles, /\.psMapIntro/);
+  assert.doesNotMatch(client, /className="psMapIntro"/);
   assert.match(styles, /\.psAuditDrawer/);
   assert.match(styles, /\.psClarityLock/);
   assert.match(styles, /\.psBullseyePlan/);
@@ -599,20 +601,19 @@ test("the futuristic depth layer changes presentation without changing layout ge
 });
 
 test("Decision Map withholds absent structure but keeps one-sided evidence explicitly partial", async () => {
-  const [client, precisionStyles] = await Promise.all([
-    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+  const [scanner, precisionStyles] = await Promise.all([
+    readFile(new URL("../app/pocket/InteractiveLevelScanner.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/pocket/pocket-precision-overhaul.css", import.meta.url), "utf8"),
   ]);
-  const decisionMap = client.slice(client.indexOf("function DecisionMap"), client.indexOf("function SourceChart"));
-  const earlyHold = decisionMap.indexOf("if (current === null || !verifiedStructure.length)");
-  const firstMapPrimitive = decisionMap.indexOf("psBattleCurrent");
+  const earlyHold = scanner.indexOf("if (current === null || !model.hasStructure || !view)");
+  const firstMapPrimitive = scanner.indexOf('className="psScannerStage"');
   assert.ok(earlyHold >= 0 && firstMapPrimitive > earlyHold, "an empty exact map must return before map primitives render");
-  assert.match(decisionMap, /hasContext \? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"/);
-  assert.match(decisionMap, /NO ESTIMATED LEVELS · NO HIDDEN MAP/);
-  assert.match(decisionMap, /PARTIAL PRICE MAP/);
-  assert.match(decisionMap, /data-structure=\{twoSided \? "two-sided" : "partial"\}/);
-  assert.match(decisionMap, /support is verified; resistance still needs a clearer view/i);
-  assert.doesNotMatch(decisionMap, /onReanalyse|reanalysing|ADD ANOTHER PHOTO/);
+  assert.match(scanner, /hasContext \? "NO VERIFIED TWO-SIDED LEVELS" : "EXACT LEVELS NOT VERIFIED"/);
+  assert.match(scanner, /NO ESTIMATED LEVELS · NO HIDDEN MAP/);
+  assert.doesNotMatch(scanner, /YOU ARE HERE|psMapIntro/);
+  assert.match(scanner, /data-structure=\{twoSided \? "two-sided" : "partial"\}/);
+  assert.match(scanner, /Resistance not verified/);
+  assert.doesNotMatch(scanner, /onReanalyse|reanalysing|ADD ANOTHER PHOTO/);
   assert.match(precisionStyles, /\.psDecisionMapHold \{/);
   assert.match(precisionStyles, /min-height: 250px/);
   assert.match(precisionStyles, /@media \(max-width: 520px\)/);
@@ -636,7 +637,7 @@ test("full-screen Decision Map keeps two independent exits inside the safe viewp
   assert.match(hotfix, /\.psBattleFocusBody[\s\S]*overflow: auto/);
   assert.match(hotfix, /\.psBattleFocusBody \.psSourceChartExpanded img[\s\S]*max-height: min\(68svh, 720px\)/);
   assert.match(hotfix, /\.psBattleFocus > header button \{ min-width: 64px; min-height: 44px; \}/);
-  assert.match(client, /<main className="psApp" data-pocket-build="v3\.3" data-chart-focus=\{chartFocus \? "true" : "false"\}>/);
+  assert.match(client, /<main className="psApp"[^>]*data-chart-focus=\{chartFocus \? "true" : "false"\}/);
   assert.match(hotfix, /\.psApp\[data-chart-focus="true"\],[\s\S]*\.psResults\[data-chart-focus="true"\] \{ perspective: none; \}/);
   assert.match(hotfix, /\.psXRayCanvas > img[\s\S]*height: auto[\s\S]*object-fit: contain/);
 });

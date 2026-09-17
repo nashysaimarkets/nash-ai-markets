@@ -22,7 +22,7 @@ function harness() {
   const charts = samples.map((chart, index) => ({ ...chart, report: index === 0 ? chart.report : undefined }));
   const context: vm.Context = {
     resultCharts: charts, analysis: samples[0].report, image: samples[0].image, activeChartId: charts[0].id,
-    busy: false, followUpBusy: false, liquidityRescanning: false,
+    busy: false, followUpBusy: false, liquidityRescanning: false, sampleMode: false,
     selectionActive: { current: false }, selectionRevision: { current: 0 }, chartWork: { current: { clear: () => { context.cancelled = true; } } }, analysisRequestActive: { current: false }, levelLabRequestActive: { current: false }, activePrimaryImage: { current: samples[0].image },
     sessionRevision: { current: 1 }, resultRevision: { current: 0 },
     Error, Promise, calls: [], remembered: [], bundleForChart, normalizePatternFrame,
@@ -82,7 +82,7 @@ test("rapid taps share the in-flight request and an unentitled request never run
 });
 
 test("cached sample switching needs neither entitlement checks nor provider calls", async () => {
-  const h = harness(); h.resultCharts = samples;
+  const h = harness(); h.sampleMode = true; h.resultCharts = samples;
   for (const chart of samples) await h.selectResultChart(chart.id);
   assert.equal(h.calls.length, 0); assert.equal(h.entitlements, undefined); assert.equal(h.remembered.length, 0);
 });
@@ -191,7 +191,8 @@ test("a ready timeframe remains usable during a stalled switch and late work can
   assert.equal(h.cancelled, undefined); assert.equal(h.error, ""); assert.equal(h.pendingChartId, null);
   finish(samples[2].report); await pending;
   assert.equal(h.activeChartId, samples[0].id); assert.equal(h.analysis, samples[0].report);
-  assert.equal(h.remembered.length, 0);
+  assert.equal(h.remembered.length, 1);
+  assert.equal(h.remembered[0].report, samples[0].report);
 });
 
 
@@ -208,4 +209,35 @@ test("main completion preserves warmed siblings only for the exact same evidence
   const changed = mergeChartSession(pending, {...images, detailImage: "replacement"}, [], samples[0].report!);
   assert.equal(changed[1].report, undefined);
   assert.equal(changed[2].preparation, undefined);
+});
+
+test("new-chart cleanup clears corrections, replies and scroll locks while preserving notebook records", () => {
+  const h = harness();
+  const names = ["Busy", "FollowUpBusy", "VaultMessage", "ChartFocus", "ShowResultCard", "ShowResultReveal", "Immersive", "PrivacyChecked", "Review", "ReviewTarget", "Intention"];
+  for (const name of names) h[`set${name}`] = (value: unknown) => { h[name[0].toLowerCase() + name.slice(1)] = value; };
+  h.followUpRequestActive = { current: true }; h.followUpController = { current: new AbortController() }; h.reviewController = { current: new AbortController() };
+  h.accuracyCorrection = { correction: "old price" }; h.correctionOriginal = samples[0].report;
+  h.followUpReply = { answer: "Old answer" }; h.immersive = true; h.privacyChecked = true; h.reviewTarget = { id: "saved" }; h.vault = [{ id: "saved" }];
+  vm.runInContext(actualFunction("clearChartContext"), h);
+  h.clearChartContext(true);
+  assert.equal(h.reviewTarget.id, "saved", "replacing the later screenshot retains its review target");
+  assert.equal(h.accuracyCorrection, null); assert.equal(h.correctionOriginal, null); assert.equal(h.followUpReply, null);
+  assert.equal(h.immersive, false); assert.equal(h.privacyChecked, false);
+  assert.equal(h.followUpController.current.signal.aborted, true); assert.equal(h.reviewController.current.signal.aborted, true);
+  h.clearChartContext();
+  assert.equal(h.reviewTarget, null); assert.equal(h.intention, "UNSURE"); assert.equal(h.vault[0].id, "saved");
+});
+
+test("a cancelled follow-up cannot start after a delayed entitlement check", async () => {
+  const h = harness();
+  let finish!: (value: boolean) => void;
+  h.followUpRequestActive = { current: false }; h.followUpController = { current: null }; h.followUpQuestion = "Why wait?";
+  h.AbortController = AbortController; h.selectedChartReport = selectedChartReport;
+  h.requireAppleEntitlementForAdditionalRequest = () => new Promise(resolve => { finish = resolve; });
+  h.setFollowUpBusy = (value: boolean) => { h.followUpBusy = value; };
+  h.withDeadline = () => { throw new Error("cancelled follow-up must not request a provider"); };
+  vm.runInContext(actualFunction("askBullseye"), h);
+  const pending = h.askBullseye();
+  h.sessionRevision.current++; h.followUpController.current.abort(); finish(true); await pending;
+  assert.equal(h.followUpReply, null); assert.equal(h.followUpError, ""); assert.equal(h.followUpBusy, false);
 });
