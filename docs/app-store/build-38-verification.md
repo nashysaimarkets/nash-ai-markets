@@ -37,3 +37,13 @@ Purchase, cancellation, restore, free-use consumption and analytics opt-out must
 - The subsequent full fictional-chart analysis on build 37's pinned deployment also returned HTTP 200 and rendered the completed report. Server logs record completed precision and report, outcome completed, in 38,246 ms. This establishes service recovery for that test, not physical StoreKit validation or a trading-accuracy benchmark. Calendar context remained partial; no complete-calendar claim is made.
 
 All five required physical-device checks remain not tested on build 38. No review was withdrawn and no App Review submission was made.
+
+## Owner follow-up — 17 September, 19:19 BST
+
+The owner reported “Still no change” and supplied `732E8AD7-DFE2-46C6-BC50-50D6E4272A0B.jpeg`. The paywall shows Apple's USD 4.99 metadata, the test-environment notice and enabled Subscribe/Restore buttons, without a pending state or error. The screenshot does not establish the installed build or show the outcome of a Subscribe tap. Treat the customer journey as unresolved; build upload and service recovery are not purchase validation.
+
+Build 38's pinned deployment received successful `/api/pocket/activity` requests at 18:19:00, 18:19:20 and 18:19:46 UTC. These requests have no event names or device identity in the runtime logs and cannot be attributed to this phone.
+
+A read-only query of the production-linked anonymous daily aggregates for 17 September and platform `apple` returned: 8 app opens, 8 paywall views, 3 purchase starts and 3 incomplete purchases. No completed-purchase, failed-purchase or completed-restore rows were returned. These are daily counts across clients, with no event timestamps or build identifiers. `is_test=false` is an analytics flag, not evidence of real payments; native TestFlight status is not propagated into it. An incomplete result can mean cancellation or a returned inactive entitlement. Do not infer that this owner cancelled, that build 38 failed three times, or that Apple displayed a purchase sheet.
+
+The audited paywall handler, action coordinator, bridge registration, Swift purchase flow and hit-testing styles did not establish a new defect. No speculative code change or replacement binary was prepared. The next needed evidence is one short recording showing the installed TestFlight version/build, opening the app, tapping Subscribe once and waiting at least 15 seconds for a prompt, pending state or error. Do not record credentials. All five physical-device release checks remain incomplete.
