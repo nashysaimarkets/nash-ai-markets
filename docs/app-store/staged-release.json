@@ -4,7 +4,7 @@
   "predecessorVersion": "1.2.11",
   "buildNumber": "37",
   "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
-  "processingState": "NOT_UPLOADED",
+  "processingState": "VALID",
   "physicalDeviceValidation": "PENDING: retest purchase, cancellation, restore, free-use and analytics opt-out on build 37. Build 36 had owner-reported purchase/restore failures.",
   "deviceValidation": {
     "status": "pending",
@@ -18,5 +18,11 @@
       "analyticsOptOut": "not-tested"
     }
   },
-  "replacesFailedDeviceBuild": "36"
+  "replacesFailedDeviceBuild": "36",
+  "appleBuildId": "d1da87e2-4316-415a-ac17-c12d9a795024",
+  "buildCommit": "dfb4fbf27a68004c3df001e9cc72ceedb09aae3d",
+  "codemagicBuildId": "6aac15fa6e9523665071695c",
+  "testFlightInternalState": "IN_BETA_TESTING",
+  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+  "appleStatusVerificationRun": "6aac18550d0db6cf773057d1"
 }
