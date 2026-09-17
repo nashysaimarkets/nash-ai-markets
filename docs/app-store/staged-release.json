@@ -4,8 +4,8 @@
   "predecessorVersion": "1.2.11",
   "buildNumber": "40",
   "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
-  "processingState": "NOT_UPLOADED",
-  "physicalDeviceValidation": "PENDING: build 40 is a diagnostic candidate. Purchase failure remains unresolved. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out must be verified on this exact build before App Review.",
+  "processingState": "VALID",
+  "physicalDeviceValidation": "PENDING: build 40 is VALID and active in internal TestFlight. This diagnostic candidate does not establish a purchase fix. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out must all be verified on this exact build before App Review.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "40",
@@ -102,5 +102,11 @@
     "preparationRun": "6aac3bc5d2ea6c284fcfc693",
     "preparationCommit": "72d09a1f6c32cbb41c9ba654ad79156a952dc08d",
     "submitted": false
-  }
+  },
+  "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
+  "buildCommit": "bc7eb41300c3a78e37f4b5bb70e9eae20ccb5b1a",
+  "codemagicBuildId": "6aac43159fdc32ad3d4f990b",
+  "testFlightInternalState": "IN_BETA_TESTING",
+  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+  "appleStatusVerificationRun": "6aac44a96145703c9436e5b4"
 }
