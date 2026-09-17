@@ -2,31 +2,44 @@
   "marketingVersion": "1.2.12",
   "appId": "6806004581",
   "predecessorVersion": "1.2.11",
-  "buildNumber": "37",
-  "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
-  "processingState": "VALID",
-  "physicalDeviceValidation": "PENDING: owner recording confirms build 37 installation and AI preflight quota_exhausted. Apple purchase outcome remains unverified. A subscription-entry UI fix is saved for a future candidate; build 37 still pins the previous web revision. All required physical-device checks remain outstanding.",
+  "buildNumber": "38",
+  "revision": "fea69217e6855ba6c161a782ae8027f953682c31",
+  "processingState": "NOT_UPLOADED",
+  "physicalDeviceValidation": "PENDING: build 38 has not been uploaded or tested on an iPhone. Verify purchase, cancellation, restore, free-use consumption and analytics opt-out on this exact build before App Review submission. Earlier device observations and the live preflight recovery check do not satisfy these checks.",
   "deviceValidation": {
     "status": "pending",
-    "buildNumber": "37",
-    "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
+    "buildNumber": "38",
+    "revision": "fea69217e6855ba6c161a782ae8027f953682c31",
     "checks": {
       "purchase": "not-tested",
       "cancellation": "not-tested",
       "restore": "not-tested",
       "freeUse": "not-tested",
       "analyticsOptOut": "not-tested"
-    },
-    "observations": [
-      "IMG_7532 Small.jpeg shows new paywall, Apple test environment, USD 4.99 and a completed no-active-entitlement message. This is not proof of a successful purchase or restore of an existing entitlement.",
-      "ScreenRecording_09-17-2026 18-30-22_1.mp4 shows build 37 installation, chart upload and AI preflight capacity error. Vercel preview log at 2026-09-17T17:30:59Z confirms /api/pocket/preflight 503 with reason quota_exhausted, not a timeout. No Apple purchase confirmation appears in the recording."
-    ]
+    }
   },
-  "replacesFailedDeviceBuild": "36",
-  "appleBuildId": "d1da87e2-4316-415a-ac17-c12d9a795024",
-  "buildCommit": "dfb4fbf27a68004c3df001e9cc72ceedb09aae3d",
-  "codemagicBuildId": "6aac15fa6e9523665071695c",
-  "testFlightInternalState": "IN_BETA_TESTING",
-  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
-  "appleStatusVerificationRun": "6aac18550d0db6cf773057d1"
+  "supersedesBuildNumber": "37",
+  "historicalCandidates": [
+    {
+      "buildNumber": "37",
+      "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
+      "processingState": "VALID",
+      "appleBuildId": "d1da87e2-4316-415a-ac17-c12d9a795024",
+      "buildCommit": "dfb4fbf27a68004c3df001e9cc72ceedb09aae3d",
+      "codemagicBuildId": "6aac15fa6e9523665071695c",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac2a4ea07116fe7f0f0c76",
+      "physicalDeviceValidation": "Incomplete; not evidence of build 38 validation.",
+      "observations": [
+        "IMG_7532 Small.jpeg shows the build 37 paywall, Apple test environment, USD 4.99 and a completed no-active-entitlement message. This is not proof of a successful purchase or restoration of an existing entitlement.",
+        "ScreenRecording_09-17-2026 18-30-22_1.mp4 shows build 37 installation, chart upload and an AI preflight capacity error. The 2026-09-17T17:30:59Z Vercel log confirms /api/pocket/preflight 503 with reason quota_exhausted. No Apple purchase confirmation appears in the recording.",
+        "At 2026-09-17T17:58:26Z, a synthetic chart submitted through the normal web UI on build 37's pinned deployment returned /api/pocket/preflight HTTP 200, READY, in 5585 ms. This demonstrates preflight service recovery for one test; it is not a physical purchase test or a complete analysis accuracy benchmark."
+      ]
+    },
+    {
+      "buildNumber": "36",
+      "physicalDeviceValidation": "Owner reported purchase and restore failures; superseded by build 37 without App Review submission."
+    }
+  ]
 }
