@@ -9,6 +9,20 @@
   "codemagicBuildId": "6aabac25628e157fb1f8e449",
   "processingState": "VALID",
   "verifiedAt": "2026-09-17T09:27:54.550963+00:00",
-  "physicalDeviceValidation": "PENDING: purchase, cancellation, restore, free-use consumption and analytics opt-out; see CUSTOMER_JOURNEY_BATCH.md.",
-  "statusCheckCodemagicBuildId": "6aabb15c6d7a3277fbd1a812"
+  "physicalDeviceValidation": "BLOCKED: Chris reports Subscribe and Restore do not work in the iPhone test flow; 17 September 2026. Do not submit build 36.",
+  "statusCheckCodemagicBuildId": "6aabb15c6d7a3277fbd1a812",
+  "deviceValidation": {
+    "status": "failed",
+    "buildNumber": "36",
+    "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
+    "checks": {
+      "purchase": "failed",
+      "cancellation": "not-tested",
+      "restore": "failed",
+      "freeUse": "reported-consumed",
+      "analyticsOptOut": "not-tested"
+    },
+    "reportedBy": "Chris Nash",
+    "reportedOn": "2026-09-17"
+  }
 }

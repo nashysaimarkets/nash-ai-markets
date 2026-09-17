@@ -116,6 +116,19 @@ def verify_build(builds, candidate):
     return build["id"]
 
 
+def verify_device_validation(candidate):
+    """The customer-journey policy is a release gate, not a status assumption."""
+    validation = candidate.get("deviceValidation", {})
+    if (validation.get("status") != "passed"
+            or validation.get("buildNumber") != candidate["buildNumber"]
+            or validation.get("revision") != candidate["revision"]
+            or not validation.get("verifiedBy")
+            or not validation.get("verifiedAt")
+            or any(validation.get("checks", {}).get(check) != "passed" for check in
+                   ("purchase", "cancellation", "restore", "freeUse", "analyticsOptOut"))):
+        raise RuntimeError("Physical iPhone customer-journey checks are incomplete or failed for this build; no submission made.")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--submit", action="store_true")
@@ -147,6 +160,7 @@ def main():
         return
     if not args.submit or status != "ready":
         return
+    verify_device_validation(candidate)
     # Refresh immediately before the only mutation. Never cancel a submission.
     status, reason = decision()
     if status != "ready":

@@ -1053,7 +1053,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setAppleAccess(latest);
       return latest;
     } catch {
-      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again.");
       setAppleAccess(null);
       return null;
     }
@@ -1061,7 +1061,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   function openApplePaywall(status: AppleAccessStatus | null) {
     if (!status?.isNative) {
-      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      setError("Apple purchase status is temporarily unavailable. Please check your connection and try again.");
       return;
     }
     applePaywallReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -2308,7 +2308,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div> : null}
           <footer>Start with one clear chart. Add up to four optional images of the same instrument; only visible evidence is analysed.</footer>
         </section> : null}
-        {image && !reviewTarget && appleNeedsSubscription ? <p className="psMessage" role="status">Your free analysis is complete. Unlock another analysis through Apple to run a new chart challenge.</p> : null}
+        {image && !reviewTarget && appleNeedsSubscription ? <div className="psMessage" role="status"><p>Your free analysis is complete. Open Apple subscription options to continue or restore your access.</p><button className="psAppleAccessButton" type="button" onClick={() => openApplePaywall(appleAccess)}>OPEN APPLE SUBSCRIPTION OPTIONS →</button></div> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
         {primaryChartReady && !reviewTarget ? <ChartPreflightPanel image={image!} contextImage={contextImage} detailImage={detailImage} fourHourImage={fourHourImage} indicatorImage={indicatorImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}

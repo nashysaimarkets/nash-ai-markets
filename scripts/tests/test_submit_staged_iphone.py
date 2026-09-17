@@ -23,6 +23,19 @@ def review(state):
 
 
 class ReviewPreservationTests(unittest.TestCase):
+    def test_only_all_passed_device_checks_for_this_exact_build_allow_submission(self):
+        candidate = {**CANDIDATE, 'revision': 'verified-revision'}
+        with self.assertRaises(RuntimeError):
+            release.verify_device_validation(candidate)
+        good = {'status': 'passed', 'buildNumber': '34', 'revision': 'verified-revision',
+                'verifiedBy': 'Device tester', 'verifiedAt': '2026-09-17',
+                'checks': dict.fromkeys(['purchase', 'cancellation', 'restore', 'freeUse', 'analyticsOptOut'], 'passed')}
+        release.verify_device_validation({**candidate, 'deviceValidation': good})
+        for change in [{'status': 'failed'}, {'buildNumber': '33'}, {'revision': 'other'},
+                       {'verifiedBy': ''}, {'checks': {**good['checks'], 'restore': 'not-tested'}}]:
+            with self.assertRaises(RuntimeError):
+                release.verify_device_validation({**candidate, 'deviceValidation': {**good, **change}})
+
     def test_active_review_and_pending_release_are_preserved(self):
         for state in release.PROTECTED:
             with self.subTest(state=state):

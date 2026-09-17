@@ -3,6 +3,7 @@ import Foundation
 import Security
 import StoreKit
 import UIKit
+import OSLog
 
 @objc(PocketStoreKitPlugin)
 public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
@@ -20,43 +21,84 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private let freeUseKey = "com.nashaimarkets.pocketbullseye.free-use-consumed.v1"
     private let successfulAnalysisCountKey = "com.nashaimarkets.pocketbullseye.successful-analysis-count.v1"
     private let reviewRequestedKey = "com.nashaimarkets.pocketbullseye.review-requested.v1"
+    private let logger = Logger(subsystem: "com.nashaimarkets.pocketbullseye", category: "Purchases")
+    @MainActor private var cachedProduct: Product?
+    @MainActor private var storeActionRunning = false
 
     @objc func getStatus(_ call: CAPPluginCall) {
-        Task { await resolveStatus(call, productId: call.getString("productId") ?? "") }
+        Task { @MainActor in await resolveStatus(call, productId: call.getString("productId") ?? "") }
     }
 
     @objc func purchase(_ call: CAPPluginCall) {
         let productId = call.getString("productId") ?? ""
-        Task {
+        Task { @MainActor in
+            guard !storeActionRunning else { call.reject("Apple is still handling the previous request.", "STORE_REQUEST_BUSY"); return }
+            storeActionRunning = true
+            defer { storeActionRunning = false }
+            logger.info("Purchase requested")
             do {
-                guard let product = try await Product.products(for: [productId]).first else {
-                    call.reject("Pocket Bullseye Monthly is temporarily unavailable from Apple.")
+                // Capacitor invokes plugins on its bridge queue. StoreKit's
+                // confirmation must use the foreground scene on the main actor.
+                guard let scene = bridge?.viewController?.view.window?.windowScene,
+                      scene.activationState == .foregroundActive else {
+                    call.reject("Open Pocket Bullseye in the foreground and try again.", "STORE_SCENE_UNAVAILABLE")
                     return
                 }
-                let result = try await product.purchase()
+                let loadedProduct: Product?
+                if let cachedProduct, cachedProduct.id == productId {
+                    loadedProduct = cachedProduct
+                } else {
+                    loadedProduct = try await Product.products(for: [productId]).first
+                }
+                guard let product = loadedProduct else {
+                    call.reject("Pocket Bullseye Monthly is temporarily unavailable from Apple. Please try again shortly.", "STORE_PRODUCT_UNAVAILABLE")
+                    return
+                }
+                cachedProduct = product
+                logger.info("Presenting Apple purchase confirmation")
+                let result: Product.PurchaseResult
+                if #available(iOS 17.0, *) {
+                    result = try await product.purchase(confirmIn: scene)
+                } else {
+                    result = try await product.purchase()
+                }
                 switch result {
                 case .success(let verification):
                     let transaction = try verified(verification)
                     await transaction.finish()
-                    await resolveStatus(call, productId: productId, product: product)
+                    logger.info("Purchase verified")
+                    await resolveStatus(call, productId: productId, product: product, completedTransaction: transaction)
                 case .pending:
-                    call.reject("Purchase pending Apple approval.")
+                    call.reject("Purchase pending Apple approval. Check your access again after approval.", "STORE_PURCHASE_PENDING")
                 case .userCancelled:
-                    call.reject("Purchase cancelled.")
+                    call.reject("Purchase cancelled.", "STORE_PURCHASE_CANCELLED")
                 @unknown default:
                     call.reject("Apple returned an unknown purchase result.")
                 }
-            } catch { call.reject(error.localizedDescription) }
+            } catch {
+                logger.error("Purchase failed: \((error as NSError).code)")
+                call.reject(error.localizedDescription, "STORE_PURCHASE_FAILED")
+            }
         }
     }
 
     @objc func restore(_ call: CAPPluginCall) {
         let productId = call.getString("productId") ?? ""
-        Task {
+        Task { @MainActor in
+            guard !storeActionRunning else { call.reject("Apple is still handling the previous request.", "STORE_REQUEST_BUSY"); return }
+            storeActionRunning = true
+            defer { storeActionRunning = false }
+            logger.info("Restore requested")
             do {
                 try await AppStore.sync()
-                await resolveStatus(call, productId: productId)
-            } catch { call.reject(error.localizedDescription) }
+                // Restoring ownership must not depend on another catalogue
+                // request succeeding after Apple has finished account sync.
+                await resolveStatus(call, productId: productId, product: cachedProduct, loadProduct: false)
+                logger.info("Restore status returned")
+            } catch {
+                logger.error("Restore failed: \((error as NSError).code)")
+                call.reject(error.localizedDescription, "STORE_RESTORE_FAILED")
+            }
         }
     }
 
@@ -119,25 +161,36 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    private func resolveStatus(_ call: CAPPluginCall, productId: String, product suppliedProduct: Product? = nil) async {
+    @MainActor
+    private func resolveStatus(_ call: CAPPluginCall, productId: String, product suppliedProduct: Product? = nil, loadProduct: Bool = true, completedTransaction: Transaction? = nil) async {
         guard !productId.isEmpty else { call.reject("Missing Apple product identifier."); return }
 
         let product: Product?
         if let suppliedProduct {
             product = suppliedProduct
-        } else {
+        } else if loadProduct {
             do {
                 product = try await Product.products(for: [productId]).first
+                cachedProduct = product
             } catch {
+                logger.error("Product lookup failed: \((error as NSError).code)")
                 product = nil
             }
+        } else {
+            product = nil
         }
 
-        var active: Transaction?
+        // A verified purchase result is authoritative even if Apple's current
+        // entitlements stream has not yet caught up with that transaction.
+        var active: Transaction? = completedTransaction.flatMap { transaction in
+            transaction.productID == productId && transaction.revocationDate == nil
+                && (transaction.expirationDate.map { $0 > Date() } ?? true) ? transaction : nil
+        }
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
                   transaction.productID == productId,
-                  transaction.revocationDate == nil else { continue }
+                  transaction.revocationDate == nil,
+                  transaction.expirationDate.map({ $0 > Date() }) ?? true else { continue }
             active = transaction
             break
         }
@@ -147,8 +200,12 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             "freeUseConsumed": readKeychain() != nil,
             "productId": productId,
             "displayName": product?.displayName ?? "Pocket Bullseye Monthly",
-            "displayPrice": product?.displayPrice ?? "£4.99"
+            "displayPrice": product?.displayPrice ?? "",
+            "productAvailable": product != nil,
+            "currencyCode": product?.priceFormatStyle.currencyCode ?? "",
+            "isSandbox": Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
         ]
+        if let storefront = await Storefront.current { payload["storefrontCountryCode"] = storefront.countryCode }
         if let transaction = active {
             payload["transactionId"] = String(transaction.id)
             payload["originalTransactionId"] = String(transaction.originalID)
