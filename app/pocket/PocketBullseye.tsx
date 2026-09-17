@@ -37,7 +37,7 @@ import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 import { invalidateDerivedChartEvidence, levelEvidenceSourceLabel, type LevelEvidenceSource } from "./pocket-derived-evidence";
 import AppleSubscriptionPaywall from "./AppleSubscriptionPaywall";
-import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, type AppleAccessStatus } from "./apple-storekit";
+import { consumeAppleFreeUse, getAppleAccessStatus, isAppleNativeApp, recordAppleSuccessfulAnalysis, requestAppleReviewIfEligible, watchAppleAccess, type AppleAccessStatus } from "./apple-storekit";
 import { postLevelLabScan } from "./level-lab-client";
 import { postLiquidityRescan } from "./liquidity-rescan-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
@@ -1043,6 +1043,22 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     readAppleAccessStatus().then((latest) => { if (active) setAppleAccess(latest); }).catch(() => { if (active) setAppleAccess(null); });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const listener = watchAppleAccess((latest) => {
+      if (!active || !latest.isNative) return;
+      setAppleAccess(latest);
+    }).catch(() => null);
+    return () => {
+      active = false;
+      void listener.then((handle) => handle?.remove()).catch(() => {});
+    };
+  }, []);
+
+  useEffect(() => {
+    if (applePaywallStatus && appleAccess?.entitled) closeApplePaywall();
+  }, [applePaywallStatus, appleAccess?.entitled]);
 
   async function refreshAppleAccess(): Promise<AppleAccessStatus | null> {
     try {

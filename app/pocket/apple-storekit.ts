@@ -1,4 +1,4 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+import { Capacitor, registerPlugin, type PluginListenerHandle } from "@capacitor/core";
 import { createAppleActionCoordinator } from "./apple-purchase-flow";
 
 export const APPLE_MONTHLY_PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly";
@@ -19,6 +19,7 @@ export type AppleAccessStatus = {
 };
 
 type AppleStoreKitPlugin = {
+  addListener(event: "accessChanged", listener: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle>;
   getStatus(options: { productId: string }): Promise<AppleAccessStatus>;
   purchase(options: { productId: string }): Promise<AppleAccessStatus>;
   restore(options: { productId: string }): Promise<AppleAccessStatus>;
@@ -51,6 +52,11 @@ export function isAppleNativeApp() {
 export async function getAppleAccessStatus(): Promise<AppleAccessStatus> {
   if (!isAppleNativeApp()) return webStatus;
   return NativeAppleStoreKit.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID });
+}
+
+export async function watchAppleAccess(listener: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle | null> {
+  if (!isAppleNativeApp()) return null;
+  return NativeAppleStoreKit.addListener("accessChanged", listener);
 }
 
 const appleActions = createAppleActionCoordinator<AppleAccessStatus>({

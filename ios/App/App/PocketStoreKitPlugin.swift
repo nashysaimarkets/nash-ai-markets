@@ -22,8 +22,30 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private let successfulAnalysisCountKey = "com.nashaimarkets.pocketbullseye.successful-analysis-count.v1"
     private let reviewRequestedKey = "com.nashaimarkets.pocketbullseye.review-requested.v1"
     private let logger = Logger(subsystem: "com.nashaimarkets.pocketbullseye", category: "Purchases")
+    private let monthlyProductId = "com.nashaimarkets.pocketbullseye.monthly"
+    private var transactionUpdatesTask: Task<Void, Never>?
     @MainActor private var cachedProduct: Product?
     @MainActor private var storeActionRunning = false
+
+    public override func load() {
+        // Apple delivers unfinished and out-of-app transactions here at launch.
+        // A purchase-button-only implementation misses this recovery path.
+        transactionUpdatesTask = Task { @MainActor [weak self] in
+            for await result in Transaction.updates {
+                guard !Task.isCancelled, let self else { return }
+                guard case .verified(let transaction) = result,
+                      transaction.productID == self.monthlyProductId else { continue }
+                let active = await self.activeEntitlement(productId: self.monthlyProductId, completedTransaction: transaction)
+                let payload = await self.statusPayload(productId: self.monthlyProductId, product: self.cachedProduct, active: active)
+                if active != nil || !self.storeActionRunning {
+                    self.notifyListeners("accessChanged", data: payload, retainUntilConsumed: true)
+                }
+                await transaction.finish()
+            }
+        }
+    }
+
+    deinit { transactionUpdatesTask?.cancel() }
 
     @objc func getStatus(_ call: CAPPluginCall) {
         Task { @MainActor in await resolveStatus(call, productId: call.getString("productId") ?? "") }
@@ -37,6 +59,17 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             defer { storeActionRunning = false }
             logger.info("Purchase requested")
             do {
+                guard productId == monthlyProductId else {
+                    call.reject("This Apple product is not supported by Pocket Bullseye.", "STORE_PRODUCT_MISMATCH")
+                    return
+                }
+                // Settle verified deliveries left by an older launch before
+                // asking Apple for a new purchase. This is not a purchase retry.
+                await reconcileUnfinishedTransactions(productId: productId)
+                if let active = await activeEntitlement(productId: productId) {
+                    call.resolve(await statusPayload(productId: productId, product: cachedProduct, active: active))
+                    return
+                }
                 // Capacitor invokes plugins on its bridge queue. StoreKit's
                 // confirmation must use the foreground scene on the main actor.
                 guard let scene = bridge?.viewController?.view.window?.windowScene,
@@ -65,9 +98,21 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 switch result {
                 case .success(let verification):
                     let transaction = try verified(verification)
-                    await transaction.finish()
-                    logger.info("Purchase verified")
-                    await resolveStatus(call, productId: productId, product: product, completedTransaction: transaction)
+                    guard transaction.productID == productId else {
+                        call.reject("Apple returned a purchase for a different product. Please contact support.", "STORE_PRODUCT_MISMATCH")
+                        return
+                    }
+                    if let active = await activeEntitlement(productId: productId, completedTransaction: transaction) {
+                        // Deliver access before acknowledging the transaction.
+                        call.resolve(await statusPayload(productId: productId, product: product, active: active))
+                        await transaction.finish()
+                        logger.info("Purchase verified and access delivered")
+                    } else {
+                        let state = purchaseState(transaction, productId: productId)
+                        await transaction.finish()
+                        logger.error("Purchase returned inactive transaction: \(state.rawValue, privacy: .public)")
+                        call.reject(inactivePurchaseMessage(state), "STORE_TRANSACTION_\(state.rawValue.uppercased())")
+                    }
                 case .pending:
                     call.reject("Purchase pending Apple approval. Check your access again after approval.", "STORE_PURCHASE_PENDING")
                 case .userCancelled:
@@ -180,21 +225,60 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             product = nil
         }
 
-        // A verified purchase result is authoritative even if Apple's current
-        // entitlements stream has not yet caught up with that transaction.
-        var active: Transaction? = completedTransaction.flatMap { transaction in
-            transaction.productID == productId && transaction.revocationDate == nil
-                && (transaction.expirationDate.map { $0 > Date() } ?? true) ? transaction : nil
-        }
+        let active = await activeEntitlement(productId: productId, completedTransaction: completedTransaction)
+        call.resolve(await statusPayload(productId: productId, product: product, active: active))
+    }
+
+    private func purchaseState(_ transaction: Transaction, productId: String) -> PocketPurchaseState {
+        PocketPurchaseState.completed(matchesProduct: transaction.productID == productId,
+                                      revoked: transaction.revocationDate != nil,
+                                      upgraded: transaction.isUpgraded,
+                                      expiration: transaction.expirationDate)
+    }
+
+    @MainActor
+    private func activeEntitlement(productId: String, completedTransaction: Transaction? = nil) async -> Transaction? {
         for await result in Transaction.currentEntitlements {
-            // StoreKit includes subscriptions in Billing Grace Period here,
-            // even when their last paid transaction has expired.
             guard case .verified(let transaction) = result,
-                  transaction.productID == productId,
-                  transaction.revocationDate == nil else { continue }
-            active = transaction
-            break
+                  PocketPurchaseState.currentEntitlement(matchesProduct: transaction.productID == productId,
+                                                         revoked: transaction.revocationDate != nil,
+                                                         upgraded: transaction.isUpgraded) else { continue }
+            return transaction
         }
+        // Accept a fresh verified purchase when the entitlement stream has not
+        // caught up. Never turn an expired/revoked replay into paid access.
+        if let transaction = completedTransaction, purchaseState(transaction, productId: productId) == .active {
+            return transaction
+        }
+        return nil
+    }
+
+    @MainActor
+    private func reconcileUnfinishedTransactions(productId: String) async {
+        for await result in Transaction.unfinished {
+            guard case .verified(let transaction) = result,
+                  transaction.productID == productId else { continue }
+            // Reconcile delivery without turning historical purchases into
+            // access. Only current entitlements can recover existing access.
+            await transaction.finish()
+        }
+    }
+
+    private func inactivePurchaseMessage(_ state: PocketPurchaseState) -> String {
+        switch state {
+        case .expired:
+            return "Apple returned an expired subscription instead of a new purchase. Complete Apple sign-in through Restore Purchases, then try Subscribe again."
+        case .revoked:
+            return "Apple returned a refunded or revoked subscription. Check your Apple Account subscriptions before trying again."
+        case .superseded:
+            return "Apple returned a subscription that was replaced by another plan. Use Restore Purchases to check your current access."
+        default:
+            return "Apple returned a purchase without valid subscription dates. Use Restore Purchases to check your access, or contact support if this continues."
+        }
+    }
+
+    @MainActor
+    private func statusPayload(productId: String, product: Product?, active: Transaction?) async -> [String: Any] {
         var payload: [String: Any] = [
             "isNative": true,
             "entitled": active != nil,
@@ -211,7 +295,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             payload["transactionId"] = String(transaction.id)
             payload["originalTransactionId"] = String(transaction.originalID)
         }
-        call.resolve(payload)
+        return payload
     }
 
     private func verified<T>(_ result: VerificationResult<T>) throws -> T {
