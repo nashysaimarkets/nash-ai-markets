@@ -2,39 +2,78 @@
   "marketingVersion": "1.2.12",
   "appId": "6806004581",
   "predecessorVersion": "1.2.11",
-  "buildNumber": "40",
-  "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
-  "processingState": "VALID",
-  "physicalDeviceValidation": "PARTIAL: owner-reported purchase and usage-count opt-out passed after build 40 instructions. Free-use behaviour is uncertain on the previously tested device; cancellation and active-purchase Restore are unavailable after subscription and remain not-tested. Final App Review submission remains gated.",
+  "buildNumber": "41",
+  "revision": "77850015745fdc375b50812afca47b7d68f332bf",
+  "processingState": "NOT_UPLOADED",
+  "physicalDeviceValidation": "PENDING: build 41 adds accessible Restore controls. Build 40 owner purchase and opt-out evidence is preserved in historicalCandidates, not promoted to a new candidate. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out remain to be verified on this exact candidate.",
   "deviceValidation": {
     "status": "pending",
-    "buildNumber": "40",
-    "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+    "buildNumber": "41",
+    "revision": "77850015745fdc375b50812afca47b7d68f332bf",
     "checks": {
-      "purchase": "passed",
+      "purchase": "not-tested",
       "cancellation": "not-tested",
       "restore": "not-tested",
       "freeUse": "not-tested",
-      "analyticsOptOut": "passed"
-    },
-    "purchaseEvidence": {
-      "source": "owner confirmation in this conversation",
-      "reportedAt": "2026-09-17T20:15:34Z",
-      "statement": "It works!!!\ud83c\udf89 Update Apple AppStore and release to all possible platforms except instagram and Snapchat",
-      "scope": "Owner-reported purchase success following the instruction to update to build 40 and tap Subscribe. Other device checks are not established by this message."
-    },
-    "followUpEvidence": {
-      "source": "owner results after the build 40 checklist in this conversation",
-      "reportedAt": "2026-09-17T20:41:22.713551+00:00",
-      "analyticsOptOut": "Owner replied 1: thumbs up to turning usage counts off and checking persistence.",
-      "freeUse": "Owner replied: I don\u2019t think so. I\u2019m sure I had to subscribe. Fresh-device allowance remains unverified; no failure is inferred solely from a previously tested device.",
-      "cancellation": "Owner reports not available after successful subscription; not tested.",
-      "restore": "Owner reports not available after successful subscription; not tested.",
-      "scope": "Purchase and usage-count opt-out are owner-reported passed. Other checks remain not-tested. No unavailable check is counted as passed."
+      "analyticsOptOut": "not-tested"
     }
   },
-  "supersedesBuildNumber": "39",
+  "supersedesBuildNumber": "40",
   "historicalCandidates": [
+    {
+      "marketingVersion": "1.2.12",
+      "appId": "6806004581",
+      "predecessorVersion": "1.2.11",
+      "buildNumber": "40",
+      "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+      "processingState": "VALID",
+      "physicalDeviceValidation": "PARTIAL: owner-reported purchase and usage-count opt-out passed after build 40 instructions. Free-use behaviour is uncertain on the previously tested device; cancellation and active-purchase Restore are unavailable after subscription and remain not-tested. Final App Review submission remains gated.",
+      "deviceValidation": {
+        "status": "pending",
+        "buildNumber": "40",
+        "revision": "6c96f9be394d0dc05d7b2da4e2a028fddaa7c82d",
+        "checks": {
+          "purchase": "passed",
+          "cancellation": "not-tested",
+          "restore": "not-tested",
+          "freeUse": "not-tested",
+          "analyticsOptOut": "passed"
+        },
+        "purchaseEvidence": {
+          "source": "owner confirmation in this conversation",
+          "reportedAt": "2026-09-17T20:15:34Z",
+          "statement": "It works!!!\ud83c\udf89 Update Apple AppStore and release to all possible platforms except instagram and Snapchat",
+          "scope": "Owner-reported purchase success following the instruction to update to build 40 and tap Subscribe. Other device checks are not established by this message."
+        },
+        "followUpEvidence": {
+          "source": "owner results after the build 40 checklist in this conversation",
+          "reportedAt": "2026-09-17T20:41:22.713551+00:00",
+          "analyticsOptOut": "Owner replied 1: thumbs up to turning usage counts off and checking persistence.",
+          "freeUse": "Owner replied: I don\u2019t think so. I\u2019m sure I had to subscribe. Fresh-device allowance remains unverified; no failure is inferred solely from a previously tested device.",
+          "cancellation": "Owner reports not available after successful subscription; not tested.",
+          "restore": "Owner reports not available after successful subscription; not tested.",
+          "scope": "Purchase and usage-count opt-out are owner-reported passed. Other checks remain not-tested. No unavailable check is counted as passed."
+        }
+      },
+      "appleDraft": {
+        "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
+        "buildNumber": "40",
+        "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
+        "state": "PREPARE_FOR_SUBMISSION",
+        "releaseType": "AFTER_APPROVAL",
+        "locale": "en-GB",
+        "releaseNotesVerified": true,
+        "preparationRun": "6aac4998ac33d9335348772e",
+        "preparationCommit": "86ad0c8c538fee8bbfaf9632431b0cbeeaac7200",
+        "submitted": false
+      },
+      "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
+      "buildCommit": "bc7eb41300c3a78e37f4b5bb70e9eae20ccb5b1a",
+      "codemagicBuildId": "6aac43159fdc32ad3d4f990b",
+      "testFlightInternalState": "IN_BETA_TESTING",
+      "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+      "appleStatusVerificationRun": "6aac44a96145703c9436e5b4"
+    },
     {
       "marketingVersion": "1.2.12",
       "buildNumber": "39",
@@ -117,11 +156,5 @@
     "preparationRun": "6aac4998ac33d9335348772e",
     "preparationCommit": "86ad0c8c538fee8bbfaf9632431b0cbeeaac7200",
     "submitted": false
-  },
-  "appleBuildId": "0397facd-949e-4bac-bf87-7b429d0bdc4e",
-  "buildCommit": "bc7eb41300c3a78e37f4b5bb70e9eae20ccb5b1a",
-  "codemagicBuildId": "6aac43159fdc32ad3d4f990b",
-  "testFlightInternalState": "IN_BETA_TESTING",
-  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
-  "appleStatusVerificationRun": "6aac44a96145703c9436e5b4"
+  }
 }
