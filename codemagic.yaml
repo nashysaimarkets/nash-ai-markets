@@ -94,3 +94,15 @@ workflows:
         script: python3 -m unittest discover -s scripts/tests -p 'test_submit_staged_iphone.py'
       - name: Submit verified candidate after the preceding release completes
         script: python3 scripts/submit-staged-iphone.py --submit
+
+  pocket-apple-prepare-draft:
+    name: Pocket Bullseye — Prepare existing Apple draft
+    instance_type: mac_mini_m2
+    max_build_duration: 10
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    scripts:
+      - name: Verify review-preservation guard
+        script: python3 -m unittest discover -s scripts/tests -p 'test_submit_staged_iphone.py'
+      - name: Attach verified build and release notes without submitting
+        script: python3 scripts/prepare-apple-release-draft.py
