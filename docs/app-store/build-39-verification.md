@@ -49,3 +49,13 @@ The final readback reported `DRAFT VERIFIED: 1.2.12 (39); en-GB notes saved; AFT
 Install 1.2.12 (39) in TestFlight and confirm that exact version before testing. At the paywall, tap Subscribe once and complete Apple's sign-in or confirmation privately. Record whether an Apple purchase sheet appears, whether access unlocks, and the exact error if it does not. Do not record credentials or treat the USD label alone as the transaction result.
 
 All five release checks remain pending on this candidate: purchase, purchase cancellation, restoration of an existing active purchase, correct one-free-analysis consumption, and analytics opt-out. A cancelled Apple sign-in or a no-active-subscription response is not successful restoration. These must be observed on the phone; the browser and automated policy tests cannot supply that evidence. The draft is prepared, so after those checks pass the next publishing action is the guarded submission workflow.
+
+## Owner recording — 17 September, 20:18 BST
+
+Reviewed the local 82.77-second `ScreenRecording_09-17-2026 20-18-07_1.mp4`. TestFlight explicitly shows 1.2.12 (39) downloading and the app subsequently opens. The owner selects five charts and opens the subscription screen around 63 seconds.
+
+At approximately 68.6 seconds, Restore changes to CHECKING APPLE ACCOUNT. Apple's password prompt appears around 69–71 seconds, then the app reports Restore cancelled around 72 seconds. A second Restore attempt around 74–75 seconds reaches the same password prompt and returns the cancellation message. No completed Apple sign-in is visible. Check Apple Access then returns the no-active-subscription message around 76–77 seconds. The recording cannot establish whether the prompts were deliberately dismissed or closed unexpectedly.
+
+No CONNECTING TO APPLE state, purchase error or successful subscription confirmation is visible in this clip; button taps themselves are not shown. Do not label this as a verified purchase attempt or as evidence that Subscribe works. Unlike the preceding build 38 recording, this recording does not capture a resolved inactive purchase result.
+
+Installation of build 39 and presentation of Apple's Restore authentication are observed. Successful purchase, purchase cancellation, active-purchase restore, free-use consumption and opt-out remain unverified. The displayed price remains USD 4.99. No additional binary or speculative code change was created from this evidence. The next useful device evidence is a completed private Apple sign-in or confirmation that the prompt closes unexpectedly; the Subscribe outcome still needs to be observed separately.
