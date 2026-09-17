@@ -1,22 +1,52 @@
 #!/usr/bin/env python3
 """Read only Pocket's subscription configuration through Codemagic's integration."""
 import json
+import os
 import re
+import shlex
+import shutil
+import sys
+from pathlib import Path
 from urllib.parse import urlsplit
 
 APP_ID = "6806004581"
 PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly"
 BASE = "https://api.appstoreconnect.apple.com"
 TERRITORIES = ("GBR", "USA")
+STAGE = "sdk-import"
+HTTP_STATUS = None
 
 
 def configured_client():
-    from codemagic.tools import AppStoreConnect
+    global STAGE
+    try:
+        from codemagic.tools import AppStoreConnect
+    except ImportError:
+        if "--cli-python" in sys.argv:
+            raise
+        STAGE = "cli-interpreter-resolution"
+        entrypoint = shutil.which("app-store-connect")
+        if not entrypoint:
+            raise RuntimeError("Codemagic CLI is unavailable.")
+        with Path(entrypoint).open() as source:
+            shebang = source.readline().strip()
+        interpreter = shlex.split(shebang[2:]) if shebang.startswith("#!") else []
+        if len(interpreter) == 2 and interpreter[0] == "/usr/bin/env":
+            interpreter = [shutil.which(interpreter[1]) or ""]
+        if (len(interpreter) != 1 or not Path(interpreter[0]).is_absolute()
+                or not re.fullmatch(r"python[0-9]*(?:\.[0-9]+)*", Path(interpreter[0]).name)):
+            raise RuntimeError("Codemagic CLI Python interpreter could not be resolved.")
+        sys.stdout.flush()
+        os.execv(interpreter[0], [interpreter[0], str(Path(__file__).resolve()), "--cli-python"])
     # Normal CLI configuration only: no action invocation or credential extraction.
+    STAGE = "cli-options"
     args = AppStoreConnect._setup_cli_options().parse_args([
         "apps", "get", APP_ID, "--json", "--disable-jwt-cache",
     ])
-    return AppStoreConnect.from_cli_args(args).api_client
+    STAGE = "integration-configuration"
+    configured = AppStoreConnect.from_cli_args(args)
+    STAGE = "api-client"
+    return configured.api_client
 
 
 def inspect_subscription(client):
@@ -24,6 +54,7 @@ def inspect_subscription(client):
     allowed = {f"/v1/apps/{APP_ID}/subscriptionGroups"}
 
     def get(path, params=None):
+        global STAGE, HTTP_STATUS
         nonlocal calls
         url = path if path.startswith("https://") else BASE + path
         parsed = urlsplit(url)
@@ -31,13 +62,13 @@ def inspect_subscription(client):
                 or parsed.path not in allowed or parsed.fragment or calls >= 30):
             raise RuntimeError("Unexpected API URL or request limit reached.")
         calls += 1
-        try:
-            response = client.session.get(url, params=params, timeout=30, allow_redirects=False)
-            if response.status_code != 200:
-                raise ValueError("HTTP status")
-            return response.json()
-        except Exception:
-            raise RuntimeError(f"Apple GET failed at {parsed.path}; no changes made.") from None
+        STAGE = "GET " + parsed.path
+        HTTP_STATUS = None
+        response = client.session.get(url, params=params, timeout=30, allow_redirects=False)
+        HTTP_STATUS = response.status_code
+        if HTTP_STATUS != 200:
+            raise RuntimeError("Apple GET failed; no changes made.")
+        return response.json()
 
     def pages(path, params=None):
         payload = get(path, params)
@@ -97,5 +128,5 @@ if __name__ == "__main__":
     try:
         print(json.dumps(inspect_subscription(configured_client()), indent=2))
     except Exception as error:
-        print(json.dumps({"status": "read-failed", "message": str(error) if type(error) is RuntimeError else "Apple configuration could not be read; no changes made."}))
+        print(json.dumps({"status": "read-failed", "stage": STAGE, "httpStatus": HTTP_STATUS, "errorType": type(error).__name__, "message": "Apple configuration could not be read; no changes made."}))
         raise SystemExit(1)
