@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { appleActionErrorMessage, appleInactiveMessage, createAppleActionCoordinator } from "../app/pocket/apple-purchase-flow";
+import { appleActionErrorMessage, appleErrorDiagnostic, appleInactiveMessage, createAppleActionCoordinator, formatAppleErrorDiagnostic } from "../app/pocket/apple-purchase-flow";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -63,4 +63,52 @@ test("native error objects remain readable and unconfirmed payments are not desc
   assert.doesNotMatch(appleInactiveMessage("purchase"), /not been charged/);
   assert.match(appleInactiveMessage("purchase"), /restore purchases before/);
   assert.match(appleInactiveMessage("restore"), /No active/);
+});
+
+const diagnosticFixture = {
+  operation: "purchase", stage: "confirmation",
+  errors: [{ domain: "StoreKit.StoreKitError", code: 2 }, { domain: "NSURLErrorDomain", code: -1009 }],
+  appVersion: "1.2.12", build: "40", osVersion: "26.6.2",
+  environment: "sandbox", storefront: "GBR", currency: "USD",
+};
+
+test("unknown Apple failures retain the operation and safe native codes without claiming a cause or payment result", () => {
+  const error = { message: "Unable to Complete Request", purchaseDiagnostics: diagnosticFixture };
+  const diagnostic = appleErrorDiagnostic(error)!;
+  assert.deepEqual(diagnostic, diagnosticFixture);
+  assert.match(appleActionErrorMessage(error, "purchase"), /could not complete the purchase/);
+  assert.match(appleActionErrorMessage(error, "restore"), /could not complete the restore/);
+  assert.doesNotMatch(appleActionErrorMessage(error, "purchase"), /not been charged|wrong password|outage/);
+  const text = formatAppleErrorDiagnostic(diagnostic);
+  assert.match(text, /confirmation/);
+  assert.match(text, /StoreKit\.StoreKitError:2 > NSURLErrorDomain:-1009/);
+  assert.match(text, /Storefront: GBR; price currency: USD/);
+});
+
+test("support details exclude arbitrary error data, account fields, URLs and untrusted domains", () => {
+  const diagnostic = appleErrorDiagnostic({
+    userInfo: { email: "private@example.test" },
+    purchaseDiagnostics: {
+      ...diagnosticFixture, receipt: "secret-receipt", email: "private@example.test",
+      stage: "https://private.test/token", appVersion: "private@example.test",
+      build: "invalid", storefront: "private@example.test", currency: "<script>",
+      errors: [...diagnosticFixture.errors, { domain: "private@example.test", code: 1 }, { domain: "SKErrorDomain", code: Infinity }],
+    },
+  })!;
+  assert.equal(diagnostic.errors.length, 2);
+  assert.equal(diagnostic.stage, "unknown");
+  assert.equal(diagnostic.appVersion, "unknown");
+  assert.equal(diagnostic.build, "unknown");
+  assert.equal(diagnostic.storefront, "unknown");
+  assert.equal(diagnostic.currency, "unknown");
+  assert.doesNotMatch(formatAppleErrorDiagnostic(diagnostic), /private|secret|receipt|script/);
+});
+
+test("malformed and old bridge errors have no fabricated diagnostics", () => {
+  for (const value of [null, "failure", {}, { purchaseDiagnostics: {} }, { purchaseDiagnostics: { ...diagnosticFixture, operation: "delete" } }, { purchaseDiagnostics: { ...diagnosticFixture, errors: [{ domain: "SKErrorDomain", code: "2" }] } }]) {
+    assert.equal(appleErrorDiagnostic(value), null);
+  }
+  assert.doesNotMatch(appleActionErrorMessage({ message: "Unable to Complete Request" }, "purchase"), /details below/);
+  const bounded = appleErrorDiagnostic({ purchaseDiagnostics: { ...diagnosticFixture, errors: Array(20).fill({ domain: "ASDErrorDomain", code: 500 }) } })!;
+  assert.equal(bounded.errors.length, 4);
 });

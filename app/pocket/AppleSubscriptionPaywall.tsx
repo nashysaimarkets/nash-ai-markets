@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { PocketGlyph } from "./PocketDepthMark";
 import type { AppleAccessStatus } from "./apple-storekit";
 import { getAppleAccessStatus, pendingAppleAction, purchaseAppleSubscription, restoreAppleSubscription } from "./apple-storekit";
-import { appleActionErrorMessage, appleInactiveMessage } from "./apple-purchase-flow";
+import { appleActionErrorMessage, appleErrorDiagnostic, appleInactiveMessage, formatAppleErrorDiagnostic, type AppleErrorDiagnostic } from "./apple-purchase-flow";
 import { withDeadline } from "./async-deadline";
 import { trackGrowth } from "./growth-client";
 import { UsageControl } from "./GrowthControls";
@@ -20,6 +20,7 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
   }, []);
   const [action, setAction] = useState<"purchase" | "restore" | null>(null);
   const [message, setMessage] = useState("");
+  const [errorDiagnostic, setErrorDiagnostic] = useState<AppleErrorDiagnostic | null>(null);
   const [slow, setSlow] = useState(false);
   const [checking, setChecking] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
@@ -47,6 +48,7 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
   async function checkAccess() {
     if (checking) return;
     setChecking(true);
+    setErrorDiagnostic(null);
     try {
       const next = await withDeadline(() => getAppleAccessStatus(), 10_000, "Apple has not returned your access status yet. Close this screen and try again when your connection is available.");
       if (!mounted.current) return;
@@ -92,6 +94,7 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
     if (kind === "purchase") trackGrowth("purchase_started", { flow: "paid" });
     setAction(kind);
     setMessage("");
+    setErrorDiagnostic(null);
     try {
       const next = kind === "purchase" ? await purchaseAppleSubscription() : await restoreAppleSubscription();
       if (!mounted.current) return;
@@ -106,6 +109,7 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
     } catch (caught) {
       if (!mounted.current) return;
       const text = appleActionErrorMessage(caught, kind);
+      setErrorDiagnostic(appleErrorDiagnostic(caught));
       if (kind === "purchase") trackGrowth(/cancel/i.test(text) ? "purchase_incomplete" : "purchase_failed", { flow: "paid" });
       setMessage(text);
     } finally { actionRunning.current = false; if (mounted.current) setAction(null); }
@@ -129,6 +133,10 @@ export default function AppleSubscriptionPaywall({ status, onUnlocked, onClose }
     </div>
     {currentStatus.isSandbox ? <p className="psAppleTestNotice">Apple test environment · test purchases do not charge money.</p> : null}
     {message ? <p ref={messageBox} className="psApplePaywallMessage" role="alert">{message}</p> : null}
+    {errorDiagnostic ? <details className="psAppleErrorDetails">
+      <summary>Apple error details · {errorDiagnostic.operation === "purchase" ? "Subscribe" : "Restore"}</summary>
+      <pre>{formatAppleErrorDiagnostic(errorDiagnostic)}</pre>
+    </details> : null}
     {slow ? <p className="psApplePaywallMessage" role="status">Apple is taking longer than usual. Complete any Apple prompt, or check your access below. You can close this screen while the request finishes.</p> : null}
     <button className="psAppleSubscribe" type="button" disabled={action !== null || checking} onClick={() => run("purchase")}>{action === "purchase" ? "CONNECTING TO APPLE…" : currentStatus.displayPrice ? `SUBSCRIBE FOR ${currentStatus.displayPrice} / MONTH` : "CHECK PRICE WITH APPLE"}<b>→</b></button>
     <button className="psAppleRestore" type="button" disabled={action !== null} onClick={() => run("restore")}>{action === "restore" ? "CHECKING APPLE ACCOUNT…" : "RESTORE PURCHASES"}</button>

@@ -33,6 +33,8 @@ workflows:
         script: |
           swiftc ios/App/App/PocketPurchaseState.swift scripts/tests/PocketPurchaseStateTests.swift -o /tmp/pocket-purchase-state-tests
           /tmp/pocket-purchase-state-tests
+          swiftc ios/App/App/PocketStoreDiagnostics.swift scripts/tests/PocketStoreDiagnosticsTests.swift -o /tmp/pocket-store-diagnostic-tests
+          /tmp/pocket-store-diagnostic-tests
       - name: Build verified Pocket Bullseye web bundle
         script: |
           npm run build

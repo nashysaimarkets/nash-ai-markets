@@ -25,6 +25,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
     private let monthlyProductId = "com.nashaimarkets.pocketbullseye.monthly"
     private var transactionUpdatesTask: Task<Void, Never>?
     @MainActor private var cachedProduct: Product?
+    @MainActor private var cachedStorefrontCountryCode: String?
     @MainActor private var storeActionRunning = false
 
     public override func load() {
@@ -58,6 +59,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             storeActionRunning = true
             defer { storeActionRunning = false }
             logger.info("Purchase requested")
+            var stage = "catalogue"
             do {
                 guard productId == monthlyProductId else {
                     call.reject("This Apple product is not supported by Pocket Bullseye.", "STORE_PRODUCT_MISMATCH")
@@ -89,6 +91,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
                 cachedProduct = product
                 logger.info("Presenting Apple purchase confirmation")
+                stage = "confirmation"
                 let result: Product.PurchaseResult
                 if #available(iOS 17.0, *) {
                     result = try await product.purchase(confirmIn: scene)
@@ -97,6 +100,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 }
                 switch result {
                 case .success(let verification):
+                    stage = "verification"
                     let transaction = try verified(verification)
                     guard transaction.productID == productId else {
                         call.reject("Apple returned a purchase for a different product. Please contact support.", "STORE_PRODUCT_MISMATCH")
@@ -121,8 +125,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                     call.reject("Apple returned an unknown purchase result.")
                 }
             } catch {
-                logger.error("Purchase failed: \((error as NSError).code)")
-                call.reject(error.localizedDescription, "STORE_PURCHASE_FAILED")
+                rejectStoreError(call, error: error, operation: "purchase", stage: stage)
             }
         }
     }
@@ -141,8 +144,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 await resolveStatus(call, productId: productId, product: cachedProduct, loadProduct: false)
                 logger.info("Restore status returned")
             } catch {
-                logger.error("Restore failed: \((error as NSError).code)")
-                call.reject(error.localizedDescription, "STORE_RESTORE_FAILED")
+                rejectStoreError(call, error: error, operation: "restore", stage: "sync")
             }
         }
     }
@@ -278,6 +280,38 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @MainActor
+    private func rejectStoreError(_ call: CAPPluginCall, error: Error, operation: String, stage: String) {
+        // StoreKit's associated system/network error is not always present in
+        // NSError.userInfo. Preserve its codes without exposing the payload.
+        var underlying: Error?
+        if let storeError = error as? StoreKitError {
+            switch storeError {
+            case .networkError(let cause): underlying = cause
+            case .systemError(let cause): underlying = cause
+            default: break
+            }
+        }
+        let codes = PocketStoreDiagnostics.errorCodes(error, underlying: underlying)
+        let summary = codes.map { "\($0["domain"] ?? "Other"):\($0["code"] ?? 0)" }.joined(separator: " > ")
+        logger.error("Store action failed operation=\(operation, privacy: .public) stage=\(stage, privacy: .public) errors=\(summary, privacy: .public)")
+        let diagnostics: [String: Any] = [
+            "operation": operation,
+            "stage": stage,
+            "errors": codes,
+            "appVersion": Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "",
+            "build": Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "",
+            "osVersion": UIDevice.current.systemVersion,
+            "environment": Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt" ? "sandbox" : "production",
+            "storefront": cachedStorefrontCountryCode ?? "unknown",
+            "currency": cachedProduct?.priceFormatStyle.currencyCode ?? "unknown"
+        ]
+        // Reading diagnostics must not start another Apple request after a
+        // failed purchase. All metadata here is local or already cached.
+        call.reject(error.localizedDescription, "STORE_\(operation.uppercased())_FAILED", nil,
+                    ["purchaseDiagnostics": diagnostics])
+    }
+
+    @MainActor
     private func statusPayload(productId: String, product: Product?, active: Transaction?) async -> [String: Any] {
         var payload: [String: Any] = [
             "isNative": true,
@@ -290,7 +324,10 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
             "currencyCode": product?.priceFormatStyle.currencyCode ?? "",
             "isSandbox": Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
         ]
-        if let storefront = await Storefront.current { payload["storefrontCountryCode"] = storefront.countryCode }
+        if let storefront = await Storefront.current {
+            cachedStorefrontCountryCode = storefront.countryCode
+            payload["storefrontCountryCode"] = storefront.countryCode
+        }
         if let transaction = active {
             payload["transactionId"] = String(transaction.id)
             payload["originalTransactionId"] = String(transaction.originalID)
