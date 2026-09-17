@@ -83,6 +83,16 @@ workflows:
       - name: Read current Apple versions and latest build
         script: python3 scripts/read-apple-release-status.py
 
+  pocket-apple-subscription-status:
+    name: Pocket Bullseye — Read Apple subscription setup
+    instance_type: mac_mini_m2
+    max_build_duration: 10
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    scripts:
+      - name: Read subscription approval availability and UK price
+        script: python3 scripts/read-apple-subscription-status.py
+
   pocket-apple-submit-staged:
     name: Pocket Bullseye — Submit staged iPhone release
     instance_type: mac_mini_m2

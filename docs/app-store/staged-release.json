@@ -5,7 +5,7 @@
   "buildNumber": "37",
   "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
   "processingState": "VALID",
-  "physicalDeviceValidation": "PENDING: retest purchase, cancellation, restore, free-use and analytics opt-out on build 37. Build 36 had owner-reported purchase/restore failures.",
+  "physicalDeviceValidation": "PENDING: owner reports still blocked on build 37. New screenshot shows sandbox USD price and no active subscription after restore/access lookup; the result of a Subscribe tap is not yet captured. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out checks remain outstanding.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "37",
@@ -16,7 +16,10 @@
       "restore": "not-tested",
       "freeUse": "not-tested",
       "analyticsOptOut": "not-tested"
-    }
+    },
+    "observations": [
+      "IMG_7532 Small.jpeg shows new paywall, Apple test environment, USD 4.99 and a completed no-active-entitlement message. This is not proof of a successful purchase or restore of an existing entitlement."
+    ]
   },
   "replacesFailedDeviceBuild": "36",
   "appleBuildId": "d1da87e2-4316-415a-ac17-c12d9a795024",
