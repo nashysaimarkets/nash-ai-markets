@@ -1,6 +1,6 @@
 # Pocket Bullseye 1.2.12 (38) — candidate preparation
 
-Prepared 17 September 2026. Build 38 is not yet uploaded, submitted or tested on an iPhone.
+Verified 17 September 2026. Build 38 is uploaded, VALID and active in internal TestFlight. It has not been submitted to App Review or physically validated on an iPhone.
 
 ## Verified source and Apple state
 
@@ -26,3 +26,14 @@ Use `pocket-bullseye-ios-stage-next` on `fix/pocket-apple-purchases-2026-09-17`.
 Populate current Apple build and workflow identifiers only after the actual upload and processing result. Historical build 36/37 observations in `staged-release.json` are not validation of build 38.
 
 Purchase, cancellation, restore, free-use consumption and analytics opt-out must all pass on this exact iPhone/TestFlight candidate before the guarded submission workflow can submit it. The physical purchase result and the phone's displayed currency remain unverified. Preserve any review that begins in the meantime and retain automatic release after approval.
+
+## Upload and recovery verification
+
+- Native build commit: `493c347fd4a53bc87e389fa7a110a6279919bca6`.
+- Staging run: `6aac2b7d8631ce102a5d2a44`; Apple accepted the archive without errors at 18:08:13 UTC.
+- Apple build ID: `1ba601b6-8de1-4200-84c6-0fba538ddb1e`.
+- Read-only verification run `6aac2cf56cc33efcef3a6270` confirmed version 1.2.12 (38), VALID, unexpired, internal `IN_BETA_TESTING`, external `READY_FOR_BETA_SUBMISSION`. Version 1.2.12 remains an editable draft; 1.2.11 remains public.
+- All 1,068 unit tests, type checking, secret-pattern scan, web build, served revision verification, Capacitor sync, signing, native archive and upload passed.
+- The subsequent full fictional-chart analysis on build 37's pinned deployment also returned HTTP 200 and rendered the completed report. Server logs record completed precision and report, outcome completed, in 38,246 ms. This establishes service recovery for that test, not physical StoreKit validation or a trading-accuracy benchmark. Calendar context remained partial; no complete-calendar claim is made.
+
+All five required physical-device checks remain not tested on build 38. No review was withdrawn and no App Review submission was made.

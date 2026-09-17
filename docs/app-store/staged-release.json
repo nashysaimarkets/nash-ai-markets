@@ -4,8 +4,8 @@
   "predecessorVersion": "1.2.11",
   "buildNumber": "38",
   "revision": "fea69217e6855ba6c161a782ae8027f953682c31",
-  "processingState": "NOT_UPLOADED",
-  "physicalDeviceValidation": "PENDING: build 38 has not been uploaded or tested on an iPhone. Verify purchase, cancellation, restore, free-use consumption and analytics opt-out on this exact build before App Review submission. Earlier device observations and the live preflight recovery check do not satisfy these checks.",
+  "processingState": "VALID",
+  "physicalDeviceValidation": "PENDING: build 38 is VALID and active in internal TestFlight. Verify purchase, cancellation, restore, free-use consumption and analytics opt-out on this exact build before App Review submission. Browser recovery tests and earlier device observations do not satisfy these checks.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "38",
@@ -41,5 +41,11 @@
       "buildNumber": "36",
       "physicalDeviceValidation": "Owner reported purchase and restore failures; superseded by build 37 without App Review submission."
     }
-  ]
+  ],
+  "appleBuildId": "1ba601b6-8de1-4200-84c6-0fba538ddb1e",
+  "buildCommit": "493c347fd4a53bc87e389fa7a110a6279919bca6",
+  "codemagicBuildId": "6aac2b7d8631ce102a5d2a44",
+  "testFlightInternalState": "IN_BETA_TESTING",
+  "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
+  "appleStatusVerificationRun": "6aac2cf56cc33efcef3a6270"
 }
