@@ -119,6 +119,29 @@ def verify_build(builds, candidate):
 def verify_device_validation(candidate):
     """The customer-journey policy is a release gate, not a status assumption."""
     validation = candidate.get("deviceValidation", {})
+    # Owner's explicit, one-candidate exception on 17 September 2026.
+    # Untested results remain untested; Apple/build/review gates still apply.
+    exception = candidate.get("manualTestException", {})
+    approved_identity = {
+        "marketingVersion": "1.2.12", "buildNumber": "41",
+        "revision": "77850015745fdc375b50812afca47b7d68f332bf",
+        "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+    }
+    if (exception.get("authorizedBy") == "Chris Nash"
+            and exception.get("instruction") == "No. Can you release it anyway?"
+            and exception.get("recordedAt")
+            and all(candidate.get(k) == v and exception.get(k) == v
+                    for k, v in approved_identity.items())
+            and validation.get("buildNumber") == "41"
+            and validation.get("revision") == approved_identity["revision"]
+            and validation.get("status") == "pending"
+            and set(exception.get("untestedChecks", [])) == {"purchase", "cancellation", "freeUse"}
+            and validation.get("checks") == {
+                "purchase": "not-tested", "cancellation": "not-tested",
+                "freeUse": "not-tested", "restore": "passed", "analyticsOptOut": "passed"}
+            and validation.get("subscribedAnalysis") == "passed"):
+        print("OWNER EXCEPTION: build 41 manual purchase/cancellation/free-use checks remain UNTESTED; submission explicitly authorized.")
+        return
     if (validation.get("status") != "passed"
             or validation.get("buildNumber") != candidate["buildNumber"]
             or validation.get("revision") != candidate["revision"]

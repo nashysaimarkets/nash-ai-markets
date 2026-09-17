@@ -54,3 +54,7 @@ Following the build 41 instructions, the owner reported: “Restore complete. Yo
 ## Owner subscribed-analysis and opt-out confirmation
 
 The owner replied “1 & 2: thumbs up” to completing a chart analysis without another subscription prompt and checking that usage counts remain off on build 41. Recorded subscribed-analysis access and analytics opt-out persistence as passed. Together with the earlier Restore pass, this establishes the reported returning-subscriber flow. New purchase, purchase-sheet cancellation and fresh-user free-use remain unverified; no historical purchase pass is relabelled as a new build 41 transaction. App Review submission remains pending those checks under the existing project release gate.
+
+## Explicit owner release exception
+
+Chris replied “No. Can you release it anyway?” after being told that fresh-user free-analysis, new purchase and purchase-sheet cancellation checks remained unverified. This explicitly authorizes submission of build 41 without those remaining manual checks. They stay recorded as not-tested. The exception is bound to version 1.2.12, build 41, its exact web revision and Apple build ID; it cannot authorize a future candidate or override a failed test. Apple processing/identity and active-review preservation checks remain enforced. Automatic release remains AFTER_APPROVAL.

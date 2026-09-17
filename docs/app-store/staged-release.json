@@ -5,7 +5,7 @@
   "buildNumber": "41",
   "revision": "77850015745fdc375b50812afca47b7d68f332bf",
   "processingState": "VALID",
-  "physicalDeviceValidation": "PARTIAL: owner confirmed Restore with active subscription, a completed subscribed chart analysis without another subscription prompt, and usage-count opt-out persistence on build 41. Fresh-user free-use, new purchase and purchase-sheet cancellation remain unverified. No App Review submission made.",
+  "physicalDeviceValidation": "PARTIAL / OWNER-AUTHORIZED EXCEPTION: Restore, subscribed analysis and opt-out passed on build 41. Purchase, cancellation and free-use remain not-tested. Owner explicitly requested release anyway; exception applies only to this exact candidate.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "41",
@@ -179,5 +179,20 @@
   "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
   "testFlightInternalState": "IN_BETA_TESTING",
   "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
-  "appleStatusVerificationRun": "6aac54784515b5cc087e3ae7"
+  "appleStatusVerificationRun": "6aac54784515b5cc087e3ae7",
+  "manualTestException": {
+    "marketingVersion": "1.2.12",
+    "buildNumber": "41",
+    "revision": "77850015745fdc375b50812afca47b7d68f332bf",
+    "appleBuildId": "4731641e-3416-485d-823a-3dc3bcffab35",
+    "authorizedBy": "Chris Nash",
+    "instruction": "No. Can you release it anyway?",
+    "recordedAt": "2026-09-17T21:18:31.382685+00:00",
+    "untestedChecks": [
+      "purchase",
+      "cancellation",
+      "freeUse"
+    ],
+    "scope": "Explicit owner authorization to submit this exact candidate despite remaining manual checks. Results remain not-tested. Apple review, processed-build identity and review-preservation gates remain required."
+  }
 }
