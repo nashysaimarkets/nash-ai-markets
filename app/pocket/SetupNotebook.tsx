@@ -7,17 +7,19 @@ import { createNotebookBackup, MAX_BACKUP_BYTES, notebookMatches, parseNotebookB
 type Backup = ReturnType<typeof parseNotebookBackup>;
 type Props = { decisions: LockedDecision[]; onReview: (decision: LockedDecision) => void; onSave: (decision: LockedDecision) => Promise<void>; loadRules: () => Promise<string[]>; saveRules: (rules: string[]) => Promise<void>; onRestore: (backup: Backup) => Promise<string> };
 function NoteEditor({ decision, onSave }: Pick<Props, "onSave"> & { decision: LockedDecision }) {
+  const [action, setAction] = useState<"" | "TAKEN" | "WAITED" | "PASSED">(decision.notebook?.action ?? "");
   const [lesson, setLesson] = useState(decision.notebook?.lesson ?? "");
   const [tags, setTags] = useState(decision.notebook?.tags.join(", ") ?? "");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   async function save() {
     setBusy(true); setStatus("");
-    try { await onSave({ ...decision, notebook: { lesson: lesson.trim(), tags: [...new Set(tags.split(",").map((tag) => tag.trim().slice(0,40)).filter(Boolean))].slice(0,8), updatedAt: new Date().toISOString() } }); trackGrowth("note_saved"); setStatus("Your note is saved. The original analysis is unchanged."); }
+    try { await onSave({ ...decision, notebook: { ...(action ? { action } : {}), lesson: lesson.trim(), tags: [...new Set(tags.split(",").map((tag) => tag.trim().slice(0,40)).filter(Boolean))].slice(0,8), updatedAt: new Date().toISOString() } }); trackGrowth("note_saved"); setStatus("Your note is saved. The original analysis is unchanged."); }
     catch { setStatus("Your note could not be saved. Keep this page open and retry."); } finally { setBusy(false); }
   }
   return <details className="pbNoteEditor"><summary>My lesson & tags {decision.notebook?.lesson ? "· saved" : ""}</summary>
     {decision.review?.nextRule ? <p><small>AI suggestion</small>{decision.review.nextRule}</p> : null}
+    <label>What did I decide?<select value={action} onChange={(event) => setAction(event.target.value as typeof action)}><option value="">Not recorded</option><option value="TAKEN">I took the setup</option><option value="WAITED">I waited</option><option value="PASSED">I passed</option></select></label>
     <label>What did I learn?<textarea maxLength={1500} value={lesson} onChange={(event) => setLesson(event.target.value)} placeholder="My own observation or rule for next time…" /></label>
     <label>Setup tags, separated by commas<input maxLength={320} value={tags} onChange={(event) => setTags(event.target.value)} placeholder="Breakout, rushed entry, waited for confirmation" /></label>
     <button type="button" disabled={busy} onClick={save}>{busy ? "Saving…" : "Save my note"}</button><p role="status">{status}</p>
@@ -38,6 +40,8 @@ export default function SetupNotebook({ decisions, onReview, onSave, loadRules, 
   useEffect(() => { let active = true; loadRules().then((items) => { if (active) { setRules([items[0] ?? "", items[1] ?? "", items[2] ?? ""]); setPinned(items); setRulesReady(true); } }).catch(() => { if (active) setMessage("Personal rules could not be loaded. Retry when device storage is available."); }); return () => { active = false; }; }, [loadRules]);
   useEffect(() => { trackGrowth("notebook_opened", { once: "notebook" }); }, []);
   const filtered = decisions.filter((decision) => notebookMatches(decision, query, instrument, timeframe, state));
+  const activeFilters = [instrument, timeframe, state].filter(Boolean).length;
+  const clearFilters = () => { setQuery(""); setInstrument(""); setTimeframe(""); setState(""); setLimit(10); };
   const instruments = [...new Set(decisions.map((decision) => decision.analysis.instrument))].sort();
   const timeframes = [...new Set(decisions.map((decision) => decision.analysis.timeframe).filter(Boolean))].sort();
   async function exportBackup() {
@@ -67,12 +71,14 @@ export default function SetupNotebook({ decisions, onReview, onSave, loadRules, 
     {pinned.length ? <ol className="pbPinnedRules" aria-label="My pinned personal rules">{pinned.map((rule,index) => <li key={index}>{rule}</li>)}</ol> : null}
     <details className="pbRules"><summary>My three personal rules</summary>{rules.map((rule,index) => <label key={index}>Rule {index+1}<input disabled={!rulesReady} value={rule} maxLength={180} placeholder="A rule I choose to follow" onChange={(event) => setRules(rules.map((value,i) => i === index ? event.target.value : value))} /></label>)}<button type="button" disabled={busy || !rulesReady} onClick={async () => { setBusy(true); try { const saved = rules.map((rule) => rule.trim()).filter(Boolean); await saveRules(saved); setPinned(saved); setMessage("Your personal rules are saved."); } catch { setMessage("Rules could not be saved. Please retry."); } finally { setBusy(false); } }}>Pin my rules</button></details>
     <NotebookInsights decisions={decisions} />
-    <div className="pbNotebookFilters"><label>Search setups & lessons<input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setLimit(10); }} placeholder="Instrument, pattern, tag or lesson" /></label>
+    <div className="pbNotebookSearch"><label>Search setups & lessons<input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setLimit(10); }} placeholder="Instrument, pattern, tag or lesson" /></label></div>
+    <div className="pbNotebookQuick"><button type="button" aria-pressed={state === "waiting"} onClick={() => { setState(state === "waiting" ? "" : "waiting"); setLimit(10); }}>Awaiting review</button>{query || activeFilters ? <button type="button" onClick={clearFilters}>Clear filters</button> : null}<span role="status">{filtered.length} of {decisions.length} setups</span></div>
+    <details className="pbNotebookFilterDetails"><summary>Filters{activeFilters ? ` · ${activeFilters} active` : ""}</summary><div className="pbNotebookFilters">
       <label>Instrument<select value={instrument} onChange={(event) => setInstrument(event.target.value)}><option value="">All instruments</option>{instruments.map((value) => <option key={value}>{value}</option>)}</select></label>
       <label>Timeframe<select value={timeframe} onChange={(event) => setTimeframe(event.target.value)}><option value="">All timeframes</option>{timeframes.map((value) => <option key={value}>{value}</option>)}</select></label>
       <label>Review state<select value={state} onChange={(event) => setState(event.target.value)}><option value="">All decisions</option><option value="waiting">Awaiting review</option><option value="reviewed">Reviewed</option><option value="lesson">My lesson recorded</option></select></label>
-    </div>
-    <div className="pbNotebookEntries">{filtered.slice(0,limit).map((decision) => <article key={decision.id}><div className="pbNotebookEntryTop"><img loading="lazy" src={decision.image} alt={`Saved ${decision.analysis.instrument} chart`} /><div><h3>{decision.analysis.instrument}</h3><span>{decision.analysis.timeframe} · {new Date(decision.createdAt).toLocaleDateString("en-GB")}</span><small>{decision.review ? "Reviewed" : "Awaiting a later chart"}</small></div></div>
+    </div></details>
+    <div className="pbNotebookEntries">{filtered.slice(0,limit).map((decision) => <article key={decision.id}><div className="pbNotebookEntryTop"><img loading="lazy" src={decision.image} alt={`Saved ${decision.analysis.instrument} chart`} /><div><h3>{decision.analysis.instrument}</h3><span>{decision.analysis.timeframe} · Saved {new Date(decision.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span><small>{decision.review ? "Reviewed" : "Awaiting a later chart"}{decision.notebook?.action ? ` · ${decision.notebook.action === "TAKEN" ? "Setup taken" : decision.notebook.action === "WAITED" ? "Waited" : "Passed"}` : ""}</small></div></div>
       {decision.notebook?.tags.length ? <p className="pbNotebookTags">{decision.notebook.tags.map((tag) => <span key={tag}>{tag}</span>)}</p> : null}
       <button type="button" onClick={() => onReview(decision)}>{decision.review ? "Open visual review" : "Add a later chart"} ↗</button><NoteEditor decision={decision} onSave={onSave}/>
     </article>)}</div>

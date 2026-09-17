@@ -270,7 +270,7 @@ body:has(.psApp[data-spatial-motion="off"]) .psApplePaywallGlow i { animation-pl
 /* Spatial typography: the same precise, polished lettering in every panel.
    Use the existing bundled font; headings carry depth, reading copy stays crisp. */
 .psApp[data-spatial][data-visual-style], .psApplePaywall {
-  --ps-font-ui: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ps-font-ui: var(--font-geist-sans, sans-serif), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-family: var(--ps-font-ui); font-kerning: normal; text-rendering: optimizeLegibility;
 }
 .psApp[data-spatial][data-visual-style] :is(h1,h2,h3,h4,p,a,b,strong,small,span,em,button,label,summary,dt,dd,time,li,input,select,textarea),

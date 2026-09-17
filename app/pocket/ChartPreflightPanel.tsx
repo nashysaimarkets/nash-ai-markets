@@ -103,6 +103,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
     <header><span>◉ CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "CHART CHECKED"}</strong></header>
     <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
       {result.captureAlignment === "MIXED" ? <p role="alert">Visible timestamps suggest these charts were captured at different times. Refresh the older screenshot before comparing their current setups.</p> : null}
+    {result.status === "RETAKE" ? <div className="pbCaptureRepair" role="alert"><strong>Before you retry</strong><p>{result.guidance || result.issues[0] || "Replace the unclear screenshot with the full chart, symbol, timeframe and price scale visible."}</p><a href="#pocket-chart-upload">Review uploaded charts ↑</a></div> : null}
     <details className="psConfirmDetails">
       <summary>CHECK OR EDIT DETECTED DETAILS</summary>
       <div className="psConfirmGrid">

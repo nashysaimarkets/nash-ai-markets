@@ -28,7 +28,7 @@ export type CompatibleLockedDecision = {
   afterImage?: string;
   reviewedAt?: string;
   review?: CompatibleProcessReview;
-  notebook?: { lesson: string; tags: string[]; updatedAt: string };
+  notebook?: { lesson: string; tags: string[]; updatedAt: string; action?: "TAKEN" | "WAITED" | "PASSED" };
   sourceImages?: Record<string, string | null>;
   analysis: Record<string, unknown> & {
     instrument: string;
@@ -134,7 +134,7 @@ export function normalizeLockedDecision(value: unknown): CompatibleLockedDecisio
     ...(typeof candidate.afterImage === "string" && candidate.afterImage.startsWith("data:image/") ? { afterImage: candidate.afterImage } : {}),
     ...(typeof candidate.reviewedAt === "string" && Number.isFinite(Date.parse(candidate.reviewedAt)) ? { reviewedAt: candidate.reviewedAt } : {}),
     ...(review ? { review } : {}),
-    ...(note ? { notebook: { lesson: typeof note.lesson === "string" ? note.lesson.slice(0, 1500) : "", tags: safeTexts(note.tags, 8, 40), updatedAt: typeof note.updatedAt === "string" ? note.updatedAt : new Date(0).toISOString() } } : {}),
+    ...(note ? { notebook: { ...(["TAKEN", "WAITED", "PASSED"].includes(String(note.action)) ? { action: note.action as "TAKEN" | "WAITED" | "PASSED" } : {}), lesson: typeof note.lesson === "string" ? note.lesson.slice(0, 1500) : "", tags: safeTexts(note.tags, 8, 40), updatedAt: typeof note.updatedAt === "string" ? note.updatedAt : new Date(0).toISOString() } } : {}),
     ...(sourceImages ? { sourceImages: Object.fromEntries(["image", "contextImage", "detailImage", "fourHourImage", "indicatorImage"].map((key) => [key, typeof sourceImages[key] === "string" && String(sourceImages[key]).startsWith("data:image/") ? sourceImages[key] : null])) as Record<string, string | null> } : {}),
     analysis: {
       ...rawAnalysis,

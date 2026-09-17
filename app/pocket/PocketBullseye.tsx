@@ -16,6 +16,7 @@ import InteractiveLevelScanner, { type ScannerProps } from "./InteractiveLevelSc
 import SnapshotReview from "./SnapshotReview";
 import SetupNotebook from "./SetupNotebook";
 import { mergeNotebook } from "./notebook";
+import { useDialogFocus } from "./use-dialog-focus";
 import { revealReportTarget } from "./report-navigation";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
@@ -407,6 +408,12 @@ function ChartXRay({ analysis, primaryLevels, sourceImage, onAddChart, onReanaly
 function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName, intention }: { analysis: Analysis; sourceImage: string; onShare: () => void; onOpenReport: (target?: string) => void; viewerName: string; intention: Intention }) {
   const [scene, setScene] = useState(0);
   const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => { if (preference.matches) setPaused(true); };
+    sync(); preference.addEventListener("change", sync);
+    return () => preference.removeEventListener("change", sync);
+  }, []);
   const [sceneDuration, setSceneDuration] = useState(12000);
   const sceneContent = useRef<HTMLDivElement>(null);
   const sceneNames = ["OPEN", "EVIDENCE", "LEVELS", "BATTLE", "RISK", "DECISION", "BULLSEYE"];
@@ -655,11 +662,12 @@ function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macro
 }
 
 function ResultCard({ analysis, onClose, onShare }: { analysis: Analysis; onClose: () => void; onShare: () => void }) {
+  const dialogRef = useDialogFocus(true, onClose);
   const numeric = numericStructure(analysis.levels);
   const verified = hasVerifiedTwoSidedStructure(numeric, numericLevel(analysis.currentPrice))
     ? analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind)).slice(0, 3)
     : [];
-  return <section className="psResultCardModal" role="dialog" aria-modal="true" aria-label="Shareable Pocket Bullseye result card">
+  return <section ref={dialogRef} tabIndex={-1} className="psResultCardModal" role="dialog" aria-modal="true" aria-label="Shareable Pocket Bullseye result card">
     <div className="psShareCard">
       <header><span>🎯 POCKET BULLSEYE</span><button type="button" onClick={onClose} aria-label="Close result card">×</button></header>
       <div className="psShareIdentity"><small>PRIVATE DECISION AUDIT</small><strong>{analysis.instrument}</strong><span>{analysis.timeframe}</span></div>
@@ -951,6 +959,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, []);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
+  const revealDialogRef = useDialogFocus(showResultReveal && Boolean(analysis), () => setShowResultReveal(false));
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
@@ -974,6 +983,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   useEffect(() => () => { chartWork.current.clear(); chartImageWork.current.clear(); }, []);
 
   const followUpRequestActive = useRef(false);
+  const followUpController = useRef<AbortController | null>(null);
+  const reviewController = useRef<AbortController | null>(null);
+  useEffect(() => () => { followUpController.current?.abort(); reviewController.current?.abort(); }, []);
   const liquidityRequestActive = useRef(false);
   const activePrimaryImage = useRef<string | null>(image);
   const appleAccessRequestActive = useRef<Promise<AppleAccessStatus> | null>(null);
@@ -1157,6 +1169,20 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return () => window.clearTimeout(timer);
   }, [image, reviewTarget, preflightStatus]);
 
+  // Presentation and user corrections belong to one uploaded chart, never its successor.
+  function clearChartContext(keepReview = false) {
+    followUpController.current?.abort(); reviewController.current?.abort();
+    followUpRequestActive.current = false; analysisRequestActive.current = false;
+    setBusy(false); setFollowUpBusy(false);
+    setAccuracyCorrection(null); setCorrectionOriginal(null);
+    setFollowUpQuestion(""); setFollowUpReply(null); setFollowUpError("");
+    setRefinementStatus("idle"); setRefinementBefore(null);
+    setSelectedScenario(null); setError(""); setVaultMessage("");
+    setChartFocus(false); setShowResultCard(false); setShowResultReveal(false);
+    setImmersive(false); setPrivacyChecked(false); setReview(null);
+    if (!keepReview) { setReviewTarget(null); setIntention("UNSURE"); }
+  }
+
   function resetChartSession() {
     sessionRevision.current += 1;
     selectionRevision.current += 1; selectionActive.current = false;
@@ -1181,7 +1207,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [analysis, resultCharts, sampleMode, busy, pendingChartId, followUpBusy, liquidityRescanning, appleAccess, backgroundWake, mainReportInFlight]);
 
   async function prepareNextChart() {
-    if ((!resultCharts[0]?.report && !mainReportInFlight) || sampleMode || (busy && !mainReportInFlight) || backgroundActive.current.size >= (mainReportInFlight ? 1 : 4)
+    if ((!resultCharts.some((chart) => chart.report) && !mainReportInFlight) || sampleMode || (busy && !mainReportInFlight) || backgroundActive.current.size >= (mainReportInFlight ? 1 : 4)
       || (analysisRequestActive.current && !mainReportInFlight) || followUpBusy || liquidityRescanning
       || document.visibilityState !== "visible" || Date.now() < providerPauseUntil.current) return;
     if (nativeAppleApp && !appleAccess?.entitled) return;
@@ -1273,7 +1299,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     if (!selected) return;
     if (selected.report) {
       if (selectionActive.current) { selectionRevision.current += 1; selectionActive.current = false; setPendingChartId(null); }
-      activateResultChart(charts, id, selected.report); return;
+      activateResultChart(charts, id, selected.report);
+      if (!sampleMode) void rememberScan(selected.report, selected.image);
+      return;
     }
     if (busy || (selectionActive.current && pendingChartId === id)) return;
     const selection = ++selectionRevision.current;
@@ -1296,7 +1324,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   function openSample() {
     trackGrowth("sample_viewed", { flow: "sample" });
     const charts = createSampleCharts();
-    resetChartSession(); setSampleMode(true);
+    resetChartSession(); clearChartContext(); setSampleMode(true);
     activateResultChart(charts, charts[0].id, charts[0].report!);
     setResultView("report"); setImmersive(true); setError("");
   }
@@ -1318,7 +1346,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
     try {
       const prepared = await prepareImage(file);
-      resetChartSession(); setAnalysis(null); setBattlefieldChart("primary");
+      resetChartSession(); clearChartContext(Boolean(reviewTarget)); setAnalysis(null); setBattlefieldChart("primary");
       setChartConfirmation(null);
       setPreflightStatus("IDLE");
       setImage(prepared);
@@ -1430,14 +1458,14 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function reanalyseResult() {
     if (!analysis || busy || analysisRequestActive.current) return;
-    if (!await requireAppleEntitlementForAdditionalRequest()) return;
+    const revision = sessionRevision.current;
+    if (!await requireAppleEntitlementForAdditionalRequest() || revision !== sessionRevision.current) return;
     const resultScroller = document.querySelector(".psResults") as HTMLElement | null;
     const savedScrollTop = resultScroller?.scrollTop ?? 0;
     setError("");
     setRefinementBefore(analysis);
     setRefinementStatus("analysing");
     try {
-      const revision = sessionRevision.current;
       const refreshed = await requestPocketAnalysis(contextImage, { bypassCache: true });
       if (revision !== sessionRevision.current) return;
       setAnalysis(refreshed);
@@ -1451,6 +1479,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setRefinementStatus("updated");
       requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
     } catch (caught) {
+      if (revision !== sessionRevision.current) return;
       setRefinementStatus("error");
       setError(caught instanceof Error ? caught.message : "This result could not be reanalysed safely.");
     }
@@ -1537,17 +1566,21 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function reanalyseWithCorrection() {
     if (!accuracyCorrection || !image || busy) return;
-    if (!await requireAppleEntitlementForAdditionalRequest()) return;
+    const revision = sessionRevision.current;
+    if (!await requireAppleEntitlementForAdditionalRequest() || revision !== sessionRevision.current) return;
     setError("");
     try {
       const patch = correctionPatch(accuracyCorrection);
       const identityChanged = Boolean(patch.instrument || patch.timeframe);
       const corrected = await requestPocketAnalysis(contextImage, { bypassCache: true });
+      if (revision !== sessionRevision.current) return;
       setAnalysis(corrected);
+      setResultCharts((charts) => charts.map((chart) => chart.id === activeChartId ? { ...chart, report: corrected, preparation: undefined, sourceImages: currentImages, sourceNames: currentNames, timeframe: normalizePatternFrame(corrected.timeframe) ?? "TIMEFRAME UNCONFIRMED" } : chart));
       setBattlefieldChart("primary");
       if (contextImage) setRefinementStatus(identityChanged ? "attached" : "updated");
       setResultView("report");
     } catch (caught) {
+      if (revision !== sessionRevision.current) return;
       setError(caught instanceof Error ? caught.message : "Correction replay could not complete safely.");
     }
   }
@@ -1827,6 +1860,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     if (!reviewTarget && !preflightAllowsAnalysis(preflightStatus)) return;
+    let requestRevision = sessionRevision.current;
     const activityStartedAt = Date.now();
     const activityFlow = currentAppleAccess?.isNative ? (currentAppleAccess.entitled ? "paid" : "free") : "web";
     if (!reviewTarget) trackGrowth("scan_started", { flow: activityFlow });
@@ -1835,7 +1869,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     try {
       if (!reviewTarget) {
         resetChartSession();
-        const revision = sessionRevision.current;
+        const revision = sessionRevision.current; requestRevision = revision;
         setResultCharts(createChartSession(currentImages, currentNames));
         const nextAnalysis = await requestPocketAnalysis(contextImage);
         if (revision !== sessionRevision.current) return;
@@ -1865,12 +1899,15 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       analysisRequestActive.current = true;
       setBusy(true);
-      const response = await fetch("/api/pocket/review", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis }),
-      });
-      const payload = await response.json() as { review?: ProcessReview; error?: string };
+      const requestController = new AbortController(); reviewController.current = requestController;
+      const { response, payload } = await withDeadline(async (signal) => {
+        const response = await fetch("/api/pocket/review", {
+          method: "POST", headers: { "content-type": "application/json" }, signal,
+          body: JSON.stringify({ beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis }),
+        });
+        return { response, payload: await response.json() as { review?: ProcessReview; error?: string } };
+      }, 60_000, "The review timed out. Your original decision is saved; you can retry.", requestController.signal);
+      if (requestRevision !== sessionRevision.current || requestController.signal.aborted) return;
       if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
       trackGrowth("review_completed", { flow: activityFlow, durationMs: Date.now() - activityStartedAt });
       const completedDecision: LockedDecision = {
@@ -1881,33 +1918,39 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       };
       await vaultSave(completedDecision);
       setVault((current) => current.map((decision) => decision.id === completedDecision.id ? completedDecision : decision));
+      if (requestRevision !== sessionRevision.current) return;
       setReviewTarget(completedDecision);
       setReview(payload.review); setImmersive(true);
     } catch (caught) {
+      if (requestRevision !== sessionRevision.current) return;
       if (!reviewTarget) trackGrowth("scan_failed", { flow: activityFlow, durationMs: Date.now() - activityStartedAt });
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
-      analysisRequestActive.current = false;
-      setBusy(false);
+      if (requestRevision === sessionRevision.current) { analysisRequestActive.current = false; setBusy(false); }
     }
   }
 
   async function askBullseye(question = followUpQuestion) {
     if (!analysis || !question.trim() || followUpBusy || followUpRequestActive.current) return;
-    if (!await requireAppleEntitlementForAdditionalRequest()) return;
+    const revision = sessionRevision.current;
+    const requestController = new AbortController(); followUpController.current = requestController;
     followUpRequestActive.current = true;
     setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
     try {
-      const response = await fetch("/api/pocket/follow-up", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ analysis: selectedChartReport(analysis), question: question.trim() }),
-      });
-      const payload = await response.json() as { reply?: FollowUpReply; error?: string };
+      if (!await requireAppleEntitlementForAdditionalRequest() || revision !== sessionRevision.current || requestController.signal.aborted) return;
+      const { response, payload } = await withDeadline(async (signal) => {
+        const response = await fetch("/api/pocket/follow-up", {
+          method: "POST", headers: { "content-type": "application/json" }, signal,
+          body: JSON.stringify({ analysis: selectedChartReport(analysis), question: question.trim() }),
+        });
+        return { response, payload: await response.json() as { reply?: FollowUpReply; error?: string } };
+      }, 45_000, "The answer timed out. Your analysis is still here; you can retry.", requestController.signal);
+      if (revision !== sessionRevision.current || requestController.signal.aborted) return;
       if (!response.ok || !payload.reply) throw new Error(payload.error || "Ask Bullseye is temporarily unavailable.");
       setFollowUpReply(payload.reply); setFollowUpQuestion(question.trim());
     } catch (caught) {
-      setFollowUpError(caught instanceof Error ? caught.message : "Ask Bullseye is temporarily unavailable.");
-    } finally { followUpRequestActive.current = false; setFollowUpBusy(false); }
+      if (revision === sessionRevision.current && !requestController.signal.aborted) setFollowUpError(caught instanceof Error ? caught.message : "Ask Bullseye is temporarily unavailable.");
+    } finally { if (followUpController.current === requestController) { followUpRequestActive.current = false; setFollowUpBusy(false); } }
   }
 
   async function shareDecision() {
@@ -2017,21 +2060,22 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
   function openNotebook() {
     startNewChart();
-    requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("bullseye-notebook")?.scrollIntoView({ block: "start" })));
+    requestAnimationFrame(() => requestAnimationFrame(() => revealReportTarget(document.getElementById("bullseye-notebook"), window.matchMedia("(prefers-reduced-motion: reduce)").matches)));
   }
 
   async function startReview(decision: LockedDecision) {
-    resetChartSession();
+    resetChartSession(); clearChartContext();
     if (decision.review) {
       setReviewTarget(decision); setReview(decision.review); setAnalysis(null); setImage(decision.afterImage ?? null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setFourHourImage(null); setFourHourFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setImmersive(true); setError("");
       return;
     }
-    if (!await requireAppleEntitlementForAdditionalRequest()) return;
+    const revision = sessionRevision.current;
+    if (!await requireAppleEntitlementForAdditionalRequest() || revision !== sessionRevision.current) return;
     setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setDetailImage(null); setDetailFileName(""); setFourHourImage(null); setFourHourFileName(""); setIndicatorImage(null); setIndicatorFileName(""); setImmersive(false); setError("");
   }
 
   function startNewChart() {
-    resetChartSession();
+    resetChartSession(); clearChartContext();
     setImmersive(false);
     setAnalysis(null);
     setImage(null);
@@ -2069,7 +2113,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return <main className="psApp" data-pocket-build="v3.3" data-visual-style="luminous" data-spatial="true">
       <PocketSpatialExperience scanning={busy} />
       <section className="psResults psAutopsyResults" data-immersive="true">
-        <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div>
+        <div className="psImmersiveBar"><span>BULLSEYE · DECISION AUTOPSY</span><button type="button" onClick={startNewChart}>DONE</button></div>
         <header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header>
         <section className="psDecisionTimeline" aria-label="Decision timeline"><header><span>⌁ DECISION TIMELINE</span><b>ORIGINAL → CHANGE → OUTCOME</b></header><ol>{decisionTimeline.map((event, index) => <li key={event.id} data-state={event.state}><i>{index + 1}</i><div><small>{event.label}{event.timestamp ? ` · ${new Date(event.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}` : ""}</small><strong>{event.headline}</strong><p>{event.detail}</p></div><b>{event.state === "COMPLETE" ? "✓" : "○"}</b></li>)}</ol></section>
         <SnapshotReview before={reviewTarget.image} after={reviewTarget.afterImage ?? image ?? ""} review={review} />
@@ -2168,7 +2212,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </section>
 
           {correctionOriginal ? <section className="psCorrectionReplaySummary"><header><span>↻ CORRECTION REPLAY ACTIVE</span><strong>ORIGINAL RESULT PRESERVED</strong></header><div><article><small>ORIGINAL</small><b>{correctionOriginal.instrument} · {correctionOriginal.timeframe} · {correctionOriginal.currentPrice || "UNKNOWN"}</b></article><article><small>CORRECTED MAP</small><b>{analysis.instrument} · {analysis.timeframe} · {analysis.currentPrice || "UNKNOWN"}</b></article></div></section> : null}
-          <div id="bullseye-feedback" className="psFeedbackTarget"><AccuracyFeedbackPanel analysis={analysis} onApplyCorrection={applyAccuracyCorrection} onReanalyse={reanalyseWithCorrection} reanalysing={busy} /></div>
+          <div className="psFeedbackTarget"><AccuracyFeedbackPanel key={`${sessionRevision.current}:${activeChartId}`} analysis={analysis} sample={sampleMode} onApplyCorrection={applyAccuracyCorrection} onReanalyse={reanalyseWithCorrection} reanalysing={busy} /></div>
 
           <section className="psJournalCta" data-saved={currentDecisionSaved}>
             <div><span>▣ PRIVATE DECISION JOURNAL</span><strong>{currentDecisionSaved ? "RESULT SAVED" : "MAKE THIS RESULT MORE VALUABLE LATER"}</strong><p>{currentDecisionSaved ? "Return with a later chart to compare what happened with the reasoning you locked today." : "Save the chart, evidence and verdict now. Later, Bullseye can grade whether the process was sound without judging it only by profit or loss."}</p></div>
@@ -2202,7 +2246,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </section>
         )}
         {showResultReveal && (
-          <section className="psResultReveal" role="dialog" aria-modal="true" aria-label="Pocket Bullseye result ready">
+          <section ref={revealDialogRef} tabIndex={-1} className="psResultReveal" role="dialog" aria-modal="true" aria-label="Pocket Bullseye result ready">
             <div className="psRevealRadar" aria-hidden="true"><i /><i /><i /><b><PocketGlyph /></b></div>
             <p>BULLSEYE ANALYSIS COMPLETE</p>
             <div className="psRevealScore"><span>AI SETUP GRADE</span><strong data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</strong><b>{analysis.setupScore.overall}<small>/100</small></b></div>
@@ -2233,6 +2277,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {!reviewTarget ? <div className="psLaunchSignals" aria-label="Bullseye decision perspectives"><article data-tone="bull"><b><PocketGlyph kind="up" /></b><span>BULL CASE</span></article><article data-tone="wait"><b><PocketGlyph kind="shield" /></b><span>PATIENCE</span></article><article data-tone="bear"><b><PocketGlyph kind="down" /></b><span>BEAR CASE</span></article></div> : null}
         </section>
         {!reviewTarget ? <div className="psTrustPulse"><span>🔒 PRIVATE IMAGE</span><span>◉ EVIDENCE FIRST</span><span>✕ NO ORDER CONNECTION</span></div> : null}
+        {reviewTarget ? <button type="button" className="pbReturnNotebook" onClick={openNotebook}>← Back to my notebook</button> : null}
         {!reviewTarget ? <details className="pbReportFold pbPersonalise"><summary>Personalise your result<span>Optional</span></summary><label className="psPersonalTouch"><span><strong>MAKE BULLSEYE YOURS</strong><small>OPTIONAL · STAYS ON THIS DEVICE</small></span><input value={viewerName} maxLength={24} autoComplete="given-name" placeholder="What should Bullseye call you?" onChange={(event) => { const value = event.target.value; setViewerName(value); try { localStorage.setItem("pocket-bullseye-viewer-name", value); } catch {} }} /></label></details> : null}
         {!image && !reviewTarget ? <button className="psSampleButton" type="button" onClick={openSample}>EXPLORE A SAMPLE ANALYSIS<small>Five fictional timeframes · no upload or subscription needed</small></button> : null}
         {!image && !reviewTarget && !nativeAppleApp ? <div className="psAppStoreEntry"><AppStoreLink>Get Pocket Bullseye for iPhone & iPad</AppStoreLink><span>One complete analysis free in the app. Then £4.99/month in the UK; regional pricing varies.</span></div> : null}

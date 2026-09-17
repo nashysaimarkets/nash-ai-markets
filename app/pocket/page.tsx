@@ -49,6 +49,7 @@ import "./pocket-luminous.css";
 import "./pocket-observatory.css";
 import "./pocket-level-scanner.css";
 import "./pocket-review-workspace.css";
+import "./pocket-surface-finish.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye",

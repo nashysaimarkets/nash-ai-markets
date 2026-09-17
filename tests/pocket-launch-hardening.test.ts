@@ -442,7 +442,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(scanner, /Linear price scale/);
   assert.doesNotMatch(client, /FULL EVIDENCE AUDIT/);
   assert.doesNotMatch(client, /DETAILED MARKET AUDIT/);
-  assert.match(scanner, /Nearest boundaries/);
+  assert.match(scanner, /aria-pressed=\{!all\} onClick=\{\(\) => changeView\(false\)\}>Nearby/);
+  assert.match(scanner, /aria-pressed=\{all\} onClick=\{\(\) => changeView\(true\)\}>All/);
   assert.match(client, /showResultReveal/);
   assert.match(client, /START MY CINEMATIC RESULT/);
   assert.match(client, /ClarityLock/);
@@ -509,12 +510,12 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /THE PRICE BATTLEFIELD/);
   assert.match(client, /OPEN FULL WRITTEN REPORT/);
   assert.match(client, /psStoryFinale/);
-  assert.match(client, /EVIDENCE BALANCE · NOT PROBABILITY/);
+  assert.match(client, /aria-label="Directional interpretation, not a probability"/);
   assert.match(client, /personalDailyMessage/);
   assert.match(client, /YOUR MESSAGE FOR TODAY/);
   assert.doesNotMatch(client, /CinematicTranscript/);
   assert.match(client, /psFinaleRatioCards/);
-  assert.match(client, /EVIDENCE BALANCE/);
+  assert.match(client, /AI interpretation · not a probability or measured win rate/);
   assert.match(client, /REPORT A PROBLEM/);
   assert.match(client, /SUGGEST AN IDEA/);
   assert.match(client, /mailto:hello@nashaimarkets\.com/);

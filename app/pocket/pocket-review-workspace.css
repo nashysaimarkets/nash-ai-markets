@@ -1,10 +1,10 @@
 .psApp .pbResearchPanel{margin:20px 0;padding:22px;border:1px solid #638ca75c;border-radius:24px;background:radial-gradient(ellipse at 8% 0,#18516880,transparent 60%),linear-gradient(150deg,#112536f5,#07131ff5);box-shadow:inset 0 2px 1px #c3f1ff23,0 18px 42px #0005;color:#eaf6ff;min-width:0}
 .psApp .pbResearchPanel>header,.pbEvidenceReveal>header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.psApp .pbResearchPanel h2{font:650 clamp(1.35rem,4.5vw,1.8rem)/1.2 var(--font-geist-sans),sans-serif;letter-spacing:-.025em;margin:6px 0;color:#edfaff;text-shadow:0 2px 12px #a7eaff22}
+.psApp .pbResearchPanel h2{font:650 clamp(1.35rem,4.5vw,1.8rem)/1.2 var(--font-geist-sans, sans-serif),sans-serif;letter-spacing:-.025em;margin:6px 0;color:#edfaff;text-shadow:0 2px 12px #a7eaff22}
 .psApp .pbResearchPanel h3{font-size:1.1rem;line-height:1.4;margin:0 0 5px}
 .psApp .pbResearchPanel p,.psApp .pbSnapshot p,.psApp .pbEvidence p{font-size:1rem;line-height:1.55;color:#baceda;overflow-wrap:anywhere}
 .psApp .pbResearchPanel small,.psApp .pbSnapshot small,.psApp .pbEvidence small,.psApp .pbResearchPanel>header span{font-size:.875rem;line-height:1.5;color:#9db8ca;display:block}
-.psApp .pbResearchPanel button,.psApp .pbSnapshot button,.psApp .pbEvidence button,.psApp .pbResultActions button,.psApp .pbReturnNotebook{font:600 .95rem/1.4 var(--font-geist-sans),sans-serif;text-transform:none;letter-spacing:0;color:#d9f6ff;border:1px solid #72b0c56b;border-radius:13px;background:linear-gradient(140deg,#204958,#112633);box-shadow:inset 0 1px 1px #c7faff28,0 5px 15px #0003;padding:12px 16px;min-height:46px;cursor:pointer;white-space:normal}
+.psApp .pbResearchPanel button,.psApp .pbSnapshot button,.psApp .pbEvidence button,.psApp .pbResultActions button,.psApp .pbReturnNotebook{font:600 .95rem/1.4 var(--font-geist-sans, sans-serif),sans-serif;text-transform:none;letter-spacing:0;color:#d9f6ff;border:1px solid #72b0c56b;border-radius:13px;background:linear-gradient(140deg,#204958,#112633);box-shadow:inset 0 1px 1px #c7faff28,0 5px 15px #0003;padding:12px 16px;min-height:46px;cursor:pointer;white-space:normal}
 .psApp .pbResearchPanel button:disabled,.psApp .pbSnapshot button:disabled{opacity:.5;cursor:default}
 .psApp .pbResearchPanel button:focus-visible,.psApp .pbSnapshot button:focus-visible,.psApp .pbEvidence button:focus-visible,.psApp .pbResultActions button:focus-visible{outline:3px solid #93eff2;outline-offset:3px}
 .psApp .pbResearchPanel button[aria-pressed=true],.psApp .pbSnapshot button[aria-pressed=true]{background:linear-gradient(140deg,#2d7479,#18454d);border-color:#97efdf;box-shadow:inset 0 2px 1px #ddfff85c,0 0 22px #5adcca22}
@@ -26,7 +26,7 @@
 .pbSnapshotChanges article{padding:16px 0;border-bottom:1px solid #7396ad30}.pbSnapshotChanges article>b{color:#9cebd3;text-transform:capitalize}.pbSnapshotChanges article[data-impact=INVALIDATED]>b,.pbSnapshotChanges article[data-impact=WEAKENED]>b{color:#ffa3ad}
 .psApp .pbSnapshotLesson{padding:24px 8px}.psApp .pbSnapshotLesson h3{font-size:1.4rem;line-height:1.45;font-weight:600;margin:16px 0;color:#e9f6ff}
 .psApp .pbResearchPanel label{display:grid;gap:7px;font-size:.9rem;line-height:1.4;color:#bdd6e3;min-width:0}
-.psApp .pbResearchPanel input,.psApp .pbResearchPanel select,.psApp .pbResearchPanel textarea{width:100%;min-width:0;box-sizing:border-box;background:#06121ee6;color:#e6f5ff;border:1px solid #6b94aa70;border-radius:10px;font:400 1rem/1.5 var(--font-geist-sans),sans-serif;padding:12px;min-height:46px}
+.psApp .pbResearchPanel input,.psApp .pbResearchPanel select,.psApp .pbResearchPanel textarea{width:100%;min-width:0;box-sizing:border-box;background:#06121ee6;color:#e6f5ff;border:1px solid #6b94aa70;border-radius:10px;font:400 1rem/1.5 var(--font-geist-sans, sans-serif),sans-serif;padding:12px;min-height:46px}
 .psApp .pbResearchPanel textarea{min-height:120px;resize:vertical}.pbNotebookFilters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}.pbNotebookFilters>label:first-child{grid-column:1/-1}
 .psApp .pbResearchPanel summary{cursor:pointer;min-height:44px;padding:12px 0;font-size:1rem;font-weight:600;line-height:1.4;color:#c2eef7;text-transform:none;letter-spacing:0}
 .pbRules{padding:0 0 14px;border-bottom:1px solid #7796af33}.pbRules label{margin:10px 0}.pbNotebookEntries{display:grid;gap:16px}.pbNotebookEntries>article{padding:18px;background:linear-gradient(125deg,#162d3eaa,#0a1927);border:1px solid #6f91ac42;border-radius:18px;box-shadow:inset 0 1px 1px #daeffa15}
@@ -42,7 +42,7 @@
 
 /* Secondary detail stays available without repeating the main decision surface. */
 .psApp[data-spatial][data-visual-style] .pbReportFold{margin:16px 0;border:1px solid #91c2d247;border-radius:18px;background:linear-gradient(140deg,#18354be6,#081625f0);box-shadow:inset 0 1px 1px #d4f6ff24,0 10px 28px #0004;min-width:0;overflow:hidden}
-.psApp[data-spatial][data-visual-style] .pbReportFold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px;min-height:52px;cursor:pointer;list-style:none;color:#e0f6ff;font:600 1rem/1.45 var(--font-geist-sans),sans-serif;text-transform:none;letter-spacing:0}
+.psApp[data-spatial][data-visual-style] .pbReportFold>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px;min-height:52px;cursor:pointer;list-style:none;color:#e0f6ff;font:600 1rem/1.45 var(--font-geist-sans, sans-serif),sans-serif;text-transform:none;letter-spacing:0}
 .pbReportFold>summary::-webkit-details-marker{display:none}.pbReportFold>summary::after{content:"+";font-size:1.4rem;color:#9ae7de;flex:none}.pbReportFold[open]>summary::after{content:"−"}
 .psApp[data-spatial][data-visual-style] .pbReportFold>summary>span{margin-left:auto;color:#a9c4d4;font-size:.875rem;font-weight:400;text-align:right}
 .psApp[data-spatial][data-visual-style] .pbReportFold>summary:focus-visible{outline:3px solid #9ae7de;outline-offset:-5px;border-radius:18px}
@@ -55,7 +55,7 @@
 .psApp[data-spatial][data-visual-style] .psMindChange strong{font-size:1rem;line-height:1.5}
 .psApp[data-spatial][data-visual-style] .pbDirectionalCards strong{font-size:clamp(1.15rem,4vw,2rem);line-height:1.2;white-space:normal;overflow-wrap:anywhere}
 .psApp[data-spatial][data-visual-style] .pbAssessmentNote{font-size:.875rem;line-height:1.5;color:#bdd5df;max-width:100%;margin:16px auto;text-transform:none;letter-spacing:0}
-.psApp[data-spatial][data-visual-style] .psEventSafety button{font:600 1rem/1.4 var(--font-geist-sans),sans-serif;color:#bcf4e9;background:#193b45;border:1px solid #6daea5;border-radius:10px;min-height:44px;padding:10px 14px}
+.psApp[data-spatial][data-visual-style] .psEventSafety button{font:600 1rem/1.4 var(--font-geist-sans, sans-serif),sans-serif;color:#bcf4e9;background:#193b45;border:1px solid #6daea5;border-radius:10px;min-height:44px;padding:10px 14px}
 .psApp[data-spatial][data-visual-style] .pbPersonalise .psPersonalTouch{margin:0;border:0;box-shadow:none}
 .psApp[data-spatial][data-visual-style] .psLiquidityIntel li span{overflow-wrap:anywhere}
 @media(max-width:520px){.psApp[data-spatial][data-visual-style] .pbReportFold>summary{flex-wrap:wrap;padding:15px;gap:8px}.psApp[data-spatial][data-visual-style] .pbReportFold>summary>span{font-size:.875rem;max-width:100%;text-align:left;margin-left:0}.psApp[data-spatial][data-visual-style] .pbReportFold>summary::after{margin-left:auto}.psApp[data-spatial][data-visual-style] .pbAssessment .psDecisionFactors{grid-template-columns:1fr}.psApp[data-spatial][data-visual-style] .psMindChange>header{align-items:flex-start;flex-wrap:wrap}}

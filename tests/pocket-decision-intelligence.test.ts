@@ -107,7 +107,10 @@ test("decision autopsy persists the later evidence and fails closed on root caus
   for (const field of ["thesisStatus", "structureShift", "rootCause", "evidenceChanges", "nextRule"]) assert.match(route, new RegExp(field));
   assert.match(route, /rootCause=NOT_PROVEN unless/);
   assert.match(client, /await vaultSave\(completedDecision\)/);
-  assert.match(client, /CHART CHANGE DETECTOR/);
+  assert.match(client, /<SnapshotReview before=\{reviewTarget\.image\}/);
+  const snapshot = await readFile(new URL("../app/pocket/SnapshotReview.tsx", import.meta.url), "utf8");
+  assert.match(snapshot, /review\.evidenceChanges\.map/);
+  assert.match(snapshot, /review\.nextRule/);
   assert.match(client, /SetupNotebook/);
   assert.match(await readFile(new URL("../app/pocket/SetupNotebook.tsx", import.meta.url), "utf8"), /Patterns in my reviews/);
   assert.match(compatibility, /afterImage/);

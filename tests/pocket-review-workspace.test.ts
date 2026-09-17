@@ -72,3 +72,16 @@ test("notebook filters use personal lessons and patterns without inferring a tra
   assert.equal(notebookMatches(decision(), "", "Different instrument", "", ""), false);
   assert.equal(notebookMatches(decision(), "", "", "", "reviewed"), false);
 });
+
+
+test("personal actions survive backup without inventing an action for older decisions", () => {
+  for (const action of ["TAKEN", "WAITED", "PASSED"] as const) {
+    const saved = decision(); saved.notebook!.action = action;
+    const restored = parseNotebookBackup(createNotebookBackup([saved], [])).decisions[0];
+    assert.equal(restored.notebook?.action, action);
+    assert.equal(restored.intention, "UNSURE");
+    assert.equal(restored.review, undefined);
+    assert.deepEqual(restored.analysis, saved.analysis);
+  }
+  assert.equal(parseNotebookBackup(createNotebookBackup([decision()], [])).decisions[0].notebook?.action, undefined);
+});

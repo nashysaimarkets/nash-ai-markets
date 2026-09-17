@@ -25,7 +25,9 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance, 
   const [entry, setEntry] = useState(analysis.currentPrice && /^\s*[£$€¥]?[\d\s,'’.]+\s*$/.test(analysis.currentPrice) ? analysis.currentPrice : "");
   const [stop, setStop] = useState("");
   const [target, setTarget] = useState("");
-  const [tradeReview, setTradeReview] = useState<TradePlanEvaluation | null>(null);
+  const [submittedPlan, setSubmittedPlan] = useState<{ side: TradeSide; entry: string; stop: string; target: string } | null>(null);
+  // Recompute against refreshed evidence, preserving the user’s submitted prices.
+  const tradeReview: TradePlanEvaluation | null = submittedPlan ? evaluateTradePlan(submittedPlan, analysis) : null;
 
   const factors = [
     { label: "STRUCTURE", score: factorScore(analysis.setupScore.structure), detail: analysis.marketStructure },
@@ -34,7 +36,7 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance, 
     { label: "RISK CLARITY", score: factorScore(analysis.setupScore.riskClarity), detail: analysis.invalidation },
   ];
 
-  const analyseTrade = () => setTradeReview(evaluateTradePlan({ side, entry, stop, target }, analysis));
+  const analyseTrade = () => setSubmittedPlan({ side, entry, stop, target });
 
   return <section className="psDecisionEngine" aria-labelledby="bullseye-decision-engine-title">
     <header className="psInstrumentHeader"><OrbitalInstrument kind="target" />
@@ -61,11 +63,11 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance, 
     <details className="psTradeReview">
       <summary><span>🎯 ANALYSE MY TRADE</span><strong>ENTRY · STOP · TARGET</strong><b>＋</b></summary>
       <div>
-        <nav aria-label="Trade direction"><button type="button" data-active={side === "LONG"} onClick={() => { setSide("LONG"); setTradeReview(null); }}>LONG</button><button type="button" data-active={side === "SHORT"} onClick={() => { setSide("SHORT"); setTradeReview(null); }}>SHORT</button></nav>
+        <nav aria-label="Trade direction"><button type="button" data-active={side === "LONG"} aria-pressed={side === "LONG"} onClick={() => { setSide("LONG"); setSubmittedPlan(null); }}>LONG</button><button type="button" data-active={side === "SHORT"} aria-pressed={side === "SHORT"} onClick={() => { setSide("SHORT"); setSubmittedPlan(null); }}>SHORT</button></nav>
         <form onSubmit={(event) => { event.preventDefault(); analyseTrade(); }}>
-          <label><span>ENTRY</span><input inputMode="decimal" value={entry} onChange={(event) => { setEntry(event.target.value); setTradeReview(null); }} placeholder="Exact price" /></label>
-          <label><span>STOP</span><input inputMode="decimal" value={stop} onChange={(event) => { setStop(event.target.value); setTradeReview(null); }} placeholder="Exact price" /></label>
-          <label><span>TARGET</span><input inputMode="decimal" value={target} onChange={(event) => { setTarget(event.target.value); setTradeReview(null); }} placeholder="Exact price" /></label>
+          <label><span>ENTRY</span><input inputMode="decimal" value={entry} onChange={(event) => { setEntry(event.target.value); setSubmittedPlan(null); }} placeholder="Exact price" /></label>
+          <label><span>STOP</span><input inputMode="decimal" value={stop} onChange={(event) => { setStop(event.target.value); setSubmittedPlan(null); }} placeholder="Exact price" /></label>
+          <label><span>TARGET</span><input inputMode="decimal" value={target} onChange={(event) => { setTarget(event.target.value); setSubmittedPlan(null); }} placeholder="Exact price" /></label>
           <button type="submit">ANALYSE MY TRADE</button>
         </form>
         {tradeReview ? <section className="psTradeReviewResult" data-verdict={tradeReview.verdict} aria-live="polite">
