@@ -37,3 +37,15 @@ Apple accepted build 39 without upload errors at 18:58:56 UTC on 17 September. R
 - Apple upload accepted at 18:58:56 UTC; delivery UUID `691ad00d-2939-4300-a2ba-488770e1debc`.
 - Read-only status run `6aac38fe35c948ed346cfd2b` finished in 30 seconds from the exact native source: Apple build `691ad00d-2939-4300-a2ba-488770e1debc`, version 1.2.12 (39), VALID, unexpired, internal IN_BETA_TESTING and external READY_FOR_BETA_SUBMISSION.
 - Actual purchase and active-purchase restore on build 39 remain unverified. No review was cancelled or submitted; public version remains 1.2.11. The existing App Store draft has not been reattached from build 38 during this verification task.
+
+## Draft preparation follow-up — 17 September, 20:13 BST
+
+Guarded draft workflow `6aac3bc5d2ea6c284fcfc693` completed in 38 seconds from source `72d09a1f6c32cbb41c9ba654ad79156a952dc08d`. It read Apple's current versions and review submissions before each mutation, verified the exact valid build, and attached build 39 to the existing 1.2.12 draft `05285e9d-04f6-49d9-9ff3-ef5dca520ac0`. It also saved and read back the en-GB release notes at localization `3dce39fe-727b-46fd-8c51-62d0c87c8249`.
+
+The final readback reported `DRAFT VERIFIED: 1.2.12 (39); en-GB notes saved; AFTER_APPROVAL` and `NOT SUBMITTED: physical iPhone customer-journey validation remains required`. The draft remains PREPARE_FOR_SUBMISSION. No new binary was created, no review was submitted or cancelled, and the immutable web pin is unchanged.
+
+### Remaining phone verification
+
+Install 1.2.12 (39) in TestFlight and confirm that exact version before testing. At the paywall, tap Subscribe once and complete Apple's sign-in or confirmation privately. Record whether an Apple purchase sheet appears, whether access unlocks, and the exact error if it does not. Do not record credentials or treat the USD label alone as the transaction result.
+
+All five release checks remain pending on this candidate: purchase, purchase cancellation, restoration of an existing active purchase, correct one-free-analysis consumption, and analytics opt-out. A cancelled Apple sign-in or a no-active-subscription response is not successful restoration. These must be observed on the phone; the browser and automated policy tests cannot supply that evidence. The draft is prepared, so after those checks pass the next publishing action is the guarded submission workflow.

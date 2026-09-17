@@ -59,5 +59,17 @@
   "codemagicBuildId": "6aac378569aec796c74123fa",
   "testFlightInternalState": "IN_BETA_TESTING",
   "testFlightExternalState": "READY_FOR_BETA_SUBMISSION",
-  "appleStatusVerificationRun": "6aac38fe35c948ed346cfd2b"
+  "appleStatusVerificationRun": "6aac38fe35c948ed346cfd2b",
+  "appleDraft": {
+    "versionId": "05285e9d-04f6-49d9-9ff3-ef5dca520ac0",
+    "buildNumber": "39",
+    "appleBuildId": "691ad00d-2939-4300-a2ba-488770e1debc",
+    "state": "PREPARE_FOR_SUBMISSION",
+    "releaseType": "AFTER_APPROVAL",
+    "locale": "en-GB",
+    "releaseNotesVerified": true,
+    "preparationRun": "6aac3bc5d2ea6c284fcfc693",
+    "preparationCommit": "72d09a1f6c32cbb41c9ba654ad79156a952dc08d",
+    "submitted": false
+  }
 }
