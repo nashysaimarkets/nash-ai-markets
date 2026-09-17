@@ -21,3 +21,11 @@ Apple's [transaction updates documentation](https://developer.apple.com/document
 The 19 existing focused purchase/review tests pass. Native policy tests cover 15 active, expired, expiry-boundary, revoked, replaced, mismatched, missing-expiry and current-entitlement cases; they must execute on the Mac build runner. Typecheck, security, full release gates, signed native compilation and Apple processing remain to be recorded. These checks do not simulate a real App Store purchase.
 
 Build 39 is not yet uploaded or submitted. Record the exact web deployment, native build commit, Apple build identifier and TestFlight state only after verification. All five physical-device release checks remain required before App Review, as specified by CUSTOMER_JOURNEY_BATCH.md.
+
+## Pinned candidate
+
+- Repair and web source: `31f8261013da992ba45f05be6e53253675caa9ec`.
+- READY deployment: `dpl_EmjS25nuAQE6i7kDPA9BMPtaowb4`; exact served revision verified 17 September 2026.
+- Web URL: https://nash-ai-markets-q9jd3ysxt-nash-ai-markets.vercel.app/pocket.
+- Type checking and the secret-pattern scan passed locally.
+- Read-only Apple preflight: `6aac36b79b5911cdc535057e`, completed in 29 seconds from the repair revision. Build 38 remains VALID and in internal TestFlight; 1.2.12 is an editable draft, and 1.2.11 remains public.

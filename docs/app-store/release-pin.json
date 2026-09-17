@@ -1,11 +1,11 @@
 {
   "branch": "fix/pocket-apple-purchases-2026-09-17",
-  "buildNumber": "38",
-  "deploymentId": "dpl_B25udymh7Ttp3L6YxCkjNEEKZQAX",
+  "buildNumber": "39",
+  "deploymentId": "dpl_EmjS25nuAQE6i7kDPA9BMPtaowb4",
   "iosBranch": "fix/pocket-apple-purchases-2026-09-17",
-  "label": "Pocket Bullseye iOS App Store 1.2.12 build 38 — direct subscription access",
+  "label": "Pocket Bullseye iOS App Store 1.2.12 build 39 \u2014 verified transaction recovery",
   "marketingVersion": "1.2.12",
-  "revision": "fea69217e6855ba6c161a782ae8027f953682c31",
-  "serverUrl": "https://nash-ai-markets-hqg42hl69-nash-ai-markets.vercel.app/pocket",
-  "verifiedAt": "2026-09-17T17:57Z"
+  "revision": "31f8261013da992ba45f05be6e53253675caa9ec",
+  "serverUrl": "https://nash-ai-markets-q9jd3ysxt-nash-ai-markets.vercel.app/pocket",
+  "verifiedAt": "2026-09-17T18:53:30Z"
 }
