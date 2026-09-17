@@ -46,3 +46,7 @@ The same read confirmed 1.2.12 PREPARE_FOR_SUBMISSION with AFTER_APPROVAL and pu
 Guarded draft-only run `6aac553ec4068f7444dda646` finished successfully in 35 seconds from saved verification commit `9d65df523a8994728d238ad17d513c0bd74c3961`. It passed the review-preservation guard, attached build 41 to existing version ID `05285e9d-04f6-49d9-9ff3-ef5dca520ac0`, saved the exact en-GB release notes and verified AFTER_APPROVAL plus PREPARE_FOR_SUBMISSION. The log explicitly confirms DRAFT VERIFIED: 1.2.12 (41) and NOT SUBMITTED pending physical iPhone validation. No existing review was cancelled or withdrawn.
 
 The upload and draft work are complete. The project gate in `docs/app-store/CUSTOMER_JOURNEY_BATCH.md`, enforced by `scripts/submit-staged-iphone.py`, still requires actual purchase, cancellation, restore, free-use and opt-out evidence for this candidate. The build 40 owner reports remain preserved separately. No unavailable check or automated test has been substituted for a physical-device pass.
+
+## Owner Restore confirmation
+
+Following the build 41 instructions, the owner reported: “Restore complete. Your subscription is active.” The active-purchase Restore check is now passed on this candidate. This is owner-reported physical-device evidence. New purchase, purchase-sheet cancellation, fresh free-use and analytics opt-out remain unverified on build 41. No App Review submission has been performed based on this single pass.

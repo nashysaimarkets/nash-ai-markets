@@ -5,7 +5,7 @@
   "buildNumber": "41",
   "revision": "77850015745fdc375b50812afca47b7d68f332bf",
   "processingState": "VALID",
-  "physicalDeviceValidation": "PENDING: build 41 adds accessible Restore controls. Build 40 owner purchase and opt-out evidence is preserved in historicalCandidates, not promoted to a new candidate. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out remain to be verified on this exact candidate.",
+  "physicalDeviceValidation": "PARTIAL: owner confirmed build 41 Restore completed with active subscription. Purchase, cancellation, fresh free-use and analytics opt-out remain unverified on this exact candidate. Build 40 purchase and opt-out evidence remains preserved separately.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "41",
@@ -13,9 +13,15 @@
     "checks": {
       "purchase": "not-tested",
       "cancellation": "not-tested",
-      "restore": "not-tested",
+      "restore": "passed",
       "freeUse": "not-tested",
       "analyticsOptOut": "not-tested"
+    },
+    "restoreEvidence": {
+      "source": "owner confirmation in this conversation after build 41 Restore instructions",
+      "recordedAt": "2026-09-17T21:10:14.766204+00:00",
+      "statement": "Restore complete. Your subscription is active.",
+      "scope": "Owner-reported active-purchase Restore pass on build 41. Does not establish a new purchase, purchase-sheet cancellation, fresh free-use or analytics opt-out on this candidate."
     }
   },
   "supersedesBuildNumber": "40",
