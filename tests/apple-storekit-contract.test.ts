@@ -51,7 +51,7 @@ test("every additional native AI request requires an Apple entitlement", async (
   assert.doesNotMatch(pocket, /async function rescanLevelsOnly/, "the duplicate manual level scanner is no longer a separate chargeable action");
   assert.match(pocket, /currentAppleAccess = await refreshAppleAccess\(\)/);
   assert.match(pocket, /reviewTarget && currentAppleAccess\?\.isNative && !currentAppleAccess\.entitled/);
-  assert.match(pocket, /primaryChartReady && !reviewTarget \? <ChartPreflightPanel/);
+  assert.match(pocket, /primaryChartReady && !reviewTarget && !appleNeedsSubscription \? <ChartPreflightPanel/);
   assert.doesNotMatch(pocket, /appleCanRunPreflight/);
   assert.match(pocket, /startNewChart[\s\S]*appleNeedsSubscription[\s\S]*openApplePaywall\(appleAccess\)/);
 });

@@ -5,7 +5,7 @@
   "buildNumber": "37",
   "revision": "c0598b3d398849990d91de5efde6e33520ba72eb",
   "processingState": "VALID",
-  "physicalDeviceValidation": "PENDING: owner reports still blocked on build 37. New screenshot shows sandbox USD price and no active subscription after restore/access lookup; the result of a Subscribe tap is not yet captured. Purchase, cancellation, active-purchase restore, free-use and analytics opt-out checks remain outstanding.",
+  "physicalDeviceValidation": "PENDING: owner recording confirms build 37 installation and AI preflight quota_exhausted. Apple purchase outcome remains unverified. A subscription-entry UI fix is saved for a future candidate; build 37 still pins the previous web revision. All required physical-device checks remain outstanding.",
   "deviceValidation": {
     "status": "pending",
     "buildNumber": "37",
@@ -18,7 +18,8 @@
       "analyticsOptOut": "not-tested"
     },
     "observations": [
-      "IMG_7532 Small.jpeg shows new paywall, Apple test environment, USD 4.99 and a completed no-active-entitlement message. This is not proof of a successful purchase or restore of an existing entitlement."
+      "IMG_7532 Small.jpeg shows new paywall, Apple test environment, USD 4.99 and a completed no-active-entitlement message. This is not proof of a successful purchase or restore of an existing entitlement.",
+      "ScreenRecording_09-17-2026 18-30-22_1.mp4 shows build 37 installation, chart upload and AI preflight capacity error. Vercel preview log at 2026-09-17T17:30:59Z confirms /api/pocket/preflight 503 with reason quota_exhausted, not a timeout. No Apple purchase confirmation appears in the recording."
     ]
   },
   "replacesFailedDeviceBuild": "36",
