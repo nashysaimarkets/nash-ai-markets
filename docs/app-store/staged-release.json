@@ -4,10 +4,11 @@
   "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
   "appId": "6806004581",
   "predecessorVersion": "1.2.11",
-  "appleBuildId": null,
-  "buildCommit": null,
-  "codemagicBuildId": null,
-  "processingState": "NOT_UPLOADED",
-  "verifiedAt": null,
-  "physicalDeviceValidation": "PENDING: purchase, cancellation, restore, free-use consumption and analytics opt-out; see CUSTOMER_JOURNEY_BATCH.md."
+  "appleBuildId": "b88d0cc0-f0ba-43be-b41c-69bc29c3c618",
+  "buildCommit": "6eab8f533258bf1a6034a2a7fa62edf84b9ff023",
+  "codemagicBuildId": "6aabac25628e157fb1f8e449",
+  "processingState": "VALID",
+  "verifiedAt": "2026-09-17T09:27:54.550963+00:00",
+  "physicalDeviceValidation": "PENDING: purchase, cancellation, restore, free-use consumption and analytics opt-out; see CUSTOMER_JOURNEY_BATCH.md.",
+  "statusCheckCodemagicBuildId": "6aabb15c6d7a3277fbd1a812"
 }
