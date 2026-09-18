@@ -122,3 +122,13 @@ workflows:
         script: python3 -m unittest discover -s scripts/tests -p 'test_submit_staged_iphone.py'
       - name: Attach verified build and release notes without submitting
         script: python3 scripts/prepare-apple-release-draft.py
+
+  pocket-apple-listing-refresh:
+    name: Pocket Bullseye — Refresh listing without a new build
+    instance_type: mac_mini_m2
+    max_build_duration: 10
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    scripts:
+      - name: Audit screenshots and update editable listing copy
+        script: python3 scripts/update-apple-listing-copy.py
