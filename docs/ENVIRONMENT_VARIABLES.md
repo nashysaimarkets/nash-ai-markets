@@ -7,6 +7,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_BRIEF_MODEL` — optional server model override.
 - `OPENAI_MORNING_BRIEF_MODEL` — optional Morning Brief model override.
 - `OPENAI_SECOND_OPINION_MODEL` — optional standalone Second Opinion model override; falls back to the default OpenAI model when absent.
+- `SECOND_OPINION_PRIVATE_PILOT` — server-side screenshot-analysis gate; only the exact value `enabled` permits AI image interpretation, otherwise the route returns plan-only output.
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
