@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   title: "Pocket Bullseye",
   description: "Private mobile-first AI chart analysis for NASH AI Markets.",
   applicationName: "Pocket Bullseye",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
