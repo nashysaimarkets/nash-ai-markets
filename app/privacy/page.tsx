@@ -87,7 +87,7 @@ export default function Privacy() {
           Supabase supplies authentication and database services, Stripe processes subscriptions,
           the hosting provider processes necessary technical requests, and the configured
           market-data provider supplies market information. Essential authentication cookies are
-          used to keep members signed in. Pocket's aggregate page report does not use a tracking
+          used to keep members signed in. The aggregate page report does not use a tracking
           cookie; an older campaign cookie is cleared when the first-party reporting endpoint is
           called and is no longer set.
         </p>

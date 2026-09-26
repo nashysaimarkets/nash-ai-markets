@@ -44,13 +44,15 @@ export default function CampaignVisit({ attribution, outcome }: {
   attribution: CampaignAttribution;
   outcome?: PocketFunnelEvent;
 }) {
+  const { source, medium, campaign } = attribution;
   useEffect(() => {
-    const referral = attribution.source === "direct"
+    const referral = source === "direct"
       ? referrerSource(document.referrer, window.location.hostname)
       : null;
+    const baseAttribution: CampaignAttribution = { source, medium, campaign };
     const captured = referral
-      ? { ...attribution, source: referral, medium: "referral" }
-      : attribution;
+      ? { ...baseAttribution, source: referral, medium: "referral" }
+      : baseAttribution;
     const initialEvents: PocketFunnelEvent[] = ["founding_page_viewed"];
     if (outcome && isPocketFunnelEvent(outcome)) initialEvents.push(outcome);
     queueEvents(initialEvents, captured);
@@ -75,6 +77,6 @@ export default function CampaignVisit({ attribution, outcome }: {
       document.removeEventListener("click", onClick, true);
       document.removeEventListener("submit", onSubmit, true);
     };
-  }, [attribution.source, attribution.medium, attribution.campaign, outcome]);
+  }, [source, medium, campaign, outcome]);
   return null;
 }
