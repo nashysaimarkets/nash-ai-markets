@@ -1,11 +1,11 @@
 {
-  "branch": "feat/pocket-titanium-visuals-2026-09-16",
-  "buildNumber": "36",
-  "deploymentId": "dpl_7e4yfyTnP6V3LTVSLgvKBMMJ574e",
-  "iosBranch": "ci/pocket-stage-1.2.12-build36",
-  "label": "Pocket Bullseye iOS App Store 1.2.12 build 36",
-  "marketingVersion": "1.2.12",
-  "revision": "7b653be5a5da4ac03ff2eadc75c6860e33f3c97e",
-  "serverUrl": "https://nash-ai-markets-nbjyp5jnj-nash-ai-markets.vercel.app/pocket",
-  "verifiedAt": "2026-09-17T08:55:43.715570+00:00"
+  "branch": "fix/compact-timeframe-picker-2026-09-26",
+  "buildNumber": "42",
+  "deploymentId": "dpl_B35g8XfPN7gGeivf6SXBPGRnwAA2",
+  "iosBranch": "stage/pocket-ios-1.2.13-build42",
+  "label": "Pocket Bullseye iOS 1.2.13 build 42 staging",
+  "marketingVersion": "1.2.13",
+  "revision": "36d296e4376eb0c1b3284d44d76fb8905499b6a0",
+  "serverUrl": "https://nash-ai-markets-fkjc2yjgq-nash-ai-markets.vercel.app/pocket",
+  "verifiedAt": "2026-09-26T16:37:01.889888+00:00"
 }
