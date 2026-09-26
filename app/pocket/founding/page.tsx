@@ -7,7 +7,7 @@ import "./pocket-founding.css";
 export const metadata: Metadata = {
   title: "Pocket Bullseye Founding 650",
   description: "Join the first 650 Pocket Bullseye founding members at £4.99 per month while continuously subscribed.",
-  robots: { index: false, follow: false },
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#07100d" };
