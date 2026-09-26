@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { ACCURACY_STORAGE_KEY, accuracySummary, benchmarkCandidates, readAccuracyFeedback, type AccuracyCategory, type AccuracyFeedback } from "./accuracy-feedback";
 
 type AccuracyAnalysis = {
@@ -19,17 +19,50 @@ const categories: { value: AccuracyCategory; label: string }[] = [
   { value: "CHART_READING", label: "Chart reading" },
 ];
 
-export default function AccuracyFeedbackPanel({ analysis, onApplyCorrection, onReanalyse, reanalysing = false }: { analysis: AccuracyAnalysis; onApplyCorrection: (feedback: AccuracyFeedback) => void; onReanalyse: () => void; reanalysing?: boolean }) {
-  const fingerprint = useMemo(() => JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]), [analysis]);
-  const [items, setItems] = useState<AccuracyFeedback[]>([]);
+type AccuracyFeedbackPanelProps = {
+  analysis: AccuracyAnalysis;
+  onApplyCorrection: (feedback: AccuracyFeedback) => void;
+  onReanalyse: () => void;
+  reanalysing?: boolean;
+};
+
+const ACCURACY_UPDATED_EVENT = "pocket-accuracy-feedback-updated";
+const EMPTY_ACCURACY_SNAPSHOT = "[]";
+
+function subscribeAccuracyFeedback(onStoreChange: () => void) {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === ACCURACY_STORAGE_KEY || event.key === null) onStoreChange();
+  };
+  window.addEventListener("storage", onStorage);
+  window.addEventListener(ACCURACY_UPDATED_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStorage);
+    window.removeEventListener(ACCURACY_UPDATED_EVENT, onStoreChange);
+  };
+}
+
+function getAccuracySnapshot() {
+  return window.localStorage.getItem(ACCURACY_STORAGE_KEY) ?? EMPTY_ACCURACY_SNAPSHOT;
+}
+
+function getServerAccuracySnapshot() {
+  return EMPTY_ACCURACY_SNAPSHOT;
+}
+
+export default function AccuracyFeedbackPanel(props: AccuracyFeedbackPanelProps) {
+  const { analysis } = props;
+  const fingerprint = JSON.stringify([analysis.instrument, analysis.timeframe, analysis.currentPrice, analysis.levels]);
+  return <AccuracyFeedbackPanelContent key={fingerprint} {...props} />;
+}
+
+function AccuracyFeedbackPanelContent({ analysis, onApplyCorrection, onReanalyse, reanalysing = false }: AccuracyFeedbackPanelProps) {
+  const serializedItems = useSyncExternalStore(subscribeAccuracyFeedback, getAccuracySnapshot, getServerAccuracySnapshot);
+  const items = useMemo(() => readAccuracyFeedback(serializedItems), [serializedItems]);
   const [mode, setMode] = useState<"IDLE" | "CORRECTING" | "SAVED">("IDLE");
   const [selected, setSelected] = useState<AccuracyCategory[]>([]);
   const [correction, setCorrection] = useState("");
   const [note, setNote] = useState("");
   const [savedEntry, setSavedEntry] = useState<AccuracyFeedback | null>(null);
-
-  useEffect(() => { setItems(readAccuracyFeedback(localStorage.getItem(ACCURACY_STORAGE_KEY))); }, []);
-  useEffect(() => { setMode("IDLE"); setSelected([]); setCorrection(""); setNote(""); setSavedEntry(null); }, [fingerprint]);
 
   const snapshot = () => ({
     instrument: analysis.instrument,
@@ -53,7 +86,8 @@ export default function AccuracyFeedbackPanel({ analysis, onApplyCorrection, onR
     const next = [entry, ...items].slice(0, 100);
     localStorage.setItem(ACCURACY_STORAGE_KEY, JSON.stringify(next));
     localStorage.setItem("pocket-bullseye-benchmark-candidates-v1", JSON.stringify(benchmarkCandidates(next)));
-    setItems(next); setSavedEntry(entry); setMode("SAVED");
+    window.dispatchEvent(new Event(ACCURACY_UPDATED_EVENT));
+    setSavedEntry(entry); setMode("SAVED");
     if (verdict === "NEEDS_CORRECTION") onApplyCorrection(entry);
   };
 

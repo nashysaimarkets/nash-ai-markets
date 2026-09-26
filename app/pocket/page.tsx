@@ -35,10 +35,24 @@ import "./pocket-bubble-lab.css";
 import "./pocket-pattern-watch.css";
 
 export const metadata: Metadata = {
-  title: "Pocket Bullseye",
-  description: "Private mobile-first AI chart analysis for NASH AI Markets.",
+  title: "Pocket Bullseye AI Chart Analysis",
+  description: "Upload a trading chart for an AI-assisted second opinion. Review market structure, support and resistance, timeframe context, invalidation and risk before deciding.",
   applicationName: "Pocket Bullseye",
-  robots: { index: false, follow: false },
+  keywords: ["AI chart analysis", "trading chart analyser", "trading second opinion", "support and resistance", "pre-trade analysis"],
+  alternates: { canonical: "/pocket" },
+  robots: { index: true, follow: true },
+  openGraph: {
+    title: "Pocket Bullseye — AI Chart Analysis for Traders",
+    description: "Get an evidence-led second opinion on your trading chart before deciding.",
+    type: "website",
+    url: "/pocket",
+    siteName: "Pocket Bullseye",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pocket Bullseye — AI Chart Analysis for Traders",
+    description: "Get an evidence-led second opinion on your trading chart before deciding.",
+  },
 };
 
 export const viewport: Viewport = {

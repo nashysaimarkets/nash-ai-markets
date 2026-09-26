@@ -13,7 +13,7 @@ export default function Privacy() {
       <article>
         <span>LEGAL</span>
         <h1>Privacy Policy</h1>
-        <p className="updated">Last updated: 22 August 2026</p>
+        <p className="updated">Last updated: 26 September 2026</p>
 
         <h2>Who we are</h2>
         <p>
@@ -37,6 +37,20 @@ export default function Privacy() {
           administer launch communications and onboarding review, prevent preview abuse, respond
           to enquiries, operate and secure the service, and meet legal obligations. We do not sell
           personal information.
+        </p>
+
+        <h2>Pocket Bullseye page measurement</h2>
+        <p>
+          On the Pocket Bullseye Founding page, we count page views, offer and app
+          clicks, checkout starts, checkout cancellations, and checkout-unavailable
+          outcomes. The report stores daily totals with a limited source and campaign
+          label from UTM parameters or, when they are absent, the referring site’s host.
+          It does not create a browser ID or set a tracking cookie.
+          Repeat visits count as separate page views. Rows older than 365 days are
+          removed when a later funnel event is recorded. When a subscription is created, its
+          source and campaign labels may also be stored in Stripe subscription metadata
+          with the billing record and used to group the report. Normal hosting and
+          security logs are processed separately.
         </p>
 
         <h2>Pocket Bullseye chart audits</h2>
@@ -74,7 +88,9 @@ export default function Privacy() {
           Supabase supplies authentication and database services, Stripe processes subscriptions,
           the hosting provider processes necessary technical requests, and the configured
           market-data provider supplies market information. Essential authentication cookies are
-          used to keep members signed in. No marketing cookies are described by this policy.
+          used to keep members signed in. The aggregate page report does not use a tracking
+          cookie; an older campaign cookie is cleared when the first-party reporting endpoint is
+          called and is no longer set.
         </p>
         <p>
           Bullseye may use storage on your device for non-sensitive preferences, personal levels,

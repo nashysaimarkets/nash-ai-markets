@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "../../../../utils/supabase/server.ts";
 import { checkoutOffering, validFoundingProPrice, validPocketFoundingPrice } from "../../../lib/stripe-commercial.ts";
-import { campaignAttribution } from "../../../lib/marketing-attribution.ts";
+import { campaignAttribution, campaignQuery } from "../../../lib/marketing-attribution.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       offeringPresent: Boolean(selected),
     });
     const unavailablePath = form.get("offering") === "pocket_founding_month"
-      ? "/pocket/founding?checkout=unavailable"
+      ? "/pocket/founding?checkout=unavailable&" + campaignQuery(attribution)
       : "/pricing?checkout=unavailable";
     return NextResponse.redirect(new URL(unavailablePath, origin), 303);
   }
@@ -47,7 +47,10 @@ export async function POST(request: Request) {
       const price = await stripe.prices.retrieve(selected.priceId);
       const valid = selected.offering.plan === "pocket" ? validPocketFoundingPrice(price) : validFoundingProPrice(price);
       if (!valid) {
-        return NextResponse.redirect(new URL("/pricing?checkout=unavailable", origin), 303);
+        const unavailablePath = selected.offering.plan === "pocket"
+          ? "/pocket/founding?checkout=unavailable&" + campaignQuery(attribution)
+          : "/pricing?checkout=unavailable";
+        return NextResponse.redirect(new URL(unavailablePath, origin), 303);
       }
     }
     const supabase = await createClient();
@@ -57,7 +60,7 @@ export async function POST(request: Request) {
       mode: "subscription",
       line_items: [{ price: selected.priceId, quantity: 1 }],
       success_url: selected.offering.plan === "pocket" ? `${origin}/pocket/founding/welcome` : `${origin}/welcome`,
-      cancel_url: selected.offering.plan === "pocket" ? `${origin}/pocket/founding?checkout=cancelled` : `${origin}/cancelled`,
+      cancel_url: selected.offering.plan === "pocket" ? `${origin}/pocket/founding?checkout=cancelled&${campaignQuery(attribution)}` : `${origin}/cancelled`,
       allow_promotion_codes: true,
       customer_email: verifiedEmail,
       client_reference_id: user?.id,
@@ -74,7 +77,7 @@ export async function POST(request: Request) {
       message: stripeError?.message || "unknown",
     });
     const unavailablePath = selected.offering.plan === "pocket"
-      ? "/pocket/founding?checkout=unavailable"
+      ? "/pocket/founding?checkout=unavailable&" + campaignQuery(attribution)
       : "/pricing?checkout=unavailable";
     return NextResponse.redirect(new URL(unavailablePath, origin), 303);
   }
