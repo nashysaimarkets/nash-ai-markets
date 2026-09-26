@@ -8,8 +8,10 @@ export default function ChartTimeframePicker({ charts, activeId, pendingId, disa
   onSelect: (id: string) => void; compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDivElement>(null);
+  useEffect(() => setMounted(true), []);
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
@@ -32,9 +34,9 @@ export default function ChartTimeframePicker({ charts, activeId, pendingId, disa
   const label = active.timeframe === "READ FROM CHART" ? `${activeIndex + 1}` : active.timeframe;
   const close = () => { setOpen(false); trigger.current?.focus(); };
   return <>
-    <button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
-      <span aria-hidden="true">{label}</span>
-    </button>
+    {mounted && createPortal(<button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      <span aria-hidden="true">CHARTS</span><strong aria-hidden="true">{label}</strong><span className="psTimeframeChevron" aria-hidden="true">⌃</span>
+    </button>, document.body)}
     {open && createPortal(<div className="psTimeframeBackdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <div ref={dialog} className="psTimeframeSheet" role="dialog" aria-modal="true" aria-labelledby="ps-timeframe-title">
         <header><div><small>YOUR UPLOADED CHARTS</small><h2 id="ps-timeframe-title">Chart / timeframe</h2></div><button className="psTimeframeClose" type="button" onClick={close} aria-label="Close chart choices">×</button></header>
