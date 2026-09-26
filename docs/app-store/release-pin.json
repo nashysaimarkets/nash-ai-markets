@@ -1,11 +1,11 @@
 {
-  "branch": "fix/pocket-apple-purchases-2026-09-17",
-  "buildNumber": "41",
-  "deploymentId": "dpl_2HQNM98VpghFUBBWcs4V77iFnZ9k",
-  "iosBranch": "fix/pocket-apple-purchases-2026-09-17",
-  "label": "Pocket Bullseye iOS App Store 1.2.12 build 41 \u2014 accessible Apple Restore",
-  "marketingVersion": "1.2.12",
-  "revision": "77850015745fdc375b50812afca47b7d68f332bf",
-  "serverUrl": "https://nash-ai-markets-rc1olosmo-nash-ai-markets.vercel.app/pocket",
-  "verifiedAt": "2026-09-17T20:47:32.276129+00:00"
+  "branch": "fix/compact-timeframe-picker-current-2026-09-26",
+  "buildNumber": "42",
+  "deploymentId": "dpl_J9i8H7RVnG49nHEYg6YH4mA5ibbJ",
+  "iosBranch": "stage/pocket-ios-1.2.13-build42-current",
+  "label": "Pocket Bullseye iOS 1.2.13 build 42 staging",
+  "marketingVersion": "1.2.13",
+  "revision": "696ddc1cbd1ac067c059459f26e2afcd8f39bea2",
+  "serverUrl": "https://nash-ai-markets-jvskfid7b-nash-ai-markets.vercel.app/pocket",
+  "verifiedAt": "2026-09-26T16:43:31.411355+00:00"
 }
