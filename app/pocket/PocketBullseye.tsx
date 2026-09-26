@@ -2177,7 +2177,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           {sampleMode ? <p className="psSampleBanner" role="status"><strong>FICTIONAL SAMPLE</strong> · These charts and results demonstrate the app. No live prices, AI scan or free-use charge. Choose NEW CHART to try your own.</p> : null}
           {sampleMode && !nativeAppleApp ? <div className="psAppStoreEntry"><AppStoreLink>Try your own chart free on iPhone or iPad</AppStoreLink><span>One complete analysis free. Then £4.99/month in the UK; regional pricing varies.</span><UsageControl /></div> : null}
           {!sampleMode && appleNeedsSubscription && appleAccess ? <div className="psAppStoreEntry"><button type="button" onClick={() => openApplePaywall(appleAccess)}>Continue with more analyses · {appleAccess.displayPrice}/month</button><span>Renews automatically. Cancel in Apple settings.</span></div> : null}
-          {timeframePicker(true)}
+          {!chartFocus ? timeframePicker(true) : null}
           {error ? <p className="psMessage" role="alert">{error}</p> : null}
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
           <CoreScanSummary
