@@ -2,9 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createAuthCompatibleFetch } from "./auth-compatible-fetch.ts";
 import { resolveSupabasePublicConfig, resolveSupabaseServiceRoleKey } from "./config.ts";
 
-type AdminClientOptions = { db?: { retry?: boolean } };
-
-export function createAdminClient(options: AdminClientOptions = {}) {
+export function createAdminClient() {
   const { url } = resolveSupabasePublicConfig();
   const service = resolveSupabaseServiceRoleKey();
 
@@ -13,7 +11,6 @@ export function createAdminClient(options: AdminClientOptions = {}) {
   }
 
   return createClient(url, service.value, {
-    ...options,
     global: {
       fetch: createAuthCompatibleFetch(service.value),
     },

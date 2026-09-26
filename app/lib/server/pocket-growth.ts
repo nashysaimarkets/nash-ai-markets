@@ -14,7 +14,8 @@ export async function recordPocketGrowthEvent(
   attribution: CampaignAttribution,
 ): Promise<boolean> {
   try {
-    const { error } = await createAdminClient({ db: { retry: false } })
+    // Keep this incrementing RPC as POST; do not opt into the read-only GET form.
+    const { error } = await createAdminClient()
       .rpc("record_pocket_growth_event", {
         p_event: event,
         p_platform: "web",
