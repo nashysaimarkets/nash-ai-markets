@@ -24,15 +24,18 @@ off the exact product, legal terms, website, adverts and intended jurisdictions.
 - the current educational-commentary, no-execution and fail-closed market-data
   boundaries.
 
-No contract, DPA, provider dashboard, secret, customer record or production
-configuration was changed.
+No contract, DPA, provider dashboard, secret or customer record was changed in
+that review. The first-party measurement migration updates existing Supabase
+aggregate functions and retires writes to the former visitor-key report.
 
 ## Conservative launch decisions now recorded
 
 These are the current Bullseye defaults unless a qualified review requires a
 stricter position:
 
-- no marketing/advertising tracker or non-essential analytics at launch;
+- no advertising pixels or third-party analytics; the Pocket founding page uses
+  first-party daily aggregate funnel counters without browser IDs or tracking
+  cookies; qualified review must confirm their lawful basis and PECR treatment;
 - no sale of personal information;
 - essential authentication/security storage only, plus clearly described
   first-party convenience storage;
@@ -83,8 +86,10 @@ anonymisation.
 
 `COOKIE_AND_DEVICE_STORAGE_INVENTORY.md` now records every first-party cookie,
 local/session-storage key and PWA cache found in source. The repository contains
-no marketing analytics tracker. Keep that position for the cash-constrained
-launch. Before public release:
+no advertising pixel or third-party analytics tracker. The Pocket founding
+page now records first-party daily event totals by source and campaign without a
+browser identifier or tracking cookie; this limited measurement still needs
+qualified lawful-basis and PECR classification. Before public release:
 
 - inventory every cookie and storage key, its purpose, owner and lifetime;
 - confirm which items are strictly necessary;

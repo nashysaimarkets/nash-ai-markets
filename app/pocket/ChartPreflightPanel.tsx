@@ -1,14 +1,30 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
 
-export default function ChartPreflightPanel({ image, contextImage, onStatus, onConfirmation }: {
+type ChartPreflightPanelProps = {
   image: string;
   contextImage?: string | null;
   onStatus: (status: PreflightStatus) => void;
   onConfirmation: (confirmation: ChartConfirmation | null) => void;
-}) {
+};
+
+function preflightImageKey(image: string, contextImage: string | null | undefined) {
+  let hash = 2166136261;
+  const combined = image + "\u0000" + (contextImage || "");
+  for (let index = 0; index < combined.length; index += 1) {
+    hash = Math.imul(hash ^ combined.charCodeAt(index), 16777619);
+  }
+  return `${combined.length}:${hash >>> 0}`;
+}
+
+export default function ChartPreflightPanel(props: ChartPreflightPanelProps) {
+  const key = useMemo(() => preflightImageKey(props.image, props.contextImage), [props.image, props.contextImage]);
+  return <ChartPreflightPanelForImage key={key} {...props} />;
+}
+
+function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirmation }: ChartPreflightPanelProps) {
   const [status, setStatus] = useState<PreflightStatus>("CHECKING");
   const [result, setResult] = useState<ChartPreflight | null>(null);
   const [message, setMessage] = useState("");
@@ -22,7 +38,7 @@ export default function ChartPreflightPanel({ image, contextImage, onStatus, onC
 
   useEffect(() => {
     const controller = new AbortController();
-    setStatus("CHECKING"); setResult(null); setMessage(""); statusHandler.current("CHECKING"); confirmationHandler.current(null);
+    statusHandler.current("CHECKING"); confirmationHandler.current(null);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
