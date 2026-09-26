@@ -1,42 +1,50 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { UploadedChart } from "./chart-session";
 
-export default function ChartTimeframePicker({ charts, activeId, pendingId, disabled, onSelect, compact = false }: {
+export default function ChartTimeframePicker({ charts, activeId, pendingId, disabled, onSelect }: {
   charts: UploadedChart[]; activeId: string; pendingId: string | null; disabled: boolean;
   onSelect: (id: string) => void; compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const root = useRef<HTMLElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const closeOutside = (event: PointerEvent) => {
-      if (event.target instanceof Node && !root.current?.contains(event.target)) setOpen(false);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialog.current?.querySelector<HTMLButtonElement>(".psTimeframeClose")?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setOpen(false); trigger.current?.focus(); }
+      if (event.key !== "Tab" || !dialog.current) return;
+      const buttons = [...dialog.current.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")];
+      if (!buttons.length) return;
+      if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons.at(-1)?.focus(); }
+      else if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0].focus(); }
     };
-    const closeEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { setOpen(false); root.current?.querySelector<HTMLButtonElement>(".psTimeframeTrigger")?.focus(); }
-    };
-    document.addEventListener("pointerdown", closeOutside);
-    document.addEventListener("keydown", closeEscape);
-    return () => { document.removeEventListener("pointerdown", closeOutside); document.removeEventListener("keydown", closeEscape); };
+    document.addEventListener("keydown", onKeyDown);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKeyDown); };
   }, [open]);
   if (!charts.length) return null;
   const activeIndex = Math.max(0, charts.findIndex((chart) => chart.id === activeId));
   const active = charts[activeIndex];
-  const label = active.timeframe === "READ FROM CHART" ? `CHART ${activeIndex + 1}` : active.timeframe;
-  const preparing = charts.some((chart) => chart.preparation && chart.preparation !== "failed");
-  const failed = charts.some((chart) => chart.preparation === "failed" && !chart.report);
-  return <section ref={root} className={`psTimeframePicker psTimeframeDisclosure${compact ? " psTimeframeCompact" : ""}`} data-open={open} aria-label="Uploaded chart selection" aria-busy={Boolean(pendingId)}>
-    <button className="psTimeframeTrigger" type="button" aria-expanded={open} aria-controls={`ps-timeframe-options-${compact ? "compact" : "full"}`} onClick={() => setOpen((value) => !value)}>
-      <span><strong>{label}</strong><small>CHART {activeIndex + 1} OF {charts.length}{pendingId ? " · PREPARING" : ""}</small></span><span aria-hidden="true">{open ? "×" : "⌄"}</span>
+  const label = active.timeframe === "READ FROM CHART" ? `${activeIndex + 1}` : active.timeframe;
+  const close = () => { setOpen(false); trigger.current?.focus(); };
+  return <>
+    <button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      <span aria-hidden="true">{label}</span>
     </button>
-    {open ? <div className="psTimeframeOptions" id={`ps-timeframe-options-${compact ? "compact" : "full"}`}>
-    <p>CHART / TIMEFRAME <span>Changes every analysis section</span></p>
-    <nav aria-label="Choose uploaded chart timeframe">{charts.map((chart, index) => <button key={chart.id} type="button" aria-pressed={chart.id === activeId} data-active={chart.id === activeId} disabled={disabled} onClick={() => { onSelect(chart.id); setOpen(false); }} title={chart.name}>
-      <span>{chart.timeframe === "READ FROM CHART" ? `CHART ${index + 1}` : chart.timeframe}</span>
-      <small>{chart.id === activeId ? "VIEWING" : chart.report ? "READY" : chart.preparation === "failed" ? "TAP TO RETRY" : chart.preparation === "preparing" ? "PREPARING…" : chart.preparation === "verifying" ? "VERIFYING…" : chart.preparation === "analysing" ? "ANALYSING…" : chart.preparation === "queued" ? "QUEUED" : pendingId === chart.id ? "PREPARING…" : "WAITING"} · {index + 1}</small>
-    </button>)}</nav>
-    {pendingId ? <div className="psScanActivity" role="status"><span>Preparing the selected chart. You can choose another chart while it finishes.</span><div className="psScanActivityTrack" role="progressbar" aria-label="Selected timeframe analysis in progress"><span /></div></div> : !compact && charts.some((chart) => !chart.report) ? <p role="status">{preparing ? "Other charts are preparing in the background. Ready charts switch instantly." : failed ? "Some charts could not finish. Tap to retry; ready results are saved." : "Ready charts switch instantly. Other views are waiting to be analysed."}</p> : null}
-    </div> : null}
-  </section>;
+    {open && createPortal(<div className="psTimeframeBackdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+      <div ref={dialog} className="psTimeframeSheet" role="dialog" aria-modal="true" aria-labelledby="ps-timeframe-title">
+        <header><div><small>YOUR UPLOADED CHARTS</small><h2 id="ps-timeframe-title">Chart / timeframe</h2></div><button className="psTimeframeClose" type="button" onClick={close} aria-label="Close chart choices">×</button></header>
+        <p>Choose a chart to update the analysis sections.</p>
+        <nav aria-label="Choose uploaded chart timeframe">{charts.map((chart, index) => <button key={chart.id} type="button" aria-pressed={chart.id === activeId} disabled={disabled} onClick={() => { onSelect(chart.id); close(); }} title={chart.name}>
+          <span><strong>{chart.timeframe === "READ FROM CHART" ? `Chart ${index + 1}` : chart.timeframe}</strong><small>CHART {index + 1}</small></span>
+          <em>{chart.id === activeId ? "VIEWING" : chart.report ? "READY" : chart.preparation === "failed" ? "RETRY" : chart.preparation === "preparing" ? "PREPARING…" : chart.preparation === "verifying" ? "VERIFYING…" : chart.preparation === "analysing" ? "ANALYSING…" : chart.preparation === "queued" ? "QUEUED" : pendingId === chart.id ? "PREPARING…" : "WAITING"}</em>
+        </button>)}</nav>
+        {pendingId ? <p role="status">The selected chart is preparing. Other ready charts remain available.</p> : null}
+      </div>
+    </div>, document.body)}
+  </>;
 }
