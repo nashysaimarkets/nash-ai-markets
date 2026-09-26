@@ -44,7 +44,8 @@ export default function Privacy() {
           On the Pocket Bullseye Founding page, we count page views, offer and app
           clicks, checkout starts, checkout cancellations, and checkout-unavailable
           outcomes. The report stores daily totals with a limited source and campaign
-          label from the link; it does not create a browser ID or set a tracking cookie.
+          label from UTM parameters or, when they are absent, the referring site’s host.
+          It does not create a browser ID or set a tracking cookie.
           Repeat visits count as separate page views. Rows older than 365 days are
           removed when a later funnel event is recorded. When a subscription is created, its
           source and campaign labels may also be stored in Stripe subscription metadata
