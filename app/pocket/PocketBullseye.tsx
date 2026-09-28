@@ -11,6 +11,7 @@ import { calculateRangePosition, mergeCompatibleChartLevels, rankChartLevels, ty
 import ChartPreflightPanel from "./ChartPreflightPanel";
 import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import LevelProvenancePanel from "./LevelProvenancePanel";
+import OptionsWallCheck from "./OptionsWallCheck";
 import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
@@ -1258,6 +1259,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
               {levelLabError ? <small role="alert">{levelLabError}</small> : null}
             </section>
             {battlefieldTabs}
+            <OptionsWallCheck key={image ?? "chart"} ticker={analysis.ticker} levels={combinedAnalysis.levels} />
             <DecisionMap analysis={battlefieldAnalysis} sourceImage={battlefieldChart === "context" ? contextImage : image} scenario={selectedScenario} onScenario={setSelectedScenario} onReanalyse={reanalyseResult} reanalysing={refinementStatus === "analysing"} />
             {battlefieldChart === "primary" ? <LevelProvenancePanel levels={combinedAnalysis.levels} anchors={analysis.priceScaleAnchors} /> : null}
             <details className="psSourceEvidence"><summary>VIEW {battlefieldChart === "context" ? "CONTEXT" : "PRIMARY"} SOURCE CHART <b>⌄</b></summary>{battlefieldChart === "context" ? contextSourceChart() : sourceChart()}</details>
