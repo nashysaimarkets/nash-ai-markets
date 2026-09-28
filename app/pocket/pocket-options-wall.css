@@ -1,0 +1,22 @@
+.psOptionsWall { margin: 1rem 0; padding: 1.1rem; border: 1px solid #347d76; border-radius: 16px; background: linear-gradient(145deg,#0e2627,#0c151d); color: #e6f7f4; }
+.psOptionsWall > header { display: flex; justify-content: space-between; gap: .8rem; align-items: start; }
+.psOptionsWall > header span { display: block; color: #87f4d5; font-weight: 800; letter-spacing: .07em; }
+.psOptionsWall > header small { display: block; color: #9eb9b9; margin-top: .25rem; }
+.psOptionsWall > header b { color: #ffe08a; font-size: .72rem; white-space: nowrap; }
+.psOptionsWall p { line-height: 1.5; color: #c4d5d5; }
+.psOptionsWallActions { display: flex; flex-wrap: wrap; gap: .6rem; }
+.psOptionsWallActions label, .psOptionsWallActions button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: .7rem .85rem; border: 1px solid #50c9ac; border-radius: 9px; background: #173b39; color: #eafff8; font: inherit; font-size: .8rem; font-weight: 800; cursor: pointer; }
+.psOptionsWallActions label input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.psOptionsWallActions label:focus-within, .psOptionsWallActions button:focus-visible { outline: 2px solid #a6ffe2; outline-offset: 3px; }
+.psOptionsWallActions button { background: #80e7ca; color: #102622; }
+.psOptionsWallActions button:disabled { opacity: .55; cursor: not-allowed; }
+.psOptionsWallFile { display: block; margin-top: .6rem; overflow-wrap: anywhere; }
+.psOptionsWallError { color: #ffadb4 !important; }
+.psOptionsWallNotice { color: #ffe08a !important; }
+.psOptionsWallResult { margin-top: .9rem; padding: .8rem; border-left: 3px solid #75d8bb; background: #102b2b; border-radius: 6px; }
+.psOptionsWallResult[data-status="UNVERIFIED"] { border-color: #ffcb70; }
+.psOptionsWallResult ul { padding-left: 1.2rem; }
+.psOptionsWallResult li { margin-top: .5rem; }
+.psOptionsWallResult li span { display: block; color: #c4d5d5; }
+.psOptionsWall footer { margin-top: .9rem; color: #a9bbbb; font-size: .75rem; line-height: 1.45; }
+@media(max-width: 520px) { .psOptionsWall > header { flex-direction: column; } .psOptionsWallActions > * { width: 100%; } }
