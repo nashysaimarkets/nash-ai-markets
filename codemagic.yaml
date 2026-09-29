@@ -108,6 +108,10 @@ workflows:
     scripts:
       - name: Verify review-preservation guard
         script: python3 -m unittest discover -s scripts/tests -p 'test_submit_staged_iphone.py'
+      - name: Attach owner-approved build 47 and verify release notes
+        script: python3 scripts/prepare-apple-release-draft.py
+      - name: Refresh current feature listing
+        script: python3 scripts/update-apple-listing-copy.py
       - name: Submit verified candidate after the preceding release completes
         script: python3 scripts/submit-staged-iphone.py --submit
 
