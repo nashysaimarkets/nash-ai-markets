@@ -51,7 +51,7 @@ def configured_client():
 
 def main():
     client = configured_client()
-    copy = json.loads((Path(__file__).resolve().parents[1] / "docs/app-store/listing-copy-2026-09-18.json").read_text())
+    copy = {"promotionalText":"Check chart levels, patterns and risk. Add optional options-volume or crypto derivatives screenshots for context. One complete analysis free; subscription thereafter.","keywords":"chart,analysis,trading,patterns,support,resistance,crypto,options,risk,education","description":"Pocket Bullseye helps you take a second look at your trading chart before making your own decision.\n\nUpload a clear chart screenshot, with up to four optional supporting views of the same instrument. Review visible support and resistance, market structure, bullish and bearish scenarios, invalidation and reasons to wait.\n\nEXPLORE THE EVIDENCE\n• Interactive chart levels and a compact chart/timeframe selector.\n• Pattern X-Ray and Liquidity Guard to inspect visible structure and potential traps.\n• Conditional scenarios, risk context and missing confirmation.\n• Saved chart reviews and comparison tools.\n\nOPTIONAL MARKET CONTEXT\nAdd a labelled options-volume screenshot to cross-check visible strike concentrations against chart levels. For crypto, add a derivatives panel to review visible crowding, liquidation pressure and conflicts with price structure. These checks are separate from the chart verdict and depend on readable uploaded evidence.\n\nONE COMPLETE ANALYSIS FREE\nDownload on iPhone or iPad and try one complete analysis free. Further analysis requires a monthly subscription (£4.99 in the UK; regional prices vary). Payment is charged to your Apple Account. Your subscription renews automatically unless cancelled at least 24 hours before the end of the current period. Manage or cancel it in Apple Account settings. Use Restore Purchases with the Apple Account that made the purchase.\n\nPocket Bullseye provides educational screenshot analysis. It does not connect to a broker, execute trades or provide a live market-data feed. AI can misread charts. Verify prices and findings independently. Output is not personalised financial advice and does not guarantee results.\n\nSupport: hello@nashaimarkets.com\nPrivacy: https://pocket.nashaimarkets.com/privacy\nTerms: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"}
     def get(path):
         if not re.fullmatch(r"/v1/[A-Za-z0-9_/-]+", path):
             raise RuntimeError("Unexpected resource path")
@@ -63,13 +63,13 @@ def main():
             raise RuntimeError("Additional results require explicit inspection")
         return data["data"]
     versions = get(f"/v1/apps/{APP_ID}/appStoreVersions")
-    target = [v for v in versions if v["attributes"].get("versionString") == "1.2.12" and v["attributes"].get("platform") == "IOS"]
+    target = [v for v in versions if v["attributes"].get("versionString") == "1.2.14" and v["attributes"].get("platform") == "IOS"]
     if len(target) != 1:
-        raise RuntimeError("Expected exact existing iOS 1.2.12; no version creation")
+        raise RuntimeError("Expected exact existing iOS 1.2.14; no version creation")
     version = target[0]
     attrs = version["attributes"]
     state = attrs.get("appVersionState") or attrs.get("appStoreState")
-    print("VERSION", json.dumps({"id":version["id"],"version":"1.2.12","state":state,"releaseType":attrs.get("releaseType")}), flush=True)
+    print("VERSION", json.dumps({"id":version["id"],"version":"1.2.14","state":state,"releaseType":attrs.get("releaseType")}), flush=True)
     locales = get(f"/v1/appStoreVersions/{version['id']}/appStoreVersionLocalizations")
     print("LOCALES", json.dumps([l["attributes"].get("locale") for l in locales]), flush=True)
     english = [l for l in locales if l["attributes"].get("locale") == "en-GB"]
