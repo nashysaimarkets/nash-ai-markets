@@ -11,10 +11,11 @@ test("Apple subscription identifiers stay aligned across TypeScript and StoreKit
   assert.match(native, /Transaction\.currentEntitlements/);
   assert.match(native, /AppStore\.sync\(\)/);
   assert.match(native, /transaction\.finish\(\)/);
-  assert.match(native, /guard let product = try await Product\.products/);
+  assert.match(native, /loadedProduct = try await Product\.products\(for: \[productId\]\)\.first/);
+  assert.match(native, /guard let product = loadedProduct else/);
   assert.match(native, /product\?\.displayName \?\? "Pocket Bullseye Monthly"/);
-  assert.match(native, /product\?\.displayPrice \?\? "£4\.99"/);
-  assert.doesNotMatch(native, /guard let product else[\s\S]{0,120}temporarily unavailable from Apple/);
+  assert.match(native, /product\?\.displayPrice \?\? ""/);
+  assert.match(native, /"STORE_PRODUCT_UNAVAILABLE"/);
 });
 
 test("the scene boots through the bridge that registers Pocket StoreKit", async () => {
