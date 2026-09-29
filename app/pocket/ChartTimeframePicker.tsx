@@ -33,11 +33,14 @@ export default function ChartTimeframePicker({ charts, activeId, pendingId, disa
   const active = charts[activeIndex];
   const label = active.timeframe === "READ FROM CHART" ? `${activeIndex + 1}` : active.timeframe;
   const close = () => { setOpen(false); trigger.current?.focus(); };
-  return <>
-    <button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+  // Keep the fixed control outside the scrolling/animated result surface. On iOS,
+  // a transformed ancestor makes position:fixed relative to that ancestor.
+  const triggerButton = <button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
       <span aria-hidden="true">CHARTS</span><strong aria-hidden="true">{label}</strong><span className="psTimeframeChevron" aria-hidden="true">⌃</span>
-    </button>
-    {mounted && open && createPortal(<div className="psTimeframeBackdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+    </button>;
+  return mounted ? createPortal(<>
+    {triggerButton}
+    {open && <div className="psTimeframeBackdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <div ref={dialog} className="psTimeframeSheet" role="dialog" aria-modal="true" aria-labelledby="ps-timeframe-title">
         <header><div><small>YOUR UPLOADED CHARTS</small><h2 id="ps-timeframe-title">Chart / timeframe</h2></div><button className="psTimeframeClose" type="button" onClick={close} aria-label="Close chart choices">×</button></header>
         <p>Choose a chart to update the analysis sections.</p>
@@ -47,6 +50,6 @@ export default function ChartTimeframePicker({ charts, activeId, pendingId, disa
         </button>)}</nav>
         {pendingId ? <p role="status">The selected chart is preparing. Other ready charts remain available.</p> : null}
       </div>
-    </div>, document.body)}
-  </>;
+    </div>}
+  </>, document.body) : triggerButton;
 }
