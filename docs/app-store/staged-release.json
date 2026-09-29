@@ -2,14 +2,12 @@
   "appId": "6806004581",
   "marketingVersion": "1.2.14",
   "predecessorVersion": "1.2.13",
-  "buildNumber": "45",
-  "revision": "e802a79538dd5d035fb85a7404b9e976805c7e3a",
-  "appleBuildId": "b066718c-5093-4193-b896-0d580119339e",
-  "codemagicBuildId": "6abb60ac083ff0a9a53a4d48",
+  "buildNumber": "46",
+  "revision": "91671452b627c6f4c5c72f720787f76a925a10cd",
   "deviceValidation": {
     "status": "pending",
-    "buildNumber": "45",
-    "revision": "e802a79538dd5d035fb85a7404b9e976805c7e3a",
+    "buildNumber": "46",
+    "revision": "91671452b627c6f4c5c72f720787f76a925a10cd",
     "checks": {
       "purchase": "not-tested",
       "cancellation": "not-tested",
