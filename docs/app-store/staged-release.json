@@ -2,12 +2,12 @@
   "appId": "6806004581",
   "marketingVersion": "1.2.14",
   "predecessorVersion": "1.2.13",
-  "buildNumber": "46",
-  "revision": "91671452b627c6f4c5c72f720787f76a925a10cd",
+  "buildNumber": "47",
+  "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
   "deviceValidation": {
     "status": "pending",
-    "buildNumber": "46",
-    "revision": "91671452b627c6f4c5c72f720787f76a925a10cd",
+    "buildNumber": "47",
+    "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
     "checks": {
       "purchase": "not-tested",
       "cancellation": "not-tested",
