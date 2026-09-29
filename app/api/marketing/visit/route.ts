@@ -1,12 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { campaignAttribution } from "../../../lib/marketing-attribution.ts";
-import { isPocketFunnelEvent } from "../../../lib/marketing-funnel.ts";
-import { recordPocketGrowthEvent } from "../../../lib/server/pocket-growth.ts";
+import { createAdminClient } from "../../../../utils/supabase/admin.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const LEGACY_VISITOR_COOKIE = "pb_campaign_visitor";
+const VISITOR_COOKIE = "pb_campaign_visitor";
 
 function sameOrigin(request: Request): boolean {
   try {
@@ -16,17 +16,15 @@ function sameOrigin(request: Request): boolean {
   }
 }
 
-function jsonResponse(request: Request, status: number, recorded: boolean) {
-  const response = NextResponse.json({ recorded }, { status });
-  response.cookies.set(LEGACY_VISITOR_COOKIE, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: new URL(request.url).protocol === "https:",
-    path: "/",
-    maxAge: 0,
-    expires: new Date(0),
-  });
-  return response;
+function visitorKey(request: Request): { value: string; created: boolean } {
+  const cookie = request.headers.get("cookie")
+    ?.split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${VISITOR_COOKIE}=`))
+    ?.slice(VISITOR_COOKIE.length + 1);
+  return cookie && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cookie)
+    ? { value: cookie, created: false }
+    : { value: randomUUID(), created: true };
 }
 
 export async function POST(request: Request) {
@@ -35,7 +33,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return jsonResponse(request, 400, false);
+    return NextResponse.json({ recorded: false }, { status: 400 });
   }
   const values = body && typeof body === "object" ? body as Record<string, unknown> : {};
   const attribution = campaignAttribution({
@@ -43,13 +41,30 @@ export async function POST(request: Request) {
     utm_medium: values.medium,
     utm_campaign: values.campaign,
   });
-  const requestedEvents = Array.isArray(values.events) ? values.events.slice(0, 6) : [values.event];
-  const events = [...new Set(requestedEvents.filter(isPocketFunnelEvent))];
-  if (!events.length) return jsonResponse(request, 400, false);
-
-  let recorded = true;
-  for (const event of events) {
-    if (!await recordPocketGrowthEvent(event, attribution)) recorded = false;
+  const visitor = visitorKey(request);
+  try {
+    const { error } = await createAdminClient().from("marketing_visits").upsert({
+      visitor_key: visitor.value,
+      source: attribution.source,
+      medium: attribution.medium,
+      campaign: attribution.campaign,
+      landing_path: "/pocket/founding",
+    }, { onConflict: "visitor_key,source,campaign", ignoreDuplicates: true });
+    if (error) throw error;
+  } catch (error) {
+    console.error("Campaign visit was not recorded", {
+      category: "campaign_attribution_failure",
+      message: error instanceof Error ? error.message : "unknown",
+    });
+    return NextResponse.json({ recorded: false }, { status: 503 });
   }
-  return jsonResponse(request, recorded ? 200 : 503, recorded);
+  const response = NextResponse.json({ recorded: true });
+  if (visitor.created) response.cookies.set(VISITOR_COOKIE, visitor.value, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: new URL(request.url).protocol === "https:",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 90,
+  });
+  return response;
 }

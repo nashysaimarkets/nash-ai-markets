@@ -1,18 +1,16 @@
 # Cookie and Device-Storage Inventory
 
-Source review: **26 September 2026**
+Source review: **16 August 2026**
 
 ## Decision
 
 **REPOSITORY INVENTORY COMPLETE. PECR/NOTICE CLASSIFICATION REQUIRES QUALIFIED
 APPROVAL.**
 
-No advertising pixel, third-party analytics tracker, IndexedDB use or
-customer-route service-worker cache was found in the reviewed repository.
-The Pocket founding page records first-party daily event totals by event, source
-and campaign, without a browser identifier or tracking cookie. This inventory
-covers first-party source behaviour; a final browser run must also inspect
-cookies/storage added by the selected deployed vendors.
+No marketing analytics, advertising pixel, behavioural tracker, IndexedDB use
+or customer-route service-worker cache was found in the reviewed repository.
+This inventory covers first-party source behaviour; a final browser run must
+also inspect cookies/storage added by the selected deployed vendors.
 
 ## Cookies
 
@@ -21,7 +19,6 @@ cookies/storage added by the selected deployed vendors.
 | Supabase SSR authentication cookie(s), dynamic names | `@supabase/ssr` | Passwordless session, refresh and protected-route access | Controlled by Supabase auth/session configuration | Strictly necessary candidate; verify exact deployed names, flags and expiry |
 | `nam_auth_next` | Bullseye login/callback | Preserve a validated same-origin post-auth route | 900 seconds; deleted on callback/confirmation | Strictly necessary authentication navigation |
 | `nash_desk_workspace_v1` | Trading Desk | Server-readable workspace layout, selected market and display preferences | 180 days | Functional/user-requested candidate; qualified consent/exemption decision required |
-| `pb_campaign_visitor` (legacy) | Former `/api/marketing/visit` route | Previously grouped campaign visits using a random browser key | Former 90-day cookie; no longer set and cleared when the first-party reporting endpoint is called | Retired; no new server-side visitor-key rows are written; rows older than 90 days are removed when a later growth event is recorded |
 
 The explicit Bullseye cookies use `SameSite=Lax`; `Secure` is appended on HTTPS.
 The final browser audit must record the Supabase-generated cookie flags without

@@ -7,6 +7,7 @@ const STATIC_CACHE = `${VERSION}-static`;
 const SHELL_ASSETS = [
   "/offline.html",
   "/manifest.webmanifest",
+  "/pocket/manifest.webmanifest",
   "/favicon.svg",
   "/icons/app-icon-192.png",
   "/icons/app-icon-512.png",

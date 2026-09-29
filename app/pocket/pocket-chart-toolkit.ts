@@ -1,9 +1,12 @@
+import type { LevelEvidenceSource } from "./pocket-derived-evidence";
+
 export type ToolkitDirection = "LONG" | "SHORT";
 
 export type NumericChartLevel = {
   kind: "support" | "resistance" | "pivot";
   label: string;
   price: number;
+  source?: LevelEvidenceSource;
 };
 
 export type RankedChartLevel = NumericChartLevel & {
@@ -21,8 +24,11 @@ export function sanitizeChartLevels(levels: NumericChartLevel[], currentPrice: n
   const usable = levels.filter((level) => {
     if (!Number.isFinite(level.price) || level.price <= 0) return false;
     if (currentPrice !== null && Math.abs(level.price - currentPrice) / Math.max(Math.abs(currentPrice), 1) > 0.2) return false;
-    if (level.kind === "support" && currentPrice !== null && level.price > currentPrice + levelTolerance(currentPrice)) return false;
-    if (level.kind === "resistance" && currentPrice !== null && level.price < currentPrice - levelTolerance(currentPrice)) return false;
+    // A level's role is directional evidence, so a tolerance must never move it
+    // across the market. Near-duplicate tolerance is useful for deduplication,
+    // but support must still be strictly below price and resistance above it.
+    if (level.kind === "support" && currentPrice !== null && level.price >= currentPrice) return false;
+    if (level.kind === "resistance" && currentPrice !== null && level.price <= currentPrice) return false;
     return true;
   });
   return usable.reduce<NumericChartLevel[]>((clean, level) => {
@@ -39,9 +45,10 @@ export function mergeCompatibleChartLevels(
   contextLevels: NumericChartLevel[],
   primaryCurrentPrice: number | null,
   contextCurrentPrice: number | null,
+  contextConfirmed = true,
 ) {
   const cleanPrimary = sanitizeChartLevels(primaryLevels, primaryCurrentPrice);
-  if (!contextLevels.length) return cleanPrimary;
+  if (!contextConfirmed || !contextLevels.length) return cleanPrimary;
 
   // A second screenshot may be a different instrument or contract. Never mix its
   // geometry into the decision map when the visible current prices disagree.
@@ -60,6 +67,18 @@ export function mergeCompatibleChartLevels(
     });
     return duplicate ? merged : [...merged, level];
   }, [...cleanPrimary]);
+}
+
+/**
+ * The minimum evidence required for a structural result that can be reused.
+ * A pivot is context, not a substitute for either side of the current price.
+ */
+export function hasVerifiedTwoSidedStructure(levels: NumericChartLevel[], currentPrice: number | null) {
+  if (currentPrice === null || !Number.isFinite(currentPrice) || currentPrice <= 0) return false;
+  const clean = sanitizeChartLevels(levels, currentPrice);
+  const supportBelow = clean.some((level) => level.kind === "support" && level.price < currentPrice);
+  const resistanceAbove = clean.some((level) => level.kind === "resistance" && level.price > currentPrice);
+  return supportBelow && resistanceAbove;
 }
 
 export function rankChartLevels(levels: NumericChartLevel[], currentPrice: number | null, contextLevels: NumericChartLevel[], scaleReadable: boolean): RankedChartLevel[] {

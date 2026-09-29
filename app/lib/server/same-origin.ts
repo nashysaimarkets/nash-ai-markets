@@ -1,14 +1,25 @@
 import { NextResponse } from "next/server";
 
-/** True when the request Origin header matches the URL origin of this server. */
+/** True when the request Origin or Referer header matches the URL origin of this server. */
 export function isSameOrigin(request: Request): boolean {
+  const requestOrigin = new URL(request.url).origin;
   const origin = request.headers.get("origin");
-  if (!origin) return false;
-  try {
-    return origin === new URL(request.url).origin;
-  } catch {
-    return false;
+  if (origin) {
+    try {
+      return origin === requestOrigin;
+    } catch {
+      return false;
+    }
   }
+  const referer = request.headers.get("referer");
+  if (referer) {
+    try {
+      return new URL(referer).origin === requestOrigin;
+    } catch {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**

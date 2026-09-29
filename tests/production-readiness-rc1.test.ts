@@ -94,9 +94,7 @@ test("launch evidence distinguishes completed readiness from external acceptance
   assert.match(legal, /not legal[\s\S]*advice, FCA authorisation or Section 21 approval/i);
   assert.match(legal, /OWNER APPROVAL: Chris Nash approved[\s\S]*16 August 2026/i);
   assert.match(storage, /nash_desk_workspace_v1/);
-  assert.match(storage, /no advertising pixel, third-party analytics tracker/i);
-  assert.match(storage, /first-party daily event totals by event, source[\s\S]*campaign/i);
-  assert.match(storage, /without a browser identifier or tracking cookie/i);
+  assert.match(storage, /no marketing analytics, advertising pixel, behavioural tracker/i);
   assert.match(retention, /OWNER-APPROVED FOR OPERATIONS/);
   assert.match(retention, /APPROVED — 16 August 2026/);
   assert.match(retention, /target completion within \*\*28 days\*\*/i);

@@ -40,12 +40,6 @@ function countUsage(userId: string) {
   counter.users.set(userId, (counter.users.get(userId) ?? 0) + 1);
 }
 
-function stringValue(value: unknown, max: number): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed && trimmed.length <= max ? trimmed : null;
-}
-
 function optionalString(value: unknown, max: number): string | null | undefined {
   if (value == null || value === "") return "";
   if (typeof value !== "string") return undefined;

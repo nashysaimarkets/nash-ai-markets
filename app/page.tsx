@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { BrandLogo } from "./components/BrandLogo.tsx";
 import { ConversionMetrics } from "./components/ConversionMetrics.tsx";
 import {
@@ -126,6 +128,10 @@ const plans = [
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const host = (await headers()).get("host")?.split(":")[0].toLowerCase();
+  if (["pocket.nashaimarkets.com", "nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site", "terminal.local"].includes(host ?? "")) {
+    redirect("/pocket-bullseye");
+  }
   const foundingAvailability = await loadFounding100Availability();
   const proFounding = founding100AvailabilityLabel(foundingAvailability.proRemaining);
   const portalUrl =
@@ -158,6 +164,7 @@ export default async function Home() {
       <header className="mcNav">
         <BrandLogo className="mcBrandLogo" />
         <nav aria-label="Main navigation">
+          <Link href="/pocket-bullseye">Pocket Bullseye</Link>
           <a href="#platform">Platform</a>
           <a href="#workflow">Method</a>
           <a href="#membership">Membership</a>

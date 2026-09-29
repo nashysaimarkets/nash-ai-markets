@@ -21,3 +21,8 @@ export const FED_MONETARY_RSS_FIXTURE = `<?xml version="1.0"?>
 <pubDate>Thu, 30 Jul 2026 12:00:00 GMT</pubDate>
 </item>
 </channel></rss>`;
+
+export const FED_EVENTS_CALENDAR_FIXTURE = `<html><body>
+<section><span>2:00 p.m.</span><strong>FOMC Meeting</strong>
+<p>Two-day meeting, September 15 - 16</p><span>Press Conference</span></section>
+</body></html>`;

@@ -1,4 +1,12 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "releaseGate": {
+    "minimumCharts": 30,
+    "minimumScenarioFamilies": 4,
+    "minimumTimeframes": 3,
+    "minimumGuideRecallPercent": 90,
+    "minimumChartPassPercent": 85,
+    "maximumExtraGuidesPerTenCharts": 1
+  },
   "cases": []
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 
 const MAX_IMAGE_BYTES = 1_000_000;
@@ -232,7 +233,7 @@ export function SecondOpinionWorkbench({ canSaveToJournal }: { canSaveToJournal:
         <section className="chartIntakeCard">
           <header><span>CHART INTAKE</span><h2>Add a private screenshot</h2></header>
           <label className="chartDropzone">
-            {imageDataUrl ? <img src={imageDataUrl} alt="Selected chart screenshot preview" /> : <span aria-hidden="true">＋</span>}
+            {imageDataUrl ? <Image src={imageDataUrl} alt="Selected chart screenshot preview" fill sizes="(max-width: 850px) calc(100vw - 80px), 420px" unoptimized /> : <span aria-hidden="true">＋</span>}
             <strong>{imageDataUrl ? "Replace screenshot" : "Choose chart screenshot"}</strong>
             <small>JPEG, PNG or WebP · maximum 1 MB</small>
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseImage} required />

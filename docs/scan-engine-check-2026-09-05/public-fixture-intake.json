@@ -1,0 +1,86 @@
+[
+  {
+    "file": "metatrader5-dukascopy.png",
+    "status": "verified",
+    "bytes": 241456,
+    "actualHash": "b6f37c811ae4a0568bd140324c141e4c176e89849899d45bfd6e8bbfd1a30270"
+  },
+  {
+    "file": "tradingview-webull.png",
+    "status": "verified",
+    "bytes": 57485,
+    "actualHash": "af4171ce627585b4740689770c85f997e1df499cff0413ba47e92c85bbe96e11"
+  },
+  {
+    "file": "thinkorswim-navigator.png",
+    "status": "verified",
+    "bytes": 76359,
+    "actualHash": "32ae5fae870f9c13c42af436db662eab3a1bb82ba013334a55ce1d6a76956db1"
+  },
+  {
+    "file": "webull-mobile.jpg",
+    "status": "verified",
+    "bytes": 128407,
+    "actualHash": "526bf0eadef1f9fca2908c8f22b5ac496fbc2f277d858d343aee4ce4850ed51e"
+  },
+  {
+    "file": "ctrader-fullscreen.png",
+    "status": "verified",
+    "bytes": 423173,
+    "actualHash": "71d40fb3df454553f28b4090a569c536a5fc48fc55f82019bba426a90247608b"
+  },
+  {
+    "file": "robinhood-candlestick.png",
+    "status": "verified",
+    "bytes": 82602,
+    "actualHash": "30059d74458b89705960fea412449a0fd265ae1d75e4e3f01f41b2880bdc7d18"
+  },
+  {
+    "file": "coinbase-advanced.png",
+    "status": "verified",
+    "bytes": 96903,
+    "actualHash": "1642f502bbf4383c56db6cc67e628333f468a6d8ba8b13c2c47e1da7b10af313"
+  },
+  {
+    "file": "coinbase-advanced-2.webp",
+    "status": "verified",
+    "bytes": 45826,
+    "actualHash": "6da9e7626daa54e363768abfa2f511bc75f677e1d4224040aec62ebda44c9483"
+  },
+  {
+    "file": "ninjatrader-tradovate.png",
+    "status": "verified",
+    "bytes": 46176,
+    "actualHash": "0fe4feb3ed93240a6b9da07e4dcda007e27fada8f852d5dd6206de8fe41dbd31"
+  },
+  {
+    "file": "saxotradergo.png",
+    "status": "verified",
+    "bytes": 24281,
+    "actualHash": "cd3d0c03c44af36403b2626e319aed169075a026c7f74477017f6dccb110e8ab"
+  },
+  {
+    "file": "volume-tradingview-auction.png",
+    "status": "verified",
+    "bytes": 230456,
+    "actualHash": "30b01d8b53d18fbd9c334f015b2c7fe9e42cfc1a037aa6661518deec18aab972"
+  },
+  {
+    "file": "volume-tradingview-zones.png",
+    "status": "verified",
+    "bytes": 176961,
+    "actualHash": "bddfaa1b3f73568259250964025c87ae068dd78cfdb88f23d8305979d0cadde8"
+  },
+  {
+    "file": "volume-ninjatrader.png",
+    "status": "hash_changed",
+    "bytes": 107020,
+    "actualHash": "b6fecccfec29a7300e7ec678d71559449b7a101d66a495c0771b91846dc3bd76"
+  },
+  {
+    "file": "volume-metatrader4.png",
+    "status": "verified",
+    "bytes": 106752,
+    "actualHash": "c50d827f5b25eeeafe518cefe56d1e39a291e80d48c271f46bd09e64ccf82ba7"
+  }
+]

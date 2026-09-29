@@ -3,6 +3,13 @@ export type OptionsWallRead = { symbol: string; readable: boolean; rows: Options
 export type OptionsWallMatch = OptionsWallRow & { level: { kind: string; price: number; label: string } };
 export type OptionsWallResult = { status: "MATCHED" | "NO_OVERLAP" | "UNVERIFIED"; message: string; symbol: string; rows: OptionsWallRow[]; matches: OptionsWallMatch[] };
 
+export function explicitOptionsSymbol(ticker: string, instrument: string): string {
+  if (ticker.trim() && ticker !== "UNKNOWN") return ticker.trim().toUpperCase();
+  // These are exact listed index/ETF/futures labels. A spread bet or generic
+  // S&P chart is not silently treated as the same underlying.
+  return /^(SPX|ES|SPY)(?=$|[\s:.-])/.exec(instrument.trim().toUpperCase())?.[1] ?? "UNKNOWN";
+}
+
 export function crossCheckOptionsWall(read: OptionsWallRead, expectedTicker: string, levels: { kind: string; price: string; label: string }[]): OptionsWallResult {
   const empty = (message: string): OptionsWallResult => ({ status: "UNVERIFIED", message, symbol: read.symbol, rows: [], matches: [] });
   // An unknown or mismatched underlying is never allowed to annotate the chart.

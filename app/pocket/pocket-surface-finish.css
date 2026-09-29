@@ -1,0 +1,108 @@
+/* One material system for the remaining report, recovery and notebook surfaces.
+   Price geometry, uploaded charts and scanner labels retain their own styling. */
+.psApp[data-spatial][data-visual-style] {
+  --pb-finish-panel: radial-gradient(ellipse at 0 0,#36869d24,transparent 62%),linear-gradient(145deg,#142e43f5,#09172bf5 68%,#0e1832f2);
+  --pb-finish-inset: linear-gradient(135deg,#1c3c5078,#071529bd);
+  --pb-finish-border: #92cfe347;
+  --pb-finish-shadow: inset 0 1px #d5f8ff38,inset 0 -1px #08111f,0 5px 0 -2px #020a16,0 6px 0 -2px #82c2de25,0 20px 38px #0005;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psJournalCta,.psAskBullseye,.psPreflight,.psMissingInputs,.psScanChanges,.psCorrectionReplaySummary,.psUtilityTray,.psAutopsyStatus,.psDecisionTimeline,.psReviewGrid,.psProcessNote,.psRiskDesk,.psTradeReview,.psLevelProvenance,.pbResearchPanel) {
+  min-width:0; border:1px solid var(--pb-finish-border); border-radius:22px;
+  background:var(--pb-finish-panel); box-shadow:var(--pb-finish-shadow); color:#ecf6ff;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psJournalCta,.psCorrectionReplaySummary,.psScanChanges) { padding:24px; margin-block:22px; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psJournalCta,.psPreflight,.psMissingInputs,.psScanChanges,.psCorrectionReplaySummary,.psRiskDesk,.psTradeReview,.psDecisionTimeline,.psReviewGrid,.psAutopsyStatus,.psLevelProvenance) :is(p,li,dd) {
+  font-size:1rem; line-height:1.65; font-weight:400; letter-spacing:0; color:#bdd1df; overflow-wrap:anywhere;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psJournalCta,.psPreflight,.psMissingInputs,.psScanChanges,.psCorrectionReplaySummary,.psRiskDesk,.psTradeReview,.psDecisionTimeline,.psReviewGrid,.psAutopsyStatus,.psLevelProvenance,.psUtilityTray) :is(small,footer) {
+  font-size:.875rem; line-height:1.5; font-weight:450; letter-spacing:.015em; color:#a8c3d4; overflow-wrap:anywhere;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psPreflight,.psMissingInputs,.psScanChanges,.psCorrectionReplaySummary,.psRiskDesk,.psTradeReview,.psDecisionTimeline,.psLevelProvenance)>header {
+  display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:16px; border-color:#92cfe325;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psPreflight,.psMissingInputs,.psScanChanges,.psCorrectionReplaySummary,.psRiskDesk,.psDecisionTimeline)>header span,
+.psApp[data-spatial][data-visual-style] .psJournalCta>div>span {
+  display:block; color:#9bdedc; font-size:.875rem; line-height:1.5; font-weight:600; letter-spacing:.06em;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psPreflight,.psMissingInputs,.psScanChanges)>header strong,
+.psApp[data-spatial][data-visual-style] .psJournalCta>div>strong {
+  display:block; margin-top:7px; font-size:clamp(1.2rem,3.5vw,1.65rem); line-height:1.3; letter-spacing:-.025em; font-weight:650;
+  color:#eaf8ff; text-shadow:0 1px #44677f,0 3px 8px #0008;
+}
+.psApp[data-spatial][data-visual-style] .psAccuracy>header>b { padding:10px 12px; border:1px solid #89cdd341; border-radius:12px; background:var(--pb-finish-inset); color:#b7e3e6; font-size:.875rem; line-height:1.5; font-weight:550; letter-spacing:.025em; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracySaved,.psCorrectionReplaySummary article,.psMindChange article,.psRiskDesk article,.psTradeReviewResult,.psAutopsyStatus article,.psReviewGrid article) { border:1px solid #8ac4d233; border-radius:16px; background:var(--pb-finish-inset); box-shadow:inset 0 1px #c6f0ff1c,0 7px 18px #0003; }
+.psApp[data-spatial][data-visual-style] .psAccuracySaved { padding:20px; }
+.psApp[data-spatial][data-visual-style] .psAccuracySaved>b { font-size:.875rem; line-height:1.5; letter-spacing:.02em; font-weight:600; color:#98efd8; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psPreflight,.psScanChanges,.psUtilityTray,.psRiskDesk,.psTradeReview,.psJournalCta) button {
+  min-height:44px; border-radius:12px; border:1px solid #8ccfdf50; background:linear-gradient(150deg,#234a5bcc,#102639); box-shadow:inset 0 1px #d7faff33,0 3px 0 #020c1980,0 8px 16px #0003;
+  color:#e1f4ff; font-size:.95rem; font-weight:600; line-height:1.4; letter-spacing:.015em; padding:12px 16px; white-space:normal;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracyChoice button[data-tone=good],.psAccuracyActions button:last-child,.psJournalCta>button) { background:linear-gradient(145deg,#286b6399,#102f3a); color:#b9fae2; border-color:#8fe4c96b; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracyCategories button[data-active=true],.psAccuracyChoice button[data-tone=fix]) { border-color:#e4c99585; color:#ffe0a8; background:linear-gradient(145deg,#66523c88,#252536); }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psPreflight,.psRiskDesk,.psTradeReview) :is(input:not([type=checkbox]):not([type=range]):not([type=file]),textarea,select) {
+  box-sizing:border-box; min-width:0; min-height:48px; padding:13px 14px; border:1px solid #93c8dd52; border-radius:12px; background:linear-gradient(135deg,#071426,#102438); color:#f0f9ff; font-size:1rem; line-height:1.5; font-weight:400; box-shadow:inset 0 2px 7px #0004;
+}
+.psApp[data-spatial][data-visual-style] :is(.psAccuracyForm,.psTradeReview,.psRiskDesk,.psConfirmGrid) label>span { font-size:.875rem; line-height:1.5; font-weight:550; letter-spacing:.035em; color:#b9d9e6; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracyForm,.psAskBullseye) textarea { min-height:110px; }
+.psApp[data-spatial][data-visual-style] :is(button,a,input,textarea,select,summary):focus-visible { outline:3px solid #92eff0; outline-offset:3px; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracySaved>div,.psAskInput) { gap:12px; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psJournalCta)>footer { margin-top:18px; padding-top:16px; border-top:1px solid #8cc2d526; }
+.psApp[data-spatial][data-visual-style] :is(.psTradeReview,.psUtilityTray,.psLevelProvenance)>summary { min-height:52px; padding:20px; display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.psApp[data-spatial][data-visual-style] :is(.psTradeReview,.psUtilityTray,.psLevelProvenance)>summary :is(span,strong,small) { font-size:.95rem; line-height:1.45; font-weight:550; letter-spacing:.025em; }
+.psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psTradeReview,.psJournalCta) button:disabled { opacity:.5; box-shadow:none; cursor:default; }
+.psApp[data-spatial][data-visual-style] .psAskReply { margin-top:18px; border:1px solid #7cb9ce42; border-radius:16px; padding:18px; background:var(--pb-finish-inset); }
+.psApp[data-spatial][data-visual-style] .psReportRail { border-radius:18px; border:1px solid #91c2d23b; background:linear-gradient(140deg,#173345e8,#091729ed); padding:12px; }
+.psApp[data-spatial][data-visual-style] .psReportRail a { font-size:.875rem; min-height:44px; display:inline-flex; align-items:center; justify-content:center; padding:10px 14px; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker>div>strong,
+.psApp[data-spatial][data-visual-style] .psTimeframePicker>div>span { font-size:.875rem; line-height:1.4; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker nav button small { font-size:.875rem; line-height:1.45; white-space:normal; }
+.psApp[data-spatial][data-visual-style] .psDetectedFacts { gap:10px; flex-wrap:wrap; padding:18px; }
+.psApp[data-spatial][data-visual-style] .psDetectedFacts :is(b,span,em) { font-size:1rem; line-height:1.5; font-style:normal; font-weight:550; }
+.psApp[data-spatial][data-visual-style] .pbCaptureRepair { margin:16px; padding:18px; border:1px solid #e7c38a61; border-radius:16px; background:linear-gradient(135deg,#5b413637,#131d32); }
+.psApp[data-spatial][data-visual-style] .pbCaptureRepair strong { color:#ffdcaa; font-size:1rem; }
+.psApp[data-spatial][data-visual-style] .pbCaptureRepair a { display:inline-flex; align-items:center; min-height:44px; color:#c6f4ee; text-underline-offset:4px; }
+.psApp[data-spatial][data-visual-style] :is(.psMessage,.psVaultMessage) { border:1px solid #e8c68d55; border-radius:16px; padding:16px 20px; color:#f3d8b1; background:linear-gradient(135deg,#4d3c335c,#101d30f2); font-size:1rem; line-height:1.55; }
+.psApp[data-spatial][data-visual-style] .pbNotebookSearch { margin-top:20px; }
+.psApp[data-spatial][data-visual-style] .pbNotebookQuick { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:12px 0; }
+.psApp[data-spatial][data-visual-style] .pbNotebookQuick>span { color:#aec9d9; font-size:.875rem; margin-left:auto; }
+.psApp[data-spatial][data-visual-style] .pbNotebookFilters { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.psApp[data-spatial][data-visual-style] .pbNotebookFilters>label { grid-column:auto; }
+.psApp[data-spatial][data-visual-style] .pbNotebookFilterDetails { border-bottom:1px solid #8dc2d52b; margin-bottom:18px; }
+.psApp[data-spatial][data-visual-style] .pbNotebookEntries>article { background:radial-gradient(ellipse at 100% 0,#6972b91b,transparent 65%),var(--pb-finish-inset); box-shadow:var(--pb-finish-shadow); }
+.psApp[data-spatial][data-visual-style] :is(.psLegal,.psDataNote) { font-size:.875rem; line-height:1.65; color:#abc2d0; }
+.psApp[data-spatial][data-visual-style] .psMotionControl { height:44px; min-width:44px; }
+.psApp[data-spatial][data-visual-style] .psMotionControl span { font-size:12px; letter-spacing:.035em; }
+/* Pause means pause, including older pseudo-element effects. */
+.psApp[data-spatial][data-spatial-motion="off"] *,
+.psApp[data-spatial][data-spatial-motion="off"] *::before,
+.psApp[data-spatial][data-spatial-motion="off"] *::after { animation-play-state:paused !important; }
+@media(max-width:620px) {
+  .psApp[data-spatial][data-visual-style] :is(.psAccuracy,.psAskBullseye,.psJournalCta,.psCorrectionReplaySummary,.psScanChanges) { padding:18px; border-radius:20px; }
+  .psApp[data-spatial][data-visual-style] :is(.psAccuracySaved>div,.psAccuracyActions) { grid-template-columns:1fr; }
+  .psApp[data-spatial][data-visual-style] :is(.psReviewGrid,.psAutopsyStatus) { grid-template-columns:1fr; }
+  .psApp[data-spatial][data-visual-style] .psAccuracy>header>b { text-align:left; max-width:100%; }
+  .psApp[data-spatial][data-visual-style] .pbNotebookFilters { grid-template-columns:1fr; }
+  .psApp[data-spatial][data-visual-style] .psTimeframePicker nav button { min-width:110px; }
+  .psApp[data-spatial][data-visual-style] .psTimeframePicker>div { flex-wrap:wrap; gap:6px; }
+}
+
+/* Retire fixed 11px overrides from the earlier accuracy panel. */
+.psApp[data-spatial][data-visual-style] .psAccuracy>header>b,
+.psApp[data-spatial][data-visual-style] .psAccuracy>header>b small { font-size:.875rem !important; color:#bad5e1 !important; max-width:100%; }
+.psApp[data-spatial][data-visual-style] .psAccuracy>header>b[data-review="pending"] { color:#ebd0a6 !important; }
+
+/* Finish active tool interiors that predate the observatory theme. */
+.psApp[data-spatial][data-visual-style] :is(.psPatternSignals>article,.psPatternNone,.psBullseyePlan article,.psClarityBars article) {
+  border:1px solid #8ac4d23d; border-radius:16px; background:var(--pb-finish-inset); box-shadow:inset 0 1px #d2f4ff24,0 8px 20px #0003;
+}
+.psApp[data-spatial][data-visual-style] :is(.psPatternSignals,.psPatternNone,.psBullseyePlan,.psClarityBars) :is(p,li) { font-size:1rem; line-height:1.65; color:#c0d4e1; font-weight:400; letter-spacing:0; }
+.psApp[data-spatial][data-visual-style] :is(.psPatternSignals,.psPatternNone,.psBullseyePlan,.psClarityBars) :is(small,article>span,article>div,button) { font-size:.875rem; line-height:1.5; font-weight:550; letter-spacing:.025em; }
+.psApp[data-spatial][data-visual-style] :is(.psBullseyePlan article,.psClarityBars article) strong { font-size:1.05rem; line-height:1.45; font-weight:650; color:#e9f8ff; }
+.psApp[data-spatial][data-visual-style] :is(.psPatternSignals,.psBullseyePlan) button { min-height:44px; padding:12px 16px; border:1px solid #96d6d94d; border-radius:12px; color:#c5f1e7; background:linear-gradient(140deg,#24505d,#102a3b); }
+.psApp[data-spatial][data-visual-style] .psProcessNote { font-size:1rem; line-height:1.65; font-weight:450; padding:20px; color:#c4e6e6; }
+.psApp[data-spatial][data-visual-style] .psAuditGrid article>span { font-size:.875rem !important; line-height:1.5; font-weight:600; letter-spacing:.045em; }
+.psApp[data-spatial][data-visual-style] .psEventCheckOnly,
+.psApp[data-spatial][data-visual-style] .psEventCheckOnly small { font-size:.875rem !important; line-height:1.5 !important; color:#c0d7e5 !important; }
+@media(max-width:520px) {
+  .psApp[data-spatial][data-visual-style] .psWrittenReport .psMissingInputs p { font-size:1rem !important; line-height:1.65; }
+}

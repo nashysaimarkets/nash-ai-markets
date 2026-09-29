@@ -32,6 +32,11 @@ DTSTART;TZID=America/New_York:20260904T083000
 SUMMARY:Employment Situation for August 2026
 END:VEVENT
 BEGIN:VEVENT
+UID:employment-live-timezone-alias-2026
+DTSTART;TZID=US-Eastern:20260904T083000
+SUMMARY:Employment Situation for August 2026
+END:VEVENT
+BEGIN:VEVENT
 UID:jolts-july-2026
 DTSTART;TZID=America/New_York:20260901T100000
 SUMMARY:Job Openings and Labor Turnover Survey for July 2026

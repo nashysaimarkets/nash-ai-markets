@@ -54,6 +54,7 @@ export async function aggregateOfficialEconomicCalendar(
   providers: readonly EconomicReleaseProvider[],
   from: Date,
   to: Date,
+  signal?: AbortSignal,
 ): Promise<OfficialEconomicCalendarResult> {
   const fromMs = from.getTime();
   const toMs = to.getTime();
@@ -62,7 +63,7 @@ export async function aggregateOfficialEconomicCalendar(
   }
 
   const settled = await Promise.allSettled(
-    providers.map((provider) => provider.fetchUpcomingReleases(from, to)),
+    providers.map((provider) => provider.fetchUpcomingReleases(from, to, signal)),
   );
 
   const successfulProviders: string[] = [];

@@ -1,14 +1,10 @@
+import { structuralSideCoverage } from "./precision-structure.ts";
+import { canonicalizePocketGeometry } from "../../lib/pocket-geometry.ts";
+import { boundedPocketScore as boundedScore, enforcePocketTrustGate, pocketScoreGrade as scoreGrade } from "../../lib/pocket-trust-gate.ts";
+
+export { enforcePocketTrustGate } from "../../lib/pocket-trust-gate.ts";
+
 type JsonRecord = Record<string, unknown>;
-
-function scoreGrade(score: number) {
-  return score >= 85 ? "A" : score >= 70 ? "B" : score >= 55 ? "C" : score >= 40 ? "D" : "F";
-}
-
-function boundedScore(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value)
-    ? Math.max(0, Math.min(100, Math.round(value)))
-    : 0;
-}
 
 function boundedPercent(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : fallback;
@@ -26,7 +22,78 @@ function numericPrice(value: unknown) {
 
 type ScaleAnchor = { price: number; y: number };
 
-function verifiedLinearScale(items: ScaleAnchor[]) {
+const PATTERN_MIN_POINTS: Record<string, number> = {
+  "HEAD & SHOULDERS": 5,
+  "INVERSE H&S": 5,
+  "DOUBLE TOP": 3,
+  "DOUBLE BOTTOM": 3,
+  "CUP & HANDLE": 6,
+  "BREAKOUT & RETEST": 3,
+  "RECTANGLE / RANGE": 4,
+  "TREND CHANNEL": 4,
+  "ASCENDING TRIANGLE": 4,
+  "DESCENDING TRIANGLE": 4,
+  "TRIANGLE": 4,
+  "RISING WEDGE": 4,
+  "FALLING WEDGE": 4,
+  "BULL FLAG": 4,
+  "BEAR FLAG": 4,
+  "PENNANT": 4,
+};
+
+function patternSpanThreshold(name: string) {
+  if (["BULL FLAG", "BEAR FLAG", "PENNANT", "BREAKOUT & RETEST"].includes(name)) return { x: .055, y: .03 };
+  if (["RECTANGLE / RANGE", "TREND CHANNEL"].includes(name)) return { x: .08, y: .035 };
+  return { x: .1, y: .04 };
+}
+
+function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, candlesReadable: boolean) {
+  if (!Array.isArray(value) || !candlesReadable) return [];
+  const seenSources = new Set<string>();
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const pattern = item as JsonRecord;
+    const name = typeof pattern.name === "string" ? pattern.name : "";
+    const sourceRole = typeof pattern.sourceRole === "string" ? pattern.sourceRole : "";
+    if (!["PRIMARY", "HIGHER_TIMEFRAME", "PRICE_DETAIL", "FOUR_HOUR", "INDICATOR_VOLUME"].includes(sourceRole)) return [];
+    const minimum = PATTERN_MIN_POINTS[name];
+    const geometry = pattern.geometry && typeof pattern.geometry === "object" ? pattern.geometry as JsonRecord : null;
+    const returnedBounds = geometry?.plotBounds && typeof geometry.plotBounds === "object" ? geometry.plotBounds as JsonRecord : null;
+    const bounds = sourceRole === "PRIMARY" && primaryBounds ? primaryBounds : returnedBounds;
+    const left = numericPrice(bounds?.left);
+    const right = numericPrice(bounds?.right);
+    const top = numericPrice(bounds?.top);
+    const bottom = numericPrice(bounds?.bottom);
+    if (left === null || right === null || top === null || bottom === null || right <= left || bottom <= top) return [];
+    const points = Array.isArray(geometry?.points) ? geometry.points.flatMap((point) => {
+      if (!point || typeof point !== "object") return [];
+      const x = numericPrice((point as JsonRecord).x);
+      const y = numericPrice((point as JsonRecord).y);
+      return x === null || y === null ? [] : [{ x, y }];
+    }) : [];
+    if (!minimum || points.length < minimum) return [];
+    if (points.some((point) => point.x < left || point.x > right || point.y < top || point.y > bottom)) return [];
+    if (points.some((point, index) => index > 0 && point.x < points[index - 1]!.x - .5)) return [];
+    const xSpan = Math.max(...points.map((point) => point.x)) - Math.min(...points.map((point) => point.x));
+    const ySpan = Math.max(...points.map((point) => point.y)) - Math.min(...points.map((point) => point.y));
+    const span = patternSpanThreshold(name);
+    if (xSpan < (right - left) * span.x || ySpan < (bottom - top) * span.y) return [];
+    if (typeof pattern.evidence !== "string" || pattern.evidence.trim().length < 24) return [];
+    if (typeof pattern.confirmation !== "string" || pattern.confirmation.trim().length < 12) return [];
+    if (typeof pattern.invalidation !== "string" || pattern.invalidation.trim().length < 12) return [];
+    const timeframe = typeof pattern.timeframe === "string" ? pattern.timeframe.trim().toUpperCase() : "";
+    const frameKey = timeframe.replace(/[^A-Z0-9]/g, "");
+    if (!frameKey || seenSources.has(sourceRole)) return [];
+    seenSources.add(sourceRole);
+    const status = pattern.status;
+    const confidence = pattern.confidence === "HIGH" && status !== "CONFIRMED" && status !== "EXTENDED"
+      ? "MEDIUM"
+      : pattern.confidence;
+    return [{ ...pattern, confidence }];
+  }).slice(0, 4);
+}
+
+export function verifiedLinearScale(items: ScaleAnchor[]) {
   const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
   if (unique.length < 2) return null;
   const ordered = [...unique].sort((a, b) => a.price - b.price);
@@ -41,10 +108,17 @@ function verifiedLinearScale(items: ScaleAnchor[]) {
   return { low, high, project, count: ordered.length };
 }
 
-/** Applies non-negotiable evidence rules after structured model output. */
-export function calibratePocketAnalysis(value: unknown): unknown {
+/**
+ * Re-apply evidence rules after structured model output.
+ * Callers such as Level Lab may supply a dedicated linear-scale checker;
+ * the default remains the global verifiedLinearScale used by the primary read.
+ */
+export function calibratePocketAnalysis(
+  value: unknown,
+  linearScale: typeof verifiedLinearScale = verifiedLinearScale,
+): unknown {
   if (!value || typeof value !== "object") return value;
-  const analysis = value as JsonRecord;
+  const analysis = canonicalizePocketGeometry(value) as JsonRecord;
   const quality = analysis.evidenceQuality && typeof analysis.evidenceQuality === "object"
     ? analysis.evidenceQuality as JsonRecord
     : {};
@@ -59,6 +133,11 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     setupScore: { ...score, overall, grade: scoreGrade(overall) },
   };
 
+  const initialBounds = analysis.plotBounds && typeof analysis.plotBounds === "object"
+    ? analysis.plotBounds as JsonRecord
+    : null;
+  calibrated.patterns = calibratePatterns(analysis.patterns, initialBounds, quality.candlesReadable === true);
+
   if (Array.isArray(analysis.missingInputs)) {
     calibrated.missingInputs = analysis.missingInputs.filter((item) =>
       typeof item === "string" && !/\b(entry|stop|target|trade size|position size|account size|risk percentage|stake)\b/i.test(item),
@@ -67,15 +146,15 @@ export function calibratePocketAnalysis(value: unknown): unknown {
 
   if (Array.isArray(analysis.levels) && analysis.plotBounds && typeof analysis.plotBounds === "object") {
     const rawBounds = analysis.plotBounds as JsonRecord;
-    const left = boundedPercent(rawBounds.left, 4);
-    const top = boundedPercent(rawBounds.top, 5);
-    const right = Math.max(left + 1, boundedPercent(rawBounds.right, 96));
-    const bottom = Math.max(top + 1, boundedPercent(rawBounds.bottom, 95));
+    const left = Math.min(99, boundedPercent(rawBounds.left, 4));
+    const top = Math.min(99, boundedPercent(rawBounds.top, 5));
+    const right = Math.min(100, Math.max(left + 1, boundedPercent(rawBounds.right, 96)));
+    const bottom = Math.min(100, Math.max(top + 1, boundedPercent(rawBounds.bottom, 95)));
     const anchors = Array.isArray(analysis.priceScaleAnchors) ? analysis.priceScaleAnchors
       .flatMap((item) => item && typeof item === "object" ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
-      .filter((item): item is { price: number; y: number } => item.price !== null && item.price > 0 && item.y !== null && item.y >= 0 && item.y <= 100)
+      .filter((item): item is { price: number; y: number } => item.price !== null && item.price > 0 && item.y !== null && item.y >= top && item.y <= bottom)
       .sort((a, b) => a.price - b.price) : [];
-    const scale = verifiedLinearScale(anchors);
+    const scale = linearScale(anchors);
     const low = scale?.low;
     const high = scale?.high;
     const calibratedScale = Boolean(scale);
@@ -94,22 +173,25 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       const suppliedY = numericPrice(level.y);
       const modelY = boundedPercent(level.y, 50);
       const price = numericPrice(level.price);
-      // A vision pass can correctly read a horizontal price but invert its
-      // semantic label. Market location is deterministic: below current is
-      // support; above current is resistance.
+      // Market location is deterministic. A rounded quote effectively on the
+      // current row is a pivot/at-market marker, not evidence for either side;
+      // otherwise a support just above market could be counted as resistance
+      // by one gate and displayed as support by another.
       if ((kind === "support" || kind === "resistance") && currentPrice !== null && price !== null) {
-        if (price < currentPrice) kind = "support";
-        else if (price > currentPrice) kind = "resistance";
+        const sideTolerance = Math.max(Math.abs(currentPrice) * .00015, .01);
+        if (price < currentPrice - sideTolerance) kind = "support";
+        else if (price > currentPrice + sideTolerance) kind = "resistance";
+        else kind = "pivot";
       }
       const horizontal = kind === "support" || kind === "resistance";
       const scaledY = horizontal ? priceToY(level.price, modelY) : modelY;
       // Axis anchors verify a linear scale, but the model often returns only
       // middle labels. Permit a candidate outside the sampled price interval
       // only when that scale still projects it inside the visible candle plot.
-      // Reading crops improve tiny price labels but introduce a few percentage
-      // points of full-image coordinate drift. The exact price is still
-      // independently projected through a verified linear axis, so tolerate
-      // that mobile crop offset while rejecting a genuinely different row.
+      // Mobile vision coordinates carry a few percentage points of row jitter.
+      // The exact price is still independently projected through a verified
+      // linear axis, so tolerate that bounded jitter while rejecting a
+      // genuinely different candle row.
       const geometryTolerance = Math.max(4.5, (bottom - top) * 0.09);
       const exactHorizontal = horizontal && calibratedScale && price !== null && suppliedY !== null && Math.abs(suppliedY - scaledY) <= geometryTolerance && scaledY >= top && scaledY <= bottom;
       const visualHorizontal = horizontal && !calibratedScale && quality.candlesReadable !== false && suppliedY !== null && suppliedY >= top && suppliedY <= bottom;
@@ -136,14 +218,19 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   }
   if (quality.instrumentConfidence !== "HIGH") calibrated.ticker = "UNKNOWN";
   if (quality.timeframeConfidence === "LOW" || quality.timeframeConfidence === "UNKNOWN") calibrated.timeframe = "UNKNOWN";
+  const calibratedBounds = calibrated.plotBounds && typeof calibrated.plotBounds === "object" ? calibrated.plotBounds as JsonRecord : null;
+  const verifiedTop = calibratedBounds ? numericPrice(calibratedBounds.top) : null;
+  const verifiedBottom = calibratedBounds ? numericPrice(calibratedBounds.bottom) : null;
   const verifiedAnchors = Array.isArray(calibrated.priceScaleAnchors)
     ? calibrated.priceScaleAnchors.flatMap((item) => item && typeof item === "object"
       ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }]
-      : []).filter((item) => item.price !== null && item.y !== null)
+      : []).filter((item) => item.price !== null && item.y !== null
+        && verifiedTop !== null && verifiedBottom !== null
+        && item.y >= verifiedTop && item.y <= verifiedBottom)
     : [];
   // The dedicated geometry pass is authoritative for numeric overlays. Do not
   // erase its verified prices because the broader prose pass was conservative.
-  const hasVerifiedScale = Boolean(verifiedLinearScale(verifiedAnchors as ScaleAnchor[]));
+  const hasVerifiedScale = Boolean(linearScale(verifiedAnchors as ScaleAnchor[]));
   if (hasVerifiedScale) {
     calibrated.evidenceQuality = { ...quality, scaleReadable: true };
   } else if (quality.scaleReadable === false) {
@@ -153,5 +240,48 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     calibrated.fibLevels = [];
   }
 
-  return calibrated;
+  const hasTrustInputs = Array.isArray(analysis.levels)
+    && Boolean(analysis.plotBounds && typeof analysis.plotBounds === "object")
+    && Array.isArray(analysis.priceScaleAnchors);
+  const structuralLevels = Array.isArray(calibrated.levels)
+    ? calibrated.levels.filter((item) => item && typeof item === "object" && ["support", "resistance", "pivot"].includes(String((item as JsonRecord).kind)))
+    : [];
+  const horizontalLevels = structuralLevels.filter((item) => ["support", "resistance"].includes(String((item as JsonRecord).kind)));
+  const exactStructuralLevels = horizontalLevels.filter((item) => numericPrice((item as JsonRecord).price) !== null);
+  const chartLocked = quality.chartReadability === "CLEAR" && quality.candlesReadable === true;
+  const identityLocked = quality.instrumentConfidence === "HIGH" && quality.timeframeConfidence === "HIGH";
+  const structuralCoverage = structuralSideCoverage(exactStructuralLevels, calibrated.currentPrice);
+  const scaleLocked = hasVerifiedScale && structuralCoverage.twoSided;
+  const contradictions = Array.isArray(analysis.contradictions) ? analysis.contradictions.filter((item) => typeof item === "string" && item.trim()) : [];
+  const status = chartLocked && identityLocked && scaleLocked
+    ? "LOCKED"
+    : unreadable || !horizontalLevels.length
+      ? "HOLD"
+      : "PARTIAL";
+  const trustReasons = [
+    chartLocked ? "Candles and structure are readable" : "Chart readability is incomplete",
+    identityLocked ? "Instrument and timeframe are verified" : "Instrument or timeframe needs confirmation",
+    scaleLocked ? `${exactStructuralLevels.length} exact structural levels bracket current price` : horizontalLevels.length ? "Two-sided exact structure is not verified" : "No structural level passed verification",
+    contradictions.length ? `${contradictions.length} contradiction${contradictions.length === 1 ? "" : "s"} remain visible` : "No explicit contradiction was returned",
+  ];
+  if (hasTrustInputs) calibrated.trustGate = {
+    status,
+    chartLocked,
+    identityLocked,
+    scaleLocked,
+    exactLevelCount: exactStructuralLevels.length,
+    reasons: trustReasons,
+    nextAction: status === "LOCKED"
+      ? "Verify the marked prices on the original chart before acting."
+      : !identityLocked
+        ? "Confirm the instrument, timeframe and current price, then reanalyse."
+        : !scaleLocked
+          ? "Add a chart with a clear price scale or a supporting timeframe, then reanalyse."
+          : "Use a clearer chart before relying on this read.",
+  };
+
+  // A visually plausible narrative must never outrank the evidence gate.
+  // Without a locked chart identity and verified structural map, Bullseye may
+  // still explain what is visible but cannot present the result as trade-ready.
+  return hasTrustInputs ? enforcePocketTrustGate(calibrated) : calibrated;
 }

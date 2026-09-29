@@ -6,12 +6,20 @@ const root = new URL("../", import.meta.url);
 const read = (path: string) => readFile(new URL(path, root), "utf8");
 
 test("manifest exposes installable platform icons and standalone scope", async () => {
-  const manifest = await read("app/manifest.ts");
+  const [manifest, pocketManifestSource] = await Promise.all([
+    read("app/manifest.ts"),
+    read("public/pocket/manifest.webmanifest"),
+  ]);
+  const pocketManifest = JSON.parse(pocketManifestSource) as Record<string, unknown>;
   assert.match(manifest, /display: "standalone"/);
   assert.match(manifest, /scope: "\/"/);
   assert.match(manifest, /app-icon-192\.png/);
   assert.match(manifest, /app-icon-512\.png/);
   assert.match(manifest, /app-icon-maskable-512\.png[\s\S]*purpose: "maskable"/);
+  assert.equal(pocketManifest.id, "/pocket");
+  assert.equal(pocketManifest.start_url, "/pocket");
+  assert.equal(pocketManifest.scope, "/pocket");
+  assert.equal(pocketManifest.display, "standalone");
   await Promise.all([
     access(new URL("public/icons/app-icon-192.png", root)),
     access(new URL("public/icons/app-icon-512.png", root)),
@@ -39,6 +47,7 @@ test("service worker caches only the application shell and safe static assets", 
   assert.match(worker, /request\.mode === "navigate"/);
   assert.match(worker, /request\.destination === "script" \|\| request\.destination === "style"/);
   assert.match(worker, /nash-shell-v2/);
+  assert.match(worker, /\/pocket\/manifest\.webmanifest/);
   assert.match(worker, /no-store\|private/);
   assert.match(worker, /set-cookie/);
   const installHandler = worker.match(/self\.addEventListener\("install"[\s\S]*?\n\}\);/)?.[0] ?? "";
@@ -76,6 +85,9 @@ test("offline state fails closed and install guidance is platform appropriate", 
   assert.match(controller, /INSTALL_DELAY_MS|45_000/);
   assert.match(controller, /DISMISS_DAYS|14/);
   assert.match(controller, /isStandalone/);
+  assert.match(controller, /Capacitor\.isNativePlatform\(\)/);
+  assert.match(controller, /nativeShell \|\| Capacitor\.isNativePlatform\(\)/);
+  assert.match(controller, /if \(nativeShell\) return null/);
   assert.match(controller, /pwaInstallClose|Close install prompt/);
   assert.doesNotMatch(controller, /OPENAI_API_KEY|STRIPE_SECRET|SUPABASE_SERVICE/);
   assert.doesNotMatch(layout, /PwaController/);

@@ -1,0 +1,31 @@
+.psTimeframePicker,.psScanChanges{margin:14px 0;padding:14px;border:1px solid #34515d;border-radius:16px;background:#101d26;color:#ecf3f5;min-width:0}
+.psTimeframePicker>div:first-child,.psScanChanges>header{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+.psTimeframePicker strong,.psScanChanges header span{font-size:.875rem;letter-spacing:.04em;color:#8ce3c4}
+.psTimeframePicker span,.psTimeframePicker p,.psScanChanges p{font-size:.875rem;line-height:1.5}
+.psTimeframePicker nav{display:flex;gap:8px;overflow-x:auto;padding:10px 0 3px;scrollbar-width:thin}
+.psTimeframePicker button,.psScanChanges>button,.psSampleButton{border:1px solid #47606e;border-radius:10px;background:#172b37;color:#e7f0f4;padding:10px 12px;cursor:pointer;min-height:48px;font:inherit}
+.psTimeframePicker button{flex:1 0 104px;display:flex;flex-direction:column;gap:5px;align-items:center}
+.psTimeframePicker button[data-active=true]{border-color:#74e0b8;background:#163d38}
+.psTimeframePicker small{font-size:.75rem;line-height:1.4;white-space:nowrap;color:#bbced7}
+.psTimeframePicker button:disabled{cursor:wait;opacity:.7}
+.psTimeframePicker button:focus-visible,.psScanChanges button:focus-visible,.psSampleButton:focus-visible{outline:3px solid #f7ce71;outline-offset:2px}
+.psTimeframeSticky{position:sticky;top:0;z-index:30;background:#101d26;box-shadow:0 8px 20px #0005;padding-top:env(safe-area-inset-top)}
+.psTimeframeSticky .psTimeframePicker{margin:0}
+.psTimeframeHelp{font-size:.875rem;line-height:1.5;color:#bbced7}
+.psResults:has(>.psTimeframeSticky)>.psImmersiveBar,.psResults:has(>.psTimeframeSticky)>.psResultViewSwitch,.psResults:has(>.psTimeframeSticky) .psReportRail{position:relative;top:auto}
+.psResults:has(>.psTimeframeSticky) .psWrittenReport{--ps-rail-offset:calc(160px + env(safe-area-inset-top))}
+.psTimeframeCompact{margin:10px 0}
+.psScanChanges header>div{display:flex;flex-direction:column;gap:6px}
+.psScanChanges small{font-size:.75rem;color:#bbced7}
+.psScanChanges>button{margin:10px 0}
+.psComparisonImages{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 0}
+.psComparisonImages figure{min-width:0;margin:0}
+.psComparisonImages img{width:100%;height:190px;object-fit:contain;background:#071018}
+.psComparisonImages figcaption{font-size:.75rem;padding:8px 0}
+.psSampleBanner{border:1px solid #edc672;padding:14px;border-radius:12px;background:#302918;color:#ffe1a0;margin:12px 0;font-size:.875rem;line-height:1.5}
+.psSampleButton{width:100%;margin:12px 0}
+.psSampleButton small{display:block;font-size:.875rem;line-height:1.5;color:#bbced7;margin-top:4px}
+.psScanChanges .psChangeLedger{margin:12px 0;padding:0}
+.psScanChanges .psChangeLedger article{display:block}
+.psScanChanges details summary{cursor:pointer;padding:10px 0}
+@media(max-width:430px){.psTimeframePicker{padding:10px}.psTimeframePicker>div:first-child>span{font-size:.75rem}.psComparisonImages{grid-template-columns:1fr}.psComparisonImages img{height:240px}}

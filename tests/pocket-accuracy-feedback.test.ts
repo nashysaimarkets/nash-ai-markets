@@ -28,6 +28,11 @@ test("only corrections become benchmark candidates", () => {
 
 test("correction replay extracts a deterministic user-verified level", () => {
   assert.deepEqual(correctionPatch(correction), { level: { kind: "support", price: "7638" } });
+  assert.deepEqual(correctionPatch({ ...correction, correction: "Support: 7,638" }), { level: { kind: "support", price: "7638" } });
+  assert.deepEqual(correctionPatch({ ...correction, categories: ["INSTRUMENT", "CURRENT_PRICE"], correction: "US 500, current 7738" }), {});
+  assert.deepEqual(correctionPatch({ ...correction, categories: ["CURRENT_PRICE"], correction: "US 500, current 7738" }), {});
+  assert.deepEqual(correctionPatch({ ...correction, categories: ["CURRENT_PRICE"], correction: "Current price: 7738" }), { currentPrice: "7738" });
+  assert.deepEqual(correctionPatch({ ...correction, categories: ["SUPPORT"], correction: "support 7640, not 7650" }), {});
   assert.deepEqual(correctionPatch(accurate), {});
 });
 
@@ -35,5 +40,10 @@ test("the current result never inherits a historical accuracy percentage", async
   const panel = await readFile(new URL("../app/pocket/AccuracyFeedbackPanel.tsx", import.meta.url), "utf8");
   assert.match(panel, /AWAITING REVIEW/);
   assert.match(panel, /HISTORY ·/);
+  assert.match(panel, /What single fact did Pocket get wrong/);
+  assert.match(panel, /current\.includes\(category\) \? \[\] : \[category\]/);
+  assert.match(panel, /disabled=\{!selected\.length \|\| !correctionIsUnambiguous\}/);
+  assert.match(panel, /OPTIONAL · NOTE REQUIRED/);
+  assert.match(panel, /CHART OBSERVATION SAVED/);
   assert.doesNotMatch(panel, />\{summary\.rate\}% <small>ACCURATE/);
 });

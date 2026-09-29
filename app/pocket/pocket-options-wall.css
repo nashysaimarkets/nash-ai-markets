@@ -20,3 +20,7 @@
 .psOptionsWallResult li span { display: block; color: #c4d5d5; }
 .psOptionsWall footer { margin-top: .9rem; color: #a9bbbb; font-size: .75rem; line-height: 1.45; }
 @media(max-width: 520px) { .psOptionsWall > header { flex-direction: column; } .psOptionsWallActions > * { width: 100%; } }
+.psMarketPanelChecks { margin: .75rem 0; border: 1px solid #244b55; border-radius: 12px; background: #0a1a22; }
+.psMarketPanelChecks > summary { min-height: 48px; padding: .9rem; cursor: pointer; color: #dffcf3; font-weight: 800; }
+.psMarketPanelChecks > summary span { margin-left: .5rem; color: #93bab4; font-size: .7rem; }
+.psMarketPanelChecks > div { padding: 0 .7rem .7rem; }

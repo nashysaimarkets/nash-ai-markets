@@ -1,0 +1,32 @@
+.psApp .psScanProgress{margin-top:8px;overflow:hidden;border:1px solid rgba(85,233,155,.28);border-radius:14px;background:linear-gradient(145deg,rgba(14,30,28,.97),rgba(7,13,18,.98));box-shadow:0 16px 38px rgba(0,0,0,.34),inset 0 1px rgba(224,255,245,.08)}
+.psApp .psScanProgress>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.psApp .psScanProgress>header div{display:grid;gap:5px}
+.psApp .psScanProgress>header span,.psApp .psScanProgress>header b,.psApp .psScanProgress li,.psApp .psScanProgress>footer{font-family:var(--font-geist-mono),ui-monospace,monospace}
+.psApp .psScanProgress>header span{color:#77a994;font-size:10px;font-weight:800;letter-spacing:.12em}
+.psApp .psScanProgress>header strong{color:#e8fff5;font-size:13px;letter-spacing:.03em}
+.psApp .psScanProgress>header b{color:#58eca0;font-size:12px}
+.psApp .psScanProgress>p{margin:0;padding:12px 14px 5px;color:#9eb0aa;font-size:12px;line-height:1.5}
+.psApp .psScanProgress ol{display:grid;gap:0;margin:0;padding:8px 14px 12px;list-style:none}
+.psApp .psScanProgress li{position:relative;display:grid;grid-template-columns:25px 1fr;align-items:center;gap:9px;min-height:34px;color:#64736e;font-size:10px;font-weight:800;letter-spacing:.04em}
+.psApp .psScanProgress li:not(:last-child)::after{content:"";position:absolute;left:12px;top:29px;bottom:-5px;width:1px;background:rgba(255,255,255,.1)}
+.psApp .psScanProgress li i{z-index:1;display:grid;place-items:center;width:25px;height:25px;border:1px solid #32423d;border-radius:50%;background:#0a1113;color:inherit;font-style:normal}
+.psApp .psScanProgress li[data-state="complete"]{color:#79cda5}
+.psApp .psScanProgress li[data-state="current"]{color:#e9fff5}
+.psApp .psScanProgress li[data-state="current"] i{border-color:#58eca0;color:#58eca0;box-shadow:0 0 18px rgba(85,233,155,.25)}
+.psApp .psScanProgress>footer{padding:10px 14px;border-top:1px solid rgba(255,255,255,.07);color:#72817c;font-size:9px;line-height:1.5;letter-spacing:.04em}
+.psApp .psDecisionTimeline{margin:14px;overflow:hidden;border:1px solid #35534a;border-radius:16px;background:linear-gradient(145deg,#0d1c1b,#070e13)}
+.psApp .psDecisionTimeline>header{display:flex;justify-content:space-between;gap:10px;padding:13px 14px;border-bottom:1px solid #294139;background:rgba(85,233,155,.055);font:800 10px/1.3 var(--font-geist-mono),ui-monospace,monospace;letter-spacing:.07em}
+.psApp .psDecisionTimeline>header span{color:#66efa9}
+.psApp .psDecisionTimeline>header b{color:#90a59d;text-align:right}
+.psApp .psDecisionTimeline ol{margin:0;padding:0;list-style:none}
+.psApp .psDecisionTimeline li{position:relative;display:grid;grid-template-columns:34px 1fr 20px;gap:10px;padding:14px;border-bottom:1px solid #20342e}
+.psApp .psDecisionTimeline li:last-child{border-bottom:0}
+.psApp .psDecisionTimeline li>i{z-index:1;display:grid;place-items:center;width:30px;height:30px;border:1px solid #4c7366;border-radius:50%;background:#0a1515;color:#66efa9;font:900 11px/1 var(--font-geist-mono),ui-monospace,monospace;font-style:normal}
+.psApp .psDecisionTimeline li:not(:last-child)::after{content:"";position:absolute;left:28px;top:44px;bottom:-9px;width:1px;background:linear-gradient(#4c7366,#243c34)}
+.psApp .psDecisionTimeline li small{display:block;margin-bottom:5px;color:#789087;font:800 9px/1.3 var(--font-geist-mono),ui-monospace,monospace;letter-spacing:.08em}
+.psApp .psDecisionTimeline li strong{display:block;color:#e7f2ee;font-size:12px;line-height:1.35}
+.psApp .psDecisionTimeline li p{margin:5px 0 0;color:#9baaa5;font-size:12px;line-height:1.45}
+.psApp .psDecisionTimeline li>b{align-self:center;color:#66efa9;font-size:14px}
+.psApp .psVault article div>small{color:#62c897;font:800 9px/1.3 var(--font-geist-mono),ui-monospace,monospace;letter-spacing:.05em}
+@media(prefers-reduced-motion:no-preference){.psApp .psScanProgress li[data-state="current"] i{animation:psScanStagePulse 1.8s ease-in-out infinite}}
+@keyframes psScanStagePulse{50%{transform:scale(1.08);box-shadow:0 0 24px rgba(85,233,155,.4)}}

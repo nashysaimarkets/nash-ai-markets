@@ -1,12 +1,16 @@
+import { comparisonIdentity } from "../../../pocket/chart-session";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+import { rejectCrossOrigin } from "../../../lib/server/same-origin";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 // Match the 8 MB upload contract used by the Pocket UI and analysis route.
 // A base64 data URL can be roughly 4/3 larger than its original file.
 const MAX_IMAGE_LENGTH = 11_000_000;
+const MAX_REQUEST_BYTES = MAX_IMAGE_LENGTH * 2 + 20_000;
 
 const schema = {
   type: "object",
@@ -22,19 +26,50 @@ const schema = {
     timingReview: { type: "string", maxLength: 260 },
     disciplineReview: { type: "string", maxLength: 260 },
     goodDecisionBadOutcome: { type: "boolean" },
+    thesisStatus: { type: "string", enum: ["HELD", "FAILED", "CHANGED", "NOT_PROVEN"] },
+    structureShift: { type: "string", enum: ["STRENGTHENED", "WEAKENED", "FLIPPED", "UNCHANGED", "UNCLEAR"] },
+    rootCause: { type: "string", enum: ["CHART_READ", "ENTRY_TIMING", "STOP_PLACEMENT", "DISCIPLINE", "MARKET_OUTCOME", "NOT_PROVEN"] },
+    evidenceChanges: {
+      type: "array", maxItems: 4, items: {
+        type: "object", additionalProperties: false,
+        properties: {
+          before: { type: "string", maxLength: 120 },
+          after: { type: "string", maxLength: 120 },
+          impact: { type: "string", enum: ["STRENGTHENED", "WEAKENED", "INVALIDATED", "UNCHANGED", "UNCLEAR"] },
+        },
+        required: ["before", "after", "impact"],
+      },
+    },
+    nextRule: { type: "string", maxLength: 180 },
     lessons: { type: "array", maxItems: 4, items: { type: "string", maxLength: 150 } },
     behaviourTags: { type: "array", maxItems: 5, items: { type: "string", maxLength: 50 } },
   },
-  required: ["outcome", "processGrade", "decisionQuality", "headline", "outcomeSummary", "confirmationReview", "invalidationReview", "timingReview", "disciplineReview", "goodDecisionBadOutcome", "lessons", "behaviourTags"],
+  required: ["outcome", "processGrade", "decisionQuality", "headline", "outcomeSummary", "confirmationReview", "invalidationReview", "timingReview", "disciplineReview", "goodDecisionBadOutcome", "thesisStatus", "structureShift", "rootCause", "evidenceChanges", "nextRule", "lessons", "behaviourTags"],
 } as const;
 
 export async function POST(request: Request) {
+  const crossOrigin = rejectCrossOrigin(request);
+  if (crossOrigin) return crossOrigin;
+  let payload: { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown; currentAnalysis?: unknown; mode?: unknown };
   try {
-    const payload = await request.json() as { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown };
+    payload = await readBoundedJsonBody(request, MAX_REQUEST_BYTES) as typeof payload;
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json({ error: "The review request is too large." }, { status: 413 });
+    }
+    return NextResponse.json({ error: "Invalid review request." }, { status: 400 });
+  }
+  try {
     const beforeImage = typeof payload.beforeImage === "string" ? payload.beforeImage : "";
     const afterImage = typeof payload.afterImage === "string" ? payload.afterImage : "";
     if (![beforeImage, afterImage].every((image) => /^data:image\/(jpeg|png|webp);base64,/.test(image) && image.length <= MAX_IMAGE_LENGTH)) {
       return NextResponse.json({ error: "Both chart screenshots are required." }, { status: 400 });
+    }
+    const changesOnly = payload.mode === "CHART_CHANGES";
+    const before = payload.lockedAnalysis && typeof payload.lockedAnalysis === "object" ? payload.lockedAnalysis as { instrument?: string; ticker?: string; timeframe?: string } : {};
+    const after = payload.currentAnalysis && typeof payload.currentAnalysis === "object" ? payload.currentAnalysis as { instrument?: string; ticker?: string; timeframe?: string } : {};
+    if (changesOnly && (!comparisonIdentity(before) || comparisonIdentity(before) !== comparisonIdentity(after) || beforeImage === afterImage)) {
+      return NextResponse.json({ error: "Choose two different screenshots of the same verified instrument and timeframe." }, { status: 400 });
     }
     const budget = takePocketBudget(request, "review");
     if (!budget.allowed) return NextResponse.json(
@@ -44,15 +79,25 @@ export async function POST(request: Request) {
     const client = createOpenAIClient(undefined, 55_000);
     if (!client) return NextResponse.json({ error: "AI review is not connected." }, { status: 503 });
     const lockedAnalysis = JSON.stringify(payload.lockedAnalysis ?? {}).slice(0, 12_000);
+    const reviewSchema = changesOnly ? { ...schema, properties: { ...schema.properties, comparisonCheck: {
+      type: "object", additionalProperties: false,
+      properties: { sameInstrument: { type: "boolean" }, sameTimeframe: { type: "boolean" }, chronology: { type: "string", enum: ["LATER", "SAME_OR_EARLIER", "UNKNOWN"] }, reason: { type: "string", maxLength: 240 } },
+      required: ["sameInstrument", "sameTimeframe", "chronology", "reason"],
+    } }, required: [...schema.required, "comparisonCheck"] } : schema;
     const response = await client.responses.create({
       model: process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
-        "You are Bullseye's post-trade process auditor.",
+        changesOnly ? "You compare the current chart with a previous saved chart. Describe visible chart changes only; do not assess the user's execution, behaviour or trading performance." : "You are Bullseye's post-trade process auditor.",
+        "First verify the screenshots show the same instrument and timeframe and that the AFTER screenshot shows later market evidence. If identity, timeframe or chronological order conflicts or cannot be verified, return thesisStatus NOT_PROVEN, structureShift UNCLEAR, rootCause NOT_PROVEN, empty evidenceChanges and explain the limitation. Upload order alone does not prove chronological order.",
         "Compare the locked before-chart and its original audit with the after-chart. Never invent entries, exits, profit, loss, prices or actions that are not visibly evidenced.",
         "Judge decision process separately from financial outcome. A disciplined plan may lose; a poor process may win. Mark outcome UNCLEAR when execution or P&L is not visible.",
         "Assess whether the original confirmation and invalidation conditions appear to have occurred, but say unknown when screenshots cannot prove timing or execution.",
+        "Build an evidence change ledger with only chart changes visibly supported across both screenshots. Mark unclear rather than inventing a change.",
+        "Classify the original thesis as HELD, FAILED, CHANGED or NOT_PROVEN and the visible structure shift as STRENGTHENED, WEAKENED, FLIPPED, UNCHANGED or UNCLEAR.",
+        "Use rootCause=NOT_PROVEN unless the two screenshots directly establish the cause. Never blame entry timing, stop placement or discipline without visible evidence of those actions.",
+        "Return one short nextRule that improves the decision process without giving a trade instruction.",
         "Be concise, constructive and blunt. This is educational process review, not personalised financial advice.",
       ].join(" "),
       input: [{ role: "user", content: [
@@ -63,11 +108,20 @@ export async function POST(request: Request) {
         { type: "input_image", image_url: afterImage, detail: "high" },
       ] }],
       max_output_tokens: 2200,
-      text: { format: { type: "json_schema", name: "bullseye_process_review", strict: true, schema } },
-    });
+      text: { format: { type: "json_schema", name: "bullseye_process_review", strict: true, schema: reviewSchema } },
+    }, { signal: AbortSignal.any([request.signal, AbortSignal.timeout(55_000)]) });
+    if (response.status !== "completed") throw new Error("The comparison response was incomplete.");
     const output = response.output_text?.trim();
     if (!output) throw new Error("Review response was empty.");
-    return NextResponse.json({ review: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
+    const review = JSON.parse(output);
+    if (changesOnly && (review.comparisonCheck?.sameInstrument !== true || review.comparisonCheck?.sameTimeframe !== true || review.comparisonCheck?.chronology !== "LATER")) {
+      review.evidenceChanges = []; review.thesisStatus = "NOT_PROVEN"; review.structureShift = "UNCLEAR";
+      review.headline = "A reliable change comparison could not be verified";
+      review.outcomeSummary = review.comparisonCheck?.reason || "The screenshots do not establish the same market, timeframe and later evidence.";
+      review.nextRule = "Use a later chart of the same instrument and timeframe with readable dates or times.";
+    }
+    if (changesOnly) { review.outcome = "UNCLEAR"; review.rootCause = "NOT_PROVEN"; review.behaviourTags = []; review.goodDecisionBadOutcome = false; }
+    return NextResponse.json({ review }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     console.error("[pocket-bullseye] review unavailable", error instanceof Error ? error.name : "Error");
     return NextResponse.json({ error: "Bullseye could not complete the comparison safely." }, { status: 503 });

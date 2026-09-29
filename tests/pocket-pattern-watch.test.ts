@@ -14,13 +14,39 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(route, /geometry: \{/);
   assert.match(route, /points: \{ type: "array", minItems: 2, maxItems: 10/);
   assert.match(route, /return an empty array when none is defensible/);
+  assert.match(route, /Test competing explanations before choosing a name/);
+  assert.match(route, /triangles need at least two reactions on each boundary/);
+  assert.match(route, /independently scan every supplied image/);
+  assert.match(route, /single strongest defensible pattern from each supplied image/);
+  assert.match(route, /sourceRole/);
+  assert.match(route, /geometry\.plotBounds must tightly enclose that source image's candle plot/);
   assert.match(client, /PATTERN WATCH/);
-  assert.match(client, /30M · 1H · 4H STRUCTURE CHECK/);
-  assert.match(client, /NO SIGNIFICANT PATTERN VERIFIED/);
+  assert.match(client, /SUPPLIED CHART STRUCTURE/);
+  assert.match(client, /NO SIGNIFICANT.*PATTERN VERIFIED/);
   assert.match(client, /WHAT DOES THIS MEAN/);
+  assert.match(client, /visiblePatterns/);
   assert.match(client, /useState\(true\)/);
   assert.match(client, /HIDE GALLERY/);
   assert.match(styles, /\.psPatternGuide/);
+  assert.match(styles, /\.psPatternFrames>button\[data-active="true"\]/);
+  assert.match(styles, /\.psPatternFrameAction/);
+});
+
+test("Pattern Watch applies a deterministic geometry and confidence gate", async () => {
+  const calibration = await readFile(new URL("../app/api/pocket/analysis-calibration.ts", import.meta.url), "utf8");
+  assert.match(calibration, /PATTERN_MIN_POINTS/);
+  assert.match(calibration, /point\.x < points\[index - 1\]/);
+  assert.match(calibration, /patternSpanThreshold\(name\)/);
+  assert.match(calibration, /"BULL FLAG", "BEAR FLAG", "PENNANT", "BREAKOUT & RETEST"/);
+  assert.match(calibration, /status !== "CONFIRMED" && status !== "EXTENDED"/);
+  assert.match(calibration, /seenSources\.has\(sourceRole\)/);
+});
+
+test("Pattern Watch follows the shared selected-chart report instead of maintaining independent source labels", async () => {
+  const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
+  assert.match(client, /selectedChartReport\(analysis\)/);
+  assert.match(client, /Use the chart selector to change timeframe/);
+  assert.doesNotMatch(client, /setSelectedFrame/);
 });
 
 test("the guide covers reversal, continuation and compression families", async () => {
@@ -33,19 +59,35 @@ test("the guide covers reversal, continuation and compression families", async (
 });
 
 test("the scanner is instructed to recognize the expanded guide without forcing a label", async () => {
-  const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
+  const [route, client, xrayStyles, launchStyles] = await Promise.all([
+    readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-2.css", import.meta.url), "utf8"),
+    readFile(new URL("../app/pocket/pocket-launch-v16.css", import.meta.url), "utf8"),
+  ]);
   for (const name of ["ASCENDING TRIANGLE", "DESCENDING TRIANGLE", "PENNANT", "CUP & HANDLE", "RECTANGLE / RANGE", "TREND CHANNEL", "BREAKOUT & RETEST"]) {
     assert.match(route, new RegExp(name));
   }
   assert.match(route, /Prefer AMBIGUOUS over forcing a name/);
+  assert.match(route, /never extend a path into blank future space, invent a projected leg or draw a forecast/);
+  assert.match(route, /forming breakout\/retest must remain explicitly unconfirmed/);
+  assert.match(client, /VISIBLE HISTORY/);
+  assert.match(client, /NOT A FORECAST/);
+  assert.match(client, /WAITING FOR HOLD \/ REJECTION/);
+  assert.match(client, /The line joins swings already visible on your screenshot/);
+  assert.match(xrayStyles, /stroke-width:1\.35;stroke-dasharray:2\.5 2\.5;opacity:\.78/);
+  assert.match(launchStyles, /\.psXRayTraceKey/);
 });
 
 test("every written-report rail control has a real destination", async () => {
   const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
-  for (const id of ["bullseye-verdict", "bullseye-events", "bullseye-levels", "bullseye-evidence", "bullseye-feedback"]) {
-    assert.match(client, new RegExp(`id=["']${id}["']`));
-    assert.match(client, new RegExp(`href=["']#${id}["']`));
+  const related = await Promise.all(["DecisionIntelligenceSuite.tsx", "ScanChanges.tsx", "AccuracyFeedbackPanel.tsx"].map((file) => readFile(new URL(`../app/pocket/${file}`, import.meta.url), "utf8")));
+  const sources = [client, ...related].join("\n");
+  for (const id of ["bullseye-verdict", "bullseye-tools", "bullseye-intelligence-maps", "bullseye-levels", "bullseye-events", "bullseye-ask", "bullseye-changes", "bullseye-feedback"]) {
+    assert.ok(sources.includes(`id="${id}"`), `missing target ${id}`);
+    assert.ok(client.includes(`href="#${id}"`), `missing link ${id}`);
   }
+  assert.match(client, /id="bullseye-tools"[^>]*><PocketCommandDeck/);
 });
 
 test("trade-intention choices use distinct green red and orange text", async () => {

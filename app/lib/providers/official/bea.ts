@@ -118,14 +118,14 @@ export function createBeaObservationProvider(options: BeaProviderOptions): Scala
   const now = options.now ?? Date.now;
   return {
     name: BEA_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       if (!options.apiKey.trim()) return [];
       const retrievedMs = now();
       const retrievedAt = new Date(retrievedMs).toISOString();
       const year = new Date(retrievedMs).getUTCFullYear();
 
       const load = async (url: URL): Promise<unknown> => {
-        const response = await fetchImpl(url, { headers: { Accept: "application/json" }, cache: "no-store" });
+        const response = await fetchImpl(url, { headers: { Accept: "application/json" }, cache: "no-store", signal });
         if (!response.ok) return null;
         return response.json().catch(() => null);
       };
@@ -155,12 +155,13 @@ export function normalizeBeaReleaseDates(
   if (!Number.isFinite(fromMs) || !Number.isFinite(toMs) || fromMs > toMs) return [];
 
   const selected = [
-    ["Gross Domestic Product", "Gross Domestic Product"],
-    ["Personal Income and Outlays", "Personal Income and Outlays"],
+    ["Gross Domestic Product", "Gross Domestic Product", "HIGH"],
+    ["Personal Income and Outlays", "Personal Income and Outlays", "HIGH"],
+    ["U.S. International Trade in Goods and Services", "U.S. International Trade in Goods and Services", "MED"],
   ] as const;
   const releases: EconomicRelease[] = [];
 
-  for (const [key, name] of selected) {
+  for (const [key, name, risk] of selected) {
     const section = payload[key];
     if (!isRecord(section) || !Array.isArray(section.release_dates)) continue;
     for (const rawDate of section.release_dates) {
@@ -173,7 +174,7 @@ export function normalizeBeaReleaseDates(
         name,
         agency: "BEA",
         scheduledAt,
-        risk: "HIGH",
+        risk,
         sourceUrl: BEA_RELEASE_DATES_ENDPOINT,
       });
     }
@@ -188,17 +189,14 @@ export function createBeaReleaseCalendarProvider(
   const fetchImpl = options.fetchImpl ?? fetch;
   return {
     name: BEA_PROVIDER_NAME,
-    async fetchUpcomingReleases(from, to) {
-      try {
-        const response = await fetchImpl(BEA_RELEASE_DATES_ENDPOINT, {
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        });
-        if (!response.ok) return [];
-        return normalizeBeaReleaseDates(await response.json().catch(() => null), from, to);
-      } catch {
-        return [];
-      }
+    async fetchUpcomingReleases(from, to, signal?: AbortSignal) {
+      const response = await fetchImpl(BEA_RELEASE_DATES_ENDPOINT, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+        signal,
+      });
+      if (!response.ok) throw new Error(`BEA release schedule unavailable (${response.status}).`);
+      return normalizeBeaReleaseDates(await response.json().catch(() => null), from, to);
     },
   };
 }

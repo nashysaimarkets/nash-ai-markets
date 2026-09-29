@@ -1,0 +1,383 @@
+/* Observatory: a real star volume behind dimensional instruments and glass.
+   Source charts and calibrated overlay coordinates are intentionally untransformed. */
+.psApp[data-spatial][data-visual-style] {
+  --ps-bg: #030914;
+  --ps-panel: #09192bd9;
+  --ps-text: #eff8ff;
+  --ps-green: #65f7c4;
+  --ps-red: #ff8296;
+  --ps-gold: #ffc181;
+  --ps-line: #91d9ef36;
+  --ps-surface: linear-gradient(135deg,#21465b70,#0b1b30e6 44%,#070f20d9);
+  --ps-shadow: 0 28px 64px #0007,0 8px 0 -3px #010711b3,0 9px 0 -3px #6ebdd52b,inset 0 1px #c7f5ff3b,inset 1px 0 #9dddff14,inset 0 -2px #0008;
+  position: relative; isolation: isolate; perspective: none !important; transform: none !important;
+  background: #030914; color: var(--ps-text); padding-bottom: 90px;
+}
+.psSpatialBackdrop { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; background: #030914; }
+.psNebula { position: absolute; inset: -8%; background: url('/pocket-visuals/observatory-nebula.webp') center 46% / cover no-repeat; opacity: .85; animation: psNebulaDrift 64s ease-in-out infinite alternate; will-change: transform; }
+.psAtmosphere { position: absolute; inset: -20%; background: radial-gradient(ellipse at 18% 72%,#05aecc30,transparent 38%),radial-gradient(ellipse at 90% 28%,#805dff30,transparent 35%); mix-blend-mode: screen; animation: psAtmosphereDrift 43s ease-in-out infinite alternate; }
+.psStarVolume { position: absolute; inset: 0; display: block; width: 100%; height: 100%; opacity: .85; }
+.psSpaceVignette { position: absolute; inset: 0; background: linear-gradient(180deg,#02071350,transparent 25%,#02071030 85%),radial-gradient(ellipse at center,transparent 35%,#01061277); }
+.psSpatialHorizon { position: absolute; left: -50%; bottom: -26%; width: 200%; height: 55%; border: 1px solid #65e9fb28; border-radius: 50%; box-shadow: 0 -10px 100px #2fa3ee14,0 -2px 24px #4cd9e82b,inset 0 24px 80px #416cc815; transform: rotate(-13deg); }
+.psMotionControl { position: fixed; z-index: 150; bottom: max(14px,env(safe-area-inset-bottom)); left: 14px; display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 10px; border: 1px solid #99d5ed40; border-radius: 12px; background: #071628ed; box-shadow: 0 6px 20px #0008,inset 0 1px #ccedff22; color: #c1dce9; cursor: pointer; backdrop-filter: blur(12px); }
+.psMotionControl svg { width: 18px; height: 18px; }
+.psMotionControl span { font-size: 10px; font-weight: 650; letter-spacing: .075em; }
+.psMotionControl:disabled { opacity: .65; cursor: default; }
+@keyframes psNebulaDrift { from { transform: scale(1) translate3d(-1%,1%,0) rotate(-2deg); } to { transform: scale(1.13) translate3d(1%,-2%,0) rotate(2deg); } }
+@keyframes psAtmosphereDrift { to { transform: translate3d(-6%,4%,0) rotate(9deg); opacity: .6; } }
+
+/* The same sculpted instrument family appears in every scanner. */
+.psApp[data-spatial][data-visual-style] .psOrbital { --orbit: #6efce4; --orbit-rgb: 75,237,216; position: relative; display: inline-block; width: 76px; height: 76px; margin: 0; flex: 0 0 76px; vertical-align: middle; perspective: 600px; pointer-events: none; color: var(--orbit); }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-kind="patterns"] { --orbit: #b5a0ff; --orbit-rgb: 157,123,255; }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-kind="macro"] { --orbit: #78c9ff; --orbit-rgb: 70,171,255; }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-kind="risk"] { --orbit: #ffc58d; --orbit-rgb: 255,166,95; }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-kind="levels"] { --orbit: #87e2ff; --orbit-rgb: 75,196,255; }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-size="large"] { width: 156px; height: 156px; flex-basis: 156px; }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-size="hero"] { display: block; width: 100%; height: auto; aspect-ratio: 1; }
+.psApp[data-spatial][data-visual-style] .psOrbital span { display: block; margin: 0; padding: 0; min-height: 0; color: inherit; font-size: inherit; line-height: normal; }
+.psApp[data-spatial][data-visual-style] .psOrbitAura { position: absolute; inset: -14%; background: radial-gradient(ellipse,rgba(var(--orbit-rgb),.24),rgba(var(--orbit-rgb),.06) 42%,transparent 66%); }
+.psApp[data-spatial][data-visual-style] .psOrbitWorld { position: absolute; inset: 8%; transform-style: preserve-3d; transform: rotateX(-13deg) rotateY(-17deg) rotateZ(-10deg); animation: psInstrumentFloat 9s ease-in-out infinite alternate; }
+.psApp[data-spatial][data-visual-style] .psOrbitRing { position: absolute; border-radius: 50%; border: 2px solid rgba(var(--orbit-rgb),.7); box-shadow: 0 0 12px rgba(var(--orbit-rgb),.28),inset 0 0 12px rgba(var(--orbit-rgb),.22),0 3px 0 #081927,0 5px 0 rgba(var(--orbit-rgb),.36); }
+.psApp[data-spatial][data-visual-style] .psOrbitRing::before { content: ''; position: absolute; inset: -5px; border: 1px solid #d5f9ff8c; border-left-color: transparent; border-bottom-color: transparent; border-radius: 50%; }
+.psApp[data-spatial][data-visual-style] .psOrbitRing::after { content: ''; position: absolute; top: 12%; left: 12%; width: 5px; height: 5px; border-radius: 50%; background: #e5ffff; box-shadow: 0 0 14px 3px var(--orbit); }
+.psApp[data-spatial][data-visual-style] .psOrbitRingOuter { inset: 0; transform: rotateX(62deg) rotateY(-18deg); animation: psOrbitOuter 26s linear infinite; border-width: 3px; }
+.psApp[data-spatial][data-visual-style] .psOrbitRingMiddle { inset: 10%; transform: rotateY(62deg) rotateX(15deg); animation: psOrbitMiddle 32s linear infinite; }
+.psApp[data-spatial][data-visual-style] .psOrbitRingInner { inset: 18%; transform: rotateX(-20deg) rotateY(-24deg); animation: psOrbitInner 22s linear infinite reverse; }
+.psApp[data-spatial][data-visual-style] .psOrbitTicks { position: absolute; inset: 7%; border-radius: 50%; background: repeating-conic-gradient(from 0deg,rgba(var(--orbit-rgb),.55) 0deg 1deg,transparent 1deg 12deg); mask-image: radial-gradient(circle,transparent 65%,#000 66% 69%,transparent 70%); transform: rotateX(18deg) rotateY(12deg); animation: psOrbitTicks 60s linear infinite; }
+.psApp[data-spatial][data-visual-style] .psOrbitCore { position: absolute; inset: 28%; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(var(--orbit-rgb),.65); background: radial-gradient(circle at 30% 22%,#d5ffff66,transparent 38%),radial-gradient(circle at 65% 80%,rgba(var(--orbit-rgb),.24),transparent 62%),linear-gradient(145deg,#284659f0,#030d1cf5 72%); box-shadow: inset 0 2px 4px #f3ffff66,inset -4px -7px 12px #010710,0 8px 0 #04121f,0 9px 0 rgba(var(--orbit-rgb),.38),0 16px 24px #0009,0 0 25px rgba(var(--orbit-rgb),.2); transform: translateZ(24px); }
+.psApp[data-spatial][data-visual-style] .psOrbitCore svg { width: 70%; height: 70%; color: var(--orbit); filter: drop-shadow(0 0 5px rgba(var(--orbit-rgb),.55)); }
+.psApp[data-spatial][data-visual-style] .psOrbitSatellite { position: absolute; width: 5%; height: 5%; border-radius: 50%; background: radial-gradient(circle at 35% 25%,white,var(--orbit) 36%,#07304a 75%); box-shadow: 0 0 16px rgba(var(--orbit-rgb),.55),0 5px 9px #0007; }
+.psApp[data-spatial][data-visual-style] .psOrbitSatelliteOne { left: 1%; top: 54%; transform: translateZ(30px); }
+.psApp[data-spatial][data-visual-style] .psOrbitSatelliteTwo { right: 8%; top: 19%; transform: translateZ(-18px); width: 3%; height: 3%; }
+.psApp[data-spatial][data-visual-style] .psOrbitFloor { position: absolute; bottom: 0; left: 21%; right: 21%; height: 8%; border-radius: 50%; background: radial-gradient(ellipse,rgba(var(--orbit-rgb),.28),transparent 68%); transform: rotate(-8deg); }
+@keyframes psInstrumentFloat { to { transform: translate3d(0,-5px,0) rotateX(4deg) rotateY(9deg) rotateZ(0deg); } }
+@keyframes psOrbitOuter { to { transform: rotateX(62deg) rotateY(-18deg) rotateZ(360deg); } }
+@keyframes psOrbitMiddle { to { transform: rotateY(62deg) rotateX(15deg) rotateZ(360deg); } }
+@keyframes psOrbitInner { to { transform: rotateX(-20deg) rotateY(-24deg) rotateZ(360deg); } }
+@keyframes psOrbitTicks { to { transform: rotateX(18deg) rotateY(12deg) rotateZ(360deg); } }
+.psApp[data-spatial][data-visual-style] .psOrbital[data-visible="false"] * { animation-play-state: paused !important; }
+
+/* Hero: open space, projected typography and a floating gyroscope. */
+.psApp[data-spatial][data-visual-style] .psHeader { height: 76px; background: linear-gradient(180deg,#071326e8,#07132678); border-color: #a2d5f129; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 14px 36px #0004,inset 0 -1px #c2f1ff0a; }
+.psApp[data-spatial][data-visual-style] .psLogoMark { background: radial-gradient(circle at 30% 20%,#b8f9ec3d,transparent 55%),linear-gradient(145deg,#234250,#081528); border-color: #9cf1e475; box-shadow: inset 0 1px #e4fff99c,inset 0 -3px #010914,0 4px 0 #071623,0 5px 0 #79eacf47,0 9px 18px #0009,0 0 22px #42e7d020; transform: rotate(-6deg); }
+.psApp[data-spatial][data-visual-style] .psLogo strong { letter-spacing: .13em; text-shadow: 0 1px #3c626d,0 2px #1d3f51,0 4px 9px #000b; }
+.psApp[data-spatial][data-visual-style] .psScanner { width: min(780px,100%); padding: 28px 22px 70px; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero { position: relative; isolation: isolate; grid-template-columns: 1.15fr 1fr; gap: 8px; overflow: visible; padding: 34px 26px 24px; border: 1px solid #a5deeb52; border-radius: 30px; background: linear-gradient(125deg,#19354d70,#06122442 52%,#162d4433); box-shadow: 0 30px 70px #0007,0 9px 0 -3px #041021a8,0 10px 0 -3px #6fc8df34,inset 0 1px #d1f7ff54,inset 1px 0 #d1f7ff1c; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero::before { display: block; content: ''; position: absolute; z-index: -1; inset: -1px; border-radius: inherit; background: radial-gradient(ellipse at 84% 32%,#3bd9da18,transparent 50%); pointer-events: none; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero::after { bottom: -1px; height: 1px; left: 18%; right: 18%; background: linear-gradient(90deg,transparent,#b1fdff,#779fff,transparent); box-shadow: 0 0 18px 1px #71e9ef70; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy { padding: 4px 0 10px; z-index: 2; }
+.psApp[data-spatial][data-visual-style] .psCopy > p { font-size: 10px; letter-spacing: .18em; color: #a1d8e8; }
+.psApp[data-spatial][data-visual-style] .psCopy > p > i { background: #81fff0; box-shadow: 0 0 12px #72ffda; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy h1 { font-size: clamp(40px,5vw,53px) !important; font-weight: 760; line-height: 1.02 !important; letter-spacing: -.055em !important; color: #f2fbff; text-shadow: 0 1px 0 #aacbda,0 2px 0 #577b8d,0 3px 0 #27495e,0 9px 20px #000a; margin: 20px 0; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy h1 em { color: #9af8e9; text-shadow: 0 1px #72b7b9,0 2px #386870,0 3px #19374a,0 8px 24px #0009,0 0 35px #44e5c324; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy > span { font-size: 14px; line-height: 1.7; max-width: 34ch; color: #b8cdd9; text-shadow: 0 2px 5px #000c; }
+.psApp[data-spatial][data-visual-style] .psDepthScene { margin: 0 -12px; min-width: 0; }
+.psApp[data-spatial][data-visual-style] .psDepthObject { transform-style: preserve-3d; }
+.psApp[data-spatial][data-visual-style] .psDepthCaption { font-size: 9px; letter-spacing: .15em; color: #aadadf; margin-top: 7px; }
+.psApp[data-spatial][data-visual-style] .psLaunchSignals { gap: 10px; margin-top: 20px; }
+.psApp[data-spatial][data-visual-style] .psLaunchSignals article { border: 1px solid #aee7ec29; border-radius: 14px; background: linear-gradient(150deg,#2861505c,#0b2135ab 65%); box-shadow: inset 0 1px #d6fff847,0 4px 0 #020b18a8,0 5px 0 #88ceb822,0 12px 24px #0004; padding: 13px 5px; }
+.psApp[data-spatial][data-visual-style] .psLaunchSignals [data-tone="wait"] { background: linear-gradient(150deg,#70502d5c,#172031ab 65%); }
+.psApp[data-spatial][data-visual-style] .psLaunchSignals [data-tone="bear"] { background: linear-gradient(150deg,#7035475c,#152033ab 65%); }
+.psApp[data-spatial][data-visual-style] .psLaunchSignals svg { filter: drop-shadow(0 2px 2px #000b) drop-shadow(0 0 8px currentColor); width: 21px; height: 21px; }
+.psApp[data-spatial][data-visual-style] .psLaunchSignals span { font-size: 10px; letter-spacing: .08em; }
+.psApp[data-spatial][data-visual-style] .psOpeningRail { margin-top: 24px; gap: 10px; }
+.psApp[data-spatial][data-visual-style] .psOpeningRail article { padding: 14px 10px; background: #0a1b2ba6; box-shadow: var(--ps-shadow); border: 1px solid #9cd3df2c; }
+.psApp[data-spatial][data-visual-style] .psOpeningRail i { color: #a1d6e1; font-size: 21px; text-shadow: 0 2px #22354a,0 4px 6px #000; }
+.psApp[data-spatial][data-visual-style] .psOpeningRail strong { font-size: 11px; }
+.psApp[data-spatial][data-visual-style] .psOpeningRail span { font-size: 11px; }
+
+/* Bevelled glass surfaces throughout the upload, results, review and journal. */
+.psApp[data-spatial][data-visual-style] :is(.psPersonalTouch,.psUploadGuide,.psAppStoreEntry,.psSampleButton,.psEvidencePack,.psJournalHome,.psFingerprint,.psVault,.psAutoPreview,.psPreflight,.psCommandDeck,.psIntelligenceSuite,.psPatternWatch,.psLiquidityGuard,.psDecisionEvents,.psResultChart,.psAskBullseye,.psRiskDesk,.psSignalPulse,.psMarketStory,.psDecisionEngine,.psScanChanges,.psResultTruthStrip,.psAccuracyFeedback,.psLevelProvenance,.psDecisionTimeline,.psAutopsyScore,.psChangeLedger,.psCoach,.psMissingInputs) { border: 1px solid #93ccde38; border-radius: 22px; background: var(--ps-surface); box-shadow: var(--ps-shadow); }
+.psApp[data-spatial][data-visual-style] :is(.psPersonalTouch,.psAppStoreEntry,.psUploadGuide,.psPrivacy,.psJournalHome,.psVault) { margin-top: 20px; }
+.psApp[data-spatial][data-visual-style] :is(.psCoreScans,.psDecisionEngine,.psIntelligenceSuite,.psCommandDeck,.psResultChart,.psDecisionEvents,.psPatternWatch,.psLiquidityGuard,.psRiskDesk,.psSignalPulse) > header { background: linear-gradient(110deg,#7fddf41a,#07132445); border-bottom-color: #9ddde830; box-shadow: inset 0 1px #b9f7ff1c; }
+.psApp[data-spatial][data-visual-style] :is(.psCoreScans,.psDecisionEngine,.psIntelligenceSuite,.psCommandDeck,.psResultChart,.psDecisionEvents,.psPatternWatch,.psLiquidityGuard,.psRiskDesk,.psSignalPulse) > header :is(span,h2,strong) { text-shadow: 0 2px 0 #071222,0 3px 9px #0009; }
+.psApp[data-spatial][data-visual-style] :is(input:not([type="checkbox"]):not([type="file"]),textarea,select) { background: linear-gradient(180deg,#020a16dc,#0b192bbf); box-shadow: inset 0 3px 10px #0007,0 1px #bbe4ff1c; border-color: #9cd5e436; color: #edf8ff; }
+.psApp[data-spatial][data-visual-style] .psSampleButton { background: linear-gradient(130deg,#195557c7,#112940e6 70%); border-color: #7ffce77d; color: #c6fff2; box-shadow: 0 10px 26px #0005,0 4px 0 #061b26,0 5px 0 #77e5d653,inset 0 1px #d0fff975,0 0 25px #53ead316; }
+.psApp[data-spatial][data-visual-style] .psUpload { padding: 22px 20px 28px; min-height: 302px; border: 1px solid #8cebea70; border-radius: 26px; background: radial-gradient(ellipse at 50% 45%,#17515838,transparent 65%),linear-gradient(145deg,#17334fa8,#061527ce 70%); box-shadow: 0 28px 60px #0007,0 8px 0 -2px #02101dd9,0 9px 0 -2px #75dcd346,inset 0 1px #c5ffff66,inset 0 0 50px #195c7314; }
+.psApp[data-spatial][data-visual-style] .psUpload > .psOrbital { margin: 10px auto 12px; display: block; }
+.psApp[data-spatial][data-visual-style] .psUpload strong { font-size: 17px; color: #d3fff6; letter-spacing: .1em; text-shadow: 0 2px #2d5b66,0 6px 16px #0008; }
+.psApp[data-spatial][data-visual-style] .psUpload::after { display: block; opacity: .7; border-color: #78f4e16b; background: none; }
+.psApp[data-spatial][data-visual-style] .psUpload[data-loaded="false"]::before { color: #91c5d5; }
+.psApp[data-spatial][data-visual-style] .psUpload[data-loaded="true"] { min-height: 0; }
+.psApp[data-spatial][data-visual-style] .psUpload[data-loaded="true"] > img { box-shadow: 0 10px 20px #0008; border-radius: 8px; }
+.psApp[data-spatial][data-visual-style] .psPrivacy { background: #0a2030c9; border-color: #95d8dc38; box-shadow: inset 0 1px #d1fff215,0 8px 18px #0004; }
+.psApp[data-spatial][data-visual-style] .psIntent button { border-radius: 14px; box-shadow: inset 0 1px #dbfaff36,0 4px 0 #030a15,0 8px 16px #0006; }
+.psApp[data-spatial][data-visual-style] .psIntent button[data-active="true"] { background: linear-gradient(145deg,#246b54,#0c342c) !important; color: #a8ffdc !important; box-shadow: inset 0 1px #c6ffdfa1,0 4px 0 #062016,0 5px 0 #7bffc22b,0 0 25px #42efb51c; }
+.psApp[data-spatial][data-visual-style] .psIntent button:nth-child(2)[data-active="true"] { background: linear-gradient(145deg,#823647,#381924) !important; color: #ffb1bf !important; box-shadow: inset 0 1px #ffc4d29c,0 4px 0 #270d16,0 0 25px #ff657f20; }
+.psApp[data-spatial][data-visual-style] .psIntent button:nth-child(3)[data-active="true"] { background: linear-gradient(145deg,#865330,#372a22) !important; color: #ffd5a7 !important; box-shadow: inset 0 1px #ffdab19c,0 4px 0 #291a10,0 0 25px #ffa55220; }
+.psApp[data-spatial][data-visual-style] .psAnalyse { position: relative; overflow: hidden; min-height: 74px; background: linear-gradient(165deg,#b57236,#6c391e 55%,#402411); color: #fff0da; border: 1px solid #ffcf969c; border-radius: 18px; box-shadow: inset 0 2px #ffeed49c,inset 0 -3px #381c13,0 5px 0 #2a1b19,0 6px 0 #e09d573d,0 14px 35px #0008,0 0 30px #ffaf4b20; }
+.psApp[data-spatial][data-visual-style] .psAnalyse strong { color: #fff2df; text-shadow: 0 2px #63351e,0 3px 5px #0008; }
+.psApp[data-spatial][data-visual-style] .psAnalyse svg { filter: drop-shadow(0 0 8px #ffc37690); }
+.psApp[data-spatial][data-visual-style] .psScanActivity { display: grid; grid-template-columns: 68px 1fr; align-items: center; gap: 8px 14px; background: #0b2335dd; border-color: #82efe349; box-shadow: var(--ps-shadow); }
+.psApp[data-spatial][data-visual-style] .psScanActivity > .psOrbital { grid-row: 1/3; width: 68px; height: 68px; }
+.psApp[data-spatial][data-visual-style] .psScanActivityTrack { margin: 0; }
+.psPreflightSculpture { display: flex; justify-content: center; padding: 10px; }
+
+/* The result opens with three tangible scanner instruments, not flat status tiles. */
+.psApp[data-spatial][data-visual-style] .psResults[data-immersive="true"] { background: transparent; }
+.psApp[data-spatial][data-visual-style] .psImmersiveBar { background: #061326c4; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 12px 28px #0005; }
+.psApp[data-spatial][data-visual-style] .psWrittenReport { background: transparent; box-shadow: none; border: 0; padding-top: 20px; }
+.psApp[data-spatial][data-visual-style] .psWrittenReport::before { display: none; }
+.psApp[data-spatial][data-visual-style] .psTimeframeSticky { background: #071326d9; border-bottom-color: #93daed2c; box-shadow: 0 14px 24px #0005; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker { background: transparent; border-color: #83c2d738; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button { background: linear-gradient(155deg,#26475b9c,#091a2ae8); border-color: #a0d6e644; box-shadow: inset 0 1px #b8edff3b,0 4px 0 #041020,0 8px 15px #0005; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button[aria-pressed="true"] { background: linear-gradient(145deg,#2d706f,#0e313d); border-color: #91f4e99e; color: #c3fff1; box-shadow: inset 0 1px #bdfffbd6,0 4px 0 #092730,0 5px 0 #87ead549,0 0 22px #41ebd028; }
+.psApp[data-spatial][data-visual-style] .psResultViewSwitch button { background: #0c2337cc; border-color: #7dbfd244; box-shadow: inset 0 1px #d0f5ff20,0 5px 16px #0005; }
+.psApp[data-spatial][data-visual-style] .psResultViewSwitch button[data-active="true"] { background: linear-gradient(145deg,#325277,#142a4c); border-color: #a6cff67c; box-shadow: inset 0 1px #c1e3ff8c,0 4px 0 #061022,0 6px 22px #0007; color: #e1f2ff; }
+.psApp[data-spatial][data-visual-style] .psCoreScans { width: min(1100px,100% - 32px); margin-top: 24px; overflow: visible; background: transparent; border: 0; box-shadow: none; }
+.psApp[data-spatial][data-visual-style] .psCoreScans > header { border: 0; padding: 12px 2px 18px; background: transparent; box-shadow: none; }
+.psApp[data-spatial][data-visual-style] .psCoreScans > header span { color: #b4eff3; letter-spacing: .15em; font-size: 11px; }
+.psApp[data-spatial][data-visual-style] .psCoreScans > header strong { color: #9ebdce; font-size: 12px; margin-top: 6px; }
+.psApp[data-spatial][data-visual-style] .psCoreScans > div { gap: 16px; background: transparent; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button { --scan-light: #76f5dc; position: relative; isolation: isolate; display: grid; grid-template-columns: 1fr; align-content: start; gap: 0; padding: 20px; overflow: hidden; border: 1px solid #a1dddf54; border-radius: 25px; background: radial-gradient(ellipse at 80% 15%,#228a963d,transparent 62%),linear-gradient(145deg,#183548c2,#061325ed 80%); box-shadow: var(--ps-shadow); transition: border-color .25s,box-shadow .25s,translate .25s; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button[data-scan="patterns"] { --scan-light: #baa5ff; border-color: #b6a4fa55; background: radial-gradient(ellipse at 80% 15%,#7260c84a,transparent 62%),linear-gradient(145deg,#2d314fc2,#101426ed 80%); }
+.psApp[data-spatial][data-visual-style] .psCoreScans button[data-scan="macro"] { --scan-light: #91ccff; border-color: #8fbbf755; background: radial-gradient(ellipse at 80% 15%,#387fd64a,transparent 62%),linear-gradient(145deg,#193556c2,#0a162ced 80%); }
+.psApp[data-spatial][data-visual-style] .psCoreScans button::after { content: ''; position: absolute; left: 15%; right: 15%; bottom: 0; height: 1px; background: linear-gradient(90deg,transparent,var(--scan-light),transparent); box-shadow: 0 0 16px var(--scan-light); }
+.psApp[data-spatial][data-visual-style] .psCoreScans button > .psOrbital { width: 172px; height: 172px; justify-self: center; margin: -6px 0 12px; grid-row: 1; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button > small { font-size: 11px; letter-spacing: .13em; color: var(--scan-light); font-weight: 700; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button > b { margin-top: 10px; font-size: 10px; padding: 5px 7px; border-radius: 6px; background: #061a24a3; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button > strong { font-size: 17px; line-height: 1.35; margin-top: 15px; color: #e4f5ff; text-shadow: 0 2px #274258,0 6px 10px #0008; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button > span:not(.psOrbital) { font-size: 13px; line-height: 1.6; color: #aec8d7; margin-top: 10px; }
+.psApp[data-spatial][data-visual-style] .psCoreScans button > em { font-size: 10px; color: var(--scan-light); letter-spacing: .1em; margin-top: 20px; }
+.psApp[data-spatial][data-visual-style] .psCoreScans > footer { background: transparent; border: 0; padding: 16px 6px 8px; color: #a4bdcb; font-size: 11px; }
+.psApp[data-spatial][data-visual-style] .psInstrumentHeader { display: flex; align-items: center; gap: 10px; }
+.psApp[data-spatial][data-visual-style] .psInstrumentHeader > .psOrbital { width: 68px; height: 68px; flex: 0 0 68px; margin: -8px 0 -8px -8px; }
+.psApp[data-spatial][data-visual-style] .psInstrumentHeader > div { flex: 1; min-width: 0; }
+.psApp[data-spatial][data-visual-style] .psInstrumentHeader > :is(button,b,strong) { flex: 0 1 auto; }
+.psApp[data-spatial][data-visual-style] .psVerdict { background: radial-gradient(ellipse at 90% 0,#368d9836,transparent 65%),var(--ps-surface); border: 1px solid #a0d6e451; border-radius: 24px; box-shadow: var(--ps-shadow); padding: 28px; }
+.psApp[data-spatial][data-visual-style] .psVerdict h1 { color: #f0fbff; text-shadow: 0 1px #abc6d2,0 2px #52718a,0 3px #244457,0 8px 20px #0009; }
+.psApp[data-spatial][data-visual-style] :is(.psVerdict strong,.psShareScore > strong,.psFinaleScore > strong,.psMapCurrent strong) { text-shadow: 0 2px #385a68,0 4px #0c2137,0 8px 16px #0007; }
+.psApp[data-spatial][data-visual-style] .psSetupQuality { background: radial-gradient(ellipse at 50% 30%,#33738628,transparent 70%),#0815259c; }
+.psApp[data-spatial][data-visual-style] .psSetupQuality > div { width: 90px; height: 90px; border: 2px solid #98d1d83a; background: radial-gradient(circle,#0a2033 54%,transparent 57%),conic-gradient(#80ffdc var(--setup-score),#243e53 0); box-shadow: inset 0 2px 5px #eeffff59,0 5px 0 #03101f,0 6px 0 #6efad244,0 12px 24px #0008,0 0 28px #65f7cc16; }
+.psApp[data-spatial][data-visual-style] .psSetupQuality strong { color: #d7fff7; text-shadow: 0 2px #497e87,0 4px 8px #000; }
+.psApp[data-spatial][data-visual-style] .psDecisionBias > div { height: 18px; box-shadow: inset 0 2px 6px #000a,0 1px #b6e0ee3b; border: 1px solid #d2f5ff25; }
+.psApp[data-spatial][data-visual-style] .psDecisionBias > div b { background: linear-gradient(180deg,#b8ffe4,#44bc91 42%,#174d45); box-shadow: inset 0 1px #e2fffac2; }
+.psApp[data-spatial][data-visual-style] .psDecisionBias > div i { background: linear-gradient(180deg,#ffc0ce,#d3697e 42%,#652b49); box-shadow: inset 0 1px #ffe3eac2; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionBias,.psDecisionFactors article,.psMindChange,.psTrapRadar,.psTimeframeConflict,.psTradeReview,.psRiskReadout article,.psXRayReadings article,.psMapReadings > section,.psConfluenceGrid > section) { border-color: #a1d2e32b; border-radius: 14px; background: linear-gradient(145deg,#15364c99,#081426bc); box-shadow: inset 0 1px #c3f0ff21,0 6px 16px #0004; }
+.psApp[data-spatial][data-visual-style] .psDecisionFactors i { box-shadow: inset 0 2px 3px #0009; height: 6px; }
+.psApp[data-spatial][data-visual-style] .psDecisionFactors i b { background: linear-gradient(180deg,#b3fff0,#54b99e); box-shadow: inset 0 1px #e5fffeb3; }
+.psApp[data-spatial][data-visual-style] .psMindChange article { background: #091b2dd4; }
+.psApp[data-spatial][data-visual-style] .psCommandDeck > nav { gap: 8px; padding: 14px; background: #03101c77; }
+.psApp[data-spatial][data-visual-style] .psCommandDeck > nav button { border: 1px solid #9ad2e13b; border-radius: 13px; background: linear-gradient(155deg,#21485b9c,#0a1c2eed); box-shadow: inset 0 1px #c1f4ff30,0 4px 0 #020c18,0 8px 14px #0004; }
+.psApp[data-spatial][data-visual-style] .psCommandDeck > nav button[data-active="true"] { background: linear-gradient(140deg,#316b77,#143444); border-color: #89e9e49c; box-shadow: inset 0 1px #c2fff8a3,0 4px 0 #061a26,0 0 20px #65eadd1c; }
+.psApp[data-spatial][data-visual-style] .psCommandDeck > nav button i { text-shadow: 0 2px #26475a,0 5px 9px #0009; }
+.psApp[data-spatial][data-visual-style] .psCommandStage { padding: 12px; background: transparent; }
+.psApp[data-spatial][data-visual-style] .psChartXRay { background: #081b2be0; border: 1px solid #b7aaff44; border-radius: 20px; box-shadow: var(--ps-shadow); overflow: hidden; }
+.psApp[data-spatial][data-visual-style] :is(.psXRayCanvas,.psLiquidityCanvas,.psSourceChart) { border-color: #7dbdd850; box-shadow: 0 0 0 1px #bedcea1a,0 0 0 5px #061322,0 0 0 6px #88c8e329,0 16px 28px #0007; }
+.psApp[data-spatial][data-visual-style] :is(.psXRayCanvas,.psLiquidityCanvas) > img { filter: none; }
+.psApp[data-spatial][data-visual-style] .psIntelligenceSuite > nav { background: #061426a3; gap: 7px; }
+.psApp[data-spatial][data-visual-style] .psIntelligenceSuite > nav button { background: linear-gradient(145deg,#224157a6,#0c1c30); border-color: #b0dbe32b; border-radius: 12px; box-shadow: inset 0 1px #d2efff24,0 3px 0 #020c18,0 6px 12px #0004; }
+.psApp[data-spatial][data-visual-style] .psIntelligenceSuite > nav button[data-active="true"] { border-color: #94d6f386; background: linear-gradient(145deg,#3c6589,#16344d); color: #dcf6ff; box-shadow: inset 0 1px #c9f4ff8c,0 3px 0 #0d2236,0 0 22px #68b9ec22; }
+.psApp[data-spatial][data-visual-style] .psMapConsole { background: radial-gradient(ellipse at 5% 0,#428db62b,transparent 50%),#07172ad4; border-color: #87d0e749; border-radius: 18px; box-shadow: inset 0 1px #b0e8fd38,0 14px 30px #0005; }
+.psApp[data-spatial][data-visual-style] .psMapConsole h2 { text-shadow: 0 2px #2f5268,0 5px 10px #0009; font-size: 22px; }
+.psApp[data-spatial][data-visual-style] .psMapReadings strong { color: #e1f6ff; text-shadow: 0 2px #26455c,0 5px 9px #0008; }
+.psApp[data-spatial][data-visual-style] .psMapReadings [data-tone="bull"] { box-shadow: inset 0 2px #6bf3c0,0 7px 14px #0004; }
+.psApp[data-spatial][data-visual-style] .psMapReadings [data-tone="bear"] { box-shadow: inset 0 2px #fa88a3,0 7px 14px #0004; }
+.psApp[data-spatial][data-visual-style] .psDecisionMap { border-color: #8edbf266 !important; background-color: #071426 !important; box-shadow: inset 0 1px #d4f6ff4a,inset 0 0 75px #4ca9dd12,0 0 0 5px #061224,0 0 0 6px #8fc4ed38,0 25px 50px #0007 !important; }
+.psApp[data-spatial][data-visual-style] .psMapLevel { box-shadow: 0 8px 18px #0006,inset 0 1px #d5f4ff38; }
+.psApp[data-spatial][data-visual-style] .psPulseCore { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 260px; padding: 24px; background: radial-gradient(ellipse,#443c7038,transparent 65%); }
+.psApp[data-spatial][data-visual-style] .psPulseCore > .psOrbital { flex-basis: 156px; }
+.psApp[data-spatial][data-visual-style] .psPulseCore > strong { position: relative; color: #e8e0ff; text-shadow: 0 2px #544577,0 5px 15px #0009; }
+.psApp[data-spatial][data-visual-style] .psPatternGuide > article { background: linear-gradient(140deg,#30294a99,#0b1930dd); border-color: #c0a9ff40; box-shadow: inset 0 1px #e0d5ff36,0 12px 24px #0005; }
+.psApp[data-spatial][data-visual-style] .psPatternGuide > article > header svg { filter: drop-shadow(0 4px 3px #000b) drop-shadow(0 0 10px #ab96ff4d); }
+
+/* Cinematic presentation has its own deep stage; chart data remains the source. */
+.psApp[data-spatial][data-visual-style] .psStoryStage { background: radial-gradient(ellipse at 50% 15%,#40829327,transparent 60%),#04101b; box-shadow: inset 0 0 0 1px #a8e2f131,inset 0 0 75px #030c21; }
+.psApp[data-spatial][data-visual-style] .psStoryStage::before { content: ''; position: absolute; inset: 0; background: url('/pocket-visuals/observatory-nebula.webp') center / cover; opacity: .38; pointer-events: none; }
+.psApp[data-spatial][data-visual-style] .psStoryShade { background: linear-gradient(180deg,#030b185c,#0712258f 50%,#030a19d9); }
+.psApp[data-spatial][data-visual-style] .psCinemaFx i { border-color: #7ee7e96b; box-shadow: 0 0 25px #7bedf222,inset 0 0 20px #6bddfb12; }
+.psApp[data-spatial][data-visual-style] .psStoryScene :is(h1,h2) { text-shadow: 0 2px #37546c,0 4px #112b43,0 12px 24px #000c; }
+.psApp[data-spatial][data-visual-style] :is(.psStoryEvidence article,.psStoryLevels article,.psStoryBattle article,.psStoryRisks article,.psStoryTrigger article,.psFinaleRatioCards section,.psConditionBoard section) { background: linear-gradient(145deg,#2e5365a8,#09182be8); border-color: #98d9e250; box-shadow: inset 0 1px #d8f9ff5c,0 6px 0 -2px #021021,0 7px 0 -2px #90d1e02b,0 16px 35px #0007; }
+.psApp[data-spatial][data-visual-style] .psFinaleSculpture { display: flex; justify-content: center; margin: 10px auto 14px; }
+.psApp[data-spatial][data-visual-style] .psFinaleRatioCards svg { width: 32px; height: 32px; }
+.psApp[data-spatial][data-visual-style] .psFinaleRatioCards strong { text-shadow: 0 2px #315969,0 4px #143345,0 9px 18px #0009; }
+.psApp[data-spatial][data-visual-style] .psStoryProgress button { box-shadow: inset 0 1px #bef7ff40,0 4px 9px #0006; }
+.psApp[data-spatial][data-visual-style] :is(.psChartFocus,.psResultCardModal,.psResultReveal) { background: linear-gradient(#041020b3,#020b19e8),url('/pocket-visuals/observatory-nebula.webp') center / cover fixed; }
+.psApp[data-spatial][data-visual-style] .psShareCard { border: 1px solid #a3d8e566; border-radius: 26px; background: linear-gradient(145deg,#2a4c63e6,#061325f2 65%); box-shadow: var(--ps-shadow); }
+.psApp[data-spatial][data-visual-style] .psRevealRadar { border-color: #98efea6b; background: radial-gradient(circle at 35% 20%,#bcfff536,#0a2130 55%,#020b19); box-shadow: inset 0 2px #d9fff680,0 7px 0 #05101d,0 8px 0 #8ef6de55,0 20px 40px #0009,0 0 50px #4df9d922; }
+.psApp[data-spatial][data-visual-style] .psReportRail a { border-color: #a0d5e139; background: linear-gradient(150deg,#254456a3,#0a1b2bdb); box-shadow: inset 0 1px #caedff2b,0 3px 0 #03101b,0 7px 14px #0005; }
+.psApp[data-spatial][data-visual-style] .psFeedback { background: #081a2be8; border-color: #93d6e54d; box-shadow: 0 8px 24px #0009,inset 0 1px #d5f7ff33; }
+/* The Apple sheet is portalled to body and therefore cannot inherit main's theme. */
+.psApplePaywall { background: linear-gradient(#041020cc,#020b19e8),url('/pocket-visuals/observatory-nebula.webp') center / cover fixed; }
+.psApplePaywall .psApplePlan { border-color: #a8e6e766; background: linear-gradient(145deg,#24495cfa,#08172dfc 65%); box-shadow: 0 30px 100px #000a,inset 0 1px #d4ffff73; }
+
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .psApp[data-spatial][data-visual-style] .psCoreScans button:hover { translate: 0 -5px; border-color: var(--scan-light); box-shadow: 0 34px 60px #0008,0 0 24px #9bd2f018,inset 0 1px #e1ffff70; }
+  .psApp[data-spatial][data-visual-style] :is(.psSampleButton,.psAnalyse,.psTimeframePicker button,.psCommandDeck > nav button):not(:disabled):hover { filter: brightness(1.14); }
+}
+@media (max-width:700px) {
+  .psNebula { background-position: 52% center; opacity: .95; }
+  .psApp[data-spatial][data-visual-style] .psHeader { height: 70px; padding: 12px 16px; }
+  .psApp[data-spatial][data-visual-style] .psHeaderActions { display: none; }
+  .psApp[data-spatial][data-visual-style] .psScanner { padding: 22px 16px 60px; }
+  .psApp[data-spatial][data-visual-style] .psLaunchHero { grid-template-columns: 1fr; padding: 28px 22px 22px; gap: 0; border-radius: 26px; }
+  .psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy { text-align: center; padding: 0; }
+  .psApp[data-spatial][data-visual-style] .psCopy > p { justify-content: center; }
+  .psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy h1 { font-size: clamp(37px,10vw,52px) !important; line-height: 1.05 !important; margin: 18px 0 16px; }
+  .psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy > span { margin: 0 auto; font-size: 13px; line-height: 1.65; max-width: 34ch; }
+  .psApp[data-spatial][data-visual-style] .psDepthScene { width: 238px; max-width: 100%; margin: 8px auto 0; }
+  .psApp[data-spatial][data-visual-style] .psDepthCaption { margin-top: -4px; }
+  .psApp[data-spatial][data-visual-style] .psLaunchSignals { margin-top: 22px; gap: 7px; }
+  .psApp[data-spatial][data-visual-style] .psLaunchSignals article { flex-direction: column; gap: 7px; padding: 11px 3px; }
+  .psApp[data-spatial][data-visual-style] .psOpeningRail article { flex-direction: column; align-items: flex-start; gap: 6px; padding: 13px 10px; }
+  .psApp[data-spatial][data-visual-style] .psOpeningRail i { font-size: 20px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans > div { grid-template-columns: 1fr; gap: 18px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button { min-height: 206px; grid-template-columns: 1fr 112px; padding: 22px; column-gap: 2px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button > .psOrbital { grid-column: 2; grid-row: 1/4; width: 128px; height: 128px; align-self: center; margin: -12px -16px 0 0; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button > :is(small,b,strong,em) { grid-column: 1; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button > span:not(.psOrbital) { grid-column: 1/-1; margin-top: 14px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button > strong { font-size: 16px; margin-top: 12px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button > em { grid-column: 1/-1; margin-top: 16px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans > header > b { display: none; }
+  .psApp[data-spatial][data-visual-style] .psInstrumentHeader { gap: 6px; flex-wrap: wrap; }
+  .psApp[data-spatial][data-visual-style] .psInstrumentHeader > .psOrbital { width: 54px; height: 54px; flex-basis: 54px; margin-left: -6px; }
+  .psApp[data-spatial][data-visual-style] .psInstrumentHeader > div { flex: 1; min-width: calc(100% - 70px); }
+  .psApp[data-spatial][data-visual-style] .psInstrumentHeader > :is(button,b,strong) { margin-left: auto; }
+  .psApp[data-spatial][data-visual-style] .psMapConsole h2 { font-size: 19px; }
+  .psApp[data-spatial][data-visual-style] .psCommandStage { padding: 8px; }
+  .psApp[data-spatial][data-visual-style] .psVerdict { padding: 20px; }
+  .psApp[data-spatial][data-visual-style] .psTimeframeSticky { backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (max-width:360px) {
+  .psApp[data-spatial][data-visual-style] .psLaunchHero { padding-inline: 16px; }
+  .psApp[data-spatial][data-visual-style] .psLaunchHero .psCopy h1 { font-size: 35px !important; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button { grid-template-columns: 1fr 94px; padding: 18px; }
+  .psApp[data-spatial][data-visual-style] .psCoreScans button > .psOrbital { width: 104px; height: 104px; }
+}
+.psApp[data-spatial]:not([data-spatial-motion="on"]) :is(.psNebula,.psAtmosphere,.psOrbital *,.psCinemaFx *,.psStoryScan,.psXRayScan,.psRevealRadar *) { animation-play-state: paused !important; }
+.psApp[data-spatial][data-spatial-motion="off"] .psDepthObject { transform: none; transition: none; }
+@media (prefers-reduced-motion:reduce) {
+  .psApp[data-spatial] *, .psApp[data-spatial] *::before, .psApp[data-spatial] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* Supporting report surfaces keep the same glass material all the way down. */
+.psApp[data-spatial][data-visual-style] :is(.psAuditGrid article,.psNarrative,.psCases article,.psDecisionGrid article,.psIntel article,.psEventDeck,.psLevelDeck,.psClarityLock,.psBullseyePlan,.psScenarioTheatre,.psConditionBoard,.psReviewCharts,.psAutopsyDimensions,.psEvidenceComparison,.psReviewVerdict) { border-color:#97d6e447; border-radius:18px; background:linear-gradient(145deg,#203f51b8,#08172de6); box-shadow:inset 0 1px #d3f6ff38,0 6px 0 -2px #030c1d,0 7px 0 -2px #75bdd125,0 20px 40px #0005; }
+.psApp[data-spatial][data-visual-style] :is(.psAuditGrid article,.psNarrative,.psCases article,.psDecisionGrid article,.psIntel article,.psLevelDeck) :is(h2,h3) { text-shadow:0 2px #2b5069,0 6px 14px #0008; }
+.psApp[data-spatial][data-visual-style] .psResultViewSwitch { background:transparent; }
+.psApp[data-spatial][data-visual-style] .psLaunchHero::before { animation:none; filter:none; transform:none; }
+.psApp[data-spatial][data-visual-style] .psLogoMark { animation:none !important; }
+.psApp[data-spatial][data-visual-style] .psAnalyse[data-busy="true"] { background:linear-gradient(155deg,#286d6b,#0b3040) !important; border-color:#92f9e88c !important; }
+.psApplePaywall h2 { text-shadow:0 2px #476c85,0 4px #19374d,0 12px 24px #000a; }
+.psApplePaywall h2 em { color:#9af8e9; font-family:inherit; font-style:normal; font-weight:650; }
+.psApplePaywallGlow { border-radius:50%; background:radial-gradient(circle at 30% 20%,#bcfff53d,#123a4b 38%,#040e21 70%); border:1px solid #c0f9ec80; box-shadow:inset 0 2px 4px #e9fffca6,0 8px 0 #05152a,0 9px 0 #8fecdb47,0 24px 45px #0009,0 0 55px #4ef3df25; }
+.psApplePaywallGlow b { display:flex; color:#a9ffdf; }
+.psApplePaywallGlow svg { width:64px; height:64px; }
+.psApplePaywall .psApplePlan { border-radius:20px; }
+.psApplePaywall .psApplePlan b,.psApplePaywall footer { color:#a0b8c8; }
+.psApplePaywall .psAppleSubscribe { border:1px solid #c0ffee91; border-radius:14px; background:linear-gradient(165deg,#94f9d4,#3dab87 55%,#267765); box-shadow:inset 0 1px #f5fffec9,0 4px 0 #0b4538,0 5px 0 #78f3c63b,0 14px 26px #0008; }
+body:has(.psApp[data-spatial-motion="off"]) .psApplePaywallGlow i { animation-play-state:paused; }
+
+/* Spatial typography: the same precise, polished lettering in every panel.
+   Use the existing bundled font; headings carry depth, reading copy stays crisp. */
+.psApp[data-spatial][data-visual-style], .psApplePaywall {
+  --ps-font-ui: var(--font-geist-sans, sans-serif), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ps-font-ui); font-kerning: normal; text-rendering: optimizeLegibility;
+}
+.psApp[data-spatial][data-visual-style] :is(h1,h2,h3,h4,p,a,b,strong,small,span,em,button,label,summary,dt,dd,time,li,input,select,textarea),
+.psApplePaywall :is(h2,p,a,b,strong,small,span,em,button) { font-family: var(--ps-font-ui) !important; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEvents,.psCommandDeck,.psIntelligenceSuite,.psDecisionEngine,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psJournalHome,.psVault,.psFingerprint,.psEvidencePack,.psEvidenceContribution,.psScanChanges,.psPreflight,.psResultChart,.psLiquidityGuard,.psChartXRay,.psBullseyePlan,.psClarityLock,.psScenarioTheatre,.psAskBullseye) > header :is(span,small) {
+  font-weight: 600; letter-spacing: .08em; line-height: 1.5;
+}
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEvents,.psCommandDeck,.psIntelligenceSuite,.psDecisionEngine,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psJournalHome,.psVault,.psEvidencePack,.psScanChanges,.psPreflight,.psResultChart,.psLiquidityGuard,.psChartXRay,.psBullseyePlan,.psClarityLock,.psAskBullseye) > header span {
+  color: #c4ecf3; font-size: 12px; text-shadow: 0 1px #356176,0 3px 5px #0009,0 0 18px #89dce626;
+}
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEvents,.psCommandDeck,.psIntelligenceSuite,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psResultChart,.psLiquidityGuard,.psChartXRay,.psBullseyePlan,.psClarityLock) > header :is(small,strong) { letter-spacing: .025em; }
+.psApp[data-spatial][data-visual-style] :is(.psCommandDeck,.psIntelligenceSuite,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psResultChart,.psLiquidityGuard,.psChartXRay) > header small { color: #9db6c8; font-size: 11px; font-weight: 450; line-height: 1.6; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionEngine > header h2,.psMapConsole h2,.psJournalHome header strong,.psEvidencePack header strong,.psFingerprint header span) {
+  font-weight: 650; letter-spacing: -.025em; line-height: 1.25; color: #e7f7ff;
+  text-shadow: 0 1px #779bb0,0 2px #2e5069,0 7px 16px #0008;
+}
+.psApp[data-spatial][data-visual-style] :is(.psDecisionFactors,.psTimeframeConflict,.psTrapRadar,.psMindChange,.psTradeReview,.psResultTruthStrip,.psEvidenceContribution,.psLevelProvenance,.psAccuracyFeedback,.psDecisionTimeline,.psChangeLedger,.psRiskDesk,.psBullseyePlan,.psClarityLock) :is(small,dt) { font-weight: 550; letter-spacing: .025em; line-height: 1.5; }
+.psApp[data-spatial][data-visual-style] :is(.psMindChange,.psTrapRadar,.psTimeframeConflict,.psResultTruthStrip,.psTradeReview) > header :is(span,b,strong),
+.psApp[data-spatial][data-visual-style] .psDecisionFactors span { font-weight: 600; letter-spacing: .045em; line-height: 1.5; }
+.psApp[data-spatial][data-visual-style] :is(.psMapReadings strong,.psDecisionFactors strong,.psTimeframeConflict article b,.psRiskDesk article strong,.psFingerprint article strong,.psVault article > b) { font-weight: 650; letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; }
+.psApp[data-spatial][data-visual-style] :is(.psPatternGuide nav button,.psCommandDeck nav button,.psIntelligenceSuite nav button,.psReportRail a,.psQuickQuestions button,.psSourceEvidence summary,.psTradeReview summary,.psUtilityTray summary) { font-weight: 550; letter-spacing: .035em; }
+.psApp[data-spatial][data-visual-style] :is(.psDecisionFactors span,.psTimeframeConflict article small,.psMapReadings small,.psEvidenceContribution article strong,.psJournalLoop span,.psOpeningRail strong) { font-weight: 600; letter-spacing: .055em; }
+.psApp[data-spatial][data-visual-style] :is(.psPreflight,.psEvidenceContribution,.psLevelProvenance,.psAccuracyFeedback,.psPatternGuide,.psRiskDesk,.psBullseyePlan,.psScanChanges) :is(p,dd) { font-weight: 400; letter-spacing: .005em; line-height: 1.65; }
+.psApp[data-spatial][data-visual-style] :is(.psCoreScans,.psCommandDeck,.psIntelligenceSuite,.psDecisionEngine,.psRiskDesk,.psPatternWatch,.psSignalPulse,.psJournalHome,.psEvidencePack,.psEvidenceContribution,.psPreflight,.psLiquidityGuard,.psChartXRay) > footer { color: #9eb4c5; font-size: 12px; font-weight: 400; letter-spacing: .01em; line-height: 1.6; }
+.psApp[data-spatial][data-visual-style] :is(.psBattleCurrent strong,.psBattleLevel strong,.psPriceLadder small,.psSetupQuality strong,.psShareScore strong,.psFinaleRatioCards strong) { font-variant-numeric: tabular-nums lining-nums; }
+
+/* Calendar: luminous titles, a precise clock and separate source/risk labels. */
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > header { padding: 20px; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > header > strong { padding: 8px 11px; border: 1px solid #e5be7b4a; border-radius: 11px; background: linear-gradient(145deg,#65492e4d,#1e2334a6); font-size: 16px; font-weight: 650; line-height: 1.25; letter-spacing: .035em; box-shadow: inset 0 1px #ffe2ad36,0 4px 12px #0004; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > header > strong small { font-size: 9px; font-weight: 550; letter-spacing: .07em; margin-top: 4px; color: #d0bfa2; }
+.psApp[data-spatial][data-visual-style] .psEventScope { padding: 18px 22px; gap: 8px; background: linear-gradient(110deg,#6cdac510,transparent); border-color: #92c9dc25; }
+.psApp[data-spatial][data-visual-style] .psEventScope b { color: #c4eee5; font-size: 12px; font-weight: 600; letter-spacing: .055em; text-shadow: 0 1px #335061,0 3px 7px #0008; }
+.psApp[data-spatial][data-visual-style] .psEventScope span { font-size: 15px; font-weight: 400; line-height: 1.6; color: #c4d4df; }
+.psApp[data-spatial][data-visual-style] .psEventScope small { font-size: 12px; font-weight: 450; line-height: 1.6; letter-spacing: .01em; color: #d0bfa2; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar { margin: 16px; padding: 22px; border: 1px solid #93d8e340; border-radius: 20px; background: radial-gradient(ellipse at 95% 0,#2b869a26,transparent 55%),linear-gradient(150deg,#122f42d9,#071629ed); box-shadow: inset 0 1px #cdf8ff45,0 4px 0 #020b18a8,0 5px 0 #8fd8e21c,0 18px 36px #0005; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header { gap: 14px; align-items: flex-start; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header > div { min-width: 0; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header small { margin: 0; font-size: 10px; font-weight: 550; letter-spacing: .075em; color: #9bbccc; line-height: 1.5; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar h3 { margin: 7px 0 9px; font-size: clamp(22px,4.6vw,29px); font-weight: 650; line-height: 1.2; letter-spacing: -.035em; color: #e0fbff; text-shadow: 0 1px #8bbac8,0 2px #30536e,0 7px 16px #0009; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header .psCalendarRefresh { display: inline-flex; align-items: center; gap: 6px; color: #a2d7c9; font-size: 11px; font-weight: 450; letter-spacing: .025em; }
+.psApp[data-spatial][data-visual-style] .psCalendarRefresh i { width: 5px; height: 5px; border-radius: 50%; background: #8ff0c9; box-shadow: 0 0 8px #84edba77; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > header > b { max-width: 90px; flex: 0 0 auto; padding: 8px 10px; border-radius: 11px; border: 1px solid #a0d9e35c; background: linear-gradient(150deg,#3c677957,#0e293cb3); color: #c9ecf4; font-size: 11px; font-weight: 550; line-height: 1.4; letter-spacing: .015em; box-shadow: inset 0 1px #d0f7ff57,0 3px 8px #0005; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar ol { margin: 21px 0 0; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar li { grid-template-columns: 76px minmax(0,1fr) auto; gap: 12px 16px; align-items: start; padding: 20px 0; border-color: #9edbea28; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar li:last-child { padding-bottom: 0; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar li > time { display: grid; place-content: center; min-height: 62px; padding: 10px 8px; color: #daf9ff; border: 1px solid #a6ddea50; border-radius: 12px; background: radial-gradient(ellipse at 30% 0,#c2f2ff24,transparent 65%),linear-gradient(155deg,#22465b,#0b2035); font-size: 20px; font-weight: 550; letter-spacing: -.035em; font-variant-numeric: tabular-nums lining-nums; text-shadow: 0 1px #44677d,0 3px 7px #000b; box-shadow: inset 0 1px #d3f7ff66,0 3px 0 #02101f,0 4px 0 #9fdaed29,0 10px 20px #0005; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar li > time::after { content: 'UK TIME'; margin-top: 4px; font-size: 8px; font-weight: 500; letter-spacing: .12em; color: #94bbcb; text-shadow: none; text-align: center; }
+.psApp[data-spatial][data-visual-style] .psCalendarEvent { min-width: 0; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar .psCalendarEvent > strong { color: #eef9ff; font-size: 19px; font-weight: 650; line-height: 1.3; letter-spacing: -.025em; text-shadow: 0 1px #3c5b71,0 4px 9px #0007; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar .psCalendarEvent > .psCalendarSource { margin-top: 7px; color: #a6bfce; font-size: 10px; font-weight: 500; line-height: 1.55; letter-spacing: .04em; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid #8abbcb29; border-radius: 7px; font-size: 10px; font-weight: 500; line-height: 1.4; letter-spacing: .02em; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventImpact { color: #b4ccd9; background: #829ecb12; }
+.psApp[data-spatial][data-visual-style] .psEventImpact i { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventImpact[data-risk="HIGH"] { color: #ffd39b; border-color: #ffc1804d; background: linear-gradient(150deg,#94613b33,#66452826); box-shadow: inset 0 1px #ffe5ad1c; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventImpact[data-risk="MED"] { color: #c4d7fd; border-color: #a9c6ff4d; background: #7a9dde17; }
+.psApp[data-spatial][data-visual-style] .psCalendarTags > .psEventStage { color: #b0c5d5; background: #829ecb0c; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents a { min-height: 40px; padding: 9px 13px; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #8cdfcc5c; background: linear-gradient(155deg,#28574f73,#0c2832a6); color: #c1f8e6; font-size: 12px; font-weight: 550; letter-spacing: .025em; box-shadow: inset 0 1px #bdffeb36,0 3px 0 #05151f,0 7px 15px #0004; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar a { margin: 0; padding: 8px 12px; }
+.psApp[data-spatial][data-visual-style] .psTodayCalendar > p { color: #b8cddd; font-size: 14px; font-weight: 400; line-height: 1.7; margin-top: 18px; }
+.psApp[data-spatial][data-visual-style] .psMacroNext { margin: 20px 16px 16px; padding: 21px; border: 1px solid #89c5dc33; border-radius: 18px; background: linear-gradient(135deg,#20384b9c,#0a182bd9); box-shadow: inset 0 1px #d3f7ff29,0 9px 20px #0005; }
+.psApp[data-spatial][data-visual-style] .psMacroNext[data-risk="HIGH"] { border-color: #d3ad6e52; background: radial-gradient(ellipse at 0 0,#d2933d1f,transparent 65%),linear-gradient(135deg,#302c26bf,#102034d9); box-shadow: inset 0 1px #ffe0a94a,inset 3px 0 #e9bc745c,0 9px 20px #0005; }
+.psApp[data-spatial][data-visual-style] .psEventMilestone { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.psApp[data-spatial][data-visual-style] .psMacroNext b { color: #bdd2df; font-size: 12px; font-weight: 600; line-height: 1.45; letter-spacing: .025em; }
+.psApp[data-spatial][data-visual-style] .psMacroNext[data-risk="HIGH"] b { color: #ffda9f; text-shadow: 0 1px #71533f,0 4px 8px #0007; }
+.psApp[data-spatial][data-visual-style] .psEventMilestone > time { font-size: 12px; font-weight: 450; line-height: 1.5; letter-spacing: .015em; color: #d9c7ac; font-variant-numeric: tabular-nums; }
+.psApp[data-spatial][data-visual-style] .psMacroNext > strong { display: block; margin-top: 13px; font-size: 20px; font-weight: 600; line-height: 1.3; letter-spacing: -.025em; color: #fff2df; text-shadow: 0 1px #685947,0 4px 10px #0008; }
+.psApp[data-spatial][data-visual-style] .psMacroNext > span { margin-top: 8px; font-size: 12px; font-weight: 450; line-height: 1.6; letter-spacing: .02em; color: #c5c4bd; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents .psMacroNext a { margin-top: 16px; }
+.psApp[data-spatial][data-visual-style] .psEventHeadline { margin: 16px; padding: 18px 20px; border: 1px solid #96bdcd29; border-radius: 16px; background: linear-gradient(130deg,#233d513b,#0a1a2b80); box-shadow: inset 0 1px #c7ecff17; }
+.psApp[data-spatial][data-visual-style] .psEventHeadline b { color: #d2e5ef; font-size: 14px; font-weight: 550; line-height: 1.5; letter-spacing: -.01em; text-shadow: 0 1px #2d4a60,0 3px 7px #0006; }
+.psApp[data-spatial][data-visual-style] .psWrittenReport .psEventHeadline span { margin-top: 8px; color: #b1c6d6; font-size: 14px !important; font-weight: 400; line-height: 1.65; letter-spacing: 0; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > details { margin: 0 16px; border-color: #b1dfea28; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents summary { min-height: 52px; align-items: center; padding: 16px 4px; color: #c4dfed; font-size: 13px; font-weight: 550; letter-spacing: .015em; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details > div { padding: 0 4px 16px; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details p { font-size: 13px; font-weight: 400; line-height: 1.65; color: #abc0d0; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details li { padding: 14px 0; gap: 7px; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details li strong { color: #d9edf7; font-size: 15px; font-weight: 550; line-height: 1.4; letter-spacing: -.015em; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents details :is(time,li span) { color: #a4bfce; font-size: 12px; font-weight: 400; line-height: 1.6; letter-spacing: .01em; }
+.psApp[data-spatial][data-visual-style] .psDecisionEvents > footer { padding: 16px 20px; color: #99b1c4; font-size: 12px; font-weight: 400; line-height: 1.7; letter-spacing: .005em; border-color: #92c5d626; }
+
+/* A solid frosted base keeps scrolled report text out of the selector labels. */
+.psApp[data-spatial][data-visual-style] .psTimeframeSticky { background: #071426; backdrop-filter: none; -webkit-backdrop-filter: none; border-radius: 18px; }
+.psApp[data-spatial][data-visual-style] .psTimeframeSticky .psTimeframePicker { background: linear-gradient(145deg,#173346,#08172b 75%); box-shadow: inset 0 1px #b5edee4a,0 10px 28px #0006; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker > div > strong { color: #c8eff0; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-shadow: 0 1px #416577,0 4px 10px #0006; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker > div > span { color: #b6c9d9; font-size: 12px; font-weight: 400; letter-spacing: .01em; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button > span { color: #e5f5ff; font-size: 20px; font-weight: 600; line-height: 1.25; letter-spacing: -.025em; font-variant-numeric: tabular-nums; text-shadow: 0 1px #54788e,0 3px #163346,0 6px 10px #0006; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button small { color: #acc5d6; font-size: 10px; font-weight: 450; letter-spacing: .065em; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button[aria-pressed="true"] > span { color: #d4fff2; text-shadow: 0 1px #4d9c91,0 3px #163b43,0 0 18px #6df1d13b; }
+.psApp[data-spatial][data-visual-style] .psTimeframePicker button[aria-pressed="true"] > small { color: #c0e9dc; }
+@media (max-width:620px) {
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents > header { padding: 17px; }
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar li { grid-template-columns: 64px minmax(0,1fr); column-gap: 12px; }
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents .psTodayCalendar a { grid-column: 2; justify-self: start; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar { margin: 12px; padding: 18px 16px; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar li > time { font-size: 18px; padding-inline: 6px; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar .psCalendarEvent > strong { font-size: 18px; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar > header > b { max-width: 74px; padding: 7px 8px; font-size: 10px; }
+  .psApp[data-spatial][data-visual-style] .psMacroNext { margin: 18px 12px 12px; padding: 18px; }
+  .psApp[data-spatial][data-visual-style] .psEventHeadline { margin: 12px; padding: 16px; }
+  .psApp[data-spatial][data-visual-style] .psEventMilestone { display: grid; gap: 7px; }
+  .psApp[data-spatial][data-visual-style] .psDecisionEvents > details { margin-inline: 16px; }
+}
+@media (max-width:360px) {
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar > header { flex-wrap: wrap; }
+  .psApp[data-spatial][data-visual-style] .psTodayCalendar > header > b { max-width: none; }
+}
+@media (forced-colors:active) {
+  .psApp[data-spatial][data-visual-style] :is(h1,h2,h3,strong,b,time) { text-shadow: none; }
+}

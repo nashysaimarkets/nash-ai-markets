@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { crossCheckOptionsWall } from "../app/pocket/options-wall.ts";
+import { crossCheckOptionsWall, explicitOptionsSymbol } from "../app/pocket/options-wall.ts";
 
 const read = { symbol: "NASDAQ:AAPL", readable: true, limitation: "", rows: [
   { side: "CALL" as const, strike: 200, volume: 12000, expiry: "2026-10-02" },
@@ -20,6 +20,12 @@ test("holds mismatched, unidentified and unreadable symbols", () => {
   assert.equal(crossCheckOptionsWall(read, "MSFT", levels).status, "UNVERIFIED");
   assert.equal(crossCheckOptionsWall(read, "UNKNOWN", levels).status, "UNVERIFIED");
   assert.equal(crossCheckOptionsWall({ ...read, readable: false }, "AAPL", levels).status, "UNVERIFIED");
+});
+
+test("supports exact SPX/ES/SPY labels without conflating a spread bet", () => {
+  assert.equal(explicitOptionsSymbol("UNKNOWN", "SPX Index"), "SPX");
+  assert.equal(explicitOptionsSymbol("UNKNOWN", "ES 12-26"), "ES");
+  assert.equal(explicitOptionsSymbol("UNKNOWN", "US 500 DFB"), "UNKNOWN");
 });
 
 test("never creates matches from missing levels, invalid prices or distant strikes", () => {

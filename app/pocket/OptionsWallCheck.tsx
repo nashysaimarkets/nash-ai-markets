@@ -3,7 +3,7 @@
 import { useState, type ChangeEvent } from "react";
 import type { OptionsWallResult } from "./options-wall";
 
-export default function OptionsWallCheck({ ticker, levels }: { ticker: string; levels: { kind: string; price: string; label: string }[] }) {
+export default function OptionsWallCheck({ ticker, levels, canScan }: { ticker: string; levels: { kind: string; price: string; label: string }[]; canScan: () => Promise<boolean> }) {
   const readyForComparison = ticker !== "UNKNOWN" && Boolean(ticker.trim()) && levels.some((level) => ["support", "resistance", "pivot"].includes(level.kind) && /^\d[\d,.]*$/.test(level.price.trim()));
   const [image, setImage] = useState("");
   const [fileName, setFileName] = useState("");
@@ -28,7 +28,7 @@ export default function OptionsWallCheck({ ticker, levels }: { ticker: string; l
   }
 
   async function check() {
-    if (!image || busy || !readyForComparison) return;
+    if (!image || busy || !readyForComparison || !await canScan()) return;
     setBusy(true); setError(""); setResult(null);
     try {
       const response = await fetch("/api/pocket/options-wall", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, ticker, levels: levels.map(({ kind, price, label }) => ({ kind, price, label })) }) });

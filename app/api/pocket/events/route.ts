@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
+import { loadFmpEconomicCalendar } from "../../../lib/providers/fmp-economic-calendar";
+import type { SupplementalMarketEvent } from "../../../lib/macro-data";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type ProviderRow = Record<string, unknown>;
 type StockEvent = { id: string; type: "EARNINGS" | "DIVIDEND" | "SPLIT"; date: string; detail: string; source: string };
@@ -15,18 +19,15 @@ function future(date: string) {
   return Number.isFinite(timestamp) && timestamp >= Date.now() - 86_400_000;
 }
 
-export async function GET(request: Request) {
-  const symbol = new URL(request.url).searchParams.get("symbol")?.trim().toUpperCase() ?? "";
+async function companyEvents(symbol: string) {
   if (!/^[A-Z][A-Z0-9.-]{0,14}$/.test(symbol)) return NextResponse.json({ error: "A valid listed-company ticker is required." }, { status: 400 });
   const apiKey = process.env.FMP_API_KEY?.trim();
   if (!apiKey) return NextResponse.json({ error: "Corporate events feed is not connected." }, { status: 503 });
-
   const endpoints = [
     ["EARNINGS", `https://financialmodelingprep.com/stable/earnings?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`],
     ["DIVIDEND", `https://financialmodelingprep.com/stable/dividends?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`],
     ["SPLIT", `https://financialmodelingprep.com/stable/splits?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`],
   ] as const;
-
   try {
     const responses = await Promise.all(endpoints.map(async ([type, url]) => {
       const response = await fetch(url, { headers: { Accept: "application/json" }, next: { revalidate: 21_600 } });
@@ -52,4 +53,22 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json({ error: "Corporate events are temporarily unavailable." }, { status: 503 });
   }
+}
+
+export async function GET(request: Request) {
+  const symbol = new URL(request.url).searchParams.get("symbol")?.trim().toUpperCase() ?? "";
+  if (symbol) return companyEvents(symbol);
+  const apiKey = process.env.FMP_API_KEY?.trim() ?? "";
+  const [macroContext, providerRows] = await Promise.all([
+    getVerifiedMacroContext({ route: "/api/pocket/events", signal: request.signal }),
+    loadFmpEconomicCalendar({ apiKey, baseUrl: process.env.FMP_API_BASE_URL?.trim(), signal: request.signal }),
+  ]);
+  const marketEvents: SupplementalMarketEvent[] = providerRows.map((event, index) => ({
+    id: `fmp-${event.at}-${index}`,
+    name: event.name,
+    scheduledAt: event.at ?? "",
+    risk: event.risk,
+    source: "Financial Modeling Prep",
+  })).filter((event) => Boolean(event.scheduledAt));
+  return NextResponse.json({ macroContext, marketEvents }, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }

@@ -76,7 +76,26 @@ test("getVerifiedMacroContext assembles official sources without market snapshot
   assert.deepEqual(context.filings, []);
   assert.deepEqual(context.availableSources, ["BEA", "BLS", "Federal Reserve", "Treasury"]);
   assert.deepEqual(context.unavailableSources, ["SEC"]);
+  assert.deepEqual(context.calendarSources, { available: ["BEA", "BLS", "Federal Reserve"], unavailable: [] });
   assert.equal(context.releases.length, 1);
+});
+
+test("official schedule window starts at London midnight so earlier same-day releases remain visible", async () => {
+  let receivedFrom = "";
+  await getVerifiedMacroContext({
+    now: () => Date.parse("2026-09-03T22:00:00.000Z"),
+    providers: {
+      observationProviders: [observationProvider("U.S. Department of the Treasury", [])],
+      releaseProviders: [{
+        name: "U.S. Bureau of Economic Analysis",
+        async fetchUpcomingReleases(from) {
+          receivedFrom = from.toISOString();
+          return [];
+        },
+      }],
+    },
+  });
+  assert.equal(receivedFrom, "2026-09-02T23:00:00.000Z");
 });
 
 test("getVerifiedMacroContext never throws when all providers fail", async () => {
@@ -105,6 +124,39 @@ test("getVerifiedMacroContext never throws when all providers fail", async () =>
   assert.equal(context.status, "unavailable");
   assert.deepEqual(context.observations, []);
   assert.deepEqual(context.releases, []);
+});
+
+test("getVerifiedMacroContext forwards cancellation to every provider and fails soft", async () => {
+  const controller = new AbortController();
+  const seenSignals: AbortSignal[] = [];
+  const waitForAbort = (signal?: AbortSignal) => new Promise<never>((_resolve, reject) => {
+    assert.ok(signal);
+    seenSignals.push(signal);
+    signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+  });
+  const pending = getVerifiedMacroContext({
+    now: () => Date.parse("2026-08-11T12:00:00.000Z"),
+    signal: controller.signal,
+    providers: {
+      observationProviders: [{
+        name: "U.S. Department of the Treasury",
+        fetchObservations: waitForAbort,
+      }],
+      releaseProviders: [{
+        name: "U.S. Bureau of Labor Statistics",
+        async fetchUpcomingReleases(_from, _to, signal) {
+          return waitForAbort(signal);
+        },
+      }],
+    },
+  });
+  controller.abort(new Error("route_deadline"));
+
+  const context = await pending;
+  assert.equal(context.status, "unavailable");
+  assert.deepEqual(context.observations, []);
+  assert.deepEqual(context.releases, []);
+  assert.deepEqual(seenSignals, [controller.signal, controller.signal]);
 });
 
 test("createUnavailableMacroContext never includes market snapshot metrics", () => {

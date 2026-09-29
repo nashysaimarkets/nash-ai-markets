@@ -31,13 +31,14 @@ function dedupeKey(observation: MacroObservation): string {
 
 export async function aggregateOfficialObservations(
   providers: readonly ScalarObservationProvider[],
+  signal?: AbortSignal,
 ): Promise<OfficialObservationsResult> {
   if (!providers.length) {
     return { observations: [], successfulProviders: [], failedProviders: [] };
   }
 
   const settled = await Promise.allSettled(
-    providers.map((provider) => provider.fetchObservations()),
+    providers.map((provider) => provider.fetchObservations(signal)),
   );
 
   const successfulProviders: string[] = [];

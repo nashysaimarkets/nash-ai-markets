@@ -59,8 +59,8 @@
 .psVault button:active{transform:scale(.97)}
 .psLegal{opacity:.62}
 /* Trim low-value explanatory chrome without removing safety/decision content. */
-.psCaptureRow span,.psDrawingDesk>p,.psAutoPreview>p,.psStudyPicker>p{font-size:7px;color:#697784}
+.psCaptureRow span,.psDrawingDesk>p,.psAutoPreview>p,.psStudyPicker>p{font-size:11px;color:#697784}
 @media(max-width:680px){.psScanner,.psResults{width:min(calc(100% - 20px),600px)}.psCopy{padding-top:26px}.psUpload{height:min(54vh,390px);min-height:280px;border-radius:14px}.psResults[data-immersive="true"]{padding-inline:10px}.psResults[data-immersive="true"] .psVerdict{border-radius:11px}.psScorecard article{min-height:68px}.psAuditGrid article,.psReviewGrid article{padding:14px}.psResultActions{margin-inline:-2px}}
-@media(max-width:420px){.psCopy h1{font-size:36px}.psCopy>span{font-size:11px;line-height:1.5}.psUpload{height:48vh}.psVerdict{padding:17px!important}.psVerdictTop h1 em{font-size:60px}.psVerdict h2{font-size:16px}.psScorecard article{padding:10px}.psScorecard span{font-size:6px}.psScorecard strong{font-size:8px}}
+@media(max-width:420px){.psCopy h1{font-size:36px}.psCopy>span{font-size:11px;line-height:1.5}.psUpload{height:48vh}.psVerdict{padding:17px!important}.psVerdictTop h1 em{font-size:60px}.psVerdict h2{font-size:16px}.psScorecard article{padding:10px}.psScorecard span{font-size:11px}.psScorecard strong{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.psUpload,.psAnalyse,.psScorecard article,.psResultActions button,.psVault button{transition:none}.psApp:before{display:none}}
 @media(hover:none){.psUpload:hover,.psScorecard article:hover,.psLevelDeck>div:hover,.psVault article:hover{transform:none;background:inherit}.psAnalyse:not(:disabled):hover,.psResultActions button:hover{transform:none;filter:none}}

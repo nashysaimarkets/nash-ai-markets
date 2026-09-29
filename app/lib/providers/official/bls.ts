@@ -114,7 +114,7 @@ export function createBlsObservationProvider(options: BlsProviderOptions = {}): 
 
   return {
     name: BLS_PROVIDER_NAME,
-    async fetchObservations() {
+    async fetchObservations(signal?: AbortSignal) {
       const retrievedAt = new Date(now()).toISOString();
 
       try {
@@ -126,6 +126,7 @@ export function createBlsObservationProvider(options: BlsProviderOptions = {}): 
           },
           body: JSON.stringify({ seriesid: Object.values(BLS_SERIES) }),
           cache: "no-store",
+          signal,
         });
         if (!response.ok) return [];
         const payload: unknown = await response.json().catch(() => null);
@@ -189,7 +190,11 @@ function icsDateToIso(key: string, value: string): string | null {
   const second = Number(ss);
   if (z) return new Date(Date.UTC(year, month - 1, day, hour, minute, second)).toISOString();
 
-  const isEastern = /TZID=(?:America\/New_York|US\/Eastern)/i.test(key);
+  // The live BLS feed currently declares `TZID=US-Eastern` while older
+  // fixtures and some calendar clients use America/New_York or US/Eastern.
+  // Treat all three official aliases as Eastern rather than silently dropping
+  // every scheduled release in the feed.
+  const isEastern = /TZID=(?:America\/New_York|US[\/-]Eastern)/i.test(key);
   if (!isEastern) return null;
   const offsetHours = easternOffsetHours(year, month, day, hour, minute);
   return new Date(Date.UTC(year, month - 1, day, hour - offsetHours, minute, second)).toISOString();
@@ -244,17 +249,14 @@ export function createBlsReleaseCalendarProvider(options: BlsProviderOptions = {
 
   return {
     name: BLS_PROVIDER_NAME,
-    async fetchUpcomingReleases(from: Date, to: Date) {
-      try {
-        const response = await fetchImpl(BLS_CALENDAR_ENDPOINT, {
-          headers: { Accept: "text/calendar" },
-          cache: "no-store",
-        });
-        if (!response.ok) return [];
-        return normalizeBlsCalendarIcs(await response.text(), from, to);
-      } catch {
-        return [];
-      }
+    async fetchUpcomingReleases(from: Date, to: Date, signal?: AbortSignal) {
+      const response = await fetchImpl(BLS_CALENDAR_ENDPOINT, {
+        headers: { Accept: "text/calendar" },
+        cache: "no-store",
+        signal,
+      });
+      if (!response.ok) throw new Error(`BLS release schedule unavailable (${response.status}).`);
+      return normalizeBlsCalendarIcs(await response.text(), from, to);
     },
   };
 }

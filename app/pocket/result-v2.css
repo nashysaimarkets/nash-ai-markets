@@ -15,7 +15,7 @@
 
 .psVerdict h1 small {
   color: #7f8984;
-  font: 800 8px var(--font-geist-mono), monospace;
+  font: 800 11px var(--font-geist-mono), monospace;
   letter-spacing: 0.16em;
 }
 
@@ -28,7 +28,7 @@
   display: block;
   margin-top: 14px;
   color: #756e68;
-  font: 800 7px var(--font-geist-mono), monospace;
+  font: 800 11px var(--font-geist-mono), monospace;
   letter-spacing: 0.1em;
 }
 
@@ -37,7 +37,7 @@
   border: 1px solid rgba(255, 47, 61, 0.65);
   background: rgba(255, 47, 61, 0.08);
   color: #ff7780;
-  font: 800 7px var(--font-geist-mono), monospace;
+  font: 800 11px var(--font-geist-mono), monospace;
   letter-spacing: 0.08em;
 }
 
@@ -64,7 +64,7 @@
 .psChartFocus > header span,
 .psChartFocus > header button,
 .psChartFocus footer small {
-  font: 800 8px var(--font-geist-mono), monospace;
+  font: 800 11px var(--font-geist-mono), monospace;
   letter-spacing: 0.11em;
 }
 
@@ -113,7 +113,7 @@
   padding: 5px 8px;
   background: rgba(2, 2, 3, 0.94);
   color: #fff;
-  font: 800 8px var(--font-geist-mono), monospace;
+  font: 800 11px var(--font-geist-mono), monospace;
   letter-spacing: 0.08em;
 }
 
@@ -175,7 +175,7 @@
 .psCorrectionChart img { display: block; width: 100%; height: auto; }
 .psCorrectionChart i { position: absolute; left: 0; right: 0; height: 2px; background: var(--ps-green); box-shadow: 0 0 10px currentColor; }
 .psCorrectionChart i[data-tool="resistance"] { background: var(--ps-red); }
-.psCorrectionChart i span { position: absolute; right: 6px; bottom: 5px; padding: 3px 6px; background: #080404; color: #fff; font-style: normal; font-size: 0.62rem; }
+.psCorrectionChart i span { position: absolute; right: 6px; bottom: 5px; padding: 3px 6px; background: #080404; color: #fff; font-style: normal; font-size: 11px; }
 .psReportBadScan { width: 100%; margin-top: 12px; border-color: var(--ps-gold); color: var(--ps-gold); }
 
 @media (max-width: 560px) {

@@ -1,0 +1,99 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import { postLiquidityRescan } from "../app/pocket/liquidity-rescan-client.ts";
+
+const route = readFileSync("app/api/pocket/liquidity/route.ts", "utf8");
+const client = readFileSync("app/pocket/PocketBullseye.tsx", "utf8");
+const depth = readFileSync("app/pocket/pocket-future-depth.css", "utf8");
+
+
+test("Liquidity Guard has a dedicated bounded primary-chart rescan", () => {
+  assert.match(client, /async function rescanLiquidityOnly/);
+  assert.match(client, /postLiquidityRescan/);
+  assert.match(client, /onLiquidityRescan={rescanLiquidityOnly}/);
+  assert.match(route, /Analyse only the uploaded primary chart/);
+  assert.match(route, /instrumentIdentitiesMatch/);
+  assert.match(route, /timeframeConfidence === "HIGH" && compatibleTimeframe/);
+  assert.match(route, /normalizePrecisionLiquidityShield/);
+  assert.match(route, /raw\.candlesReadable !== true \|\| raw\.priceScaleReadable !== true \|\| raw\.confidence === "LOW"/);
+  assert.match(route, /reasoning: \{ effort: "low" \}/);
+  assert.match(route, /inFlight\.set\(key, work\)/);
+  assert.doesNotMatch(route, /signal: request\.signal/);
+  assert.match(route, /classifyOpenAIFailure/);
+  assert.match(client, /activePrimaryImage\.current !== sourceImageRevision/);
+  assert.match(client, /const effectiveLiquidity = effectiveLiquidityGeometry\(analysis\)/);
+  assert.match(client, /createMeasuredScanImage/);
+  assert.match(client, /measuredScanImage/);
+  assert.match(route, /cyan pixel-locked ruler/);
+  assert.match(route, /independentCalibration: true/);
+});
+
+test("a completed main scan automatically invokes independent recovery when precision was withheld", () => {
+  const request = client.slice(client.indexOf("async function requestPocketAnalysis"), client.indexOf("async function analyse()"));
+  assert.match(request, /needsLevelRecovery = !hasVerifiedTwoSidedStructure/);
+  assert.match(request, /needsLiquidityRecovery = needsPocketLiquidityRecovery\(completedAnalysis\.liquidityShield\?\.status\)/);
+  assert.match(request, /postLevelLabScan/);
+  assert.match(request, /postLiquidityRescan/);
+  assert.match(request, /const \[levelRecovery, liquidityRecovery\] = await Promise\.all/);
+  assert.match(request, /liquidityGeometry: liquidityRecovery\.payload\.liquidity/);
+  assert.doesNotMatch(request, /setLevelLabImage|setLevelLabFileName/);
+});
+
+test("async chart uploads retain the input before React releases the event", () => {
+  const uploads = client.slice(client.indexOf("async function loadFile"), client.indexOf("async function reanalyseResult"));
+  for (const handler of ["loadFile", "replaceSupportingFile", "loadSupportingFiles", "addResultContextFile"]) {
+    const start = uploads.indexOf(`async function ${handler}`);
+    const next = uploads.indexOf("\n  async function ", start + 1);
+    const body = uploads.slice(start, next === -1 ? undefined : next);
+    assert.notEqual(start, -1, `${handler} must exist`);
+    assert.match(body, /const input = event\.currentTarget/, `${handler} must retain its input synchronously`);
+    assert.equal(body.match(/event\.currentTarget/g)?.length, 1, `${handler} must not revisit the React event`);
+    assert.doesNotMatch(body, /event\.target/, `${handler} must not use an unretained event target`);
+    assert.match(body, /input\.value = "";/, `${handler} must release same-file selection`);
+  }
+  assert.doesNotMatch(client, /async function addLevelLabFile|async function rescanLevelsOnly/);
+});
+
+test("new chart and review transitions cannot reuse a prior four-hour upload", () => {
+  const review = client.slice(client.indexOf("async function startReview"), client.indexOf("function startNewChart"));
+  const next = client.slice(client.indexOf("function startNewChart"), client.indexOf("const sourceChart"));
+  assert.match(review, /setFourHourImage\(null\); setFourHourFileName\(""\)/);
+  assert.match(next, /setFourHourImage\(null\);/);
+  assert.match(next, /setFourHourFileName\(""\);/);
+});
+
+test("an accuracy correction invalidates dedicated Guard geometry", () => {
+  const correction = client.slice(client.indexOf("function applyAccuracyCorrection"), client.indexOf("async function reanalyseWithCorrection"));
+  assert.match(correction, /liquidityShield: undefined, liquidityGeometry: undefined/);
+});
+
+test("Liquidity rescan retries a transient response with one correlation id", async () => {
+  const ids: string[] = [];
+  let calls = 0;
+  const fetcher = async (_input: RequestInfo | URL, init?: RequestInit) => {
+    calls += 1;
+    ids.push(new Headers(init?.headers).get("x-pocket-request-id") ?? "");
+    return calls === 1
+      ? new Response(JSON.stringify({ error: "retry" }), { status: 502 })
+      : new Response(JSON.stringify({ liquidity: { liquidityShield: { status: "NO_VISIBLE_RISK_ZONES", zones: [] } } }), { status: 200 });
+  };
+  const result = await postLiquidityRescan<{ liquidity?: unknown }>("{}", fetcher);
+  assert.equal(result.response.status, 200);
+  assert.equal(calls, 2);
+  assert.ok(ids[0]);
+  assert.equal(ids[0], ids[1]);
+});
+
+test("mobile level scanner has independent label slots and motion controls", () => {
+  const scanner = readFileSync("app/pocket/InteractiveLevelScanner.tsx", "utf8");
+  const styles = readFileSync("app/pocket/pocket-level-scanner.css", "utf8");
+  assert.doesNotMatch(client + scanner, /className="psMapIntro"/);
+  assert.match(scanner, /entry\.labelY/);
+  assert.match(scanner, /entry\.y/);
+  assert.match(scanner, /aria-pressed=\{selection === entry\.id\}/);
+  assert.match(styles, /--scanner-count/);
+  assert.match(styles, /prefers-reduced-motion/);
+  assert.match(styles, /data-spatial-motion="off"/);
+  assert.doesNotMatch(depth, /min-height: 108px|\.psDecisionMap \.psBattleIntel \{ top:/);
+});

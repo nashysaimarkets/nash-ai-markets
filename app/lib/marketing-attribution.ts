@@ -1,33 +1,4 @@
-export const CAMPAIGN_SOURCES = [
-  "appstore",
-  "babypips",
-  "bing",
-  "discord",
-  "direct",
-  "duckduckgo",
-  "email",
-  "facebook",
-  "forexfactory",
-  "google",
-  "instagram",
-  "investing",
-  "linkedin",
-  "medium",
-  "newsletter",
-  "other",
-  "producthunt",
-  "reddit",
-  "snapchat",
-  "stocktwits",
-  "telegram",
-  "tiktok",
-  "tipseason",
-  "trading212",
-  "tradingview",
-  "x",
-  "xfn-network",
-  "youtube",
-] as const;
+export const CAMPAIGN_SOURCES = ["instagram", "tiktok", "x", "youtube", "snapchat", "linkedin", "direct"] as const;
 
 export type CampaignSource = typeof CAMPAIGN_SOURCES[number];
 
@@ -45,20 +16,18 @@ function safeToken(value: unknown, fallback: string): string {
   return SAFE_TOKEN.test(normalized) ? normalized : fallback;
 }
 
-export function isCampaignSource(value: unknown): value is CampaignSource {
-  return typeof value === "string" && CAMPAIGN_SOURCES.includes(value as CampaignSource);
-}
-
 export function campaignAttribution(input: {
   utm_source?: unknown;
   utm_medium?: unknown;
   utm_campaign?: unknown;
 }): CampaignAttribution {
   const requestedSource = safeToken(input.utm_source, "direct");
-  const source = isCampaignSource(requestedSource) ? requestedSource : "other";
+  const source = CAMPAIGN_SOURCES.includes(requestedSource as CampaignSource)
+    ? requestedSource as CampaignSource
+    : "direct";
   return {
     source,
-    medium: safeToken(input.utm_medium, source === "direct" ? "none" : source === "other" ? "referral" : "social"),
+    medium: safeToken(input.utm_medium, source === "direct" ? "none" : "social"),
     campaign: safeToken(input.utm_campaign, "founding650"),
   };
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { checkOpenAIConnection, createOpenAIClient } from "../app/lib/server/openai.ts";
+import { checkOpenAIConnection, classifyOpenAIFailure, createOpenAIClient } from "../app/lib/server/openai.ts";
 
 test("OpenAI client remains unconfigured when the server key is absent", () => {
   assert.equal(createOpenAIClient(""), null);
@@ -75,6 +75,24 @@ test("OpenAI health check exposes only safe operational failure categories", asy
   assert.deepEqual(permission, { status: "unavailable", reason: "permission_denied" });
   assert.deepEqual(model, { status: "unavailable", reason: "model_unavailable" });
   assert.doesNotMatch(JSON.stringify([authentication, rateLimit, quota, timeout, permission, model]), /credential|account detail|billing detail|request URL|project detail|model detail/);
+});
+
+test("OpenAI spend-limit failures are never mistaken for ordinary rate limiting", () => {
+  assert.equal(classifyOpenAIFailure({
+    status: 429,
+    code: "organization_spend_limit_exceeded",
+    type: "insufficient_quota",
+    message: "organization has reached its configured enforced spend limit",
+  }), "quota_exhausted");
+  assert.equal(classifyOpenAIFailure({ status: 429, code: "rate_limit_exceeded" }), "rate_limited");
+  for (const code of ["credit_balance_exhausted", "project_spend_limit_exceeded", "organization_usage_limit_exceeded"]) {
+    assert.equal(classifyOpenAIFailure({ status: 429, code }), "quota_exhausted");
+  }
+});
+
+test("OpenAI SDK timeout and abort errors are distinguished from an outage", () => {
+  assert.equal(classifyOpenAIFailure({ name: "APIConnectionTimeoutError" }), "timeout");
+  assert.equal(classifyOpenAIFailure({ name: "APIUserAbortError" }), "timeout");
 });
 
 test("OpenAI health route requires authentication and never serializes credentials or raw errors", async () => {

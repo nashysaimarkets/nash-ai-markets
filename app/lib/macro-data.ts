@@ -72,6 +72,14 @@ export type EconomicRelease = {
   sourceUrl?: string;
 };
 
+export type SupplementalMarketEvent = {
+  id: string;
+  name: string;
+  scheduledAt: string;
+  risk: "HIGH" | "MED";
+  source: string;
+};
+
 export type FilingActivity = {
   id: string;
   companyName: string;
@@ -91,5 +99,9 @@ export type VerifiedMacroContext = {
   filings: FilingActivity[];
   availableSources: string[];
   unavailableSources: string[];
+  calendarSources?: {
+    available: string[];
+    unavailable: string[];
+  };
   status: VerifiedMacroContextStatus;
 };

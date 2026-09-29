@@ -1,7 +1,6 @@
 import { createAdminClient } from "../../../utils/supabase/admin.ts";
 import Stripe from "stripe";
-import { CAMPAIGN_SOURCES, campaignAttribution, type CampaignSource } from "../marketing-attribution.ts";
-import type { PocketFunnelEvent } from "../marketing-funnel.ts";
+import { CAMPAIGN_SOURCES, type CampaignSource } from "../marketing-attribution.ts";
 
 export type CommercialMembership = {
   email: string;
@@ -38,18 +37,7 @@ export type PocketLaunchMember = {
   source: CampaignSource;
 };
 
-export type PocketAttributionRow = {
-  source: CampaignSource;
-  campaign: string;
-  pageViews: number;
-  offerClicks: number;
-  appOpenClicks: number;
-  checkoutStarts: number;
-  checkoutCancelled: number;
-  checkoutUnavailable: number;
-  subscriptions: number;
-  conversionPercent: number | null;
-};
+export type PocketAttributionRow = { source: CampaignSource; visits: number; subscriptions: number; conversionPercent: number | null };
 
 export type PocketLaunchMetrics = {
   activeSubscribers: number;
@@ -104,70 +92,30 @@ export async function loadPocketLaunchReport() {
     const pocketSubscriptions = subscriptions.filter((subscription) =>
       subscription.items.data.some((item) => item.price.id === pocketPriceId),
     );
-    const since = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
-    const reportFrom = new Date(since * 1000).toISOString().slice(0, 10);
-    type CountField = "pageViews" | "offerClicks" | "appOpenClicks" | "checkoutStarts" | "checkoutCancelled" | "checkoutUnavailable" | "subscriptions";
-    const eventFields: Partial<Record<PocketFunnelEvent, CountField>> = {
-      founding_page_viewed: "pageViews",
-      founding_offer_clicked: "offerClicks",
-      app_open_clicked: "appOpenClicks",
-      checkout_started: "checkoutStarts",
-      checkout_cancelled: "checkoutCancelled",
-      checkout_unavailable: "checkoutUnavailable",
-    };
-    const countsByKey = new Map<string, PocketAttributionRow>();
-    const getCountRow = (source: CampaignSource, campaign: string) => {
-      const key = source + "\u0000" + campaign;
-      let row = countsByKey.get(key);
-      if (!row) {
-        row = { source, campaign, pageViews: 0, offerClicks: 0, appOpenClicks: 0, checkoutStarts: 0, checkoutCancelled: 0, checkoutUnavailable: 0, subscriptions: 0, conversionPercent: null };
-        countsByKey.set(key, row);
-      }
-      return row;
-    };
-    let attributionAvailable = false;
-    try {
-      const { data, error } = await createAdminClient().rpc("pocket_growth_report", { p_from: reportFrom });
-      if (!error && data && typeof data === "object" && !Array.isArray(data)) {
-        attributionAvailable = true;
-        const report = data as Record<string, unknown>;
-        const events = Array.isArray(report.events) ? report.events : [];
-        for (const value of events) {
-          if (!value || typeof value !== "object") continue;
-          const event = value as Record<string, unknown>;
-          if (event.platform !== "web" || event.flow !== "founding650" || typeof event.event !== "string") continue;
-          const field = eventFields[event.event as PocketFunnelEvent];
-          if (!field) continue;
-          const count = Number(event.total);
-          if (!Number.isFinite(count) || count <= 0) continue;
-          const attributed = campaignAttribution({ utm_source: event.source, utm_campaign: event.campaign });
-          getCountRow(attributed.source, attributed.campaign)[field] += Math.floor(count);
-        }
-      }
-    } catch {
-      attributionAvailable = false;
+    const { data: visitData, error: visitError } = await createAdminClient().from("marketing_visits").select("source").eq("campaign", "founding650").limit(10000);
+    const attributionAvailable = !visitError && Array.isArray(visitData);
+    const visitsBySource = new Map<CampaignSource, number>();
+    if (attributionAvailable) for (const row of visitData) if (CAMPAIGN_SOURCES.includes(row.source as CampaignSource)) {
+      const source = row.source as CampaignSource;
+      visitsBySource.set(source, (visitsBySource.get(source) ?? 0) + 1);
     }
+    const subscriptionsBySource = new Map<CampaignSource, number>();
+    for (const subscription of pocketSubscriptions) {
+      const requested = subscription.metadata.acquisition_source;
+      const source = CAMPAIGN_SOURCES.includes(requested as CampaignSource) ? requested as CampaignSource : "direct";
+      subscriptionsBySource.set(source, (subscriptionsBySource.get(source) ?? 0) + 1);
+    }
+    const attribution: PocketAttributionRow[] = CAMPAIGN_SOURCES.map((source) => {
+      const visits = visitsBySource.get(source) ?? 0;
+      const sourceSubscriptions = subscriptionsBySource.get(source) ?? 0;
+      return { source, visits, subscriptions: sourceSubscriptions, conversionPercent: visits > 0 ? Math.round((sourceSubscriptions / visits) * 1000) / 10 : null };
+    }).filter((row) => row.visits > 0 || row.subscriptions > 0);
     const active = pocketSubscriptions.filter((subscription) =>
       subscription.status === "active" || subscription.status === "trialing",
     );
     const activeIds = new Set(active.map((subscription) => subscription.id));
     const pocketIds = new Set(pocketSubscriptions.map((subscription) => subscription.id));
-    for (const subscription of active) {
-      if (subscription.created < since) continue;
-      const attributed = campaignAttribution({
-        utm_source: subscription.metadata.acquisition_source,
-        utm_campaign: subscription.metadata.acquisition_campaign,
-      });
-      getCountRow(attributed.source, attributed.campaign).subscriptions += 1;
-    }
-    const attribution: PocketAttributionRow[] = [...countsByKey.values()]
-      .map((row) => ({
-        ...row,
-        conversionPercent: row.pageViews > 0
-          ? Math.round((row.subscriptions / row.pageViews) * 1000) / 10
-          : null,
-      }))
-      .sort((a, b) => b.pageViews - a.pageViews || a.source.localeCompare(b.source) || a.campaign.localeCompare(b.campaign));
+    const since = Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60;
     const [paidInvoices, openInvoices] = await Promise.all([
       listAll<Stripe.Invoice>((startingAfter) => stripe.invoices.list({
         status: "paid", created: { gte: since }, limit: 100,

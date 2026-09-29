@@ -24,46 +24,65 @@ import "./pocket-feedback.css";
 import "./pocket-cinema-pro.css";
 import "./pocket-2.css";
 import "./pocket-preflight.css";
+import "./pocket-preflight-compact.css";
 import "./pocket-accuracy-feedback.css";
 import "./pocket-level-provenance.css";
 import "./pocket-result-clarity.css";
 import "./pocket-consistency.css";
 import "./pocket-launch-v17.css";
-import "./pocket-lock-on.css";
-import "./pocket-command-arena.css";
-import "./pocket-bubble-lab.css";
 import "./pocket-pattern-watch.css";
+import "./pocket-trust-retention.css";
+import "./pocket-liquidity-guard.css";
+import "./pocket-precision-overhaul.css";
+import "./pocket-apple-paywall.css";
+import "./pocket-v1-1-hotfix.css";
 import "./pocket-options-wall.css";
+import "./pocket-decision-intelligence.css";
+import "./pocket-decision-engine.css";
+import "./pocket-decision-autopsy.css";
+import "./pocket-core-scans.css";
+import "./pocket-future-depth.css";
+import "./pocket-chart-captions.css";
+import "./pocket-timeframes.css";
+import "./upload-guide.css";
+import "./pocket-growth.css";
+import "./pocket-luminous.css";
+import "./pocket-observatory.css";
+import "./pocket-level-scanner.css";
+import "./pocket-review-workspace.css";
+import "./pocket-surface-finish.css";
+
+const sharingTitle = "Pocket Bullseye — AI Chart Analysis";
+const sharingDescription = "Explore a fictional chart analysis without an upload or account. Try one complete analysis free on iPhone or iPad; continued analysis requires a subscription.";
+const sharingImage = "https://pocket.nashaimarkets.com/pocket-marketing/app-icon.png";
 
 export const metadata: Metadata = {
-  title: "Pocket Bullseye AI Chart Analysis",
-  description: "Upload a trading chart for an AI-assisted second opinion. Review market structure, support and resistance, timeframe context, invalidation and risk before deciding.",
+  title: { absolute: sharingTitle },
+  description: "Upload a chart screenshot for an AI second opinion on support, resistance, scenarios and risk. Pocket Bullseye by NASH AI Markets.",
   applicationName: "Pocket Bullseye",
-  keywords: ["AI chart analysis", "trading chart analyser", "trading second opinion", "support and resistance", "pre-trade analysis"],
-  alternates: { canonical: "/pocket" },
-  robots: { index: true, follow: true },
+  robots: { index: false, follow: false },
   openGraph: {
-    title: "Pocket Bullseye — AI Chart Analysis for Traders",
-    description: "Get an evidence-led second opinion on your trading chart before deciding.",
-    type: "website",
-    url: "/pocket",
+    title: sharingTitle,
+    description: sharingDescription,
+    url: "https://pocket.nashaimarkets.com/pocket",
     siteName: "Pocket Bullseye",
+    type: "website",
+    locale: "en_GB",
+    images: [{ url: sharingImage, width: 1024, height: 1024, alt: "Pocket Bullseye app icon" }],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Pocket Bullseye — AI Chart Analysis for Traders",
-    description: "Get an evidence-led second opinion on your trading chart before deciding.",
-  },
+  twitter: { card: "summary", title: sharingTitle, description: sharingDescription, images: [sharingImage] },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  themeColor: "#0a0e13",
+  viewportFit: "cover",
+  themeColor: "#030914",
 };
 
-export default async function PocketPage() {
-  const macroContext = await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
+export default async function PocketPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sample = (await searchParams).demo === "1";
+  // Fictional samples have no live events and must not wait for calendar providers.
+  const macroContext = sample ? createUnavailableMacroContext() : await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
   return <PocketBullseye macroContext={macroContext} />;
 }

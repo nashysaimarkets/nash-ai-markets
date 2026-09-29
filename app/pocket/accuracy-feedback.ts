@@ -16,6 +16,17 @@ export type AccuracyFeedback = {
   };
 };
 
+export type NormalizedAccuracyCorrection = {
+  category: AccuracyCategory;
+  categories: [AccuracyCategory];
+  correction: string;
+  note: string;
+  instrument?: string;
+  timeframe?: string;
+  currentPrice?: string;
+  level?: { kind: "support" | "resistance"; price: string };
+};
+
 export function readAccuracyFeedback(raw: string | null): AccuracyFeedback[] {
   if (!raw) return [];
   try {
@@ -54,16 +65,56 @@ export type AccuracyCorrectionPatch = {
   level?: { kind: "support" | "resistance"; price: string };
 };
 
+const CORRECTION_NUMBER = "-?(?:\\d+(?:\\.\\d+)?|\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?)";
+const ACCURACY_CATEGORIES = new Set<AccuracyCategory>(["INSTRUMENT", "TIMEFRAME", "CURRENT_PRICE", "SUPPORT", "RESISTANCE", "CHART_READING"]);
+
+function categoryPrice(value: string, category: "CURRENT_PRICE" | "SUPPORT" | "RESISTANCE") {
+  const label = category === "CURRENT_PRICE" ? "(?:current\\s*price|price)" : category.toLowerCase();
+  const match = value.trim().replace(/[−–—]/g, "-").match(new RegExp(`^(?:${label}\\s*(?::|=)?\\s*)?(${CORRECTION_NUMBER})$`, "i"));
+  return match?.[1] ?? null;
+}
+
+/** Normalize one correction fact for both the browser replay and API boundary. */
+export function normalizeAccuracyCorrection(value: unknown): NormalizedAccuracyCorrection | null {
+  if (!value || typeof value !== "object") return null;
+  const candidate = value as Record<string, unknown>;
+  if (candidate.verdict !== "NEEDS_CORRECTION" || !Array.isArray(candidate.categories) || candidate.categories.length !== 1) return null;
+  const category = candidate.categories[0];
+  if (typeof category !== "string" || !ACCURACY_CATEGORIES.has(category as AccuracyCategory)) return null;
+  const typedCategory = category as AccuracyCategory;
+  const correction = typeof candidate.correction === "string" ? candidate.correction.trim().replace(/\s+/g, " ").slice(0, 80) : "";
+  const note = typeof candidate.note === "string" ? candidate.note.trim().replace(/\s+/g, " ").slice(0, 180) : "";
+  const normalized: NormalizedAccuracyCorrection = { category: typedCategory, categories: [typedCategory], correction, note };
+
+  if (typedCategory === "INSTRUMENT") {
+    if (!correction) return null;
+    normalized.instrument = correction;
+  }
+  if (typedCategory === "TIMEFRAME") {
+    if (!correction) return null;
+    normalized.timeframe = correction.slice(0, 30);
+  }
+  if (["CURRENT_PRICE", "SUPPORT", "RESISTANCE"].includes(typedCategory)) {
+    if (!correction) return null;
+    const numeric = categoryPrice(correction, typedCategory as "CURRENT_PRICE" | "SUPPORT" | "RESISTANCE");
+    const canonical = numeric?.replaceAll(",", "") ?? "";
+    if (!canonical || !Number.isFinite(Number(canonical)) || Number(canonical) <= 0) return null;
+    if (typedCategory === "CURRENT_PRICE") normalized.currentPrice = canonical;
+    if (typedCategory === "SUPPORT" || typedCategory === "RESISTANCE") {
+      normalized.level = { kind: typedCategory === "SUPPORT" ? "support" : "resistance", price: canonical };
+    }
+  }
+  if (typedCategory === "CHART_READING" && !correction && !note) return null;
+  return normalized;
+}
+
 export function correctionPatch(feedback: AccuracyFeedback): AccuracyCorrectionPatch {
-  if (feedback.verdict !== "NEEDS_CORRECTION") return {};
-  const value = feedback.correction.trim();
-  if (!value) return {};
-  const numeric = value.replaceAll(",", "").match(/-?\d+(?:\.\d+)?/)?.[0];
+  const normalized = normalizeAccuracyCorrection(feedback);
+  if (!normalized) return {};
   const patch: AccuracyCorrectionPatch = {};
-  if (feedback.categories.includes("INSTRUMENT")) patch.instrument = value.slice(0, 40);
-  if (feedback.categories.includes("TIMEFRAME")) patch.timeframe = value.slice(0, 30);
-  if (feedback.categories.includes("CURRENT_PRICE") && numeric) patch.currentPrice = numeric;
-  if (feedback.categories.includes("SUPPORT") && numeric) patch.level = { kind: "support", price: numeric };
-  else if (feedback.categories.includes("RESISTANCE") && numeric) patch.level = { kind: "resistance", price: numeric };
+  if (normalized.instrument) patch.instrument = normalized.instrument;
+  if (normalized.timeframe) patch.timeframe = normalized.timeframe;
+  if (normalized.currentPrice) patch.currentPrice = normalized.currentPrice;
+  if (normalized.level) patch.level = normalized.level;
   return patch;
 }

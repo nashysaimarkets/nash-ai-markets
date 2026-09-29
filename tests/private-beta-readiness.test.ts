@@ -61,6 +61,6 @@ test("default validation commands include the complete regression suite and a re
   };
   assert.match(packageJson.scripts.test, /test:unit/);
   assert.match(packageJson.scripts.test, /test:rendered/);
-  assert.equal(packageJson.scripts["test:unit"], "node --test tests/*.test.ts");
+  assert.equal(packageJson.scripts["test:unit"], "node --import tsx --test tests/*.test.ts");
   assert.equal(packageJson.scripts["security:scan"], "node scripts/check-secrets.mjs");
 });

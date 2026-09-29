@@ -3,7 +3,7 @@ import { PwaController } from "../components/PwaController";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye | NASH AI Markets",
-  description: "Private mobile-first AI chart analysis for NASH AI Markets.",
+  description: "Upload a chart screenshot for an AI second opinion on support, resistance, scenarios and risk. Pocket Bullseye by NASH AI Markets.",
   manifest: "/pocket/manifest.webmanifest",
   appleWebApp: {
     capable: true,

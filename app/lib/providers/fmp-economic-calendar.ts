@@ -33,7 +33,26 @@ function eventTimestampMs(record: Record<string, unknown>): number | null {
   for (const key of ["date", "datetime", "eventDate", "releaseDate", "time"]) {
     const value = record[key];
     if (typeof value !== "string" || !value.trim()) continue;
-    const parsed = Date.parse(value.includes("T") || value.includes(" ") ? value.replace(" ", "T") : `${value}T12:00:00Z`);
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?$/.test(trimmed)) {
+      const [date, clock] = trimmed.split(" ");
+      const [year, month, day] = date!.split("-").map(Number);
+      const [hour, minute, second = 0] = clock!.split(":").map(Number);
+      const intendedWallClock = Date.UTC(year!, month! - 1, day!, hour!, minute!, second!);
+      let candidate = intendedWallClock;
+      const formatter = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+      });
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const parts = Object.fromEntries(formatter.formatToParts(candidate)
+          .filter((part) => part.type !== "literal")
+          .map((part) => [part.type, Number(part.value)]));
+        candidate += intendedWallClock - Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+      }
+      return candidate;
+    }
+    const parsed = Date.parse(trimmed.includes("T") ? trimmed : `${trimmed}T12:00:00Z`);
     if (Number.isFinite(parsed)) return parsed;
   }
   return null;

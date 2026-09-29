@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
+import { Capacitor } from "@capacitor/core";
 
 interface InstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -13,6 +14,9 @@ const DEFAULT_SESSION_KEY = "nash-pwa-install-session-shown";
 const DISMISS_DAYS = 14;
 const INSTALL_DELAY_MS = 45_000;
 const MEMBER_INSTALL_PATHS = ["/dashboard", "/terminal", "/brief", "/ideas", "/profile", "/onboarding", "/pocket"];
+const subscribeToNativePlatform = () => () => undefined;
+const readNativePlatform = () => Capacitor.isNativePlatform();
+const readServerPlatform = () => false;
 
 function isMemberInstallPath(pathname: string): boolean {
   return MEMBER_INSTALL_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
@@ -77,10 +81,19 @@ export function PwaController({
   const [visible, setVisible] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
   const [status, setStatus] = useState("");
+  const nativeShell = useSyncExternalStore(subscribeToNativePlatform, readNativePlatform, readServerPlatform);
   const updateAccepted = useRef(false);
   const installEligible = useRef(false);
 
   useEffect(() => {
+    // Capacitor is already an installed native application. Registering a web
+    // service worker or showing Safari's Add to Home Screen guidance inside
+    // WKWebView is both confusing and an App Review risk.
+    // Read Capacitor directly as well as the hydration-safe snapshot. This
+    // prevents a first hydration effect from registering a service worker in
+    // WKWebView before useSyncExternalStore publishes its client snapshot.
+    if (nativeShell || Capacitor.isNativePlatform()) return;
+
     let updateTimer: number | undefined;
     let iosPromptTimer: number | undefined;
     let installRevealTimer: number | undefined;
@@ -179,7 +192,7 @@ export function PwaController({
       if (installRevealTimer !== undefined) window.clearTimeout(installRevealTimer);
       lifetime.abort();
     };
-  }, [appName, dismissKey, installDelayMs, installSurface, sessionKey]);
+  }, [appName, dismissKey, installDelayMs, installSurface, nativeShell, sessionKey]);
 
   const dismiss = () => {
     try {
@@ -207,6 +220,8 @@ export function PwaController({
     setStatus("Applying application update.");
     waitingWorker.postMessage({ type: "SKIP_WAITING" });
   };
+
+  if (nativeShell) return null;
 
   if (!visible) {
     return <div className="pwaStatus" aria-live="polite">{status}</div>;

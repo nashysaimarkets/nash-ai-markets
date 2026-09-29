@@ -10,7 +10,7 @@ import type {
  */
 export interface ScalarObservationProvider {
   readonly name: string;
-  fetchObservations(): Promise<MacroObservation[]>;
+  fetchObservations(signal?: AbortSignal): Promise<MacroObservation[]>;
 }
 
 /**
@@ -19,7 +19,7 @@ export interface ScalarObservationProvider {
  */
 export interface EconomicReleaseProvider {
   readonly name: string;
-  fetchUpcomingReleases(from: Date, to: Date): Promise<EconomicRelease[]>;
+  fetchUpcomingReleases(from: Date, to: Date, signal?: AbortSignal): Promise<EconomicRelease[]>;
 }
 
 /**

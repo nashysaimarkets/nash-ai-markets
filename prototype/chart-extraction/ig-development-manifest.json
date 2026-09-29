@@ -1,0 +1,22 @@
+[
+  {"file":"IMG_6272.PNG","sha256":"595ee2e251a48bb70245c67a6e5e2c45ef1c59ba696839ffeb2d2ee59fa1a7b2","instrument":"US 500","timeframe":"30m"},
+  {"file":"IMG_6273.PNG","sha256":"af2fcda7cfc1366572de9355b1926a08082f4727509e061f044e9384a727fea3","instrument":"US Tech 100","timeframe":"30m"},
+  {"file":"IMG_6274.PNG","sha256":"14850fc162a6ea291eb4154ac06f53b09cb713ba039c226cede0eaf70a1af22b","instrument":"Japan 225","timeframe":"30m"},
+  {"file":"IMG_6276.PNG","sha256":"1a4e6bff8f2c51957de11bec727078663e8f5c960e6afd72d6f207a509684a84","instrument":"US Russell 2000","timeframe":"30m"},
+  {"file":"IMG_6277.PNG","sha256":"cbeea1eaddd52481c272e6331014b5adb812bfe82e2f0746f77c66c435ce1969","instrument":"China A50","timeframe":"30m"},
+  {"file":"IMG_6278.PNG","sha256":"b4412498079a2f29b8790e28f28f0448269054dda4b87e6be75e9032cc5a1eee","instrument":"China A50","timeframe":"3h"},
+  {"file":"IMG_6279.PNG","sha256":"beddb35ae9a2076545bf9aef922cb8ce12f4132e4218b55abf3a6a20fce98cc1","instrument":"China A50","timeframe":"5m"},
+  {"file":"IMG_6280.PNG","sha256":"563accf79926d65307ffd07e1e0a217fac223ecf209bf2011698d03f261e25a1","instrument":"FTSE 100","timeframe":"15m"},
+  {"file":"IMG_6281.PNG","sha256":"3e3c98a0f6c580a74aac64602afa3458c3c894bb66da9e956a39de7bd72a699e","instrument":"AI Index","timeframe":"30m"},
+  {"file":"IMG_6282.PNG","sha256":"0c73a8aa010919225384d631c859d8a097b4d9756de982b5cf05a000379352d4","instrument":"EU Volatility Index","timeframe":"1h"},
+  {"file":"IMG_6283.PNG","sha256":"1f4aa9d54d6f6a8f2c0291cb63d858dde1cfb6fd903a230af0a9d0983a79c857","instrument":"Crypto Stocks Index","timeframe":"3h"},
+  {"file":"IMG_6284.PNG","sha256":"5dda9addbc51e42b2968142c9fed940e978c87f42f2b2095997ac0eadfb202e2","instrument":"USD/JPY","timeframe":"3h"},
+  {"file":"IMG_6285.PNG","sha256":"490ac93a452b8615d9a954d95b342f7d119eccf4904b12e54a442694d63caa21","instrument":"USD/JPY","timeframe":"3m"},
+  {"file":"IMG_6286.PNG","sha256":"1f7206aa43a28480f85d2a2f147c17f3cfe7f1acb90a594178de7ae2dc13a054","instrument":"EUR/USD","timeframe":"15m"},
+  {"file":"IMG_6287.PNG","sha256":"06ca1aeef1d0004875071d00dc2855bd56ad637dbdac1d8733b254c73dc57a6b","instrument":"CHF/JPY","timeframe":"5m"},
+  {"file":"IMG_6288.PNG","sha256":"bffdb1f3117827acc36674def0ffdbf3f423db11c0347c97cc283200450a1be5","instrument":"EUR/GBP","timeframe":"1d"},
+  {"file":"IMG_6289.PNG","sha256":"ede8ed080ad1afb2432c6d5673ab9b6113f09bff460df5c4cf0a46bb5f35a39d","instrument":"US Dollar Basket","timeframe":"2h"},
+  {"file":"IMG_6290.PNG","sha256":"1c34ef7ff655ad2793416588f94cc183552db023fdeb0f414bc39e412b014333","instrument":"Bitcoin","timeframe":"3m"},
+  {"file":"IMG_6293.PNG","sha256":"80f298b5c90694031350ef0fb8d90b8ab22915fce779308dc7e0785d9228b6ba","instrument":"SpaceX (24 Hours)","timeframe":"15m"},
+  {"file":"IMG_6295.PNG","sha256":"7ac4d0f8ead9a29d17a5e9670aa63eccd9d9c6f2cbd473b57905af291268df76","instrument":"Tesla Motors Inc (24 Hours)","timeframe":"10m"}
+]
