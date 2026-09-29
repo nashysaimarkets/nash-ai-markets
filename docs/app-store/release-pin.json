@@ -1,11 +1,11 @@
 {
-  "branch": "prep/pocket-ios-1.2.14-build46",
-  "buildNumber": "46",
-  "deploymentId": "dpl_5f3aV4A8sgRVN1hqJfDQHem8soGA",
-  "iosBranch": "stage/pocket-ios-1.2.14-build46",
-  "label": "Pocket Bullseye iOS 1.2.14 build 46 staging",
+  "branch": "prep/pocket-ios-1.2.14-build47",
+  "buildNumber": "47",
+  "deploymentId": "dpl_9Aq3eKbNtPMqoN4AsRbgCzHQyCZS",
+  "iosBranch": "stage/pocket-ios-1.2.14-build47",
+  "label": "Pocket Bullseye iOS 1.2.14 build 47 staging",
   "marketingVersion": "1.2.14",
-  "revision": "91671452b627c6f4c5c72f720787f76a925a10cd",
-  "serverUrl": "https://nash-ai-markets-rj8a208bf-nash-ai-markets.vercel.app/pocket",
-  "verifiedAt": "2026-09-29T09:32:41.735Z"
+  "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
+  "serverUrl": "https://nash-ai-markets-1vkj2wrgp-nash-ai-markets.vercel.app/pocket",
+  "verifiedAt": null
 }
