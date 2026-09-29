@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-export type PocketBudgetAction = "preflight" | "analyse" | "levels" | "options-wall" | "review" | "follow-up";
+export type PocketBudgetAction = "preflight" | "analyse" | "levels" | "options-wall" | "crypto-derivatives" | "review" | "follow-up";
 
 type BudgetRule = { limit: number; windowMs: number };
 type BudgetEntry = { count: number; resetAt: number };
@@ -10,6 +10,7 @@ const RULES: Record<PocketBudgetAction, BudgetRule> = {
   analyse: { limit: 4, windowMs: 30 * 60_000 },
   levels: { limit: 6, windowMs: 30 * 60_000 },
   "options-wall": { limit: 4, windowMs: 30 * 60_000 },
+  "crypto-derivatives": { limit: 4, windowMs: 30 * 60_000 },
   review: { limit: 3, windowMs: 30 * 60_000 },
   "follow-up": { limit: 10, windowMs: 30 * 60_000 },
 };
