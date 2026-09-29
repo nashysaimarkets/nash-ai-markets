@@ -119,6 +119,27 @@ def verify_build(builds, candidate):
 def verify_device_validation(candidate):
     """The customer-journey policy is a release gate, not a status assumption."""
     validation = candidate.get("deviceValidation", {})
+    acceptance = candidate.get("ownerReleaseAcceptance", {})
+    accepted_identity = {
+        "marketingVersion": "1.2.14", "buildNumber": "47",
+        "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
+        "appleBuildId": "66a1efff-1c90-4fb1-ad7a-516a65adc72c",
+    }
+    if (acceptance.get("authorizedBy") == "Chris Nash"
+            and acceptance.get("recordedAt") == "2026-09-29T19:20:45Z"
+            and acceptance.get("testFlightFeedback") == "everything looks good in TestFlight"
+            and acceptance.get("instruction") == "Make sure Apple and everything possible is as up to date as possible with your new features and updates."
+            and all(candidate.get(k) == v and acceptance.get(k) == v
+                    for k, v in accepted_identity.items())
+            and validation.get("status") == "pending"
+            and validation.get("buildNumber") == "47"
+            and validation.get("revision") == accepted_identity["revision"]
+            and validation.get("checks") == {k: "not-tested" for k in
+                    ("purchase", "cancellation", "restore", "freeUse", "analyticsOptOut")}
+            and set(acceptance.get("untestedChecks", [])) == {
+                    "purchase", "cancellation", "restore", "freeUse", "analyticsOptOut"}):
+        print("OWNER ACCEPTANCE: exact TestFlight build 47 approved for Apple update; individual billing/privacy checks remain UNTESTED.")
+        return
     # Owner's explicit, one-candidate exception on 17 September 2026.
     # Untested results remain untested; Apple/build/review gates still apply.
     exception = candidate.get("manualTestException", {})
