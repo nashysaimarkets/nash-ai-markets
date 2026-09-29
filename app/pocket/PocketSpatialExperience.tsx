@@ -130,19 +130,11 @@ export default function PocketSpatialExperience({ scanning = false }: { scanning
     sync(); document.addEventListener("visibilitychange", sync);
     return () => document.removeEventListener("visibilitychange", sync);
   }, [enabled]);
-  const toggleMotion = () => {
-    const next = !motion; setMotion(next);
-    try { localStorage.setItem(MOTION_KEY, next ? "on" : "off"); } catch {}
-  };
   return <>
     <div ref={backdropRef} className="psSpatialBackdrop" aria-hidden="true">
       <div className="psNebula" /><div className="psAtmosphere" />
       <StarVolume enabled={enabled} scanning={scanning} />
       <div className="psSpatialHorizon" /><div className="psSpaceVignette" />
     </div>
-    <button type="button" className="psMotionControl" onClick={toggleMotion} aria-pressed={enabled} aria-label={reduced ? "Background motion disabled by your device settings" : enabled ? "Pause background motion" : "Enable background motion"} disabled={reduced}>
-      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">{enabled ? <path d="M7 5v10M13 5v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/> : <path d="m7 4 9 6-9 6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>}</svg>
-      <span>MOTION {enabled ? "ON" : "OFF"}</span>
-    </button>
   </>;
 }
