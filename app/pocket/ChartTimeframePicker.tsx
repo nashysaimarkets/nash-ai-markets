@@ -35,10 +35,11 @@ export default function ChartTimeframePicker({ charts, activeId, pendingId, disa
   const close = () => { setOpen(false); trigger.current?.focus(); };
   // Keep the fixed control outside the scrolling/animated result surface. On iOS,
   // a transformed ancestor makes position:fixed relative to that ancestor.
-  return mounted ? createPortal(<>
-    <button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+  const triggerButton = <button ref={trigger} className="psTimeframeFab" type="button" aria-label={`Choose chart and timeframe. ${label}, chart ${activeIndex + 1} of ${charts.length}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
       <span aria-hidden="true">CHARTS</span><strong aria-hidden="true">{label}</strong><span className="psTimeframeChevron" aria-hidden="true">⌃</span>
-    </button>
+    </button>;
+  return mounted ? createPortal(<>
+    {triggerButton}
     {open && <div className="psTimeframeBackdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <div ref={dialog} className="psTimeframeSheet" role="dialog" aria-modal="true" aria-labelledby="ps-timeframe-title">
         <header><div><small>YOUR UPLOADED CHARTS</small><h2 id="ps-timeframe-title">Chart / timeframe</h2></div><button className="psTimeframeClose" type="button" onClick={close} aria-label="Close chart choices">×</button></header>
@@ -50,5 +51,5 @@ export default function ChartTimeframePicker({ charts, activeId, pendingId, disa
         {pendingId ? <p role="status">The selected chart is preparing. Other ready charts remain available.</p> : null}
       </div>
     </div>}
-  </>, document.body) : null;
+  </>, document.body) : triggerButton;
 }
