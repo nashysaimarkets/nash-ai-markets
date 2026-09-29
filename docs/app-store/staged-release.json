@@ -1,1 +1,21 @@
-{}
+{
+  "appId": "6806004581",
+  "marketingVersion": "1.2.14",
+  "predecessorVersion": "1.2.13",
+  "buildNumber": "45",
+  "revision": "e802a79538dd5d035fb85a7404b9e976805c7e3a",
+  "appleBuildId": "b066718c-5093-4193-b896-0d580119339e",
+  "codemagicBuildId": "6abb60ac083ff0a9a53a4d48",
+  "deviceValidation": {
+    "status": "pending",
+    "buildNumber": "45",
+    "revision": "e802a79538dd5d035fb85a7404b9e976805c7e3a",
+    "checks": {
+      "purchase": "not-tested",
+      "cancellation": "not-tested",
+      "restore": "not-tested",
+      "freeUse": "not-tested",
+      "analyticsOptOut": "not-tested"
+    }
+  }
+}
