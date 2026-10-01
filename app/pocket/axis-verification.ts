@@ -1,6 +1,6 @@
 /** Pure, independently measured axis evidence. No inferred decimal repair. */
 export type AxisWord = { text:string; confidence:number; x:number; y:number; width:number; height:number };
-export type VerifiedAxis = { status:'verified'; anchors:Array<{price:number;y:number}>; matchedModelTicks:number };
+export type VerifiedAxis = { status:'verified'; anchors:Array<{price:number;y:number}>; matchedModelTicks:number; axisLeft?:number };
 export type AxisVerification = VerifiedAxis | { status:'held'; reason:string };
 
 export function exactAxisPrice(text:string):number|null {
@@ -50,5 +50,5 @@ export function verifyAxisWords(words:AxisWord[],gridPixels:number[],model:Array
  if(!Number.isFinite(slope)||slope>=0||ordered.some(a=>Math.abs(a.y-(meanY+(a.price-meanP)*slope))*height/100>1.5))return hold('Independent price labels do not establish a linear scale.');
  const matchedModelTicks=new Set(model.filter(a=>ordered.some(b=>Math.abs(a.price-b.price)<=Math.max(1e-10,Math.abs(b.price)*1e-10))).map(a=>a.price)).size;
  if(matchedModelTicks<3)return hold('The vision scan and independent price reader disagree.');
- return {status:'verified',anchors:ordered.map(({price,y})=>({price,y})),matchedModelTicks};
+ return {status:'verified',anchors:ordered.map(({price,y})=>({price,y})),matchedModelTicks,axisLeft:Math.min(...ordered.map(a=>a.x))};
 }
