@@ -38,3 +38,5 @@
 @media(max-width:420px) { .psApp .psSourceScanner { margin:10px 6px; padding:12px; }.psSourceScannerStatus>span { width:100%; margin-left:14px; }.psSourceScannerLevels { gap:6px; }.psApp .psSourceScannerLevels>button { flex-basis:100px; } }
 
 .psSourceScannerPrice { position:absolute; translate:0 -50%; pointer-events:none; padding:4px 6px; border:1px solid var(--level-tone); border-radius:3px; background:#08121fee; color:var(--level-tone); font:600 .6875rem/1.1 var(--font-geist-sans,sans-serif); font-variant-numeric:tabular-nums; max-width:45%; overflow-wrap:anywhere; }
+
+.psSourceScannerFigure { margin-inline:auto; }
