@@ -56,3 +56,17 @@ test("cancellation settles even when the transport ignores its signal", async ()
   controller.abort();
   await assert.rejects(job, { name: "AbortError" });
 });
+
+test("Safari transport failure gives a recoverable connection message without an automatic retry", async () => {
+  let calls = 0;
+  await assert.rejects(postPocketAnalysis("{}", { fetchImpl: async () => {
+    calls++; throw new TypeError("Load failed");
+  }}), /connection could not complete.*charts are still loaded/i);
+  assert.equal(calls, 1);
+});
+
+test("server error status and specific error body survive transport handling", async () => {
+  const response = await postPocketAnalysis("{}", { fetchImpl: async () => new Response('{"error":"Service capacity reached"}', { status: 503 }) });
+  assert.equal(response.status,503);
+  assert.equal((await response.json()).error,"Service capacity reached");
+});
