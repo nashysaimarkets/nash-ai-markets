@@ -9,6 +9,6 @@ const core=dirname(require.resolve('tesseract.js-core/package.json'));
 const language=dirname(require.resolve('@tesseract.js-data/eng/package.json'));
 await copyFile(join(engine,'dist/worker.min.js'),join(target,'worker.min.js'));
 for(const name of await readdir(core))if(/^tesseract-core.*\.wasm(?:\.js)?$/.test(name))await copyFile(join(core,name),join(target,'core',name));
-await copyFile(join(language,'4.0.0','eng.traineddata.gz'),join(target,'lang/eng.traineddata.gz'));
+await copyFile(join(language,'4.0.0_best_int','eng.traineddata.gz'),join(target,'lang/eng.traineddata.gz'));
 await copyFile(join(engine,'LICENSE.md'),join(target,'LICENSE-tesseract.txt'));
 console.log('Prepared same-origin OCR worker, WebAssembly cores and English model.');
