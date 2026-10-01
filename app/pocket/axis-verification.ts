@@ -19,6 +19,15 @@ export function axisWordsFromTsv(tsv:string,offset:{x:number;y:number;scale:numb
   return [{text:c.slice(11).join('\t'),confidence,x:offset.x+x/offset.scale,y:offset.y+(y+height/2)/offset.scale,width:width/offset.scale,height:height/offset.scale}];
  });
 }
+export function axisRetryColumn(words:AxisWord[],width:number):{left:number;right:number}{
+ const numeric=words.filter(w=>exactAxisPrice(w.text)!==null && w.confidence>=70 && w.height>0 && [w.x,w.width,w.height].every(Number.isFinite));
+ const groups=numeric.map(seed=>numeric.filter(w=>Math.abs(w.x-seed.x)<=Math.max(8,seed.height)));
+ const column=groups.sort((a,b)=>b.length-a.length)[0]??[];
+ if(column.length<3)return {left:Math.floor(width*.65),right:width};
+ const font=Math.max(...column.map(w=>w.height));
+ const padding=column.some(w=>/^0\d{3,}$/.test(w.text.trim()))?2:.4;
+ return {left:Math.max(Math.floor(width*.65),Math.floor(Math.min(...column.map(w=>w.x))-font*padding)),right:Math.min(width,Math.ceil(Math.max(...column.map(w=>w.x+w.width))+font*1.5))};
+}
 export function verifyAxisWords(words:AxisWord[],gridPixels:number[],model:Array<{price:number;y:number}>,height:number):AxisVerification {
  const hold=(reason:string):AxisVerification=>({status:'held',reason});
  if(!Number.isFinite(height)||height<=0||gridPixels.length<3||gridPixels.some(y=>!Number.isFinite(y)))return hold('Price grid could not be independently verified.');
