@@ -14,12 +14,12 @@ export default function InteractiveLevelScanner({ analysis, expanded = false, sc
   const { current, support, resistance, twoSided } = model;
   const [selection, setSelection] = useState<string>("current");
   const [all, setAll] = useState(false);
-  const depth = 78;
+  const [dimensional, setDimensional] = useState(false);
+  const depth = dimensional ? 38 : 0;
   const [localScenario, setLocalScenario] = useState<Scenario>("wait");
   const root = useRef<HTMLElement>(null);
   const detailId = useId();
   const scenarioId = useId();
-  const chamberId = useId().replaceAll(":", "");
   const selected = model.levels.find((level) => level.id === selection) ?? null;
   const activeScenario = scenario ?? localScenario;
   const view = scannerView(model, all);
@@ -63,45 +63,35 @@ export default function InteractiveLevelScanner({ analysis, expanded = false, sc
 
   const projectionX = depth * .23;
   const projectionY = depth * .15;
-  const selectedEntry = view.entries.find((entry) => entry.id === selection) ?? view.entries.find((entry) => entry.id === "current")!;
 
-  return <section ref={root} className={`psLevelScanner${expanded ? " psLevelScannerExpanded" : ""}`} data-visible="true" data-design="holographic" data-focus={selected?.kind ?? "current"} data-structure={twoSided ? "two-sided" : "partial"} data-scenario={activeScenario} aria-label="Bullseye Decision Map">
-    <div className="psScannerTopline"><span><em aria-hidden="true">⌁</em> Level scanner <b>{analysis.timeframe}</b></span><small>{twoSided ? "Two-sided structure" : "Partial structure"}</small></div>
+  return <section ref={root} className={`psLevelScanner${expanded ? " psLevelScannerExpanded" : ""}`} data-visible="true" data-design="professional" data-view={dimensional ? "3d" : "2d"} data-focus={selected?.kind ?? "current"} data-structure={twoSided ? "two-sided" : "partial"} data-scenario={activeScenario} aria-label="Bullseye Decision Map">
+    <div className="psScannerTopline"><span>Level scanner <b>{analysis.timeframe}</b></span><small>{twoSided ? "Two-sided structure" : "Partial structure"}</small></div>
     <div className="psScannerToolbar">
       <p>Tap a level to explore</p>
+      <div className="psScannerControls">
+      <div className="psScannerScope" role="group" aria-label="Map view">
+        <button type="button" aria-pressed={!dimensional} onClick={() => setDimensional(false)}>2D</button>
+        <button type="button" aria-pressed={dimensional} onClick={() => setDimensional(true)}>3D</button>
+      </div>
       <div className="psScannerScope" role="group" aria-label="Price range shown">
         <button type="button" aria-pressed={!all} onClick={() => changeView(false)}>Nearby</button>
         <button type="button" aria-pressed={all} onClick={() => changeView(true)}>All {model.levels.length}</button>
       </div>
+      </div>
     </div>
     {!twoSided ? <p className="psScannerPartial">{support ? "Resistance not verified" : "Support not verified"} · only available evidence is shown.</p> : null}
 
-    <div className="psScannerStage" style={{ "--scanner-height": `${view.height}px`, "--scanner-count": view.entries.length, "--scanner-selected-y": `${selectedEntry.y}%` } as CSSProperties}>
-      <div className="psHoloAtmosphere" aria-hidden="true"><i/><i/><i/></div>
-      <div className="psHoloVanishingGrid" aria-hidden="true"/>
-      <div className="psHoloWalls" aria-hidden="true"><i/><i/></div>
-      <div className="psHoloShaft" aria-hidden="true"><i/></div>
+    <div className="psScannerWorkspace">
+    <div className="psScannerStage" style={{ "--scanner-height": `${view.height}px`, "--scanner-count": view.entries.length } as CSSProperties}>
       <svg className="psScannerGeometry" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id={`${chamberId}-shaft`} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#8defff" stopOpacity="0"/><stop offset=".45" stopColor="#9eeeff" stopOpacity=".6"/><stop offset="1" stopColor="#8defff" stopOpacity="0"/></linearGradient>
-          <linearGradient id={`${chamberId}-glass`} x1="0" y1="1" x2="1" y2="0"><stop stopColor="#8dcfff" stopOpacity=".04"/><stop offset=".6" stopColor="#91d7ff" stopOpacity=".13"/><stop offset="1" stopColor="#d4f8ff" stopOpacity=".3"/></linearGradient>
-        </defs>
-        {view.ticks.map((tick, index) => <path key={index} className="psScannerGridline" d={`M 2 ${tick.y} H 95`} />)}
-        <path className="psHoloAxisGlow" d="M 23 2 V 98" style={{ stroke: `url(#${chamberId}-shaft)` }} />
-        <path className="psScannerSpine" d="M 23 2 V 98"/>
-        {view.entries.map((entry) => <g key={entry.id} className="psHoloPlane" data-kind={entry.kind} data-selected={selection === entry.id}>
-          <path className="psHoloPlateShadow" d={`M 2 ${entry.y + 2.5} H 38 L ${38 + projectionX} ${entry.y - projectionY + 2.5} H ${2 + projectionX} Z`}/>
-          <path className="psHoloPlateSide" d={`M 2 ${entry.y} H 38 L ${38 + projectionX} ${entry.y - projectionY} V ${entry.y - projectionY + 1.6} L 38 ${entry.y + 1.6} H 2 Z`}/>
-          <path className="psHoloPlateSurface" d={`M 2 ${entry.y} H 38 L ${38 + projectionX} ${entry.y - projectionY} H ${2 + projectionX} Z`} style={{ fill: `url(#${chamberId}-glass)` }}/>
-          <path className="psHoloPlateTint" d={`M 2 ${entry.y} H 38 L ${38 + projectionX} ${entry.y - projectionY} H ${2 + projectionX} Z`}/>
-          {[.2, .4, .6, .8].map((step) => <path key={step} className="psHoloMesh" d={`M ${2 + 36 * step} ${entry.y} l ${projectionX} ${-projectionY} M ${2 + projectionX * step} ${entry.y - projectionY * step} h 36`}/>)}
-          <path className="psHoloBackRim" d={`M 2 ${entry.y} l ${projectionX} ${-projectionY} h 36`}/>
-          <path className="psScannerPriceBeam" d={`M 2 ${entry.y} H 38`}/>
-          <path className="psHoloBeamFlow" d={`M 2 ${entry.y} H 38`}/>
-          <path className="psScannerLeader" d={`M 23 ${entry.y} H 38 L 49 ${entry.labelY} H 57`}/>
+        {view.ticks.map((tick, index) => <path key={index} className="psScannerGridline" d={`M 3 ${tick.y} H 97`} />)}
+        {[3, 14, 25, 36, 47].map((x) => <path key={x} className="psScannerGridline" d={`M ${x} 0 V 100`}/>)}
+        {view.entries.map((entry) => <g key={entry.id} data-kind={entry.kind} data-selected={selection === entry.id}>
+          {dimensional ? <path className="psScannerDepthPlane" d={`M 3 ${entry.y} H 40 L ${40 + projectionX} ${entry.y - projectionY} H ${3 + projectionX} Z`}/> : null}
+          <path className="psScannerPriceBeam" d={`M 3 ${entry.y} H 40`}/>
+          <path className="psScannerLeader" d={`M 40 ${entry.y} L 51 ${entry.labelY} H 55`}/>
         </g>)}
       </svg>
-      <div className="psScannerAnchors" aria-hidden="true">{view.entries.map((entry) => <i key={entry.id} data-kind={entry.kind} data-selected={selection === entry.id} style={{ top: `${entry.y}%` }}><b/><em/><span/></i>)}</div>
       <div className="psScannerLabels">{view.entries.map((entry) => <button type="button" key={entry.id} className="psScannerLevel" data-kind={entry.kind} aria-pressed={selection === entry.id} aria-controls={detailId} onClick={() => setSelection(entry.id)} style={{ top: `${entry.labelY}%` }} aria-label={`${entry.kind === "current" ? "Chart price" : entry.kind === "pivot" ? "Swing reference" : entry.kind} ${entry.price}${entry.level ? `, ${levelEvidenceSourceLabel(entry.level.source).toLowerCase()}` : ""}`}>
         <span>{entry.kind === "current" ? "Chart price" : entry.kind === "pivot" ? "Swing reference" : entry.kind === "support" ? "Support" : "Resistance"}<i aria-hidden="true">{selection === entry.id ? "●" : "+"}</i></span>
         <strong>{entry.price}</strong>
@@ -115,9 +105,10 @@ export default function InteractiveLevelScanner({ analysis, expanded = false, sc
       <div key={selection} className="psScannerDetailReveal">
         <div className="psScannerDetailHeading"><div><span>{title}</span><strong>{selected?.price ?? model.currentLabel}</strong></div><b>{selected ? `${scannerPercent(distance, current)} ${selected.value >= current ? "above" : "below"}` : `${directionLabel} read`}</b></div>
         <p>{selected ? selected.label : "Select a support, resistance or swing reference to inspect its source and distance."}</p>
-        <footer><span>{sourceLabel}</span>{selected ? <span>{distanceLabel} from chart price</span> : <span>Snapshot · not a live feed</span>}</footer>
+        <footer><span>{sourceLabel} · {analysis.timeframe}</span>{selected ? <span>{distanceLabel} from chart price</span> : <span>Snapshot · not a live feed</span>}</footer>
         {selected && sourceImage ? <SourceEvidence key={selected.id} level={selected} analysis={sourceAnalysis ?? analysis} image={sourceImage} contextImage={contextImage} /> : null}
       </div>
+    </div>
     </div>
 
     <nav className="psScannerScenarios" aria-label="Explore Decision Map scenarios">{([
