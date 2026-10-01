@@ -24,3 +24,19 @@ test('blank charts, vertical rules, missing pixels and invalid bounds provide no
  assert.deepEqual(chartGridRows({data:new Uint8ClampedArray(),width:120,height:480},bounds),[]);
  assert.deepEqual(chartGridRows(raster([80,240,400]),{...bounds,right:NaN}),[]);
 });
+
+test('dotted and dashed rules on light and dark themes retain original pixel centres',()=>{
+ for(const background of [18,255])for(const period of [8,18]){
+  const image=raster([]);const contrast=background===18?70:155;
+  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+   const rule=[80,240,400].includes(y)&&x%period<(period===8?4:1);
+   image.data.set([rule?contrast:background,rule?contrast:background,rule?contrast:background,255],(y*image.width+x)*4);
+  }
+  assert.deepEqual(chartGridRows(image,bounds).map(y=>Math.round(y*image.height/100)),[80,240,400]);
+ }
+});
+test('isolated horizontal marks at opposite ends are not dotted grid evidence',()=>{
+ const image=raster([]);
+ for(const x of [7,8,9,108,109,110])image.data.set([70,70,70,255],(80*image.width+x)*4);
+ assert.deepEqual(chartGridRows(image,bounds),[]);
+});
