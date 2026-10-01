@@ -12,7 +12,7 @@ export function sourceChartLevels(analysis: Analysis, width: number, height: num
   if (!quality?.scaleReadable || !quality.candlesReadable || quality.chartReadability !== 'CLEAR'
     || quality.timeframeConfidence !== 'HIGH' || quality.instrumentConfidence !== 'HIGH'
     || !analysis.trustGate?.scaleLocked || !analysis.trustGate.identityLocked) return hold('Chart identity or price scale needs verification.');
-  if (quality.limitations.some(item => /\blog(?:arithmic)?\b|non.?linear|scale type.*(?:unknown|uncertain)/i.test(item))) return hold('This price scale is not supported for precise placement.');
+  if ((quality.limitations ?? []).some(item => /\blog(?:arithmic)?\b|non.?linear|scale type.*(?:unknown|uncertain)/i.test(item))) return hold('This price scale is not supported for precise placement.');
   const bounds = analysis.plotBounds;
   if (!bounds || !Object.values(bounds).every(Number.isFinite) || bounds.left < 0 || bounds.top < 0 || bounds.right > 100 || bounds.bottom > 100 || bounds.left >= bounds.right || bounds.top >= bounds.bottom) return hold('Candle plotting area needs verification.');
   const anchors = analysis.priceScaleAnchors ?? [];
@@ -21,7 +21,14 @@ export function sourceChartLevels(analysis: Analysis, width: number, height: num
   if (ordered.some((a,i)=>i>0 && (a.price <= ordered[i-1].price || a.y >= ordered[i-1].y))) return hold('Price-axis labels disagree.');
   const low=ordered[0], high=ordered.at(-1)!;
   if (low.y-high.y < 20) return hold('Price-axis labels are too close together to verify placement.');
-  const project=(price:number)=>low.y+(price-low.price)/(high.price-low.price)*(high.y-low.y);
+  // Fit all ticks so ordinary raster rounding at the endpoints does not bias
+  // every line. Residuals still must satisfy the original-image pixel limit.
+  const meanPrice=ordered.reduce((sum,a)=>sum+a.price,0)/ordered.length;
+  const meanY=ordered.reduce((sum,a)=>sum+a.y,0)/ordered.length;
+  const variance=ordered.reduce((sum,a)=>sum+(a.price-meanPrice)**2,0);
+  const slope=ordered.reduce((sum,a)=>sum+(a.price-meanPrice)*(a.y-meanY),0)/variance;
+  if (!Number.isFinite(slope) || slope>=0) return hold('Price-axis calibration is inconsistent.');
+  const project=(price:number)=>meanY+(price-meanPrice)*slope;
   const pixelError=(a:number,b:number)=>Math.abs(a-b)*height/100;
   if (ordered.some(a=>pixelError(project(a.price),a.y)>1.5)) return hold('Price-axis calibration is inconsistent.');
   const levels=buildLevelScanner(analysis).levels.flatMap(level=>{
