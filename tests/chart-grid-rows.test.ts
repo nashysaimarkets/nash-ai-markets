@@ -40,3 +40,12 @@ test('isolated horizontal marks at opposite ends are not dotted grid evidence',(
  for(const x of [7,8,9,108,109,110])image.data.set([70,70,70,255],(80*image.width+x)*4);
  assert.deepEqual(chartGridRows(image,bounds),[]);
 });
+test('gradient backgrounds keep each dashed row tied to its own neighbouring pixels',()=>{
+ const width=600,height=480,data=new Uint8ClampedArray(width*height*4);
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+  const background=18+x/40+y/100;
+  const tone=[80,240,400].includes(y)&&x%12<6?background+20:background;
+  data.set([tone,tone,tone,255],(y*width+x)*4);
+ }
+ assert.deepEqual(chartGridRows({data,width,height},bounds).map(y=>Math.round(y*height/100)),[80,240,400]);
+});
