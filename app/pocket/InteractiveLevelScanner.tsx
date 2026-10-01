@@ -4,6 +4,7 @@ import { useId, useState } from 'react';
 import type { Analysis } from './analysis-types';
 import { scannerDistance, scannerPercent } from './level-scanner-model';
 import { sourceChartLevels } from './source-chart-levels';
+import { chartGridRows } from './chart-grid-rows';
 import { numericLevelPrice } from './level-verification';
 
 type Scenario = 'bull' | 'wait' | 'bear';
@@ -13,23 +14,39 @@ export default function InteractiveLevelScanner({ analysis, sourceAnalysis, sour
   // The combined report may contain levels from other uploads. Only this
   // screenshot's own report can supply geometry for its overlay.
   const frame=sourceAnalysis ?? analysis;
-  const [loaded,setLoaded]=useState<{image:string;width:number;height:number}|null>(null);
+  const [loaded,setLoaded]=useState<{image:string;width:number;height:number;rows:number[]}|null>(null);
   const [visible,setVisible]=useState(true);
   const [selection,setSelection]=useState('');
   const [localScenario,setLocalScenario]=useState<Scenario>('wait');
   const detailId=useId();
   const dimensions=loaded?.image===sourceImage ? loaded : null;
-  const overlay=sourceChartLevels(frame,dimensions?.width ?? 0,dimensions?.height ?? 0);
+  const overlay=sourceChartLevels(frame,dimensions?.width ?? 0,dimensions?.height ?? 0,dimensions?.rows ?? []);
   const selected=overlay.levels.find(level=>level.id===selection) ?? overlay.levels[0];
   const current=numericLevelPrice(frame.currentPrice);
   const distance=selected && current!==null ? Math.abs(selected.value-current) : null;
   const activeScenario=scenario ?? localScenario;
   const conditions=activeScenario==='bull' ? frame.bullConfirmation || frame.nextSequence.confirmation : activeScenario==='bear' ? frame.bearConfirmation || frame.nextSequence.failure : frame.nextSequence.patience || frame.noTradeCondition;
+  function measureOriginalGrid(image: HTMLImageElement) {
+    let rows: number[] = [];
+    try {
+      if (frame.plotBounds && sourceImage) {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (context) {
+          context.drawImage(image, 0, 0);
+          rows = chartGridRows(context.getImageData(0, 0, canvas.width, canvas.height), frame.plotBounds);
+        }
+      }
+    } catch { /* No readable pixels means no overlay. */ }
+    if (sourceImage) setLoaded({ image: sourceImage, width: image.naturalWidth, height: image.naturalHeight, rows });
+  }
   return <section className={`psSourceScanner${expanded?' psSourceScannerExpanded':''}`} aria-label="Bullseye source chart levels">
     <header className="psSourceScannerHeader"><div><span>CHART LEVELS</span><h3>{frame.instrument} <b>{frame.timeframe}</b></h3></div><button type="button" aria-pressed={visible} onClick={()=>setVisible(!visible)}>{visible?'Hide levels':'Show levels'}</button></header>
     <div className="psSourceScannerStatus" role="status"><i data-ready={!overlay.reason} aria-hidden="true"/>{!sourceImage?'Original screenshot unavailable':overlay.reason ?? `${overlay.levels.length} scale-checked levels · ${overlay.anchors} axis labels`}<span>Original screenshot</span></div>
     {sourceImage ? <figure className="psSourceScannerFigure" style={dimensions ? { width: `min(100%, calc(${expanded ? 78 : 60}vh * ${dimensions.width / dimensions.height}), calc(720px * ${dimensions.width / dimensions.height}))` } : undefined}>
-      <img src={sourceImage} alt={`${frame.instrument} ${frame.timeframe} original uploaded chart`} onLoad={event=>{const image=event.currentTarget;setLoaded({image:sourceImage,width:image.naturalWidth,height:image.naturalHeight});}} onError={()=>setLoaded(null)}/>
+      <img src={sourceImage} alt={`${frame.instrument} ${frame.timeframe} original uploaded chart`} onLoad={event=>measureOriginalGrid(event.currentTarget)} onError={()=>setLoaded(null)}/>
       {visible && !overlay.reason ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Price-scale calibrated levels">{overlay.levels.map(level=><g key={level.id} data-kind={level.kind} data-selected={selected?.id===level.id}><line x1={level.x} x2={level.x2} y1={level.y} y2={level.y} vectorEffect="non-scaling-stroke"/><circle cx={level.x} cy={level.y} r=".45"/></g>)}</svg> : null}
       {visible && selected && !overlay.reason ? <span className="psSourceScannerPrice" data-kind={selected.kind} style={{top:`${selected.y}%`,right:`${100-selected.x2}%`}}>{selected.price}</span> : null}
     </figure> : <p className="psSourceScannerHold">Open the original upload to inspect its levels. No replacement chart is generated.</p>}
