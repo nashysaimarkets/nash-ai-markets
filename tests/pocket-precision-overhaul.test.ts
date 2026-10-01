@@ -58,9 +58,9 @@ test("selected-chart levels retain visible provenance on the map, cinema and res
     assert.match(surface, /data-source=\{level\.source \?\? "PRIMARY"\}/);
   }
   const scanner = await readFile(new URL("../app/pocket/InteractiveLevelScanner.tsx", import.meta.url), "utf8");
-  assert.match(scanner, /levelEvidenceSourceLabel\(selected\.source\)/);
-  assert.match(scanner, /<footer><span>\{sourceLabel\}<\/span>/);
-  assert.match(scanner, /levelEvidenceSourceLabel\(entry\.level\.source\)/);
+  assert.match(scanner, /frame=sourceAnalysis \?\? analysis/);
+  assert.match(scanner, /source only/);
+  assert.match(scanner, /Original screenshot/);
   assert.match(source, /CURRENT · PRIMARY CHART/);
 });
 
