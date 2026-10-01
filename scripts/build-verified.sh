@@ -13,6 +13,8 @@ if [[ ! -x "${vinext}" ]]; then
   exit 69
 fi
 
+node "${script_dir}/prepare-axis-ocr.mjs"
+
 echo "Running verified vinext build..."
 if command -v timeout >/dev/null; then
   timeout \
