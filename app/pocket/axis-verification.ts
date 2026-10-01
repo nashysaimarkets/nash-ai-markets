@@ -42,6 +42,14 @@ export function verifyAxisWords(words:AxisWord[],gridPixels:number[],model:Array
  // joining the price axis. Never repair OCR values to fit the model.
  const groups=candidates.map(seed=>candidates.filter(w=>Math.abs(w.x-seed.x)<=Math.max(8,seed.font)));
  const selected=groups.sort((a,b)=>b.length-a.length)[0]??[];
+ // Conflicting readings on one raster row are ambiguous evidence, even if
+ // keeping whichever word happened to arrive last would produce a good fit.
+ const pricesByRow=new Map<number,number>();
+ for(const a of selected){
+  const prior=pricesByRow.get(a.y);
+  if(prior!==undefined&&prior!==a.price)return hold('Independent price labels conflict on the same grid row.');
+  pricesByRow.set(a.y,a.price);
+ }
  const ordered=[...new Map(selected.map(a=>[a.y,a])).values()].sort((a,b)=>a.y-b.y);
  if(ordered.length<3||ordered.some((a,i)=>i>0&&a.price>=ordered[i-1].price)||ordered.at(-1)!.y-ordered[0].y<20)return hold('Independent price labels need a clearer axis.');
  const meanP=ordered.reduce((s,a)=>s+a.price,0)/ordered.length,meanY=ordered.reduce((s,a)=>s+a.y,0)/ordered.length;
