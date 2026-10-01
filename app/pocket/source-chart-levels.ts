@@ -16,7 +16,10 @@ export function sourceChartLevels(analysis: Analysis, width: number, height: num
     || quality.timeframeConfidence !== 'HIGH' || quality.instrumentConfidence !== 'HIGH'
     || !analysis.trustGate?.scaleLocked || !analysis.trustGate.identityLocked) return hold('Chart identity or price scale needs verification.');
   if ((quality.limitations ?? []).some(item => /\blog(?:arithmic)?\b|non.?linear|scale type.*(?:unknown|uncertain)/i.test(item))) return hold('This price scale is not supported for precise placement.');
-  const bounds = analysis.plotBounds;
+  const reportedBounds = analysis.plotBounds;
+  if(!reportedBounds || !Object.values(reportedBounds).every(Number.isFinite) || reportedBounds.right>100 || reportedBounds.left<0 || reportedBounds.top<0 || reportedBounds.bottom>100) return hold('Candle plotting area needs verification.');
+  const axisRight=axis?.status==='verified' && Number.isFinite(axis.axisLeft) ? axis.axisLeft!/width*100-1 : 100;
+  const bounds = reportedBounds ? {...reportedBounds,right:Math.min(reportedBounds.right,axisRight)} : null;
   if (!bounds || !Object.values(bounds).every(Number.isFinite) || bounds.left < 0 || bounds.top < 0 || bounds.right > 100 || bounds.bottom > 100 || bounds.left >= bounds.right || bounds.top >= bounds.bottom) return hold('Candle plotting area needs verification.');
   const anchors = axis?.status === 'verified' ? axis.anchors : analysis.priceScaleAnchors ?? [];
   if (axis?.status === 'verified' && new Set((analysis.priceScaleAnchors ?? []).filter(a=>anchors.some(b=>Math.abs(a.price-b.price)<=Math.max(1e-10,Math.abs(b.price)*1e-10))).map(a=>a.price)).size<3) return hold('The vision scan and independent price reader disagree.');
@@ -45,7 +48,7 @@ export function sourceChartLevels(analysis: Analysis, width: number, height: num
     const y=project(level.value);
     if (level.value<low.price || level.value>high.price || y<bounds.top || y>bounds.bottom
       || ![level.x,level.x2,level.y,level.y2].every(Number.isFinite)
-      || level.x<bounds.left || level.x2>bounds.right || level.x2<=level.x
+      || level.x<reportedBounds!.left || level.x2>reportedBounds!.right || level.x2<=level.x
       || (!axis && (pixelError(level.y,y)>2 || pixelError(level.y2,y)>2))) return [];
     return [{...level,x:bounds.left,x2:bounds.right,y,y2:y}];
   });
