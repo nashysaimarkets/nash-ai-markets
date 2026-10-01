@@ -56,3 +56,13 @@ test('owner 30-minute scan cannot pass a self-consistent scale with shifted rast
  const raster=[400,622,844,1066,1291,1513,1735,1957].map(y=>y/2556*100);
  assert.match(sourceChartLevels(report,1179,2556,raster).reason!,/original screenshot/);
 });
+
+test('independently verified rows correct model coordinate drift without changing prices',()=>{
+ const shifted={...sample,plotBounds:{...sample.plotBounds!,top:0,bottom:100},priceScaleAnchors:sample.priceScaleAnchors!.map(a=>({...a,y:a.y+1})),levels:sample.levels.map(l=>({...l,y:l.y+1,y2:l.y2+1}))};
+ const axis={status:'verified' as const,anchors:sample.priceScaleAnchors!,matchedModelTicks:sample.priceScaleAnchors!.length};
+ const result=sourceChartLevels(shifted,640,480,axis.anchors.map(a=>a.y),axis);
+ assert.equal(result.levels.length,2);for(const line of result.levels)assert.equal(line.y,sample.levels.find(l=>l.price===line.price)!.y);
+ assert.equal(sourceChartLevels(sample,640,480,axis.anchors.map(a=>a.y),null).levels.length,0);
+ assert.equal(sourceChartLevels(sample,640,480,axis.anchors.map(a=>a.y),{status:'held',reason:'OCR unavailable'}).levels.length,0);
+ assert.equal(sourceChartLevels(sample,640,480,axis.anchors.map(a=>a.y),{...axis,anchors:axis.anchors.map(a=>({...a,price:a.price*100}))}).levels.length,0);
+});
