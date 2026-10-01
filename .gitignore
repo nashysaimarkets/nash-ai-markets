@@ -44,3 +44,6 @@ audit/.env.local
 *.icloud
 **/* 2.*
 **/* 3.*
+
+# Generated same-origin OCR assets from pinned npm packages
+public/ocr/v6/
