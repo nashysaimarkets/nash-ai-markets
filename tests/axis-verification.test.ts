@@ -19,6 +19,15 @@ test('OCR TSV coordinates return to the original image after cropping and enlarg
  const tsv='level\tpage\tblock\tpar\tline\tword\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t20\t100\t60\t40\t96\t1.09505';
  const [word]=axisWordsFromTsv(tsv,{x:800,y:200,scale:2});assert.equal(word.x,810);assert.equal(word.y,260);assert.equal(word.text,'1.09505');
 });
+test('contradictory labels on one row are withheld in either OCR ordering',()=>{
+ const conflicting={...words[2],text:'111'};
+ for(const input of [[conflicting,...words],[...words,conflicting]]){
+  const result=verifyAxisWords(input,[200,300,400,500,600],model,1000);
+  assert.equal(result.status,'held');
+  if(result.status==='held')assert.match(result.reason,/conflict/);
+ }
+ assert.equal(verifyAxisWords([...words,{...words[2]}],[200,300,400,500,600],model,1000).status,'verified');
+});
 test('targeted reread expands a clipped leading zero without fabricating its decimal',()=>{
  const truncated=[0,1,2].map(i=>({text:'09505',confidence:95,x:658,y:242+i*60,width:65,height:16}));
  const crop=axisRetryColumn(truncated,790);assert.equal(crop.left,626);assert.ok(crop.right>=723);assert.equal(exactAxisPrice(truncated[0].text),9505);
