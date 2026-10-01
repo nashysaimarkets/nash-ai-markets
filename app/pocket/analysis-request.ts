@@ -1,4 +1,4 @@
-import { withDeadline } from "./async-deadline";
+import { withDeadline, throwIfCancelled } from "./async-deadline";
 
 // Stay just beyond the server's 300-second function boundary so the browser
 // receives the server's specific outcome instead of aborting a valid request.
@@ -19,6 +19,9 @@ export function pocketAnalysisCountdownLabel(totalSeconds: number) {
   return `${stage} · UP TO ${formatPocketAnalysisCountdown(totalSeconds)} REMAINING`;
 }
 
+export const POCKET_ANALYSIS_CONNECTION_MESSAGE =
+  "The connection could not complete this analysis. Your charts are still loaded. Open the preview in Safari and tap Analyse Chart to retry.";
+
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
 export async function postPocketAnalysis(
@@ -27,15 +30,21 @@ export async function postPocketAnalysis(
 ): Promise<Response> {
   const fetchImpl = options.fetchImpl ?? fetch;
   return withDeadline(async (signal) => {
-    const response = await fetchImpl("/api/pocket/analyse", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body,
-      signal,
-    });
-    // fetch() resolves at headers. Keep the deadline until ALL bytes arrive.
-    const text = await response.text();
-    signal.throwIfAborted();
-    return new Response(text, { status: response.status, statusText: response.statusText, headers: response.headers });
+    try {
+      const response = await fetchImpl("/api/pocket/analyse", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body,
+        signal,
+      });
+      // fetch() resolves at headers. Keep the deadline until ALL bytes arrive.
+      const text = await response.text();
+      throwIfCancelled(signal);
+      return new Response(text, { status: response.status, statusText: response.statusText, headers: response.headers });
+    } catch (error) {
+      throwIfCancelled(signal);
+      if (error instanceof TypeError) throw new Error(POCKET_ANALYSIS_CONNECTION_MESSAGE);
+      throw error;
+    }
   }, options.timeoutMs ?? POCKET_ANALYSIS_CLIENT_TIMEOUT_MS, POCKET_ANALYSIS_TIMEOUT_MESSAGE, options.signal);
 }
