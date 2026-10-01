@@ -5,7 +5,7 @@ import { buildLevelScanner } from './level-scanner-model';
  * Coordinates belong to this image only. Never clamp or extrapolate a price.
  * These checks establish internal scale consistency, not independent OCR truth.
  */
-export function sourceChartLevels(analysis: Analysis, width: number, height: number) {
+export function sourceChartLevels(analysis: Analysis, width: number, height: number, gridRows: number[] = []) {
   const hold = (reason: string) => ({ reason, levels: [], anchors: 0 });
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return hold('Loading original chart…');
   const quality = analysis.evidenceQuality;
@@ -30,6 +30,11 @@ export function sourceChartLevels(analysis: Analysis, width: number, height: num
   if (!Number.isFinite(slope) || slope>=0) return hold('Price-axis calibration is inconsistent.');
   const project=(price:number)=>meanY+(price-meanPrice)*slope;
   const pixelError=(a:number,b:number)=>Math.abs(a-b)*height/100;
+  if (gridRows.length<3 || gridRows.some(y=>!Number.isFinite(y))) return hold('Screenshot grid rows could not be verified.');
+  // A self-consistent model scale may still be shifted or stretched. Each
+  // reported axis tick must align with a separately measured raster row.
+  const matches=ordered.map(a=>gridRows.reduce((best,y)=>pixelError(a.y,y)<pixelError(a.y,best)?y:best,gridRows[0]));
+  if(new Set(matches).size!==ordered.length || ordered.some((a,i)=>pixelError(a.y,matches[i])>2)) return hold('Reported price ticks do not align with the original screenshot.');
   if (ordered.some(a=>pixelError(project(a.price),a.y)>1.5)) return hold('Price-axis calibration is inconsistent.');
   const levels=buildLevelScanner(analysis).levels.flatMap(level=>{
     if ((level.source ?? 'PRIMARY') !== 'PRIMARY' || !['support','resistance','pivot'].includes(level.kind)) return [];
