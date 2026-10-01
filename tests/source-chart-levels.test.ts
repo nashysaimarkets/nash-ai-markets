@@ -66,3 +66,8 @@ test('independently verified rows correct model coordinate drift without changin
  assert.equal(sourceChartLevels(sample,640,480,axis.anchors.map(a=>a.y),{status:'held',reason:'OCR unavailable'}).levels.length,0);
  assert.equal(sourceChartLevels(sample,640,480,axis.anchors.map(a=>a.y),{...axis,anchors:axis.anchors.map(a=>({...a,price:a.price*100}))}).levels.length,0);
 });
+test('verified OCR column bounds stop overlays before price labels',()=>{
+ const axis={status:'verified' as const,anchors:sample.priceScaleAnchors!,matchedModelTicks:4,axisLeft:500};
+ const result=sourceChartLevels(sample,640,480,axis.anchors.map(a=>a.y),axis);assert.equal(result.levels.length,2);
+ assert.ok(result.levels.every(l=>l.x2<=500/640*100-1));
+});
