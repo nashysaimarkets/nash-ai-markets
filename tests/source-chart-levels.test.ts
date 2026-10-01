@@ -29,3 +29,16 @@ test('source geometry, price coverage and report identity fail closed without cl
 test('all five timeframes retain their own screenshot coordinates and precision',()=>{
  for(const chart of createSampleCharts()){const report=chart.report!;const result=resolve(report);assert.equal(result.levels.length,2);for(const l of result.levels){const original=report.levels.find(o=>o.price===l.price)!;assert.ok(Math.abs(l.y-original.y)<1e-10);}}
 });
+
+test('real IG screenshot tick positions pass raster rounding checks without moving onto indicator panels',()=>{
+ // Owner archive IMG_6272.PNG (944x2048). Prices read from the axis;
+ // row centres measured from its horizontal grid pixels. Tests placement only.
+ const ticks=[[7760,258],[7740,337],[7720,414],[7700,493.5],[7680,570.5],[7660,647],[7640,726.5],[7620,803.5]];
+ const report={...sample,instrument:'US 500',timeframe:'30m',currentPrice:'7718.49',plotBounds:{left:0,top:250/2048*100,right:81,bottom:810/2048*100},priceScaleAnchors:ticks.map(([price,y])=>({price,y:y/2048*100})),levels:[{...sample.levels[0],kind:'support' as const,price:'7660',x:1,x2:80,y:647/2048*100,y2:647/2048*100}]};
+ const result=sourceChartLevels(report,944,2048);assert.equal(result.reason,null);assert.equal(result.levels.length,1);assert.ok(Math.abs(result.levels[0].y*2048/100-647)<1.5);
+});
+test('narrow forex prices retain their exact labels and distinct calibrated rows',()=>{
+ const y=(p:number)=>90-(p-1.172)/.002*80;
+ const report={...sample,currentPrice:'1.17234',plotBounds:{left:5,right:90,top:5,bottom:95},priceScaleAnchors:[1.172,1.173,1.174].map(price=>({price,y:y(price)})),levels:[{...sample.levels[0],price:'1.17230',x:5,x2:90,y:y(1.17230),y2:y(1.17230)},{...sample.levels[1],price:'1.17238',x:5,x2:90,y:y(1.17238),y2:y(1.17238)}]};
+ const result=sourceChartLevels(report,640,480);assert.equal(result.levels.length,2);assert.deepEqual(result.levels.map(l=>l.price),['1.17238','1.17230']);assert.notEqual(result.levels[0].y,result.levels[1].y);
+});
