@@ -1,8 +1,9 @@
+import type { CandlePixels } from './candle-pixels';
 import type { AxisVerification } from './axis-verification';
 import { parseLiquidityCurrentPrice, type LiquidityShield, type LiquidityPlotBounds, type LiquidityScaleAnchor, type ProjectedLiquidityZone } from './liquidity-guard';
 
 /** Prices come from the source report; placement comes only from independent pixels. */
-export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPrice:string|undefined,model:LiquidityScaleAnchor[],bounds:LiquidityPlotBounds|undefined,axis:AxisVerification|null,width:number,height:number){
+export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPrice:string|undefined,model:LiquidityScaleAnchor[],bounds:LiquidityPlotBounds|undefined,axis:AxisVerification|null,width:number,height:number,pixels:CandlePixels|null=null){
  const hold=(reason:string)=>({zones:[] as ProjectedLiquidityZone[],reason});
  if(!axis)return hold('Verifying the original price labels…');
  if(axis.status==='held')return hold(axis.reason);
@@ -21,6 +22,7 @@ export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPr
  if(shield?.status!=='VISIBLE_RISK_ZONES'||!Array.isArray(shield.zones))return hold('No drawable stop-risk candidates.');
  const right=Math.min(bounds.right,axis.axisLeft===undefined?bounds.right:axis.axisLeft/width*100-1);
  if(!Number.isFinite(right)||right<=bounds.left)return hold('Price-label column needs verification.');
+ if(!pixels||pixels.width!==width||pixels.height!==height)return hold('Original candle pixels need independent verification.');
  const zones:ProjectedLiquidityZone[]=[];
  for(const zone of shield.zones){
   if(zone.confidence!=='HIGH'||!covered(zone.priceLow)||!covered(zone.priceHigh)||zone.priceHigh<zone.priceLow)continue;
@@ -28,11 +30,25 @@ export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPr
   const top=y(zone.priceHigh),bottom=y(zone.priceLow),heightPercent=bottom-top;
   if(top<bounds.top||bottom>bounds.bottom||heightPercent>(bounds.bottom-bounds.top)*.12)continue;
   if(!Array.isArray(zone.touchPoints)||zone.touchPoints.some(p=>![p.x,p.y].every(Number.isFinite)||p.x<bounds.left||p.x>right||p.y<top-2/height*100||p.y>bottom+2/height*100))continue;
-  const touches=zone.touchPoints.filter((p,i,all)=>all.findIndex(q=>Math.abs(p.x-q.x)*width/100<3)===i);
-  if(touches.length<2)continue;
+  // Associate by the reported location inside a component. Never search for a candle
+  // simply because its endpoint happens to fit the proposed price band.
+  const used=new Set<number>(),touches:typeof zone.touchPoints=[];
+  let supported=true;
+  for(const point of zone.touchPoints){
+   const px=point.x*width/100,py=point.y*height/100;
+   const candidates=pixels.candles.filter(c=>px>=c.left-2&&px<=c.right+2&&py>=c.highY-2&&py<=c.lowY+2);
+   if(candidates.length!==1){supported=false;break;}
+   const candle=candidates[0];
+   const edge=zone.pattern==='EQUAL_HIGHS'?'high':zone.pattern==='EQUAL_LOWS'?'low':zone.side==='ABOVE_PRICE'?'high':zone.side==='BELOW_PRICE'?'low':null;
+   if(!edge||(edge==='high'&&zone.side==='BELOW_PRICE')||(edge==='low'&&zone.side==='ABOVE_PRICE')){supported=false;break;}
+   const endpoint=edge==='high'?candle.highY:candle.lowY,wick=edge==='high'?candle.upperWick:candle.lowerWick;
+   if(!wick||used.has(candle.id)||Math.abs(endpoint-py)>2||endpoint<top*height/100-2||endpoint>bottom*height/100+2||candle.x<bounds.left*width/100||candle.x>right*width/100){supported=false;break;}
+   used.add(candle.id);touches.push({x:candle.x/width*100,y:endpoint/height*100});
+  }
+  if(!supported||touches.length<2||touches.some((p,i)=>touches.slice(0,i).some(q=>Math.abs(p.x-q.x)*width/100<3)))continue;
   // Keep the exact price interval. A zero-width price band stays a line;
   // never enlarge it to make a visually impressive pool.
   zones.push({...zone,touchPoints:touches,lineY:(top+bottom)/2,top,height:heightPercent,left:bounds.left,right});
  }
- return zones.length?{zones,reason:null}:hold('Candidates did not pass the price, side and touch-row checks.');
+ return zones.length?{zones,reason:null}:hold('Candidates did not pass the price, side and independent wick-pixel checks.');
 }
