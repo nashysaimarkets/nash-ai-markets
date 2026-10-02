@@ -547,7 +547,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(commandStyles, /\.psXRayPatterns/);
   assert.match(client, /pattern\.geometry/);
   assert.match(client, /psXRayPatternLabels/);
-  assert.match(client, /1 FOCUSED TOOL/);
+  assert.match(client, /PIXEL-CHECKED/);
   assert.match(client, /drawablePatterns/);
   assert.doesNotMatch(client, /visualAreas/);
   assert.match(client, /psClarityClassic/);
