@@ -96,6 +96,17 @@ test("a missing Liquidity Guard result reports unavailable without covering the 
   assert.doesNotMatch(html, /psLiquidityVector/);
 });
 
+test("insufficient evidence explains the completed hold instead of claiming OCR is still running", () => {
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
+    ...base,
+    liquidityShield: {status:"INSUFFICIENT_EVIDENCE",summary:"No readable current-price marker is visible.",zones:[],stopGuidance:"Verify the source."},
+  }}/>);
+  assert.match(html, /OVERLAY WITHHELD/);
+  assert.match(html, /No readable current-price marker is visible/);
+  assert.doesNotMatch(html, /Verifying the original price labels/);
+  assert.doesNotMatch(html, /<svg/);
+});
+
 test("a Liquidity Guard request failure remains visible on the result screen", () => {
   const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base} onRescan={() => undefined} errorMessage="The chart check timed out. Please retry."/>);
   assert.match(html, /role="alert"/);
