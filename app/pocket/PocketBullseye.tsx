@@ -638,7 +638,7 @@ function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macro
     effectiveLiquidity.evidenceQuality,
   );
   const liquidityState = liquidityZones.length
-    ? { state: "found", badge: `${liquidityZones.length} FOUND`, title: `${liquidityZones.length} VISIBLE STOP-RISK ${liquidityZones.length === 1 ? "ZONE" : "ZONES"}`, detail: effectiveLiquidity.liquidityShield?.summary || "Scale-checked candle reactions were found and marked on the uploaded chart." }
+    ? { state: "found", badge: `${liquidityZones.length} CANDIDATE${liquidityZones.length === 1 ? "" : "S"}`, title: `${liquidityZones.length} REPORTED STOP-RISK ${liquidityZones.length === 1 ? "AREA" : "AREAS"}`, detail: "Reported candle clusters. Open the map to check placement against the original price labels." }
     : effectiveLiquidity.liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
       ? { state: "clear", badge: "SCAN COMPLETE", title: "NO CLEAR LIQUIDITY CLUSTER", detail: "The chart was checked, but no defensible repeated stop-risk cluster was visible." }
       : { state: "withheld", badge: "NOT VERIFIED", title: "LIQUIDITY OVERLAY WITHHELD", detail: effectiveLiquidity.liquidityShield?.summary || "The chart or price scale was not precise enough to mark a zone safely." };
