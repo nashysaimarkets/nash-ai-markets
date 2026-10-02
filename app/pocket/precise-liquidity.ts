@@ -1,0 +1,38 @@
+import type { AxisVerification } from './axis-verification';
+import { parseLiquidityCurrentPrice, type LiquidityShield, type LiquidityPlotBounds, type LiquidityScaleAnchor, type ProjectedLiquidityZone } from './liquidity-guard';
+
+/** Prices come from the source report; placement comes only from independent pixels. */
+export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPrice:string|undefined,model:LiquidityScaleAnchor[],bounds:LiquidityPlotBounds|undefined,axis:AxisVerification|null,width:number,height:number){
+ const hold=(reason:string)=>({zones:[] as ProjectedLiquidityZone[],reason});
+ if(!axis)return hold('Verifying the original price labels…');
+ if(axis.status==='held')return hold(axis.reason);
+ if(!bounds||![width,height,...Object.values(bounds)].every(Number.isFinite)||width<=0||height<=0||bounds.left<0||bounds.top<0||bounds.right>100||bounds.bottom>100||bounds.left>=bounds.right||bounds.top>=bounds.bottom)return hold('Original chart bounds need verification.');
+ const anchors=[...axis.anchors].sort((a,b)=>a.y-b.y);
+ if(anchors.length<3||anchors.some((a,i)=>!Number.isFinite(a.price)||a.price<=0||!Number.isFinite(a.y)||a.y<bounds.top||a.y>bounds.bottom||(i>0&& (a.y<=anchors[i-1].y||a.price>=anchors[i-1].price)))||anchors.at(-1)!.y-anchors[0].y<20)return hold('Independent price scale needs verification.');
+ const matches=new Set(model.filter(a=>anchors.some(b=>Math.abs(a.price-b.price)<=Math.max(1e-10,b.price*1e-10))).map(a=>a.price));
+ if(matches.size<3)return hold('The source scan and independent price reader disagree.');
+ const mp=anchors.reduce((s,a)=>s+a.price,0)/anchors.length,my=anchors.reduce((s,a)=>s+a.y,0)/anchors.length;
+ const slope=anchors.reduce((s,a)=>s+(a.price-mp)*(a.y-my),0)/anchors.reduce((s,a)=>s+(a.price-mp)**2,0);
+ const y=(p:number)=>my+(p-mp)*slope;
+ if(!Number.isFinite(slope)||slope>=0||anchors.some(a=>Math.abs(y(a.price)-a.y)*height/100>1.5))return hold('Independent price labels do not establish a precise linear scale.');
+ const covered=(p:number)=>Number.isFinite(p)&&p>=anchors.at(-1)!.price&&p<=anchors[0].price;
+ const current=parseLiquidityCurrentPrice(currentPrice);
+ if(current===null||!covered(current))return hold('Current price is outside the verified scale.');
+ if(shield?.status!=='VISIBLE_RISK_ZONES'||!Array.isArray(shield.zones))return hold('No drawable stop-risk candidates.');
+ const right=Math.min(bounds.right,axis.axisLeft===undefined?bounds.right:axis.axisLeft/width*100-1);
+ if(!Number.isFinite(right)||right<=bounds.left)return hold('Price-label column needs verification.');
+ const zones:ProjectedLiquidityZone[]=[];
+ for(const zone of shield.zones){
+  if(zone.confidence!=='HIGH'||!covered(zone.priceLow)||!covered(zone.priceHigh)||zone.priceHigh<zone.priceLow)continue;
+  if(zone.side==='ABOVE_PRICE'?zone.priceLow<=current:zone.side==='BELOW_PRICE'?zone.priceHigh>=current:zone.side==='AT_PRICE'?current<zone.priceLow||current>zone.priceHigh:true)continue;
+  const top=y(zone.priceHigh),bottom=y(zone.priceLow),heightPercent=bottom-top;
+  if(top<bounds.top||bottom>bounds.bottom||heightPercent>(bounds.bottom-bounds.top)*.12)continue;
+  if(!Array.isArray(zone.touchPoints)||zone.touchPoints.some(p=>![p.x,p.y].every(Number.isFinite)||p.x<bounds.left||p.x>right||p.y<top-2/height*100||p.y>bottom+2/height*100))continue;
+  const touches=zone.touchPoints.filter((p,i,all)=>all.findIndex(q=>Math.abs(p.x-q.x)*width/100<3)===i);
+  if(touches.length<2)continue;
+  // Keep the exact price interval. A zero-width price band stays a line;
+  // never enlarge it to make a visually impressive pool.
+  zones.push({...zone,touchPoints:touches,lineY:(top+bottom)/2,top,height:heightPercent,left:bounds.left,right});
+ }
+ return zones.length?{zones,reason:null}:hold('Candidates did not pass the price, side and touch-row checks.');
+}
