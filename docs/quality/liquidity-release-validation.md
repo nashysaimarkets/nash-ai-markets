@@ -44,3 +44,8 @@ All 21 render tests, TypeScript check and verified build passed. The previous un
 3. Representative fresh end-to-end browser scans including PNG/JPEG and timeout recovery.
 4. Actual iPhone/iPad WebView execution. This workspace is Linux without Xcode or an iOS simulator; browser checks cannot substitute for native-device verification.
 5. Check the live Apple state via the read-only release-status workflow before any publishing run, and preserve any submission in review.
+
+
+## Conservative wick gate follow-up
+
+The experimental probe has now become an additional fail-closed requirement in preview only (`66eeb523660d3c111ac0cee01e6e284e0a76988c`); it does not replace the price-axis checks or weaken any threshold. See `liquidity-precision-checkpoint.md` for supported styles, matching limits and original-pixel evidence. All 1,112 unit tests, 21 render tests, TypeScript check, verified build and rendered-artifact test pass. A new live IG 4h browser scan took 27.8s, preserved six calibrated levels/11 labels, and withheld both reported liquidity candidates with zero SVGs and the completed independent-wick explanation. A successful live positive liquidity band and native execution are still not verified. Release remains HOLD.
