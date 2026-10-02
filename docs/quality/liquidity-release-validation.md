@@ -33,6 +33,10 @@ For a HIGH-identity, CLEAR chart with INSUFFICIENT_EVIDENCE, the component skipp
 
 A local colour-connected candle probe was checked on the original IG 4h and public MetaTrader images. It confirms that model touch coordinates cannot be treated as independently verified candle endpoints. On the archived MetaTrader report, purported aligned lows at the reported x columns terminate at different actual pixel rows. On IG, connected neighbouring candle bodies can merge and make simple component extraction ambiguous. This probe is not sufficiently general to replace the production gate, and its results do not establish order-book liquidity. Do not relax thresholds or manufacture a positive overlay to pass the test.
 
+## Checks after the status fix
+
+All 21 render tests, TypeScript check and verified build passed. The previous unchanged unit baseline remains 1,104 passing tests. Preview deployment bcd6d3d4354b7c46a9783d48f35555a7c9c82771 is READY.
+
 ## Remaining release gates
 
 1. Independently supported candle-touch extraction, with clear positive and negative real-chart references; reject ambiguous/obscured styles.
