@@ -15,10 +15,21 @@ Four new attachments (IMG_6891–6894.jpeg) are readable locally. They are scree
 
 ## Validation
 
-1,116 unit tests (concurrency four), 22 render tests, TypeScript check, verified build and rendered-artifact test passed. An initial unrestricted unit run ended without a complete summary, so it was not counted as a pass; a complete bounded-concurrency run supplied the recorded result. No price thresholds or liquidity gates were relaxed.
+1,117 unit tests (concurrency four), 22 render tests, TypeScript check, verified build and rendered-artifact test passed. An initial unrestricted unit run ended without a complete summary, so it was not counted as a pass; a complete bounded-concurrency run supplied the recorded result. No price thresholds or liquidity gates were relaxed.
 
 The revised original IG 4h pixel probe still finds only 17 conservative components; this is not a candle-recall measurement. The underlying liquidity detection/false-negative problem is NOT proven fixed. Proper endpoint extraction on compressed, touching and unsupported candle styles and genuine positive live overlays remain work in progress. Do not claim permanent accuracy or production readiness from these tests.
 
 ## Remaining work
 
 Obtain the customer's original 15m/1h/daily inputs and scan reports; distinguish absent AI candidates, confidence/side rejection, price-band mismatch and component/touch association failure with exact receipts. Add independently annotated real positive/negative examples before changing candidate reconstruction. Verify successful live overlays, source switching and native iPhone/iPad execution. Do not retry scans until they happen to pass or draw inferred bands simply to populate the UI.
+
+
+## Diagnostic and browser follow-up
+
+Latest implementation commit: `aaa9ccf9891040d53acb3934659d027dd7bf4f8a`.
+
+Each rejected liquidity candidate now has a specific explanation: confidence requirement, incomplete independently read scale coverage, wrong price side, excessive band extent, touch-row disagreement or missing distinct pixel endpoint witnesses. Global reader/identity holds retain their own explanation. Pattern summaries separate reported interpretations from pixel-checked drawings instead of reporting zero visible patterns when only geometry was withheld.
+
+Actual browser scan on preview `f721a94d` used the older original daily IG chart, not the new result screenshots. It completed in 37.1s, independently read nine labels and drew four levels. It reported a HIGH high-cluster candidate at 7780–7815 and a MEDIUM/AMBIGUOUS rectangle/range. The liquidity band stayed withheld, while the new reported-candidate panel displayed its range and evidence. Pattern X-Ray withheld the unverified path, retained the reported interpretation and displayed the original unaltered chart in the quieter layout. This is negative-path verification, not proof of accurate positive detection or the customer's exact new inputs.
+
+Two browser file-upload calls took unusually long (roughly five and eight minutes) while ordinary navigation and result controls responded normally. Do not attribute that to the application's scan API latency: the recorded first analysis audit was 37.1s. A notebook export displayed its prepared notification, but this browser did not deliver a download event/path; no exported scan receipt was claimed saved. The most recent diagnostic preview opened and its daily preflight identified US 500 (DFB), 1d and 7670.47. No repeated upload should be used to force a passing result.
