@@ -1,10 +1,12 @@
 "use client";
 import {axisWordsFromTsv,axisRetryColumn,verifyAxisWords,type AxisVerification,type AxisWord} from './axis-verification';
 import type {Worker} from 'tesseract.js';
+import {createSharedAxisReader} from './axis-reader-cache';
 
 type Bounds={left:number;right:number;top:number;bottom:number};
+export const verifyOriginalAxis=createSharedAxisReader(readOriginalAxis);
 /** The original pixels stay on this device. OCR assets are served by this app. */
-export async function verifyOriginalAxis(image:HTMLImageElement,bounds:Bounds,gridRows:number[],model:Array<{price:number;y:number}>,signal:AbortSignal):Promise<AxisVerification>{
+async function readOriginalAxis(image:HTMLImageElement,bounds:Bounds,gridRows:number[],model:Array<{price:number;y:number}>,signal:AbortSignal):Promise<AxisVerification>{
  let worker:Worker|undefined;let stopped=false;let timer:ReturnType<typeof setTimeout>|undefined;let onAbort:(()=>void)|undefined;
  const stop=()=>{stopped=true;void worker?.terminate().catch(()=>{});};
  const deadline=new Promise<never>((_,reject)=>{
