@@ -38,3 +38,9 @@ test('a distant annotation at the same x cannot become a wick witness',()=>{
  const r=preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,{...pixels,candles:[...pixels.candles,annotation]});assert.equal(r.zones.length,1);
  const wrong={...shield,zones:[{...zone,touchPoints:[{x:25,y:10},{x:55,y:10}]}]};assert.equal(check(wrong).zones.length,0);
 });
+
+
+test('held candidates identify a scale-coverage failure separately from a candle match failure',()=>{
+ const outside=check({...shield,zones:[{...zone,priceHigh:3010}]});assert.match(outside.candidateReasons[0].reason,/complete price band.*2800–3000/);
+ const displaced=preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,{...pixels,candles:pixels.candles.map(c=>({...c,lowY:670}))});assert.match(displaced.candidateReasons[0].reason,/distinct original candle wick endpoint/);
+});
