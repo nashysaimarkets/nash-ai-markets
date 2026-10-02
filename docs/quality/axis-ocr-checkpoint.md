@@ -30,3 +30,12 @@ Full private responses and original customer images are not committed. Scratch e
 5. Product success means both usable precise overlays and safe withholding. Do not describe fail-closed-only results as 100% accuracy or claim trading usefulness.
 
 Current local repo: /workspace/scratch/6b4ca5b00226/pocket-redesign. Original owner files: ../upload/IMG_6871.png through IMG_6876.png. Scratch may expire; code and this checkpoint are persisted on GitHub. Public images can be retrieved from prototype/chart-extraction/cross-platform-sources.json if needed. Keep images/receipts out of public GitHub.
+
+## Resume evidence — 2 October 2026
+
+- Saved safety fix commits b73c07740cd2bd68249f5f108f9d61a4761b8add and 3c96fab5b6f846cbf8e251d7e6a4dd87ac84f7f7: conflicting OCR prices bound to one raster row now withhold the overlay regardless of OCR order. Exact duplicate readings remain allowed. Focused tests 22/22 passed.
+- Final local typecheck and build passed. A scratch-only obsolete .mts benchmark was renamed .mts.saved; no application type rules were weakened.
+- Repeated the 24 local variant cases after the fix: unchanged 20 verified axes, 15/18 owner IG variants display, estimated maximum displayed error 1.03 original-image pixels.
+- Diagnosed held-axis residuals: IG15m smallJPEG70 1.741px; IG4h JPEG85 1.551px; IG4h smallJPEG70 1.922px; Robinhood JPEG85 1.944px. Strict 1.5px fit tolerance retained. Correct OCR values do not establish precise placement when raster positions are inconsistent. No outlier deletion or invented price repair added.
+- Corrected-asset preview 8acfaf6629ac666dc75390779944c44d92189796 completed an actual browser scan of the owner30m chart after one AI-service timeout. Successful retry displayed 3 levels (7700,7680,7660), 8 axis labels. Audit displayed27.4s. Original image1179x2556, SVG viewBox0 0 100 100; y rows41.74338645383739,50.45357281824345,59.163759182649514; x2=76.61. Hide/Show verified. This is browser evidence, separate from local Node OCR benchmarks.
+- Latest safety-fix preview: https://nash-ai-markets-pys7hdqi0-nash-ai-markets.vercel.app/pocket, deployment dpl_2rVME1BGbdyA7gvbtbgvHLYQKUN5 at3c96fab5b6f846cbf8e251d7e6a4dd87ac84f7f7. Its final browser scan is in progress; do not claim it finished yet. Browser-control upload stalled during the earlier attempt; user resumed. Production and Apple pins untouched.
