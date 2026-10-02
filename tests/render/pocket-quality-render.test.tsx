@@ -33,7 +33,7 @@ test("price labels retain narrow forex and tiny asset ranges without collapsing 
   assert.equal(evidencePrice(Number.NaN), "Unverified");
 });
 
-test("verified forex stop-risk overlay renders the original endpoints", () => {
+test("forex stop-risk candidates remain withheld before independent browser verification", () => {
   const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
     timeframe: "15m", currentPrice: "1.2347",
     evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true },
@@ -43,7 +43,7 @@ test("verified forex stop-risk overlay renders the original endpoints", () => {
       side: "BELOW_PRICE", pattern: "EQUAL_LOWS", label: "Repeated lows", priceLow: 1.23451, priceHigh: 1.23459, confidence: "HIGH", evidence: "The wicks align with the scale.", touchPoints: [{ x: 25, y: 65 }, { x: 48, y: 65.2 }, { x: 70, y: 64.8 }],
     }] },
   }}/>);
-  assert.match(html, /data-status="locked"/);
-  assert.match(html, /1\.23451–1\.23459/);
+  assert.match(html, /data-status="withheld"/);
+  assert.doesNotMatch(html, /<svg/);
   assert.doesNotMatch(html, /1\.235–1\.235/);
 });
