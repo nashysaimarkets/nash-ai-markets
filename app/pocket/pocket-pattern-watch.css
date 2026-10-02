@@ -6,3 +6,18 @@
 .psPatternNone{padding:25px 18px;text-align:center}.psPatternNone strong{color:#d9b45b;font:900 11px var(--font-geist-mono),monospace}.psPatternNone p{max-width:430px;margin:10px auto 0;color:#8b9993;font-size:11px;line-height:1.6}
 .psPatternGuide{border-top:1px solid #40504c;background:#060d11}.psPatternGuide>nav{display:flex;gap:6px;overflow-x:auto;padding:10px}.psPatternGuide>nav button{flex:0 0 auto;min-height:34px;padding:7px 9px;border:1px solid #344249;border-radius:7px;background:#0b151a;color:#718087;font:900 11px var(--font-geist-mono),monospace}.psPatternGuide>nav button[data-active="true"]{border-color:#5bea9f88;background:#10251d;color:#67eda9}.psPatternGuide>article{margin:0 10px 10px;border:1px solid #344249;background:#0a1318}.psPatternGuide>article>header{display:grid;grid-template-columns:1fr 120px;align-items:center;gap:10px;padding:13px}.psPatternGuide>article>header small,.psPatternGuide>article>header strong{display:block}.psPatternGuide>article>header small{color:#d9b45b;font:900 11px var(--font-geist-mono),monospace}.psPatternGuide>article>header strong{margin-top:6px;color:#eef5f1;font:900 13px var(--font-geist-mono),monospace}.psPatternGuide svg{width:120px;height:70px;border:1px solid #ffffff12;background:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:18px 18px}.psPatternGuide polyline{fill:none;stroke:#61eda8;stroke-width:3}.psPatternGuide line{stroke:#d9b45b;stroke-width:1;stroke-dasharray:4 3}.psPatternGuide dl{margin:0}.psPatternGuide dl>div{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:10px 13px;border-top:1px solid #ffffff0d}.psPatternGuide dt{color:#6f7e84;font:900 11px var(--font-geist-mono),monospace}.psPatternGuide dd{margin:0;color:#c9d4cf;font-size:11px;line-height:1.45}.psPatternGuide article>footer{padding:11px 13px;border-top:1px solid #d9b45b33;background:#1d190d;color:#e4c565;font:800 11px/1.5 var(--font-geist-mono),monospace}
 @media(max-width:620px){.psPatternGuide>article>header{grid-template-columns:1fr 105px}.psPatternGuide svg{width:105px}.psPatternSignals article>div,.psPatternGuide dl>div{grid-template-columns:1fr}.psPatternWatch>header{align-items:flex-start}.psPatternWatch>header button{flex:0 0 auto}}
+
+/* Original-raster patterns: quiet presentation and aspect-correct markers. */
+.psPatternPrecise{background:#0c1b2b;border:1px solid #496178;border-radius:12px;box-shadow:none}
+.psPatternPrecise>.psInstrumentHeader{background:#102337;border-bottom:1px solid #496178;padding:16px;min-height:0}
+.psPatternPrecise>.psInstrumentHeader span{color:#e2edf5;font-size:12px;letter-spacing:.08em}
+.psPatternPrecise>.psInstrumentHeader small{color:#b4c5d2;font-size:12px}
+.psPatternPrecise .psXRayCanvas{margin:16px auto;min-height:0!important;width:min(100%,420px);background:#0c1b2b;overflow:hidden}
+.psPatternPrecise .psXRayCanvas>img{display:block;position:static;width:100%;height:auto!important;min-height:0!important;object-fit:contain!important;filter:none!important}
+.psPatternPrecise .psXRayCanvas svg{overflow:hidden}
+.psPatternPrecise .psXRayPatterns g polyline{stroke:#b4d5ed;stroke-width:1.4;filter:none;opacity:.9}
+.psPatternPrecise .psXRayPatterns g circle{fill:#102337;stroke:#b4d5ed!important;stroke-width:1;filter:none}
+.psPatternPrecise .psXRaySource,.psPatternPrecise .psXRayLayerTag,.psPatternPrecise .psXRayTraceKey{display:none}
+.psPatternPrecise .psXRayRead{background:#102337;color:#d9e6ef}
+.psPatternPrecise .psToolkitEmpty section{padding:12px 0;border-top:1px solid #496178}
+.psPatternPrecise .psToolkitEmpty strong{display:block;color:#d9e6ef}
