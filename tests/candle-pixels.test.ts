@@ -18,3 +18,8 @@ test('an original raster can support a calibrated band, but an interior body cro
  assert.equal(call(r).zones.length,1);
  const crossing=chart();candle(crossing,50,110,150);candle(crossing,110,105,150);assert.equal(call(crossing).zones.length,0);
 });
+
+test('stem ties use the column supporting both original endpoints',()=>{
+ const r=chart();candle(r,50,40,90);rect(r,51,41,51,90);r.data.set([0,0,0,255],(60*r.width+50)*4);
+ const c=readCandlePixels(r,bounds)!.candles;assert.equal(c.length,1);assert.equal(c[0].x,50);assert.equal(c[0].highY,40);assert.equal(c[0].lowY,90);
+});
