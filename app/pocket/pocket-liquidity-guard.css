@@ -174,3 +174,7 @@
 .psLiquidityGuard.psLiquidityPrecise > footer p { color:#9eb6c6; }
 .psLiquidityGuard.psLiquidityPrecise > footer small { text-align:left; text-transform:none; font:400 11px/1.6 var(--font-geist-sans),sans-serif; letter-spacing:0; }
 @media(max-width:560px) { .psLiquidityPrecise > header { flex-direction:row; flex-wrap:wrap; }.psLiquidityPrecise > header button { align-self:center; }.psLiquidityPrecise .psLiquidityStatus { flex-wrap:wrap; }.psLiquidityChoices { grid-template-columns:1fr; } }
+
+.psLiquidityHeldCandidates{padding:16px;border-top:1px solid #496178;background:#102337;color:#d9e6ef;font-size:13px;line-height:1.55}
+.psLiquidityHeldCandidates article{padding:12px 0;border-top:1px solid #496178}
+.psLiquidityHeldCandidates small{display:block;margin-top:5px;color:#b4c5d2}
