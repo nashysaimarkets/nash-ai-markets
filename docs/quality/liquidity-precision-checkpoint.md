@@ -22,4 +22,6 @@ The original 30m image completed a live scan in 29.1 seconds. The liquidity view
 
 Latest code preview: https://nash-ai-markets-mfzy2quds-nash-ai-markets.vercel.app/pocket (deployment commit 1a322e432b1ae663a3400764657971cefa462759).
 
-An original 4h chart has been uploaded and preflight verified in this preview. Its live analysis is in progress; positive-band placement and interaction verification are not yet claimed. Continue from this section if interrupted.
+The original 4h chart completed a fresh live analysis in 34.5 seconds and reported one candidate. Independent OCR accepted 11 axis labels (the levels view drew six calibrated levels), but the liquidity candidate failed the stricter price/side/touch-row gate and the browser correctly showed OVERLAY WITHHELD with zero overlay SVGs. The original source image and inference disclaimer remained visible. This verifies fail-closed behavior, not a successful live positive band; positive placement is covered by deterministic regression tests and the saved-report replay. A live positive-band interaction remains unverified.
+
+Browser proof: liquidity-preview-1790919092014.jpg, saved separately. Do not commit customer screenshots or report receipts. Next investigation: improve independently supported candle-touch extraction rather than relaxing the two-pixel threshold or repeatedly rescanning until a candidate passes.
