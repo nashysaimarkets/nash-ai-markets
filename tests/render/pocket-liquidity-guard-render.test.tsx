@@ -133,3 +133,13 @@ test("a dedicated verified Guard rescan is not vetoed by stale report readabilit
   assert.doesNotMatch(html, /<svg/);
   assert.doesNotMatch(html, /OVERLAY WITHHELD/);
 });
+
+
+test("held candidates remain reported rather than implying no areas were found",()=>{
+ const html=renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{...base,trustGate:{identityLocked:false},liquidityShield:{status:"VISIBLE_RISK_ZONES",summary:"Reported lows",stopGuidance:"Verify",zones:[{side:"BELOW_PRICE",pattern:"EQUAL_LOWS",label:"Repeated lows",priceLow:2850,priceHigh:2852,confidence:"HIGH",evidence:"Reported reactions",touchPoints:[{x:25,y:65},{x:55,y:65}]}]}}}/>);
+ assert.match(html,/1 reported candidate · drawing unverified/);
+ assert.match(html,/Repeated lows · 2,850–2,852/);
+ assert.match(html,/No bands have been added/);
+ assert.doesNotMatch(html,/NO CLEAR STOP-RISK CLUSTER/);
+ assert.doesNotMatch(html,/<svg/);
+});
