@@ -33,7 +33,9 @@ export function readCandlePixels(raster:Raster,bounds:LiquidityPlotBounds):Candl
   // A flat wide rectangle is a body/label, not an independently located wick.
   const maxBody=rows.reduce((max,n)=>Math.max(max,n),0),upperWick=rows[0]<maxBody,lowerWick=rows[h-1]<maxBody;
   if(maxBody<2||(!upperWick&&!lowerWick)||rows.filter(v=>v>=2).length<2)continue;
-  const stem=stems[Math.floor(stems.length/2)],stemX=minX+stem;
+  const supportedStems=stems.filter(i=>mask[minY*width+minX+i]===colour&&mask[maxY*width+minX+i]===colour);
+  if(!supportedStems.length)continue;
+  const stem=supportedStems[Math.floor(supportedStems.length/2)],stemX=minX+stem;
   if(mask[minY*width+stemX]!==colour||mask[maxY*width+stemX]!==colour)continue;
   candles.push({id:candles.length,left:minX,right:maxX,x:stemX,highY:minY,lowY:maxY,upperWick,lowerWick});
  }
