@@ -1,3 +1,4 @@
+import {axisReadingBounds} from './axis-reading-bounds';
 import type { CandlePixels } from './candle-pixels';
 import type { AxisVerification } from './axis-verification';
 import { parseLiquidityCurrentPrice, type LiquidityShield, type LiquidityPlotBounds, type LiquidityScaleAnchor, type ProjectedLiquidityZone } from './liquidity-guard';
@@ -8,8 +9,9 @@ export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPr
  if(!axis)return hold('Verifying the original price labels…');
  if(axis.status==='held')return hold(axis.reason);
  if(!bounds||![width,height,...Object.values(bounds)].every(Number.isFinite)||width<=0||height<=0||bounds.left<0||bounds.top<0||bounds.right>100||bounds.bottom>100||bounds.left>=bounds.right||bounds.top>=bounds.bottom)return hold('Original chart bounds need verification.');
+ const reading=axisReadingBounds(bounds,height);
  const anchors=[...axis.anchors].sort((a,b)=>a.y-b.y);
- if(anchors.length<3||anchors.some((a,i)=>!Number.isFinite(a.price)||a.price<=0||!Number.isFinite(a.y)||a.y<bounds.top||a.y>bounds.bottom||(i>0&& (a.y<=anchors[i-1].y||a.price>=anchors[i-1].price)))||anchors.at(-1)!.y-anchors[0].y<20)return hold('Independent price scale needs verification.');
+ if(anchors.length<3||anchors.some((a,i)=>!Number.isFinite(a.price)||a.price<=0||!Number.isFinite(a.y)||a.y<reading.top||a.y>reading.bottom||(i>0&& (a.y<=anchors[i-1].y||a.price>=anchors[i-1].price)))||anchors.at(-1)!.y-anchors[0].y<20)return hold('Independent price scale needs verification.');
  const matches=new Set(model.filter(a=>anchors.some(b=>Math.abs(a.price-b.price)<=Math.max(1e-10,b.price*1e-10))).map(a=>a.price));
  if(matches.size<3)return hold('The source scan and independent price reader disagree.');
  const mp=anchors.reduce((s,a)=>s+a.price,0)/anchors.length,my=anchors.reduce((s,a)=>s+a.y,0)/anchors.length;
