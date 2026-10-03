@@ -1,0 +1,5 @@
+# Tools visible by default — 3 October 2026
+
+Chris requested every scanner/tool open by default because collapsed boxes hid crucial features. Native disclosures now open on arrival and include visible Hide/Show labels. All seven command-deck tools and ten analysis maps render together; navigation reveals and jumps to a chosen section. Trade evaluation, source evidence, market panel checks, provenance and notebook tools start open. Independent scanner-only results expose both liquidity and patterns. Hiding is local to the current view and remains reversible; no additional AI request is triggered by expanding a section. Duplicate source input IDs were removed when both X-Ray instances became visible.
+
+Validation: typechecking, 26 render checks, corrected command-deck invariant, production build and rendered HTML passed. Full unit suite: 1,148 passed; one source-text invariant expected the old single-mode conditional, updated and its five-test file passed. Browser visual/Hide-Show verification and original-chart scans remain pending deployment. Apple and production distribution remains authorized, but no release success is claimed before verification.

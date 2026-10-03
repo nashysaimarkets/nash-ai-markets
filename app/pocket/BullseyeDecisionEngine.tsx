@@ -1,4 +1,5 @@
 "use client";
+import ExpandedDetails from "./ExpandedDetails";
 
 import OrbitalInstrument from "./OrbitalInstrument";
 import TimeframeComparison from "./TimeframeComparison";
@@ -53,14 +54,14 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance, 
       </div>
     </section>
 
-    <details className="pbReportFold pbAssessment"><summary>Why this setup grade?<span>AI assessment</span></summary>
+    <ExpandedDetails className="pbReportFold pbAssessment"><summary>Why this setup grade?<span>AI assessment</span></summary>
       <p>The grade summarises the model’s interpretation. It is not a measured win rate or probability. Event risk is checked separately in the calendar.</p>
       <div className="psDecisionFactors">{factors.map((factor) => <article key={factor.label}><span>{factor.label}</span><strong>{factor.score}/10</strong><i><b style={{ width: `${factor.score * 10}%` }} /></i><p>{factor.detail}</p></article>)}</div>
-    </details>
+    </ExpandedDetails>
 
     <TimeframeComparison charts={charts} analysis={analysis} activeId={activeId} onSelect={onSelectChart} disabled={switchingDisabled} />
 
-    <details className="psTradeReview">
+    <ExpandedDetails className="psTradeReview">
       <summary><span>🎯 ANALYSE MY TRADE</span><strong>ENTRY · STOP · TARGET</strong><b>＋</b></summary>
       <div>
         <nav aria-label="Trade direction"><button type="button" data-active={side === "LONG"} aria-pressed={side === "LONG"} onClick={() => { setSide("LONG"); setSubmittedPlan(null); }}>LONG</button><button type="button" data-active={side === "SHORT"} aria-pressed={side === "SHORT"} onClick={() => { setSide("SHORT"); setSubmittedPlan(null); }}>SHORT</button></nav>
@@ -76,7 +77,7 @@ export default function BullseyeDecisionEngine({ analysis, charts, performance, 
           <footer>Uses only your prices and this verified audit. It does not place an order or tell you to trade.</footer>
         </section> : null}
       </div>
-    </details>
+    </ExpandedDetails>
 
     <footer>
       <span>{performance ? `${performance.outcome === "cached" ? "PRIVATE CACHE REUSED" : "LATEST AUDIT"} · ${(performance.elapsedMs / 1000).toFixed(1)}s · ${performance.chartCount} CHART${performance.chartCount === 1 ? "" : "S"}` : "TIMING RECORDED AUTOMATICALLY ON LIVE SCANS"}</span>

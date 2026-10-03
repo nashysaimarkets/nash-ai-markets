@@ -5,11 +5,11 @@ import type { Analysis, Level } from "./analysis-types";
 import { resolveLevelEvidence } from "./source-evidence";
 
 export default function SourceEvidence({ level, analysis, image, contextImage }: { level: Level; analysis: Analysis; image: string; contextImage?: string | null }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [highlight, setHighlight] = useState(true);
   const evidence = resolveLevelEvidence(level, analysis, image, contextImage);
   return <div className="pbEvidence">
-    <button type="button" aria-expanded={open} onClick={() => { if (!open) trackGrowth("evidence_opened"); setOpen(!open); }}>{open ? "Close source chart" : "Show evidence on chart"}<span aria-hidden="true">{open ? " −" : " ↗"}</span></button>
+    <button type="button" aria-expanded={open} onClick={() => { if (!open) trackGrowth("evidence_opened"); setOpen(!open); }}>{open ? "Hide source chart" : "Show evidence on chart"}<span aria-hidden="true">{open ? " −" : " ↗"}</span></button>
     {open ? <div className="pbEvidenceReveal">
       <header><strong>{evidence.label}</strong><span>{level.price}</span></header>
       {evidence.image ? <>

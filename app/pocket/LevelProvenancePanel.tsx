@@ -1,11 +1,12 @@
 "use client";
+import ExpandedDetails from "./ExpandedDetails";
 
 import { deriveLevelProvenance, type ProvenanceLevel } from "./level-provenance";
 
 export default function LevelProvenancePanel({ levels, anchors = [] }: { levels: ProvenanceLevel[]; anchors?: { price: number; y: number }[] }) {
   const structural = levels.filter((level) => ["support", "resistance", "pivot"].includes(level.kind));
   if (!structural.length) return null;
-  return <details className="psProvenance">
+  return <ExpandedDetails className="psProvenance">
     <summary><span>◉ LEVEL EVIDENCE PROVENANCE</span><small>{structural.length} LEVEL{structural.length === 1 ? "" : "S"} · TAP TO AUDIT</small><b>⌄</b></summary>
     <div>{structural.map((level, index) => {
       const item = deriveLevelProvenance(level, anchors.length);
@@ -22,5 +23,5 @@ export default function LevelProvenancePanel({ levels, anchors = [] }: { levels:
         <button type="button" onClick={showEvidence}>VIEW SOURCE CHART AREA</button>
       </article>;
     })}</div>
-  </details>;
+  </ExpandedDetails>;
 }
