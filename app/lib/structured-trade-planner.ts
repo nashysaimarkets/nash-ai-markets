@@ -7,6 +7,18 @@ export type DirectionalPosture = "long-bias" | "short-bias" | "neutral" | "stand
 export type ParticipationLevel = "none" | "very-small" | "small" | "normal";
 export type PreferredSetupType = "trend-continuation" | "pullback" | "breakout" | "mean-reversion" | "fade" | "wait-for-confirmation" | "none";
 export type ExecutionReadiness = "ready" | "conditional" | "not-ready";
+export type ReadyMyTradeStatus = "READY" | "WAIT" | "STAND_ASIDE";
+
+export type ReadyMyTrade = {
+  status: ReadyMyTradeStatus;
+  bias: "LONG" | "SHORT" | "NEUTRAL";
+  entryCondition: string;
+  invalidation: string;
+  risk: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
+  confidence: number;
+  reasons: string[];
+  blockers: string[];
+};
 
 export type UpcomingEventMetadata = {
   id: string;
@@ -39,6 +51,7 @@ export type TradePlan = {
   eventRiskWarnings: Array<{ code: string; eventId: string; impact: UpcomingEventMetadata["impact"]; startsInMinutes: number | null }>;
   dataQualityWarnings: MissingDataWarning[];
   reasonsToRemainSidelined: string[];
+  readyMyTrade: ReadyMyTrade;
   reviewTrigger: {
     kind: "RECALCULATE";
     conditions: string[];
@@ -153,6 +166,37 @@ export function createStructuredTradePlan(input: TradePlannerInput): TradePlan {
   if (highImpactWarnings.length > 0) requiredConfirmations.push("EVENT_WINDOW_CLEARED");
   if (input.decision.volatilityRegime === "elevated" || input.decision.volatilityRegime === "extreme") requiredConfirmations.push("VOLATILITY_REGIME_REASSESSED");
 
+  const primaryInvalidation = input.decision.invalidationConditions[0];
+  const invalidation = primaryInvalidation?.level
+    ? `${primaryInvalidation.kind.replaceAll("_", " ")} ${primaryInvalidation.level}`
+    : primaryInvalidation?.kind.replaceAll("_", " ") ?? "Recalculate if the verified decision state changes";
+  const bias: ReadyMyTrade["bias"] = directionalPosture === "long-bias"
+    ? "LONG"
+    : directionalPosture === "short-bias"
+      ? "SHORT"
+      : "NEUTRAL";
+  const entryCondition = preferredSetupType === "none"
+    ? "No entry condition while the plan is stood aside"
+    : preferredSetupType === "wait-for-confirmation"
+      ? "Wait for the listed confirmations before considering participation"
+      : `Wait for a verified ${preferredSetupType.replaceAll("-", " ")} setup aligned with the current bias`;
+  const blockers = uniqueStrings([...sidelined, ...requiredConfirmations.filter((item) =>
+    item === "DRIVER_CONFLICT_RESOLVED" || item === "EVENT_WINDOW_CLEARED" || item === "VOLATILITY_REGIME_REASSESSED"
+  )]);
+  const readyMyTrade: ReadyMyTrade = {
+    status: executionReadiness === "ready" ? "READY" : executionReadiness === "conditional" ? "WAIT" : "STAND_ASIDE",
+    bias,
+    entryCondition,
+    invalidation,
+    risk: input.decision.riskRating.toUpperCase() as ReadyMyTrade["risk"],
+    confidence: planConfidence,
+    reasons: uniqueStrings([
+      ...input.decision.topSupportingDrivers.map((driver) => driver.factor.replaceAll("_", " ")),
+      ...input.decision.conflictingDrivers.map((driver) => `Conflict: ${driver.factor.replaceAll("_", " ")}`),
+    ]).slice(0, 5),
+    blockers,
+  };
+
   return {
     schemaVersion: "1.0",
     directionalPosture,
@@ -166,6 +210,7 @@ export function createStructuredTradePlan(input: TradePlannerInput): TradePlan {
     eventRiskWarnings: highImpactWarnings,
     dataQualityWarnings: warnings,
     reasonsToRemainSidelined: uniqueStrings(sidelined),
+    readyMyTrade,
     reviewTrigger: {
       kind: "RECALCULATE",
       conditions: ["PROVIDER_UPDATE", "DATA_STATUS_CHANGE", "DATA_AGE_THRESHOLD", "DECISION_CHANGE", "WARNING_SET_CHANGE", "EVENT_WINDOW_CHANGE"],
