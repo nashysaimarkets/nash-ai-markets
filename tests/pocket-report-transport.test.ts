@@ -48,6 +48,8 @@ test('bounded number transport preserves exact finite values and every semantic 
   assert.equal(codec.schema.properties?.value.type, 'string');
   assert.match(codec.schema.properties?.value.description ?? '', /Exact numeric value/);
   assert.equal(codec.schema.properties?.value.maxLength, 40);
+  assert.deepEqual(codec.schema.properties?.count.enum, Array.from({ length: 101 }, (_, index) => String(index)));
+  assert.match(codec.schema.properties?.count.description ?? '', /Whole integer only.*Minimum 0.*Maximum 100/);
   for (const value of ['1'.repeat(1000), 'NaN', 'Infinity', '1e999', '1e-999', ' 1', '01', '1,000', 1, null]) assert.throws(() => codec.decode({ value, count: '4' }));
   for (const count of ['101', '-1', '1.5']) assert.throws(() => codec.decode({ value: '7723.23', count }));
 });

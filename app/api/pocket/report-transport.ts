@@ -16,7 +16,14 @@ export function createReportTransport(source: Schema, options: { boundedNumbers?
   const name = (key: string, index: number) => options.aliasKeys === false ? key : `f${index.toString(36)}`;
   function compile(node: Schema): Schema {
     if (options.boundedNumbers && (node.type === 'number' || node.type === 'integer')) {
-      return { type: 'string', pattern: numberText.source, maxLength: 40, description: `${node.description ?? ''} Exact numeric value as bounded JSON-number text; use scientific notation for very small or large values.`, ...(Array.isArray(node.enum) ? { enum: node.enum.map(String) } : {}) };
+      const minimum = typeof node.minimum === 'number' ? node.minimum : null;
+      const maximum = typeof node.maximum === 'number' ? node.maximum : null;
+      const choices = Array.isArray(node.enum) ? node.enum.map(String)
+        : node.type === 'integer' && minimum !== null && maximum !== null
+          && Number.isInteger(minimum) && Number.isInteger(maximum) && maximum >= minimum && maximum - minimum <= 100
+          ? Array.from({ length: maximum - minimum + 1 }, (_, index) => String(minimum + index)) : null;
+      const constraints = [node.type === 'integer' ? 'Whole integer only.' : '', minimum !== null ? `Minimum ${minimum}.` : '', maximum !== null ? `Maximum ${maximum}.` : ''].filter(Boolean).join(' ');
+      return { type: 'string', pattern: numberText.source, maxLength: 40, description: `${node.description ?? ''} ${constraints} Exact numeric value as bounded JSON-number text; use scientific notation for very small or large values.`, ...(choices ? { enum: choices } : {}) };
     }
     if (node.properties) {
       const entries = Object.entries(node.properties);
