@@ -45,6 +45,7 @@ import { postLiquidityRescan } from "./liquidity-rescan-client";
 import { enforcePocketTrustGate } from "../lib/pocket-trust-gate";
 import DecisionIntelligenceSuite from "./DecisionIntelligenceSuite";
 import { eventCoverageFor, isListedEquityEventInput } from "./event-coverage";
+import { macroScanStatus } from "./macro-scan-status";
 import { measureChart } from "./browser-chart-extractor";
 import type { ChartEvidenceRole, DeterministicChartEvidence } from "../lib/deterministic-chart-evidence";
 import { withDeadline, throwIfCancelled } from "./async-deadline";
@@ -644,7 +645,7 @@ function PocketCommandDeck({ analysis, sourceAnalysis, primaryLevels, sourceImag
   </section>;
 }
 
-function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macroAvailable, sample = false, onOpenTool, onOpenMacro }: { analysis: Analysis; todayMacroCount: number; nextHighImpactLabel: string | null; macroAvailable: boolean; sample?: boolean; onOpenTool: (mode: "guard" | "patterns") => void; onOpenMacro: () => void }) {
+function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macroAvailable, macroUnavailable, sample = false, onOpenTool, onOpenMacro }: { analysis: Analysis; todayMacroCount: number; nextHighImpactLabel: string | null; macroAvailable: boolean; macroUnavailable: readonly string[]; sample?: boolean; onOpenTool: (mode: "guard" | "patterns") => void; onOpenMacro: () => void }) {
   const effectiveLiquidity = effectiveLiquidityGeometry(analysis);
   const liquidityZones = projectLiquidityZones(
     effectiveLiquidity.liquidityShield,
@@ -663,13 +664,7 @@ function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macro
   const patternState = strongestPattern
     ? { state: "found", badge: `${analysis.patterns.length} FOUND`, title: strongestPattern.name, detail: `${strongestPattern.timeframe || analysis.timeframe} · ${strongestPattern.status} · ${strongestPattern.confidence ?? "LOW"} confidence` }
     : { state: "clear", badge: "SCAN COMPLETE", title: "NO CLEAN PATTERN VERIFIED", detail: "Every uploaded chart was checked. Bullseye did not force a gallery name onto ordinary price noise." };
-  const macroState = sample
-    ? { state: "clear", badge: "FICTIONAL SAMPLE", title: "NO LIVE EVENT CONTEXT", detail: "This example is not a real instrument. Live macro events do not apply to the sample." }
-    : !macroAvailable
-    ? { state: "withheld", badge: "CHECK SOURCE", title: "MACRO SCHEDULE UNAVAILABLE", detail: "Connected calendar sources could not be confirmed. Treat event risk as unknown." }
-    : nextHighImpactLabel
-      ? { state: "warning", badge: "HIGH IMPACT", title: nextHighImpactLabel, detail: `${todayMacroCount} macro ${todayMacroCount === 1 ? "event" : "events"} listed today in UK time.` }
-      : { state: "clear", badge: "LIVE CHECK", title: todayMacroCount ? `${todayMacroCount} MACRO ${todayMacroCount === 1 ? "EVENT" : "EVENTS"} TODAY` : "NO RELEASE LISTED TODAY", detail: todayMacroCount ? "Open Macro Check for times, impact and source details." : "No medium or high-impact US release is listed today; unscheduled news can still move price." };
+  const macroState = macroScanStatus({ sample, available: macroAvailable, unavailable: macroUnavailable, todayCount: todayMacroCount, nextHighImpactLabel });
 
   return <section className="psCoreScans" aria-label="Core AI scan results">
     <header><div><span>◎ CORE AI CHECKS</span><strong>LIQUIDITY · PATTERNS · MACRO</strong></div><b>ALWAYS VISIBLE</b></header>
@@ -2160,6 +2155,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     const todayMacro = scheduledMacro.filter((event) => londonDay(event.scheduledAt) === todayInLondon);
     const nextHighImpact = scheduledMacro.find((event) => event.risk === "HIGH" && Date.parse(event.scheduledAt) > eventNow);
     const calendarUnavailable = eventContext.calendarSources?.unavailable ?? [];
+    const macroAvailable = (eventContext.calendarSources?.available.length ?? 0) > 0 || marketEvents.length > 0;
     const eventCoverage = eventCoverageFor(analysis);
     const contextBattlefield = analysis.contextBattlefield;
     const scopedAnalysis = selectedChartReport(analysis);
@@ -2189,7 +2185,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             todayMacroCount={todayMacro.length}
             sample={sampleMode}
             nextHighImpactLabel={nextHighImpact ? `${macroEventDisplayName(nextHighImpact.name)} · ${formatEventTime(nextHighImpact.scheduledAt)}` : null}
-            macroAvailable={calendarUnavailable.length < 3 || marketEvents.length > 0}
+            macroAvailable={macroAvailable}
+            macroUnavailable={calendarUnavailable}
             onOpenTool={(mode) => { setCommandDeckMode(mode); openResultReport("bullseye-tools"); }}
             onOpenMacro={() => openResultReport("bullseye-events")}
           />
@@ -2222,7 +2219,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header className="psInstrumentHeader"><OrbitalInstrument kind="macro" /><div><span>EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · ${eventCoverage.label}` : `${eventCoverage.label} · CONFIRM BEFORE TRADING`}</small></div>{nextHighImpact ? <strong className="psEventHighAlert">HIGH<small>EVENT AHEAD</small></strong> : isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{stockEvents.length}<small>EVENTS LISTED</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
             <div className="psEventScope" data-asset={eventCoverage.assetClass}><b>{eventCoverage.label}</b><span>{eventCoverage.summary}</span>{eventCoverage.limitation ? <small>NOT INCLUDED · {eventCoverage.limitation}</small> : null}</div>
-            <div className="psTodayCalendar"><header><div><small>US macro + market calendar</small><h3>Today · UK time</h3><span className="psCalendarRefresh"><i aria-hidden="true" />Auto-refresh</span></div><b>{todayMacro.length ? `${todayMacro.length} event${todayMacro.length === 1 ? "" : "s"}` : calendarUnavailable.length === 3 && !marketEvents.length ? "Unavailable" : "No release"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => { const released = Date.parse(event.scheduledAt) <= eventNow; return <li key={event.id} data-risk={event.risk}><time dateTime={event.scheduledAt}>{londonClock(event.scheduledAt)}</time><div className="psCalendarEvent"><strong>{macroEventDisplayName(event.name)}</strong><small className="psCalendarSource">{event.sourceLabel}</small><div className="psCalendarTags"><span className="psEventImpact" data-risk={event.risk}><i aria-hidden="true" />{event.risk === "HIGH" ? "High impact" : event.risk === "MED" ? "Medium impact" : "Impact unverified"}</span><span className="psEventStage">{released ? "Released" : "Scheduled"}</span></div></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">Source ↗</a> : null}</li>; })}</ol> : <p>{calendarUnavailable.length === 3 && !marketEvents.length ? "The connected calendar sources could not be reached. Treat event risk as unverified and check the agency or broker calendar." : "No medium or high-impact US release is listed for today in the connected schedules. Unscheduled news can still move price."}</p>}</div>
+            <div className="psTodayCalendar"><header><div><small>US macro + market calendar</small><h3>Today · UK time</h3><span className="psCalendarRefresh"><i aria-hidden="true" />Auto-refresh</span></div><b>{todayMacro.length ? `${todayMacro.length} event${todayMacro.length === 1 ? "" : "s"}` : !macroAvailable ? "Unavailable" : calendarUnavailable.length ? "Partial coverage" : "No release"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => { const released = Date.parse(event.scheduledAt) <= eventNow; return <li key={event.id} data-risk={event.risk}><time dateTime={event.scheduledAt}>{londonClock(event.scheduledAt)}</time><div className="psCalendarEvent"><strong>{macroEventDisplayName(event.name)}</strong><small className="psCalendarSource">{event.sourceLabel}</small><div className="psCalendarTags"><span className="psEventImpact" data-risk={event.risk}><i aria-hidden="true" />{event.risk === "HIGH" ? "High impact" : event.risk === "MED" ? "Medium impact" : "Impact unverified"}</span><span className="psEventStage">{released ? "Released" : "Scheduled"}</span></div></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">Source ↗</a> : null}</li>; })}</ol> : <p>{!macroAvailable ? "Connected calendar sources could not be confirmed. Treat event risk as unknown and check the agency or broker calendar." : calendarUnavailable.length ? `Schedule incomplete: ${calendarUnavailable.join(" · ")} unavailable. No events were returned by the available sources; additional event risk is unverified. Check the agency or broker calendar.` : "No medium or high-impact US release is listed for today in the connected schedules. Unscheduled news can still move price."}</p>}</div>
             {nextHighImpact ? <div className="psMacroNext" data-risk="HIGH"><div className="psEventMilestone"><b>Next high impact</b><time dateTime={nextHighImpact.scheduledAt}>{formatEventTime(nextHighImpact.scheduledAt)}</time></div><strong>{nextHighImpact.name}</strong><span>{nextHighImpact.sourceLabel}</span>{nextHighImpact.sourceUrl ? <a href={nextHighImpact.sourceUrl} target="_blank" rel="noreferrer">Verify source ↗</a> : null}</div> : <div className="psMacroNext"><b>No upcoming high-impact event listed</b><span>{calendarUnavailable.length && !marketEvents.length ? `Schedule coverage unavailable: ${calendarUnavailable.join(" · ")}.` : "No high-impact row appears in the connected schedule window."}</span></div>}
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>Macro calendar coverage</b><span>{eventCoverage.limitation ?? "This instrument uses the official macro schedule rather than a company calendar."}</span></div>}
             <details><summary>Event sources <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{scheduledMacro.length ? <ol>{scheduledMacro.slice(0, 8).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.sourceLabel} · {event.risk} IMPACT</span></li>)}</ol> : <p>No medium or high-impact US release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
