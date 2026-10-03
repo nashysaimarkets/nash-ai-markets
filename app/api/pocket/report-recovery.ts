@@ -24,6 +24,7 @@ type Options = {
 
 function recoveryReason(error: unknown): string | null {
   if (error instanceof PocketReportCompletionError) {
+    if (error.reason === "numeric_output_limit") return "numeric_output_limit";
     return error.reason === "max_output_tokens" ? "output_limit" : null;
   }
   const reason = classifyOpenAIFailure(error);

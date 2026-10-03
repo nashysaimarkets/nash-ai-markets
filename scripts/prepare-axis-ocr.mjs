@@ -1,0 +1,14 @@
+import {mkdir,copyFile,readdir} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {dirname,join} from 'node:path';
+const require=createRequire(import.meta.url);
+const target=join(process.cwd(),'public/ocr/v6');
+await mkdir(join(target,'core'),{recursive:true});await mkdir(join(target,'lang'),{recursive:true});
+const engine=dirname(require.resolve('tesseract.js/package.json'));
+const core=dirname(require.resolve('tesseract.js-core/package.json'));
+const language=dirname(require.resolve('@tesseract.js-data/eng/package.json'));
+await copyFile(join(engine,'dist/worker.min.js'),join(target,'worker.min.js'));
+for(const name of await readdir(core))if(/^tesseract-core.*\.wasm(?:\.js)?$/.test(name))await copyFile(join(core,name),join(target,'core',name));
+await copyFile(join(language,'4.0.0_best_int','eng.traineddata.gz'),join(target,'lang/eng.traineddata.gz'));
+await copyFile(join(engine,'LICENSE.md'),join(target,'LICENSE-tesseract.txt'));
+console.log('Prepared same-origin OCR worker, WebAssembly cores and English model.');

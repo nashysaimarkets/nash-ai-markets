@@ -4,6 +4,7 @@ import OrbitalInstrument from "./OrbitalInstrument";
 
 import { useEffect, useRef, useState } from "react";
 import type { ChartConfirmation, ChartPreflight, PreflightStatus } from "./chart-preflight";
+import { chartCaptureGuidance } from "./chart-preflight";
 
 type ChartPreflightPanelProps = {
   image: string;
@@ -85,6 +86,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
   if (!result) return null;
 
   const locked = status === "LOCKED";
+  const captureAdvice = chartCaptureGuidance(result);
   const valid = result.status !== "RETAKE" && instrument.trim().length > 1 && timeframe.trim().length > 0 && (!currentPrice.trim() || /^-?\d[\d,.]*$/.test(currentPrice.trim()));
   const lock = () => {
     if (!valid) return;
@@ -102,6 +104,7 @@ function ChartPreflightRequest({ image, contextImage, detailImage, fourHourImage
   return <section id="pocket-preflight-lock" className="psPreflight psPreflightCompact" data-status={result.status} data-locked={locked}>
     <header><span>◉ CHART PREFLIGHT</span><strong>{result.status === "RETAKE" ? "FIX HIGHLIGHTED CHART" : locked ? "DETAILS CONFIRMED" : result.status === "LIMITED" ? "USEFUL READ · CHECK LABELS" : "CHART CHECKED"}</strong></header>
     <div className="psDetectedFacts"><b>{instrument || "INSTRUMENT UNREADABLE"}</b><span>{timeframe || "TIMEFRAME UNREADABLE"}</span><em>{currentPrice ? `PRICE ${currentPrice}` : "PRICE UNVERIFIED"}</em></div>
+    {captureAdvice.length ? <div className="pbCaptureRepair" role="status"><strong>For a clearer scan</strong><ul>{captureAdvice.map((advice) => <li key={advice}>{advice}</li>)}</ul><p>Portrait and landscape screenshots are both accepted. A readable chart gives the scanner more useful evidence.</p></div> : null}
       {result.captureAlignment === "MIXED" ? <p role="alert">Visible timestamps suggest these charts were captured at different times. Refresh the older screenshot before comparing their current setups.</p> : null}
     {result.status === "RETAKE" ? <div className="pbCaptureRepair" role="alert"><strong>Before you retry</strong><p>{result.guidance || result.issues[0] || "Replace the unclear screenshot with the full chart, symbol, timeframe and price scale visible."}</p><a href="#pocket-chart-upload">Review uploaded charts ↑</a></div> : null}
     <details className="psConfirmDetails">

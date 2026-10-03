@@ -1,3 +1,5 @@
+import { completedScannerAnalysis } from "../independent-scanner";
+import type { IndependentScannerAnalysis } from "../../../pocket/independent-scanner";
 import { createReportTransport, reportTransportInstruction } from "../report-transport";
 import { capacityRetrySeconds, noteCapacityExhausted, POCKET_CAPACITY_MESSAGE } from "../../../lib/server/pocket-provider-capacity";
 import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../precision-receipt";
@@ -37,6 +39,7 @@ import {
 } from "../precision-structure";
 import { runPocketReport, reportServiceTier } from "../report-recovery";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../report-completion";
+import { createReportNumberGuard } from "../report-number-guard";
 import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/chart-preflight";
 
 export const runtime = "nodejs";
@@ -228,6 +231,9 @@ const precisionOverlaySchema = {
   additionalProperties: false,
   properties: {
     instrumentIdentifier: { type: "string", maxLength: 80 },
+    timeframe: schema.properties.timeframe,
+    evidenceQuality: schema.properties.evidenceQuality,
+    patterns: { ...schema.properties.patterns, maxItems: 1, items: { ...schema.properties.patterns.items, properties: { ...schema.properties.patterns.items.properties, sourceRole: { type: "string", enum: ["PRIMARY"] } } } },
     plotBounds: schema.properties.plotBounds,
     priceScaleAnchors: schema.properties.priceScaleAnchors,
     levels: schema.properties.levels,
@@ -269,7 +275,7 @@ const precisionOverlaySchema = {
     confidence: { type: "string", enum: ["HIGH", "MEDIUM", "LOW"] },
     limitation: { type: "string", maxLength: 160 },
   },
-  required: ["instrumentIdentifier", "plotBounds", "priceScaleAnchors", "levels", "currentPrice", "liquidityShield", "confidence", "limitation"],
+  required: ["instrumentIdentifier", "timeframe", "evidenceQuality", "patterns", "plotBounds", "priceScaleAnchors", "levels", "currentPrice", "liquidityShield", "confidence", "limitation"],
 } as const;
 
 export async function POST(request: Request) {
@@ -348,6 +354,8 @@ export async function POST(request: Request) {
   const fullReportSchema = { ...schema, properties: { ...schema.properties, evidencePack: pocketEvidencePackSchema(suppliedImages) } };
   const transport = profile.startsWith("lossless") ? createReportTransport(fullReportSchema) : null;
   const reportSchema = transport ? transport.schema : compact ? compactReportSchema(fullReportSchema) : profile === "focused" ? selectedPatternSchema(fullReportSchema) : fullReportSchema;
+  const boundedReport = createReportTransport(reportSchema, { boundedNumbers: true, aliasKeys: false });
+  const boundedPrecision = createReportTransport(precisionOverlaySchema, { boundedNumbers: true, aliasKeys: false });
   const client = createOpenAIClient(undefined, policy.reportTimeoutMs);
   if (!client) { budget.release?.(); metrics.finish("failed", "not_configured"); return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 }); }
   const providerDeadlineAt = routeStartedAt + policy.providerDeadlineMs;
@@ -377,6 +385,7 @@ export async function POST(request: Request) {
     elapsedMs: Date.now() - routeStartedAt,
   }));
 
+  let completedScanners: IndependentScannerAnalysis | null = null;
   try {
     const userConfirmedChart = confirmedChartFacts(chartConfirmation);
     // A valid current-price correction is the trader's newest explicit fact.
@@ -413,6 +422,9 @@ export async function POST(request: Request) {
     const precisionInstructions = [
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return instrumentIdentifier as the exact instrument symbol or title visibly printed on this chart, with ordinary spacing preserved. Return UNKNOWN when it is absent or unreadable. Never infer identity from price shape or asset class.",
+        "Independently read the printed timeframe and evidenceQuality; do not infer timeframe from candle spacing. Mark unknown identity or timeframe explicitly. Readability describes this exact chart, not the requested result.",
+        "Pattern Watch: return at most one defensible PRIMARY pattern with historical defining swing geometry, visible timeframe, confidence, confirmation and invalidation. Return no pattern when none is defensible. Double tops/bottoms need two comparable extremes and the intervening swing; head and shoulders need five pivots and a neckline; flags/pennants need an impulse and smaller multi-candle pause; ranges/channels need reactions on both rails; wedges/triangles need repeated boundary reactions and the required slopes; cup and handle needs a rounded base, rim return and shallow handle; breakout/retest needs a break, return and reaction away. FORMING is incomplete, CONFIRMED requires visible completion. HIGH requires clear completed geometry and confirmation. Never draw future or projected legs. Order actual historical pivots left-to-right and keep every point inside plotBounds. LOW or AMBIGUOUS is preferable to forcing a name.",
+        "Numeric schema fields use bounded text: preserve the exact visible value, never invent decimal precision; scientific notation is allowed for extreme magnitudes.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
         "plotBounds must tightly enclose only the candle plotting rectangle. Exclude phone chrome, chart headers, order tickets, price-axis labels, dates, footer data, indicator panels and volume panels.",
         "Read 3-4 clearly printed prices from the visible price axis when possible and return each exact numeric price with the y coordinate through the centre of its label. Higher prices must have smaller y coordinates and all anchors must form one linear scale. Two exact labels are acceptable only when widely separated vertically and every returned level's visible reaction row agrees with the resulting projection. With fewer than two exact labels, return no support or resistance levels.",
@@ -488,6 +500,7 @@ export async function POST(request: Request) {
         "Name relevant event categories for the identified instrument, but never invent event names, dates or times. Keep summary, scenarios and invalidation under 40 words each.",
         ...(compact ? [compactReportInstruction] : []),
         ...(transport ? [reportTransportInstruction] : []),
+        "NUMERIC WIRE FORMAT: numeric fields are bounded JSON-number text. Preserve the exact intended numeric values and their constraints. Use scientific notation for extreme magnitudes. Never pad decimals, invent precision or repeat digits.",
       ].join(" "),
       input: [{
         role: "user",
@@ -500,17 +513,24 @@ export async function POST(request: Request) {
       // Keep the same report model, medium reasoning and every evidence field.
       // The larger allowance is needed only for multiple supplied charts.
       max_output_tokens: recovery ? 20_000 : policy.reportOutputTokens,
-      text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema: reportSchema } },
+      text: { verbosity: "low", format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema: boundedReport.schema } },
     }, {
       signal,
       timeout: timeoutMs,
     });
       let firstOutput = false;
       let outputChars = 0;
+      const acceptNumbers=createReportNumberGuard();
+      let numericOutputError:PocketReportCompletionError|null=null;
       let lastOutputAt: number | null = null;
       stream.on("response.created", () => console.info("[pocket-bullseye] report stream started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })));
       stream.on("response.output_text.delta", (event) => {
         outputChars += event.delta.length;
+        if(!acceptNumbers(event.delta)){
+          numericOutputError=new PocketReportCompletionError("numeric_output_limit",outputChars);
+          stream.abort();
+          return;
+        }
         if (event.delta.trim().length) { lastOutputAt = Date.now(); noteOutputProgress(); }
         if (!firstOutput) { metrics.mark("first_output"); firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
       });
@@ -518,8 +538,9 @@ export async function POST(request: Request) {
       try { response = await stream.finalResponse(); }
       catch (error) {
         console.warn("[pocket-bullseye] report attempt ended", JSON.stringify({ recovery, outputChars, elapsedMs: Date.now() - routeStartedAt, outputIdleMs: lastOutputAt === null ? null : Date.now() - lastOutputAt, cancelled: signal.aborted, cause: signal.aborted && signal.reason instanceof Error ? signal.reason.message : classifyOpenAIFailure(error) }));
-        throw error;
+        throw numericOutputError ?? error;
       }
+      if (numericOutputError) throw numericOutputError;
       metrics.usage(recovery ? "report_recovery" : "report", model, response.usage, response.service_tier ?? "unknown");
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
@@ -535,7 +556,8 @@ export async function POST(request: Request) {
       }));
       completedPocketReportOutput(response);
       metrics.mark("report_ready");
-      return transport ? { ...response, output_text: JSON.stringify(transport.decode(JSON.parse(response.output_text))) } : response;
+      const decoded = boundedReport.decode(JSON.parse(response.output_text));
+      return { ...response, output_text: JSON.stringify(transport ? transport.decode(decoded) : decoded) };
     }, {
       signal: providerSignal,
       deadlineAt: Math.min(providerDeadlineAt, Date.now() + policy.reportTimeoutMs),
@@ -585,9 +607,11 @@ export async function POST(request: Request) {
       }],
       // Reasoning and schema JSON share this allowance. At 2.2k, real charts
       // could end with status=incomplete and no parseable JSON at all.
-      max_output_tokens: 5000,
-      text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    }, { signal: precisionSignal, timeout: Math.min(policy.precisionCallTimeoutMs, timeoutMs) });
+      max_output_tokens: 6500,
+      text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: boundedPrecision.schema } },
+    }, { signal: precisionSignal, timeout: Math.min(policy.precisionCallTimeoutMs, timeoutMs) }).then(response => response.status === "completed" && response.output_text
+      ? { ...response, output_text: JSON.stringify(boundedPrecision.decode(JSON.parse(response.output_text))) }
+      : response);
     const parsePrecisionOutput = (outputText: string | undefined) => {
       try { return outputText ? JSON.parse(outputText) as Record<string, unknown> : null; }
       catch { return null; }
@@ -722,6 +746,7 @@ export async function POST(request: Request) {
           ? finishPrecision(contextFirst, contextImage, "context", contextPrecisionImage || null)
           : Promise.resolve(null),
       ]);
+      completedScanners = completedScannerAnalysis(primary.output_text, chartConfirmation);
       metrics.mark("precision_ready");
       console.info("[pocket-bullseye] precision completed", JSON.stringify({
         primary: Boolean(primary.output_text),
@@ -983,19 +1008,20 @@ export async function POST(request: Request) {
       chartCount: policy.imageCount,
     }));
     const message = typeof failure.message === "string" ? failure.message : "";
-    budget.release?.();
     const providerFailure = classifyOpenAIFailure(error);
     if (providerFailure === "quota_exhausted") noteCapacityExhausted();
     const timedOut = providerDeadlineSignal.aborted || /timed out/i.test(message);
     const incomplete = error instanceof PocketReportCompletionError
       || /structured response was (?:empty|incomplete|invalid JSON)/i.test(message);
+    const scannerResult = !request.signal.aborted && (timedOut || incomplete || providerFailure === "provider_unavailable") ? completedScanners : null;
+    if (!scannerResult) budget.release?.();
     metrics.finish("failed", timedOut ? "timeout" : incomplete ? "incomplete_report" : providerFailure);
     const providerMessage = providerFailure === "quota_exhausted"
       ? POCKET_CAPACITY_MESSAGE
       : providerFailure === "rate_limited"
         ? "AI analysis is temporarily busy. Your charts are still loaded—please retry in a minute."
         : "AI analysis is temporarily unavailable. Your charts are still loaded—please try again later.";
-    return NextResponse.json({ code: providerFailure, error: timedOut
+    return NextResponse.json({ ...(scannerResult ? { scannerResult } : {}), code: providerFailure, error: timedOut
       ? "The AI service did not finish this scan. Your charts are still loaded—please try again."
       : incomplete
         ? "The AI returned an unfinished report. Your charts are still loaded; no partial analysis has been used."

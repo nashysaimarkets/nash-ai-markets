@@ -10,16 +10,30 @@ type Schema = {
   [key: string]: unknown;
 };
 
-export function createReportTransport(source: Schema) {
+const numberText = /^-?(?:0|[1-9][0-9]{0,15})(?:\.[0-9]{1,17})?(?:[eE][+-]?[0-9]{1,3})?$/;
+
+export function createReportTransport(source: Schema, options: { boundedNumbers?: boolean; aliasKeys?: boolean } = {}) {
+  const name = (key: string, index: number) => options.aliasKeys === false ? key : `f${index.toString(36)}`;
   function compile(node: Schema): Schema {
+    if (options.boundedNumbers && (node.type === 'number' || node.type === 'integer')) {
+      const minimum = typeof node.minimum === 'number' ? node.minimum : null;
+      const maximum = typeof node.maximum === 'number' ? node.maximum : null;
+      const choices = Array.isArray(node.enum) ? node.enum.map(String)
+        : node.type === 'integer' && minimum !== null && maximum !== null
+          && Number.isInteger(minimum) && Number.isInteger(maximum) && maximum >= minimum && maximum - minimum <= 100
+          ? Array.from({ length: maximum - minimum + 1 }, (_, index) => String(minimum + index)) : null;
+      const constraints = [node.type === 'integer' ? 'Whole integer only.' : '', minimum !== null ? `Minimum ${minimum}.` : '', maximum !== null ? `Maximum ${maximum}.` : ''].filter(Boolean).join(' ');
+      return { type: 'string', pattern: numberText.source, maxLength: 40, description: `${node.description ?? ''} ${constraints} Exact numeric value as bounded JSON-number text; use scientific notation for very small or large values.`, ...(choices ? { enum: choices } : {}) };
+    }
     if (node.properties) {
       const entries = Object.entries(node.properties);
-      const names = new Map(entries.map(([key], index) => [key, `f${index.toString(36)}`]));
+      const names = new Map(entries.map(([key], index) => [key, name(key, index)]));
       return {
         ...node,
-        properties: Object.fromEntries(entries.map(([key, child]) => [names.get(key)!, {
-          ...compile(child), description: `${key}${child.description ? `: ${child.description}` : ""}`,
-        }])),
+        properties: Object.fromEntries(entries.map(([key, child]) => {
+          const compiled = compile(child);
+          return [names.get(key)!, { ...compiled, description: `${key}${compiled.description ? `: ${compiled.description}` : ""}` }];
+        })),
         required: node.required?.map((key) => names.get(key)!),
       };
     }
@@ -32,7 +46,7 @@ export function createReportTransport(source: Schema) {
     if (node.properties) {
       if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Report object missing");
       const record = value as Record<string, unknown>;
-      const fields = Object.entries(node.properties).map(([key, child], index) => ({ key, child, alias: `f${index.toString(36)}` }));
+      const fields = Object.entries(node.properties).map(([key, child], index) => ({ key, child, alias: name(key, index) }));
       const allowed = new Set(fields.map((field) => decoding ? field.alias : field.key));
       if (Object.keys(record).some((key) => !allowed.has(key))) throw new Error("Unexpected report field");
       return Object.fromEntries(fields.flatMap(({ key, child, alias }) => {
@@ -50,12 +64,20 @@ export function createReportTransport(source: Schema) {
       if (typeof node.minItems === "number" && value.length < node.minItems) throw new Error("Report array too short");
       return value.map((item) => convert(item, node.items!, decoding));
     }
+    if (options.boundedNumbers && (node.type === 'number' || node.type === 'integer')) {
+      if (decoding) {
+        if (typeof value !== 'string' || value.length > 40 || !numberText.test(value)) throw new Error('Invalid bounded report number');
+        const decoded = Number(value);
+        if (decoded === 0 && /[1-9]/.test(value.split(/[eE]/)[0])) throw new Error('Report number underflow');
+        value = decoded;
+      }
+    }
     const actualType = typeof value;
     if (type.includes("integer") ? !Number.isInteger(value) : !type.includes(actualType)) throw new Error("Invalid report value type");
     if (actualType === "number" && (!Number.isFinite(value) || (typeof node.minimum === "number" && (value as number) < node.minimum) || (typeof node.maximum === "number" && (value as number) > node.maximum))) throw new Error("Invalid report number");
     if (typeof value === "string" && typeof node.maxLength === "number" && value.length > node.maxLength) throw new Error("Report text exceeds its limit");
     if (Array.isArray(node.enum) && !node.enum.includes(value)) throw new Error("Invalid report choice");
-    return value;
+    return options.boundedNumbers && !decoding && (node.type === 'number' || node.type === 'integer') ? String(value) : value;
   }
 
   return {

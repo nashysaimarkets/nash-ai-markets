@@ -1,144 +1,67 @@
 "use client";
-
-import OrbitalInstrument from "./OrbitalInstrument";
-
-/* Uploaded charts are private data URLs and intentionally bypass next/image. */
+/* Private original images intentionally bypass next/image. */
 /* eslint-disable @next/next/no-img-element */
+import {useEffect,useId,useRef,useState} from 'react';
+import {effectiveLiquidityGeometry,type LiquidityGeometrySource} from './liquidity-guard';
+import {canonicalizePocketGeometry} from '../lib/pocket-geometry';
+import {evidencePriceRange} from './evidence-price';
+import {chartGridRows} from './chart-grid-rows';
+import {verifyOriginalAxis} from './browser-axis-ocr';
+import type {AxisVerification} from './axis-verification';
+import {readCandlePixels,type CandlePixels} from './candle-pixels';
+import {preciseLiquidityZones} from './precise-liquidity';
 
-import { useId, useMemo, useState, type SyntheticEvent } from "react";
-import {
-  parseLiquidityCurrentPrice,
-  effectiveLiquidityGeometry,
-  projectLiquidityPrice,
-  projectLiquidityZones,
-  type LiquidityPlotBounds,
-  type LiquidityScaleAnchor,
-  type LiquidityShield,
-} from "./liquidity-guard";
-import { canonicalizePocketGeometry } from "../lib/pocket-geometry";
-import { evidencePriceRange as zonePriceLabel } from "./evidence-price";
+type GuardAnalysis=LiquidityGeometrySource & {instrument?:string;timeframe:string;currentPrice?:string;evidenceQuality?:LiquidityGeometrySource['evidenceQuality'] & {instrumentConfidence?:string;timeframeConfidence?:string;scaleReadable?:boolean;limitations?:string[]};trustGate?:{identityLocked?:boolean;scaleLocked?:boolean}};
+export default function LiquidityGuardOverlay({analysis,sourceImage,onRescan,rescanning=false,errorMessage=''}:{analysis:GuardAnalysis;sourceImage:string;onRescan?:()=>void;rescanning?:boolean;errorMessage?:string}){
+ const headingId=useId(),detailId=useId();
+ const imageRef=useRef<HTMLImageElement>(null);
+ const [ready,setReady]=useState(0),[visible,setVisible]=useState(true),[selection,setSelection]=useState(0);
+ const [measured,setMeasured]=useState<{key:string;width:number;height:number;axis:AxisVerification|null;pixels:CandlePixels|null}|null>(null);
+ const raw=effectiveLiquidityGeometry(analysis);
+ const geometry=canonicalizePocketGeometry({plotBounds:raw.plotBounds,priceScaleAnchors:raw.priceScaleAnchors,liquidityShield:raw.liquidityShield}) as typeof raw;
+ const key=JSON.stringify([sourceImage,geometry.plotBounds,geometry.priceScaleAnchors,analysis.instrument,analysis.timeframe,analysis.evidenceQuality,analysis.trustGate,raw.evidenceQuality]);
+ const current=measured?.key===key?measured:null;
+ const quality=analysis.evidenceQuality;
+ const unsupported=(quality?.limitations??[]).some(t=>/\blog(?:arithmic)?\b|non[- ]linear/i.test(t));
+ const identity=!unsupported&&quality?.instrumentConfidence==='HIGH'&&quality?.timeframeConfidence==='HIGH'&&analysis.trustGate?.identityLocked;
+ const readable=raw.evidenceQuality?.chartReadability==='CLEAR'&&raw.evidenceQuality?.candlesReadable===true;
+ const shield=geometry.liquidityShield;
+ useEffect(()=>{
+  const image=imageRef.current,bounds=geometry.plotBounds;
+  if(!sourceImage||!image?.complete||!image.naturalWidth||!bounds)return;
+  const controller=new AbortController(),base={key,width:image.naturalWidth,height:image.naturalHeight,axis:null,pixels:null as CandlePixels|null};
+  setMeasured(base);
+  if(!identity||!readable){setMeasured({...base,axis:{status:'held',reason:'Chart identity or candle evidence needs verification.'}});return ()=>controller.abort();}
+  if(shield?.status!=='VISIBLE_RISK_ZONES')return ()=>controller.abort();
+  let rows:number[]=[];
+  try{const canvas=document.createElement('canvas');canvas.width=base.width;canvas.height=base.height;const ctx=canvas.getContext('2d',{willReadFrequently:true});if(ctx){ctx.drawImage(image,0,0);const raster=ctx.getImageData(0,0,base.width,base.height);rows=chartGridRows(raster,bounds);base.pixels=readCandlePixels(raster,bounds);}canvas.width=canvas.height=1;}catch{}
+  void verifyOriginalAxis(image,bounds,rows,geometry.priceScaleAnchors??[],controller.signal).then(axis=>{if(!controller.signal.aborted)setMeasured({...base,axis});});
+  return ()=>controller.abort();
+ // key contains the complete source image, scale, identity and quality evidence.
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ },[key,ready,shield?.status]);
+ const result=preciseLiquidityZones(shield,analysis.currentPrice,geometry.priceScaleAnchors??[],geometry.plotBounds,current?.axis??null,current?.width??0,current?.height??0,current?.pixels??null);
+ const zones=identity&&readable?result.zones:[];
+ const selected=zones[selection]??zones[0];
+ const withheldReason=shield?.status==='INSUFFICIENT_EVIDENCE'
+  ? shield.summary||'The scan could not establish sufficient candle and price evidence.'
+  : result.reason;
+ const state=!shield?'unavailable':shield.status==='NO_VISIBLE_RISK_ZONES'&&identity&&readable?'verified-none':zones.length?'locked':(!current||current.axis===null)&&geometry.plotBounds&&identity&&readable&&shield.status==='VISIBLE_RISK_ZONES'?'checking':'withheld';
+ const status=state==='locked'?`${zones.length} pixel-checked ${zones.length===1?'area':'areas'} · ${current?.axis?.status==='verified'?current.axis.anchors.length:0} axis labels`:state==='checking'?'Verifying the original price labels…':state==='verified-none'?'NO CLEAR STOP-RISK CLUSTER':state==='unavailable'?'LIQUIDITY GUARD UNAVAILABLE':'OVERLAY WITHHELD';
+ return <section className="psLiquidityGuard psLiquidityPrecise" data-status={state} aria-labelledby={headingId}>
+  <header><div><span>LIQUIDITY GUARD</span><h2 id={headingId}>{analysis.instrument??'Source chart'} <b>{analysis.timeframe}</b></h2><small>Visually inferred stop-risk areas</small></div>{zones.length?<button type="button" aria-pressed={visible} onClick={()=>setVisible(v=>!v)}>{visible?'HIDE OVERLAY':'SHOW OVERLAY'}</button>:onRescan&&state!=='checking'&&state!=='verified-none'?<button type="button" onClick={onRescan} disabled={rescanning}>{rescanning?'REANALYSING…':'REANALYSE CHART'}</button>:null}</header>
+  {errorMessage?<p className="psLiquidityError" role="alert">{errorMessage}</p>:null}
+  <div className="psLiquidityStatus" role="status" aria-live="polite"><i data-ready={state==='locked'||state==='verified-none'}/><div><strong>{status}</strong>{state==='withheld'?<p>{!identity||!readable?'Chart identity or candle evidence needs verification.':withheldReason}</p>:state==='unavailable'?<p>Your chart remains unchanged; retry when ready.</p>:state==='verified-none'?<p>Nothing has been added to your chart.</p>:null}</div><span>Original screenshot</span></div>
 
-type LiquidityGuardAnalysis = {
-  currentPrice?: string;
-  timeframe: string;
-  evidenceQuality?: { chartReadability?: string; candlesReadable?: boolean };
-  plotBounds?: LiquidityPlotBounds;
-  priceScaleAnchors?: LiquidityScaleAnchor[];
-  liquidityShield?: LiquidityShield;
-  liquidityGeometry?: {
-    plotBounds?: LiquidityPlotBounds;
-    priceScaleAnchors?: LiquidityScaleAnchor[];
-    liquidityShield?: LiquidityShield;
-    evidenceQuality?: { chartReadability?: string; candlesReadable?: boolean };
-  };
-};
+  <figure className="psLiquidityCanvas" style={current?{width:`min(100%, calc(65vh * ${current.width/current.height}), calc(760px * ${current.width/current.height}))`}:undefined}>
+   <img ref={imageRef} src={sourceImage} alt={`${analysis.instrument??'Uploaded trading chart'} ${analysis.timeframe} original screenshot`} onLoad={()=>setReady(v=>v+1)}/>
+   {visible&&zones.length?<svg className="psLiquidityVector" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="Price-scale and candle-pixel checked stop-risk bands">{zones.map((z,i)=><g key={`${z.pattern}-${z.priceLow}-${i}`} data-side={z.side} data-selected={selected===z}>
+    {z.height>0?<rect x={z.left} y={z.top} width={z.right-z.left} height={z.height}/>:null}<line x1={z.left} x2={z.right} y1={z.lineY} y2={z.lineY} vectorEffect="non-scaling-stroke"/>
+   </g>)}</svg>:null}
+  </figure>
+  {state==='withheld'&&!zones.length&&shield?.status==='VISIBLE_RISK_ZONES'&&shield.zones.length?<div className="psLiquidityHeldCandidates" aria-label="Reported areas awaiting placement verification"><p><strong>{shield.zones.length} reported {shield.zones.length===1?'candidate':'candidates'} · drawing unverified</strong></p><p>The scan reported these areas, but precise placement was not verified. No bands have been added to your chart.</p>{shield.zones.map((zone,i)=><article key={`${zone.pattern}-${i}`}><strong>{zone.label||zone.pattern.replaceAll('_',' ')} · {evidencePriceRange(zone.priceLow,zone.priceHigh)}</strong><small>{zone.confidence} reported confidence · {zone.side.replaceAll('_',' ').toLowerCase()}</small><p>{zone.evidence}</p><p><strong>Why withheld:</strong> {result.candidateReasons.find(r=>r.index===i)?.reason??result.reason}</p></article>)}</div>:null}
+  {zones.length?<><nav className="psLiquidityChoices" aria-label="Inspect stop-risk areas">{zones.map((z,i)=><button key={`${z.pattern}-${i}`} type="button" data-side={z.side} aria-pressed={selected===z} aria-controls={detailId} onClick={()=>setSelection(i)}><span>{z.side==='ABOVE_PRICE'?'Above chart price':z.side==='BELOW_PRICE'?'Below chart price':'At chart price'}</span><strong>{evidencePriceRange(z.priceLow,z.priceHigh)}</strong><small>{z.label||z.pattern.replaceAll('_',' ')}</small></button>)}</nav><div id={detailId} className="psLiquidityDetail" aria-live="polite"><strong>{selected.label||selected.pattern.replaceAll('_',' ')}</strong><p>{selected.evidence}</p><small>{selected.touchPoints.length} pixel-checked candle endpoints · HIGH confidence in reported visual structure</small></div></>:null}
 
-type LiquidityGuardDisplayState = "locked" | "verified-none" | "withheld" | "unavailable";
-
-const EMPTY_ANCHORS: LiquidityScaleAnchor[] = [];
-
-function patternLabel(pattern: string) {
-  return pattern.replaceAll("_", " ");
-}
-
-function sideLabel(side: "ABOVE_PRICE" | "AT_PRICE" | "BELOW_PRICE") {
-  return side === "ABOVE_PRICE" ? "ABOVE CURRENT" : side === "BELOW_PRICE" ? "BELOW CURRENT" : "AT CURRENT PRICE";
-}
-
-export default function LiquidityGuardOverlay({ analysis, sourceImage, onRescan, rescanning = false, errorMessage = "" }: { analysis: LiquidityGuardAnalysis; sourceImage: string; onRescan?: () => void; rescanning?: boolean; errorMessage?: string }) {
-  const [overlayVisible, setOverlayVisible] = useState(true);
-  const [landscape, setLandscape] = useState(false);
-  const instanceId = useId().replaceAll(":", "");
-  const headingId = `liquidity-guard-${instanceId}`;
-  const aboveGradientId = `liquidity-above-${instanceId}`;
-  const atGradientId = `liquidity-at-${instanceId}`;
-  const belowGradientId = `liquidity-below-${instanceId}`;
-  const scanGeometry = effectiveLiquidityGeometry(analysis);
-  const geometry = useMemo(() => canonicalizePocketGeometry({
-    plotBounds: scanGeometry.plotBounds,
-    priceScaleAnchors: scanGeometry.priceScaleAnchors,
-    liquidityShield: scanGeometry.liquidityShield,
-  }) as Pick<LiquidityGuardAnalysis, "plotBounds" | "priceScaleAnchors" | "liquidityShield">, [scanGeometry.liquidityShield, scanGeometry.plotBounds, scanGeometry.priceScaleAnchors]);
-  const anchors = geometry.priceScaleAnchors ?? EMPTY_ANCHORS;
-  const plotBounds = geometry.plotBounds;
-  const zones = useMemo(() => projectLiquidityZones(
-    geometry.liquidityShield,
-    analysis.currentPrice,
-    anchors,
-    plotBounds,
-    scanGeometry.evidenceQuality,
-  ), [analysis.currentPrice, geometry.liquidityShield, plotBounds, anchors, scanGeometry.evidenceQuality]);
-  const currentPrice = parseLiquidityCurrentPrice(analysis.currentPrice);
-  const currentY = currentPrice === null ? null : projectLiquidityPrice(currentPrice, anchors, plotBounds);
-  const shield = geometry.liquidityShield;
-  const displayState: LiquidityGuardDisplayState = zones.length
-    ? "locked"
-    : !shield
-      ? "unavailable"
-      : shield.status === "NO_VISIBLE_RISK_ZONES"
-        ? "verified-none"
-        : "withheld";
-  const lockedSummary = shield?.summary || "Visible candle reactions align with the calibrated price rows.";
-  const scaleEvidenceLabel = anchors.length >= 3 ? "THREE-LABEL SCALE CHECK" : anchors.length === 2 ? "TWO-LABEL SCALE CHECK" : "PRICE SCALE CHECK";
-  const emptyState = displayState === "verified-none"
-    ? {
-        eyebrow: "SCAN COMPLETE",
-        title: "NO CLEAR STOP-RISK CLUSTER",
-        detail: "This chart does not show a defensible stop-risk cluster to mark. Nothing has been added to your chart.",
-      }
-    : displayState === "withheld"
-      ? {
-          eyebrow: "PROTECTION ACTIVE",
-          title: "OVERLAY WITHHELD",
-          detail: "Bullseye could not verify a stop-risk zone precisely enough, so it left your chart unmarked rather than guess.",
-        }
-      : {
-          eyebrow: "SCAN NOT COMPLETED",
-          title: "LIQUIDITY GUARD UNAVAILABLE",
-          detail: "The stop-risk scan did not complete. Your chart remains unchanged; retry the analysis when ready.",
-        };
-
-  const recordAspect = (event: SyntheticEvent<HTMLImageElement>) => {
-    const image = event.currentTarget;
-    setLandscape(image.naturalWidth / Math.max(1, image.naturalHeight) > 1.35);
-  };
-
-  return <section className="psLiquidityGuard" data-visible={overlayVisible} data-status={displayState} aria-labelledby={headingId}>
-    <header className="psInstrumentHeader"><OrbitalInstrument kind="liquidity" />
-      <div><span>◉ LIQUIDITY GUARD</span><h2 id={headingId}>VISUAL STOP-RISK MAP</h2><small>{scaleEvidenceLabel} · MULTIPLE CANDLE TOUCHES</small></div>
-      {displayState === "locked" ? <button type="button" aria-pressed={overlayVisible} onClick={() => setOverlayVisible((visible) => !visible)}>{overlayVisible ? "HIDE OVERLAY" : "SHOW OVERLAY"}</button>
-        : displayState !== "verified-none" && onRescan ? <button type="button" disabled={rescanning} onClick={onRescan}>{rescanning ? "REANALYSING…" : "REANALYSE CHART"}</button> : null}
-    </header>
-    {errorMessage ? <p className="psLiquidityError" role="alert">{errorMessage}</p> : null}
-    {displayState !== "locked" ? <div className="psLiquidityStatus" data-state={displayState} role="status" aria-live="polite"><i aria-hidden="true">{displayState === "verified-none" ? "✓" : displayState === "withheld" ? "🛡" : "!"}</i><div><small>{emptyState.eyebrow}</small><strong>{emptyState.title}</strong><p>{emptyState.detail}</p></div><span>ORIGINAL CHART UNCHANGED</span></div> : null}
-    <div className="psLiquidityCanvas" data-landscape={landscape}>
-      <img src={sourceImage} alt="Uploaded trading chart" onLoad={recordAspect} />
-      {overlayVisible && displayState === "locked" ? <>
-        <svg className="psLiquidityVector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <linearGradient id={aboveGradientId} x1="0" x2="1"><stop offset="0" stopColor="#ff6277" stopOpacity=".08"/><stop offset=".58" stopColor="#ff6277" stopOpacity=".28"/><stop offset="1" stopColor="#ffb35a" stopOpacity=".08"/></linearGradient>
-            <linearGradient id={atGradientId} x1="0" x2="1"><stop offset="0" stopColor="#ffc857" stopOpacity=".08"/><stop offset=".58" stopColor="#ffc857" stopOpacity=".32"/><stop offset="1" stopColor="#ff8f4d" stopOpacity=".08"/></linearGradient>
-            <linearGradient id={belowGradientId} x1="0" x2="1"><stop offset="0" stopColor="#55d9ff" stopOpacity=".08"/><stop offset=".58" stopColor="#55d9ff" stopOpacity=".28"/><stop offset="1" stopColor="#8b7bff" stopOpacity=".08"/></linearGradient>
-          </defs>
-          {zones.map((zone, index) => <g key={`${zone.side}-${zone.pattern}-${zone.lineY}-${index}`} data-side={zone.side} data-confidence={zone.confidence}>
-            <rect x={zone.left} y={zone.top} width={zone.right - zone.left} height={zone.height} rx=".5" fill={zone.side === "ABOVE_PRICE" ? `url(#${aboveGradientId})` : zone.side === "BELOW_PRICE" ? `url(#${belowGradientId})` : `url(#${atGradientId})`}/>
-            <line x1={zone.left} y1={zone.lineY} x2={zone.right} y2={zone.lineY} vectorEffect="non-scaling-stroke"/>
-            <path d={`M ${zone.left} ${zone.lineY - 1.5} V ${zone.lineY + 1.5} M ${zone.right} ${zone.lineY - 1.5} V ${zone.lineY + 1.5}`} vectorEffect="non-scaling-stroke"/>
-            <g data-touch>{zone.touchPoints.map((point, pointIndex) => <circle key={`${point.x}-${point.y}-${pointIndex}`} cx={point.x} cy={point.y} r=".72" vectorEffect="non-scaling-stroke"/>)}</g>
-          </g>)}
-          {currentY !== null ? <g data-current><line x1={plotBounds?.left ?? 4} y1={currentY} x2={plotBounds?.right ?? 96} y2={currentY} vectorEffect="non-scaling-stroke"/></g> : null}
-        </svg>
-        <div className="psLiquidityLabels" aria-hidden="true">
-          {zones.map((zone, index) => <span key={`${zone.label}-${zone.lineY}-${index}`} data-side={zone.side} data-confidence={zone.confidence} style={{ top: `clamp(34px, ${zone.lineY}%, calc(100% - 34px))`, left: `${Math.min(74, Math.max(3, zone.left + 1.5))}%` }}><i>{zone.side === "ABOVE_PRICE" ? "▲" : zone.side === "BELOW_PRICE" ? "▼" : "◆"}</i><b>{zone.label || patternLabel(zone.pattern)}</b><small>{zonePriceLabel(zone.priceLow, zone.priceHigh)} · {sideLabel(zone.side)}</small></span>)}
-          {currentY !== null ? <em style={{ top: `clamp(22px, ${currentY}%, calc(100% - 22px))`, right: `${Math.max(2, 100 - (plotBounds?.right ?? 96))}%` }}>CURRENT · {analysis.currentPrice}</em> : null}
-        </div>
-      </> : null}
-      {displayState === "locked" ? <div className="psLiquidityCorners" aria-hidden="true"><i/><i/><i/><i/></div> : null}
-    </div>
-    {displayState === "locked" ? <div className="psLiquidityIntel">
-      <article><small>VISIBLE RISK MAP</small><strong>{`${zones.length} SCALE-CHECKED AREA${zones.length === 1 ? "" : "S"}`}</strong><p>{lockedSummary}</p></article>
-      <ol aria-label="Visually inferred stop-risk areas">{zones.slice(0, 4).map((zone, index) => <li key={`${zone.pattern}-${index}`} data-side={zone.side}><i>{index + 1}</i><div><strong>{zone.label || patternLabel(zone.pattern)}</strong><span>{sideLabel(zone.side)} · {patternLabel(zone.pattern)} · {zonePriceLabel(zone.priceLow, zone.priceHigh)}</span></div><b>{zone.confidence}</b></li>)}</ol>
-    </div> : null}
-    <footer><div><span>🛡 STRUCTURAL GUIDANCE</span><p>{displayState === "locked" ? shield?.stopGuidance || "Keep invalidation structurally decisive and verify every marked area on the original chart." : displayState === "verified-none" ? "Keep using the invalidation defined by your setup; no separate stop-risk cluster was verified." : "Use the invalidation defined by your setup; Bullseye will not suggest a stop area without visible proof."}</p></div><small>MARKED AREAS ARE VISUALLY INFERRED STOP-RISK CANDIDATES. THEY ARE NOT GUARANTEED REVERSALS AND DO NOT VERIFY RESTING ORDERS. CHECK THE ORIGINAL PLATFORM.</small></footer>
-  </section>;
+  <footer><p>Areas are inferred from visible candle structure. Price-scale and candle-pixel checks verify placement; they do not verify resting orders or guarantee reversals.</p><small>Source screenshot only · not a live order book. Confirm on your original platform.</small></footer>
+ </section>;
 }

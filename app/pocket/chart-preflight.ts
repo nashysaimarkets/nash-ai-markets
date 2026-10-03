@@ -40,3 +40,13 @@ export function confirmedChartFacts(facts: ChartConfirmation | null): ChartConfi
 export function preflightAllowsAnalysis(status: PreflightStatus) {
   return !["IDLE", "CHECKING", "RETAKE"].includes(status);
 }
+
+/** Advice follows observable quality flags, never the screenshot orientation. */
+export function chartCaptureGuidance(result: Pick<ChartPreflight, "priceScaleVisible" | "candlesReadable" | "enoughHistory" | "instrumentConfidence" | "timeframeConfidence">) {
+  const advice: string[] = [];
+  if (!result.candlesReadable) advice.push("Zoom in until candle bodies and wicks are distinct. Use the original screenshot rather than a camera photo.");
+  if (!result.enoughHistory) advice.push("Include more candles to show the preceding swing and repeated reactions. Try landscape if it gives you more history while keeping candles clear.");
+  if (!result.priceScaleVisible) advice.push("Keep the full price scale visible with several readable labels.");
+  if (result.instrumentConfidence !== "HIGH" || result.timeframeConfidence !== "HIGH") advice.push("Keep the instrument name and selected timeframe visible.");
+  return advice;
+}

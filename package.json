@@ -45,7 +45,8 @@
     "audit:desktop": "node --experimental-strip-types audit/src/run-audit.ts --mode=desktop",
     "audit:mobile": "node --experimental-strip-types audit/src/run-audit.ts --mode=mobile",
     "audit:all": "node --experimental-strip-types audit/src/run-audit.ts --mode=all",
-    "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all"
+    "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all",
+    "postinstall": "node scripts/prepare-axis-ocr.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
@@ -58,13 +59,15 @@
     "@capacitor/share": "^8.0.1",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.2",
+    "@tesseract.js-data/eng": "1.0.0",
     "drizzle-orm": "0.45.2",
     "lightweight-charts": "^5.2.0",
     "next": "16.2.12",
     "openai": "6.48.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "stripe": "^18.5.0"
+    "stripe": "^18.5.0",
+    "tesseract.js": "6.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
@@ -93,5 +96,5 @@
     "sharp": "0.35.0"
   },
   "type": "module",
-  "displayName": "NASH AI Markets — Project Bullseye"
+  "displayName": "NASH AI Markets \u2014 Project Bullseye"
 }

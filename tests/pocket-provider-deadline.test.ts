@@ -45,7 +45,8 @@ test("real-chart precision exhaustion cannot starve context recovery or return a
   const source = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
   assert.match(source, /remainingCalls: contextImage \? 4 : 2/);
   assert.match(source, /reasoning: \{ effort: "low" \}/);
-  assert.match(source, /max_output_tokens: 5000/);
+  assert.match(source, /max_output_tokens: 6500/);
+  assert.match(source, /schema: boundedPrecision\.schema/);
   assert.match(source, /first\.status !== "completed" \|\| !output/);
   assert.match(source, /rescue\.status !== "completed" \|\| !rescueOutput/);
   assert.match(source, /\$\{label\} precision provider completion/);

@@ -85,15 +85,13 @@ test("Liquidity rescan retries a transient response with one correlation id", as
   assert.equal(ids[0], ids[1]);
 });
 
-test("mobile level scanner has independent label slots and motion controls", () => {
+test("mobile scanner preserves original screenshot geometry and exposes level visibility", () => {
   const scanner = readFileSync("app/pocket/InteractiveLevelScanner.tsx", "utf8");
-  const styles = readFileSync("app/pocket/pocket-level-scanner.css", "utf8");
   assert.doesNotMatch(client + scanner, /className="psMapIntro"/);
-  assert.match(scanner, /entry\.labelY/);
-  assert.match(scanner, /entry\.y/);
-  assert.match(scanner, /aria-pressed=\{selection === entry\.id\}/);
-  assert.match(styles, /--scanner-count/);
-  assert.match(styles, /prefers-reduced-motion/);
-  assert.match(styles, /data-spatial-motion="off"/);
+  assert.match(scanner, /Hide levels/);
+  assert.match(scanner, /Show levels/);
+  assert.match(scanner, /Price-scale calibrated levels/);
+  assert.match(scanner, /preserveAspectRatio="none"/);
+  assert.match(scanner, /sourceImage/);
   assert.doesNotMatch(depth, /min-height: 108px|\.psDecisionMap \.psBattleIntel \{ top:/);
 });

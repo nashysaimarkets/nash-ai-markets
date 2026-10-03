@@ -134,3 +134,47 @@
 @media (prefers-reduced-motion: reduce) {
   .psLiquidityGuard::before { animation: none; }
 }
+
+/* Source-chart precision view: quiet controls, unaltered raster, no label blocks. */
+.psLiquidityGuard.psLiquidityPrecise { background:#0d1d2b; border:1px solid #89afc733; box-shadow:0 12px 32px #0003; }
+.psLiquidityGuard.psLiquidityPrecise::before { display:none; }
+.psLiquidityPrecise > header { background:transparent; border-bottom:1px solid #89afc726; gap:12px; padding:18px; }
+.psLiquidityPrecise > header h2 { font:600 18px/1.4 var(--font-geist-sans),sans-serif; letter-spacing:0; text-shadow:none; }
+.psLiquidityPrecise > header h2 b { margin-left:8px; padding:4px 7px; background:#a4c6dd12; border-radius:5px; color:#b7cddd; font:500 12px var(--font-geist-mono),monospace; }
+.psLiquidityPrecise > header div > span { color:#aec8d9; font:600 11px/1.5 var(--font-geist-sans),sans-serif; letter-spacing:.12em; }
+.psLiquidityPrecise > header div > small { color:#9fb3c2; font:400 12px/1.5 var(--font-geist-sans),sans-serif; letter-spacing:0; }
+.psLiquidityPrecise > header button { flex-shrink:0; border-radius:7px; background:#a4c6dd12; border-color:#a4c6dd33; color:#dde9f1; font:500 11px var(--font-geist-sans),sans-serif; box-shadow:none; letter-spacing:.02em; }
+.psLiquidityPrecise .psLiquidityStatus { display:flex; gap:8px; background:transparent; border:0; padding:14px 18px; color:#afc4d3; }
+.psLiquidityPrecise .psLiquidityStatus > i { width:6px; height:6px; flex-shrink:0; border:0; border-radius:50%; background:#c6a96d; box-shadow:none; }
+.psLiquidityPrecise .psLiquidityStatus > i[data-ready="true"] { background:#67ceb1; }
+.psLiquidityPrecise .psLiquidityStatus strong { margin:0; color:inherit; font:500 12px/1.5 var(--font-geist-sans),sans-serif; letter-spacing:0; }
+.psLiquidityPrecise .psLiquidityStatus p { margin:5px 0 0; }
+.psLiquidityPrecise .psLiquidityStatus > span { margin-left:auto; border:0; padding:0; color:#8fa7b8; font:400 11px var(--font-geist-sans),sans-serif; letter-spacing:0; }
+.psLiquidityPrecise .psLiquidityCanvas { margin:0 auto 16px; border:1px solid #a4c6dd30; border-radius:7px; background:#080d12; box-shadow:none; }
+.psLiquidityPrecise .psLiquidityCanvas > img { filter:none; }
+.psLiquidityPrecise .psLiquidityVector rect { fill:#66cbbb14; stroke:#66cbbb55; stroke-width:1px; vector-effect:non-scaling-stroke; }
+.psLiquidityPrecise .psLiquidityVector [data-side="ABOVE_PRICE"] rect { fill:#ee889514; stroke:#ee889555; }
+.psLiquidityPrecise .psLiquidityVector [data-side="AT_PRICE"] rect { fill:#ddbc7114; stroke:#ddbc7155; }
+.psLiquidityPrecise .psLiquidityVector [data-side] line { stroke-width:1px; filter:none; opacity:.55; }
+.psLiquidityPrecise .psLiquidityVector [data-selected="true"] line { opacity:1; stroke-width:1.5px; }
+.psLiquidityChoices { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; padding:0 18px 16px; }
+.psLiquidityChoices button { min-height:82px; text-align:left; padding:12px; border:1px solid #89afc730; border-left:2px solid #72cabb; border-radius:7px; color:#deebf3; background:#afcfe508; }
+.psLiquidityChoices button[data-side="ABOVE_PRICE"] { border-left-color:#e38a98; }
+.psLiquidityChoices button[data-side="AT_PRICE"] { border-left-color:#d8b967; }
+.psLiquidityChoices button[aria-pressed="true"] { background:#a4c6dd17; border-color:#89afc766; }
+.psLiquidityChoices :is(span,strong,small) { display:block; }
+.psLiquidityChoices span { color:#a4bdce; font-size:11px; }
+.psLiquidityChoices strong { margin:5px 0; font:600 16px var(--font-geist-mono),monospace; }
+.psLiquidityChoices small { color:#9eb4c3; font-size:12px; }
+.psLiquidityChoices button:focus-visible { outline:2px solid #a8d7e9; outline-offset:3px; }
+.psLiquidityDetail { margin:0 18px 18px; color:#e0edf4; font-size:13px; }
+.psLiquidityDetail p { color:#afc4d3; line-height:1.6; margin:6px 0; }
+.psLiquidityDetail small { color:#8fa7b8; font-size:11px; }
+.psLiquidityGuard.psLiquidityPrecise > footer { background:transparent; border-color:#89afc726; padding:14px 18px; }
+.psLiquidityGuard.psLiquidityPrecise > footer p { color:#9eb6c6; }
+.psLiquidityGuard.psLiquidityPrecise > footer small { text-align:left; text-transform:none; font:400 11px/1.6 var(--font-geist-sans),sans-serif; letter-spacing:0; }
+@media(max-width:560px) { .psLiquidityPrecise > header { flex-direction:row; flex-wrap:wrap; }.psLiquidityPrecise > header button { align-self:center; }.psLiquidityPrecise .psLiquidityStatus { flex-wrap:wrap; }.psLiquidityChoices { grid-template-columns:1fr; } }
+
+.psLiquidityHeldCandidates{padding:16px;border-top:1px solid #496178;background:#102337;color:#d9e6ef;font-size:13px;line-height:1.55}
+.psLiquidityHeldCandidates article{padding:12px 0;border-top:1px solid #496178}
+.psLiquidityHeldCandidates small{display:block;margin-top:5px;color:#b4c5d2}

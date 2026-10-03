@@ -8,8 +8,8 @@ const route = readFileSync("app/api/pocket/levels/route.ts", "utf8");
 test("Liquidity Guard and Signal Pulse remain separate command tools", () => {
   assert.match(client, /number: "02", label: "LIQUIDITY GUARD"/);
   assert.match(client, /number: "07", label: "SIGNAL PULSE"/);
-  assert.match(client, /mode === "guard" \? <LiquidityGuardOverlay/);
-  assert.match(client, /mode === "pulse" \? <SignalPulse analysis=\{analysis\}/);
+  assert.match(client, /item.id === "guard" \? <LiquidityGuardOverlay/);
+  assert.match(client, /item.id === "pulse" \? <SignalPulse analysis=\{analysis\}/);
   assert.match(client, /VISIBLE IN THIS SNAPSHOT/);
 });
 

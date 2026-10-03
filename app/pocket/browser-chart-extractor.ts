@@ -18,13 +18,21 @@ const pixel = (image: PixelImage, x: number, y: number) => {
 };
 
 async function decode(dataUrl: string): Promise<PixelImage> {
-  const bitmap = await createImageBitmap(await (await fetch(dataUrl)).blob());
-  const scale = Math.min(1, 900 / Math.max(bitmap.width, bitmap.height));
-  const width = Math.max(1, Math.round(bitmap.width * scale)), height = Math.max(1, Math.round(bitmap.height * scale));
+  // Uploaded bytes are already local. A fetch(data:) round trip can fail in
+  // embedded WebKit browsers before any analysis request reaches the server.
+  // Use the same direct image decode as the upload preview instead.
+  const source = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error("This browser could not decode the chart for measurement. Choose the screenshot again."));
+    image.src = dataUrl;
+  });
+  const scale = Math.min(1, 900 / Math.max(source.naturalWidth, source.naturalHeight));
+  const width = Math.max(1, Math.round(source.naturalWidth * scale)), height = Math.max(1, Math.round(source.naturalHeight * scale));
   const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
   const context = canvas.getContext("2d", { willReadFrequently: true });
   if (!context) throw new Error("Chart measurement is unavailable in this browser.");
-  context.drawImage(bitmap, 0, 0, width, height); bitmap.close();
+  context.drawImage(source, 0, 0, width, height);
   return { data: context.getImageData(0, 0, width, height).data, width, height };
 }
 

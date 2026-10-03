@@ -204,7 +204,7 @@ test("customer surface exposes a toggle, distinct safe states and explicit non-g
     readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8"),
   ]);
   assert.match(component, /LIQUIDITY GUARD/);
-  assert.match(component, /TWO-LABEL SCALE CHECK/);
+  assert.match(component, /verifyOriginalAxis/);
   assert.doesNotMatch(component, /THREE-ANCHOR SCALE/);
   assert.match(component, /HIDE OVERLAY/);
   assert.match(component, /REANALYSE CHART/);
@@ -212,8 +212,8 @@ test("customer surface exposes a toggle, distinct safe states and explicit non-g
   assert.match(component, /NO CLEAR STOP-RISK CLUSTER/);
   assert.match(component, /LIQUIDITY GUARD UNAVAILABLE/);
   assert.doesNotMatch(component, /No candidate survived scale, side, candle-row and readability verification/);
-  assert.match(component, /NOT GUARANTEED REVERSALS/);
-  assert.match(component, /projectLiquidityZones/);
+  assert.match(component, /do not verify resting orders or guarantee reversals/);
+  assert.match(component, /preciseLiquidityZones/);
   assert.match(client, /id: "guard"/);
   assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 18/);
   assert.match(styles, /\.psLiquidityVector/);

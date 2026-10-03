@@ -6,7 +6,8 @@ import LiquidityGuardOverlay from "../../app/pocket/LiquidityGuardOverlay";
 const base = {
   timeframe: "15m",
   currentPrice: "2,900",
-  evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true },
+  evidenceQuality: { chartReadability: "CLEAR", candlesReadable: true, instrumentConfidence: "HIGH", timeframeConfidence: "HIGH" },
+  trustGate: {identityLocked:true},
   plotBounds: { left: 8, top: 12, right: 88, bottom: 86 },
   priceScaleAnchors: [{ price: 3000, y: 20 }, { price: 2900, y: 50 }, { price: 2800, y: 80 }],
 };
@@ -30,17 +31,16 @@ test("verified Liquidity Guard renders source chart, risk band, touch evidence a
       }],
     },
   }}/>)
-  assert.match(html, /VISUAL STOP-RISK MAP/);
-  assert.match(html, /data-touch="true"/);
-  assert.match(html, /BELOW CURRENT/);
-  assert.match(html, /SCALE-CHECKED AREA/);
-  assert.doesNotMatch(html, /OVERLAY WITHHELD/);
+  assert.match(html, /original screenshot/);
+  assert.match(html, /Verifying the original price labels/);
+  assert.doesNotMatch(html, /<svg|psLiquidityLabels|data-touch/);
+  assert.match(html, /do not verify resting orders/);
 });
 
 test("poor evidence leaves the source chart unobstructed and explains the withheld overlay once", () => {
   const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
     ...base,
-    evidenceQuality: { chartReadability: "POOR", candlesReadable: false },
+    evidenceQuality: { ...base.evidenceQuality, chartReadability: "POOR", candlesReadable: false },
     liquidityShield: {
       status: "VISIBLE_RISK_ZONES",
       summary: "Untrusted model claim.",
@@ -59,8 +59,8 @@ test("poor evidence leaves the source chart unobstructed and explains the withhe
   }}/>)
   assert.match(html, /data-status="withheld"/);
   assert.match(html, /OVERLAY WITHHELD/);
-  assert.match(html, /Bullseye could not verify a stop-risk zone precisely enough/);
-  assert.equal(html.match(/Bullseye could not verify a stop-risk zone precisely enough/g)?.length, 1);
+  assert.match(html, /Chart identity or candle evidence needs verification/);
+  assert.equal(html.match(/Chart identity or candle evidence needs verification/g)?.length, 1);
   assert.doesNotMatch(html, /psLiquidityVector/);
   assert.doesNotMatch(html, /psLiquidityHold/);
   assert.doesNotMatch(html, /HIDE OVERLAY/);
@@ -96,6 +96,17 @@ test("a missing Liquidity Guard result reports unavailable without covering the 
   assert.doesNotMatch(html, /psLiquidityVector/);
 });
 
+test("insufficient evidence explains the completed hold instead of claiming OCR is still running", () => {
+  const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
+    ...base,
+    liquidityShield: {status:"INSUFFICIENT_EVIDENCE",summary:"No readable current-price marker is visible.",zones:[],stopGuidance:"Verify the source."},
+  }}/>);
+  assert.match(html, /OVERLAY WITHHELD/);
+  assert.match(html, /No readable current-price marker is visible/);
+  assert.doesNotMatch(html, /Verifying the original price labels/);
+  assert.doesNotMatch(html, /<svg/);
+});
+
 test("a Liquidity Guard request failure remains visible on the result screen", () => {
   const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={base} onRescan={() => undefined} errorMessage="The chart check timed out. Please retry."/>);
   assert.match(html, /role="alert"/);
@@ -105,7 +116,7 @@ test("a Liquidity Guard request failure remains visible on the result screen", (
 test("a dedicated verified Guard rescan is not vetoed by stale report readability", () => {
   const html = renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{
     ...base,
-    evidenceQuality: { chartReadability: "POOR", candlesReadable: false },
+    evidenceQuality: { ...base.evidenceQuality, chartReadability: "POOR", candlesReadable: false },
     liquidityGeometry: {
       plotBounds: base.plotBounds,
       priceScaleAnchors: base.priceScaleAnchors,
@@ -118,7 +129,18 @@ test("a dedicated verified Guard rescan is not vetoed by stale report readabilit
       },
     },
   }}/>);
-  assert.match(html, /data-status="locked"/);
-  assert.match(html, /SCALE-CHECKED AREA/);
+  assert.match(html, /Verifying the original price labels/);
+  assert.doesNotMatch(html, /<svg/);
   assert.doesNotMatch(html, /OVERLAY WITHHELD/);
+});
+
+
+test("held candidates remain reported rather than implying no areas were found",()=>{
+ const html=renderToStaticMarkup(<LiquidityGuardOverlay sourceImage="data:image/png;base64,AA==" analysis={{...base,trustGate:{identityLocked:false},liquidityShield:{status:"VISIBLE_RISK_ZONES",summary:"Reported lows",stopGuidance:"Verify",zones:[{side:"BELOW_PRICE",pattern:"EQUAL_LOWS",label:"Repeated lows",priceLow:2850,priceHigh:2852,confidence:"HIGH",evidence:"Reported reactions",touchPoints:[{x:25,y:65},{x:55,y:65}]}]}}}/>);
+ assert.match(html,/1 reported candidate · drawing unverified/);
+ assert.match(html,/Repeated lows · 2,850–2,852/);
+ assert.match(html,/No bands have been added/);
+ assert.ok(html.indexOf("psLiquidityCanvas") < html.indexOf("psLiquidityHeldCandidates"), "the original chart must precede candidate details");
+ assert.doesNotMatch(html,/NO CLEAR STOP-RISK CLUSTER/);
+ assert.doesNotMatch(html,/<svg/);
 });

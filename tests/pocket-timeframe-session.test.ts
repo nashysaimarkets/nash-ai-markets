@@ -6,6 +6,7 @@ import ts from "typescript";
 import { bundleForChart, createChartSession, mergeChartSession, previousComparableScan, selectedChartReport, comparisonIdentity } from "../app/pocket/chart-session";
 import { createSampleCharts } from "../app/pocket/sample-analysis";
 import { normalizePatternFrame } from "../app/pocket/chart-images";
+import { ScannerOnlyError } from "../app/pocket/independent-scanner";
 import { createScanMetrics } from "../app/api/pocket/scan-metrics";
 
 const samples = createSampleCharts();
@@ -145,23 +146,25 @@ test("monthly chart labels remain distinct from minute chart labels", () => {
 });
 
 test("the actual initial scan consumes a free use only after a readable result", async () => {
-  for (const outcome of ["poor", "unreadable", "failed", "ready"]) {
+  for (const outcome of ["poor", "unreadable", "failed", "ready", "scanners", "unlock-failed", "stale-scanners"]) {
     const report = structuredClone(samples[0].report!);
     if (outcome === "poor") report.evidenceQuality.chartReadability = "POOR";
     if (outcome === "unreadable") report.evidenceQuality.candlesReadable = false;
-    const h: vm.Context = { Error, createChartSession, currentImages: {image: "chart", contextImage: null, detailImage: null, fourHourImage: null, indicatorImage: null}, currentNames: [], resetChartSession: () => undefined, setResultCharts: () => undefined, image: "chart", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, sessionRevision: { current: 1 }, appleAccess: { isNative: true, entitled: false, freeUseConsumed: false }, reviewTarget: null, preflightStatus: "READY", contextImage: null, consumed: 0, published: null,
+    const h: vm.Context = { Error, ScannerOnlyError, standalone: null, createChartSession, currentImages: {image: "chart", contextImage: null, detailImage: null, fourHourImage: null, indicatorImage: null}, currentNames: [], resetChartSession: () => undefined, setResultCharts: () => undefined, image: "chart", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, sessionRevision: { current: 1 }, appleAccess: { isNative: true, entitled: false, freeUseConsumed: false }, reviewTarget: null, preflightStatus: "READY", contextImage: null, consumed: 0, published: null,
       isAppleNativeApp: () => true, refreshAppleAccess: async () => h.appleAccess,
-      preflightAllowsAnalysis: () => true, requestPocketAnalysis: async () => { if (outcome === "failed") throw new Error("timeout"); return report; },
-      consumeAppleFreeUse: async () => { h.consumed++; }, setAnalysis: (value: unknown) => { h.published = value; },
+      preflightAllowsAnalysis: () => true, requestPocketAnalysis: async () => { if (outcome === "failed") throw new Error("timeout"); if (["scanners", "unlock-failed", "stale-scanners"].includes(outcome)) throw new ScannerOnlyError("report timed out", {instrument: report.instrument} as any, "exact-source"); return report; },
+      consumeAppleFreeUse: async () => { if (outcome === "unlock-failed") throw new Error("access unavailable"); h.consumed++; if (outcome === "stale-scanners") h.sessionRevision.current++; }, setStandaloneScanners: (value: unknown) => { h.standalone = value; }, setAnalysis: (value: unknown) => { h.published = value; },
       recordAppleSuccessfulAnalysis: async () => undefined, rememberScan: async () => undefined,
       activity: [] as string[], trackGrowth: (event: string) => h.activity.push(event),
     };
     for (const name of ["setError", "setStockEvents", "setStockEventStatus", "setAppleAccess", "initialiseChartSession", "setResultView", "setImmersive", "setShowResultReveal", "setBusy", "notifyPocketAnalysisReady"]) h[name] = () => undefined;
     vm.runInContext(actualFunction("analyse"), vm.createContext(h));
     await h.analyse();
-    assert.equal(h.consumed, outcome === "ready" ? 1 : 0, outcome);
+    assert.equal(h.consumed, ["ready", "scanners", "stale-scanners"].includes(outcome) ? 1 : 0, outcome);
     assert.equal(Boolean(h.published), outcome === "ready", outcome);
-    assert.deepEqual(h.activity, ["scan_started", outcome === "ready" ? "scan_completed" : "scan_failed"], outcome);
+    assert.equal(Boolean(h.standalone), outcome === "scanners", outcome);
+    if (h.standalone) assert.equal(h.standalone.sourceImage, "exact-source");
+    assert.deepEqual(h.activity, ["scan_started", ...(outcome === "ready" ? ["scan_completed"] : ["scanners", "unlock-failed", "stale-scanners"].includes(outcome) ? [] : ["scan_failed"])], outcome);
   }
 });
 
