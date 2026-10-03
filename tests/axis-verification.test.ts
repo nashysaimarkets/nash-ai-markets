@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {exactAxisPrice,axisWordsFromTsv,axisRetryColumn,verifyAxisWords} from '../app/pocket/axis-verification';
+import {exactAxisPrice,axisWordsFromTsv,axisInitialColumn,axisRetryColumn,verifyAxisWords} from '../app/pocket/axis-verification';
 const model=[{price:130,y:20},{price:110,y:40},{price:90,y:60}];
 const words=[130,120,110,100,90].map((price,i)=>({text:String(price),confidence:95,x:900,y:200+i*100+2,width:35,height:20}));
 test('strict axis numbers preserve forex decimals and reject ambiguous or repaired labels',()=>{
@@ -33,4 +33,19 @@ test('targeted reread expands a clipped leading zero without fabricating its dec
  const crop=axisRetryColumn(truncated,790);assert.equal(crop.left,626);assert.ok(crop.right>=723);assert.equal(exactAxisPrice(truncated[0].text),9505);
  const prices=[130,120,110].map((p,i)=>({text:String(p),confidence:95,x:648,y:335+i*64,width:40,height:19}));
  assert.equal(axisRetryColumn(prices,754).left,640);
+});
+test('a chart beside a watchlist reads its own axis and excludes the adjacent quote column',()=>{
+ const bounds={left:1.8,right:43.1};const crop=axisInitialColumn(448,bounds);
+ assert.ok(crop.left<195&&crop.right>217&&crop.right<330);
+ const chart=words.map(w=>({...w,x:195,width:22,height:8}));
+ const quotes=words.map(w=>({...w,x:360}));
+ const retry=axisRetryColumn([...quotes,...chart],448,bounds);
+ assert.ok(retry.left<=195&&retry.right>=217&&retry.right<330);
+ // Changing the search window never removes independent grid/model checks.
+ assert.equal(verifyAxisWords(chart,[],model,1000).status,'held');
+ assert.equal(verifyAxisWords(chart,[200,300,400,500,600],model,1000).status,'verified');
+});
+test('full-width charts and invalid plot bounds retain the established crop',()=>{
+ for(const bounds of [undefined,{left:0,right:100},{left:0,right:85},{left:50,right:40},{left:0,right:Number.NaN}])
+  assert.deepEqual(axisInitialColumn(1179,bounds),{left:766,right:1179});
 });
