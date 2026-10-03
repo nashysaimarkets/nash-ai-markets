@@ -1,6 +1,7 @@
 "use client";
 import {readCandlePixels,type CandlePixels} from './candle-pixels';
 import {pixelCheckedPatterns} from './pattern-pixels';
+import { hasReadableStructureEvidence } from './structure-scan-status';
 
 import { normalizePatternFrame } from "./chart-images";
 import { bundleForChart, createChartSession, mergeChartSession, previousComparableScan, selectedChartReport, type ChartBundle, type UploadedChart } from "./chart-session";
@@ -645,7 +646,8 @@ function PocketCommandDeck({ analysis, sourceAnalysis, primaryLevels, sourceImag
   </section>;
 }
 
-function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macroAvailable, macroUnavailable, sample = false, onOpenTool, onOpenMacro }: { analysis: Analysis; todayMacroCount: number; nextHighImpactLabel: string | null; macroAvailable: boolean; macroUnavailable: readonly string[]; sample?: boolean; onOpenTool: (mode: "guard" | "patterns") => void; onOpenMacro: () => void }) {
+export function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macroAvailable, macroUnavailable, sample = false, onOpenTool, onOpenMacro }: { analysis: Analysis; todayMacroCount: number; nextHighImpactLabel: string | null; macroAvailable: boolean; macroUnavailable: readonly string[]; sample?: boolean; onOpenTool: (mode: "guard" | "patterns") => void; onOpenMacro: () => void }) {
+  const readableStructure = hasReadableStructureEvidence(analysis);
   const effectiveLiquidity = effectiveLiquidityGeometry(analysis);
   const liquidityZones = projectLiquidityZones(
     effectiveLiquidity.liquidityShield,
@@ -656,14 +658,16 @@ function CoreScanSummary({ analysis, todayMacroCount, nextHighImpactLabel, macro
   );
   const liquidityState = liquidityZones.length
     ? { state: "found", badge: `${liquidityZones.length} CANDIDATE${liquidityZones.length === 1 ? "" : "S"}`, title: `${liquidityZones.length} REPORTED STOP-RISK ${liquidityZones.length === 1 ? "AREA" : "AREAS"}`, detail: "Reported candle clusters. Open the map to check placement against the original price labels." }
-    : effectiveLiquidity.liquidityShield?.status === "NO_VISIBLE_RISK_ZONES"
+    : effectiveLiquidity.liquidityShield?.status === "NO_VISIBLE_RISK_ZONES" && readableStructure
       ? { state: "clear", badge: "SCAN COMPLETE", title: "NO CLEAR LIQUIDITY CLUSTER", detail: "The chart was checked, but no defensible repeated stop-risk cluster was visible." }
-      : { state: "withheld", badge: "NOT VERIFIED", title: "LIQUIDITY OVERLAY WITHHELD", detail: effectiveLiquidity.liquidityShield?.summary || "The chart or price scale was not precise enough to mark a zone safely." };
+      : { state: "withheld", badge: "NOT VERIFIED", title: "LIQUIDITY OVERLAY WITHHELD", detail: !readableStructure ? "The selected chart's identity or candles could not be read confidently. Liquidity risk remains unverified." : effectiveLiquidity.liquidityShield?.summary || "The chart or price scale was not precise enough to mark a zone safely." };
   const patternConfidenceRank = { HIGH: 0, MEDIUM: 1, LOW: 2 } as const;
   const strongestPattern = [...analysis.patterns].sort((left, right) => patternConfidenceRank[left.confidence ?? "LOW"] - patternConfidenceRank[right.confidence ?? "LOW"])[0];
   const patternState = strongestPattern
-    ? { state: "found", badge: `${analysis.patterns.length} FOUND`, title: strongestPattern.name, detail: `${strongestPattern.timeframe || analysis.timeframe} · ${strongestPattern.status} · ${strongestPattern.confidence ?? "LOW"} confidence` }
-    : { state: "clear", badge: "SCAN COMPLETE", title: "NO CLEAN PATTERN VERIFIED", detail: "Every uploaded chart was checked. Bullseye did not force a gallery name onto ordinary price noise." };
+    ? { state: "found", badge: `${analysis.patterns.length} REPORTED`, title: strongestPattern.name, detail: `${strongestPattern.timeframe || analysis.timeframe} · ${strongestPattern.status} · ${strongestPattern.confidence ?? "LOW"} confidence. Open the chart to check whether the drawing was verified.` }
+    : readableStructure
+      ? { state: "clear", badge: "SCAN COMPLETE", title: "NO CLEAN PATTERN VERIFIED", detail: "No clean named formation was reported on this selected chart. Confirm the reading on the original image." }
+      : { state: "withheld", badge: "NOT VERIFIED", title: "PATTERN READ INCONCLUSIVE", detail: "The selected chart's identity or candles could not be read confidently. No returned pattern does not establish that none is present." };
   const macroState = macroScanStatus({ sample, available: macroAvailable, unavailable: macroUnavailable, todayCount: todayMacroCount, nextHighImpactLabel });
 
   return <section className="psCoreScans" aria-label="Core AI scan results">
