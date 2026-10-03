@@ -1,3 +1,4 @@
+import {axisReadingBounds} from './axis-reading-bounds';
 import type { Analysis } from './analysis-types';
 import { buildLevelScanner } from './level-scanner-model';
 import type { AxisVerification } from './axis-verification';
@@ -21,9 +22,10 @@ export function sourceChartLevels(analysis: Analysis, width: number, height: num
   const axisRight=axis?.status==='verified' && Number.isFinite(axis.axisLeft) ? axis.axisLeft!/width*100-1 : 100;
   const bounds = reportedBounds ? {...reportedBounds,right:Math.min(reportedBounds.right,axisRight)} : null;
   if (!bounds || !Object.values(bounds).every(Number.isFinite) || bounds.left < 0 || bounds.top < 0 || bounds.right > 100 || bounds.bottom > 100 || bounds.left >= bounds.right || bounds.top >= bounds.bottom) return hold('Candle plotting area needs verification.');
+  const reading=axis?.status==='verified'?axisReadingBounds(bounds,height):bounds;
   const anchors = axis?.status === 'verified' ? axis.anchors : analysis.priceScaleAnchors ?? [];
   if (axis?.status === 'verified' && new Set((analysis.priceScaleAnchors ?? []).filter(a=>anchors.some(b=>Math.abs(a.price-b.price)<=Math.max(1e-10,Math.abs(b.price)*1e-10))).map(a=>a.price)).size<3) return hold('The vision scan and independent price reader disagree.');
-  if (anchors.length < 3 || anchors.some(a => !Number.isFinite(a.price) || a.price <= 0 || !Number.isFinite(a.y) || a.y < bounds.top || a.y > bounds.bottom)) return hold('At least three clear price-axis labels are needed.');
+  if (anchors.length < 3 || anchors.some(a => !Number.isFinite(a.price) || a.price <= 0 || !Number.isFinite(a.y) || a.y < reading.top || a.y > reading.bottom)) return hold('At least three clear price-axis labels are needed.');
   const ordered = [...anchors].sort((a,b)=>a.price-b.price);
   if (ordered.some((a,i)=>i>0 && (a.price <= ordered[i-1].price || a.y >= ordered[i-1].y))) return hold('Price-axis labels disagree.');
   const low=ordered[0], high=ordered.at(-1)!;
