@@ -1,5 +1,5 @@
 "use client";
-import {axisWordsFromTsv,axisRetryColumn,verifyAxisWords,type AxisVerification,type AxisWord} from './axis-verification';
+import {axisWordsFromTsv,axisInitialColumn,axisRetryColumn,verifyAxisWords,type AxisVerification,type AxisWord} from './axis-verification';
 import {axisReadingBounds} from './axis-reading-bounds';
 import type {Worker} from 'tesseract.js';
 import {createSharedAxisReader} from './axis-reader-cache';
@@ -28,7 +28,7 @@ async function readOriginalAxis(image:HTMLImageElement,bounds:Bounds,gridRows:nu
   // One focused reread uses a numeric column layout, not another AI scan.
   for(const attempt of [0,1]){
    if(stopped||signal.aborted)throw new Error('Axis verification cancelled.');
-   const column=attempt?axisRetryColumn(words,image.naturalWidth):{left:Math.floor(image.naturalWidth*.65),right:image.naturalWidth};
+   const column=attempt?axisRetryColumn(words,image.naturalWidth,bounds):axisInitialColumn(image.naturalWidth,bounds);
    const x=column.left,reading=axisReadingBounds(bounds,image.naturalHeight);
    const y=Math.max(0,Math.floor(image.naturalHeight*reading.top/100));
    const width=column.right-x,height=Math.min(image.naturalHeight-y,Math.ceil(image.naturalHeight*(reading.bottom-reading.top)/100));
