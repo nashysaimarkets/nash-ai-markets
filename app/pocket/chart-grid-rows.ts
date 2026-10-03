@@ -1,3 +1,4 @@
+import {axisReadingBounds} from './axis-reading-bounds';
 /** Read horizontal rules from the original raster; never infer their prices.
  * Sparse column sampling keeps this linear in image height on mobile.
  */
@@ -6,7 +7,8 @@ export function chartGridRows(image:{data:Uint8ClampedArray;width:number;height:
  if(!Number.isInteger(width)||!Number.isInteger(height)||width<=0||height<=0||data.length!==width*height*4||!Object.values(bounds).every(Number.isFinite))return [];
  const left=Math.max(0,Math.ceil(width*(bounds.left+.05*(bounds.right-bounds.left))/100));
  const right=Math.min(width-1,Math.floor(width*(bounds.right-.05*(bounds.right-bounds.left))/100));
- const top=Math.max(4,Math.floor(height*bounds.top/100)),bottom=Math.min(height-5,Math.ceil(height*bounds.bottom/100));
+ const reading=axisReadingBounds(bounds,height);
+ const top=Math.max(4,Math.floor(height*reading.top/100)),bottom=Math.min(height-5,Math.ceil(height*reading.bottom/100));
  if(right<=left||bottom<=top)return [];
  const samples=Math.min(120,right-left+1),rows:Float64Array[]=[];
  for(let y=top-4;y<=bottom+4;y++){
