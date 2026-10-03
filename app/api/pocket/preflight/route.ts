@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       store: false,
       instructions: [
         "Perform a fast screenshot quality preflight only; do not analyse market direction and do not return trading advice.",
+        "Accept both portrait and landscape screenshots. Judge actual label readability, distinct candle bodies/wicks and visible history; orientation alone is never a defect. If history is insufficient, recommend a wider view or landscape only while preserving readable candles and labels. If candles are too small, recommend zooming in and an original screenshot, not merely changing orientation.",
         "Read the top-level instrument, timeframe and currentPrice from image 1 only. The top-level timeframe must be the exact visibly printed image-1 label (for example 5m), never a list, requested sequence, expected slot, or inferred value. Otherwise return UNKNOWN with the correct confidence.",
         "Copy the instrument title exactly as printed, including broker qualifiers. Do not add a currency, ticker, or market name that is not visible.",
         "priceScaleVisible is true only when at least two right-side or left-side axis prices are legible.",

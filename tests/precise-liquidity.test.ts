@@ -51,3 +51,10 @@ test('an independently read boundary label can sit inside the OCR margin while d
  const outside={...shield,zones:[{...zone,side:'ABOVE_PRICE' as const,pattern:'EQUAL_HIGHS' as const,priceLow:3000,priceHigh:3000,touchPoints:[{x:25,y:20},{x:55,y:20}]}]};
  assert.equal(preciseLiquidityZones(outside,'2900',anchors,clipped,axis,1000,1000,pixels).zones.length,0);
 });
+
+
+test('identifies the failed third touch while keeping the original two-pixel limit',()=>{
+ const third={id:2,left:699,right:701,x:700,highY:600,lowY:652.04,upperWick:true,lowerWick:true};
+ const result=preciseLiquidityZones({...shield,zones:[{...zone,touchPoints:[...zone.touchPoints,{x:70,y:65}]}]},'2900',anchors,bounds,axis,1000,1000,{...pixels,candles:[...pixels.candles,third]});
+ assert.equal(result.zones.length,0);assert.match(result.candidateReasons[0].reason,/Touch 3 does not match a distinct original candle endpoint/);
+});

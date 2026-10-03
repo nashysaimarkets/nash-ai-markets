@@ -37,8 +37,9 @@ export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPr
   // Associate by the reported location inside a component. Never search for a candle
   // simply because its endpoint happens to fit the proposed price band.
   const used=new Set<number>(),touches:typeof zone.touchPoints=[];
-  let supported=true;
-  for(const point of zone.touchPoints){
+  let supported=true,failedTouch=0;
+  for(const [touchIndex,point] of zone.touchPoints.entries()){
+   failedTouch=touchIndex+1;
    const px=point.x*width/100,py=point.y*height/100;
    const candidates=pixels.candles.filter(c=>px>=c.left-2&&px<=c.right+2&&py>=c.highY-2&&py<=c.lowY+2);
    if(candidates.length!==1){supported=false;break;}
@@ -49,7 +50,7 @@ export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPr
    if(used.has(candle.id)||Math.abs(endpoint-py)>2||endpoint<top*height/100-2||endpoint>bottom*height/100+2||candle.x<bounds.left*width/100||candle.x>right*width/100){supported=false;break;}
    used.add(candle.id);touches.push({x:candle.x/width*100,y:endpoint/height*100});
   }
-  if(!supported||touches.length<2||touches.some((p,i)=>touches.slice(0,i).some(q=>Math.abs(p.x-q.x)*width/100<3))){reject('Not every reported touch matches a distinct original candle endpoint.');continue;}
+  if(!supported||touches.length<2||touches.some((p,i)=>touches.slice(0,i).some(q=>Math.abs(p.x-q.x)*width/100<3))){reject(!supported?`Touch ${failedTouch} does not match a distinct original candle endpoint. Precise placement remains unverified.`:'At least two separated original candle endpoints are required.');continue;}
   // Keep the exact price interval. A zero-width price band stays a line;
   // never enlarge it to make a visually impressive pool.
   zones.push({...zone,touchPoints:touches,lineY:(top+bottom)/2,top,height:heightPercent,left:bounds.left,right});
