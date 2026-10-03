@@ -556,6 +556,42 @@ export function MarketCommandCentre({
         <div className="dashCockpitGrid">{orderedGroup(cockpitIds)}</div>
       </section>
 
+      {plan ? (
+        <section className="dashDecisionSnap" aria-labelledby="ready-my-trade-title">
+          <header>
+            <div>
+              <span className="mccEyebrow">READY MY TRADE</span>
+              <h2 id="ready-my-trade-title">{plan.readyMyTrade.status.replace("_", " ")}</h2>
+              <p className="dashDecisionWhy">
+                One clean decision card from the verified Bullseye engine. Educational planning only — you place any trade yourself.
+              </p>
+            </div>
+            <StatusBadge
+              label={plan.readyMyTrade.status.replace("_", " ")}
+              tone={plan.readyMyTrade.status === "READY" ? "positive" : plan.readyMyTrade.status === "WAIT" ? "caution" : "risk"}
+            />
+          </header>
+          <div className="dashDecisionGrid">
+            <article><span>Bias</span><strong>{plan.readyMyTrade.bias}</strong></article>
+            <article><span>Confidence</span><strong>{plan.readyMyTrade.confidence}%</strong></article>
+            <article><span>Risk</span><strong>{plan.readyMyTrade.risk}</strong></article>
+            <article><span>Invalidation</span><strong>{plan.readyMyTrade.invalidation}</strong></article>
+          </div>
+          <p className="dashDecisionWhy"><strong>Entry condition:</strong> {plan.readyMyTrade.entryCondition}</p>
+          {plan.readyMyTrade.reasons.length ? (
+            <details className="dashEngineDetails">
+              <summary>Why?</summary>
+              <div className="dashEngineColumns">
+                <div><span>Evidence</span><ul>{plan.readyMyTrade.reasons.map((item) => <li key={item}>{item}</li>)}</ul></div>
+                {plan.readyMyTrade.blockers.length ? (
+                  <div><span>Wait / stand-aside conditions</span><ul>{plan.readyMyTrade.blockers.map((item) => <li key={item}>{item}</li>)}</ul></div>
+                ) : null}
+              </div>
+            </details>
+          ) : null}
+        </section>
+      ) : null}
+
       <section id="plan" className="dashPlanContinuity" aria-label="Verified levels and price action">
       <div className={catalyst && !eventModeAvailable ? "dashSplitRow" : "dashLevelsStack"}>
         <section className="dashLevels" aria-labelledby="dash-levels-title">
