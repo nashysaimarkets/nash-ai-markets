@@ -44,3 +44,10 @@ test('held candidates identify a scale-coverage failure separately from a candle
  const outside=check({...shield,zones:[{...zone,priceHigh:3010}]});assert.match(outside.candidateReasons[0].reason,/complete price band.*2800–3000/);
  const displaced=preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,{...pixels,candles:pixels.candles.map(c=>({...c,lowY:670}))});assert.match(displaced.candidateReasons[0].reason,/distinct original candle endpoint/);
 });
+
+test('an independently read boundary label can sit inside the OCR margin while drawings stay inside the plot',()=>{
+ const clipped={...bounds,top:21};assert.equal(preciseLiquidityZones(shield,'2900',anchors,clipped,axis,1000,1000,pixels).zones.length,1);
+ const remote={...bounds,top:23};assert.equal(preciseLiquidityZones(shield,'2900',anchors,remote,axis,1000,1000,pixels).zones.length,0);
+ const outside={...shield,zones:[{...zone,side:'ABOVE_PRICE' as const,pattern:'EQUAL_HIGHS' as const,priceLow:3000,priceHigh:3000,touchPoints:[{x:25,y:20},{x:55,y:20}]}]};
+ assert.equal(preciseLiquidityZones(outside,'2900',anchors,clipped,axis,1000,1000,pixels).zones.length,0);
+});
