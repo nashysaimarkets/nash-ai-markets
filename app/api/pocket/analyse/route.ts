@@ -37,6 +37,7 @@ import {
 } from "../precision-structure";
 import { runPocketReport, reportServiceTier } from "../report-recovery";
 import { completedPocketReportOutput, PocketReportCompletionError } from "../report-completion";
+import { createReportNumberGuard } from "../report-number-guard";
 import { confirmedChartFacts, type ChartConfirmation } from "../../../pocket/chart-preflight";
 
 export const runtime = "nodejs";
@@ -507,10 +508,17 @@ export async function POST(request: Request) {
     });
       let firstOutput = false;
       let outputChars = 0;
+      const acceptNumbers=createReportNumberGuard();
+      let numericOutputError:PocketReportCompletionError|null=null;
       let lastOutputAt: number | null = null;
       stream.on("response.created", () => console.info("[pocket-bullseye] report stream started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })));
       stream.on("response.output_text.delta", (event) => {
         outputChars += event.delta.length;
+        if(!acceptNumbers(event.delta)){
+          numericOutputError=new PocketReportCompletionError("numeric_output_limit",outputChars);
+          stream.abort();
+          return;
+        }
         if (event.delta.trim().length) { lastOutputAt = Date.now(); noteOutputProgress(); }
         if (!firstOutput) { metrics.mark("first_output"); firstOutput = true; console.info("[pocket-bullseye] report output started", JSON.stringify({ recovery, elapsedMs: Date.now() - routeStartedAt })); }
       });
@@ -518,8 +526,9 @@ export async function POST(request: Request) {
       try { response = await stream.finalResponse(); }
       catch (error) {
         console.warn("[pocket-bullseye] report attempt ended", JSON.stringify({ recovery, outputChars, elapsedMs: Date.now() - routeStartedAt, outputIdleMs: lastOutputAt === null ? null : Date.now() - lastOutputAt, cancelled: signal.aborted, cause: signal.aborted && signal.reason instanceof Error ? signal.reason.message : classifyOpenAIFailure(error) }));
-        throw error;
+        throw numericOutputError ?? error;
       }
+      if (numericOutputError) throw numericOutputError;
       metrics.usage(recovery ? "report_recovery" : "report", model, response.usage, response.service_tier ?? "unknown");
       const reportOutput = response.output_text?.trim() ?? "";
       const incompleteReason = response.incomplete_details?.reason ?? null;
