@@ -23,3 +23,24 @@ test('stem ties use the column supporting both original endpoints',()=>{
  const r=chart();candle(r,50,40,90);rect(r,51,41,51,90);r.data.set([0,0,0,255],(60*r.width+50)*4);
  const c=readCandlePixels(r,bounds)!.candles;assert.equal(c.length,1);assert.equal(c[0].x,50);assert.equal(c[0].highY,40);assert.equal(c[0].lowY,90);
 });
+
+test('compressed candles need a regular mixed-colour price series before flat endpoints are accepted',()=>{
+ const r=chart();for(let i=0;i<9;i++)rect(r,25+i*6,30+i*3,26+i*6,70+i*4,i%2?[40,160,40]:[240,30,30]);
+ const c=readCandlePixels(r,bounds)!.candles;assert.equal(c.length,9);
+ assert.deepEqual(c.map(v=>[v.highY,v.lowY]),Array.from({length:9},(_,i)=>[30+i*3,70+i*4]));
+ assert.ok(c.every(v=>!v.upperWick&&!v.lowerWick));
+});
+test('regular rectangles with a shared histogram baseline, one colour or too few bars stay rejected',()=>{
+ for(const variant of ['volume','one-colour','short','irregular']){
+  const r=chart();for(let i=0;i<(variant==='short'?7:9);i++)rect(r,25+i*6+(variant==='irregular'?i%3*2:0),30+i*3,26+i*6+(variant==='irregular'?i%3*2:0),variant==='volume'?110:70+i*4,i%2&&variant!=='one-colour'?[40,160,40]:[240,30,30]);
+  assert.equal(readCandlePixels(r,bounds)!.candles.length,0,variant);
+ }
+});
+test('a tapered candle high at the body edge remains an exact price endpoint',()=>{
+ const r=chart();for(const x of [50,110]){rect(r,x,70,x,100);rect(r,x-1,70,x+1,90);}
+ const pixels=readCandlePixels(r,bounds)!;assert.equal(pixels.candles.length,2);assert.ok(pixels.candles.every(c=>!c.upperWick&&c.lowerWick));
+ const anchors=[{price:3000,y:20},{price:2900,y:50},{price:2800,y:80}],axis={status:'verified' as const,anchors,matchedModelTicks:3,axisLeft:190};
+ const zone={side:'ABOVE_PRICE' as const,pattern:'EQUAL_HIGHS' as const,label:'Highs',priceLow:2950,priceHigh:2950,confidence:'HIGH' as const,evidence:'Body-edge highs',touchPoints:[{x:25,y:35},{x:55,y:35}]};
+ const shield={status:'VISIBLE_RISK_ZONES' as const,summary:'Synthetic',stopGuidance:'Verify',zones:[zone]};
+ assert.equal(preciseLiquidityZones(shield,'2900',anchors,bounds,axis,200,200,pixels).zones.length,1);
+});
