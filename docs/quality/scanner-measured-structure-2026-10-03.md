@@ -44,3 +44,13 @@ These sources support the architectural direction, not a guarantee of profitable
 ## Validation
 
 19 focused tests passed for capture guidance, preflight, strict liquidity placement and the measured prototype. All 25 existing render checks passed. TypeScript and the verified production build passed; build artifact and rendered HTML checks are recorded with the deployment checkpoint. Raw customer charts, model responses and signed precision receipts are excluded from git.
+
+## Deployed browser verification
+
+Implementation commit: `9044ba72b396aa9601c51aaedb8c8e85f5937b52`. Ready preview: https://nash-ai-markets-89t46euw1-nash-ai-markets.vercel.app/pocket . The repository tree matched the API-created tree, and every uploaded blob matched its local Git hash.
+
+The expanded capture guide visibly confirms portrait acceptance and optional landscape. One actual browser upload of original US 500 30m passed preflight: US 500 (DFB), 30m, 7723.23. Privacy acknowledgement and JUST ANALYSE used the normal controls. The subsequent complete report FAILED; no result was saved. Runtime evidence shows precision completed in 13.584 seconds, whereas the primary report terminated incomplete at 72.712 seconds with max_output_tokens (14,000 output tokens, 2,922 output characters). Bounded recovery started after the slow-report threshold and did not finish within the request deadline. The browser correctly retained the original upload and displayed that the service did not finish. No retry was made to obtain a favourable result.
+
+This is a separate reliability failure from candle/axis placement. Prioritise independent, source-bound structured scanner results with their own completion states so a failed long narrative cannot discard completed validated scans. Do not reuse partial narrative JSON or uncalibrated precision output as a finished report. The code checks passing do not override this failed real browser flow. Positive pattern/liquidity browser overlays and native validation remain unverified.
+
+Additional checks passed: 18 liquidity guard tests, 17 pattern/independent-rescan tests, and one rendered HTML artifact check. The screenshot and private diagnostic archive retain the failed real-browser evidence.
