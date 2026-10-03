@@ -1,37 +1,28 @@
 {
   "appId": "6806004581",
-  "marketingVersion": "1.2.14",
-  "predecessorVersion": "1.2.13",
-  "buildNumber": "47",
-  "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
+  "marketingVersion": "1.2.15",
+  "predecessorVersion": "1.2.14",
+  "buildNumber": "48",
+  "revision": "5d0f435c97de32e621a69632d4f24cb751a4a50a",
   "deviceValidation": {
     "status": "pending",
-    "buildNumber": "47",
-    "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
+    "buildNumber": "48",
+    "revision": "5d0f435c97de32e621a69632d4f24cb751a4a50a",
     "checks": {
       "purchase": "not-tested",
       "cancellation": "not-tested",
       "restore": "not-tested",
       "freeUse": "not-tested",
-      "analyticsOptOut": "not-tested"
+      "analyticsOptOut": "not-tested",
+      "scannerSourceBinding": "not-tested",
+      "expandedTools": "not-tested"
     }
   },
-  "appleBuildId": "66a1efff-1c90-4fb1-ad7a-516a65adc72c",
-  "ownerReleaseAcceptance": {
+  "scannerAccuracyValidation": "pending",
+  "releaseStatus": "testing-only; do not submit before validation",
+  "distributionAuthorization": {
     "authorizedBy": "Chris Nash",
-    "recordedAt": "2026-09-29T19:20:45Z",
-    "marketingVersion": "1.2.14",
-    "buildNumber": "47",
-    "revision": "4591a26904bc5956f5d1773a9003664d6a97dd3a",
-    "appleBuildId": "66a1efff-1c90-4fb1-ad7a-516a65adc72c",
-    "testFlightFeedback": "everything looks good in TestFlight",
-    "instruction": "Make sure Apple and everything possible is as up to date as possible with your new features and updates.",
-    "untestedChecks": [
-      "purchase",
-      "cancellation",
-      "restore",
-      "freeUse",
-      "analyticsOptOut"
-    ]
+    "instruction": "You have every permission needed to sort all issues and distribute the newest version to all Apple App Store and linked site",
+    "testFlightAcceptance": "not-yet-provided-for-build-48"
   }
 }
