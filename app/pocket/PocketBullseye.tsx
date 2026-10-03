@@ -528,7 +528,7 @@ const PATTERN_GUIDE = [
 ] as const;
 
 
-function PatternWatch({ analysis, onViewChart, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; onViewChart: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+export function PatternWatch({ analysis, sourceImage, primaryLevels, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; primaryLevels: Level[]; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [guideOpen, setGuideOpen] = useState(true);
   const [selectedGuide, setSelectedGuide] = useState<string>(PATTERN_GUIDE[0].name);
   const activeFrame = normalizePatternFrame(analysis.timeframe) ?? "CHART";
@@ -546,7 +546,7 @@ function PatternWatch({ analysis, onViewChart, onAddChart, onReanalyse, hasConte
   return <section className="psPatternWatch">
     <header className="psInstrumentHeader"><OrbitalInstrument kind="patterns" /><div><span>◫ PATTERN WATCH</span><small>SUPPLIED CHART STRUCTURE</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
     <p className="psSelectedFrameLabel">{activeFrame} · Selected uploaded chart. Use the chart selector to change timeframe.</p>
-    <div className="psPatternChartEntry"><div><strong>Your uploaded chart</strong><p>Inspect the original image and any verified pattern drawings.</p></div><button type="button" onClick={onViewChart}>VIEW MY CHART →</button></div>
+    <ChartXRay analysis={analysis} primaryLevels={primaryLevels} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} />
     {visiblePatterns.length ? <div className="psPatternSignals" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}>{visiblePatterns.map((pattern, index) => <article key={`${pattern.name}-${pattern.sourceRole ?? "PRIMARY"}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || activeFrame} · {(pattern.sourceRole ?? "PRIMARY").replaceAll("_", " ")} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone" role="tabpanel" aria-label={`${activeFrame} pattern analysis`}><strong>NO SIGNIFICANT {activeFrame} PATTERN VERIFIED</strong><p>This selected chart does not show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
   </section>;
@@ -636,7 +636,7 @@ function PocketCommandDeck({ analysis, sourceAnalysis, primaryLevels, sourceImag
     <div className="psCommandStage" data-mode={mode}>
       {mode === "xray" ? <ChartXRay analysis={sourceAnalysis} primaryLevels={primaryLevels} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "guard" ? <LiquidityGuardOverlay analysis={sourceAnalysis} sourceImage={sourceImage} onRescan={onLiquidityRescan} rescanning={liquidityRescanning} errorMessage={liquidityError} /> : null}
-      {mode === "patterns" ? <PatternWatch analysis={sourceAnalysis} onViewChart={() => onMode("xray")} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
+      {mode === "patterns" ? <PatternWatch analysis={sourceAnalysis} sourceImage={sourceImage} primaryLevels={primaryLevels} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}

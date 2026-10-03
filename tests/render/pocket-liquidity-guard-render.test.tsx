@@ -140,6 +140,7 @@ test("held candidates remain reported rather than implying no areas were found",
  assert.match(html,/1 reported candidate · drawing unverified/);
  assert.match(html,/Repeated lows · 2,850–2,852/);
  assert.match(html,/No bands have been added/);
+ assert.ok(html.indexOf("psLiquidityCanvas") < html.indexOf("psLiquidityHeldCandidates"), "the original chart must precede candidate details");
  assert.doesNotMatch(html,/NO CLEAR STOP-RISK CLUSTER/);
  assert.doesNotMatch(html,/<svg/);
 });
