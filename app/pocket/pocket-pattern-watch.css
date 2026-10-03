@@ -22,3 +22,5 @@
 .psPatternPrecise .psXRayRead{background:#102337;color:#d9e6ef}
 .psPatternPrecise .psToolkitEmpty section{padding:12px 0;border-top:1px solid #496178}
 .psPatternPrecise .psToolkitEmpty strong{display:block;color:#d9e6ef}
+
+.psIndependentScanners{margin-top:20px;padding:16px;border:1px solid #385a69;border-radius:16px;background:#0c2130;color:#d6e9ee}.psIndependentScanners>p{line-height:1.5;color:#b5cbd2}.psIndependentScannerViews{display:flex;gap:8px;margin:16px 0}.psIndependentScannerViews button{flex:1;padding:12px 8px;border:1px solid #436374;border-radius:10px;background:#102b3b;color:#d7e8ef;font:inherit;font-weight:700}.psIndependentScannerViews button[aria-pressed="true"]{background:#244d67;border-color:#84b7d0}.psIndependentScannerViews button:focus-visible{outline:2px solid #a5e6ce;outline-offset:3px}

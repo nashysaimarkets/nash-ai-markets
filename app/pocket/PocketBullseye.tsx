@@ -35,6 +35,8 @@ import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import LevelProvenancePanel from "./LevelProvenancePanel";
 import LiquidityGuardOverlay from "./LiquidityGuardOverlay";
 import ChartCaptureGuide from "./ChartCaptureGuide";
+import IndependentScannerResult from "./IndependentScannerResult";
+import { ScannerOnlyError, type IndependentScannerAnalysis } from "./independent-scanner";
 import { effectiveLiquidityGeometry, projectLiquidityZones, type LiquidityShield } from "./liquidity-guard";
 import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
@@ -926,6 +928,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [scanStage, setScanStage] = useState<PocketScanStage>("PREPARING");
   const [error, setError] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [standaloneScanners, setStandaloneScanners] = useState<{ analysis: IndependentScannerAnalysis; sourceImage: string } | null>(null);
   const [resultCharts, setResultCharts] = useState<UploadedChart[]>([]);
   const [activeChartId, setActiveChartId] = useState("image");
   const [pendingChartId, setPendingChartId] = useState<string | null>(null);
@@ -1206,6 +1209,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   function resetChartSession() {
+    setStandaloneScanners(null);
     sessionRevision.current += 1;
     selectionRevision.current += 1; selectionActive.current = false;
     chartWork.current.clear(); chartImageWork.current.clear(); backgroundActive.current.clear(); precisionReceiptCache.current = []; measuredCharts.current.clear(); preparedCharts.current.clear(); setMainReportInFlight(false);
@@ -1740,7 +1744,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       mark("response");
       options.onPhase?.("verifying");
-      const payload = await response.json() as { precisionReceipts?: string[]; analysis?: Analysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string; code?: string };
+      const payload = await response.json() as { precisionReceipts?: string[]; analysis?: Analysis; scannerResult?: IndependentScannerAnalysis; macroContext?: VerifiedMacroContext; marketEvents?: SupplementalMarketEvent[]; error?: string; code?: string };
       throwIfCancelled(options.signal);
       if (!response.ok || !payload.analysis) {
         if (response.status === 429) {
@@ -1751,6 +1755,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           providerPauseUntil.current = Math.max(providerPauseUntil.current, Date.now() + 60_000);
           providerPauseMessage.current = payload.error || "Chart analysis is unavailable while service credits are restored.";
         }
+        if (payload.scannerResult && !options.background && !options.signal?.aborted) throw new ScannerOnlyError(payload.error || "Written report unavailable.", payload.scannerResult, providerImage);
         throw new Error(payload.error || "Analysis is temporarily unavailable.");
       }
       // A successful sibling must not cancel a newer provider pause.
@@ -1945,6 +1950,18 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setReview(payload.review); setImmersive(true);
     } catch (caught) {
       if (requestRevision !== sessionRevision.current) return;
+      if (!reviewTarget && caught instanceof ScannerOnlyError) {
+        // Preserve the same native entitlement rule as completed reports.
+        if (currentAppleAccess?.isNative && !currentAppleAccess.entitled) {
+          try { await consumeAppleFreeUse(); }
+          catch { setError("Scanner findings could not be unlocked safely. Your chart remains loaded."); return; }
+          if (requestRevision !== sessionRevision.current) return;
+          setAppleAccess({ ...currentAppleAccess, freeUseConsumed: true });
+        }
+        setStandaloneScanners({ analysis: caught.scanner, sourceImage: caught.sourceImage });
+        setError("The written report did not complete. Completed scanner findings are available below.");
+        return;
+      }
       if (!reviewTarget) trackGrowth("scan_failed", { flow: activityFlow, durationMs: Date.now() - activityStartedAt });
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
@@ -2350,6 +2367,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <span role="status">{reviewTarget ? "Comparing your charts…" : "Analysing your charts…"}</span>
           <div className="psScanActivityTrack" role="progressbar" aria-label={reviewTarget ? "Chart comparison in progress" : "Chart analysis in progress"}><span /></div>
         </div> : null}
+        {!reviewTarget && standaloneScanners ? <IndependentScannerResult analysis={standaloneScanners.analysis} sourceImage={standaloneScanners.sourceImage} /> : null}
         {!reviewTarget ? <SetupNotebook decisions={vault} onReview={startReview} onSave={saveNotebookDecision} loadRules={vaultLoadRules} saveRules={vaultSaveRules} onRestore={restoreNotebook} /> : null}
       </section>
       <FeedbackButton />

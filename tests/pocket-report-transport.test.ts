@@ -37,3 +37,17 @@ test("lower-reasoning trial cannot be selected on customer or unrelated preview 
   assert.equal(scanProfile(request, { VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "other" }), "full-parallel");
   assert.equal(scanProfile(request, { VERCEL_ENV: "preview", VERCEL_GIT_COMMIT_REF: "feat/pocket-evidence-speed-2026-09-11" }), "lossless-low");
 });
+
+test('bounded number transport preserves exact finite values and every semantic field', () => {
+  const numericSchema = { type: 'object', additionalProperties: false, properties: { value: { type: 'number' }, count: { type: 'integer', minimum: 0, maximum: 100 } }, required: ['value','count'] };
+  const codec = createReportTransport(numericSchema, { boundedNumbers: true, aliasKeys: false });
+  for (const value of [0, -100, 7723.23, 0.12345678901234566, Number.MAX_VALUE, Number.MIN_VALUE, 1e-300]) {
+    const input = { value, count: 4 }; assert.deepEqual(codec.decode(codec.encode(input)), input);
+  }
+  assert.deepEqual(codec.schema.required, numericSchema.required);
+  assert.equal(codec.schema.properties?.value.type, 'string');
+  assert.match(codec.schema.properties?.value.description ?? '', /Exact numeric value/);
+  assert.equal(codec.schema.properties?.value.maxLength, 40);
+  for (const value of ['1'.repeat(1000), 'NaN', 'Infinity', '1e999', '1e-999', ' 1', '01', '1,000', 1, null]) assert.throws(() => codec.decode({ value, count: '4' }));
+  for (const count of ['101', '-1', '1.5']) assert.throws(() => codec.decode({ value: '7723.23', count }));
+});

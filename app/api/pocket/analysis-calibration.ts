@@ -47,7 +47,7 @@ function patternSpanThreshold(name: string) {
   return { x: .1, y: .04 };
 }
 
-function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, candlesReadable: boolean) {
+export function calibratePatterns(value: unknown, primaryBounds: JsonRecord | null, candlesReadable: boolean) {
   if (!Array.isArray(value) || !candlesReadable) return [];
   const seenSources = new Set<string>();
   return value.flatMap((item) => {
