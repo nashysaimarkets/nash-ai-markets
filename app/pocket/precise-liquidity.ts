@@ -43,14 +43,14 @@ export function preciseLiquidityZones(shield:LiquidityShield|undefined,currentPr
    const candle=candidates[0];
    const edge=zone.pattern==='EQUAL_HIGHS'?'high':zone.pattern==='EQUAL_LOWS'?'low':zone.side==='ABOVE_PRICE'?'high':zone.side==='BELOW_PRICE'?'low':null;
    if(!edge||(edge==='high'&&zone.side==='BELOW_PRICE')||(edge==='low'&&zone.side==='ABOVE_PRICE')){supported=false;break;}
-   const endpoint=edge==='high'?candle.highY:candle.lowY,wick=edge==='high'?candle.upperWick:candle.lowerWick;
-   if(!wick||used.has(candle.id)||Math.abs(endpoint-py)>2||endpoint<top*height/100-2||endpoint>bottom*height/100+2||candle.x<bounds.left*width/100||candle.x>right*width/100){supported=false;break;}
+   const endpoint=edge==='high'?candle.highY:candle.lowY;
+   if(used.has(candle.id)||Math.abs(endpoint-py)>2||endpoint<top*height/100-2||endpoint>bottom*height/100+2||candle.x<bounds.left*width/100||candle.x>right*width/100){supported=false;break;}
    used.add(candle.id);touches.push({x:candle.x/width*100,y:endpoint/height*100});
   }
-  if(!supported||touches.length<2||touches.some((p,i)=>touches.slice(0,i).some(q=>Math.abs(p.x-q.x)*width/100<3))){reject('Not every reported touch matches a distinct original candle wick endpoint.');continue;}
+  if(!supported||touches.length<2||touches.some((p,i)=>touches.slice(0,i).some(q=>Math.abs(p.x-q.x)*width/100<3))){reject('Not every reported touch matches a distinct original candle endpoint.');continue;}
   // Keep the exact price interval. A zero-width price band stays a line;
   // never enlarge it to make a visually impressive pool.
   zones.push({...zone,touchPoints:touches,lineY:(top+bottom)/2,top,height:heightPercent,left:bounds.left,right});
  }
- return {zones,reason:zones.length?null:'Candidates did not pass the price, side and independent wick-pixel checks.',candidateReasons};
+ return {zones,reason:zones.length?null:'Candidates did not pass the price, side and independent candle-endpoint checks.',candidateReasons};
 }
