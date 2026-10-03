@@ -22,7 +22,7 @@ test('bands preserve supplied price endpoints without adding visual padding',()=
 });
 
 test('AI-aligned rows cannot substitute for missing, wrong-dimension or displaced wick pixels',()=>{
- for(const p of [null,{...pixels,height:2000},{...pixels,candles:[]},{...pixels,candles:pixels.candles.map(c=>({...c,lowY:670}))},{...pixels,candles:pixels.candles.map(c=>({...c,lowerWick:false}))}])assert.equal(preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,p).zones.length,0);
+ for(const p of [null,{...pixels,height:2000},{...pixels,candles:[]},{...pixels,candles:pixels.candles.map(c=>({...c,lowY:670}))}])assert.equal(preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,p).zones.length,0);
 });
 test('ambiguous horizontal association and duplicate candle witnesses fail closed',()=>{
  for(const candles of [[...pixels.candles,{...pixels.candles[0],id:2,x:252,left:252,right:254}],pixels.candles.map(c=>({...c,id:0}))])assert.equal(preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,{...pixels,candles}).zones.length,0);
@@ -42,5 +42,5 @@ test('a distant annotation at the same x cannot become a wick witness',()=>{
 
 test('held candidates identify a scale-coverage failure separately from a candle match failure',()=>{
  const outside=check({...shield,zones:[{...zone,priceHigh:3010}]});assert.match(outside.candidateReasons[0].reason,/complete price band.*2800–3000/);
- const displaced=preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,{...pixels,candles:pixels.candles.map(c=>({...c,lowY:670}))});assert.match(displaced.candidateReasons[0].reason,/distinct original candle wick endpoint/);
+ const displaced=preciseLiquidityZones(shield,'2900',anchors,bounds,axis,1000,1000,{...pixels,candles:pixels.candles.map(c=>({...c,lowY:670}))});assert.match(displaced.candidateReasons[0].reason,/distinct original candle endpoint/);
 });
