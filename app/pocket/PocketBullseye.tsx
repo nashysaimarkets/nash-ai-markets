@@ -988,7 +988,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
-  const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
+  const [resultView, setResultView] = useState<"cinema" | "report">("report");
   const [commandDeckMode, setCommandDeckMode] = useState<CommandDeckMode>("xray");
   const [appleAccess, setAppleAccess] = useState<AppleAccessStatus | null>(null);
   const [applePaywallStatus, setApplePaywallStatus] = useState<AppleAccessStatus | null>(null);
@@ -1916,9 +1916,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         initialiseChartSession(nextAnalysis, true);
         void rememberScan(nextAnalysis, image);
         notifyPocketAnalysisReady(nextAnalysis.instrument);
-        setResultView("cinema");
+        setResultView("report");
         setImmersive(true);
-        setShowResultReveal(true);
+        setShowResultReveal(false);
         // Count only completed, newly uploaded chart analyses. Reanalysis,
         // follow-ups and review workflows must not inflate review eligibility.
         // The prompt itself is deferred until the customer leaves the result.
@@ -2132,7 +2132,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     setChartConfirmation(null);
     setPreflightStatus("IDLE");
     setBattlefieldChart("primary");
-    setResultView("cinema");
+    setResultView("report");
     setShowResultReveal(false);
     // This customer-controlled transition occurs after they have had time to
     // inspect the result. StoreKit decides whether to display the prompt, and
