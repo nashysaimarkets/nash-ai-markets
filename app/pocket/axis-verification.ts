@@ -19,14 +19,22 @@ export function axisWordsFromTsv(tsv:string,offset:{x:number;y:number;scale:numb
   return [{text:c.slice(11).join('\t'),confidence,x:offset.x+x/offset.scale,y:offset.y+(y+height/2)/offset.scale,width:width/offset.scale,height:height/offset.scale}];
  });
 }
-export function axisRetryColumn(words:AxisWord[],width:number):{left:number;right:number}{
- const numeric=words.filter(w=>exactAxisPrice(w.text)!==null && w.confidence>=70 && w.height>0 && [w.x,w.width,w.height].every(Number.isFinite));
+/** Plot geometry selects pixels to read, never prices or accepted axis rows.
+ * A chart beside a watchlist may end before the image's right-hand third. */
+export function axisInitialColumn(width:number,bounds?:{left:number;right:number}):{left:number;right:number}{
+ const fallback={left:Math.floor(width*.65),right:width};
+ if(!bounds||![bounds.left,bounds.right].every(Number.isFinite)||bounds.left<0||bounds.right>100||bounds.left>=bounds.right||bounds.right>=65)return fallback;
+ return {left:Math.max(0,Math.floor(width*(bounds.right/100-.2))),right:Math.min(width,Math.ceil(width*(bounds.right/100+.2)))};
+}
+export function axisRetryColumn(words:AxisWord[],width:number,bounds?:{left:number;right:number}):{left:number;right:number}{
+ const initial=axisInitialColumn(width,bounds);
+ const numeric=words.filter(w=>exactAxisPrice(w.text)!==null && w.confidence>=70 && w.height>0 && [w.x,w.width,w.height].every(Number.isFinite)&&w.x>=initial.left&&w.x<initial.right);
  const groups=numeric.map(seed=>numeric.filter(w=>Math.abs(w.x-seed.x)<=Math.max(8,seed.height)));
  const column=groups.sort((a,b)=>b.length-a.length)[0]??[];
- if(column.length<3)return {left:Math.floor(width*.65),right:width};
+ if(column.length<3)return initial;
  const font=Math.max(...column.map(w=>w.height));
  const padding=column.some(w=>/^0\d{3,}$/.test(w.text.trim()))?2:.4;
- return {left:Math.max(Math.floor(width*.65),Math.floor(Math.min(...column.map(w=>w.x))-font*padding)),right:Math.min(width,Math.ceil(Math.max(...column.map(w=>w.x+w.width))+font*1.5))};
+ return {left:Math.max(initial.left,Math.floor(Math.min(...column.map(w=>w.x))-font*padding)),right:Math.min(initial.right,Math.ceil(Math.max(...column.map(w=>w.x+w.width))+font*1.5))};
 }
 export function verifyAxisWords(words:AxisWord[],gridPixels:number[],model:Array<{price:number;y:number}>,height:number):AxisVerification {
  const hold=(reason:string):AxisVerification=>({status:'held',reason});
