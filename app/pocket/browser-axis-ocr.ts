@@ -1,5 +1,6 @@
 "use client";
 import {axisWordsFromTsv,axisRetryColumn,verifyAxisWords,type AxisVerification,type AxisWord} from './axis-verification';
+import {axisReadingBounds} from './axis-reading-bounds';
 import type {Worker} from 'tesseract.js';
 import {createSharedAxisReader} from './axis-reader-cache';
 
@@ -28,9 +29,9 @@ async function readOriginalAxis(image:HTMLImageElement,bounds:Bounds,gridRows:nu
   for(const attempt of [0,1]){
    if(stopped||signal.aborted)throw new Error('Axis verification cancelled.');
    const column=attempt?axisRetryColumn(words,image.naturalWidth):{left:Math.floor(image.naturalWidth*.65),right:image.naturalWidth};
-   const x=column.left;
-   const y=Math.max(0,Math.floor(image.naturalHeight*bounds.top/100));
-   const width=column.right-x,height=Math.min(image.naturalHeight-y,Math.ceil(image.naturalHeight*(bounds.bottom-bounds.top)/100));
+   const x=column.left,reading=axisReadingBounds(bounds,image.naturalHeight);
+   const y=Math.max(0,Math.floor(image.naturalHeight*reading.top/100));
+   const width=column.right-x,height=Math.min(image.naturalHeight-y,Math.ceil(image.naturalHeight*(reading.bottom-reading.top)/100));
    if(width<=0||height<=0)return {status:'held',reason:'Price-axis crop could not be verified.'};
    const scale=Math.min(attempt?3:2,4096/height,1200/width);
    const canvas=document.createElement('canvas');canvas.width=Math.round(width*scale);canvas.height=Math.round(height*scale);
