@@ -265,7 +265,7 @@ export default function PocketNext() {
   const patterns = analysis?.patterns ?? [];
   const liquidity = analysis?.liquidity;
 
-  if (!mainAnalysis) return <main className="pnApp pnStartApp">
+  if (!mainAnalysis || !analysis) return <main className="pnApp pnStartApp">
     <header className="pnTop">
       <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Decision intelligence</small></div></div>
       <div className="pnEngine"><i/> ANALYSIS ENGINE ONLINE</div>
