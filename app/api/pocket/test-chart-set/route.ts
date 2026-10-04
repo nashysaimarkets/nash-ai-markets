@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
+// @ts-ignore -- sharp is bundled in the Next.js runtime but its export map typings are incomplete here.\nimport sharp from "sharp";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
