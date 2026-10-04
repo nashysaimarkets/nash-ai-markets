@@ -100,8 +100,8 @@ function decodePng(buffer:Buffer){
   return {width,height,rgb};
 }
 
-function resizeRgb(decoded:{width:number;height:number;rgb:Buffer}){
-  const width=Math.min(420,decoded.width);
+function resizeRgb(decoded:{width:number;height:number;rgb:Buffer},maxWidth=420){
+  const width=Math.min(maxWidth,decoded.width);
   const height=Math.max(180,Math.round(decoded.height*width/decoded.width));
   const data=Buffer.alloc(width*height*3);
   for(let y=0;y<height;y++){
@@ -115,23 +115,79 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer}){
   return {data,width,height,channels:3};
 }
 
-async function scan(buffer:Buffer):Promise<DeviceLocalScan>{
-  const {data,width,height,channels}=resizeRgb(decodePng(buffer));
+async function scan(buffer:Buffer,maxWidth=420):Promise<DeviceLocalScan>{
+  const {data,width,height,channels}=resizeRgb(decodePng(buffer),maxWidth);
   return scanDevicePixels({pixels:data,width,height,channels});
+}
+
+function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
+  const topPad=Math.max(46,Math.round(frame.height*.11)), bottomPad=Math.max(34,Math.round(frame.height*.08));
+  const width=frame.width, height=frame.height+topPad+bottomPad, data=Buffer.alloc(width*height*3,248);
+  for(let y=0;y<frame.height;y++) frame.data.copy(data,((y+topPad)*width)*3,y*width*3,(y+1)*width*3);
+  const rect=(x0:number,y0:number,x1:number,y1:number,r:number,g:number,b:number)=>{
+    for(let y=Math.max(0,y0);y<Math.min(height,y1);y++) for(let x=Math.max(0,x0);x<Math.min(width,x1);x++){
+      const i=(y*width+x)*3;data[i]=r;data[i+1]=g;data[i+2]=b;
+    }
+  };
+  // Grey quote boxes plus tiny red/green/blue controls deliberately mimic broker chrome.
+  rect(Math.round(width*.55),8,Math.round(width*.76),topPad-8,232,232,232);
+  rect(Math.round(width*.76),8,Math.round(width*.97),topPad-8,232,232,232);
+  rect(Math.round(width*.08),topPad+frame.height+6,Math.round(width*.17),height-6,47,136,207);
+  rect(Math.round(width*.2),topPad+frame.height+6,Math.round(width*.29),height-6,37,168,96);
+  rect(Math.round(width*.32),topPad+frame.height+6,Math.round(width*.41),height-6,214,74,69);
+  return {data,width,height,channels:3};
+}
+
+async function scanRobust(buffer:Buffer){
+  const decoded=decodePng(buffer);
+  const base=resizeRgb(decoded,420), small=resizeRgb(decoded,300), chrome=addBrokerChrome(base);
+  return {
+    base:scanDevicePixels({pixels:base.data,width:base.width,height:base.height,channels:3}),
+    small:scanDevicePixels({pixels:small.data,width:small.width,height:small.height,channels:3}),
+    chrome:scanDevicePixels({pixels:chrome.data,width:chrome.width,height:chrome.height,channels:3}),
+  };
 }
 
 export async function GET(request:Request){
   const url=new URL(request.url);
   if(url.searchParams.get("key")!=="pocket-next-internal") return NextResponse.json({error:"not found"},{status:404});
+  const robust=url.searchParams.get("robust")==="1";
   const results=[] as any[];
   for(const test of CASES){
     try{
       const buffer=await fetchImage(test.url);
-      const scanResult=await scan(buffer);
-      results.push({...test,scan:scanResult});
+      if(robust){
+        const variants=await scanRobust(buffer);
+        const visible=(scan:DeviceLocalScan)=>scan.patterns.filter(pattern=>pattern.confidence!=="LOW").map(pattern=>pattern.name);
+        results.push({
+          ...test,
+          variants:{
+            base:{patterns:visible(variants.base),levels:variants.base.levels.length,liquidity:variants.base.liquidity.zones.length,candles:variants.base.candleCount},
+            small:{patterns:visible(variants.small),levels:variants.small.levels.length,liquidity:variants.small.liquidity.zones.length,candles:variants.small.candleCount},
+            chrome:{patterns:visible(variants.chrome),levels:variants.chrome.levels.length,liquidity:variants.chrome.liquidity.zones.length,candles:variants.chrome.candleCount},
+          }
+        });
+      }else{
+        const scanResult=await scan(buffer);
+        results.push({...test,scan:scanResult});
+      }
     }catch(error){
       results.push({...test,error:error instanceof Error?error.message:String(error)});
     }
+  }
+  if(robust){
+    const usable=results.filter(item=>!item.error&&item.variants);
+    let patternStable=0,levelStable=0,liquidityStable=0;
+    const unstable:any[]=[];
+    for(const item of usable){
+      const names=(variant:any)=>JSON.stringify(variant.patterns);
+      const p=names(item.variants.base)===names(item.variants.small)&&names(item.variants.base)===names(item.variants.chrome);
+      const l=[item.variants.base,item.variants.small,item.variants.chrome].every((variant:any)=>variant.levels>=2);
+      const q=[item.variants.base,item.variants.small,item.variants.chrome].every((variant:any)=>variant.liquidity>=1);
+      if(p)patternStable++; if(l)levelStable++; if(q)liquidityStable++;
+      if(!p||!l||!q)unstable.push({id:item.id,...item.variants});
+    }
+    return NextResponse.json({count:results.length,usable:usable.length,patternStable,levelStable,liquidityStable,unstable,errors:results.filter(item=>item.error)});
   }
   if(url.searchParams.get("summary")==="1"){
     const norm=(name:string)=>name.replace(" CANDIDATE","").trim();
