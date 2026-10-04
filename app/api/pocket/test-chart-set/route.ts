@@ -38,7 +38,7 @@ const CASES = [
   { id:"upstox-double-top", expected:"DOUBLE TOP", url:"https://europe1.discourse-cdn.com/flex017/uploads/upstox1/original/2X/f/f9ce0213237f0e308ec03217ab841562728438d4.png" },
   { id:"tradingfuel-inverse-hs", expected:"INVERSE H&S", url:"https://www.tradingfuel.com/wp-content/uploads/2020/06/Inverse-Head-and-shoulder-1024x764.png" },
   { id:"top1-rising-wedge", expected:"RISING WEDGE", url:"https://images.top1market.com/images/ueditor/php/upload/image/20220328/1648458815661470.png" },
-  { id:"tradeleader-desc-triangle", expected:"DESCENDING TRIANGLE", url:"https://fr.trade-leader.com/assets/images/resources/graphic-patterns/012.png" },
+  { id:"coinsect-desc-triangle", expected:"DESCENDING TRIANGLE", url:"https://d1085v6s0hknp1.cloudfront.net/boards/free_board/210f97df-3041-48ec-8b34-830caa6411fd_image.png" },
   { id:"b2broker-bull-flag", expected:"BULL FLAG", url:"https://media.b2broker.com/app/uploads/2024/12/bullish-flag-pattern-1536x1100.png" }
 
 ] as const;
