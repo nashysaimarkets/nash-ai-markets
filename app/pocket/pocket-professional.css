@@ -23,3 +23,18 @@
 @media(prefers-reduced-motion:no-preference){
   .psCommandDeck>nav button,.psResultViewSwitch button{transition:border-color .16s ease,background .16s ease,color .16s ease!important}
 }
+
+.psScannerHealth{margin:10px 0 14px;padding:12px 14px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:#0b0f12}
+.psScannerHealth>header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.psScannerHealth>header span{font-size:10px;font-weight:800;letter-spacing:.13em;color:#e8eeee}
+.psScannerHealth>header small{font-size:7px;letter-spacing:.1em;color:#6f7d80}
+.psScannerHealth>div{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.psScannerHealth article{display:grid;grid-template-columns:auto 1fr;gap:4px 7px;align-items:center;padding:8px;border:1px solid rgba(255,255,255,.055);border-radius:7px;background:#0d1216}
+.psScannerHealth article i{grid-row:1/3;width:7px;height:7px;border-radius:50%;background:#6a7477}
+.psScannerHealth article span{font-size:7px;letter-spacing:.1em;color:#7f8c8f}
+.psScannerHealth article strong{font-size:8px;letter-spacing:.07em;color:#b8c3c5}
+.psScannerHealth article[data-state="VERIFIED"] i{background:#65d49a}
+.psScannerHealth article[data-state="VERIFIED"] strong{color:#bfe8d1}
+.psScannerHealth article[data-state="PARTIAL"] i{background:#d7a85c}
+.psScannerHealth article[data-state="PARTIAL"] strong{color:#e1c997}
+@media(max-width:720px){.psScannerHealth>div{grid-template-columns:repeat(2,minmax(0,1fr))}.psScannerHealth>header{align-items:flex-start;flex-direction:column;gap:3px}}
