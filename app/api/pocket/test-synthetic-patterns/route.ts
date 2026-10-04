@@ -39,7 +39,7 @@ const CASES:Case[]=[
     {i:0,y:70},{i:25,y:82},{i:34,y:214},{i:40,y:200},{i:47,y:180},{i:54,y:194},{i:61,y:173},{i:68,y:188},{i:76,y:214},{i:87,y:232}]},
   {id:"straight-up",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:230},{i:87,y:72}]},
   {id:"straight-down",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:72},{i:87,y:230}]},
-  {id:"one-spike",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:160},{i:35,y:150},{i:43,y:70},{i:51,y:158},{i:87,y:150}]},
+  {id:"one-spike",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:150},{i:40,y:150},{i:41,y:150},{i:42,y:72},{i:43,y:150},{i:87,y:150}]},
   {id:"random-chop",expected:"NO CLEAN PATTERN",anchors:[
     {i:0,y:150},{i:8,y:130},{i:16,y:174},{i:24,y:118},{i:32,y:164},{i:40,y:137},{i:48,y:182},{i:56,y:122},{i:64,y:170},{i:72,y:140},{i:80,y:166},{i:87,y:146}]}
 ];
