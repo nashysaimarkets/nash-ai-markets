@@ -162,6 +162,51 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
   return candidates.sort((a,b)=>b.score-a.score)[0]?.pattern ?? null;
 }
 
+
+function pennantPattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
+  let best:{score:number;pattern:DevicePattern}|null=null;
+  const maxWindow=Math.min(12,pivots.length);
+  for(let size=6;size<=maxWindow;size++){
+    for(let start=0;start+size<=pivots.length;start++){
+      const window=pivots.slice(start,start+size);
+      const highs=window.filter(p=>p.kind==="high"),lows=window.filter(p=>p.kind==="low");
+      if(highs.length<3||lows.length<3)continue;
+      const x1=window[0].x,x2=window.at(-1)!.x,span=x2-x1;
+      if(span<width*.16||span>width*.38||x1<width*.22)continue;
+      const prior=trendMove(candles,x1,width);
+      if(prior===null||Math.abs(prior)<height*.32)continue;
+      const hf=linearFit(highs),lf=linearFit(lows);if(!hf||!lf)continue;
+      if(hf.rms>height*.025||lf.rms>height*.025)continue;
+      const sep1=lineY(lf,x1)-lineY(hf,x1),sep2=lineY(lf,x2)-lineY(hf,x2);
+      if(sep1<height*.055||sep2<=0)continue;
+      const ratio=sep2/sep1;
+      if(ratio<.06||ratio>.72)continue;
+      const events=[...highs.map(p=>({x:p.x,k:"h"})),...lows.map(p=>({x:p.x,k:"l"}))].sort((a,b)=>a.x-b.x);
+      let alternations=0;for(let i=1;i<events.length;i++)if(events[i].k!==events[i-1].k)alternations++;
+      if(alternations<5)continue;
+      const gx1=Math.max(Math.min(...highs.map(p=>p.x)),Math.min(...lows.map(p=>p.x)));
+      const gx2=Math.min(Math.max(...highs.map(p=>p.x)),Math.max(...lows.map(p=>p.x)));
+      if(gx2-gx1<width*.14)continue;
+      const points=[
+        {x:pctX(gx1),y:pctY(lineY(hf,gx1))},{x:pctX(gx2),y:pctY(lineY(hf,gx2))},
+        {x:pctX(gx2),y:pctY(lineY(lf,gx2))},{x:pctX(gx1),y:pctY(lineY(lf,gx1))}
+      ];
+      if(points.some(p=>p.y<bounds.top-2||p.y>bounds.bottom+2))continue;
+      const score=Math.abs(prior)/height+span/width+(1-ratio)*.25-(hf.rms+lf.rms)/height;
+      const bullish=prior<0;
+      const pattern:DevicePattern={
+        name:"PENNANT",status:"FORMING",confidence:"MEDIUM",
+        evidence:(bullish?"A strong upward flagpole":"A strong downward flagpole")+" is followed by a short, alternating triangular consolidation with converging boundaries.",
+        confirmation:"A decisive close through the pennant boundary in the direction of the preceding flagpole.",
+        invalidation:"The consolidation expands materially or breaks decisively against the preceding impulse.",
+        geometry:{points,labelX:Math.max(bounds.left,pctX(gx2)-15),labelY:Math.max(bounds.top,pctY(Math.min(lineY(hf,gx1),lineY(hf,gx2)))-4)}
+      };
+      if(!best||score>best.score)best={score,pattern};
+    }
+  }
+  return best?.pattern??null;
+}
+
 function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   const candidates:{pattern:DevicePattern;score:number}[]=[];
   const maxWindow=Math.min(16,pivots.length);
@@ -513,6 +558,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       }
     }
 
+    const pennant=pennantPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
+    if(pennant)patternCandidates.push(pennant);
+
     const reversalSkeleton=hasReversalSkeleton(pivots,candles,width,structureHeight);
     const flag=reversalSkeleton ? null : flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
     if(flag)patternCandidates.push(flag);
@@ -543,7 +591,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const familyPriority=(pattern:DevicePattern)=>{
       const confidence=pattern.confidence==="HIGH"?40:pattern.confidence==="MEDIUM"?25:0;
       const status=pattern.status==="CONFIRMED"?30:pattern.status==="FORMING"?12:pattern.status==="FAILED"?10:0;
-      const distinctive=/HEAD|DOUBLE|FLAG|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
+      const distinctive=/HEAD|DOUBLE|FLAG|PENNANT|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
       return confidence+status+distinctive;
     };
     const sortedPatterns=patternCandidates
