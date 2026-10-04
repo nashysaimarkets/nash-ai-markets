@@ -611,12 +611,19 @@ export default function PocketNext() {
           <img src={image ?? ""} alt="Analysed trading chart"/>
           <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
-            {(overlayMode==="overview"||overlayMode==="levels") ? levels.map((level,i)=><g key={"l"+i} data-kind={level.kind}><line x1={clamp(level.x || 5)} x2={clamp(level.x2 || 95)} y1={clamp(level.y)} y2={clamp(level.y2 || level.y)}/><circle cx={clamp(level.x || 5)} cy={clamp(level.y)} r=".8"/></g>) : null}
-            {overlayMode==="patterns" ? patterns.flatMap((p,pi)=>p.geometry?.points?.length ? [<polyline key={"p"+pi} points={p.geometry.points.map(pt=>clamp(pt.x)+","+clamp(pt.y)).join(" ")} data-pattern={p.status}/>] : []) : null}
-            {overlayMode==="liquidity" ? (liquidity?.zones ?? []).map((z,i)=><g key={"q"+i} data-side={z.side}><line x1={clamp(z.x)} x2={clamp(z.x2)} y1={clamp(z.y)} y2={clamp(z.y)}/></g>) : null}
+            <defs>
+              <clipPath id="pnPlotClip">
+                <rect x={plotBounds.left} y={plotBounds.top} width={Math.max(1,plotBounds.right-plotBounds.left)} height={Math.max(1,plotBounds.bottom-plotBounds.top)}/>
+              </clipPath>
+            </defs>
+            <g clipPath="url(#pnPlotClip)">
+              {(overlayMode==="overview"||overlayMode==="levels") ? levels.map((level,i)=><g key={"l"+i} data-kind={level.kind}><line x1={clamp(level.x || plotBounds.left)} x2={clamp(level.x2 || plotBounds.right)} y1={clamp(level.y)} y2={clamp(level.y2 || level.y)}/><circle cx={clamp(level.x || plotBounds.left)} cy={clamp(level.y)} r=".8"/></g>) : null}
+              {overlayMode==="patterns" ? patterns.flatMap((p,pi)=>p.geometry?.points?.length ? [<polyline key={"p"+pi} points={p.geometry.points.map(pt=>clamp(pt.x)+","+clamp(pt.y)).join(" ")} data-pattern={p.status}/>] : []) : null}
+              {overlayMode==="liquidity" ? (liquidity?.zones ?? []).map((z,i)=><g key={"q"+i} data-side={z.side}><line x1={clamp(z.x)} x2={clamp(z.x2)} y1={clamp(z.y)} y2={clamp(z.y)}/></g>) : null}
+            </g>
           </svg>
-          {(overlayMode==="overview"||overlayMode==="levels") ? <div className="pnLevelLabels">{levels.slice(0,5).map((l,i)=><span key={i} data-kind={l.kind} style={{top:clamp(l.y)+"%"}}><small>{l.kind.toUpperCase()}</small><b>{l.price || l.label}</b></span>)}</div> : null}
-          {overlayMode==="liquidity" ? <div className="pnLevelLabels">{(liquidity?.zones ?? []).map((z,i)=><span key={i} data-kind={z.side==="BUY_SIDE"?"resistance":"support"} style={{top:clamp(z.y)+"%"}}><small>{z.side.replace("_"," ")}</small><b>{z.price || z.basis.replaceAll("_"," ")}</b></span>)}</div> : null}
+          {overlayMode==="levels" ? <div className="pnLevelLabels">{levels.slice(0,5).filter(l=>withinPlot(l.y,plotBounds)).map((l,i)=><span key={i} data-kind={l.kind} style={{top:clamp(l.y)+"%"}}><small>{l.kind.toUpperCase()}</small><b>{l.price || l.label}</b></span>)}</div> : null}
+          {overlayMode==="liquidity" ? <div className="pnLevelLabels">{(liquidity?.zones ?? []).filter(z=>withinPlot(z.y,plotBounds)).map((z,i)=><span key={i} data-kind={z.side==="BUY_SIDE"?"resistance":"support"} style={{top:clamp(z.y)+"%"}}><small>{z.side.replace("_"," ")}</small><b>{z.price || z.basis.replaceAll("_"," ")}</b></span>)}</div> : null}
         </div>
 
         <footer className="pnChartFoot">
