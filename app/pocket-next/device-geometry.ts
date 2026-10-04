@@ -285,6 +285,10 @@ function pennantPattern(pivots:Swing[],candles:Candle[],width:number,height:numb
       if(sep1<height*.055||sep2<=0)continue;
       const ratio=sep2/sep1;
       if(ratio<.06||ratio>.72)continue;
+      const hChange=hf.slope*span/height,lChange=lf.slope*span/height;
+      // A pennant must actually contract from both sides. A flat shelf after an
+      // impulse is consolidation, not a pennant, even if noise gives it a tiny apex.
+      if(hChange<.02||lChange>-.02)continue;
       const events=[...highs.map(p=>({x:p.x,k:"h"})),...lows.map(p=>({x:p.x,k:"l"}))].sort((a,b)=>a.x-b.x);
       let alternations=0;for(let i=1;i<events.length;i++)if(events[i].k!==events[i-1].k)alternations++;
       if(alternations<5)continue;
