@@ -159,7 +159,7 @@ function mergeOverlayPatterns(ai: Pattern[], local: Pattern[], bounds: PlotBound
     );
   });
   const merged = safeAi.filter(pattern => pattern.confidence !== "LOW" || pattern.status === "CONFIRMED" || pattern.status === "FAILED");
-  for (const pattern of local) {
+  for (const pattern of local.filter(pattern => pattern.confidence !== "LOW" || pattern.status === "CONFIRMED" || pattern.status === "FAILED")) {
     if (!merged.some(existing => existing.name === pattern.name)) merged.push(pattern);
   }
   return merged.slice(0,3);
@@ -423,6 +423,7 @@ export default function PocketNext() {
     plotBounds,
   ), [analysis, activeLocal, plotBounds.left, plotBounds.top, plotBounds.right, plotBounds.bottom]);
   const patterns = mergeOverlayPatterns(analysis?.patterns ?? [], activeLocal?.patterns ?? [], plotBounds);
+  const devicePatternCount = activeLocal?.patterns.filter(pattern => pattern.confidence !== "LOW" || pattern.status === "CONFIRMED" || pattern.status === "FAILED").length ?? 0;
   const liquidity = mergeOverlayLiquidity(analysis?.liquidity, activeLocal?.liquidity, plotBounds);
   const deviceOnly = Boolean(activeLocal && !activeSlot?.analysis);
   const multiChart = useMemo(() => {
@@ -574,7 +575,7 @@ export default function PocketNext() {
         </div>
 
         <footer className="pnChartFoot">
-          <span>{activeLocal ? `DEVICE · ${activeLocal.levels.length} LV · ${activeLocal.patterns.length} PT · ${activeLocal.liquidity.zones.length} LQ` : "SOURCE IMAGE PRESERVED"}</span>
+          <span>{activeLocal ? `DEVICE · ${activeLocal.levels.length} LV · ${devicePatternCount} PT · ${activeLocal.liquidity.zones.length} LQ` : "SOURCE IMAGE PRESERVED"}</span>
           <span>{active==="levels" ? analysis.levelStory : active==="structure" ? analysis.marketStructure : active==="patterns" ? (patterns[0]?.evidence || "No defensible pattern is currently verified.") : active==="liquidity" ? (liquidity?.evidence || "No defensible liquidity event is currently verified.") : "Select a scanner to isolate its evidence on the chart."}</span>
         </footer>
       </section>
