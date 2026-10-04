@@ -263,6 +263,18 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       if(c.high===Math.min(...near.map(v=>v.high)))swings.push({x:c.x,y:c.high,kind:"high"});
       if(c.low===Math.max(...near.map(v=>v.low)))swings.push({x:c.x,y:c.low,kind:"low"});
     }
+
+    // Named chart patterns need slower structural pivots than levels/liquidity.
+    // Keep 2/2 swings for local references, but require 3/3–5/5 structure
+    // for pattern geometry so ordinary candle noise cannot impersonate a pattern.
+    const patternRadius=candles.length>=85?5:candles.length>=55?4:3;
+    const patternSwings:Swing[]=[];
+    for(let i=patternRadius;i<candles.length-patternRadius;i++){
+      const candle=candles[i],near=candles.slice(i-patternRadius,i+patternRadius+1);
+      if(candle.high===Math.min(...near.map(v=>v.high)))patternSwings.push({x:candle.x,y:candle.high,kind:"high"});
+      if(candle.low===Math.max(...near.map(v=>v.low)))patternSwings.push({x:candle.x,y:candle.low,kind:"low"});
+    }
+
     const cluster=(kind:"high"|"low")=>{
       const src=swings.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,height*.018);
       for(const s of src){const found=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol);if(found)found.push(s);else groups.push([s]);}
@@ -276,7 +288,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     if(!picked.some(x=>x.kind==="support")&&lows[0])picked[picked.length-1]={kind:"support",group:lows[0],rank:rank(lows[0])};
     const levels:DeviceLevel[]=picked.filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind&&Math.abs(other.group.y-item.group.y)<height*.025)===index).map(({kind,group})=>({kind,label:group.score>=3?(kind==="resistance"?"Repeated rejection highs":"Repeated defended lows"):group.score>=2?(kind==="resistance"?"Repeated swing highs":"Repeated swing lows"):(kind==="resistance"?"Prominent swing high":"Prominent swing low"),price:"",x:plotBounds.left,y:pctY(group.y),x2:plotBounds.right,y2:pctY(group.y)})).slice(0,3);
 
-    const pivots=normalizePivots(swings);
+    const pivots=normalizePivots(patternSwings);
     const patternCandidates:DevicePattern[]=[];
     const hs=headShoulders(pivots,candles,width,height,pctX,pctY,plotBounds);
     if(hs)patternCandidates.push(hs);
