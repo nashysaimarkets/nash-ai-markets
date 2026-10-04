@@ -290,7 +290,7 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
   return best?.pattern ?? null;
 }
 
-export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number}):DeviceLocalScan{
+export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number;patternRadiusOverride?:number}):DeviceLocalScan{
   try{
     const {pixels,width,height}=input,channels=input.channels??4;
     if(width<20||height<20)return emptyDeviceScan();
@@ -400,7 +400,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // Named chart patterns need slower structural pivots than levels/liquidity.
     // Keep 2/2 swings for local references, but require 3/3–5/5 structure
     // for pattern geometry so ordinary candle noise cannot impersonate a pattern.
-    const patternRadius=candles.length>=50?5:candles.length>=30?4:3;
+    const patternRadius=input.patternRadiusOverride
+      ? Math.min(7,Math.max(2,Math.round(input.patternRadiusOverride)))
+      : candles.length>=50?5:candles.length>=30?4:3;
     const patternSwings:Swing[]=[];
     for(let i=patternRadius;i<candles.length-patternRadius;i++){
       const candle=candles[i],near=candles.slice(i-patternRadius,i+patternRadius+1);
