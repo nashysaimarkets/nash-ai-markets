@@ -104,12 +104,15 @@ export async function GET(request:Request){
   const u=new URL(request.url);
   if(u.searchParams.get("key")!=="pocket-next-internal")return NextResponse.json({error:"not found"},{status:404});
   const variants=Math.min(8,Math.max(1,Number(u.searchParams.get("variants")||4)));
+  const debug=u.searchParams.get("debug")==="1";
+  const only=u.searchParams.get("only");
+  const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results:any[]=[];
   let total=0,exact=0,negativePass=0,negativeTotal=0,strongWrong=0,stable=0;
-  for(const test of CASES){
+  for(const test of selectedCases){
     const runs=[] as any[];
     for(let v=0;v<variants;v++){
-      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3});
+      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3,debug});
       const pats=visible(scan);
       const names=pats.map(p=>p.name);
       const hit=test.expected==="NO CLEAN PATTERN"?!names.length:names.some(n=>norm(n)===norm(test.expected));
@@ -117,14 +120,14 @@ export async function GET(request:Request){
       if(test.expected!=="NO CLEAN PATTERN"&&names.length&&!hit)strongWrong++;
       if(test.expected!=="NO CLEAN PATTERN"&&hit)exact++;
       total++;
-      runs.push({variant:v,names,levels:scan.levels.length,liquidity:scan.liquidity.zones.length,candles:scan.candleCount,hit});
+      runs.push({variant:v,names,levels:scan.levels.length,liquidity:scan.liquidity.zones.length,candles:scan.candleCount,hit,...(debug?{debug:scan._debug}:{})});
     }
     const signature=JSON.stringify(runs[0]?.names??[]);
     if(runs.every(r=>JSON.stringify(r.names)===signature))stable++;
     results.push({id:test.id,expected:test.expected,runs});
   }
   return NextResponse.json({
-    cases:CASES.length,variants,total,exact,positiveTotal:(CASES.filter(c=>c.expected!=="NO CLEAN PATTERN").length*variants),
+    cases:selectedCases.length,variants,total,exact,positiveTotal:(selectedCases.filter(c=>c.expected!=="NO CLEAN PATTERN").length*variants),
     negativePass,negativeTotal,strongWrong,stableCases:stable,results
   });
 }
