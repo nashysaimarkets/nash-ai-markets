@@ -309,7 +309,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // many separate candles can legitimately touch the same price. Instead detect a
     // long *continuous* coloured horizontal run (allowing one tiny anti-aliasing gap).
     const noisyRows=new Set<number>();
-    const rowMaskFraction=Math.min(.6,Math.max(.08,input.rowMaskFraction??.18));
+    const rowMaskFraction=Math.min(.6,Math.max(.08,input.rowMaskFraction??.22));
     const rowRunThreshold=Math.max(18,Math.round((right-left+1)*rowMaskFraction));
     for(let y=top;y<=bottom;y++){
       let streak=0,longest=0,gap=0;
@@ -410,7 +410,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // for pattern geometry so ordinary candle noise cannot impersonate a pattern.
     const patternRadius=input.patternRadiusOverride
       ? Math.min(7,Math.max(2,Math.round(input.patternRadiusOverride)))
-      : candles.length>=50?5:candles.length>=30?4:3;
+      : 3;
     const patternSwings:Swing[]=[];
     for(let i=patternRadius;i<candles.length-patternRadius;i++){
       const candle=candles[i],near=candles.slice(i-patternRadius,i+patternRadius+1);
