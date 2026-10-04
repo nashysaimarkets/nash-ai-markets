@@ -188,8 +188,8 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       if(violations>Math.max(1,Math.floor(inside.length*.04)))continue;
       const converging=ratio>.08&&ratio<.68;
       const parallel=ratio>.82&&ratio<1.18&&Math.abs(hChange-lChange)<.028;
-      const flatHigh=Math.abs(hChange)<.055&&Math.abs(hChange)<=Math.abs(lChange)*.45;
-      const flatLow=Math.abs(lChange)<.055&&Math.abs(lChange)<=Math.abs(hChange)*.45;
+      const flatHigh=Math.abs(hChange)<.09&&Math.abs(hChange)<=Math.abs(lChange)*.30;
+      const flatLow=Math.abs(lChange)<.09&&Math.abs(lChange)<=Math.abs(hChange)*.30;
       let name="",evidence="";
       if(flatHigh&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a comparatively flat ceiling with materially rising lows.";}
       else if(hChange>.065&&flatLow&&converging){name="DESCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support falling highs against a comparatively flat floor.";}
