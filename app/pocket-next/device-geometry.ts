@@ -188,9 +188,11 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       if(violations>Math.max(1,Math.floor(inside.length*.04)))continue;
       const converging=ratio>.08&&ratio<.68;
       const parallel=ratio>.82&&ratio<1.18&&Math.abs(hChange-lChange)<.028;
+      const flatHigh=Math.abs(hChange)<.055&&Math.abs(hChange)<=Math.abs(lChange)*.45;
+      const flatLow=Math.abs(lChange)<.055&&Math.abs(lChange)<=Math.abs(hChange)*.45;
       let name="",evidence="";
-      if(Math.abs(hChange)<.025&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a flat ceiling with materially rising lows.";}
-      else if(hChange>.065&&Math.abs(lChange)<.025&&converging){name="DESCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support falling highs against a broadly flat floor.";}
+      if(flatHigh&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a comparatively flat ceiling with materially rising lows.";}
+      else if(hChange>.065&&flatLow&&converging){name="DESCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support falling highs against a comparatively flat floor.";}
       else if(hChange>.055&&lChange<-.055&&converging){name="TRIANGLE";evidence="Multiple falling highs and rising lows form a tightly fitted converging triangle.";}
       else if(hChange<-.045&&lChange<-.075&&lChange<hChange-.03&&converging){name="RISING WEDGE";evidence="Multiple touches show both boundaries rising while the lower boundary converges faster.";}
       else if(hChange>.075&&lChange>.045&&hChange>lChange+.03&&converging){name="FALLING WEDGE";evidence="Multiple touches show both boundaries falling while the upper boundary converges faster.";}
