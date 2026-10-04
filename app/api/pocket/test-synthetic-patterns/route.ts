@@ -107,6 +107,8 @@ export async function GET(request:Request){
   const debug=u.searchParams.get("debug")==="1";
   const maskRaw=u.searchParams.get("mask");
   const rowMaskFraction=maskRaw===null?undefined:Number(maskRaw);
+  const radiusRaw=u.searchParams.get("radius");
+  const patternRadiusOverride=radiusRaw===null?undefined:Number(radiusRaw);
   const only=u.searchParams.get("only");
   const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results:any[]=[];
@@ -114,7 +116,7 @@ export async function GET(request:Request){
   for(const test of selectedCases){
     const runs=[] as any[];
     for(let v=0;v<variants;v++){
-      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3,debug,rowMaskFraction});
+      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride});
       const pats=visible(scan);
       const names=pats.map(p=>p.name);
       const hit=test.expected==="NO CLEAN PATTERN"?!names.length:names.some(n=>norm(n)===norm(test.expected));
