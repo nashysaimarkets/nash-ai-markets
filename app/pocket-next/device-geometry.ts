@@ -479,7 +479,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const reversalSkeleton=hasReversalSkeleton(pivots,candles,width,structureHeight);
     const flag=reversalSkeleton ? null : flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
     if(flag)patternCandidates.push(flag);
-    const boundary=boundaryPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
+    const boundary=reversalSkeleton ? null : boundaryPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(boundary)patternCandidates.push(boundary);
 
     const rh=patternHighs.find(g=>g.score>=2),rl=patternLows.find(g=>g.score>=2);
