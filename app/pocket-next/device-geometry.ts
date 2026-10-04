@@ -300,7 +300,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // of identical candle endpoints. Real candle pixels are sparse across a row;
     // annotation lines are abnormally dense. Mask only those extreme horizontal bands.
     const noisyRows=new Set<number>();
-    const rowThreshold=Math.max(24,Math.round((right-left+1)*.18));
+    const rowThreshold=Math.max(32,Math.round((right-left+1)*.32));
     for(let y=top;y<=bottom;y++){
       let hits=0;
       for(let x=left;x<=right;x++){
