@@ -223,3 +223,122 @@
 
   .pnTopActions button{height:34px;padding:0 9px;font-size:7px}
 }
+
+
+/* Trading-workstation refinement — pass 2 */
+.pnMobileDecision{display:none}
+.pnFocusButton{
+  position:absolute;z-index:6;right:14px;bottom:14px;height:30px;padding:0 10px;
+  border:1px solid rgba(231,227,218,.3);background:rgba(15,22,32,.88);color:#e9e4d9;
+  font-family:"SFMono-Regular",Consolas,monospace;font-size:7px;font-weight:700;letter-spacing:.1em;
+  backdrop-filter:blur(8px)
+}
+
+@media(max-width:760px){
+  .pnTop{height:54px}
+  .pnResultTop{min-height:54px}
+  .pnBrand strong{font-size:10px}
+  .pnTopActions button{height:36px;padding:0 10px;font-size:8px}
+
+  .pnWorkspace{min-height:calc(100dvh - 54px)}
+  .pnChartHeader{min-height:56px;padding:0 14px}
+  .pnChartHeader small{font-size:8px}
+  .pnChartHeader strong{font-size:21px}
+
+  .pnMobileDecision{
+    display:grid;
+    grid-template-columns:auto auto 1fr;
+    align-items:center;
+    gap:12px;
+    min-height:46px;
+    padding:7px 14px;
+    background:#111925;
+    color:#dce3eb;
+    border-bottom:1px solid #283444;
+  }
+  .pnMobileDecision>span{
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:19px;
+    line-height:1;
+  }
+  .pnMobileDecision>strong{
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    font-family:Georgia,"Times New Roman",serif;
+    font-size:22px;
+    font-weight:500;
+    line-height:1;
+    color:#f0ece3;
+  }
+  .pnMobileDecision>strong small{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:7px;
+    font-weight:500;
+    color:#8f9bad;
+    letter-spacing:.05em;
+  }
+  .pnMobileDecision>b{
+    justify-self:end;
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:7px;
+    font-weight:600;
+    letter-spacing:.08em;
+    color:#8492a3;
+    white-space:nowrap;
+  }
+  .pnResultApp[data-tone="bull"] .pnMobileDecision>span{color:#8ab69a}
+  .pnResultApp[data-tone="bear"] .pnMobileDecision>span{color:#c98982}
+  .pnResultApp[data-tone="wait"] .pnMobileDecision>span{color:#c4a46f}
+
+  .pnChartFoot span:last-child{font-size:11px}
+  .pnDecision>p{font-size:14px;line-height:1.62}
+  .pnTriptych strong,.pnMiss strong{font-size:14px}
+  .pnRows strong{font-size:14px}
+  .pnRows small{font-size:11px}
+  .pnTools button span{font-size:9px}
+
+  .pnFocusButton{
+    right:10px;
+    bottom:10px;
+    height:32px;
+    padding:0 11px;
+    font-size:8px;
+  }
+  .pnChart[data-focus="true"]{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    width:100vw;
+    height:100dvh;
+    min-height:100dvh;
+    display:grid;
+    place-items:center;
+    background:#0d131c;
+    overflow:hidden;
+  }
+  .pnChart[data-focus="true"] img{
+    width:100%;
+    height:100%;
+    max-width:100%;
+    max-height:100dvh;
+    object-fit:contain;
+    padding:0;
+  }
+  .pnChart[data-focus="true"] svg,
+  .pnChart[data-focus="true"] .pnLevelLabels{
+    inset:0;
+    width:100%;
+    height:100%;
+  }
+  .pnChart[data-focus="true"] .pnFocusButton{
+    top:calc(env(safe-area-inset-top) + 12px);
+    right:12px;
+    bottom:auto;
+    height:36px;
+    padding:0 13px;
+    background:rgba(237,233,223,.94);
+    color:#172232;
+    border-color:rgba(237,233,223,.94);
+  }
+}
