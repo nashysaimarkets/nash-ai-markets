@@ -297,21 +297,28 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const left=Math.round(width*.04),right=Math.round(width*.91),top=Math.round(height*.08),bottom=Math.round(height*.88);
 
     // Long coloured drawing tools / price lines can otherwise masquerade as dozens
-    // of identical candle endpoints. Real candle pixels are sparse across a row;
-    // annotation lines are abnormally dense. Mask only those extreme horizontal bands.
+    // of identical candle endpoints. Total row density is a poor discriminator because
+    // many separate candles can legitimately touch the same price. Instead detect a
+    // long *continuous* coloured horizontal run (allowing one tiny anti-aliasing gap).
     const noisyRows=new Set<number>();
-    const rowMaskFraction=Math.min(.6,Math.max(.1,input.rowMaskFraction??.32));
-    const rowThreshold=Math.max(24,Math.round((right-left+1)*rowMaskFraction));
+    const rowMaskFraction=Math.min(.6,Math.max(.08,input.rowMaskFraction??.18));
+    const rowRunThreshold=Math.max(18,Math.round((right-left+1)*rowMaskFraction));
     for(let y=top;y<=bottom;y++){
-      let hits=0;
+      let streak=0,longest=0,gap=0;
       for(let x=left;x<=right;x++){
         const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
-        if(a<180)continue;
         const hi=Math.max(r,g,b),lo=Math.min(r,g,b),sat=hi-lo;
-        const redOrGreen=(g>r+18&&g>b+6)||(r>g+18&&r>b+6);
-        if(sat>42&&hi>90&&redOrGreen)hits++;
+        const redOrGreen=a>=180&&sat>42&&hi>90&&((g>r+18&&g>b+6)||(r>g+18&&r>b+6));
+        if(redOrGreen){
+          streak+=gap+1; gap=0;
+          if(streak>longest)longest=streak;
+        }else if(streak>0&&gap<1){
+          gap++;
+        }else{
+          streak=0; gap=0;
+        }
       }
-      if(hits>=rowThreshold){noisyRows.add(y-1);noisyRows.add(y);noisyRows.add(y+1);}
+      if(longest>=rowRunThreshold){noisyRows.add(y-1);noisyRows.add(y);noisyRows.add(y+1);}
     }
 
     const collectColumns=(allowBlue:boolean)=>{
