@@ -526,6 +526,59 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     };
     let columnRuns=collectColumns(false);if(columnRuns.length<12)columnRuns=collectColumns(true);
 
+    // Monochrome fallback: only activate when the colour pass cannot find a real
+    // candle stream. Infer the dominant neutral background from the plot region,
+    // then keep high-contrast neutral vertical segments while masking long neutral
+    // drawing lines. This supports black/grey and white/grey candle themes without
+    // changing the normal coloured-chart path.
+    if(columnRuns.length<12){
+      const samples:number[]=[];
+      for(let y=top;y<=bottom;y+=8)for(let x=left;x<=right;x+=8){
+        const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0);
+        const hi=Math.max(r,g,b),lo=Math.min(r,g,b);
+        if(hi-lo<=24)samples.push((r+g+b)/3);
+      }
+      samples.sort((a,b)=>a-b);
+      const background=samples.length?samples[Math.floor(samples.length/2)]:128;
+      const neutralNoisyRows=new Set<number>();
+      const rowRunThreshold=Math.max(18,Math.round((right-left+1)*rowMaskFraction));
+      for(let y=top;y<=bottom;y++){
+        let streak=0,longest=0,gap=0;
+        for(let x=left;x<=right;x++){
+          const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
+          const hi=Math.max(r,g,b),lo=Math.min(r,g,b),lum=(r+g+b)/3;
+          const neutral=a>=180&&hi-lo<=34&&Math.abs(lum-background)>=58;
+          if(neutral){streak+=gap+1;gap=0;if(streak>longest)longest=streak;}
+          else if(streak>0&&gap<1)gap++;
+          else{streak=0;gap=0;}
+        }
+        if(longest>=rowRunThreshold){neutralNoisyRows.add(y-1);neutralNoisyRows.add(y);neutralNoisyRows.add(y+1);}
+      }
+      const neutralRuns:{x:number;ys:number[];span:number}[]=[];
+      for(let x=left;x<=right;x++){
+        const ys:number[]=[];
+        for(let y=top;y<=bottom;y++){
+          if(neutralNoisyRows.has(y))continue;
+          const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
+          const hi=Math.max(r,g,b),lo=Math.min(r,g,b),lum=(r+g+b)/3;
+          if(a>=180&&hi-lo<=34&&Math.abs(lum-background)>=58)ys.push(y);
+        }
+        if(ys.length<2)continue;
+        const groups:number[][]=[];let group:number[]=[];
+        for(const y of ys){
+          const prev=group.at(-1);
+          if(prev===undefined||y-prev<=2)group.push(y);
+          else{if(group.length)groups.push(group);group=[y];}
+        }
+        if(group.length)groups.push(group);
+        const best=groups.map(items=>({items,span:items.at(-1)!-items[0]}))
+          .filter(item=>item.items.length>=2&&item.span>=3)
+          .sort((a,b)=>b.span-a.span||b.items.length-a.items.length)[0];
+        if(best)neutralRuns.push({x,ys:best.items,span:best.span});
+      }
+      if(neutralRuns.length>=8)columnRuns=neutralRuns;
+    }
+
     // Volume histograms and some oscillator bars form many vertical coloured runs
     // that terminate on one exact horizontal baseline. Candlesticks should not have
     // dozens of unrelated bars sharing the identical low pixel across a wide span.
