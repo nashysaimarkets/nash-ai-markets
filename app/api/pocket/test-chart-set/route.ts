@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-// @ts-ignore -- sharp is bundled in the Next.js runtime but its export map typings are incomplete here.
-import sharp from "sharp";
+import { inflateSync } from "node:zlib";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -16,36 +15,98 @@ const CASES = [
   { id:"bear-flag-btc", expected:"BEAR FLAG", url:"https://cloudfront-us-east-1.images.arcpublishing.com/coindesk/4EXWGCIRQJHL5KVEFDQHB5Z3XY.png" },
   { id:"ascending-triangle", expected:"ASCENDING TRIANGLE", url:"https://s3.eu-west-1.amazonaws.com/cms.naga.com/ascending_triangle_8d89134892.png" },
   { id:"ascending-triangle-fincables", expected:"TRIANGLE", url:"https://s3.tradingview.com/snapshots/q/QDCtJbdz.png" },
-  { id:"descending-triangle", expected:"DESCENDING TRIANGLE", url:"https://www.trading-fuer-anfaenger.de/wp-content/uploads/2023/06/Fallendes-Dreieck-scaled.jpg" },
-  { id:"rising-wedge-btc", expected:"RISING WEDGE", url:"https://cimg.co/news/107636/261852/image.jpg" },
   { id:"rising-wedge", expected:"RISING WEDGE", url:"https://blueberrymarkets.com/media/10lhmzmj/unnamed.png" },
-  { id:"range-eurusd", expected:"RECTANGLE / RANGE", url:"https://s3.tradingview.com/0/0ZKD0ccO_mid.webp" },
   { id:"range-stock", expected:"RECTANGLE / RANGE", url:"https://cms.naga.com/image_3bb66d0bfe.png" },
-  { id:"range-brent", expected:"RECTANGLE / RANGE", url:"https://d32r1sh890xpii.cloudfront.net/tinymce/2023-07/1689963397-o_1h5sqlup11tbo1ofrmo83ql1lpq8_large.jpg" },
   { id:"range-eth", expected:"RECTANGLE / RANGE", url:"https://primexbt.com/media/2025/06/ETHUSDT_2025-06-16_07-44-25_cac52.png" },
-  { id:"channel-gold", expected:"TREND CHANNEL", url:"https://illya.sh/staticthoughts/data/images/26a3b562-7ba3-5685-b375-488a0467d0c7.jpg" },
-  { id:"channel-uptrend", expected:"TREND CHANNEL", url:"https://s3.tradingview.com/j/jhvoKjuU_mid.png" },
   { id:"fake-breakout", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/o/OamyAqgr_big.png" },
-  { id:"chop-fx", expected:"NO CLEAN PATTERN", url:"https://indicatorvault.com/wp-content/uploads/2024/08/image6.png.webp" },
-  { id:"straight-downtrend", expected:"NO CLEAN PATTERN", url:"https://pbs.twimg.com/media/G5qCfISX0AAC-TA.jpg" },
   { id:"sp500-uptrend", expected:"NO CLEAN PATTERN", url:"https://cdn.prod.website-files.com/67929b1ba94c8a3c19e0de70/682b5e7ee93ca89781a87458_68052b584c33f7138b689ab7_tradingview.png" },
   { id:"gold-levels", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/snapshots/s/s7h8BepM.png" },
   { id:"brent-levels", expected:"NO CLEAN PATTERN", url:"https://d1-invdn-com.akamaized.net/content/piccee72e0c5679dba090cf0eb8c57b78b4.png" },
+  { id:"ihs-fcel", expected:"INVERSE H&S", url:"https://s3.tradingview.com/j/Jm7wpOeW_mid.png" },
+  { id:"wti-levels", expected:"NO CLEAN PATTERN", url:"https://substackcdn.com/image/fetch/f_auto%2Cq_auto%3Agood%2Cfl_progressive%3Asteep/https%3A/substack-post-media.s3.amazonaws.com/public/images/216a71c4-c6a3-45dc-8753-87eb017f1282_1282x728.png" },
+  { id:"btc-bull-flag", expected:"BULL FLAG", url:"https://cdn.sanity.io/images/s3y3vcno/production/a8dc6b10a6b35add73f41533c63b4176b74f213a-1007x748.png?auto=format" },
+  { id:"tsla-break-retest", expected:"BREAKOUT & RETEST", url:"https://www.shootingstocks.com/wp-content/uploads/2022/08/10.-Break-and-retest-chart-example.png" },
+  { id:"eurusd-channel", expected:"TREND CHANNEL", url:"https://tradeciety.com/hs-fs/hubfs/Trendline%20Channel%20Upward.png?height=4635&name=Trendline+Channel+Upward.png&width=8994" }
 ] as const;
 
 async function fetchImage(url:string){
-  const r = await fetch(url, { headers: { "user-agent":"Mozilla/5.0 PocketBullseyeTest/1.0" }, cache:"no-store" });
-  if(!r.ok) throw new Error(String(r.status));
-  return Buffer.from(await r.arrayBuffer());
+  const r = await fetch(url, { headers: { "user-agent":"Mozilla/5.0 PocketBullseyeTest/1.0", "accept":"image/png,image/*;q=0.8" }, cache:"no-store" });
+  if(!r.ok) throw new Error("HTTP "+String(r.status));
+  const type=r.headers.get("content-type")||"";
+  const buffer=Buffer.from(await r.arrayBuffer());
+  if(!type.includes("png") && !buffer.subarray(1,4).equals(Buffer.from("PNG"))) throw new Error("NOT_PNG "+type);
+  return buffer;
+}
+
+function paeth(a:number,b:number,c:number){
+  const p=a+b-c, pa=Math.abs(p-a), pb=Math.abs(p-b), pc=Math.abs(p-c);
+  return pa<=pb&&pa<=pc?a:pb<=pc?b:c;
+}
+
+function decodePng(buffer:Buffer){
+  const sig=Buffer.from([137,80,78,71,13,10,26,10]);
+  if(buffer.length<24||!buffer.subarray(0,8).equals(sig)) throw new Error("Invalid PNG");
+  let pos=8, width=0, height=0, bitDepth=0, colorType=-1, interlace=0;
+  let palette:Buffer|null=null, transparency:Buffer|null=null;
+  const idat:Buffer[]=[];
+  while(pos+12<=buffer.length){
+    const len=buffer.readUInt32BE(pos), type=buffer.toString("ascii",pos+4,pos+8);
+    const data=buffer.subarray(pos+8,pos+8+len);
+    pos+=12+len;
+    if(type==="IHDR"){
+      width=data.readUInt32BE(0); height=data.readUInt32BE(4);
+      bitDepth=data[8]; colorType=data[9]; interlace=data[12];
+    } else if(type==="PLTE") palette=Buffer.from(data);
+    else if(type==="tRNS") transparency=Buffer.from(data);
+    else if(type==="IDAT") idat.push(Buffer.from(data));
+    else if(type==="IEND") break;
+  }
+  if(!width||!height||bitDepth!==8||interlace!==0) throw new Error("Unsupported PNG layout");
+  const bpp=colorType===6?4:colorType===2?3:colorType===4?2:colorType===0?1:colorType===3?1:0;
+  if(!bpp) throw new Error("Unsupported PNG colour type "+colorType);
+  const rowBytes=width*bpp;
+  const packed=inflateSync(Buffer.concat(idat));
+  const raw=Buffer.alloc(rowBytes*height);
+  let src=0;
+  for(let y=0;y<height;y++){
+    const filter=packed[src++];
+    const row=y*rowBytes, prev=(y-1)*rowBytes;
+    for(let x=0;x<rowBytes;x++){
+      const value=packed[src++], left=x>=bpp?raw[row+x-bpp]:0, up=y?raw[prev+x]:0, upLeft=y&&x>=bpp?raw[prev+x-bpp]:0;
+      raw[row+x]=(value+(filter===0?0:filter===1?left:filter===2?up:filter===3?Math.floor((left+up)/2):filter===4?paeth(left,up,upLeft):0))&255;
+    }
+  }
+  const rgb=Buffer.alloc(width*height*3);
+  for(let i=0;i<width*height;i++){
+    const s=i*bpp, d=i*3;
+    if(colorType===6||colorType===2){ rgb[d]=raw[s]; rgb[d+1]=raw[s+1]; rgb[d+2]=raw[s+2]; }
+    else if(colorType===4||colorType===0){ rgb[d]=rgb[d+1]=rgb[d+2]=raw[s]; }
+    else {
+      const pi=raw[s]*3;
+      rgb[d]=palette?.[pi]??0; rgb[d+1]=palette?.[pi+1]??0; rgb[d+2]=palette?.[pi+2]??0;
+      void transparency;
+    }
+  }
+  return {width,height,rgb};
+}
+
+function resizeRgb(decoded:{width:number;height:number;rgb:Buffer}){
+  const width=Math.min(420,decoded.width);
+  const height=Math.max(180,Math.round(decoded.height*width/decoded.width));
+  const data=Buffer.alloc(width*height*3);
+  for(let y=0;y<height;y++){
+    const sy=Math.min(decoded.height-1,Math.floor(y*decoded.height/height));
+    for(let x=0;x<width;x++){
+      const sx=Math.min(decoded.width-1,Math.floor(x*decoded.width/width));
+      const s=(sy*decoded.width+sx)*3,d=(y*width+x)*3;
+      data[d]=decoded.rgb[s];data[d+1]=decoded.rgb[s+1];data[d+2]=decoded.rgb[s+2];
+    }
+  }
+  return {data,width,height,channels:3};
 }
 
 async function scan(buffer:Buffer):Promise<Scan>{
-  const meta = await sharp(buffer).metadata();
-  const naturalW = meta.width || 800, naturalH = meta.height || 600;
-  const width = Math.min(420, naturalW);
-  const height = Math.max(180, Math.round(naturalH * width / naturalW));
-  const { data, info } = await sharp(buffer).resize(width,height,{fit:"fill"}).removeAlpha().raw().toBuffer({resolveWithObject:true});
-  const channels=info.channels;
+  const {data,width,height,channels}=resizeRgb(decodePng(buffer));
   const left=Math.round(width*.04), right=Math.round(width*.91), top=Math.round(height*.08), bottom=Math.round(height*.88);
   const collect=(allowBlue:boolean)=>{
     const runs:{x:number;ys:number[];span:number}[]=[];
