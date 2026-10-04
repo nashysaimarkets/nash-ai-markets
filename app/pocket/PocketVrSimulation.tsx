@@ -207,8 +207,9 @@ export default function PocketVrSimulation({analysis,sourceImage,viewerName,inte
 
   useEffect(()=>{
     const canvas=canvasRef.current; if(!canvas) return;
-    const gl=canvas.getContext("webgl",{antialias:true,alpha:false});
-    if(!gl){setError("This device could not start the 3D renderer.");return;}
+    const context=canvas.getContext("webgl",{antialias:true,alpha:false});
+    if(!context){setError("This device could not start the 3D renderer.");return;}
+    const gl: WebGLRenderingContext = context;
     let frame=0,dead=false,chartTexture:WebGLTexture|null=null,phoneChallenge:WebGLTexture|null=null,phoneVerdict:WebGLTexture|null=null;
 
     function shader(type:number,source:string){const s=gl.createShader(type)!;gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s)||"Shader error");return s;}
