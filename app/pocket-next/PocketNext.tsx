@@ -409,6 +409,9 @@ export default function PocketNext() {
   const [error, setError] = useState("");
   const requestActive = useRef(false);
   const centreRef = useRef<HTMLElement | null>(null);
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const chartImageRef = useRef<HTMLImageElement | null>(null);
+  const [imageBox, setImageBox] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
   const mainAnalysis = charts[0]?.analysis ?? null;
   const activeSlot = charts[activeChart];
@@ -417,6 +420,42 @@ export default function PocketNext() {
     ?? mainAnalysis;
   const image = activeSlot?.image ?? charts[0]?.image ?? null;
   const busy = busyChart !== null;
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    const img = chartImageRef.current;
+    if (!chart || !img) return;
+    const sync = () => {
+      const chartRect = chart.getBoundingClientRect();
+      const imgRect = img.getBoundingClientRect();
+      if (!img.naturalWidth || !img.naturalHeight || !imgRect.width || !imgRect.height) return;
+      const naturalRatio = img.naturalWidth / img.naturalHeight;
+      const boxRatio = imgRect.width / imgRect.height;
+      let width = imgRect.width, height = imgRect.height, offsetX = 0, offsetY = 0;
+      if (boxRatio > naturalRatio) {
+        width = imgRect.height * naturalRatio;
+        offsetX = (imgRect.width - width) / 2;
+      } else if (boxRatio < naturalRatio) {
+        height = imgRect.width / naturalRatio;
+        offsetY = (imgRect.height - height) / 2;
+      }
+      setImageBox({
+        left: imgRect.left - chartRect.left + offsetX,
+        top: imgRect.top - chartRect.top + offsetY,
+        width,
+        height,
+      });
+    };
+    sync();
+    const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(sync) : null;
+    observer?.observe(chart);
+    observer?.observe(img);
+    window.addEventListener("resize", sync);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", sync);
+    };
+  }, [image, chartFocus]);
 
   useEffect(() => {
     if (!chartFocus) return;
@@ -524,6 +563,14 @@ export default function PocketNext() {
   ), [analysis, activeLocal, plotBounds.left, plotBounds.top, plotBounds.right, plotBounds.bottom]);
   const patterns = mergeOverlayPatterns(analysis?.patterns ?? [], activeLocal?.patterns ?? [], plotBounds);
   const liquidity = mergeOverlayLiquidity(analysis?.liquidity, activeLocal?.liquidity, plotBounds);
+  const overlayStyle = imageBox.width > 0 && imageBox.height > 0 ? {
+    left: imageBox.left,
+    top: imageBox.top,
+    width: imageBox.width,
+    height: imageBox.height,
+    right: "auto",
+    bottom: "auto",
+  } : undefined;
 
   if (!mainAnalysis || !analysis) return <main className="pnApp pnStartApp">
     <header className="pnTop">
@@ -619,27 +666,38 @@ export default function PocketNext() {
           </label>)}
         </div>
 
-        <div className="pnChart" data-focus={chartFocus ? "true" : "false"}>
-          <img src={image ?? ""} alt="Analysed trading chart"/>
+        <div className="pnChart" ref={chartRef} data-focus={chartFocus ? "true" : "false"}>
+          <img ref={chartImageRef} src={image ?? ""} alt="Analysed trading chart"/>
           <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
+          <svg style={overlayStyle} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
             <defs>
               <clipPath id="pnPlotClip">
                 <rect x={plotBounds.left} y={plotBounds.top} width={Math.max(1,plotBounds.right-plotBounds.left)} height={Math.max(1,plotBounds.bottom-plotBounds.top)}/>
               </clipPath>
             </defs>
             <g clipPath="url(#pnPlotClip)">
-              {(overlayMode==="overview"||overlayMode==="levels") ? levels.map((level,i)=><g key={"l"+i} data-kind={level.kind}><line x1={clamp(level.x || plotBounds.left)} x2={clamp(level.x2 || plotBounds.right)} y1={clamp(level.y)} y2={clamp(level.y2 || level.y)}/><circle cx={clamp(level.x || plotBounds.left)} cy={clamp(level.y)} r=".8"/></g>) : null}
-              {overlayMode==="patterns" ? patterns.flatMap((p,pi)=>p.geometry?.points?.length ? [<polyline key={"p"+pi} points={p.geometry.points.map(pt=>clamp(pt.x)+","+clamp(pt.y)).join(" ")} data-pattern={p.status}/>] : []) : null}
-              {overlayMode==="liquidity" ? (liquidity?.zones ?? []).map((z,i)=><g key={"q"+i} data-side={z.side}><line x1={clamp(z.x)} x2={clamp(z.x2)} y1={clamp(z.y)} y2={clamp(z.y)}/></g>) : null}
+              {(overlayMode==="overview"||overlayMode==="levels") ? levels.map((level,i)=><g key={"l"+i} data-kind={level.kind}>
+                <rect className="pnLevelBand" x={clamp(level.x || plotBounds.left)} y={clamp(level.y)-.45} width={Math.max(1,clamp(level.x2 || plotBounds.right)-clamp(level.x || plotBounds.left))} height=".9"/>
+                <line x1={clamp(level.x || plotBounds.left)} x2={clamp(level.x2 || plotBounds.right)} y1={clamp(level.y)} y2={clamp(level.y2 || level.y)}/>
+                <circle cx={clamp(level.x || plotBounds.left)} cy={clamp(level.y)} r=".8"/>
+              </g>) : null}
+              {overlayMode==="patterns" ? patterns.flatMap((p,pi)=>p.geometry?.points?.length ? [<g key={"p"+pi} data-pattern={p.status}>
+                <polyline points={p.geometry.points.map(pt=>clamp(pt.x)+","+clamp(pt.y)).join(" ")}/>
+                {p.geometry.points.map((pt,i)=><circle key={i} className="pnPatternPoint" cx={clamp(pt.x)} cy={clamp(pt.y)} r=".72"/>)}
+              </g>] : []) : null}
+              {overlayMode==="liquidity" ? (liquidity?.zones ?? []).map((z,i)=><g key={"q"+i} data-side={z.side}>
+                <rect className="pnLiquidityBand" x={clamp(z.x)} y={clamp(z.y)-.75} width={Math.max(1,clamp(z.x2)-clamp(z.x))} height="1.5"/>
+                <line x1={clamp(z.x)} x2={clamp(z.x2)} y1={clamp(z.y)} y2={clamp(z.y)}/>
+              </g>) : null}
             </g>
           </svg>
-          {overlayMode==="levels" ? <div className="pnLevelLabels">{levels.slice(0,5).filter(l=>withinPlot(l.y,plotBounds)).map((l,i)=><span key={i} data-kind={l.kind} style={{top:clamp(l.y)+"%"}}><small>{l.kind.toUpperCase()}</small><b>{l.price || l.label}</b></span>)}</div> : null}
-          {overlayMode==="liquidity" ? <div className="pnLevelLabels">{(liquidity?.zones ?? []).filter(z=>withinPlot(z.y,plotBounds)).map((z,i)=><span key={i} data-kind={z.side==="BUY_SIDE"?"resistance":"support"} style={{top:clamp(z.y)+"%"}}><small>{z.side.replace("_"," ")}</small><b>{z.price || z.basis.replaceAll("_"," ")}</b></span>)}</div> : null}
+          {overlayMode==="levels" ? <div style={overlayStyle} className="pnLevelLabels">{levels.slice(0,6).filter(l=>withinPlot(l.y,plotBounds)).map((l,i)=><span key={i} data-kind={l.kind} style={{top:clamp(l.y)+"%"}}><small>{l.kind.toUpperCase()}</small><b>{l.price || l.label}</b></span>)}</div> : null}
+          {overlayMode==="patterns" ? <div style={overlayStyle} className="pnPatternLabels">{patterns.filter(p=>p.geometry?.points?.length).slice(0,3).map((p,i)=><span key={i} style={{left:clamp(p.geometry!.labelX)+"%",top:clamp(p.geometry!.labelY)+"%"}}>{p.name}</span>)}</div> : null}
+          {overlayMode==="liquidity" ? <div style={overlayStyle} className="pnLevelLabels">{(liquidity?.zones ?? []).filter(z=>withinPlot(z.y,plotBounds)).map((z,i)=><span key={i} data-kind={z.side==="BUY_SIDE"?"resistance":"support"} style={{top:clamp(z.y)+"%"}}><small>{z.side.replace("_"," ")}</small><b>{z.price || z.basis.replaceAll("_"," ")}</b></span>)}</div> : null}
         </div>
 
         <footer className="pnChartFoot">
-          <span>SOURCE IMAGE PRESERVED</span>
+          <span>{activeLocal ? `DEVICE · ${activeLocal.levels.length} LV · ${activeLocal.patterns.length} PT · ${activeLocal.liquidity.zones.length} LQ` : "SOURCE IMAGE PRESERVED"}</span>
           <span>{active==="levels" ? analysis.levelStory : active==="structure" ? analysis.marketStructure : active==="patterns" ? (patterns[0]?.evidence || "No defensible pattern is currently verified.") : active==="liquidity" ? (liquidity?.evidence || "No defensible liquidity event is currently verified.") : "Select a scanner to isolate its evidence on the chart."}</span>
         </footer>
       </section>
