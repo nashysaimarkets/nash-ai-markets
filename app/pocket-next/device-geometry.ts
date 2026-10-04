@@ -276,6 +276,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const candleTop=Math.max(top,Math.min(...candles.map(v=>v.high))-height*.012);
     const candleBottom=Math.min(bottom,Math.max(...candles.map(v=>v.low))+height*.012);
     const plotBounds={left:pctX(candleLeft),top:pctY(candleTop),right:pctX(candleRight),bottom:pctY(candleBottom)};
+    const structureHeight=Math.max(40,candleBottom-candleTop);
     const swings:Swing[]=[];
     for(let i=2;i<candles.length-2;i++){
       const c=candles[i],near=candles.slice(i-2,i+3);
@@ -295,22 +296,22 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     }
 
     const clusterFrom=(source:Swing[],kind:"high"|"low")=>{
-      const src=source.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,height*.018);
+      const src=source.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,structureHeight*.018);
       for(const s of src){const found=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol);if(found)found.push(s);else groups.push([s]);}
       return groups.map(items=>({items,y:items.reduce((n,v)=>n+v.y,0)/items.length,score:items.length} as Cluster)).sort((a,b)=>b.score-a.score||(kind==="high"?a.y-b.y:b.y-a.y));
     };
     const highs=clusterFrom(swings,"high"),lows=clusterFrom(swings,"low");
     const patternHighs=clusterFrom(patternSwings,"high"),patternLows=clusterFrom(patternSwings,"low");
-    const rank=(g:Cluster)=>{const recency=Math.max(...g.items.map(i=>i.x))/width,spread=Math.max(...g.items.map(i=>i.y))-Math.min(...g.items.map(i=>i.y));return g.score*4+recency*2-spread/Math.max(2,height*.02);};
+    const rank=(g:Cluster)=>{const recency=Math.max(...g.items.map(i=>i.x))/width,spread=Math.max(...g.items.map(i=>i.y))-Math.min(...g.items.map(i=>i.y));return g.score*4+recency*2-spread/Math.max(2,structureHeight*.02);};
     const ranked=[...highs.map(group=>({kind:"resistance" as const,group,rank:rank(group)})),...lows.map(group=>({kind:"support" as const,group,rank:rank(group)}))].sort((a,b)=>b.rank-a.rank);
     const picked=ranked.slice(0,3);
     if(!picked.some(x=>x.kind==="resistance")&&highs[0])picked[picked.length-1]={kind:"resistance",group:highs[0],rank:rank(highs[0])};
     if(!picked.some(x=>x.kind==="support")&&lows[0])picked[picked.length-1]={kind:"support",group:lows[0],rank:rank(lows[0])};
-    const levels:DeviceLevel[]=picked.filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind&&Math.abs(other.group.y-item.group.y)<height*.025)===index).map(({kind,group})=>({kind,label:group.score>=3?(kind==="resistance"?"Repeated rejection highs":"Repeated defended lows"):group.score>=2?(kind==="resistance"?"Repeated swing highs":"Repeated swing lows"):(kind==="resistance"?"Prominent swing high":"Prominent swing low"),price:"",x:plotBounds.left,y:pctY(group.y),x2:plotBounds.right,y2:pctY(group.y)})).slice(0,3);
+    const levels:DeviceLevel[]=picked.filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind&&Math.abs(other.group.y-item.group.y)<structureHeight*.025)===index).map(({kind,group})=>({kind,label:group.score>=3?(kind==="resistance"?"Repeated rejection highs":"Repeated defended lows"):group.score>=2?(kind==="resistance"?"Repeated swing highs":"Repeated swing lows"):(kind==="resistance"?"Prominent swing high":"Prominent swing low"),price:"",x:plotBounds.left,y:pctY(group.y),x2:plotBounds.right,y2:pctY(group.y)})).slice(0,3);
 
     const pivots=normalizePivots(patternSwings);
     const patternCandidates:DevicePattern[]=[];
-    const hs=headShoulders(pivots,candles,width,height,pctX,pctY,plotBounds);
+    const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(hs)patternCandidates.push(hs);
 
     for(let i=0;i<=pivots.length-3;i++){
@@ -321,9 +322,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         const prior=trendMove(candles,a.x,width);
         const topDiff=Math.abs(a.y-b.y);
         const depth=m.y-(a.y+b.y)/2;
-        if(prior!==null&&prior< -height*.04&&topDiff<=height*.035&&depth>=height*.075&&depth<=height*.36){
+        if(prior!==null&&prior< -structureHeight*.04&&topDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.36){
           const after=candles.filter(x=>x.x>b.x);
-          const breaks=after.filter(x=>x.mid>m.y+height*.01).length;
+          const breaks=after.filter(x=>x.mid>m.y+structureHeight*.01).length;
           const confirmed=after.length>=3&&breaks>=2;
           patternCandidates.push({
             name:confirmed?"DOUBLE TOP":"DOUBLE TOP CANDIDATE",
@@ -341,9 +342,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         const prior=trendMove(candles,a.x,width);
         const bottomDiff=Math.abs(a.y-b.y);
         const depth=(a.y+b.y)/2-m.y;
-        if(prior!==null&&prior>height*.04&&bottomDiff<=height*.035&&depth>=height*.075&&depth<=height*.36){
+        if(prior!==null&&prior>structureHeight*.04&&bottomDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.36){
           const after=candles.filter(x=>x.x>b.x);
-          const breaks=after.filter(x=>x.mid<m.y-height*.01).length;
+          const breaks=after.filter(x=>x.mid<m.y-structureHeight*.01).length;
           const confirmed=after.length>=3&&breaks>=2;
           patternCandidates.push({
             name:confirmed?"DOUBLE BOTTOM":"DOUBLE BOTTOM CANDIDATE",
@@ -358,9 +359,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       }
     }
 
-    const flag=flagPattern(candles,width,height,pctX,pctY,plotBounds);
+    const flag=flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
     if(flag)patternCandidates.push(flag);
-    const boundary=boundaryPattern(pivots,candles,width,height,pctX,pctY,plotBounds);
+    const boundary=boundaryPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(boundary)patternCandidates.push(boundary);
 
     const rh=patternHighs.find(g=>g.score>=2),rl=patternLows.find(g=>g.score>=2);
@@ -368,14 +369,14 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       const events=[...rh.items.map(i=>({x:i.x,kind:"high" as const})),...rl.items.map(i=>({x:i.x,kind:"low" as const}))].sort((a,b)=>a.x-b.x);
       const xStart=Math.min(...events.map(e=>e.x)),xEnd=Math.max(...events.map(e=>e.x)),spanPct=(xEnd-xStart)/width*100;
       let alternations=0;for(let i=1;i<events.length;i++)if(events[i].kind!==events[i-1].kind)alternations++;
-      const separation=rl.y-rh.y,breakTol=height*.02,inside=candles.filter(c=>c.x>=xStart&&c.x<=xEnd);
+      const separation=rl.y-rh.y,breakTol=structureHeight*.02,inside=candles.filter(c=>c.x>=xStart&&c.x<=xEnd);
       const upperBreaches=inside.filter(c=>c.high<rh.y-breakTol).length,lowerBreaches=inside.filter(c=>c.low>rl.y+breakTol).length;
       const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
       const highCoverage=(Math.max(...rh.items.map(i=>i.x))-Math.min(...rh.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
       const lowCoverage=(Math.max(...rl.items.map(i=>i.x))-Math.min(...rl.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
-      if(rh.score>=3&&rl.score>=3&&separation>=height*.09&&separation<=height*.5&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
+      if(rh.score>=3&&rl.score>=3&&separation>=structureHeight*.09&&separation<=structureHeight*.5&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",invalidation:"A decisive breach through the opposite edge invalidates the range read.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
-      }else if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&spanPct>=20&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
+      }else if(rh.score>=2&&rl.score>=2&&separation>=structureHeight*.09&&spanPct>=20&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a rectangle.",confirmation:"More alternating tests with both boundaries holding.",invalidation:"A decisive break through either proposed boundary.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
       }
     }
