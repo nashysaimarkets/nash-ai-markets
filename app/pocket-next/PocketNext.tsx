@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { scanDevicePixels, emptyDeviceScan, type DeviceLocalScan, type DevicePlotBounds } from "./device-geometry";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type Intention = "LONG" | "SHORT" | "UNSURE";
@@ -56,8 +57,8 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
 };
 
-type PlotBounds = { left: number; top: number; right: number; bottom: number };
-type LocalScan = { levels: Level[]; patterns: Pattern[]; liquidity: LiquidityRead; candleCount: number; plotBounds: PlotBounds };
+type PlotBounds = DevicePlotBounds;
+type LocalScan = DeviceLocalScan;
 type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -115,234 +116,19 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
         const width = Math.min(420, source.naturalWidth);
         const height = Math.max(180, Math.round(source.naturalHeight * width / source.naturalWidth));
         const canvas = document.createElement("canvas");
-        canvas.width = width; canvas.height = height;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) return resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0, plotBounds: { left: 4, top: 12, right: 91, bottom: 88 } });
+        if (!ctx) return resolve(emptyDeviceScan());
         ctx.drawImage(source, 0, 0, width, height);
-        const pixels = ctx.getImageData(0,0,width,height).data;
-        const left = Math.round(width * .04), right = Math.round(width * .91);
-        const top = Math.round(height * .08), bottom = Math.round(height * .88);
-        const collectColumns = (allowBlue: boolean) => {
-          const runs: Array<{x:number;ys:number[];span:number}> = [];
-          for (let x=left;x<=right;x++) {
-            const ys:number[] = [];
-            for (let y=top;y<=bottom;y++) {
-              const i=(y*width+x)*4, r=pixels[i], g=pixels[i+1], b=pixels[i+2], a=pixels[i+3];
-              if (a<180) continue;
-              const hi=Math.max(r,g,b), lo=Math.min(r,g,b);
-              const sat=hi-lo;
-              const redOrGreen = (g>r+18 && g>b+6) || (r>g+18 && r>b+6);
-              const blueFallback = allowBlue && b>r+24 && b>g+10;
-              const candleColour = sat>42 && hi>90 && (redOrGreen || blueFallback);
-              if (candleColour) ys.push(y);
-            }
-            if (ys.length>=2) {
-              const span=Math.max(...ys)-Math.min(...ys);
-              if (span>=3) runs.push({x,ys,span});
-            }
-          }
-          return runs;
-        };
-        let columnRuns = collectColumns(false);
-        // Most broker screenshots use red/green candles. Staying red/green first
-        // avoids mistaking blue current-price badges and selected UI controls for
-        // candles. Only fall back to blue when a chart genuinely lacks enough
-        // red/green structure to scan.
-        if (columnRuns.length < 12) columnRuns = collectColumns(true);
-
-        // Candles in screenshots frequently sit only a pixel or two apart.
-        // Grouping neighbouring coloured columns merges an entire chart into
-        // one blob. Instead use the longest vertical colour run as the
-        // wick/body centre and suppress only nearby duplicate columns.
-        const selected:Array<{x:number;ys:number[];span:number}> = [];
-        for (const candidate of [...columnRuns].sort((a,b)=>b.span-a.span)) {
-          if (selected.every(existing=>Math.abs(existing.x-candidate.x)>=3)) selected.push(candidate);
-        }
-        selected.sort((a,b)=>a.x-b.x);
-        const candles:Array<{x:number;high:number;low:number;mid:number}> = selected.map(candidate=>{
-          const high=Math.min(...candidate.ys), low=Math.max(...candidate.ys);
-          return {x:candidate.x,high,low,mid:(high+low)/2};
-        });
-
-        const pctX=(x:number)=>x/width*100, pctY=(y:number)=>y/height*100;
-        const candleLeft = candles.length ? Math.max(left, Math.min(...candles.map(v=>v.x)) - width*.012) : left;
-        const candleRight = candles.length ? Math.min(right, Math.max(...candles.map(v=>v.x)) + width*.018) : right;
-        const candleTop = candles.length ? Math.max(top, Math.min(...candles.map(v=>v.high)) - height*.012) : top;
-        const candleBottom = candles.length ? Math.min(bottom, Math.max(...candles.map(v=>v.low)) + height*.012) : bottom;
-        const plotBounds: PlotBounds = { left:pctX(candleLeft), top:pctY(candleTop), right:pctX(candleRight), bottom:pctY(candleBottom) };
-        type Swing={x:number;y:number;kind:"high"|"low"};
-        const swings:Swing[]=[];
-        for(let i=2;i<candles.length-2;i++){
-          const c=candles[i];
-          const near=candles.slice(i-2,i+3);
-          if (c.high===Math.min(...near.map(v=>v.high))) swings.push({x:c.x,y:c.high,kind:"high"});
-          if (c.low===Math.max(...near.map(v=>v.low))) swings.push({x:c.x,y:c.low,kind:"low"});
-        }
-        const cluster=(kind:"high"|"low")=>{
-          const src=swings.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y);
-          const groups:Array<Swing[]>=[];
-          const tol=Math.max(3,height*.018);
-          for(const s of src){
-            const found=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol);
-            if(found) found.push(s); else groups.push([s]);
-          }
-          return groups
-            .map(g=>({items:g,y:g.reduce((n,v)=>n+v.y,0)/g.length,score:g.length}))
-            .sort((a,b)=>b.score-a.score || (kind==="high"?a.y-b.y:b.y-a.y));
-        };
-        const highs=cluster("high"), lows=cluster("low");
-
-        const rankCluster = (group: {items: Swing[]; y: number; score: number}) => {
-          const recency = group.items.length ? Math.max(...group.items.map(item=>item.x)) / width : 0;
-          const spread = group.items.length ? Math.max(...group.items.map(item=>item.y)) - Math.min(...group.items.map(item=>item.y)) : 0;
-          return group.score * 4 + recency * 2 - spread / Math.max(2,height*.02);
-        };
-        const rankedLevels = [
-          ...highs.map(group=>({kind:"resistance" as const,group,rank:rankCluster(group)})),
-          ...lows.map(group=>({kind:"support" as const,group,rank:rankCluster(group)})),
-        ].sort((a,b)=>b.rank-a.rank);
-        const pickedLevels = rankedLevels.slice(0,3);
-        if (!pickedLevels.some(item=>item.kind==="resistance") && highs[0]) {
-          pickedLevels[pickedLevels.length-1] = {kind:"resistance",group:highs[0],rank:rankCluster(highs[0])};
-        }
-        if (!pickedLevels.some(item=>item.kind==="support") && lows[0]) {
-          pickedLevels[pickedLevels.length-1] = {kind:"support",group:lows[0],rank:rankCluster(lows[0])};
-        }
-        const levels:Level[]=pickedLevels
-          .filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind && Math.abs(other.group.y-item.group.y)<height*.025)===index)
-          .map(({kind,group})=>({
-            kind,
-            label:group.score>=3 ? (kind==="resistance"?"Repeated rejection highs":"Repeated defended lows") : group.score>=2 ? (kind==="resistance"?"Repeated swing highs":"Repeated swing lows") : (kind==="resistance"?"Prominent swing high":"Prominent swing low"),
-            price:"",
-            x:plotBounds.left,
-            y:pctY(group.y),
-            x2:plotBounds.right,
-            y2:pctY(group.y)
-          }))
-          .slice(0,3);
-
-        const patterns:Pattern[]=[];
-        const repeatedHigh=highs.find(g=>g.score>=2), repeatedLow=lows.find(g=>g.score>=2);
-        const addDoubleTop = () => {
-          const group=highs.find(g=>g.score===2);
-          if(!group) return false;
-          const [a,b]=[...group.items].sort((x,y)=>x.x-y.x);
-          if(!a||!b||b.x-a.x<width*.18) return false;
-          const between=candles.filter(v=>v.x>a.x&&v.x<b.x);
-          if(between.length<4) return false;
-          const valley=Math.max(...between.map(v=>v.low));
-          const topY=(a.y+b.y)/2;
-          if(valley-topY<height*.065) return false;
-          patterns.push({
-            name:"DOUBLE TOP",status:"FORMING",confidence:"MEDIUM",
-            evidence:"Two separated swing highs sit on a similar row with a meaningful valley between them.",
-            confirmation:"Break below the intervening swing low after the second test.",
-            invalidation:"Clean acceptance above both swing highs.",
-            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(valley)},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}
-          });
-          return true;
-        };
-        const addDoubleBottom = () => {
-          const group=lows.find(g=>g.score===2);
-          if(!group) return false;
-          const [a,b]=[...group.items].sort((x,y)=>x.x-y.x);
-          if(!a||!b||b.x-a.x<width*.18) return false;
-          const between=candles.filter(v=>v.x>a.x&&v.x<b.x);
-          if(between.length<4) return false;
-          const peak=Math.min(...between.map(v=>v.high));
-          const bottomY=(a.y+b.y)/2;
-          if(bottomY-peak<height*.065) return false;
-          patterns.push({
-            name:"DOUBLE BOTTOM",status:"FORMING",confidence:"MEDIUM",
-            evidence:"Two separated swing lows sit on a similar row with a meaningful peak between them.",
-            confirmation:"Break above the intervening swing high after the second test.",
-            invalidation:"Clean acceptance below both swing lows.",
-            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(peak)},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}
-          });
-          return true;
-        };
-
-        if(repeatedHigh && repeatedLow){
-          const events=[
-            ...repeatedHigh.items.map(item=>({x:item.x,kind:"high" as const})),
-            ...repeatedLow.items.map(item=>({x:item.x,kind:"low" as const}))
-          ].sort((a,b)=>a.x-b.x);
-          const xStart=Math.min(...events.map(event=>event.x));
-          const xEnd=Math.max(...events.map(event=>event.x));
-          const spanPct=(xEnd-xStart)/width*100;
-          let alternations=0;
-          for(let i=1;i<events.length;i++) if(events[i].kind!==events[i-1].kind) alternations++;
-          const separation=repeatedLow.y-repeatedHigh.y;
-          const breakTol=height*.02;
-          const inside=candles.filter(candle=>candle.x>=xStart&&candle.x<=xEnd);
-          const upperBreaches=inside.filter(candle=>candle.high<repeatedHigh.y-breakTol).length;
-          const lowerBreaches=inside.filter(candle=>candle.low>repeatedLow.y+breakTol).length;
-          const balancedTouches=repeatedHigh.score>=2&&repeatedLow.score>=2;
-          const sufficientHeight=separation>=height*.09&&separation<=height*.5;
-          const cleanDuration=spanPct>=24;
-          const alternating=alternations>=3;
-          const notBroken=upperBreaches<=1&&lowerBreaches<=1;
-          const x1=Math.max(plotBounds.left,pctX(xStart)), x2=Math.min(plotBounds.right,pctX(xEnd));
-          if(balancedTouches&&sufficientHeight&&cleanDuration&&alternating&&notBroken){
-            patterns.push({
-              name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",
-              evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",
-              confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",
-              invalidation:"A decisive breach through the opposite edge invalidates the range read.",
-              geometry:{points:[{x:x1,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedHigh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(repeatedHigh.y)-4)}
-            });
-          } else if (balancedTouches&&sufficientHeight&&spanPct>=18&&alternations>=2&&upperBreaches<=2&&lowerBreaches<=2) {
-            patterns.push({
-              name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",
-              evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a confirmed rectangle.",
-              confirmation:"More alternating tests with both boundaries holding.",
-              invalidation:"A decisive break through either proposed boundary.",
-              geometry:{points:[{x:x1,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedHigh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(repeatedHigh.y)-4)}
-            });
-          }
-        }
-        if(!patterns.length) {
-          if(!addDoubleTop()) addDoubleBottom();
-        }
-        const zones:LiquidityZone[]=[];
-        const liquidityHigh=highs[0], liquidityLow=lows[0];
-        if(liquidityHigh){
-          const startX=pctX(Math.min(...liquidityHigh.items.map(s=>s.x)));
-          zones.push({
-            side:"BUY_SIDE",
-            basis:liquidityHigh.score>=2?"EQUAL_HIGHS":"PRIOR_SWING_HIGH",
-            price:"",
-            x:startX,
-            x2:Math.max(startX+5,plotBounds.right),
-            y:pctY(liquidityHigh.y)
-          });
-        }
-        if(liquidityLow){
-          const startX=pctX(Math.min(...liquidityLow.items.map(s=>s.x)));
-          zones.push({
-            side:"SELL_SIDE",
-            basis:liquidityLow.score>=2?"EQUAL_LOWS":"PRIOR_SWING_LOW",
-            price:"",
-            x:startX,
-            x2:Math.max(startX+5,plotBounds.right),
-            y:pctY(liquidityLow.y)
-          });
-        }
-        const liquidity:LiquidityRead = zones.length ? {
-          state:"PARTIAL",event:"TESTING",confidence:"LOW",
-          evidence:"Device pixel geometry marked repeated or prior swing references only; hidden orders are not inferred.",
-          confirmation:"A visible sweep/reclaim or rejection is still required.",
-          invalidation:"The reference is invalid if price cleanly accepts beyond it.",
-          zones
-        } : {state:"NONE",event:"NONE",confidence:"LOW",evidence:"No repeated swing reference was strong enough on-device.",confirmation:"",invalidation:"",zones:[]};
-
-        resolve({levels,patterns,liquidity,candleCount:candles.length,plotBounds});
+        const imageData = ctx.getImageData(0, 0, width, height);
+        resolve(scanDevicePixels({ pixels: imageData.data, width, height, channels: 4 }));
       } catch {
-        resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0, plotBounds: { left: 4, top: 12, right: 91, bottom: 88 } });
+        resolve(emptyDeviceScan());
       }
     };
-    source.onerror=()=>resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0, plotBounds: { left: 4, top: 12, right: 91, bottom: 88 } });
-    source.src=dataUrl;
+    source.onerror = () => resolve(emptyDeviceScan());
+    source.src = dataUrl;
   });
 }
 
