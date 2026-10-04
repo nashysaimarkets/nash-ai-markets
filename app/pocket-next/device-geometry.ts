@@ -369,6 +369,34 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     };
     let columnRuns=collectColumns(false);if(columnRuns.length<12)columnRuns=collectColumns(true);
 
+    // Volume histograms and some oscillator bars form many vertical coloured runs
+    // that terminate on one exact horizontal baseline. Candlesticks should not have
+    // dozens of unrelated bars sharing the identical low pixel across a wide span.
+    // Remove only dominant lower-panel baselines so colour-theme support cannot turn
+    // volume into fake price structure.
+    if(columnRuns.length>=18){
+      const bins=new Map<number,{count:number;minX:number;maxX:number}>();
+      for(const run of columnRuns){
+        const low=run.ys.at(-1)!;
+        if(low<top+(bottom-top)*.55)continue;
+        const key=Math.round(low/2)*2;
+        const hit=bins.get(key);
+        if(hit){hit.count++;hit.minX=Math.min(hit.minX,run.x);hit.maxX=Math.max(hit.maxX,run.x);}
+        else bins.set(key,{count:1,minX:run.x,maxX:run.x});
+      }
+      const minCount=Math.max(10,Math.round(columnRuns.length*.14));
+      const baselines=[...bins.entries()]
+        .filter(([,v])=>v.count>=minCount&&v.maxX-v.minX>=width*.24)
+        .map(([y])=>y);
+      if(baselines.length){
+        const cleaned=columnRuns.filter(run=>{
+          const low=run.ys.at(-1)!;
+          return !baselines.some(base=>Math.abs(low-base)<=2);
+        });
+        if(cleaned.length>=8)columnRuns=cleaned;
+      }
+    }
+
     // Solid broker/UI buttons create long runs of neighbouring columns with
     // almost identical top/bottom edges. Real candles may have a body a few
     // pixels wide, but their wick/body silhouette is not a 15–40 px plateau.
