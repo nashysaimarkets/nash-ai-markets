@@ -210,8 +210,9 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
     const slope=den?num/den:0,total=slope*xSpan;
     const rms=Math.sqrt(rest.reduce((s,x)=>{const e=x.mid-(my+slope*(x.x-mx));return s+e*e;},0)/rest.length);
     if(rms>Math.max(3,range*.34))continue;
-    const bull=pole<0&&total>height*.025&&total<poleMag*.45;
-    const bear=pole>0&&total< -height*.025&&Math.abs(total)<poleMag*.45;
+    const counterRatio=Math.abs(total)/Math.max(1,poleMag);
+    const bull=pole<0&&total>height*.025&&total<poleMag*.45&&counterRatio>=.1;
+    const bear=pole>0&&total< -height*.025&&Math.abs(total)<poleMag*.45&&counterRatio>=.1;
     if(!bull&&!bear)continue;
     const name=bull?"BULL FLAG":"BEAR FLAG";
     const points=[{x:pctX(rest[0].x),y:pctY(top)},{x:pctX(rest.at(-1)!.x),y:pctY(top+total)},{x:pctX(rest.at(-1)!.x),y:pctY(bottom+total)},{x:pctX(rest[0].x),y:pctY(bottom)}];
