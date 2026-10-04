@@ -163,6 +163,49 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
 }
 
 
+
+function cupHandlePattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
+  let best:{score:number;pattern:DevicePattern}|null=null;
+  for(let i=0;i<=pivots.length-4;i++){
+    const [leftRim,cupLow,rightRim,handleLow]=pivots.slice(i,i+4);
+    if(leftRim.kind!=="high"||cupLow.kind!=="low"||rightRim.kind!=="high"||handleLow.kind!=="low")continue;
+    const cupSpan=rightRim.x-leftRim.x;
+    if(cupSpan<width*.22||cupSpan>width*.62)continue;
+    const rim=(leftRim.y+rightRim.y)/2;
+    const rimDiff=Math.abs(leftRim.y-rightRim.y);
+    const cupDepth=cupLow.y-rim;
+    if(rimDiff>height*.055||cupDepth<height*.22||cupDepth>height*.82)continue;
+    const centre=(leftRim.x+rightRim.x)/2;
+    if(Math.abs(cupLow.x-centre)>cupSpan*.28)continue;
+    const handleDepth=handleLow.y-rim;
+    const handleSpan=handleLow.x-rightRim.x;
+    if(handleSpan<width*.035||handleSpan>cupSpan*.38)continue;
+    if(handleDepth<height*.045||handleDepth>cupDepth*.48)continue;
+    const prior=trendMove(candles,leftRim.x,width);
+    if(prior===null||prior> -height*.12)continue;
+    const after=candles.filter(c=>c.x>handleLow.x&&c.x<=handleLow.x+width*.2);
+    if(after.length<4)continue;
+    let streak=0,maxStreak=0;
+    for(const candle of after){
+      const above=candle.mid<rim-height*.012;
+      streak=above?streak+1:0;
+      if(streak>maxStreak)maxStreak=streak;
+    }
+    if(maxStreak<2)continue;
+    const points=[leftRim,cupLow,rightRim,handleLow].map(p=>({x:pctX(p.x),y:pctY(p.y)}));
+    const score=cupSpan/width+cupDepth/height-rimDiff/height-handleDepth/Math.max(1,cupDepth)*.15;
+    const pattern:DevicePattern={
+      name:"CUP & HANDLE",status:"CONFIRMED",confidence:"MEDIUM",
+      evidence:"A prior advance is followed by two similar rim highs, a broad centred cup, a shallower handle and repeated closes above the rim after the handle.",
+      confirmation:"Repeated acceptance above the cup rim after the handle.",
+      invalidation:"The handle falls materially back into the lower half of the cup or price loses the rim after breakout.",
+      geometry:{points,labelX:pctX(handleLow.x),labelY:Math.max(bounds.top,pctY(rim)-4)}
+    };
+    if(!best||score>best.score)best={score,pattern};
+  }
+  return best?.pattern??null;
+}
+
 function pennantPattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   let best:{score:number;pattern:DevicePattern}|null=null;
   const maxWindow=Math.min(12,pivots.length);
@@ -558,6 +601,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       }
     }
 
+    const cupHandle=cupHandlePattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
+    if(cupHandle)patternCandidates.push(cupHandle);
+
     const pennant=pennantPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(pennant)patternCandidates.push(pennant);
 
@@ -591,7 +637,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const familyPriority=(pattern:DevicePattern)=>{
       const confidence=pattern.confidence==="HIGH"?40:pattern.confidence==="MEDIUM"?25:0;
       const status=pattern.status==="CONFIRMED"?30:pattern.status==="FORMING"?12:pattern.status==="FAILED"?10:0;
-      const distinctive=/HEAD|DOUBLE|FLAG|PENNANT|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
+      const distinctive=/HEAD|DOUBLE|CUP|FLAG|PENNANT|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
       return confidence+status+distinctive;
     };
     const sortedPatterns=patternCandidates
