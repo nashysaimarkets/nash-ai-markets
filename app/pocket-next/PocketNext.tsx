@@ -56,7 +56,8 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
 };
 
-type PlotBounds = { left: number; top: number; right: number; bottom: number };\ntype LocalScan = { levels: Level[]; patterns: Pattern[]; liquidity: LiquidityRead; candleCount: number; plotBounds: PlotBounds };
+type PlotBounds = { left: number; top: number; right: number; bottom: number };
+type LocalScan = { levels: Level[]; patterns: Pattern[]; liquidity: LiquidityRead; candleCount: number; plotBounds: PlotBounds };
 type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
