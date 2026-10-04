@@ -33,7 +33,10 @@ const CASES = [
   { id:"msft-head-shoulders", expected:"HEAD & SHOULDERS", url:"https://miro.medium.com/v2/resize%3Afit%3A1200/1%2Ac1zWUXNfUopaZ8Wl-cySGQ.png" },
   { id:"pvr-cup-handle", expected:"CUP & HANDLE", url:"https://s3.tradingview.com/i/IoH3xUIP.png" },
   { id:"btc-double-bottom", expected:"DOUBLE BOTTOM", url:"https://s3.tradingview.com/y/YRTSbmTz_mid.png" },
-  { id:"eurusd-straight-downtrend", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/q/QXo92Wjj_mid.png?v=1778496476" }
+  { id:"eurusd-straight-downtrend", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/q/QXo92Wjj_mid.png?v=1778496476" },
+  { id:"ftmo-falling-wedge", expected:"FALLING WEDGE", url:"https://ftmo-frontend-prod.storage.googleapis.com/wp-content/uploads/2023/10/04161105/TradingView-All-Chart-Patterns.png" },
+  { id:"utx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://www.tradercampus.de/sites/default/files/dubbele_bodem.png" },
+  { id:"idx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://img.idxchannel.com/images/idx/2024/11/07/double-buttom-pattern.png" }
 ] as const;
 
 async function fetchImage(url:string){
