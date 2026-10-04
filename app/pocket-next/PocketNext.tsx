@@ -56,7 +56,7 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
 };
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;\nfunction emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null })); }
 const TABS: Array<{ id: Tab; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "OV" },
   { id: "levels", label: "Levels", short: "LV" },
@@ -150,19 +150,21 @@ function statusOf(analysis: Analysis, kind: "levels" | "patterns" | "liquidity" 
 function statusLabel(value: string) { return value === "NONE" ? "NO EVIDENCE" : value; }
 
 export default function PocketNext() {
-  const [image, setImage] = useState<string | null>(null);
-  const [imageName, setImageName] = useState("");
-  const [contextImage, setContextImage] = useState<string | null>(null);
-  const [contextName, setContextName] = useState("");
+  const [charts, setCharts] = useState<ChartSlot[]>(emptyChartSlots);
+  const [activeChart, setActiveChart] = useState(0);
   const [intention, setIntention] = useState<Intention>("UNSURE");
   const [privacy, setPrivacy] = useState(false);
-  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [active, setActive] = useState<Tab>("overview");
-  const [busy, setBusy] = useState(false);
+  const [busyChart, setBusyChart] = useState<number | null>(null);
   const [chartFocus, setChartFocus] = useState(false);
   const [error, setError] = useState("");
   const requestActive = useRef(false);
   const centreRef = useRef<HTMLElement | null>(null);
+
+  const mainAnalysis = charts[0]?.analysis ?? null;
+  const analysis = charts[activeChart]?.analysis ?? mainAnalysis;
+  const image = charts[activeChart]?.image ?? charts[0]?.image ?? null;
+  const busy = busyChart !== null;
 
   useEffect(() => {
     if (!chartFocus) return;
@@ -183,35 +185,75 @@ export default function PocketNext() {
     }
   };
 
-  const loadPrimary = async (file?: File) => {
+  const loadChart = async (index: number, file?: File) => {
     if (!file) return;
-    try { setError(""); setImage(await fileToDataUrl(file)); setImageName(file.name); setAnalysis(null); }
-    catch (e) { setError(e instanceof Error ? e.message : "Could not load that chart."); }
-  };
-  const loadContext = async (file?: File) => {
-    if (!file) return;
-    try { setError(""); setContextImage(await fileToDataUrl(file)); setContextName(file.name); }
-    catch (e) { setError(e instanceof Error ? e.message : "Could not load that chart."); }
+    try {
+      setError("");
+      const nextImage = await fileToDataUrl(file);
+      setCharts((current) => current.map((slot, slotIndex) => slotIndex === index
+        ? { image: nextImage, name: file.name, analysis: null }
+        : slot));
+      if (index === 0) setActiveChart(0);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not load that chart.");
+    }
   };
 
-  const run = async () => {
-    if (!image || !privacy || busy || requestActive.current) return;
-    requestActive.current = true; setBusy(true); setError("");
+  const analyseChart = async (index: number, switchAfter = false) => {
+    const slot = charts[index];
+    if (!slot?.image || !privacy || busy || requestActive.current) return;
+    requestActive.current = true;
+    setBusyChart(index);
+    setError("");
     try {
-      const [precisionImage, contextPrecisionImage] = await Promise.all([precisionCrop(image), contextImage ? precisionCrop(contextImage) : Promise.resolve(null)]);
+      const precisionImage = await precisionCrop(slot.image);
       const response = await fetch("/api/pocket/analyse", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ image, contextImage, precisionImage, contextPrecisionImage, intention }),
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ image: slot.image, precisionImage, intention }),
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis could not complete.");
-      setAnalysis(payload.analysis); setActive("overview");
-    } catch (e) { setError(e instanceof Error ? e.message : "Analysis could not complete."); }
-    finally { requestActive.current = false; setBusy(false); }
+      setCharts((current) => current.map((chart, chartIndex) => chartIndex === index
+        ? { ...chart, analysis: payload.analysis ?? null }
+        : chart));
+      if (switchAfter) setActiveChart(index);
+      if (index === 0) setActive("overview");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Analysis could not complete.");
+    } finally {
+      requestActive.current = false;
+      setBusyChart(null);
+    }
   };
 
-  const openDemo = () => { setImage(demoChart()); setImageName("Interface demo"); setContextImage(null); setAnalysis(DEMO_ANALYSIS); setActive("overview"); setPrivacy(true); };
-  const reset = () => { setAnalysis(null); setImage(null); setImageName(""); setContextImage(null); setContextName(""); setActive("overview"); setChartFocus(false); setError(""); };
+  const run = async () => { await analyseChart(0, false); };
+
+  const selectChart = async (index: number) => {
+    const slot = charts[index];
+    if (!slot?.image || index === activeChart) return;
+    if (slot.analysis) {
+      setActiveChart(index);
+      return;
+    }
+    await analyseChart(index, true);
+  };
+
+  const openDemo = () => {
+    const demo = emptyChartSlots();
+    demo[0] = { image: demoChart(), name: "Interface demo", analysis: DEMO_ANALYSIS };
+    setCharts(demo);
+    setActiveChart(0);
+    setActive("overview");
+    setPrivacy(true);
+  };
+  const reset = () => {
+    setCharts(emptyChartSlots());
+    setActiveChart(0);
+    setActive("overview");
+    setChartFocus(false);
+    setError("");
+  };
   const share = async () => {
     if (!analysis) return;
     const text = "Pocket Bullseye · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
@@ -223,7 +265,7 @@ export default function PocketNext() {
   const patterns = analysis?.patterns ?? [];
   const liquidity = analysis?.liquidity;
 
-  if (!analysis) return <main className="pnApp pnStartApp">
+  if (!mainAnalysis) return <main className="pnApp pnStartApp">
     <header className="pnTop">
       <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Decision intelligence</small></div></div>
       <div className="pnEngine"><i/> ANALYSIS ENGINE ONLINE</div>
@@ -243,17 +285,21 @@ export default function PocketNext() {
 
       <aside className="pnIntake">
         <div className="pnIntakeHead"><span>NEW ANALYSIS</span><small>PRIMARY CHART REQUIRED</small></div>
-        <label className="pnDrop" data-loaded={image ? "true" : "false"}>
-          {image ? <img src={image} alt="Selected chart"/> : <div><b>+</b><strong>Add chart</strong><span>JPEG · PNG · WEBP · max 8 MB</span></div>}
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadPrimary(e.target.files?.[0])}/>
-          {image ? <footer><strong>{imageName}</strong><span>Tap to replace</span></footer> : null}
+        <label className="pnDrop" data-loaded={charts[0].image ? "true" : "false"}>
+          {charts[0].image ? <img src={charts[0].image} alt="Selected main chart"/> : <div><b>+</b><strong>Add main chart</strong><span>JPEG · PNG · WEBP · max 8 MB</span></div>}
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(0,e.target.files?.[0])}/>
+          {charts[0].image ? <footer><strong>{charts[0].name}</strong><span>Tap to replace</span></footer> : null}
         </label>
 
-        <label className="pnContext">
-          <div><strong>Context chart</strong><span>{contextImage ? contextName : "Optional higher timeframe"}</span></div>
-          <b>{contextImage ? "CHANGE" : "ADD"}</b>
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadContext(e.target.files?.[0])}/>
-        </label>
+        <div className="pnStartChartRail" aria-label="Optional charts">
+          <span>EXTRA CHARTS</span>
+          <div>
+            {charts.slice(1).map((slot, offset)=><label key={offset} className="pnStartSlot" data-loaded={Boolean(slot.image)}>
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(offset+1,e.target.files?.[0])}/>
+              <b>{offset+2}</b><small>{slot.image ? "READY" : "+"}</small>
+            </label>)}
+          </div>
+        </div>
 
         <div className="pnBias">
           <small>BIAS TO CHALLENGE</small>
@@ -263,7 +309,7 @@ export default function PocketNext() {
         <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>setPrivacy(e.target.checked)}/><span><strong>Privacy check</strong>I removed account number, balance and personal notifications.</span></label>
 
         {error ? <p className="pnError">{error}</p> : null}
-        <button className="pnRun" type="button" disabled={!image || !privacy || busy} onClick={run}><span>{busy ? "ANALYSING…" : "RUN ANALYSIS"}</span><b>→</b></button>
+        <button className="pnRun" type="button" disabled={!charts[0].image || !privacy || busy} onClick={run}><span>{busyChart===0 ? "ANALYSING…" : "RUN ANALYSIS"}</span><b>→</b></button>
         <button className="pnDemo" type="button" onClick={openDemo}>OPEN NO-CREDIT INTERFACE DEMO</button>
       </aside>
     </section>
@@ -297,6 +343,20 @@ export default function PocketNext() {
           <span>{analysis.verdict.replaceAll("_"," ")}</span>
           <strong>{analysis.setupScore.overall}<small>/100 · {analysis.setupScore.grade}</small></strong>
           <b>{analysis.instrument} · {analysis.timeframe}</b>
+        </div>
+
+        <div className="pnChartSwitcher" aria-label="Chart selector">
+          {charts.map((slot,index)=>slot.image ? <button
+            key={index}
+            type="button"
+            data-active={activeChart===index}
+            data-busy={busyChart===index}
+            onClick={()=>void selectChart(index)}
+            disabled={busy && busyChart!==index}
+          ><span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>{busyChart===index ? "SCANNING" : slot.analysis?.timeframe && slot.analysis.timeframe!=="UNKNOWN" ? slot.analysis.timeframe : slot.analysis ? "READY" : "SCAN"}</strong></button> : <label key={index} className="pnChartAdd">
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(index,e.target.files?.[0])}/>
+            <span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>+</strong>
+          </label>)}
         </div>
 
         <div className="pnChart" data-focus={chartFocus ? "true" : "false"}>
