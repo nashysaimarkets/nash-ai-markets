@@ -27,6 +27,12 @@ export type DeviceLocalScan = {
   candleCount:number;
   swingCount:number;
   plotBounds:DevicePlotBounds;
+  _debug?: {
+    patternSwings:{x:number;y:number;kind:"high"|"low"}[];
+    pivots:{x:number;y:number;kind:"high"|"low"}[];
+    localSwings:{x:number;y:number;kind:"high"|"low"}[];
+    structureHeight:number;
+  };
 };
 
 type Candle={x:number;high:number;low:number;mid:number};
@@ -235,7 +241,7 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
   return best?.pattern ?? null;
 }
 
-export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number}):DeviceLocalScan{
+export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean}):DeviceLocalScan{
   try{
     const {pixels,width,height}=input,channels=input.channels??4;
     if(width<20||height<20)return emptyDeviceScan();
@@ -411,6 +417,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     if(h){const sx=pctX(Math.min(...h.items.map(i=>i.x)));zones.push({side:"BUY_SIDE",basis:h.score>=2?"EQUAL_HIGHS":"PRIOR_SWING_HIGH",price:"",x:sx,x2:Math.max(sx+5,plotBounds.right),y:pctY(h.y)});}
     if(l){const sx=pctX(Math.min(...l.items.map(i=>i.x)));zones.push({side:"SELL_SIDE",basis:l.score>=2?"EQUAL_LOWS":"PRIOR_SWING_LOW",price:"",x:sx,x2:Math.max(sx+5,plotBounds.right),y:pctY(l.y)});}
     const liquidity:DeviceLiquidityRead=zones.length?{state:"PARTIAL",event:"NONE",confidence:"LOW",evidence:"Device scan found visible liquidity references only; this is not a verified liquidity event or hidden-order claim.",confirmation:"A visible sweep, reclaim or rejection is required before this becomes an event.",invalidation:"The reference is invalid if price cleanly accepts beyond it.",zones}:{...EMPTY_LIQUIDITY,zones:[]};
-    return {levels,patterns:patterns.slice(0,2),liquidity,candleCount:candles.length,swingCount:swings.length,plotBounds};
+    return {
+      levels,patterns:patterns.slice(0,2),liquidity,candleCount:candles.length,swingCount:swings.length,plotBounds,
+      ...(input.debug?{_debug:{patternSwings,pivots,localSwings:swings,structureHeight}}:{})
+    };
   }catch{return emptyDeviceScan();}
 }
