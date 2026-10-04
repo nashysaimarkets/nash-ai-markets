@@ -167,7 +167,7 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       const inside=candles.filter(c=>c.x>=x1&&c.x<=x2),tol=height*.018;
       const violations=inside.filter(c=>c.high<lineY(hf,c.x)-tol||c.low>lineY(lf,c.x)+tol).length;
       if(violations>Math.max(1,Math.floor(inside.length*.04)))continue;
-      const converging=ratio>.28&&ratio<.64;
+      const converging=ratio>.08&&ratio<.68;
       const parallel=ratio>.82&&ratio<1.18&&Math.abs(hChange-lChange)<.028;
       let name="",evidence="";
       if(Math.abs(hChange)<.025&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a flat ceiling with materially rising lows.";}
