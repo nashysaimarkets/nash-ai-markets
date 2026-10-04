@@ -232,7 +232,7 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       const inside=candles.filter(c=>c.x>=x1&&c.x<=x2),tol=height*.018;
       const violations=inside.filter(c=>c.mid<lineY(hf,c.x)-tol||c.mid>lineY(lf,c.x)+tol).length;
       if(violations>Math.max(1,Math.floor(inside.length*.04)))continue;
-      const converging=ratio>.28&&ratio<.64;
+      const converging=ratio>.08&&ratio<.68;
       const parallel=ratio>.82&&ratio<1.18&&Math.abs(hChange-lChange)<.028;
       let name="",evidence="";
       if(Math.abs(hChange)<.025&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a flat ceiling with materially rising lows.";}
@@ -372,7 +372,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       return groups.map(items=>({items,y:items.reduce((n,v)=>n+v.y,0)/items.length,score:items.length} as Cluster)).sort((a,b)=>b.score-a.score||(kind==="high"?a.y-b.y:b.y-a.y));
     };
     const highs=clusterFrom(swings,"high"),lows=clusterFrom(swings,"low");
-    const patternHighs=clusterFrom(patternSwings,"high"),patternLows=clusterFrom(patternSwings,"low");
+    const patternHighs=clusterFrom(patternSwings,"high",.035),patternLows=clusterFrom(patternSwings,"low",.035);
     const rank=(g:Cluster)=>{const recency=Math.max(...g.items.map(i=>i.x))/width,spread=Math.max(...g.items.map(i=>i.y))-Math.min(...g.items.map(i=>i.y));return g.score*4+recency*2-spread/Math.max(2,structureHeight*.02);};
     const ranked=[...highs.map(group=>({kind:"resistance" as const,group,rank:rank(group)})),...lows.map(group=>({kind:"support" as const,group,rank:rank(group)}))].sort((a,b)=>b.rank-a.rank);
     const picked=ranked.slice(0,3);
@@ -385,7 +385,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(hs)patternCandidates.push(hs);
 
-    for(const pattern of doublePatternCandidates(patternSwings,candles,width,structureHeight,pctX,pctY,plotBounds)){
+    for(const pattern of doublePatternCandidates(swings,candles,width,structureHeight,pctX,pctY,plotBounds)){
       patternCandidates.push(pattern);
     }
 
@@ -414,14 +414,14 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const familyPriority=(pattern:DevicePattern)=>{
       const confidence=pattern.confidence==="HIGH"?40:pattern.confidence==="MEDIUM"?25:0;
       const status=pattern.status==="CONFIRMED"?30:pattern.status==="FORMING"?12:pattern.status==="FAILED"?10:0;
-      const distinctive=/HEAD|DOUBLE|FLAG|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
-      return confidence+status+distinctive;
+      const family=/HEAD/.test(pattern.name)?18:/DOUBLE/.test(pattern.name)?14:/FLAG|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?10:0;
+      return confidence+status+family;
     };
     const sortedPatterns=patternCandidates
       .sort((a,b)=>familyPriority(b)-familyPriority(a))
       .filter((pattern,index,array)=>array.findIndex(other=>other.name===pattern.name)===index);
     const strongPatterns=sortedPatterns.filter(pattern=>pattern.confidence!=="LOW"||pattern.status==="CONFIRMED"||pattern.status==="FAILED");
-    const patterns=(strongPatterns.length?strongPatterns:sortedPatterns.slice(0,1)).slice(0,2);
+    const patterns=(strongPatterns.length?strongPatterns:sortedPatterns.slice(0,1)).slice(0,1);
 
     const zones:DeviceLiquidityZone[]=[];
     const h=highs[0],l=lows[0];
