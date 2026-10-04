@@ -26,6 +26,41 @@ function numericPrice(value: unknown) {
 
 type ScaleAnchor = { price: number; y: number };
 
+const PATTERN_NAMES = new Set([
+  "HEAD & SHOULDERS", "INVERSE H&S", "RISING WEDGE", "FALLING WEDGE", "BULL FLAG", "BEAR FLAG",
+  "DOUBLE TOP", "DOUBLE BOTTOM", "TRIANGLE", "ASCENDING TRIANGLE", "DESCENDING TRIANGLE", "PENNANT",
+  "CUP & HANDLE", "RECTANGLE / RANGE", "TREND CHANNEL", "BREAKOUT & RETEST",
+]);
+
+function calibratedPatterns(value: unknown, candlesReadable: boolean) {
+  if (!candlesReadable || !Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const pattern = item as JsonRecord;
+    const name = typeof pattern.name === "string" ? pattern.name.trim().toUpperCase() : "";
+    const status = typeof pattern.status === "string" ? pattern.status : "";
+    const confidence = typeof pattern.confidence === "string" ? pattern.confidence : "LOW";
+    const evidence = typeof pattern.evidence === "string" ? pattern.evidence.trim() : "";
+    const confirmation = typeof pattern.confirmation === "string" ? pattern.confirmation.trim() : "";
+    const invalidation = typeof pattern.invalidation === "string" ? pattern.invalidation.trim() : "";
+    const geometry = pattern.geometry && typeof pattern.geometry === "object" ? pattern.geometry as JsonRecord : null;
+    const rawPoints = geometry && Array.isArray(geometry.points) ? geometry.points : [];
+    const points = rawPoints.flatMap((point) => {
+      if (!point || typeof point !== "object") return [];
+      const candidate = point as JsonRecord;
+      const x = typeof candidate.x === "number" && Number.isFinite(candidate.x) ? candidate.x : null;
+      const y = typeof candidate.y === "number" && Number.isFinite(candidate.y) ? candidate.y : null;
+      return x !== null && y !== null && x >= 0 && x <= 100 && y >= 0 && y <= 100 ? [{ x, y }] : [];
+    });
+    if (!PATTERN_NAMES.has(name) || !evidence || !confirmation || !invalidation || points.length < 3) return [];
+    const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
+    const xSpan = Math.max(...xs) - Math.min(...xs), ySpan = Math.max(...ys) - Math.min(...ys);
+    if (xSpan < 8 || ySpan < 3) return [];
+    const safeStatus = status === "CONFIRMED" && confidence === "LOW" ? "AMBIGUOUS" : status;
+    return [{ ...pattern, name, status: safeStatus, geometry: { ...geometry, points } }];
+  }).slice(0, 4);
+}
+
 function verifiedLinearScale(items: ScaleAnchor[]) {
   const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
   if (unique.length < 2) return null;
@@ -57,6 +92,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   const calibrated: JsonRecord = {
     ...analysis,
     setupScore: { ...score, overall, grade: scoreGrade(overall) },
+    patterns: calibratedPatterns(analysis.patterns, quality.candlesReadable !== false && quality.chartReadability !== "POOR"),
   };
 
   if (Array.isArray(analysis.missingInputs)) {
