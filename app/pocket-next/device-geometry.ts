@@ -164,6 +164,67 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
 
 
 
+
+function breakoutRetestPattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
+  let best:{score:number;pattern:DevicePattern}|null=null;
+
+  for(let i=0;i<=pivots.length-4;i++){
+    const [level,pullback,breakout,retest]=pivots.slice(i,i+4);
+    const span=breakout.x-level.x;
+    const retestLag=retest.x-breakout.x;
+    if(span<width*.1||span>width*.42||retestLag<width*.025||retestLag>width*.2)continue;
+
+    // Bullish: prior swing high becomes support after an upside break.
+    if(level.kind==="high"&&pullback.kind==="low"&&breakout.kind==="high"&&retest.kind==="low"){
+      const breakSize=level.y-breakout.y;
+      const pullbackDepth=pullback.y-level.y;
+      const retestError=Math.abs(retest.y-level.y);
+      if(breakSize<height*.1||pullbackDepth<height*.12||retestError>height*.07)continue;
+      const after=candles.filter(c=>c.x>retest.x&&c.x<=retest.x+width*.22);
+      if(after.length<4)continue;
+      let acceptance=0;
+      for(const candle of after)if(candle.mid<level.y-height*.012)acceptance++;
+      const bestMid=Math.min(...after.map(c=>c.mid));
+      if(acceptance<2||bestMid>breakout.y-height*.015)continue;
+      const confirm=after.reduce((a,b)=>a.mid<b.mid?a:b);
+      const score=breakSize/height+pullbackDepth/height-retestError/height+acceptance*.015;
+      const pattern:DevicePattern={
+        name:"BREAKOUT & RETEST",status:"CONFIRMED",confidence:"MEDIUM",
+        evidence:"Price breaks above a prior structural high, retests that level closely from above, then resumes with repeated acceptance beyond the old resistance.",
+        confirmation:"Continuation and closes above the reclaimed breakout level after the retest.",
+        invalidation:"Price accepts back below the reclaimed level after the retest.",
+        geometry:{points:[level,pullback,breakout,retest].map(p=>({x:pctX(p.x),y:pctY(p.y)})).concat([{x:pctX(confirm.x),y:pctY(confirm.mid)}]),labelX:pctX(retest.x),labelY:Math.max(bounds.top,pctY(level.y)-4)}
+      };
+      if(!best||score>best.score)best={score,pattern};
+    }
+
+    // Bearish mirror: prior swing low becomes resistance after a downside break.
+    if(level.kind==="low"&&pullback.kind==="high"&&breakout.kind==="low"&&retest.kind==="high"){
+      const breakSize=breakout.y-level.y;
+      const pullbackDepth=level.y-pullback.y;
+      const retestError=Math.abs(retest.y-level.y);
+      if(breakSize<height*.1||pullbackDepth<height*.12||retestError>height*.07)continue;
+      const after=candles.filter(c=>c.x>retest.x&&c.x<=retest.x+width*.22);
+      if(after.length<4)continue;
+      let acceptance=0;
+      for(const candle of after)if(candle.mid>level.y+height*.012)acceptance++;
+      const bestMid=Math.max(...after.map(c=>c.mid));
+      if(acceptance<2||bestMid<breakout.y+height*.015)continue;
+      const confirm=after.reduce((a,b)=>a.mid>b.mid?a:b);
+      const score=breakSize/height+pullbackDepth/height-retestError/height+acceptance*.015;
+      const pattern:DevicePattern={
+        name:"BREAKOUT & RETEST",status:"CONFIRMED",confidence:"MEDIUM",
+        evidence:"Price breaks below a prior structural low, retests that level closely from below, then resumes with repeated acceptance beyond the old support.",
+        confirmation:"Continuation and closes below the lost breakout level after the retest.",
+        invalidation:"Price accepts back above the lost level after the retest.",
+        geometry:{points:[level,pullback,breakout,retest].map(p=>({x:pctX(p.x),y:pctY(p.y)})).concat([{x:pctX(confirm.x),y:pctY(confirm.mid)}]),labelX:pctX(retest.x),labelY:Math.min(bounds.bottom,pctY(level.y)+4)}
+      };
+      if(!best||score>best.score)best={score,pattern};
+    }
+  }
+  return best?.pattern??null;
+}
+
 function cupHandlePattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   let best:{score:number;pattern:DevicePattern}|null=null;
   for(let i=0;i<=pivots.length-4;i++){
@@ -604,6 +665,11 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const cupHandle=cupHandlePattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(cupHandle)patternCandidates.push(cupHandle);
 
+    if(!patternCandidates.some(pattern=>pattern.status==="CONFIRMED")){
+      const breakoutRetest=breakoutRetestPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
+      if(breakoutRetest)patternCandidates.push(breakoutRetest);
+    }
+
     const pennant=pennantPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(pennant)patternCandidates.push(pennant);
 
@@ -637,7 +703,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const familyPriority=(pattern:DevicePattern)=>{
       const confidence=pattern.confidence==="HIGH"?40:pattern.confidence==="MEDIUM"?25:0;
       const status=pattern.status==="CONFIRMED"?30:pattern.status==="FORMING"?12:pattern.status==="FAILED"?10:0;
-      const distinctive=/HEAD|DOUBLE|CUP|FLAG|PENNANT|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
+      const distinctive=/HEAD|DOUBLE|CUP|RETEST|FLAG|PENNANT|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
       return confidence+status+distinctive;
     };
     const sortedPatterns=patternCandidates
