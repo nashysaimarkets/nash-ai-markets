@@ -536,3 +536,60 @@
     padding:5px 7px;
   }
 }
+
+
+/* Device-only judgement + multi-chart refinement */
+.pnMobileDecision[data-device="true"]{
+  grid-template-columns:auto auto 1fr;
+}
+.pnMobileDecision[data-device="true"]>span{
+  color:#93b8a0;
+  font-size:15px;
+  letter-spacing:.03em;
+}
+.pnMobileDecision[data-device="true"]>strong{
+  color:#f0ece3;
+  font-size:18px;
+}
+.pnDeviceReady{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:16px;
+  border-bottom:1px solid #c8c3b9;
+}
+.pnDeviceReady span{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:30px;
+  color:#446d56;
+}
+.pnDeviceReady small{
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:7px;
+  letter-spacing:.09em;
+  color:#81786e;
+}
+.pnMultiChart{
+  margin-top:22px;
+}
+.pnMultiChart article:first-child{
+  border-top:1px solid #c8c3b9;
+}
+@media(max-width:760px){
+  .pnMobileDecision[data-device="true"]{
+    gap:8px;
+  }
+  .pnMobileDecision[data-device="true"]>span{
+    font-size:13px;
+  }
+  .pnMobileDecision[data-device="true"]>strong{
+    font-size:16px;
+  }
+  .pnMobileDecision[data-device="true"]>b{
+    font-size:6px;
+  }
+  .pnDeviceReady span{
+    font-size:25px;
+  }
+}
