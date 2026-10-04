@@ -373,9 +373,9 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
       const highCoverage=(Math.max(...rh.items.map(i=>i.x))-Math.min(...rh.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
       const lowCoverage=(Math.max(...rl.items.map(i=>i.x))-Math.min(...rl.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
-      if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&separation<=height*.5&&spanPct>=24&&alternations>=3&&highCoverage>=.42&&lowCoverage>=.42&&upperBreaches<=1&&lowerBreaches<=1){
+      if(rh.score>=3&&rl.score>=3&&separation>=height*.09&&separation<=height*.5&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",invalidation:"A decisive breach through the opposite edge invalidates the range read.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
-      }else if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&spanPct>=18&&alternations>=2&&upperBreaches<=1&&lowerBreaches<=1){
+      }else if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&spanPct>=20&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a rectangle.",confirmation:"More alternating tests with both boundaries holding.",invalidation:"A decisive break through either proposed boundary.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
       }
     }
