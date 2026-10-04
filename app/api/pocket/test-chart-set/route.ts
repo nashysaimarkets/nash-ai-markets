@@ -119,9 +119,9 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer},maxWidth=420)
   return {data,width,height,channels:3};
 }
 
-async function scan(buffer:Buffer,maxWidth=420):Promise<DeviceLocalScan>{
+async function scan(buffer:Buffer,maxWidth=420,debug=false):Promise<DeviceLocalScan>{
   const {data,width,height,channels}=resizeRgb(decodePng(buffer),maxWidth);
-  return scanDevicePixels({pixels:data,width,height,channels});
+  return scanDevicePixels({pixels:data,width,height,channels,debug});
 }
 
 function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
@@ -156,8 +156,11 @@ export async function GET(request:Request){
   const url=new URL(request.url);
   if(url.searchParams.get("key")!=="pocket-next-internal") return NextResponse.json({error:"not found"},{status:404});
   const robust=url.searchParams.get("robust")==="1";
+  const debug=url.searchParams.get("debug")==="1";
+  const only=url.searchParams.get("only");
+  const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results=[] as any[];
-  for(const test of CASES){
+  for(const test of selectedCases){
     try{
       const buffer=await fetchImage(test.url);
       if(robust){
@@ -172,7 +175,7 @@ export async function GET(request:Request){
           }
         });
       }else{
-        const scanResult=await scan(buffer);
+        const scanResult=await scan(buffer,420,debug);
         results.push({...test,scan:scanResult});
       }
     }catch(error){
