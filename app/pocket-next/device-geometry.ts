@@ -526,12 +526,15 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     };
     let columnRuns=collectColumns(false);if(columnRuns.length<12)columnRuns=collectColumns(true);
 
-    // Monochrome fallback: only activate when the colour pass cannot find a real
-    // candle stream. Infer the dominant neutral background from the plot region,
-    // then keep high-contrast neutral vertical segments while masking long neutral
-    // drawing lines. This supports black/grey and white/grey candle themes without
-    // changing the normal coloured-chart path.
-    if(columnRuns.length<12){
+    // Monochrome fallback: activate when the colour pass is sparse OR confined
+    // to a small part of the screenshot. Coloured arrows/labels can otherwise create
+    // 12+ runs and prevent a genuine black/white price stream from being considered.
+    // Compare horizontal coverage before replacing the colour stream.
+    const colourCoverage=columnRuns.length
+      ? Math.max(...columnRuns.map(run=>run.x))-Math.min(...columnRuns.map(run=>run.x))
+      : 0;
+    const colourWeak=columnRuns.length<14||colourCoverage<width*.45;
+    if(colourWeak){
       const neutralContrast=Math.min(90,Math.max(30,input.neutralContrastOverride??58));
       const samples:number[]=[];
       for(let y=top;y<=bottom;y+=8)for(let x=left;x<=right;x+=8){
@@ -577,7 +580,13 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
           .sort((a,b)=>b.span-a.span||b.items.length-a.items.length)[0];
         if(best)neutralRuns.push({x,ys:best.items,span:best.span});
       }
-      if(neutralRuns.length>=8)columnRuns=neutralRuns;
+      if(neutralRuns.length>=8){
+        const neutralCoverage=Math.max(...neutralRuns.map(run=>run.x))-Math.min(...neutralRuns.map(run=>run.x));
+        const neutralClearlyBetter=
+          neutralRuns.length>=Math.max(8,columnRuns.length+3)||
+          neutralCoverage>=Math.max(width*.45,colourCoverage*1.35);
+        if(neutralClearlyBetter)columnRuns=neutralRuns;
+      }
     }
 
     // Volume histograms and some oscillator bars form many vertical coloured runs
