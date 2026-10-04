@@ -442,9 +442,12 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
       const highCoverage=(Math.max(...rh.items.map(i=>i.x))-Math.min(...rh.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
       const lowCoverage=(Math.max(...rl.items.map(i=>i.x))-Math.min(...rl.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
-      if(rh.score>=3&&rl.score>=3&&separation>=structureHeight*.09&&separation<=structureHeight*.5&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
+      const priorRangeMove=trendMove(candles,xStart,width);
+      const lateImpulseRange=xStart>width*.35&&priorRangeMove!==null&&Math.abs(priorRangeMove)>structureHeight*.22;
+      const rangeHeightOk=separation<=structureHeight*.5||(xStart<=width*.3&&spanPct>=55&&separation<=structureHeight*.95);
+      if(!lateImpulseRange&&rh.score>=3&&rl.score>=3&&separation>=structureHeight*.09&&rangeHeightOk&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",invalidation:"A decisive breach through the opposite edge invalidates the range read.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
-      }else if(rh.score>=2&&rl.score>=2&&separation>=structureHeight*.09&&spanPct>=20&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
+      }else if(!lateImpulseRange&&rh.score>=2&&rl.score>=2&&separation>=structureHeight*.09&&spanPct>=20&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a rectangle.",confirmation:"More alternating tests with both boundaries holding.",invalidation:"A decisive break through either proposed boundary.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
       }
     }
