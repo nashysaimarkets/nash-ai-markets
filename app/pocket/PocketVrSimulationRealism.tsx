@@ -19,6 +19,7 @@ type Analysis = {
   bullishCase: string;
   bearishCase: string;
   setupScore: { overall: number; grade: string };
+  nextSequence: { now: string; confirmation: string; failure: string; reassess: string };
   levels: { kind: string; price: string; y: number }[];
 };
 
