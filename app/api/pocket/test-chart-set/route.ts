@@ -119,9 +119,9 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer},maxWidth=420)
   return {data,width,height,channels:3};
 }
 
-async function scan(buffer:Buffer,maxWidth=420,debug=false,rowMaskFraction?:number):Promise<DeviceLocalScan>{
+async function scan(buffer:Buffer,maxWidth=420,debug=false,rowMaskFraction?:number,patternRadiusOverride?:number):Promise<DeviceLocalScan>{
   const {data,width,height,channels}=resizeRgb(decodePng(buffer),maxWidth);
-  return scanDevicePixels({pixels:data,width,height,channels,debug,rowMaskFraction});
+  return scanDevicePixels({pixels:data,width,height,channels,debug,rowMaskFraction,patternRadiusOverride});
 }
 
 function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
@@ -142,13 +142,13 @@ function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:
   return {data,width,height,channels:3};
 }
 
-async function scanRobust(buffer:Buffer,rowMaskFraction?:number){
+async function scanRobust(buffer:Buffer,rowMaskFraction?:number,patternRadiusOverride?:number){
   const decoded=decodePng(buffer);
   const base=resizeRgb(decoded,420), small=resizeRgb(decoded,300), chrome=addBrokerChrome(base);
   return {
-    base:scanDevicePixels({pixels:base.data,width:base.width,height:base.height,channels:3,rowMaskFraction}),
-    small:scanDevicePixels({pixels:small.data,width:small.width,height:small.height,channels:3,rowMaskFraction}),
-    chrome:scanDevicePixels({pixels:chrome.data,width:chrome.width,height:chrome.height,channels:3,rowMaskFraction}),
+    base:scanDevicePixels({pixels:base.data,width:base.width,height:base.height,channels:3,rowMaskFraction,patternRadiusOverride}),
+    small:scanDevicePixels({pixels:small.data,width:small.width,height:small.height,channels:3,rowMaskFraction,patternRadiusOverride}),
+    chrome:scanDevicePixels({pixels:chrome.data,width:chrome.width,height:chrome.height,channels:3,rowMaskFraction,patternRadiusOverride}),
   };
 }
 
@@ -159,6 +159,8 @@ export async function GET(request:Request){
   const debug=url.searchParams.get("debug")==="1";
   const maskRaw=url.searchParams.get("mask");
   const rowMaskFraction=maskRaw===null?undefined:Number(maskRaw);
+  const radiusRaw=url.searchParams.get("radius");
+  const patternRadiusOverride=radiusRaw===null?undefined:Number(radiusRaw);
   const only=url.searchParams.get("only");
   const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results=[] as any[];
@@ -166,7 +168,7 @@ export async function GET(request:Request){
     try{
       const buffer=await fetchImage(test.url);
       if(robust){
-        const variants=await scanRobust(buffer,rowMaskFraction);
+        const variants=await scanRobust(buffer,rowMaskFraction,patternRadiusOverride);
         const visible=(scan:DeviceLocalScan)=>scan.patterns.filter(pattern=>pattern.confidence!=="LOW").map(pattern=>pattern.name);
         results.push({
           ...test,
@@ -177,7 +179,7 @@ export async function GET(request:Request){
           }
         });
       }else{
-        const scanResult=await scan(buffer,420,debug,rowMaskFraction);
+        const scanResult=await scan(buffer,420,debug,rowMaskFraction,patternRadiusOverride);
         results.push({...test,scan:scanResult});
       }
     }catch(error){
