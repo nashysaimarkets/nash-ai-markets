@@ -191,44 +191,119 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
             .sort((a,b)=>b.score-a.score || (kind==="high"?a.y-b.y:b.y-a.y));
         };
         const highs=cluster("high"), lows=cluster("low");
-        const chosenHighs=highs.filter(g=>g.score>=1).slice(0,2);
-        const chosenLows=lows.filter(g=>g.score>=1).slice(0,2);
-        const levels:Level[]=[
-          ...chosenHighs.map((g,i)=>({kind:"resistance" as const,label:g.score>=2?"Repeated swing highs":"Swing high",price:"",x:plotBounds.left,y:pctY(g.y),x2:plotBounds.right,y2:pctY(g.y)})),
-          ...chosenLows.map((g,i)=>({kind:"support" as const,label:g.score>=2?"Repeated swing lows":"Swing low",price:"",x:plotBounds.left,y:pctY(g.y),x2:plotBounds.right,y2:pctY(g.y)})),
-        ].slice(0,4);
+
+        const rankCluster = (group: {items: Swing[]; y: number; score: number}) => {
+          const recency = group.items.length ? Math.max(...group.items.map(item=>item.x)) / width : 0;
+          const spread = group.items.length ? Math.max(...group.items.map(item=>item.y)) - Math.min(...group.items.map(item=>item.y)) : 0;
+          return group.score * 4 + recency * 2 - spread / Math.max(2,height*.02);
+        };
+        const rankedLevels = [
+          ...highs.map(group=>({kind:"resistance" as const,group,rank:rankCluster(group)})),
+          ...lows.map(group=>({kind:"support" as const,group,rank:rankCluster(group)})),
+        ].sort((a,b)=>b.rank-a.rank);
+        const pickedLevels = rankedLevels.slice(0,3);
+        if (!pickedLevels.some(item=>item.kind==="resistance") && highs[0]) {
+          pickedLevels[pickedLevels.length-1] = {kind:"resistance",group:highs[0],rank:rankCluster(highs[0])};
+        }
+        if (!pickedLevels.some(item=>item.kind==="support") && lows[0]) {
+          pickedLevels[pickedLevels.length-1] = {kind:"support",group:lows[0],rank:rankCluster(lows[0])};
+        }
+        const levels:Level[]=pickedLevels
+          .filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind && Math.abs(other.group.y-item.group.y)<height*.025)===index)
+          .map(({kind,group})=>({
+            kind,
+            label:group.score>=3 ? (kind==="resistance"?"Repeated rejection highs":"Repeated defended lows") : group.score>=2 ? (kind==="resistance"?"Repeated swing highs":"Repeated swing lows") : (kind==="resistance"?"Prominent swing high":"Prominent swing low"),
+            price:"",
+            x:plotBounds.left,
+            y:pctY(group.y),
+            x2:plotBounds.right,
+            y2:pctY(group.y)
+          }))
+          .slice(0,3);
 
         const patterns:Pattern[]=[];
         const repeatedHigh=highs.find(g=>g.score>=2), repeatedLow=lows.find(g=>g.score>=2);
+        const addDoubleTop = () => {
+          const group=highs.find(g=>g.score===2);
+          if(!group) return false;
+          const [a,b]=[...group.items].sort((x,y)=>x.x-y.x);
+          if(!a||!b||b.x-a.x<width*.18) return false;
+          const between=candles.filter(v=>v.x>a.x&&v.x<b.x);
+          if(between.length<4) return false;
+          const valley=Math.max(...between.map(v=>v.low));
+          const topY=(a.y+b.y)/2;
+          if(valley-topY<height*.065) return false;
+          patterns.push({
+            name:"DOUBLE TOP",status:"FORMING",confidence:"MEDIUM",
+            evidence:"Two separated swing highs sit on a similar row with a meaningful valley between them.",
+            confirmation:"Break below the intervening swing low after the second test.",
+            invalidation:"Clean acceptance above both swing highs.",
+            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(valley)},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}
+          });
+          return true;
+        };
+        const addDoubleBottom = () => {
+          const group=lows.find(g=>g.score===2);
+          if(!group) return false;
+          const [a,b]=[...group.items].sort((x,y)=>x.x-y.x);
+          if(!a||!b||b.x-a.x<width*.18) return false;
+          const between=candles.filter(v=>v.x>a.x&&v.x<b.x);
+          if(between.length<4) return false;
+          const peak=Math.min(...between.map(v=>v.high));
+          const bottomY=(a.y+b.y)/2;
+          if(bottomY-peak<height*.065) return false;
+          patterns.push({
+            name:"DOUBLE BOTTOM",status:"FORMING",confidence:"MEDIUM",
+            evidence:"Two separated swing lows sit on a similar row with a meaningful peak between them.",
+            confirmation:"Break above the intervening swing high after the second test.",
+            invalidation:"Clean acceptance below both swing lows.",
+            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(peak)},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}
+          });
+          return true;
+        };
+
         if(repeatedHigh && repeatedLow){
-          const hx=repeatedHigh.items.map(s=>pctX(s.x)), lx=repeatedLow.items.map(s=>pctX(s.x));
-          const x1=Math.max(plotBounds.left,Math.min(...hx,...lx)), x2=Math.min(plotBounds.right,Math.max(...hx,...lx));
-          if(x2-x1>=18){
+          const events=[
+            ...repeatedHigh.items.map(item=>({x:item.x,kind:"high" as const})),
+            ...repeatedLow.items.map(item=>({x:item.x,kind:"low" as const}))
+          ].sort((a,b)=>a.x-b.x);
+          const xStart=Math.min(...events.map(event=>event.x));
+          const xEnd=Math.max(...events.map(event=>event.x));
+          const spanPct=(xEnd-xStart)/width*100;
+          let alternations=0;
+          for(let i=1;i<events.length;i++) if(events[i].kind!==events[i-1].kind) alternations++;
+          const separation=repeatedLow.y-repeatedHigh.y;
+          const breakTol=height*.02;
+          const inside=candles.filter(candle=>candle.x>=xStart&&candle.x<=xEnd);
+          const upperBreaches=inside.filter(candle=>candle.high<repeatedHigh.y-breakTol).length;
+          const lowerBreaches=inside.filter(candle=>candle.low>repeatedLow.y+breakTol).length;
+          const balancedTouches=repeatedHigh.score>=2&&repeatedLow.score>=2;
+          const sufficientHeight=separation>=height*.09&&separation<=height*.5;
+          const cleanDuration=spanPct>=24;
+          const alternating=alternations>=3;
+          const notBroken=upperBreaches<=1&&lowerBreaches<=1;
+          const x1=Math.max(plotBounds.left,pctX(xStart)), x2=Math.min(plotBounds.right,pctX(xEnd));
+          if(balancedTouches&&sufficientHeight&&cleanDuration&&alternating&&notBroken){
             patterns.push({
               name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",
-              evidence:"Device geometry found repeated swing highs and lows forming a visible range.",
-              confirmation:"Break and hold beyond one range edge.",invalidation:"Range geometry fails after a decisive break.",
-              geometry:{points:[{x:x1,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedLow.y)}],labelX:Math.max(5,x2-16),labelY:Math.max(4,pctY(repeatedHigh.y)-4)}
+              evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",
+              confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",
+              invalidation:"A decisive breach through the opposite edge invalidates the range read.",
+              geometry:{points:[{x:x1,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedHigh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(repeatedHigh.y)-4)}
+            });
+          } else if (balancedTouches&&sufficientHeight&&spanPct>=18&&alternations>=2&&upperBreaches<=2&&lowerBreaches<=2) {
+            patterns.push({
+              name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",
+              evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a confirmed rectangle.",
+              confirmation:"More alternating tests with both boundaries holding.",
+              invalidation:"A decisive break through either proposed boundary.",
+              geometry:{points:[{x:x1,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedHigh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(repeatedHigh.y)-4)}
             });
           }
-        } else if (repeatedHigh && repeatedHigh.items.length>=2) {
-          const a=repeatedHigh.items[0], b=repeatedHigh.items.at(-1)!;
-          if(Math.abs(b.x-a.x)>width*.14) patterns.push({
-            name:"DOUBLE TOP",status:"FORMING",confidence:"LOW",
-            evidence:"Device geometry found two separated swing highs at a similar row.",
-            confirmation:"Visible rejection followed by a lower structural break.",invalidation:"Clean acceptance above the twin highs.",
-            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(Math.max(...candles.filter(v=>v.x>a.x&&v.x<b.x).map(v=>v.low),a.y))},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.max(4,pctY(b.y)-4)}
-          });
-        } else if (repeatedLow && repeatedLow.items.length>=2) {
-          const a=repeatedLow.items[0], b=repeatedLow.items.at(-1)!;
-          if(Math.abs(b.x-a.x)>width*.14) patterns.push({
-            name:"DOUBLE BOTTOM",status:"FORMING",confidence:"LOW",
-            evidence:"Device geometry found two separated swing lows at a similar row.",
-            confirmation:"Visible reclaim followed by a higher structural break.",invalidation:"Clean acceptance below the twin lows.",
-            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(Math.min(...candles.filter(v=>v.x>a.x&&v.x<b.x).map(v=>v.high),a.y))},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.min(96,pctY(b.y)+4)}
-          });
         }
-
+        if(!patterns.length) {
+          if(!addDoubleTop()) addDoubleBottom();
+        }
         const zones:LiquidityZone[]=[];
         const liquidityHigh=highs[0], liquidityLow=lows[0];
         if(liquidityHigh){
@@ -287,7 +362,7 @@ function mergeOverlayLevels(ai: Level[], local: Level[], bounds: PlotBounds) {
   for (const level of safeAi) {
     if (!merged.some(existing => Math.abs(existing.y - level.y) <= 3)) merged.push(level);
   }
-  return merged.sort((a,b)=>a.y-b.y).slice(0,6);
+  return merged.sort((a,b)=>a.y-b.y).slice(0,4);
 }
 
 function mergeOverlayPatterns(ai: Pattern[], local: Pattern[], bounds: PlotBounds) {
@@ -297,11 +372,11 @@ function mergeOverlayPatterns(ai: Pattern[], local: Pattern[], bounds: PlotBound
       point.x >= bounds.left - 2 && point.x <= bounds.right + 2 && withinPlot(point.y, bounds, 2)
     );
   });
-  const merged = [...safeAi];
+  const merged = safeAi.filter(pattern => pattern.confidence !== "LOW" || pattern.status === "CONFIRMED" || pattern.status === "FAILED");
   for (const pattern of local) {
     if (!merged.some(existing => existing.name === pattern.name)) merged.push(pattern);
   }
-  return merged.slice(0,4);
+  return merged.slice(0,3);
 }
 
 function mergeOverlayLiquidity(ai: LiquidityRead | undefined, local: LiquidityRead | undefined, bounds: PlotBounds): LiquidityRead | undefined {
@@ -563,6 +638,16 @@ export default function PocketNext() {
   ), [analysis, activeLocal, plotBounds.left, plotBounds.top, plotBounds.right, plotBounds.bottom]);
   const patterns = mergeOverlayPatterns(analysis?.patterns ?? [], activeLocal?.patterns ?? [], plotBounds);
   const liquidity = mergeOverlayLiquidity(analysis?.liquidity, activeLocal?.liquidity, plotBounds);
+  const deviceOnly = Boolean(activeLocal && !activeSlot?.analysis);
+  const multiChart = useMemo(() => {
+    const loaded = charts.filter(slot=>slot.image).length;
+    const ready = charts.filter(slot=>slot.localScan).length;
+    const structural = charts.filter(slot=>(slot.localScan?.levels.length ?? 0)>=2).length;
+    const cleanPatterns = charts.filter(slot=>(slot.localScan?.patterns ?? []).some(pattern=>pattern.confidence!=="LOW"&&pattern.status!=="AMBIGUOUS")).length;
+    const liquidityRefs = charts.filter(slot=>(slot.localScan?.liquidity.zones.length ?? 0)>0).length;
+    const verifiedScales = charts.filter(slot=>(slot.analysis?.priceScaleAnchors?.length ?? 0)>=2).length;
+    return { loaded, ready, structural, cleanPatterns, liquidityRefs, verifiedScales };
+  }, [charts]);
   const overlayStyle = imageBox.width > 0 && imageBox.height > 0 ? {
     left: imageBox.left,
     top: imageBox.top,
@@ -646,10 +731,16 @@ export default function PocketNext() {
           </div>
         </header>
 
-        <div className="pnMobileDecision" aria-label="Decision snapshot">
-          <span>{analysis.verdict.replaceAll("_"," ")}</span>
-          <strong>{analysis.setupScore.overall}<small>/100 · {analysis.setupScore.grade}</small></strong>
-          <b>{analysis.instrument} · {analysis.timeframe}</b>
+        <div className="pnMobileDecision" data-device={deviceOnly ? "true" : "false"} aria-label="Decision snapshot">
+          {deviceOnly ? <>
+            <span>DEVICE SCAN</span>
+            <strong>READY<small>STRUCTURE</small></strong>
+            <b>ZERO CREDIT · {activeLocal?.candleCount ?? 0} CANDLES</b>
+          </> : <>
+            <span>{analysis.verdict.replaceAll("_"," ")}</span>
+            <strong>{analysis.setupScore.overall}<small>/100 · {analysis.setupScore.grade}</small></strong>
+            <b>{analysis.instrument} · {analysis.timeframe}</b>
+          </>}
         </div>
 
         <div className="pnChartSwitcher" aria-label="Chart selector">
@@ -704,12 +795,19 @@ export default function PocketNext() {
 
       <aside className="pnDecision">
         {active==="overview" ? <>
-          <div className="pnDecisionLabel">DECISION SUMMARY</div>
-          <div className="pnVerdict"><span>{analysis.verdict.replaceAll("_"," ")}</span><b>{analysis.setupScore.overall}</b><small>/100 · GRADE {analysis.setupScore.grade}</small></div>
-          <h2>{analysis.verdictHeadline}</h2>
-          <p>{analysis.summary}</p>
-          <div className="pnTriptych"><article><small>NOW</small><strong>{analysis.nextSequence.now}</strong></article><article><small>CONFIRMS</small><strong>{analysis.nextSequence.confirmation}</strong></article><article><small>FAILS</small><strong>{analysis.nextSequence.failure}</strong></article></div>
-          <section className="pnMiss"><small>STRONGEST COUNTER-EVIDENCE</small><strong>{analysis.whatYouMayBeMissing[0] || analysis.contradictions[0] || "No strong contradiction was returned."}</strong></section>
+          <div className="pnDecisionLabel">{deviceOnly ? "DEVICE STRUCTURE SCAN" : "DECISION SUMMARY"}</div>
+          {deviceOnly ? <>
+            <div className="pnDeviceReady"><span>STRUCTURE READY</span><small>ZERO-CREDIT DEVICE CHECK</small></div>
+            <h2>{levels.length} levels · {patterns.length} pattern read{patterns.length===1?"":"s"} · {liquidity?.zones.length ?? 0} liquidity reference{(liquidity?.zones.length ?? 0)===1?"":"s"}</h2>
+            <p>No setup score or risk grade is shown because this chart has not used the AI judgement layer.</p>
+          </> : <>
+            <div className="pnVerdict"><span>{analysis.verdict.replaceAll("_"," ")}</span><b>{analysis.setupScore.overall}</b><small>/100 · GRADE {analysis.setupScore.grade}</small></div>
+            <h2>{analysis.verdictHeadline}</h2>
+            <p>{analysis.summary}</p>
+            <div className="pnTriptych"><article><small>NOW</small><strong>{analysis.nextSequence.now}</strong></article><article><small>CONFIRMS</small><strong>{analysis.nextSequence.confirmation}</strong></article><article><small>FAILS</small><strong>{analysis.nextSequence.failure}</strong></article></div>
+            <section className="pnMiss"><small>STRONGEST COUNTER-EVIDENCE</small><strong>{analysis.whatYouMayBeMissing[0] || analysis.contradictions[0] || "No strong contradiction was returned."}</strong></section>
+          </>}
+          <div className="pnRows pnMultiChart"><article><span>MULTI-CHART CONTEXT</span><strong>{multiChart.ready}/{multiChart.loaded || 1} device scans ready</strong><small>{multiChart.structural} show structural references · {multiChart.cleanPatterns} show clean patterns · {multiChart.liquidityRefs} show liquidity references.</small></article><article><span>PRICE CONFLUENCE</span><strong>{multiChart.verifiedScales>=2 ? "Verified scale clustering available" : "Awaiting 2+ verified price scales"}</strong><small>Pocket will only claim cross-timeframe price confluence when numeric scales are independently verified.</small></article></div>
         </> : null}
 
         {active==="levels" ? <>
@@ -735,16 +833,22 @@ export default function PocketNext() {
 
         {active==="liquidity" ? <>
           <div className="pnDecisionLabel">LIQUIDITY GUARD</div>
-          <h2>{liquidity?.state==="VERIFIED" ? liquidity.event : liquidity?.state==="PARTIAL" ? "Partial evidence" : "No verified event"}</h2>
+          <h2>{liquidity?.state==="VERIFIED" ? liquidity.event : liquidity?.state==="PARTIAL" ? "Liquidity references" : "No verified event"}</h2>
           <p>{liquidity?.evidence || "Pocket does not infer hidden orders or stop placement from ordinary price noise."}</p>
           <div className="pnRows"><article><span>STATE</span><strong>{liquidity?.state ?? "NONE"}</strong><small>{liquidity?.confidence ?? "LOW"} confidence</small></article><article><span>CONFIRMS</span><strong>{liquidity?.confirmation || "No defensible trigger."}</strong></article><article><span>INVALIDATES</span><strong>{liquidity?.invalidation || "No defensible invalidation."}</strong></article></div>
         </> : null}
 
         {active==="risk" ? <>
           <div className="pnDecisionLabel">RISK & DISCIPLINE</div>
-          <h2>{analysis.riskFlags.length ? analysis.riskFlags.length+" active risk flag"+(analysis.riskFlags.length===1?"":"s") : "No major flag returned"}</h2>
-          <p>{analysis.noTradeCondition}</p>
-          <div className="pnRows">{analysis.riskFlags.map((r,i)=><article key={i}><span>RISK {String(i+1).padStart(2,"0")}</span><strong>{r}</strong></article>)}<article><span>INVALIDATION</span><strong>{analysis.invalidation}</strong></article><article><span>TRADER TRAP</span><strong>{analysis.traderTrap}</strong></article></div>
+          {deviceOnly ? <>
+            <h2>AI risk judgement not run</h2>
+            <p>The zero-credit device pass measures chart geometry only. It does not assign a setup score, trade risk grade or directional permission.</p>
+            <div className="pnRows"><article><span>DEVICE CHECK</span><strong>Structure only</strong><small>Use Levels, Patterns and Liquidity for screenshot-derived evidence.</small></article></div>
+          </> : <>
+            <h2>{analysis.riskFlags.length ? analysis.riskFlags.length+" active risk flag"+(analysis.riskFlags.length===1?"":"s") : "No major flag returned"}</h2>
+            <p>{analysis.noTradeCondition}</p>
+            <div className="pnRows">{analysis.riskFlags.map((r,i)=><article key={i}><span>RISK {String(i+1).padStart(2,"0")}</span><strong>{r}</strong></article>)}<article><span>INVALIDATION</span><strong>{analysis.invalidation}</strong></article><article><span>TRADER TRAP</span><strong>{analysis.traderTrap}</strong></article></div>
+          </>}
         </> : null}
       </aside>
     </section>
