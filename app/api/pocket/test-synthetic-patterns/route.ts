@@ -41,7 +41,23 @@ const CASES:Case[]=[
   {id:"straight-down",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:72},{i:87,y:230}]},
   {id:"one-spike",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:150},{i:40,y:150},{i:41,y:150},{i:42,y:72},{i:43,y:150},{i:87,y:150}]},
   {id:"random-chop",expected:"NO CLEAN PATTERN",anchors:[
-    {i:0,y:150},{i:8,y:130},{i:16,y:174},{i:24,y:118},{i:32,y:164},{i:40,y:137},{i:48,y:182},{i:56,y:122},{i:64,y:170},{i:72,y:140},{i:80,y:166},{i:87,y:146}]}
+    {i:0,y:150},{i:8,y:130},{i:16,y:174},{i:24,y:118},{i:32,y:164},{i:40,y:137},{i:48,y:182},{i:56,y:122},{i:64,y:170},{i:72,y:140},{i:80,y:166},{i:87,y:146}]},
+  {id:"double-top-no-break",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:225},{i:18,y:140},{i:28,y:78},{i:40,y:154},{i:54,y:80},{i:66,y:142},{i:87,y:126}]},
+  {id:"double-bottom-no-break",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:76},{i:18,y:140},{i:28,y:224},{i:40,y:146},{i:54,y:222},{i:66,y:156},{i:87,y:172}]},
+  {id:"hs-no-neckline-break",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:225},{i:16,y:155},{i:24,y:105},{i:32,y:160},{i:41,y:68},{i:50,y:158},{i:60,y:108},{i:69,y:160},{i:87,y:146}]},
+  {id:"ihs-no-neckline-break",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:78},{i:16,y:145},{i:24,y:195},{i:32,y:140},{i:41,y:232},{i:50,y:142},{i:60,y:192},{i:69,y:140},{i:87,y:154}]},
+  {id:"two-touch-box",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:150},{i:18,y:96},{i:36,y:204},{i:54,y:98},{i:72,y:202},{i:87,y:150}]},
+  {id:"almost-ascending-triangle",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:220},{i:18,y:105},{i:34,y:205},{i:50,y:96},{i:66,y:178},{i:87,y:142}]},
+  {id:"almost-descending-triangle",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:82},{i:18,y:195},{i:34,y:96},{i:50,y:202},{i:66,y:126},{i:87,y:160}]},
+  {id:"impulse-without-flag",expected:"NO CLEAN PATTERN",anchors:[
+    {i:0,y:225},{i:32,y:220},{i:40,y:85},{i:48,y:92},{i:56,y:89},{i:64,y:94},{i:72,y:88},{i:87,y:90}]}
 ];
 
 function interp(anchors:Point[],i:number){
