@@ -1183,7 +1183,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     context.strokeStyle = "#2d3b42"; context.beginPath(); context.moveTo(78, nextY); context.lineTo(1002, nextY); context.stroke();
     nextY += 62; context.fillStyle = "#d9b45b"; context.font = "700 23px monospace"; context.fillText("CLARITY IMPROVES WHEN", 78, nextY);
     nextY += 49; context.fillStyle = "#c4cec9"; context.font = "500 31px sans-serif"; wrap(analysis.nextSequence.confirmation, 78, nextY, 924, 43, 5);
-    context.fillStyle = "#68777f"; context.font = "700 19px monospace"; context.fillText("CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION", 78, 1250);
+    context.fillStyle = "#68777f"; context.font = "700 19px monospace"; context.fillText("DECISION SUPPORT · VERIFY ON SOURCE PLATFORM", 78, 1250);
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) return;
     const file = new File([blob], "pocket-bullseye-result.png", { type: "image/png" });
@@ -1286,7 +1286,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       <button type="button" data-active={battlefieldChart === "context"} aria-pressed={battlefieldChart === "context"} onClick={() => setBattlefieldChart("context")}><span>②</span><strong>CONTEXT</strong><small>{analysis.higherTimeframe.timeframe || "SECOND VIEW"}</small></button>
     </nav> : null;
     return (
-      <main className="psApp" data-pocket-build="v3.1">
+      <main className="psApp" data-pocket-build="institutional-v1">
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · ANALYSIS WORKSPACE</span>
@@ -1294,10 +1294,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </div>
           
           <div className="psWrittenReport">
-          <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
+          <nav className="psReportRail" aria-label="Analysis sections"><a href="#bullseye-verdict">OVERVIEW</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-events">EVENT RISK</a><a href="#bullseye-feedback">REVIEW</a></nav>
           <header id="bullseye-verdict" className="psVerdict">
-            <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
-            <div className="psVerdictTop"><h1><small>SETUP GRADE</small><em data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</em></h1><div><small>{analysis.setupScore.overall}/100</small><strong data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</strong></div></div>
+            <p><i /> DECISION SUMMARY · EVIDENCE-LED</p>
+            <div className="psVerdictTop"><h1><small>QUALITY GRADE</small><em data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</em></h1><div><small>{analysis.setupScore.overall}/100</small><strong data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</strong></div></div>
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
@@ -1351,7 +1351,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             </div>
             <p>Saved decisions stay privately on this device. Shared summaries and invites never include the uploaded screenshot.</p>
           </details>
-          </div>}
+          </div>
         </section>
         {chartFocus && (
           <section className="psChartFocus psBattleFocus" aria-modal="true" role="dialog" aria-label="Full-screen Bullseye Decision Map">
@@ -1380,7 +1380,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   return (
-    <main className="psApp" data-pocket-build="v3.1">
+    <main className="psApp" data-pocket-build="institutional-v1">
       <header className="psHeader">
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>POCKET BULLSEYE</strong><small>DECISION INTELLIGENCE</small></span></div>
         <div className="psHeaderActions"><span>ANALYSIS ENGINE</span><b>ONLINE</b></div>
