@@ -419,8 +419,18 @@ export async function POST(request: Request) {
           } : null,
         };
       } else {
-        // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
-        analysis = { ...record, priceScaleAnchors: [], levels: [] };
+        // Preserve visually defensible geometry even when the printed price scale
+        // cannot be verified. Numeric labels are removed below by calibration,
+        // but the user should still see the support/resistance rows themselves.
+        analysis = {
+          ...record,
+          priceScaleAnchors: [],
+          levels: Array.isArray(record.levels)
+            ? record.levels.map((item) => item && typeof item === "object"
+              ? { ...(item as Record<string, unknown>), price: "" }
+              : item)
+            : [],
+        };
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;
