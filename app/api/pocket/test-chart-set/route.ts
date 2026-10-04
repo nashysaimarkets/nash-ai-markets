@@ -36,7 +36,11 @@ const CASES = [
   { id:"eurusd-straight-downtrend", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/q/QXo92Wjj_mid.png?v=1778496476" },
   { id:"ftmo-falling-wedge", expected:"FALLING WEDGE", url:"https://ftmo-frontend-prod.storage.googleapis.com/wp-content/uploads/2023/10/04161105/TradingView-All-Chart-Patterns.png" },
   { id:"utx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://www.tradercampus.de/sites/default/files/dubbele_bodem.png" },
-  { id:"idx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://img.idxchannel.com/images/idx/2024/11/07/double-buttom-pattern.png" }
+  { id:"idx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://img.idxchannel.com/images/idx/2024/11/07/double-buttom-pattern.png" },
+  { id:"tv-btc-double-bottom", expected:"DOUBLE BOTTOM", url:"https://s3.tradingview.com/snapshots/x/XVEEOh1c.png" },
+  { id:"tv-eurusd-double-top", expected:"DOUBLE TOP", url:"https://s3.tradingview.com/snapshots/4/4Qa0fqKS.png" },
+  { id:"tv-xauusd-double-top", expected:"DOUBLE TOP", url:"https://s3.tradingview.com/snapshots/p/pCsUYgFF.png" },
+  { id:"tv-eurusd-double-family", expected:"DOUBLE TOP", url:"https://s3.tradingview.com/snapshots/m/M7KVDpQR.png" }
 ] as const;
 
 async function fetchImage(url:string){
