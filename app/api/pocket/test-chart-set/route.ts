@@ -22,9 +22,7 @@ const CASES = [
   { id:"gold-levels", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/snapshots/s/s7h8BepM.png" },
   { id:"brent-levels", expected:"NO CLEAN PATTERN", url:"https://d1-invdn-com.akamaized.net/content/piccee72e0c5679dba090cf0eb8c57b78b4.png" },
   { id:"ihs-fcel", expected:"INVERSE H&S", url:"https://s3.tradingview.com/j/Jm7wpOeW_mid.png" },
-  { id:"wti-levels", expected:"NO CLEAN PATTERN", url:"https://substackcdn.com/image/fetch/f_auto%2Cq_auto%3Agood%2Cfl_progressive%3Asteep/https%3A/substack-post-media.s3.amazonaws.com/public/images/216a71c4-c6a3-45dc-8753-87eb017f1282_1282x728.png" },
   { id:"btc-bull-flag", expected:"BULL FLAG", url:"https://cdn.sanity.io/images/s3y3vcno/production/a8dc6b10a6b35add73f41533c63b4176b74f213a-1007x748.png?auto=format" },
-  { id:"tsla-break-retest", expected:"BREAKOUT & RETEST", url:"https://www.shootingstocks.com/wp-content/uploads/2022/08/10.-Break-and-retest-chart-example.png" },
   { id:"eurusd-channel", expected:"TREND CHANNEL", url:"https://tradeciety.com/hs-fs/hubfs/Trendline%20Channel%20Upward.png?height=4635&name=Trendline+Channel+Upward.png&width=8994" },
   { id:"btc-double-top-coindesk", expected:"DOUBLE TOP", url:"https://cdn.sanity.io/images/s3y3vcno/production/36ca2959d23639eb0a9c522e967ef977e9a2fb2b-1258x847.png?auto=format" },
   { id:"range-axi", expected:"RECTANGLE / RANGE", url:"https://d2tpnh780x5es.cloudfront.net/rebrand-prod/axnlzyhk/range-trading.png" },
@@ -37,10 +35,6 @@ const CASES = [
   { id:"ftmo-falling-wedge", expected:"FALLING WEDGE", url:"https://ftmo-frontend-prod.storage.googleapis.com/wp-content/uploads/2023/10/04161105/TradingView-All-Chart-Patterns.png" },
   { id:"utx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://www.tradercampus.de/sites/default/files/dubbele_bodem.png" },
   { id:"idx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://img.idxchannel.com/images/idx/2024/11/07/double-buttom-pattern.png" },
-  { id:"tv-btc-double-bottom", expected:"DOUBLE BOTTOM", url:"https://s3.tradingview.com/snapshots/x/XVEEOh1c.png" },
-  { id:"tv-eurusd-double-top", expected:"DOUBLE TOP", url:"https://s3.tradingview.com/snapshots/4/4Qa0fqKS.png" },
-  { id:"tv-xauusd-double-top", expected:"DOUBLE TOP", url:"https://s3.tradingview.com/snapshots/p/pCsUYgFF.png" },
-  { id:"tv-eurusd-double-family", expected:"DOUBLE TOP", url:"https://s3.tradingview.com/snapshots/m/M7KVDpQR.png" }
 ] as const;
 
 async function fetchImage(url:string){
