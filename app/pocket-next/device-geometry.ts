@@ -385,7 +385,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(hs)patternCandidates.push(hs);
 
-    for(const pattern of doublePatternCandidates(swings,candles,width,structureHeight,pctX,pctY,plotBounds)){
+    for(const pattern of doublePatternCandidates(patternSwings,candles,width,structureHeight,pctX,pctY,plotBounds)){
       patternCandidates.push(pattern);
     }
 
