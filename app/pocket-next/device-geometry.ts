@@ -455,7 +455,7 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
   return best?.pattern ?? null;
 }
 
-export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number;patternRadiusOverride?:number}):DeviceLocalScan{
+export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number;patternRadiusOverride?:number;neutralContrastOverride?:number}):DeviceLocalScan{
   try{
     const {pixels,width,height}=input,channels=input.channels??4;
     if(width<20||height<20)return emptyDeviceScan();
@@ -532,6 +532,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // drawing lines. This supports black/grey and white/grey candle themes without
     // changing the normal coloured-chart path.
     if(columnRuns.length<12){
+      const neutralContrast=Math.min(90,Math.max(30,input.neutralContrastOverride??58));
       const samples:number[]=[];
       for(let y=top;y<=bottom;y+=8)for(let x=left;x<=right;x+=8){
         const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0);
@@ -547,7 +548,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         for(let x=left;x<=right;x++){
           const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
           const hi=Math.max(r,g,b),lo=Math.min(r,g,b),lum=(r+g+b)/3;
-          const neutral=a>=180&&hi-lo<=34&&Math.abs(lum-background)>=58;
+          const neutral=a>=180&&hi-lo<=34&&Math.abs(lum-background)>=neutralContrast;
           if(neutral){streak+=gap+1;gap=0;if(streak>longest)longest=streak;}
           else if(streak>0&&gap<1)gap++;
           else{streak=0;gap=0;}
@@ -561,7 +562,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
           if(neutralNoisyRows.has(y))continue;
           const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
           const hi=Math.max(r,g,b),lo=Math.min(r,g,b),lum=(r+g+b)/3;
-          if(a>=180&&hi-lo<=34&&Math.abs(lum-background)>=58)ys.push(y);
+          if(a>=180&&hi-lo<=34&&Math.abs(lum-background)>=neutralContrast)ys.push(y);
         }
         if(ys.length<2)continue;
         const groups:number[][]=[];let group:number[]=[];
