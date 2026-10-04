@@ -184,7 +184,7 @@ function BullseyeCommandArena({ analysis, sourceImage, onOpenReport, onShare }: 
   const tone = analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait";
   const modes: Array<{ id: ArenaMode; icon: string; label: string }> = [
     { id: "command", icon: "◎", label: "COMMAND" }, { id: "levels", icon: "⌁", label: "LEVELS" },
-    { id: "battle", icon: "±", label: "EVIDENCE" }, { id: "risk", icon: "⚠", label: "RISK" },
+    { id: "battle", icon: "±", label: "EVIDENCE" }, { id: "risk", icon: "!", label: "RISK" },
   ];
   const move = (event: PointerEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
