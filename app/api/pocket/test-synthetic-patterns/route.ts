@@ -67,8 +67,19 @@ function interp(anchors:Point[],i:number){
   return a.y+(b.y-a.y)*t;
 }
 
-function render(test:Case,variant:number){
-  const data=new Uint8Array(W*H*3);data.fill(248);
+type PaletteName="rg"|"blue-orange"|"cyan-magenta"|"mono-light"|"mono-dark";
+const PALETTES:Record<PaletteName,{bg:[number,number,number];up:[number,number,number];down:[number,number,number]}> = {
+  "rg":{bg:[248,248,248],up:[38,166,82],down:[224,70,66]},
+  "blue-orange":{bg:[247,247,247],up:[36,120,220],down:[235,145,40]},
+  "cyan-magenta":{bg:[20,24,31],up:[55,205,220],down:[224,72,185]},
+  "mono-light":{bg:[250,250,250],up:[35,35,35],down:[105,105,105]},
+  "mono-dark":{bg:[18,22,29],up:[235,235,235],down:[150,150,150]},
+};
+
+function render(test:Case,variant:number,paletteName:PaletteName="rg"){
+  const palette=PALETTES[paletteName];
+  const data=new Uint8Array(W*H*3);
+  for(let i=0;i<data.length;i+=3){data[i]=palette.bg[0];data[i+1]=palette.bg[1];data[i+2]=palette.bg[2];}
   const set=(x:number,y:number,r:number,g:number,b:number)=>{
     if(x<0||x>=W||y<0||y>=H)return;
     const p=(Math.round(y)*W+Math.round(x))*3;data[p]=r;data[p+1]=g;data[p+2]=b;
@@ -89,7 +100,7 @@ function render(test:Case,variant:number){
     const high=Math.min(open,close)-wick;
     const low=Math.max(open,close)+wick;
     const up=close<open;
-    const rgb=up?[38,166,82]:[224,70,66];
+    const rgb=up?palette.up:palette.down;
     line(x,high,low,rgb[0],rgb[1],rgb[2],0);
     line(x,Math.min(open,close),Math.max(open,close),rgb[0],rgb[1],rgb[2],1);
     prev=close;
@@ -110,13 +121,15 @@ export async function GET(request:Request){
   const radiusRaw=u.searchParams.get("radius");
   const patternRadiusOverride=radiusRaw===null?undefined:Number(radiusRaw);
   const only=u.searchParams.get("only");
+  const paletteRaw=(u.searchParams.get("palette")||"rg") as PaletteName;
+  const paletteName:PaletteName=paletteRaw in PALETTES?paletteRaw:"rg";
   const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results:any[]=[];
   let total=0,exact=0,negativePass=0,negativeTotal=0,strongWrong=0,stable=0;
   for(const test of selectedCases){
     const runs=[] as any[];
     for(let v=0;v<variants;v++){
-      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride});
+      const scan=scanDevicePixels({pixels:render(test,v,paletteName),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride});
       const pats=visible(scan);
       const names=pats.map(p=>p.name);
       const hit=test.expected==="NO CLEAN PATTERN"?!names.length:names.some(n=>norm(n)===norm(test.expected));
@@ -131,7 +144,7 @@ export async function GET(request:Request){
     results.push({id:test.id,expected:test.expected,runs});
   }
   return NextResponse.json({
-    cases:selectedCases.length,variants,total,exact,positiveTotal:(selectedCases.filter(c=>c.expected!=="NO CLEAN PATTERN").length*variants),
+    palette:paletteName,cases:selectedCases.length,variants,total,exact,positiveTotal:(selectedCases.filter(c=>c.expected!=="NO CLEAN PATTERN").length*variants),
     negativePass,negativeTotal,strongWrong,stableCases:stable,results
   });
 }
