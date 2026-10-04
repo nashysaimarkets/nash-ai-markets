@@ -56,7 +56,10 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
 };
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;\nfunction emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null })); }
+type ChartSlot = { image: string | null; name: string; analysis: Analysis | null };
+
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+function emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null })); }
 const TABS: Array<{ id: Tab; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "OV" },
   { id: "levels", label: "Levels", short: "LV" },
