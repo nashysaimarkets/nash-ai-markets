@@ -81,3 +81,145 @@
   .pnDecision{grid-row:1;grid-column:1;position:absolute;left:0;right:0;bottom:60px;top:auto;max-height:37vh;z-index:10;border-left:0;border-top:1px solid #bdb7ac;padding:15px 14px 22px;box-shadow:0 -18px 40px rgba(0,0,0,.12)}
   .pnDecisionLabel{margin-bottom:8px}.pnVerdict span{font-size:30px}.pnVerdict b{font-size:52px}.pnDecision h2{font-size:21px;margin:14px 0 7px}.pnDecision>p{font-size:10px}.pnTriptych{margin:12px 0}.pnTriptych article{padding:9px 0}.pnRows{margin-top:10px}.pnRows article{padding:9px 0}.pnRows strong{font-size:10px}.pnMiss{padding:10px}
 }
+
+
+/* Mobile legibility + chart-first refinement — 2026-10-04 */
+@media(max-width:760px){
+  /* Start / intake: readable without changing the new editorial direction */
+  .pnIntro>p{font-size:9px;line-height:1.45}
+  .pnIntro h1{font-size:46px;line-height:.98}
+  .pnIntro>span{font-size:14px;line-height:1.65}
+  .pnPrinciples b{font-size:9px}
+  .pnPrinciples strong{font-size:12px}
+  .pnPrinciples small{font-size:11px;line-height:1.45}
+  .pnIntakeHead span{font-size:11px}
+  .pnIntakeHead small{font-size:8px}
+  .pnDrop>div strong{font-size:24px}
+  .pnDrop>div span{font-size:9px}
+  .pnDrop footer strong{font-size:11px}
+  .pnDrop footer span{font-size:9px}
+  .pnContext strong{font-size:12px}
+  .pnContext span{font-size:10px}
+  .pnContext>b{font-size:8px}
+  .pnBias small{font-size:8px}
+  .pnBias button{font-size:10px}
+  .pnPrivacy span{font-size:11px;line-height:1.5}
+  .pnRun{font-size:11px}
+  .pnDemo{font-size:8px}
+
+  /* Results: chart first. Never hide the evidence behind the verdict panel. */
+  .pnResultApp{min-height:100dvh;overflow-x:hidden}
+  .pnWorkspace{
+    height:auto;
+    min-height:calc(100dvh - 58px);
+    display:flex;
+    flex-direction:column;
+    padding-bottom:calc(68px + env(safe-area-inset-bottom));
+    overflow:visible;
+  }
+  .pnCentre{
+    order:1;
+    display:block;
+    min-height:0;
+    background:#111722;
+  }
+  .pnChartHeader{
+    min-height:64px;
+    padding:0 14px;
+  }
+  .pnChartHeader small{font-size:8px}
+  .pnChartHeader strong{font-size:22px}
+
+  /* Let portrait screenshots use the full phone width instead of shrinking into a fixed-height box. */
+  .pnChart{
+    display:block;
+    min-height:0;
+    height:auto;
+    overflow:hidden;
+  }
+  .pnChart img{
+    display:block;
+    position:relative;
+    width:100%;
+    height:auto;
+    max-width:100%;
+    max-height:none;
+    object-fit:contain;
+    padding:0;
+  }
+  .pnChart svg,.pnLevelLabels{
+    inset:0;
+    width:100%;
+    height:100%;
+  }
+  .pnLevelLabels span{
+    right:2%;
+    min-width:92px;
+    padding:6px 8px;
+  }
+  .pnLevelLabels small{font-size:7px}
+  .pnLevelLabels b{font-size:11px}
+
+  .pnChartFoot{
+    min-height:58px;
+    grid-template-columns:1fr;
+    padding:10px 14px;
+    gap:4px;
+  }
+  .pnChartFoot span:first-child{font-size:7px}
+  .pnChartFoot span:last-child{font-size:10px;line-height:1.5}
+
+  /* Verdict/details now sit below the chart rather than obscuring it. */
+  .pnDecision{
+    order:2;
+    position:relative;
+    left:auto;
+    right:auto;
+    bottom:auto;
+    top:auto;
+    max-height:none;
+    overflow:visible;
+    border-left:0;
+    border-top:1px solid #bdb7ac;
+    padding:20px 16px 28px;
+    box-shadow:none;
+  }
+  .pnDecisionLabel{font-size:9px;margin-bottom:12px}
+  .pnVerdict{padding-bottom:18px}
+  .pnVerdict span{font-size:34px}
+  .pnVerdict b{font-size:58px}
+  .pnVerdict small{font-size:8px}
+  .pnDecision h2{font-size:25px;line-height:1.15;margin:18px 0 9px}
+  .pnDecision>p{font-size:13px;line-height:1.6}
+  .pnTriptych{margin:16px 0}
+  .pnTriptych article{padding:12px 0}
+  .pnTriptych small,.pnMiss small,.pnRows span{font-size:8px}
+  .pnTriptych strong,.pnMiss strong{font-size:13px;line-height:1.5}
+  .pnMiss{padding:13px}
+  .pnRows{margin-top:16px}
+  .pnRows article{padding:12px 0}
+  .pnRows strong{font-size:13px;line-height:1.48}
+  .pnRows small{font-size:10px;line-height:1.5}
+
+  /* Scanner selector stays available while the user inspects a long chart. */
+  .pnTools{
+    order:3;
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:60;
+    grid-template-columns:repeat(6,1fr);
+    min-height:calc(62px + env(safe-area-inset-bottom));
+    padding:5px 4px calc(5px + env(safe-area-inset-bottom));
+    gap:2px;
+    border-right:0;
+    border-top:1px solid #344154;
+    box-shadow:0 -10px 28px rgba(6,10,16,.2);
+  }
+  .pnTools button{min-height:52px;gap:4px}
+  .pnTools button b{width:27px;height:23px;font-size:8px}
+  .pnTools button span{font-size:8px;font-weight:650;letter-spacing:.01em}
+
+  .pnTopActions button{height:34px;padding:0 9px;font-size:7px}
+}
