@@ -342,3 +342,142 @@
     border-color:rgba(237,233,223,.94);
   }
 }
+
+
+/* Five-chart compact switcher — 2026-10-04 */
+.pnStartChartRail{
+  display:grid;
+  gap:7px;
+  padding:10px 11px;
+  border:1px solid #d0cbc1;
+  background:#f4f1e9;
+}
+.pnStartChartRail>span{
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.1em;
+  color:#736d64;
+}
+.pnStartChartRail>div{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+}
+.pnStartSlot{
+  position:relative;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 9px;
+  border:1px solid #c8c1b5;
+  background:#ece7dc;
+  cursor:pointer;
+  overflow:hidden;
+}
+.pnStartSlot input,.pnChartAdd input{
+  position:absolute;
+  inset:0;
+  opacity:0;
+  cursor:pointer;
+}
+.pnStartSlot b{
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:8px;
+  color:#6e675e;
+}
+.pnStartSlot small{
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:7px;
+  letter-spacing:.06em;
+  color:#756d62;
+}
+.pnStartSlot[data-loaded="true"]{
+  background:#172232;
+  border-color:#172232;
+}
+.pnStartSlot[data-loaded="true"] b,
+.pnStartSlot[data-loaded="true"] small{color:#eee9df}
+
+.pnChartSwitcher{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+  padding:6px 8px;
+  background:#151e2a;
+  border-bottom:1px solid #283444;
+}
+.pnChartSwitcher button,.pnChartAdd{
+  position:relative;
+  min-width:0;
+  height:38px;
+  border:1px solid #334154;
+  background:#1a2533;
+  color:#a5b0be;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:5px;
+  padding:0 8px;
+  cursor:pointer;
+}
+.pnChartSwitcher button span,.pnChartAdd span{
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.pnChartSwitcher button strong,.pnChartAdd strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:7px;
+  font-weight:600;
+  color:#7f8da0;
+}
+.pnChartSwitcher button[data-active="true"]{
+  background:#eee9df;
+  border-color:#eee9df;
+  color:#172232;
+}
+.pnChartSwitcher button[data-active="true"] strong{color:#78684f}
+.pnChartSwitcher button[data-busy="true"] strong{animation:pnPulse 1s ease-in-out infinite}
+.pnChartSwitcher button:disabled{opacity:.45;cursor:default}
+.pnChartAdd{cursor:pointer}
+@keyframes pnPulse{0%,100%{opacity:.45}50%{opacity:1}}
+
+@media(max-width:760px){
+  .pnStartChartRail{padding:9px}
+  .pnStartChartRail>span{font-size:8px}
+  .pnStartSlot{min-height:40px;padding:0 8px}
+  .pnStartSlot b{font-size:9px}
+  .pnStartSlot small{font-size:8px}
+
+  .pnWorkspace{
+    padding-bottom:calc(112px + env(safe-area-inset-bottom));
+  }
+  .pnChartSwitcher{
+    position:fixed;
+    left:8px;
+    right:8px;
+    bottom:calc(65px + env(safe-area-inset-bottom));
+    z-index:59;
+    padding:4px;
+    gap:3px;
+    border:1px solid #3a4758;
+    border-bottom:1px solid #3a4758;
+    background:rgba(18,26,37,.96);
+    box-shadow:0 8px 28px rgba(0,0,0,.2);
+    backdrop-filter:blur(12px);
+  }
+  .pnChartSwitcher button,.pnChartAdd{
+    height:34px;
+    padding:0 6px;
+    gap:3px;
+  }
+  .pnChartSwitcher button span,.pnChartAdd span{font-size:7px}
+  .pnChartSwitcher button strong,.pnChartAdd strong{font-size:6px}
+}
