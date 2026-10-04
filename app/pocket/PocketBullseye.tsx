@@ -631,6 +631,27 @@ function SignalPulse({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
+function ScannerHealth({ analysis }: { analysis: Analysis }) {
+  const numericLevels = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
+  const chartState = analysis.evidenceQuality.chartReadability === "CLEAR" && analysis.evidenceQuality.candlesReadable ? "VERIFIED" : analysis.evidenceQuality.chartReadability === "POOR" ? "NONE" : "PARTIAL";
+  const levelState = numericLevels.length && analysis.evidenceQuality.scaleReadable ? "VERIFIED" : analysis.levels.length ? "PARTIAL" : "NONE";
+  const strongPatterns = analysis.patterns.filter((pattern) => pattern.confidence !== "LOW" && pattern.status !== "AMBIGUOUS");
+  const patternState = strongPatterns.length ? "VERIFIED" : analysis.patterns.length ? "PARTIAL" : "NONE";
+  const liquidityState = analysis.liquidity?.state ?? "NONE";
+  const timeframeState = analysis.higherTimeframe.provided ? "VERIFIED" : "NONE";
+  const items = [
+    ["CHART", chartState],
+    ["LEVELS", levelState],
+    ["PATTERNS", patternState],
+    ["LIQUIDITY", liquidityState],
+    ["HTF", timeframeState],
+  ] as const;
+  return <section className="psScannerHealth" aria-label="Scanner evidence status">
+    <header><span>SCANNER HEALTH</span><small>WHAT POCKET ACTUALLY VERIFIED</small></header>
+    <div>{items.map(([label, state]) => <article key={label} data-state={state}><i/><span>{label}</span><strong>{state === "NONE" ? "NO EVIDENCE" : state}</strong></article>)}</div>
+  </section>;
+}
+
 function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [mode, setMode] = useState<CommandDeckMode>("xray");
   const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
@@ -1280,6 +1301,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
+          <ScannerHealth analysis={analysis} />
           <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "GENERAL MACRO CHECK · CONFIRM BEFORE TRADING"}</small></div>{isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
