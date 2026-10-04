@@ -229,6 +229,13 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
     const rms=Math.sqrt(rest.reduce((s,x)=>{const e=x.mid-(my+slope*(x.x-mx));return s+e*e;},0)/rest.length);
     if(rms>Math.max(3,range*.34))continue;
     const counterRatio=Math.abs(total)/Math.max(1,poleMag);
+    const poleCandles=candles.slice(poleStart,split+1);
+    const steps=poleCandles.slice(1).map((c,i)=>c.mid-poleCandles[i].mid);
+    const poleDirection=pole<0?-1:1;
+    const directional=steps.filter(step=>Math.sign(step)===poleDirection && Math.abs(step)>height*.0025).length;
+    const directionalFraction=directional/Math.max(1,steps.length);
+    const maxStep=Math.max(...steps.map(step=>Math.abs(step)),0);
+    if(directionalFraction<.62||maxStep>poleMag*.5)continue;
     const bull=pole<0&&total>height*.025&&total<poleMag*.45&&counterRatio>=.1;
     const bear=pole>0&&total< -height*.025&&Math.abs(total)<poleMag*.45&&counterRatio>=.1;
     if(!bull&&!bear)continue;
