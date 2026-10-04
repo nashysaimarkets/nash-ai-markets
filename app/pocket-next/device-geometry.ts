@@ -631,7 +631,20 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       if(selected.every(existing=>Math.abs(existing.x-candidate.x)>=3))selected.push(candidate);
     }
     selected.sort((a,b)=>a.x-b.x);
-    const candles:Candle[]=selected.map(c=>{const high=Math.min(...c.ys),low=Math.max(...c.ys);return{x:c.x,high,low,mid:(high+low)/2};});
+    const filteredSelected=selected.filter((candidate,index,array)=>{
+      if(index===0||index===array.length-1)return true;
+      const prev=array[index-1],next=array[index+1];
+      if(candidate.x-prev.x>width*.045||next.x-candidate.x>width*.045)return true;
+      const mid=(Math.min(...candidate.ys)+Math.max(...candidate.ys))/2;
+      const prevMid=(Math.min(...prev.ys)+Math.max(...prev.ys))/2;
+      const nextMid=(Math.min(...next.ys)+Math.max(...next.ys))/2;
+      const neighboursAgree=Math.abs(prevMid-nextMid)<=height*.08;
+      const teleports=Math.abs(mid-(prevMid+nextMid)/2)>=height*.18;
+      const tinyFragment=candidate.span<=height*.08;
+      return !(neighboursAgree&&teleports&&tinyFragment);
+    });
+    const candleSource=filteredSelected.length>=8?filteredSelected:selected;
+    const candles:Candle[]=candleSource.map(c=>{const high=Math.min(...c.ys),low=Math.max(...c.ys);return{x:c.x,high,low,mid:(high+low)/2};});
     if(candles.length<6)return emptyDeviceScan();
     const pctX=(x:number)=>x/width*100,pctY=(y:number)=>y/height*100;
     const candleLeft=Math.max(left,Math.min(...candles.map(v=>v.x))-width*.012);
