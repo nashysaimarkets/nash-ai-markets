@@ -97,11 +97,17 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const n1=leftNecks.reduce((a,b)=>a.y>b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y>b.y?a:b);
     if(n1.y-Math.max(ls.y,head.y)<height*.035||n2.y-Math.max(rs.y,head.y)<height*.035)continue;
     const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.065)continue;
-    const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x), after=candles.filter(x=>x.x>rs.x);
+    const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x);
+    const confirmEnd=rs.x+Math.min(width*.2,span*.58);
+    const after=candles.filter(x=>x.x>rs.x&&x.x<=confirmEnd);
     if(after.length<4)continue;
-    let breaks=0;
-    for(const x of after){if(x.low>(n1.y+slope*(x.x-n1.x))+height*.015)breaks++;}
-    const confirmed=breaks>=2;
+    let streak=0,maxStreak=0;
+    for(const x of after){
+      const beyond=x.mid>(n1.y+slope*(x.x-n1.x))+height*.012;
+      streak=beyond?streak+1:0;
+      if(streak>maxStreak)maxStreak=streak;
+    }
+    const confirmed=maxStreak>=2;
     if(!confirmed)continue;
     const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
     candidates.push({score:headProm/height+symmetry*.12-neckDiff/height*.25,pattern:{
@@ -126,11 +132,17 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const n1=leftNecks.reduce((a,b)=>a.y<b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y<b.y?a:b);
     if(Math.min(ls.y,head.y)-n1.y<height*.035||Math.min(rs.y,head.y)-n2.y<height*.035)continue;
     const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.065)continue;
-    const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x), after=candles.filter(x=>x.x>rs.x);
+    const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x);
+    const confirmEnd=rs.x+Math.min(width*.2,span*.58);
+    const after=candles.filter(x=>x.x>rs.x&&x.x<=confirmEnd);
     if(after.length<4)continue;
-    let breaks=0;
-    for(const x of after){if(x.high<(n1.y+slope*(x.x-n1.x))-height*.015)breaks++;}
-    const confirmed=breaks>=2;
+    let streak=0,maxStreak=0;
+    for(const x of after){
+      const beyond=x.mid<(n1.y+slope*(x.x-n1.x))-height*.012;
+      streak=beyond?streak+1:0;
+      if(streak>maxStreak)maxStreak=streak;
+    }
+    const confirmed=maxStreak>=2;
     if(!confirmed)continue;
     const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
     candidates.push({score:headProm/height+symmetry*.12-neckDiff/height*.25,pattern:{
