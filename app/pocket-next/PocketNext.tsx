@@ -56,7 +56,7 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
 };
 
-type LocalScan = { levels: Level[]; patterns: Pattern[]; liquidity: LiquidityRead; candleCount: number };
+type PlotBounds = { left: number; top: number; right: number; bottom: number };\ntype LocalScan = { levels: Level[]; patterns: Pattern[]; liquidity: LiquidityRead; candleCount: number; plotBounds: PlotBounds };
 type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -116,7 +116,7 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
         const canvas = document.createElement("canvas");
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) return resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0 });
+        if (!ctx) return resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0, plotBounds: { left: 4, top: 12, right: 91, bottom: 88 } });
         ctx.drawImage(source, 0, 0, width, height);
         const pixels = ctx.getImageData(0,0,width,height).data;
         const left = Math.round(width * .04), right = Math.round(width * .91);
@@ -153,6 +153,11 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
         });
 
         const pctX=(x:number)=>x/width*100, pctY=(y:number)=>y/height*100;
+        const candleLeft = candles.length ? Math.max(left, Math.min(...candles.map(v=>v.x)) - width*.012) : left;
+        const candleRight = candles.length ? Math.min(right, Math.max(...candles.map(v=>v.x)) + width*.018) : right;
+        const candleTop = candles.length ? Math.max(top, Math.min(...candles.map(v=>v.high)) - height*.012) : top;
+        const candleBottom = candles.length ? Math.min(bottom, Math.max(...candles.map(v=>v.low)) + height*.012) : bottom;
+        const plotBounds: PlotBounds = { left:pctX(candleLeft), top:pctY(candleTop), right:pctX(candleRight), bottom:pctY(candleBottom) };
         type Swing={x:number;y:number;kind:"high"|"low"};
         const swings:Swing[]=[];
         for(let i=2;i<candles.length-2;i++){
@@ -177,33 +182,33 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
         const chosenHighs=highs.filter(g=>g.score>=1).slice(0,2);
         const chosenLows=lows.filter(g=>g.score>=1).slice(0,2);
         const levels:Level[]=[
-          ...chosenHighs.map((g,i)=>({kind:"resistance" as const,label:g.score>=2?"Repeated swing highs":"Swing high",price:"",x:pctX(left),y:pctY(g.y),x2:pctX(right),y2:pctY(g.y)})),
-          ...chosenLows.map((g,i)=>({kind:"support" as const,label:g.score>=2?"Repeated swing lows":"Swing low",price:"",x:pctX(left),y:pctY(g.y),x2:pctX(right),y2:pctY(g.y)})),
+          ...chosenHighs.map((g,i)=>({kind:"resistance" as const,label:g.score>=2?"Repeated swing highs":"Swing high",price:"",x:plotBounds.left,y:pctY(g.y),x2:plotBounds.right,y2:pctY(g.y)})),
+          ...chosenLows.map((g,i)=>({kind:"support" as const,label:g.score>=2?"Repeated swing lows":"Swing low",price:"",x:plotBounds.left,y:pctY(g.y),x2:plotBounds.right,y2:pctY(g.y)})),
         ].slice(0,4);
 
         const patterns:Pattern[]=[];
-        const bestHigh=highs.find(g=>g.score>=2), bestLow=lows.find(g=>g.score>=2);
-        if(bestHigh && bestLow){
-          const hx=bestHigh.items.map(s=>pctX(s.x)), lx=bestLow.items.map(s=>pctX(s.x));
-          const x1=Math.max(4,Math.min(...hx,...lx)), x2=Math.min(96,Math.max(...hx,...lx));
+        const repeatedHigh=highs.find(g=>g.score>=2), repeatedLow=lows.find(g=>g.score>=2);
+        if(repeatedHigh && repeatedLow){
+          const hx=repeatedHigh.items.map(s=>pctX(s.x)), lx=repeatedLow.items.map(s=>pctX(s.x));
+          const x1=Math.max(plotBounds.left,Math.min(...hx,...lx)), x2=Math.min(plotBounds.right,Math.max(...hx,...lx));
           if(x2-x1>=18){
             patterns.push({
               name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",
               evidence:"Device geometry found repeated swing highs and lows forming a visible range.",
               confirmation:"Break and hold beyond one range edge.",invalidation:"Range geometry fails after a decisive break.",
-              geometry:{points:[{x:x1,y:pctY(bestHigh.y)},{x:x2,y:pctY(bestHigh.y)},{x:x2,y:pctY(bestLow.y)},{x:x1,y:pctY(bestLow.y)}],labelX:Math.max(5,x2-16),labelY:Math.max(4,pctY(bestHigh.y)-4)}
+              geometry:{points:[{x:x1,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedHigh.y)},{x:x2,y:pctY(repeatedLow.y)},{x:x1,y:pctY(repeatedLow.y)}],labelX:Math.max(5,x2-16),labelY:Math.max(4,pctY(repeatedHigh.y)-4)}
             });
           }
-        } else if (bestHigh && bestHigh.items.length>=2) {
-          const a=bestHigh.items[0], b=bestHigh.items.at(-1)!;
+        } else if (repeatedHigh && repeatedHigh.items.length>=2) {
+          const a=repeatedHigh.items[0], b=repeatedHigh.items.at(-1)!;
           if(Math.abs(b.x-a.x)>width*.14) patterns.push({
             name:"DOUBLE TOP",status:"FORMING",confidence:"LOW",
             evidence:"Device geometry found two separated swing highs at a similar row.",
             confirmation:"Visible rejection followed by a lower structural break.",invalidation:"Clean acceptance above the twin highs.",
             geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(Math.max(...candles.filter(v=>v.x>a.x&&v.x<b.x).map(v=>v.low),a.y))},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.max(4,pctY(b.y)-4)}
           });
-        } else if (bestLow && bestLow.items.length>=2) {
-          const a=bestLow.items[0], b=bestLow.items.at(-1)!;
+        } else if (repeatedLow && repeatedLow.items.length>=2) {
+          const a=repeatedLow.items[0], b=repeatedLow.items.at(-1)!;
           if(Math.abs(b.x-a.x)>width*.14) patterns.push({
             name:"DOUBLE BOTTOM",status:"FORMING",confidence:"LOW",
             evidence:"Device geometry found two separated swing lows at a similar row.",
@@ -213,11 +218,28 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
         }
 
         const zones:LiquidityZone[]=[];
-        if(bestHigh){
-          zones.push({side:"BUY_SIDE",basis:bestHigh.score>=2?"EQUAL_HIGHS":"PRIOR_SWING_HIGH",price:"",x:pctX(Math.min(...bestHigh.items.map(s=>s.x))),x2:pctX(Math.max(...bestHigh.items.map(s=>s.x))),y:pctY(bestHigh.y)});
+        const liquidityHigh=highs[0], liquidityLow=lows[0];
+        if(liquidityHigh){
+          const startX=pctX(Math.min(...liquidityHigh.items.map(s=>s.x)));
+          zones.push({
+            side:"BUY_SIDE",
+            basis:liquidityHigh.score>=2?"EQUAL_HIGHS":"PRIOR_SWING_HIGH",
+            price:"",
+            x:startX,
+            x2:Math.max(startX+5,plotBounds.right),
+            y:pctY(liquidityHigh.y)
+          });
         }
-        if(bestLow){
-          zones.push({side:"SELL_SIDE",basis:bestLow.score>=2?"EQUAL_LOWS":"PRIOR_SWING_LOW",price:"",x:pctX(Math.min(...bestLow.items.map(s=>s.x))),x2:pctX(Math.max(...bestLow.items.map(s=>s.x))),y:pctY(bestLow.y)});
+        if(liquidityLow){
+          const startX=pctX(Math.min(...liquidityLow.items.map(s=>s.x)));
+          zones.push({
+            side:"SELL_SIDE",
+            basis:liquidityLow.score>=2?"EQUAL_LOWS":"PRIOR_SWING_LOW",
+            price:"",
+            x:startX,
+            x2:Math.max(startX+5,plotBounds.right),
+            y:pctY(liquidityLow.y)
+          });
         }
         const liquidity:LiquidityRead = zones.length ? {
           state:"PARTIAL",event:"TESTING",confidence:"LOW",
@@ -227,12 +249,12 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
           zones
         } : {state:"NONE",event:"NONE",confidence:"LOW",evidence:"No repeated swing reference was strong enough on-device.",confirmation:"",invalidation:"",zones:[]};
 
-        resolve({levels,patterns,liquidity,candleCount:candles.length});
+        resolve({levels,patterns,liquidity,candleCount:candles.length,plotBounds});
       } catch {
-        resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0 });
+        resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0, plotBounds: { left: 4, top: 12, right: 91, bottom: 88 } });
       }
     };
-    source.onerror=()=>resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0 });
+    source.onerror=()=>resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0, plotBounds: { left: 4, top: 12, right: 91, bottom: 88 } });
     source.src=dataUrl;
   });
 }
