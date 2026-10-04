@@ -31,6 +31,7 @@ export type DeviceLocalScan = {
     patternSwings:{x:number;y:number;kind:"high"|"low"}[];
     pivots:{x:number;y:number;kind:"high"|"low"}[];
     localSwings:{x:number;y:number;kind:"high"|"low"}[];
+    candles:{x:number;high:number;low:number;mid:number}[];
     structureHeight:number;
   };
 };
@@ -471,7 +472,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const liquidity:DeviceLiquidityRead=zones.length?{state:"PARTIAL",event:"NONE",confidence:"LOW",evidence:"Device scan found visible liquidity references only; this is not a verified liquidity event or hidden-order claim.",confirmation:"A visible sweep, reclaim or rejection is required before this becomes an event.",invalidation:"The reference is invalid if price cleanly accepts beyond it.",zones}:{...EMPTY_LIQUIDITY,zones:[]};
     return {
       levels,patterns:patterns.slice(0,2),liquidity,candleCount:candles.length,swingCount:swings.length,plotBounds,
-      ...(input.debug?{_debug:{patternSwings,pivots,localSwings:swings,structureHeight}}:{})
+      ...(input.debug?{_debug:{patternSwings,pivots,localSwings:swings,candles,structureHeight}}:{})
     };
   }catch{return emptyDeviceScan();}
 }
