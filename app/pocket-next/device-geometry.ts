@@ -242,6 +242,20 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     if(hs)patterns.push(hs);
 
     if(!patterns.length){
+      for(let i=0;i<=pivots.length-3;i++){
+        const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;if(span<width*.18)continue;
+        if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"&&Math.abs(a.y-b.y)<=height*.045&&m.y-(a.y+b.y)/2>=height*.065){
+          patterns.push({name:"DOUBLE TOP CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two separated swing highs and an intervening valley are visible, but neckline confirmation is not proven on-device.",confirmation:"Break below the intervening swing low after the second test.",invalidation:"Clean acceptance above the twin highs.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}});break;
+        }
+        if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"&&Math.abs(a.y-b.y)<=height*.045&&(a.y+b.y)/2-m.y>=height*.065){
+          patterns.push({name:"DOUBLE BOTTOM CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two separated swing lows and an intervening peak are visible, but neckline confirmation is not proven on-device.",confirmation:"Break above the intervening swing high after the second test.",invalidation:"Clean acceptance below the twin lows.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}});break;
+        }
+      }
+    }
+    if(!patterns.length){const boundary=boundaryPattern(pivots,width,height,pctX,pctY,plotBounds);if(boundary)patterns.push(boundary);}
+    if(!patterns.length){const flag=flagPattern(candles,width,height,pctX,pctY,plotBounds);if(flag)patterns.push(flag);}
+
+    if(!patterns.length){
       const rh=highs.find(g=>g.score>=2),rl=lows.find(g=>g.score>=2);
       if(rh&&rl){
         const events=[...rh.items.map(i=>({x:i.x,kind:"high" as const})),...rl.items.map(i=>({x:i.x,kind:"low" as const}))].sort((a,b)=>a.x-b.x);
@@ -258,19 +272,6 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       }
     }
 
-    if(!patterns.length){
-      for(let i=0;i<=pivots.length-3;i++){
-        const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;if(span<width*.18)continue;
-        if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"&&Math.abs(a.y-b.y)<=height*.045&&m.y-(a.y+b.y)/2>=height*.065){
-          patterns.push({name:"DOUBLE TOP CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two separated swing highs and an intervening valley are visible, but neckline confirmation is not proven on-device.",confirmation:"Break below the intervening swing low after the second test.",invalidation:"Clean acceptance above the twin highs.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}});break;
-        }
-        if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"&&Math.abs(a.y-b.y)<=height*.045&&(a.y+b.y)/2-m.y>=height*.065){
-          patterns.push({name:"DOUBLE BOTTOM CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two separated swing lows and an intervening peak are visible, but neckline confirmation is not proven on-device.",confirmation:"Break above the intervening swing high after the second test.",invalidation:"Clean acceptance below the twin lows.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}});break;
-        }
-      }
-    }
-    if(!patterns.length){const boundary=boundaryPattern(pivots,width,height,pctX,pctY,plotBounds);if(boundary)patterns.push(boundary);}
-    if(!patterns.length){const flag=flagPattern(candles,width,height,pctX,pctY,plotBounds);if(flag)patterns.push(flag);}
 
     const zones:DeviceLiquidityZone[]=[];
     const h=highs[0],l=lows[0];
