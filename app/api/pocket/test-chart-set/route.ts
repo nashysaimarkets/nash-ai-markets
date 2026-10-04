@@ -26,7 +26,15 @@ const CASES = [
   { id:"wti-levels", expected:"NO CLEAN PATTERN", url:"https://substackcdn.com/image/fetch/f_auto%2Cq_auto%3Agood%2Cfl_progressive%3Asteep/https%3A/substack-post-media.s3.amazonaws.com/public/images/216a71c4-c6a3-45dc-8753-87eb017f1282_1282x728.png" },
   { id:"btc-bull-flag", expected:"BULL FLAG", url:"https://cdn.sanity.io/images/s3y3vcno/production/a8dc6b10a6b35add73f41533c63b4176b74f213a-1007x748.png?auto=format" },
   { id:"tsla-break-retest", expected:"BREAKOUT & RETEST", url:"https://www.shootingstocks.com/wp-content/uploads/2022/08/10.-Break-and-retest-chart-example.png" },
-  { id:"eurusd-channel", expected:"TREND CHANNEL", url:"https://tradeciety.com/hs-fs/hubfs/Trendline%20Channel%20Upward.png?height=4635&name=Trendline+Channel+Upward.png&width=8994" }
+  { id:"eurusd-channel", expected:"TREND CHANNEL", url:"https://tradeciety.com/hs-fs/hubfs/Trendline%20Channel%20Upward.png?height=4635&name=Trendline+Channel+Upward.png&width=8994" },
+  { id:"btc-double-top-coindesk", expected:"DOUBLE TOP", url:"https://cdn.sanity.io/images/s3y3vcno/production/36ca2959d23639eb0a9c522e967ef977e9a2fb2b-1258x847.png?auto=format" },
+  { id:"range-axi", expected:"RECTANGLE / RANGE", url:"https://d2tpnh780x5es.cloudfront.net/rebrand-prod/axnlzyhk/range-trading.png" },
+  { id:"btc-rising-wedge-tv", expected:"RISING WEDGE", url:"https://s3.tradingview.com/j/JUlnUzQx_mid.png" },
+  { id:"btc-triangle-breakout", expected:"TRIANGLE", url:"https://cdn.sanity.io/images/s3y3vcno/production/84960f4d7992f4f9adafb73d6bfe00803fcdb405-2010x1214.png?auto=format" },
+  { id:"msft-head-shoulders", expected:"HEAD & SHOULDERS", url:"https://miro.medium.com/v2/resize%3Afit%3A1200/1%2Ac1zWUXNfUopaZ8Wl-cySGQ.png" },
+  { id:"pvr-cup-handle", expected:"CUP & HANDLE", url:"https://s3.tradingview.com/i/IoH3xUIP.png" },
+  { id:"btc-double-bottom", expected:"DOUBLE BOTTOM", url:"https://s3.tradingview.com/y/YRTSbmTz_mid.png" },
+  { id:"eurusd-straight-downtrend", expected:"NO CLEAN PATTERN", url:"https://s3.tradingview.com/q/QXo92Wjj_mid.png?v=1778496476" }
 ] as const;
 
 async function fetchImage(url:string){
