@@ -244,6 +244,25 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       return runs;
     };
     let columnRuns=collectColumns(false);if(columnRuns.length<12)columnRuns=collectColumns(true);
+
+    // Solid broker/UI buttons create long runs of neighbouring columns with
+    // almost identical top/bottom edges. Real candles may have a body a few
+    // pixels wide, but their wick/body silhouette is not a 15–40 px plateau.
+    const withoutWideBlocks:{x:number;ys:number[];span:number}[]=[];
+    const plateauLimit=Math.max(9,Math.round(width*.026));
+    for(let i=0;i<columnRuns.length;){
+      const seed=columnRuns[i], seedHigh=Math.min(...seed.ys), seedLow=Math.max(...seed.ys);
+      let j=i+1;
+      while(j<columnRuns.length){
+        const next=columnRuns[j], nextHigh=Math.min(...next.ys), nextLow=Math.max(...next.ys);
+        if(next.x-columnRuns[j-1].x>1||Math.abs(nextHigh-seedHigh)>1||Math.abs(nextLow-seedLow)>1)break;
+        j++;
+      }
+      if(j-i<=plateauLimit) for(let k=i;k<j;k++) withoutWideBlocks.push(columnRuns[k]);
+      i=j;
+    }
+    if(withoutWideBlocks.length>=8)columnRuns=withoutWideBlocks;
+
     const selected:{x:number;ys:number[];span:number}[]=[];
     for(const candidate of [...columnRuns].sort((a,b)=>b.span-a.span)){
       if(selected.every(existing=>Math.abs(existing.x-candidate.x)>=3))selected.push(candidate);
@@ -267,7 +286,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // Named chart patterns need slower structural pivots than levels/liquidity.
     // Keep 2/2 swings for local references, but require 3/3–5/5 structure
     // for pattern geometry so ordinary candle noise cannot impersonate a pattern.
-    const patternRadius=candles.length>=85?5:candles.length>=55?4:3;
+    const patternRadius=candles.length>=50?5:candles.length>=30?4:3;
     const patternSwings:Swing[]=[];
     for(let i=patternRadius;i<candles.length-patternRadius;i++){
       const candle=candles[i],near=candles.slice(i-patternRadius,i+patternRadius+1);
