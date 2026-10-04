@@ -143,71 +143,6 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
   return candidates.sort((a,b)=>b.score-a.score)[0]?.pattern ?? null;
 }
 
-
-function doublePatternCandidates(
-  structural:Swing[], candles:Candle[], width:number, height:number,
-  pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds
-){
-  const out:{pattern:DevicePattern;score:number}[]=[];
-  const highs=structural.filter(p=>p.kind==="high").sort((a,b)=>a.x-b.x);
-  const lows=structural.filter(p=>p.kind==="low").sort((a,b)=>a.x-b.x);
-
-  for(let i=0;i<highs.length-1;i++) for(let j=i+1;j<highs.length;j++){
-    const a=highs[i],b=highs[j],span=b.x-a.x;
-    if(span<width*.17||span>width*.58||b.x>width*.9)continue;
-    const prior=trendMove(candles,a.x,width);
-    if(prior===null||prior>=-height*.035)continue;
-    const between=lows.filter(p=>p.x>a.x&&p.x<b.x);
-    if(!between.length)continue;
-    const neck=between.reduce((x,y)=>x.y>y.y?x:y);
-    const topDiff=Math.abs(a.y-b.y),depth=neck.y-(a.y+b.y)/2;
-    if(topDiff>height*.045||depth<height*.07||depth>height*.38)continue;
-    const after=candles.filter(x=>x.x>b.x);
-    const breaks=after.filter(x=>x.mid>neck.y+height*.008).length;
-    const confirmed=after.length>=3&&breaks>=2;
-    const pattern:DevicePattern={
-      name:confirmed?"DOUBLE TOP":"DOUBLE TOP CANDIDATE",
-      status:confirmed?"CONFIRMED":"AMBIGUOUS",
-      confidence:confirmed?"MEDIUM":"LOW",
-      evidence:confirmed
-        ?"A prior advance is followed by two structural highs at a similar level, a meaningful valley and repeated acceptance below the neckline."
-        :"Two structural highs and a meaningful valley are visible after an advance, but neckline confirmation is not proven.",
-      confirmation:"Repeated acceptance below the intervening swing low after the second test.",
-      invalidation:"Clean acceptance above the twin highs.",
-      geometry:{points:[a,neck,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(bounds.top,pctY(b.y)-4)}
-    };
-    out.push({pattern,score:depth/height-topDiff/height+(confirmed?.18:0)});
-  }
-
-  for(let i=0;i<lows.length-1;i++) for(let j=i+1;j<lows.length;j++){
-    const a=lows[i],b=lows[j],span=b.x-a.x;
-    if(span<width*.17||span>width*.58||b.x>width*.9)continue;
-    const prior=trendMove(candles,a.x,width);
-    if(prior===null||prior<=height*.035)continue;
-    const between=highs.filter(p=>p.x>a.x&&p.x<b.x);
-    if(!between.length)continue;
-    const neck=between.reduce((x,y)=>x.y<y.y?x:y);
-    const bottomDiff=Math.abs(a.y-b.y),depth=(a.y+b.y)/2-neck.y;
-    if(bottomDiff>height*.045||depth<height*.07||depth>height*.38)continue;
-    const after=candles.filter(x=>x.x>b.x);
-    const breaks=after.filter(x=>x.mid<neck.y-height*.008).length;
-    const confirmed=after.length>=3&&breaks>=2;
-    const pattern:DevicePattern={
-      name:confirmed?"DOUBLE BOTTOM":"DOUBLE BOTTOM CANDIDATE",
-      status:confirmed?"CONFIRMED":"AMBIGUOUS",
-      confidence:confirmed?"MEDIUM":"LOW",
-      evidence:confirmed
-        ?"A prior decline is followed by two structural lows at a similar level, a meaningful peak and repeated acceptance above the neckline."
-        :"Two structural lows and a meaningful peak are visible after a decline, but neckline confirmation is not proven.",
-      confirmation:"Repeated acceptance above the intervening swing high after the second test.",
-      invalidation:"Clean acceptance below the twin lows.",
-      geometry:{points:[a,neck,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(bounds.bottom,pctY(b.y)+4)}
-    };
-    out.push({pattern,score:depth/height-bottomDiff/height+(confirmed?.18:0)});
-  }
-  return out.sort((a,b)=>b.score-a.score).map(item=>item.pattern).slice(0,2);
-}
-
 function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   const candidates:{pattern:DevicePattern;score:number}[]=[];
   const maxWindow=Math.min(16,pivots.length);
@@ -230,9 +165,9 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       const ratio=sep2/sep1;
       const hChange=hf.slope*span/height,lChange=lf.slope*span/height;
       const inside=candles.filter(c=>c.x>=x1&&c.x<=x2),tol=height*.018;
-      const violations=inside.filter(c=>c.mid<lineY(hf,c.x)-tol||c.mid>lineY(lf,c.x)+tol).length;
+      const violations=inside.filter(c=>c.high<lineY(hf,c.x)-tol||c.low>lineY(lf,c.x)+tol).length;
       if(violations>Math.max(1,Math.floor(inside.length*.04)))continue;
-      const converging=ratio>.08&&ratio<.68;
+      const converging=ratio>.28&&ratio<.64;
       const parallel=ratio>.82&&ratio<1.18&&Math.abs(hChange-lChange)<.028;
       let name="",evidence="";
       if(Math.abs(hChange)<.025&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a flat ceiling with materially rising lows.";}
@@ -278,12 +213,6 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
     const bull=pole<0&&total>height*.025&&total<poleMag*.45;
     const bear=pole>0&&total< -height*.025&&Math.abs(total)<poleMag*.45;
     if(!bull&&!bear)continue;
-    const poleCandles=candles.slice(poleStart,split+1);
-    const steps=poleCandles.slice(1).map((c,i)=>c.mid-poleCandles[i].mid);
-    const desired=bull?steps.filter(step=>step<0):steps.filter(step=>step>0);
-    const directionalFraction=desired.length/Math.max(1,steps.length);
-    const maxStep=Math.max(...steps.map(step=>Math.abs(step)),0);
-    if(directionalFraction<.62||maxStep>poleMag*.48)continue;
     const name=bull?"BULL FLAG":"BEAR FLAG";
     const points=[{x:pctX(rest[0].x),y:pctY(top)},{x:pctX(rest.at(-1)!.x),y:pctY(top+total)},{x:pctX(rest.at(-1)!.x),y:pctY(bottom+total)},{x:pctX(rest[0].x),y:pctY(bottom)}];
     const pattern:DevicePattern={name,status:"AMBIGUOUS",confidence:"MEDIUM",evidence:"A strong directional pole is followed by a shorter, narrower and tightly fitted counter-trend consolidation.",confirmation:"Break from the flag in the direction of the preceding impulse.",invalidation:"The consolidation expands materially or breaks against the preceding impulse.",geometry:{points,labelX:pctX(rest.at(-1)!.x),labelY:Math.max(bounds.top,pctY(top)-4)}};
@@ -366,13 +295,13 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       if(candle.low===Math.max(...near.map(v=>v.low)))patternSwings.push({x:candle.x,y:candle.low,kind:"low"});
     }
 
-    const clusterFrom=(source:Swing[],kind:"high"|"low",tolPct=.018)=>{
-      const src=source.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,structureHeight*tolPct);
+    const clusterFrom=(source:Swing[],kind:"high"|"low")=>{
+      const src=source.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,structureHeight*.018);
       for(const s of src){const found=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol);if(found)found.push(s);else groups.push([s]);}
       return groups.map(items=>({items,y:items.reduce((n,v)=>n+v.y,0)/items.length,score:items.length} as Cluster)).sort((a,b)=>b.score-a.score||(kind==="high"?a.y-b.y:b.y-a.y));
     };
     const highs=clusterFrom(swings,"high"),lows=clusterFrom(swings,"low");
-    const patternHighs=clusterFrom(patternSwings,"high",.035),patternLows=clusterFrom(patternSwings,"low",.035);
+    const patternHighs=clusterFrom(patternSwings,"high"),patternLows=clusterFrom(patternSwings,"low");
     const rank=(g:Cluster)=>{const recency=Math.max(...g.items.map(i=>i.x))/width,spread=Math.max(...g.items.map(i=>i.y))-Math.min(...g.items.map(i=>i.y));return g.score*4+recency*2-spread/Math.max(2,structureHeight*.02);};
     const ranked=[...highs.map(group=>({kind:"resistance" as const,group,rank:rank(group)})),...lows.map(group=>({kind:"support" as const,group,rank:rank(group)}))].sort((a,b)=>b.rank-a.rank);
     const picked=ranked.slice(0,3);
@@ -385,8 +314,49 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(hs)patternCandidates.push(hs);
 
-    for(const pattern of doublePatternCandidates(patternSwings,candles,width,structureHeight,pctX,pctY,plotBounds)){
-      patternCandidates.push(pattern);
+    for(let i=0;i<=pivots.length-3;i++){
+      const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;
+      if(span<width*.18||span>width*.58||b.x>width*.9)continue;
+
+      if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"){
+        const prior=trendMove(candles,a.x,width);
+        const topDiff=Math.abs(a.y-b.y);
+        const depth=m.y-(a.y+b.y)/2;
+        if(prior!==null&&prior< -structureHeight*.04&&topDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.36){
+          const after=candles.filter(x=>x.x>b.x);
+          const breaks=after.filter(x=>x.mid>m.y+structureHeight*.01).length;
+          const confirmed=after.length>=3&&breaks>=2;
+          patternCandidates.push({
+            name:confirmed?"DOUBLE TOP":"DOUBLE TOP CANDIDATE",
+            status:confirmed?"CONFIRMED":"AMBIGUOUS",
+            confidence:confirmed?"MEDIUM":"LOW",
+            evidence:confirmed?"A prior advance is followed by two structural highs at a similar level, a meaningful valley and repeated acceptance below the neckline.":"Two structural highs and a meaningful valley are visible after an advance, but neckline confirmation is not proven.",
+            confirmation:"Repeated acceptance below the intervening swing low after the second test.",
+            invalidation:"Clean acceptance above the twin highs.",
+            geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}
+          });
+        }
+      }
+
+      if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"){
+        const prior=trendMove(candles,a.x,width);
+        const bottomDiff=Math.abs(a.y-b.y);
+        const depth=(a.y+b.y)/2-m.y;
+        if(prior!==null&&prior>structureHeight*.04&&bottomDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.36){
+          const after=candles.filter(x=>x.x>b.x);
+          const breaks=after.filter(x=>x.mid<m.y-structureHeight*.01).length;
+          const confirmed=after.length>=3&&breaks>=2;
+          patternCandidates.push({
+            name:confirmed?"DOUBLE BOTTOM":"DOUBLE BOTTOM CANDIDATE",
+            status:confirmed?"CONFIRMED":"AMBIGUOUS",
+            confidence:confirmed?"MEDIUM":"LOW",
+            evidence:confirmed?"A prior decline is followed by two structural lows at a similar level, a meaningful peak and repeated acceptance above the neckline.":"Two structural lows and a meaningful peak are visible after a decline, but neckline confirmation is not proven.",
+            confirmation:"Repeated acceptance above the intervening swing high after the second test.",
+            invalidation:"Clean acceptance below the twin lows.",
+            geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}
+          });
+        }
+      }
     }
 
     const flag=flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
@@ -400,7 +370,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       const xStart=Math.min(...events.map(e=>e.x)),xEnd=Math.max(...events.map(e=>e.x)),spanPct=(xEnd-xStart)/width*100;
       let alternations=0;for(let i=1;i<events.length;i++)if(events[i].kind!==events[i-1].kind)alternations++;
       const separation=rl.y-rh.y,breakTol=structureHeight*.02,inside=candles.filter(c=>c.x>=xStart&&c.x<=xEnd);
-      const upperBreaches=inside.filter(c=>c.mid<rh.y-breakTol).length,lowerBreaches=inside.filter(c=>c.mid>rl.y+breakTol).length;
+      const upperBreaches=inside.filter(c=>c.high<rh.y-breakTol).length,lowerBreaches=inside.filter(c=>c.low>rl.y+breakTol).length;
       const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
       const highCoverage=(Math.max(...rh.items.map(i=>i.x))-Math.min(...rh.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
       const lowCoverage=(Math.max(...rl.items.map(i=>i.x))-Math.min(...rl.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
@@ -414,14 +384,14 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const familyPriority=(pattern:DevicePattern)=>{
       const confidence=pattern.confidence==="HIGH"?40:pattern.confidence==="MEDIUM"?25:0;
       const status=pattern.status==="CONFIRMED"?30:pattern.status==="FORMING"?12:pattern.status==="FAILED"?10:0;
-      const family=/HEAD/.test(pattern.name)?18:/DOUBLE/.test(pattern.name)?14:/FLAG|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?10:0;
-      return confidence+status+family;
+      const distinctive=/HEAD|DOUBLE|FLAG|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
+      return confidence+status+distinctive;
     };
     const sortedPatterns=patternCandidates
       .sort((a,b)=>familyPriority(b)-familyPriority(a))
       .filter((pattern,index,array)=>array.findIndex(other=>other.name===pattern.name)===index);
     const strongPatterns=sortedPatterns.filter(pattern=>pattern.confidence!=="LOW"||pattern.status==="CONFIRMED"||pattern.status==="FAILED");
-    const patterns=(strongPatterns.length?strongPatterns:sortedPatterns.slice(0,1)).slice(0,1);
+    const patterns=(strongPatterns.length?strongPatterns:sortedPatterns.slice(0,1)).slice(0,2);
 
     const zones:DeviceLiquidityZone[]=[];
     const h=highs[0],l=lows[0];
