@@ -212,6 +212,44 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
   return candidates.sort((a,b)=>b.score-a.score)[0]?.pattern ?? null;
 }
 
+
+function hasReversalSkeleton(pivots:Swing[],candles:Candle[],width:number,height:number){
+  // This is a veto only: an unconfirmed reversal skeleton must not be
+  // relabelled as a flag. It never creates a user-visible reversal pattern.
+  for(let i=0;i<=pivots.length-5;i++){
+    const p=pivots.slice(i,i+5), kinds=p.map(x=>x.kind).join("");
+    const span=p[4].x-p[0].x;
+    if(span<width*.18||span>width*.65)continue;
+    if(kinds==="highlowhighlowhigh"){
+      const [ls,,head,,rs]=p;
+      const shoulderDiff=Math.abs(ls.y-rs.y);
+      const headProm=Math.min(ls.y,rs.y)-head.y;
+      const prior=trendMove(candles,ls.x,width);
+      if(prior!==null&&prior< -height*.03&&shoulderDiff<=height*.065&&headProm>=height*.045)return true;
+    }
+    if(kinds==="lowhighlowhighlow"){
+      const [ls,,head,,rs]=p;
+      const shoulderDiff=Math.abs(ls.y-rs.y);
+      const headProm=head.y-Math.max(ls.y,rs.y);
+      const prior=trendMove(candles,ls.x,width);
+      if(prior!==null&&prior>height*.03&&shoulderDiff<=height*.065&&headProm>=height*.045)return true;
+    }
+  }
+  for(let i=0;i<=pivots.length-3;i++){
+    const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;
+    if(span<width*.16||span>width*.62)continue;
+    if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"){
+      const prior=trendMove(candles,a.x,width);
+      if(prior!==null&&prior< -height*.03&&Math.abs(a.y-b.y)<=height*.05&&m.y-(a.y+b.y)/2>=height*.065)return true;
+    }
+    if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"){
+      const prior=trendMove(candles,a.x,width);
+      if(prior!==null&&prior>height*.03&&Math.abs(a.y-b.y)<=height*.05&&(a.y+b.y)/2-m.y>=height*.065)return true;
+    }
+  }
+  return false;
+}
+
 function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   if(candles.length<20)return null;
   let best:{score:number;pattern:DevicePattern}|null=null;
@@ -385,7 +423,8 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       }
     }
 
-    const flag=flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
+    const reversalSkeleton=hasReversalSkeleton(pivots,candles,width,structureHeight);
+    const flag=reversalSkeleton ? null : flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
     if(flag)patternCandidates.push(flag);
     const boundary=boundaryPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(boundary)patternCandidates.push(boundary);
