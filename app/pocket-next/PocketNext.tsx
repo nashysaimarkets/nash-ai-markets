@@ -158,7 +158,8 @@ export default function PocketNext() {
   const [privacy, setPrivacy] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [active, setActive] = useState<Tab>("overview");
-  const [busy, setBusy] = useState(false);\n  const [chartFocus, setChartFocus] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [chartFocus, setChartFocus] = useState(false);
   const [error, setError] = useState("");
   const requestActive = useRef(false);
 
