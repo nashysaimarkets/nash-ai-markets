@@ -130,5 +130,34 @@ export async function GET(request:Request){
       results.push({...test,error:error instanceof Error?error.message:String(error)});
     }
   }
+  if(url.searchParams.get("summary")==="1"){
+    const norm=(name:string)=>name.replace(" CANDIDATE","").trim();
+    let usable=0,positives=0,negatives=0,exact=0,negativePass=0,strongWrong=0,qualified=0;
+    const failures:any[]=[];
+    for(const item of results){
+      if(item.error||!item.scan)continue;
+      usable++;
+      const patterns=(item.scan.patterns??[]) as DeviceLocalScan["patterns"];
+      const visible=patterns.filter(pattern=>pattern.confidence!=="LOW");
+      qualified+=visible.length;
+      if(item.expected==="NO CLEAN PATTERN"){
+        negatives++;
+        if(!visible.length)negativePass++;
+        else{strongWrong++;failures.push({id:item.id,expected:item.expected,got:visible.map(pattern=>pattern.name)});}
+      }else{
+        positives++;
+        if(patterns.some(pattern=>norm(pattern.name)===norm(item.expected)))exact++;
+        else{
+          if(visible.length)strongWrong++;
+          failures.push({id:item.id,expected:item.expected,got:patterns.map(pattern=>pattern.name)});
+        }
+      }
+    }
+    return NextResponse.json({
+      count:results.length,usable,positives,negatives,exact,negativePass,strongWrong,qualified,
+      errors:results.filter(item=>item.error).map(item=>({id:item.id,error:item.error})),
+      failures
+    });
+  }
   return NextResponse.json({count:results.length,results});
 }
