@@ -176,6 +176,8 @@ function breakoutRetestPattern(pivots:Swing[],candles:Candle[],width:number,heig
 
     // Bullish: prior swing high becomes support after an upside break.
     if(level.kind==="high"&&pullback.kind==="low"&&breakout.kind==="high"&&retest.kind==="low"){
+      const priorLevelTouch=pivots.slice(0,i).some(p=>p.kind==="high"&&level.x-p.x>=width*.06&&Math.abs(p.y-level.y)<=height*.06);
+      if(!priorLevelTouch)continue;
       const breakSize=level.y-breakout.y;
       const pullbackDepth=pullback.y-level.y;
       const retestError=Math.abs(retest.y-level.y);
@@ -200,6 +202,8 @@ function breakoutRetestPattern(pivots:Swing[],candles:Candle[],width:number,heig
 
     // Bearish mirror: prior swing low becomes resistance after a downside break.
     if(level.kind==="low"&&pullback.kind==="high"&&breakout.kind==="low"&&retest.kind==="high"){
+      const priorLevelTouch=pivots.slice(0,i).some(p=>p.kind==="low"&&level.x-p.x>=width*.06&&Math.abs(p.y-level.y)<=height*.06);
+      if(!priorLevelTouch)continue;
       const breakSize=breakout.y-level.y;
       const pullbackDepth=level.y-pullback.y;
       const retestError=Math.abs(retest.y-level.y);
