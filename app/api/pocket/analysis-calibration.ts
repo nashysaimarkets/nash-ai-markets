@@ -85,7 +85,12 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
     const side = zone.side === "BUY_SIDE" || zone.side === "SELL_SIDE" ? zone.side : null;
     const basis = typeof zone.basis === "string" && allowedBasis.has(zone.basis) ? zone.basis : null;
     const x = numericPrice(zone.x), x2 = numericPrice(zone.x2), y = numericPrice(zone.y), price = numericPrice(zone.price);
-    if (!side || !basis || x === null || x2 === null || y === null || x < left || x2 > right || x2 - x < 8 || y < top || y > bottom) return [];
+    if (!side || !basis || x === null || x2 === null || y === null || x < left || x2 > right || y < top || y > bottom) return [];
+    const priorSwing = basis === "PRIOR_SWING_HIGH" || basis === "PRIOR_SWING_LOW";
+    const span = x2 - x;
+    if ((!priorSwing && span < 8) || (priorSwing && span < 0)) return [];
+    const calibratedX = priorSwing && span < 5 ? Math.max(left, x - 3) : x;
+    const calibratedX2 = priorSwing && span < 5 ? Math.min(right, x2 + 3) : x2;
     let calibratedY = y;
     let calibratedPrice = typeof zone.price === "string" ? zone.price : "";
     if (price !== null && scale) {
@@ -96,7 +101,7 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
     } else {
       calibratedPrice = "";
     }
-    return [{ ...zone, side, basis, price: calibratedPrice, x, x2, y: Math.max(top, Math.min(bottom, calibratedY)) }];
+    return [{ ...zone, side, basis, price: calibratedPrice, x: calibratedX, x2: calibratedX2, y: Math.max(top, Math.min(bottom, calibratedY)) }];
   }).slice(0, 4) : [];
   if (!zones.length || !evidence) return empty;
   const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation ? "VERIFIED" : "PARTIAL";
