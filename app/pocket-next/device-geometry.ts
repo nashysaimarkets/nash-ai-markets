@@ -335,7 +335,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
           let group:number[]=[];
           for(const y of ys){
             const prev=group.at(-1);
-            if(prev===undefined||y-prev<=3)group.push(y);
+            if(prev===undefined||y-prev<=2)group.push(y);
             else{if(group.length)groups.push(group);group=[y];}
           }
           if(group.length)groups.push(group);
