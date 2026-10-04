@@ -132,6 +132,12 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       if(span<width*.25)continue;
       const hf=linearFit(highs),lf=linearFit(lows);if(!hf||!lf)continue;
       if(hf.rms>height*.026||lf.rms>height*.026)continue;
+      const highCoverage=(Math.max(...highs.map(p=>p.x))-Math.min(...highs.map(p=>p.x)))/span;
+      const lowCoverage=(Math.max(...lows.map(p=>p.x))-Math.min(...lows.map(p=>p.x)))/span;
+      if(highCoverage<.55||lowCoverage<.55)continue;
+      const touchEvents=[...highs.map(p=>({x:p.x,k:"h"})),...lows.map(p=>({x:p.x,k:"l"}))].sort((a,b)=>a.x-b.x);
+      let alternations=0;for(let i=1;i<touchEvents.length;i++)if(touchEvents[i].k!==touchEvents[i-1].k)alternations++;
+      if(alternations<4)continue;
       const sep1=lineY(lf,x1)-lineY(hf,x1),sep2=lineY(lf,x2)-lineY(hf,x2);
       if(sep1<height*.06||sep2<height*.025)continue;
       const ratio=sep2/sep1;
@@ -249,43 +255,55 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const levels:DeviceLevel[]=picked.filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind&&Math.abs(other.group.y-item.group.y)<height*.025)===index).map(({kind,group})=>({kind,label:group.score>=3?(kind==="resistance"?"Repeated rejection highs":"Repeated defended lows"):group.score>=2?(kind==="resistance"?"Repeated swing highs":"Repeated swing lows"):(kind==="resistance"?"Prominent swing high":"Prominent swing low"),price:"",x:plotBounds.left,y:pctY(group.y),x2:plotBounds.right,y2:pctY(group.y)})).slice(0,3);
 
     const pivots=normalizePivots(swings);
-    const patterns:DevicePattern[]=[];
+    const patternCandidates:DevicePattern[]=[];
     const hs=headShoulders(pivots,candles,width,height,pctX,pctY,plotBounds);
-    if(hs)patterns.push(hs);
+    if(hs)patternCandidates.push(hs);
 
-    if(!patterns.length){
-      for(let i=0;i<=pivots.length-3;i++){
-        const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;if(span<width*.18)continue;
-        if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"&&Math.abs(a.y-b.y)<=height*.045&&m.y-(a.y+b.y)/2>=height*.065){
-          const confirmed=candles.filter(x=>x.x>b.x).some(x=>x.low>m.y+height*.012);
-          patterns.push({name:confirmed?"DOUBLE TOP":"DOUBLE TOP CANDIDATE",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",evidence:confirmed?"Two separated swing highs, a meaningful valley and a visible neckline break are present.":"Two separated swing highs and an intervening valley are visible, but neckline confirmation is not proven on-device.",confirmation:"Break below the intervening swing low after the second test.",invalidation:"Clean acceptance above the twin highs.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}});break;
-        }
-        if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"&&Math.abs(a.y-b.y)<=height*.045&&(a.y+b.y)/2-m.y>=height*.065){
-          const confirmed=candles.filter(x=>x.x>b.x).some(x=>x.high<m.y-height*.012);
-          patterns.push({name:confirmed?"DOUBLE BOTTOM":"DOUBLE BOTTOM CANDIDATE",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",evidence:confirmed?"Two separated swing lows, a meaningful peak and a visible neckline break are present.":"Two separated swing lows and an intervening peak are visible, but neckline confirmation is not proven on-device.",confirmation:"Break above the intervening swing high after the second test.",invalidation:"Clean acceptance below the twin lows.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}});break;
-        }
+    for(let i=0;i<=pivots.length-3;i++){
+      const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;if(span<width*.18)continue;
+      if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"&&Math.abs(a.y-b.y)<=height*.045&&m.y-(a.y+b.y)/2>=height*.065){
+        const confirmed=candles.filter(x=>x.x>b.x).some(x=>x.low>m.y+height*.012);
+        patternCandidates.push({name:confirmed?"DOUBLE TOP":"DOUBLE TOP CANDIDATE",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",evidence:confirmed?"Two separated swing highs, a meaningful valley and a visible neckline break are present.":"Two separated swing highs and an intervening valley are visible, but neckline confirmation is not proven on-device.",confirmation:"Break below the intervening swing low after the second test.",invalidation:"Clean acceptance above the twin highs.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}});
       }
-    }
-    if(!patterns.length){const flag=flagPattern(candles,width,height,pctX,pctY,plotBounds);if(flag)patterns.push(flag);}
-    if(!patterns.length){const boundary=boundaryPattern(pivots,candles,width,height,pctX,pctY,plotBounds);if(boundary)patterns.push(boundary);}
-
-    if(!patterns.length){
-      const rh=highs.find(g=>g.score>=2),rl=lows.find(g=>g.score>=2);
-      if(rh&&rl){
-        const events=[...rh.items.map(i=>({x:i.x,kind:"high" as const})),...rl.items.map(i=>({x:i.x,kind:"low" as const}))].sort((a,b)=>a.x-b.x);
-        const xStart=Math.min(...events.map(e=>e.x)),xEnd=Math.max(...events.map(e=>e.x)),spanPct=(xEnd-xStart)/width*100;
-        let alternations=0;for(let i=1;i<events.length;i++)if(events[i].kind!==events[i-1].kind)alternations++;
-        const separation=rl.y-rh.y,breakTol=height*.02,inside=candles.filter(c=>c.x>=xStart&&c.x<=xEnd);
-        const upperBreaches=inside.filter(c=>c.high<rh.y-breakTol).length,lowerBreaches=inside.filter(c=>c.low>rl.y+breakTol).length;
-        const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
-        if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&separation<=height*.5&&spanPct>=24&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
-          patterns.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",invalidation:"A decisive breach through the opposite edge invalidates the range read.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
-        }else if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&spanPct>=18&&alternations>=2&&upperBreaches<=1&&lowerBreaches<=1){
-          patterns.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a rectangle.",confirmation:"More alternating tests with both boundaries holding.",invalidation:"A decisive break through either proposed boundary.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
-        }
+      if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"&&Math.abs(a.y-b.y)<=height*.045&&(a.y+b.y)/2-m.y>=height*.065){
+        const confirmed=candles.filter(x=>x.x>b.x).some(x=>x.high<m.y-height*.012);
+        patternCandidates.push({name:confirmed?"DOUBLE BOTTOM":"DOUBLE BOTTOM CANDIDATE",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",evidence:confirmed?"Two separated swing lows, a meaningful peak and a visible neckline break are present.":"Two separated swing lows and an intervening peak are visible, but neckline confirmation is not proven on-device.",confirmation:"Break above the intervening swing high after the second test.",invalidation:"Clean acceptance below the twin lows.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}});
       }
     }
 
+    const flag=flagPattern(candles,width,height,pctX,pctY,plotBounds);
+    if(flag)patternCandidates.push(flag);
+    const boundary=boundaryPattern(pivots,candles,width,height,pctX,pctY,plotBounds);
+    if(boundary)patternCandidates.push(boundary);
+
+    const rh=highs.find(g=>g.score>=2),rl=lows.find(g=>g.score>=2);
+    if(rh&&rl){
+      const events=[...rh.items.map(i=>({x:i.x,kind:"high" as const})),...rl.items.map(i=>({x:i.x,kind:"low" as const}))].sort((a,b)=>a.x-b.x);
+      const xStart=Math.min(...events.map(e=>e.x)),xEnd=Math.max(...events.map(e=>e.x)),spanPct=(xEnd-xStart)/width*100;
+      let alternations=0;for(let i=1;i<events.length;i++)if(events[i].kind!==events[i-1].kind)alternations++;
+      const separation=rl.y-rh.y,breakTol=height*.02,inside=candles.filter(c=>c.x>=xStart&&c.x<=xEnd);
+      const upperBreaches=inside.filter(c=>c.high<rh.y-breakTol).length,lowerBreaches=inside.filter(c=>c.low>rl.y+breakTol).length;
+      const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
+      const highCoverage=(Math.max(...rh.items.map(i=>i.x))-Math.min(...rh.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
+      const lowCoverage=(Math.max(...rl.items.map(i=>i.x))-Math.min(...rl.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
+      if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&separation<=height*.5&&spanPct>=24&&alternations>=3&&highCoverage>=.42&&lowCoverage>=.42&&upperBreaches<=1&&lowerBreaches<=1){
+        patternCandidates.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",invalidation:"A decisive breach through the opposite edge invalidates the range read.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
+      }else if(rh.score>=2&&rl.score>=2&&separation>=height*.09&&spanPct>=18&&alternations>=2&&upperBreaches<=1&&lowerBreaches<=1){
+        patternCandidates.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a rectangle.",confirmation:"More alternating tests with both boundaries holding.",invalidation:"A decisive break through either proposed boundary.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
+      }
+    }
+
+    const familyPriority=(pattern:DevicePattern)=>{
+      const confidence=pattern.confidence==="HIGH"?40:pattern.confidence==="MEDIUM"?25:0;
+      const status=pattern.status==="CONFIRMED"?30:pattern.status==="FORMING"?12:pattern.status==="FAILED"?10:0;
+      const distinctive=/HEAD|DOUBLE|FLAG|WEDGE|TRIANGLE|CHANNEL/.test(pattern.name)?5:0;
+      return confidence+status+distinctive;
+    };
+    const sortedPatterns=patternCandidates
+      .sort((a,b)=>familyPriority(b)-familyPriority(a))
+      .filter((pattern,index,array)=>array.findIndex(other=>other.name===pattern.name)===index);
+    const strongPatterns=sortedPatterns.filter(pattern=>pattern.confidence!=="LOW"||pattern.status==="CONFIRMED"||pattern.status==="FAILED");
+    const patterns=(strongPatterns.length?strongPatterns:sortedPatterns.slice(0,1)).slice(0,2);
 
     const zones:DeviceLiquidityZone[]=[];
     const h=highs[0],l=lows[0];
