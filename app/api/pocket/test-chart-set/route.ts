@@ -35,6 +35,12 @@ const CASES = [
   { id:"ftmo-falling-wedge", expected:"FALLING WEDGE", url:"https://ftmo-frontend-prod.storage.googleapis.com/wp-content/uploads/2023/10/04161105/TradingView-All-Chart-Patterns.png" },
   { id:"utx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://www.tradercampus.de/sites/default/files/dubbele_bodem.png" },
   { id:"idx-double-bottom", expected:"DOUBLE BOTTOM", url:"https://img.idxchannel.com/images/idx/2024/11/07/double-buttom-pattern.png" },
+  { id:"upstox-double-top", expected:"DOUBLE TOP", url:"https://europe1.discourse-cdn.com/flex017/uploads/upstox1/original/2X/f/f9ce0213237f0e308ec03217ab841562728438d4.png" },
+  { id:"tradingfuel-inverse-hs", expected:"INVERSE H&S", url:"https://www.tradingfuel.com/wp-content/uploads/2020/06/Inverse-Head-and-shoulder-1024x764.png" },
+  { id:"top1-rising-wedge", expected:"RISING WEDGE", url:"https://images.top1market.com/images/ueditor/php/upload/image/20220328/1648458815661470.png" },
+  { id:"tradeleader-desc-triangle", expected:"DESCENDING TRIANGLE", url:"https://fr.trade-leader.com/assets/images/resources/graphic-patterns/012.png" },
+  { id:"b2broker-bull-flag", expected:"BULL FLAG", url:"https://media.b2broker.com/app/uploads/2024/12/bullish-flag-pattern-1536x1100.png" }
+
 ] as const;
 
 async function fetchImage(url:string){
