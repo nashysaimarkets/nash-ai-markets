@@ -21,6 +21,8 @@ type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
 type Level = { kind: ToolKind; label: string; price: string; x: number; y: number; x2: number; y2: number };
 type FibLevel = { ratio: string; price: string; y: number };
+type LiquidityZone = { side: "BUY_SIDE" | "SELL_SIDE"; basis: "EQUAL_HIGHS" | "EQUAL_LOWS" | "PRIOR_SWING_HIGH" | "PRIOR_SWING_LOW" | "RANGE_HIGH" | "RANGE_LOW"; price: string; x: number; x2: number; y: number };
+type LiquidityRead = { state: "VERIFIED" | "PARTIAL" | "NONE"; event: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; confidence: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation: string; invalidation: string; zones: LiquidityZone[] };
 type Intention = "LONG" | "SHORT" | "UNSURE";
 type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
 type Analysis = {
@@ -47,6 +49,7 @@ type Analysis = {
     summary: string;
   };
   patterns: { name: string; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
+  liquidity?: LiquidityRead;
   nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
   missingInputs: string[];
   contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
@@ -525,7 +528,42 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
-type CommandDeckMode = "xray" | "patterns" | "scenarios" | "plan" | "risk" | "pulse";
+function LiquidityGuard({ analysis, sourceImage }: { analysis: Analysis; sourceImage: string }) {
+  const read: LiquidityRead = analysis.liquidity ?? { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [] };
+  const zones = read.zones.filter((zone) => Number.isFinite(zone.x) && Number.isFinite(zone.x2) && Number.isFinite(zone.y));
+  const basisLabel = (basis: LiquidityZone["basis"]) => basis.replaceAll("_", " ");
+  return <section className="psLiquidityGuard" data-state={read.state}>
+    <header>
+      <div><span>LIQUIDITY GUARD</span><small>VISIBLE STRUCTURE ONLY · NO ORDER-BOOK CLAIMS</small></div>
+      <strong>{read.state === "NONE" ? "NO EVIDENCE" : read.state + " · " + read.confidence}</strong>
+    </header>
+    <div className="psLiquidityChart">
+      <img src={sourceImage} alt="Uploaded chart with screenshot-derived liquidity references" />
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Liquidity reference overlay">
+        {zones.map((zone, index) => <g key={zone.side + "-" + zone.basis + "-" + index} data-side={zone.side}>
+          <line x1={zone.x} x2={zone.x2} y1={clampY(zone.y)} y2={clampY(zone.y)} vectorEffect="non-scaling-stroke"/>
+          <circle cx={zone.x} cy={clampY(zone.y)} r="1.1" vectorEffect="non-scaling-stroke"/>
+        </g>)}
+      </svg>
+      <div className="psLiquidityLabels">
+        {zones.map((zone, index) => <span key={zone.basis + "-" + index} data-side={zone.side} style={{ top: clampY(zone.y) + "%", left: Math.max(4, Math.min(76, zone.x)) + "%" }}>
+          <small>{zone.side === "BUY_SIDE" ? "BUY-SIDE REFERENCE" : "SELL-SIDE REFERENCE"}</small>
+          <b>{basisLabel(zone.basis)}{zone.price ? " · " + zone.price : ""}</b>
+        </span>)}
+      </div>
+    </div>
+    {read.state === "NONE" ? <div className="psLiquidityEmpty"><strong>NO VERIFIED LIQUIDITY STRUCTURE</strong><p>Pocket will not invent stop pools or hidden orders from ordinary price noise.</p></div> :
+      <div className="psLiquidityReadout">
+        <article><small>VISIBLE EVIDENCE</small><strong>{read.evidence}</strong></article>
+        <article><small>CURRENT EVENT</small><strong>{read.event}</strong></article>
+        <article><small>CONFIRMS IF</small><strong>{read.confirmation || "No defensible confirmation condition was returned."}</strong></article>
+        <article><small>INVALID IF</small><strong>{read.invalidation || "No defensible invalidation condition was returned."}</strong></article>
+      </div>}
+    <footer>Liquidity Guard marks screenshot-derived reference structures only. It does not see hidden stops, exchange order books or institutional positioning.</footer>
+  </section>;
+}
+
+type CommandDeckMode = "xray" | "patterns" | "liquidity" | "scenarios" | "plan" | "risk";
 type RiskCurrency = "GBP" | "USD" | "EUR";
 type StoredRiskDesk = RiskDeskInput & { currency: RiskCurrency; version: 1 };
 
@@ -597,11 +635,11 @@ function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, on
   const [mode, setMode] = useState<CommandDeckMode>("xray");
   const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
     { id: "xray", number: "01", label: "CHART X-RAY", detail: "SOURCE AUDIT" },
-    { id: "patterns", number: "02", label: "PATTERNS", detail: "FORMING SIGNALS" },
-    { id: "scenarios", number: "03", label: "SCENARIOS", detail: "IF / THEN PATHS" },
-    { id: "plan", number: "04", label: "PLAN", detail: "CLARITY LOCK" },
-    { id: "risk", number: "05", label: "RISK", detail: "PERSONAL LIMITS" },
-    { id: "pulse", number: "06", label: "SIGNAL PULSE", detail: "LIVE FORMATION" },
+    { id: "patterns", number: "02", label: "PATTERNS", detail: "VERIFIED GEOMETRY" },
+    { id: "liquidity", number: "03", label: "LIQUIDITY", detail: "VISIBLE POOLS / SWEEPS" },
+    { id: "scenarios", number: "04", label: "SCENARIOS", detail: "IF / THEN PATHS" },
+    { id: "plan", number: "05", label: "PLAN", detail: "CLARITY LOCK" },
+    { id: "risk", number: "06", label: "RISK", detail: "PERSONAL LIMITS" },
   ];
 
   return <section id="bullseye-evidence" className="psCommandDeck">
@@ -610,10 +648,10 @@ function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, on
     <div className="psCommandStage" data-mode={mode}>
       {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
+      {mode === "liquidity" ? <LiquidityGuard analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}
-      {mode === "pulse" ? <SignalPulse analysis={analysis} /> : null}
     </div>
     <footer><span>Every mode stays evidence-first. Scenario graphics are conditional illustrations; risk figures come only from your inputs.</span></footer>
   </section>;
@@ -665,7 +703,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 8 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 9 as const;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 function hasVerifiedStructuralLevel(analysis: Analysis) {
