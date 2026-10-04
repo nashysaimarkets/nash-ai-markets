@@ -42,7 +42,7 @@ const CASES:Case[]=[
   {id:"cup-handle",expected:"CUP & HANDLE",anchors:[
     {i:0,y:220},{i:18,y:112},{i:28,y:102},{i:38,y:150},{i:48,y:202},{i:58,y:150},{i:68,y:103},{i:74,y:124},{i:80,y:112},{i:87,y:82}]},
   {id:"breakout-retest",expected:"BREAKOUT & RETEST",anchors:[
-    {i:0,y:190},{i:14,y:150},{i:26,y:174},{i:38,y:122},{i:48,y:146},{i:56,y:92},{i:64,y:119},{i:72,y:98},{i:87,y:70}]},
+    {i:0,y:190},{i:14,y:122},{i:25,y:176},{i:36,y:124},{i:47,y:160},{i:57,y:86},{i:66,y:121},{i:76,y:96},{i:87,y:68}]},
   {id:"straight-up",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:230},{i:87,y:72}]},
   {id:"straight-down",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:72},{i:87,y:230}]},
   {id:"one-spike",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:150},{i:40,y:150},{i:41,y:150},{i:42,y:72},{i:43,y:150},{i:87,y:150}]},
