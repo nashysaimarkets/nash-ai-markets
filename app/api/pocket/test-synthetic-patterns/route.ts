@@ -37,6 +37,12 @@ const CASES:Case[]=[
     {i:0,y:230},{i:25,y:220},{i:34,y:92},{i:40,y:105},{i:47,y:126},{i:54,y:112},{i:61,y:134},{i:68,y:118},{i:76,y:92},{i:87,y:72}]},
   {id:"bear-flag",expected:"BEAR FLAG",anchors:[
     {i:0,y:70},{i:25,y:82},{i:34,y:214},{i:40,y:200},{i:47,y:180},{i:54,y:194},{i:61,y:173},{i:68,y:188},{i:76,y:214},{i:87,y:232}]},
+  {id:"bull-pennant",expected:"PENNANT",anchors:[
+    {i:0,y:230},{i:28,y:220},{i:38,y:78},{i:44,y:100},{i:50,y:84},{i:56,y:96},{i:62,y:88},{i:68,y:93},{i:75,y:80},{i:87,y:62}]},
+  {id:"cup-handle",expected:"CUP & HANDLE",anchors:[
+    {i:0,y:220},{i:18,y:112},{i:28,y:102},{i:38,y:150},{i:48,y:202},{i:58,y:150},{i:68,y:103},{i:74,y:124},{i:80,y:112},{i:87,y:82}]},
+  {id:"breakout-retest",expected:"BREAKOUT & RETEST",anchors:[
+    {i:0,y:190},{i:14,y:150},{i:26,y:174},{i:38,y:122},{i:48,y:146},{i:56,y:92},{i:64,y:119},{i:72,y:98},{i:87,y:70}]},
   {id:"straight-up",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:230},{i:87,y:72}]},
   {id:"straight-down",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:72},{i:87,y:230}]},
   {id:"one-spike",expected:"NO CLEAN PATTERN",anchors:[{i:0,y:150},{i:40,y:150},{i:41,y:150},{i:42,y:72},{i:43,y:150},{i:87,y:150}]},
