@@ -307,7 +307,25 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
           const blueFallback=allowBlue&&b>r+24&&b>g+10;
           if(sat>42&&hi>90&&(redOrGreen||blueFallback))ys.push(y);
         }
-        if(ys.length>=2){const span=Math.max(...ys)-Math.min(...ys);if(span>=3)runs.push({x,ys,span});}
+        if(ys.length>=2){
+          // Never weld unrelated coloured objects together just because they share
+          // an x-column. Chart annotations/arrows can sit above or below a candle;
+          // treating min(all pixels) → max(all pixels) as one wick creates gigantic
+          // fake candles. Split the column into coherent vertical colour runs first.
+          const groups:number[][]=[];
+          let group:number[]=[];
+          for(const y of ys){
+            const prev=group.at(-1);
+            if(prev===undefined||y-prev<=2)group.push(y);
+            else{if(group.length)groups.push(group);group=[y];}
+          }
+          if(group.length)groups.push(group);
+          const best=groups
+            .map(items=>({items,span:items.at(-1)!-items[0]}))
+            .filter(item=>item.items.length>=2&&item.span>=3)
+            .sort((a,b)=>b.span-a.span||b.items.length-a.items.length)[0];
+          if(best)runs.push({x,ys:best.items,span:best.span});
+        }
       }
       return runs;
     };
