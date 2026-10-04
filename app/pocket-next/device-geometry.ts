@@ -72,83 +72,93 @@ function normalizePivots(swings:Swing[]){
 
 function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   const candidates:{pattern:DevicePattern;score:number}[]=[];
-  for(let i=0;i<=pivots.length-5;i++){
-    const p=pivots.slice(i,i+5);
-    const span=p[4].x-p[0].x;
-    if(span<width*.18)continue;
-    const leftSpace=p[2].x-p[0].x,rightSpace=p[4].x-p[2].x;
-    const symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
-    if(symmetry<.34)continue;
-    if(p.map(x=>x.kind).join("")==="highlowhighlowhigh"){
-      const [ls,n1,head,n2,rs]=p;
-      const shoulderDiff=Math.abs(ls.y-rs.y), headProm=Math.min(ls.y,rs.y)-head.y;
-      const neckDiff=Math.abs(n1.y-n2.y);
-      if(headProm<height*.045||shoulderDiff>height*.075||neckDiff>height*.1)continue;
-      const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x);
-      const after=candles.filter(c=>c.x>rs.x);
-      const confirmed=after.some(c=>c.low>(n1.y+slope*(c.x-n1.x))+height*.012);
-      const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
-      candidates.push({score:headProm/height+symmetry*.08-neckDiff/height*.25,pattern:{
-        name:"HEAD & SHOULDERS",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",
-        evidence:confirmed?"Three-peak geometry with a higher head is followed by a visible neckline break.":"Three-peak geometry with a higher head is visible, but neckline breakdown is not proven on-device.",
-        confirmation:"Visible close/acceptance below the neckline after the right shoulder.",invalidation:"Clean acceptance above the head or a materially higher right shoulder.",
-        geometry:{points,labelX:pctX(rs.x),labelY:Math.max(bounds.top,pctY(Math.min(ls.y,head.y,rs.y))-4)}
-      }});
-    }
-    if(p.map(x=>x.kind).join("")==="lowhighlowhighlow"){
-      const [ls,n1,head,n2,rs]=p;
-      const shoulderDiff=Math.abs(ls.y-rs.y), headProm=head.y-Math.max(ls.y,rs.y);
-      const neckDiff=Math.abs(n1.y-n2.y);
-      if(headProm<height*.045||shoulderDiff>height*.075||neckDiff>height*.1)continue;
-      const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x);
-      const after=candles.filter(c=>c.x>rs.x);
-      const confirmed=after.some(c=>c.high<(n1.y+slope*(c.x-n1.x))-height*.012);
-      const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
-      candidates.push({score:headProm/height+symmetry*.08-neckDiff/height*.25,pattern:{
-        name:"INVERSE H&S",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",
-        evidence:confirmed?"Three-trough geometry with a lower head is followed by a visible neckline break.":"Three-trough geometry with a lower head is visible, but neckline breakout is not proven on-device.",
-        confirmation:"Visible close/acceptance above the neckline after the right shoulder.",invalidation:"Clean acceptance below the head or a materially lower right shoulder.",
-        geometry:{points,labelX:pctX(rs.x),labelY:Math.min(bounds.bottom,pctY(Math.max(ls.y,head.y,rs.y))+4)}
-      }});
-    }
+  const highs=pivots.filter(p=>p.kind==="high"), lows=pivots.filter(p=>p.kind==="low");
+  const between=(items:Swing[],a:number,b:number)=>items.filter(p=>p.x>a&&p.x<b);
+
+  for(let i=0;i<highs.length-2;i++) for(let j=i+1;j<highs.length-1;j++) for(let k=j+1;k<highs.length;k++){
+    const ls=highs[i],head=highs[j],rs=highs[k], span=rs.x-ls.x;
+    if(span<width*.2||span>width*.78)continue;
+    const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
+    if(symmetry<.38)continue;
+    const headProm=Math.min(ls.y,rs.y)-head.y, shoulderDiff=Math.abs(ls.y-rs.y);
+    if(headProm<height*.055||shoulderDiff>height*.055)continue;
+    const leftNecks=between(lows,ls.x,head.x),rightNecks=between(lows,head.x,rs.x);
+    if(!leftNecks.length||!rightNecks.length)continue;
+    const n1=leftNecks.reduce((a,b)=>a.y>b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y>b.y?a:b);
+    const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.085)continue;
+    const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x), after=candles.filter(x=>x.x>rs.x);
+    const confirmed=after.some(x=>x.low>(n1.y+slope*(x.x-n1.x))+height*.012);
+    const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
+    candidates.push({score:headProm/height+symmetry*.1-neckDiff/height*.25,pattern:{
+      name:"HEAD & SHOULDERS",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",
+      evidence:confirmed?"Three-peak geometry with a materially higher head is followed by a visible neckline break.":"Three-peak geometry with a materially higher head is visible, but neckline breakdown is not proven on-device.",
+      confirmation:"Visible acceptance below the neckline after the right shoulder.",invalidation:"Clean acceptance above the head or a materially higher right shoulder.",
+      geometry:{points,labelX:pctX(rs.x),labelY:Math.max(bounds.top,pctY(Math.min(ls.y,head.y,rs.y))-4)}
+    }});
+  }
+
+  for(let i=0;i<lows.length-2;i++) for(let j=i+1;j<lows.length-1;j++) for(let k=j+1;k<lows.length;k++){
+    const ls=lows[i],head=lows[j],rs=lows[k], span=rs.x-ls.x;
+    if(span<width*.2||span>width*.78)continue;
+    const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
+    if(symmetry<.38)continue;
+    const headProm=head.y-Math.max(ls.y,rs.y), shoulderDiff=Math.abs(ls.y-rs.y);
+    if(headProm<height*.055||shoulderDiff>height*.055)continue;
+    const leftNecks=between(highs,ls.x,head.x),rightNecks=between(highs,head.x,rs.x);
+    if(!leftNecks.length||!rightNecks.length)continue;
+    const n1=leftNecks.reduce((a,b)=>a.y<b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y<b.y?a:b);
+    const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.085)continue;
+    const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x), after=candles.filter(x=>x.x>rs.x);
+    const confirmed=after.some(x=>x.high<(n1.y+slope*(x.x-n1.x))-height*.012);
+    const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
+    candidates.push({score:headProm/height+symmetry*.1-neckDiff/height*.25,pattern:{
+      name:"INVERSE H&S",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",
+      evidence:confirmed?"Three-trough geometry with a materially lower head is followed by a visible neckline break.":"Three-trough geometry with a materially lower head is visible, but neckline breakout is not proven on-device.",
+      confirmation:"Visible acceptance above the neckline after the right shoulder.",invalidation:"Clean acceptance below the head or a materially lower right shoulder.",
+      geometry:{points,labelX:pctX(rs.x),labelY:Math.min(bounds.bottom,pctY(Math.max(ls.y,head.y,rs.y))+4)}
+    }});
   }
   return candidates.sort((a,b)=>b.score-a.score)[0]?.pattern ?? null;
 }
 
-function boundaryPattern(pivots:Swing[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
+function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   const candidates:{pattern:DevicePattern;score:number}[]=[];
   const maxWindow=Math.min(16,pivots.length);
   for(let size=6;size<=maxWindow;size++){
     for(let start=0;start+size<=pivots.length;start++){
       const window=pivots.slice(start,start+size), highs=window.filter(p=>p.kind==="high"), lows=window.filter(p=>p.kind==="low");
-      if(highs.length<2||lows.length<2)continue;
+      if(highs.length<3||lows.length<3)continue;
       const x1=window[0].x,x2=window.at(-1)!.x,span=x2-x1;
-      if(span<width*.18)continue;
+      if(span<width*.25)continue;
       const hf=linearFit(highs),lf=linearFit(lows);if(!hf||!lf)continue;
-      if(hf.rms>height*.05||lf.rms>height*.05)continue;
+      if(hf.rms>height*.026||lf.rms>height*.026)continue;
       const sep1=lineY(lf,x1)-lineY(hf,x1),sep2=lineY(lf,x2)-lineY(hf,x2);
-      if(sep1<height*.045||sep2<height*.025)continue;
+      if(sep1<height*.06||sep2<height*.025)continue;
+      const ratio=sep2/sep1;
       const hChange=hf.slope*span/height,lChange=lf.slope*span/height;
-      const converging=sep2<sep1*.82;
-      const parallel=Math.abs(hChange-lChange)<.055 && sep2/sep1>.58 && sep2/sep1<1.48;
+      const inside=candles.filter(c=>c.x>=x1&&c.x<=x2),tol=height*.018;
+      const violations=inside.filter(c=>c.high<lineY(hf,c.x)-tol||c.low>lineY(lf,c.x)+tol).length;
+      if(violations>Math.max(1,Math.floor(inside.length*.07)))continue;
+      const converging=ratio>.22&&ratio<.7;
+      const parallel=ratio>.74&&ratio<1.28&&Math.abs(hChange-lChange)<.035;
       let name="",evidence="";
-      if(Math.abs(hChange)<.035&&lChange<-.055&&converging){name="ASCENDING TRIANGLE";evidence="Flat upper reactions and rising swing lows form a converging structure.";}
-      else if(hChange>.055&&Math.abs(lChange)<.035&&converging){name="DESCENDING TRIANGLE";evidence="Falling swing highs and a broadly flat lower boundary form a converging structure.";}
-      else if(hChange>.045&&lChange<-.045&&converging){name="TRIANGLE";evidence="Falling highs and rising lows form a converging triangle.";}
-      else if(hChange<-.03&&lChange<-.06&&lChange<hChange-.02&&converging){name="RISING WEDGE";evidence="Both boundaries rise while the lower boundary converges faster into the upper boundary.";}
-      else if(hChange>.06&&lChange>.03&&hChange>lChange+.02&&converging){name="FALLING WEDGE";evidence="Both boundaries fall while the upper boundary converges faster into the lower boundary.";}
-      else if(parallel&&Math.abs((hChange+lChange)/2)>.055){name="TREND CHANNEL";evidence="Swing highs and lows track approximately parallel sloping boundaries.";}
+      if(Math.abs(hChange)<.025&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a flat ceiling with materially rising lows.";}
+      else if(hChange>.065&&Math.abs(lChange)<.025&&converging){name="DESCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support falling highs against a broadly flat floor.";}
+      else if(hChange>.055&&lChange<-.055&&converging){name="TRIANGLE";evidence="Multiple falling highs and rising lows form a tightly fitted converging triangle.";}
+      else if(hChange<-.045&&lChange<-.075&&lChange<hChange-.03&&converging){name="RISING WEDGE";evidence="Multiple touches show both boundaries rising while the lower boundary converges faster.";}
+      else if(hChange>.075&&lChange>.045&&hChange>lChange+.03&&converging){name="FALLING WEDGE";evidence="Multiple touches show both boundaries falling while the upper boundary converges faster.";}
+      else if(parallel&&Math.abs((hChange+lChange)/2)>.085){name="TREND CHANNEL";evidence="At least three swing highs and three swing lows track tightly fitted parallel boundaries.";}
       else continue;
-      const touchScore=Math.min(6,highs.length+lows.length);
-      const score=touchScore*.1+span/width*.25-(hf.rms+lf.rms)/height;
+      const score=(highs.length+lows.length)*.11+span/width*.3-(hf.rms+lf.rms)/height-violations*.04;
       const points=[
         {x:pctX(x1),y:pctY(lineY(hf,x1))},{x:pctX(x2),y:pctY(lineY(hf,x2))},
         {x:pctX(x2),y:pctY(lineY(lf,x2))},{x:pctX(x1),y:pctY(lineY(lf,x1))}
       ];
+      if(points.some(p=>p.y<bounds.top-2||p.y>bounds.bottom+2))continue;
       candidates.push({score,pattern:{
-        name,status:"AMBIGUOUS",confidence:highs.length>=3&&lows.length>=3?"MEDIUM":"LOW",evidence,
-        confirmation:name==="TREND CHANNEL"?"A further clean reaction at either boundary or a decisive channel break.":"A decisive break/hold beyond the converging boundary.",
-        invalidation:"Price action no longer respects the proposed boundary geometry.",
+        name,status:"AMBIGUOUS",confidence:"MEDIUM",evidence,
+        confirmation:name==="TREND CHANNEL"?"Another clean boundary reaction or a decisive channel break.":"A decisive break and hold beyond the validated boundary.",
+        invalidation:"Price action stops respecting the proposed boundary geometry.",
         geometry:{points,labelX:Math.max(bounds.left,pctX(x2)-18),labelY:Math.max(bounds.top,pctY(Math.min(lineY(hf,x1),lineY(hf,x2)))-4)}
       }});
     }
@@ -157,26 +167,28 @@ function boundaryPattern(pivots:Swing[],width:number,height:number,pctX:(x:numbe
 }
 
 function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
-  if(candles.length<18)return null;
+  if(candles.length<20)return null;
   let best:{score:number;pattern:DevicePattern}|null=null;
-  for(let split=8;split<candles.length-8;split++){
-    const poleStart=Math.max(0,split-8), a=candles[poleStart], b=candles[split];
-    const pole=b.mid-a.mid, poleMag=Math.abs(pole);
-    if(poleMag<height*.14||b.x-a.x>width*.28)continue;
-    const rest=candles.slice(split+1,Math.min(candles.length,split+15));
-    if(rest.length<7)continue;
-    const range=Math.max(...rest.map(c=>c.low))-Math.min(...rest.map(c=>c.high));
-    if(range>poleMag*.62)continue;
-    const xMean=rest.reduce((s,c)=>s+c.x,0)/rest.length,yMean=rest.reduce((s,c)=>s+c.mid,0)/rest.length;
-    let num=0,den=0;for(const c of rest){num+=(c.x-xMean)*(c.mid-yMean);den+=(c.x-xMean)**2;}
-    const slope=den?num/den:0,total=slope*(rest.at(-1)!.x-rest[0].x);
-    const bull=pole<0&&total>height*.015, bear=pole>0&&total< -height*.015;
+  for(let split=8;split<candles.length-9;split++){
+    const poleStart=Math.max(0,split-8),a=candles[poleStart],b=candles[split],pole=b.mid-a.mid,poleMag=Math.abs(pole);
+    if(poleMag<height*.18||b.x-a.x>width*.25)continue;
+    const rest=candles.slice(split+1,Math.min(candles.length,split+14));
+    if(rest.length<8)continue;
+    const xSpan=rest.at(-1)!.x-rest[0].x;if(xSpan<width*.1||xSpan>width*.34)continue;
+    const top=Math.min(...rest.map(c=>c.high)),bottom=Math.max(...rest.map(c=>c.low)),range=bottom-top;
+    if(range>poleMag*.5)continue;
+    const mx=rest.reduce((s,c)=>s+c.x,0)/rest.length,my=rest.reduce((s,c)=>s+c.mid,0)/rest.length;
+    let num=0,den=0;for(const x of rest){num+=(x.x-mx)*(x.mid-my);den+=(x.x-mx)**2;}
+    const slope=den?num/den:0,total=slope*xSpan;
+    const rms=Math.sqrt(rest.reduce((s,x)=>{const e=x.mid-(my+slope*(x.x-mx));return s+e*e;},0)/rest.length);
+    if(rms>Math.max(3,range*.34))continue;
+    const bull=pole<0&&total>height*.025&&total<poleMag*.45;
+    const bear=pole>0&&total< -height*.025&&Math.abs(total)<poleMag*.45;
     if(!bull&&!bear)continue;
     const name=bull?"BULL FLAG":"BEAR FLAG";
-    const top=Math.min(...rest.map(c=>c.high)),bottom=Math.max(...rest.map(c=>c.low));
     const points=[{x:pctX(rest[0].x),y:pctY(top)},{x:pctX(rest.at(-1)!.x),y:pctY(top+total)},{x:pctX(rest.at(-1)!.x),y:pctY(bottom+total)},{x:pctX(rest[0].x),y:pctY(bottom)}];
-    const pattern:DevicePattern={name,status:"AMBIGUOUS",confidence:"LOW",evidence:"A strong directional pole is followed by a shorter, narrower counter-trend consolidation.",confirmation:"Break from the flag in the direction of the preceding impulse.",invalidation:"The consolidation expands materially or breaks against the preceding impulse.",geometry:{points,labelX:pctX(rest.at(-1)!.x),labelY:Math.max(bounds.top,pctY(top)-4)}};
-    const score=poleMag/height-range/height;
+    const pattern:DevicePattern={name,status:"AMBIGUOUS",confidence:"MEDIUM",evidence:"A strong directional pole is followed by a shorter, narrower and tightly fitted counter-trend consolidation.",confirmation:"Break from the flag in the direction of the preceding impulse.",invalidation:"The consolidation expands materially or breaks against the preceding impulse.",geometry:{points,labelX:pctX(rest.at(-1)!.x),labelY:Math.max(bounds.top,pctY(top)-4)}};
+    const score=poleMag/height-range/height-rms/height;
     if(!best||score>best.score)best={score,pattern};
   }
   return best?.pattern ?? null;
@@ -245,15 +257,17 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       for(let i=0;i<=pivots.length-3;i++){
         const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;if(span<width*.18)continue;
         if(a.kind==="high"&&m.kind==="low"&&b.kind==="high"&&Math.abs(a.y-b.y)<=height*.045&&m.y-(a.y+b.y)/2>=height*.065){
-          patterns.push({name:"DOUBLE TOP CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two separated swing highs and an intervening valley are visible, but neckline confirmation is not proven on-device.",confirmation:"Break below the intervening swing low after the second test.",invalidation:"Clean acceptance above the twin highs.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}});break;
+          const confirmed=candles.filter(x=>x.x>b.x).some(x=>x.low>m.y+height*.012);
+          patterns.push({name:confirmed?"DOUBLE TOP":"DOUBLE TOP CANDIDATE",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",evidence:confirmed?"Two separated swing highs, a meaningful valley and a visible neckline break are present.":"Two separated swing highs and an intervening valley are visible, but neckline confirmation is not proven on-device.",confirmation:"Break below the intervening swing low after the second test.",invalidation:"Clean acceptance above the twin highs.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.max(plotBounds.top,pctY(b.y)-4)}});break;
         }
         if(a.kind==="low"&&m.kind==="high"&&b.kind==="low"&&Math.abs(a.y-b.y)<=height*.045&&(a.y+b.y)/2-m.y>=height*.065){
-          patterns.push({name:"DOUBLE BOTTOM CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two separated swing lows and an intervening peak are visible, but neckline confirmation is not proven on-device.",confirmation:"Break above the intervening swing high after the second test.",invalidation:"Clean acceptance below the twin lows.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}});break;
+          const confirmed=candles.filter(x=>x.x>b.x).some(x=>x.high<m.y-height*.012);
+          patterns.push({name:confirmed?"DOUBLE BOTTOM":"DOUBLE BOTTOM CANDIDATE",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",evidence:confirmed?"Two separated swing lows, a meaningful peak and a visible neckline break are present.":"Two separated swing lows and an intervening peak are visible, but neckline confirmation is not proven on-device.",confirmation:"Break above the intervening swing high after the second test.",invalidation:"Clean acceptance below the twin lows.",geometry:{points:[a,m,b].map(p=>({x:pctX(p.x),y:pctY(p.y)})),labelX:pctX(b.x),labelY:Math.min(plotBounds.bottom,pctY(b.y)+4)}});break;
         }
       }
     }
-    if(!patterns.length){const boundary=boundaryPattern(pivots,width,height,pctX,pctY,plotBounds);if(boundary)patterns.push(boundary);}
     if(!patterns.length){const flag=flagPattern(candles,width,height,pctX,pctY,plotBounds);if(flag)patterns.push(flag);}
+    if(!patterns.length){const boundary=boundaryPattern(pivots,candles,width,height,pctX,pctY,plotBounds);if(boundary)patterns.push(boundary);}
 
     if(!patterns.length){
       const rh=highs.find(g=>g.score>=2),rl=lows.find(g=>g.score>=2);
