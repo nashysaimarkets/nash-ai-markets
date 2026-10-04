@@ -196,9 +196,12 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       else if(parallel&&Math.abs((hChange+lChange)/2)>.085){name="TREND CHANNEL";evidence="At least three swing highs and three swing lows track tightly fitted parallel boundaries.";}
       else continue;
       const score=(highs.length+lows.length)*.11+span/width*.3-(hf.rms+lf.rms)/height-violations*.04;
+      const gx1=Math.max(Math.min(...highs.map(p=>p.x)),Math.min(...lows.map(p=>p.x)));
+      const gx2=Math.min(Math.max(...highs.map(p=>p.x)),Math.max(...lows.map(p=>p.x)));
+      if(gx2-gx1<width*.18)continue;
       const points=[
-        {x:pctX(x1),y:pctY(lineY(hf,x1))},{x:pctX(x2),y:pctY(lineY(hf,x2))},
-        {x:pctX(x2),y:pctY(lineY(lf,x2))},{x:pctX(x1),y:pctY(lineY(lf,x1))}
+        {x:pctX(gx1),y:pctY(lineY(hf,gx1))},{x:pctX(gx2),y:pctY(lineY(hf,gx2))},
+        {x:pctX(gx2),y:pctY(lineY(lf,gx2))},{x:pctX(gx1),y:pctY(lineY(lf,gx1))}
       ];
       if(points.some(p=>p.y<bounds.top-2||p.y>bounds.bottom+2))continue;
       candidates.push({score,pattern:{
@@ -439,7 +442,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       const x1=Math.max(plotBounds.left,pctX(xStart)),x2=Math.min(plotBounds.right,pctX(xEnd));
       const highCoverage=(Math.max(...rh.items.map(i=>i.x))-Math.min(...rh.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
       const lowCoverage=(Math.max(...rl.items.map(i=>i.x))-Math.min(...rl.items.map(i=>i.x)))/Math.max(1,xEnd-xStart);
-      if(rh.score>=3&&rl.score>=3&&separation>=structureHeight*.09&&separation<=structureHeight*.5&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
+      if(rh.score>=3&&rl.score>=3&&separation>=structureHeight*.09&&separation<=structureHeight*.92&&spanPct>=26&&alternations>=5&&highCoverage>=.5&&lowCoverage>=.5&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",evidence:"Repeated upper and lower reactions alternate across a sustained, largely intact range.",confirmation:"Break and hold beyond one range edge after repeated two-sided rotation.",invalidation:"A decisive breach through the opposite edge invalidates the range read.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
       }else if(rh.score>=2&&rl.score>=2&&separation>=structureHeight*.09&&spanPct>=20&&alternations>=3&&upperBreaches<=1&&lowerBreaches<=1){
         patternCandidates.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW",evidence:"Two-sided reactions are visible, but the geometry is not clean enough to call a rectangle.",confirmation:"More alternating tests with both boundaries holding.",invalidation:"A decisive break through either proposed boundary.",geometry:{points:[{x:x1,y:pctY(rh.y)},{x:x2,y:pctY(rh.y)},{x:x2,y:pctY(rl.y)},{x:x1,y:pctY(rl.y)},{x:x1,y:pctY(rh.y)}],labelX:Math.max(plotBounds.left,x2-18),labelY:Math.max(plotBounds.top,pctY(rh.y)-4)}});
