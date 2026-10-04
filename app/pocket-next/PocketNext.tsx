@@ -158,7 +158,7 @@ export default function PocketNext() {
   const [privacy, setPrivacy] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [active, setActive] = useState<Tab>("overview");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false);\n  const [chartFocus, setChartFocus] = useState(false);
   const [error, setError] = useState("");
   const requestActive = useRef(false);
 
@@ -190,7 +190,7 @@ export default function PocketNext() {
   };
 
   const openDemo = () => { setImage(demoChart()); setImageName("Interface demo"); setContextImage(null); setAnalysis(DEMO_ANALYSIS); setActive("overview"); setPrivacy(true); };
-  const reset = () => { setAnalysis(null); setImage(null); setImageName(""); setContextImage(null); setContextName(""); setActive("overview"); setError(""); };
+  const reset = () => { setAnalysis(null); setImage(null); setImageName(""); setContextImage(null); setContextName(""); setActive("overview"); setChartFocus(false); setError(""); };
   const share = async () => {
     if (!analysis) return;
     const text = "Pocket Bullseye · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
@@ -272,8 +272,15 @@ export default function PocketNext() {
           </div>
         </header>
 
-        <div className="pnChart">
+        <div className="pnMobileDecision" aria-label="Decision snapshot">
+          <span>{analysis.verdict.replaceAll("_"," ")}</span>
+          <strong>{analysis.setupScore.overall}<small>/100 · {analysis.setupScore.grade}</small></strong>
+          <b>{analysis.instrument} · {analysis.timeframe}</b>
+        </div>
+
+        <div className="pnChart" data-focus={chartFocus ? "true" : "false"}>
           <img src={image ?? ""} alt="Analysed trading chart"/>
+          <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
             {(overlayMode==="overview"||overlayMode==="levels") ? levels.map((level,i)=><g key={"l"+i} data-kind={level.kind}><line x1={clamp(level.x || 5)} x2={clamp(level.x2 || 95)} y1={clamp(level.y)} y2={clamp(level.y2 || level.y)}/><circle cx={clamp(level.x || 5)} cy={clamp(level.y)} r=".8"/></g>) : null}
             {overlayMode==="patterns" ? patterns.flatMap((p,pi)=>p.geometry?.points?.length ? [<polyline key={"p"+pi} points={p.geometry.points.map(pt=>clamp(pt.x)+","+clamp(pt.y)).join(" ")} data-pattern={p.status}/>] : []) : null}
