@@ -295,11 +295,30 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const {pixels,width,height}=input,channels=input.channels??4;
     if(width<20||height<20)return emptyDeviceScan();
     const left=Math.round(width*.04),right=Math.round(width*.91),top=Math.round(height*.08),bottom=Math.round(height*.88);
+
+    // Long coloured drawing tools / price lines can otherwise masquerade as dozens
+    // of identical candle endpoints. Real candle pixels are sparse across a row;
+    // annotation lines are abnormally dense. Mask only those extreme horizontal bands.
+    const noisyRows=new Set<number>();
+    const rowThreshold=Math.max(24,Math.round((right-left+1)*.18));
+    for(let y=top;y<=bottom;y++){
+      let hits=0;
+      for(let x=left;x<=right;x++){
+        const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
+        if(a<180)continue;
+        const hi=Math.max(r,g,b),lo=Math.min(r,g,b),sat=hi-lo;
+        const redOrGreen=(g>r+18&&g>b+6)||(r>g+18&&r>b+6);
+        if(sat>42&&hi>90&&redOrGreen)hits++;
+      }
+      if(hits>=rowThreshold){noisyRows.add(y-1);noisyRows.add(y);noisyRows.add(y+1);}
+    }
+
     const collectColumns=(allowBlue:boolean)=>{
       const runs:{x:number;ys:number[];span:number}[]=[];
       for(let x=left;x<=right;x++){
         const ys:number[]=[];
         for(let y=top;y<=bottom;y++){
+          if(noisyRows.has(y))continue;
           const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
           if(a<180)continue;
           const hi=Math.max(r,g,b),lo=Math.min(r,g,b),sat=hi-lo;
@@ -316,7 +335,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
           let group:number[]=[];
           for(const y of ys){
             const prev=group.at(-1);
-            if(prev===undefined||y-prev<=2)group.push(y);
+            if(prev===undefined||y-prev<=3)group.push(y);
             else{if(group.length)groups.push(group);group=[y];}
           }
           if(group.length)groups.push(group);
