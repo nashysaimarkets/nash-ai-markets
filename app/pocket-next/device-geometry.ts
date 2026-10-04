@@ -70,6 +70,14 @@ function normalizePivots(swings:Swing[]){
   return out;
 }
 
+function trendMove(candles:Candle[], x:number, width:number){
+  const sample=candles.filter(c=>c.x>=x-width*.22&&c.x<x-width*.015);
+  if(sample.length<6)return null;
+  const first=sample.slice(0,Math.max(2,Math.floor(sample.length*.3))).reduce((s,c)=>s+c.mid,0)/Math.max(1,Math.floor(sample.length*.3));
+  const last=sample.slice(-Math.max(2,Math.floor(sample.length*.3))).reduce((s,c)=>s+c.mid,0)/Math.max(1,Math.floor(sample.length*.3));
+  return last-first;
+}
+
 function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   const candidates:{pattern:DevicePattern;score:number}[]=[];
   const highs=pivots.filter(p=>p.kind==="high"), lows=pivots.filter(p=>p.kind==="low");
@@ -77,21 +85,28 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
 
   for(let i=0;i<highs.length-2;i++) for(let j=i+1;j<highs.length-1;j++) for(let k=j+1;k<highs.length;k++){
     const ls=highs[i],head=highs[j],rs=highs[k], span=rs.x-ls.x;
-    if(span<width*.2||span>width*.78)continue;
+    if(span<width*.22||span>width*.62||rs.x>width*.87)continue;
+    const prior=trendMove(candles,ls.x,width);
+    if(prior===null||prior> -height*.045)continue; // H&S should arrive after an actual advance.
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
-    if(symmetry<.38)continue;
+    if(symmetry<.48)continue;
     const headProm=Math.min(ls.y,rs.y)-head.y, shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.055||shoulderDiff>height*.055)continue;
+    if(headProm<height*.06||headProm>height*.24||shoulderDiff>height*.045)continue;
     const leftNecks=between(lows,ls.x,head.x),rightNecks=between(lows,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y>b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y>b.y?a:b);
-    const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.085)continue;
+    if(n1.y-Math.max(ls.y,head.y)<height*.035||n2.y-Math.max(rs.y,head.y)<height*.035)continue;
+    const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.065)continue;
     const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x), after=candles.filter(x=>x.x>rs.x);
-    const confirmed=after.some(x=>x.low>(n1.y+slope*(x.x-n1.x))+height*.012);
+    if(after.length<4)continue;
+    let breaks=0;
+    for(const x of after){if(x.low>(n1.y+slope*(x.x-n1.x))+height*.015)breaks++;}
+    const confirmed=breaks>=2;
+    if(!confirmed)continue;
     const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
-    candidates.push({score:headProm/height+symmetry*.1-neckDiff/height*.25,pattern:{
-      name:"HEAD & SHOULDERS",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",
-      evidence:confirmed?"Three-peak geometry with a materially higher head is followed by a visible neckline break.":"Three-peak geometry with a materially higher head is visible, but neckline breakdown is not proven on-device.",
+    candidates.push({score:headProm/height+symmetry*.12-neckDiff/height*.25,pattern:{
+      name:"HEAD & SHOULDERS",status:"CONFIRMED",confidence:"MEDIUM",
+      evidence:"A prior advance is followed by symmetric shoulders, a materially higher head and repeated acceptance below the neckline.",
       confirmation:"Visible acceptance below the neckline after the right shoulder.",invalidation:"Clean acceptance above the head or a materially higher right shoulder.",
       geometry:{points,labelX:pctX(rs.x),labelY:Math.max(bounds.top,pctY(Math.min(ls.y,head.y,rs.y))-4)}
     }});
@@ -99,21 +114,28 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
 
   for(let i=0;i<lows.length-2;i++) for(let j=i+1;j<lows.length-1;j++) for(let k=j+1;k<lows.length;k++){
     const ls=lows[i],head=lows[j],rs=lows[k], span=rs.x-ls.x;
-    if(span<width*.2||span>width*.78)continue;
+    if(span<width*.22||span>width*.62||rs.x>width*.87)continue;
+    const prior=trendMove(candles,ls.x,width);
+    if(prior===null||prior<height*.045)continue; // inverse H&S should arrive after an actual decline.
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
-    if(symmetry<.38)continue;
+    if(symmetry<.48)continue;
     const headProm=head.y-Math.max(ls.y,rs.y), shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.055||shoulderDiff>height*.055)continue;
+    if(headProm<height*.06||headProm>height*.24||shoulderDiff>height*.045)continue;
     const leftNecks=between(highs,ls.x,head.x),rightNecks=between(highs,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y<b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y<b.y?a:b);
-    const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.085)continue;
+    if(Math.min(ls.y,head.y)-n1.y<height*.035||Math.min(rs.y,head.y)-n2.y<height*.035)continue;
+    const neckDiff=Math.abs(n1.y-n2.y);if(neckDiff>height*.065)continue;
     const slope=(n2.y-n1.y)/Math.max(1,n2.x-n1.x), after=candles.filter(x=>x.x>rs.x);
-    const confirmed=after.some(x=>x.high<(n1.y+slope*(x.x-n1.x))-height*.012);
+    if(after.length<4)continue;
+    let breaks=0;
+    for(const x of after){if(x.high<(n1.y+slope*(x.x-n1.x))-height*.015)breaks++;}
+    const confirmed=breaks>=2;
+    if(!confirmed)continue;
     const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
-    candidates.push({score:headProm/height+symmetry*.1-neckDiff/height*.25,pattern:{
-      name:"INVERSE H&S",status:confirmed?"CONFIRMED":"AMBIGUOUS",confidence:confirmed?"MEDIUM":"LOW",
-      evidence:confirmed?"Three-trough geometry with a materially lower head is followed by a visible neckline break.":"Three-trough geometry with a materially lower head is visible, but neckline breakout is not proven on-device.",
+    candidates.push({score:headProm/height+symmetry*.12-neckDiff/height*.25,pattern:{
+      name:"INVERSE H&S",status:"CONFIRMED",confidence:"MEDIUM",
+      evidence:"A prior decline is followed by symmetric shoulders, a materially lower head and repeated acceptance above the neckline.",
       confirmation:"Visible acceptance above the neckline after the right shoulder.",invalidation:"Clean acceptance below the head or a materially lower right shoulder.",
       geometry:{points,labelX:pctX(rs.x),labelY:Math.min(bounds.bottom,pctY(Math.max(ls.y,head.y,rs.y))+4)}
     }});
@@ -129,24 +151,24 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
       const window=pivots.slice(start,start+size), highs=window.filter(p=>p.kind==="high"), lows=window.filter(p=>p.kind==="low");
       if(highs.length<3||lows.length<3)continue;
       const x1=window[0].x,x2=window.at(-1)!.x,span=x2-x1;
-      if(span<width*.25)continue;
+      if(span<width*.3)continue;
       const hf=linearFit(highs),lf=linearFit(lows);if(!hf||!lf)continue;
-      if(hf.rms>height*.026||lf.rms>height*.026)continue;
+      if(hf.rms>height*.022||lf.rms>height*.022)continue;
       const highCoverage=(Math.max(...highs.map(p=>p.x))-Math.min(...highs.map(p=>p.x)))/span;
       const lowCoverage=(Math.max(...lows.map(p=>p.x))-Math.min(...lows.map(p=>p.x)))/span;
-      if(highCoverage<.55||lowCoverage<.55)continue;
+      if(highCoverage<.62||lowCoverage<.62)continue;
       const touchEvents=[...highs.map(p=>({x:p.x,k:"h"})),...lows.map(p=>({x:p.x,k:"l"}))].sort((a,b)=>a.x-b.x);
       let alternations=0;for(let i=1;i<touchEvents.length;i++)if(touchEvents[i].k!==touchEvents[i-1].k)alternations++;
-      if(alternations<4)continue;
+      if(alternations<5)continue;
       const sep1=lineY(lf,x1)-lineY(hf,x1),sep2=lineY(lf,x2)-lineY(hf,x2);
       if(sep1<height*.06||sep2<height*.025)continue;
       const ratio=sep2/sep1;
       const hChange=hf.slope*span/height,lChange=lf.slope*span/height;
       const inside=candles.filter(c=>c.x>=x1&&c.x<=x2),tol=height*.018;
       const violations=inside.filter(c=>c.high<lineY(hf,c.x)-tol||c.low>lineY(lf,c.x)+tol).length;
-      if(violations>Math.max(1,Math.floor(inside.length*.07)))continue;
-      const converging=ratio>.22&&ratio<.7;
-      const parallel=ratio>.74&&ratio<1.28&&Math.abs(hChange-lChange)<.035;
+      if(violations>Math.max(1,Math.floor(inside.length*.04)))continue;
+      const converging=ratio>.28&&ratio<.64;
+      const parallel=ratio>.82&&ratio<1.18&&Math.abs(hChange-lChange)<.028;
       let name="",evidence="";
       if(Math.abs(hChange)<.025&&lChange<-.065&&converging){name="ASCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support a flat ceiling with materially rising lows.";}
       else if(hChange>.065&&Math.abs(lChange)<.025&&converging){name="DESCENDING TRIANGLE";evidence="Three-plus upper and lower reactions support falling highs against a broadly flat floor.";}
