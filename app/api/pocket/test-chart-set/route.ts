@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { inflateSync } from "node:zlib";
+import { scanDevicePixels, type DeviceLocalScan } from "../../../pocket-next/device-geometry";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-type Pattern = { name: string; status: string; confidence: string };
-type Scan = { candles: number; swings: number; levels: number; patterns: Pattern[]; liquidity: number };
 
 const CASES = [
   { id:"hs-btc", expected:"HEAD & SHOULDERS", url:"https://s3.tradingview.com/snapshots/f/fzD3jQZO.png" },
@@ -113,63 +112,9 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer}){
   return {data,width,height,channels:3};
 }
 
-async function scan(buffer:Buffer):Promise<Scan>{
+async function scan(buffer:Buffer):Promise<DeviceLocalScan>{
   const {data,width,height,channels}=resizeRgb(decodePng(buffer));
-  const left=Math.round(width*.04), right=Math.round(width*.91), top=Math.round(height*.08), bottom=Math.round(height*.88);
-  const collect=(allowBlue:boolean)=>{
-    const runs:{x:number;ys:number[];span:number}[]=[];
-    for(let x=left;x<=right;x++){
-      const ys:number[]=[];
-      for(let y=top;y<=bottom;y++){
-        const i=(y*width+x)*channels, r=data[i], g=data[i+1], b=data[i+2];
-        const hi=Math.max(r,g,b), lo=Math.min(r,g,b), sat=hi-lo;
-        const rg=(g>r+18&&g>b+6)||(r>g+18&&r>b+6);
-        const blue=allowBlue&&b>r+24&&b>g+10;
-        if(sat>42&&hi>90&&(rg||blue)) ys.push(y);
-      }
-      if(ys.length>=2){ const span=Math.max(...ys)-Math.min(...ys); if(span>=3) runs.push({x,ys,span}); }
-    }
-    return runs;
-  };
-  let runs=collect(false); if(runs.length<12) runs=collect(true);
-  const selected:{x:number;ys:number[];span:number}[]=[];
-  for(const candidate of [...runs].sort((a,b)=>b.span-a.span)){
-    if(selected.every(e=>Math.abs(e.x-candidate.x)>=3)) selected.push(candidate);
-  }
-  selected.sort((a,b)=>a.x-b.x);
-  const candles=selected.map(c=>({x:c.x,high:Math.min(...c.ys),low:Math.max(...c.ys)}));
-  type Swing={x:number;y:number;kind:"high"|"low"};
-  const swings:Swing[]=[];
-  for(let i=2;i<candles.length-2;i++){
-    const c=candles[i], near=candles.slice(i-2,i+3);
-    if(c.high===Math.min(...near.map(v=>v.high))) swings.push({x:c.x,y:c.high,kind:"high"});
-    if(c.low===Math.max(...near.map(v=>v.low))) swings.push({x:c.x,y:c.low,kind:"low"});
-  }
-  const cluster=(kind:"high"|"low")=>{
-    const src=swings.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y), groups:Swing[][]=[], tol=Math.max(3,height*.018);
-    for(const s of src){ const g=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol); if(g)g.push(s);else groups.push([s]); }
-    return groups.map(items=>({items,y:items.reduce((n,v)=>n+v.y,0)/items.length,score:items.length}))
-      .sort((a,b)=>b.score-a.score||(kind==="high"?a.y-b.y:b.y-a.y));
-  };
-  const highs=cluster("high"), lows=cluster("low");
-  const levels=Math.min(3, highs.length+lows.length);
-  const patterns:Pattern[]=[];
-  const rh=highs.find(g=>g.score>=2), rl=lows.find(g=>g.score>=2);
-  if(rh&&rl){
-    const events=[...rh.items.map(x=>({x:x.x,k:"h"})),...rl.items.map(x=>({x:x.x,k:"l"}))].sort((a,b)=>a.x-b.x);
-    const span=(Math.max(...events.map(e=>e.x))-Math.min(...events.map(e=>e.x)))/width*100;
-    let alt=0;for(let i=1;i<events.length;i++)if(events[i].k!==events[i-1].k)alt++;
-    const sep=rl.y-rh.y;
-    if(rh.score>=2&&rl.score>=2&&sep>=height*.09&&sep<=height*.5&&span>=24&&alt>=3) patterns.push({name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM"});
-    else if(rh.score>=2&&rl.score>=2&&sep>=height*.09&&span>=18&&alt>=2) patterns.push({name:"RANGE CANDIDATE",status:"AMBIGUOUS",confidence:"LOW"});
-  }
-  if(!patterns.length){
-    const top=highs.find(g=>g.score===2), bot=lows.find(g=>g.score===2);
-    if(top){ const [a,b]=[...top.items].sort((x,y)=>x.x-y.x); if(b&&b.x-a.x>=width*.18){ const between=candles.filter(v=>v.x>a.x&&v.x<b.x); if(between.length>=4&&Math.max(...between.map(v=>v.low))-((a.y+b.y)/2)>=height*.065) patterns.push({name:"DOUBLE TOP CANDIDATE",status:"AMBIGUOUS",confidence:"LOW"}); } }
-    if(!patterns.length&&bot){ const [a,b]=[...bot.items].sort((x,y)=>x.x-y.x); if(b&&b.x-a.x>=width*.18){ const between=candles.filter(v=>v.x>a.x&&v.x<b.x); if(between.length>=4&&((a.y+b.y)/2)-Math.min(...between.map(v=>v.high))>=height*.065) patterns.push({name:"DOUBLE BOTTOM CANDIDATE",status:"AMBIGUOUS",confidence:"LOW"}); } }
-  }
-  const liquidity=(highs.length?1:0)+(lows.length?1:0);
-  return {candles:candles.length,swings:swings.length,levels,patterns,liquidity};
+  return scanDevicePixels({pixels:data,width,height,channels});
 }
 
 export async function GET(request:Request){
