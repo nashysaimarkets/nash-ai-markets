@@ -105,6 +105,8 @@ export async function GET(request:Request){
   if(u.searchParams.get("key")!=="pocket-next-internal")return NextResponse.json({error:"not found"},{status:404});
   const variants=Math.min(8,Math.max(1,Number(u.searchParams.get("variants")||4)));
   const debug=u.searchParams.get("debug")==="1";
+  const maskRaw=u.searchParams.get("mask");
+  const rowMaskFraction=maskRaw===null?undefined:Number(maskRaw);
   const only=u.searchParams.get("only");
   const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results:any[]=[];
@@ -112,7 +114,7 @@ export async function GET(request:Request){
   for(const test of selectedCases){
     const runs=[] as any[];
     for(let v=0;v<variants;v++){
-      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3,debug});
+      const scan=scanDevicePixels({pixels:render(test,v),width:W,height:H,channels:3,debug,rowMaskFraction});
       const pats=visible(scan);
       const names=pats.map(p=>p.name);
       const hit=test.expected==="NO CLEAN PATTERN"?!names.length:names.some(n=>norm(n)===norm(test.expected));
