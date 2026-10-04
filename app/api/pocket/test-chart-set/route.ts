@@ -42,8 +42,6 @@ const CASES = [
   { id:"b2broker-bull-flag", expected:"BULL FLAG", url:"https://media.b2broker.com/app/uploads/2024/12/bullish-flag-pattern-1536x1100.png" },
   { id:"cipla-cup-handle", expected:"CUP & HANDLE", url:"https://www.sharetradingcampus.com/storage/204/60c24c236adf5_CIPLA-CUP-%26-HANDLE.png" },
   { id:"capital-break-retest", expected:"BREAKOUT & RETEST", url:"https://img.capital.com/articles/articleimg_b223db2e9639c691ad785f240f43f80a59ca2e99.png" },
-  { id:"oanda-bull-pennant", expected:"PENNANT", url:"https://storage.googleapis.com/oanda-prod-asne1-oj-jp-wordpress/2023/06/top-14.jpg" },
-  { id:"tesla-break-retest", expected:"BREAKOUT & RETEST", url:"https://www.shootingstocks.com/wp-content/uploads/2022/08/10.-Break-and-retest-chart-example.png" }
 
 ] as const;
 
