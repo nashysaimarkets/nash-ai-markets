@@ -194,7 +194,7 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
               geometry:{points:[{x:x1,y:pctY(bestHigh.y)},{x:x2,y:pctY(bestHigh.y)},{x:x2,y:pctY(bestLow.y)},{x:x1,y:pctY(bestLow.y)}],labelX:Math.max(5,x2-16),labelY:Math.max(4,pctY(bestHigh.y)-4)}
             });
           }
-        } else if (bestHigh?.items.length>=2) {
+        } else if (bestHigh && bestHigh.items.length>=2) {
           const a=bestHigh.items[0], b=bestHigh.items.at(-1)!;
           if(Math.abs(b.x-a.x)>width*.14) patterns.push({
             name:"DOUBLE TOP",status:"FORMING",confidence:"LOW",
@@ -202,7 +202,7 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
             confirmation:"Visible rejection followed by a lower structural break.",invalidation:"Clean acceptance above the twin highs.",
             geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(Math.max(...candles.filter(v=>v.x>a.x&&v.x<b.x).map(v=>v.low),a.y))},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.max(4,pctY(b.y)-4)}
           });
-        } else if (bestLow?.items.length>=2) {
+        } else if (bestLow && bestLow.items.length>=2) {
           const a=bestLow.items[0], b=bestLow.items.at(-1)!;
           if(Math.abs(b.x-a.x)>width*.14) patterns.push({
             name:"DOUBLE BOTTOM",status:"FORMING",confidence:"LOW",
