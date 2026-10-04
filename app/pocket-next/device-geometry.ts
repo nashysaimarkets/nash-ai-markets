@@ -358,6 +358,30 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     };
     let columnRuns=collectColumns(false);if(columnRuns.length<12)columnRuns=collectColumns(true);
 
+    // A horizontal drawing/price line can contaminate just one edge of many
+    // neighbouring candidate columns while the opposite edge varies. Detect long
+    // contiguous runs sharing either the high or the low edge and discard them.
+    // Real candles at equal support/resistance remain separated by candle spacing.
+    const edgeReject=new Set<number>();
+    const edgePlateauLimit=Math.max(14,Math.round(width*.04));
+    for(const edge of ["high","low"] as const){
+      for(let i=0;i<columnRuns.length;){
+        const seed=edge==="high"?Math.min(...columnRuns[i].ys):Math.max(...columnRuns[i].ys);
+        let j=i+1;
+        while(j<columnRuns.length){
+          const prev=columnRuns[j-1],next=columnRuns[j];
+          const value=edge==="high"?Math.min(...next.ys):Math.max(...next.ys);
+          if(next.x-prev.x>1||Math.abs(value-seed)>1)break;
+          j++;
+        }
+        if(j-i>edgePlateauLimit)for(let k=i;k<j;k++)edgeReject.add(k);
+        i=j;
+      }
+    }
+    if(edgeReject.size&&columnRuns.length-edgeReject.size>=8){
+      columnRuns=columnRuns.filter((_,index)=>!edgeReject.has(index));
+    }
+
     // Solid broker/UI buttons create long runs of neighbouring columns with
     // almost identical top/bottom edges. Real candles may have a body a few
     // pixels wide, but their wick/body silhouette is not a 15–40 px plateau.
