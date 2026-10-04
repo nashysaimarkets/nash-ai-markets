@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type Intention = "LONG" | "SHORT" | "UNSURE";
@@ -162,6 +162,26 @@ export default function PocketNext() {
   const [chartFocus, setChartFocus] = useState(false);
   const [error, setError] = useState("");
   const requestActive = useRef(false);
+  const centreRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!chartFocus) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setChartFocus(false); };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previous;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [chartFocus]);
+
+  const selectTab = (tab: Tab) => {
+    setActive(tab);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches) {
+      window.requestAnimationFrame(() => centreRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  };
 
   const loadPrimary = async (file?: File) => {
     if (!file) return;
@@ -259,10 +279,10 @@ export default function PocketNext() {
 
     <section className="pnWorkspace">
       <nav className="pnTools" aria-label="Analysis views">
-        {TABS.map(tab=><button key={tab.id} type="button" data-active={active===tab.id} onClick={()=>setActive(tab.id)}><b>{tab.short}</b><span>{tab.label}</span></button>)}
+        {TABS.map(tab=><button key={tab.id} type="button" data-active={active===tab.id} onClick={()=>selectTab(tab.id)}><b>{tab.short}</b><span>{tab.label}</span></button>)}
       </nav>
 
-      <section className="pnCentre">
+      <section className="pnCentre" ref={centreRef}>
         <header className="pnChartHeader">
           <div><small>ACTIVE VIEW</small><strong>{TABS.find(t=>t.id===active)?.label}</strong></div>
           <div className="pnQuality">
