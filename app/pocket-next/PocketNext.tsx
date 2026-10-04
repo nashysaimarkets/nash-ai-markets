@@ -122,22 +122,33 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
         const pixels = ctx.getImageData(0,0,width,height).data;
         const left = Math.round(width * .04), right = Math.round(width * .91);
         const top = Math.round(height * .08), bottom = Math.round(height * .88);
-        const columnRuns: Array<{x:number;ys:number[];span:number}> = [];
-        for (let x=left;x<=right;x++) {
-          const ys:number[] = [];
-          for (let y=top;y<=bottom;y++) {
-            const i=(y*width+x)*4, r=pixels[i], g=pixels[i+1], b=pixels[i+2], a=pixels[i+3];
-            if (a<180) continue;
-            const hi=Math.max(r,g,b), lo=Math.min(r,g,b);
-            const sat=hi-lo;
-            const candleColour = sat>42 && hi>90 && ((g>r+18 && g>b+6) || (r>g+18 && r>b+6) || (b>r+24 && b>g+10));
-            if (candleColour) ys.push(y);
+        const collectColumns = (allowBlue: boolean) => {
+          const runs: Array<{x:number;ys:number[];span:number}> = [];
+          for (let x=left;x<=right;x++) {
+            const ys:number[] = [];
+            for (let y=top;y<=bottom;y++) {
+              const i=(y*width+x)*4, r=pixels[i], g=pixels[i+1], b=pixels[i+2], a=pixels[i+3];
+              if (a<180) continue;
+              const hi=Math.max(r,g,b), lo=Math.min(r,g,b);
+              const sat=hi-lo;
+              const redOrGreen = (g>r+18 && g>b+6) || (r>g+18 && r>b+6);
+              const blueFallback = allowBlue && b>r+24 && b>g+10;
+              const candleColour = sat>42 && hi>90 && (redOrGreen || blueFallback);
+              if (candleColour) ys.push(y);
+            }
+            if (ys.length>=2) {
+              const span=Math.max(...ys)-Math.min(...ys);
+              if (span>=3) runs.push({x,ys,span});
+            }
           }
-          if (ys.length>=2) {
-            const span=Math.max(...ys)-Math.min(...ys);
-            if (span>=3) columnRuns.push({x,ys,span});
-          }
-        }
+          return runs;
+        };
+        let columnRuns = collectColumns(false);
+        // Most broker screenshots use red/green candles. Staying red/green first
+        // avoids mistaking blue current-price badges and selected UI controls for
+        // candles. Only fall back to blue when a chart genuinely lacks enough
+        // red/green structure to scan.
+        if (columnRuns.length < 12) columnRuns = collectColumns(true);
 
         // Candles in screenshots frequently sit only a pixel or two apart.
         // Grouping neighbouring coloured columns merges an entire chart into
