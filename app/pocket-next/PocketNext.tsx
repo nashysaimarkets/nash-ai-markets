@@ -259,6 +259,67 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
   });
 }
 
+function withinPlot(y: number, bounds: PlotBounds, pad = 1.5) {
+  return Number.isFinite(y) && y >= bounds.top - pad && y <= bounds.bottom + pad;
+}
+
+function mergeOverlayLevels(ai: Level[], local: Level[], bounds: PlotBounds) {
+  const safeAi = ai.filter(level => ["support","resistance","pivot"].includes(level.kind) && withinPlot(level.y, bounds));
+  const merged = local.map(level => {
+    const match = safeAi.find(candidate =>
+      Math.abs(candidate.y - level.y) <= 4 &&
+      (candidate.kind === level.kind || candidate.kind === "pivot")
+    );
+    return match ? { ...level, label: match.label || level.label, price: match.price || level.price } : level;
+  });
+  for (const level of safeAi) {
+    if (!merged.some(existing => Math.abs(existing.y - level.y) <= 3)) merged.push(level);
+  }
+  return merged.sort((a,b)=>a.y-b.y).slice(0,6);
+}
+
+function mergeOverlayPatterns(ai: Pattern[], local: Pattern[], bounds: PlotBounds) {
+  const safeAi = ai.filter(pattern => {
+    const points = pattern.geometry?.points ?? [];
+    return points.length >= 2 && points.every(point =>
+      point.x >= bounds.left - 2 && point.x <= bounds.right + 2 && withinPlot(point.y, bounds, 2)
+    );
+  });
+  const merged = [...safeAi];
+  for (const pattern of local) {
+    if (!merged.some(existing => existing.name === pattern.name)) merged.push(pattern);
+  }
+  return merged.slice(0,4);
+}
+
+function mergeOverlayLiquidity(ai: LiquidityRead | undefined, local: LiquidityRead | undefined, bounds: PlotBounds): LiquidityRead | undefined {
+  const safeAiZones = (ai?.zones ?? []).filter(zone =>
+    withinPlot(zone.y, bounds) &&
+    Number.isFinite(zone.x) && Number.isFinite(zone.x2) &&
+    zone.x2 - zone.x >= 3
+  );
+  const localZones = (local?.zones ?? []).filter(zone =>
+    withinPlot(zone.y, bounds) &&
+    Number.isFinite(zone.x) && Number.isFinite(zone.x2) &&
+    zone.x2 - zone.x >= 3
+  );
+  const zones = [...safeAiZones];
+  for (const zone of localZones) {
+    if (!zones.some(existing => existing.side === zone.side && Math.abs(existing.y - zone.y) <= 3)) zones.push(zone);
+  }
+  if (!zones.length) return ai ?? local;
+  const narrative = safeAiZones.length ? ai : local;
+  return {
+    state: narrative?.state === "VERIFIED" ? "VERIFIED" : "PARTIAL",
+    event: narrative?.event ?? "TESTING",
+    confidence: narrative?.confidence ?? "LOW",
+    evidence: narrative?.evidence || "Device geometry marked visible swing references.",
+    confirmation: narrative?.confirmation || "A visible sweep, reclaim or rejection is still required.",
+    invalidation: narrative?.invalidation || "Clean acceptance beyond the reference invalidates it.",
+    zones: zones.slice(0,4),
+  };
+}
+
 function buildLocalAnalysis(scan: LocalScan): Analysis {
   return {
     direction:"NEUTRAL",confidence:"LOW",instrument:"DEVICE SCAN",ticker:"UNKNOWN",timeframe:"UNCONFIRMED",
@@ -273,7 +334,7 @@ function buildLocalAnalysis(scan: LocalScan): Analysis {
     bullishCase:"Not assessed on-device.",bearishCase:"Not assessed on-device.",invalidation:"Not assessed on-device.",
     marketStructure:"Device mode isolates visible swing geometry only.",levelStory:scan.levels.length?"Local support/resistance rows were detected from repeated or prominent swing geometry.":"No strong device level row was detected.",
     momentum:"Not assessed on-device.",bullConfirmation:"Not assessed on-device.",bearConfirmation:"Not assessed on-device.",noTradeCondition:"No AI decision has been run for this chart.",
-    riskFlags:["Device geometry is provisional until visually confirmed."],observableFacts:[],contradictions:[],indicators:[],checklist:[],relevantEventTypes:[],levels:scan.levels
+    riskFlags:["Device geometry is provisional until visually confirmed."],observableFacts:[],contradictions:[],indicators:[],checklist:[],relevantEventTypes:[],levels:scan.levels,plotBounds:scan.plotBounds
   };
 }
 
@@ -338,8 +399,11 @@ export default function PocketNext() {
   const centreRef = useRef<HTMLElement | null>(null);
 
   const mainAnalysis = charts[0]?.analysis ?? null;
-  const analysis = charts[activeChart]?.analysis ?? mainAnalysis;
-  const image = charts[activeChart]?.image ?? charts[0]?.image ?? null;
+  const activeSlot = charts[activeChart];
+  const analysis = activeSlot?.analysis
+    ?? (activeSlot?.localScan ? buildLocalAnalysis(activeSlot.localScan) : null)
+    ?? mainAnalysis;
+  const image = activeSlot?.image ?? charts[0]?.image ?? null;
   const busy = busyChart !== null;
 
   useEffect(() => {
@@ -437,9 +501,17 @@ export default function PocketNext() {
   };
 
   const overlayMode = active;
-  const levels = useMemo(() => analysis?.levels.filter((l) => ["support","resistance","pivot"].includes(l.kind)) ?? [], [analysis]);
-  const patterns = analysis?.patterns ?? [];
-  const liquidity = analysis?.liquidity;
+  const activeLocal = activeSlot?.localScan;
+  const plotBounds: PlotBounds = activeLocal?.plotBounds
+    ?? analysis?.plotBounds
+    ?? { left: 4, top: 12, right: 91, bottom: 88 };
+  const levels = useMemo(() => mergeOverlayLevels(
+    analysis?.levels.filter((l) => ["support","resistance","pivot"].includes(l.kind)) ?? [],
+    activeLocal?.levels ?? [],
+    plotBounds,
+  ), [analysis, activeLocal, plotBounds.left, plotBounds.top, plotBounds.right, plotBounds.bottom]);
+  const patterns = mergeOverlayPatterns(analysis?.patterns ?? [], activeLocal?.patterns ?? [], plotBounds);
+  const liquidity = mergeOverlayLiquidity(analysis?.liquidity, activeLocal?.liquidity, plotBounds);
 
   if (!mainAnalysis || !analysis) return <main className="pnApp pnStartApp">
     <header className="pnTop">
