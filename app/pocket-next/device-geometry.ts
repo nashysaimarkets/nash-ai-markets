@@ -316,8 +316,10 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       for(let x=left;x<=right;x++){
         const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
         const hi=Math.max(r,g,b),lo=Math.min(r,g,b),sat=hi-lo;
-        const redOrGreen=a>=180&&sat>42&&hi>90&&((g>r+18&&g>b+6)||(r>g+18&&r>b+6));
-        if(redOrGreen){
+        const warmOrGreen=((g>r+18&&g>b+6)||(r>g+18&&r>b+6));
+        const cool=(b>r+24&&((b>g+6)||(g>r+24)));
+        const candleColour=a>=180&&sat>42&&hi>90&&(warmOrGreen||cool);
+        if(candleColour){
           streak+=gap+1; gap=0;
           if(streak>longest)longest=streak;
         }else if(streak>0&&gap<1){
@@ -338,9 +340,10 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
           const i=(y*width+x)*channels,r=Number(pixels[i]??0),g=Number(pixels[i+1]??0),b=Number(pixels[i+2]??0),a=channels>=4?Number(pixels[i+3]??255):255;
           if(a<180)continue;
           const hi=Math.max(r,g,b),lo=Math.min(r,g,b),sat=hi-lo;
-          const redOrGreen=(g>r+18&&g>b+6)||(r>g+18&&r>b+6);
+          const warmOrGreen=(g>r+18&&g>b+6)||(r>g+18&&r>b+6);
+          const cool=(b>r+24&&((b>g+6)||(g>r+24)));
           const blueFallback=allowBlue&&b>r+24&&b>g+10;
-          if(sat>42&&hi>90&&(redOrGreen||blueFallback))ys.push(y);
+          if(sat>42&&hi>90&&(warmOrGreen||cool||blueFallback))ys.push(y);
         }
         if(ys.length>=2){
           // Never weld unrelated coloured objects together just because they share
