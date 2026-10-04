@@ -488,3 +488,51 @@
 .pnChart g[data-kind="resistance"] line{stroke-width:1.9}
 .pnChart g[data-kind="pivot"] line{stroke-width:1.6;stroke-dasharray:5 4}
 .pnChart svg{overflow:visible}
+
+
+/* Overlay reliability lock — measured image box + unmistakable evidence */
+.pnChart img{
+  padding:0;
+}
+.pnChart svg,.pnChart .pnLevelLabels,.pnChart .pnPatternLabels{
+  position:absolute;
+  z-index:4;
+  pointer-events:none;
+}
+.pnChart g[data-kind="support"] .pnLevelBand{fill:#67b181;opacity:.18;stroke:none}
+.pnChart g[data-kind="resistance"] .pnLevelBand{fill:#c87870;opacity:.18;stroke:none}
+.pnChart g[data-kind="pivot"] .pnLevelBand{fill:#b39a6d;opacity:.16;stroke:none}
+.pnChart .pnLiquidityBand{stroke:none;opacity:.22}
+.pnChart g[data-side="BUY_SIDE"] .pnLiquidityBand{fill:#c75f58}
+.pnChart g[data-side="SELL_SIDE"] .pnLiquidityBand{fill:#4da374}
+.pnChart .pnPatternPoint{
+  fill:#f4d493;
+  stroke:#172232;
+  stroke-width:1;
+  vector-effect:non-scaling-stroke;
+}
+.pnPatternLabels span{
+  position:absolute;
+  transform:translate(-4px,-110%);
+  max-width:132px;
+  padding:4px 6px;
+  background:rgba(22,29,40,.9);
+  border:1px solid rgba(214,185,126,.6);
+  color:#f2d7a0;
+  font-family:"SFMono-Regular",Consolas,monospace;
+  font-size:7px;
+  font-weight:800;
+  line-height:1.2;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+@media(max-width:760px){
+  .pnChart[data-focus="true"] .pnPatternLabels{
+    position:absolute;
+  }
+  .pnPatternLabels span{
+    font-size:8px;
+    padding:5px 7px;
+  }
+}
