@@ -56,10 +56,11 @@ type Analysis = {
   priceScaleAnchors?: { price: number; y: number }[];
 };
 
-type ChartSlot = { image: string | null; name: string; analysis: Analysis | null };
+type LocalScan = { levels: Level[]; patterns: Pattern[]; liquidity: LiquidityRead; candleCount: number };
+type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-function emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null })); }
+function emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null, localScan: null })); }
 const TABS: Array<{ id: Tab; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "OV" },
   { id: "levels", label: "Levels", short: "LV" },
@@ -102,6 +103,156 @@ function precisionCrop(dataUrl: string) {
     source.onerror = () => resolve(null);
     source.src = dataUrl;
   });
+}
+
+
+async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
+  return new Promise((resolve) => {
+    const source = new Image();
+    source.onload = () => {
+      try {
+        const width = Math.min(420, source.naturalWidth);
+        const height = Math.max(180, Math.round(source.naturalHeight * width / source.naturalWidth));
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0 });
+        ctx.drawImage(source, 0, 0, width, height);
+        const pixels = ctx.getImageData(0,0,width,height).data;
+        const left = Math.round(width * .04), right = Math.round(width * .91);
+        const top = Math.round(height * .08), bottom = Math.round(height * .88);
+        const columns: Array<{x:number;ys:number[]}> = [];
+        for (let x=left;x<=right;x++) {
+          const ys:number[] = [];
+          for (let y=top;y<=bottom;y++) {
+            const i=(y*width+x)*4, r=pixels[i], g=pixels[i+1], b=pixels[i+2], a=pixels[i+3];
+            if (a<180) continue;
+            const hi=Math.max(r,g,b), lo=Math.min(r,g,b);
+            const sat=hi-lo;
+            const candleColour = sat>42 && hi>90 && ((g>r+18 && g>b+6) || (r>g+18 && r>b+6) || (b>r+24 && b>g+10));
+            if (candleColour) ys.push(y);
+          }
+          if (ys.length>=2) columns.push({x,ys});
+        }
+        const candles:Array<{x:number;high:number;low:number;mid:number}> = [];
+        let group:Array<{x:number;ys:number[]}> = [];
+        const flush=()=>{
+          if (!group.length) return;
+          const xs=group.map(v=>v.x);
+          const ys=group.flatMap(v=>v.ys);
+          if (ys.length>=4) {
+            const high=Math.min(...ys), low=Math.max(...ys);
+            if (low-high>=2) candles.push({x:(Math.min(...xs)+Math.max(...xs))/2,high,low,mid:(high+low)/2});
+          }
+          group=[];
+        };
+        for (const col of columns) {
+          if (!group.length || col.x-group[group.length-1].x<=2) group.push(col);
+          else { flush(); group.push(col); }
+        }
+        flush();
+
+        const pctX=(x:number)=>x/width*100, pctY=(y:number)=>y/height*100;
+        type Swing={x:number;y:number;kind:"high"|"low"};
+        const swings:Swing[]=[];
+        for(let i=2;i<candles.length-2;i++){
+          const c=candles[i];
+          const near=candles.slice(i-2,i+3);
+          if (c.high===Math.min(...near.map(v=>v.high))) swings.push({x:c.x,y:c.high,kind:"high"});
+          if (c.low===Math.max(...near.map(v=>v.low))) swings.push({x:c.x,y:c.low,kind:"low"});
+        }
+        const cluster=(kind:"high"|"low")=>{
+          const src=swings.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y);
+          const groups:Array<Swing[]>=[];
+          const tol=Math.max(3,height*.018);
+          for(const s of src){
+            const found=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol);
+            if(found) found.push(s); else groups.push([s]);
+          }
+          return groups
+            .map(g=>({items:g,y:g.reduce((n,v)=>n+v.y,0)/g.length,score:g.length}))
+            .sort((a,b)=>b.score-a.score || (kind==="high"?a.y-b.y:b.y-a.y));
+        };
+        const highs=cluster("high"), lows=cluster("low");
+        const chosenHighs=highs.filter(g=>g.score>=1).slice(0,2);
+        const chosenLows=lows.filter(g=>g.score>=1).slice(0,2);
+        const levels:Level[]=[
+          ...chosenHighs.map((g,i)=>({kind:"resistance" as const,label:g.score>=2?"Repeated swing highs":"Swing high",price:"",x:pctX(left),y:pctY(g.y),x2:pctX(right),y2:pctY(g.y)})),
+          ...chosenLows.map((g,i)=>({kind:"support" as const,label:g.score>=2?"Repeated swing lows":"Swing low",price:"",x:pctX(left),y:pctY(g.y),x2:pctX(right),y2:pctY(g.y)})),
+        ].slice(0,4);
+
+        const patterns:Pattern[]=[];
+        const bestHigh=highs.find(g=>g.score>=2), bestLow=lows.find(g=>g.score>=2);
+        if(bestHigh && bestLow){
+          const hx=bestHigh.items.map(s=>pctX(s.x)), lx=bestLow.items.map(s=>pctX(s.x));
+          const x1=Math.max(4,Math.min(...hx,...lx)), x2=Math.min(96,Math.max(...hx,...lx));
+          if(x2-x1>=18){
+            patterns.push({
+              name:"RECTANGLE / RANGE",status:"FORMING",confidence:"MEDIUM",
+              evidence:"Local geometry found repeated swing highs and lows forming a visible range.",
+              confirmation:"Break and hold beyond one range edge.",invalidation:"Range geometry fails after a decisive break.",
+              geometry:{points:[{x:x1,y:pctY(bestHigh.y)},{x:x2,y:pctY(bestHigh.y)},{x:x2,y:pctY(bestLow.y)},{x:x1,y:pctY(bestLow.y)}],labelX:Math.max(5,x2-16),labelY:Math.max(4,pctY(bestHigh.y)-4)}
+            });
+          }
+        } else if (bestHigh?.items.length>=2) {
+          const a=bestHigh.items[0], b=bestHigh.items.at(-1)!;
+          if(Math.abs(b.x-a.x)>width*.14) patterns.push({
+            name:"DOUBLE TOP",status:"FORMING",confidence:"LOW",
+            evidence:"Local geometry found two separated swing highs at a similar row.",
+            confirmation:"Visible rejection followed by a lower structural break.",invalidation:"Clean acceptance above the twin highs.",
+            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(Math.max(...candles.filter(v=>v.x>a.x&&v.x<b.x).map(v=>v.low),a.y))},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.max(4,pctY(b.y)-4)}
+          });
+        } else if (bestLow?.items.length>=2) {
+          const a=bestLow.items[0], b=bestLow.items.at(-1)!;
+          if(Math.abs(b.x-a.x)>width*.14) patterns.push({
+            name:"DOUBLE BOTTOM",status:"FORMING",confidence:"LOW",
+            evidence:"Local geometry found two separated swing lows at a similar row.",
+            confirmation:"Visible reclaim followed by a higher structural break.",invalidation:"Clean acceptance below the twin lows.",
+            geometry:{points:[{x:pctX(a.x),y:pctY(a.y)},{x:pctX((a.x+b.x)/2),y:pctY(Math.min(...candles.filter(v=>v.x>a.x&&v.x<b.x).map(v=>v.high),a.y))},{x:pctX(b.x),y:pctY(b.y)}],labelX:pctX(b.x),labelY:Math.min(96,pctY(b.y)+4)}
+          });
+        }
+
+        const zones:LiquidityZone[]=[];
+        if(bestHigh){
+          zones.push({side:"BUY_SIDE",basis:bestHigh.score>=2?"EQUAL_HIGHS":"PRIOR_SWING_HIGH",price:"",x:pctX(Math.min(...bestHigh.items.map(s=>s.x))),x2:pctX(Math.max(...bestHigh.items.map(s=>s.x))),y:pctY(bestHigh.y)});
+        }
+        if(bestLow){
+          zones.push({side:"SELL_SIDE",basis:bestLow.score>=2?"EQUAL_LOWS":"PRIOR_SWING_LOW",price:"",x:pctX(Math.min(...bestLow.items.map(s=>s.x))),x2:pctX(Math.max(...bestLow.items.map(s=>s.x))),y:pctY(bestLow.y)});
+        }
+        const liquidity:LiquidityRead = zones.length ? {
+          state:"PARTIAL",event:"TESTING",confidence:"LOW",
+          evidence:"Local pixel geometry marked repeated or prior swing references only; hidden orders are not inferred.",
+          confirmation:"A visible sweep/reclaim or rejection is still required.",
+          invalidation:"The reference is invalid if price cleanly accepts beyond it.",
+          zones
+        } : {state:"NONE",event:"NONE",confidence:"LOW",evidence:"No repeated swing reference was strong enough locally.",confirmation:"",invalidation:"",zones:[]};
+
+        resolve({levels,patterns,liquidity,candleCount:candles.length});
+      } catch {
+        resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0 });
+      }
+    };
+    source.onerror=()=>resolve({ levels: [], patterns: [], liquidity: { state:"NONE",event:"NONE",confidence:"LOW",evidence:"",confirmation:"",invalidation:"",zones:[] }, candleCount: 0 });
+    source.src=dataUrl;
+  });
+}
+
+function buildLocalAnalysis(scan: LocalScan): Analysis {
+  return {
+    direction:"NEUTRAL",confidence:"LOW",instrument:"LOCAL SCAN",ticker:"UNKNOWN",timeframe:"UNCONFIRMED",
+    evidenceQuality:{chartReadability:scan.candleCount>=12?"PARTIAL":"POOR",instrumentConfidence:"UNKNOWN",timeframeConfidence:"UNKNOWN",scaleReadable:false,candlesReadable:scan.candleCount>=8,limitations:["Local zero-credit geometry only. Numeric prices and instrument labels are not verified."]},
+    higherTimeframe:{provided:false,timeframe:"UNKNOWN",direction:"UNKNOWN",alignment:"NOT_PROVIDED",summary:"AI multi-timeframe narrative has not been run for this chart."},
+    patterns:scan.patterns,liquidity:scan.liquidity,
+    nextSequence:{now:"LOCAL SCAN READY",confirmation:"Use the visible chart reaction to confirm.",failure:"Ignore a local mark that does not match visible price structure.",patience:"AI enrichment is optional.",reassess:"Re-check after the chart materially changes."},
+    summary:"Zero-credit local geometry is ready. This view has not used an OpenAI analysis call.",
+    verdict:"REVIEW_REQUIRED",verdictHeadline:"Local geometry ready — AI judgement not run.",setupScore:{overall:0,grade:"F",structure:0,momentum:0,location:0,confirmation:0,riskClarity:0,eventSafety:0},
+    whatYouMayBeMissing:["Local scanning can find screenshot geometry but cannot reliably read every price label or market context."],
+    improvesSetup:[],killsSetup:[],traderTrap:"Treating a locally detected row as a trading signal instead of a chart reference.",
+    bullishCase:"Not assessed locally.",bearishCase:"Not assessed locally.",invalidation:"Not assessed locally.",
+    marketStructure:"Local mode isolates visible swing geometry only.",levelStory:scan.levels.length?"Local support/resistance rows were detected from repeated or prominent swing geometry.":"No strong local level row was detected.",
+    momentum:"Not assessed locally.",bullConfirmation:"Not assessed locally.",bearConfirmation:"Not assessed locally.",noTradeCondition:"No AI decision has been run for this chart.",
+    riskFlags:["Local geometry is provisional until visually confirmed."],observableFacts:[],contradictions:[],indicators:[],checklist:[],relevantEventTypes:[],levels:scan.levels
+  };
 }
 
 function demoChart() {
@@ -194,9 +345,13 @@ export default function PocketNext() {
       setError("");
       const nextImage = await fileToDataUrl(file);
       setCharts((current) => current.map((slot, slotIndex) => slotIndex === index
-        ? { image: nextImage, name: file.name, analysis: null }
+        ? { image: nextImage, name: file.name, analysis: null, localScan: null }
         : slot));
       if (index === 0) setActiveChart(0);
+      const localScan = await scanChartLocally(nextImage);
+      setCharts((current) => current.map((slot, slotIndex) => slotIndex === index && slot.image === nextImage
+        ? { ...slot, localScan }
+        : slot));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not load that chart.");
     }
@@ -235,16 +390,12 @@ export default function PocketNext() {
   const selectChart = async (index: number) => {
     const slot = charts[index];
     if (!slot?.image || index === activeChart) return;
-    if (slot.analysis) {
-      setActiveChart(index);
-      return;
-    }
-    await analyseChart(index, true);
+    setActiveChart(index);
   };
 
   const openDemo = () => {
     const demo = emptyChartSlots();
-    demo[0] = { image: demoChart(), name: "Interface demo", analysis: DEMO_ANALYSIS };
+    demo[0] = { image: demoChart(), name: "Interface demo", analysis: DEMO_ANALYSIS, localScan: null };
     setCharts(demo);
     setActiveChart(0);
     setActive("overview");
@@ -356,7 +507,7 @@ export default function PocketNext() {
             data-busy={busyChart===index}
             onClick={()=>void selectChart(index)}
             disabled={busy && busyChart!==index}
-          ><span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>{busyChart===index ? "SCANNING" : slot.analysis?.timeframe && slot.analysis.timeframe!=="UNKNOWN" ? slot.analysis.timeframe : slot.analysis ? "READY" : "SCAN"}</strong></button> : <label key={index} className="pnChartAdd">
+          ><span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>{busyChart===index ? "AI…" : slot.analysis?.timeframe && slot.analysis.timeframe!=="UNKNOWN" ? slot.analysis.timeframe : slot.analysis ? "READY" : slot.localScan ? "LOCAL" : "SCAN…"}</strong></button> : <label key={index} className="pnChartAdd">
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(index,e.target.files?.[0])}/>
             <span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>+</strong>
           </label>)}
