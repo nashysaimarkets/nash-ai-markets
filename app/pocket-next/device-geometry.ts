@@ -366,8 +366,8 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
       if(candle.low===Math.max(...near.map(v=>v.low)))patternSwings.push({x:candle.x,y:candle.low,kind:"low"});
     }
 
-    const clusterFrom=(source:Swing[],kind:"high"|"low")=>{
-      const src=source.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,structureHeight*.018);
+    const clusterFrom=(source:Swing[],kind:"high"|"low",tolPct=.018)=>{
+      const src=source.filter(s=>s.kind===kind).sort((a,b)=>a.y-b.y),groups:Swing[][]=[],tol=Math.max(3,structureHeight*tolPct);
       for(const s of src){const found=groups.find(g=>Math.abs(g.reduce((n,v)=>n+v.y,0)/g.length-s.y)<=tol);if(found)found.push(s);else groups.push([s]);}
       return groups.map(items=>({items,y:items.reduce((n,v)=>n+v.y,0)/items.length,score:items.length} as Cluster)).sort((a,b)=>b.score-a.score||(kind==="high"?a.y-b.y:b.y-a.y));
     };
