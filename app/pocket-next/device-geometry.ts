@@ -340,7 +340,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(hs)patternCandidates.push(hs);
 
-    for(let i=0;i<=pivots.length-3;i++){
+    if(!hs) for(let i=0;i<=pivots.length-3;i++){
       const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;
       if(span<width*.18||span>width*.58||b.x>width*.9)continue;
 
@@ -348,7 +348,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         const prior=trendMove(candles,a.x,width);
         const topDiff=Math.abs(a.y-b.y);
         const depth=m.y-(a.y+b.y)/2;
-        if(prior!==null&&prior< -structureHeight*.04&&topDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.36){
+        if(prior!==null&&prior< -structureHeight*.04&&topDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.6){
           const after=candles.filter(x=>x.x>b.x);
           const breaks=after.filter(x=>x.mid>m.y+structureHeight*.01).length;
           const confirmed=after.length>=3&&breaks>=2;
@@ -368,7 +368,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         const prior=trendMove(candles,a.x,width);
         const bottomDiff=Math.abs(a.y-b.y);
         const depth=(a.y+b.y)/2-m.y;
-        if(prior!==null&&prior>structureHeight*.04&&bottomDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.36){
+        if(prior!==null&&prior>structureHeight*.04&&bottomDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.6){
           const after=candles.filter(x=>x.x>b.x);
           const breaks=after.filter(x=>x.mid<m.y-structureHeight*.01).length;
           const confirmed=after.length>=3&&breaks>=2;
