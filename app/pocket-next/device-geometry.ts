@@ -219,9 +219,7 @@ function boundaryPattern(pivots:Swing[],candles:Candle[],width:number,height:num
 }
 
 
-function hasReversalSkeleton(pivots:Swing[],candles:Candle[],width:number,height:number){
-  // This is a veto only: an unconfirmed reversal skeleton must not be
-  // relabelled as a flag. It never creates a user-visible reversal pattern.
+function hasHeadShouldersSkeleton(pivots:Swing[],candles:Candle[],width:number,height:number){
   for(let i=0;i<=pivots.length-5;i++){
     const p=pivots.slice(i,i+5), kinds=p.map(x=>x.kind).join("");
     const span=p[4].x-p[0].x;
@@ -241,6 +239,13 @@ function hasReversalSkeleton(pivots:Swing[],candles:Candle[],width:number,height
       if(prior!==null&&prior>height*.03&&shoulderDiff<=height*.065&&headProm>=height*.045)return true;
     }
   }
+  return false;
+}
+
+function hasReversalSkeleton(pivots:Swing[],candles:Candle[],width:number,height:number){
+  // Veto only: an unconfirmed reversal skeleton must not be relabelled as a flag.
+  // This never creates a user-visible reversal pattern.
+  if(hasHeadShouldersSkeleton(pivots,candles,width,height))return true;
   for(let i=0;i<=pivots.length-3;i++){
     const [a,m,b]=pivots.slice(i,i+3),span=b.x-a.x;
     if(span<width*.16||span>width*.62)continue;
@@ -255,6 +260,7 @@ function hasReversalSkeleton(pivots:Swing[],candles:Candle[],width:number,height
   }
   return false;
 }
+
 
 function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)=>number,pctY:(y:number)=>number,bounds:DevicePlotBounds){
   if(candles.length<20)return null;
@@ -479,7 +485,8 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const reversalSkeleton=hasReversalSkeleton(pivots,candles,width,structureHeight);
     const flag=reversalSkeleton ? null : flagPattern(candles,width,structureHeight,pctX,pctY,plotBounds);
     if(flag)patternCandidates.push(flag);
-    const boundary=reversalSkeleton ? null : boundaryPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
+    const headShouldersSkeleton=hasHeadShouldersSkeleton(pivots,candles,width,structureHeight);
+    const boundary=headShouldersSkeleton ? null : boundaryPattern(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
     if(boundary)patternCandidates.push(boundary);
 
     const rh=patternHighs.find(g=>g.score>=2),rl=patternLows.find(g=>g.score>=2);
