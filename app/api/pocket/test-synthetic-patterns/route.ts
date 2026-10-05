@@ -128,6 +128,8 @@ export async function GET(request:Request){
   const patternRadiusOverride=radiusRaw===null?undefined:Number(radiusRaw);
   const insetRaw=u.searchParams.get("inset");
   const horizontalInsetOverride=insetRaw===null?undefined:Number(insetRaw);
+  const rightInsetRaw=u.searchParams.get("rightInset");
+  const horizontalRightInsetOverride=rightInsetRaw===null?undefined:Number(rightInsetRaw);
   const only=u.searchParams.get("only");
   const paletteRaw=(u.searchParams.get("palette")||"rg") as PaletteName;
   const paletteName:PaletteName=paletteRaw in PALETTES?paletteRaw:"rg";
@@ -137,7 +139,7 @@ export async function GET(request:Request){
   for(const test of selectedCases){
     const runs=[] as any[];
     for(let v=0;v<variants;v++){
-      const scan=scanDevicePixels({pixels:render(test,v,paletteName),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride,horizontalInsetOverride});
+      const scan=scanDevicePixels({pixels:render(test,v,paletteName),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride,horizontalInsetOverride,horizontalRightInsetOverride});
       const pats=visible(scan);
       const names=pats.map(p=>p.name);
       const hit=test.expected==="NO CLEAN PATTERN"?!names.length:names.some(n=>norm(n)===norm(test.expected));
