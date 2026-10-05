@@ -466,7 +466,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // many separate candles can legitimately touch the same price. Instead detect a
     // long *continuous* coloured horizontal run (allowing one tiny anti-aliasing gap).
     const noisyRows=new Set<number>();
-    const rowMaskFraction=Math.min(.6,Math.max(.08,input.rowMaskFraction??.22));
+    const rowMaskFraction=Math.min(.6,Math.max(.08,input.rowMaskFraction??.20));
     const rowRunThreshold=Math.max(18,Math.round((right-left+1)*rowMaskFraction));
     for(let y=top;y<=bottom;y++){
       let streak=0,longest=0,gap=0;
