@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { inflateSync } from "node:zlib";
-import { scanDevicePixels, scanDevicePixelsWithReversalFallback, type DeviceLocalScan } from "../../../pocket-next/device-geometry";
+import { scanDevicePixels, type DeviceLocalScan } from "../../../pocket-next/device-geometry";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -152,8 +152,19 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer},maxWidth=420)
 }
 
 async function scan(buffer:Buffer,maxWidth=420,debug=false,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number,horizontalInsetOverride?:number,horizontalRightInsetOverride?:number):Promise<DeviceLocalScan>{
-  const {data,width,height,channels}=resizeRgb(decodePng(buffer),maxWidth);
-  return scanDevicePixelsWithReversalFallback({pixels:data,width,height,channels,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride});
+  const decoded=decodePng(buffer);
+  const primary=resizeRgb(decoded,maxWidth);
+  const input={pixels:primary.data,width:primary.width,height:primary.height,channels:primary.channels,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride};
+  const base=scanDevicePixels(input);
+  const confirmedReversal=(pattern:DeviceLocalScan["patterns"][number])=>
+    (pattern.name==="HEAD & SHOULDERS"||pattern.name==="INVERSE H&S")&&pattern.status==="CONFIRMED"&&pattern.confidence!=="LOW";
+  if(maxWidth!==420||patternRadiusOverride||base.patterns.some(confirmedReversal))return base;
+  const tiny=resizeRgb(decoded,220);
+  const fallback=scanDevicePixels({pixels:tiny.data,width:tiny.width,height:tiny.height,channels:tiny.channels,rowMaskFraction,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride});
+  const reversal=fallback.patterns.find(confirmedReversal);
+  if(!reversal)return base;
+  const retained=base.patterns.filter(pattern=>pattern.name!=="HEAD & SHOULDERS"&&pattern.name!=="INVERSE H&S");
+  return {...base,patterns:[reversal,...retained].slice(0,2)};
 }
 
 function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
