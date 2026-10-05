@@ -113,16 +113,28 @@ async function scanChartLocally(dataUrl: string): Promise<LocalScan> {
     const source = new Image();
     source.onload = () => {
       try {
-        const width = Math.min(420, source.naturalWidth);
-        const height = Math.max(180, Math.round(source.naturalHeight * width / source.naturalWidth));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        if (!ctx) return resolve(emptyDeviceScan());
-        ctx.drawImage(source, 0, 0, width, height);
-        const imageData = ctx.getImageData(0, 0, width, height);
-        resolve(scanDevicePixels({ pixels: imageData.data, width, height, channels: 4 }));
+        const renderScan = (targetWidth: number) => {
+          const width = Math.min(targetWidth, source.naturalWidth);
+          const height = Math.max(180, Math.round(source.naturalHeight * width / source.naturalWidth));
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          if (!ctx) return emptyDeviceScan();
+          ctx.drawImage(source, 0, 0, width, height);
+          const imageData = ctx.getImageData(0, 0, width, height);
+          return scanDevicePixels({ pixels: imageData.data, width, height, channels: 4 });
+        };
+        const base = renderScan(420);
+        const confirmedReversal = (pattern: Pattern) =>
+          (pattern.name === "HEAD & SHOULDERS" || pattern.name === "INVERSE H&S") &&
+          pattern.status === "CONFIRMED" && pattern.confidence !== "LOW";
+        if (base.patterns.some(confirmedReversal) || source.naturalWidth <= 240) return resolve(base);
+        const fallback = renderScan(220);
+        const reversal = fallback.patterns.find(confirmedReversal);
+        if (!reversal) return resolve(base);
+        const retained = base.patterns.filter((pattern) => pattern.name !== "HEAD & SHOULDERS" && pattern.name !== "INVERSE H&S");
+        resolve({ ...base, patterns: [reversal, ...retained].slice(0, 2) });
       } catch {
         resolve(emptyDeviceScan());
       }
