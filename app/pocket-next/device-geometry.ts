@@ -742,7 +742,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         const prior=trendMove(candles,a.x,width);
         const topDiff=Math.abs(a.y-b.y);
         const depth=m.y-(a.y+b.y)/2;
-        if(prior!==null&&prior< -structureHeight*.04&&topDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.6){
+        if(prior!==null&&prior< -structureHeight*.04&&topDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.7){
           const after=candles.filter(x=>x.x>b.x);
           const breaks=after.filter(x=>x.mid>m.y+structureHeight*.01).length;
           const confirmed=after.length>=3&&breaks>=2;
@@ -762,7 +762,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
         const prior=trendMove(candles,a.x,width);
         const bottomDiff=Math.abs(a.y-b.y);
         const depth=(a.y+b.y)/2-m.y;
-        if(prior!==null&&prior>structureHeight*.04&&bottomDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.6){
+        if(prior!==null&&prior>structureHeight*.04&&bottomDiff<=structureHeight*.035&&depth>=structureHeight*.075&&depth<=structureHeight*.7){
           const after=candles.filter(x=>x.x>b.x);
           const breaks=after.filter(x=>x.mid<m.y-structureHeight*.01).length;
           const confirmed=after.length>=3&&breaks>=2;
