@@ -78,17 +78,10 @@ function normalizePivots(swings:Swing[]){
 }
 
 function trendMove(candles:Candle[], x:number, width:number){
-  // Use the nearest completed candles before the candidate, not a fixed slice of
-  // the entire screenshot. Real broker screenshots often show months of history
-  // while the relevant reversal occupies only the final 15–30% of the chart.
-  // A global-width lookback can therefore measure an older opposite trend and
-  // incorrectly veto otherwise valid local pattern geometry.
-  const before=candles.filter(c=>c.x<x-width*.015);
-  if(before.length<6)return null;
-  const sample=before.slice(-Math.min(14,Math.max(6,Math.round(before.length*.42))));
-  const edge=Math.max(2,Math.floor(sample.length*.3));
-  const first=sample.slice(0,edge).reduce((s,c)=>s+c.mid,0)/edge;
-  const last=sample.slice(-edge).reduce((s,c)=>s+c.mid,0)/edge;
+  const sample=candles.filter(c=>c.x>=x-width*.22&&c.x<x-width*.015);
+  if(sample.length<6)return null;
+  const first=sample.slice(0,Math.max(2,Math.floor(sample.length*.3))).reduce((s,c)=>s+c.mid,0)/Math.max(1,Math.floor(sample.length*.3));
+  const last=sample.slice(-Math.max(2,Math.floor(sample.length*.3))).reduce((s,c)=>s+c.mid,0)/Math.max(1,Math.floor(sample.length*.3));
   return last-first;
 }
 
