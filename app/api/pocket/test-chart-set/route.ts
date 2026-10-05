@@ -144,14 +144,40 @@ function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:
   return {data,width,height,channels:3};
 }
 
+function addSideChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
+  const leftPad=Math.max(34,Math.round(frame.width*.09));
+  const rightPad=Math.max(50,Math.round(frame.width*.13));
+  const width=frame.width+leftPad+rightPad, height=frame.height;
+  const data=Buffer.alloc(width*height*3,246);
+  for(let y=0;y<frame.height;y++){
+    for(let x=0;x<frame.width;x++){
+      const s=(y*frame.width+x)*3,d=(y*width+x+leftPad)*3;
+      data[d]=frame.data[s];data[d+1]=frame.data[s+1];data[d+2]=frame.data[s+2];
+    }
+  }
+  const rect=(x0:number,y0:number,x1:number,y1:number,r:number,g:number,b:number)=>{
+    for(let y=Math.max(0,y0);y<Math.min(height,y1);y++) for(let x=Math.max(0,x0);x<Math.min(width,x1);x++){
+      const i=(y*width+x)*3;data[i]=r;data[i+1]=g;data[i+2]=b;
+    }
+  };
+  rect(4,Math.round(height*.12),leftPad-5,Math.round(height*.22),35,128,202);
+  rect(4,Math.round(height*.28),leftPad-5,Math.round(height*.38),38,167,97);
+  rect(4,Math.round(height*.44),leftPad-5,Math.round(height*.54),214,73,68);
+  for(let y=Math.round(height*.12);y<Math.round(height*.88);y+=Math.max(16,Math.round(height*.07))){
+    rect(width-rightPad+6,y,width-6,y+2,96,96,96);
+  }
+  return {data,width,height,channels:3};
+}
+
+
 async function scanRobust(buffer:Buffer,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number){
   const decoded=decodePng(buffer);
-  const base=resizeRgb(decoded,420), small=resizeRgb(decoded,300), chrome=addBrokerChrome(base);
-  return {
-    base:scanDevicePixels({pixels:base.data,width:base.width,height:base.height,channels:3,rowMaskFraction,patternRadiusOverride,neutralContrastOverride}),
-    small:scanDevicePixels({pixels:small.data,width:small.width,height:small.height,channels:3,rowMaskFraction,patternRadiusOverride,neutralContrastOverride}),
-    chrome:scanDevicePixels({pixels:chrome.data,width:chrome.width,height:chrome.height,channels:3,rowMaskFraction,patternRadiusOverride,neutralContrastOverride}),
-  };
+  const base=resizeRgb(decoded,420), small=resizeRgb(decoded,300), tiny=resizeRgb(decoded,220);
+  const chrome=addBrokerChrome(base), side=addSideChrome(base);
+  const scan=(frame:{data:Buffer;width:number;height:number;channels:number})=>scanDevicePixels({
+    pixels:frame.data,width:frame.width,height:frame.height,channels:3,rowMaskFraction,patternRadiusOverride,neutralContrastOverride
+  });
+  return {base:scan(base),small:scan(small),tiny:scan(tiny),chrome:scan(chrome),side:scan(side)};
 }
 
 export async function GET(request:Request){
@@ -179,7 +205,9 @@ export async function GET(request:Request){
           variants:{
             base:{patterns:visible(variants.base),levels:variants.base.levels.length,liquidity:variants.base.liquidity.zones.length,candles:variants.base.candleCount},
             small:{patterns:visible(variants.small),levels:variants.small.levels.length,liquidity:variants.small.liquidity.zones.length,candles:variants.small.candleCount},
+            tiny:{patterns:visible(variants.tiny),levels:variants.tiny.levels.length,liquidity:variants.tiny.liquidity.zones.length,candles:variants.tiny.candleCount},
             chrome:{patterns:visible(variants.chrome),levels:variants.chrome.levels.length,liquidity:variants.chrome.liquidity.zones.length,candles:variants.chrome.candleCount},
+            side:{patterns:visible(variants.side),levels:variants.side.levels.length,liquidity:variants.side.liquidity.zones.length,candles:variants.side.candleCount},
           }
         });
       }else{
@@ -196,9 +224,10 @@ export async function GET(request:Request){
     const unstable:any[]=[];
     for(const item of usable){
       const names=(variant:any)=>JSON.stringify(variant.patterns);
-      const p=names(item.variants.base)===names(item.variants.small)&&names(item.variants.base)===names(item.variants.chrome);
-      const l=[item.variants.base,item.variants.small,item.variants.chrome].every((variant:any)=>variant.levels>=2);
-      const q=[item.variants.base,item.variants.small,item.variants.chrome].every((variant:any)=>variant.liquidity>=1);
+      const variantList=[item.variants.base,item.variants.small,item.variants.tiny,item.variants.chrome,item.variants.side];
+      const p=variantList.every((variant:any)=>names(item.variants.base)===names(variant));
+      const l=variantList.every((variant:any)=>variant.levels>=2);
+      const q=variantList.every((variant:any)=>variant.liquidity>=1);
       if(p)patternStable++; if(l)levelStable++; if(q)liquidityStable++;
       if(!p||!l||!q)unstable.push({id:item.id,...item.variants});
     }
