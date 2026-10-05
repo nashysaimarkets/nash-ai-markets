@@ -100,7 +100,7 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
     if(symmetry<.45)continue;
     const headProm=Math.min(ls.y,rs.y)-head.y, shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.095)continue;
+    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.13)continue;
     const leftNecks=between(lows,ls.x,head.x),rightNecks=between(lows,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y>b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y>b.y?a:b);
@@ -143,7 +143,7 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
     if(symmetry<.45)continue;
     const headProm=head.y-Math.max(ls.y,rs.y), shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.095)continue;
+    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.13)continue;
     const leftNecks=between(highs,ls.x,head.x),rightNecks=between(highs,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y<b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y<b.y?a:b);
