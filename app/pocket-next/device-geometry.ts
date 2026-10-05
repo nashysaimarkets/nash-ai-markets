@@ -840,3 +840,33 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     };
   }catch{return emptyDeviceScan();}
 }
+
+
+// Production-safe secondary pass for scale-sensitive reversal structures.
+// The base scan remains authoritative for levels/liquidity and all non-H&S
+// families. Only a fully confirmed H&S / inverse H&S may be promoted from
+// the normalized narrow-width pass.
+export function scanDevicePixelsWithReversalFallback(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number;patternRadiusOverride?:number;neutralContrastOverride?:number;horizontalInsetOverride?:number;horizontalRightInsetOverride?:number}):DeviceLocalScan{
+  const base=scanDevicePixels(input);
+  const isConfirmedReversal=(pattern:DevicePattern)=>
+    (pattern.name==="HEAD & SHOULDERS"||pattern.name==="INVERSE H&S")&&
+    pattern.status==="CONFIRMED"&&pattern.confidence!=="LOW";
+  if(base.patterns.some(isConfirmedReversal)||input.width<=240)return base;
+
+  const channels=input.channels??4,targetWidth=220;
+  const targetHeight=Math.max(180,Math.round(input.height*targetWidth/input.width));
+  const resized=new Uint8ClampedArray(targetWidth*targetHeight*channels);
+  for(let y=0;y<targetHeight;y++){
+    const sy=Math.min(input.height-1,Math.floor(y*input.height/targetHeight));
+    for(let x=0;x<targetWidth;x++){
+      const sx=Math.min(input.width-1,Math.floor(x*input.width/targetWidth));
+      const source=(sy*input.width+sx)*channels,target=(y*targetWidth+x)*channels;
+      for(let channel=0;channel<channels;channel++)resized[target+channel]=Number(input.pixels[source+channel]??0);
+    }
+  }
+  const fallback=scanDevicePixels({...input,pixels:resized,width:targetWidth,height:targetHeight,debug:false});
+  const reversal=fallback.patterns.find(isConfirmedReversal);
+  if(!reversal)return base;
+  const retained=base.patterns.filter(pattern=>pattern.name!=="HEAD & SHOULDERS"&&pattern.name!=="INVERSE H&S");
+  return {...base,patterns:[reversal,...retained].slice(0,2)};
+}
