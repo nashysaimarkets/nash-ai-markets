@@ -149,9 +149,9 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer},maxWidth=420)
   return {data,width,height,channels:3};
 }
 
-async function scan(buffer:Buffer,maxWidth=420,debug=false,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number,horizontalInsetOverride?:number):Promise<DeviceLocalScan>{
+async function scan(buffer:Buffer,maxWidth=420,debug=false,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number,horizontalInsetOverride?:number,horizontalRightInsetOverride?:number):Promise<DeviceLocalScan>{
   const {data,width,height,channels}=resizeRgb(decodePng(buffer),maxWidth);
-  return scanDevicePixels({pixels:data,width,height,channels,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride});
+  return scanDevicePixels({pixels:data,width,height,channels,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride});
 }
 
 function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
@@ -198,12 +198,12 @@ function addSideChrome(frame:{data:Buffer;width:number;height:number;channels:nu
 }
 
 
-async function scanRobust(buffer:Buffer,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number,horizontalInsetOverride?:number){
+async function scanRobust(buffer:Buffer,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number,horizontalInsetOverride?:number,horizontalRightInsetOverride?:number){
   const decoded=decodePng(buffer);
   const base=resizeRgb(decoded,420), small=resizeRgb(decoded,300), tiny=resizeRgb(decoded,220);
   const chrome=addBrokerChrome(base), side=addSideChrome(base);
   const scan=(frame:{data:Buffer;width:number;height:number;channels:number})=>scanDevicePixels({
-    pixels:frame.data,width:frame.width,height:frame.height,channels:3,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride
+    pixels:frame.data,width:frame.width,height:frame.height,channels:3,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride
   });
   return {base:scan(base),small:scan(small),tiny:scan(tiny),chrome:scan(chrome),side:scan(side)};
 }
@@ -221,6 +221,8 @@ export async function GET(request:Request){
   const neutralContrastOverride=contrastRaw===null?undefined:Number(contrastRaw);
   const insetRaw=url.searchParams.get("inset");
   const horizontalInsetOverride=insetRaw===null?undefined:Number(insetRaw);
+  const rightInsetRaw=url.searchParams.get("rightInset");
+  const horizontalRightInsetOverride=rightInsetRaw===null?undefined:Number(rightInsetRaw);
   const only=url.searchParams.get("only");
   const selectedCases=only?CASES.filter(test=>test.id===only):CASES;
   const results=[] as any[];
@@ -228,7 +230,7 @@ export async function GET(request:Request){
     try{
       const buffer=await fetchImage(test.url);
       if(robust){
-        const variants=await scanRobust(buffer,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride);
+        const variants=await scanRobust(buffer,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride);
         const visible=(scan:DeviceLocalScan)=>scan.patterns.filter(pattern=>pattern.confidence!=="LOW").map(pattern=>pattern.name);
         results.push({
           ...test,
@@ -241,7 +243,7 @@ export async function GET(request:Request){
           }
         });
       }else{
-        const scanResult=await scan(buffer,420,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride);
+        const scanResult=await scan(buffer,420,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride);
         results.push({...test,scan:scanResult});
       }
     }catch(error){
