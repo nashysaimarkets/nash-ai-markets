@@ -92,13 +92,15 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
 
   for(let i=0;i<highs.length-2;i++) for(let j=i+1;j<highs.length-1;j++) for(let k=j+1;k<highs.length;k++){
     const ls=highs[i],head=highs[j],rs=highs[k], span=rs.x-ls.x;
-    if(span<width*.22||span>width*.62||rs.x>width*.87)continue;
+    if(span<width*.16||span>width*.64||rs.x>width*.90)continue;
     const prior=trendMove(candles,ls.x,width);
-    if(prior===null||prior> -height*.045)continue; // H&S should arrive after an actual advance.
+    const priorLow=lows.filter(p=>p.x<ls.x&&ls.x-p.x<=width*.20).at(-1);
+    const approach=priorLow?priorLow.y-ls.y:0;
+    if((prior===null||prior> -height*.045)&&approach<height*.075)continue; // Accept a sharp local advance into the left shoulder when the screenshot contains older opposing history.
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
-    if(symmetry<.48)continue;
+    if(symmetry<.45)continue;
     const headProm=Math.min(ls.y,rs.y)-head.y, shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.06||headProm>height*.24||shoulderDiff>height*.045)continue;
+    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.085)continue;
     const leftNecks=between(lows,ls.x,head.x),rightNecks=between(lows,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y>b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y>b.y?a:b);
@@ -127,13 +129,15 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
 
   for(let i=0;i<lows.length-2;i++) for(let j=i+1;j<lows.length-1;j++) for(let k=j+1;k<lows.length;k++){
     const ls=lows[i],head=lows[j],rs=lows[k], span=rs.x-ls.x;
-    if(span<width*.22||span>width*.62||rs.x>width*.87)continue;
+    if(span<width*.16||span>width*.64||rs.x>width*.90)continue;
     const prior=trendMove(candles,ls.x,width);
-    if(prior===null||prior<height*.045)continue; // inverse H&S should arrive after an actual decline.
+    const priorHigh=highs.filter(p=>p.x<ls.x&&ls.x-p.x<=width*.20).at(-1);
+    const approach=priorHigh?ls.y-priorHigh.y:0;
+    if((prior===null||prior<height*.045)&&approach<height*.075)continue; // Accept a sharp local decline into the left shoulder when older chart history points the other way.
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
-    if(symmetry<.48)continue;
+    if(symmetry<.45)continue;
     const headProm=head.y-Math.max(ls.y,rs.y), shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.06||headProm>height*.24||shoulderDiff>height*.045)continue;
+    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.085)continue;
     const leftNecks=between(highs,ls.x,head.x),rightNecks=between(highs,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y<b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y<b.y?a:b);
