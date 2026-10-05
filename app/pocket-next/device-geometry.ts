@@ -100,7 +100,7 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
     if(symmetry<.45)continue;
     const headProm=Math.min(ls.y,rs.y)-head.y, shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.085)continue;
+    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.095)continue;
     const leftNecks=between(lows,ls.x,head.x),rightNecks=between(lows,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y>b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y>b.y?a:b);
@@ -110,18 +110,24 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const confirmEnd=rs.x+Math.min(width*.2,span*.58);
     const after=candles.filter(x=>x.x>rs.x&&x.x<=confirmEnd);
     if(after.length<4)continue;
-    let streak=0,maxStreak=0;
+    let streak=0,maxStreak=0,strongBreak=false;
     for(const x of after){
-      const beyond=x.mid>(n1.y+slope*(x.x-n1.x))+height*.012;
+      const neckline=n1.y+slope*(x.x-n1.x);
+      const beyond=x.mid>neckline+height*.012;
       streak=beyond?streak+1:0;
       if(streak>maxStreak)maxStreak=streak;
+      // A single genuinely decisive breakdown candle is valid confirmation even
+      // when the screenshot ends before a second close is available. Requiring
+      // both the candle midpoint and its lower extreme to clear the neckline by
+      // material margins avoids turning an ordinary wick poke into confirmation.
+      if(x.mid>neckline+height*.03&&x.low>neckline+height*.055)strongBreak=true;
     }
-    const confirmed=maxStreak>=2;
+    const confirmed=maxStreak>=2||strongBreak;
     if(!confirmed)continue;
     const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
     candidates.push({score:headProm/height+symmetry*.12-neckDiff/height*.25,pattern:{
       name:"HEAD & SHOULDERS",status:"CONFIRMED",confidence:"MEDIUM",
-      evidence:"A prior advance is followed by symmetric shoulders, a materially higher head and repeated acceptance below the neckline.",
+      evidence:"A prior advance is followed by symmetric shoulders, a materially higher head and verified acceptance or a decisive break below the neckline.",
       confirmation:"Visible acceptance below the neckline after the right shoulder.",invalidation:"Clean acceptance above the head or a materially higher right shoulder.",
       geometry:{points,labelX:pctX(rs.x),labelY:Math.max(bounds.top,pctY(Math.min(ls.y,head.y,rs.y))-4)}
     }});
@@ -137,7 +143,7 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const leftSpace=head.x-ls.x,rightSpace=rs.x-head.x,symmetry=Math.min(leftSpace,rightSpace)/Math.max(leftSpace,rightSpace);
     if(symmetry<.45)continue;
     const headProm=head.y-Math.max(ls.y,rs.y), shoulderDiff=Math.abs(ls.y-rs.y);
-    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.085)continue;
+    if(headProm<height*.055||headProm>height*.28||shoulderDiff>height*.095)continue;
     const leftNecks=between(highs,ls.x,head.x),rightNecks=between(highs,head.x,rs.x);
     if(!leftNecks.length||!rightNecks.length)continue;
     const n1=leftNecks.reduce((a,b)=>a.y<b.y?a:b),n2=rightNecks.reduce((a,b)=>a.y<b.y?a:b);
@@ -147,18 +153,22 @@ function headShoulders(pivots:Swing[],candles:Candle[],width:number,height:numbe
     const confirmEnd=rs.x+Math.min(width*.2,span*.58);
     const after=candles.filter(x=>x.x>rs.x&&x.x<=confirmEnd);
     if(after.length<4)continue;
-    let streak=0,maxStreak=0;
+    let streak=0,maxStreak=0,strongBreak=false;
     for(const x of after){
-      const beyond=x.mid<(n1.y+slope*(x.x-n1.x))-height*.012;
+      const neckline=n1.y+slope*(x.x-n1.x);
+      const beyond=x.mid<neckline-height*.012;
       streak=beyond?streak+1:0;
       if(streak>maxStreak)maxStreak=streak;
+      // Mirror the H&S rule: one decisive upside break can confirm an inverse
+      // pattern, but only when both midpoint and upper extreme clear the neckline.
+      if(x.mid<neckline-height*.03&&x.high<neckline-height*.055)strongBreak=true;
     }
-    const confirmed=maxStreak>=2;
+    const confirmed=maxStreak>=2||strongBreak;
     if(!confirmed)continue;
     const points=[ls,n1,head,n2,rs].map(x=>({x:pctX(x.x),y:pctY(x.y)}));
     candidates.push({score:headProm/height+symmetry*.12-neckDiff/height*.25,pattern:{
       name:"INVERSE H&S",status:"CONFIRMED",confidence:"MEDIUM",
-      evidence:"A prior decline is followed by symmetric shoulders, a materially lower head and repeated acceptance above the neckline.",
+      evidence:"A prior decline is followed by symmetric shoulders, a materially lower head and verified acceptance or a decisive break above the neckline.",
       confirmation:"Visible acceptance above the neckline after the right shoulder.",invalidation:"Clean acceptance below the head or a materially lower right shoulder.",
       geometry:{points,labelX:pctX(rs.x),labelY:Math.min(bounds.bottom,pctY(Math.max(ls.y,head.y,rs.y))+4)}
     }});
