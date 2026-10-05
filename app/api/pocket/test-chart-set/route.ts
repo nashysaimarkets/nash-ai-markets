@@ -43,6 +43,8 @@ const CASES = [
   { id:"cipla-cup-handle", expected:"CUP & HANDLE", url:"https://www.sharetradingcampus.com/storage/204/60c24c236adf5_CIPLA-CUP-%26-HANDLE.png" },
   { id:"capital-break-retest", expected:"BREAKOUT & RETEST", url:"https://img.capital.com/articles/articleimg_b223db2e9639c691ad785f240f43f80a59ca2e99.png" },
   { id:"capital-ihs-clean", expected:"INVERSE H&S", url:"https://img.capital.com/docs/image10.png" },
+  { id:"fresh-ihs-eurusd", expected:"INVERSE H&S", url:"https://cdn.prod.website-files.com/6019e1a1265f87bbc2b5a2c0/680a2ed34eca9a8488bb1d5e_head%20and%20shoulders%20example%202.png" },
+  { id:"fresh-ihs-copper", expected:"INVERSE H&S", url:"https://cdn.prod.website-files.com/69a07d50b42d57fc4b6930d3/69a0c8c0013a49be8a1dd890_inverse-head-and-shoulders-pattern-04.png" },
   { id:"osl-falling-wedge", expected:"FALLING WEDGE", url:"https://images.ctfassets.net/s9n78lc7gxyk/3YKSP0myPsxaox3ZSvSMmm/f03f061fa8799c607dec262566b5342b/what-is-falling-wedge-pattern-cover.png" },
   { id:"zenledger-rising-wedge", expected:"RISING WEDGE", url:"https://uploads-ssl.webflow.com/5f9a1900790900e2b7f25ba1/5ff3beb6338bc82c47eb8b55_rising-wedge.png" },
   { id:"nicepng-double-top", expected:"DOUBLE TOP", url:"https://www.nicepng.com/png/detail/187-1870455_double-top-chart-pattern-double-top-candlestick-pattern.png" },
