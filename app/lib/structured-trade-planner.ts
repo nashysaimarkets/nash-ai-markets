@@ -167,9 +167,7 @@ export function createStructuredTradePlan(input: TradePlannerInput): TradePlan {
   if (input.decision.volatilityRegime === "elevated" || input.decision.volatilityRegime === "extreme") requiredConfirmations.push("VOLATILITY_REGIME_REASSESSED");
 
   const primaryInvalidation = input.decision.invalidationConditions[0];
-  const invalidation = primaryInvalidation?.level
-    ? `${primaryInvalidation.kind.replaceAll("_", " ")} ${primaryInvalidation.level}`
-    : primaryInvalidation?.kind.replaceAll("_", " ") ?? "Recalculate if the verified decision state changes";
+  const invalidation = primaryInvalidation?.kind.replaceAll("_", " ") ?? "Recalculate if the verified decision state changes";
   const bias: ReadyMyTrade["bias"] = directionalPosture === "long-bias"
     ? "LONG"
     : directionalPosture === "short-bias"
