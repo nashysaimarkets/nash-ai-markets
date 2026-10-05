@@ -48,7 +48,29 @@ const CASES = [
   { id:"nicepng-double-top", expected:"DOUBLE TOP", url:"https://www.nicepng.com/png/detail/187-1870455_double-top-chart-pattern-double-top-candlestick-pattern.png" },
   { id:"nicepng-inverse-hs", expected:"INVERSE H&S", url:"https://www.nicepng.com/png/detail/432-4320678_simple-inverted-head-and-shoulders-candlestick-pattern-diagram.png" },
   { id:"vecomda-break-retest", expected:"BREAKOUT & RETEST", url:"https://tstvmediaprod.blob.core.windows.net/posts/kien-thuc/chien-luoc-theo-xu-huong/chien-luoc-theo-xu-huong-7-breackout.png" }
-
+,
+  { id:"raw-usoil-01", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/n/ngjJ3V5n.png" },
+  { id:"raw-usoil-02", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/G/GTGqdPHO.png" },
+  { id:"raw-usoil-03", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/K/KClDKIno.png" },
+  { id:"raw-usoil-04", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/G/GOVL6Bpr.png" },
+  { id:"raw-usoil-05", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/D/D3E1fl1E.png" },
+  { id:"raw-spx-01", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/8/8UMIEgEp.png" },
+  { id:"raw-spx-02", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/7/7jGn6nz7.png" },
+  { id:"raw-spx-03", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/i/iNnobrsd.png" },
+  { id:"raw-spx-04", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/Q/Q74oSvzE.png" },
+  { id:"raw-btc-01", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/d/dPar6nhi.png" },
+  { id:"raw-btc-02", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/r/rpeIEW8k.png" },
+  { id:"raw-btc-03", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/c/cAegcx7M.png" },
+  { id:"raw-btc-04", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/F/FgskeDGG.png" },
+  { id:"raw-eth-01", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/w/waHpJiUi.png" },
+  { id:"raw-eth-02", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/u/uCbrcxN5.png" },
+  { id:"raw-eth-03", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/Q/Q0PCCA1O.png" },
+  { id:"raw-eurusd-01", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/h/hMm7QcfX.png" },
+  { id:"raw-eurusd-02", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/d/dpoopOtj.png" },
+  { id:"raw-eurusd-03", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/n/ncjU1ftn.png" },
+  { id:"raw-xauusd-01", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/v/veYnGgYY.png" },
+  { id:"raw-xauusd-02", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/T/TAGjRy5Y.png" },
+  { id:"raw-xauusd-03", expected:"UNLABELLED", url:"https://s3.tradingview.com/snapshots/T/Tvp6RxIo.png" }
 ] as const;
 
 async function fetchImage(url:string){
@@ -249,7 +271,9 @@ export async function GET(request:Request){
       const patterns=(item.scan.patterns??[]) as DeviceLocalScan["patterns"];
       const visible=patterns.filter(pattern=>pattern.confidence!=="LOW");
       qualified+=visible.length;
-      if(item.expected==="NO CLEAN PATTERN"){
+      if(item.expected==="UNLABELLED"){
+        continue;
+      }else if(item.expected==="NO CLEAN PATTERN"){
         negatives++;
         if(!visible.length)negativePass++;
         else{strongWrong++;failures.push({id:item.id,expected:item.expected,got:visible.map(pattern=>pattern.name)});}
