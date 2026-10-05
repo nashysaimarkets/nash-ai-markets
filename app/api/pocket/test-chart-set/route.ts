@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { inflateSync } from "node:zlib";
-import { scanDevicePixels, type DeviceLocalScan } from "../../../pocket-next/device-geometry";
+import { scanDevicePixels, scanDevicePixelsWithReversalFallback, type DeviceLocalScan } from "../../../pocket-next/device-geometry";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -153,7 +153,7 @@ function resizeRgb(decoded:{width:number;height:number;rgb:Buffer},maxWidth=420)
 
 async function scan(buffer:Buffer,maxWidth=420,debug=false,rowMaskFraction?:number,patternRadiusOverride?:number,neutralContrastOverride?:number,horizontalInsetOverride?:number,horizontalRightInsetOverride?:number):Promise<DeviceLocalScan>{
   const {data,width,height,channels}=resizeRgb(decodePng(buffer),maxWidth);
-  return scanDevicePixels({pixels:data,width,height,channels,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride});
+  return scanDevicePixelsWithReversalFallback({pixels:data,width,height,channels,debug,rowMaskFraction,patternRadiusOverride,neutralContrastOverride,horizontalInsetOverride,horizontalRightInsetOverride});
 }
 
 function addBrokerChrome(frame:{data:Buffer;width:number;height:number;channels:number}){
