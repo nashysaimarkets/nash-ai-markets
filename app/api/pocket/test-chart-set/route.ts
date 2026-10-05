@@ -42,6 +42,12 @@ const CASES = [
   { id:"b2broker-bull-flag", expected:"BULL FLAG", url:"https://media.b2broker.com/app/uploads/2024/12/bullish-flag-pattern-1536x1100.png" },
   { id:"cipla-cup-handle", expected:"CUP & HANDLE", url:"https://www.sharetradingcampus.com/storage/204/60c24c236adf5_CIPLA-CUP-%26-HANDLE.png" },
   { id:"capital-break-retest", expected:"BREAKOUT & RETEST", url:"https://img.capital.com/articles/articleimg_b223db2e9639c691ad785f240f43f80a59ca2e99.png" },
+  { id:"capital-ihs-clean", expected:"INVERSE H&S", url:"https://img.capital.com/docs/image10.png" },
+  { id:"osl-falling-wedge", expected:"FALLING WEDGE", url:"https://images.ctfassets.net/s9n78lc7gxyk/3YKSP0myPsxaox3ZSvSMmm/f03f061fa8799c607dec262566b5342b/what-is-falling-wedge-pattern-cover.png" },
+  { id:"zenledger-rising-wedge", expected:"RISING WEDGE", url:"https://uploads-ssl.webflow.com/5f9a1900790900e2b7f25ba1/5ff3beb6338bc82c47eb8b55_rising-wedge.png" },
+  { id:"nicepng-double-top", expected:"DOUBLE TOP", url:"https://www.nicepng.com/png/detail/187-1870455_double-top-chart-pattern-double-top-candlestick-pattern.png" },
+  { id:"nicepng-inverse-hs", expected:"INVERSE H&S", url:"https://www.nicepng.com/png/detail/432-4320678_simple-inverted-head-and-shoulders-candlestick-pattern-diagram.png" },
+  { id:"vecomda-break-retest", expected:"BREAKOUT & RETEST", url:"https://tstvmediaprod.blob.core.windows.net/posts/kien-thuc/chien-luoc-theo-xu-huong/chien-luoc-theo-xu-huong-7-breackout.png" }
 
 ] as const;
 
