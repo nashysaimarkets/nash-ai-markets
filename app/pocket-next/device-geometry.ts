@@ -674,7 +674,7 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     // for pattern geometry so ordinary candle noise cannot impersonate a pattern.
     const patternRadius=input.patternRadiusOverride
       ? Math.min(7,Math.max(2,Math.round(input.patternRadiusOverride)))
-      : 3;
+      : 6;
     const patternSwings:Swing[]=[];
     for(let i=patternRadius;i<candles.length-patternRadius;i++){
       const candle=candles[i],near=candles.slice(i-patternRadius,i+patternRadius+1);
