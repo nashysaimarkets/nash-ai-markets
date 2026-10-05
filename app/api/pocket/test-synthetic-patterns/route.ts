@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { scanDevicePixels } from "../../../pocket-next/device-geometry";
+import { scanDevicePixelsWithReversalFallback } from "../../../pocket-next/device-geometry";
 
 export const runtime="nodejs";
 
@@ -115,7 +115,7 @@ function render(test:Case,variant:number,paletteName:PaletteName="rg"){
 }
 
 function norm(name:string){return name.replace(" CANDIDATE","").trim();}
-function visible(scan:ReturnType<typeof scanDevicePixels>){return scan.patterns.filter(p=>p.confidence!=="LOW");}
+function visible(scan:ReturnType<typeof scanDevicePixelsWithReversalFallback>){return scan.patterns.filter(p=>p.confidence!=="LOW");}
 
 export async function GET(request:Request){
   const u=new URL(request.url);
@@ -139,7 +139,7 @@ export async function GET(request:Request){
   for(const test of selectedCases){
     const runs=[] as any[];
     for(let v=0;v<variants;v++){
-      const scan=scanDevicePixels({pixels:render(test,v,paletteName),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride,horizontalInsetOverride,horizontalRightInsetOverride});
+      const scan=scanDevicePixelsWithReversalFallback({pixels:render(test,v,paletteName),width:W,height:H,channels:3,debug,rowMaskFraction,patternRadiusOverride,horizontalInsetOverride,horizontalRightInsetOverride});
       const pats=visible(scan);
       const names=pats.map(p=>p.name);
       const hit=test.expected==="NO CLEAN PATTERN"?!names.length:names.some(n=>norm(n)===norm(test.expected));
