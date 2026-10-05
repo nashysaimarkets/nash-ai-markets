@@ -455,11 +455,12 @@ function flagPattern(candles:Candle[],width:number,height:number,pctX:(x:number)
   return best?.pattern ?? null;
 }
 
-export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number;patternRadiusOverride?:number;neutralContrastOverride?:number}):DeviceLocalScan{
+export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;height:number;channels?:number;debug?:boolean;rowMaskFraction?:number;patternRadiusOverride?:number;neutralContrastOverride?:number;horizontalInsetOverride?:number}):DeviceLocalScan{
   try{
     const {pixels,width,height}=input,channels=input.channels??4;
     if(width<20||height<20)return emptyDeviceScan();
-    const left=Math.round(width*.04),right=Math.round(width*.91),top=Math.round(height*.08),bottom=Math.round(height*.88);
+    const horizontalInset=Math.min(.1,Math.max(.005,input.horizontalInsetOverride??.04));
+    const left=Math.round(width*horizontalInset),right=Math.round(width*(1-horizontalInset)),top=Math.round(height*.08),bottom=Math.round(height*.88);
 
     // Long coloured drawing tools / price lines can otherwise masquerade as dozens
     // of identical candle endpoints. Total row density is a poor discriminator because
