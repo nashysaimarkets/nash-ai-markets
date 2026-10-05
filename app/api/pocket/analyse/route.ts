@@ -73,6 +73,32 @@ const schema = {
         required: ["name", "status", "timeframe", "confidence", "evidence", "confirmation", "invalidation", "geometry"],
       },
     },
+    liquidity: {
+      type: "object", additionalProperties: false,
+      properties: {
+        state: { type: "string", enum: ["VERIFIED", "PARTIAL", "NONE"] },
+        event: { type: "string", enum: ["NONE", "TESTING", "SWEEP", "RECLAIM", "REJECTION"] },
+        confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+        evidence: { type: "string", maxLength: 220 },
+        confirmation: { type: "string", maxLength: 180 },
+        invalidation: { type: "string", maxLength: 180 },
+        zones: {
+          type: "array", maxItems: 4, items: {
+            type: "object", additionalProperties: false,
+            properties: {
+              side: { type: "string", enum: ["BUY_SIDE", "SELL_SIDE"] },
+              basis: { type: "string", enum: ["EQUAL_HIGHS", "EQUAL_LOWS", "PRIOR_SWING_HIGH", "PRIOR_SWING_LOW", "RANGE_HIGH", "RANGE_LOW"] },
+              price: { type: "string", maxLength: 30 },
+              x: { type: "number", minimum: 0, maximum: 100 },
+              x2: { type: "number", minimum: 0, maximum: 100 },
+              y: { type: "number", minimum: 0, maximum: 100 },
+            },
+            required: ["side", "basis", "price", "x", "x2", "y"],
+          },
+        },
+      },
+      required: ["state", "event", "confidence", "evidence", "confirmation", "invalidation", "zones"],
+    },
     nextSequence: {
       type: "object", additionalProperties: false,
       properties: {
@@ -171,7 +197,7 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "liquidity", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
 } as const;
 
 const precisionOverlaySchema = {
@@ -256,7 +282,8 @@ export async function POST(request: Request) {
         "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified, preserve it in the returned levels/currentPrice, and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
-        "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
+        "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Pattern validation is deliberately strict: RECTANGLE / RANGE requires at least two clearly separated reactions at each boundary, meaningful horizontal duration, broadly flat boundaries, alternating upper/lower tests, useful vertical separation and no obvious decisive breach through the proposed box. Two highs or two lows alone are not a range. DOUBLE TOP and DOUBLE BOTTOM require two genuinely separated tests at a similar price row plus a meaningful intervening valley/peak; nearby noise does not qualify. Wedges, flags, channels and triangles require multiple visible touches on both defining boundaries and a coherent slope/shape. Prefer AMBIGUOUS or an empty patterns array over forcing a name. LOW-confidence FORMING geometry should be omitted unless it still has a clear, useful structure. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
+        "Liquidity geometry x/x2/y must use full uploaded-image percentage coordinates so overlays align with the original screenshot. Liquidity Guard is screenshot-derived structure only. Never claim to see hidden orders, actual stop placement, institutional order flow, liquidation data or order-book liquidity unless such data is visibly supplied. Mark potential buy-side liquidity only at clearly repeated/equal highs, prior swing highs or a visible range high; mark potential sell-side liquidity only at clearly repeated/equal lows, prior swing lows or a visible range low. A SWEEP requires price to visibly trade beyond the referenced pool and return; RECLAIM requires a visible return through the level; REJECTION requires a visible reaction without claiming a sweep. VERIFIED requires defensible geometry and at least MEDIUM confidence. Otherwise use PARTIAL or NONE. Return no zones rather than inventing one.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
@@ -392,8 +419,18 @@ export async function POST(request: Request) {
           } : null,
         };
       } else {
-        // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
-        analysis = { ...record, priceScaleAnchors: [], levels: [] };
+        // Preserve visually defensible geometry even when the printed price scale
+        // cannot be verified. Numeric labels are removed below by calibration,
+        // but the user should still see the support/resistance rows themselves.
+        analysis = {
+          ...record,
+          priceScaleAnchors: [],
+          levels: Array.isArray(record.levels)
+            ? record.levels.map((item) => item && typeof item === "object"
+              ? { ...(item as Record<string, unknown>), price: "" }
+              : item)
+            : [],
+        };
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;
