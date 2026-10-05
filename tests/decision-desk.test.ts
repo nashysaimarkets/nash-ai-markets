@@ -56,6 +56,9 @@ test("Decision Desk fails closed without inventing setups or internal codes", ()
     resistance: null,
   });
 
+  assert.equal(plan.readyMyTrade.status, "STAND_ASIDE");
+  assert.equal(plan.readyMyTrade.bias, "NEUTRAL");
+  assert.ok(plan.readyMyTrade.blockers.length > 0);
   assert.equal(desk.opportunity.available, false);
   assert.match(desk.opportunity.headline, /No verified high-probability setup/i);
   assert.doesNotMatch(desk.tradeThesis, /CRITICAL_INPUT_MISSING|NULL|Undefined/);
@@ -107,6 +110,12 @@ test("Decision Desk uses verified bias and structure when actionable", () => {
     missingDataWarnings: intelligence.reasoning.missingDataWarnings,
   });
 
+  assert.ok(["READY", "WAIT", "STAND_ASIDE"].includes(plan.readyMyTrade.status));
+  assert.ok(["LONG", "SHORT", "NEUTRAL"].includes(plan.readyMyTrade.bias));
+  assert.ok(plan.readyMyTrade.confidence >= 0 && plan.readyMyTrade.confidence <= 100);
+  assert.ok(plan.readyMyTrade.entryCondition.length > 0);
+  assert.ok(plan.readyMyTrade.invalidation.length > 0);
+
   const now = Math.floor(Date.now() / 1000);
   const candles = Array.from({ length: 40 }, (_, index) => {
     const base = 6380 + index * 0.8;
@@ -150,6 +159,9 @@ test("Dashboard decision snapshot uses shared presentation without auth or provi
   assert.match(page, /buildDashboardCommandSummary/);
   assert.match(page, /supabase\.auth\.getUser/);
   assert.match(centre, /TODAY.?S POSTURE|Participation/);
+  assert.match(centre, /READY MY TRADE/);
+  assert.match(centre, /plan\.readyMyTrade\.status/);
+  assert.match(centre, /Entry condition/);
   assert.match(centre, /summary\.decision|decision\.permissionLabel/);
   assert.match(summaryLib, /buildDeskDecisionPresentation/);
   assert.match(deskUi, /Decision Desk|Market diagnosis/);
