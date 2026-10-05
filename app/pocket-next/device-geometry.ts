@@ -713,8 +713,25 @@ export function scanDevicePixels(input:{pixels:ArrayLike<number>;width:number;he
     const levels:DeviceLevel[]=picked.filter((item,index,array)=>array.findIndex(other=>other.kind===item.kind&&Math.abs(other.group.y-item.group.y)<structureHeight*.025)===index).map(({kind,group})=>({kind,label:group.score>=3?(kind==="resistance"?"Repeated rejection highs":"Repeated defended lows"):group.score>=2?(kind==="resistance"?"Repeated swing highs":"Repeated swing lows"):(kind==="resistance"?"Prominent swing high":"Prominent swing low"),price:"",x:plotBounds.left,y:pctY(group.y),x2:plotBounds.right,y2:pctY(group.y)})).slice(0,3);
 
     const pivots=normalizePivots(patternSwings);
+    // Reversal structures such as H&S can occupy a much smaller recent slice
+    // than channels/ranges. Keep the conservative six-bar pivots for the general
+    // scanner, but give H&S one tighter structural pass before declaring NONE.
+    // This is intentionally H&S-only so the extra sensitivity cannot inflate
+    // flags, wedges, triangles or ranges.
+    let reversalPivots=pivots;
+    if(!input.patternRadiusOverride&&patternRadius>3){
+      const reversalSwings:Swing[]=[];
+      const reversalRadius=3;
+      for(let i=reversalRadius;i<candles.length-reversalRadius;i++){
+        const candle=candles[i],near=candles.slice(i-reversalRadius,i+reversalRadius+1);
+        if(candle.high===Math.min(...near.map(v=>v.high)))reversalSwings.push({x:candle.x,y:candle.high,kind:"high"});
+        if(candle.low===Math.max(...near.map(v=>v.low)))reversalSwings.push({x:candle.x,y:candle.low,kind:"low"});
+      }
+      reversalPivots=normalizePivots(reversalSwings);
+    }
     const patternCandidates:DevicePattern[]=[];
-    const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds);
+    const hs=headShoulders(pivots,candles,width,structureHeight,pctX,pctY,plotBounds)
+      ?? (reversalPivots!==pivots?headShoulders(reversalPivots,candles,width,structureHeight,pctX,pctY,plotBounds):null);
     if(hs)patternCandidates.push(hs);
 
     if(!hs) for(let i=0;i<=pivots.length-3;i++){
