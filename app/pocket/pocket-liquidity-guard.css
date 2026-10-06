@@ -1,0 +1,23 @@
+.psLiquidityGuard{display:grid;gap:14px}
+.psLiquidityGuard>header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:4px 2px}
+.psLiquidityGuard>header span{display:block;font-size:12px;font-weight:800;letter-spacing:.14em;color:#eef5f5}
+.psLiquidityGuard>header small{display:block;margin-top:5px;font-size:8px;letter-spacing:.11em;color:#7f8e92}
+.psLiquidityGuard>header strong{font-size:9px;letter-spacing:.11em;color:#9dd5d8;border:1px solid rgba(157,213,216,.2);padding:7px 9px;border-radius:7px}
+.psLiquidityGuard[data-state="NONE"]>header strong{color:#98a1a4;border-color:rgba(255,255,255,.1)}
+.psLiquidityChart{position:relative;overflow:hidden;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#080b0d;min-height:260px}
+.psLiquidityChart img{display:block;width:100%;height:auto;max-height:560px;object-fit:contain;filter:saturate(.9) contrast(1.02)}
+.psLiquidityChart svg,.psLiquidityLabels{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.psLiquidityChart line{stroke-width:.32;stroke-dasharray:2.2 1.5}
+.psLiquidityChart g[data-side="BUY_SIDE"] line{stroke:rgba(231,116,116,.9)}
+.psLiquidityChart g[data-side="SELL_SIDE"] line{stroke:rgba(91,210,148,.9)}
+.psLiquidityChart circle{fill:#dce8e9}
+.psLiquidityLabels span{position:absolute;transform:translateY(-50%);max-width:210px;padding:6px 8px;border-radius:7px;background:rgba(5,8,10,.82);border:1px solid rgba(255,255,255,.11);backdrop-filter:blur(8px)}
+.psLiquidityLabels small{display:block;font-size:6px;letter-spacing:.1em;color:#8b9a9d}
+.psLiquidityLabels b{display:block;margin-top:2px;font-size:9px;color:#edf3f3}
+.psLiquidityReadout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.psLiquidityReadout article,.psLiquidityEmpty{padding:12px 13px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:rgba(255,255,255,.025)}
+.psLiquidityReadout small{display:block;font-size:7px;letter-spacing:.12em;color:#819194}
+.psLiquidityReadout strong{display:block;margin-top:5px;font-size:11px;line-height:1.4;color:#e0e7e8}
+.psLiquidityEmpty strong{font-size:11px;letter-spacing:.07em}.psLiquidityEmpty p{margin:5px 0 0;font-size:11px;line-height:1.45;color:#9aa6a8}
+.psLiquidityGuard>footer{font-size:8px;line-height:1.45;color:#69777a}
+@media(max-width:720px){.psLiquidityReadout{grid-template-columns:1fr}.psLiquidityChart{min-height:220px}.psLiquidityGuard>header{align-items:center}.psLiquidityGuard>header small{max-width:220px}}
