@@ -1,22 +1,24 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createEvidenceChain } from "../app/lib/evidence-chain.ts";
+import type { TradePlan } from "../app/lib/structured-trade-planner.ts";
+import type { TradingDecision } from "../app/lib/trading-decision-engine.ts";
 
-const provenance = { provider: "test", asOf: "2026-10-06T00:00:00Z", dataStatus: "LIVE", providerStatus: "connected", dataAgeMs: 1000, fallbackActive: false };
+const provenance: TradePlan["provenance"] = { provider: "test", asOf: "2026-10-06T00:00:00Z", dataStatus: "LIVE", providerStatus: "connected", dataAgeMs: 1000, fallbackActive: false };
 
-function fixtures() {
-  const decision: any = {
+function fixtures(): { decision: TradingDecision; plan: TradePlan } {
+  const decision = {
     noTradeReasons: [],
     conflictingDrivers: [],
-    topSupportingDrivers: [{ factor: "TREND" }],
-  };
-  const plan: any = {
+    topSupportingDrivers: [{ factor: "TREND", score: 70, contribution: 20 }],
+  } as TradingDecision;
+  const plan = {
     provenance,
     reasonsToRemainSidelined: [],
     dataQualityWarnings: [],
     executionReadiness: "ready",
     readyMyTrade: { status: "READY" },
-  };
+  } as TradePlan;
   return { decision, plan };
 }
 
@@ -37,7 +39,7 @@ test("blocks a stood-aside trade even without warnings", () => {
 
 test("reports conflict only after block conditions clear", () => {
   const { decision, plan } = fixtures();
-  decision.conflictingDrivers = [{ factor: "INVERSE_VOLATILITY" }];
+  decision.conflictingDrivers = [{ factor: "INVERSE_VOLATILITY", score: 30, contribution: -20 }];
   const chain = createEvidenceChain(decision, plan);
   assert.equal(chain.status, "CONFLICT");
   assert.deepEqual(chain.reasons, ["CONFLICT:INVERSE_VOLATILITY"]);
@@ -53,17 +55,17 @@ test("verified requires clean evidence and preserves provenance", () => {
 
 test("block takes precedence over conflict", () => {
   const { decision, plan } = fixtures();
-  decision.conflictingDrivers = [{ factor: "TREND" }];
+  decision.conflictingDrivers = [{ factor: "TREND", score: 30, contribution: -20 }];
   decision.noTradeReasons = ["STALE_DATA"];
   const chain = createEvidenceChain(decision, plan);
   assert.equal(chain.status, "BLOCKED");
   assert.ok(chain.reasons.includes("STALE_DATA"));
 });
 
-
 test("blocks WAIT execution even when all other evidence is clean", () => {
   const { decision, plan } = fixtures();
-  plan.executionReadiness = "wait";
+  plan.executionReadiness = "conditional";
+  plan.readyMyTrade.status = "WAIT";
   assert.equal(createEvidenceChain(decision, plan).status, "BLOCKED");
 });
 
