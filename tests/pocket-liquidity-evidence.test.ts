@@ -168,3 +168,29 @@ test("one strong observation plus low-confidence noise still fails closed", () =
   assert.equal(result.status, "BLOCKED");
   assert.deepEqual(result.zones, []);
 });
+
+
+test("chained y-clusters are deterministic across every input permutation", () => {
+  const a = { kind: "equal-highs" as const, side: "buy-side" as const, x: 10, y: 20, confidence: "HIGH" as const };
+  const b = { kind: "rejection" as const, side: "buy-side" as const, x: 50, y: 23, confidence: "HIGH" as const };
+  const c = { kind: "sweep-reclaim" as const, side: "buy-side" as const, x: 90, y: 26, confidence: "HIGH" as const };
+  const permutations = [
+    [a, b, c], [a, c, b], [b, a, c],
+    [b, c, a], [c, a, b], [c, b, a],
+  ];
+  const baseline = assessLiquidity(clear({ evidence: permutations[0] }));
+  for (const evidence of permutations.slice(1)) {
+    assert.deepEqual(assessLiquidity(clear({ evidence })), baseline);
+  }
+});
+
+test("one invalid observation blocks an otherwise defensible liquidity zone", () => {
+  const result = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 10, y: 25, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 80, y: 26, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 101, y: 25, confidence: "LOW" },
+  ] }));
+  assert.equal(result.status, "BLOCKED");
+  assert.deepEqual(result.zones, []);
+  assert.deepEqual(result.reasons, ["INVALID_EVIDENCE_GEOMETRY"]);
+});
