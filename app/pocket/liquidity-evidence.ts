@@ -44,7 +44,9 @@ export function assessLiquidity(input: LiquidityInput): LiquidityAssessment {
 
   const zones: LiquidityZone[] = [];
   for (const side of ["buy-side", "sell-side"] as const) {
-    const sideEvidence = material\n      .filter((item) => item.side === side)\n      .sort((a, b) => a.y - b.y || a.x - b.x || a.kind.localeCompare(b.kind));
+    const sideEvidence = material
+      .filter((item) => item.side === side)
+      .sort((a, b) => a.y - b.y || a.x - b.x || a.kind.localeCompare(b.kind));
     if (sideEvidence.length < 2) continue;
 
     const groups: LiquidityEvidence[][] = [];
