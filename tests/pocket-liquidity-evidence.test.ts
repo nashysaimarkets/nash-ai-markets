@@ -106,3 +106,65 @@ test("supports independently verified buy-side and sell-side zones", () => {
   assert.equal(result.status, "VERIFIED");
   assert.deepEqual(result.zones.map((zone) => zone.side).sort(), ["buy-side", "sell-side"]);
 });
+
+
+test("input order cannot change the assessment", () => {
+  const evidence = [
+    { kind: "equal-highs" as const, side: "buy-side" as const, x: 12, y: 22, confidence: "HIGH" as const },
+    { kind: "rejection" as const, side: "buy-side" as const, x: 72, y: 23, confidence: "MEDIUM" as const },
+    { kind: "equal-lows" as const, side: "sell-side" as const, x: 18, y: 78, confidence: "HIGH" as const },
+    { kind: "sweep-reclaim" as const, side: "sell-side" as const, x: 82, y: 79, confidence: "HIGH" as const },
+  ];
+  const forward = assessLiquidity(clear({ evidence }));
+  const reverse = assessLiquidity(clear({ evidence: [...evidence].reverse() }));
+  assert.deepEqual(reverse, forward);
+});
+
+test("extreme but valid edge coordinates remain bounded", () => {
+  const result = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 0, y: 0, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 100, y: 3, confidence: "HIGH" },
+  ] }));
+  assert.equal(result.status, "VERIFIED");
+  assert.ok(result.zones[0].y >= 0 && result.zones[0].y <= 100);
+});
+
+test("evidence just outside the clustering tolerance cannot become a zone", () => {
+  const result = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 10, y: 25, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 90, y: 28.01, confidence: "HIGH" },
+  ] }));
+  assert.equal(result.status, "BLOCKED");
+  assert.deepEqual(result.zones, []);
+});
+
+test("evidence exactly at the clustering tolerance is accepted", () => {
+  const result = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 10, y: 25, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 90, y: 28, confidence: "HIGH" },
+  ] }));
+  assert.equal(result.status, "VERIFIED");
+});
+
+test("five-percent x separation is the minimum independent spacing", () => {
+  const accepted = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 10, y: 25, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 15, y: 25, confidence: "HIGH" },
+  ] }));
+  const rejected = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 10, y: 25, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 14.99, y: 25, confidence: "HIGH" },
+  ] }));
+  assert.equal(accepted.status, "VERIFIED");
+  assert.equal(rejected.status, "BLOCKED");
+});
+
+test("one strong observation plus low-confidence noise still fails closed", () => {
+  const result = assessLiquidity(clear({ evidence: [
+    { kind: "equal-highs", side: "buy-side", x: 10, y: 25, confidence: "HIGH" },
+    { kind: "rejection", side: "buy-side", x: 70, y: 25, confidence: "LOW" },
+    { kind: "sweep-reclaim", side: "buy-side", x: 90, y: 26, confidence: "LOW" },
+  ] }));
+  assert.equal(result.status, "BLOCKED");
+  assert.deepEqual(result.zones, []);
+});
