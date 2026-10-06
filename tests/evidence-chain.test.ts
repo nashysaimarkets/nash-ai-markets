@@ -7,18 +7,46 @@ import type { TradingDecision } from "../app/lib/trading-decision-engine.ts";
 const provenance: TradePlan["provenance"] = { provider: "test", asOf: "2026-10-06T00:00:00Z", dataStatus: "LIVE", providerStatus: "connected", dataAgeMs: 1000, fallbackActive: false };
 
 function fixtures(): { decision: TradingDecision; plan: TradePlan } {
-  const decision = {
-    noTradeReasons: [],
-    conflictingDrivers: [],
+  const decision: TradingDecision = {
+    schemaVersion: "1.0",
+    marketBias: "bullish",
+    confidenceScore: 70,
+    riskRating: "medium",
+    recommendedPosture: "trend-following",
+    volatilityRegime: "normal",
+    tradePermission: "actionable",
     topSupportingDrivers: [{ factor: "TREND", score: 70, contribution: 20 }],
-  } as TradingDecision;
-  const plan = {
-    provenance,
-    reasonsToRemainSidelined: [],
+    conflictingDrivers: [],
+    invalidationConditions: [{ kind: "CONFIDENCE_BELOW", threshold: 35 }],
+    noTradeReasons: [],
     dataQualityWarnings: [],
+  };
+  const plan: TradePlan = {
+    schemaVersion: "1.0",
+    directionalPosture: "long-bias",
+    participationLevel: "normal",
+    preferredSetupType: "trend-continuation",
     executionReadiness: "ready",
-    readyMyTrade: { status: "READY" },
-  } as TradePlan;
+    planConfidence: 70,
+    priorityChecklist: [],
+    requiredConfirmations: [],
+    invalidationConditions: [{ kind: "CONFIDENCE_BELOW" }],
+    eventRiskWarnings: [],
+    dataQualityWarnings: [],
+    reasonsToRemainSidelined: [],
+    readyMyTrade: {
+      status: "READY",
+      bias: "LONG",
+      entryCondition: "Verified test setup",
+      invalidation: "Confidence below threshold",
+      risk: "MEDIUM",
+      confidence: 70,
+      reasons: ["TREND"],
+      blockers: [],
+    },
+    reviewTrigger: { kind: "RECALCULATE", conditions: [] },
+    provenance,
+  };
   return { decision, plan };
 }
 
