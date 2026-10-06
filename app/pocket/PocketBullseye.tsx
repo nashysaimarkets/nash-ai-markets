@@ -13,6 +13,7 @@ import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import LevelProvenancePanel from "./LevelProvenancePanel";
 import OptionsWallCheck from "./OptionsWallCheck";
 import CryptoDerivativesCheck from "./CryptoDerivativesCheck";
+import GuidedPovSimulation from "./GuidedPovSimulation";
 import { numericLevelPrice } from "./level-verification";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
@@ -1234,7 +1235,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setResultView("cinema"); setShowResultReveal(false); }}>NEW CHART</button>
           </div>
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
-          {resultView === "cinema" ? <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
+          {resultView === "cinema" ? <GuidedPovSimulation analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
           <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
           <header id="bullseye-verdict" className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
