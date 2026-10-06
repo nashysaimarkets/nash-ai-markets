@@ -26,6 +26,83 @@ function numericPrice(value: unknown) {
 
 type ScaleAnchor = { price: number; y: number };
 
+const PATTERN_NAMES = new Set([
+  "HEAD & SHOULDERS", "INVERSE H&S", "RISING WEDGE", "FALLING WEDGE", "BULL FLAG", "BEAR FLAG",
+  "DOUBLE TOP", "DOUBLE BOTTOM", "TRIANGLE", "ASCENDING TRIANGLE", "DESCENDING TRIANGLE", "PENNANT",
+  "CUP & HANDLE", "RECTANGLE / RANGE", "TREND CHANNEL", "BREAKOUT & RETEST",
+]);
+
+function calibratedPatterns(value: unknown, candlesReadable: boolean) {
+  if (!candlesReadable || !Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const pattern = item as JsonRecord;
+    const name = typeof pattern.name === "string" ? pattern.name.trim().toUpperCase() : "";
+    const status = typeof pattern.status === "string" ? pattern.status : "";
+    const confidence = typeof pattern.confidence === "string" ? pattern.confidence : "LOW";
+    const evidence = typeof pattern.evidence === "string" ? pattern.evidence.trim() : "";
+    const confirmation = typeof pattern.confirmation === "string" ? pattern.confirmation.trim() : "";
+    const invalidation = typeof pattern.invalidation === "string" ? pattern.invalidation.trim() : "";
+    const geometry = pattern.geometry && typeof pattern.geometry === "object" ? pattern.geometry as JsonRecord : null;
+    const rawPoints = geometry && Array.isArray(geometry.points) ? geometry.points : [];
+    const points = rawPoints.flatMap((point) => {
+      if (!point || typeof point !== "object") return [];
+      const candidate = point as JsonRecord;
+      const x = typeof candidate.x === "number" && Number.isFinite(candidate.x) ? candidate.x : null;
+      const y = typeof candidate.y === "number" && Number.isFinite(candidate.y) ? candidate.y : null;
+      return x !== null && y !== null && x >= 0 && x <= 100 && y >= 0 && y <= 100 ? [{ x, y }] : [];
+    });
+    if (!PATTERN_NAMES.has(name) || !evidence || !confirmation || !invalidation || points.length < 3) return [];
+    const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
+    const xSpan = Math.max(...xs) - Math.min(...xs), ySpan = Math.max(...ys) - Math.min(...ys);
+    if (xSpan < 8 || ySpan < 3) return [];
+    const safeStatus = status === "CONFIRMED" && confidence === "LOW" ? "AMBIGUOUS" : status;
+    return [{ ...pattern, name, status: safeStatus, geometry: { ...geometry, points } }];
+  }).slice(0, 4);
+}
+
+function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsValue: unknown, anchorsValue: unknown) {
+  const empty = { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [] };
+  if (!candlesReadable || !value || typeof value !== "object") return empty;
+  const source = value as JsonRecord;
+  const rawState = source.state === "VERIFIED" || source.state === "PARTIAL" ? source.state : "NONE";
+  const confidence = source.confidence === "HIGH" || source.confidence === "MEDIUM" ? source.confidence : "LOW";
+  const event = ["TESTING", "SWEEP", "RECLAIM", "REJECTION"].includes(String(source.event)) ? String(source.event) : "NONE";
+  const evidence = typeof source.evidence === "string" ? source.evidence.trim() : "";
+  const confirmation = typeof source.confirmation === "string" ? source.confirmation.trim() : "";
+  const invalidation = typeof source.invalidation === "string" ? source.invalidation.trim() : "";
+  const bounds = boundsValue && typeof boundsValue === "object" ? boundsValue as JsonRecord : {};
+  const left = boundedPercent(bounds.left, 4), top = boundedPercent(bounds.top, 5);
+  const right = Math.max(left + 1, boundedPercent(bounds.right, 96)), bottom = Math.max(top + 1, boundedPercent(bounds.bottom, 95));
+  const anchors = Array.isArray(anchorsValue) ? anchorsValue.flatMap((item) => item && typeof item === "object"
+    ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
+    .filter((item): item is ScaleAnchor => item.price !== null && item.price > 0 && item.y !== null && item.y >= 0 && item.y <= 100) : [];
+  const scale = verifiedLinearScale(anchors);
+  const allowedBasis = new Set(["EQUAL_HIGHS", "EQUAL_LOWS", "PRIOR_SWING_HIGH", "PRIOR_SWING_LOW", "RANGE_HIGH", "RANGE_LOW"]);
+  const zones = Array.isArray(source.zones) ? source.zones.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const zone = item as JsonRecord;
+    const side = zone.side === "BUY_SIDE" || zone.side === "SELL_SIDE" ? zone.side : null;
+    const basis = typeof zone.basis === "string" && allowedBasis.has(zone.basis) ? zone.basis : null;
+    const x = numericPrice(zone.x), x2 = numericPrice(zone.x2), y = numericPrice(zone.y), price = numericPrice(zone.price);
+    if (!side || !basis || x === null || x2 === null || y === null || x < left || x2 > right || x2 - x < 8 || y < top || y > bottom) return [];
+    let calibratedY = y;
+    let calibratedPrice = typeof zone.price === "string" ? zone.price : "";
+    if (price !== null && scale) {
+      const projected = scale.project(price);
+      const tolerance = Math.max(4.5, (bottom - top) * 0.09);
+      if (projected < top || projected > bottom || Math.abs(projected - y) > tolerance) return [];
+      calibratedY = projected;
+    } else {
+      calibratedPrice = "";
+    }
+    return [{ ...zone, side, basis, price: calibratedPrice, x, x2, y: Math.max(top, Math.min(bottom, calibratedY)) }];
+  }).slice(0, 4) : [];
+  if (!zones.length || !evidence) return empty;
+  const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation ? "VERIFIED" : "PARTIAL";
+  return { state, event, confidence, evidence, confirmation, invalidation, zones };
+}
+
 function verifiedLinearScale(items: ScaleAnchor[]) {
   const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
   if (unique.length < 2) return null;
@@ -57,6 +134,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   const calibrated: JsonRecord = {
     ...analysis,
     setupScore: { ...score, overall, grade: scoreGrade(overall) },
+    patterns: calibratedPatterns(analysis.patterns, quality.candlesReadable !== false && quality.chartReadability !== "POOR"),
   };
 
   if (Array.isArray(analysis.missingInputs)) {
@@ -129,6 +207,13 @@ export function calibratePocketAnalysis(value: unknown): unknown {
       }];
     });
   }
+
+  calibrated.liquidity = calibratedLiquidity(
+    analysis.liquidity,
+    quality.candlesReadable !== false && quality.chartReadability !== "POOR",
+    calibrated.plotBounds ?? analysis.plotBounds,
+    calibrated.priceScaleAnchors ?? analysis.priceScaleAnchors,
+  );
 
   if (unreadable) {
     calibrated.verdict = "REVIEW_REQUIRED";
