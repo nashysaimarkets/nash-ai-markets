@@ -59,6 +59,26 @@ export function buildPocketSubscriptionAlertEmail(customerEmail: string, dashboa
   };
 }
 
+export function buildApplePocketSubscriptionAlertEmail(input: {
+  productId: string;
+  originalTransactionId: string;
+  environment: string;
+  dashboardUrl: string;
+}): LaunchEmailTemplate {
+  return {
+    template: "pocket-subscription-alert",
+    subject: "New Pocket Bullseye App Store subscription \uD83C\uDFAF",
+    text: [
+      "A new Pocket Bullseye subscription has been verified from Apple App Store Server Notifications.",
+      `Product: ${input.productId}`,
+      `Apple original transaction: ${input.originalTransactionId}`,
+      `Environment: ${input.environment}`,
+      `OPEN LAUNCH CONTROL\n${input.dashboardUrl}`,
+      "Apple does not include the subscriber's email address or payment-card information in this notification.",
+    ].join("\n\n"),
+  };
+}
+
 export function buildMembershipWelcomeEmail(plan: PaidPlan): LaunchEmailTemplate {
   return { template: "membership-welcome", subject: `Welcome to NASH AI Markets ${plan.toUpperCase()}`, text: [`Your ${plan.toUpperCase()} membership is active.`, "Sign in using the email address used at checkout.", brandFooter].join("\n\n") };
 }
