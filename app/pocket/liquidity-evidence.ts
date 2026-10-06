@@ -56,7 +56,7 @@ export function assessLiquidity(input: LiquidityInput): LiquidityAssessment {
 
     for (const group of groups) {
       const distinctX = Math.max(...group.map((item) => item.x)) - Math.min(...group.map((item) => item.x));
-      const kinds = [...new Set(group.map((item) => item.kind))];
+      const kinds = [...new Set(group.map((item) => item.kind))].sort();
       if (group.length >= 2 && distinctX >= 5 && kinds.length >= 1) {
         zones.push({
           side,
