@@ -34,6 +34,8 @@ import "./pocket-command-arena.css";
 import "./pocket-bubble-lab.css";
 import "./pocket-pattern-watch.css";
 import "./pocket-options-wall.css";
+import "./pocket-vr-simulation.css";
+import "./pocket-vr-realism.css";
 
 export const metadata: Metadata = {
   title: "Pocket Bullseye AI Chart Analysis",
