@@ -59,3 +59,26 @@ test("block takes precedence over conflict", () => {
   assert.equal(chain.status, "BLOCKED");
   assert.ok(chain.reasons.includes("STALE_DATA"));
 });
+
+
+test("blocks WAIT execution even when all other evidence is clean", () => {
+  const { decision, plan } = fixtures();
+  plan.executionReadiness = "wait";
+  assert.equal(createEvidenceChain(decision, plan).status, "BLOCKED");
+});
+
+test("blocks PREVIEW provenance independently of warning arrays", () => {
+  const { decision, plan } = fixtures();
+  plan.provenance = { ...provenance, dataStatus: "PREVIEW" };
+  const chain = createEvidenceChain(decision, plan);
+  assert.equal(chain.status, "BLOCKED");
+  assert.ok(chain.reasons.includes("DATA_STATUS_PREVIEW"));
+});
+
+test("blocks fallback provenance independently of warning arrays", () => {
+  const { decision, plan } = fixtures();
+  plan.provenance = { ...provenance, fallbackActive: true };
+  const chain = createEvidenceChain(decision, plan);
+  assert.equal(chain.status, "BLOCKED");
+  assert.ok(chain.reasons.includes("FALLBACK_ACTIVE"));
+});
