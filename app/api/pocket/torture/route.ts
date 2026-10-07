@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
+import sharpModule from "sharp/lib/index.js";
+const sharp = sharpModule;
 import { POST as analyse } from "../analyse/route";
 import { TORTURE_CASES, syntheticSvg } from "../../../../tests/support/pocket-image-torture";
 
