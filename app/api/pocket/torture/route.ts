@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
 import { TORTURE_CASES, syntheticSvg } from "../../../../tests/support/pocket-image-torture";
 
@@ -20,7 +21,8 @@ export async function GET(request:Request){
   const match=(e:{kind:string;y:number;tolerance:number},a:Array<{kind?:string;y?:number}>)=>a.some(x=>x.kind===e.kind&&typeof x.y==="number"&&Math.abs(x.y-e.y)<=e.tolerance);
   for(let i=0;i<selected.length;i++){
     const sample=selected[i]!;
-    const image=Buffer.from(syntheticSvg(sample));
+    const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
+    if(image.length < 8 || image.subarray(0,8).toString("hex") !== "89504e470d0a1a0a") throw new Error(`${sample.id}: torture fixture did not rasterize to PNG`);
     const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${i+1}`},body:JSON.stringify({image:`data:image/png;base64,${image.toString("base64")}`,intention:"UNSURE",chartConfirmation:{instrument:sample.market,timeframe:sample.timeframe,currentPrice:"100",contextMatch:"NOT_PROVIDED"}})});
     let response: Response;
     let body: Analysis;
