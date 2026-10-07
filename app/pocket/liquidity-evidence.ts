@@ -35,6 +35,12 @@ export function assessLiquidity(input: LiquidityInput): LiquidityAssessment {
   if (input.chartReadability !== "CLEAR") return { status: "BLOCKED", zones: [], reasons: ["CHART_NOT_CLEAR"] };
   if (!input.candlesReadable) return { status: "BLOCKED", zones: [], reasons: ["CANDLES_NOT_READABLE"] };
   if (!input.plotBoundsVerified) return { status: "BLOCKED", zones: [], reasons: ["PLOT_BOUNDS_UNVERIFIED"] };
+  const validKinds = new Set<LiquidityEvidenceKind>(["equal-highs", "equal-lows", "rejection", "sweep-reclaim"]);
+  const validSides = new Set<LiquiditySide>(["buy-side", "sell-side"]);
+  const validConfidence = new Set<LiquidityEvidence["confidence"]>(["LOW", "MEDIUM", "HIGH"]);
+  if (input.evidence.some((item) => !validKinds.has(item.kind) || !validSides.has(item.side) || !validConfidence.has(item.confidence))) {
+    return { status: "BLOCKED", zones: [], reasons: ["INVALID_EVIDENCE_CONTRACT"] };
+  }
   if (input.evidence.some((item) => !inPercent(item.x) || !inPercent(item.y))) {
     return { status: "BLOCKED", zones: [], reasons: ["INVALID_EVIDENCE_GEOMETRY"] };
   }
