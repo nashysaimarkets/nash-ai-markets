@@ -263,7 +263,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /showResultReveal/);
   assert.match(client, /START MY CINEMATIC RESULT/);
   assert.match(client, /ClarityLock/);
-  assert.match(client, /BULLSEYE CLARITY LOCK/);
+  assert.match(client, /ClarityLock/);
+  assert.match(client, /psClarityClassic/);
+  assert.match(client, /psClarityBars/);
   assert.match(client, /BullseyePlan/);
   assert.match(client, /YOUR BULLSEYE PLAN/);
   assert.match(client, /VIEW RESULT CARD/);
