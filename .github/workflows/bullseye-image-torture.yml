@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - run: npm run install:ci
+      - run: chmod +x scripts/sites-env.sh scripts/install-ci.sh\n      - run: npm run install:ci
       - name: Require configured scanner provider
         run: test -n "$OPENAI_API_KEY" || { echo "OPENAI_API_KEY is not configured for image torture."; exit 2; }
       - name: Run labelled image torture corpus
