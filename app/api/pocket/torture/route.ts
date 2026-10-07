@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { POST as analyse } from "../../analyse/route";
-import { TORTURE_CASES, syntheticSvg } from "../../../../../tests/support/pocket-image-torture";
+import { POST as analyse } from "../analyse/route";
+import { TORTURE_CASES, syntheticSvg } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
