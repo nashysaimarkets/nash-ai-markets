@@ -194,3 +194,22 @@ test("one invalid observation blocks an otherwise defensible liquidity zone", ()
   assert.deepEqual(result.zones, []);
   assert.deepEqual(result.reasons, ["INVALID_EVIDENCE_GEOMETRY"]);
 });
+
+
+test("malformed runtime evidence enums fail closed", () => {
+  const malformed = [
+    { kind: "invented-kind", side: "buy-side", x: 20, y: 25, confidence: "HIGH" },
+    { kind: "equal-highs", side: "invented-side", x: 20, y: 25, confidence: "HIGH" },
+    { kind: "equal-highs", side: "buy-side", x: 20, y: 25, confidence: "UNKNOWN" },
+  ];
+
+  for (const bad of malformed) {
+    const result = assessLiquidity(clear({ evidence: [
+      bad as unknown as LiquidityInput["evidence"][number],
+      { kind: "rejection", side: "buy-side", x: 80, y: 26, confidence: "HIGH" },
+    ] }));
+    assert.equal(result.status, "BLOCKED");
+    assert.deepEqual(result.zones, []);
+    assert.deepEqual(result.reasons, ["INVALID_EVIDENCE_CONTRACT"]);
+  }
+});
