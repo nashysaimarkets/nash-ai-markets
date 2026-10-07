@@ -420,3 +420,12 @@ test("beta budgets are isolated by action and requester and reset after the wind
   assert.equal(takePocketBudget(second, "review", 1_000).remaining, 2);
   assert.equal(takePocketBudget(first, "review", 1_000 + 31 * 60_000).remaining, 2);
 });
+
+
+test("live torture harness rasterizes synthetic SVG fixtures before declaring PNG", async () => {
+  const route = await readFile(new URL("../app/api/pocket/torture/route.ts", import.meta.url), "utf8");
+  assert.match(route, /sharp\(Buffer\.from\(syntheticSvg\(sample\)\)\)\.png\(\)\.toBuffer\(\)/);
+  assert.match(route, /89504e470d0a1a0a/);
+  assert.match(route, /data:image\/png;base64/);
+  assert.doesNotMatch(route, /const image=Buffer\.from\(syntheticSvg\(sample\)\)/);
+});
