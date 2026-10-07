@@ -210,7 +210,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 8/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 9/);
   assert.match(client, /hasVerifiedStructuralLevel\(cached\)/);
   assert.match(client, /hasVerifiedStructuralLevel\(payload\.analysis\)/);
   assert.match(client, /createPrecisionReadingCrop/);
@@ -263,7 +263,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /showResultReveal/);
   assert.match(client, /START MY CINEMATIC RESULT/);
   assert.match(client, /ClarityLock/);
-  assert.match(client, /BULLSEYE CLARITY LOCK/);
+  assert.match(client, /ClarityLock/);
+  assert.match(client, /psClarityClassic/);
+  assert.match(client, /psClarityBars/);
   assert.match(client, /BullseyePlan/);
   assert.match(client, /YOUR BULLSEYE PLAN/);
   assert.match(client, /VIEW RESULT CARD/);
