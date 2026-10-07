@@ -10,7 +10,11 @@ type Analysis={evidenceQuality?:{chartReadability?:string};levels?:Array<{kind?:
 
 export async function GET(request:Request){
   if(process.env.VERCEL_ENV!=="preview") return NextResponse.json({error:"Not available."},{status:404});
-  if(new URL(request.url).searchParams.get("run")!=="1") return NextResponse.json({ready:true,cases:TORTURE_CASES.map(x=>x.id)});
+  const params=new URL(request.url).searchParams;
+  const requested=params.get("case");
+  if(params.get("run")!=="1") return NextResponse.json({ready:true,cases:TORTURE_CASES.map(x=>x.id)});
+  const selected=requested ? TORTURE_CASES.filter(x=>x.id===requested) : TORTURE_CASES;
+  if(requested && selected.length===0) return NextResponse.json({error:"Unknown torture case."},{status:400});
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const match=(e:{kind:string;y:number;tolerance:number},a:Array<{kind?:string;y?:number}>)=>a.some(x=>x.kind===e.kind&&typeof x.y==="number"&&Math.abs(x.y-e.y)<=e.tolerance);
@@ -42,5 +46,5 @@ export async function GET(request:Request){
   }
   const rate=(m:Counts,d:"p"|"r")=>{const n=d==="p"?m.tp+m.fp:m.tp+m.fn;return n?m.tp/n:null};
   const scored=Object.fromEntries(Object.entries(metrics).map(([k,m])=>[k,{...m,precision:rate(m,"p"),recall:rate(m,"r")}]));
-  return NextResponse.json({cases:TORTURE_CASES.length,metrics:scored,failures,observations,pass:failures.length===0},{status:failures.length?422:200});
+  return NextResponse.json({cases:selected.length,metrics:scored,failures,observations,pass:failures.length===0},{status:failures.length?422:200});
 }
