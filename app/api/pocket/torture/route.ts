@@ -18,9 +18,24 @@ export async function GET(request:Request){
   const match=(e:{kind:string;y:number;tolerance:number},a:Array<{kind?:string;y?:number}>)=>a.some(x=>x.kind===e.kind&&typeof x.y==="number"&&Math.abs(x.y-e.y)<=e.tolerance);
   for(let i=0;i<TORTURE_CASES.length;i++){
     const sample=TORTURE_CASES[i]!;
-    const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
+    let image: Buffer;
+    try {
+      image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
+    } catch (error) {
+      failures.push(`${sample.id}: rasterisation exception ${error instanceof Error ? error.message : String(error)}`);
+      continue;
+    }
     const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${i+1}`},body:JSON.stringify({image:`data:image/png;base64,${image.toString("base64")}`,intention:"UNSURE",chartConfirmation:{instrument:sample.market,timeframe:sample.timeframe,currentPrice:"100",contextMatch:"NOT_PROVIDED"}})});
-    const response=await analyse(req); const body=await response.json() as Analysis;
+    let response: Response;
+    let body: Analysis;
+    try {
+      response=await analyse(req);
+      body=await response.json() as Analysis;
+    } catch (error) {
+      failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
+      observations.push({id:sample.id,exception:error instanceof Error ? error.message : String(error)});
+      continue;
+    }
     if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);continue;}
     const levels=(body.levels??[]).filter(x=>x.kind==="support"||x.kind==="resistance");
     for(const e of sample.expectedLevels){if(match(e,levels))metrics.levels.tp++;else{metrics.levels.fn++;failures.push(`${sample.id}: missed ${e.kind}`);}}
