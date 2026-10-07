@@ -1,0 +1,32 @@
+name: Bullseye image torture
+
+on:
+  pull_request:
+    paths:
+      - "scripts/run-pocket-image-torture.ts"
+      - "tests/support/pocket-image-torture.ts"
+      - "app/api/pocket/**"
+      - "app/pocket/**"
+      - "package.json"
+
+permissions:
+  contents: read
+
+jobs:
+  image-torture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_POCKET_MODEL: ${{ vars.OPENAI_POCKET_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm run install:ci
+      - name: Require configured scanner provider
+        run: test -n "$OPENAI_API_KEY" || { echo "OPENAI_API_KEY is not configured for image torture."; exit 2; }
+      - name: Run labelled image torture corpus
+        run: npm run verify:pocket-image-torture
