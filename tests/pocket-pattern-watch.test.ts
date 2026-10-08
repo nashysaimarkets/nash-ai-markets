@@ -38,6 +38,7 @@ test("the scanner is instructed to recognize the expanded guide without forcing 
     assert.match(route, new RegExp(name));
   }
   assert.match(route, /Prefer AMBIGUOUS over forcing a name/);
+  assert.match(route, /at least three distinct visible swing anchors/);
 });
 
 test("every written-report rail control has a real destination", async () => {
