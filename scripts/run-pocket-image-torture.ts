@@ -1,5 +1,5 @@
 import { POST } from "../app/api/pocket/analyse/route.ts";
-import { TORTURE_CASES, syntheticSvg } from "../tests/support/pocket-image-torture.ts";
+import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis } from "../tests/support/pocket-image-torture.ts";
 
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 const sharpModule = await import("sharp");
@@ -25,14 +25,17 @@ for(const sample of TORTURE_CASES){
   let pipeline=sharp(Buffer.from(syntheticSvg(sample))).png();
   if(sample.degrade==="compress") pipeline=pipeline.jpeg({quality:28}).png();
   const image=await pipeline.toBuffer();
+  const spec=syntheticPrecisionCropSpec(900,600);
+  const crop=await sharp(image).extract({left:spec.left,top:spec.top,width:spec.width,height:spec.height}).resize(spec.targetWidth,spec.targetHeight,{fit:"fill"}).jpeg({quality:92}).toBuffer();
   const data=`data:image/png;base64,${image.toString("base64")}`;
   const req=new Request("http://localhost/api/pocket/analyse",{
     method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`127.0.0.${TORTURE_CASES.indexOf(sample)+1}`},
-    body:JSON.stringify({image:data,intention:"UNSURE",chartConfirmation:{instrument:sample.market,timeframe:sample.timeframe,currentPrice:"100",contextMatch:"NOT_PROVIDED"}}),
+    body:JSON.stringify(buildTortureRequestPayload(sample,data,"data:image/jpeg;base64,"+crop.toString("base64"))),
   });
   const response=await POST(req);
-  const body=await response.json() as Analysis & {error?:string};
-  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`); continue; }
+  const payload=await response.json() as {analysis?:unknown;error?:string};
+  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`); continue; }
+  const body=unwrapTortureAnalysis(payload) as Analysis;
 
   const actualLevels=(body.levels??[]).filter(x=>x.kind==="support"||x.kind==="resistance");
   for(const expected of sample.expectedLevels){
