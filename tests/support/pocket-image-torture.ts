@@ -130,3 +130,59 @@ export function tortureExpectationFailures(
   }
   return failures;
 }
+
+export type TortureCounts = { tp: number; fp: number; fn: number };
+export type TortureMetrics = Record<"levels" | "patterns" | "liquidity", TortureCounts>;
+
+/** One-to-one detections; a wrong liquidity state/event is both a miss and a false detection. */
+export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeof unwrapTortureAnalysis>) {
+  const metrics: TortureMetrics = {levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
+  const failures: string[] = [];
+  const levels = (body.levels ?? []).filter(level => level.kind === "support" || level.kind === "resistance");
+  const matchedActual = new Map<number, number>();
+  // Augmenting paths avoid order-dependent greedy matching when tolerances overlap.
+  function assign(expectedIndex: number, visited: Set<number>): boolean {
+    const expected = sample.expectedLevels[expectedIndex]!;
+    for (const [index, actual] of levels.entries()) {
+      if (visited.has(index) || actual.kind !== expected.kind || !Number.isFinite(actual.y) ||
+          Math.abs(actual.y! - expected.y) > expected.tolerance) continue;
+      visited.add(index);
+      const previous = matchedActual.get(index);
+      if (previous === undefined || assign(previous, visited)) {
+        matchedActual.set(index, expectedIndex);
+        return true;
+      }
+    }
+    return false;
+  }
+  sample.expectedLevels.forEach((expected, index) => {
+    if (assign(index, new Set())) metrics.levels.tp++;
+    else { metrics.levels.fn++; failures.push(`${sample.id}: missed ${expected.kind}@${expected.y}`); }
+  });
+  levels.forEach((actual, index) => {
+    if (!matchedActual.has(index)) { metrics.levels.fp++; failures.push(`${sample.id}: false level ${actual.kind}@${actual.y}`); }
+  });
+  const patterns = (body.patterns ?? []).map(pattern => pattern.name).filter((name): name is string => Boolean(name));
+  const remainingPatterns = [...sample.expectedPatterns];
+  for (const name of patterns) {
+    const index = remainingPatterns.indexOf(name);
+    if (index >= 0) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
+    else { metrics.patterns.fp++; failures.push(`${sample.id}: false pattern ${name}`); }
+  }
+  for (const name of remainingPatterns) { metrics.patterns.fn++; failures.push(`${sample.id}: missed pattern ${name}`); }
+  const expected = sample.expectedLiquidity;
+  const actual = body.liquidity;
+  const expectedPositive = expected.state !== "NONE";
+  const actualPositive = actual?.state === "VERIFIED" || actual?.state === "PARTIAL";
+  const correct = actualPositive && actual?.state === expected.state &&
+    (!expected.event || actual.event === expected.event) &&
+    (actual.zones?.length ?? 0) >= (expected.minimumZones ?? 0);
+  if (expectedPositive && correct) metrics.liquidity.tp++;
+  else {
+    if (expectedPositive) { metrics.liquidity.fn++; failures.push(`${sample.id}: missed expected liquidity ${expected.state}/${expected.event ?? "any event"}`); }
+    if (actualPositive) { metrics.liquidity.fp++; failures.push(`${sample.id}: false liquidity ${actual?.state}/${actual?.event ?? "no event"}`); }
+  }
+  if (expected.event && actual?.event !== expected.event) failures.push(`${sample.id}: liquidity event ${actual?.event} != ${expected.event}`);
+  failures.push(...tortureExpectationFailures(sample, patterns, actual));
+  return {metrics, failures, levels, patterns};
+}

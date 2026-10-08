@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
-import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, tortureExpectationFailures } from "../../../../tests/support/pocket-image-torture";
+import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -41,7 +41,6 @@ export async function GET(request:Request){
   }
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
-  const match=(e:{kind:string;y:number;tolerance:number},a:Array<{kind?:string;y?:number}>)=>a.some(x=>x.kind===e.kind&&typeof x.y==="number"&&Math.abs(x.y-e.y)<=e.tolerance);
   for(let i=0;i<selected.length;i++){
     const sample=selected[i]!;
     const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
@@ -63,16 +62,12 @@ export async function GET(request:Request){
       continue;
     }
     if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);continue;}
-    const levels=(body.levels??[]).filter(x=>x.kind==="support"||x.kind==="resistance");
-    for(const e of sample.expectedLevels){if(match(e,levels))metrics.levels.tp++;else{metrics.levels.fn++;failures.push(`${sample.id}: missed ${e.kind}`);}}
-    for(const a of levels)if(!sample.expectedLevels.some(e=>match(e,[a]))){metrics.levels.fp++;failures.push(`${sample.id}: false level ${a.kind}@${a.y}`);}
-    const patterns=(body.patterns??[]).map(x=>x.name).filter((x):x is string=>Boolean(x));
-    for(const e of sample.expectedPatterns){if(patterns.includes(e))metrics.patterns.tp++;else{metrics.patterns.fn++;failures.push(`${sample.id}: missed pattern ${e}`);}}
-    for(const a of patterns)if(!sample.expectedPatterns.includes(a)){metrics.patterns.fp++;failures.push(`${sample.id}: false pattern ${a}`);}
-    const positive=sample.expectedLiquidity.state!=="NONE", actual=body.liquidity?.state==="VERIFIED"||body.liquidity?.state==="PARTIAL";
-    if(positive&&actual)metrics.liquidity.tp++;else if(positive&&!actual){metrics.liquidity.fn++;failures.push(`${sample.id}: missed liquidity`);}else if(!positive&&actual){metrics.liquidity.fp++;failures.push(`${sample.id}: false liquidity ${body.liquidity?.state}`);}
-    if(sample.expectedLiquidity.event&&body.liquidity?.event!==sample.expectedLiquidity.event)failures.push(`${sample.id}: liquidity event ${body.liquidity?.event} != ${sample.expectedLiquidity.event}`);
-    failures.push(...tortureExpectationFailures(sample,patterns,body.liquidity));
+    const scoredCase = scoreTortureAnalysis(sample, body);
+    const { levels, patterns } = scoredCase;
+    for (const key of ["levels", "patterns", "liquidity"] as const) {
+      for (const count of ["tp", "fp", "fn"] as const) metrics[key][count] += scoredCase.metrics[key][count];
+    }
+    failures.push(...scoredCase.failures);
     observations.push({id:sample.id,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
   }
   const rate=(m:Counts,d:"p"|"r")=>{const n=d==="p"?m.tp+m.fp:m.tp+m.fn;return n?m.tp/n:null};
