@@ -45,3 +45,17 @@ export function syntheticSvg(sample:TortureCase): string {
   const filter=sample.degrade==="blur"?' filter="url(#blur)"':"";
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="white"/><defs><filter id="blur"><feGaussianBlur stdDeviation="3.2"/></filter></defs><text x="75" y="30" font-size="18" font-family="Arial">${esc(sample.market)} · ${sample.timeframe}</text><g${filter}>${grid}<rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="none" stroke="#555" stroke-width="2"/>${candles}</g>${scale}</svg>`;
 }
+
+/** The production analyse route returns { analysis }, never bare scanner fields. */
+export function unwrapTortureAnalysis(payload: unknown): {
+  levels?: Array<{kind?: string; y?: number}>;
+  patterns?: Array<{name?: string}>;
+  liquidity?: {state?: string; event?: string; zones?: unknown[]};
+  evidenceQuality?: {chartReadability?: string};
+} {
+  if (!payload || typeof payload !== "object" || !("analysis" in payload) ||
+      !payload.analysis || typeof payload.analysis !== "object" || Array.isArray(payload.analysis)) {
+    throw new Error("Missing analysis envelope in live torture response");
+  }
+  return payload.analysis as ReturnType<typeof unwrapTortureAnalysis>;
+}
