@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       run_live:
-        description: "Invoke the billed AI provider for scanner measurements"
+        description: "Invoke billed AI analysis ONLY after verifying remaining budget"
         type: boolean
         default: false
+      case_id:
+        description: "One labelled case per billed run; never all six at once"
+        type: string
+        required: false
+        default: ""
   pull_request:
     paths:
       - "scripts/run-pocket-image-torture.ts"
@@ -55,4 +60,5 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_live }}
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          POCKET_TORTURE_CASE: ${{ inputs.case_id }}
         run: npm run verify:pocket-image-torture
