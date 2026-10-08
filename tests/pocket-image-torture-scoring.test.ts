@@ -88,8 +88,13 @@ test("unknown or duplicate measured image IDs cannot manufacture completion", ()
 
 test("separate paid scans cannot claim completeness until all six are measured", () => {
   const cases = TORTURE_CASES.map(sample => sample.id);
-  const good = { levels:{tp:1,fp:0,fn:0}, patterns:{tp:1,fp:0,fn:0}, liquidity:{tp:1,fp:0,fn:0} };
-  const reports = cases.map(id => ({cases:1,observations:[{id,caseMetrics:good}]}));
+  const reports = TORTURE_CASES.map(sample => ({
+    cases:1, observations:[{id:sample.id,caseMetrics:{
+      levels:{tp:sample.expectedLevels.length,fp:0,fn:0},
+      patterns:{tp:sample.expectedPatterns.length,fp:0,fn:0},
+      liquidity:{tp:sample.expectedLiquidity.state === "NONE" ? 0 : 1,fp:0,fn:0},
+    }}],
+  }));
   const partial = aggregateSeparateTortureReports(reports.slice(0,1));
   assert.equal(partial.measurementComplete,false);
   assert.equal(partial.measuredCases,1);
@@ -102,7 +107,7 @@ test("separate paid scans cannot claim completeness until all six are measured",
   assert.equal(complete.measurementComplete,true);
   assert.equal(complete.measuredCases,6);
   assert.deepEqual(complete.unmeasuredCaseIds,[]);
-  assert.equal(complete.metrics.levels.tp,6);
+  assert.equal(complete.metrics.levels.tp,4);
   assert.equal(complete.metrics.levels.precision,1);
 });
 
@@ -121,4 +126,22 @@ test("aggregator rejects duplicates, unknown cases and invalid or invented count
   assert.throws(() => aggregateSeparateTortureReports([{cases:1,observations:[{id:"not-labelled",caseMetrics:good}]}]), /unknown/i);
   assert.throws(() => aggregateSeparateTortureReports([{cases:1,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:{...good,levels:{tp:-1,fp:0,fn:0}}}]}]), /invalid/i);
   assert.throws(() => aggregateSeparateTortureReports([{cases:6,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:good}]}]), /single-case/i);
+});
+
+test("aggregator refuses impossible true positives and omitted false negatives", () => {
+  const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
+  const range = TORTURE_CASES.find(sample => sample.id === "range-clear")!;
+  const empty = {tp:0,fp:0,fn:0};
+  const badNegative = {cases:1,observations:[{id:negative.id,caseMetrics:{
+    levels:{tp:1,fp:0,fn:0},patterns:empty,liquidity:empty,
+  }}]};
+  assert.throws(() => aggregateSeparateTortureReports([badNegative]), /invalid|impossible/i);
+  const missedRange = {cases:1,observations:[{id:range.id,caseMetrics:{
+    levels:{tp:1,fp:0,fn:0},patterns:{tp:0,fp:0,fn:1},liquidity:{tp:0,fp:0,fn:1},
+  }}]};
+  assert.throws(() => aggregateSeparateTortureReports([missedRange]), /invalid|impossible/i);
+  const impossibleFalsePositives = {cases:1,observations:[{id:negative.id,caseMetrics:{
+    levels:{tp:0,fp:1000,fn:0},patterns:empty,liquidity:empty,
+  }}]};
+  assert.throws(() => aggregateSeparateTortureReports([impossibleFalsePositives]), /invalid|impossible/i);
 });
