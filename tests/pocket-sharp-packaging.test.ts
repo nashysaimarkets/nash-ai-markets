@@ -117,3 +117,16 @@ test("all displayed synthetic price labels lie on the same linear price scale", 
     assert.ok(Math.abs(Number(syntheticLastPrice(sample)) - expectedPrice) < 0.006, sample.id);
   }
 });
+
+test("synthetic price axis remains readable without system fonts", async () => {
+  const { SYNTHETIC_PRICE_AXIS } = await import("./support/pocket-image-torture.ts");
+  for (const sample of TORTURE_CASES) {
+    const svg = syntheticSvg(sample);
+    if (sample.degrade === "crop-scale") continue;
+    for (const {price, y} of SYNTHETIC_PRICE_AXIS) {
+      assert.ok(svg.includes(`data-axis-price="${price}" data-axis-y="${y}"`), `${sample.id}: missing vector axis ${price}`);
+    }
+    assert.equal((svg.match(/data-axis-digit=/g) ?? []).length, SYNTHETIC_PRICE_AXIS.length * 3,
+      sample.id + ": all numeric labels must have font-independent vector glyphs");
+  }
+});
