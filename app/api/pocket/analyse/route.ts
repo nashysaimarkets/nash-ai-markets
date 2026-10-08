@@ -82,6 +82,19 @@ const schema = {
         evidence: { type: "string", maxLength: 220 },
         confirmation: { type: "string", maxLength: 180 },
         invalidation: { type: "string", maxLength: 180 },
+        observations: {
+          type: "array", maxItems: 12, items: {
+            type: "object", additionalProperties: false,
+            properties: {
+              kind: { type: "string", enum: ["equal-highs", "equal-lows", "rejection", "sweep-reclaim"] },
+              side: { type: "string", enum: ["buy-side", "sell-side"] },
+              x: { type: "number", minimum: 0, maximum: 100 },
+              y: { type: "number", minimum: 0, maximum: 100 },
+              confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+            },
+            required: ["kind", "side", "x", "y", "confidence"],
+          },
+        },
         zones: {
           type: "array", maxItems: 4, items: {
             type: "object", additionalProperties: false,
@@ -97,7 +110,7 @@ const schema = {
           },
         },
       },
-      required: ["state", "event", "confidence", "evidence", "confirmation", "invalidation", "zones"],
+      required: ["state", "event", "confidence", "evidence", "confirmation", "invalidation", "zones", "observations"],
     },
     nextSequence: {
       type: "object", additionalProperties: false,
@@ -284,6 +297,7 @@ export async function POST(request: Request) {
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
         "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
         "Liquidity geometry x/x2/y must use full uploaded-image percentage coordinates so overlays align with the original screenshot. Liquidity Guard is screenshot-derived structure only. Never claim to see hidden orders, actual stop placement, institutional order flow, liquidation data or order-book liquidity unless such data is visibly supplied. Mark potential buy-side liquidity only at clearly repeated/equal highs, prior swing highs or a visible range high; mark potential sell-side liquidity only at clearly repeated/equal lows, prior swing lows or a visible range low. A SWEEP requires price to visibly trade beyond the referenced pool and return; RECLAIM requires a visible return through the level; REJECTION requires a visible reaction without claiming a sweep. VERIFIED requires defensible geometry and at least MEDIUM confidence. Otherwise use PARTIAL or NONE. Return no zones rather than inventing one.",
+        "Liquidity observations are individual visible candle reactions with full-image percentage x/y, side, kind and confidence. Never manufacture observations from zone endpoints or prose. Supply an empty observations array when distinct reactions cannot be read. VERIFIED zones require at least two MEDIUM/HIGH observations at the reference row, spatially separated by at least 5 percentage points within the zone span on a CLEAR chart; otherwise use PARTIAL or NONE.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",

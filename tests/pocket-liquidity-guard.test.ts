@@ -21,6 +21,10 @@ const good = {
   evidence: "Two prior highs formed a visible pool and price traded above them before closing back below.",
   confirmation: "The rejection continues below the swept highs.",
   invalidation: "Price accepts back above the swept area.",
+  observations: [
+    { kind: "equal-highs", side: "buy-side", x: 25, y: 30, confidence: "HIGH" },
+    { kind: "equal-highs", side: "buy-side", x: 60, y: 30, confidence: "HIGH" },
+  ],
   zones: [{ side: "BUY_SIDE", basis: "EQUAL_HIGHS", price: "7750", x: 18, x2: 82, y: 30 }],
 };
 

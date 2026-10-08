@@ -1,3 +1,5 @@
+import { assessProductionLiquidityChain } from "./liquidity-chain.ts";
+
 type JsonRecord = Record<string, unknown>;
 
 function scoreGrade(score: number) {
@@ -61,11 +63,12 @@ function calibratedPatterns(value: unknown, candlesReadable: boolean) {
   }).slice(0, 4);
 }
 
-function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsValue: unknown, anchorsValue: unknown) {
+function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsValue: unknown, anchorsValue: unknown, quality: JsonRecord) {
   const empty = { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [] };
   if (!candlesReadable || !value || typeof value !== "object") return empty;
   const source = value as JsonRecord;
   const rawState = source.state === "VERIFIED" || source.state === "PARTIAL" ? source.state : "NONE";
+  if (rawState === "NONE") return empty;
   const confidence = source.confidence === "HIGH" || source.confidence === "MEDIUM" ? source.confidence : "LOW";
   const event = ["TESTING", "SWEEP", "RECLAIM", "REJECTION"].includes(String(source.event)) ? String(source.event) : "NONE";
   const evidence = typeof source.evidence === "string" ? source.evidence.trim() : "";
@@ -82,7 +85,7 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
   const zones = Array.isArray(source.zones) ? source.zones.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
     const zone = item as JsonRecord;
-    const side = zone.side === "BUY_SIDE" || zone.side === "SELL_SIDE" ? zone.side : null;
+    const side: "BUY_SIDE" | "SELL_SIDE" | null = zone.side === "BUY_SIDE" || zone.side === "SELL_SIDE" ? zone.side : null;
     const basis = typeof zone.basis === "string" && allowedBasis.has(zone.basis) ? zone.basis : null;
     const x = numericPrice(zone.x), x2 = numericPrice(zone.x2), y = numericPrice(zone.y), price = numericPrice(zone.price);
     if (!side || !basis || x === null || x2 === null || y === null || x < left || x2 > right || x2 - x < 8 || y < top || y > bottom) return [];
@@ -99,8 +102,10 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
     return [{ ...zone, side, basis, price: calibratedPrice, x, x2, y: Math.max(top, Math.min(bottom, calibratedY)) }];
   }).slice(0, 4) : [];
   if (!zones.length || !evidence) return empty;
-  const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation ? "VERIFIED" : "PARTIAL";
-  return { state, event, confidence, evidence, confirmation, invalidation, zones };
+  const chain = assessProductionLiquidityChain(source.observations, quality, boundsValue, zones);
+  const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation && chain.status === "VERIFIED" ? "VERIFIED" : "PARTIAL";
+  return { state, event, confidence, evidence, confirmation, invalidation, zones,
+    evidenceChain: {status:chain.status,reasons:chain.reasons} };
 }
 
 function verifiedLinearScale(items: ScaleAnchor[]) {
@@ -211,8 +216,9 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   calibrated.liquidity = calibratedLiquidity(
     analysis.liquidity,
     quality.candlesReadable !== false && quality.chartReadability !== "POOR",
-    calibrated.plotBounds ?? analysis.plotBounds,
+    analysis.plotBounds,
     calibrated.priceScaleAnchors ?? analysis.priceScaleAnchors,
+    quality,
   );
 
   if (unreadable) {
