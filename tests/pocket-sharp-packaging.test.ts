@@ -74,3 +74,13 @@ test("both torture runners use the real analyse envelope and precision crop", as
     assert.match(source, /buildTortureRequestPayload\(/, path);
   }
 });
+
+test("live torture enforces forbidden patterns and minimum liquidity zones", async () => {
+  const { tortureExpectationFailures, TORTURE_CASES } = await import("./support/pocket-image-torture.ts");
+  const sweep = TORTURE_CASES.find((sample) => sample.id === "sweep-reclaim")!;
+  const bad = tortureExpectationFailures(sweep, ["HEAD & SHOULDERS"], {state:"VERIFIED",event:"SWEEP",zones:[]});
+  assert.ok(bad.some((message) => message.includes("forbidden pattern HEAD & SHOULDERS")));
+  assert.ok(bad.some((message) => message.includes("liquidity zones 0 < 1")));
+  const good = tortureExpectationFailures(sweep, [], {state:"VERIFIED",event:"SWEEP",zones:[{}]});
+  assert.deepEqual(good, []);
+});
