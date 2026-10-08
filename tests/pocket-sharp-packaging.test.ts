@@ -49,3 +49,28 @@ test("live torture reads the analysis envelope rather than silently scoring empt
   assert.equal(result.evidenceQuality?.chartReadability, "HIGH");
   assert.throws(() => unwrapTortureAnalysis({ levels: [] }), /analysis envelope/i);
 });
+
+test("torture payload matches the app's precision-crop geometry and chart scale", async () => {
+  const { syntheticPrecisionCropSpec, buildTortureRequestPayload } = await import("./support/pocket-image-torture.ts");
+  assert.deepEqual(syntheticPrecisionCropSpec(900, 600), {
+    left: 0, top: 36, width: 900, height: 492, targetWidth: 1400, targetHeight: 765,
+  });
+  for (const sample of TORTURE_CASES) {
+    const payload = buildTortureRequestPayload(sample, "data:image/png;base64,dummy", "data:image/jpeg;base64,crop");
+    assert.equal(payload.precisionImage, "data:image/jpeg;base64,crop");
+    assert.equal(payload.chartConfirmation.instrument, sample.market);
+    assert.equal(payload.chartConfirmation.timeframe, sample.timeframe);
+    const lastPixelY = 60 + sample.points.at(-1)! * 4.6;
+    const priceProjectedY = 80 + (110 - Number(payload.chartConfirmation.currentPrice)) * 21;
+    assert.ok(Math.abs(lastPixelY - priceProjectedY) < 0.2, sample.id + " price mismatch");
+  }
+});
+
+test("both torture runners use the real analyse envelope and precision crop", async () => {
+  for (const path of ["../app/api/pocket/torture/route.ts", "../scripts/run-pocket-image-torture.ts"]) {
+    const source = await readFile(new URL(path, import.meta.url), "utf8");
+    assert.match(source, /unwrapTortureAnalysis\(/, path);
+    assert.match(source, /syntheticPrecisionCropSpec\(/, path);
+    assert.match(source, /buildTortureRequestPayload\(/, path);
+  }
+});
