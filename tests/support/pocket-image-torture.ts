@@ -29,6 +29,10 @@ export const TORTURE_CASES: TortureCase[] = [
     expectedLiquidity:{state:"NONE",minimumZones:0}, degrade:"blur" },
 ];
 
+export const SYNTHETIC_PRICE_AXIS = [
+  {price:110,y:80},{price:105,y:185},{price:100,y:290},{price:95,y:395},{price:90,y:500},
+] as const;
+
 export function syntheticCandleGeometry(sample: TortureCase) {
   return sample.points.map((point, index) => {
     const closeY = 60 + point * 4.6;
@@ -49,7 +53,7 @@ export function syntheticSvg(sample:TortureCase): string {
     return `<line x1="${x}" y1="${candle.highY}" x2="${x}" y2="${candle.lowY}" stroke="#111" stroke-width="2"/><rect x="${x-5}" y="${candle.bodyTop}" width="10" height="${Math.max(1,candle.bodyBottom-candle.bodyTop)}" fill="${candle.closeY<=candle.openY?"#fff":"#777"}" stroke="#111"/>`;
   }).join("");
   const grid=[60,152,244,336,428,520].map(y=>`<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#ddd"/>`).join("");
-  const scale=sample.degrade==="crop-scale"?"":[["110",80],["105",190],["100",300],["95",410],["90",500]].map(([p,y])=>`<text x="832" y="${y}" font-size="16" font-family="Arial">${p}</text>`).join("");
+  const scale=sample.degrade==="crop-scale"?"":SYNTHETIC_PRICE_AXIS.map(({price,y})=>`<text x="832" y="${y}" font-size="16" font-family="Arial">${price}</text>`).join("");
   const filter=sample.degrade==="blur"?' filter="url(#blur)"':"";
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="white"/><defs><filter id="blur"><feGaussianBlur stdDeviation="3.2"/></filter></defs><text x="75" y="30" font-size="18" font-family="Arial">${esc(sample.market)} · ${sample.timeframe}</text><g${filter}>${grid}<rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="none" stroke="#555" stroke-width="2"/>${candles}</g>${scale}</svg>`;
 }
