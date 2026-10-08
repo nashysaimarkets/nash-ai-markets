@@ -59,7 +59,7 @@ const schema = {
           geometry: {
             type: "object", additionalProperties: false,
             properties: {
-              points: { type: "array", minItems: 2, maxItems: 10, items: {
+              points: { type: "array", minItems: 3, maxItems: 10, items: {
                 type: "object", additionalProperties: false,
                 properties: { x: { type: "number", minimum: 0, maximum: 100 }, y: { type: "number", minimum: 0, maximum: 100 } },
                 required: ["x", "y"],
