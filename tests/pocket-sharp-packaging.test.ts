@@ -34,3 +34,18 @@ test("all six labelled SVGs rasterize and decode without an AI provider", async 
     assert.equal(metadata.format, "png", sample.id);
   }
 });
+
+test("live torture reads the analysis envelope rather than silently scoring empty output", async () => {
+  const { unwrapTortureAnalysis } = await import("./support/pocket-image-torture.ts");
+  const result = unwrapTortureAnalysis({ analysis: {
+    levels: [{ kind: "support", y: 64 }],
+    patterns: [{ name: "RECTANGLE / RANGE" }],
+    liquidity: { state: "VERIFIED", event: "NONE" },
+    evidenceQuality: { chartReadability: "HIGH" },
+  } });
+  assert.equal(result.levels?.[0]?.kind, "support");
+  assert.equal(result.patterns?.[0]?.name, "RECTANGLE / RANGE");
+  assert.equal(result.liquidity?.state, "VERIFIED");
+  assert.equal(result.evidenceQuality?.chartReadability, "HIGH");
+  assert.throws(() => unwrapTortureAnalysis({ levels: [] }), /analysis envelope/i);
+});
