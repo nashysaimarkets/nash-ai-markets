@@ -236,15 +236,28 @@ export function aggregateSeparateTortureReports(reports: unknown) {
     if (rawMetrics == null) continue; // Network/provider errors are attempts, not measurements.
     if (typeof rawMetrics !== "object" || Array.isArray(rawMetrics)) throw new Error("Invalid case metrics");
     const metricSet = rawMetrics as Record<string,unknown>;
+    const sample = TORTURE_CASES.find(candidate => candidate.id === id)!;
     for (const scanner of ["levels","patterns","liquidity"] as const) {
       const raw = metricSet[scanner];
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid case metrics");
       const fields = raw as Record<string,unknown>;
+      const expected = scanner === "levels" ? sample.expectedLevels.length
+        : scanner === "patterns" ? sample.expectedPatterns.length
+        : sample.expectedLiquidity.state === "NONE" ? 0 : 1;
+      const maxDetections = scanner === "levels" ? 8 : scanner === "patterns" ? 4 : 1;
       for (const key of ["tp","fp","fn"] as const) {
         const value = fields[key];
         if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) throw new Error("Invalid case metrics count");
-        totals[scanner][key] += value;
       }
+      const tp = fields.tp as number, fp = fields.fp as number, fn = fields.fn as number;
+      // A counted positive must belong to a labelled expected detection.
+      // Every missed expected item MUST appear as FN; no hidden omissions.
+      if (tp + fn !== expected || tp + fp > maxDetections) {
+        throw new Error(`Invalid case metrics: impossible ${scanner} TP/FP/FN for ${id}`);
+      }
+      totals[scanner].tp += tp;
+      totals[scanner].fp += fp;
+      totals[scanner].fn += fn;
     }
     measured.push(id);
   }
