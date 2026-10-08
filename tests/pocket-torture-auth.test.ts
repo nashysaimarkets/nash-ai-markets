@@ -55,3 +55,22 @@ test("live benchmark records end-to-end duration for successful and failed cases
   }
   assert.match(route, /observations\.push\(\{id:sample\.id/);
 });
+
+test("one-case preview never claims the six-case benchmark is complete", async () => {
+  const route = await readFile(new URL("../app/api/pocket/torture/route.ts", import.meta.url), "utf8");
+  assert.match(route, /summarizeTortureMeasurements\(TORTURE_CASES\.map\(sample\s*=>\s*sample\.id\),measuredCaseIds,metrics\)/);
+  assert.match(route, /caseMetrics:\s*scoredCase\.metrics/);
+});
+
+test("the protected workflow never fires all six billable scans in one dispatch", async () => {
+  const workflow = await readFile(new URL("../.github/workflows/bullseye-image-torture.yml", import.meta.url), "utf8");
+  const runner = await readFile(new URL("../scripts/run-pocket-image-torture.ts", import.meta.url), "utf8");
+  assert.match(workflow, /case_id:/);
+  assert.match(workflow, /POCKET_TORTURE_CASE:\s*\$\{\{\s*inputs\.case_id\s*\}\}/);
+  assert.match(runner, /process\.env\.POCKET_TORTURE_CASE/);
+  assert.match(runner, /TORTURE_CASES\.filter\(/);
+  assert.doesNotMatch(runner, /for\s*\(const sample of TORTURE_CASES\)/);
+  assert.match(runner, /caseMetrics:\s*scoredCase\.metrics/);
+  // Prove that the case validation appears before any call to the live analyse route.
+  assert.ok(runner.indexOf("POCKET_TORTURE_CASE") < runner.indexOf("await POST(req)"));
+});
