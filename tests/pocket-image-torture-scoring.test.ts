@@ -120,7 +120,7 @@ test("aggregator treats failed scans without scored observations as unmeasured",
 });
 
 test("aggregator rejects duplicates, unknown cases and invalid or invented counts", () => {
-  const good = {levels:{tp:1,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
+  const good = {levels:{tp:2,fp:0,fn:0},patterns:{tp:1,fp:0,fn:0},liquidity:{tp:1,fp:0,fn:0}};
   const first = {cases:1,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:good}]};
   assert.throws(() => aggregateSeparateTortureReports([first,first]), /duplicate/i);
   assert.throws(() => aggregateSeparateTortureReports([{cases:1,observations:[{id:"not-labelled",caseMetrics:good}]}]), /unknown/i);
