@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
-import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload } from "../../../../tests/support/pocket-image-torture";
+import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, tortureExpectationFailures } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -72,6 +72,7 @@ export async function GET(request:Request){
     const positive=sample.expectedLiquidity.state!=="NONE", actual=body.liquidity?.state==="VERIFIED"||body.liquidity?.state==="PARTIAL";
     if(positive&&actual)metrics.liquidity.tp++;else if(positive&&!actual){metrics.liquidity.fn++;failures.push(`${sample.id}: missed liquidity`);}else if(!positive&&actual){metrics.liquidity.fp++;failures.push(`${sample.id}: false liquidity ${body.liquidity?.state}`);}
     if(sample.expectedLiquidity.event&&body.liquidity?.event!==sample.expectedLiquidity.event)failures.push(`${sample.id}: liquidity event ${body.liquidity?.event} != ${sample.expectedLiquidity.event}`);
+    failures.push(...tortureExpectationFailures(sample,patterns,body.liquidity));
     observations.push({id:sample.id,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
   }
   const rate=(m:Counts,d:"p"|"r")=>{const n=d==="p"?m.tp+m.fp:m.tp+m.fn;return n?m.tp/n:null};
