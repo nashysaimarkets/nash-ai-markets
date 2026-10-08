@@ -45,6 +45,8 @@ export async function GET(request:Request){
     enabled: process.env.POCKET_TORTURE_LIVE_ENABLED,
     token: process.env.POCKET_TORTURE_LIVE_TOKEN,
   })) return NextResponse.json({error:"Live benchmark not authorized."},{status:403});
+  // A paid run must explicitly name one case; batch execution requires a budget check between calls.
+  if (!requested) return NextResponse.json({error:"Live benchmark requires one named case."},{status:400});
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const measuredCaseIds: string[] = [];
@@ -59,16 +61,18 @@ export async function GET(request:Request){
     const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${i+1}`},body:JSON.stringify(requestPayload)});
     let response: Response;
     let body: Analysis;
+    const startedAt = performance.now();
     try {
       response=await analyse(req);
       const payload = await response.json();
       body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : payload as Analysis;
     } catch (error) {
       failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
-      observations.push({id:sample.id,exception:error instanceof Error ? error.message : String(error)});
+      observations.push({id:sample.id,durationMs:Math.round(performance.now()-startedAt),exception:error instanceof Error ? error.message : String(error)});
       continue;
     }
-    if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);continue;}
+    const durationMs = Math.round(performance.now()-startedAt);
+    if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);observations.push({id:sample.id,durationMs,httpStatus:response.status,error:body.error??null});continue;}
     const scoredCase = scoreTortureAnalysis(sample, body);
     const { levels, patterns } = scoredCase;
     for (const key of ["levels", "patterns", "liquidity"] as const) {
@@ -76,7 +80,7 @@ export async function GET(request:Request){
     }
     failures.push(...scoredCase.failures);
     measuredCaseIds.push(sample.id);
-    observations.push({id:sample.id,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
+    observations.push({id:sample.id,durationMs,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
   }
   const summary = summarizeTortureMeasurements(selected.map(sample=>sample.id),measuredCaseIds,metrics);
   const pass = summary.measurementComplete && failures.length === 0;
