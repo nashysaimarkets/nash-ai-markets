@@ -125,8 +125,12 @@ test("synthetic price axis remains readable without system fonts", async () => {
     if (sample.degrade === "crop-scale") continue;
     for (const {price, y} of SYNTHETIC_PRICE_AXIS) {
       assert.ok(svg.includes(`data-axis-price="${price}" data-axis-y="${y}"`), `${sample.id}: missing vector axis ${price}`);
+      const group = svg.split(`data-axis-price="${price}" data-axis-y="${y}">`)[1]?.split("</g>")[0] ?? "";
+      const digits = [...group.matchAll(/data-axis-digit="(\d)" d="([^"]+)"/g)];
+      assert.equal(digits.map((match) => match[1]).join(""), String(price), `${sample.id}: exact digits for ${price}`);
+      assert.ok(digits.every((match) => match[2].includes("M")), `${sample.id}: each digit has drawable strokes`);
     }
-    assert.equal((svg.match(/data-axis-digit=/g) ?? []).length, SYNTHETIC_PRICE_AXIS.length * 3,
+    assert.equal((svg.match(/data-axis-digit=/g) ?? []).length, SYNTHETIC_PRICE_AXIS.reduce((count, tick) => count + String(tick.price).length, 0),
       sample.id + ": all numeric labels must have font-independent vector glyphs");
   }
 });
