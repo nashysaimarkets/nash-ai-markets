@@ -43,6 +43,22 @@ export function syntheticCandleGeometry(sample: TortureCase) {
   });
 }
 
+/** Font-independent price glyphs: Vercel Sharp may lack a usable fontconfig setup. */
+function vectorPriceLabel(price: number, y: number): string {
+  const segments: Record<string, string> = {
+    "0": "abcdef", "1": "bc", "2": "abged", "3": "abgcd", "4": "fgbc",
+    "5": "afgcd", "6": "afgecd", "7": "abc", "8": "abcdefg", "9": "abcfgd",
+  };
+  const strokes: Record<string, string> = {
+    a: "M1 0H7", b: "M8 1V6", c: "M8 8V13", d: "M1 14H7",
+    e: "M0 8V13", f: "M0 1V6", g: "M1 7H7",
+  };
+  const digits = String(price).split("").map((digit, index) => {
+    const d = [...(segments[digit] ?? "")].map((segment) => strokes[segment]).join(" ");
+    return `<path data-axis-digit="${digit}" d="${d}" transform="translate(${832 + index * 11} ${y - 14})" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }).join("");
+  return `<g data-axis-price="${price}" data-axis-y="${y}">${digits}</g>`;
+}
 const esc=(s:string)=>s.replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]!));
 
 export function syntheticSvg(sample:TortureCase): string {
@@ -53,7 +69,7 @@ export function syntheticSvg(sample:TortureCase): string {
     return `<line x1="${x}" y1="${candle.highY}" x2="${x}" y2="${candle.lowY}" stroke="#111" stroke-width="2"/><rect x="${x-5}" y="${candle.bodyTop}" width="10" height="${Math.max(1,candle.bodyBottom-candle.bodyTop)}" fill="${candle.closeY<=candle.openY?"#fff":"#777"}" stroke="#111"/>`;
   }).join("");
   const grid=[60,152,244,336,428,520].map(y=>`<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#ddd"/>`).join("");
-  const scale=sample.degrade==="crop-scale"?"":SYNTHETIC_PRICE_AXIS.map(({price,y})=>`<text x="832" y="${y}" font-size="16" font-family="Arial">${price}</text>`).join("");
+  const scale=sample.degrade==="crop-scale"?"":SYNTHETIC_PRICE_AXIS.map(({price,y})=>vectorPriceLabel(price,y)).join("");
   const filter=sample.degrade==="blur"?' filter="url(#blur)"':"";
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="white"/><defs><filter id="blur"><feGaussianBlur stdDeviation="3.2"/></filter></defs><text x="75" y="30" font-size="18" font-family="Arial">${esc(sample.market)} · ${sample.timeframe}</text><g${filter}>${grid}<rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="none" stroke="#555" stroke-width="2"/>${candles}</g>${scale}</svg>`;
 }
