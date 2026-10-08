@@ -84,3 +84,36 @@ test("live torture enforces forbidden patterns and minimum liquidity zones", asy
   const good = tortureExpectationFailures(sweep, [], {state:"VERIFIED",event:"SWEEP",zones:[{}]});
   assert.deepEqual(good, []);
 });
+
+test("synthetic candle OHLC geometry is internally valid for every fixture", async () => {
+  const { syntheticCandleGeometry } = await import("./support/pocket-image-torture.ts");
+  for (const sample of TORTURE_CASES) {
+    const candles = syntheticCandleGeometry(sample);
+    assert.equal(candles.length, sample.points.length, sample.id);
+    for (const [index, candle] of candles.entries()) {
+      const label = `${sample.id} candle ${index}`;
+      assert.ok(candle.highY <= Math.min(candle.openY, candle.closeY), label + " wick high");
+      assert.ok(candle.lowY >= Math.max(candle.openY, candle.closeY), label + " wick low");
+      assert.equal(candle.bodyTop, Math.min(candle.openY, candle.closeY), label + " body top");
+      assert.equal(candle.bodyBottom, Math.max(candle.openY, candle.closeY), label + " body bottom");
+      assert.ok(candle.highY >= 60 && candle.lowY <= 520, label + " within plot");
+      assert.ok(Math.abs(candle.closeY - (60 + sample.points[index]! * 4.6)) < 0.00001, label + " close");
+    }
+  }
+});
+
+test("all displayed synthetic price labels lie on the same linear price scale", async () => {
+  const { SYNTHETIC_PRICE_AXIS, syntheticLastPrice } = await import("./support/pocket-image-torture.ts");
+  assert.ok(SYNTHETIC_PRICE_AXIS.length >= 3);
+  const [first, last] = [SYNTHETIC_PRICE_AXIS[0]!, SYNTHETIC_PRICE_AXIS.at(-1)!];
+  const slope = (last.price - first.price) / (last.y - first.y);
+  for (const tick of SYNTHETIC_PRICE_AXIS) {
+    assert.ok(Math.abs(tick.price - (first.price + (tick.y - first.y) * slope)) < 0.001,
+      `axis tick ${tick.price} at y ${tick.y} is not linear`);
+  }
+  for (const sample of TORTURE_CASES) {
+    const closeY = 60 + sample.points.at(-1)! * 4.6;
+    const expectedPrice = first.price + (closeY - first.y) * slope;
+    assert.ok(Math.abs(Number(syntheticLastPrice(sample)) - expectedPrice) < 0.006, sample.id);
+  }
+});
