@@ -201,3 +201,53 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   failures.push(...tortureExpectationFailures(sample, patterns, actual));
   return {metrics, failures, levels, patterns};
 }
+
+
+/**
+ * Combine separately authorised one-case preview responses without mistaking a
+ * successful single scan for completion of the labelled six-image corpus.
+ * Never accepts bare counters as proof: each count must belong to a known unique
+ * labelled case, and unsuccessful cases remain explicitly unmeasured.
+ */
+export function aggregateSeparateTortureReports(reports: unknown) {
+  if (!Array.isArray(reports)) throw new Error("Expected an array of single-case reports");
+  const expectedIds = TORTURE_CASES.map(sample => sample.id);
+  const known = new Set(expectedIds);
+  const attempted = new Set<string>();
+  const measured: string[] = [];
+  const totals: TortureMetrics = {
+    levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0},
+  };
+  for (const report of reports) {
+    if (!report || typeof report !== "object" || Array.isArray(report)) throw new Error("Invalid single-case report");
+    const record = report as Record<string,unknown>;
+    const observations = record.observations;
+    if (record.cases !== 1 || !Array.isArray(observations) || observations.length !== 1) {
+      throw new Error("Expected exactly one observation in each single-case report");
+    }
+    const item = observations[0];
+    if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("Invalid case observation");
+    const observed = item as Record<string,unknown>;
+    const id = observed.id;
+    if (typeof id !== "string" || !known.has(id)) throw new Error("Unknown labelled case in benchmark report");
+    if (attempted.has(id)) throw new Error("Duplicate labelled case in benchmark reports");
+    attempted.add(id);
+    const rawMetrics = observed.caseMetrics;
+    if (rawMetrics == null) continue; // Network/provider errors are attempts, not measurements.
+    if (typeof rawMetrics !== "object" || Array.isArray(rawMetrics)) throw new Error("Invalid case metrics");
+    const metricSet = rawMetrics as Record<string,unknown>;
+    for (const scanner of ["levels","patterns","liquidity"] as const) {
+      const raw = metricSet[scanner];
+      if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid case metrics");
+      const fields = raw as Record<string,unknown>;
+      for (const key of ["tp","fp","fn"] as const) {
+        const value = fields[key];
+        if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) throw new Error("Invalid case metrics count");
+        totals[scanner][key] += value;
+      }
+    }
+    measured.push(id);
+  }
+  return { attemptedCases: attempted.size,
+    ...summarizeTortureMeasurements(expectedIds, measured, totals) };
+}
