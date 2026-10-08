@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
+import { mayRunLiveTorture } from "./authorization";
 import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis, summarizeTortureMeasurements } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
@@ -39,6 +40,11 @@ export async function GET(request:Request){
     }
     return NextResponse.json({cases:images.length,images,providerCalls:0,pass:true});
   }
+  // Free raster proof stays accessible; billed scans require two explicit secrets.
+  if (!mayRunLiveTorture(request, {
+    enabled: process.env.POCKET_TORTURE_LIVE_ENABLED,
+    token: process.env.POCKET_TORTURE_LIVE_TOKEN,
+  })) return NextResponse.json({error:"Live benchmark not authorized."},{status:403});
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const measuredCaseIds: string[] = [];
