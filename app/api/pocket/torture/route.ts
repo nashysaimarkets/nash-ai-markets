@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
-import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis } from "../../../../tests/support/pocket-image-torture";
+import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis, summarizeTortureMeasurements } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -41,6 +41,7 @@ export async function GET(request:Request){
   }
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
+  const measuredCaseIds: string[] = [];
   for(let i=0;i<selected.length;i++){
     const sample=selected[i]!;
     const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
@@ -68,9 +69,10 @@ export async function GET(request:Request){
       for (const count of ["tp", "fp", "fn"] as const) metrics[key][count] += scoredCase.metrics[key][count];
     }
     failures.push(...scoredCase.failures);
+    measuredCaseIds.push(sample.id);
     observations.push({id:sample.id,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
   }
-  const rate=(m:Counts,d:"p"|"r")=>{const n=d==="p"?m.tp+m.fp:m.tp+m.fn;return n?m.tp/n:null};
-  const scored=Object.fromEntries(Object.entries(metrics).map(([k,m])=>[k,{...m,precision:rate(m,"p"),recall:rate(m,"r")}]));
-  return NextResponse.json({cases:selected.length,metrics:scored,failures,observations,pass:failures.length===0},{status:failures.length?422:200});
+  const summary = summarizeTortureMeasurements(selected.map(sample=>sample.id),measuredCaseIds,metrics);
+  const pass = summary.measurementComplete && failures.length === 0;
+  return NextResponse.json({cases:selected.length,...summary,failures,observations,pass},{status:pass?200:422});
 }

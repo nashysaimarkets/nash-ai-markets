@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { scoreTortureAnalysis, TORTURE_CASES, type TortureCase } from "./support/pocket-image-torture.ts";
+import { scoreTortureAnalysis, summarizeTortureMeasurements, TORTURE_CASES, type TortureCase } from "./support/pocket-image-torture.ts";
 
 const range = TORTURE_CASES[0]!;
 const perfect = {
@@ -56,4 +56,32 @@ test("perfect and no-signal fixtures score without manufacturing true positives"
   const empty = scoreTortureAnalysis(negative, {levels:[],patterns:[],liquidity:{state:"NONE",zones:[]}});
   for (const counts of Object.values(empty.metrics)) assert.deepEqual(counts, {tp:0,fp:0,fn:0});
   assert.deepEqual(empty.failures, []);
+});
+
+test("incomplete image runs cannot report aggregate benchmark precision or recall", () => {
+  const counts = scoreTortureAnalysis(range,perfect).metrics;
+  const result = summarizeTortureMeasurements(TORTURE_CASES.map(sample=>sample.id),[range.id],counts);
+  assert.equal(result.measurementComplete,false);
+  assert.equal(result.measuredCases,1);
+  assert.equal(result.unmeasuredCaseIds.length,5);
+  for (const metric of Object.values(result.metrics)) {
+    assert.equal(metric.precision,null);
+    assert.equal(metric.recall,null);
+  }
+});
+
+test("complete measurements retain actual rates and undefined denominators", () => {
+  const counts = {levels:{tp:2,fp:1,fn:2},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:1,fp:1,fn:0}};
+  const result = summarizeTortureMeasurements(["a","b"],["a","b"],counts);
+  assert.equal(result.measurementComplete,true);
+  assert.equal(result.metrics.levels.precision,2/3);
+  assert.equal(result.metrics.levels.recall,0.5);
+  assert.equal(result.metrics.patterns.precision,null);
+  assert.equal(result.metrics.patterns.recall,null);
+});
+
+test("unknown or duplicate measured image IDs cannot manufacture completion", () => {
+  const counts = scoreTortureAnalysis(range,perfect).metrics;
+  assert.throws(()=>summarizeTortureMeasurements(["a","b"],["a","a"],counts),/measurement IDs/);
+  assert.throws(()=>summarizeTortureMeasurements(["a","b"],["a","c"],counts),/measurement IDs/);
 });

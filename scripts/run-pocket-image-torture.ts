@@ -1,5 +1,5 @@
 import { POST } from "../app/api/pocket/analyse/route.ts";
-import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis } from "../tests/support/pocket-image-torture.ts";
+import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis, summarizeTortureMeasurements } from "../tests/support/pocket-image-torture.ts";
 
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 const sharpModule = await import("sharp");
@@ -17,6 +17,7 @@ const metrics: Record<"levels"|"patterns"|"liquidity",Counts> = {
   levels:{tp:0,fp:0,fn:0}, patterns:{tp:0,fp:0,fn:0}, liquidity:{tp:0,fp:0,fn:0},
 };
 const failures: string[]=[];
+const measuredCaseIds: string[]=[];
 
 for(const sample of TORTURE_CASES){
   let pipeline=sharp(Buffer.from(syntheticSvg(sample))).png();
@@ -41,13 +42,11 @@ for(const sample of TORTURE_CASES){
     for (const count of ["tp", "fp", "fn"] as const) metrics[key][count] += scoredCase.metrics[key][count];
   }
   failures.push(...scoredCase.failures);
+  measuredCaseIds.push(sample.id);
 
   console.log(JSON.stringify({id:sample.id,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
 }
 
-const rate=(m:Counts,key:"precision"|"recall")=>{
-  const d=key==="precision"?m.tp+m.fp:m.tp+m.fn;
-  return d?m.tp/d:null;
-};
-console.log("IMAGE_TORTURE_METRICS",JSON.stringify(Object.fromEntries(Object.entries(metrics).map(([k,m])=>[k,{...m,precision:rate(m,"precision"),recall:rate(m,"recall")}]))));
+const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample=>sample.id),measuredCaseIds,metrics);
+console.log("IMAGE_TORTURE_MEASUREMENTS",JSON.stringify(summary));
 if(failures.length){console.error("IMAGE_TORTURE_FAILURES\n"+failures.join("\n"));process.exitCode=1;}

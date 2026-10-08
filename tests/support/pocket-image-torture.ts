@@ -134,6 +134,21 @@ export function tortureExpectationFailures(
 export type TortureCounts = { tp: number; fp: number; fn: number };
 export type TortureMetrics = Record<"levels" | "patterns" | "liquidity", TortureCounts>;
 
+/** Rates describe the complete selected corpus, never a silent successful subset. */
+export function summarizeTortureMeasurements(caseIds: string[], measuredCaseIds: string[], counts: TortureMetrics) {
+  if (new Set(measuredCaseIds).size !== measuredCaseIds.length || measuredCaseIds.some(id => !caseIds.includes(id))) {
+    throw new Error("Invalid measurement IDs");
+  }
+  const unmeasuredCaseIds = caseIds.filter(id => !measuredCaseIds.includes(id));
+  const measurementComplete = caseIds.length > 0 && unmeasuredCaseIds.length === 0;
+  const rates = (metric: TortureCounts) => ({...metric,
+    precision: measurementComplete && metric.tp + metric.fp > 0 ? metric.tp / (metric.tp + metric.fp) : null,
+    recall: measurementComplete && metric.tp + metric.fn > 0 ? metric.tp / (metric.tp + metric.fn) : null,
+  });
+  return {measurementComplete,measuredCases:measuredCaseIds.length,unmeasuredCaseIds,
+    metrics:{levels:rates(counts.levels),patterns:rates(counts.patterns),liquidity:rates(counts.liquidity)}};
+}
+
 /** One-to-one detections; a wrong liquidity state/event is both a miss and a false detection. */
 export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeof unwrapTortureAnalysis>) {
   const metrics: TortureMetrics = {levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
