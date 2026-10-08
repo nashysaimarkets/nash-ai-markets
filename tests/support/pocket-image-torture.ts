@@ -59,3 +59,29 @@ export function unwrapTortureAnalysis(payload: unknown): {
   }
   return payload.analysis as ReturnType<typeof unwrapTortureAnalysis>;
 }
+
+/** Mirror PocketBullseye.tsx createPrecisionReadingCrop's 6%/82% full-width crop. */
+export function syntheticPrecisionCropSpec(width: number, height: number) {
+  const top = Math.round(height * 0.06);
+  const cropHeight = Math.round(height * 0.82);
+  const targetWidth = Math.min(1800, Math.max(1400, width));
+  return { left: 0, top, width, height: cropHeight, targetWidth,
+    targetHeight: Math.round(cropHeight * targetWidth / width) };
+}
+
+/** Scale drawn by syntheticSvg: 110 at pixel y=80 and 90 at pixel y=500. */
+export function syntheticLastPrice(sample: TortureCase): string {
+  const last = sample.points.at(-1);
+  if (last === undefined) throw new Error(sample.id + ": empty chart");
+  const lastPixelY = 60 + last * 4.6;
+  return (110 - (lastPixelY - 80) / 21).toFixed(2);
+}
+
+export function buildTortureRequestPayload(sample: TortureCase, image: string, precisionImage: string) {
+  return { image, precisionImage, intention: "UNSURE" as const,
+    chartConfirmation: {
+      instrument: sample.market, timeframe: sample.timeframe,
+      currentPrice: syntheticLastPrice(sample), contextMatch: "NOT_PROVIDED" as const,
+    },
+  };
+}
