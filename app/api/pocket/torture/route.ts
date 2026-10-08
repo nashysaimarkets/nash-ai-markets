@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
-import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis } from "../../../../tests/support/pocket-image-torture";
+import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
+
+async function makePrecisionCrop(image: Buffer) {
+  const spec = syntheticPrecisionCropSpec(900, 600);
+  return sharp(image).extract({ left: spec.left, top: spec.top, width: spec.width, height: spec.height })
+    .resize(spec.targetWidth, spec.targetHeight, { fit: "fill" }).jpeg({ quality: 92 }).toBuffer();
+}
+
 
 type Counts={tp:number;fp:number;fn:number};
 type Analysis={evidenceQuality?:{chartReadability?:string};levels?:Array<{kind?:string;y?:number}>;patterns?:Array<{name?:string}>;liquidity?:{state?:string;event?:string;zones?:unknown[]};error?:string};
@@ -24,7 +31,11 @@ export async function GET(request:Request){
       const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
       const metadata=await sharp(image).metadata();
       if(image.subarray(0,8).toString("hex")!=="89504e470d0a1a0a" || metadata.width!==900 || metadata.height!==600) throw new Error(`${sample.id}: invalid raster fixture`);
-      images.push({id:sample.id,bytes:image.length,width:metadata.width,height:metadata.height,format:metadata.format});
+      const precisionCrop = await makePrecisionCrop(image);
+      const precisionMetadata = await sharp(precisionCrop).metadata();
+      if (precisionMetadata.format !== "jpeg" || precisionMetadata.width !== 1400 || precisionMetadata.height !== 765) throw new Error(`${sample.id}: invalid precision crop`);
+      images.push({id:sample.id,bytes:image.length,width:metadata.width,height:metadata.height,format:metadata.format,
+        precisionFormat:precisionMetadata.format,precisionWidth:precisionMetadata.width,precisionHeight:precisionMetadata.height});
     }
     return NextResponse.json({cases:images.length,images,providerCalls:0,pass:true});
   }
@@ -35,7 +46,11 @@ export async function GET(request:Request){
     const sample=selected[i]!;
     const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
     if(image.length < 8 || image.subarray(0,8).toString("hex") !== "89504e470d0a1a0a") throw new Error(`${sample.id}: torture fixture did not rasterize to PNG`);
-    const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${i+1}`},body:JSON.stringify({image:`data:image/png;base64,${image.toString("base64")}`,intention:"UNSURE",chartConfirmation:{instrument:sample.market,timeframe:sample.timeframe,currentPrice:"100",contextMatch:"NOT_PROVIDED"}})});
+    const precisionCrop = await makePrecisionCrop(image);
+    const requestPayload = buildTortureRequestPayload(sample,
+      `data:image/png;base64,${image.toString("base64")}`,
+      `data:image/jpeg;base64,${precisionCrop.toString("base64")}`);
+    const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${i+1}`},body:JSON.stringify(requestPayload)});
     let response: Response;
     let body: Analysis;
     try {
