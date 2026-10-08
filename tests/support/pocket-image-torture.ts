@@ -55,7 +55,7 @@ function vectorPriceLabel(price: number, y: number): string {
   };
   const digits = String(price).split("").map((digit, index) => {
     const d = [...(segments[digit] ?? "")].map((segment) => strokes[segment]).join(" ");
-    return `<path data-axis-digit="${digit}" d="${d}" transform="translate(${832 + index * 11} ${y - 14})" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    return `<path data-axis-digit="${digit}" d="${d}" transform="translate(${832 + index * 11} ${y - 7})" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`;
   }).join("");
   return `<g data-axis-price="${price}" data-axis-y="${y}">${digits}</g>`;
 }

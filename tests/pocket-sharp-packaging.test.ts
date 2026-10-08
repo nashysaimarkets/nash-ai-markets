@@ -129,6 +129,10 @@ test("synthetic price axis remains readable without system fonts", async () => {
       const digits = [...group.matchAll(/data-axis-digit="(\d)" d="([^"]+)"/g)];
       assert.equal(digits.map((match) => match[1]).join(""), String(price), `${sample.id}: exact digits for ${price}`);
       assert.ok(digits.every((match) => match[2].includes("M")), `${sample.id}: each digit has drawable strokes`);
+      const positions = [...group.matchAll(/transform="translate\([\d.]+ ([\d.]+)\)"/g)];
+      assert.equal(positions.length, String(price).length, `${sample.id}: each digit has a position`);
+      for (const position of positions) assert.equal(Number(position[1]) + 7, y,
+        `${sample.id}: ${price} glyph centre must match the calibrated axis row`);
     }
     assert.equal((svg.match(/data-axis-digit=/g) ?? []).length, SYNTHETIC_PRICE_AXIS.reduce((count, tick) => count + String(tick.price).length, 0),
       sample.id + ": all numeric labels must have font-independent vector glyphs");
