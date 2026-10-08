@@ -18,8 +18,12 @@ const metrics: Record<"levels"|"patterns"|"liquidity",Counts> = {
 };
 const failures: string[]=[];
 const measuredCaseIds: string[]=[];
+const requestedCase = process.env.POCKET_TORTURE_CASE?.trim();
+const selected = TORTURE_CASES.filter(sample => sample.id === requestedCase);
+// Fail before creating images, requests, or AI clients unless exactly one named case was selected.
+if (selected.length !== 1) throw new Error("POCKET_TORTURE_CASE must name exactly one labelled fixture for a paid run.");
 
-for(const sample of TORTURE_CASES){
+for(const sample of selected){
   let pipeline=sharp(Buffer.from(syntheticSvg(sample))).png();
   if(sample.degrade==="compress") pipeline=pipeline.jpeg({quality:28}).png();
   const image=await pipeline.toBuffer();
@@ -55,7 +59,7 @@ for(const sample of TORTURE_CASES){
   failures.push(...scoredCase.failures);
   measuredCaseIds.push(sample.id);
 
-  console.log(JSON.stringify({id:sample.id,durationMs,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
+  console.log(JSON.stringify({id:sample.id,durationMs,caseMetrics: scoredCase.metrics,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
 }
 
 const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample=>sample.id),measuredCaseIds,metrics);
