@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
-import { TORTURE_CASES, syntheticSvg } from "../../../../tests/support/pocket-image-torture";
+import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -40,7 +40,8 @@ export async function GET(request:Request){
     let body: Analysis;
     try {
       response=await analyse(req);
-      body=await response.json() as Analysis;
+      const payload = await response.json();
+      body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : payload as Analysis;
     } catch (error) {
       failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
       observations.push({id:sample.id,exception:error instanceof Error ? error.message : String(error)});
