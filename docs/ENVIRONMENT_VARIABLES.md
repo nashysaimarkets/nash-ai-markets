@@ -11,6 +11,8 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
+- `POCKET_TORTURE_LIVE_ENABLED` — preview-only benchmark opt-in; only the exact string `true` allows attempting the billed route. Leave unset/false until authoritative $2 spending accounting is verified.
+- `POCKET_TORTURE_LIVE_TOKEN` — server-only random secret of at least 32 characters. A preview live benchmark must supply the exact secret in `x-pocket-torture-token`. Never place it in client code, URLs or logs. Leave unset unless a billed test is explicitly authorised and cost-bounded.
 
 ## Supabase
 - `NEXT_PUBLIC_SUPABASE_URL` — public project URL.
