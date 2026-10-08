@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { calibratePocketAnalysis } from "../app/api/pocket/analysis-calibration.ts";
@@ -30,4 +31,13 @@ test("removes all pattern claims when candles are unreadable", () => {
   value.evidenceQuality.candlesReadable = false;
   const calibrated = calibratePocketAnalysis(value) as { patterns: unknown[] };
   assert.deepEqual(calibrated.patterns, []);
+});
+
+test("production pattern schema requires three evidence anchors just like the post-model gate", async () => {
+  const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
+  const calibration = await readFile(new URL("../app/api/pocket/analysis-calibration.ts", import.meta.url), "utf8");
+  // Inspect the schema's pattern-only geometry, not unrelated minItems elsewhere.
+  const patternBlock = route.split("    patterns: {")[1]?.split("    liquidity: {")[0] ?? "";
+  assert.match(patternBlock, /points:\s*\{\s*type:\s*"array",\s*minItems:\s*3/);
+  assert.match(calibration, /points\.length < 3/);
 });
