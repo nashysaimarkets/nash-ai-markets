@@ -34,11 +34,11 @@ const esc=(s:string)=>s.replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt
 export function syntheticSvg(sample:TortureCase): string {
   const width=900,height=600,left=70,right=820,top=60,bottom=520;
   const xs=sample.points.map((_,i)=>90+i*(700/Math.max(1,sample.points.length-1)));
-  const ys=sample.points.map(v=>top+v*4.6);
   const candles=xs.map((x,i)=>{
-    const y=ys[i]!, prev=i?ys[i-1]!:y;
-    const bodyTop=Math.min(y,prev)-3, bodyHeight=Math.max(7,Math.abs(y-prev)*0.28);
-    return `<line x1="${x}" y1="${y-12}" x2="${x}" y2="${y+12}" stroke="#111" stroke-width="2"/><rect x="${x-5}" y="${bodyTop}" width="10" height="${bodyHeight}" fill="${y<=prev?"#fff":"#777"}" stroke="#111"/>`;
+    const close=60+sample.points[i]!*4.6;
+    const open=i?60+sample.points[i-1]!*4.6:close+5;
+    const high=Math.min(open,close)-8,low=Math.max(open,close)+8;
+    return `<line x1="${x}" y1="${high}" x2="${x}" y2="${low}" stroke="#111" stroke-width="2"/><rect x="${x-5}" y="${Math.min(open,close)}" width="10" height="${Math.max(1,Math.abs(close-open))}" fill="${close<=open?"#fff":"#777"}" stroke="#111"/>`;
   }).join("");
   const grid=[60,152,244,336,428,520].map(y=>`<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#ddd"/>`).join("");
   const scale=sample.degrade==="crop-scale"?"":[["110",80],["105",190],["100",300],["95",410],["90",500]].map(([p,y])=>`<text x="832" y="${y}" font-size="16" font-family="Arial">${p}</text>`).join("");
