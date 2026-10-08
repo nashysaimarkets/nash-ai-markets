@@ -12,7 +12,7 @@ test("Pattern Watch exposes strict status, timeframe and confirmation evidence",
   assert.match(route, /confidence: \{ type: "string", enum: \["LOW", "MEDIUM", "HIGH"\]/);
   assert.match(route, /confirmation: \{ type: "string"/);
   assert.match(route, /geometry: \{/);
-  assert.match(route, /points: \{ type: "array", minItems: 2, maxItems: 10/);
+  assert.match(route, /points: \{ type: "array", minItems: 3, maxItems: 10/);
   assert.match(route, /return an empty array when none is defensible/);
   assert.match(client, /PATTERN WATCH/);
   assert.match(client, /30M · 1H · 4H STRUCTURE CHECK/);
