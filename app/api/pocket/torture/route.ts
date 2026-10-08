@@ -80,9 +80,11 @@ export async function GET(request:Request){
     }
     failures.push(...scoredCase.failures);
     measuredCaseIds.push(sample.id);
-    observations.push({id:sample.id,durationMs,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
+    observations.push({id:sample.id,durationMs,caseMetrics: scoredCase.metrics,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
   }
-  const summary = summarizeTortureMeasurements(selected.map(sample=>sample.id),measuredCaseIds,metrics);
-  const pass = summary.measurementComplete && failures.length === 0;
-  return NextResponse.json({cases:selected.length,...summary,failures,observations,pass},{status:pass?200:422});
+  // Always use the entire corpus as the benchmark denominator, even for a one-case paid request.
+  const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample => sample.id),measuredCaseIds,metrics);
+  const casePass = measuredCaseIds.length === selected.length && failures.length === 0;
+  const pass = summary.measurementComplete && casePass;
+  return NextResponse.json({cases:selected.length,...summary,casePass,failures,observations,pass},{status:casePass?200:422});
 }
