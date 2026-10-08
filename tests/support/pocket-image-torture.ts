@@ -85,3 +85,20 @@ export function buildTortureRequestPayload(sample: TortureCase, image: string, p
     },
   };
 }
+
+/** Additional negative and zone-count assertions shared by live torture scoring. */
+export function tortureExpectationFailures(
+  sample: TortureCase,
+  patterns: string[],
+  liquidity: {state?: string;event?: string;zones?: unknown[]} | undefined,
+): string[] {
+  const failures: string[] = [];
+  for (const forbidden of sample.forbiddenPatterns ?? []) {
+    if (patterns.includes(forbidden)) failures.push(`${sample.id}: forbidden pattern ${forbidden}`);
+  }
+  const minimum = sample.expectedLiquidity.minimumZones;
+  if (minimum !== undefined && (liquidity?.zones?.length ?? 0) < minimum) {
+    failures.push(`${sample.id}: liquidity zones ${liquidity?.zones?.length ?? 0} < ${minimum}`);
+  }
+  return failures;
+}
