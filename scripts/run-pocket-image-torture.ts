@@ -1,7 +1,8 @@
 import { POST } from "../app/api/pocket/analyse/route.ts";
 import { TORTURE_CASES, syntheticSvg } from "../tests/support/pocket-image-torture.ts";
 
-// @ts-expect-error sharp is provided transitively by the verified Next.js build stack; runtime import is checked by this harness.\nconst sharpModule = await import("sharp");
+// @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
+const sharpModule = await import("sharp");
 const sharp = sharpModule.default;
 
 type Analysis = {

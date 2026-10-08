@@ -17,6 +17,17 @@ export async function GET(request:Request){
   if(params.get("run")!=="1") return NextResponse.json({ready:true,cases:TORTURE_CASES.map(x=>x.id)});
   const selected=requested ? TORTURE_CASES.filter(x=>x.id===requested) : TORTURE_CASES;
   if(requested && selected.length===0) return NextResponse.json({error:"Unknown torture case."},{status:400});
+  // Exercise the deployed native package without invoking a paid AI provider.
+  if(params.get("raster")==="1") {
+    const images=[];
+    for(const sample of selected) {
+      const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
+      const metadata=await sharp(image).metadata();
+      if(image.subarray(0,8).toString("hex")!=="89504e470d0a1a0a" || metadata.width!==900 || metadata.height!==600) throw new Error(`${sample.id}: invalid raster fixture`);
+      images.push({id:sample.id,bytes:image.length,width:metadata.width,height:metadata.height,format:metadata.format});
+    }
+    return NextResponse.json({cases:images.length,images,providerCalls:0,pass:true});
+  }
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const match=(e:{kind:string;y:number;tolerance:number},a:Array<{kind?:string;y?:number}>)=>a.some(x=>x.kind===e.kind&&typeof x.y==="number"&&Math.abs(x.y-e.y)<=e.tolerance);

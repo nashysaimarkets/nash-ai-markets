@@ -15,6 +15,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Native shared libraries are loaded by dlopen, outside JavaScript tracing.
+  // Keep this scoped to the preview harness rather than every API function.
+  outputFileTracingIncludes: {
+    "/api/pocket/torture": [
+      "./node_modules/sharp/**/*",
+      "./node_modules/@img/sharp-*/**/*",
+    ],
+  },
   async headers() {
     return [
       {
