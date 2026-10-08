@@ -35,3 +35,23 @@ test("preview route enforces authorization before invoking a billed analysis", a
   assert.match(route, /POCKET_TORTURE_LIVE_TOKEN/);
   assert.match(route, /status:403/);
 });
+
+test("billed benchmark requires one explicitly selected labelled case", async () => {
+  const route = await readFile(new URL("../app/api/pocket/torture/route.ts", import.meta.url), "utf8");
+  const paidGuard = route.indexOf("if (!mayRunLiveTorture(");
+  const select = route.indexOf("if (!requested) return NextResponse.json(");
+  const analysis = route.indexOf("await analyse(req)");
+  assert.ok(paidGuard >= 0 && select > paidGuard && analysis > select,
+    "one-case gate must run after authorization and before any billable calls");
+  assert.match(route, /Live benchmark requires one named case/);
+});
+
+test("live benchmark records end-to-end duration for successful and failed cases", async () => {
+  const route = await readFile(new URL("../app/api/pocket/torture/route.ts", import.meta.url), "utf8");
+  const runner = await readFile(new URL("../scripts/run-pocket-image-torture.ts", import.meta.url), "utf8");
+  for (const source of [route, runner]) {
+    assert.match(source, /performance\.now\(\)/);
+    assert.match(source, /durationMs/);
+  }
+  assert.match(route, /observations\.push\(\{id:sample\.id/);
+});
