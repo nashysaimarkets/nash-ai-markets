@@ -30,9 +30,20 @@ for(const sample of TORTURE_CASES){
     method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`127.0.0.${TORTURE_CASES.indexOf(sample)+1}`},
     body:JSON.stringify(buildTortureRequestPayload(sample,data,"data:image/jpeg;base64,"+crop.toString("base64"))),
   });
-  const response=await POST(req);
-  const payload=await response.json() as {analysis?:unknown;error?:string};
-  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`); continue; }
+  const startedAt = performance.now();
+  let response: Response;
+  let payload: {analysis?:unknown;error?:string};
+  try {
+    response=await POST(req);
+    payload=await response.json() as {analysis?:unknown;error?:string};
+  } catch (error) {
+    const durationMs = Math.round(performance.now()-startedAt);
+    failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
+    console.log(JSON.stringify({id:sample.id,durationMs,exception:error instanceof Error ? error.message : String(error)}));
+    continue;
+  }
+  const durationMs = Math.round(performance.now()-startedAt);
+  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`);console.log(JSON.stringify({id:sample.id,durationMs,httpStatus:response.status,error:payload.error??null})); continue; }
   const body=unwrapTortureAnalysis(payload) as Analysis;
 
   const scoredCase = scoreTortureAnalysis(sample, body);
@@ -44,7 +55,7 @@ for(const sample of TORTURE_CASES){
   failures.push(...scoredCase.failures);
   measuredCaseIds.push(sample.id);
 
-  console.log(JSON.stringify({id:sample.id,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
+  console.log(JSON.stringify({id:sample.id,durationMs,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
 }
 
 const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample=>sample.id),measuredCaseIds,metrics);
