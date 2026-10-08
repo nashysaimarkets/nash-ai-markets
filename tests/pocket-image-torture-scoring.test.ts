@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { scoreTortureAnalysis, summarizeTortureMeasurements, TORTURE_CASES, type TortureCase } from "./support/pocket-image-torture.ts";
+import { scoreTortureAnalysis, summarizeTortureMeasurements, aggregateSeparateTortureReports, TORTURE_CASES, type TortureCase } from "./support/pocket-image-torture.ts";
 
 const range = TORTURE_CASES[0]!;
 const perfect = {
@@ -84,4 +84,41 @@ test("unknown or duplicate measured image IDs cannot manufacture completion", ()
   const counts = scoreTortureAnalysis(range,perfect).metrics;
   assert.throws(()=>summarizeTortureMeasurements(["a","b"],["a","a"],counts),/measurement IDs/);
   assert.throws(()=>summarizeTortureMeasurements(["a","b"],["a","c"],counts),/measurement IDs/);
+});
+
+test("separate paid scans cannot claim completeness until all six are measured", () => {
+  const cases = TORTURE_CASES.map(sample => sample.id);
+  const good = { levels:{tp:1,fp:0,fn:0}, patterns:{tp:1,fp:0,fn:0}, liquidity:{tp:1,fp:0,fn:0} };
+  const reports = cases.map(id => ({cases:1,observations:[{id,caseMetrics:good}]}));
+  const partial = aggregateSeparateTortureReports(reports.slice(0,1));
+  assert.equal(partial.measurementComplete,false);
+  assert.equal(partial.measuredCases,1);
+  assert.equal(partial.unmeasuredCaseIds.length,5);
+  for (const metric of Object.values(partial.metrics)) {
+    assert.equal(metric.precision,null);
+    assert.equal(metric.recall,null);
+  }
+  const complete = aggregateSeparateTortureReports(reports);
+  assert.equal(complete.measurementComplete,true);
+  assert.equal(complete.measuredCases,6);
+  assert.deepEqual(complete.unmeasuredCaseIds,[]);
+  assert.equal(complete.metrics.levels.tp,6);
+  assert.equal(complete.metrics.levels.precision,1);
+});
+
+test("aggregator treats failed scans without scored observations as unmeasured", () => {
+  const reports = [{cases:1,observations:[{id:TORTURE_CASES[0]!.id,httpStatus:503}]}];
+  const result = aggregateSeparateTortureReports(reports);
+  assert.equal(result.measuredCases,0);
+  assert.equal(result.measurementComplete,false);
+  assert.equal(result.metrics.levels.precision,null);
+});
+
+test("aggregator rejects duplicates, unknown cases and invalid or invented counts", () => {
+  const good = {levels:{tp:1,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
+  const first = {cases:1,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:good}]};
+  assert.throws(() => aggregateSeparateTortureReports([first,first]), /duplicate/i);
+  assert.throws(() => aggregateSeparateTortureReports([{cases:1,observations:[{id:"not-labelled",caseMetrics:good}]}]), /unknown/i);
+  assert.throws(() => aggregateSeparateTortureReports([{cases:1,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:{...good,levels:{tp:-1,fp:0,fn:0}}}]}]), /invalid/i);
+  assert.throws(() => aggregateSeparateTortureReports([{cases:6,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:good}]}]), /single-case/i);
 });
