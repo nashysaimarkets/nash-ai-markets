@@ -1104,6 +1104,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function requestPocketAnalysis(selectedContext: string | null, options: { bypassCache?: boolean } = {}): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
+    if (!preflightAllowsAnalysis(preflightStatus) || !chartConfirmation) throw new Error("Confirm chart facts before analysis.");
     const requestToken = analysisEpoch.current.snapshot();
     const requireCurrentChart = () => {
       if (!analysisEpoch.current.isCurrent(requestToken)) throw new DOMException("Chart replaced", "AbortError");

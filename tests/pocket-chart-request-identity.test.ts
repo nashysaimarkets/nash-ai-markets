@@ -64,7 +64,7 @@ test("actual analysis request stops before provider dispatch if chart changes du
   let calls = 0;
   const bindings = {
     image: "A", analysisRequestActive: { current: false }, analysisEpoch, setBusy: () => {}, intention: "UNSURE",
-    chartConfirmation: null, accuracyCorrection: null, analysisCacheKey: async () => "A", analysisCacheGet: async () => null,
+    preflightStatus: "LOCKED", preflightAllowsAnalysis: () => true, chartConfirmation: { instrument: "US 500", timeframe: "5m", currentPrice: "100", contextMatch: "NOT_PROVIDED" }, accuracyCorrection: null, analysisCacheKey: async () => "A", analysisCacheGet: async () => null,
     hasVerifiedStructuralLevel: () => false, createPrecisionReadingCrop: () => { started.resolve("started"); return crop.promise; },
     fetch: async () => { calls += 1; throw new Error("must not dispatch"); },
   };
