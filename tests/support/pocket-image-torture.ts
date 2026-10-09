@@ -61,6 +61,35 @@ function vectorPriceLabel(price: number, y: number): string {
 }
 const esc=(s:string)=>s.replace(/[&<>"]/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]!));
 
+
+/** Visible fixture headers must not depend on fonts installed or initialised by a serverless instance. */
+function vectorChartLabel(label: string): string {
+  const glyphs: Record<string, string> = {
+    A:"01110/10001/10001/11111/10001/10001/10001", C:"01111/10000/10000/10000/10000/10000/01111",
+    D:"11110/10001/10001/10001/10001/10001/11110", E:"11111/10000/10000/11110/10000/10000/11111",
+    G:"01111/10000/10000/10111/10001/10001/01111", H:"10001/10001/10001/11111/10001/10001/10001",
+    I:"11111/00100/00100/00100/00100/00100/11111", N:"10001/11001/11001/10101/10011/10011/10001",
+    O:"01110/10001/10001/10001/10001/10001/01110", P:"11110/10001/10001/11110/10000/10000/10000",
+    R:"11110/10001/10001/11110/10100/10010/10001", S:"01111/10000/10000/01110/00001/00001/11110",
+    T:"11111/00100/00100/00100/00100/00100/00100", W:"10001/10001/10001/10101/10101/10101/01010",
+    Y:"10001/10001/01010/00100/00100/00100/00100",
+    "0":"01110/10001/10011/10101/11001/10001/01110", "1":"00100/01100/00100/00100/00100/00100/01110",
+    "3":"11110/00001/00001/01110/00001/00001/11110", "4":"00010/00110/01010/10010/11111/00010/00010",
+    "5":"11111/10000/10000/11110/00001/00001/11110",
+    h:"10000/10000/10110/11001/10001/10001/10001", m:"00000/00000/11010/10101/10101/10101/10101",
+    "-":"00000/00000/00000/11111/00000/00000/00000", "·":"00000/00000/00000/00100/00000/00000/00000",
+    " ":"00000/00000/00000/00000/00000/00000/00000",
+  };
+  const characters = [...label].map((character,index) => {
+    const glyph = glyphs[character];
+    if (!glyph) throw new Error(`Unsupported fixture label character: ${character}`);
+    const cells = glyph.split("/").flatMap((row,y) => [...row].flatMap((cell,x) => cell === "1"
+      ? [`<rect x="${75+index*12+x*2}" y="${14+y*2}" width="2" height="2"/>`] : [])).join("");
+    return `<g data-label-character="${esc(character)}">${cells}</g>`;
+  }).join("");
+  return `<g data-chart-label="${esc(label)}" fill="#111">${characters}</g>`;
+}
+
 export function syntheticSvg(sample:TortureCase): string {
   const width=900,height=600,left=70,right=820,top=60,bottom=520;
   const xs=sample.points.map((_,i)=>90+i*(700/Math.max(1,sample.points.length-1)));
@@ -71,7 +100,7 @@ export function syntheticSvg(sample:TortureCase): string {
   const grid=[60,152,244,336,428,520].map(y=>`<line x1="${left}" y1="${y}" x2="${right}" y2="${y}" stroke="#ddd"/>`).join("");
   const scale=sample.degrade==="crop-scale"?"":SYNTHETIC_PRICE_AXIS.map(({price,y})=>vectorPriceLabel(price,y)).join("");
   const filter=sample.degrade==="blur"?' filter="url(#blur)"':"";
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="white"/><defs><filter id="blur"><feGaussianBlur stdDeviation="3.2"/></filter></defs><text x="75" y="30" font-size="18" font-family="Arial">${esc(sample.market)} · ${sample.timeframe}</text><g${filter}>${grid}<rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="none" stroke="#555" stroke-width="2"/>${candles}</g>${scale}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="white"/><defs><filter id="blur"><feGaussianBlur stdDeviation="3.2"/></filter></defs>${vectorChartLabel(`${sample.market} · ${sample.timeframe}`)}<g${filter}>${grid}<rect x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="none" stroke="#555" stroke-width="2"/>${candles}</g>${scale}</svg>`;
 }
 
 /** The production analyse route returns { analysis }, never bare scanner fields. */

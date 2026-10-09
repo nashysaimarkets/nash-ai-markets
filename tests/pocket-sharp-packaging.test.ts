@@ -164,3 +164,12 @@ test('actual deployed raster route reports stable decoded pixel digests without 
     assert.equal(providerCalls,0);
   }finally{if(old===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=old;}
 });
+
+test('all fixture labels use vectors so cold-start font selection cannot change pixels',()=>{
+  for(const sample of TORTURE_CASES){
+    const svg=syntheticSvg(sample);
+    assert.doesNotMatch(svg,/<text\b|font-family=/,sample.id);
+    assert.ok(svg.includes('data-chart-label='),sample.id+' must retain visible instrument/timeframe labels');
+    assert.ok(svg.includes('data-label-character="m"')||svg.includes('data-label-character="h"'),sample.id+' must retain lowercase timeframe units');
+  }
+});
