@@ -13,19 +13,26 @@ test("an earlier FileReader completion cannot replace a newer chart", () => {
 
 test("a response started for chart A cannot be applied after chart B is selected", () => {
   const epoch = createChartRequestEpoch();
-  const chartA = epoch.begin();
+  const chartA = epoch.snapshot();
   assert.equal(epoch.isCurrent(chartA), true);
   epoch.invalidate();
   assert.equal(epoch.isCurrent(chartA), false);
 });
 
-test("Pocket client uses epochs to guard uploads and response application", async () => {
+test("Pocket client guards FileReader and analysis responses by chart identity", async () => {
   const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
-  assert.match(client, /primaryUploadEpoch\.current\s*\+\+/);
-  assert.match(client, /contextUploadEpoch\.current\s*\+\+/);
-  assert.match(client, /analysisEpoch\.current\s*\+\+/);
-  assert.match(client, /if\s*\(.*primaryUploadEpoch\.current.*\)\s*return/);
-  assert.match(client, /if\s*\(.*analysisEpoch\.current.*\)\s*return/);
+  assert.match(client, /primaryUploadEpoch\.current\.begin\(\)/);
+  assert.match(client, /contextUploadEpoch\.current\.begin\(\)/);
+  assert.match(client, /analysisEpoch\.current\.invalidate\(\)/);
+  assert.match(client, /primaryUploadEpoch\.current\.isCurrent\(readToken\)/);
+  assert.match(client, /contextUploadEpoch\.current\.isCurrent\(readToken\)/);
+  assert.match(client, /analysisEpoch\.current\.isCurrent\(requestToken\)/);
   assert.match(client, /setPreflightStatus\("CHECKING"\)/);
   assert.match(client, /setChartConfirmation\(null\)/);
+});
+
+test("old preflight callbacks are cancelled after image replacement", async () => {
+  const panel = await readFile(new URL("../app/pocket/ChartPreflightPanel.tsx", import.meta.url), "utf8");
+  assert.match(panel, /controller\.abort\(\)/);
+  assert.match(panel, /if \(!active\) return/);
 });
