@@ -250,7 +250,7 @@ export async function POST(request: Request) {
       const timeframe = typeof candidate.timeframe === "string" ? candidate.timeframe.trim().slice(0, 30) : "";
       const currentPrice = typeof candidate.currentPrice === "string" ? candidate.currentPrice.trim().slice(0, 30) : "";
       const contextMatch = candidate.contextMatch === "MATCHED" ? "MATCHED" : "NOT_PROVIDED";
-      if (instrument && timeframe && /^-?\\d[\\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
+      if (instrument && timeframe && /^-?\d[\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
     }
     if (payload.accuracyCorrection && typeof payload.accuracyCorrection === "object") {
       const candidate = payload.accuracyCorrection as Record<string, unknown>;
@@ -435,6 +435,12 @@ export async function POST(request: Request) {
       } else {
         // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
         analysis = { ...record, priceScaleAnchors: [], levels: [] };
+      }
+      // Locked facts belong to the trader's chart. A separate model pass must
+      // never overwrite them, including when its current-price marker is blank.
+      if (chartConfirmation) {
+        analysis = { ...(analysis as Record<string, unknown>), instrument: chartConfirmation.instrument,
+          timeframe: chartConfirmation.timeframe, currentPrice: chartConfirmation.currentPrice };
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;
