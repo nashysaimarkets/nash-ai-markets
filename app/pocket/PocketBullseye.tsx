@@ -844,6 +844,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [resultView, setResultView] = useState<"cinema" | "report">("report");
   const primaryUploadEpoch = useRef(createChartRequestEpoch());
   const contextUploadEpoch = useRef(createChartRequestEpoch());
+  const levelLabUploadEpoch = useRef(createChartRequestEpoch());
   const analysisEpoch = useRef(createChartRequestEpoch());
   const preflightToken = analysisEpoch.current.snapshot();
   const analysisRequestActive = useRef(false);
@@ -989,25 +990,36 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       event.currentTarget.value = "";
       return;
     }
+    const input = event.currentTarget;
+    const readToken = levelLabUploadEpoch.current.begin();
+    const chartToken = analysisEpoch.current.snapshot();
     try {
-      setLevelLabImage(await prepareImage(file));
+      const prepared = await prepareImage(file);
+      if (!levelLabUploadEpoch.current.isCurrent(readToken) || !analysisEpoch.current.isCurrent(chartToken)) return;
+      setLevelLabImage(prepared);
       setLevelLabFileName(file.name);
       setLevelLabStatus("attached");
     } catch {
+      if (!levelLabUploadEpoch.current.isCurrent(readToken) || !analysisEpoch.current.isCurrent(chartToken)) return;
       setLevelLabStatus("error");
       setLevelLabError("That chart could not be prepared safely.");
-    } finally { event.currentTarget.value = ""; }
+    } finally { if (levelLabUploadEpoch.current.isCurrent(readToken)) input.value = ""; }
   }
 
   async function rescanLevelsOnly() {
     if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
+    const requestToken = analysisEpoch.current.snapshot();
+    const readToken = levelLabUploadEpoch.current.snapshot();
+    const isCurrent = () => analysisEpoch.current.isCurrent(requestToken) && levelLabUploadEpoch.current.isCurrent(readToken);
     levelLabRequestActive.current = true;
     setLevelLabStatus("scanning");
     setLevelLabError("");
     try {
       const precisionImage = await createPrecisionReadingCrop(levelLabImage);
+      if (!isCurrent()) return;
       const response = await fetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage }) });
       const payload = await response.json() as { levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory">; error?: string };
+      if (!isCurrent()) return;
       if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
       setAnalysis((current) => current ? {
         ...current,
@@ -1020,6 +1032,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setBattlefieldChart("primary");
       setLevelLabStatus("updated");
     } catch (caught) {
+      if (!isCurrent()) return;
       setLevelLabStatus("error");
       setLevelLabError(caught instanceof Error ? caught.message : "The independent level scan could not complete.");
     } finally { levelLabRequestActive.current = false; }
