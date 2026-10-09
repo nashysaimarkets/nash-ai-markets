@@ -842,6 +842,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
   const [resultView, setResultView] = useState<"cinema" | "report">("report");
+  const analysisController = useRef<AbortController | null>(null);
   const primaryUploadEpoch = useRef(createChartRequestEpoch());
   const contextUploadEpoch = useRef(createChartRequestEpoch());
   const levelLabUploadEpoch = useRef(createChartRequestEpoch());
@@ -886,6 +887,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }, [immersive, chartFocus, showResultReveal, showResultCard]);
 
   function invalidateChartWork() {
+    analysisController.current?.abort();
     analysisEpoch.current.invalidate();
     setPreflightStatus("CHECKING");
     setChartConfirmation(null);
@@ -1102,9 +1104,18 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     }
   }
 
+  function cancelAnalysis() {
+    if (!analysisController.current) return;
+    analysisEpoch.current.invalidate();
+    analysisController.current.abort();
+    setBusy(false);
+  }
+
   async function requestPocketAnalysis(selectedContext: string | null, options: { bypassCache?: boolean } = {}): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
     if (!preflightAllowsAnalysis(preflightStatus) || !chartConfirmation) throw new Error("Confirm chart facts before analysis.");
+    const controller = new AbortController();
+    analysisController.current = controller;
     const requestToken = analysisEpoch.current.snapshot();
     const requireCurrentChart = () => {
       if (!analysisEpoch.current.isCurrent(requestToken)) throw new DOMException("Chart replaced", "AbortError");
@@ -1130,6 +1141,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention, chartConfirmation, accuracyCorrection }),
+        signal: controller.signal,
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       requireCurrentChart();
@@ -1141,8 +1153,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       requireCurrentChart();
       return payload.analysis;
     } finally {
-      analysisRequestActive.current = false;
-      setBusy(false);
+      if (analysisController.current === controller) {
+        analysisController.current = null;
+        analysisRequestActive.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -1177,8 +1192,10 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       if (!analysisEpoch.current.isCurrent(requestToken)) return;
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
-      analysisRequestActive.current = false;
-      setBusy(false);
+      if (analysisEpoch.current.isCurrent(requestToken)) {
+        analysisRequestActive.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -1479,6 +1496,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
         <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>→</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        {busy && !reviewTarget ? <div className="psConfirmActions"><button type="button" onClick={cancelAnalysis}>CANCEL ANALYSIS</button></div> : null}
         {!reviewTarget && vault.length ? <section className="psFingerprint">
           <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
           <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>
