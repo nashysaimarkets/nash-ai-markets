@@ -20,7 +20,7 @@ test("actual primary upload callback ignores a FileReader that finishes after a 
   const noop = () => {};
   const bindings = {
     ...epochs, MAX_IMAGE_BYTES: 100, prepareImage: (file: { name: string }) => file.name === "A" ? first.promise : second.promise,
-    setImage: (image: string) => images.push(image), setFileName: noop, setError: noop, setAnalysis: noop, setBattlefieldChart: noop,
+    setImage: (image: string | null) => { if (image !== null) images.push(image); }, setFileName: noop, setError: noop, setAnalysis: noop, setBattlefieldChart: noop,
     setPreflightStatus: noop, setChartConfirmation: noop, invalidateChartWork: () => epochs.analysisEpoch.current.invalidate(),
   };
   const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn loadFile;");
@@ -30,6 +30,74 @@ test("actual primary upload callback ignores a FileReader that finishes after a 
   second.resolve("chart-B"); await latest;
   first.resolve("chart-A"); await old;
   assert.deepEqual(images, ["chart-B"]);
+});
+
+test("actual analysis caller discards success and error after chart replacement", async () => {
+  const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
+  const source = client.slice(client.indexOf("  async function analyse("), client.indexOf("  async function askBullseye("));
+  for (const failed of [false, true]) {
+    const pending = deferred();
+    const updates: unknown[] = [];
+    const analysisEpoch = { current: createChartRequestEpoch() };
+    const noop = () => {};
+    const bindings = {
+      image: "A", privacyChecked: true, busy: false, analysisRequestActive: { current: false }, reviewTarget: null,
+      preflightStatus: "LOCKED", preflightAllowsAnalysis: () => true, contextImage: null, analysisEpoch,
+      requestPocketAnalysis: async () => { await pending.promise; if (failed) throw new Error("old failure"); return { ticker: "A" }; },
+      setError: (value: string) => { if (value) updates.push(value); }, setAnalysis: (value: unknown) => updates.push(value),
+      setStockEvents: noop, setStockEventStatus: noop, setResultView: noop, setImmersive: noop, setShowResultReveal: noop, setBusy: noop,
+    };
+    const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn analyse;");
+    const analyse = await run(...Object.values(bindings));
+    const request = analyse();
+    analysisEpoch.current.invalidate();
+    pending.resolve("done"); await request;
+    assert.deepEqual(updates, []);
+  }
+});
+
+test("actual analysis request stops before provider dispatch if chart changes during crop preparation", async () => {
+  const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
+  const source = client.slice(client.indexOf("  async function requestPocketAnalysis("), client.indexOf("  async function analyse("));
+  const crop = deferred(), started = deferred();
+  const analysisEpoch = { current: createChartRequestEpoch() };
+  let calls = 0;
+  const bindings = {
+    image: "A", analysisRequestActive: { current: false }, analysisEpoch, setBusy: () => {}, intention: "UNSURE",
+    chartConfirmation: null, accuracyCorrection: null, analysisCacheKey: async () => "A", analysisCacheGet: async () => null,
+    hasVerifiedStructuralLevel: () => false, createPrecisionReadingCrop: () => { started.resolve("started"); return crop.promise; },
+    fetch: async () => { calls += 1; throw new Error("must not dispatch"); },
+  };
+  const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn requestPocketAnalysis;");
+  const requestAnalysis = await run(...Object.values(bindings));
+  const request = requestAnalysis(null);
+  await started.promise; analysisEpoch.current.invalidate(); crop.resolve("crop");
+  await assert.rejects(request, { name: "AbortError" });
+  assert.equal(calls, 0);
+  assert.equal(bindings.analysisRequestActive.current, false);
+});
+
+test("actual preflight effect ignores a body resolving after cleanup even if fetch ignores abort", async () => {
+  const panel = await readFile(new URL("../app/pocket/ChartPreflightPanel.tsx", import.meta.url), "utf8");
+  const controller = panel.indexOf("    const controller = new AbortController();");
+  const start = panel.lastIndexOf("  useEffect(() => {", controller) + "  useEffect(() => {".length;
+  const end = panel.indexOf("  }, [image, contextImage]);", controller);
+  const body = deferred(), started = deferred();
+  const updates: unknown[] = [];
+  let callback!: () => Promise<void>;
+  const record = (value: unknown) => updates.push(value);
+  const bindings = {
+    image: "A", contextImage: null, statusHandler: { current: record }, confirmationHandler: { current: record },
+    window: { setTimeout: (next: () => Promise<void>) => { callback = next; return 1; }, clearTimeout: () => {} },
+    fetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await body.promise; return { preflight: { status: "READY" } }; } }),
+    setResult: record, setInstrument: record, setTimeframe: record, setCurrentPrice: record, setStatus: record, setMessage: record,
+  };
+  const effect = stripTypeScriptTypes("function effect() {" + panel.slice(start, end) + "\n}");
+  const run = new Function(...Object.keys(bindings), effect + "\nreturn effect();");
+  const cleanup = run(...Object.values(bindings));
+  const response = callback(); await started.promise;
+  cleanup(); updates.length = 0; body.resolve("done"); await response;
+  assert.deepEqual(updates, []);
 });
 
 test("an earlier FileReader completion cannot replace a newer chart", () => {

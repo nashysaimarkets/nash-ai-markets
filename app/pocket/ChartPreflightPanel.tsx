@@ -37,12 +37,14 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
   useEffect(() => { confirmationHandler.current = onConfirmation; }, [onConfirmation]);
 
   useEffect(() => {
+    let active = true;
     const controller = new AbortController();
     statusHandler.current("CHECKING"); confirmationHandler.current(null);
     const timer = window.setTimeout(async () => {
       try {
         const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
+        if (!active) return;
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
         const next = payload.preflight;
         setResult(next);
@@ -52,12 +54,13 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
         const nextStatus: PreflightStatus = next.status === "RETAKE" ? "RETAKE" : "AWAITING_CONFIRMATION";
         setStatus(nextStatus); statusHandler.current(nextStatus);
       } catch (error) {
+        if (!active) return;
         if (error instanceof Error && error.name === "AbortError") return;
         setStatus("UNAVAILABLE"); statusHandler.current("UNAVAILABLE"); confirmationHandler.current(null);
         setMessage(error instanceof Error ? error.message : "Preflight unavailable");
       }
     }, 300);
-    return () => { window.clearTimeout(timer); controller.abort(); };
+    return () => { active = false; window.clearTimeout(timer); controller.abort(); };
   }, [image, contextImage]);
 
   if (status === "CHECKING") return <section className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
