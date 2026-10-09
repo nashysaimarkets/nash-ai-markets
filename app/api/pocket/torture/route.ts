@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
@@ -36,7 +37,9 @@ export async function GET(request:Request){
       const precisionCrop = await makePrecisionCrop(image);
       const precisionMetadata = await sharp(precisionCrop).metadata();
       if (precisionMetadata.format !== "jpeg" || precisionMetadata.width !== 1400 || precisionMetadata.height !== 765) throw new Error(`${sample.id}: invalid precision crop`);
-      images.push({id:sample.id,bytes:image.length,width:metadata.width,height:metadata.height,format:metadata.format,
+      const pixelSha256 = createHash("sha256").update(await sharp(image).ensureAlpha().raw().toBuffer()).digest("hex");
+      const precisionPixelSha256 = createHash("sha256").update(await sharp(precisionCrop).ensureAlpha().raw().toBuffer()).digest("hex");
+      images.push({pixelSha256,precisionPixelSha256,id:sample.id,bytes:image.length,width:metadata.width,height:metadata.height,format:metadata.format,
         precisionFormat:precisionMetadata.format,precisionWidth:precisionMetadata.width,precisionHeight:precisionMetadata.height});
     }
     return NextResponse.json({cases:images.length,images,providerCalls:0,pass:true});

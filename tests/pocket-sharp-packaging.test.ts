@@ -138,3 +138,29 @@ test("synthetic price axis remains readable without system fonts", async () => {
       sample.id + ": all numeric labels must have font-independent vector glyphs");
   }
 });
+
+test('actual deployed raster route reports stable decoded pixel digests without provider calls', async () => {
+  const { stripTypeScriptTypes } = await import('node:module');
+  const { createHash } = await import('node:crypto');
+  const { syntheticPrecisionCropSpec } = await import('./support/pocket-image-torture.ts');
+  const route=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
+  const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
+  const source=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
+  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+  let providerCalls=0;
+  const bindings={sharp,createHash,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,NextResponse:{json:(body:unknown)=>body},analyse:()=>{providerCalls++;throw new Error('must never call a provider');}};
+  const get=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(helper+source)+'\nreturn GET;')(...Object.values(bindings));
+  const old=process.env.VERCEL_ENV;process.env.VERCEL_ENV='preview';
+  try{
+    const first=await get(new Request('https://preview.test/api/pocket/torture?run=1&raster=1'));
+    const second=await get(new Request('https://preview.test/api/pocket/torture?run=1&raster=1'));
+    assert.equal(first.images.length,6);
+    for(let index=0;index<6;index++){
+      assert.match(first.images[index].pixelSha256,/^[a-f0-9]{64}$/);
+      assert.match(first.images[index].precisionPixelSha256,/^[a-f0-9]{64}$/);
+      assert.equal(first.images[index].pixelSha256,second.images[index].pixelSha256);
+      assert.equal(first.images[index].precisionPixelSha256,second.images[index].precisionPixelSha256);
+    }
+    assert.equal(providerCalls,0);
+  }finally{if(old===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=old;}
+});
