@@ -196,7 +196,7 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   const remainingPatterns = [...sample.expectedPatterns];
   for (const pattern of body.patterns ?? []) {
     const name = pattern.name!;
-    const points = pattern.geometry?.points ?? [];
+    const points = Array.isArray(pattern.geometry?.points) ? pattern.geometry.points : [];
     const validGeometry = points.length >= 3 && points.every(point => point &&
       typeof point.x === "number" && Number.isFinite(point.x) && point.x >= 0 && point.x <= 100 &&
       typeof point.y === "number" && Number.isFinite(point.y) && point.y >= 0 && point.y <= 100) &&
