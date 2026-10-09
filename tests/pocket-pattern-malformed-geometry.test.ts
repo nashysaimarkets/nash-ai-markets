@@ -19,3 +19,13 @@ test("mixed malformed pattern geometry fails closed", () => {
     assert.deepEqual(result.patterns, []);
   }
 });
+
+test("repeated points cannot impersonate three distinct visible pattern anchors", () => {
+  for (const points of [
+    [{x:10,y:30},{x:90,y:70},{x:90,y:70}],
+    [{x:10,y:30},{x:50,y:70},{x:90,y:30},{x:50,y:70}],
+  ]) {
+    const result = calibratePocketAnalysis(analysis(points)) as { patterns?: unknown[] };
+    assert.deepEqual(result.patterns, []);
+  }
+});
