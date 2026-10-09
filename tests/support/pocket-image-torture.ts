@@ -77,7 +77,7 @@ export function syntheticSvg(sample:TortureCase): string {
 /** The production analyse route returns { analysis }, never bare scanner fields. */
 export function unwrapTortureAnalysis(payload: unknown): {
   levels?: Array<{kind?: string; y?: number}>;
-  patterns?: Array<{name?: string}>;
+  patterns?: Array<{name?: string; geometry?: {points?: Array<{x?: number; y?: number}>}}>;
   liquidity?: {state?: string; event?: string; zones?: unknown[]};
   evidenceQuality?: {chartReadability?: string};
 } {
@@ -194,9 +194,17 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   });
   const patterns = (body.patterns ?? []).map(pattern => pattern.name).filter((name): name is string => Boolean(name));
   const remainingPatterns = [...sample.expectedPatterns];
-  for (const name of patterns) {
+  for (const pattern of body.patterns ?? []) {
+    const name = pattern.name!;
+    const points = pattern.geometry?.points ?? [];
+    const validGeometry = points.length >= 3 && points.every(point => point &&
+      typeof point.x === "number" && Number.isFinite(point.x) && point.x >= 0 && point.x <= 100 &&
+      typeof point.y === "number" && Number.isFinite(point.y) && point.y >= 0 && point.y <= 100) &&
+      new Set(points.map(point => `${point.x}:${point.y}`)).size === points.length &&
+      Math.max(...points.map(point => point.x!)) - Math.min(...points.map(point => point.x!)) >= 8 &&
+      Math.max(...points.map(point => point.y!)) - Math.min(...points.map(point => point.y!)) >= 3;
     const index = remainingPatterns.indexOf(name);
-    if (index >= 0) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
+    if (index >= 0 && validGeometry) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
     else { metrics.patterns.fp++; failures.push(`${sample.id}: false pattern ${name}`); }
   }
   for (const name of remainingPatterns) { metrics.patterns.fn++; failures.push(`${sample.id}: missed pattern ${name}`); }
@@ -204,7 +212,16 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   const actual = body.liquidity;
   const expectedPositive = expected.state !== "NONE";
   const actualPositive = actual?.state === "VERIFIED" || actual?.state === "PARTIAL";
+  const validZones = Array.isArray(actual?.zones) && actual.zones.length > 0 && actual.zones.every(item => {
+    if (!item || typeof item !== "object") return false;
+    const zone = item as Record<string, unknown>;
+    return ["BUY_SIDE", "SELL_SIDE"].includes(String(zone.side)) &&
+      ["EQUAL_HIGHS", "EQUAL_LOWS", "PRIOR_SWING_HIGH", "PRIOR_SWING_LOW", "RANGE_HIGH", "RANGE_LOW"].includes(String(zone.basis)) &&
+      [zone.x, zone.x2, zone.y].every(coordinate => typeof coordinate === "number" && Number.isFinite(coordinate) && coordinate >= 0 && coordinate <= 100) &&
+      (zone.x2 as number) - (zone.x as number) >= 8;
+  });
   const correct = actualPositive && actual?.state === expected.state &&
+    validZones &&
     (!expected.event || actual.event === expected.event) &&
     (actual.zones?.length ?? 0) >= (expected.minimumZones ?? 0);
   if (expectedPositive && correct) metrics.liquidity.tp++;
