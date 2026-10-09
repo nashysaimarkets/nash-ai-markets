@@ -34,3 +34,20 @@ test("actual precision merge preserves locked chart facts before calibration", a
   }
   assert.equal(merge(report, null, null, locked, recoverPrecisionGeometry).currentPrice, locked.currentPrice);
 });
+
+test("blank current prices and blank level prices cannot satisfy both precision sides as zero", async () => {
+  const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
+  const start = route.indexOf("    const safePrecision = async");
+  const end = route.indexOf("    const [response, precisionResult", start);
+  const make = new Function("requestPrecision", "recoverPrecisionGeometry", stripTypeScriptTypes(route.slice(start, end)) + "\nreturn safePrecision;");
+  for (const first of [
+    { currentPrice: "100", levels: [{ price: "" }, { price: "110" }] },
+    { currentPrice: "100", levels: [{ price: null }, { price: "110" }] },
+    { currentPrice: "", levels: [{ price: "-10" }, { price: "10" }] },
+  ]) {
+    let calls = 0;
+    const read = make(async () => { calls++; return { output_text: JSON.stringify(first) }; }, recoverPrecisionGeometry);
+    await read("image", "test", null);
+    assert.equal(calls, 2);
+  }
+});
