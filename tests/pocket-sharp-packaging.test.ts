@@ -40,7 +40,7 @@ test("live torture reads the analysis envelope rather than silently scoring empt
   const result = unwrapTortureAnalysis({ analysis: {
     levels: [{ kind: "support", y: 64 }],
     patterns: [{ name: "RECTANGLE / RANGE" }],
-    liquidity: { state: "VERIFIED", event: "NONE" },
+    liquidity: { state: "VERIFIED", event: "NONE", zones: [] },
     evidenceQuality: { chartReadability: "HIGH" },
   } });
   assert.equal(result.levels?.[0]?.kind, "support");

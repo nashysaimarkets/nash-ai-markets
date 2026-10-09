@@ -85,7 +85,21 @@ export function unwrapTortureAnalysis(payload: unknown): {
       !payload.analysis || typeof payload.analysis !== "object" || Array.isArray(payload.analysis)) {
     throw new Error("Missing analysis envelope in live torture response");
   }
+  assertTortureScannerOutput(payload.analysis);
   return payload.analysis as ReturnType<typeof unwrapTortureAnalysis>;
+}
+
+/** Missing scanner fields are not evidence of a measured no-signal result. */
+function assertTortureScannerOutput(value: unknown) {
+  const record = (item: unknown): item is Record<string, unknown> => Boolean(item) && typeof item === "object" && !Array.isArray(item);
+  const invalid = () => { throw new Error("Invalid scanner output in live torture response"); };
+  if (!record(value)) return invalid();
+  if (!Array.isArray(value.levels) || !Array.isArray(value.patterns) || !record(value.liquidity)) return invalid();
+  if (value.levels.some(level => !record(level) || typeof level.kind !== "string" || !level.kind || !Number.isFinite(level.y))) return invalid();
+  if (value.patterns.some(pattern => !record(pattern) || typeof pattern.name !== "string" || !pattern.name.trim())) return invalid();
+  const liquidity = value.liquidity;
+  if (!["NONE", "PARTIAL", "VERIFIED"].includes(String(liquidity.state)) || !Array.isArray(liquidity.zones)) return invalid();
+  if (liquidity.state === "NONE" && liquidity.zones.length !== 0) return invalid();
 }
 
 /** Mirror PocketBullseye.tsx createPrecisionReadingCrop's 6%/82% full-width crop. */
@@ -151,6 +165,7 @@ export function summarizeTortureMeasurements(caseIds: string[], measuredCaseIds:
 
 /** One-to-one detections; a wrong liquidity state/event is both a miss and a false detection. */
 export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeof unwrapTortureAnalysis>) {
+  assertTortureScannerOutput(body);
   const metrics: TortureMetrics = {levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures: string[] = [];
   const levels = (body.levels ?? []).filter(level => level.kind === "support" || level.kind === "resistance");

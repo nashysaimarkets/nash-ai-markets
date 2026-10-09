@@ -37,9 +37,11 @@ for(const sample of selected){
   const startedAt = performance.now();
   let response: Response;
   let payload: {analysis?:unknown;error?:string};
+  let body: Analysis;
   try {
     response=await POST(req);
     payload=await response.json() as {analysis?:unknown;error?:string};
+    body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : {};
   } catch (error) {
     const durationMs = Math.round(performance.now()-startedAt);
     failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
@@ -48,8 +50,6 @@ for(const sample of selected){
   }
   const durationMs = Math.round(performance.now()-startedAt);
   if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`);console.log(JSON.stringify({id:sample.id,durationMs,httpStatus:response.status,error:payload.error??null})); continue; }
-  const body=unwrapTortureAnalysis(payload) as Analysis;
-
   const scoredCase = scoreTortureAnalysis(sample, body);
   const { levels: actualLevels, patterns: actualPatterns } = scoredCase;
   const liq = body.liquidity ?? {};
