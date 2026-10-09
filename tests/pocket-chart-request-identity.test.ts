@@ -133,3 +133,23 @@ test("old preflight callbacks are cancelled after image replacement", async () =
   assert.match(panel, /controller\.abort\(\)/);
   assert.match(panel, /if \(!active\) return/);
 });
+
+test("actual independent level scan cannot overwrite a replacement chart", async () => {
+  const client = await readFile(new URL("../app/pocket/PocketBullseye.tsx", import.meta.url), "utf8");
+  const source = client.slice(client.indexOf("  async function rescanLevelsOnly("), client.indexOf("  async function reanalyseResult("));
+  const pending = deferred(), started = deferred();
+  const updates: unknown[] = [];
+  const analysisEpoch = { current: createChartRequestEpoch() }, levelLabUploadEpoch = { current: createChartRequestEpoch() };
+  const noop = () => {};
+  const bindings = {
+    analysis: {}, levelLabImage: "A", levelLabRequestActive: { current: false }, analysisEpoch, levelLabUploadEpoch,
+    setLevelLabStatus: noop, setLevelLabError: noop, setBattlefieldChart: noop, createPrecisionReadingCrop: async () => "crop",
+    fetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await pending.promise; return { levels: { levels: [] } }; } }),
+    setAnalysis: (value: unknown) => updates.push(value), clampY: (value: number) => value,
+  };
+  const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn rescanLevelsOnly;");
+  const scan = await run(...Object.values(bindings));
+  const response = scan(); await started.promise;
+  analysisEpoch.current.invalidate(); pending.resolve("done"); await response;
+  assert.deepEqual(updates, []);
+});
