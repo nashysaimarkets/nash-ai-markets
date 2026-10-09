@@ -5,8 +5,8 @@ import { scoreTortureAnalysis, summarizeTortureMeasurements, aggregateSeparateTo
 const range = TORTURE_CASES[0]!;
 const perfect = {
   levels: [{kind:"resistance",y:31},{kind:"support",y:64}],
-  patterns: [{name:"RECTANGLE / RANGE"}],
-  liquidity: {state:"VERIFIED",zones:[{}]},
+  patterns: [{name:"RECTANGLE / RANGE",geometry:{points:[{x:20,y:31},{x:50,y:64},{x:80,y:31}]}}],
+  liquidity: {state:"VERIFIED",zones:[{side:"BUY_SIDE",basis:"RANGE_HIGH",x:20,x2:80,y:31}]},
 };
 
 test("torture scoring counts duplicate levels and patterns as false positives", () => {
@@ -58,6 +58,20 @@ test("no-signal cases cannot pass with omitted null or malformed scanner output"
     { ...empty, liquidity: { state: "UNKNOWN", zones: [] } },
     { ...empty, liquidity: { state: "NONE" } }, { ...empty, liquidity: { state: "NONE", zones: [{}] } },
   ]) assert.throws(() => scoreTortureAnalysis(negative, body as Parameters<typeof scoreTortureAnalysis>[1]), /scanner output/i);
+});
+
+test("matching names and placeholder zones cannot earn geometry-free true positives", () => {
+  const scored = scoreTortureAnalysis(range, {...perfect,
+    patterns:[{name:"RECTANGLE / RANGE"}], liquidity:{state:"VERIFIED",zones:[{}]},
+  });
+  assert.deepEqual(scored.metrics.patterns, {tp:0,fp:1,fn:1});
+  assert.deepEqual(scored.metrics.liquidity, {tp:0,fp:1,fn:1});
+  const bad = scoreTortureAnalysis(range, {...perfect,
+    patterns:[{name:"RECTANGLE / RANGE",geometry:{points:[{x:20,y:31},{x:80,y:64},{x:80,y:64}]}}],
+    liquidity:{state:"VERIFIED",zones:[{side:"BUY_SIDE",basis:"RANGE_HIGH",x:20,x2:80,y:101}]},
+  } as Parameters<typeof scoreTortureAnalysis>[1]);
+  assert.deepEqual(bad.metrics.patterns, {tp:0,fp:1,fn:1});
+  assert.deepEqual(bad.metrics.liquidity, {tp:0,fp:1,fn:1});
 });
 
 test("perfect and no-signal fixtures score without manufacturing true positives", () => {
