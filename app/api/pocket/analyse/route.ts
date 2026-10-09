@@ -370,10 +370,14 @@ export async function POST(request: Request) {
         try {
           const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
           if (parsed && Array.isArray(parsed.levels)) {
-            const current = typeof parsed.currentPrice === "string" ? Number(parsed.currentPrice.replaceAll(",", "")) : NaN;
+            const readPrice = (value: unknown) => {
+              const text = typeof value === "string" ? value.trim().replaceAll(",", "") : "";
+              return text && /^-?\d+(?:\.\d+)?$/.test(text) ? Number(text) : NaN;
+            };
+            const current = readPrice(parsed.currentPrice);
             const prices = parsed.levels.flatMap((level) => {
               if (!level || typeof level !== "object") return [];
-              const price = Number(String((level as Record<string, unknown>).price ?? "").replaceAll(",", ""));
+              const price = readPrice((level as Record<string, unknown>).price);
               return Number.isFinite(price) ? [price] : [];
             });
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
