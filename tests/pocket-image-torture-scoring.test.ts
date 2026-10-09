@@ -44,8 +44,20 @@ test("liquidity cannot earn a true positive with wrong verification state or abs
 
 test("wrong sweep event counts as an incorrect detection and a missed expected event", () => {
   const sweep = TORTURE_CASES.find(sample => sample.id === "sweep-reclaim")!;
-  const scored = scoreTortureAnalysis(sweep, {liquidity:{state:"VERIFIED",event:"REJECTION",zones:[{}]}});
+  const scored = scoreTortureAnalysis(sweep, {levels:[],patterns:[],liquidity:{state:"VERIFIED",event:"REJECTION",zones:[{}]}});
   assert.deepEqual(scored.metrics.liquidity, {tp:0,fp:1,fn:1});
+});
+
+test("no-signal cases cannot pass with omitted null or malformed scanner output", () => {
+  const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
+  const empty = { levels: [], patterns: [], liquidity: { state: "NONE", zones: [] } };
+  for (const body of [
+    {}, { ...empty, levels: undefined }, { ...empty, patterns: undefined }, { ...empty, liquidity: undefined },
+    { ...empty, levels: null }, { ...empty, patterns: null }, { ...empty, liquidity: null },
+    { ...empty, levels: [null] }, { ...empty, patterns: [null] },
+    { ...empty, liquidity: { state: "UNKNOWN", zones: [] } },
+    { ...empty, liquidity: { state: "NONE" } }, { ...empty, liquidity: { state: "NONE", zones: [{}] } },
+  ]) assert.throws(() => scoreTortureAnalysis(negative, body as Parameters<typeof scoreTortureAnalysis>[1]), /scanner output/i);
 });
 
 test("perfect and no-signal fixtures score without manufacturing true positives", () => {
