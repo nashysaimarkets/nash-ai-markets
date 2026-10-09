@@ -1,3 +1,4 @@
+import { isCumulativeTestSpendHeld } from "../app/api/pocket/torture/spending-hold.ts";
 import { POST } from "../app/api/pocket/analyse/route.ts";
 import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis, summarizeTortureMeasurements } from "../tests/support/pocket-image-torture.ts";
 
@@ -22,6 +23,9 @@ const requestedCase = process.env.POCKET_TORTURE_CASE?.trim();
 const selected = TORTURE_CASES.filter(sample => sample.id === requestedCase);
 // Fail before creating images, requests, or AI clients unless exactly one named case was selected.
 if (selected.length !== 1) throw new Error("POCKET_TORTURE_CASE must name exactly one labelled fixture for a paid run.");
+
+// CUMULATIVE_TEST_SPEND_HOLD: CI process restarts must never reset the dollar cap.
+if (isCumulativeTestSpendHeld()) throw new Error("Cumulative testing costs and spending reservations remain unverified. No AI request was sent.");
 
 for(const sample of selected){
   let pipeline=sharp(Buffer.from(syntheticSvg(sample))).png();

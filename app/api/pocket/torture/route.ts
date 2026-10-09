@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
+import { isCumulativeTestSpendHeld } from "./spending-hold";
 import { mayRunLiveTorture } from "./authorization";
 import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis, summarizeTortureMeasurements } from "../../../../tests/support/pocket-image-torture";
 
@@ -47,6 +48,8 @@ export async function GET(request:Request){
   })) return NextResponse.json({error:"Live benchmark not authorized."},{status:403});
   // A paid run must explicitly name one case; batch execution requires a budget check between calls.
   if (!requested) return NextResponse.json({error:"Live benchmark requires one named case."},{status:400});
+  // CUMULATIVE_TEST_SPEND_HOLD: opt-in secrets do not prove remaining dollars.
+  if (isCumulativeTestSpendHeld()) return NextResponse.json({error:"Cumulative testing costs and spending reservations remain unverified. No AI request was sent."},{status:503});
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const measuredCaseIds: string[] = [];
