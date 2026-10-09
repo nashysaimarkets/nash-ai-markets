@@ -145,6 +145,17 @@ test("aggregator treats failed scans without scored observations as unmeasured",
   assert.equal(result.metrics.levels.precision,null);
 });
 
+test("failed HTTP responses and exceptions cannot become measured by carrying counters", () => {
+  const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
+  const empty = {tp:0,fp:0,fn:0};
+  const caseMetrics = {levels:empty,patterns:empty,liquidity:empty};
+  for (const failure of [{httpStatus:429},{httpStatus:503},{exception:"request failed"},{error:"request failed"}]) {
+    const result = aggregateSeparateTortureReports([{cases:1,observations:[{id:negative.id,caseMetrics,...failure}]}]);
+    assert.equal(result.measuredCases,0);
+    assert.equal(result.metrics.levels.precision,null);
+  }
+});
+
 test("aggregator rejects duplicates, unknown cases and invalid or invented counts", () => {
   const good = {levels:{tp:2,fp:0,fn:0},patterns:{tp:1,fp:0,fn:0},liquidity:{tp:1,fp:0,fn:0}};
   const first = {cases:1,observations:[{id:TORTURE_CASES[0]!.id,caseMetrics:good}]};
