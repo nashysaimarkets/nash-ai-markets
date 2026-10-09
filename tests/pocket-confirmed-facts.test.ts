@@ -13,7 +13,7 @@ test("actual server parser accepts ordinary trader-confirmed numeric prices", as
     const confirmation = { instrument: "US 500", timeframe: "30m", currentPrice, contextMatch: "NOT_PROVIDED" };
     assert.deepEqual(parse({ chartConfirmation: confirmation }), confirmation);
   }
-  for (const currentPrice of ["", "NaN", "price=100", "12x", "\\d"]) {
+  for (const currentPrice of ["", "NaN", "price=100", "12x", "\\d", "1..2", "1,2", "12.", "1,,000"]) {
     assert.equal(parse({ chartConfirmation: { instrument: "US 500", timeframe: "30m", currentPrice } }), null);
   }
 });
@@ -50,4 +50,29 @@ test("blank current prices and blank level prices cannot satisfy both precision 
     await read("image", "test", null);
     assert.equal(calls, 2);
   }
+});
+
+test('actual analyse endpoint rejects malformed supplied confirmations before provider setup', async () => {
+  const route=await readFile(new URL('../app/api/pocket/analyse/route.ts',import.meta.url),'utf8');
+  const source=route.slice(route.indexOf('export async function POST(')).replace('export async function','async function');
+  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+  for(const chartConfirmation of [{instrument:'US 500',timeframe:'5m',currentPrice:'1..2',contextMatch:'NOT_PROVIDED'}, 'malformed', {}, {instrument:'US 500',timeframe:'5m',currentPrice:'100',contextMatch:'UNKNOWN'}]) {
+    let providers=0;
+    const bindings={NextResponse:{json:(body:unknown,options:{status:number})=>({body,...options})},INTENTIONS:['LONG','SHORT','UNSURE'],MAX_DATA_URL_LENGTH:11000000,POCKET_ANALYSIS_TIMEOUT_MS:55000,takePocketBudget:()=>({allowed:true}),createOpenAIClient:()=>{providers++;throw new Error('provider setup reached');}};
+    const handler=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(source)+'\nreturn POST;')(...Object.values(bindings));
+    const response=await handler(new Request('https://example.test/api/pocket/analyse',{method:'POST',body:JSON.stringify({image:'data:image/png;base64,AAAA',chartConfirmation})}));
+    assert.equal(response.status,400);assert.equal(providers,0);
+  }
+});
+
+
+test('actual analyse endpoint rejects context without explicit instrument-match confirmation', async () => {
+  const route=await readFile(new URL('../app/api/pocket/analyse/route.ts',import.meta.url),'utf8');
+  const source=route.slice(route.indexOf('export async function POST(')).replace('export async function','async function');
+  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+  let providers=0;
+  const bindings={NextResponse:{json:(body:unknown,options:{status:number})=>({body,...options})},INTENTIONS:['LONG','SHORT','UNSURE'],MAX_DATA_URL_LENGTH:11000000,POCKET_ANALYSIS_TIMEOUT_MS:55000,takePocketBudget:()=>({allowed:true}),createOpenAIClient:()=>{providers++;return null;}};
+  const handler=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(source)+'\nreturn POST;')(...Object.values(bindings));
+  const response=await handler(new Request('https://example.test/api/pocket/analyse',{method:'POST',body:JSON.stringify({image:'data:image/png;base64,AAAA',contextImage:'data:image/png;base64,BBBB',chartConfirmation:{instrument:'US 500',timeframe:'5m',currentPrice:'100',contextMatch:'NOT_PROVIDED'}})}));
+  assert.equal(response.status,400);assert.equal(providers,0);
 });

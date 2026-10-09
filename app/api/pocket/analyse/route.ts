@@ -234,6 +234,7 @@ export async function POST(request: Request) {
   let precisionImage = "";
   let contextPrecisionImage = "";
   let chartConfirmation: { instrument: string; timeframe: string; currentPrice: string; contextMatch: "MATCHED" | "NOT_PROVIDED" } | null = null;
+  let confirmationSupplied = false;
   let accuracyCorrection: { categories: string[]; correction: string; note: string } | null = null;
   try {
     const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown };
@@ -244,13 +245,14 @@ export async function POST(request: Request) {
     intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
       ? payload.intention as typeof INTENTIONS[number]
       : "UNSURE";
+    confirmationSupplied = payload.chartConfirmation !== undefined && payload.chartConfirmation !== null;
     if (payload.chartConfirmation && typeof payload.chartConfirmation === "object") {
       const candidate = payload.chartConfirmation as Record<string, unknown>;
       const instrument = typeof candidate.instrument === "string" ? candidate.instrument.trim().slice(0, 40) : "";
       const timeframe = typeof candidate.timeframe === "string" ? candidate.timeframe.trim().slice(0, 30) : "";
       const currentPrice = typeof candidate.currentPrice === "string" ? candidate.currentPrice.trim().slice(0, 30) : "";
       const contextMatch = candidate.contextMatch === "MATCHED" ? "MATCHED" : "NOT_PROVIDED";
-      if (instrument && timeframe && /^-?\d[\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
+      if ((candidate.contextMatch === "MATCHED" || candidate.contextMatch === "NOT_PROVIDED") && instrument && timeframe && /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(currentPrice) && Number.isFinite(Number(currentPrice.replaceAll(",", "")))) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
     }
     if (payload.accuracyCorrection && typeof payload.accuracyCorrection === "object") {
       const candidate = payload.accuracyCorrection as Record<string, unknown>;
@@ -263,6 +265,8 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
+  if (confirmationSupplied && !chartConfirmation) return NextResponse.json({ error: "Please confirm a valid instrument, timeframe and numeric current price." }, { status: 400 });
+  if (contextImage && chartConfirmation && chartConfirmation.contextMatch !== "MATCHED") return NextResponse.json({ error: "Confirm that both charts show the same instrument before analysis." }, { status: 400 });
   if (!/^data:image\/(jpeg|png|webp);base64,/.test(image) || image.length > MAX_DATA_URL_LENGTH) {
     return NextResponse.json({ error: "Please upload a valid JPEG, PNG or WebP chart under 8 MB." }, { status: 400 });
   }
