@@ -55,6 +55,7 @@ function calibratedPatterns(value: unknown, candlesReadable: boolean) {
       return x !== null && y !== null && x >= 0 && x <= 100 && y >= 0 && y <= 100 ? [{ x, y }] : [];
     });
     if (rawPoints.length !== points.length || !PATTERN_NAMES.has(name) || !evidence || !confirmation || !invalidation || points.length < 3) return [];
+    if (new Set(points.map(point => `${point.x}:${point.y}`)).size !== points.length) return [];
     const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
     const xSpan = Math.max(...xs) - Math.min(...xs), ySpan = Math.max(...ys) - Math.min(...ys);
     if (xSpan < 8 || ySpan < 3) return [];
