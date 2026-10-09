@@ -264,6 +264,13 @@ export function aggregateSeparateTortureReports(reports: unknown) {
     if (typeof id !== "string" || !known.has(id)) throw new Error("Unknown labelled case in benchmark report");
     if (attempted.has(id)) throw new Error("Duplicate labelled case in benchmark reports");
     attempted.add(id);
+    if (observed.exception != null || observed.error != null) continue;
+    if (observed.httpStatus !== undefined) {
+      if (typeof observed.httpStatus !== "number" || !Number.isInteger(observed.httpStatus) || observed.httpStatus < 100 || observed.httpStatus > 599) {
+        throw new Error("Invalid HTTP status in benchmark report");
+      }
+      if (observed.httpStatus < 200 || observed.httpStatus >= 300) continue;
+    }
     const rawMetrics = observed.caseMetrics;
     if (rawMetrics == null) continue; // Network/provider errors are attempts, not measurements.
     if (typeof rawMetrics !== "object" || Array.isArray(rawMetrics)) throw new Error("Invalid case metrics");
