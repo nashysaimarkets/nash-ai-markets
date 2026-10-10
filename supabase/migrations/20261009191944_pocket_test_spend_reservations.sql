@@ -52,7 +52,7 @@ alter table private.pocket_test_spend_reservations enable row level security;
 revoke all on table private.pocket_test_spend_ledgers from public, anon, authenticated, service_role;
 revoke all on table private.pocket_test_spend_reservations from public, anon, authenticated, service_role;
 
-create or replace function public.reserve_pocket_test_spend(
+create or replace function private.reserve_pocket_test_spend(
   p_ledger_key text,
   p_request_key text,
   p_project_ref text,
@@ -142,16 +142,32 @@ begin
 end;
 $$;
 
-create or replace function public.submit_pocket_test_spend(p_ledger_key text, p_request_key text)
+create or replace function private.submit_pocket_test_spend(p_ledger_key text, p_request_key text)
 returns jsonb language plpgsql security definer set search_path = pg_catalog, private as $$
 declare
   v_row private.pocket_test_spend_reservations%rowtype;
+  v_ledger private.pocket_test_spend_ledgers%rowtype;
+  v_committed bigint;
   v_claimed boolean := false;
 begin
-  perform 1 from private.pocket_test_spend_ledgers where ledger_key = p_ledger_key for update;
+  select * into v_ledger from private.pocket_test_spend_ledgers where ledger_key = p_ledger_key for update;
+  if not found then raise exception 'ledger not found'; end if;
+  if not v_ledger.enabled or not v_ledger.historical_attribution_complete
+      or v_ledger.historical_spend_microusd is null
+      or v_ledger.owner_approved_at is null or v_ledger.owner_approval_ref is null then
+    raise exception 'ledger not approved';
+  end if;
   select * into v_row from private.pocket_test_spend_reservations
     where ledger_key = p_ledger_key and request_key = p_request_key for update;
   if not found then raise exception 'reservation not found'; end if;
+  if v_row.project_ref <> v_ledger.project_ref or v_row.owner_approval_ref <> v_ledger.owner_approval_ref then
+    raise exception 'reservation approval revoked';
+  end if;
+  select v_ledger.historical_spend_microusd + coalesce(sum(
+    case when status = 'settled' then actual_microusd else estimated_microusd end
+  ), 0) into v_committed from private.pocket_test_spend_reservations
+    where ledger_key = p_ledger_key and status in ('reserved', 'submitted', 'settled');
+  if v_committed > v_ledger.cap_microusd then raise exception 'cumulative cap exceeded'; end if;
   if v_row.status = 'reserved' then
     update private.pocket_test_spend_reservations set status = 'submitted', submitted_at = now()
       where reservation_id = v_row.reservation_id returning * into v_row;
@@ -166,7 +182,7 @@ begin
 end;
 $$;
 
-create or replace function public.settle_pocket_test_spend(
+create or replace function private.settle_pocket_test_spend(
   p_ledger_key text,
   p_request_key text,
   p_actual_microusd bigint,
@@ -177,7 +193,7 @@ declare
   v_ledger private.pocket_test_spend_ledgers%rowtype;
   v_committed bigint;
 begin
-  if p_actual_microusd is null or p_actual_microusd < 0 or p_actual_microusd > 2000000
+  if p_actual_microusd is null or p_actual_microusd < 0 or p_actual_microusd > 9007199254740991
       or nullif(trim(p_provider_request_id), '') is null then raise exception 'invalid settlement'; end if;
   select * into v_ledger from private.pocket_test_spend_ledgers
     where ledger_key = p_ledger_key for update;
@@ -209,7 +225,7 @@ begin
 end;
 $$;
 
-create or replace function public.void_pocket_test_spend(
+create or replace function private.void_pocket_test_spend(
   p_ledger_key text,
   p_request_key text,
   p_reason text
@@ -231,11 +247,42 @@ begin
 end;
 $$;
 
+-- Privileged code lives outside exposed schemas. Only service_role can call
+-- it; the public RPC surfaces run with the caller's own privileges.
+grant usage on schema private to service_role;
+
+revoke all on function private.reserve_pocket_test_spend(text, text, text, text, bigint) from public, anon, authenticated, service_role;
+grant execute on function private.reserve_pocket_test_spend(text, text, text, text, bigint) to service_role;
+create or replace function public.reserve_pocket_test_spend(p_ledger_key text, p_request_key text, p_project_ref text, p_owner_approval_ref text, p_estimated_microusd bigint)
+returns jsonb language sql security invoker set search_path = pg_catalog as $$
+  select private.reserve_pocket_test_spend(p_ledger_key, p_request_key, p_project_ref, p_owner_approval_ref, p_estimated_microusd);
+$$;
 revoke all on function public.reserve_pocket_test_spend(text, text, text, text, bigint) from public, anon, authenticated, service_role;
 grant execute on function public.reserve_pocket_test_spend(text, text, text, text, bigint) to service_role;
+
+revoke all on function private.submit_pocket_test_spend(text, text) from public, anon, authenticated, service_role;
+grant execute on function private.submit_pocket_test_spend(text, text) to service_role;
+create or replace function public.submit_pocket_test_spend(p_ledger_key text, p_request_key text)
+returns jsonb language sql security invoker set search_path = pg_catalog as $$
+  select private.submit_pocket_test_spend(p_ledger_key, p_request_key);
+$$;
 revoke all on function public.submit_pocket_test_spend(text, text) from public, anon, authenticated, service_role;
 grant execute on function public.submit_pocket_test_spend(text, text) to service_role;
+
+revoke all on function private.settle_pocket_test_spend(text, text, bigint, text) from public, anon, authenticated, service_role;
+grant execute on function private.settle_pocket_test_spend(text, text, bigint, text) to service_role;
+create or replace function public.settle_pocket_test_spend(p_ledger_key text, p_request_key text, p_actual_microusd bigint, p_provider_request_id text)
+returns jsonb language sql security invoker set search_path = pg_catalog as $$
+  select private.settle_pocket_test_spend(p_ledger_key, p_request_key, p_actual_microusd, p_provider_request_id);
+$$;
 revoke all on function public.settle_pocket_test_spend(text, text, bigint, text) from public, anon, authenticated, service_role;
 grant execute on function public.settle_pocket_test_spend(text, text, bigint, text) to service_role;
+
+revoke all on function private.void_pocket_test_spend(text, text, text) from public, anon, authenticated, service_role;
+grant execute on function private.void_pocket_test_spend(text, text, text) to service_role;
+create or replace function public.void_pocket_test_spend(p_ledger_key text, p_request_key text, p_reason text)
+returns jsonb language sql security invoker set search_path = pg_catalog as $$
+  select private.void_pocket_test_spend(p_ledger_key, p_request_key, p_reason);
+$$;
 revoke all on function public.void_pocket_test_spend(text, text, text) from public, anon, authenticated, service_role;
 grant execute on function public.void_pocket_test_spend(text, text, text) to service_role;

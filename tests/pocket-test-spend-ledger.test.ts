@@ -90,6 +90,12 @@ test("only the first atomic submit claimant may dispatch a provider request", as
   assert.equal(duplicate.claimed, false);
 });
 
+test("actual charges above the cap are recorded, never hidden by the estimate limit", async () => {
+  const rpc = fakeRpc([{ data: { ok: true, reservation_id: "r-1", status: "settled", actual_microusd: 2_100_000, cap_exceeded: true }, error: null }]);
+  const result = await settlePocketTestSpend(rpc.client, { ledgerKey: reservation.ledgerKey, requestKey: reservation.requestKey, actualMicroUsd: 2_100_000, providerRequestId: "req-overrun" });
+  assert.equal(result.cap_exceeded, true);
+});
+
 test("migration keeps reservations private, atomic and closed until reconciled approval", async () => {
   const migrations = new URL("../supabase/migrations/", import.meta.url);
   const sql = await readFile(new URL("20261009191944_pocket_test_spend_reservations.sql", migrations), "utf8");
@@ -108,4 +114,13 @@ test("migration keeps reservations private, atomic and closed until reconciled a
   assert.match(sql, /security definer[\s\S]*set search_path = pg_catalog, private/);
   assert.match(sql, /revoke all on function public\.reserve_pocket_test_spend[\s\S]*from public, anon, authenticated/);
   assert.match(sql, /grant execute on function public\.reserve_pocket_test_spend[\s\S]*to service_role/);
+});
+
+test("privileged ledger functions stay in private schema behind invoker RPC wrappers", async () => {
+  const sql = await readFile(new URL("../supabase/migrations/20261009191944_pocket_test_spend_reservations.sql", import.meta.url), "utf8");
+  for (const name of ["reserve", "submit", "settle", "void"]) {
+    assert.match(sql, new RegExp(`create or replace function private\\.${name}_pocket_test_spend`));
+    const publicDefinition = sql.slice(sql.indexOf(`create or replace function public.${name}_pocket_test_spend`));
+    assert.match(publicDefinition.split("$$;")[0], /security invoker/i);
+  }
 });

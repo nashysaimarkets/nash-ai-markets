@@ -13,11 +13,11 @@ function requiredText(value: string, label: string) {
   return normalized;
 }
 
-function microUsd(value: number, label: string, allowZero = false) {
+function microUsd(value: number, label: string, allowZero = false, enforceCap = true) {
   if (!Number.isSafeInteger(value) || value < (allowZero ? 0 : 1)) {
     throw new Error(`${label} must be a ${allowZero ? "non-negative" : "positive"} integer number of micro-dollars.`);
   }
-  if (value > HARD_TEST_CAP_MICRO_USD) throw new Error(`${label} exceeds the cumulative $2 hard cap.`);
+  if (enforceCap && value > HARD_TEST_CAP_MICRO_USD) throw new Error(`${label} exceeds the cumulative $2 hard cap.`);
   return value;
 }
 
@@ -72,7 +72,8 @@ export async function settlePocketTestSpend(client: SpendLedgerRpc, input: Reser
   const reply = await invoke(client, "settle_pocket_test_spend", {
     p_ledger_key: requiredText(input.ledgerKey, "Ledger key"),
     p_request_key: requiredText(input.requestKey, "Request key"),
-    p_actual_microusd: microUsd(input.actualMicroUsd, "Actual spend", true),
+    // Recording an already incurred charge must never conceal an overrun.
+    p_actual_microusd: microUsd(input.actualMicroUsd, "Actual spend", true, false),
     p_provider_request_id: requiredText(input.providerRequestId, "Provider request ID"),
   });
   if (!validStateReply(reply, ["settled"]) || !Number.isSafeInteger(reply.actual_microusd)
