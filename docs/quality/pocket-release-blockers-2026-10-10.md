@@ -26,6 +26,16 @@ Free mobile checker race reproduced and fixed: wait for the exact analysis alert
 
 OpenAI usage inspection redirects to account sign-in. Historical attribution cannot be resolved from this session without authorised account access. Connected Stripe account is live only; no live purchase made.
 
+## Customer access checkpoint
+
+Provider integration commit `61934b4656c3a3e57b1a2516b2e7ddc1bcef9587`: Quality CI 38072190118 and native packaging 38072190166 mandatory free steps PASS. Paid image stage explicitly SKIPPED. Preview `dpl_6C9VCVLadtbvnfPRgykWJ9SigWPA` READY at https://nash-ai-markets-61f66xra8-nash-ai-markets.vercel.app with matching SHA. Six raster fixtures HTTP 200, providerCalls=0; all nine intercepted mobile flows PASS on this exact preview, zero JS errors, no horizontal overflow. This does not accept accuracy or native purchases.
+
+Independent read-only QA confirmed a missing authentication/entitlement boundary. Regression failed on the real analysis handler source before repair. All seven billed Pocket routes now reject anonymous/unverified, unsubscribed and unavailable-verification requests before any payload, budget or provider touch (actual extracted handlers exercised with 401/403/503). Pocket subscriptions now have a private server ledger distinct from permanent founding awards. Signed Stripe webhook grants only the configured validated Pocket product; inactive/changed-plan/failed-payment events revoke by subscription ID before customer email lookup. Cancellation with deleted customer regression failed then passed. Older/equal activation cannot override newer revocation; stale ignored events cannot allocate founding places. A valid later re-subscription grants access while preserving forfeited founding status.
+
+Entitlement migration 20261010173440 was tested in staging BEGIN/ROLLBACK, rollback verified, then applied on staging only as 20261010174024. SQL regressions passed for active/expired/wrong-user, revocation, stale/equal events, tombstones, forfeited awards, and role grants. Service-role public invoker lookup executed successfully. Test rows rolled back; zero actual web subscription or spending-ledger rows remain. Production is untouched. **Before any rollout**, populate current subscriptions from authoritative Stripe records, verify signed webhooks and real login, and integrate native Apple/first-free entitlements. The current web guard deliberately does not accept client-local flags as entitlement.
+
+Local successor unit suite 891 PASS, zero failed/skipped. Existing malformed-confirmation handler tests now inject an authorised fake guard so their original input-validation assertions remain exercised. Independent re-review confirmed all findings corrected. No provider requests were made.
+
 ## Complete blocker register
 
 No row may be removed without linked completion evidence or an explicit owner product decision. A preparation task does not close a runtime gate.
@@ -45,10 +55,10 @@ No row may be removed without linked completion evidence or an explicit owner pr
 | UX-01 | Real mobile upload/replacement/multiple images/axes/overlays/controls | PARTIAL | Mocked Chromium is free safety evidence; real scanner and iPhone/Safari/native remain required |
 | UX-02 | Real latency/timeouts/network recovery | PARTIAL | Mock timings are not provider performance; real p50/p95 and timeout/cancel billing semantics required |
 | INT-01 | Approved UI/scanner/native branches reconciled | OPEN | PRs #95, #102–104, #105–111 and native approved-build47 line reviewed against candidate; no blind merges |
-| COM-01 | Registration/login and paid entitlement enforcement | CONFIRMED SECURITY BLOCKER | Independent review found no authenticated paid-access guard before analysis provider calls; also preflight, levels, review and follow-up. Repair must use Pocket-specific entitlement, not terminal Pro/Elite or browser assertions; real E2E still required |
+| COM-01 | Registration/login and paid entitlement enforcement | REPAIRED IN SOURCE; REAL E2E BLOCKED | Seven billed Pocket routes now check verified server identity + independent current subscription before parsing/budget/provider. Staging SQL and denied actual-handler regressions pass. Existing paid subscriptions need authoritative Stripe backfill before rollout; native Apple/first-free not yet integrated |
 | COM-02 | Apple sandbox purchase/cancel/restore/grace/entitlements | BLOCKED | Native source/build/ASC and physical iPhone evidence; repository candidate has no native directory |
 | COM-03 | Stripe web subscription/webhook/customer return flows | UNVERIFIED E2E | Connected Nashaimarkets account is live; test-mode/customer test resources not yet established; no live purchase |
-| SEC-01 | Independent code/security/privacy review | REVIEW FOUND BLOCKER | Read-only review confirmed COM-01; ledger/provider receipt changes reviewed with no concrete defect found. Exact final candidate review and all high findings resolved still mandatory |
+| SEC-01 | Independent code/security/privacy review | SOURCE FINDINGS REPAIRED | Independent re-review confirmed all three findings corrected; seven free access/webhook regressions PASS, no additional concrete defect in scope. Genuine customer/native/security configuration gates remain |
 | SEC-02 | Supabase auth/database configuration | PARTIAL | Staging advisor: leaked-password protection warning; 14 RLS/no-policy informational entries require access-intent review, not automatic public grants |
 | IOS-01 | Native source integration/signed build/store compliance | BLOCKED | Approved-build47 native line differs materially from PR #112; signed tooling and immutable web pin must be verified |
 | AND-01 | Applicable Android build/distribution/device checks | UNVERIFIED | Determine current native project/release target and verify signed build/device |
@@ -62,4 +72,4 @@ PR #95 (`design/source-chart-levels`, `5d0f435c...`) targets `ops/pocket-approve
 
 ## Restart instruction
 
-Resolve current PR #112 exact head, active writers, completed CI and matching preview. Preserve verified repairs. Provider integration is prepared and free-tested; do not repeat completed ledger work. Resolve COM-01 next using Pocket-specific server entitlements; reconcile native/customer/design integration separately. Hard hold stays true. Obtain request-attributed billing and real native/device resources only for their blocked actions. Never convert skipped paid tests or mock flows into release signoff.
+Resolve current PR #112 exact head, active writers, completed CI and matching preview. Preserve verified repairs. Provider integration is prepared and free-tested; do not repeat completed ledger work. Current Pocket web entitlement source is repaired; do not repeat completed source defects. Next verify successor exact CI/deployment + anonymous API denials, then reconcile native/customer/design integration. Never roll out without Stripe backfill + genuine customer proof. Hard hold stays true. Obtain request-attributed billing and real native/device resources only for their blocked actions. Never convert skipped paid tests or mock flows into release signoff.

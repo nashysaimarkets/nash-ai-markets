@@ -1,3 +1,4 @@
+import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
@@ -229,6 +230,8 @@ const precisionOverlaySchema = {
 } as const;
 
 export async function POST(request: Request) {
+  const accessError = await requirePocketScanAccess();
+  if (accessError) return accessError;
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
   let contextImage = "";
