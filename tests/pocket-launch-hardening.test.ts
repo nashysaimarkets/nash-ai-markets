@@ -210,7 +210,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /PRIVACY SHIELD/);
   assert.match(client, /NO ORDER CONNECTION/);
   assert.match(client, /normalizeLockedDecisions/);
-  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 8/);
+  assert.match(client, /POCKET_ANALYSIS_ENGINE_VERSION = 9/);
   assert.match(client, /hasVerifiedStructuralLevel\(cached\)/);
   assert.match(client, /hasVerifiedStructuralLevel\(payload\.analysis\)/);
   assert.match(client, /createPrecisionReadingCrop/);
@@ -263,7 +263,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /showResultReveal/);
   assert.match(client, /START MY CINEMATIC RESULT/);
   assert.match(client, /ClarityLock/);
-  assert.match(client, /BULLSEYE CLARITY LOCK/);
+  assert.match(client, /ClarityLock/);
+  assert.match(client, /psClarityClassic/);
+  assert.match(client, /psClarityBars/);
   assert.match(client, /BullseyePlan/);
   assert.match(client, /YOUR BULLSEYE PLAN/);
   assert.match(client, /VIEW RESULT CARD/);
@@ -417,4 +419,13 @@ test("beta budgets are isolated by action and requester and reset after the wind
   assert.equal(takePocketBudget(first, "follow-up", 1_000).remaining, 9);
   assert.equal(takePocketBudget(second, "review", 1_000).remaining, 2);
   assert.equal(takePocketBudget(first, "review", 1_000 + 31 * 60_000).remaining, 2);
+});
+
+
+test("live torture harness rasterizes synthetic SVG fixtures before declaring PNG", async () => {
+  const route = await readFile(new URL("../app/api/pocket/torture/route.ts", import.meta.url), "utf8");
+  assert.match(route, /sharp\(Buffer\.from\(syntheticSvg\(sample\)\)\)\.png\(\)\.toBuffer\(\)/);
+  assert.match(route, /89504e470d0a1a0a/);
+  assert.match(route, /data:image\/png;base64/);
+  assert.doesNotMatch(route, /const image=Buffer\.from\(syntheticSvg\(sample\)\)/);
 });

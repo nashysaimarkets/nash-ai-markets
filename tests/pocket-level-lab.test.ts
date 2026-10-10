@@ -5,9 +5,10 @@ import { readFileSync } from "node:fs";
 const client = readFileSync("app/pocket/PocketBullseye.tsx", "utf8");
 const route = readFileSync("app/api/pocket/levels/route.ts", "utf8");
 
-test("the sixth command tile is a genuinely separate Signal Pulse", () => {
-  assert.match(client, /number: "06", label: "SIGNAL PULSE"/);
-  assert.match(client, /WHAT IS DEVELOPING NOW/);
+test("main scanner rail keeps liquidity first-class without a Signal Pulse command tile", () => {
+  assert.match(client, /label: "LIQUIDITY"/);
+  assert.doesNotMatch(client, /label: "SIGNAL PULSE"/);
+  assert.match(client, /WHAT POCKET ACTUALLY VERIFIED/);
 });
 
 test("Level Lab exposes a separate photo and levels-only rescan", () => {

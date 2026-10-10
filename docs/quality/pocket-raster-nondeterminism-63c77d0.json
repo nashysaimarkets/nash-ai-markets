@@ -1,0 +1,244 @@
+{
+  "sha": "63c77d033e08951aaf75faef0061edb777938d04",
+  "providerCalls": 0,
+  "repeatedRequests": 3,
+  "reports": [
+    {
+      "cases": 6,
+      "images": [
+        {
+          "pixelSha256": "1202789f32a4f19990438b3c8577c72c0527d283ad110beaf5023a1c72513e83",
+          "precisionPixelSha256": "0dd46a9bef7e3cbf94f60ea92296f8b67b6b7162848a32a6453cafde715c18c7",
+          "id": "range-clear",
+          "bytes": 11650,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "ba6470b2e31f580232ed73aca3579350abb012994dc860296658fa34475f88bb",
+          "precisionPixelSha256": "9fa051806a747fd919cab440b568dc81bf9aa83ef6eddd7a0ebae9604b227814",
+          "id": "double-top",
+          "bytes": 10364,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "de06e477d7fdd60077ca55528328521946e646202d3b1fef9e023fb7b932c1fb",
+          "precisionPixelSha256": "93e3fc6687563e532c9a48bfcaf29ea9204ccd1d658166513cae9a1493bb2a84",
+          "id": "head-shoulders",
+          "bytes": 9837,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "2f9945b8b861adc8ffd6d18a832f32b8e8e9273ffb73d05b1eabe31a841fe558",
+          "precisionPixelSha256": "8cb39fee51632257c3fcf5e935c1db51eeb800fc3f0f257541dd2d999fc5b547",
+          "id": "sweep-reclaim",
+          "bytes": 10160,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "455b1a4185f9fd2ae09ebbc3f88515b344949f8fbbf1ff2542202317cc3f1b4a",
+          "precisionPixelSha256": "77a97059a17eab1831df65d0625ef956784795839de35ec163011da7cc1cc43e",
+          "id": "near-miss-chop",
+          "bytes": 8220,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "84c278c2d2e3305af975bcc6974f1cca5d00774eb8035390ec735454d1dfebfb",
+          "precisionPixelSha256": "c9c1191c8f8852c107bbd3ec2694a8683aebf76008009a592f9e975f8e4e19c4",
+          "id": "degraded-no-signal",
+          "bytes": 20601,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        }
+      ],
+      "providerCalls": 0,
+      "pass": true
+    },
+    {
+      "cases": 6,
+      "images": [
+        {
+          "pixelSha256": "f15e976d51f80894aa1fe6e72d9f1cdaa46a4125626d5f8f147d6abbb7d974e9",
+          "precisionPixelSha256": "8c0cf7b180975612d28b4b26d9bed54a46de92f2084d5a6d47befbae3a338602",
+          "id": "range-clear",
+          "bytes": 11517,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "ba6470b2e31f580232ed73aca3579350abb012994dc860296658fa34475f88bb",
+          "precisionPixelSha256": "9fa051806a747fd919cab440b568dc81bf9aa83ef6eddd7a0ebae9604b227814",
+          "id": "double-top",
+          "bytes": 10364,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "de06e477d7fdd60077ca55528328521946e646202d3b1fef9e023fb7b932c1fb",
+          "precisionPixelSha256": "93e3fc6687563e532c9a48bfcaf29ea9204ccd1d658166513cae9a1493bb2a84",
+          "id": "head-shoulders",
+          "bytes": 9837,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "2f9945b8b861adc8ffd6d18a832f32b8e8e9273ffb73d05b1eabe31a841fe558",
+          "precisionPixelSha256": "8cb39fee51632257c3fcf5e935c1db51eeb800fc3f0f257541dd2d999fc5b547",
+          "id": "sweep-reclaim",
+          "bytes": 10160,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "103801b0d82c5188e8672b56005c32fb9a95b2d8853cf5af65be5e4b89b52d7a",
+          "precisionPixelSha256": "5befa320916ba51a0119c60e9457dd26eacad9cc18c198a270e1821b8b17e94b",
+          "id": "near-miss-chop",
+          "bytes": 8088,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "884802b71dd00818105720723923a1ee1800c617163af558a6ad466071bc57a0",
+          "precisionPixelSha256": "c9c1191c8f8852c107bbd3ec2694a8683aebf76008009a592f9e975f8e4e19c4",
+          "id": "degraded-no-signal",
+          "bytes": 20467,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        }
+      ],
+      "providerCalls": 0,
+      "pass": true
+    },
+    {
+      "cases": 6,
+      "images": [
+        {
+          "pixelSha256": "54167ef4fe26ef5da283ccc40038bb204b7db27f8d2a6d175bb41b2836927203",
+          "precisionPixelSha256": "8c0cf7b180975612d28b4b26d9bed54a46de92f2084d5a6d47befbae3a338602",
+          "id": "range-clear",
+          "bytes": 11680,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "ba6470b2e31f580232ed73aca3579350abb012994dc860296658fa34475f88bb",
+          "precisionPixelSha256": "9fa051806a747fd919cab440b568dc81bf9aa83ef6eddd7a0ebae9604b227814",
+          "id": "double-top",
+          "bytes": 10364,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "de06e477d7fdd60077ca55528328521946e646202d3b1fef9e023fb7b932c1fb",
+          "precisionPixelSha256": "93e3fc6687563e532c9a48bfcaf29ea9204ccd1d658166513cae9a1493bb2a84",
+          "id": "head-shoulders",
+          "bytes": 9837,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "2f9945b8b861adc8ffd6d18a832f32b8e8e9273ffb73d05b1eabe31a841fe558",
+          "precisionPixelSha256": "8cb39fee51632257c3fcf5e935c1db51eeb800fc3f0f257541dd2d999fc5b547",
+          "id": "sweep-reclaim",
+          "bytes": 10160,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "103801b0d82c5188e8672b56005c32fb9a95b2d8853cf5af65be5e4b89b52d7a",
+          "precisionPixelSha256": "5befa320916ba51a0119c60e9457dd26eacad9cc18c198a270e1821b8b17e94b",
+          "id": "near-miss-chop",
+          "bytes": 8088,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        },
+        {
+          "pixelSha256": "884802b71dd00818105720723923a1ee1800c617163af558a6ad466071bc57a0",
+          "precisionPixelSha256": "c9c1191c8f8852c107bbd3ec2694a8683aebf76008009a592f9e975f8e4e19c4",
+          "id": "degraded-no-signal",
+          "bytes": 20467,
+          "width": 900,
+          "height": 600,
+          "format": "png",
+          "precisionFormat": "jpeg",
+          "precisionWidth": 1400,
+          "precisionHeight": 765
+        }
+      ],
+      "providerCalls": 0,
+      "pass": true
+    }
+  ]
+}

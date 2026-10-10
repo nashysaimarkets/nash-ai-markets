@@ -40,7 +40,8 @@
     "audit:desktop": "node --experimental-strip-types audit/src/run-audit.ts --mode=desktop",
     "audit:mobile": "node --experimental-strip-types audit/src/run-audit.ts --mode=mobile",
     "audit:all": "node --experimental-strip-types audit/src/run-audit.ts --mode=all",
-    "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all"
+    "audit:report": "node --experimental-strip-types audit/src/run-audit.ts --mode=all",
+    "verify:pocket-image-torture": "node --env-file-if-exists=.env --import tsx scripts/run-pocket-image-torture.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
@@ -51,6 +52,7 @@
     "openai": "6.48.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
+    "sharp": "0.35.0",
     "stripe": "^18.5.0"
   },
   "devDependencies": {

@@ -1,3 +1,4 @@
+import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
@@ -28,6 +29,8 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
+  const accessError = await requirePocketScanAccess();
+  if (accessError) return accessError;
   let image = "";
   let contextImage = "";
   try {

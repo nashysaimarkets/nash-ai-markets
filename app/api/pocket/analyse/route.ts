@@ -1,9 +1,11 @@
+import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
+import { dispatchPocketAnalysisProviderCall, pocketTestProviderProject } from "../torture/provider-spend";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -59,7 +61,7 @@ const schema = {
           geometry: {
             type: "object", additionalProperties: false,
             properties: {
-              points: { type: "array", minItems: 2, maxItems: 10, items: {
+              points: { type: "array", minItems: 3, maxItems: 10, items: {
                 type: "object", additionalProperties: false,
                 properties: { x: { type: "number", minimum: 0, maximum: 100 }, y: { type: "number", minimum: 0, maximum: 100 } },
                 required: ["x", "y"],
@@ -72,6 +74,45 @@ const schema = {
         },
         required: ["name", "status", "timeframe", "confidence", "evidence", "confirmation", "invalidation", "geometry"],
       },
+    },
+    liquidity: {
+      type: "object", additionalProperties: false,
+      properties: {
+        state: { type: "string", enum: ["VERIFIED", "PARTIAL", "NONE"] },
+        event: { type: "string", enum: ["NONE", "TESTING", "SWEEP", "RECLAIM", "REJECTION"] },
+        confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+        evidence: { type: "string", maxLength: 220 },
+        confirmation: { type: "string", maxLength: 180 },
+        invalidation: { type: "string", maxLength: 180 },
+        observations: {
+          type: "array", maxItems: 12, items: {
+            type: "object", additionalProperties: false,
+            properties: {
+              kind: { type: "string", enum: ["equal-highs", "equal-lows", "rejection", "sweep-reclaim"] },
+              side: { type: "string", enum: ["buy-side", "sell-side"] },
+              x: { type: "number", minimum: 0, maximum: 100 },
+              y: { type: "number", minimum: 0, maximum: 100 },
+              confidence: { type: "string", enum: ["LOW", "MEDIUM", "HIGH"] },
+            },
+            required: ["kind", "side", "x", "y", "confidence"],
+          },
+        },
+        zones: {
+          type: "array", maxItems: 4, items: {
+            type: "object", additionalProperties: false,
+            properties: {
+              side: { type: "string", enum: ["BUY_SIDE", "SELL_SIDE"] },
+              basis: { type: "string", enum: ["EQUAL_HIGHS", "EQUAL_LOWS", "PRIOR_SWING_HIGH", "PRIOR_SWING_LOW", "RANGE_HIGH", "RANGE_LOW"] },
+              price: { type: "string", maxLength: 30 },
+              x: { type: "number", minimum: 0, maximum: 100 },
+              x2: { type: "number", minimum: 0, maximum: 100 },
+              y: { type: "number", minimum: 0, maximum: 100 },
+            },
+            required: ["side", "basis", "price", "x", "x2", "y"],
+          },
+        },
+      },
+      required: ["state", "event", "confidence", "evidence", "confirmation", "invalidation", "zones", "observations"],
     },
     nextSequence: {
       type: "object", additionalProperties: false,
@@ -171,7 +212,7 @@ const schema = {
       },
     },
   },
-  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
+  required: ["direction", "confidence", "instrument", "ticker", "timeframe", "evidenceQuality", "observableFacts", "contradictions", "higherTimeframe", "patterns", "liquidity", "nextSequence", "missingInputs", "contextContribution", "summary", "verdict", "verdictHeadline", "setupScore", "whatYouMayBeMissing", "improvesSetup", "killsSetup", "traderTrap", "bullishCase", "bearishCase", "invalidation", "marketStructure", "levelStory", "momentum", "bullConfirmation", "bearConfirmation", "noTradeCondition", "riskFlags", "indicators", "checklist", "relevantEventTypes", "plotBounds", "priceScaleAnchors", "levels", "fibLevels"],
 } as const;
 
 const precisionOverlaySchema = {
@@ -189,12 +230,15 @@ const precisionOverlaySchema = {
 } as const;
 
 export async function POST(request: Request) {
+  const accessError = await requirePocketScanAccess();
+  if (accessError) return accessError;
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
   let contextImage = "";
   let precisionImage = "";
   let contextPrecisionImage = "";
   let chartConfirmation: { instrument: string; timeframe: string; currentPrice: string; contextMatch: "MATCHED" | "NOT_PROVIDED" } | null = null;
+  let confirmationSupplied = false;
   let accuracyCorrection: { categories: string[]; correction: string; note: string } | null = null;
   try {
     const payload = await request.json() as { image?: unknown; contextImage?: unknown; precisionImage?: unknown; contextPrecisionImage?: unknown; intention?: unknown; chartConfirmation?: unknown; accuracyCorrection?: unknown };
@@ -205,13 +249,14 @@ export async function POST(request: Request) {
     intention = typeof payload.intention === "string" && INTENTIONS.includes(payload.intention as typeof INTENTIONS[number])
       ? payload.intention as typeof INTENTIONS[number]
       : "UNSURE";
+    confirmationSupplied = payload.chartConfirmation !== undefined && payload.chartConfirmation !== null;
     if (payload.chartConfirmation && typeof payload.chartConfirmation === "object") {
       const candidate = payload.chartConfirmation as Record<string, unknown>;
       const instrument = typeof candidate.instrument === "string" ? candidate.instrument.trim().slice(0, 40) : "";
       const timeframe = typeof candidate.timeframe === "string" ? candidate.timeframe.trim().slice(0, 30) : "";
       const currentPrice = typeof candidate.currentPrice === "string" ? candidate.currentPrice.trim().slice(0, 30) : "";
       const contextMatch = candidate.contextMatch === "MATCHED" ? "MATCHED" : "NOT_PROVIDED";
-      if (instrument && timeframe && /^-?\\d[\\d,.]*$/.test(currentPrice)) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
+      if ((candidate.contextMatch === "MATCHED" || candidate.contextMatch === "NOT_PROVIDED") && instrument && timeframe && /^-?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d+)?$/.test(currentPrice) && Number.isFinite(Number(currentPrice.replaceAll(",", "")))) chartConfirmation = { instrument, timeframe, currentPrice, contextMatch };
     }
     if (payload.accuracyCorrection && typeof payload.accuracyCorrection === "object") {
       const candidate = payload.accuracyCorrection as Record<string, unknown>;
@@ -224,6 +269,8 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid chart upload." }, { status: 400 });
   }
+  if (confirmationSupplied && !chartConfirmation) return NextResponse.json({ error: "Please confirm a valid instrument, timeframe and numeric current price." }, { status: 400 });
+  if (contextImage && chartConfirmation && chartConfirmation.contextMatch !== "MATCHED") return NextResponse.json({ error: "Confirm that both charts show the same instrument before analysis." }, { status: 400 });
   if (!/^data:image\/(jpeg|png|webp);base64,/.test(image) || image.length > MAX_DATA_URL_LENGTH) {
     return NextResponse.json({ error: "Please upload a valid JPEG, PNG or WebP chart under 8 MB." }, { status: 400 });
   }
@@ -238,14 +285,14 @@ export async function POST(request: Request) {
     { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
-  const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
+  const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS, pocketTestProviderProject());
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
 
   try {
     const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse" });
     const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
-    const analysisRequest = client.responses.create({
+    const analysisRequest = dispatchPocketAnalysisProviderCall(model, 7000, () => client.responses.create({
       model,
       reasoning: { effort: "low" },
       store: false,
@@ -256,7 +303,9 @@ export async function POST(request: Request) {
         "When a user correction is provided, explicitly re-check that category against the chart. Treat a corrected numeric support, resistance or current price as user-verified, preserve it in the returned levels/currentPrice, and rebuild the audit around it. Do not invent additional corrected levels.",
         "First audit input quality. Separate observableFacts (directly visible) from contradictions (evidence that conflicts with the apparent setup). State every readability limitation.",
         "If a second image is supplied, treat the first as the trading chart and the second as optional higher-timeframe context. Re-evaluate and replace the entire audit using both images, including support/resistance commentary, missing inputs, score and verdict. Verify that both appear to show the same instrument; if not, mark alignment CONFLICTING and explain.",
-        "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
+        "Pattern Watch may name only structures visibly supported by candle geometry. Use exactly these gallery names: HEAD & SHOULDERS, INVERSE H&S, RISING WEDGE, FALLING WEDGE, BULL FLAG, BEAR FLAG, DOUBLE TOP, DOUBLE BOTTOM, TRIANGLE, ASCENDING TRIANGLE, DESCENDING TRIANGLE, PENNANT, CUP & HANDLE, RECTANGLE / RANGE, TREND CHANNEL, BREAKOUT & RETEST. Each pattern must include its visible timeframe, confidence, evidence, confirmation condition, invalidation and image-relative geometry. Supply at least three distinct visible swing anchors for a named pattern; otherwise omit the claim. Geometry points must trace the actual visible swing path on the full uploaded image and labelX/labelY must sit beside—not over—the candles. Prefer AMBIGUOUS over forcing a name. HIGH confidence requires a clear completed geometry plus visible confirmation; FORMING is incomplete; CONFIRMED requires the visible neckline/boundary break or other completion; FAILED means invalidation is already visible; EXTENDED means the confirmed move is mature. Do not call ordinary noise a pattern and return an empty array when none is defensible.",
+        "Liquidity geometry x/x2/y must use full uploaded-image percentage coordinates so overlays align with the original screenshot. Liquidity Guard is screenshot-derived structure only. Never claim to see hidden orders, actual stop placement, institutional order flow, liquidation data or order-book liquidity unless such data is visibly supplied. Mark potential buy-side liquidity only at clearly repeated/equal highs, prior swing highs or a visible range high; mark potential sell-side liquidity only at clearly repeated/equal lows, prior swing lows or a visible range low. A SWEEP requires price to visibly trade beyond the referenced pool and return; RECLAIM requires a visible return through the level; REJECTION requires a visible reaction without claiming a sweep. VERIFIED requires defensible geometry and at least MEDIUM confidence. Otherwise use PARTIAL or NONE. Return no zones rather than inventing one.",
+        "Liquidity observations are individual visible candle reactions with full-image percentage x/y, side, kind and confidence. Never manufacture observations from zone endpoints or prose. Supply an empty observations array when distinct reactions cannot be read. VERIFIED zones require at least two MEDIUM/HIGH observations at the reference row, spatially separated by at least 5 percentage points within the zone span on a CLEAR chart; otherwise use PARTIAL or NONE.",
         "Build nextSequence as a practical observation timeline: what is happening now, confirmation required, failure evidence, patience condition and when another screenshot would add value.",
         "Avoid repetition across fields. Each section must add a distinct decision insight; do not restate the same support, resistance, confirmation or risk sentence in summary, cases, sequence and audit fields.",
         "missingInputs must request only information that materially changes the audit, such as a readable header, price scale, higher timeframe or volume panel. Never request everything by default.",
@@ -293,7 +342,7 @@ export async function POST(request: Request) {
       // distinct evidence. Reasoning tokens also count toward this allowance.
       max_output_tokens: 7000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
-    });
+    }));
     const precisionInstructions = [
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
@@ -305,7 +354,8 @@ export async function POST(request: Request) {
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "For every level, y must mark the actual visible candle reaction and must also agree with the price projected from the three-point scale. Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
-    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => client.responses.create({
+    const precisionModel = process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model;
+    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => dispatchPocketAnalysisProviderCall(precisionModel, 1400, () => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
       reasoning: { effort: "low" },
       store: false,
@@ -322,17 +372,21 @@ export async function POST(request: Request) {
       }],
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    });
+    }));
     const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
         const first = await requestPrecision(chartImage);
         try {
           const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
           if (parsed && Array.isArray(parsed.levels)) {
-            const current = typeof parsed.currentPrice === "string" ? Number(parsed.currentPrice.replaceAll(",", "")) : NaN;
+            const readPrice = (value: unknown) => {
+              const text = typeof value === "string" ? value.trim().replaceAll(",", "") : "";
+              return text && /^-?\d+(?:\.\d+)?$/.test(text) ? Number(text) : NaN;
+            };
+            const current = readPrice(parsed.currentPrice);
             const prices = parsed.levels.flatMap((level) => {
               if (!level || typeof level !== "object") return [];
-              const price = Number(String((level as Record<string, unknown>).price ?? "").replaceAll(",", ""));
+              const price = readPrice((level as Record<string, unknown>).price);
               return Number.isFinite(price) ? [price] : [];
             });
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
@@ -394,6 +448,12 @@ export async function POST(request: Request) {
       } else {
         // Fail closed: a report may still be useful, but unverified geometry must never be drawn.
         analysis = { ...record, priceScaleAnchors: [], levels: [] };
+      }
+      // Locked facts belong to the trader's chart. A separate model pass must
+      // never overwrite them, including when its current-price marker is blank.
+      if (chartConfirmation) {
+        analysis = { ...(analysis as Record<string, unknown>), instrument: chartConfirmation.instrument,
+          timeframe: chartConfirmation.timeframe, currentPrice: chartConfirmation.currentPrice };
       }
     }
     const calibrated = calibratePocketAnalysis(analysis) as Record<string, unknown>;

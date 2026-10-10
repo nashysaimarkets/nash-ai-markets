@@ -11,6 +11,8 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
+- `POCKET_TORTURE_LIVE_ENABLED` — preview-only benchmark opt-in; only the exact string `true` allows attempting the billed route. Leave unset/false until authoritative $2 spending accounting is verified.
+- `POCKET_TORTURE_LIVE_TOKEN` — server-only random secret of at least 32 characters. A preview live benchmark must supply the exact secret in `x-pocket-torture-token`. Never place it in client code, URLs or logs. Leave unset unless a billed test is explicitly authorised and cost-bounded.
 
 ## Supabase
 - `NEXT_PUBLIC_SUPABASE_URL` — public project URL.
@@ -92,3 +94,20 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 Never expose server secrets with `NEXT_PUBLIC_` or `VITE_` prefixes. Rotate credentials immediately after suspected exposure. OpenAI Responses requests explicitly use `store: false`; Pocket Bullseye retains deterministic fallback output when AI is unavailable.
 
 <!-- Pocket Bullseye launch-gate verification marker: documentation validated on 2026-08-20. -->
+# Pending scanner-test ledger configuration
+
+The cumulative spending hold remains unconditional. None of these settings
+authorises a billable call or replaces reconciled historical dollar evidence.
+Do not enable a real ledger until the owner separately approves exact spending.
+
+- `POCKET_TEST_SPEND_LEDGER_KEY`: reconciled shared ledger, never per-process allowance.
+- `POCKET_TEST_OPENAI_PROJECT_ID`: verified billing project, supplied to the provider SDK and checked by the ledger.
+- `POCKET_TEST_SPEND_APPROVAL_REF`: separate exact owner approval recorded in that ledger.
+- `POCKET_TEST_MODEL_COST_BOUNDS`: JSON object by exact model with `maxOutputTokens`, `maxCostMicroUsd`, and `fullContextCostBoundEvidenceRef`. Bounds must conservatively cover the full allowed model input context plus maximum output, using verified current prices, including image input. No guessed dollar estimates.
+
+Each main/precision/rescue/context provider call reserves its own amount and
+claims dispatch atomically. Receipts persist request/response IDs, model and
+usage without chart content. Unsettled or failed calls stay counted; token
+usage is not substituted for authoritative charged dollars.
+
+Pocket scan entitlement rollout requires the `pocket_scan_entitlements` migration and authoritative Stripe backfill. Founding awards and terminal Pro/Elite tiers are not Pocket access. Native Apple subscriptions and the advertised first free iPhone analysis require their own verified server entitlement integration before distribution. Do not deploy this guard to production as a stand-alone migration-free change.

@@ -1,0 +1,64 @@
+name: Bullseye image torture
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_live:
+        description: "Invoke billed AI analysis ONLY after verifying remaining budget"
+        type: boolean
+        default: false
+      case_id:
+        description: "One labelled case per billed run; never all six at once"
+        type: string
+        required: false
+        default: ""
+  pull_request:
+    paths:
+      - "scripts/run-pocket-image-torture.ts"
+      - "tests/support/pocket-image-torture.ts"
+      - "app/api/pocket/**"
+      - "app/pocket/**"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.ts"
+      - "tests/pocket-sharp-packaging.test.ts"
+      - "scripts/verify-sharp-trace.mjs"
+      - ".github/workflows/bullseye-image-torture.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  image-torture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      OPENAI_POCKET_MODEL: ${{ vars.OPENAI_POCKET_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: chmod +x scripts/sites-env.sh scripts/install-ci.sh
+      - run: npm run install:ci
+      - name: Verify native rasterization without provider calls
+        run: node --import tsx --test tests/pocket-sharp-packaging.test.ts
+      - name: Build the Vercel Next.js function traces
+        run: npx next build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_ci_placeholder"
+      - name: Rasterize from isolated production trace
+        run: node scripts/verify-sharp-trace.mjs
+      - name: Report live-scan execution path
+        run: |
+          echo "Packaging checks always run without provider calls."
+          echo "Billed scanner measurements require an explicit run_live manual dispatch or the protected preview harness."
+      - name: Run labelled image torture corpus
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_live }}
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          POCKET_TORTURE_CASE: ${{ inputs.case_id }}
+        run: npm run verify:pocket-image-torture

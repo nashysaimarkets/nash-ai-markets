@@ -70,3 +70,55 @@ test("known readable range fails old evasive fallback wording", () => {
     ],
   }), /forbidden fallback copy/);
 });
+
+
+test("golden framework accepts 30m fail-closed no-signal controls", () => {
+  const noSignal: PocketGoldenCase = {
+    id: "cropped-scale-no-signal",
+    imageFile: "cropped-scale-no-signal.png",
+    imageSha256: "b".repeat(64),
+    privacyReviewed: true,
+    market: "SYNTHETIC",
+    timeframe: "30m",
+    expectedDisposition: "withhold",
+    expectedReadability: ["partial", "unreadable"],
+    expectedLean: ["neutral"],
+    expectedGuides: [],
+    forbiddenPhrases: [],
+  };
+  validatePocketGoldenCase(noSignal);
+  assertPocketGolden(noSignal, {
+    chartReadability: "partial",
+    directionalLean: "neutral",
+    summary: "Scale evidence is insufficient.",
+    observations: [],
+    noTradeReasons: ["Numeric levels withheld."],
+    uncertainties: ["Price scale is cropped."],
+    visualGuides: [],
+  });
+});
+
+test("fail-closed golden control rejects invented visual guides", () => {
+  const noSignal: PocketGoldenCase = {
+    id: "ambiguous-no-signal",
+    imageFile: "ambiguous-no-signal.png",
+    imageSha256: "c".repeat(64),
+    privacyReviewed: true,
+    market: "SYNTHETIC",
+    timeframe: "30m",
+    expectedDisposition: "withhold",
+    expectedReadability: ["partial"],
+    expectedLean: ["neutral"],
+    expectedGuides: [],
+    forbiddenPhrases: [],
+  };
+  assert.throws(() => assertPocketGolden(noSignal, {
+    chartReadability: "partial",
+    directionalLean: "neutral",
+    summary: "Ambiguous structure.",
+    observations: [],
+    noTradeReasons: [],
+    uncertainties: [],
+    visualGuides: [{ tool: "support", yPercent: 70, confidence: "low" }],
+  }), /fail-closed case emitted visual guides/);
+});

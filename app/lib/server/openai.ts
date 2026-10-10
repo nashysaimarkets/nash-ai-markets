@@ -20,12 +20,14 @@ type OpenAIHealthClient = {
 export function createOpenAIClient(
   apiKey = process.env.OPENAI_API_KEY,
   timeout = OPENAI_HEALTH_TIMEOUT_MS,
+  project?: string,
 ): OpenAI | null {
   if (!apiKey?.trim()) return null;
   return new OpenAI({
     apiKey,
     maxRetries: 0,
     timeout,
+    ...(project ? { project } : {}),
   });
 }
 

@@ -97,11 +97,19 @@ async function saveSubscription(
   const billingIntervals = [...new Set(offerings.map(({ offering }) => offering.billingInterval))];
   const billingInterval = billingIntervals.length === 1 ? billingIntervals[0] : null;
   const unitAmount = offerings.length === 1 ? offerings[0].item.price.unit_amount : null;
+  // Revocation must not depend on customer lookup or a recoverable email.
+  if (plan !== "pocket" || !foundingSubscriptionActive(subscription.status)) {
+    const { error } = await createAdminClient().rpc("revoke_pocket_web_subscription", {
+      p_stripe_subscription_id: subscription.id, p_event_created_at: eventCreated,
+    });
+    if (error) throw new Error("Pocket entitlement revocation failed");
+    if (plan === "pocket") return "pocket" as const;
+  }
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
 
   if (plan === "pocket") {
     if (!email || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
-    const { error } = await createAdminClient().rpc("sync_pocket_founding_650", {
+    const { error } = await createAdminClient().rpc("sync_pocket_web_subscription", {
       p_email: email,
       p_stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
       p_stripe_subscription_id: subscription.id,
@@ -244,6 +252,8 @@ export async function POST(request: Request) {
         ? invoice.parent.subscription_details.subscription
         : invoice.parent?.subscription_details?.subscription?.id;
       if (subscriptionId) {
+        const { error: pocketRevokeError } = await createAdminClient().rpc("revoke_pocket_web_subscription", { p_stripe_subscription_id: subscriptionId, p_event_created_at: event.created });
+        if (pocketRevokeError) throw new Error("Pocket entitlement revocation failed");
         const { error } = await createAdminClient().rpc("sync_membership_from_stripe", {
           p_email: "",
           p_plan: null,
