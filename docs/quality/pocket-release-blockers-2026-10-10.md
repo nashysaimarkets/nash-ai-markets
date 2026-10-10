@@ -16,6 +16,16 @@ Executed complete repaired migration and `tests/sql/pocket-test-spend-ledger.sql
 
 Four concurrent real staging reservations each requested a simulated $0.60 against simulated $1 historical spend under $2: exactly one reserved and three were denied, committed $1.60. Four concurrent submit claims on that simulated reservation: exactly one true, three false. **No provider calls.** Disposable simulation rows removed; confirmed zero ledger rows. These synthetic financial values are test inputs, not owner billing history or expenditure approval.
 
+## Provider integration checkpoint
+
+Ledger repair commit `6fc79fb2ff07069eb7aa276cb5eaf11ebd8ae94f`: Quality CI 38071250470 and packaging 38071250469 passed mandatory free steps. Exact preview `dpl_6EJ5ZLCWhJhxnWqXfNrgnyFnRjhG` READY at https://nash-ai-markets-49va1we4k-nash-ai-markets.vercel.app. Raster endpoint returned six PNG/crop hashes, providerCalls=0; live scanner stage SKIPPED, not accepted accuracy.
+
+Successor source adds per-call reservations around every analysis provider request and internal benchmark scope, no customer-header bypass. Receipt migration was transaction/rollback tested and installed on staging only (20261010172411). Request/response identity is immutable, identical receipt is idempotent, conflicting receipt or settlement is denied; usage tokens do not invent dollar charges. Zero real ledger rows and hard hold remains true. Five failing-before-implementation provider regressions now pass. Local full unit suite 884/884, typecheck, production build, rendered HTML, secret scan, ops, four render and eight production simulations pass; lint has eight pre-existing warnings, no errors.
+
+Free mobile checker race reproduced and fixed: wait for the exact analysis alert instead of the earlier preflight alert. Nine intercepted Chromium mobile flows pass, 8 fake preflights/3 fake analyses, zero paid requests and zero browser JS errors. This is browser safety evidence, not physical-device or genuine scanner evidence.
+
+OpenAI usage inspection redirects to account sign-in. Historical attribution cannot be resolved from this session without authorised account access. Connected Stripe account is live only; no live purchase made.
+
 ## Complete blocker register
 
 No row may be removed without linked completion evidence or an explicit owner product decision. A preparation task does not close a runtime gate.
@@ -26,7 +36,7 @@ No row may be removed without linked completion evidence or an explicit owner pr
 | ENG-02 | Identity/preflight/malformed price/cancellation guards | Earlier regressions and intercepted Chromium PASS | Preserve; final candidate browser run, physical device proof separate |
 | BUD-01 | Historical OpenAI test spend/pending/retries/project mapping | BLOCKED | Correct project/request dollar attribution; daily/org totals and credit balance insufficient |
 | BUD-02 | Durable ledger transactional verification | Staging SQL and concurrent reservations/claims PASS | Migration installed in staging, zero real ledger rows; production/configuration not activated |
-| BUD-03 | Per-provider-call reserve/claim/receipt/settlement integration | OPEN | Every main/precision/rescue/context call individually bounded and reserved; unknown costs remain committed |
+| BUD-03 | Per-provider-call reserve/claim/receipt/settlement integration | FREE VERIFICATION PASS; activation blocked | Main/precision/rescue/context calls individually reserve then claim; immutable provider receipts persist. Actual dollars still require authoritative reconciliation; unknown costs remain committed |
 | BUD-04 | Exact spending approval and verified remaining $2 | BLOCKED | Separate owner approval after BUD-01; no paid calls until proven |
 | ACC-01 | Six labelled real Levels measurements | UNMEASURED | TP/FP/FN, precision/recall, latency, negatives, raw exact-SHA receipts |
 | ACC-02 | Six labelled real Patterns measurements | UNMEASURED | Same; real positive pattern and geometry acceptance required |
@@ -35,11 +45,11 @@ No row may be removed without linked completion evidence or an explicit owner pr
 | UX-01 | Real mobile upload/replacement/multiple images/axes/overlays/controls | PARTIAL | Mocked Chromium is free safety evidence; real scanner and iPhone/Safari/native remain required |
 | UX-02 | Real latency/timeouts/network recovery | PARTIAL | Mock timings are not provider performance; real p50/p95 and timeout/cancel billing semantics required |
 | INT-01 | Approved UI/scanner/native branches reconciled | OPEN | PRs #95, #102–104, #105–111 and native approved-build47 line reviewed against candidate; no blind merges |
-| COM-01 | Registration/login and paid entitlement enforcement | UNVERIFIED E2E | Real staging customer session; unauthorized API access and expired subscriptions denied |
+| COM-01 | Registration/login and paid entitlement enforcement | CONFIRMED SECURITY BLOCKER | Independent review found no authenticated paid-access guard before analysis provider calls; also preflight, levels, review and follow-up. Repair must use Pocket-specific entitlement, not terminal Pro/Elite or browser assertions; real E2E still required |
 | COM-02 | Apple sandbox purchase/cancel/restore/grace/entitlements | BLOCKED | Native source/build/ASC and physical iPhone evidence; repository candidate has no native directory |
 | COM-03 | Stripe web subscription/webhook/customer return flows | UNVERIFIED E2E | Connected Nashaimarkets account is live; test-mode/customer test resources not yet established; no live purchase |
-| SEC-01 | Independent code/security/privacy review | PENDING | Exact final candidate review and all high findings resolved |
-| SEC-02 | Supabase auth/database configuration | PARTIAL | Staging advisor: leaked-password protection warning; 12 RLS/no-policy informational entries require access-intent review, not automatic public grants |
+| SEC-01 | Independent code/security/privacy review | REVIEW FOUND BLOCKER | Read-only review confirmed COM-01; ledger/provider receipt changes reviewed with no concrete defect found. Exact final candidate review and all high findings resolved still mandatory |
+| SEC-02 | Supabase auth/database configuration | PARTIAL | Staging advisor: leaked-password protection warning; 14 RLS/no-policy informational entries require access-intent review, not automatic public grants |
 | IOS-01 | Native source integration/signed build/store compliance | BLOCKED | Approved-build47 native line differs materially from PR #112; signed tooling and immutable web pin must be verified |
 | AND-01 | Applicable Android build/distribution/device checks | UNVERIFIED | Determine current native project/release target and verify signed build/device |
 | REL-01 | Website assets/privacy/terms/store listings/pricing consistency | OPEN | Verify final release assets without changing pricing |
@@ -52,4 +62,4 @@ PR #95 (`design/source-chart-levels`, `5d0f435c...`) targets `ops/pocket-approve
 
 ## Restart instruction
 
-Resolve current PR #112 exact head, active writers, completed CI and matching preview. Preserve verified repairs. Continue BUD-03 with only fake providers/free tests while hard hold stays true; reconcile native/customer/design integration separately. Obtain request-attributed billing and real native/device resources only for their blocked actions. Never convert skipped paid tests or mock flows into release signoff.
+Resolve current PR #112 exact head, active writers, completed CI and matching preview. Preserve verified repairs. Provider integration is prepared and free-tested; do not repeat completed ledger work. Resolve COM-01 next using Pocket-specific server entitlements; reconcile native/customer/design integration separately. Hard hold stays true. Obtain request-attributed billing and real native/device resources only for their blocked actions. Never convert skipped paid tests or mock flows into release signoff.

@@ -4,6 +4,7 @@ import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
+import { dispatchPocketAnalysisProviderCall, pocketTestProviderProject } from "../torture/provider-spend";
 
 export const runtime = "nodejs";
 const MAX_DATA_URL_LENGTH = 11_000_000;
@@ -281,14 +282,14 @@ export async function POST(request: Request) {
     { error: "Your beta analysis allowance needs a short reset. No request was sent to the AI provider." },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
-  const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS);
+  const client = createOpenAIClient(undefined, POCKET_ANALYSIS_TIMEOUT_MS, pocketTestProviderProject());
   if (!client) return NextResponse.json({ error: "AI analysis is not connected in this environment." }, { status: 503 });
 
   try {
     const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse" });
     const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
-    const analysisRequest = client.responses.create({
+    const analysisRequest = dispatchPocketAnalysisProviderCall(model, 7000, () => client.responses.create({
       model,
       reasoning: { effort: "low" },
       store: false,
@@ -338,7 +339,7 @@ export async function POST(request: Request) {
       // distinct evidence. Reasoning tokens also count toward this allowance.
       max_output_tokens: 7000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
-    });
+    }));
     const precisionInstructions = [
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
@@ -350,7 +351,8 @@ export async function POST(request: Request) {
         "Support and resistance are horizontal from plotBounds.left to plotBounds.right. Never use current-price guide lines, screen edges, phone UI, order prices or volume bars as market levels.",
         "For every level, y must mark the actual visible candle reaction and must also agree with the price projected from the three-point scale. Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
-    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => client.responses.create({
+    const precisionModel = process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model;
+    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => dispatchPocketAnalysisProviderCall(precisionModel, 1400, () => client.responses.create({
       model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
       reasoning: { effort: "low" },
       store: false,
@@ -367,7 +369,7 @@ export async function POST(request: Request) {
       }],
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    });
+    }));
     const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
         const first = await requestPrecision(chartImage);

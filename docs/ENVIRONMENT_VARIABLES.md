@@ -94,3 +94,18 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 Never expose server secrets with `NEXT_PUBLIC_` or `VITE_` prefixes. Rotate credentials immediately after suspected exposure. OpenAI Responses requests explicitly use `store: false`; Pocket Bullseye retains deterministic fallback output when AI is unavailable.
 
 <!-- Pocket Bullseye launch-gate verification marker: documentation validated on 2026-08-20. -->
+# Pending scanner-test ledger configuration
+
+The cumulative spending hold remains unconditional. None of these settings
+authorises a billable call or replaces reconciled historical dollar evidence.
+Do not enable a real ledger until the owner separately approves exact spending.
+
+- `POCKET_TEST_SPEND_LEDGER_KEY`: reconciled shared ledger, never per-process allowance.
+- `POCKET_TEST_OPENAI_PROJECT_ID`: verified billing project, supplied to the provider SDK and checked by the ledger.
+- `POCKET_TEST_SPEND_APPROVAL_REF`: separate exact owner approval recorded in that ledger.
+- `POCKET_TEST_MODEL_COST_BOUNDS`: JSON object by exact model with `maxOutputTokens`, `maxCostMicroUsd`, and `fullContextCostBoundEvidenceRef`. Bounds must conservatively cover the full allowed model input context plus maximum output, using verified current prices, including image input. No guessed dollar estimates.
+
+Each main/precision/rescue/context provider call reserves its own amount and
+claims dispatch atomically. Receipts persist request/response IDs, model and
+usage without chart content. Unsettled or failed calls stay counted; token
+usage is not substituted for authoritative charged dollars.

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
 import { isCumulativeTestSpendHeld } from "./spending-hold";
+import { withPocketTestSpendScope } from "./provider-spend";
 import { mayRunLiveTorture } from "./authorization";
 import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis, summarizeTortureMeasurements } from "../../../../tests/support/pocket-image-torture";
 
@@ -69,7 +70,7 @@ export async function GET(request:Request){
     let body: Analysis;
     const startedAt = performance.now();
     try {
-      response=await analyse(req);
+      response=await withPocketTestSpendScope(sample.id, async () => await analyse(req));
       const payload = await response.json();
       body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : payload as Analysis;
     } catch (error) {

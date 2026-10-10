@@ -1,4 +1,5 @@
 import { isCumulativeTestSpendHeld } from "../app/api/pocket/torture/spending-hold.ts";
+import { withPocketTestSpendScope } from "../app/api/pocket/torture/provider-spend.ts";
 import { POST } from "../app/api/pocket/analyse/route.ts";
 import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis, summarizeTortureMeasurements } from "../tests/support/pocket-image-torture.ts";
 
@@ -43,7 +44,7 @@ for(const sample of selected){
   let payload: {analysis?:unknown;error?:string};
   let body: Analysis;
   try {
-    response=await POST(req);
+    response=await withPocketTestSpendScope(sample.id, async () => await POST(req));
     payload=await response.json() as {analysis?:unknown;error?:string};
     body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : {};
   } catch (error) {
