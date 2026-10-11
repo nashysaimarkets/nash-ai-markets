@@ -6,7 +6,7 @@ test("all billed Pocket endpoints reject unauthorized access before reading uplo
   for (const route of ["analyse", "preflight", "levels", "follow-up", "review", "options-wall", "crypto-derivatives"]) {
     const source = await readFile(new URL(`../app/api/pocket/${route}/route.ts`, import.meta.url), "utf8");
     const post = source.slice(source.indexOf("export async function POST"));
-    const guard = post.indexOf("await requirePocketScanAccess()");
+    const guard = post.indexOf("await requirePocketScanAccess(request)");
     assert.ok(guard >= 0, `${route}: missing server entitlement guard`);
     assert.ok(guard < post.indexOf("request.json()"), `${route}: authenticate before processing uploads`);
     assert.ok(guard < post.indexOf("createOpenAIClient("), `${route}: authenticate before provider creation`);
@@ -15,6 +15,17 @@ test("all billed Pocket endpoints reject unauthorized access before reading uplo
 });
 
 import { checkPocketScanAccess } from "../app/lib/server/pocket-scan-access.ts";
+
+test("Apple entitlement permits only a verified identity, leaves Stripe unchanged and fails closed on verification errors", async () => {
+  const member = { id: "7a9d6268-93d5-43ec-bd05-15f074e35bcc", email: "m@example.invalid", email_confirmed_at: "2026-01-01" };
+  let calls = 0;
+  assert.equal(await checkPocketScanAccess({ authenticate: async () => member, hasSubscription: async () => false, hasAppleSubscription: async id => { calls++; assert.equal(id, member.id); return true; } }), null);
+  assert.equal(calls, 1);
+  for (const identity of [null, { ...member, email_confirmed_at: undefined }]) assert.equal((await checkPocketScanAccess({ authenticate: async () => identity, hasSubscription: async () => false, hasAppleSubscription: async () => { throw new Error("anonymous must not reach Apple"); } }))?.status, 401);
+  assert.equal(await checkPocketScanAccess({ authenticate: async () => member, hasSubscription: async () => true, hasAppleSubscription: async () => { throw new Error("web subscribers do not need Apple"); } }), null);
+  assert.equal((await checkPocketScanAccess({ authenticate: async () => member, hasSubscription: async () => false, hasAppleSubscription: async () => false }))?.status, 403);
+  assert.equal((await checkPocketScanAccess({ authenticate: async () => member, hasSubscription: async () => false, hasAppleSubscription: async () => { throw new Error("offline"); } }))?.status, 503);
+});
 
 test("anonymous and unverified users never query subscriptions or dispatch", async () => {
   for (const user of [null, {}, { email: "test@example.invalid" }]) {

@@ -1,4 +1,5 @@
 "use client";
+import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { canLockChartFacts, type ChartConfirmation, type ChartPreflight, type PreflightStatus } from "./chart-preflight";
@@ -44,7 +45,7 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
     statusHandler.current("CHECKING"); confirmationHandler.current(null);
     const timer = window.setTimeout(async () => {
       try {
-        const response = await fetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
+        const response = await pocketAuthenticatedFetch("/api/pocket/preflight", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, contextImage: contextImage || "" }), signal: controller.signal });
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
         if (!active) return;
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");

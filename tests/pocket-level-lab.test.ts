@@ -14,7 +14,7 @@ test("main scanner rail keeps liquidity first-class without a Signal Pulse comma
 test("Level Lab exposes a separate photo and levels-only rescan", () => {
   assert.match(client, /INDEPENDENT LEVEL LAB/);
   assert.match(client, /RESCAN LEVELS ONLY/);
-  assert.match(client, /fetch\("\/api\/pocket\/levels"/);
+  assert.match(client, /pocketAuthenticatedFetch\("\/api\/pocket\/levels"/);
 });
 
 test("Level Lab merges only price-map fields into the existing analysis", () => {

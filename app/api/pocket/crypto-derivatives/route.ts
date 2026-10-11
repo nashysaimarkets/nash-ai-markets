@@ -12,7 +12,7 @@ const schema = { type: "object", additionalProperties: false, properties: {
 }, required: ["readable", ...keys] } as const;
 
 export async function POST(request: Request) {
-  const accessError = await requirePocketScanAccess();
+  const accessError = await requirePocketScanAccess(request);
   if (accessError) return accessError;
   let image: unknown, ticker: unknown, structure: unknown;
   try { ({ image, ticker, structure } = await request.json()); }

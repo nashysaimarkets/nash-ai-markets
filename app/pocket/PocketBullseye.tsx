@@ -1,4 +1,7 @@
 "use client";
+import OriginalChartEvidence from "./OriginalChartEvidence";
+import NativeSubscriptionControls from "./NativeSubscriptionControls";
+import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -1019,7 +1022,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     try {
       const precisionImage = await createPrecisionReadingCrop(levelLabImage);
       if (!isCurrent()) return;
-      const response = await fetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage }) });
+      const response = await pocketAuthenticatedFetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage }) });
       const payload = await response.json() as { levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory">; error?: string };
       if (!isCurrent()) return;
       if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
@@ -1137,7 +1140,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         selectedContext ? createPrecisionReadingCrop(selectedContext) : Promise.resolve(null),
       ]);
       requireCurrentChart();
-      const response = await fetch("/api/pocket/analyse", {
+      const response = await pocketAuthenticatedFetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention, chartConfirmation, accuracyCorrection }),
@@ -1179,7 +1182,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       }
       analysisRequestActive.current = true;
       setBusy(true);
-      const response = await fetch("/api/pocket/review", {
+      const response = await pocketAuthenticatedFetch("/api/pocket/review", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis }),
@@ -1204,7 +1207,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     followUpRequestActive.current = true;
     setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
     try {
-      const response = await fetch("/api/pocket/follow-up", {
+      const response = await pocketAuthenticatedFetch("/api/pocket/follow-up", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ analysis, question: question.trim() }),
       });
@@ -1322,7 +1325,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return { total, average, patience, commonRisk: top(risks, "NO REPEATED RISK"), dominant: top(instruments, "NO PATTERN YET") };
   })();
 
-  const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
+  const sourceChart = (focus = false) => image ? <OriginalChartEvidence image={image} report={analysis} identityConfirmed={Boolean(chartConfirmation) && preflightAllowsAnalysis(preflightStatus) && (!levelLabImage || levelLabImage === image)} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
 
   if (review && reviewTarget) {
@@ -1468,6 +1471,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
         <div className="psHeaderActions"><span>BULLSEYE ENGINE · PRIVATE BETA</span></div>
       </header>
+      <NativeSubscriptionControls />
       <section className="psScanner">
         <section className="psLaunchHero">
           <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "PRIVATE PRE-TRADE AUDIT"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>

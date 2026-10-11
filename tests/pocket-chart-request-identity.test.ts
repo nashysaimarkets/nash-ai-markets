@@ -66,7 +66,7 @@ test("actual analysis request stops before provider dispatch if chart changes du
     image: "A", analysisRequestActive: { current: false }, analysisController: { current: null }, analysisEpoch, setBusy: () => {}, intention: "UNSURE",
     preflightStatus: "LOCKED", preflightAllowsAnalysis: () => true, chartConfirmation: { instrument: "US 500", timeframe: "5m", currentPrice: "100", contextMatch: "NOT_PROVIDED" }, accuracyCorrection: null, analysisCacheKey: async () => "A", analysisCacheGet: async () => null,
     hasVerifiedStructuralLevel: () => false, createPrecisionReadingCrop: () => { started.resolve("started"); return crop.promise; },
-    fetch: async () => { calls += 1; throw new Error("must not dispatch"); },
+    pocketAuthenticatedFetch: async () => { calls += 1; throw new Error("must not dispatch"); },
   };
   const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn requestPocketAnalysis;");
   const requestAnalysis = await run(...Object.values(bindings));
@@ -89,7 +89,7 @@ test("actual preflight effect ignores a body resolving after cleanup even if fet
   const bindings = {
     image: "A", contextImage: null, statusHandler: { current: record }, confirmationHandler: { current: record },
     window: { setTimeout: (next: () => Promise<void>) => { callback = next; return 1; }, clearTimeout: () => {} },
-    fetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await body.promise; return { preflight: { status: "READY" } }; } }),
+    pocketAuthenticatedFetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await body.promise; return { preflight: { status: "READY" } }; } }),
     setResult: record, setInstrument: record, setTimeframe: record, setCurrentPrice: record, setStatus: record, setMessage: record,
   };
   const effect = stripTypeScriptTypes("function effect() {" + panel.slice(start, end) + "\n}");
@@ -144,7 +144,7 @@ test("actual independent level scan cannot overwrite a replacement chart", async
   const bindings = {
     analysis: {}, levelLabImage: "A", levelLabRequestActive: { current: false }, analysisEpoch, levelLabUploadEpoch,
     setLevelLabStatus: noop, setLevelLabError: noop, setBattlefieldChart: noop, createPrecisionReadingCrop: async () => "crop",
-    fetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await pending.promise; return { levels: { levels: [] } }; } }),
+    pocketAuthenticatedFetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await pending.promise; return { levels: { levels: [] } }; } }),
     setAnalysis: (value: unknown) => updates.push(value), clampY: (value: number) => value,
   };
   const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn rescanLevelsOnly;");

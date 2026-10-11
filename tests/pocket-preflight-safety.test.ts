@@ -43,7 +43,7 @@ test('direct analysis dispatch cannot bypass an unavailable preflight', async ()
   const client = await readFile(new URL('../app/pocket/PocketBullseye.tsx', import.meta.url), 'utf8');
   const source = client.slice(client.indexOf('  async function requestPocketAnalysis('), client.indexOf('  async function analyse('));
   let calls = 0;
-  const bindings = { image: 'A', analysisRequestActive: { current: false }, analysisEpoch: { current: { snapshot: () => 0, isCurrent: () => true } }, setBusy: () => {}, intention: 'UNSURE', preflightStatus: 'UNAVAILABLE', preflightAllowsAnalysis: guards.preflightAllowsAnalysis, chartConfirmation: null, accuracyCorrection: null, analysisCacheKey: async () => 'A', analysisCacheGet: async () => null, hasVerifiedStructuralLevel: () => false, createPrecisionReadingCrop: async () => null, fetch: async () => { calls++; throw new Error('provider dispatched'); } };
+  const bindings = { image: 'A', analysisRequestActive: { current: false }, analysisEpoch: { current: { snapshot: () => 0, isCurrent: () => true } }, setBusy: () => {}, intention: 'UNSURE', preflightStatus: 'UNAVAILABLE', preflightAllowsAnalysis: guards.preflightAllowsAnalysis, chartConfirmation: null, accuracyCorrection: null, analysisCacheKey: async () => 'A', analysisCacheGet: async () => null, hasVerifiedStructuralLevel: () => false, createPrecisionReadingCrop: async () => null, pocketAuthenticatedFetch: async () => { calls++; throw new Error('provider dispatched'); } };
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   const request = await new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + '\nreturn requestPocketAnalysis;')(...Object.values(bindings));
   await assert.rejects(request(null));

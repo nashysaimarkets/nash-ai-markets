@@ -29,7 +29,7 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
-  const accessError = await requirePocketScanAccess();
+  const accessError = await requirePocketScanAccess(request);
   if (accessError) return accessError;
   let image = "";
   let contextImage = "";

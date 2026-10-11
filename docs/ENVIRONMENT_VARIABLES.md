@@ -14,7 +14,20 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `POCKET_TORTURE_LIVE_ENABLED` — preview-only benchmark opt-in; only the exact string `true` allows attempting the billed route. Leave unset/false until authoritative $2 spending accounting is verified.
 - `POCKET_TORTURE_LIVE_TOKEN` — server-only random secret of at least 32 characters. A preview live benchmark must supply the exact secret in `x-pocket-torture-token`. Never place it in client code, URLs or logs. Leave unset unless a billed test is explicitly authorised and cost-bounded.
 
-## Supabase
+## Apple server verification and native pin
+
+- `POCKET_APPLE_ENVIRONMENT` — server only; exactly `Production` or `Sandbox`. Sandbox is rejected on Vercel production. No automatic environment fallback.
+- `POCKET_APPLE_SIGNING_KEY` — server-only App Store In-App Purchase private signing key; never a public environment variable.
+- `POCKET_APPLE_KEY_ID` — server-only key identifier matching the In-App Purchase key.
+- `POCKET_APPLE_ISSUER_ID` — server-only App Store Connect issuer identifier.
+- `POCKET_APPLE_ROOT_CERTIFICATES_BASE64` — server-only JSON array of base64 DER Apple root certificates obtained from Apple's PKI distribution and independently validated. Never accept certificate roots from a client.
+- `POCKET_APPLE_APP_ID` — numeric App Store application ID for the verified bundle (existing Pocket listing: 6806004581).
+- `CAPACITOR_SERVER_URL` — immutable verified HTTPS deployment URL ending in `/pocket`; production and mutable branch aliases are rejected.
+- `CAPACITOR_SERVER_REVISION` — exact 40-character commit served by that immutable URL. Native verification must match it before sync/build.
+
+Apple configuration is not activated by source integration. Missing configuration or failed signature/status checks deny access. Purchases lacking an account token must not be silently reassigned; verified legacy ownership migration and server-controlled first-free consumption remain release blockers.
+
+## Supabase credentials
 - `NEXT_PUBLIC_SUPABASE_URL` — public project URL.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — public publishable key.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — temporary legacy public fallback.
