@@ -20,6 +20,9 @@ begin
  assert (select preflights=0 from private.pocket_first_free_accounts where user_id=u),'release does not consume';
  r:=public.reserve_pocket_first_free(u,h,'preflight',img,k); lease:=(r->>'lease')::uuid;
  assert public.claim_pocket_first_free(u,h,'preflight',img,k,lease)->>'ok'='true','single dispatch';
+ update private.pocket_first_free_requests set dispatched_at=now()-interval '10 minutes' where user_id=u and phase='preflight' and request_key=k;
+ assert public.reserve_pocket_first_free(u,h,'preflight',img,k)->>'status'='interrupted','crashed dispatch cannot stay busy forever';
+ update private.pocket_first_free_requests set dispatched_at=now() where user_id=u and phase='preflight' and request_key=k;
  assert public.claim_pocket_first_free(u,h,'preflight',img,k,lease)->>'ok'='false','duplicate dispatch denied';
  assert public.finish_pocket_first_free(u,h,'preflight',img,k,lease,false,400,'{}')->>'ok'='false','post-dispatch cannot release';
  assert public.finish_pocket_first_free(u,h,'preflight',img,k,lease,true,200,'{"preflight":{"status":"READY","priceScaleVisible":true,"candlesReadable":true,"sameInstrument":null}}')->>'ok'='true';

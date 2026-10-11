@@ -73,3 +73,10 @@ test("free upload size and malformed JSON are rejected before reserving allowanc
     assert.equal(db.calls.length,0);
   }
 });
+test("interrupted admitted requests are terminal and never dispatch again", async () => {
+  const db=ledger({allowed:false,status:'interrupted'} as never);
+  const response=await executePocketFirstFreeRequest(request(),user,db,async()=>{throw new Error('must not run');});
+  assert.equal(response.status,503);
+  assert.equal((await response.json()).code,'POCKET_FREE_INTERRUPTED');
+  assert.equal(db.calls.length,1);
+});

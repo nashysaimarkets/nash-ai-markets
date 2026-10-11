@@ -74,6 +74,7 @@ export async function executePocketFirstFreeRequest(request: Request, user: Firs
     const reserved = await rpc(client, "reserve_pocket_first_free", args);
     if (reserved.status === "replay" && reserved.response_status === 200 && reserved.response_body && typeof reserved.response_body === "object") return Response.json(reserved.response_body, { headers: { "Cache-Control": "private, no-store", "x-pocket-free-replay": "1" } });
     if (reserved.allowed !== true || reserved.status !== "reserved" || typeof reserved.lease !== "string" || !reserved.lease) {
+      if (reserved.status === "interrupted") return Response.json({ error: "Your free scan was interrupted after admission. It cannot be run again for free. If its result arrives, retrying this exact upload can recover it.", code: "POCKET_FREE_INTERRUPTED" }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
       const busy = reserved.status === "busy";
       return Response.json({ error: busy ? "Your free scan is still running. Retry shortly to recover its result." : reserved.status === "preflight_required" ? "Complete a readable preflight for this exact chart before your free analysis." : "Your free allowance is unavailable or already used. A subscription is required for more scans.", code: busy ? "POCKET_FREE_BUSY" : "POCKET_FREE_REQUIRED" }, { status: busy ? 409 : 403, headers: { "Cache-Control": "private, no-store", ...(busy ? { "Retry-After": "5" } : {}) } });
     }
