@@ -124,3 +124,5 @@ usage without chart content. Unsettled or failed calls stay counted; token
 usage is not substituted for authoritative charged dollars.
 
 Pocket scan entitlement rollout requires the `pocket_scan_entitlements` migration and authoritative Stripe backfill. Founding awards and terminal Pro/Elite tiers are not Pocket access. Native Apple subscriptions and the advertised first free iPhone analysis require their own verified server entitlement integration before distribution. Do not deploy this guard to production as a stand-alone migration-free change.
+
+- `POCKET_FIRST_FREE_ENABLED` — server-only trial routing switch, default off. Also requires the private durable policy to be enabled in the same verified environment. Release hold prevents production activation. Allows at most three preflights and one analysis per verified account/email; no client/native flag grants access.

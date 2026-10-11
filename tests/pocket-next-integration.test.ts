@@ -41,3 +41,9 @@ test("actual redesign handler blocks unconfirmed charts and abandons cancelled c
   epoch.invalidate(); cropResolve(null); await pending;
   assert.equal(dispatches, 0); assert.equal(bindings.requestActive.current, false);
 });
+
+test("professional preview exposes guarded existing cross-check and native subscription tools without dispatching them in demos", async () => {
+  const source = await readFile(new URL("../app/pocket-next/PocketNext.tsx", import.meta.url), "utf8");
+  for (const component of ["OptionsWallCheck", "CryptoDerivativesCheck", "PersonalRiskDesk", "NativeSubscriptionControls"]) assert.match(source, new RegExp(`<${component}\\b`));
+  assert.match(source, /!demoMode && !deviceOnly/);
+});

@@ -1,3 +1,4 @@
+import { withPocketFirstFreeRequest } from "../../../lib/server/pocket-first-free";
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
@@ -232,6 +233,7 @@ const precisionOverlaySchema = {
 export async function POST(request: Request) {
   const accessError = await requirePocketScanAccess(request);
   if (accessError) return accessError;
+  return withPocketFirstFreeRequest(request, async () => {
   let image = "";
   let intention: typeof INTENTIONS[number] = "UNSURE";
   let contextImage = "";
@@ -504,4 +506,5 @@ export async function POST(request: Request) {
         ? "The analysis report was interrupted before it finished. Your chart is still loaded—please retry once."
         : "Bullseye could not verify enough chart detail safely. Please use a clearer screenshot." }, { status: 503 });
   }
+  });
 }

@@ -37,7 +37,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                 guard case .verified(let transaction) = result,
                       transaction.productID == self.monthlyProductId else { continue }
                 let active = await self.activeEntitlement(productId: self.monthlyProductId, completedTransaction: transaction)
-                let payload = await self.statusPayload(productId: self.monthlyProductId, product: self.cachedProduct, active: active)
+                let payload = await self.statusPayload(productId: self.monthlyProductId, product: self.cachedProduct, active: active, completedVerification: result)
                 if active != nil || !self.storeActionRunning {
                     self.notifyListeners("accessChanged", data: payload, retainUntilConsumed: true)
                 }
@@ -112,7 +112,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
                     }
                     if let active = await activeEntitlement(productId: productId, completedTransaction: transaction) {
                         // Deliver access before acknowledging the transaction.
-                        call.resolve(await statusPayload(productId: productId, product: product, active: active))
+                        call.resolve(await statusPayload(productId: productId, product: product, active: active, completedVerification: verification))
                         await transaction.finish()
                         logger.info("Purchase verified and access delivered")
                     } else {
@@ -316,7 +316,7 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     @MainActor
-    private func statusPayload(productId: String, product: Product?, active: Transaction?) async -> [String: Any] {
+    private func statusPayload(productId: String, product: Product?, active: Transaction?, completedVerification: VerificationResult<Transaction>? = nil) async -> [String: Any] {
         var payload: [String: Any] = [
             "isNative": true,
             "entitled": active != nil,
@@ -335,6 +335,13 @@ public class PocketStoreKitPlugin: CAPPlugin, CAPBridgedPlugin {
         if let transaction = active {
             payload["transactionId"] = String(transaction.id)
             payload["originalTransactionId"] = String(transaction.originalID)
+            // Fresh purchase/update evidence must not wait for the entitlement
+            // stream to catch up. Only forward the verification for this exact ID.
+            if let completedVerification,
+               case .verified(let completed) = completedVerification,
+               completed.id == transaction.id {
+                payload["signedTransactionInfo"] = completedVerification.jwsRepresentation
+            }
             for await result in Transaction.currentEntitlements {
                 if case .verified(let current) = result, current.id == transaction.id {
                     payload["signedTransactionInfo"] = result.jwsRepresentation

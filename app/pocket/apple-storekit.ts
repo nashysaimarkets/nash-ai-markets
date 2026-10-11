@@ -1,5 +1,6 @@
 "use client";
 import { Capacitor, registerPlugin } from "@capacitor/core";
+import type { PluginListenerHandle } from "@capacitor/core";
 
 export const APPLE_MONTHLY_PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly";
 export type AppleAccessStatus = { isNative: boolean; entitled: boolean; freeUseConsumed: boolean; productId: string; displayName: string; displayPrice: string; productAvailable?: boolean; signedTransactionInfo?: string };
@@ -7,6 +8,7 @@ type NativePlugin = {
   getStatus(options: { productId: string }): Promise<AppleAccessStatus>;
   purchase(options: { productId: string; appAccountToken: string }): Promise<AppleAccessStatus>;
   restore(options: { productId: string }): Promise<AppleAccessStatus>;
+  addListener(event: "accessChanged", listener: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle>;
 };
 const native = registerPlugin<NativePlugin>("PocketStoreKit");
 export const isAppleNativeApp = () => Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
@@ -40,6 +42,23 @@ export async function purchaseAppleSubscription(): Promise<AppleAccessStatus> {
 export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
   if (!isAppleNativeApp()) return webStatus;
   return verifyStatus(await native.restore({ productId: APPLE_MONTHLY_PRODUCT_ID }));
+}
+
+/** Pending/out-of-app purchases arrive through StoreKit updates. Local events
+ * immediately clear UI access, then independently refresh server verification. */
+export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle> {
+  let revision = 0;
+  let active = true;
+  if (!isAppleNativeApp()) return { remove: async () => { active = false; } };
+  const listener = await native.addListener("accessChanged", status => {
+    const current = ++revision;
+    if (!active) return;
+    onStatus({ ...status, entitled: false });
+    void verifyStatus(status).then(verified => {
+      if (active && current === revision) onStatus(verified);
+    }).catch(() => { /* The cleared status remains fail-closed on outages. */ });
+  });
+  return { remove: async () => { active = false; revision++; await listener.remove(); } };
 }
 
 /** Every billed route rechecks this evidence server-side, including restoration,

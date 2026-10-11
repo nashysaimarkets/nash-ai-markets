@@ -593,3 +593,16 @@
     font-size:25px;
   }
 }
+
+.pnToolDetails{border:1px solid var(--pn-line);border-radius:10px;margin:12px 0;padding:12px;background:var(--pn-paper2)}
+.pnToolDetails summary{cursor:pointer;min-height:44px;padding:10px 0;font-weight:700}
+.pnApp .psRiskDesk header,.pnApp .psPreflight header{display:flex;justify-content:space-between;gap:12px;padding:10px 0}
+.pnApp .psRiskDesk small,.pnApp .psRiskDesk span{display:block;font-size:12px;line-height:1.5}
+.pnApp .psRiskDesk form{display:grid;gap:12px;margin:12px 0}
+.pnApp .psRiskDesk label>div{display:flex;gap:8px;align-items:center}
+.pnApp .psRiskDesk input,.pnApp .psRiskDesk select{max-width:100%;min-width:0;min-height:44px;padding:10px;border:1px solid var(--pn-line);background:var(--pn-paper2);color:var(--pn-ink);border-radius:6px}
+.pnApp .psRiskDesk input{width:100%}
+.pnApp .psRiskDesk button,.pnApp .psPreflight button{min-height:44px;padding:10px 14px;border:1px solid var(--pn-line);border-radius:6px;background:var(--pn-ink);color:var(--pn-paper)}
+.pnApp .psRiskReadout{display:grid;gap:10px;margin:12px 0}
+.pnApp .psRiskReadout strong{font-size:24px}
+.pnApp .psRiskDesk footer{font-size:12px;line-height:1.5}

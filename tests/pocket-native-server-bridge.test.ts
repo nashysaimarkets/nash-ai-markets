@@ -22,3 +22,21 @@ test("native billed requests carry signed evidence without accepting device enti
     assert.match(source, /pocketAuthenticatedFetch\(/, `${path} must pass signed proof to its billed route`);
   }
 });
+
+test("fresh purchase and subscription updates deliver their exact verified JWS before the entitlement stream catches up", async () => {
+  const source = await readFile(new URL("../ios/App/App/PocketStoreKitPlugin.swift", import.meta.url), "utf8");
+  const purchase = source.slice(source.indexOf("case .success(let verification):"), source.indexOf("case .pending:"));
+  assert.match(purchase, /completedVerification: verification/);
+  const updates = source.slice(source.indexOf("for await result in Transaction.updates"), source.indexOf("deinit"));
+  assert.match(updates, /completedVerification: result/);
+  assert.match(source, /payload\["signedTransactionInfo"\] = completedVerification.jwsRepresentation/);
+});
+
+test("native accessChanged notifications are server verified and listener lifecycle is wired into customer controls", async () => {
+  const bridge = await readFile(new URL("../app/pocket/apple-storekit.ts", import.meta.url), "utf8");
+  assert.match(bridge, /addListener\("accessChanged"/);
+  assert.match(bridge, /subscribeAppleAccessChanges/);
+  const controls = await readFile(new URL("../app/pocket/NativeSubscriptionControls.tsx", import.meta.url), "utf8");
+  assert.match(controls, /subscribeAppleAccessChanges/);
+  assert.match(controls, /listener\?\.remove\(\)/);
+});

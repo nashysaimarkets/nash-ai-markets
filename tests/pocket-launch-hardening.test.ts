@@ -293,8 +293,10 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /<BullseyePlan analysis=/);
   assert.match(client, /PocketCommandDeck/);
   assert.match(client, /POCKET BULLSEYE 2\.0/);
-  assert.match(client, /PERSONAL RISK DESK/);
-  assert.match(client, /pocket-risk-desk-v1/);
+  const riskDesk = await readFile(new URL("../app/pocket/PersonalRiskDesk.tsx", import.meta.url), "utf8");
+  assert.match(client, /PersonalRiskDesk/);
+  assert.match(riskDesk, /PERSONAL RISK DESK/);
+  assert.match(riskDesk, /pocket-risk-desk-v1/);
   assert.match(client, /EVENT RISK CONTEXT/);
   assert.match(client, /psResultSupportInput/);
   assert.match(client, /could not be verified safely/);
@@ -364,7 +366,8 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(commandStyles, /\.psXRayCanvas/);
   assert.match(commandStyles, /\.psXRayPatterns/);
   assert.match(client, /pattern\.geometry/);
-  assert.match(client, /psXRayPatternLabels/);
+  assert.match(client, /OriginalChartEvidence[^>]+layer="patterns"/);
+  assert.doesNotMatch(client, /psXRayPatternLabels/);
   assert.match(client, /1 FOCUSED TOOL/);
   assert.match(client, /drawablePatterns/);
   assert.match(client, /visualAreas/);

@@ -5,6 +5,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DeviceLocalScan, DevicePlotBounds } from "./device-geometry";
 import ChartPreflightPanel from "../pocket/ChartPreflightPanel";
+import NativeSubscriptionControls from "../pocket/NativeSubscriptionControls";
+import PersonalRiskDesk from "../pocket/PersonalRiskDesk";
+import OptionsWallCheck from "../pocket/OptionsWallCheck";
+import CryptoDerivativesCheck from "../pocket/CryptoDerivativesCheck";
 import OriginalChartEvidence from "../pocket/OriginalChartEvidence";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "../pocket/chart-preflight";
 import { createChartRequestEpoch } from "../pocket/chart-request-identity";
@@ -16,7 +20,7 @@ type Tab = "overview" | "levels" | "structure" | "patterns" | "liquidity" | "ris
 type Level = { kind: "support" | "resistance" | "trend" | "pivot" | "zone" | "gap"; label: string; price: string; x: number; y: number; x2: number; y2: number };
 type Pattern = { name: string; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { points: { x: number; y: number }[]; labelX: number; labelY: number } };
 type LiquidityZone = { side: "BUY_SIDE" | "SELL_SIDE"; basis: "EQUAL_HIGHS" | "EQUAL_LOWS" | "PRIOR_SWING_HIGH" | "PRIOR_SWING_LOW" | "RANGE_HIGH" | "RANGE_LOW"; price: string; x: number; x2: number; y: number };
-type LiquidityRead = { state: "VERIFIED" | "PARTIAL" | "NONE"; event: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; confidence: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation: string; invalidation: string; zones: LiquidityZone[] };
+type LiquidityRead = { observations?: {side:string;x:number;y:number;confidence:string}[]; state: "VERIFIED" | "PARTIAL" | "NONE"; event: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; confidence: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation: string; invalidation: string; zones: LiquidityZone[] };
 type Analysis = {
   direction: Direction;
   confidence: "LOW" | "MEDIUM" | "HIGH";
@@ -451,6 +455,7 @@ export default function PocketNext() {
           <div>{(["LONG","UNSURE","SHORT"] as Intention[]).map(v=><button key={v} type="button" data-active={intention===v} onClick={()=>{invalidate();setIntention(v);}}>{v==="UNSURE"?"NO BIAS":v}</button>)}</div>
         </div>
 
+        <NativeSubscriptionControls />
         <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>setPrivacy(e.target.checked)}/><span><strong>Privacy check</strong>I removed account number, balance and personal notifications.</span></label>
 
         <div className="pnChartSwitcher">{charts.map((slot, index) => slot.image ? <button key={index} type="button" onClick={() => setActiveChart(index)} aria-pressed={activeChart === index}>CHART {index + 1}</button> : null)}</div>
@@ -520,7 +525,7 @@ export default function PocketNext() {
         </div>
 
         <div className="pnChart" ref={chartRef} data-focus={chartFocus ? "true" : "false"}>
-          {demoMode ? <img ref={chartImageRef} src={image ?? ""} alt="Synthetic interface demo chart"/> : <OriginalChartEvidence image={image ?? ""} report={analysis} identityConfirmed={Boolean(activeSlot.confirmation) && preflightAllowsAnalysis(activeSlot.status)} /> }
+          {demoMode ? <img ref={chartImageRef} src={image ?? ""} alt="Synthetic interface demo chart"/> : <OriginalChartEvidence layer={active === "patterns" ? "patterns" : active === "liquidity" ? "liquidity" : "levels"} image={image ?? ""} report={analysis} identityConfirmed={Boolean(activeSlot.confirmation) && preflightAllowsAnalysis(activeSlot.status)} /> }
           <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
           {demoMode && <svg style={overlayStyle} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
             <defs>
@@ -573,6 +578,7 @@ export default function PocketNext() {
         </> : null}
 
         {active==="levels" ? <>
+          {!demoMode && !deviceOnly ? <details className="pnToolDetails" open><summary>Options Wall Cross-check</summary><OptionsWallCheck key={`options-${activeChart}-${activeSlot.revision}`} ticker={analysis.ticker} levels={analysis.levels} /></details> : null}
           <div className="pnDecisionLabel">VERIFIED PRICE REFERENCES</div>
           <h2>{levels.length ? levels.length+" structural levels" : "Precision held"}</h2>
           <p>{analysis.levelStory}</p>
@@ -594,6 +600,7 @@ export default function PocketNext() {
         </> : null}
 
         {active==="liquidity" ? <>
+          {!demoMode && !deviceOnly ? <CryptoDerivativesCheck key={`crypto-${activeChart}-${activeSlot.revision}`} ticker={analysis.ticker !== "UNKNOWN" ? analysis.ticker : analysis.instrument} structure={analysis.marketStructure} /> : null}
           <div className="pnDecisionLabel">LIQUIDITY GUARD</div>
           <h2>{liquidity?.state==="VERIFIED" ? liquidity.event : liquidity?.state==="PARTIAL" ? "Liquidity references" : "No verified event"}</h2>
           <p>{liquidity?.evidence || "Pocket does not infer hidden orders or stop placement from ordinary price noise."}</p>
@@ -601,6 +608,7 @@ export default function PocketNext() {
         </> : null}
 
         {active==="risk" ? <>
+          <details className="pnToolDetails" open><summary>Personal risk calculator</summary><PersonalRiskDesk /></details>
           <div className="pnDecisionLabel">RISK & DISCIPLINE</div>
           {deviceOnly ? <>
             <h2>AI risk judgement not run</h2>

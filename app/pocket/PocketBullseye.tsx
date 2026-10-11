@@ -9,7 +9,7 @@ import { pocketAuthenticatedFetch } from "./apple-storekit";
 import { ChangeEvent, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
-import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
+import PersonalRiskDesk from "./PersonalRiskDesk";
 import { calculateRangePosition, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel } from "./pocket-chart-toolkit";
 import ChartPreflightPanel from "./ChartPreflightPanel";
 import { createChartRequestEpoch } from "./chart-request-identity";
@@ -26,7 +26,7 @@ type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
 type Level = { kind: ToolKind; label: string; price: string; x: number; y: number; x2: number; y2: number };
 type FibLevel = { ratio: string; price: string; y: number };
 type LiquidityZone = { side: "BUY_SIDE" | "SELL_SIDE"; basis: "EQUAL_HIGHS" | "EQUAL_LOWS" | "PRIOR_SWING_HIGH" | "PRIOR_SWING_LOW" | "RANGE_HIGH" | "RANGE_LOW"; price: string; x: number; x2: number; y: number };
-type LiquidityRead = { state: "VERIFIED" | "PARTIAL" | "NONE"; event: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; confidence: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation: string; invalidation: string; zones: LiquidityZone[] };
+type LiquidityRead = { observations?: {side:string;x:number;y:number;confidence:string}[]; state: "VERIFIED" | "PARTIAL" | "NONE"; event: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; confidence: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation: string; invalidation: string; zones: LiquidityZone[] };
 type Intention = "LONG" | "SHORT" | "UNSURE";
 type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
 type Analysis = {
@@ -384,11 +384,10 @@ function ScenarioTheatre({ analysis }: { analysis: Analysis; sourceImage: string
 
 type XRayLayer = "patterns" | "levels" | "swings" | "fib" | "rsi";
 
-function ChartXRay({ analysis, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+function ChartXRay({ analysis, sourceImage, identityConfirmed, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; identityConfirmed: boolean; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [layer] = useState<XRayLayer>("patterns");
   const drawablePatterns = analysis.patterns.filter((pattern) => (pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length ?? 0) >= 2);
   const verifiedLevels = analysis.levels.filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind));
-  const drawableLevels = analysis.levels.filter((item) => ["support", "resistance"].includes(item.kind));
   const swingLevels = analysis.levels.filter((item) => item.kind === "pivot");
   const numericLevels: NumericChartLevel[] = verifiedLevels.map((item) => ({ kind: item.kind as NumericChartLevel["kind"], label: item.label, price: numericLevel(item.price)! }));
   const contextLevels: NumericChartLevel[] = (analysis.contextBattlefield?.levels ?? []).filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind)).map((item) => ({ kind: item.kind as NumericChartLevel["kind"], label: item.label, price: numericLevel(item.price)! }));
@@ -400,19 +399,8 @@ function ChartXRay({ analysis, sourceImage, onAddChart, onReanalyse, hasContext,
   const formatPrice = (value: number) => new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(value);
   return <section className="psChartXRay" data-layer={layer}>
     <header><div><span>⌖ BULLSEYE PATTERN X-RAY</span><small>VISIBLE FORMATIONS · DRAWN ON YOUR CHART</small></div><strong>1 FOCUSED TOOL</strong></header>
-    <div className="psXRayCanvas"><img src={sourceImage} alt="Customer's uploaded source chart with verified Bullseye X-Ray overlays"/><div className="psXRayShade"/><div className="psXRayScan" aria-hidden="true"/>
-      {layer === "patterns" ? <><svg className="psXRayPatterns" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected chart pattern overlay">{drawablePatterns.flatMap((pattern, index) => {
-        const points = pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)) ?? [];
-        if (points.length < 2) return [];
-        const path = points.map((point) => `${point.x},${point.y}`).join(" ");
-        return [<g key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><polyline points={path} vectorEffect="non-scaling-stroke"/><circle cx={points[0].x} cy={points[0].y} r="1.2" vectorEffect="non-scaling-stroke"/><circle cx={points.at(-1)!.x} cy={points.at(-1)!.y} r="1.2" vectorEffect="non-scaling-stroke"/></g>];
-      })}</svg><div className="psXRayPatternLabels">{drawablePatterns.map((pattern, index) => { const points = pattern.geometry!.points; const left = Math.min(72, Math.max(3, pattern.geometry?.labelX ?? points[0].x)); const top = Math.min(88, Math.max(8, pattern.geometry?.labelY ?? points[0].y)); return <span key={`${pattern.name}-label-${index}`} data-status={pattern.status} style={{ left: `${left}%`, top: `${top}%` }}>{pattern.name}<b>{pattern.status}</b></span>; })}</div></> : null}
-      {layer === "levels" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Verified chart level overlay">{drawableLevels.map((item, index) => <g key={`${item.kind}-${item.label}-${index}`} data-kind={item.kind}><line x1={item.x} y1={item.y} x2={item.x2} y2={item.y2} vectorEffect="non-scaling-stroke"/><circle cx={item.x} cy={item.y} r="1.15" vectorEffect="non-scaling-stroke"/><text x={Math.min(82, Math.max(3, item.x + 2))} y={Math.min(96, Math.max(5, item.y - 2))}>{numericLevel(item.price) !== null ? item.price : item.label}</text></g>)}</svg> : null}
-      {layer === "swings" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected swing high and low overlay">{swingLevels.map((item, index) => <g key={`${item.label}-${index}`} data-kind="pivot"><circle cx={item.x} cy={item.y} r="2" vectorEffect="non-scaling-stroke"/><line x1={Math.max(1, item.x - 4)} y1={item.y} x2={Math.min(99, item.x + 4)} y2={item.y} vectorEffect="non-scaling-stroke"/><text x={Math.min(78, Math.max(3, item.x + 3))} y={Math.min(96, Math.max(6, item.y - 3))}>{item.label || "SWING"}</text></g>)}</svg> : null}
-      {layer === "fib" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Fibonacci retracement overlay">{analysis.fibLevels.map((item, index) => <g key={`${item.ratio}-${index}`} data-kind="fib"><line x1="5" y1={item.y} x2="95" y2={item.y} vectorEffect="non-scaling-stroke"/><text x="6" y={Math.min(97, Math.max(5, item.y - 1.5))}>{item.ratio} · {item.price}</text></g>)}</svg> : null}
-      {layer === "rsi" ? <div className="psXRayRsi" data-state={rsi === null ? "unverified" : rsi >= 70 ? "hot" : rsi <= 30 ? "cold" : "balanced"}><small>VISIBLE RSI</small><strong>{rsi === null ? "—" : Math.round(rsi)}</strong><span>{rsi === null ? "NOT SHOWN ON CHART" : rsi >= 70 ? "OVERBOUGHT AREA" : rsi <= 30 ? "OVERSOLD AREA" : "MID-RANGE"}</span><i><b style={{ width: `${rsi ?? 50}%` }}/></i></div> : null}
-      <span className="psXRaySource">● SOURCE CHART</span><span className="psXRayLayerTag">{layer.toUpperCase()} LAYER</span></div>
-    <div className="psXRayCounts psPatternOnlyCounts" aria-label="Pattern X-Ray summary"><article data-tone="verified"><strong>{drawablePatterns.filter((item) => item.confidence === "HIGH").length}</strong><span>HIGH-CONFIDENCE</span></article><article data-tone="uncertain"><strong>{drawablePatterns.length}</strong><span>VISIBLE PATTERNS</span></article><article data-tone="missing"><strong>{drawablePatterns.filter((item) => item.status === "FORMING" || item.status === "AMBIGUOUS").length}</strong><span>NEEDS CONFIRMING</span></article></div>
+    <OriginalChartEvidence image={sourceImage} report={analysis} identityConfirmed={identityConfirmed} layer="patterns" />
+    <div className="psXRayCounts psPatternOnlyCounts" aria-label="Pattern X-Ray summary"><article data-tone="verified"><strong>{drawablePatterns.filter((item) => item.confidence === "HIGH").length}</strong><span>HIGH-CONFIDENCE REPORTS</span></article><article data-tone="uncertain"><strong>{drawablePatterns.length}</strong><span>REPORTED CANDIDATES</span></article><article data-tone="missing"><strong>{drawablePatterns.filter((item) => item.status === "FORMING" || item.status === "AMBIGUOUS").length}</strong><span>NEEDS CONFIRMING</span></article></div>
     <article className="psXRayRead" aria-live="polite">
       {layer === "patterns" ? <><small>PATTERN SCAN · VISIBLE GEOMETRY ONLY</small>{drawablePatterns.length ? <div className="psPatternXRayRead">{drawablePatterns.map((pattern) => <section key={`${pattern.name}-${pattern.status}`} data-status={pattern.status}><div><strong>{pattern.name}</strong><b>{pattern.status}</b></div><p>{pattern.evidence}</p><span>CONFIRMS IF · {pattern.confirmation}</span></section>)}</div> : <div className="psToolkitEmpty"><strong>NO CLEAN PATTERN VISIBLE</strong><p>This chart does not contain enough defensible geometry for a gallery pattern.</p><span>Try a wider 30m, 1h or 4h chart showing more candles.</span></div>}</> : null}
       {layer === "levels" ? <><small>SUPPORT + RESISTANCE · VERIFIED PRICE AREAS</small>{rankedLevels.filter((item) => item.kind !== "pivot").length ? <div className="psLevelRanking">{rankedLevels.filter((item) => item.kind !== "pivot").slice(0, 5).map((item, index) => <section key={`${item.kind}-${item.price}`} data-kind={item.kind} data-confidence={item.verification}><i>{index + 1}</i><div><span>{item.kind.toUpperCase()} · {item.verification} VERIFICATION</span><strong>{formatPrice(item.price)}</strong><small>{item.distance === null ? "DISTANCE NEEDS CURRENT PRICE" : `${formatPrice(item.distance)} PTS · ${item.distancePercent!.toFixed(2)}% AWAY`} · {item.reason.replaceAll("_", " ")}</small></div></section>)}</div> : <div className="psToolkitEmpty"><strong>EXACT LEVELS NOT VERIFIED</strong><p>{analysis.levelStory}</p><span>Attach a clearer price-scale chart, then reanalyse.</span></div>}</> : null}
@@ -532,30 +520,14 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
-function LiquidityGuard({ analysis, sourceImage }: { analysis: Analysis; sourceImage: string }) {
+function LiquidityGuard({ analysis, sourceImage, identityConfirmed }: { analysis: Analysis; sourceImage: string; identityConfirmed: boolean }) {
   const read: LiquidityRead = analysis.liquidity ?? { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [] };
-  const zones = read.zones.filter((zone) => Number.isFinite(zone.x) && Number.isFinite(zone.x2) && Number.isFinite(zone.y));
-  const basisLabel = (basis: LiquidityZone["basis"]) => basis.replaceAll("_", " ");
   return <section className="psLiquidityGuard" data-state={read.state}>
     <header>
       <div><span>LIQUIDITY GUARD</span><small>VISIBLE STRUCTURE ONLY · NO ORDER-BOOK CLAIMS</small></div>
       <strong>{read.state === "NONE" ? "NO EVIDENCE" : read.state + " · " + read.confidence}</strong>
     </header>
-    <div className="psLiquidityChart">
-      <img src={sourceImage} alt="Uploaded chart with screenshot-derived liquidity references" />
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Liquidity reference overlay">
-        {zones.map((zone, index) => <g key={zone.side + "-" + zone.basis + "-" + index} data-side={zone.side}>
-          <line x1={zone.x} x2={zone.x2} y1={clampY(zone.y)} y2={clampY(zone.y)} vectorEffect="non-scaling-stroke"/>
-          <circle cx={zone.x} cy={clampY(zone.y)} r="1.1" vectorEffect="non-scaling-stroke"/>
-        </g>)}
-      </svg>
-      <div className="psLiquidityLabels">
-        {zones.map((zone, index) => <span key={zone.basis + "-" + index} data-side={zone.side} style={{ top: clampY(zone.y) + "%", left: Math.max(4, Math.min(76, zone.x)) + "%" }}>
-          <small>{zone.side === "BUY_SIDE" ? "BUY-SIDE REFERENCE" : "SELL-SIDE REFERENCE"}</small>
-          <b>{basisLabel(zone.basis)}{zone.price ? " · " + zone.price : ""}</b>
-        </span>)}
-      </div>
-    </div>
+    <OriginalChartEvidence image={sourceImage} report={analysis} identityConfirmed={identityConfirmed} layer="liquidity" />
     {read.state === "NONE" ? <div className="psLiquidityEmpty"><strong>NO VERIFIED LIQUIDITY STRUCTURE</strong><p>Pocket will not invent stop pools or hidden orders from ordinary price noise.</p></div> :
       <div className="psLiquidityReadout">
         <article><small>VISIBLE EVIDENCE</small><strong>{read.evidence}</strong></article>
@@ -568,59 +540,7 @@ function LiquidityGuard({ analysis, sourceImage }: { analysis: Analysis; sourceI
 }
 
 type CommandDeckMode = "xray" | "patterns" | "liquidity" | "scenarios" | "plan" | "risk";
-type RiskCurrency = "GBP" | "USD" | "EUR";
-type StoredRiskDesk = RiskDeskInput & { currency: RiskCurrency; version: 1 };
-
-const EMPTY_RISK_DESK: RiskDeskInput = { accountValue: "", riskPercent: "0.5", stopDistance: "", valuePerPoint: "" };
-
-function RiskDesk() {
-  const [input, setInput] = useState<RiskDeskInput>(EMPTY_RISK_DESK);
-  const [currency, setCurrency] = useState<RiskCurrency>("GBP");
-  const [status, setStatus] = useState("");
-  const calculation = calculateRiskDesk(input);
-  const money = (value: number | null) => value === null ? "—" : new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const stored = JSON.parse(localStorage.getItem("pocket-risk-desk-v1") ?? "null") as StoredRiskDesk | null;
-        if (!stored || stored.version !== 1) return;
-        setInput({ accountValue: stored.accountValue, riskPercent: stored.riskPercent, stopDistance: stored.stopDistance, valuePerPoint: stored.valuePerPoint });
-        if (["GBP", "USD", "EUR"].includes(stored.currency)) setCurrency(stored.currency);
-      } catch {}
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const update = (key: keyof RiskDeskInput, value: string) => setInput((current) => ({ ...current, [key]: value }));
-  const save = () => {
-    try {
-      const stored: StoredRiskDesk = { ...input, currency, version: 1 };
-      localStorage.setItem("pocket-risk-desk-v1", JSON.stringify(stored));
-      setStatus("Saved privately on this device.");
-    } catch { setStatus("This browser could not save your risk settings."); }
-  };
-
-  return <section className="psRiskDesk">
-    <header><div><span>PERSONAL RISK DESK</span><small>YOUR LIMITS · YOUR DEVICE · NO ORDER CONNECTION</small></div><strong>{calculation.riskPercent !== null && calculation.riskPercent > 2 ? "HIGH LIMIT" : "PRIVATE"}</strong></header>
-    <div className="psRiskDeskBody">
-      <form onSubmit={(event) => { event.preventDefault(); save(); }}>
-        <label><span>ACCOUNT VALUE</span><div><select aria-label="Account currency" value={currency} onChange={(event) => setCurrency(event.target.value as RiskCurrency)}><option value="GBP">GBP</option><option value="USD">USD</option><option value="EUR">EUR</option></select><input aria-label="Account value" inputMode="decimal" value={input.accountValue} onChange={(event) => update("accountValue", event.target.value)} placeholder="10,000" /></div></label>
-        <label><span>MAX RISK PER IDEA</span><div><input aria-label="Maximum risk percent" inputMode="decimal" value={input.riskPercent} onChange={(event) => update("riskPercent", event.target.value)} placeholder="0.5" /><b>%</b></div></label>
-        <label><span>STOP DISTANCE</span><div><input aria-label="Stop distance in points" inputMode="decimal" value={input.stopDistance} onChange={(event) => update("stopDistance", event.target.value)} placeholder="Optional" /><b>PTS</b></div></label>
-        <label><span>VALUE PER POINT / UNIT</span><div><input aria-label="Value per point per unit" inputMode="decimal" value={input.valuePerPoint} onChange={(event) => update("valuePerPoint", event.target.value)} placeholder="Check broker" /><b>{currency}</b></div></label>
-        <button type="submit">SAVE ON THIS DEVICE</button>
-      </form>
-      <div className="psRiskReadout" aria-live="polite">
-        <article><small>MAX CASH RISK</small><strong>{money(calculation.cashRisk)}</strong><span>{calculation.riskPercent === null ? "Add account value and risk %" : `${calculation.riskPercent}% personal ceiling`}</span></article>
-        <article><small>RISK PER UNIT</small><strong>{money(calculation.riskPerUnit)}</strong><span>Stop distance × value per point</span></article>
-        <article data-primary><small>ILLUSTRATIVE MAX UNITS</small><strong>{calculation.units ?? "—"}</strong><span>{calculation.units === 0 ? "The stated unit risk exceeds your cash limit" : "Round down only · never up"}</span></article>
-      </div>
-    </div>
-    {status ? <p className="psRiskStatus" role="status">{status}</p> : null}
-    <footer><b>VERIFY CONTRACT SPECS</b><span>This calculator uses only the figures you enter. It does not know leverage, fees, slippage, margin or your broker’s contract size, and it does not place or recommend a trade.</span></footer>
-  </section>;
-}
+const RiskDesk = PersonalRiskDesk;
 
 function SignalPulse({ analysis }: { analysis: Analysis }) {
   const signal = analysis.patterns[0];
@@ -656,7 +576,7 @@ function ScannerHealth({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
-function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+function PocketCommandDeck({ analysis, sourceImage, identityConfirmed, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; identityConfirmed: boolean; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [mode, setMode] = useState<CommandDeckMode>("xray");
   const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
     { id: "xray", number: "01", label: "CHART X-RAY", detail: "SOURCE AUDIT" },
@@ -671,9 +591,9 @@ function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, on
     <header><div><span>◎ POCKET BULLSEYE 2.0</span><strong>SCAN. UNDERSTAND. PLAN. REVIEW.</strong></div><b>COMMAND DECK</b></header>
     <nav aria-label="Pocket Bullseye command deck">{modes.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
     <div className="psCommandStage" data-mode={mode}>
-      {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
+      {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} identityConfirmed={identityConfirmed} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
-      {mode === "liquidity" ? <LiquidityGuard analysis={analysis} sourceImage={sourceImage} /> : null}
+      {mode === "liquidity" ? <LiquidityGuard analysis={analysis} sourceImage={sourceImage} identityConfirmed={identityConfirmed} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}
@@ -1388,7 +1308,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
           <ScannerHealth analysis={analysis} />
-          <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
+          <PocketCommandDeck identityConfirmed={Boolean(chartConfirmation) && preflightAllowsAnalysis(preflightStatus)} analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "GENERAL MACRO CHECK · CONFIRM BEFORE TRADING"}</small></div>{isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
             <div className="psTodayCalendar"><header><div><span>TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : "CLEAR"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>)}</ol> : <p>No scheduled BLS, BEA or Federal Reserve release was returned for today. Unscheduled news can still move price.</p>}</div>

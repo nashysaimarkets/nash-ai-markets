@@ -21,3 +21,20 @@ RELEASE HOLD. This is an executable test plan, not acceptance evidence. No purch
 When external resources become available, execute the above against one frozen exact SHA. Save redacted transaction/status/build/device receipts with IDs and timestamps, record real provider latency and ledger settlement, and update the master register only for gates actually proven. Never publish raw signed transactions, user tokens, private keys or customer screenshots in PR comments.
 
 Free restart commands: `npm run test:unit`, `npm run typecheck`, `npm run lint`, `npm run test:render`, `npm run simulate:production`, `npm run ops:validate`, `npm run security:scan`, `npm run build`, `npm run test:rendered`. Existing `scripts/verify-pocket-mobile-free.mjs` intercepts billed browser routes and records providerCalls=0; its outputs must remain labelled mock preparation.
+
+## Durable-access successor acceptance additions
+
+Record exact Git SHA, immutable preview/build manifest, native build number, device/iOS, environment and redacted independent evidence per case. Never put signed proofs, secrets or personal receipts into artifacts. All cases below remain NOT RUN on a genuine device.
+
+| Case | Required result | Evidence |
+| --- | --- | --- |
+| First-free cold start, reinstall, account deletion/recreation | No client flag/reset can replenish same verified identity | Redacted ledger transitions + screen capture |
+| Parallel preflight/analysis and exact retry | One accepted phase, busy/replay response, no duplicate paid dispatch | Concurrent server requests + provider receipt reconciliation |
+| Cancellation before vs after admission | Release only before durable claim; no replenishment after claim | Time-aligned request/ledger/provider receipts |
+| Third preflight, fourth attempt, wrong context/image, changed payload | Retake cap and exact-image prerequisite enforced | Redacted requests/status + ledger |
+| Purchase completion before entitlement stream catches up | Immediate signed proof reaches server; UI grants only after verification | Sandbox native/server timeline |
+| Restore and pending/out-of-app update | Current server verification, correct account, stale callbacks ignored | Device event + redacted server verification |
+| Missing account token legacy owner / wrong owner | Independently approved mapping accepts only correct environment/user; no possession claim | Mapping evidence reference + account-bound checks |
+| Signed renewal/grace/refund/revocation events | Correct product/account current statuses; events idempotent, never grant alone | Apple sandbox signed-event digest + refreshed scan status |
+| Original Patterns/Liquidity candles | Independent image endpoints/axis; uncertain or unsupported geometry held | Annotated labelled real corpus with exact source hashes |
+| Redesign tool parity | Risk/purchase/options/crypto plus remaining workflows accepted without bypass | Device workflow matrix and security responses |

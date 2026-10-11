@@ -1,26 +1,38 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { getAppleProductStatus, getAppleAccessStatus, isAppleNativeApp, purchaseAppleSubscription, restoreAppleSubscription, type AppleAccessStatus } from "./apple-storekit";
+import { getAppleProductStatus, getAppleAccessStatus, isAppleNativeApp, purchaseAppleSubscription, restoreAppleSubscription, subscribeAppleAccessChanges, type AppleAccessStatus } from "./apple-storekit";
 
 export default function NativeSubscriptionControls() {
   const [status, setStatus] = useState<AppleAccessStatus | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const actionRunning = useRef(false);
+  const revision = useRef(0);
   useEffect(() => {
     if (!isAppleNativeApp()) return;
     let active = true;
-    void getAppleProductStatus().then(next => { if (active) setStatus(next); return getAppleAccessStatus(); })
-      .then(next => { if (active) setStatus(next); })
+    const initial = ++revision.current;
+    const subscription = subscribeAppleAccessChanges(next => {
+      if (!active) return;
+      revision.current++;
+      setStatus(next);
+    }).catch(error => {
+      if (active) setMessage(error instanceof Error ? error.message : "Apple updates are unavailable. Try Restore Purchases.");
+      return null;
+    });
+    void getAppleProductStatus().then(next => { if (active && initial === revision.current) setStatus(next); return getAppleAccessStatus(); })
+      .then(next => { if (active && initial === revision.current) setStatus(next); })
       .catch(error => { if (active) setMessage(error instanceof Error ? error.message : "Apple access is unavailable."); });
-    return () => { active = false; };
+    return () => { active = false; void subscription.then(listener => listener?.remove()).catch(() => undefined); };
   }, []);
   if (!status) return null;
   async function run(kind: "purchase" | "restore") {
     if (actionRunning.current) return;
     actionRunning.current = true; setBusy(true); setMessage("");
+    const current = ++revision.current;
     try {
       const next = kind === "purchase" ? await purchaseAppleSubscription() : await restoreAppleSubscription();
+      if (current !== revision.current) return;
       setStatus(next);
       setMessage(next.entitled ? "Your Apple subscription is verified for this Pocket account." : "Apple access could not be linked to this Pocket account. Existing purchases may need verified account linking. Contact support before purchasing again.");
     } catch (error) {

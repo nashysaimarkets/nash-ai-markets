@@ -1,10 +1,12 @@
 import { pocketTestProviderProject } from "../../api/pocket/torture/provider-spend.ts";
+import { rememberPocketFirstFreeIdentity } from "./pocket-first-free.ts";
 
-type Identity = { id?: string; email?: string; email_confirmed_at?: string };
+type Identity = { id?: string; email?: string; email_confirmed_at?: string; is_anonymous?: boolean };
 type AccessDependencies = {
   authenticate: () => Promise<Identity | null>;
   hasSubscription: (email: string) => Promise<boolean>;
   hasAppleSubscription?: (userId: string) => Promise<boolean>;
+  hasFirstFreeAccess?: (user: Identity) => Promise<boolean>;
 };
 
 /** A verified identity and current Pocket subscription are both required.
@@ -12,9 +14,10 @@ type AccessDependencies = {
 export async function checkPocketScanAccess(deps: AccessDependencies): Promise<Response | null> {
   try {
     const user = await deps.authenticate();
-    if (!user?.email || !user.email_confirmed_at) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
+    if (!user?.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
     if (await deps.hasSubscription(user.email.trim().toLowerCase())) return null;
     if (user.id && deps.hasAppleSubscription && await deps.hasAppleSubscription(user.id)) return null;
+    if (user.id && deps.hasFirstFreeAccess && await deps.hasFirstFreeAccess(user)) return null;
     return Response.json({ error: "An active Pocket subscription is required to scan.", code: "POCKET_SUBSCRIPTION_REQUIRED" }, { status: 403 });
   } catch {
     return Response.json({ error: "Pocket access could not be verified. Please retry shortly.", code: "POCKET_ACCESS_UNAVAILABLE" }, { status: 503 });
@@ -44,6 +47,14 @@ export async function requirePocketScanAccess(request?: Request): Promise<Respon
       if (!proof || proof.length > 16000) return false;
       const { hasPocketAppleSubscription } = await import("./pocket-apple-access.ts");
       return hasPocketAppleSubscription(userId, proof);
+    },
+    hasFirstFreeAccess: async (user) => {
+      if (!request || process.env.POCKET_FIRST_FREE_ENABLED !== "true") return false;
+      const phase = new URL(request.url).pathname.split("/").at(-1);
+      if (phase !== "preflight" && phase !== "analyse") return false;
+      rememberPocketFirstFreeIdentity(request, { id: user.id!, email: user.email! });
+      // The transactional wrapper, not this routing decision, grants admission.
+      return true;
     },
   });
 }

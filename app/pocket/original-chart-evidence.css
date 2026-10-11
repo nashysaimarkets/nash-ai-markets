@@ -8,3 +8,6 @@
 .psOriginalRaster line[data-kind=resistance]{stroke:#fb7185}
 .psOriginalRaster line[data-kind=pivot]{stroke:#fbbf24}
 .psOriginalEvidence p{padding:10px 12px;margin:0;font-size:12px;line-height:1.5;color:#cbd5e1}
+
+.psOriginalRaster polyline{stroke:#a78bfa;stroke-width:1.5;fill:none}
+.psOriginalRaster circle{fill:#fbbf24}

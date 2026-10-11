@@ -106,6 +106,7 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
   const chain = assessProductionLiquidityChain(source.observations, quality, boundsValue, zones);
   const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation && chain.status === "VERIFIED" ? "VERIFIED" : "PARTIAL";
   return { state, event, confidence, evidence, confirmation, invalidation, zones,
+    observations: chain.status === "VERIFIED" ? source.observations : [],
     evidenceChain: {status:chain.status,reasons:chain.reasons} };
 }
 
