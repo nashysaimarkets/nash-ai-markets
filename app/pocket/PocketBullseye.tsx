@@ -1,5 +1,6 @@
 "use client";
 import {createPrecisionReadingCrop} from "./precision-reading-crop";
+import {canOverlayLevelLab,type LevelLabSource} from "./level-lab-source";
 import OriginalChartEvidence from "./OriginalChartEvidence";
 import NativeSubscriptionControls from "./NativeSubscriptionControls";
 import { pocketAuthenticatedFetch } from "./apple-storekit";
@@ -736,6 +737,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [levelLabFileName, setLevelLabFileName] = useState("");
   const [levelLabStatus, setLevelLabStatus] = useState<"idle" | "attached" | "scanning" | "updated" | "error">("idle");
   const [levelLabError, setLevelLabError] = useState("");
+  const [levelLabResult,setLevelLabResult]=useState<(LevelLabSource&{levelStory?:string;limitation?:string})|null>(null);
+  const [levelLabPreflightStatus,setLevelLabPreflightStatus]=useState<PreflightStatus>("IDLE");
+  const [levelLabConfirmation,setLevelLabConfirmation]=useState<ChartConfirmation|null>(null);
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
@@ -752,6 +756,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
+  const levelLabController=useRef<AbortController|null>(null);
+  useEffect(()=>()=>levelLabController.current?.abort(),[image]);
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
@@ -894,6 +900,8 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       return;
     }
     const input = event.currentTarget;
+    levelLabController.current?.abort();
+    setLevelLabResult(null);setLevelLabConfirmation(null);setLevelLabPreflightStatus("IDLE");
     const readToken = levelLabUploadEpoch.current.begin();
     const chartToken = analysisEpoch.current.snapshot();
     try {
@@ -910,35 +918,28 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function rescanLevelsOnly() {
-    if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
+    if (!analysis || !levelLabImage || levelLabRequestActive.current || !levelLabConfirmation || !preflightAllowsAnalysis(levelLabPreflightStatus)) return;
     const requestToken = analysisEpoch.current.snapshot();
     const readToken = levelLabUploadEpoch.current.snapshot();
-    const isCurrent = () => analysisEpoch.current.isCurrent(requestToken) && levelLabUploadEpoch.current.isCurrent(readToken);
+    const controller=new AbortController();levelLabController.current=controller;
+    const isCurrent = () => !controller.signal.aborted && analysisEpoch.current.isCurrent(requestToken) && levelLabUploadEpoch.current.isCurrent(readToken);
     levelLabRequestActive.current = true;
     setLevelLabStatus("scanning");
     setLevelLabError("");
     try {
       const precisionImage = await createPrecisionReadingCrop(levelLabImage);
       if (!isCurrent()) return;
-      const response = await pocketAuthenticatedFetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage }) });
-      const payload = await response.json() as { levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory">; error?: string };
+      const response = await pocketAuthenticatedFetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, signal:controller.signal, body: JSON.stringify({ image: levelLabImage, precisionImage,chartConfirmation:levelLabConfirmation }) });
+      const payload = await response.json() as { levels?: LevelLabSource&{levelStory?:string;limitation?:string}; error?: string };
       if (!isCurrent()) return;
-      if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
-      setAnalysis((current) => current ? {
-        ...current,
-        plotBounds: payload.levels!.plotBounds,
-        priceScaleAnchors: payload.levels!.priceScaleAnchors,
-        levels: payload.levels!.levels.map((level) => ({ ...level, y: clampY(level.y) })),
-        currentPrice: payload.levels!.currentPrice || current.currentPrice,
-        levelStory: payload.levels!.levelStory || current.levelStory,
-      } : current);
-      setBattlefieldChart("primary");
+      if (!response.ok || !payload.levels || !Array.isArray(payload.levels.levels) || payload.levels.levels.some(level=>!level||typeof level.kind!=="string"||typeof level.price!=="string"||typeof level.label!=="string")) throw new Error(payload.error || "The independent level scan could not complete.");
+      setLevelLabResult(payload.levels);
       setLevelLabStatus("updated");
     } catch (caught) {
       if (!isCurrent()) return;
       setLevelLabStatus("error");
       setLevelLabError(caught instanceof Error ? caught.message : "The independent level scan could not complete.");
-    } finally { levelLabRequestActive.current = false; }
+    } finally { if(levelLabController.current===controller){levelLabController.current=null;levelLabRequestActive.current = false;} }
   }
 
   async function reanalyseResult() {
@@ -1297,10 +1298,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
             <section id="bullseye-level-lab" className="psLevelLab" data-status={levelLabStatus} aria-live="polite" aria-busy={levelLabStatus === "scanning"}>
-              <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "MAP UPDATED" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
-              <p>Add a clearer price-scale photo, then rescan only this map. Your verdict, patterns, scenarios, score and Clarity Lock will not change.</p>
+              <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "SEPARATE RESULT READY" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
+              <p>Confirm this photo, then scan its own support and resistance. Results stay separate from the primary chart and report.</p>
               {levelLabImage ? <div className="psLevelLabPhoto"><img src={levelLabImage} alt="Chart selected for independent support and resistance scan" /><span>{levelLabFileName}</span></div> : null}
-              <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button></div>
+              {levelLabImage?<ChartPreflightPanel image={levelLabImage} onStatus={status=>{if(!preflightAllowsAnalysis(status)){levelLabController.current?.abort();setLevelLabResult(null);setLevelLabStatus("attached");}setLevelLabPreflightStatus(status);}} onConfirmation={setLevelLabConfirmation}/>:null}
+              <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || !levelLabConfirmation || !preflightAllowsAnalysis(levelLabPreflightStatus) || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button>{levelLabStatus==="scanning"?<button type="button" onClick={()=>{levelLabController.current?.abort();levelLabController.current=null;levelLabRequestActive.current=false;levelLabUploadEpoch.current.invalidate();setLevelLabStatus("attached");}}>CANCEL LEVEL SCAN</button>:null}</div>
+              {levelLabImage&&levelLabResult?<><OriginalChartEvidence image={levelLabImage} report={canOverlayLevelLab(levelLabResult,levelLabConfirmation)?levelLabResult:null} identityConfirmed={preflightAllowsAnalysis(levelLabPreflightStatus)&&Boolean(levelLabConfirmation)}/><p>{levelLabResult.levelStory}</p><small>{levelLabResult.limitation}{!canOverlayLevelLab(levelLabResult,levelLabConfirmation)?" Source identity/price agreement remains held.":""}</small></>:null}
               {levelLabError ? <small role="alert">{levelLabError}</small> : null}
             </section>
             {battlefieldTabs}

@@ -19,7 +19,7 @@ export function canOverlayLevelLab(report:LevelLabSource,confirmation:ChartConfi
  const name=(s:string|undefined)=>(s??'').trim().toUpperCase().replace(/\s+/g,'');
  const frame=(s:string|undefined)=>name(s).replace(/MIN(?:UTE)?S?/g,'M').replace(/HOUR(?:S)?/g,'H');
  const price=exactAxisPrice(report.currentPrice??''),confirmed=exactAxisPrice(facts.currentPrice)!;
- return Boolean(q&&q.chartReadability==='CLEAR'&&q.scaleReadable&&q.candlesReadable&&q.instrumentConfidence==='HIGH'&&q.timeframeConfidence==='HIGH'
+ return Boolean(q&&q.chartReadability==='CLEAR'&&q.scaleReadable===true&&q.candlesReadable===true&&q.instrumentConfidence==='HIGH'&&q.timeframeConfidence==='HIGH'
   &&name(report.instrument)===name(facts.instrument)&&frame(report.timeframe)===frame(facts.timeframe)
   &&price!==null&&Math.abs(price-confirmed)<=Math.max(1e-10,confirmed*1e-10));
 }

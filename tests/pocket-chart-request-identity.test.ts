@@ -142,10 +142,10 @@ test("actual independent level scan cannot overwrite a replacement chart", async
   const analysisEpoch = { current: createChartRequestEpoch() }, levelLabUploadEpoch = { current: createChartRequestEpoch() };
   const noop = () => {};
   const bindings = {
-    analysis: {}, levelLabImage: "A", levelLabRequestActive: { current: false }, analysisEpoch, levelLabUploadEpoch,
+    analysis: {}, levelLabImage: "A", levelLabRequestActive: { current: false }, levelLabController:{current:null},levelLabPreflightStatus:"LOCKED",levelLabConfirmation:{instrument:"US 500",timeframe:"5m",currentPrice:"100",contextMatch:"NOT_PROVIDED"},preflightAllowsAnalysis:(status:string)=>status==="LOCKED",analysisEpoch, levelLabUploadEpoch,
     setLevelLabStatus: noop, setLevelLabError: noop, setBattlefieldChart: noop, createPrecisionReadingCrop: async () => "crop",
     pocketAuthenticatedFetch: async () => ({ ok: true, json: async () => { started.resolve("started"); await pending.promise; return { levels: { levels: [] } }; } }),
-    setAnalysis: (value: unknown) => updates.push(value), clampY: (value: number) => value,
+    setLevelLabResult: (value: unknown) => updates.push(value), clampY: (value: number) => value,
   };
   const run = new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(source) + "\nreturn rescanLevelsOnly;");
   const scan = await run(...Object.values(bindings));

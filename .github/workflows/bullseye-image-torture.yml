@@ -21,6 +21,7 @@ on:
       - "scripts/verify-pocket-workflows-free.mjs"
       - "scripts/verify-pocket-next-local-free.mjs"
       - "scripts/verify-pocket-next-free.mjs"
+      - "scripts/verify-pocket-customer-lab-free.mjs"
       - "app/pocket-next/**"
       - "app/api/pocket/**"
       - "app/pocket/**"
@@ -58,6 +59,8 @@ jobs:
         run: node --import tsx scripts/verify-pocket-workflows-free.mjs
       - name: Verify actual redesign mobile intake and successful mocked report
         run: node --import tsx scripts/verify-pocket-next-local-free.mjs
+      - name: Verify customer Level Lab source isolation without providers
+        run: node --import tsx scripts/verify-pocket-customer-lab-free.mjs
       - name: Build the Vercel Next.js function traces
         run: npx next build
         env:

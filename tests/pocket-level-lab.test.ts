@@ -17,9 +17,11 @@ test("Level Lab exposes a separate photo and levels-only rescan", () => {
   assert.match(client, /pocketAuthenticatedFetch\("\/api\/pocket\/levels"/);
 });
 
-test("Level Lab merges only price-map fields into the existing analysis", () => {
+test("Level Lab preserves the entire primary analysis and stores a source-isolated result", () => {
   const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
-  assert.match(merge, /setAnalysis\(\(current\)/);
+  assert.doesNotMatch(merge, /setAnalysis\(|setBattlefieldChart\(/);
+  assert.match(merge, /setLevelLabResult\(payload.levels\)/);
+  assert.match(merge, /chartConfirmation:levelLabConfirmation/);
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
 });
 
