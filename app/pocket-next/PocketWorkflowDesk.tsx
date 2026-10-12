@@ -11,10 +11,11 @@ import {listPocketDecisions,savePocketDecision,deletePocketDecision} from '../po
 import type {CompatibleLockedDecision} from '../pocket/decision-compatibility';
 import {calculateUserPlan,exportPocketPlan,isCompanyCalendarEligible,type UserPlan,type WorkflowReport} from '../pocket/workflow-plan';
 import type {VerifiedMacroContext} from '../lib/macro-data';
+import {canOverlayLevelLab,type LevelLabSource} from '../pocket/level-lab-source';
 
 type Reply={answer:string;evidence:string[];caution:string;nextCheck:string};
 type Review={outcome:string;processGrade:string;decisionQuality:number;headline:string;outcomeSummary:string;confirmationReview:string;invalidationReview:string;timingReview:string;disciplineReview:string;lessons:string[]};
-type LevelResult={levels:{kind:string;price:string;label:string}[];levelStory:string;limitation:string;confidence:string};
+type LevelResult=LevelLabSource&{levelStory:string;limitation:string;confidence:string};
 type CompanyEvent={id:string;type:string;date:string;detail:string;source:string};
 export async function readWorkflowImage(file:File):Promise<string>{
  if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1024*1024)throw new Error('Use a JPEG, PNG or WebP under 8 MB.');
@@ -61,7 +62,7 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
  const scanLevels=async()=>{
   if(!labImage||!labFacts||!preflightAllowsAnalysis(labStatus)||pending.current)return;
   const source=labImage;setLabResult(null);
-  await perform('levels',async()=>({image:source,precisionImage:await createPrecisionReadingCrop(source)}),payload=>{
+  await perform('levels',async()=>({image:source,precisionImage:await createPrecisionReadingCrop(source),chartConfirmation:labFacts}),payload=>{
    const result=payload.levels as LevelResult|undefined;
    if(!result||!Array.isArray(result.levels)||result.levels.some(level=>!level||typeof level.price!=='string'||typeof level.label!=='string'||typeof level.kind!=='string'))throw new Error('Level scan returned an invalid result.');
    setLabResult(result);
@@ -104,8 +105,8 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
   <details open><summary>Standalone Level Lab</summary>
    <p>Scan another source image for levels. Results stay separate from your main chart and report.</p>
    <label>Level Lab chart<input aria-label="Add separate chart for Level Lab" type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>void load(e.target.files?.[0],'lab')}/></label>
-   {labImage?<><ChartPreflightPanel image={labImage} onStatus={setLabStatus} onConfirmation={setLabFacts}/><button type="button" disabled={!labFacts||!preflightAllowsAnalysis(labStatus)||Boolean(busy)} onClick={()=>void scanLevels()}>Scan this chart for levels</button><OriginalChartEvidence image={labImage}/></>:null}
-   {labResult?<article aria-label="Separate Level Lab result"><p>{labResult.levelStory}</p><p>{labResult.confidence} reported confidence · {labResult.limitation}</p><ul>{labResult.levels.map((level,i)=><li key={i}>{level.kind} · {level.price||'No numeric price'} · {level.label}</li>)}</ul><p>Reported levels are separate. This response does not provide all source identity evidence required for original-pixel placement.</p></article>:null}
+   {labImage?<><ChartPreflightPanel image={labImage} onStatus={status=>{if(!preflightAllowsAnalysis(status))cancel();setLabStatus(status);}} onConfirmation={setLabFacts}/><button type="button" disabled={!labFacts||!preflightAllowsAnalysis(labStatus)||Boolean(busy)} onClick={()=>void scanLevels()}>Scan this chart for levels</button><OriginalChartEvidence image={labImage} report={labResult&&canOverlayLevelLab(labResult,labFacts)?labResult:null} identityConfirmed={preflightAllowsAnalysis(labStatus)&&Boolean(labFacts)}/></>:null}
+   {labResult?<article aria-label="Separate Level Lab result"><p>{labResult.levelStory}</p><p>{labResult.confidence} reported confidence · {labResult.limitation}</p><ul>{labResult.levels.map((level,i)=><li key={i}>{level.kind} · {level.price||'No numeric price'} · {level.label}</li>)}</ul><p>{canOverlayLevelLab(labResult,labFacts)?'Source facts match. Original-image overlay still requires independent price-label and grid verification.':'Source identity or exact price agreement remains unverified; original-image placement is held.'}</p></article>:null}
   </details>
  </section>;
 }

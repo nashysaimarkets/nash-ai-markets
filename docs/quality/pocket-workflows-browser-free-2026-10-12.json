@@ -6,6 +6,8 @@
     "follow-up transports exact selected report through existing endpoint",
     "chart/report remount aborts delayed reply and suppresses stale answer",
     "process review requires after-image privacy and original saved decision",
+    "mismatched Level Lab identity holds original drawing",
+    "matched separate Level Lab source passes actual original-pixel local OCR and draws its own overlay",
     "standalone Level Lab uses locked separate source and actual Canvas JPEG crop",
     "unavailable official calendar does not assert no event risk",
     "saved decision deletion completes transaction and refreshes history",
@@ -16,6 +18,7 @@
     "/api/pocket/follow-up",
     "/api/pocket/review",
     "/api/pocket/preflight",
+    "/api/pocket/levels",
     "/api/pocket/levels",
     "/api/pocket/events"
   ],
