@@ -23,10 +23,10 @@ export const TORTURE_CASES: TortureCase[] = [
     expectedLiquidity:{state:"VERIFIED",event:"SWEEP",minimumZones:1} },
   { id:"near-miss-chop", market:"SYNTH-CHOP", timeframe:"30m", points:[55,48,52,45,50,47,54,49,51,46,53],
     expectedLevels:[], expectedPatterns:[], forbiddenPatterns:["HEAD & SHOULDERS","DOUBLE TOP","DOUBLE BOTTOM","TRIANGLE","PENNANT"],
-    expectedLiquidity:{state:"NONE",minimumZones:0} },
+    expectedLiquidity:{state:"NONE",event:"NONE",minimumZones:0} },
   { id:"degraded-no-signal", market:"SYNTH-NOISE", timeframe:"30m", points:[60,52,57,49,55,51,58,50],
     expectedLevels:[], expectedPatterns:[], forbiddenPatterns:["HEAD & SHOULDERS","DOUBLE TOP","DOUBLE BOTTOM","TRIANGLE","PENNANT"],
-    expectedLiquidity:{state:"NONE",minimumZones:0}, degrade:"blur" },
+    expectedLiquidity:{state:"NONE",event:"NONE",minimumZones:0}, degrade:"blur" },
 ];
 
 export const SYNTHETIC_PRICE_AXIS = [
@@ -128,7 +128,7 @@ function assertTortureScannerOutput(value: unknown) {
   if (value.patterns.some(pattern => !record(pattern) || typeof pattern.name !== "string" || !pattern.name.trim())) return invalid();
   const liquidity = value.liquidity;
   if (!["NONE", "PARTIAL", "VERIFIED"].includes(String(liquidity.state)) || !Array.isArray(liquidity.zones)) return invalid();
-  if (liquidity.state === "NONE" && liquidity.zones.length !== 0) return invalid();
+  if (liquidity.state === "NONE" && (liquidity.zones.length !== 0 || liquidity.event !== "NONE")) return invalid();
 }
 
 /** Mirror PocketBullseye.tsx createPrecisionReadingCrop's 6%/82% full-width crop. */

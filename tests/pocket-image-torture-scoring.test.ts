@@ -48,9 +48,19 @@ test("wrong sweep event counts as an incorrect detection and a missed expected e
   assert.deepEqual(scored.metrics.liquidity, {tp:0,fp:1,fn:1});
 });
 
+test("negative liquidity cannot silently carry an unsupported event", () => {
+  for (const negative of TORTURE_CASES.filter(sample => sample.expectedLiquidity.state === "NONE")) {
+    const empty = {levels:[], patterns:[], liquidity:{state:"NONE",event:"NONE",zones:[]}};
+    assert.deepEqual(scoreTortureAnalysis(negative, empty).failures, []);
+    for (const event of ["SWEEP", "RECLAIM", "REJECTION", "TESTING"]) {
+      assert.throws(() => scoreTortureAnalysis(negative, {...empty,liquidity:{...empty.liquidity,event}}), /scanner output/i);
+    }
+  }
+});
+
 test("no-signal cases cannot pass with omitted null or malformed scanner output", () => {
   const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
-  const empty = { levels: [], patterns: [], liquidity: { state: "NONE", zones: [] } };
+  const empty = { levels: [], patterns: [], liquidity: { state: "NONE", event: "NONE", zones: [] } };
   for (const body of [
     {}, { ...empty, levels: undefined }, { ...empty, patterns: undefined }, { ...empty, liquidity: undefined },
     { ...empty, levels: null }, { ...empty, patterns: null }, { ...empty, liquidity: null },
@@ -79,7 +89,7 @@ test("perfect and no-signal fixtures score without manufacturing true positives"
   assert.deepEqual(scored.metrics.liquidity, {tp:1,fp:0,fn:0});
   assert.deepEqual(scored.failures, []);
   const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
-  const empty = scoreTortureAnalysis(negative, {levels:[],patterns:[],liquidity:{state:"NONE",zones:[]}});
+  const empty = scoreTortureAnalysis(negative, {levels:[],patterns:[],liquidity:{state:"NONE",event:"NONE",zones:[]}});
   for (const counts of Object.values(empty.metrics)) assert.deepEqual(counts, {tp:0,fp:0,fn:0});
   assert.deepEqual(empty.failures, []);
 });
