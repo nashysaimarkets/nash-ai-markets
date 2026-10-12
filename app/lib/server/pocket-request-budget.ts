@@ -71,7 +71,7 @@ export function pocketBudgetHeaders(decision: PocketBudgetDecision) {
     "x-ratelimit-limit": String(decision.limit),
     "x-ratelimit-remaining": String(decision.remaining),
     "x-ratelimit-reset": String(Math.ceil(decision.resetAt / 1000)),
-    ...(decision.allowed ? {} : { "retry-after": String(decision.retryAfterSeconds) }),
+    ...(decision.allowed ? {} : { "retry-after": String(decision.retryAfterSeconds), "x-pocket-rate-limit-source": "application" }),
   };
 }
 

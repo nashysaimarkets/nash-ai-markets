@@ -6,6 +6,7 @@ import { POST as analyse } from "../analyse/route";
 import { isCumulativeTestSpendHeld } from "./spending-hold";
 import { withPocketTestSpendScope } from "./provider-spend";
 import { mayRunLiveTorture } from "./authorization";
+import { tortureHttpFailure } from "./http-failure";
 import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis, summarizeTortureMeasurements } from "../../../../tests/support/pocket-image-torture";
 
 export const runtime = "nodejs";
@@ -65,7 +66,7 @@ export async function GET(request:Request){
     const requestPayload = buildTortureRequestPayload(sample,
       `data:image/png;base64,${image.toString("base64")}`,
       `data:image/jpeg;base64,${precisionCrop.toString("base64")}`);
-    const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${i+1}`},body:JSON.stringify(requestPayload)});
+    const req=new Request("http://preview/api/pocket/analyse",{method:"POST",headers:{"content-type":"application/json","x-forwarded-for":`10.77.0.${TORTURE_CASES.indexOf(sample)+1}`},body:JSON.stringify(requestPayload)});
     let response: Response;
     let body: Analysis;
     const startedAt = performance.now();
@@ -79,7 +80,7 @@ export async function GET(request:Request){
       continue;
     }
     const durationMs = Math.round(performance.now()-startedAt);
-    if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);observations.push({id:sample.id,durationMs,httpStatus:response.status,error:body.error??null});continue;}
+    if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);observations.push({id:sample.id,durationMs,httpStatus:response.status,error:body.error??null,...tortureHttpFailure(response)});continue;}
     const scoredCase = scoreTortureAnalysis(sample, body);
     const { levels, patterns } = scoredCase;
     for (const key of ["levels", "patterns", "liquidity"] as const) {

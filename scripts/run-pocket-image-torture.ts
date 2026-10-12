@@ -1,5 +1,6 @@
 import { isCumulativeTestSpendHeld } from "../app/api/pocket/torture/spending-hold.ts";
 import { withPocketTestSpendScope } from "../app/api/pocket/torture/provider-spend.ts";
+import { tortureHttpFailure } from "../app/api/pocket/torture/http-failure.ts";
 import { POST } from "../app/api/pocket/analyse/route.ts";
 import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis, summarizeTortureMeasurements } from "../tests/support/pocket-image-torture.ts";
 
@@ -54,7 +55,7 @@ for(const sample of selected){
     continue;
   }
   const durationMs = Math.round(performance.now()-startedAt);
-  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`);console.log(JSON.stringify({id:sample.id,durationMs,httpStatus:response.status,error:payload.error??null})); continue; }
+  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`);console.log(JSON.stringify({id:sample.id,durationMs,httpStatus:response.status,error:payload.error??null,...tortureHttpFailure(response)})); continue; }
   const scoredCase = scoreTortureAnalysis(sample, body);
   const { levels: actualLevels, patterns: actualPatterns } = scoredCase;
   const liq = body.liquidity ?? {};
