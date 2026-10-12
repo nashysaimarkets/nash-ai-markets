@@ -606,3 +606,15 @@
 .pnApp .psRiskReadout{display:grid;gap:10px;margin:12px 0}
 .pnApp .psRiskReadout strong{font-size:24px}
 .pnApp .psRiskDesk footer{font-size:12px;line-height:1.5}
+
+.pnWorkflow{margin:24px 0;border-top:1px solid var(--pn-line);padding-top:24px;min-width:0}
+.pnWorkflow>header h2{font-size:24px;margin:0 0 8px}
+.pnWorkflow details{margin:12px 0;padding:16px;border:1px solid var(--pn-line);border-radius:10px;background:var(--pn-paper2);min-width:0}
+.pnWorkflow summary{min-height:44px;cursor:pointer;font-weight:700;line-height:1.5}
+.pnWorkflow p,.pnWorkflow li,.pnWorkflow dd{font-size:14px;line-height:1.6;overflow-wrap:anywhere}
+.pnWorkflow dl{margin:12px 0}.pnWorkflow dt{font-size:11px;font-weight:700;text-transform:uppercase}.pnWorkflow dd{margin:0 0 12px}
+.pnWorkflow label{display:block;margin:12px 0;font-size:12px;line-height:1.6}
+.pnWorkflow input:not([type=checkbox]),.pnWorkflow select{display:block;min-height:44px;width:100%;max-width:100%;padding:10px;border:1px solid var(--pn-line);border-radius:6px;background:var(--pn-paper);color:var(--pn-ink)}
+.pnWorkflow button{min-height:44px;padding:10px 14px;margin:8px 8px 8px 0;border:1px solid var(--pn-line);border-radius:6px;background:var(--pn-ink);color:var(--pn-paper);font-size:12px}
+.pnWorkflow button:disabled{opacity:.5;cursor:not-allowed}.pnWorkflow img{display:block;width:100%;height:auto;max-width:100%;border-radius:8px}
+.pnWorkflow ul,.pnWorkflow ol{padding-left:20px}.pnWorkflow li{margin-bottom:12px}.pnWorkflow a{display:inline-block;min-height:44px;padding:12px}

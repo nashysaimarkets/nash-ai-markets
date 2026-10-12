@@ -38,3 +38,18 @@ Record exact Git SHA, immutable preview/build manifest, native build number, dev
 | Signed renewal/grace/refund/revocation events | Correct product/account current statuses; events idempotent, never grant alone | Apple sandbox signed-event digest + refreshed scan status |
 | Original Patterns/Liquidity candles | Independent image endpoints/axis; uncertain or unsupported geometry held | Annotated labelled real corpus with exact source hashes |
 | Redesign tool parity | Risk/purchase/options/crypto plus remaining workflows accepted without bypass | Device workflow matrix and security responses |
+
+## 12 October source/UX successor acceptance additions
+
+The guarded redesign candidate now provides follow-up, shared device decision history/save/delete, before/after process review, user-defined plan/export, official macro/calendar availability, explicit symbol-matched company lookup and standalone Level Lab. Free Chromium tests use intercepted endpoints and real IndexedDB/file downloads/Canvas; they do not verify Apple, provider semantics, real company-event availability or physical iPhone behaviour. `/pocket` remains the customer/native entrypoint; `/pocket-next` remains a preview.
+
+On a separately authorised physical-iPhone/sandbox test candidate:
+1. Pin the native wrapper to the immutable HTTPS candidate and exact full SHA; verify deployed manifest and native revision check. Never use a mutable branch alias or production URL for acceptance.
+2. Verify registration/confirmed identity; first-free policy remains OFF until retention, cleanup health, staging acceptance and a production migration/configuration window are independently approved. Test retries/cancel/retake limits without replenishing an admitted call.
+3. Test fresh purchase, immediate signed JWS delivery, subscription update, restore after reinstall, independent legacy ownership mapping, cross-account denial, expiry/refund/grace and signed notification identity/idempotence in isolated Apple sandbox. Never treat a local StoreKit boolean as server entitlement. Real Stripe backfill and signed webhooks remain separate before rollout.
+4. Exercise the candidate tools on real source images: save a decision, restart app, reload history; select the correct saved before image; add/redact after chart; cancel/reselect during a delayed review; verify no stale result. Check valid LONG/SHORT user-defined prices and invalid side/order; export/share actual text on iOS; delete the saved decision. Confirm five uploaded chart slots never borrow another chart's report.
+5. For Level Lab, confirm its own source and axes, replace it during crop/request, cancel/retry and verify the main report/image are unchanged. Its endpoint lacks all independent source-identity evidence required for numeric overlay placement: do not promote its model-only table to a verified original-image drawing.
+6. Test official event freshness, London timezone/daylight-saving times, missing/unavailable schedule messaging and symbol-matched company events; macro-only index charts must never receive a company ticker feed.
+7. Once budget history and reservations are reconciled and exact spending separately authorised, run each labelled scanner case individually. Preserve request/response identity, full source/crop pixels and actual output, TP/FP/FN, precision/recall/latency per scanner. Preserve local application rate-limit marker and retry/reset headers; a 429/network failure is unmeasured, not a model miss. Require independent real Liquidity interval endpoints and every supplied original-candle witness; zero-width bands remain lines.
+
+No physical-device, sandbox purchase, native Swift compilation or labelled live-scanner result was produced by these additions. RELEASE HOLD remains.

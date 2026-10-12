@@ -47,3 +47,11 @@ test("professional preview exposes guarded existing cross-check and native subsc
   for (const component of ["OptionsWallCheck", "CryptoDerivativesCheck", "PersonalRiskDesk", "NativeSubscriptionControls"]) assert.match(source, new RegExp(`<${component}\\b`));
   assert.match(source, /!demoMode && !deviceOnly/);
 });
+
+test('redesign workflows are isolated to a confirmed real source report; customer entrypoint is preserved',async()=>{
+ const source=await readFile(new URL('../app/pocket-next/PocketNext.tsx',import.meta.url),'utf8');
+ assert.match(source,/!demoMode && !deviceOnly && image && activeSlot.confirmation && preflightAllowsAnalysis\(activeSlot.status\).*<PocketWorkflowDesk/);
+ assert.match(source,/reportRevision:\(chart.reportRevision\?\?0\)\+1/);
+ assert.match(source,/key=\{`workflow-\$\{activeChart\}-\$\{activeSlot.revision\}-\$\{activeSlot.reportRevision\?\?0\}`\}/);
+ const customer=await readFile(new URL('../app/pocket/page.tsx',import.meta.url),'utf8');assert.match(customer,/<PocketBullseye macroContext=/);assert.doesNotMatch(customer,/<PocketNext/);
+});

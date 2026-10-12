@@ -1,0 +1,30 @@
+{
+  "checks": [
+    "no automatic billed requests",
+    "user-defined plan calculation and actual text download",
+    "shared existing IndexedDB vault preserves exact original image",
+    "follow-up transports exact selected report through existing endpoint",
+    "chart/report remount aborts delayed reply and suppresses stale answer",
+    "process review requires after-image privacy and original saved decision",
+    "standalone Level Lab uses locked separate source and actual Canvas JPEG crop",
+    "unavailable official calendar does not assert no event risk",
+    "saved decision deletion completes transaction and refreshes history",
+    "company calendar requires identified company and explicit symbol-matched request"
+  ],
+  "interceptedRequests": [
+    "/api/pocket/follow-up",
+    "/api/pocket/follow-up",
+    "/api/pocket/review",
+    "/api/pocket/preflight",
+    "/api/pocket/levels",
+    "/api/pocket/events"
+  ],
+  "providerCalls": 0,
+  "jsErrors": [],
+  "blockedExternalRequests": [],
+  "overflow": {
+    "viewport": 390,
+    "body": 390
+  },
+  "browser": "Chromium emulated mobile 390x844; mocked endpoints; not physical iPhone or scanner accuracy"
+}

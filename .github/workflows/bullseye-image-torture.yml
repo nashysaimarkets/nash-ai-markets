@@ -18,6 +18,10 @@ on:
       - "tests/support/pocket-image-torture.ts"
       - "tests/support/fixture-axis-glyphs*"
       - "scripts/verify-pocket-raster-browser-free.mjs"
+      - "scripts/verify-pocket-workflows-free.mjs"
+      - "scripts/verify-pocket-next-local-free.mjs"
+      - "scripts/verify-pocket-next-free.mjs"
+      - "app/pocket-next/**"
       - "app/api/pocket/**"
       - "app/pocket/**"
       - "package.json"
@@ -50,6 +54,10 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Verify real browser pixels, customer Canvas crop and same-origin OCR
         run: node --import tsx scripts/verify-pocket-raster-browser-free.mjs
+      - name: Verify mobile decision workflows without providers
+        run: node --import tsx scripts/verify-pocket-workflows-free.mjs
+      - name: Verify actual redesign mobile intake and successful mocked report
+        run: node --import tsx scripts/verify-pocket-next-local-free.mjs
       - name: Build the Vercel Next.js function traces
         run: npx next build
         env:

@@ -1,4 +1,5 @@
 "use client";
+import {createPrecisionReadingCrop as precisionCrop} from "../pocket/precision-reading-crop";
 /* Private uploads and synthetic inline demos stay local; next/image provides no benefit. */
 /* eslint-disable @next/next/no-img-element */
 
@@ -7,6 +8,8 @@ import type { DeviceLocalScan, DevicePlotBounds } from "./device-geometry";
 import ChartPreflightPanel from "../pocket/ChartPreflightPanel";
 import NativeSubscriptionControls from "../pocket/NativeSubscriptionControls";
 import PersonalRiskDesk from "../pocket/PersonalRiskDesk";
+import PocketWorkflowDesk from "./PocketWorkflowDesk";
+import type { VerifiedMacroContext } from "../lib/macro-data";
 import OptionsWallCheck from "../pocket/OptionsWallCheck";
 import CryptoDerivativesCheck from "../pocket/CryptoDerivativesCheck";
 import OriginalChartEvidence from "../pocket/OriginalChartEvidence";
@@ -70,7 +73,7 @@ type Analysis = {
 
 type PlotBounds = DevicePlotBounds;
 type LocalScan = DeviceLocalScan;
-type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null; confirmation: ChartConfirmation | null; status: PreflightStatus; revision: number };
+type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null; confirmation: ChartConfirmation | null; status: PreflightStatus; revision: number; reportRevision?: number };
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 function emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null, localScan: null, confirmation: null, status: "IDLE", revision: 0 })); }
@@ -95,29 +98,6 @@ function fileToDataUrl(file: File) {
     reader.readAsDataURL(file);
   });
 }
-
-function precisionCrop(dataUrl: string) {
-  return new Promise<string | null>((resolve) => {
-    const source = new Image();
-    source.onload = () => {
-      try {
-        const top = Math.round(source.naturalHeight * 0.06);
-        const height = Math.round(source.naturalHeight * 0.82);
-        const targetWidth = Math.min(1800, Math.max(1400, source.naturalWidth));
-        const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = Math.round(height * targetWidth / source.naturalWidth);
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(null);
-        ctx.drawImage(source, 0, top, source.naturalWidth, height, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.92));
-      } catch { resolve(null); }
-    };
-    source.onerror = () => resolve(null);
-    source.src = dataUrl;
-  });
-}
-
 
 
 function withinPlot(y: number, bounds: PlotBounds, pad = 1.5) {
@@ -230,7 +210,8 @@ function statusOf(analysis: Analysis, kind: "levels" | "patterns" | "liquidity" 
 
 function statusLabel(value: string) { return value === "NONE" ? "NO EVIDENCE" : value; }
 
-export default function PocketNext() {
+const UNAVAILABLE_MACRO: VerifiedMacroContext = {generatedAt:"",status:"unavailable",observations:[],releases:[],filings:[],availableSources:[],unavailableSources:[]};
+export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContext?:VerifiedMacroContext} = {}) {
   const [charts, setCharts] = useState<ChartSlot[]>(emptyChartSlots);
   const [activeChart, setActiveChart] = useState(0);
   const [intention, setIntention] = useState<Intention>("UNSURE");
@@ -341,7 +322,7 @@ export default function PocketNext() {
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis could not complete.");
-      setCharts(current => current.map((chart, i) => i === index && chart.revision === slot.revision ? { ...chart, analysis: payload.analysis ?? null } : chart));
+      setCharts(current => current.map((chart, i) => i === index && chart.revision === slot.revision ? { ...chart, analysis: payload.analysis ?? null, reportRevision:(chart.reportRevision??0)+1 } : chart));
       if (switchAfter) setActiveChart(index);
       setActive("overview");
     } catch (e) {
@@ -558,6 +539,7 @@ export default function PocketNext() {
           <span>{activeLocal ? `DEVICE · ${activeLocal.levels.length} LV · ${devicePatternCount} PT · ${activeLocal.liquidity.zones.length} LQ` : "SOURCE IMAGE PRESERVED"}</span>
           <span>{active==="levels" ? analysis.levelStory : active==="structure" ? analysis.marketStructure : active==="patterns" ? (patterns[0]?.evidence || "No defensible pattern is currently verified.") : active==="liquidity" ? (liquidity?.evidence || "No defensible liquidity event is currently verified.") : "Select a scanner to isolate its evidence on the chart."}</span>
         </footer>
+        {!demoMode && !deviceOnly && image && activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <PocketWorkflowDesk key={`workflow-${activeChart}-${activeSlot.revision}-${activeSlot.reportRevision??0}`} image={image} report={analysis} intention={intention} macroContext={macroContext}/> : null}
       </section>
 
       <aside className="pnDecision">

@@ -8,14 +8,10 @@ import sharp from 'sharp';
 import {chromium} from '@playwright/test';
 import {TORTURE_CASES,syntheticSvg,SYNTHETIC_PRICE_AXIS} from '../tests/support/pocket-image-torture.ts';
 const root=process.cwd();
-// Execute the actual customer implementation, rather than the Sharp approximation.
-const source=await readFile('app/pocket/PocketBullseye.tsx','utf8');
-const crop=source.slice(source.indexOf('function createPrecisionReadingCrop('),source.indexOf('\nfunction numericLevel('));
-assert.ok(crop.startsWith('function createPrecisionReadingCrop('));
 const bundle=await build({stdin:{contents:`import {chartGridRows} from './app/pocket/chart-grid-rows.ts';
 import {verifyAxisWords} from './app/pocket/axis-verification.ts';
 import {verifyOriginalAxis} from './app/pocket/browser-axis-ocr.ts';
-${crop}\nwindow.fixtureTools={chartGridRows,verifyAxisWords,verifyOriginalAxis,createPrecisionReadingCrop};`,resolveDir:root,loader:'ts'},bundle:true,write:false,platform:'browser',format:'iife'});
+import {createPrecisionReadingCrop} from './app/pocket/precision-reading-crop.ts';\nwindow.fixtureTools={chartGridRows,verifyAxisWords,verifyOriginalAxis,createPrecisionReadingCrop};`,resolveDir:root,loader:'ts'},bundle:true,write:false,platform:'browser',format:'iife'});
 const png=await sharp(Buffer.from(syntheticSvg(TORTURE_CASES[0]))).png().toBuffer();
 const server=createServer(async(req,res)=>{
  try{

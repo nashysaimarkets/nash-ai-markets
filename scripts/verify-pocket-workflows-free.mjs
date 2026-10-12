@@ -1,0 +1,56 @@
+// Real React/mobile/IndexedDB/download checks. EVERY server API is intercepted; no providers.
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFile} from 'node:fs/promises';
+import {build} from 'esbuild';
+import {chromium,expect} from '@playwright/test';
+import sharp from 'sharp';
+import {syntheticSvg,TORTURE_CASES} from '../tests/support/pocket-image-torture.ts';
+const png=await sharp(Buffer.from(syntheticSvg(TORTURE_CASES[0]))).png().toBuffer();
+const image='data:image/png;base64,'+png.toString('base64');
+const report={instrument:'SYNTH-RANGE',ticker:'UNKNOWN',timeframe:'30m',verdict:'WAIT',summary:'Synthetic browser test only',verdictHeadline:'Wait for evidence',setupScore:{overall:60,grade:'C'},riskFlags:[],nextSequence:{confirmation:'Visible break',failure:'Visible failure',reassess:'Next bar'},invalidation:'Visible failure'};
+const macro={generatedAt:'2026-10-12T12:00:00Z',status:'unavailable',releases:[],observations:[],filings:[],availableSources:[],unavailableSources:[]};
+const bundle=await build({stdin:{contents:`import React from 'react';import {createRoot} from 'react-dom/client';
+import PocketWorkflowDesk from './app/pocket-next/PocketWorkflowDesk.tsx';import './app/pocket-next/pocket-next.css';
+const root=createRoot(document.getElementById('root'));let counter=0;
+window.mountReport=(name='SYNTH-RANGE')=>root.render(<PocketWorkflowDesk key={++counter} report={{...${JSON.stringify(report)},instrument:name,ticker:name==='Apple'?'AAPL':'UNKNOWN',evidenceQuality:{instrumentConfidence:'HIGH'}}} image={${JSON.stringify(image)}} intention="UNSURE" macroContext={${JSON.stringify(macro)}}/>);window.mountReport();`,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,outfile:'fixture.js',jsx:'automatic',platform:'browser',format:'iife',define:{'process.env.NODE_ENV':'"production"'}});
+const js=bundle.outputFiles.find(f=>f.path.endsWith('.js')).contents;
+const css=bundle.outputFiles.find(f=>f.path.endsWith('.css'))?.text??'';
+const server=createServer((req,res)=>{if(req.url==='/'){res.setHeader('content-type','text/html');res.end('<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}#root{padding:16px;max-width:100%;box-sizing:border-box}.pnWorkflow{--pn-line:#ccc;--pn-paper:#fff;--pn-paper2:#f5f5f5;--pn-ink:#112233}'+css+'</style><div id="root"></div><script src="/fixture.js"></script>');}else if(req.url==='/fixture.js'){res.setHeader('content-type','text/javascript');res.end(js);}else{res.writeHead(404);res.end();}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});const page=await context.newPage();
+const errors=[],calls=[],checks=[],blocked=[];let delay=false,release=()=>{};
+page.on('pageerror',e=>errors.push(e.message));
+await context.route('**/*',async route=>{
+ const url=new URL(route.request().url());if(url.origin!==origin){blocked.push(url.href);return route.abort();}
+ if(!url.pathname.startsWith('/api/'))return route.continue();
+ const body=route.request().method()==='POST'?route.request().postDataJSON():null;calls.push({route:url.pathname,body,query:url.search});
+ if(url.pathname==='/api/pocket/preflight')return route.fulfill({json:{preflight:{status:'READY',instrument:'SYNTH-RANGE',instrumentConfidence:'HIGH',timeframe:'30m',timeframeConfidence:'HIGH',currentPrice:'100',currentPriceConfidence:'HIGH',priceScaleVisible:true,candlesReadable:true,enoughHistory:true,sameInstrument:true,issues:[],guidance:'Mock preflight, no vision provider'}}});
+ if(url.pathname==='/api/pocket/follow-up'){const stale=delay;if(stale)await new Promise(r=>{release=r;});return route.fulfill({json:{reply:{answer:stale?'STALE ANSWER':'Mock answer from supplied report',evidence:['Supplied evidence'],caution:'Mock only',nextCheck:'Check source'}}}).catch(()=>{});}
+ if(url.pathname==='/api/pocket/review')return route.fulfill({json:{review:{outcome:'UNCLEAR',processGrade:'B',decisionQuality:75,headline:'Mock process review',outcomeSummary:'No execution evidence',confirmationReview:'Unknown',invalidationReview:'Unknown',timingReview:'Unknown',disciplineReview:'No invented profit',lessons:['Check source']}}});
+ if(url.pathname==='/api/pocket/levels')return route.fulfill({json:{levels:{levels:[{kind:'support',price:'95',label:'Mock reference'}],levelStory:'Separate mock levels',limitation:'Mock only',confidence:'HIGH'}}});
+ if(url.pathname==='/api/pocket/events')return route.fulfill({json:{symbol:'AAPL',events:[{id:'event-aapl',type:'EARNINGS',date:'2026-10-13',detail:'Mock earnings date',source:'Mock provider'}]}});
+ blocked.push(url.href);return route.abort();
+});
+const check=name=>checks.push(name);
+try{
+ await page.goto(origin);await page.getByRole('heading',{name:'Your next steps'}).waitFor();
+ assert.equal(calls.length,0);check('no automatic billed requests');
+ await page.getByLabel('Your entry price').fill('100');await page.getByLabel('Your stop price').fill('95');await page.getByLabel('Your target price').fill('110');await page.getByText('Illustrative reward/risk 2.00',{exact:true}).waitFor();
+ const downloadPromise=page.waitForEvent('download');await page.getByRole('button',{name:'Export plan',exact:true}).click();const download=await downloadPromise;const text=await readFile(await download.path(),'utf8');assert.match(text,/USER-DEFINED LONG PLAN: entry 100 \/ stop 95 \/ target 110/);assert.match(text,/SYNTH-RANGE/);check('user-defined plan calculation and actual text download');
+ await page.getByRole('button',{name:'Save decision on this device'}).click();await page.getByText('Decision saved on this device.',{exact:true}).waitFor();await page.getByRole('button',{name:'Load saved decisions'}).click();await page.getByRole('button',{name:'Review this decision'}).waitFor();
+ const saved=await page.evaluate(()=>new Promise((resolve,reject)=>{const req=indexedDB.open('bullseye-decision-vault',2);req.onsuccess=()=>{const db=req.result;const rows=db.transaction('decisions').objectStore('decisions').getAll();rows.onsuccess=()=>{resolve(rows.result);db.close();};rows.onerror=reject;};req.onerror=reject;}));assert.equal(saved.length,1);assert.equal(saved[0].image,image);check('shared existing IndexedDB vault preserves exact original image');
+ await page.getByLabel('Ask a follow-up question').fill('What am I missing?');await page.getByRole('button',{name:'Ask Bullseye',exact:true}).click();await page.getByText('Mock answer from supplied report',{exact:true}).waitFor();assert.equal(calls.at(-1).body.analysis.instrument,'SYNTH-RANGE');check('follow-up transports exact selected report through existing endpoint');
+ delay=true;await page.getByRole('button',{name:'Ask Bullseye',exact:true}).click();await expect.poll(()=>calls.filter(c=>c.route.endsWith('follow-up')).length).toBe(2);await page.evaluate(()=>window.mountReport('SECOND-SOURCE'));release();delay=false;await page.getByRole('heading',{name:'Your next steps'}).waitFor();await page.waitForTimeout(150);assert.equal(await page.getByText('STALE ANSWER',{exact:true}).count(),0);check('chart/report remount aborts delayed reply and suppresses stale answer');
+ await page.getByRole('button',{name:'Load saved decisions'}).click();await page.getByRole('button',{name:'Review this decision'}).click();assert.equal(await page.getByRole('button',{name:'Compare decision process'}).isEnabled(),false);
+ await page.getByLabel('Add after chart for process review').setInputFiles({name:'after.png',mimeType:'image/png',buffer:png});await page.getByAltText('After chart selected for process review').waitFor();assert.equal(await page.getByRole('button',{name:'Compare decision process'}).isEnabled(),false);await page.getByLabel('I removed personal details from the after chart.').check();await page.getByRole('button',{name:'Compare decision process'}).click();await page.getByRole('heading',{name:'Mock process review'}).waitFor();
+ const review=calls.find(c=>c.route.endsWith('/review'));assert.equal(review.body.beforeImage,saved[0].image);assert.equal(review.body.afterImage,image);assert.equal(review.body.lockedAnalysis.instrument,'SYNTH-RANGE');check('process review requires after-image privacy and original saved decision');
+ await page.getByLabel('Add separate chart for Level Lab').setInputFiles({name:'lab.png',mimeType:'image/png',buffer:png});await page.getByLabel('I can read the price scale and candles on this chart.').check();assert.equal(await page.getByRole('button',{name:'Scan this chart for levels'}).isEnabled(),false);await page.getByRole('button',{name:'CONFIRM & LOCK CHART FACTS'}).click();await page.getByRole('button',{name:'Scan this chart for levels'}).click();await page.getByText('Separate mock levels',{exact:true}).waitFor();
+ const lab=calls.find(c=>c.route.endsWith('/levels'));assert.equal(lab.body.image,image);const crop=Buffer.from(lab.body.precisionImage.split(',')[1],'base64');const metadata=await sharp(crop).metadata();assert.equal(metadata.width,1400);assert.equal(metadata.height,765);assert.equal(await page.getByText('SECOND-SOURCE · 30m',{exact:true}).count(),1);
+ const main=await page.evaluate(()=>document.querySelector('.pnWorkflow').textContent);assert.match(main,/Wait for evidence/);check('standalone Level Lab uses locked separate source and actual Canvas JPEG crop');
+ await page.getByText('No verified scheduled macro rows are available.',{exact:false}).waitFor();assert.equal(await page.getByText('CLEAR',{exact:true}).count(),0);check('unavailable official calendar does not assert no event risk');
+ await page.getByRole('button',{name:'Delete saved decision'}).click();await page.getByText('Saved decision removed.',{exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Review this decision'}).count(),0);check('saved decision deletion completes transaction and refreshes history');
+ assert.equal(calls.filter(c=>c.route.endsWith('/events')).length,0);await page.evaluate(()=>window.mountReport('Apple'));await page.getByRole('button',{name:'Check AAPL company events'}).click();await page.getByText('2026-10-13 · EARNINGS · Mock earnings date · Mock provider · SYMBOL MATCHED',{exact:true}).waitFor();assert.equal(calls.at(-1).query,'?symbol=AAPL');check('company calendar requires identified company and explicit symbol-matched request');
+ assert.deepEqual(errors,[]);assert.deepEqual(blocked,[]);const overflow=await page.evaluate(()=>({viewport:innerWidth,body:document.body.scrollWidth}));assert.equal(overflow.body,overflow.viewport);
+ console.log(JSON.stringify({checks,interceptedRequests:calls.map(c=>c.route),providerCalls:0,jsErrors:errors,blockedExternalRequests:blocked,overflow,browser:'Chromium emulated mobile 390x844; mocked endpoints; not physical iPhone or scanner accuracy'},null,2));
+}finally{await browser.close();await new Promise(r=>server.close(r));}
