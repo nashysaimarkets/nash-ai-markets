@@ -11,3 +11,5 @@
 
 .psOriginalRaster polyline{stroke:#a78bfa;stroke-width:1.5;fill:none}
 .psOriginalRaster circle{fill:#fbbf24}
+.psOriginalLiquidityBand{fill:#34d399;opacity:.14}
+.psOriginalLiquidityBand[data-side=BUY_SIDE]{fill:#fb7185}

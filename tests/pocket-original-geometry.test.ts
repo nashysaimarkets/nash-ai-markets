@@ -38,3 +38,19 @@ test("compressed candles require a regular mixed-color run; histograms, isolated
  }
  assert.equal(readCandlePixels({...r,data:new Uint8ClampedArray(4)},bounds),null);
 });
+
+test('dedicated liquidity intervals preserve exact price endpoints, including zero-width lines',()=>{
+ const base={...report,currentPrice:'2975',liquidity:{...report.liquidity,zones:[{...report.liquidity.zones[0],priceLow:2949,priceHigh:2951}],observations:[{side:'sell-side',x:25,y:34.7,confidence:'HIGH'},{side:'sell-side',x:55,y:35.3,confidence:'HIGH'}]}};
+ const p={...pixels,candles:pixels.candles.map((c,i)=>({...c,lowY:i===0?694:i===1?706:c.lowY}))};
+ const bands=pixelCheckedLiquidity(base,true,axis,p);
+ assert.equal(bands.length,1);
+ assert.ok(Math.abs(bands[0].top-34.7)<1e-8);
+ assert.ok(Math.abs(bands[0].height-.6)<1e-8,'keep exact interval, never visual padding');
+ const line=pixelCheckedLiquidity({...report,currentPrice:'2975'},true,axis,pixels);
+ assert.equal(line[0].height,0);
+ for(const range of [{priceLow:2799,priceHigh:2951},{priceLow:2951,priceHigh:2949},{priceLow:2949},{priceLow:2949,priceHigh:3000}]){
+  assert.equal(pixelCheckedLiquidity({...base,liquidity:{...base.liquidity,zones:[{...report.liquidity.zones[0],...range}]}},true,axis,p).length,0);
+ }
+ const third={...base,liquidity:{...base.liquidity,observations:[...base.liquidity.observations,{side:'sell-side',x:40,y:35,confidence:'HIGH'}]}};
+ assert.equal(pixelCheckedLiquidity(third,true,axis,p).length,0,'unsupported third witness must reject complete band');
+});

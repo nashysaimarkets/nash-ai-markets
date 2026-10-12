@@ -1,4 +1,5 @@
 import { assessProductionLiquidityChain } from "./liquidity-chain.ts";
+import { exactAxisPrice } from "../../pocket/axis-verification.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -90,17 +91,26 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
     const basis = typeof zone.basis === "string" && allowedBasis.has(zone.basis) ? zone.basis : null;
     const x = numericPrice(zone.x), x2 = numericPrice(zone.x2), y = numericPrice(zone.y), price = numericPrice(zone.price);
     if (!side || !basis || x === null || x2 === null || y === null || x < left || x2 > right || x2 - x < 8 || y < top || y > bottom) return [];
+    const interval = zone.priceLow != null || zone.priceHigh != null;
+    const low = zone.priceLow, high = zone.priceHigh;
+    if (interval) {
+      const exact = typeof zone.price === "string" ? exactAxisPrice(zone.price) : null;
+      if (!scale || typeof low !== "number" || typeof high !== "number" || !Number.isFinite(low) || !Number.isFinite(high) || low <= 0 || high < low || exact === null || exact < low || exact > high) return [];
+      const bandTop = scale.project(high), bandBottom = scale.project(low);
+      if (low < scale.low.price || high > scale.high.price || bandTop < top || bandBottom > bottom || bandBottom-bandTop > (bottom-top)*.12) return [];
+    }
     let calibratedY = y;
     let calibratedPrice = typeof zone.price === "string" ? zone.price : "";
     if (price !== null && scale) {
-      const projected = scale.project(price);
+      const projected = scale.project(interval ? ((low as number)+(high as number))/2 : price);
       const tolerance = Math.max(4.5, (bottom - top) * 0.09);
       if (projected < top || projected > bottom || Math.abs(projected - y) > tolerance) return [];
       calibratedY = projected;
     } else {
       calibratedPrice = "";
     }
-    return [{ ...zone, side, basis, price: calibratedPrice, x, x2, y: Math.max(top, Math.min(bottom, calibratedY)) }];
+    const { priceLow: _rawLow, priceHigh: _rawHigh, ...rest } = zone;
+    return [{ ...rest, ...(interval ? {priceLow:low,priceHigh:high} : {}), side, basis, price: calibratedPrice, x, x2, y: Math.max(top, Math.min(bottom, calibratedY)) }];
   }).slice(0, 4) : [];
   if (!zones.length || !evidence) return empty;
   const chain = assessProductionLiquidityChain(source.observations, quality, boundsValue, zones);

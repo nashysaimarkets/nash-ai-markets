@@ -73,3 +73,12 @@ test("one corroborated zone cannot verify a second uncorroborated displayed zone
     {side:"SELL_SIDE",basis:"EQUAL_LOWS",price:"7600",x:18,x2:82,y:60},
   ]}).liquidity.state,"PARTIAL");
 });
+
+test('production interval contract retains exact endpoints and rejects incomplete or uncovered ranges',()=>{
+ const zone={side:'BUY_SIDE',basis:'EQUAL_HIGHS',price:'7750',priceLow:7749,priceHigh:7751,x:18,x2:82,y:30};
+ const good=run(observations,{}, {zones:[zone]}).liquidity.zones[0] as Record<string,unknown>;
+ assert.equal(good.priceLow,7749);assert.equal(good.priceHigh,7751);
+ for(const changes of [{priceLow:7749,priceHigh:null},{priceLow:null,priceHigh:7751},{priceLow:7752,priceHigh:7749},{priceLow:7400,priceHigh:7751},{priceLow:'7749',priceHigh:7751}]){
+  assert.equal(run(observations,{}, {zones:[{...zone,...changes}]}).liquidity.zones.length,0);
+ }
+});
