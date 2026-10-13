@@ -76,11 +76,11 @@ export async function GET(request:Request){
       body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : payload as Analysis;
     } catch (error) {
       failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
-      observations.push({id:sample.id,durationMs:Math.round(performance.now()-startedAt),exception:error instanceof Error ? error.message : String(error)});
+      observations.push({id:sample.id,durationMs:Math.round(performance.now()-startedAt),scored:false,exception:error instanceof Error ? error.message : String(error)});
       continue;
     }
     const durationMs = Math.round(performance.now()-startedAt);
-    if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);observations.push({id:sample.id,durationMs,httpStatus:response.status,error:body.error??null,...tortureHttpFailure(response)});continue;}
+    if(!response.ok){failures.push(`${sample.id}: HTTP ${response.status} ${body.error??""}`);observations.push({id:sample.id,durationMs,scored:false,analysisHttpStatus:response.status,httpStatus:response.status,error:body.error??null,...tortureHttpFailure(response)});continue;}
     const scoredCase = scoreTortureAnalysis(sample, body);
     const { levels, patterns } = scoredCase;
     for (const key of ["levels", "patterns", "liquidity"] as const) {
@@ -88,11 +88,11 @@ export async function GET(request:Request){
     }
     failures.push(...scoredCase.failures);
     measuredCaseIds.push(sample.id);
-    observations.push({id:sample.id,durationMs,caseMetrics: scoredCase.metrics,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
+    observations.push({id:sample.id,durationMs,scored:true,analysisHttpStatus:response.status,caseMetrics: scoredCase.metrics,readability:body.evidenceQuality?.chartReadability,levels,patterns,liquidity:body.liquidity});
   }
   // Always use the entire corpus as the benchmark denominator, even for a one-case paid request.
   const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample => sample.id),measuredCaseIds,metrics);
   const casePass = measuredCaseIds.length === selected.length && failures.length === 0;
   const pass = summary.measurementComplete && casePass;
-  return NextResponse.json({cases:selected.length,...summary,casePass,failures,observations,pass},{status:casePass?200:422});
+  return NextResponse.json({cases:selected.length,...summary,casePass,failures,observations:observations.map(item=>({...item as Record<string,unknown>,httpStatus:casePass?200:422})),pass},{status:casePass?200:422});
 }

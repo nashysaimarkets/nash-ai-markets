@@ -12,13 +12,13 @@ const bundle=await build({stdin:{contents:`import {chartGridRows} from './app/po
 import {verifyAxisWords} from './app/pocket/axis-verification.ts';
 import {verifyOriginalAxis} from './app/pocket/browser-axis-ocr.ts';
 import {createPrecisionReadingCrop} from './app/pocket/precision-reading-crop.ts';\nwindow.fixtureTools={chartGridRows,verifyAxisWords,verifyOriginalAxis,createPrecisionReadingCrop};`,resolveDir:root,loader:'ts'},bundle:true,write:false,platform:'browser',format:'iife'});
-const png=await sharp(Buffer.from(syntheticSvg(TORTURE_CASES[0]))).png().toBuffer();
+const pngs=new Map(await Promise.all(TORTURE_CASES.map(async sample=>[sample.id,await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer()])));
 const server=createServer(async(req,res)=>{
  try{
   const path=new URL(req.url,'http://localhost').pathname;
   if(path==='/'){res.setHeader('content-type','text/html');return res.end('<script src="/bundle.js"></script>');}
   if(path==='/bundle.js'){res.setHeader('content-type','text/javascript');return res.end(bundle.outputFiles[0].contents);}
-  if(path==='/fixture.png'){res.setHeader('content-type','image/png');return res.end(png);}
+  if(path==='/fixture.png'){res.setHeader('content-type','image/png');return res.end(pngs.get(new URL(req.url,"http://localhost").searchParams.get("case")));}
   if(path.startsWith('/ocr/')){
    const file=resolve(root,'public','.'+path);if(!file.startsWith(resolve(root,'public','ocr')+sep))throw new Error('invalid path');
    res.setHeader('content-type',path.endsWith('.js')?'text/javascript':path.endsWith('.wasm')?'application/wasm':'application/octet-stream');return res.end(await readFile(file));
@@ -35,17 +35,19 @@ page.on('pageerror',e=>errors.push(e.message));
 await page.route('**/*',route=>{if(!route.request().url().startsWith(origin+'/')){requests.push(route.request().url());return route.abort();}return route.continue();});
 try{
  await page.goto(origin);
- const results=await page.evaluate(async(axis)=>{
+ const cases=[];
+ for(const sample of TORTURE_CASES){
+ const results=await page.evaluate(async({axis,source})=>{
   const {chartGridRows,verifyAxisWords,verifyOriginalAxis,createPrecisionReadingCrop}=window.fixtureTools;
   const load=src=>new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src;});
-  const original=await load('/fixture.png');
+  const original=await load(source);
   const raster=im=>{const canvas=document.createElement('canvas');canvas.width=im.naturalWidth;canvas.height=im.naturalHeight;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(im,0,0);return ctx.getImageData(0,0,canvas.width,canvas.height);};
   const bounds={left:70/9,right:820/9,top:10,bottom:520/6};
   const words=axis.map(a=>({text:String(a.price),confidence:95,x:832,y:a.y,width:32,height:14}));
   const model=axis.map(a=>({price:a.price,y:a.y/6}));
   const grid=chartGridRows(raster(original),bounds).map(y=>y*6);
   const verified=verifyAxisWords(words,grid,model,600);
-  const data=await createPrecisionReadingCrop('/fixture.png');
+  const data=await createPrecisionReadingCrop(source);
   const precision=await load(data);const scale=precision.naturalWidth/900;
   const cropBounds={...bounds,top:(60-36)/492*100,bottom:(520-36)/492*100};
   const cropGrid=chartGridRows(raster(precision),cropBounds).map(y=>y*precision.naturalHeight/100);
@@ -64,13 +66,18 @@ try{
   const erased=await load(missingCanvas.toDataURL('image/png'));
   const missingOcr=await verifyOriginalAxis(erased,bounds,grid.map(y=>y/6),model,new AbortController().signal);
   return {verified,cropVerified,misaligned,blurred,missing,ocr,cropOcr,missingOcr,grid,cropGrid,cropDimensions:[precision.naturalWidth,precision.naturalHeight]};
- },SYNTHETIC_PRICE_AXIS);
- console.log(JSON.stringify({results,externalRequests:requests,jsErrors:errors,providerCalls:0},null,2));
- assert.equal(results.verified.status,'verified','actual synthetic PNG grid must align with visible labels');
- assert.equal(results.cropVerified.status,'verified','actual customer JPEG crop must preserve verified grid/scale alignment');
+ },{axis:SYNTHETIC_PRICE_AXIS,source:"/fixture.png?case="+sample.id});
+ cases.push({id:sample.id,results});
+ const gridStatus=sample.degrade==='blur'?'held':'verified';
+ const ocrStatus=sample.degrade?'held':'verified';
+ assert.equal(results.verified.status,gridStatus,sample.id+': actual PNG grid verification');
+ assert.equal(results.cropVerified.status,gridStatus,sample.id+': customer JPEG crop grid verification');
  for(const k of ['misaligned','blurred','missing'])assert.equal(results[k].status,'held',k+' must fail closed');
- assert.equal(results.ocr.status,'verified','real browser OCR must independently read fixture prices');
- assert.equal(results.cropOcr.status,'verified','real browser OCR must read customer JPEG crop prices');
+ assert.equal(results.ocr.status,ocrStatus,sample.id+': real browser independent OCR');
+ assert.equal(results.cropOcr.status,ocrStatus,sample.id+': customer JPEG crop independent OCR');
  assert.equal(results.missingOcr.status,'held','erased scale pixels must fail closed in the real OCR reader');
- assert.deepEqual(results.cropDimensions,[1400,765]);assert.deepEqual(requests,[]);assert.deepEqual(errors,[]);
+ assert.deepEqual(results.cropDimensions,[1400,765]);
+ }
+ assert.equal(cases.length,6);assert.deepEqual(requests,[]);assert.deepEqual(errors,[]);
+ console.log(JSON.stringify({cases,externalRequests:requests,jsErrors:errors,providerCalls:0},null,2));
 }finally{await browser.close();await new Promise(r=>server.close(r));}

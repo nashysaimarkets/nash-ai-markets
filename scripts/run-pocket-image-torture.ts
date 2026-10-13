@@ -51,11 +51,11 @@ for(const sample of selected){
   } catch (error) {
     const durationMs = Math.round(performance.now()-startedAt);
     failures.push(`${sample.id}: analysis exception ${error instanceof Error ? error.message : String(error)}`);
-    console.log(JSON.stringify({id:sample.id,durationMs,exception:error instanceof Error ? error.message : String(error)}));
+    console.log(JSON.stringify({id:sample.id,durationMs,scored:false,exception:error instanceof Error ? error.message : String(error)}));
     continue;
   }
   const durationMs = Math.round(performance.now()-startedAt);
-  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`);console.log(JSON.stringify({id:sample.id,durationMs,httpStatus:response.status,error:payload.error??null,...tortureHttpFailure(response)})); continue; }
+  if(!response.ok){ failures.push(`${sample.id}: HTTP ${response.status} ${payload.error??""}`);console.log(JSON.stringify({id:sample.id,durationMs,scored:false,analysisHttpStatus:response.status,httpStatus:response.status,error:payload.error??null,...tortureHttpFailure(response)})); continue; }
   const scoredCase = scoreTortureAnalysis(sample, body);
   const { levels: actualLevels, patterns: actualPatterns } = scoredCase;
   const liq = body.liquidity ?? {};
@@ -65,7 +65,7 @@ for(const sample of selected){
   failures.push(...scoredCase.failures);
   measuredCaseIds.push(sample.id);
 
-  console.log(JSON.stringify({id:sample.id,durationMs,caseMetrics: scoredCase.metrics,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
+  console.log(JSON.stringify({id:sample.id,durationMs,scored:true,httpStatus:response.status,analysisHttpStatus:response.status,caseMetrics: scoredCase.metrics,readability:body.evidenceQuality?.chartReadability,levels:actualLevels,patterns:actualPatterns,liquidity:liq}));
 }
 
 const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample=>sample.id),measuredCaseIds,metrics);

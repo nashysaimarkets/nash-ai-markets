@@ -192,3 +192,15 @@ test("aggregator refuses impossible true positives and omitted false negatives",
   }}]};
   assert.throws(() => aggregateSeparateTortureReports([impossibleFalsePositives]), /invalid|impossible/i);
 });
+
+ test("scored 422 retains measured misses while unscored HTTP failures stay unmeasured", () => {
+  const caseMetrics = scoreTortureAnalysis(range, {...perfect,levels:[{kind:"support",y:5}],patterns:[],liquidity:{state:"NONE",event:"NONE",zones:[]}}).metrics;
+  const observation = {id:range.id,httpStatus:422,analysisHttpStatus:200,scored:true,caseMetrics};
+  const measured = aggregateSeparateTortureReports([{cases:1,casePass:false,observations:[observation]}]);
+  assert.equal(measured.measuredCases,1);
+  assert.deepEqual(measured.metrics.levels.fn,caseMetrics.levels.fn);
+  assert.equal(measured.measurementComplete,false);
+  for (const change of [{scored:false},{scored:undefined},{analysisHttpStatus:503},{analysisHttpStatus:undefined},{httpStatus:429},{httpStatus:503},{exception:"failed"},{error:"failed"}]) {
+    assert.equal(aggregateSeparateTortureReports([{cases:1,observations:[{...observation,...change}]}]).measuredCases,0);
+  }
+ });

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFile} from 'node:fs/promises';
 import {takePocketBudget,pocketBudgetHeaders,resetPocketBudgetsForTesting} from '../app/lib/server/pocket-request-budget.ts';
-import {TORTURE_CASES,syntheticSvg,syntheticPrecisionCropSpec,buildTortureRequestPayload} from './support/pocket-image-torture.ts';
+import {TORTURE_CASES,syntheticSvg,syntheticPrecisionCropSpec,buildTortureRequestPayload,scoreTortureAnalysis,summarizeTortureMeasurements,unwrapTortureAnalysis,aggregateSeparateTortureReports} from './support/pocket-image-torture.ts';
 import {createRequire,stripTypeScriptTypes} from 'node:module';
 import {tortureHttpFailure} from '../app/api/pocket/torture/http-failure.ts';
 const require=createRequire(import.meta.url);const sharp=require('sharp');
@@ -46,3 +46,23 @@ test('fifth same-IP analysis is locally limited with explicit origin and retry e
   assert.equal(headers['x-pocket-rate-limit-source'],'application');
  }finally{resetPocketBudgetsForTesting();}
 });
+
+ test('actual preview handler distinguishes scored acceptance 422 from an unscored 422', async()=>{
+ const route=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
+ const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
+ const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
+ let analysisStatus=200;
+ const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,scoreTortureAnalysis,summarizeTortureMeasurements,unwrapTortureAnalysis,
+ mayRunLiveTorture:()=>true,isCumulativeTestSpendHeld:()=>false,withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>run(),
+ analyse:async()=>Response.json(analysisStatus===200?{analysis:{levels:[],patterns:[],liquidity:{state:'NONE',event:'NONE',zones:[]}}}:{error:'Incomplete analysis'},{status:analysisStatus}),NextResponse:{json:Response.json}};
+ const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+ const get=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(helper+handler)+'\nreturn GET;')(...Object.values(bindings));
+ const old=process.env.VERCEL_ENV;process.env.VERCEL_ENV='preview';
+ try{
+  const request=()=>new Request('https://preview.test/api/pocket/torture?run=1&case=range-clear');
+  const scoredResponse=await get(request());assert.equal(scoredResponse.status,422);
+  const report=await scoredResponse.json();assert.equal(report.casePass,false);assert.equal(report.observations[0].scored,true);assert.equal(report.observations[0].httpStatus,422);assert.equal(report.observations[0].analysisHttpStatus,200);
+  const aggregate=aggregateSeparateTortureReports([report]);assert.equal(aggregate.measuredCases,1);assert.equal(aggregate.metrics.levels.fn,2);
+  analysisStatus=422;const unscored=await (await get(request())).json();assert.equal(unscored.observations[0].scored,false);assert.equal(aggregateSeparateTortureReports([unscored]).measuredCases,0);
+ }finally{if(old===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=old;}
+ });

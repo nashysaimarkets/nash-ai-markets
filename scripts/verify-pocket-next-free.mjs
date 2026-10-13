@@ -14,14 +14,14 @@ const proxy=proxyAddress&&!origin.startsWith('http://127.0.0.1:')?new URL(proxyA
 const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(proxy?{proxy:{server:proxy.origin,username:decodeURIComponent(proxy.username),password:decodeURIComponent(proxy.password)}}:{})});
 const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,ignoreHTTPSErrors:true});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
-let analysisCalls=0,preflightCalls=0,pending=false,success=false,release=()=>{};
+let analysisCalls=0,preflightCalls=0,pending=false,success=false,release=()=>{},expectedPrice="6725.50";
 const facts={status:'READY',instrument:'US 500',instrumentConfidence:'HIGH',timeframe:'5m',timeframeConfidence:'HIGH',currentPrice:'6725.50',currentPriceConfidence:'HIGH',priceScaleVisible:true,candlesReadable:true,enoughHistory:true,sameInstrument:true,issues:[],guidance:'Clear'};
 await page.route('**/api/**',async route=>{
  const path=new URL(route.request().url()).pathname;
  if(path==='/api/pocket/preflight'){preflightCalls++;return route.fulfill({status:200,json:{preflight:facts}});}
  if(path==='/api/pocket/analyse'){
   analysisCalls++;const body=route.request().postDataJSON();
-  assert.equal(body.chartConfirmation.instrument,'US 500');assert.equal(body.chartConfirmation.timeframe,'5m');
+  assert.equal(body.chartConfirmation.instrument,'US 500');assert.equal(body.chartConfirmation.timeframe,'5m');assert.equal(body.chartConfirmation.currentPrice,expectedPrice);
   const crop=Buffer.from(body.precisionImage.split(',')[1],'base64');const meta=await sharp(crop).metadata();assert.equal(meta.width,1400);assert.equal(meta.height,765);
   if(pending)await new Promise(resolve=>{release=resolve;});
   return route.fulfill(success?{status:200,json:{analysis:successfulReport}}:{status:503,json:{error:'Mock analysis only — no provider request'}});
@@ -47,11 +47,31 @@ try{
  results.push('replacement clears lock and rejects stale failure PASS');
  pending=false;success=true;await lock();const before=preflightCalls;await run().click();await page.locator('.psPreflight[data-locked="true"]').waitFor({timeout:5000});assert.equal(preflightCalls,before,'accepted report must retain image-bound facts without a second preflight');await page.getByRole('heading',{name:'Your next steps'}).waitFor({timeout:5000});
  results.push('successful mocked analysis preserves locked source and exposes workflows PASS');
+ await page.getByRole('button',{name:'Edit chart facts'}).click();
+ await expect(page.locator('.pnResultApp')).toHaveCount(0);
+ await expect(page.getByRole('heading',{name:'Your next steps'})).toHaveCount(0);
+ await page.locator('.psPreflight input').first().waitFor();
+ expectedPrice='6726.25';await page.getByPlaceholder('e.g. 7658.01').fill(expectedPrice);
+ await lock();await expect(page.locator('.pnResultApp')).toHaveCount(0);
+ pending=true;await run().click();await expect.poll(()=>analysisCalls).toBe(5);
+ await page.getByRole('button',{name:'CANCEL ANALYSIS'}).click();release();
+ await expect(run()).toBeEnabled();await expect(page.locator('.pnResultApp')).toHaveCount(0);
+ pending=false;await run().click();await page.getByRole('button',{name:'Edit chart facts'}).waitFor();
+ results.push('fact edits remove cached report; reconfirmation and cancelled late response cannot restore it PASS');
+ expectedPrice='6725.50';await page.locator('.pnChartAdd input').first().setInputFiles({name:'Independent.png',mimeType:'image/png',buffer});
+ await page.locator('.psPreflight input').first().waitFor();await lock();await run().click();await page.getByRole('button',{name:'Edit chart facts'}).waitFor();
+ await page.locator('.pnChartSwitcher button').filter({hasText:'MAIN'}).click();
+ await page.getByRole('button',{name:'Edit chart facts'}).click();await expect(page.locator('.pnResultApp')).toHaveCount(0);
+ await page.getByRole('button',{name:'CHART 2',exact:true}).click();await page.getByRole('heading',{name:'Your next steps'}).waitFor();
+ await page.locator('.pnChartSwitcher button').filter({hasText:'MAIN'}).click();await expect(page.locator('.pnResultApp')).toHaveCount(0);
+ results.push('editing one slot preserves independent report while the edited slot remains invalidated PASS');
+ // Return to the retained report to exercise the normal reset control.
+ await page.getByRole('button',{name:'CHART 2',exact:true}).click();
  await page.getByRole('button',{name:'NEW ANALYSIS'}).click();
  await page.getByRole('button',{name:'OPEN NO-CREDIT INTERFACE DEMO'}).click();
  await page.getByRole('button',{name:'NEW ANALYSIS'}).waitFor();
  for(const tab of ['Levels','Patterns','Liquidity','Risk'])await page.getByRole('button',{name:new RegExp(tab)}).first().click();
- assert.equal(analysisCalls,4);assert.deepEqual(errors,[]);
+ assert.equal(analysisCalls,7);assert.deepEqual(errors,[]);
  const overflow=await page.evaluate(()=>({viewport:innerWidth,body:document.body.scrollWidth}));assert.ok(overflow.body<=overflow.viewport);
  results.push('synthetic demo tabs and mobile layout PASS');
  await page.getByRole('button',{name:'NEW ANALYSIS'}).click();assert.equal(await run().isEnabled(),false);
