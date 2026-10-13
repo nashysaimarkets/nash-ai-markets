@@ -42,6 +42,36 @@ test("liquidity cannot earn a true positive with wrong verification state or abs
   }
 });
 
+test("liquidity cannot earn a true positive at an unrelated chart position", () => {
+  for (const sample of [range, TORTURE_CASES.find(candidate => candidate.id === "sweep-reclaim")!]) {
+    const scored = scoreTortureAnalysis(sample, {
+      levels: [], patterns: [], liquidity: {
+        state: sample.expectedLiquidity.state,
+        event: sample.expectedLiquidity.event ?? "REJECTION",
+        zones: [{ side: "SELL_SIDE", basis: "PRIOR_SWING_LOW", x: 1, x2: 99, y: 99 }],
+      },
+    });
+    assert.deepEqual(scored.metrics.liquidity, { tp: 0, fp: 1, fn: 1 });
+    assert.ok(scored.failures.some(failure => failure.includes("liquidity")));
+  }
+});
+
+test("liquidity credit requires independently labelled candle witnesses", () => {
+  for (const sample of TORTURE_CASES.filter(candidate => candidate.expectedLiquidity.state !== "NONE")) {
+    const label = sample.expectedLiquidity.zones![0]!;
+    const x = (index: number) => (90 + index * (700 / Math.max(1, sample.points.length - 1))) / 9;
+    const aligned = { side: label.side, basis: label.bases[0],
+      x: x(label.witnessIndices[0]!) - 1, x2: x(label.witnessIndices.at(-1)!) + 1, y: label.y };
+    const body = { levels: [], patterns: [], liquidity: {
+      state: sample.expectedLiquidity.state, event: sample.expectedLiquidity.event ?? "TESTING", zones: [aligned],
+    } };
+    assert.deepEqual(scoreTortureAnalysis(sample, body).metrics.liquidity, { tp: 1, fp: 0, fn: 0 });
+    assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity, zones: [aligned,
+      { side: "SELL_SIDE", basis: "PRIOR_SWING_LOW", x: 1, x2: 99, y: 99 },
+    ]}}).metrics.liquidity, { tp: 0, fp: 1, fn: 1 });
+  }
+});
+
 test("wrong sweep event counts as an incorrect detection and a missed expected event", () => {
   const sweep = TORTURE_CASES.find(sample => sample.id === "sweep-reclaim")!;
   const scored = scoreTortureAnalysis(sweep, {levels:[],patterns:[],liquidity:{state:"VERIFIED",event:"REJECTION",zones:[{}]}});

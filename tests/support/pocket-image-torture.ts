@@ -7,21 +7,35 @@ export type TortureCase = {
   expectedLevels: Array<{ kind: "support" | "resistance"; y: number; tolerance: number }>;
   expectedPatterns: string[];
   forbiddenPatterns?: string[];
-  expectedLiquidity: { state: "VERIFIED" | "PARTIAL" | "NONE"; event?: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; minimumZones?: number };
+  expectedLiquidity: {
+    state: "VERIFIED" | "PARTIAL" | "NONE";
+    event?: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION";
+    minimumZones?: number;
+    zones?: Array<{ side: "BUY_SIDE" | "SELL_SIDE"; bases: Array<"EQUAL_HIGHS" | "EQUAL_LOWS" | "PRIOR_SWING_HIGH" | "PRIOR_SWING_LOW" | "RANGE_HIGH" | "RANGE_LOW">; y: number; tolerance: number; witnessIndices: number[] }>;
+  };
   degrade?: "blur" | "compress" | "crop-scale";
 };
 
 export const TORTURE_CASES: TortureCase[] = [
   { id:"range-clear", market:"SYNTH-RANGE", timeframe:"30m", points:[72,65,35,28,62,70,40,30,64,69,42,33,58,61],
     expectedLevels:[{kind:"resistance",y:31,tolerance:7},{kind:"support",y:64,tolerance:7}], expectedPatterns:["RECTANGLE / RANGE"],
-    expectedLiquidity:{state:"VERIFIED",minimumZones:1} },
+    expectedLiquidity:{state:"VERIFIED",minimumZones:1,zones:[
+      {side:"BUY_SIDE",bases:["RANGE_HIGH","EQUAL_HIGHS"],y:31,tolerance:7,witnessIndices:[3,7,11]},
+      {side:"SELL_SIDE",bases:["RANGE_LOW","EQUAL_LOWS"],y:64,tolerance:7,witnessIndices:[0,5,9]},
+    ]} },
   { id:"double-top", market:"SYNTH-DTOP", timeframe:"1h", points:[75,58,32,52,70,50,31,48,67,78],
-    expectedLevels:[{kind:"resistance",y:34,tolerance:8}], expectedPatterns:["DOUBLE TOP"], expectedLiquidity:{state:"PARTIAL"} },
+    expectedLevels:[{kind:"resistance",y:34,tolerance:8}], expectedPatterns:["DOUBLE TOP"], expectedLiquidity:{state:"PARTIAL",minimumZones:1,zones:[
+      {side:"BUY_SIDE",bases:["EQUAL_HIGHS"],y:34,tolerance:8,witnessIndices:[2,6]},
+    ]} },
   { id:"head-shoulders", market:"SYNTH-HS", timeframe:"4h", points:[75,55,38,62,22,61,37,64,80],
-    expectedLevels:[], expectedPatterns:["HEAD & SHOULDERS"], expectedLiquidity:{state:"PARTIAL"} },
+    expectedLevels:[], expectedPatterns:["HEAD & SHOULDERS"], expectedLiquidity:{state:"PARTIAL",minimumZones:1,zones:[
+      {side:"BUY_SIDE",bases:["EQUAL_HIGHS"],y:39,tolerance:5,witnessIndices:[2,6]},
+    ]} },
   { id:"sweep-reclaim", market:"SYNTH-SWEEP", timeframe:"5m", points:[70,45,30,48,31,50,29,18,38,52],
     expectedLevels:[{kind:"resistance",y:32,tolerance:9}], expectedPatterns:[], forbiddenPatterns:["HEAD & SHOULDERS","DOUBLE TOP"],
-    expectedLiquidity:{state:"VERIFIED",event:"SWEEP",minimumZones:1} },
+    expectedLiquidity:{state:"VERIFIED",event:"SWEEP",minimumZones:1,zones:[
+      {side:"BUY_SIDE",bases:["EQUAL_HIGHS"],y:33,tolerance:9,witnessIndices:[2,4,6]},
+    ]} },
   { id:"near-miss-chop", market:"SYNTH-CHOP", timeframe:"30m", points:[55,48,52,45,50,47,54,49,51,46,53],
     expectedLevels:[], expectedPatterns:[], forbiddenPatterns:["HEAD & SHOULDERS","DOUBLE TOP","DOUBLE BOTTOM","TRIANGLE","PENNANT"],
     expectedLiquidity:{state:"NONE",event:"NONE",minimumZones:0} },
@@ -233,14 +247,36 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   const actual = body.liquidity;
   const expectedPositive = expected.state !== "NONE";
   const actualPositive = actual?.state === "VERIFIED" || actual?.state === "PARTIAL";
-  const validZones = Array.isArray(actual?.zones) && actual.zones.length > 0 && actual.zones.every(item => {
-    if (!item || typeof item !== "object") return false;
+  const zoneRecords = Array.isArray(actual?.zones) ? actual.zones.flatMap(item => {
+    if (!item || typeof item !== "object") return [];
     const zone = item as Record<string, unknown>;
-    return ["BUY_SIDE", "SELL_SIDE"].includes(String(zone.side)) &&
+    const valid = ["BUY_SIDE", "SELL_SIDE"].includes(String(zone.side)) &&
       ["EQUAL_HIGHS", "EQUAL_LOWS", "PRIOR_SWING_HIGH", "PRIOR_SWING_LOW", "RANGE_HIGH", "RANGE_LOW"].includes(String(zone.basis)) &&
       [zone.x, zone.x2, zone.y].every(coordinate => typeof coordinate === "number" && Number.isFinite(coordinate) && coordinate >= 0 && coordinate <= 100) &&
       (zone.x2 as number) - (zone.x as number) >= 8;
-  });
+    return valid ? [zone] : [];
+  }) : [];
+  const expectedZones = expected.zones ?? [];
+  const matchedZones = new Map<number, number>();
+  const witnessX = (index: number) => (90 + index * (700 / Math.max(1, sample.points.length - 1))) / 9;
+  function assignZone(expectedIndex: number, visited: Set<number>): boolean {
+    const label = expectedZones[expectedIndex]!;
+    for (const [actualIndex, zone] of zoneRecords.entries()) {
+      if (visited.has(actualIndex) || zone.side !== label.side || !label.bases.includes(zone.basis as typeof label.bases[number]) ||
+          Math.abs((zone.y as number) - label.y) > label.tolerance ||
+          label.witnessIndices.filter(index => witnessX(index) >= (zone.x as number) && witnessX(index) <= (zone.x2 as number)).length < 2) continue;
+      visited.add(actualIndex);
+      const previous = matchedZones.get(actualIndex);
+      if (previous === undefined || assignZone(previous, visited)) {
+        matchedZones.set(actualIndex, expectedIndex);
+        return true;
+      }
+    }
+    return false;
+  }
+  expectedZones.forEach((_, index) => assignZone(index, new Set()));
+  const validZones = zoneRecords.length === (actual?.zones?.length ?? 0) && zoneRecords.length > 0 &&
+    matchedZones.size === zoneRecords.length && matchedZones.size >= (expected.minimumZones ?? 0);
   const correct = actualPositive && actual?.state === expected.state &&
     validZones &&
     (!expected.event || actual.event === expected.event) &&
