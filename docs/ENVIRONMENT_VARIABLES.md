@@ -11,7 +11,7 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
-- `POCKET_TORTURE_LIVE_ENABLED` — preview-only benchmark opt-in; only the exact string `true` allows attempting the billed route. Leave unset/false until authoritative $2 spending accounting is verified.
+- `POCKET_TORTURE_LIVE_ENABLED` — preview-only benchmark opt-in; only the exact string `true` allows attempting the billed route. Leave unset/false until the separate pilot ledger, exact project/model/tier/pricing bounds and independent gates are verified.
 - `POCKET_TORTURE_LIVE_TOKEN` — server-only random secret of at least 32 characters. A preview live benchmark must supply the exact secret in `x-pocket-torture-token`. Never place it in client code, URLs or logs. Leave unset unless a billed test is explicitly authorised and cost-bounded.
 
 ## Apple server verification and native pin
@@ -122,6 +122,32 @@ Each main/precision/rescue/context provider call reserves its own amount and
 claims dispatch atomically. Receipts persist request/response IDs, model and
 usage without chart content. Unsettled or failed calls stay counted; token
 usage is not substituted for authoritative charged dollars.
+
+## Separate six-case benchmark pilot (approved ceiling: USD $5)
+
+These variables belong only to the new owner-approved pilot recorded in PR
+comment `6165012632`. They do not modify, settle or infer headroom in the
+historical $2 ledger above. The pilot is denied unless every value is present,
+the private ledger is independently enabled, and the exact candidate matches.
+
+- `POCKET_BENCHMARK_PILOT_ENABLED`: exact `true` only after independent gates pass; default false.
+- `POCKET_BENCHMARK_LEDGER_KEY`: one durable pilot ledger shared by all six named cases.
+- `POCKET_BENCHMARK_OPENAI_PROJECT_ID`: exact verified provider project passed to the SDK and checked by SQL.
+- `POCKET_BENCHMARK_APPROVAL_REF`: immutable reference to the approved $5 scope.
+- `POCKET_BENCHMARK_CANDIDATE_SHA`: full 40-character candidate commit.
+- `POCKET_BENCHMARK_MODEL_COST_BOUNDS`: JSON keyed by exact model. Every entry pins `serviceTier=default`, maximum output, text characters, schema bytes, image count/bytes, worst-case micro-USD and pricing-evidence reference.
+- `POCKET_BENCHMARK_CALL_PLAN`: exactly three deterministic slots—`main`, `primary_precision`, `rescue_precision`—each pinning model/tier, output, text, schema, image count/bytes, worst-case micro-USD and evidence reference. This supports distinct main/precision bounds even when both use the same model. The complete worst-case total is reserved before dispatch.
+
+Named cases cannot be reclaimed, concurrent retransmits cannot dispatch the
+same slot twice, the private ledger allowlists no more than six exact case IDs,
+and a previous unresolved charge blocks the next case.
+Unused conditional rescue is voided only while still reserved. Submitted calls
+remain committed through crashes/timeouts until an immutable provider receipt
+and authoritative dollar settlement exist. Provisional synthetic-case output
+is stored with a SHA-256 digest but the endpoint returns only
+`PENDING_AUTHORITATIVE_SETTLEMENT`; TP/FP/FN and acceptance are released only
+through the result path after every required call settles and the final
+cumulative-cap veto passes. A conflicting provisional measurement is rejected.
 
 Pocket scan entitlement rollout requires the `pocket_scan_entitlements` migration and authoritative Stripe backfill. Founding awards and terminal Pro/Elite tiers are not Pocket access. Native Apple subscriptions and the advertised first free iPhone analysis require their own verified server entitlement integration before distribution. Do not deploy this guard to production as a stand-alone migration-free change.
 

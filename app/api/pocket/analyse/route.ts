@@ -1,5 +1,6 @@
 import { withPocketFirstFreeRequest } from "../../../lib/server/pocket-first-free";
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
+import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
@@ -296,8 +297,9 @@ export async function POST(request: Request) {
     const macroContext = await getVerifiedMacroContext({ route: "/api/pocket/analyse" });
     const verifiedEvents = macroContext.releases.slice(0, 4).map((event) => `${event.name} (${event.agency}) at ${event.scheduledAt}, ${event.risk} impact`);
     const model = process.env.OPENAI_POCKET_MODEL?.trim() || OPENAI_DEFAULT_MODEL;
-    const analysisRequest = dispatchPocketAnalysisProviderCall(model, 7000, () => client.responses.create({
+    const analysisEnvelope: ResponseCreateParamsNonStreaming = {
       model,
+      service_tier: "default" as const,
       reasoning: { effort: "low" },
       store: false,
       instructions: [
@@ -347,7 +349,8 @@ export async function POST(request: Request) {
       // distinct evidence. Reasoning tokens also count toward this allowance.
       max_output_tokens: 7000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
-    }));
+    };
+    const analysisRequest = dispatchPocketAnalysisProviderCall("main", analysisEnvelope as unknown as Record<string, unknown>, () => client.responses.create(analysisEnvelope));
     const precisionInstructions = [
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
@@ -360,8 +363,10 @@ export async function POST(request: Request) {
         "For every level, y must mark the actual visible candle reaction and must also agree with the price projected from the three-point scale. Prefer an empty levels array to false precision. Keep label and price terse; no prose overlays.",
       ].join(" ");
     const precisionModel = process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model;
-    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => dispatchPocketAnalysisProviderCall(precisionModel, 1400, () => client.responses.create({
-      model: process.env.OPENAI_POCKET_ANNOTATION_MODEL?.trim() || model,
+    const requestPrecision = (chartImage: string, rescue = false, readingCrop: string | null = null) => {
+      const precisionEnvelope: ResponseCreateParamsNonStreaming = {
+      model: precisionModel,
+      service_tier: "default" as const,
       reasoning: { effort: "low" },
       store: false,
       instructions: precisionInstructions,
@@ -377,7 +382,9 @@ export async function POST(request: Request) {
       }],
       max_output_tokens: 1400,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
-    }));
+      };
+      return dispatchPocketAnalysisProviderCall(rescue ? "rescue_precision" : "primary_precision", precisionEnvelope as unknown as Record<string, unknown>, () => client.responses.create(precisionEnvelope));
+    };
     const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
         const first = await requestPrecision(chartImage);

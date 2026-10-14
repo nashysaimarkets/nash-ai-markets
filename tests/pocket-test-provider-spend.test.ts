@@ -1,61 +1,95 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
-import { executeReservedPocketProviderCall, withPocketTestSpendScope } from "../app/api/pocket/torture/provider-spend.ts";
+import { parsePocketBenchmarkConfiguration, verifyPocketBenchmarkEnvelope, withPocketTestSpendScope } from "../app/api/pocket/torture/provider-spend.ts";
 
-const input = { ledgerKey: "test-only", requestKey: "case:call-1", projectRef: "test-project", ownerApprovalRef: "test-approval", estimatedMicroUsd: 100000 };
-const allowed = { allowed: true, status: "reserved", reservation_id: "r1", committed_microusd: 100000, remaining_microusd: 1900000 };
-const submitted = { ok: true, status: "submitted", reservation_id: "r1", claimed: true };
-
-test("live scope stays held before database configuration or provider dispatch", async () => {
+test("new benchmark scope remains held without explicit pilot activation", async () => {
+  const before = process.env.POCKET_BENCHMARK_PILOT_ENABLED;
+  delete process.env.POCKET_BENCHMARK_PILOT_ENABLED;
   let calls = 0;
-  await assert.rejects(() => withPocketTestSpendScope("range-clear", async () => { calls++; }), /spending remains held/i);
+  await assert.rejects(() => withPocketTestSpendScope("range-clear", async () => { calls++; }), /pilot spending remains held/i);
   assert.equal(calls, 0);
+  if (before === undefined) delete process.env.POCKET_BENCHMARK_PILOT_ENABLED; else process.env.POCKET_BENCHMARK_PILOT_ENABLED = before;
 });
 
-function rpc(replies: unknown[]) {
-  const calls: string[] = [];
-  return { calls, client: { async rpc(name: string) { calls.push(name); return { data: replies.shift(), error: null }; } } };
-}
+const image = `data:image/png;base64,${Buffer.from("bounded-fixture").toString("base64")}`;
+const envelope = {
+  model: "verified-model", service_tier: "default", store: false,
+  reasoning: { effort: "low" }, max_output_tokens: 7000,
+  instructions: "bounded instructions",
+  input: [{ role: "user", content: [{ type: "input_text", text: "audit" }, { type: "input_image", image_url: image, detail: "high" }] }],
+  text: { format: { type: "json_schema", strict: true, schema: { type: "object" } } },
+};
+const plan = {
+    main: { slot: "main", model: "verified-model", serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxCostMicroUsd: 500000, costBoundEvidenceRef: "pricing-export-1" },
+    primary_precision: { slot: "primary_precision", model: "verified-model", serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxCostMicroUsd: 200000, costBoundEvidenceRef: "pricing-export-1" },
+    rescue_precision: { slot: "rescue_precision", model: "verified-model", serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 2, maxImageBytes: 2000, maxCostMicroUsd: 300000, costBoundEvidenceRef: "pricing-export-1" },
+};
+const scope = {
+  plan,
+  bounds: { "verified-model": { serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxCostMicroUsd: 500000, fullContextCostBoundEvidenceRef: "pricing-export-1" } },
+} as never;
 
-test("provider dispatch waits for durable reservation and exclusive submit claim", async () => {
-  const ledger = rpc([allowed, submitted, { ok: true, status: "submitted", reservation_id: "r1" }]);
-  let sent = 0;
-  const result = await executeReservedPocketProviderCall(ledger.client, input, async () => {
-    assert.deepEqual(ledger.calls, ["reserve_pocket_test_spend", "submit_pocket_test_spend"]);
-    sent++;
-    return { _request_id: "req-test", id: "resp-test", model: "test-model", usage: { input_tokens: 100, output_tokens: 20 } };
+test("actual provider envelope is inspected and fingerprinted", () => {
+  const facts = verifyPocketBenchmarkEnvelope("main", envelope, scope);
+  assert.equal(facts?.images, 1);
+  assert.equal(facts?.serviceTier, "default");
+  assert.match(facts?.fingerprint ?? "", /^[0-9a-f]{64}$/);
+});
+
+test("one verified model supports distinct main and precision slot bounds", () => {
+  const beforeBounds = process.env.POCKET_BENCHMARK_MODEL_COST_BOUNDS;
+  const beforePlan = process.env.POCKET_BENCHMARK_CALL_PLAN;
+  process.env.POCKET_BENCHMARK_MODEL_COST_BOUNDS = JSON.stringify({
+    "verified-model": { serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 30000, maxSchemaBytes: 30000, maxImages: 2, maxImageBytes: 4000000, maxCostMicroUsd: 500000, fullContextCostBoundEvidenceRef: "pricing-export-1" },
   });
-  assert.equal(result.id, "resp-test");
-  assert.equal(sent, 1);
-  assert.deepEqual(ledger.calls, ["reserve_pocket_test_spend", "submit_pocket_test_spend", "record_pocket_test_spend_receipt"]);
-});
-
-test("denied budgets and duplicate claims dispatch nothing", async () => {
-  for (const replies of [[{ allowed: false, reason: "cumulative_cap_exceeded" }], [allowed, { ...submitted, claimed: false }]]) {
-    let sent = 0;
-    await assert.rejects(() => executeReservedPocketProviderCall(rpc(replies).client, input, async () => { sent++; return {}; }));
-    assert.equal(sent, 0);
+  process.env.POCKET_BENCHMARK_CALL_PLAN = JSON.stringify(Object.values(plan));
+  try {
+    const parsed = parsePocketBenchmarkConfiguration();
+    assert.equal(parsed.plan.main.maxOutputTokens, 7000);
+    assert.equal(parsed.plan.primary_precision.maxOutputTokens, 1400);
+    assert.equal(parsed.plan.rescue_precision.maxImages, 2);
+  } finally {
+    if (beforeBounds === undefined) delete process.env.POCKET_BENCHMARK_MODEL_COST_BOUNDS; else process.env.POCKET_BENCHMARK_MODEL_COST_BOUNDS = beforeBounds;
+    if (beforePlan === undefined) delete process.env.POCKET_BENCHMARK_CALL_PLAN; else process.env.POCKET_BENCHMARK_CALL_PLAN = beforePlan;
   }
 });
 
-test("provider failure and missing receipt retain submitted uncertainty without settlement or void", async () => {
-  const ledger = rpc([allowed, submitted]);
-  await assert.rejects(() => executeReservedPocketProviderCall(ledger.client, input, async () => { throw new Error("timeout after possible charge"); }), /timeout/);
-  assert.deepEqual(ledger.calls, ["reserve_pocket_test_spend", "submit_pocket_test_spend"]);
-  const missing = rpc([allowed, submitted]);
-  await assert.rejects(() => executeReservedPocketProviderCall(missing.client, input, async () => ({})), /receipt/i);
-  assert.deepEqual(missing.calls, ["reserve_pocket_test_spend", "submit_pocket_test_spend"]);
+test("unpriced features, tier drift, image overflow and output drift fail closed", () => {
+  for (const changed of [
+    { ...envelope, service_tier: "auto" },
+    { ...envelope, tools: [{ type: "web_search" }] },
+    { ...envelope, max_output_tokens: 7001 },
+    { ...envelope, input: [{ role: "user", content: [...envelope.input[0]!.content, { type: "input_image", image_url: image, detail: "high" }] }] },
+  ]) assert.throws(() => verifyPocketBenchmarkEnvelope("main", changed, scope), /benchmark|provider request/i);
 });
 
-test("both live harnesses establish a spend scope and every analysis/precision call uses it", async () => {
+test("routes pass the exact request object, deterministic slots and pinned tier", async () => {
   const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
-  assert.equal((route.match(/dispatchPocketAnalysisProviderCall\(/g) ?? []).length, 2);
-  assert.equal((route.match(/client\.responses\.create\(/g) ?? []).length, 2);
-  assert.equal((route.match(/dispatchPocketAnalysisProviderCall\([^\n]+=> client\.responses\.create\(/g) ?? []).length, 2);
-  for (const file of ["../app/api/pocket/torture/route.ts", "../scripts/run-pocket-image-torture.ts"]) {
-    const source = await readFile(new URL(file, import.meta.url), "utf8");
-    assert.match(source, /withPocketTestSpendScope/);
-    assert.match(source, /isCumulativeTestSpendHeld/);
-  }
+  assert.match(route, /service_tier:\s*"default"/);
+  assert.match(route, /dispatchPocketAnalysisProviderCall\("main", analysisEnvelope/);
+  assert.match(route, /rescue \? "rescue_precision" : "primary_precision"/);
+  assert.doesNotMatch(route, /dispatchPocketAnalysisProviderCall\(model,\s*7000/);
+});
+
+test("pilot SQL is isolated, deterministic, six-case bounded and postflight-vetoed", async () => {
+  const sql = await readFile(new URL("../supabase/migrations/20261014113000_pocket_benchmark_pilot.sql", import.meta.url), "utf8");
+  assert.match(sql, /cap_microusd between 1 and 5000000/);
+  assert.match(sql, /primary key \(ledger_key, case_id, slot\)/);
+  assert.match(sql, /count\(\*\)[\s\S]*>= 6/);
+  assert.match(sql, /p_case_id = any\(v_ledger\.allowed_case_ids\)/);
+  assert.match(sql, /previous_case_unresolved/);
+  assert.match(sql, /possibly charged call cannot be voided/);
+  assert.match(sql, /assert_pocket_benchmark_case_reconciled/);
+  assert.match(sql, /record_pocket_benchmark_measurement/);
+  assert.match(sql, /release_pocket_benchmark_measurement/);
+  assert.match(sql, /authoritative_settlement_incomplete/);
+  assert.doesNotMatch(sql, /pocket_test_spend_ledgers\s+set|alter table private\.pocket_test_spend/i);
+});
+
+test("provisional scanner evidence is withheld until authoritative settlement", async () => {
+  const route = await readFile(new URL("../app/api/pocket/torture/route.ts", import.meta.url), "utf8");
+  assert.match(route, /PENDING_AUTHORITATIVE_SETTLEMENT/);
+  assert.match(route, /recordPocketBenchmarkMeasurement\(requested, measurement\)/);
+  assert.match(route, /releasePocketBenchmarkMeasurement\(requested\)/);
 });

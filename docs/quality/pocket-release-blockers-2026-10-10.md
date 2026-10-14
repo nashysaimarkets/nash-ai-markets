@@ -2,6 +2,22 @@
 
 RELEASE HOLD. The owner's complete/verify/launch directive authorises candidate engineering and controlled release only after mandatory gates genuinely pass. It does not authorise unreconciled paid calls. Sole writer: this interactive Work Jimmy session; scheduled Scanner Fixer stays paused. Supporting automations are read-only. Never resume from an old checkpoint: resolve PR #112 head and check ownership first.
 
+### 14 October separate benchmark-pilot successor
+
+Owner approval in PR comment `6165012632` establishes a new independent USD
+$5 ceiling for at most six labelled cases; it does not settle or reuse the old
+$2 ledger. Successor source adds separate private tables/RPCs, durable named
+case identity, complete three-call reservation, exact project/candidate/tier
+binding, actual request-envelope inspection, immutable receipts, unresolved
+charge quarantine and a two-phase measurement release. Provisional output is
+durably hashed but withheld; TP/FP/FN is released only after authoritative
+dollar settlement and the final cumulative-cap veto. The SQL and synthetic
+main/precision/rescue lifecycle, including denial before settlement and exact
+release after settlement, passed on staging inside
+`BEGIN/ROLLBACK`; no schema or test rows persisted and provider calls remained
+zero. Activation, authoritative pricing/project evidence, exact-SHA CI and
+independent QA remain mandatory before the first billable case.
+
 ## Proven starting point
 
 PR #112 candidate `4282ec77c01c3c367485a61d8f3bfd7330c1c0ca`, branch `qa/image-torture-corpus-2026-10-07`, draft/unmerged. Quality run 37980145730 and image packaging 37980145778 completed success. Exact preview `dpl_HGbc7ao9Uj55TBfQAmwKcTnSxfZM` READY; `/pocket` HTTP 200. Billed image stage skipped: accuracy remains unmeasured. Earlier completed preflight, identity, cancellation and decoded pixel repairs are preserved, not reported as new fixes.
@@ -48,6 +64,7 @@ No row may be removed without linked completion evidence or an explicit owner pr
 | BUD-02 | Durable ledger transactional verification | Staging SQL and concurrent reservations/claims PASS | Migration installed in staging, zero real ledger rows; production/configuration not activated |
 | BUD-03 | Per-provider-call reserve/claim/receipt/settlement integration | FREE VERIFICATION PASS; activation blocked | Main/precision/rescue/context calls individually reserve then claim; immutable provider receipts persist. Actual dollars still require authoritative reconciliation; unknown costs remain committed |
 | BUD-04 | Exact spending approval and verified remaining $2 | BLOCKED | Separate owner approval after BUD-01; no paid calls until proven |
+| BUD-05 | Independent approved $5 six-case pilot | SOURCE IMPLEMENTED; ACTIVATION HOLD | Owner approval `6165012632`; isolated SQL rollback and two-phase measurement-release tests PASS, zero provider calls. Requires exact-SHA CI, QA, project/model/tier/pricing evidence, staging migration/config and one-case-at-a-time reconciled receipts |
 | ACC-01 | Six labelled real Levels measurements | UNMEASURED | TP/FP/FN, precision/recall, latency, negatives, raw exact-SHA receipts |
 | ACC-02 | Six labelled real Patterns measurements | UNMEASURED | Same; real positive pattern and geometry acceptance required |
 | ACC-03 | Six labelled real Liquidity measurements | UNMEASURED | Same; sweep, pool/reclaim and evidence-chain checks |
@@ -55,7 +72,7 @@ No row may be removed without linked completion evidence or an explicit owner pr
 | UX-01 | Real mobile upload/replacement/multiple images/axes/overlays/controls | PARTIAL | Mocked Chromium is free safety evidence; real scanner and iPhone/Safari/native remain required |
 | UX-02 | Real latency/timeouts/network recovery | PARTIAL | Mock timings are not provider performance; real p50/p95 and timeout/cancel billing semantics required |
 | INT-01 | Approved UI/scanner/native branches reconciled | PARTIAL IN SOURCE | PRs #95, #102–104, #105–111 and native approved-build47 line reviewed against candidate; no blind merges |
-| COM-01 | Registration/login and paid entitlement enforcement | REPAIRED IN SOURCE; REAL E2E BLOCKED | Seven billed Pocket routes now check verified server identity + independent current subscription before parsing/budget/provider. Staging SQL and denied actual-handler regressions pass. Existing paid subscriptions need authoritative Stripe backfill before rollout; Apple bridge integrated in successor source; legacy binding/first-free remain open |
+| COM-01 | Registration/login and paid entitlement enforcement | P1 SOURCE DEFECT OPEN | Audit at `c7466ef` reproduced acceptance of an unlinked replacement application UUID sharing the verified email. Bind exact authenticated UUID + Stripe customer + subscription; legacy mappings require deliberate authoritative backfill. Real customer E2E remains blocked |
 | COM-02 | Apple sandbox purchase/cancel/restore/grace/entitlements | BLOCKED | Native source/server bridge now staged; no Swift compilation, signed build, real sandbox purchase/restore, legacy binding or first-free evidence |
 | COM-03 | Stripe web subscription/webhook/customer return flows | UNVERIFIED E2E | Connected Nashaimarkets account is live; test-mode/customer test resources not yet established; no live purchase |
 | SEC-01 | Independent code/security/privacy review | SOURCE FINDINGS REPAIRED | Independent re-review confirmed all three findings corrected; seven free access/webhook regressions PASS, no additional concrete defect in scope. Genuine customer/native/security configuration gates remain |

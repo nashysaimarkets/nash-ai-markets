@@ -12,8 +12,9 @@ test('one-case preview requests preserve distinct stable fixture rate-limit iden
  const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
  const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
  const addresses:string[]=[];
- const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,mayRunLiveTorture:()=>true,isCumulativeTestSpendHeld:()=>false,
-  withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>run(),
+ const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,mayRunLiveTorture:()=>true,isBenchmarkPilotSpendHeld:()=>false,
+  withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>({value:await run(),reconciliation:{reconciled:true,capExceeded:false,committedMicroUsd:1}}),
+  recordPocketBenchmarkMeasurement:async()=>({ok:true}),releasePocketBenchmarkMeasurement:async()=>({released:false}),
   analyse:async(req:Request)=>{addresses.push(req.headers.get('x-forwarded-for')!);return Response.json({error:'No provider in this test'},{status:503});},
   summarizeTortureMeasurements:()=>({measurementComplete:false}),NextResponse:{json:(body:unknown)=>body}};
  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
@@ -53,7 +54,8 @@ test('fifth same-IP analysis is locally limited with explicit origin and retry e
  const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
  let analysisStatus=200;
  const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,scoreTortureAnalysis,summarizeTortureMeasurements,unwrapTortureAnalysis,
- mayRunLiveTorture:()=>true,isCumulativeTestSpendHeld:()=>false,withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>run(),
+ mayRunLiveTorture:()=>true,isBenchmarkPilotSpendHeld:()=>false,withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>({value:await run(),reconciliation:{reconciled:true,capExceeded:false,committedMicroUsd:1}}),
+ recordPocketBenchmarkMeasurement:async()=>({ok:true}),releasePocketBenchmarkMeasurement:async()=>({released:false}),
  analyse:async()=>Response.json(analysisStatus===200?{analysis:{levels:[],patterns:[],liquidity:{state:'NONE',event:'NONE',zones:[]}}}:{error:'Incomplete analysis'},{status:analysisStatus}),NextResponse:{json:Response.json}};
  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
  const get=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(helper+handler)+'\nreturn GET;')(...Object.values(bindings));
@@ -61,8 +63,34 @@ test('fifth same-IP analysis is locally limited with explicit origin and retry e
  try{
   const request=()=>new Request('https://preview.test/api/pocket/torture?run=1&case=range-clear');
   const scoredResponse=await get(request());assert.equal(scoredResponse.status,422);
-  const report=await scoredResponse.json();assert.equal(report.casePass,false);assert.equal(report.observations[0].scored,true);assert.equal(report.observations[0].httpStatus,422);assert.equal(report.observations[0].analysisHttpStatus,200);
+  const report=await scoredResponse.json();assert.equal(report.casePass,false);assert.equal(report.observations[0].scored,true);assert.equal(report.observations[0].httpStatus,200);assert.equal(report.observations[0].benchmarkHttpStatus,422);assert.equal(report.observations[0].analysisHttpStatus,200);
   const aggregate=aggregateSeparateTortureReports([report]);assert.equal(aggregate.measuredCases,1);assert.equal(aggregate.metrics.levels.fn,2);
   analysisStatus=422;const unscored=await (await get(request())).json();assert.equal(unscored.observations[0].scored,false);assert.equal(aggregateSeparateTortureReports([unscored]).measuredCases,0);
  }finally{if(old===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=old;}
  });
+
+test('preview preserves provider 429 and 503 diagnostics instead of rewriting them as benchmark 422', async()=>{
+ const route=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
+ const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
+ const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
+ let analysisStatus=429;
+ const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,scoreTortureAnalysis,summarizeTortureMeasurements,unwrapTortureAnalysis,
+ mayRunLiveTorture:()=>true,isBenchmarkPilotSpendHeld:()=>false,withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>({value:await run(),reconciliation:{reconciled:true,capExceeded:false,committedMicroUsd:1}}),
+ recordPocketBenchmarkMeasurement:async()=>({ok:true}),releasePocketBenchmarkMeasurement:async()=>({released:false}),
+ analyse:async()=>Response.json({error:analysisStatus===429?'Rate limited':'Unavailable'},{status:analysisStatus,headers:analysisStatus===429?{'x-pocket-rate-limit-source':'application'}:{}}),NextResponse:{json:Response.json}};
+ const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+ const get=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(helper+handler)+'\nreturn GET;')(...Object.values(bindings));
+ const old=process.env.VERCEL_ENV;process.env.VERCEL_ENV='preview';
+ try{
+  for(const status of [429,503]){
+   analysisStatus=status;
+   const response=await get(new Request('https://preview.test/api/pocket/torture?run=1&case=range-clear'));
+   assert.equal(response.status,422);
+   const report=await response.json();
+   assert.equal(report.observations[0].scored,false);
+   assert.equal(report.observations[0].httpStatus,status);
+   assert.equal(report.observations[0].analysisHttpStatus,status);
+   assert.equal(report.observations[0].benchmarkHttpStatus,422);
+  }
+ }finally{if(old===undefined)delete process.env.VERCEL_ENV;else process.env.VERCEL_ENV=old;}
+});

@@ -9,3 +9,9 @@
 export function isCumulativeTestSpendHeld(): boolean {
   return true;
 }
+
+/** The owner-approved $5 pilot is independent of the unresolved historical
+ * $2 ledger and remains closed until its own controls are explicitly enabled. */
+export function isBenchmarkPilotSpendHeld(): boolean {
+  return process.env.POCKET_BENCHMARK_PILOT_ENABLED !== "true";
+}

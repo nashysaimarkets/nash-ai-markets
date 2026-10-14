@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 // @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
-import { isCumulativeTestSpendHeld } from "./spending-hold";
-import { withPocketTestSpendScope } from "./provider-spend";
+import { isBenchmarkPilotSpendHeld } from "./spending-hold";
+import { recordPocketBenchmarkMeasurement, releasePocketBenchmarkMeasurement, withPocketTestSpendScope } from "./provider-spend";
 import { mayRunLiveTorture } from "./authorization";
 import { tortureHttpFailure } from "./http-failure";
 import { TORTURE_CASES, syntheticSvg, unwrapTortureAnalysis, syntheticPrecisionCropSpec, buildTortureRequestPayload, scoreTortureAnalysis, summarizeTortureMeasurements } from "../../../../tests/support/pocket-image-torture";
@@ -53,11 +53,22 @@ export async function GET(request:Request){
   })) return NextResponse.json({error:"Live benchmark not authorized."},{status:403});
   // A paid run must explicitly name one case; batch execution requires a budget check between calls.
   if (!requested) return NextResponse.json({error:"Live benchmark requires one named case."},{status:400});
-  // CUMULATIVE_TEST_SPEND_HOLD: opt-in secrets do not prove remaining dollars.
-  if (isCumulativeTestSpendHeld()) return NextResponse.json({error:"Cumulative testing costs and spending reservations remain unverified. No AI request was sent."},{status:503});
+  // The new pilot remains independent of the unresolved historical $2 hold.
+  if (isBenchmarkPilotSpendHeld()) return NextResponse.json({error:"The separately approved benchmark pilot controls are not enabled. No AI request was sent."},{status:503});
+  if (params.get("result") === "1") {
+    try {
+      const released = await releasePocketBenchmarkMeasurement(requested);
+      if (released.released !== true) return NextResponse.json({caseId:requested,status:"PENDING_AUTHORITATIVE_SETTLEMENT",scored:false},{status:409});
+      return NextResponse.json(released.measurement,{status:200});
+    } catch (error) {
+      return NextResponse.json({error:error instanceof Error ? error.message : String(error),caseId:requested,scored:false},{status:409});
+    }
+  }
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const measuredCaseIds: string[] = [];
+  let reconciled = false;
+  let committedMicroUsd: number | null = null;
   for(let i=0;i<selected.length;i++){
     const sample=selected[i]!;
     const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
@@ -71,7 +82,10 @@ export async function GET(request:Request){
     let body: Analysis;
     const startedAt = performance.now();
     try {
-      response=await withPocketTestSpendScope(sample.id, async () => await analyse(req));
+      const run=await withPocketTestSpendScope(sample.id, async () => await analyse(req));
+      response=run.value;
+      reconciled=run.reconciliation.reconciled;
+      committedMicroUsd=run.reconciliation.committedMicroUsd;
       const payload = await response.json();
       body = response.ok ? unwrapTortureAnalysis(payload) as Analysis : payload as Analysis;
     } catch (error) {
@@ -94,5 +108,12 @@ export async function GET(request:Request){
   const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample => sample.id),measuredCaseIds,metrics);
   const casePass = measuredCaseIds.length === selected.length && failures.length === 0;
   const pass = summary.measurementComplete && casePass;
-  return NextResponse.json({cases:selected.length,...summary,casePass,failures,observations:observations.map(item=>({...item as Record<string,unknown>,httpStatus:casePass?200:422})),pass},{status:casePass?200:422});
+  const benchmarkHttpStatus = casePass ? 200 : 422;
+  const measurement={cases:selected.length,...summary,casePass,failures,observations:observations.map(item=>{
+    const observation = item as Record<string,unknown>;
+    return {...observation,httpStatus:observation.httpStatus ?? observation.analysisHttpStatus ?? benchmarkHttpStatus,benchmarkHttpStatus};
+  }),pass};
+  await recordPocketBenchmarkMeasurement(requested, measurement);
+  if (!reconciled) return NextResponse.json({caseId:requested,status:"PENDING_AUTHORITATIVE_SETTLEMENT",scored:false,committedMicroUsd},{status:202});
+  return NextResponse.json(measurement,{status:benchmarkHttpStatus});
 }
