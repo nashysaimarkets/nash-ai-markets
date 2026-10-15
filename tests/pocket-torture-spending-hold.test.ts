@@ -22,3 +22,29 @@ test('CLI holds before a model call even when a valid fixture was selected', asy
   const run=new Function('isBenchmarkPilotSpendHeld','calls',source.slice(start,end)+'; calls();');
   assert.throws(()=>run(()=>true,()=>calls++),/pilot controls/i);assert.equal(calls,0);
 });
+
+test('immediate POST measurement must pass final database release veto', async () => {
+  const source=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
+  const start=source.lastIndexOf('  await recordPocketBenchmarkMeasurement(requested, measurement);');
+  const end=source.indexOf('\n}',start);
+  assert.ok(start>0 && end>start,'benchmark POST tail not found');
+  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+  const run=new AsyncFunction('recordPocketBenchmarkMeasurement','releasePocketBenchmarkMeasurement',
+    'requested','measurement','reconciled','committedMicroUsd','NextResponse','benchmarkHttpStatus',
+    source.slice(start,end));
+  const responses={json:(body:unknown,opts:{status:number})=>({body,...opts})};
+  let releases=0;
+  const record=async()=>true;
+  const deny=async()=>{releases++;return {released:false}};
+  const blocked=await run(record,deny,'range-clear',{pass:true},true,2000,responses,200);
+  assert.equal(blocked.status,409);
+  assert.deepEqual(blocked.body,{caseId:'range-clear',status:'PENDING_AUTHORITATIVE_SETTLEMENT',scored:false});
+  assert.equal(releases,1);
+  const hold=await run(record,deny,'range-clear',{pass:true},false,null,responses,200);
+  assert.equal(hold.status,202);
+  assert.equal(releases,1,'unsettled case must not attempt release');
+  const allow=async()=>({released:true,measurement:{provenance:'settled',pass:false}});
+  const released=await run(record,allow,'range-clear',{pass:true},true,2000,responses,422);
+  assert.equal(released.status,422);
+  assert.deepEqual(released.body,{provenance:'settled',pass:false});
+});

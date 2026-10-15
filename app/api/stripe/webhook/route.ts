@@ -3,7 +3,8 @@ import Stripe from "stripe";
 import { createAdminClient } from "../../../../utils/supabase/admin";
 import { buildPocketFoundingWelcomeEmail, buildPocketSubscriptionAlertEmail } from "../../../lib/launch-email.ts";
 import { dispatchLaunchEmail } from "../../../lib/server/resend-launch-email.ts";
-import { configuredOffering, validFoundingProPrice, validPocketFoundingPrice, type CommercialPlan as Plan, type StripeOffering as Offering } from "../../../lib/stripe-commercial.ts";
+import { validFoundingProPrice, validPocketFoundingPrice, type CommercialPlan as Plan } from "../../../lib/stripe-commercial.ts";
+import { singleConfiguredSubscriptionItem, containsPocketPrice } from "../../../lib/stripe-subscription-scope.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,14 +95,17 @@ async function saveSubscription(
   fallbackEmail?: string | null,
   fallbackAppUserId?: string | null,
 ) {
-  const offerings = subscription.items.data
-    .map((item) => ({ offering: configuredOffering(item.price.id), item }))
-    .filter((value): value is { offering: Offering; item: Stripe.SubscriptionItem } => value.offering !== null);
-  const matchedPlans = [...new Set(offerings.map(({ offering }) => offering.plan))];
-  const plan = matchedPlans.length === 1 ? matchedPlans[0] : null;
-  const billingIntervals = [...new Set(offerings.map(({ offering }) => offering.billingInterval))];
-  const billingInterval = billingIntervals.length === 1 ? billingIntervals[0] : null;
-  const unitAmount = offerings.length === 1 ? offerings[0].item.price.unit_amount : null;
+  const resolvedItem = singleConfiguredSubscriptionItem(subscription.items.data);
+  // Never grant or revoke a currently active subscription based on an ambiguous
+  // collection. In particular, filtering unknown items before counting would
+  // falsely accept a Pocket price with an unrelated second Stripe price.
+  if (!resolvedItem && foundingSubscriptionActive(subscription.status)) {
+    throw new Error("Cannot safely map ambiguous Stripe subscription items");
+  }
+  const offerings = resolvedItem ? [resolvedItem] : [];
+  const plan = resolvedItem?.offering.plan ?? null;
+  const billingInterval = resolvedItem?.offering.billingInterval ?? null;
+  const unitAmount = resolvedItem?.item.price.unit_amount ?? null;
   // Revocation must not depend on customer lookup or a recoverable email.
   if (plan !== "pocket" || !foundingSubscriptionActive(subscription.status)) {
     const { error } = await createAdminClient().rpc("revoke_pocket_web_subscription", {
@@ -243,8 +247,14 @@ export async function POST(request: Request) {
         const customerAddress = session.customer_details?.email?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
         const referenceUserId = applicationUserId(session.client_reference_id);
         const metadataUserId = applicationUserId(session.metadata?.supabase_user_id);
-        if (!referenceUserId || !metadataUserId || referenceUserId !== metadataUserId) throw new Error("Checkout application identity mismatch");
-        const savedPlan = await saveSubscription(stripe, subscription, event.created, customerAddress, referenceUserId ?? metadataUserId);
+        // Pocket access requires a verified UUID; legacy Pro/Elite checkout can
+        // legitimately be anonymous. Derive scope from Stripe price IDs, never
+        // from customer-supplied checkout metadata.
+        const isPocketCheckout = containsPocketPrice(subscription.items.data);
+        if (isPocketCheckout && (!referenceUserId || !metadataUserId || referenceUserId !== metadataUserId)) {
+          throw new Error("Checkout application identity mismatch");
+        }
+        const savedPlan = await saveSubscription(stripe, subscription, event.created, customerAddress, isPocketCheckout ? referenceUserId : null);
         if (savedPlan === "pocket" && customerAddress) {
           // Welcome delivery is deliberately non-blocking: membership access is the critical path.
           await Promise.allSettled([

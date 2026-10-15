@@ -6,7 +6,7 @@ const range = TORTURE_CASES[0]!;
 const perfect = {
   levels: [{kind:"resistance",y:31},{kind:"support",y:64}],
   patterns: [{name:"RECTANGLE / RANGE",geometry:{points:[{x:20,y:31},{x:50,y:64},{x:80,y:31}]}}],
-  liquidity: {state:"VERIFIED",zones:[{side:"BUY_SIDE",basis:"RANGE_HIGH",x:20,x2:80,y:31}]},
+  liquidity: {state:"VERIFIED",zones:[{side:"BUY_SIDE",basis:"RANGE_HIGH",x:20,x2:80,y:31},{side:"SELL_SIDE",basis:"RANGE_LOW",x:20,x2:80,y:64}]},
 };
 
 test("torture scoring counts duplicate levels and patterns as false positives", () => {
@@ -56,19 +56,25 @@ test("liquidity cannot earn a true positive at an unrelated chart position", () 
   }
 });
 
-test("liquidity credit requires independently labelled candle witnesses", () => {
+test("liquidity credit requires every labelled zone and independent candle witnesses", () => {
   for (const sample of TORTURE_CASES.filter(candidate => candidate.expectedLiquidity.state !== "NONE")) {
-    const label = sample.expectedLiquidity.zones![0]!;
     const x = (index: number) => (90 + index * (700 / Math.max(1, sample.points.length - 1))) / 9;
-    const aligned = { side: label.side, basis: label.bases[0],
-      x: x(label.witnessIndices[0]!) - 1, x2: x(label.witnessIndices.at(-1)!) + 1, y: label.y };
+    const aligned = sample.expectedLiquidity.zones!.map(label => ({
+      side: label.side, basis: label.bases[0],
+      x: x(label.witnessIndices[0]!) - 1,
+      x2: x(label.witnessIndices.at(-1)!) + 1, y: label.y,
+    }));
     const body = { levels: [], patterns: [], liquidity: {
-      state: sample.expectedLiquidity.state, event: sample.expectedLiquidity.event ?? "TESTING", zones: [aligned],
+      state: sample.expectedLiquidity.state, event: sample.expectedLiquidity.event ?? "TESTING", zones: aligned,
     } };
     assert.deepEqual(scoreTortureAnalysis(sample, body).metrics.liquidity, { tp: 1, fp: 0, fn: 0 });
-    assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity, zones: [aligned,
+    assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity, zones: [...aligned,
       { side: "SELL_SIDE", basis: "PRIOR_SWING_LOW", x: 1, x2: 99, y: 99 },
     ]}}).metrics.liquidity, { tp: 0, fp: 1, fn: 1 });
+    if (aligned.length > 1) {
+      assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity,zones:[aligned[0]!]}}).metrics.liquidity,
+        { tp: 0, fp: 1, fn: 1 });
+    }
   }
 });
 
@@ -88,6 +94,14 @@ test("negative liquidity cannot silently carry an unsupported event", () => {
   }
 });
 
+test("unsupported level kinds cannot disappear before false-positive scoring", () => {
+  const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
+  assert.throws(() => scoreTortureAnalysis(negative, {
+    levels: [{kind:"pivot",y:42}], patterns: [],
+    liquidity: {state:"NONE",event:"NONE",zones:[]},
+  } as Parameters<typeof scoreTortureAnalysis>[1]), /Invalid scanner output/i);
+});
+
 test("no-signal cases cannot pass with omitted null or malformed scanner output", () => {
   const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
   const empty = { levels: [], patterns: [], liquidity: { state: "NONE", event: "NONE", zones: [] } };
@@ -98,6 +112,17 @@ test("no-signal cases cannot pass with omitted null or malformed scanner output"
     { ...empty, liquidity: { state: "UNKNOWN", zones: [] } },
     { ...empty, liquidity: { state: "NONE" } }, { ...empty, liquidity: { state: "NONE", zones: [{}] } },
   ]) assert.throws(() => scoreTortureAnalysis(negative, body as Parameters<typeof scoreTortureAnalysis>[1]), /scanner output/i);
+});
+
+test("collinear diagonal anchors never prove a rectangle or range", () => {
+  const scored = scoreTortureAnalysis(range, {
+    ...perfect,
+    patterns:[{name:"RECTANGLE / RANGE",geometry:{points:[
+      {x:20,y:20},{x:50,y:40},{x:80,y:60},
+    ]}}],
+  });
+  assert.deepEqual(scored.metrics.patterns,{tp:0,fp:1,fn:1});
+  assert.ok(scored.failures.some(f => f.includes("false pattern")));
 });
 
 test("matching names and placeholder zones cannot earn geometry-free true positives", () => {
@@ -155,7 +180,8 @@ test("unknown or duplicate measured image IDs cannot manufacture completion", ()
 test("separate paid scans cannot claim completeness until all six are measured", () => {
   const cases = TORTURE_CASES.map(sample => sample.id);
   const reports = TORTURE_CASES.map(sample => ({
-    cases:1, observations:[{id:sample.id,caseMetrics:{
+    cases:1, ledgerReleaseVerified:true,ledgerCaseId:sample.id,
+    observations:[{id:sample.id,scored:true,httpStatus:200,benchmarkHttpStatus:200,analysisHttpStatus:200,caseMetrics:{
       levels:{tp:sample.expectedLevels.length,fp:0,fn:0},
       patterns:{tp:sample.expectedPatterns.length,fp:0,fn:0},
       liquidity:{tp:sample.expectedLiquidity.state === "NONE" ? 0 : 1,fp:0,fn:0},
@@ -175,6 +201,45 @@ test("separate paid scans cannot claim completeness until all six are measured",
   assert.deepEqual(complete.unmeasuredCaseIds,[]);
   assert.equal(complete.metrics.levels.tp,4);
   assert.equal(complete.metrics.levels.precision,1);
+});
+
+test("six counter-only JSON files cannot impersonate completed measured scanner accuracy", () => {
+  const reports = TORTURE_CASES.map(sample => ({
+    cases:1,observations:[{id:sample.id,caseMetrics:{
+      levels:{tp:sample.expectedLevels.length,fp:0,fn:0},
+      patterns:{tp:sample.expectedPatterns.length,fp:0,fn:0},
+      liquidity:{tp:sample.expectedLiquidity.state === "NONE" ? 0 : 1,fp:0,fn:0},
+    }}],
+  }));
+  const summary = aggregateSeparateTortureReports(reports);
+  assert.equal(summary.attemptedCases,6);
+  assert.equal(summary.measuredCases,0);
+  assert.equal(summary.measurementComplete,false);
+  for (const scanner of Object.values(summary.metrics)) {
+    assert.equal(scanner.precision,null);
+    assert.equal(scanner.recall,null);
+  }
+});
+
+test("missing or mismatched database-release provenance cannot count as a scored scan", () => {
+  const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
+  const observation = {id:negative.id,scored:true,httpStatus:200,benchmarkHttpStatus:200,
+    analysisHttpStatus:200,caseMetrics:{
+      levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0},
+    }};
+  for(const evidence of [
+    {},{ledgerReleaseVerified:true},{ledgerCaseId:negative.id},
+    {ledgerReleaseVerified:true,ledgerCaseId:"other-case"},
+  ]) {
+    const summary=aggregateSeparateTortureReports([{cases:1,...evidence,observations:[observation]}]);
+    assert.equal(summary.measuredCases,0);
+  }
+  for(const change of [{benchmarkHttpStatus:undefined},{httpStatus:undefined},
+    {analysisHttpStatus:429},{scored:undefined}]) {
+    const summary=aggregateSeparateTortureReports([{cases:1,ledgerReleaseVerified:true,
+      ledgerCaseId:negative.id,observations:[{...observation,...change}]}]);
+    assert.equal(summary.measuredCases,0);
+  }
 });
 
 test("aggregator treats failed scans without scored observations as unmeasured", () => {
@@ -225,12 +290,13 @@ test("aggregator refuses impossible true positives and omitted false negatives",
 
  test("scored 422 retains measured misses while unscored HTTP failures stay unmeasured", () => {
   const caseMetrics = scoreTortureAnalysis(range, {...perfect,levels:[{kind:"support",y:5}],patterns:[],liquidity:{state:"NONE",event:"NONE",zones:[]}}).metrics;
-  const observation = {id:range.id,httpStatus:422,analysisHttpStatus:200,scored:true,caseMetrics};
-  const measured = aggregateSeparateTortureReports([{cases:1,casePass:false,observations:[observation]}]);
+  const observation = {id:range.id,httpStatus:422,benchmarkHttpStatus:422,analysisHttpStatus:200,scored:true,caseMetrics};
+  const verifiedReport = {cases:1,casePass:false,ledgerReleaseVerified:true,ledgerCaseId:range.id,observations:[observation]};
+  const measured = aggregateSeparateTortureReports([verifiedReport]);
   assert.equal(measured.measuredCases,1);
   assert.deepEqual(measured.metrics.levels.fn,caseMetrics.levels.fn);
   assert.equal(measured.measurementComplete,false);
   for (const change of [{scored:false},{scored:undefined},{analysisHttpStatus:503},{analysisHttpStatus:undefined},{httpStatus:429},{httpStatus:503},{exception:"failed"},{error:"failed"}]) {
-    assert.equal(aggregateSeparateTortureReports([{cases:1,observations:[{...observation,...change}]}]).measuredCases,0);
+    assert.equal(aggregateSeparateTortureReports([{...verifiedReport,observations:[{...observation,...change}]}]).measuredCases,0);
   }
  });
