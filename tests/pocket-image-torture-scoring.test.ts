@@ -108,6 +108,17 @@ test("no-signal cases cannot pass with omitted null or malformed scanner output"
   ]) assert.throws(() => scoreTortureAnalysis(negative, body as Parameters<typeof scoreTortureAnalysis>[1]), /scanner output/i);
 });
 
+test("collinear diagonal anchors never prove a rectangle or range", () => {
+  const scored = scoreTortureAnalysis(range, {
+    ...perfect,
+    patterns:[{name:"RECTANGLE / RANGE",geometry:{points:[
+      {x:20,y:20},{x:50,y:40},{x:80,y:60},
+    ]}}],
+  });
+  assert.deepEqual(scored.metrics.patterns,{tp:0,fp:1,fn:1});
+  assert.ok(scored.failures.some(f => f.includes("false pattern")));
+});
+
 test("matching names and placeholder zones cannot earn geometry-free true positives", () => {
   const scored = scoreTortureAnalysis(range, {...perfect,
     patterns:[{name:"RECTANGLE / RANGE"}], liquidity:{state:"VERIFIED",zones:[{}]},
