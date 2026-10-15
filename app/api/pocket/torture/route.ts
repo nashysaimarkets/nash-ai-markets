@@ -20,6 +20,17 @@ async function makePrecisionCrop(image: Buffer) {
 
 
 type Counts={tp:number;fp:number;fn:number};
+
+function publishedLedgerMeasurement(caseId: string, released: {measurement?: unknown}) {
+  const measurement = released.measurement;
+  if (!measurement || typeof measurement !== "object" || Array.isArray(measurement)) {
+    throw new Error("Benchmark ledger did not release a valid case measurement");
+  }
+  // Origin metadata is attached only after the final authoritative database
+  // release veto. An offline copy remains independently untrusted until matched
+  // against the scoped request/receipt/cost ledger.
+  return {...measurement, ledgerReleaseVerified: true, ledgerCaseId: caseId};
+}
 type Analysis={evidenceQuality?:{chartReadability?:string};levels?:Array<{kind?:string;y?:number}>;patterns?:Array<{name?:string}>;liquidity?:{state?:string;event?:string;zones?:unknown[]};error?:string};
 
 export async function GET(request:Request){
@@ -59,7 +70,7 @@ export async function GET(request:Request){
     try {
       const released = await releasePocketBenchmarkMeasurement(requested);
       if (released.released !== true) return NextResponse.json({caseId:requested,status:"PENDING_AUTHORITATIVE_SETTLEMENT",scored:false},{status:409});
-      return NextResponse.json(released.measurement,{status:200});
+      return NextResponse.json(publishedLedgerMeasurement(requested,released),{status:200});
     } catch (error) {
       return NextResponse.json({error:error instanceof Error ? error.message : String(error),caseId:requested,scored:false},{status:409});
     }
@@ -120,5 +131,5 @@ export async function GET(request:Request){
   // Only the database release RPC may publish scored benchmark evidence.
   const released = await releasePocketBenchmarkMeasurement(requested);
   if (released.released !== true) return NextResponse.json({caseId:requested,status:"PENDING_AUTHORITATIVE_SETTLEMENT",scored:false},{status:409});
-  return NextResponse.json(released.measurement,{status:benchmarkHttpStatus});
+  return NextResponse.json(publishedLedgerMeasurement(requested,released),{status:benchmarkHttpStatus});
 }
