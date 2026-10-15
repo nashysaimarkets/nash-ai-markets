@@ -115,5 +115,10 @@ export async function GET(request:Request){
   }),pass};
   await recordPocketBenchmarkMeasurement(requested, measurement);
   if (!reconciled) return NextResponse.json({caseId:requested,status:"PENDING_AUTHORITATIVE_SETTLEMENT",scored:false,committedMicroUsd},{status:202});
-  return NextResponse.json(measurement,{status:benchmarkHttpStatus});
+  // A cached reconciliation flag is not the final release authority. The pilot
+  // ledger may have been disabled, de-verified or revoked after settlement.
+  // Only the database release RPC may publish scored benchmark evidence.
+  const released = await releasePocketBenchmarkMeasurement(requested);
+  if (released.released !== true) return NextResponse.json({caseId:requested,status:"PENDING_AUTHORITATIVE_SETTLEMENT",scored:false},{status:409});
+  return NextResponse.json(released.measurement,{status:benchmarkHttpStatus});
 }
