@@ -6,17 +6,35 @@ declare
   failed boolean;
 begin
  if exists(select 1 from auth.users where id in (u1,u2)) then raise exception 'fixture_uuid_collision'; end if;
+ -- Staging Auth has a UNIQUE partial email index for non-SSO accounts.
+ -- Use different emails for simultaneous users; test sequential same-email
+ -- recreation separately rather than constructing impossible Auth fixtures.
  insert into auth.users(id,email,email_confirmed_at,is_anonymous) values
    (u1,'qa-entitlement@example.invalid',now(),false),
-   (u2,'qa-entitlement@example.invalid',now(),false);
+   (u2,'qa-other-entitlement@example.invalid',now(),false);
 
  perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',100);
  assert public.has_pocket_web_subscription(u1),'linked application UUID denied';
- assert not public.has_pocket_web_subscription(u2),'same-email different UUID accepted';
+ assert not public.has_pocket_web_subscription(u2),'different application UUID accepted';
+
+ -- Simulate a later account using the SAME email while preserving its
+ -- DIFFERENT UUID. The old identity remains bound to its Stripe customer.
+ update auth.users set email='qa-retired-entitlement@example.invalid' where id=u1;
+ update auth.users set email='qa-entitlement@example.invalid' where id=u2;
+ assert not public.has_pocket_web_subscription(u1),'old identity accessed subscription after email change';
+ assert not public.has_pocket_web_subscription(u2),'recreated same-email identity inherited paid access';
+ failed:=false;
+ begin
+   perform public.sync_pocket_web_subscription(u2,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_recreated',true,now()+interval '1 day',101);
+ exception when others then failed:=true; end;
+ assert failed,'recreated same-email identity reassigned the original Stripe customer';
+ update auth.users set email='qa-other-entitlement@example.invalid' where id=u2;
+ update auth.users set email='qa-entitlement@example.invalid' where id=u1;
+ assert public.has_pocket_web_subscription(u1),'restored original identity denied';
 
  failed:=false;
  begin
-   perform public.sync_pocket_web_subscription(u2,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_other',true,now()+interval '1 day',101);
+   perform public.sync_pocket_web_subscription(u2,'qa-other-entitlement@example.invalid','cus_qa_entitlement','sub_qa_other',true,now()+interval '1 day',101);
  exception when others then failed:=true; end;
  assert failed,'Stripe customer transferred to another application UUID';
  failed:=false;
