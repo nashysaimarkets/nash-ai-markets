@@ -281,7 +281,8 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   }
   expectedZones.forEach((_, index) => assignZone(index, new Set()));
   const validZones = zoneRecords.length === (actual?.zones?.length ?? 0) && zoneRecords.length > 0 &&
-    matchedZones.size === zoneRecords.length && matchedZones.size >= (expected.minimumZones ?? 0);
+    matchedZones.size === zoneRecords.length && matchedZones.size === expectedZones.length
+    && matchedZones.size >= (expected.minimumZones ?? 0);
   const correct = actualPositive && actual?.state === expected.state &&
     validZones &&
     (!expected.event || actual.event === expected.event) &&
