@@ -238,8 +238,13 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
       new Set(points.map(point => `${point.x}:${point.y}`)).size === points.length &&
       Math.max(...points.map(point => point.x!)) - Math.min(...points.map(point => point.x!)) >= 8 &&
       Math.max(...points.map(point => point.y!)) - Math.min(...points.map(point => point.y!)) >= 3;
+    // A rectangle/range requires geometry enclosing actual chart space.
+    // A diagonal run of collinear anchors is not a defensible range signal.
+    const hasArea = points.length >= 3 && points.slice(2).some(point =>
+      Math.abs((points[1]!.x! - points[0]!.x!) * (point.y! - points[0]!.y!)
+        - (points[1]!.y! - points[0]!.y!) * (point.x! - points[0]!.x!)) > 1);
     const index = remainingPatterns.indexOf(name);
-    if (index >= 0 && validGeometry) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
+    if (index >= 0 && validGeometry && (name !== "RECTANGLE / RANGE" || hasArea)) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
     else { metrics.patterns.fp++; failures.push(`${sample.id}: false pattern ${name}`); }
   }
   for (const name of remainingPatterns) { metrics.patterns.fn++; failures.push(`${sample.id}: missed pattern ${name}`); }
