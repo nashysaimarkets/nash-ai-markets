@@ -6,7 +6,7 @@ const range = TORTURE_CASES[0]!;
 const perfect = {
   levels: [{kind:"resistance",y:31},{kind:"support",y:64}],
   patterns: [{name:"RECTANGLE / RANGE",geometry:{points:[{x:20,y:31},{x:50,y:64},{x:80,y:31}]}}],
-  liquidity: {state:"VERIFIED",zones:[{side:"BUY_SIDE",basis:"RANGE_HIGH",x:20,x2:80,y:31}]},
+  liquidity: {state:"VERIFIED",zones:[{side:"BUY_SIDE",basis:"RANGE_HIGH",x:20,x2:80,y:31},{side:"SELL_SIDE",basis:"RANGE_LOW",x:20,x2:80,y:64}]},
 };
 
 test("torture scoring counts duplicate levels and patterns as false positives", () => {
@@ -56,19 +56,25 @@ test("liquidity cannot earn a true positive at an unrelated chart position", () 
   }
 });
 
-test("liquidity credit requires independently labelled candle witnesses", () => {
+test("liquidity credit requires every labelled zone and independent candle witnesses", () => {
   for (const sample of TORTURE_CASES.filter(candidate => candidate.expectedLiquidity.state !== "NONE")) {
-    const label = sample.expectedLiquidity.zones![0]!;
     const x = (index: number) => (90 + index * (700 / Math.max(1, sample.points.length - 1))) / 9;
-    const aligned = { side: label.side, basis: label.bases[0],
-      x: x(label.witnessIndices[0]!) - 1, x2: x(label.witnessIndices.at(-1)!) + 1, y: label.y };
+    const aligned = sample.expectedLiquidity.zones!.map(label => ({
+      side: label.side, basis: label.bases[0],
+      x: x(label.witnessIndices[0]!) - 1,
+      x2: x(label.witnessIndices.at(-1)!) + 1, y: label.y,
+    }));
     const body = { levels: [], patterns: [], liquidity: {
-      state: sample.expectedLiquidity.state, event: sample.expectedLiquidity.event ?? "TESTING", zones: [aligned],
+      state: sample.expectedLiquidity.state, event: sample.expectedLiquidity.event ?? "TESTING", zones: aligned,
     } };
     assert.deepEqual(scoreTortureAnalysis(sample, body).metrics.liquidity, { tp: 1, fp: 0, fn: 0 });
-    assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity, zones: [aligned,
+    assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity, zones: [...aligned,
       { side: "SELL_SIDE", basis: "PRIOR_SWING_LOW", x: 1, x2: 99, y: 99 },
     ]}}).metrics.liquidity, { tp: 0, fp: 1, fn: 1 });
+    if (aligned.length > 1) {
+      assert.deepEqual(scoreTortureAnalysis(sample, {...body, liquidity: {...body.liquidity,zones:[aligned[0]!]}}).metrics.liquidity,
+        { tp: 0, fp: 1, fn: 1 });
+    }
   }
 });
 
