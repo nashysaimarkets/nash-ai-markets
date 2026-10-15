@@ -12,27 +12,29 @@ test("new benchmark scope remains held without explicit pilot activation", async
   if (before === undefined) delete process.env.POCKET_BENCHMARK_PILOT_ENABLED; else process.env.POCKET_BENCHMARK_PILOT_ENABLED = before;
 });
 
-const image = `data:image/png;base64,${Buffer.from("bounded-fixture").toString("base64")}`;
+const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
 const envelope = {
   model: "verified-model", service_tier: "default", store: false,
   reasoning: { effort: "low" }, max_output_tokens: 7000,
   instructions: "bounded instructions",
   input: [{ role: "user", content: [{ type: "input_text", text: "audit" }, { type: "input_image", image_url: image, detail: "high" }] }],
-  text: { format: { type: "json_schema", strict: true, schema: { type: "object" } } },
+  text: { format: { type: "json_schema", name: "verified_schema", strict: true, schema: { type: "object" } } },
 };
 const plan = {
-    main: { slot: "main", model: "verified-model", serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxCostMicroUsd: 500000, costBoundEvidenceRef: "pricing-export-1" },
-    primary_precision: { slot: "primary_precision", model: "verified-model", serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxCostMicroUsd: 200000, costBoundEvidenceRef: "pricing-export-1" },
-    rescue_precision: { slot: "rescue_precision", model: "verified-model", serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 2, maxImageBytes: 2000, maxCostMicroUsd: 300000, costBoundEvidenceRef: "pricing-export-1" },
+    main: { slot: "main", model: "verified-model", serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxImageWidth: 10, maxImageHeight: 10, maxImagePixels: 100, maxCostMicroUsd: 500000, costBoundEvidenceRef: "pricing-export-1" },
+    primary_precision: { slot: "primary_precision", model: "verified-model", serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxImageWidth: 10, maxImageHeight: 10, maxImagePixels: 100, maxCostMicroUsd: 200000, costBoundEvidenceRef: "pricing-export-1" },
+    rescue_precision: { slot: "rescue_precision", model: "verified-model", serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 2, maxImageBytes: 2000, maxImageWidth: 10, maxImageHeight: 10, maxImagePixels: 200, maxCostMicroUsd: 300000, costBoundEvidenceRef: "pricing-export-1" },
 };
 const scope = {
   plan,
-  bounds: { "verified-model": { serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 1, maxImageBytes: 1000, maxCostMicroUsd: 500000, fullContextCostBoundEvidenceRef: "pricing-export-1" } },
+  bounds: { "verified-model": { serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 1000, maxSchemaBytes: 1000, maxImages: 2, maxImageBytes: 2000, maxImageWidth: 10, maxImageHeight: 10, maxImagePixels: 200, maxCostMicroUsd: 500000, fullContextCostBoundEvidenceRef: "pricing-export-1" } },
 } as never;
 
 test("actual provider envelope is inspected and fingerprinted", () => {
   const facts = verifyPocketBenchmarkEnvelope("main", envelope, scope);
   assert.equal(facts?.images, 1);
+  assert.equal(facts?.imagePixels, 1);
+  assert.equal(facts?.maxImageWidth, 1);
   assert.equal(facts?.serviceTier, "default");
   assert.match(facts?.fingerprint ?? "", /^[0-9a-f]{64}$/);
 });
@@ -41,7 +43,7 @@ test("one verified model supports distinct main and precision slot bounds", () =
   const beforeBounds = process.env.POCKET_BENCHMARK_MODEL_COST_BOUNDS;
   const beforePlan = process.env.POCKET_BENCHMARK_CALL_PLAN;
   process.env.POCKET_BENCHMARK_MODEL_COST_BOUNDS = JSON.stringify({
-    "verified-model": { serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 30000, maxSchemaBytes: 30000, maxImages: 2, maxImageBytes: 4000000, maxCostMicroUsd: 500000, fullContextCostBoundEvidenceRef: "pricing-export-1" },
+    "verified-model": { serviceTier: "default", maxOutputTokens: 7000, maxInputTextChars: 30000, maxSchemaBytes: 30000, maxImages: 2, maxImageBytes: 4000000, maxImageWidth: 4096, maxImageHeight: 4096, maxImagePixels: 16777216, maxCostMicroUsd: 500000, fullContextCostBoundEvidenceRef: "pricing-export-1" },
   });
   process.env.POCKET_BENCHMARK_CALL_PLAN = JSON.stringify(Object.values(plan));
   try {
@@ -64,6 +66,31 @@ test("unpriced features, tier drift, image overflow and output drift fail closed
   ]) assert.throws(() => verifyPocketBenchmarkEnvelope("main", changed, scope), /benchmark|provider request/i);
 });
 
+test("all alternate and unknown provider envelope shapes fail closed", () => {
+  const oversized = "x".repeat(10_000);
+  for (const changed of [
+    { ...envelope, input: oversized },
+    { ...envelope, input: [{ role: "user", content: oversized }] },
+    { ...envelope, instructions: { text: oversized } },
+    { ...envelope, conversation: oversized },
+    { ...envelope, input: [{ role: "user", content: envelope.input[0]!.content, metadata: oversized }] },
+    { ...envelope, text: { format: { ...envelope.text.format, description: oversized } } },
+    { ...envelope, input: [{ role: "user", content: [{ type: "input_text", text: "audit", metadata: oversized }, envelope.input[0]!.content[1]] }] },
+  ]) assert.throws(() => verifyPocketBenchmarkEnvelope("main", changed, scope), /benchmark|provider request/i);
+});
+
+test("image bytes are decoded and MIME metadata and dimensions are verified", () => {
+  const invalidPng = `data:image/png;base64,${Buffer.from("not-a-png").toString("base64")}`;
+  const invalidBase64 = "data:image/png;base64,%%%";
+  for (const imageUrl of [invalidPng, invalidBase64]) {
+    const changed = { ...envelope, input: [{ role: "user", content: [envelope.input[0]!.content[0], { type: "input_image", image_url: imageUrl, detail: "high" }] }] };
+    assert.throws(() => verifyPocketBenchmarkEnvelope("main", changed, scope), /benchmark|image/i);
+  }
+  const tinyScope = JSON.parse(JSON.stringify(scope));
+  tinyScope.plan.main.maxImageWidth = 0;
+  assert.throws(() => verifyPocketBenchmarkEnvelope("main", envelope, tinyScope), /exceeds/i);
+});
+
 test("routes pass the exact request object, deterministic slots and pinned tier", async () => {
   const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
   assert.match(route, /service_tier:\s*"default"/);
@@ -84,6 +111,10 @@ test("pilot SQL is isolated, deterministic, six-case bounded and postflight-veto
   assert.match(sql, /record_pocket_benchmark_measurement/);
   assert.match(sql, /release_pocket_benchmark_measurement/);
   assert.match(sql, /authoritative_settlement_incomplete/);
+  assert.match(sql, /benchmark_ledger_disabled/);
+  assert.match(sql, /p_actual_microusd is null/);
+  assert.match(sql, /provider_usage is distinct from p_usage/);
+  assert.match(sql, /unique \(project_ref,provider_request_id\)/);
   assert.doesNotMatch(sql, /pocket_test_spend_ledgers\s+set|alter table private\.pocket_test_spend/i);
 });
 

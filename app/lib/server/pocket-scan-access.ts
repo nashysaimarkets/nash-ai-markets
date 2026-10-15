@@ -4,7 +4,7 @@ import { rememberPocketFirstFreeIdentity } from "./pocket-first-free.ts";
 type Identity = { id?: string; email?: string; email_confirmed_at?: string; is_anonymous?: boolean };
 type AccessDependencies = {
   authenticate: () => Promise<Identity | null>;
-  hasSubscription: (email: string) => Promise<boolean>;
+  hasSubscription: (userId: string) => Promise<boolean>;
   hasAppleSubscription?: (userId: string) => Promise<boolean>;
   hasFirstFreeAccess?: (user: Identity) => Promise<boolean>;
 };
@@ -14,8 +14,8 @@ type AccessDependencies = {
 export async function checkPocketScanAccess(deps: AccessDependencies): Promise<Response | null> {
   try {
     const user = await deps.authenticate();
-    if (!user?.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
-    if (await deps.hasSubscription(user.email.trim().toLowerCase())) return null;
+    if (!user?.id || !user.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
+    if (await deps.hasSubscription(user.id)) return null;
     if (user.id && deps.hasAppleSubscription && await deps.hasAppleSubscription(user.id)) return null;
     if (user.id && deps.hasFirstFreeAccess && await deps.hasFirstFreeAccess(user)) return null;
     return Response.json({ error: "An active Pocket subscription is required to scan.", code: "POCKET_SUBSCRIPTION_REQUIRED" }, { status: 403 });
@@ -36,9 +36,9 @@ export async function requirePocketScanAccess(request?: Request): Promise<Respon
       if (error) return null;
       return user;
     },
-    hasSubscription: async (email) => {
+    hasSubscription: async (userId) => {
       const { createAdminClient } = await import("../../../utils/supabase/admin.ts");
-      const { data, error } = await createAdminClient().rpc("has_pocket_web_subscription", { p_email: email });
+      const { data, error } = await createAdminClient().rpc("has_pocket_web_subscription", { p_user_id: userId });
       if (error || typeof data !== "boolean") throw new Error("Pocket subscription lookup unavailable");
       return data;
     },

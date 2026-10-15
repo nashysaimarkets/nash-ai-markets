@@ -135,8 +135,8 @@ the private ledger is independently enabled, and the exact candidate matches.
 - `POCKET_BENCHMARK_OPENAI_PROJECT_ID`: exact verified provider project passed to the SDK and checked by SQL.
 - `POCKET_BENCHMARK_APPROVAL_REF`: immutable reference to the approved $5 scope.
 - `POCKET_BENCHMARK_CANDIDATE_SHA`: full 40-character candidate commit.
-- `POCKET_BENCHMARK_MODEL_COST_BOUNDS`: JSON keyed by exact model. Every entry pins `serviceTier=default`, maximum output, text characters, schema bytes, image count/bytes, worst-case micro-USD and pricing-evidence reference.
-- `POCKET_BENCHMARK_CALL_PLAN`: exactly three deterministic slots—`main`, `primary_precision`, `rescue_precision`—each pinning model/tier, output, text, schema, image count/bytes, worst-case micro-USD and evidence reference. This supports distinct main/precision bounds even when both use the same model. The complete worst-case total is reserved before dispatch.
+- `POCKET_BENCHMARK_MODEL_COST_BOUNDS`: JSON keyed by exact model. Every entry pins `serviceTier=default`, maximum output, text characters, complete response-format bytes, decoded image count/bytes/width/height/pixels, worst-case micro-USD and pricing-evidence reference.
+- `POCKET_BENCHMARK_CALL_PLAN`: exactly three deterministic slots—`main`, `primary_precision`, `rescue_precision`—each pinning model/tier, output, text, complete response format, decoded image count/bytes/width/height/pixels, worst-case micro-USD and evidence reference. This supports distinct main/precision bounds even when both use the same model. The complete worst-case total is reserved before dispatch.
 
 Named cases cannot be reclaimed, concurrent retransmits cannot dispatch the
 same slot twice, the private ledger allowlists no more than six exact case IDs,

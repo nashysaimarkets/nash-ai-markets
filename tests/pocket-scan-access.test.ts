@@ -28,7 +28,7 @@ test("Apple entitlement permits only a verified identity, leaves Stripe unchange
 });
 
 test("anonymous and unverified users never query subscriptions or dispatch", async () => {
-  for (const user of [null, {}, { email: "test@example.invalid" }]) {
+  for (const user of [null, {}, { email: "test@example.invalid" }, { email: "test@example.invalid", email_confirmed_at: "2026-01-01" }]) {
     let lookups = 0;
     const denial = await checkPocketScanAccess({ authenticate: async () => user, hasSubscription: async () => { lookups++; return true; } });
     assert.equal(denial?.status, 401);
@@ -38,22 +38,52 @@ test("anonymous and unverified users never query subscriptions or dispatch", asy
 test("expired, inactive or absent subscriptions deny; verified current Pocket subscription permits", async () => {
   for (const entitled of [false, true]) {
     let key = "";
-    const result = await checkPocketScanAccess({ authenticate: async () => ({ email: " Member@Example.invalid ", email_confirmed_at: "2026-01-01" }), hasSubscription: async (email) => { key = email; return entitled; } });
-    assert.equal(key, "member@example.invalid");
+    const result = await checkPocketScanAccess({ authenticate: async () => ({ id: "11111111-1111-4111-8111-111111111111", email: " Member@Example.invalid ", email_confirmed_at: "2026-01-01" }), hasSubscription: async (userId) => { key = userId; return entitled; } });
+    assert.equal(key, "11111111-1111-4111-8111-111111111111");
     assert.equal(result?.status ?? null, entitled ? null : 403);
   }
 });
 test("identity or subscription service errors fail closed before provider access", async () => {
   for (const authFailure of [true, false]) {
-    const denial = await checkPocketScanAccess({ authenticate: async () => { if (authFailure) throw new Error("auth unavailable"); return { email: "m@example.invalid", email_confirmed_at: "2026-01-01" }; }, hasSubscription: async () => { throw new Error("database unavailable"); } });
+    const denial = await checkPocketScanAccess({ authenticate: async () => { if (authFailure) throw new Error("auth unavailable"); return { id: "11111111-1111-4111-8111-111111111111", email: "m@example.invalid", email_confirmed_at: "2026-01-01" }; }, hasSubscription: async () => { throw new Error("database unavailable"); } });
     assert.equal(denial?.status, 503);
   }
+});
+
+test("a recreated account sharing a verified email cannot inherit another UUID's web subscription", async () => {
+  const linkedUserId = "11111111-1111-4111-8111-111111111111";
+  const replacementUserId = "22222222-2222-4222-8222-222222222222";
+  const hasSubscription = async (userId: string) => userId === linkedUserId;
+  const identity = (id: string) => ({ id, email: "same@example.invalid", email_confirmed_at: "2026-01-01" });
+  assert.equal(await checkPocketScanAccess({ authenticate: async () => identity(linkedUserId), hasSubscription }), null);
+  assert.equal((await checkPocketScanAccess({ authenticate: async () => identity(replacementUserId), hasSubscription }))?.status, 403);
 });
 test("Stripe Pocket status updates use independent entitlements and revoke failed payments", async () => {
   const source = await readFile(new URL("../app/api/stripe/webhook/route.ts", import.meta.url), "utf8");
   assert.match(source, /rpc\("sync_pocket_web_subscription"/);
+  assert.match(source, /p_app_user_id: appUserId/);
+  assert.match(source, /subscription\.metadata\?\.supabase_user_id/);
   assert.match(source.slice(source.indexOf('event.type === "invoice.payment_failed"')), /rpc\("revoke_pocket_web_subscription"/);
   assert.match(source.slice(source.indexOf("async function saveSubscription"), source.indexOf("const email = fallbackEmail")), /rpc\("revoke_pocket_web_subscription"/);
+});
+
+test("Pocket checkout requires a verified application account and copies its UUID to the subscription", async () => {
+  const source = await readFile(new URL("../app/api/stripe/checkout/route.ts", import.meta.url), "utf8");
+  assert.match(source, /selected\.offering\.plan === "pocket"[\s\S]*!user\?\.id[\s\S]*!user\.email_confirmed_at/);
+  assert.match(source, /subscription_data:[\s\S]*supabase_user_id: user!\.id/);
+});
+
+test("identity-binding migration removes email lookup and requires UUID, customer and exact subscription", async () => {
+  const sql = await readFile(new URL("../supabase/migrations/20261014143000_bind_pocket_web_subscription_identity.sql", import.meta.url), "utf8");
+  assert.match(sql, /add column app_user_id uuid/);
+  assert.match(sql, /add column stripe_customer_id text/);
+  assert.match(sql, /drop function public\.has_pocket_web_subscription\(text\)/);
+  assert.match(sql, /has_pocket_web_subscription\(p_user_id uuid\)/);
+  assert.match(sql, /s\.app_user_id=p_user_id/);
+  assert.match(sql, /s\.stripe_customer_id is not null/);
+  assert.match(sql, /pocket_subscription_identity_conflict/);
+  assert.match(sql, /link_pocket_web_subscription_identity/);
+  assert.match(sql, /identity_evidence_ref/);
 });
 
 test("actual route handlers return denial before parsing payloads, consuming budgets or constructing providers", async () => {

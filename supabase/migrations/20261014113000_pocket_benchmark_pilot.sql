@@ -29,6 +29,7 @@ create table private.pocket_benchmark_pilot_cases (
 create table private.pocket_benchmark_pilot_calls (
   ledger_key text not null,
   case_id text not null,
+  project_ref text not null check (length(project_ref) between 1 and 200),
   slot text not null check (slot in ('main','primary_precision','rescue_precision')),
   model text not null check (length(model) between 1 and 200),
   service_tier text not null check (service_tier = 'default'),
@@ -37,6 +38,9 @@ create table private.pocket_benchmark_pilot_calls (
   max_schema_bytes integer not null check (max_schema_bytes > 0),
   max_images integer not null check (max_images between 1 and 2),
   max_image_bytes integer not null check (max_image_bytes > 0),
+  max_image_width integer not null check (max_image_width > 0),
+  max_image_height integer not null check (max_image_height > 0),
+  max_image_pixels bigint not null check (max_image_pixels > 0),
   cost_bound_evidence_ref text not null check (length(cost_bound_evidence_ref) between 1 and 500),
   estimated_microusd bigint not null check (estimated_microusd between 1 and 5000000),
   status text not null default 'reserved' check (status in ('reserved','submitted','settled','voided')),
@@ -53,6 +57,8 @@ create table private.pocket_benchmark_pilot_calls (
   voided_at timestamptz,
   void_reason text,
   primary key (ledger_key, case_id, slot),
+  unique (project_ref,provider_request_id),
+  unique (project_ref,provider_response_id),
   foreign key (ledger_key, case_id) references private.pocket_benchmark_pilot_cases(ledger_key, case_id)
 );
 
@@ -94,22 +100,27 @@ begin
        or nullif(value->>'costBoundEvidenceRef','') is null
        or (value->>'maxOutputTokens') !~ '^[0-9]+$' or (value->>'maxInputTextChars') !~ '^[0-9]+$'
        or (value->>'maxSchemaBytes') !~ '^[0-9]+$' or (value->>'maxImages') !~ '^[0-9]+$'
-       or (value->>'maxImageBytes') !~ '^[0-9]+$' or (value->>'maxCostMicroUsd') !~ '^[0-9]+$'
+       or (value->>'maxImageBytes') !~ '^[0-9]+$' or (value->>'maxImageWidth') !~ '^[0-9]+$'
+       or (value->>'maxImageHeight') !~ '^[0-9]+$' or (value->>'maxImagePixels') !~ '^[0-9]+$'
+       or (value->>'maxCostMicroUsd') !~ '^[0-9]+$'
        or (value->>'maxImages')::int not between 1 and 2
+       or (value->>'maxImageWidth')::int < 1 or (value->>'maxImageHeight')::int < 1
+       or (value->>'maxImagePixels')::bigint < 1
        or (value->>'maxCostMicroUsd')::bigint not between 1 and 5000000) then raise exception 'invalid complete call plan'; end if;
   select sum((value->>'maxCostMicroUsd')::bigint) into v_total from jsonb_array_elements(p_plan);
-  select coalesce(sum(case when status='settled' then actual_microusd else estimated_microusd end),0) into v_committed
+  select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_committed
     from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and status in ('reserved','submitted','settled');
   if v_committed + v_total > v_ledger.cap_microusd then
     return jsonb_build_object('allowed',false,'reason','pilot_cap_exceeded','committed_microusd',v_committed,'remaining_microusd',greatest(0,v_ledger.cap_microusd-v_committed));
   end if;
   insert into private.pocket_benchmark_pilot_cases(ledger_key,case_id,candidate_sha) values(p_ledger_key,p_case_id,p_candidate_sha);
   for v_call in select value from jsonb_array_elements(p_plan) loop
-    insert into private.pocket_benchmark_pilot_calls(ledger_key,case_id,slot,model,service_tier,
-      max_output_tokens,max_input_text_chars,max_schema_bytes,max_images,max_image_bytes,cost_bound_evidence_ref,estimated_microusd)
-      values(p_ledger_key,p_case_id,v_call->>'slot',v_call->>'model','default',
+    insert into private.pocket_benchmark_pilot_calls(ledger_key,case_id,project_ref,slot,model,service_tier,
+      max_output_tokens,max_input_text_chars,max_schema_bytes,max_images,max_image_bytes,max_image_width,max_image_height,max_image_pixels,cost_bound_evidence_ref,estimated_microusd)
+      values(p_ledger_key,p_case_id,v_ledger.project_ref,v_call->>'slot',v_call->>'model','default',
         (v_call->>'maxOutputTokens')::int,(v_call->>'maxInputTextChars')::int,(v_call->>'maxSchemaBytes')::int,
-        (v_call->>'maxImages')::int,(v_call->>'maxImageBytes')::int,v_call->>'costBoundEvidenceRef',(v_call->>'maxCostMicroUsd')::bigint);
+        (v_call->>'maxImages')::int,(v_call->>'maxImageBytes')::int,(v_call->>'maxImageWidth')::int,
+        (v_call->>'maxImageHeight')::int,(v_call->>'maxImagePixels')::bigint,v_call->>'costBoundEvidenceRef',(v_call->>'maxCostMicroUsd')::bigint);
   end loop;
   return jsonb_build_object('allowed',true,'status','reserved','idempotent',false,'committed_microusd',v_committed+v_total,'remaining_microusd',v_ledger.cap_microusd-v_committed-v_total);
 end; $$;
@@ -136,6 +147,11 @@ create or replace function private.release_pocket_benchmark_measurement(p_ledger
 returns jsonb language plpgsql security definer set search_path=pg_catalog,private as $$
 declare v_check jsonb; v_measurement jsonb; v_sha text;
 begin
+  perform 1 from private.pocket_benchmark_pilot_ledgers
+    where ledger_key=p_ledger_key and enabled and config_verified_at is not null for update;
+  if not found then
+    return jsonb_build_object('released',false,'reason','benchmark_ledger_disabled');
+  end if;
   v_check:=private.assert_pocket_benchmark_case_reconciled(p_ledger_key,p_case_id);
   if coalesce((v_check->>'reconciled')::boolean,false) is not true then
     return jsonb_build_object('released',false,'reason','authoritative_settlement_incomplete','reconciliation',v_check);
@@ -169,13 +185,29 @@ create or replace function private.record_pocket_benchmark_receipt(
 declare v_call private.pocket_benchmark_pilot_calls%rowtype;
 begin
   if nullif(trim(p_provider_request_id),'') is null or nullif(trim(p_response_id),'') is null
-    or p_service_tier <> 'default' or pg_column_size(p_usage)>16384 then raise exception 'invalid provider receipt'; end if;
+    or nullif(trim(p_model),'') is null or p_service_tier is distinct from 'default'
+    or p_envelope_sha256 is null or p_envelope_sha256 !~ '^[0-9a-f]{64}$'
+    or p_usage is null or jsonb_typeof(p_usage)<>'object' or pg_column_size(p_usage)>16384
+    or coalesce(jsonb_typeof(p_usage->'input_tokens'),'')<>'number'
+    or coalesce(jsonb_typeof(p_usage->'output_tokens'),'')<>'number'
+    or coalesce(jsonb_typeof(p_usage->'total_tokens'),'')<>'number'
+    or coalesce(p_usage->>'input_tokens','') !~ '^[0-9]+$'
+    or coalesce(p_usage->>'output_tokens','') !~ '^[0-9]+$'
+    or coalesce(p_usage->>'total_tokens','') !~ '^[0-9]+$'
+    or (p_usage->>'total_tokens')::bigint <> (p_usage->>'input_tokens')::bigint + (p_usage->>'output_tokens')::bigint
+    then raise exception 'invalid provider receipt'; end if;
   perform 1 from private.pocket_benchmark_pilot_ledgers where ledger_key=p_ledger_key for update;
   select * into v_call from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot for update;
-  if not found or v_call.status <> 'submitted' or v_call.model <> p_model or v_call.service_tier <> p_service_tier
-    or v_call.envelope_sha256 <> p_envelope_sha256 then raise exception 'provider receipt scope mismatch'; end if;
+  if not found or v_call.status <> 'submitted' or v_call.model is distinct from p_model or v_call.service_tier is distinct from p_service_tier
+    or v_call.envelope_sha256 is distinct from p_envelope_sha256 then raise exception 'provider receipt scope mismatch'; end if;
+  if exists(select 1 from private.pocket_benchmark_pilot_calls c where c.project_ref=v_call.project_ref
+    and (c.provider_request_id=p_provider_request_id or c.provider_response_id=p_response_id)
+    and (c.ledger_key,c.case_id,c.slot)<>(v_call.ledger_key,v_call.case_id,v_call.slot)) then raise exception 'provider receipt already attributed'; end if;
   if v_call.receipt_recorded_at is not null then
-    if v_call.provider_request_id <> p_provider_request_id or v_call.provider_response_id <> p_response_id then raise exception 'provider receipt conflict'; end if;
+    if v_call.provider_request_id is distinct from p_provider_request_id or v_call.provider_response_id is distinct from p_response_id
+      or v_call.provider_model is distinct from p_model or v_call.provider_service_tier is distinct from p_service_tier
+      or v_call.provider_usage is distinct from p_usage or v_call.envelope_sha256 is distinct from p_envelope_sha256
+      then raise exception 'provider receipt conflict'; end if;
   else
     update private.pocket_benchmark_pilot_calls set provider_request_id=p_provider_request_id,provider_response_id=p_response_id,
       provider_model=p_model,provider_service_tier=p_service_tier,provider_usage=p_usage,receipt_recorded_at=now()
@@ -201,29 +233,36 @@ create or replace function private.settle_pocket_benchmark_call(p_ledger_key tex
 returns jsonb language plpgsql security definer set search_path=pg_catalog,private as $$
 declare v_call private.pocket_benchmark_pilot_calls%rowtype; v_cap bigint; v_total bigint;
 begin
-  if p_actual_microusd<0 or nullif(trim(p_provider_request_id),'') is null then raise exception 'invalid authoritative settlement'; end if;
+  if p_actual_microusd is null or p_actual_microusd<0 or nullif(trim(p_provider_request_id),'') is null then raise exception 'invalid authoritative settlement'; end if;
   select cap_microusd into v_cap from private.pocket_benchmark_pilot_ledgers where ledger_key=p_ledger_key for update;
   select * into v_call from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot for update;
   if not found or v_call.status<>'submitted' or v_call.receipt_recorded_at is null or v_call.provider_request_id<>p_provider_request_id then raise exception 'submitted receipted call required'; end if;
   update private.pocket_benchmark_pilot_calls set status='settled',actual_microusd=p_actual_microusd,settled_at=now()
     where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot;
-  select coalesce(sum(case when status='settled' then actual_microusd else estimated_microusd end),0) into v_total
+  select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_total
     from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and status in ('reserved','submitted','settled');
   return jsonb_build_object('ok',true,'status','settled','actual_microusd',p_actual_microusd,'committed_microusd',v_total,'cap_exceeded',v_total>v_cap);
 end; $$;
 
 create or replace function private.assert_pocket_benchmark_case_reconciled(p_ledger_key text,p_case_id text)
 returns jsonb language plpgsql security definer set search_path=pg_catalog,private as $$
-declare v_cap bigint; v_total bigint; v_open int; v_required int;
+declare v_cap bigint; v_enabled boolean; v_config_verified_at timestamptz; v_total bigint; v_open int; v_required int; v_unknown int;
 begin
-  select cap_microusd into v_cap from private.pocket_benchmark_pilot_ledgers where ledger_key=p_ledger_key for update;
+  select cap_microusd,enabled,config_verified_at into v_cap,v_enabled,v_config_verified_at
+    from private.pocket_benchmark_pilot_ledgers where ledger_key=p_ledger_key for update;
+  if not found or v_enabled is not true or v_config_verified_at is null then
+    return jsonb_build_object('reconciled',false,'reason','benchmark_ledger_disabled');
+  end if;
   select count(*) filter(where status in ('reserved','submitted')),
-    count(*) filter(where slot in ('main','primary_precision') and status='settled') into v_open,v_required
+    count(*) filter(where slot in ('main','primary_precision') and status='settled' and actual_microusd is not null
+      and provider_usage is not null and receipt_recorded_at is not null),
+    count(*) filter(where status='settled' and actual_microusd is null) into v_open,v_required,v_unknown
     from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id;
-  select coalesce(sum(case when status='settled' then actual_microusd else estimated_microusd end),0) into v_total
+  select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_total
     from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and status in ('reserved','submitted','settled');
-  if v_open=0 and v_required=2 and v_total<=v_cap then update private.pocket_benchmark_pilot_cases set status='settled' where ledger_key=p_ledger_key and case_id=p_case_id; end if;
-  return jsonb_build_object('reconciled',v_open=0 and v_required=2 and v_total<=v_cap,'cap_exceeded',v_total>v_cap,'committed_microusd',v_total);
+  if v_open=0 and v_required=2 and v_unknown=0 and v_total<=v_cap then update private.pocket_benchmark_pilot_cases set status='settled' where ledger_key=p_ledger_key and case_id=p_case_id; end if;
+  return jsonb_build_object('reconciled',v_open=0 and v_required=2 and v_unknown=0 and v_total<=v_cap,
+    'unknown_settlements',v_unknown,'cap_exceeded',v_total>v_cap,'committed_microusd',v_total);
 end; $$;
 
 grant usage on schema private to service_role;

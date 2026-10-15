@@ -20,6 +20,10 @@ function foundingSubscriptionActive(status: string): boolean {
   return status === "active" || status === "trialing";
 }
 
+function applicationUserId(value: unknown): string | null {
+  return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value.toLowerCase() : null;
+}
+
 function logSupabaseFailure(stage: "membership_rpc" | "founding_rpc", error: { code?: string; message?: string }) {
   console.error("Stripe membership database call failed", {
     category: "membership_sync_failure",
@@ -88,6 +92,7 @@ async function saveSubscription(
   subscription: Stripe.Subscription,
   eventCreated: number,
   fallbackEmail?: string | null,
+  fallbackAppUserId?: string | null,
 ) {
   const offerings = subscription.items.data
     .map((item) => ({ offering: configuredOffering(item.price.id), item }))
@@ -108,8 +113,13 @@ async function saveSubscription(
   const email = fallbackEmail?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
 
   if (plan === "pocket") {
-    if (!email || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
+    const fallbackId = applicationUserId(fallbackAppUserId);
+    const metadataId = applicationUserId(subscription.metadata?.supabase_user_id);
+    if (fallbackId && metadataId && fallbackId !== metadataId) throw new Error("Subscription application identity mismatch");
+    const appUserId = fallbackId ?? metadataId;
+    if (!email || !appUserId || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
     const { error } = await createAdminClient().rpc("sync_pocket_web_subscription", {
+      p_app_user_id: appUserId,
       p_email: email,
       p_stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
       p_stripe_subscription_id: subscription.id,
@@ -231,7 +241,10 @@ export async function POST(request: Request) {
       if (session.mode === "subscription" && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(String(session.subscription));
         const customerAddress = session.customer_details?.email?.toLowerCase() ?? await customerEmail(stripe, subscription.customer);
-        const savedPlan = await saveSubscription(stripe, subscription, event.created, customerAddress);
+        const referenceUserId = applicationUserId(session.client_reference_id);
+        const metadataUserId = applicationUserId(session.metadata?.supabase_user_id);
+        if (!referenceUserId || !metadataUserId || referenceUserId !== metadataUserId) throw new Error("Checkout application identity mismatch");
+        const savedPlan = await saveSubscription(stripe, subscription, event.created, customerAddress, referenceUserId ?? metadataUserId);
         if (savedPlan === "pocket" && customerAddress) {
           // Welcome delivery is deliberately non-blocking: membership access is the critical path.
           await Promise.allSettled([
