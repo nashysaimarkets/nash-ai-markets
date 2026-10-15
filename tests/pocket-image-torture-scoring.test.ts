@@ -88,6 +88,14 @@ test("negative liquidity cannot silently carry an unsupported event", () => {
   }
 });
 
+test("unsupported level kinds cannot disappear before false-positive scoring", () => {
+  const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
+  assert.throws(() => scoreTortureAnalysis(negative, {
+    levels: [{kind:"pivot",y:42}], patterns: [],
+    liquidity: {state:"NONE",event:"NONE",zones:[]},
+  } as Parameters<typeof scoreTortureAnalysis>[1]), /Invalid scanner output/i);
+});
+
 test("no-signal cases cannot pass with omitted null or malformed scanner output", () => {
   const negative = TORTURE_CASES.find(sample => sample.id === "near-miss-chop")!;
   const empty = { levels: [], patterns: [], liquidity: { state: "NONE", event: "NONE", zones: [] } };
