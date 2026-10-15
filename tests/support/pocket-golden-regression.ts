@@ -13,7 +13,9 @@ export type PocketGoldenCase = {
   imageSha256: string;
   privacyReviewed: true;
   market: string;
-  timeframe: "1m" | "5m" | "15m" | "1h" | "4h" | "daily";
+  timeframe: "1m" | "5m" | "15m" | "30m" | "1h" | "4h" | "daily";
+  expectedDisposition?: "analyse" | "withhold";
+  expectedReadability?: Array<"clear" | "partial" | "unreadable">;
   expectedLean: Array<"bullish" | "bearish" | "neutral">;
   expectedGuides: GoldenGuide[];
   forbiddenPhrases: string[];
@@ -38,8 +40,16 @@ export type GoldenActual = {
 const confidenceRank = { low: 0, medium: 1, high: 2 } as const;
 
 export function assertPocketGolden(caseFile: PocketGoldenCase, actual: GoldenActual): void {
-  assert.notEqual(actual.chartReadability, "unreadable", `${caseFile.id}: known-readable chart was rejected`);
+  const disposition = caseFile.expectedDisposition ?? "analyse";
+  if (caseFile.expectedReadability) {
+    assert.ok(caseFile.expectedReadability.includes(actual.chartReadability), `${caseFile.id}: unexpected readability ${actual.chartReadability}`);
+  } else if (disposition === "analyse") {
+    assert.notEqual(actual.chartReadability, "unreadable", `${caseFile.id}: known-readable chart was rejected`);
+  }
   assert.ok(caseFile.expectedLean.includes(actual.directionalLean), `${caseFile.id}: unexpected directional lean ${actual.directionalLean}`);
+  if (disposition === "withhold") {
+    assert.deepEqual(actual.visualGuides, [], `${caseFile.id}: fail-closed case emitted visual guides`);
+  }
 
   for (const expected of caseFile.expectedGuides) {
     const candidates = actual.visualGuides.filter((guide) => guide.tool === expected.tool);
@@ -72,9 +82,13 @@ export function validatePocketGoldenCase(value: unknown): asserts value is Pocke
   assert.match(item.imageSha256 ?? "", /^[a-f0-9]{64}$/);
   assert.equal(item.privacyReviewed, true);
   assert.ok(Boolean(item.market?.trim()));
-  assert.ok(["1m", "5m", "15m", "1h", "4h", "daily"].includes(item.timeframe ?? ""));
+  assert.ok(["1m", "5m", "15m", "30m", "1h", "4h", "daily"].includes(item.timeframe ?? ""));
+  assert.ok(item.expectedDisposition === undefined || ["analyse", "withhold"].includes(item.expectedDisposition));
+  assert.ok(item.expectedReadability === undefined || (Array.isArray(item.expectedReadability) && item.expectedReadability.length > 0 && item.expectedReadability.every((state) => ["clear", "partial", "unreadable"].includes(state))));
   assert.ok(Array.isArray(item.expectedLean) && item.expectedLean.length > 0);
-  assert.ok(Array.isArray(item.expectedGuides) && item.expectedGuides.length > 0);
+  assert.ok(Array.isArray(item.expectedGuides));
+  if ((item.expectedDisposition ?? "analyse") === "analyse") assert.ok(item.expectedGuides.length > 0);
+  if (item.expectedDisposition === "withhold") assert.equal(item.expectedGuides.length, 0);
   assert.ok(item.expectedGuides.every((guide) =>
     (guide.tool === "support" || guide.tool === "resistance")
     && Number.isFinite(guide.yPercent) && guide.yPercent >= 5 && guide.yPercent <= 95

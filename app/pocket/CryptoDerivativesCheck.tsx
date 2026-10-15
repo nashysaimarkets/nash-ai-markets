@@ -1,4 +1,5 @@
 "use client";
+import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 import { useState, type ChangeEvent } from "react";
 import { cryptoBase, type DerivativesResult } from "./crypto-derivatives";
@@ -32,7 +33,7 @@ export default function CryptoDerivativesCheck({ ticker, structure }: { ticker: 
     if (!image || busy) return;
     setBusy(true); setError(""); setResult(null);
     try {
-      const response = await fetch("/api/pocket/crypto-derivatives", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, ticker, structure }) });
+      const response = await pocketAuthenticatedFetch("/api/pocket/crypto-derivatives", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, ticker, structure }) });
       const payload = await response.json() as { result?: DerivativesResult; error?: string };
       if (!response.ok || !payload.result) throw new Error(payload.error || "The panel check could not complete.");
       setResult(payload.result);

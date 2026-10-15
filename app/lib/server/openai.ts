@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { claimPocketFirstFreeProviderDispatch, isPocketFirstFreeRequest } from "./pocket-first-free.ts";
 
 const OPENAI_HEALTH_TIMEOUT_MS = 5_000;
 export const OPENAI_DEFAULT_MODEL = "gpt-5-mini";
@@ -20,13 +21,23 @@ type OpenAIHealthClient = {
 export function createOpenAIClient(
   apiKey = process.env.OPENAI_API_KEY,
   timeout = OPENAI_HEALTH_TIMEOUT_MS,
+  project?: string,
 ): OpenAI | null {
   if (!apiKey?.trim()) return null;
-  return new OpenAI({
+  const client = new OpenAI({
     apiKey,
     maxRetries: 0,
     timeout,
+    ...(project ? { project } : {}),
   });
+  if (!isPocketFirstFreeRequest()) return client;
+  const create = client.responses.create.bind(client.responses);
+  // Admission is a durable server decision, never a client free-use flag.
+  client.responses.create = (async (...args: Parameters<typeof create>) => {
+    await claimPocketFirstFreeProviderDispatch();
+    return create(...args);
+  }) as typeof client.responses.create;
+  return client;
 }
 
 function safeFailureReason(error: unknown): Extract<OpenAIHealthStatus, { status: "unavailable" }>["reason"] {

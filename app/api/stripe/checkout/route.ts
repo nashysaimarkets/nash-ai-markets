@@ -56,6 +56,9 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const verifiedEmail = user?.email?.trim().toLowerCase() || undefined;
+    if (selected.offering.plan === "pocket" && (!user?.id || !verifiedEmail || !user.email_confirmed_at || user.is_anonymous)) {
+      return NextResponse.redirect(new URL("/login?next=/pocket/founding", origin), 303);
+    }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: selected.priceId, quantity: 1 }],
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
       customer_email: verifiedEmail,
       client_reference_id: user?.id,
       metadata: { ...(user?.id ? { supabase_user_id: user.id } : {}), offering: selected.offering.plan === "pocket" ? "pocket_founding_650" : selected.offering.plan, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign },
-      subscription_data: selected.offering.plan === "pocket" ? { metadata: { offering: "pocket_founding_650", acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign } } : undefined,
+      subscription_data: selected.offering.plan === "pocket" ? { metadata: { offering: "pocket_founding_650", supabase_user_id: user!.id, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign } } : undefined,
     });
     if (!session.url) throw new Error("checkout_url_unavailable");
     return NextResponse.redirect(session.url, 303);

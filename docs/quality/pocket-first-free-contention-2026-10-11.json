@@ -1,0 +1,26 @@
+{
+  "environment": "staging-only pxlqvaddvghjjhenqmdh",
+  "providerCalls": 0,
+  "reservationBackends": [
+    718075,
+    718077,
+    718079,
+    718080
+  ],
+  "reserved": 1,
+  "busy": 3,
+  "claimBackends": [
+    718083,
+    718082,
+    718086,
+    718087
+  ],
+  "acceptedClaims": 1,
+  "deniedClaims": 3,
+  "cleanup": {
+    "enabled": false,
+    "accounts": 0,
+    "requests": 0,
+    "fixtureUsers": 0
+  }
+}

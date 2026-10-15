@@ -1,0 +1,62 @@
+-- Execute inside a disposable transaction after applying the identity-binding migration.
+do $$
+declare
+  u1 uuid := '51b94c3f-2213-48d5-87a8-c66cfa554101';
+  u2 uuid := '51b94c3f-2213-48d5-87a8-c66cfa554102';
+  failed boolean;
+begin
+ if exists(select 1 from auth.users where id in (u1,u2)) then raise exception 'fixture_uuid_collision'; end if;
+ insert into auth.users(id,email,email_confirmed_at,is_anonymous) values
+   (u1,'qa-entitlement@example.invalid',now(),false),
+   (u2,'qa-entitlement@example.invalid',now(),false);
+
+ perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',100);
+ assert public.has_pocket_web_subscription(u1),'linked application UUID denied';
+ assert not public.has_pocket_web_subscription(u2),'same-email different UUID accepted';
+
+ failed:=false;
+ begin
+   perform public.sync_pocket_web_subscription(u2,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_other',true,now()+interval '1 day',101);
+ exception when others then failed:=true; end;
+ assert failed,'Stripe customer transferred to another application UUID';
+ failed:=false;
+ begin
+   perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_other','sub_qa_other',true,now()+interval '1 day',101);
+ exception when others then failed:=true; end;
+ assert failed,'application UUID accepted a second Stripe customer';
+
+ perform public.revoke_pocket_web_subscription('sub_qa_entitlement',101);
+ assert not public.has_pocket_web_subscription(u1),'revoked access allowed';
+ perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',100);
+ assert not public.has_pocket_web_subscription(u1),'stale activation allowed';
+ perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',101);
+ assert not public.has_pocket_web_subscription(u1),'equal-time activation overrides revocation';
+ perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',102);
+ assert public.has_pocket_web_subscription(u1),'later paid activation denied';
+
+ -- Historical email-only records stay denied until exact evidence-backed linking.
+ insert into private.pocket_web_subscriptions(stripe_subscription_id,email,active,current_period_end,last_event_created_at)
+ values('sub_qa_legacy','qa-entitlement@example.invalid',true,now()+interval '1 day',200);
+ assert not exists(select 1 from private.pocket_web_subscriptions where stripe_subscription_id='sub_qa_legacy' and app_user_id is not null);
+ failed:=false;
+ begin
+   perform public.link_pocket_web_subscription_identity(u1,'wrong@example.invalid','cus_qa_entitlement','sub_qa_legacy','qa:receipt:legacy');
+ exception when others then failed:=true; end;
+ assert failed,'legacy link accepted mismatched email';
+ perform public.link_pocket_web_subscription_identity(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_legacy','qa:receipt:legacy');
+ assert exists(select 1 from private.pocket_web_subscriptions where stripe_subscription_id='sub_qa_legacy'
+   and app_user_id=u1 and stripe_customer_id='cus_qa_entitlement' and identity_evidence_ref='qa:receipt:legacy');
+
+ update auth.users set email_confirmed_at=null where id=u1;
+ assert not public.has_pocket_web_subscription(u1),'unverified application identity retained access';
+ update auth.users set email_confirmed_at=now(),email='changed@example.invalid' where id=u1;
+ assert not public.has_pocket_web_subscription(u1),'changed application email retained access';
+
+ assert to_regprocedure('public.has_pocket_web_subscription(text)') is null,'email-only lookup still exists';
+ assert not has_function_privilege('anon','public.has_pocket_web_subscription(uuid)','execute');
+ assert not has_function_privilege('authenticated','public.sync_pocket_web_subscription(uuid,text,text,text,boolean,timestamptz,bigint)','execute');
+ assert has_function_privilege('service_role','public.link_pocket_web_subscription_identity(uuid,text,text,text,text)','execute');
+ assert not has_table_privilege('service_role','private.pocket_web_subscriptions','select');
+ assert not has_table_privilege('service_role','private.pocket_web_identities','select');
+end $$;
+select 'pocket_subscription_identity_sql_pass' as result;

@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // Build artefacts, not authored source.
     "dist/**",
     "audit-output/**",
+    // Reproducibly copied third-party OCR worker/cores, not authored code.
+    "public/ocr/**",
   ]),
   {
     rules: {

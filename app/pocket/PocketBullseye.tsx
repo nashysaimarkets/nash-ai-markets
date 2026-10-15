@@ -1,4 +1,9 @@
 "use client";
+import {createPrecisionReadingCrop} from "./precision-reading-crop";
+import {canOverlayLevelLab,type LevelLabSource} from "./level-lab-source";
+import OriginalChartEvidence from "./OriginalChartEvidence";
+import NativeSubscriptionControls from "./NativeSubscriptionControls";
+import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 /* Uploaded charts are private data URLs; routing them through next/image would add no optimisation benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -6,9 +11,10 @@
 import { ChangeEvent, useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import type { VerifiedMacroContext } from "../lib/macro-data";
 import { normalizeLockedDecisions } from "./decision-compatibility";
-import { calculateRiskDesk, type RiskDeskInput } from "./pocket-risk-desk";
+import PersonalRiskDesk from "./PersonalRiskDesk";
 import { calculateRangePosition, mergeCompatibleChartLevels, rankChartLevels, type NumericChartLevel } from "./pocket-chart-toolkit";
 import ChartPreflightPanel from "./ChartPreflightPanel";
+import { createChartRequestEpoch } from "./chart-request-identity";
 import AccuracyFeedbackPanel from "./AccuracyFeedbackPanel";
 import LevelProvenancePanel from "./LevelProvenancePanel";
 import OptionsWallCheck from "./OptionsWallCheck";
@@ -21,6 +27,8 @@ type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type ToolKind = "support" | "resistance" | "trend" | "pivot" | "zone" | "gap";
 type Level = { kind: ToolKind; label: string; price: string; x: number; y: number; x2: number; y2: number };
 type FibLevel = { ratio: string; price: string; y: number };
+type LiquidityZone = { side: "BUY_SIDE" | "SELL_SIDE"; basis: "EQUAL_HIGHS" | "EQUAL_LOWS" | "PRIOR_SWING_HIGH" | "PRIOR_SWING_LOW" | "RANGE_HIGH" | "RANGE_LOW"; price: string; x: number; x2: number; y: number };
+type LiquidityRead = { observations?: {side:string;x:number;y:number;confidence:string}[]; state: "VERIFIED" | "PARTIAL" | "NONE"; event: "NONE" | "TESTING" | "SWEEP" | "RECLAIM" | "REJECTION"; confidence: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation: string; invalidation: string; zones: LiquidityZone[] };
 type Intention = "LONG" | "SHORT" | "UNSURE";
 type SetupScore = { overall: number; grade: "A" | "B" | "C" | "D" | "F"; structure: number; momentum: number; location: number; confirmation: number; riskClarity: number; eventSafety: number };
 type Analysis = {
@@ -47,6 +55,7 @@ type Analysis = {
     summary: string;
   };
   patterns: { name: string; status: "FORMING" | "CONFIRMED" | "FAILED" | "AMBIGUOUS" | "EXTENDED"; timeframe?: string; confidence?: "LOW" | "MEDIUM" | "HIGH"; evidence: string; confirmation?: string; invalidation: string; geometry?: { points: { x: number; y: number }[]; labelX: number; labelY: number } }[];
+  liquidity?: LiquidityRead;
   nextSequence: { now: string; confirmation: string; failure: string; patience: string; reassess: string };
   missingInputs: string[];
   contextContribution?: { used: boolean; materialChange: boolean; summary: string; resolvedInputs: string[] };
@@ -88,29 +97,6 @@ function clampY(y: number) {
   return Math.max(5, Math.min(95, Number.isFinite(y) ? y : 50));
 }
 
-function createPrecisionReadingCrop(dataUrl: string) {
-  return new Promise<string | null>((resolve) => {
-    const source = new Image();
-    source.onload = () => {
-      try {
-        // Preserve the full plot width (including the right-hand scale), while
-        // removing most phone chrome and the chart app's bottom controls.
-        const top = Math.round(source.naturalHeight * 0.06);
-        const height = Math.round(source.naturalHeight * 0.82);
-        const targetWidth = Math.min(1800, Math.max(1400, source.naturalWidth));
-        const canvas = document.createElement("canvas");
-        canvas.width = targetWidth;
-        canvas.height = Math.round(height * targetWidth / source.naturalWidth);
-        const context = canvas.getContext("2d");
-        if (!context) return resolve(null);
-        context.drawImage(source, 0, top, source.naturalWidth, height, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.92));
-      } catch { resolve(null); }
-    };
-    source.onerror = () => resolve(null);
-    source.src = dataUrl;
-  });
-}
 
 function numericLevel(value: string | undefined) {
   return numericLevelPrice(value);
@@ -181,7 +167,7 @@ function BullseyeCommandArena({ analysis, sourceImage, onOpenReport, onShare }: 
   const tone = analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait";
   const modes: Array<{ id: ArenaMode; icon: string; label: string }> = [
     { id: "command", icon: "◎", label: "COMMAND" }, { id: "levels", icon: "⌁", label: "LEVELS" },
-    { id: "battle", icon: "⚔", label: "BATTLE" }, { id: "risk", icon: "⚠", label: "RISK" },
+    { id: "battle", icon: "±", label: "EVIDENCE" }, { id: "risk", icon: "⚠", label: "RISK" },
   ];
   const move = (event: PointerEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -205,7 +191,7 @@ function BullseyeCommandArena({ analysis, sourceImage, onOpenReport, onShare }: 
       </article>
       <article className="psArenaPanel psArenaBattle">
         <small>DIRECTIONAL BATTLE</small><h2>TWO CASES. ONE DECISION.</h2>
-        <div><section data-side="bull"><b>🐂 {balance.bull}%</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 {balance.bear}%</b><p>{analysis.bearishCase}</p></section></div>
+        <div><section data-side="bull"><b>BULL {balance.bull}%</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>BEAR {balance.bear}%</b><p>{analysis.bearishCase}</p></section></div>
         <footer><span>ACTIVATES WHEN</span><strong>{analysis.nextSequence.confirmation}</strong></footer>
       </article>
       <article className="psArenaPanel psArenaRisk">
@@ -377,11 +363,10 @@ function ScenarioTheatre({ analysis }: { analysis: Analysis; sourceImage: string
 
 type XRayLayer = "patterns" | "levels" | "swings" | "fib" | "rsi";
 
-function ChartXRay({ analysis, sourceImage, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+function ChartXRay({ analysis, sourceImage, identityConfirmed, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; identityConfirmed: boolean; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [layer] = useState<XRayLayer>("patterns");
   const drawablePatterns = analysis.patterns.filter((pattern) => (pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).length ?? 0) >= 2);
   const verifiedLevels = analysis.levels.filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind));
-  const drawableLevels = analysis.levels.filter((item) => ["support", "resistance"].includes(item.kind));
   const swingLevels = analysis.levels.filter((item) => item.kind === "pivot");
   const numericLevels: NumericChartLevel[] = verifiedLevels.map((item) => ({ kind: item.kind as NumericChartLevel["kind"], label: item.label, price: numericLevel(item.price)! }));
   const contextLevels: NumericChartLevel[] = (analysis.contextBattlefield?.levels ?? []).filter((item) => numericLevel(item.price) !== null && ["support", "resistance", "pivot"].includes(item.kind)).map((item) => ({ kind: item.kind as NumericChartLevel["kind"], label: item.label, price: numericLevel(item.price)! }));
@@ -393,19 +378,8 @@ function ChartXRay({ analysis, sourceImage, onAddChart, onReanalyse, hasContext,
   const formatPrice = (value: number) => new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(value);
   return <section className="psChartXRay" data-layer={layer}>
     <header><div><span>⌖ BULLSEYE PATTERN X-RAY</span><small>VISIBLE FORMATIONS · DRAWN ON YOUR CHART</small></div><strong>1 FOCUSED TOOL</strong></header>
-    <div className="psXRayCanvas"><img src={sourceImage} alt="Customer's uploaded source chart with verified Bullseye X-Ray overlays"/><div className="psXRayShade"/><div className="psXRayScan" aria-hidden="true"/>
-      {layer === "patterns" ? <><svg className="psXRayPatterns" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected chart pattern overlay">{drawablePatterns.flatMap((pattern, index) => {
-        const points = pattern.geometry?.points?.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)) ?? [];
-        if (points.length < 2) return [];
-        const path = points.map((point) => `${point.x},${point.y}`).join(" ");
-        return [<g key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><polyline points={path} vectorEffect="non-scaling-stroke"/><circle cx={points[0].x} cy={points[0].y} r="1.2" vectorEffect="non-scaling-stroke"/><circle cx={points.at(-1)!.x} cy={points.at(-1)!.y} r="1.2" vectorEffect="non-scaling-stroke"/></g>];
-      })}</svg><div className="psXRayPatternLabels">{drawablePatterns.map((pattern, index) => { const points = pattern.geometry!.points; const left = Math.min(72, Math.max(3, pattern.geometry?.labelX ?? points[0].x)); const top = Math.min(88, Math.max(8, pattern.geometry?.labelY ?? points[0].y)); return <span key={`${pattern.name}-label-${index}`} data-status={pattern.status} style={{ left: `${left}%`, top: `${top}%` }}>{pattern.name}<b>{pattern.status}</b></span>; })}</div></> : null}
-      {layer === "levels" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Verified chart level overlay">{drawableLevels.map((item, index) => <g key={`${item.kind}-${item.label}-${index}`} data-kind={item.kind}><line x1={item.x} y1={item.y} x2={item.x2} y2={item.y2} vectorEffect="non-scaling-stroke"/><circle cx={item.x} cy={item.y} r="1.15" vectorEffect="non-scaling-stroke"/><text x={Math.min(82, Math.max(3, item.x + 2))} y={Math.min(96, Math.max(5, item.y - 2))}>{numericLevel(item.price) !== null ? item.price : item.label}</text></g>)}</svg> : null}
-      {layer === "swings" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Detected swing high and low overlay">{swingLevels.map((item, index) => <g key={`${item.label}-${index}`} data-kind="pivot"><circle cx={item.x} cy={item.y} r="2" vectorEffect="non-scaling-stroke"/><line x1={Math.max(1, item.x - 4)} y1={item.y} x2={Math.min(99, item.x + 4)} y2={item.y} vectorEffect="non-scaling-stroke"/><text x={Math.min(78, Math.max(3, item.x + 3))} y={Math.min(96, Math.max(6, item.y - 3))}>{item.label || "SWING"}</text></g>)}</svg> : null}
-      {layer === "fib" ? <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Fibonacci retracement overlay">{analysis.fibLevels.map((item, index) => <g key={`${item.ratio}-${index}`} data-kind="fib"><line x1="5" y1={item.y} x2="95" y2={item.y} vectorEffect="non-scaling-stroke"/><text x="6" y={Math.min(97, Math.max(5, item.y - 1.5))}>{item.ratio} · {item.price}</text></g>)}</svg> : null}
-      {layer === "rsi" ? <div className="psXRayRsi" data-state={rsi === null ? "unverified" : rsi >= 70 ? "hot" : rsi <= 30 ? "cold" : "balanced"}><small>VISIBLE RSI</small><strong>{rsi === null ? "—" : Math.round(rsi)}</strong><span>{rsi === null ? "NOT SHOWN ON CHART" : rsi >= 70 ? "OVERBOUGHT AREA" : rsi <= 30 ? "OVERSOLD AREA" : "MID-RANGE"}</span><i><b style={{ width: `${rsi ?? 50}%` }}/></i></div> : null}
-      <span className="psXRaySource">● SOURCE CHART</span><span className="psXRayLayerTag">{layer.toUpperCase()} LAYER</span></div>
-    <div className="psXRayCounts psPatternOnlyCounts" aria-label="Pattern X-Ray summary"><article data-tone="verified"><strong>{drawablePatterns.filter((item) => item.confidence === "HIGH").length}</strong><span>HIGH-CONFIDENCE</span></article><article data-tone="uncertain"><strong>{drawablePatterns.length}</strong><span>VISIBLE PATTERNS</span></article><article data-tone="missing"><strong>{drawablePatterns.filter((item) => item.status === "FORMING" || item.status === "AMBIGUOUS").length}</strong><span>NEEDS CONFIRMING</span></article></div>
+    <OriginalChartEvidence image={sourceImage} report={analysis} identityConfirmed={identityConfirmed} layer="patterns" />
+    <div className="psXRayCounts psPatternOnlyCounts" aria-label="Pattern X-Ray summary"><article data-tone="verified"><strong>{drawablePatterns.filter((item) => item.confidence === "HIGH").length}</strong><span>HIGH-CONFIDENCE REPORTS</span></article><article data-tone="uncertain"><strong>{drawablePatterns.length}</strong><span>REPORTED CANDIDATES</span></article><article data-tone="missing"><strong>{drawablePatterns.filter((item) => item.status === "FORMING" || item.status === "AMBIGUOUS").length}</strong><span>NEEDS CONFIRMING</span></article></div>
     <article className="psXRayRead" aria-live="polite">
       {layer === "patterns" ? <><small>PATTERN SCAN · VISIBLE GEOMETRY ONLY</small>{drawablePatterns.length ? <div className="psPatternXRayRead">{drawablePatterns.map((pattern) => <section key={`${pattern.name}-${pattern.status}`} data-status={pattern.status}><div><strong>{pattern.name}</strong><b>{pattern.status}</b></div><p>{pattern.evidence}</p><span>CONFIRMS IF · {pattern.confirmation}</span></section>)}</div> : <div className="psToolkitEmpty"><strong>NO CLEAN PATTERN VISIBLE</strong><p>This chart does not contain enough defensible geometry for a gallery pattern.</p><span>Try a wider 30m, 1h or 4h chart showing more candles.</span></div>}</> : null}
       {layer === "levels" ? <><small>SUPPORT + RESISTANCE · VERIFIED PRICE AREAS</small>{rankedLevels.filter((item) => item.kind !== "pivot").length ? <div className="psLevelRanking">{rankedLevels.filter((item) => item.kind !== "pivot").slice(0, 5).map((item, index) => <section key={`${item.kind}-${item.price}`} data-kind={item.kind} data-confidence={item.verification}><i>{index + 1}</i><div><span>{item.kind.toUpperCase()} · {item.verification} VERIFICATION</span><strong>{formatPrice(item.price)}</strong><small>{item.distance === null ? "DISTANCE NEEDS CURRENT PRICE" : `${formatPrice(item.distance)} PTS · ${item.distancePercent!.toFixed(2)}% AWAY`} · {item.reason.replaceAll("_", " ")}</small></div></section>)}</div> : <div className="psToolkitEmpty"><strong>EXACT LEVELS NOT VERIFIED</strong><p>{analysis.levelStory}</p><span>Attach a clearer price-scale chart, then reanalyse.</span></div>}</> : null}
@@ -448,10 +422,10 @@ function MarketStory({ analysis, sourceImage, onShare, onOpenReport, viewerName,
         {scene === 0 ? <article className="psStorySetup"><small>CHAPTER 01 · {viewerName ? `${viewerName.toUpperCase()}, YOUR ANALYSIS IS READY` : "YOUR ANALYSIS IS READY"}</small><h2>{analysis.instrument}</h2><div><span>{analysis.timeframe}</span><b data-direction={analysis.direction}>{analysis.direction}</b></div><p>Bullseye has challenged the chart, the opposing case and the conditions that could change this read.</p></article> : null}
         {scene === 1 ? <article className="psStoryEvidence"><small>CHAPTER 02 · VERIFIED EVIDENCE</small><h2>Evidence before opinion.</h2><ul>{analysis.observableFacts.slice(0, 2).map((fact) => <li key={fact}>{fact}</li>)}</ul><div><span>IMAGE {analysis.evidenceQuality.chartReadability}</span><span>SCALE {analysis.evidenceQuality.scaleReadable ? "VERIFIED" : "UNVERIFIED"}</span></div><section className="psEvidencePulse"><b>STRUCTURE</b><p>{analysis.marketStructure}</p><b>MOMENTUM</b><p>{analysis.momentum}</p></section><button type="button" onClick={() => openExplanation("bullseye-evidence")}>OPEN VERIFIED EVIDENCE ↓</button></article> : null}
         {scene === 2 ? <article className="psStoryLevels"><small>CHAPTER 03 · THE PRICE BATTLEFIELD</small><h2>{verifiedLevels.length ? `${verifiedLevels.length} level${verifiedLevels.length === 1 ? "" : "s"} survived verification.` : "Exact levels remain unverified."}</h2><div>{analysis.currentPrice ? <span><small>CURRENT</small><b>{analysis.currentPrice}</b></span> : null}{verifiedLevels.slice(0, 3).map((level) => <span key={`${level.kind}-${level.price}`} data-kind={level.kind}><small>{level.kind.toUpperCase()}</small><b>{level.price}</b></span>)}</div><p>{analysis.levelStory}</p><button type="button" onClick={() => openExplanation("bullseye-levels")}>EXPLORE PRICE LEVELS ↓</button></article> : null}
-        {scene === 3 ? <article className="psStoryBattle"><small>CHAPTER 04 · BULL VS BEAR</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>🐂 BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>🐻 BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
-        {scene === 4 ? <article className="psStoryRisks psStoryRiskPro"><small>CHAPTER 05 · RISK CONTROL</small><h2>What could make this read wrong?</h2><div><section><b>⚡ CONTRADICTIONS</b><ul>{(analysis.contradictions.length ? analysis.contradictions : ["No clear contradiction is visible in this screenshot."]).slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section><section><b>⚠ RISK FLAGS</b><ul>{analysis.riskFlags.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section></div><div className="psEventSafety"><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY · CONFIRM THE LIVE CALENDAR</span></div><p>TRADER TRAP · {analysis.traderTrap}</p></article> : null}
+        {scene === 3 ? <article className="psStoryBattle"><small>CHAPTER 04 · BULL VS BEAR</small><h2>Two stories are fighting for control.</h2><div><section data-side="bull"><b>BULL EVIDENCE</b><p>{analysis.bullishCase}</p></section><i>VS</i><section data-side="bear"><b>BEAR EVIDENCE</b><p>{analysis.bearishCase}</p></section></div></article> : null}
+        {scene === 4 ? <article className="psStoryRisks psStoryRiskPro"><small>CHAPTER 05 · RISK CONTROL</small><h2>What could make this read wrong?</h2><div><section><b>CONTRADICTIONS</b><ul>{(analysis.contradictions.length ? analysis.contradictions : ["No clear contradiction is visible in this screenshot."]).slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section><section><b>RISK FLAGS</b><ul>{analysis.riskFlags.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul></section></div><div className="psEventSafety"><strong>{analysis.setupScore.eventSafety}<small>/10</small></strong><span>EVENT SAFETY · CONFIRM THE LIVE CALENDAR</span></div><p>TRADER TRAP · {analysis.traderTrap}</p></article> : null}
         {scene === 5 ? <article className="psStoryTrigger psStoryDecisionPro"><small>CHAPTER 06 · DECISION CONDITIONS</small><h2>Do not guess. Let price prove it.</h2><div><section><b>◆ STRENGTHENS WHEN</b><p>{analysis.nextSequence.confirmation}</p></section><section><b>✕ BREAKS WHEN</b><p>{analysis.nextSequence.failure || analysis.invalidation}</p></section></div><p>STAND ASIDE · {analysis.noTradeCondition}</p><section className="psNextCheck"><b>RIGHT NOW</b><span>{analysis.nextSequence.now}</span><b>NEXT CHECK</b><span>{analysis.nextSequence.reassess}</span></section></article> : null}
-        {scene === 6 ? <article className="psStoryVerdict psStoryFinale psFinalePage"><small>FINAL CHAPTER · PERSONAL RESULT</small><div className="psFinaleTarget psLaunchTarget" aria-hidden="true"><i/><i/><i/><b>🎯</b><span>LOCKING<br/>EVIDENCE</span></div><div className="psFinaleLogo"><span className="psLogoMark"><i/></span><strong>BULLSEYE</strong></div><h1>{viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"}<span>EVIDENCE BALANCE</span></h1><div className="psFinaleRatioCards" aria-label={`Bull ${balance.bull} percent, bear ${balance.bear} percent evidence balance`}><section data-side="bull"><i>🐂</i><span>BULL CASE</span><strong>{balance.bull}<small>%</small></strong></section><b>VS</b><section data-side="bear"><i>🐻</i><span>BEAR CASE</span><strong>{balance.bear}<small>%</small></strong></section></div><div className="psFinaleBalanceBar"><i style={{ width: `${balance.bull}%` }}/><b/><span>EVIDENCE BALANCE · NOT PROBABILITY</span></div><div className="psFinaleScore"><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b></div><h2>{analysis.verdictHeadline}</h2><p className="psDailyMessage"><span>YOUR MESSAGE FOR TODAY</span>{dailyMessage}</p><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
+        {scene === 6 ? <article className="psStoryVerdict psStoryFinale psFinalePage"><small>FINAL CHAPTER · PERSONAL RESULT</small><div className="psFinaleTarget psLaunchTarget" aria-hidden="true"><i/><i/><i/><b/><span>LOCKING<br/>EVIDENCE</span></div><div className="psFinaleLogo"><span className="psLogoMark"><i/></span><strong>BULLSEYE</strong></div><h1>{viewerName ? `${viewerName.toUpperCase()}'S` : "YOUR"}<span>EVIDENCE BALANCE</span></h1><div className="psFinaleRatioCards" aria-label={`Bull ${balance.bull} percent, bear ${balance.bear} percent evidence balance`}><section data-side="bull"><i aria-hidden="true"/><span>BULL CASE</span><strong>{balance.bull}<small>%</small></strong></section><b>VS</b><section data-side="bear"><i aria-hidden="true"/><span>BEAR CASE</span><strong>{balance.bear}<small>%</small></strong></section></div><div className="psFinaleBalanceBar"><i style={{ width: `${balance.bull}%` }}/><b/><span>EVIDENCE BALANCE · NOT PROBABILITY</span></div><div className="psFinaleScore"><strong>{analysis.setupScore.grade}</strong><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction} · {analysis.verdict.replaceAll("_", " ")}</b></div><h2>{analysis.verdictHeadline}</h2><p className="psDailyMessage"><span>YOUR MESSAGE FOR TODAY</span>{dailyMessage}</p><div className="psFinaleActions"><button type="button" onClick={() => onOpenReport()}>OPEN FULL WRITTEN REPORT →</button><button type="button" onClick={onShare}>SHARE MY BULLSEYE ↗</button></div></article> : null}
       </div>
     </div>
     <nav className="psStoryLinks" aria-label="Open the solid-state explanation"><button type="button" onClick={() => openExplanation("bullseye-events")}><b>01</b><span>EVENTS</span></button><button type="button" onClick={() => openExplanation("bullseye-levels")}><b>02</b><span>PRICE LEVELS</span></button><button type="button" onClick={() => openExplanation("bullseye-evidence")}><b>03</b><span>EVIDENCE</span></button></nav>
@@ -467,7 +441,7 @@ function ClarityLock({ analysis }: { analysis: Analysis }) {
   ] as const);
   const aligned = metrics.filter(([, score]) => score >= 7).length;
   return <section className="psClarityLock psClarityClassic" data-direction={analysis.direction}>
-    <header><div><span>🎯 BULLSEYE CLARITY LOCK</span><small>DECISION CLARITY · NOT PERMISSION TO TRADE</small></div><strong>{aligned}<small>/6</small><b> ALIGNED</b></strong></header>
+    <header><div><span>BULLSEYE CLARITY</span><small>DECISION CLARITY · NOT PERMISSION TO TRADE</small></div><strong>{aligned}<small>/6</small><b> ALIGNED</b></strong></header>
     <div className="psClarityBars">{metrics.map(([label, score]) => <article key={label} data-strength={score >= 8 ? "high" : score >= 6 ? "mid" : "low"}><div><span>{label}</span><strong>{score}<small>/10</small></strong></div><i><b style={{ width: `${score * 10}%` }}/></i></article>)}</div>
     <footer><span>CLARITY STATUS</span><strong>{aligned >= 5 ? "STRONG ALIGNMENT" : aligned >= 3 ? "PARTIAL ALIGNMENT" : "EVIDENCE NOT LOCKED"}</strong><p>{analysis.verdictHeadline}</p></footer>
   </section>;
@@ -475,7 +449,7 @@ function ClarityLock({ analysis }: { analysis: Analysis }) {
 
 function BullseyePlan({ analysis, onResultCard }: { analysis: Analysis; onResultCard: () => void }) {
   return <section className="psBullseyePlan">
-    <header><div><span>🧭 YOUR BULLSEYE PLAN</span><small>THE RESULT IN FOUR DECISIONS</small></div><button type="button" onClick={onResultCard}>VIEW RESULT CARD ↗</button></header>
+    <header><div><span>YOUR BULLSEYE PLAN</span><small>THE RESULT IN FOUR DECISIONS</small></div><button type="button" onClick={onResultCard}>VIEW RESULT CARD ↗</button></header>
     <div>
       <article data-step="now"><i>01</i><small>RIGHT NOW</small><strong>{analysis.verdict.replaceAll("_", " ")}</strong><p>{analysis.summary}</p></article>
       <article data-step="lock"><i>02</i><small>CLARITY IMPROVES WHEN</small><strong>{analysis.nextSequence.confirmation}</strong></article>
@@ -525,60 +499,27 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
-type CommandDeckMode = "xray" | "patterns" | "scenarios" | "plan" | "risk" | "pulse";
-type RiskCurrency = "GBP" | "USD" | "EUR";
-type StoredRiskDesk = RiskDeskInput & { currency: RiskCurrency; version: 1 };
-
-const EMPTY_RISK_DESK: RiskDeskInput = { accountValue: "", riskPercent: "0.5", stopDistance: "", valuePerPoint: "" };
-
-function RiskDesk() {
-  const [input, setInput] = useState<RiskDeskInput>(EMPTY_RISK_DESK);
-  const [currency, setCurrency] = useState<RiskCurrency>("GBP");
-  const [status, setStatus] = useState("");
-  const calculation = calculateRiskDesk(input);
-  const money = (value: number | null) => value === null ? "—" : new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const stored = JSON.parse(localStorage.getItem("pocket-risk-desk-v1") ?? "null") as StoredRiskDesk | null;
-        if (!stored || stored.version !== 1) return;
-        setInput({ accountValue: stored.accountValue, riskPercent: stored.riskPercent, stopDistance: stored.stopDistance, valuePerPoint: stored.valuePerPoint });
-        if (["GBP", "USD", "EUR"].includes(stored.currency)) setCurrency(stored.currency);
-      } catch {}
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const update = (key: keyof RiskDeskInput, value: string) => setInput((current) => ({ ...current, [key]: value }));
-  const save = () => {
-    try {
-      const stored: StoredRiskDesk = { ...input, currency, version: 1 };
-      localStorage.setItem("pocket-risk-desk-v1", JSON.stringify(stored));
-      setStatus("Saved privately on this device.");
-    } catch { setStatus("This browser could not save your risk settings."); }
-  };
-
-  return <section className="psRiskDesk">
-    <header><div><span>🛡 PERSONAL RISK DESK</span><small>YOUR LIMITS · YOUR DEVICE · NO ORDER CONNECTION</small></div><strong>{calculation.riskPercent !== null && calculation.riskPercent > 2 ? "HIGH LIMIT" : "PRIVATE"}</strong></header>
-    <div className="psRiskDeskBody">
-      <form onSubmit={(event) => { event.preventDefault(); save(); }}>
-        <label><span>ACCOUNT VALUE</span><div><select aria-label="Account currency" value={currency} onChange={(event) => setCurrency(event.target.value as RiskCurrency)}><option value="GBP">GBP</option><option value="USD">USD</option><option value="EUR">EUR</option></select><input aria-label="Account value" inputMode="decimal" value={input.accountValue} onChange={(event) => update("accountValue", event.target.value)} placeholder="10,000" /></div></label>
-        <label><span>MAX RISK PER IDEA</span><div><input aria-label="Maximum risk percent" inputMode="decimal" value={input.riskPercent} onChange={(event) => update("riskPercent", event.target.value)} placeholder="0.5" /><b>%</b></div></label>
-        <label><span>STOP DISTANCE</span><div><input aria-label="Stop distance in points" inputMode="decimal" value={input.stopDistance} onChange={(event) => update("stopDistance", event.target.value)} placeholder="Optional" /><b>PTS</b></div></label>
-        <label><span>VALUE PER POINT / UNIT</span><div><input aria-label="Value per point per unit" inputMode="decimal" value={input.valuePerPoint} onChange={(event) => update("valuePerPoint", event.target.value)} placeholder="Check broker" /><b>{currency}</b></div></label>
-        <button type="submit">SAVE ON THIS DEVICE</button>
-      </form>
-      <div className="psRiskReadout" aria-live="polite">
-        <article><small>MAX CASH RISK</small><strong>{money(calculation.cashRisk)}</strong><span>{calculation.riskPercent === null ? "Add account value and risk %" : `${calculation.riskPercent}% personal ceiling`}</span></article>
-        <article><small>RISK PER UNIT</small><strong>{money(calculation.riskPerUnit)}</strong><span>Stop distance × value per point</span></article>
-        <article data-primary><small>ILLUSTRATIVE MAX UNITS</small><strong>{calculation.units ?? "—"}</strong><span>{calculation.units === 0 ? "The stated unit risk exceeds your cash limit" : "Round down only · never up"}</span></article>
-      </div>
-    </div>
-    {status ? <p className="psRiskStatus" role="status">{status}</p> : null}
-    <footer><b>VERIFY CONTRACT SPECS</b><span>This calculator uses only the figures you enter. It does not know leverage, fees, slippage, margin or your broker’s contract size, and it does not place or recommend a trade.</span></footer>
+function LiquidityGuard({ analysis, sourceImage, identityConfirmed }: { analysis: Analysis; sourceImage: string; identityConfirmed: boolean }) {
+  const read: LiquidityRead = analysis.liquidity ?? { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [] };
+  return <section className="psLiquidityGuard" data-state={read.state}>
+    <header>
+      <div><span>LIQUIDITY GUARD</span><small>VISIBLE STRUCTURE ONLY · NO ORDER-BOOK CLAIMS</small></div>
+      <strong>{read.state === "NONE" ? "NO EVIDENCE" : read.state + " · " + read.confidence}</strong>
+    </header>
+    <OriginalChartEvidence image={sourceImage} report={analysis} identityConfirmed={identityConfirmed} layer="liquidity" />
+    {read.state === "NONE" ? <div className="psLiquidityEmpty"><strong>NO VERIFIED LIQUIDITY STRUCTURE</strong><p>Pocket will not invent stop pools or hidden orders from ordinary price noise.</p></div> :
+      <div className="psLiquidityReadout">
+        <article><small>VISIBLE EVIDENCE</small><strong>{read.evidence}</strong></article>
+        <article><small>CURRENT EVENT</small><strong>{read.event}</strong></article>
+        <article><small>CONFIRMS IF</small><strong>{read.confirmation || "No defensible confirmation condition was returned."}</strong></article>
+        <article><small>INVALID IF</small><strong>{read.invalidation || "No defensible invalidation condition was returned."}</strong></article>
+      </div>}
+    <footer>Liquidity Guard marks screenshot-derived reference structures only. It does not see hidden stops, exchange order books or institutional positioning.</footer>
   </section>;
 }
+
+type CommandDeckMode = "xray" | "patterns" | "liquidity" | "scenarios" | "plan" | "risk";
+const RiskDesk = PersonalRiskDesk;
 
 function SignalPulse({ analysis }: { analysis: Analysis }) {
   const signal = analysis.patterns[0];
@@ -593,27 +534,48 @@ function SignalPulse({ analysis }: { analysis: Analysis }) {
   </section>;
 }
 
-function PocketCommandDeck({ analysis, sourceImage, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
+function ScannerHealth({ analysis }: { analysis: Analysis }) {
+  const numericLevels = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
+  const chartState = analysis.evidenceQuality.chartReadability === "CLEAR" && analysis.evidenceQuality.candlesReadable ? "VERIFIED" : analysis.evidenceQuality.chartReadability === "POOR" ? "NONE" : "PARTIAL";
+  const levelState = numericLevels.length && analysis.evidenceQuality.scaleReadable ? "VERIFIED" : analysis.levels.length ? "PARTIAL" : "NONE";
+  const strongPatterns = analysis.patterns.filter((pattern) => pattern.confidence !== "LOW" && pattern.status !== "AMBIGUOUS");
+  const patternState = strongPatterns.length ? "VERIFIED" : analysis.patterns.length ? "PARTIAL" : "NONE";
+  const liquidityState = analysis.liquidity?.state ?? "NONE";
+  const timeframeState = analysis.higherTimeframe.provided ? "VERIFIED" : "NONE";
+  const items = [
+    ["CHART", chartState],
+    ["LEVELS", levelState],
+    ["PATTERNS", patternState],
+    ["LIQUIDITY", liquidityState],
+    ["HTF", timeframeState],
+  ] as const;
+  return <section className="psScannerHealth" aria-label="Scanner evidence status">
+    <header><span>SCANNER HEALTH</span><small>WHAT POCKET ACTUALLY VERIFIED</small></header>
+    <div>{items.map(([label, state]) => <article key={label} data-state={state}><i/><span>{label}</span><strong>{state === "NONE" ? "NO EVIDENCE" : state}</strong></article>)}</div>
+  </section>;
+}
+
+function PocketCommandDeck({ analysis, sourceImage, identityConfirmed, onResultCard, onAddChart, onReanalyse, hasContext, reanalysing }: { analysis: Analysis; sourceImage: string; identityConfirmed: boolean; onResultCard: () => void; onAddChart: (event: ChangeEvent<HTMLInputElement>) => void; onReanalyse: () => void; hasContext: boolean; reanalysing: boolean }) {
   const [mode, setMode] = useState<CommandDeckMode>("xray");
   const modes: Array<{ id: CommandDeckMode; number: string; label: string; detail: string }> = [
     { id: "xray", number: "01", label: "CHART X-RAY", detail: "SOURCE AUDIT" },
-    { id: "patterns", number: "02", label: "PATTERNS", detail: "FORMING SIGNALS" },
-    { id: "scenarios", number: "03", label: "SCENARIOS", detail: "IF / THEN PATHS" },
-    { id: "plan", number: "04", label: "PLAN", detail: "CLARITY LOCK" },
-    { id: "risk", number: "05", label: "RISK", detail: "PERSONAL LIMITS" },
-    { id: "pulse", number: "06", label: "SIGNAL PULSE", detail: "LIVE FORMATION" },
+    { id: "patterns", number: "02", label: "PATTERNS", detail: "VERIFIED GEOMETRY" },
+    { id: "liquidity", number: "03", label: "LIQUIDITY", detail: "VISIBLE POOLS / SWEEPS" },
+    { id: "scenarios", number: "04", label: "SCENARIOS", detail: "IF / THEN PATHS" },
+    { id: "plan", number: "05", label: "PLAN", detail: "CLARITY LOCK" },
+    { id: "risk", number: "06", label: "RISK", detail: "PERSONAL LIMITS" },
   ];
 
   return <section id="bullseye-evidence" className="psCommandDeck">
     <header><div><span>◎ POCKET BULLSEYE 2.0</span><strong>SCAN. UNDERSTAND. PLAN. REVIEW.</strong></div><b>COMMAND DECK</b></header>
     <nav aria-label="Pocket Bullseye command deck">{modes.map((item) => <button key={item.id} type="button" data-active={mode === item.id} aria-pressed={mode === item.id} onClick={() => setMode(item.id)}><i>{item.number}</i><span>{item.label}</span><small>{item.detail}</small></button>)}</nav>
     <div className="psCommandStage" data-mode={mode}>
-      {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
+      {mode === "xray" ? <ChartXRay analysis={analysis} sourceImage={sourceImage} identityConfirmed={identityConfirmed} onAddChart={onAddChart} onReanalyse={onReanalyse} hasContext={hasContext} reanalysing={reanalysing} /> : null}
       {mode === "patterns" ? <PatternWatch analysis={analysis} /> : null}
+      {mode === "liquidity" ? <LiquidityGuard analysis={analysis} sourceImage={sourceImage} identityConfirmed={identityConfirmed} /> : null}
       {mode === "scenarios" ? <ScenarioTheatre analysis={analysis} sourceImage={sourceImage} /> : null}
       {mode === "plan" ? <><ClarityLock analysis={analysis} /><BullseyePlan analysis={analysis} onResultCard={onResultCard} /></> : null}
       {mode === "risk" ? <RiskDesk /> : null}
-      {mode === "pulse" ? <SignalPulse analysis={analysis} /> : null}
     </div>
     <footer><span>Every mode stays evidence-first. Scenario graphics are conditional illustrations; risk figures come only from your inputs.</span></footer>
   </section>;
@@ -623,7 +585,7 @@ function ResultCard({ analysis, onClose, onShare }: { analysis: Analysis; onClos
   const verified = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind)).slice(0, 3);
   return <section className="psResultCardModal" role="dialog" aria-modal="true" aria-label="Shareable Pocket Bullseye result card">
     <div className="psShareCard">
-      <header><span>🎯 POCKET BULLSEYE</span><button type="button" onClick={onClose} aria-label="Close result card">×</button></header>
+      <header><span>POCKET BULLSEYE</span><button type="button" onClick={onClose} aria-label="Close result card">×</button></header>
       <div className="psShareIdentity"><small>PRIVATE DECISION AUDIT</small><strong>{analysis.instrument}</strong><span>{analysis.timeframe}</span></div>
       <div className="psShareScore"><strong>{analysis.setupScore.grade}</strong><div><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction}</b><em>{analysis.verdict.replaceAll("_", " ")}</em></div></div>
       <h2>{analysis.verdictHeadline}</h2>
@@ -665,7 +627,7 @@ function openVault() {
   });
 }
 
-const POCKET_ANALYSIS_ENGINE_VERSION = 8 as const;
+const POCKET_ANALYSIS_ENGINE_VERSION = 9 as const;
 type CachedAnalysis = { key: string; analysis: Analysis; createdAt: string; version: typeof POCKET_ANALYSIS_ENGINE_VERSION };
 
 function hasVerifiedStructuralLevel(analysis: Analysis) {
@@ -735,11 +697,11 @@ function FeedbackButton() {
   const ideaHref = "mailto:hello@nashaimarkets.com?subject=Pocket%20Bullseye%20%E2%80%94%20idea&body=My%20idea%20for%20Pocket%20Bullseye%3A%0A%0AWhy%20it%20would%20help%3A%0A";
 
   return <details id="pocket-feedback" className="psFeedback">
-    <summary aria-label="Send Pocket Bullseye feedback"><span>💬</span><strong>FEEDBACK</strong></summary>
+    <summary aria-label="Send Pocket Bullseye feedback"><span>?</span><strong>FEEDBACK</strong></summary>
     <div>
       <p>Help us improve Pocket Bullseye.</p>
-      <a href={problemHref}><b>⚠</b><span><strong>REPORT A PROBLEM</strong><small>Tell us what went wrong</small></span></a>
-      <a href={ideaHref}><b>✦</b><span><strong>SUGGEST AN IDEA</strong><small>Help shape what comes next</small></span></a>
+      <a href={problemHref}><b>!</b><span><strong>REPORT A PROBLEM</strong><small>Tell us what went wrong</small></span></a>
+      <a href={ideaHref}><b>+</b><span><strong>SUGGEST AN IDEA</strong><small>Help shape what comes next</small></span></a>
     </div>
   </details>;
 }
@@ -775,16 +737,27 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   const [levelLabFileName, setLevelLabFileName] = useState("");
   const [levelLabStatus, setLevelLabStatus] = useState<"idle" | "attached" | "scanning" | "updated" | "error">("idle");
   const [levelLabError, setLevelLabError] = useState("");
+  const [levelLabResult,setLevelLabResult]=useState<(LevelLabSource&{levelStory?:string;limitation?:string})|null>(null);
+  const [levelLabPreflightStatus,setLevelLabPreflightStatus]=useState<PreflightStatus>("IDLE");
+  const [levelLabConfirmation,setLevelLabConfirmation]=useState<ChartConfirmation|null>(null);
   const [refinementBefore, setRefinementBefore] = useState<Analysis | null>(null);
   const [showResultReveal, setShowResultReveal] = useState(false);
   const [showResultCard, setShowResultCard] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bull" | "wait" | "bear" | null>(null);
   const [battlefieldChart, setBattlefieldChart] = useState<"primary" | "context">("primary");
   const [viewerName, setViewerName] = useState("");
-  const [resultView, setResultView] = useState<"cinema" | "report">("cinema");
+  const [resultView, setResultView] = useState<"cinema" | "report">("report");
+  const analysisController = useRef<AbortController | null>(null);
+  const primaryUploadEpoch = useRef(createChartRequestEpoch());
+  const contextUploadEpoch = useRef(createChartRequestEpoch());
+  const levelLabUploadEpoch = useRef(createChartRequestEpoch());
+  const analysisEpoch = useRef(createChartRequestEpoch());
+  const preflightToken = analysisEpoch.current.snapshot();
   const analysisRequestActive = useRef(false);
   const followUpRequestActive = useRef(false);
   const levelLabRequestActive = useRef(false);
+  const levelLabController=useRef<AbortController|null>(null);
+  useEffect(()=>()=>levelLabController.current?.abort(),[image]);
 
   useEffect(() => { vaultList().then(setVault).catch(() => setVaultMessage("Decision Vault is unavailable on this device.")); }, []);
 
@@ -820,6 +793,13 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return () => { document.body.style.overflow = previous; };
   }, [immersive, chartFocus, showResultReveal, showResultCard]);
 
+  function invalidateChartWork() {
+    analysisController.current?.abort();
+    analysisEpoch.current.invalidate();
+    setPreflightStatus("CHECKING");
+    setChartConfirmation(null);
+  }
+
   async function loadFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -834,11 +814,19 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setError("That image is too large. Please use a chart screenshot under 8 MB.");
       return;
     }
+    const readToken = primaryUploadEpoch.current.begin();
+    contextUploadEpoch.current.invalidate();
+    invalidateChartWork();
+    setImage(null);
     try {
       const prepared = await prepareImage(file);
+      if (!primaryUploadEpoch.current.isCurrent(readToken)) return;
       setImage(prepared);
       setFileName(file.name);
-    } catch { setError("That image could not be prepared safely."); }
+    } catch {
+      if (!primaryUploadEpoch.current.isCurrent(readToken)) return;
+      setError("That image could not be prepared safely.");
+    }
   }
 
   async function loadContextFile(event: ChangeEvent<HTMLInputElement>) {
@@ -853,10 +841,18 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setError("That higher-timeframe image is too large. Please use a screenshot under 8 MB.");
       return;
     }
+    const readToken = contextUploadEpoch.current.begin();
+    invalidateChartWork();
+    setContextImage(null);
     try {
-      setContextImage(await prepareImage(file));
+      const prepared = await prepareImage(file);
+      if (!contextUploadEpoch.current.isCurrent(readToken)) return;
+      setContextImage(prepared);
       setContextFileName(file.name);
-    } catch { setError("That higher-timeframe image could not be prepared safely."); }
+    } catch {
+      if (!contextUploadEpoch.current.isCurrent(readToken)) return;
+      setError("That higher-timeframe image could not be prepared safely.");
+    }
   }
 
   async function addResultContextFile(event: ChangeEvent<HTMLInputElement>) {
@@ -873,18 +869,23 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setError("That supporting chart is too large. Please use a screenshot under 8 MB.");
       return;
     }
+    const input = event.currentTarget;
+    const readToken = contextUploadEpoch.current.begin();
+    invalidateChartWork();
     try {
       const prepared = await prepareImage(file);
+      if (!contextUploadEpoch.current.isCurrent(readToken)) return;
       setContextImage(prepared);
       setContextFileName(file.name);
       setRefinementStatus("attached");
       setBattlefieldChart("context");
       requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
     } catch (caught) {
+      if (!contextUploadEpoch.current.isCurrent(readToken)) return;
       setRefinementStatus("error");
       setError(caught instanceof Error ? caught.message : "That supporting chart could not be attached safely.");
     } finally {
-      event.currentTarget.value = "";
+      if (contextUploadEpoch.current.isCurrent(readToken)) input.value = "";
     }
   }
 
@@ -898,51 +899,60 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       event.currentTarget.value = "";
       return;
     }
+    const input = event.currentTarget;
+    levelLabController.current?.abort();
+    setLevelLabResult(null);setLevelLabConfirmation(null);setLevelLabPreflightStatus("IDLE");
+    const readToken = levelLabUploadEpoch.current.begin();
+    const chartToken = analysisEpoch.current.snapshot();
     try {
-      setLevelLabImage(await prepareImage(file));
+      const prepared = await prepareImage(file);
+      if (!levelLabUploadEpoch.current.isCurrent(readToken) || !analysisEpoch.current.isCurrent(chartToken)) return;
+      setLevelLabImage(prepared);
       setLevelLabFileName(file.name);
       setLevelLabStatus("attached");
     } catch {
+      if (!levelLabUploadEpoch.current.isCurrent(readToken) || !analysisEpoch.current.isCurrent(chartToken)) return;
       setLevelLabStatus("error");
       setLevelLabError("That chart could not be prepared safely.");
-    } finally { event.currentTarget.value = ""; }
+    } finally { if (levelLabUploadEpoch.current.isCurrent(readToken)) input.value = ""; }
   }
 
   async function rescanLevelsOnly() {
-    if (!analysis || !levelLabImage || levelLabRequestActive.current) return;
+    if (!analysis || !levelLabImage || levelLabRequestActive.current || !levelLabConfirmation || !preflightAllowsAnalysis(levelLabPreflightStatus)) return;
+    const requestToken = analysisEpoch.current.snapshot();
+    const readToken = levelLabUploadEpoch.current.snapshot();
+    const controller=new AbortController();levelLabController.current=controller;
+    const isCurrent = () => !controller.signal.aborted && analysisEpoch.current.isCurrent(requestToken) && levelLabUploadEpoch.current.isCurrent(readToken);
     levelLabRequestActive.current = true;
     setLevelLabStatus("scanning");
     setLevelLabError("");
     try {
       const precisionImage = await createPrecisionReadingCrop(levelLabImage);
-      const response = await fetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image: levelLabImage, precisionImage }) });
-      const payload = await response.json() as { levels?: Pick<Analysis, "plotBounds" | "priceScaleAnchors" | "levels" | "currentPrice" | "levelStory">; error?: string };
-      if (!response.ok || !payload.levels) throw new Error(payload.error || "The independent level scan could not complete.");
-      setAnalysis((current) => current ? {
-        ...current,
-        plotBounds: payload.levels!.plotBounds,
-        priceScaleAnchors: payload.levels!.priceScaleAnchors,
-        levels: payload.levels!.levels.map((level) => ({ ...level, y: clampY(level.y) })),
-        currentPrice: payload.levels!.currentPrice || current.currentPrice,
-        levelStory: payload.levels!.levelStory || current.levelStory,
-      } : current);
-      setBattlefieldChart("primary");
+      if (!isCurrent()) return;
+      const response = await pocketAuthenticatedFetch("/api/pocket/levels", { method: "POST", headers: { "content-type": "application/json" }, signal:controller.signal, body: JSON.stringify({ image: levelLabImage, precisionImage,chartConfirmation:levelLabConfirmation }) });
+      const payload = await response.json() as { levels?: LevelLabSource&{levelStory?:string;limitation?:string}; error?: string };
+      if (!isCurrent()) return;
+      if (!response.ok || !payload.levels || !Array.isArray(payload.levels.levels) || payload.levels.levels.some(level=>!level||typeof level.kind!=="string"||typeof level.price!=="string"||typeof level.label!=="string")) throw new Error(payload.error || "The independent level scan could not complete.");
+      setLevelLabResult(payload.levels);
       setLevelLabStatus("updated");
     } catch (caught) {
+      if (!isCurrent()) return;
       setLevelLabStatus("error");
       setLevelLabError(caught instanceof Error ? caught.message : "The independent level scan could not complete.");
-    } finally { levelLabRequestActive.current = false; }
+    } finally { if(levelLabController.current===controller){levelLabController.current=null;levelLabRequestActive.current = false;} }
   }
 
   async function reanalyseResult() {
     if (!analysis || busy || analysisRequestActive.current) return;
     const resultScroller = document.querySelector(".psResults") as HTMLElement | null;
     const savedScrollTop = resultScroller?.scrollTop ?? 0;
+    const requestToken = analysisEpoch.current.snapshot();
     setError("");
     setRefinementBefore(analysis);
     setRefinementStatus("analysing");
     try {
       const refreshed = await requestPocketAnalysis(contextImage, { bypassCache: true });
+      if (!analysisEpoch.current.isCurrent(requestToken)) return;
       setAnalysis(refreshed);
       setStockEvents([]);
       setStockEventStatus(refreshed.ticker === "UNKNOWN" ? "unavailable" : "loading");
@@ -952,6 +962,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       setRefinementStatus("updated");
       requestAnimationFrame(() => { if (resultScroller) resultScroller.scrollTop = savedScrollTop; });
     } catch (caught) {
+      if (!analysisEpoch.current.isCurrent(requestToken)) return;
       setRefinementStatus("error");
       setError(caught instanceof Error ? caught.message : "This result could not be reanalysed safely.");
     }
@@ -982,79 +993,111 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function reanalyseWithCorrection() {
     if (!accuracyCorrection || !image || busy) return;
+    const requestToken = analysisEpoch.current.snapshot();
     setError("");
     try {
       const corrected = await requestPocketAnalysis(contextImage, { bypassCache: true });
+      if (!analysisEpoch.current.isCurrent(requestToken)) return;
       setAnalysis(corrected);
       setResultView("report");
     } catch (caught) {
+      if (!analysisEpoch.current.isCurrent(requestToken)) return;
       setError(caught instanceof Error ? caught.message : "Correction replay could not complete safely.");
     }
   }
 
+  function cancelAnalysis() {
+    if (!analysisController.current) return;
+    analysisEpoch.current.invalidate();
+    analysisController.current.abort();
+    setBusy(false);
+  }
+
   async function requestPocketAnalysis(selectedContext: string | null, options: { bypassCache?: boolean } = {}): Promise<Analysis> {
     if (!image || analysisRequestActive.current) throw new Error("An analysis is already running.");
+    if (!preflightAllowsAnalysis(preflightStatus) || !chartConfirmation) throw new Error("Confirm chart facts before analysis.");
+    const controller = new AbortController();
+    analysisController.current = controller;
+    const requestToken = analysisEpoch.current.snapshot();
+    const requireCurrentChart = () => {
+      if (!analysisEpoch.current.isCurrent(requestToken)) throw new DOMException("Chart replaced", "AbortError");
+    };
     analysisRequestActive.current = true;
     setBusy(true);
     try {
       const cacheKey = await analysisCacheKey(image, selectedContext, intention, chartConfirmation, accuracyCorrection);
+      requireCurrentChart();
       if (!options.bypassCache) {
         const cached = await analysisCacheGet(cacheKey).catch(() => null);
         // A held/empty result must never become sticky. Only reuse evidence
         // that contains an independently verified structural price level.
+        requireCurrentChart();
         if (cached && hasVerifiedStructuralLevel(cached)) return cached;
       }
       const [precisionImage, contextPrecisionImage] = await Promise.all([
         createPrecisionReadingCrop(image),
         selectedContext ? createPrecisionReadingCrop(selectedContext) : Promise.resolve(null),
       ]);
-      const response = await fetch("/api/pocket/analyse", {
+      requireCurrentChart();
+      const response = await pocketAuthenticatedFetch("/api/pocket/analyse", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ image, contextImage: selectedContext, precisionImage, contextPrecisionImage, intention, chartConfirmation, accuracyCorrection }),
+        signal: controller.signal,
       });
       const payload = await response.json() as { analysis?: Analysis; error?: string };
+      requireCurrentChart();
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
       payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
       if (hasVerifiedStructuralLevel(payload.analysis)) {
         await analysisCacheSave(cacheKey, payload.analysis).catch(() => undefined);
       }
+      requireCurrentChart();
       return payload.analysis;
     } finally {
-      analysisRequestActive.current = false;
-      setBusy(false);
+      if (analysisController.current === controller) {
+        analysisController.current = null;
+        analysisRequestActive.current = false;
+        setBusy(false);
+      }
     }
   }
 
   async function analyse() {
     if (!image || !privacyChecked || busy || analysisRequestActive.current || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))) return;
+    const requestToken = analysisEpoch.current.snapshot();
     setError("");
     try {
       if (!reviewTarget) {
         const nextAnalysis = await requestPocketAnalysis(contextImage);
+        if (!analysisEpoch.current.isCurrent(requestToken)) return;
         setStockEvents([]);
         setStockEventStatus(nextAnalysis.ticker === "UNKNOWN" ? "unavailable" : "loading");
         setAnalysis(nextAnalysis);
-        setResultView("cinema");
+        setResultView("report");
         setImmersive(true);
-        setShowResultReveal(true);
+        setShowResultReveal(false);
         return;
       }
       analysisRequestActive.current = true;
       setBusy(true);
-      const response = await fetch("/api/pocket/review", {
+      const response = await pocketAuthenticatedFetch("/api/pocket/review", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ beforeImage: reviewTarget.image, afterImage: image, lockedAnalysis: reviewTarget.analysis }),
       });
       const payload = await response.json() as { review?: ProcessReview; error?: string };
+      if (!analysisEpoch.current.isCurrent(requestToken)) return;
       if (!response.ok || !payload.review) throw new Error(payload.error || "Review is temporarily unavailable.");
       setReview(payload.review); setImmersive(true);
     } catch (caught) {
+      if (!analysisEpoch.current.isCurrent(requestToken)) return;
       setError(caught instanceof Error ? caught.message : "Analysis is temporarily unavailable.");
     } finally {
-      analysisRequestActive.current = false;
-      setBusy(false);
+      if (analysisEpoch.current.isCurrent(requestToken)) {
+        analysisRequestActive.current = false;
+        setBusy(false);
+      }
     }
   }
 
@@ -1063,7 +1106,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     followUpRequestActive.current = true;
     setFollowUpBusy(true); setFollowUpError(""); setFollowUpReply(null);
     try {
-      const response = await fetch("/api/pocket/follow-up", {
+      const response = await pocketAuthenticatedFetch("/api/pocket/follow-up", {
         method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({ analysis, question: question.trim() }),
       });
@@ -1162,6 +1205,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   function startReview(decision: LockedDecision) {
+    primaryUploadEpoch.current.invalidate(); contextUploadEpoch.current.invalidate(); invalidateChartWork();
     setReviewTarget(decision); setReview(null); setAnalysis(null); setImage(null); setFileName(""); setContextImage(null); setContextFileName(""); setImmersive(false); setError("");
   }
 
@@ -1180,11 +1224,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     return { total, average, patience, commonRisk: top(risks, "NO REPEATED RISK"), dominant: top(instruments, "NO PATTERN YET") };
   })();
 
-  const sourceChart = (focus = false) => image ? <SourceChart image={image} expanded={focus} /> : null;
+  const sourceChart = (focus = false) => image ? <OriginalChartEvidence image={image} report={analysis} identityConfirmed={Boolean(chartConfirmation) && preflightAllowsAnalysis(preflightStatus) && (!levelLabImage || levelLabImage === image)} expanded={focus} /> : null;
   const contextSourceChart = (focus = false) => contextImage ? <SourceChart image={contextImage} expanded={focus} /> : null;
 
   if (review && reviewTarget) {
-    return <main className="psApp" data-pocket-build="v3.1"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section><FeedbackButton /></main>;
+    return <main className="psApp" data-pocket-build="v3.1"><section className="psResults" data-immersive="true"><div className="psImmersiveBar"><span>BULLSEYE · PROCESS REVIEW</span><button type="button" onClick={() => { primaryUploadEpoch.current.invalidate(); contextUploadEpoch.current.invalidate(); invalidateChartWork(); setReview(null); setReviewTarget(null); setImage(null); }}>DONE</button></div><header className="psVerdict psReviewVerdict"><p><i /> BEFORE VS AFTER · OUTCOME IS NOT PROCESS</p><div className="psVerdictTop"><h1><small>PROCESS GRADE</small><em data-grade={review.processGrade}>{review.processGrade}</em></h1><div><small>{review.decisionQuality}/100</small><strong>{review.outcome}</strong></div></div><h2>{review.headline}</h2><span>{review.outcomeSummary}</span></header><section className="psReviewGrid"><article><span>CONFIRMATION</span><p>{review.confirmationReview}</p></article><article><span>INVALIDATION</span><p>{review.invalidationReview}</p></article><article><span>TIMING</span><p>{review.timingReview}</p></article><article><span>DISCIPLINE</span><p>{review.disciplineReview}</p></article></section><section className="psAuditGrid"><article data-audit="improve"><span>LESSONS TO CARRY FORWARD</span><ul>{review.lessons.map((lesson) => <li key={lesson}>{lesson}</li>)}</ul></article><article data-audit="trap"><span>BEHAVIOUR TAGS</span><p>{review.behaviourTags.join(" · ") || "No reliable behaviour tag"}</p></article></section>{review.goodDecisionBadOutcome ? <p className="psProcessNote">GOOD DECISION · BAD OUTCOME — protect the process; do not rewrite it because of one result.</p> : null}<p className="psLegal">Screenshots cannot prove exact execution. Confirm fills and P&amp;L on the original platform.</p></section><FeedbackButton /></main>;
   }
 
   if (analysis) {
@@ -1231,9 +1275,9 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <section className="psResults" data-immersive={immersive ? "true" : "false"}>
           <div className="psImmersiveBar">
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
-            <button type="button" onClick={() => { setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setResultView("cinema"); setShowResultReveal(false); }}>NEW CHART</button>
+            <button type="button" onClick={() => { primaryUploadEpoch.current.invalidate(); contextUploadEpoch.current.invalidate(); invalidateChartWork(); setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setResultView("report"); setShowResultReveal(false); }}>NEW CHART</button>
           </div>
-          <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>▶ CINEMATIC RESULT</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>▤ WRITTEN REPORT</button></nav>
+          <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>FOCUS VIEW</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>EVIDENCE REPORT</button></nav>
           {resultView === "cinema" ? <MarketStory analysis={analysis} sourceImage={image ?? ""} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
           <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
           <header id="bullseye-verdict" className="psVerdict">
@@ -1242,10 +1286,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
             <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
           </header>
-          <PocketCommandDeck analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
+          <ScannerHealth analysis={analysis} />
+          <PocketCommandDeck identityConfirmed={Boolean(chartConfirmation) && preflightAllowsAnalysis(preflightStatus)} analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
           <section id="bullseye-events" className="psDecisionEvents" data-status={stockEventStatus}>
             <header><div><span>◷ EVENT RISK CONTEXT</span><small>{analysis.ticker !== "UNKNOWN" ? `${analysis.ticker} · COMPANY + MACRO` : "GENERAL MACRO CHECK · CONFIRM BEFORE TRADING"}</small></div>{isListedEquityAnalysis(analysis) && stockEvents.length ? <strong>{analysis.setupScore.eventSafety}<small>/10</small></strong> : <strong className="psEventCheckOnly">CHECK<small>NO VERIFIED SCORE</small></strong>}</header>
-            <div className="psTodayCalendar"><header><div><span>📅 TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : "CLEAR"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>)}</ol> : <p>No scheduled BLS, BEA or Federal Reserve release was returned for today. Unscheduled news can still move price.</p>}</div>
+            <div className="psTodayCalendar"><header><div><span>TODAY · UK TIME</span><small>OFFICIAL US MACRO SCHEDULE</small></div><b>{todayMacro.length ? `${todayMacro.length} EVENT${todayMacro.length === 1 ? "" : "S"}` : "CLEAR"}</b></header>{todayMacro.length ? <ol>{todayMacro.map((event) => <li key={event.id} data-risk={event.risk}><time>{londonClock(event.scheduledAt)}</time><div><strong>{event.name}</strong><small>{event.agency} · {event.risk} IMPACT</small></div>{event.sourceUrl ? <a href={event.sourceUrl} target="_blank" rel="noreferrer">SOURCE ↗</a> : null}</li>)}</ol> : <p>No scheduled BLS, BEA or Federal Reserve release was returned for today. Unscheduled news can still move price.</p>}</div>
             {isListedEquityAnalysis(analysis) ? <div className="psEventHeadline"><b>{stockEventStatus === "loading" ? "CHECKING COMPANY CALENDAR…" : stockEvents[0] ? `${stockEvents[0].type} · ${stockEvents[0].date}` : stockEventStatus === "unavailable" ? "COMPANY FEED UNAVAILABLE" : `NO UPCOMING ${analysis.ticker} EVENT RETURNED`}</b><span>{stockEvents[0]?.detail ?? "No symbol-matched company event was returned in the connected provider window."}</span></div> : <div className="psEventHeadline"><b>MACRO TIMING ONLY</b><span>This chart was not confidently identified as one listed company, so Bullseye will not attach a company calendar to it.</span></div>}
             <details><summary>VIEW EVENT SOURCES <b>⌄</b></summary><div><p>Relevant categories: {analysis.relevantEventTypes.length ? analysis.relevantEventTypes.join(" · ") : "No category identified safely"}</p>{stockEvents.length ? <ol>{stockEvents.map((event) => <li key={event.id}><time>{event.date}</time><strong>{event.type}</strong><span>{event.detail} · {event.source} · SYMBOL MATCHED</span></li>)}</ol> : null}{macroContext.releases.length ? <ol>{macroContext.releases.slice(0, 5).map((event) => <li key={event.id}><time>{formatEventTime(event.scheduledAt)}</time><strong>{event.name}</strong><span>{event.agency} · OFFICIAL SCHEDULE · {event.risk} IMPACT</span></li>)}</ol> : <p>No verified official macro release rows are available in the current window.</p>}{isListedEquityAnalysis(analysis) ? <a href={`https://www.sec.gov/edgar/browse/?CIK=${encodeURIComponent(analysis.ticker)}&owner=exclude&action=getcompany`} target="_blank" rel="noreferrer">CHECK OFFICIAL SEC FILINGS ↗</a> : null}</div></details>
             <footer>Company dates are provider-scheduled and symbol-matched; they may be estimated or revised. Macro rows labelled official come from agency schedules. Always confirm with the issuer or exchange.</footer>
@@ -1253,10 +1298,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           <section id="bullseye-levels" className="psResultChart psChartWorkspace psBattleWorkspace psDecisionMapWorkspace">
             <header><div><span>🗺️ EXPLORE PRICE LEVELS</span><small>OPTIONAL DECISION MAP · PRIMARY / CONTEXT</small></div><button type="button" onClick={() => setChartFocus(true)}>EXPAND</button></header>
             <section id="bullseye-level-lab" className="psLevelLab" data-status={levelLabStatus} aria-live="polite" aria-busy={levelLabStatus === "scanning"}>
-              <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "MAP UPDATED" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
-              <p>Add a clearer price-scale photo, then rescan only this map. Your verdict, patterns, scenarios, score and Clarity Lock will not change.</p>
+              <header><div><span>◎ INDEPENDENT LEVEL LAB</span><small>SUPPORT + RESISTANCE ONLY</small></div><b>{levelLabStatus === "updated" ? "SEPARATE RESULT READY" : levelLabStatus === "scanning" ? "SCANNING…" : levelLabStatus === "attached" ? "PHOTO READY" : "SEPARATE SCAN"}</b></header>
+              <p>Confirm this photo, then scan its own support and resistance. Results stay separate from the primary chart and report.</p>
               {levelLabImage ? <div className="psLevelLabPhoto"><img src={levelLabImage} alt="Chart selected for independent support and resistance scan" /><span>{levelLabFileName}</span></div> : null}
-              <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button></div>
+              {levelLabImage?<ChartPreflightPanel image={levelLabImage} onStatus={status=>{if(!preflightAllowsAnalysis(status)){levelLabController.current?.abort();setLevelLabResult(null);setLevelLabStatus("attached");}setLevelLabPreflightStatus(status);}} onConfirmation={setLevelLabConfirmation}/>:null}
+              <div><label>{levelLabImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add photo for independent support and resistance scan" disabled={levelLabStatus === "scanning"} onChange={addLevelLabFile} /></label><button type="button" disabled={!levelLabImage || !levelLabConfirmation || !preflightAllowsAnalysis(levelLabPreflightStatus) || levelLabStatus === "scanning"} onClick={rescanLevelsOnly}>{levelLabStatus === "scanning" ? "SCANNING LEVELS…" : "↻ RESCAN LEVELS ONLY"}</button>{levelLabStatus==="scanning"?<button type="button" onClick={()=>{levelLabController.current?.abort();levelLabController.current=null;levelLabRequestActive.current=false;levelLabUploadEpoch.current.invalidate();setLevelLabStatus("attached");}}>CANCEL LEVEL SCAN</button>:null}</div>
+              {levelLabImage&&levelLabResult?<><OriginalChartEvidence image={levelLabImage} report={canOverlayLevelLab(levelLabResult,levelLabConfirmation)?levelLabResult:null} identityConfirmed={preflightAllowsAnalysis(levelLabPreflightStatus)&&Boolean(levelLabConfirmation)}/><p>{levelLabResult.levelStory}</p><small>{levelLabResult.limitation}{!canOverlayLevelLab(levelLabResult,levelLabConfirmation)?" Source identity/price agreement remains held.":""}</small></>:null}
               {levelLabError ? <small role="alert">{levelLabError}</small> : null}
             </section>
             {battlefieldTabs}
@@ -1268,7 +1315,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
           </section>
           {analysis.missingInputs.length || refinementStatus !== "idle" || !analysis.levels.some((level) => numericLevel(level.price) !== null) ? <section className="psMissingInputs" data-refined={refinementStatus === "updated"} data-status={refinementStatus} aria-busy={refinementStatus === "analysing"} aria-live="polite"><header><span>📷 {refinementStatus === "updated" ? "TWO CHARTS ANALYSED" : refinementStatus === "attached" ? "SECOND VIEW ATTACHED" : contextImage ? "TWO CHARTS LOADED · OPTIONAL FINAL CHECK" : "ONE MORE VIEW COULD HELP"}</span><b>{refinementStatus === "analysing" ? "REANALYSING ALL CHARTS…" : refinementStatus === "updated" ? analysis.contextContribution?.materialChange ? "FINDINGS UPDATED" : "READ CONFIRMED" : refinementStatus === "attached" ? "2 CHARTS READY" : contextImage ? "ONLY MISSING EVIDENCE" : "ONLY IF AVAILABLE"}</b></header>{contextImage && (refinementStatus === "attached" || refinementStatus === "updated") ? <div className="psViewComparison"><div className="psViewPair"><figure><img src={image ?? ""} alt="Original trading chart" /><figcaption>PRIMARY</figcaption></figure><i>＋</i><figure><img src={contextImage} alt="Supporting timeframe chart" /><figcaption>ADDED VIEW</figcaption></figure></div><p>{refinementStatus === "attached" ? "Your second timeframe is attached. Tap Reanalyse all charts to replace the findings using both images." : analysis.contextContribution?.summary || "Both charts were compared and the current findings were replaced."}</p>{refinementStatus === "updated" ? <><div className="psRefineDelta"><article><span>SCORE</span><strong>{refinementBefore ? `${analysis.setupScore.overall - refinementBefore.setupScore.overall >= 0 ? "+" : ""}${analysis.setupScore.overall - refinementBefore.setupScore.overall}` : "—"}</strong></article><article><span>VERDICT</span><strong>{refinementBefore && refinementBefore.verdict !== analysis.verdict ? `${refinementBefore.verdict.replaceAll("_", " ")} → ${analysis.verdict.replaceAll("_", " ")}` : "UNCHANGED"}</strong></article><article><span>LEVELS</span><strong>{battlefieldChart === "context" ? "CONTEXT VIEW" : "PRIMARY VIEW"}</strong></article></div>{analysis.contextContribution?.resolvedInputs.length ? <small>RESOLVED · {analysis.contextContribution.resolvedInputs.join(" · ")}</small> : null}</> : null}</div> : analysis.missingInputs.length ? <ul>{analysis.missingInputs.slice(0, 2).map((item) => <li key={item}>{item}</li>)}</ul> : <p className="psPrecisionPrompt">Add a view with a clear price scale so Bullseye can retry exact support and resistance verification.</p>}<footer><div><strong>{refinementStatus === "analysing" ? "CHECKING BOTH CHARTS" : refinementStatus === "updated" ? "FINDINGS REPLACED" : refinementStatus === "attached" ? "PHOTO ADDED — READY" : "HAVE THAT VIEW?"}</strong><span>{refinementStatus === "analysing" ? "Support, resistance and the written read are being checked again." : refinementStatus === "updated" ? "The decision map and report now use the latest two-chart analysis." : refinementStatus === "attached" ? contextFileName : contextImage ? (analysis.missingInputs.slice(0, 2).join(" · ") || "Two charts were analysed; add another image only if it contains the missing evidence above.") : "Add a clearer lower, upper or higher-timeframe view."}</span></div><div className="psRefineActions"><label>{contextImage ? "CHANGE PHOTO" : "＋ ADD PHOTO"}<input id="psResultSupportInput" disabled={refinementStatus === "analysing"} aria-label="Add another timeframe chart photo" accept="image/jpeg,image/png,image/webp" type="file" onChange={addResultContextFile} /></label><button type="button" disabled={!contextImage || refinementStatus === "analysing"} onClick={reanalyseResult}>{refinementStatus === "analysing" ? "REANALYSING…" : "↻ REANALYSE ALL CHARTS"}</button></div></footer>{refinementStatus === "error" && error ? <p className="psRefineError" role="alert">{error}</p> : null}</section> : null}
           <section className="psAskBullseye">
-            <header><span>💬 ASK BULLSEYE</span><b>USES THIS AUDIT ONLY</b></header>
+            <header><span>ASK BULLSEYE</span><b>USES THIS AUDIT ONLY</b></header>
             <p>Challenge one part of the result without uploading the chart again.</p>
             <div className="psQuickQuestions">{["What am I missing?","Why should I wait?","What would improve this?","Where is the trap?"].map((question) => <button key={question} type="button" disabled={followUpBusy} onClick={() => askBullseye(question)}>{question}</button>)}</div>
             <form onSubmit={(event) => { event.preventDefault(); askBullseye(); }}><input value={followUpQuestion} maxLength={180} onChange={(event) => setFollowUpQuestion(event.target.value)} placeholder="Ask one short question…" aria-label="Ask Bullseye a follow-up question" /><button type="submit" disabled={!followUpQuestion.trim() || followUpBusy}>{followUpBusy ? "THINKING…" : "ASK"}</button></form>
@@ -1304,7 +1351,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         )}
         {showResultReveal && (
           <section className="psResultReveal" role="dialog" aria-modal="true" aria-label="Pocket Bullseye result ready">
-            <div className="psRevealRadar" aria-hidden="true"><i /><i /><i /><b>🎯</b></div>
+            <div className="psRevealRadar" aria-hidden="true"><i /><i /><i /><b /></div>
             <p>BULLSEYE ANALYSIS COMPLETE</p>
             <div className="psRevealScore"><span>SETUP GRADE</span><strong data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</strong><b>{analysis.setupScore.overall}<small>/100</small></b></div>
             <div className="psRevealVerdict"><span data-direction={analysis.direction}>{analysis.direction}</span><strong>{analysis.verdict.replaceAll("_", " ")}</strong></div>
@@ -1325,11 +1372,12 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psLogo"><span className="psLogoMark"><i /></span><span><strong>BULLSEYE</strong><small>TRADE SECOND OPINION</small></span></div>
         <div className="psHeaderActions"><span>BULLSEYE ENGINE · PRIVATE BETA</span></div>
       </header>
+      <NativeSubscriptionControls />
       <section className="psScanner">
         <section className="psLaunchHero">
           <div className="psCopy"><p><i /> {reviewTarget ? "LOCKED DECISION REVIEW" : "PRIVATE PRE-TRADE AUDIT"}</p><h1>{reviewTarget ? <>What happened<br /><em>after the decision?</em></> : <>One chart.<br /><em>One honest challenge.</em></>}</h1><span>{reviewTarget ? "Upload the later chart. Bullseye will compare it with the original locked reasoning and grade the process separately from the outcome." : "Before money meets market, Bullseye tests the evidence, challenges your bias and shows what a patient trader should wait for."}</span></div>
-          {!reviewTarget ? <div className="psLaunchTarget" aria-hidden="true"><i /><i /><i /><b>🎯</b><span>SCANNING<br />FOR CLARITY</span></div> : null}
-          {!reviewTarget ? <div className="psLaunchSignals" aria-label="Bullseye decision perspectives"><article data-tone="bull"><b>🐂</b><span>BULL CASE</span></article><article data-tone="wait"><b>🛡️</b><span>PATIENCE</span></article><article data-tone="bear"><b>🐻</b><span>BEAR CASE</span></article></div> : null}
+          {!reviewTarget ? <div className="psLaunchTarget" aria-hidden="true"><i /><i /><i /><b /><span>SCANNING<br />FOR CLARITY</span></div> : null}
+          {!reviewTarget ? <div className="psLaunchSignals" aria-label="Bullseye decision perspectives"><article data-tone="bull"><b>BULL</b><span>BULL CASE</span></article><article data-tone="wait"><b>WAIT</b><span>PATIENCE</span></article><article data-tone="bear"><b>BEAR</b><span>BEAR CASE</span></article></div> : null}
         </section>
         {!reviewTarget ? <section className="psOpeningRail" aria-label="How Bullseye works"><article><i>01</i><div><strong>READ</strong><span>Structure and levels</span></div></article><article><i>02</i><div><strong>CHALLENGE</strong><span>Bias and contradictions</span></div></article><article><i>03</i><div><strong>PROTECT</strong><span>Patience and risk</span></div></article></section> : null}
         {!reviewTarget ? <div className="psTrustPulse"><span>🔒 PRIVATE IMAGE</span><span>◉ EVIDENCE FIRST</span><span>✕ NO ORDER CONNECTION</span></div> : null}
@@ -1344,15 +1392,16 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         <div className="psCaptureRow"><label>USE CAMERA<input aria-label="Use camera" accept="image/*" capture="environment" type="file" onChange={loadFile} /></label><span>OR CHOOSE FROM CAMERA ROLL ABOVE</span></div>
         {image && !reviewTarget ? <section className="psContextUpload" data-loaded={contextImage ? "true" : "false"}>
           <div><span>② OPTIONAL CONTEXT CHART</span><strong>{contextImage ? "HIGHER TIMEFRAME LOADED" : "ADD HIGHER TIMEFRAME"}</strong><p>{contextImage ? contextFileName : "Add a 1-hour, 4-hour or daily view for alignment. Skip to keep analysis fast and data-light."}</p></div>
-          {contextImage ? <button type="button" onClick={() => { setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
+          {contextImage ? <button type="button" onClick={() => { contextUploadEpoch.current.invalidate(); invalidateChartWork(); setContextImage(null); setContextFileName(""); }}>REMOVE</button> : <label>ADD CHART<input aria-label="Add optional higher-timeframe chart" accept="image/jpeg,image/png,image/webp" type="file" onChange={loadContextFile} /></label>}
         </section> : null}
-        {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={setPreflightStatus} onConfirmation={setChartConfirmation} /> : null}
+        {image && !reviewTarget ? <ChartPreflightPanel image={image} contextImage={contextImage} onStatus={(status) => { if (analysisEpoch.current.isCurrent(preflightToken)) setPreflightStatus(status); }} onConfirmation={(confirmation) => { if (analysisEpoch.current.isCurrent(preflightToken)) setChartConfirmation(confirmation); }} /> : null}
         {image && !reviewTarget && <section className="psIntent"><header><span>WHAT ARE YOU CONSIDERING?</span></header><div>{(["LONG","SHORT","UNSURE"] as const).map((value) => <button key={value} type="button" data-active={intention === value} onClick={() => setIntention(value)}>{value === "UNSURE" ? "JUST ANALYSE" : value}</button>)}</div></section>}
         {image && <section className="psAutoPreview"><header><span>SOURCE CHART READY</span><b>AI DECISION MAP NEXT</b></header>{sourceChart()}<p>Bullseye will transform verified prices into a clear Decision Map—without drawing over your screenshot.</p></section>}
         <label className="psPrivacy"><input type="checkbox" checked={privacyChecked} onChange={(event) => setPrivacyChecked(event.target.checked)} /><span><strong>PRIVACY SHIELD</strong>I removed my name, account number, balance and notifications.</span></label>
         <p className="psDataNote">Images are sent to our AI provider for this audit. Saved decisions stay in this browser. <a href="/privacy" target="_blank" rel="noreferrer">HOW YOUR CHART IS HANDLED ↗</a></p>
         {error && <p className="psMessage" role="alert">{error}</p>}
-        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>🎯</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        <button className="psAnalyse" data-busy={busy ? "true" : "false"} type="button" disabled={!image || !privacyChecked || busy || (!reviewTarget && !preflightAllowsAnalysis(preflightStatus))} onClick={analyse}><span><strong>{busy ? (reviewTarget ? "COMPARING DECISIONS…" : "BULLSEYE IS CHALLENGING YOUR SETUP…") : reviewTarget ? "RUN BEFORE VS AFTER REVIEW" : preflightStatus === "CHECKING" ? "CHECKING CHART QUALITY…" : preflightStatus === "AWAITING_CONFIRMATION" ? "CONFIRM CHART FACTS ABOVE" : preflightStatus === "RETAKE" ? "RETAKE CHART TO CONTINUE" : "CHALLENGE MY SETUP"}</strong>{busy && !reviewTarget ? <small>READING STRUCTURE · TESTING BIAS · MAPPING RISK</small> : null}</span><b>→</b>{busy ? <i aria-hidden="true" /> : null}</button>
+        {busy && !reviewTarget ? <div className="psConfirmActions"><button type="button" onClick={cancelAnalysis}>CANCEL ANALYSIS</button></div> : null}
         {!reviewTarget && vault.length ? <section className="psFingerprint">
           <header><span>🧬 YOUR TRADER FINGERPRINT</span><b>{vaultStats.total} SAVED AUDIT{vaultStats.total === 1 ? "" : "S"}</b></header>
           <div><article><small>AVERAGE SETUP</small><strong>{vaultStats.average}/100</strong></article><article><small>PATIENCE FLAGS</small><strong>{vaultStats.patience}%</strong></article><article><small>MOST REVIEWED</small><strong>{vaultStats.dominant}</strong></article></div>

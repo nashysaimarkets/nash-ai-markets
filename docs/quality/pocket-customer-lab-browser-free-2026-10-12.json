@@ -1,0 +1,18 @@
+{
+  "checks": [
+    "actual customer primary upload/fact lock/mocked analysis",
+    "separate Lab photo needs its own fact lock",
+    "Lab request uses its own original bytes and source identity",
+    "separate low-quality Lab result holds drawing and preserves main verdict/report"
+  ],
+  "interceptedRequests": [
+    "/api/pocket/preflight",
+    "/api/pocket/analyse",
+    "/api/pocket/preflight",
+    "/api/pocket/levels"
+  ],
+  "providerCalls": 0,
+  "jsErrors": [],
+  "blockedExternalRequests": [],
+  "browser": "Chromium mobile 390x844; mocked providers; no physical-device or scanner accuracy evidence"
+}

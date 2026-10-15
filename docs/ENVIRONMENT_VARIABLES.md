@@ -11,8 +11,23 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 - `OPENAI_POCKET_MODEL` — optional Pocket Bullseye chart-analysis model override.
 - `OPENAI_POCKET_ANNOTATION_MODEL` — optional Pocket Bullseye annotation model override.
 - `POCKET_BUDGET_SALT` — optional server-only salt for Pocket request-budget keys.
+- `POCKET_TORTURE_LIVE_ENABLED` — preview-only benchmark opt-in; only the exact string `true` allows attempting the billed route. Leave unset/false until the separate pilot ledger, exact project/model/tier/pricing bounds and independent gates are verified.
+- `POCKET_TORTURE_LIVE_TOKEN` — server-only random secret of at least 32 characters. A preview live benchmark must supply the exact secret in `x-pocket-torture-token`. Never place it in client code, URLs or logs. Leave unset unless a billed test is explicitly authorised and cost-bounded.
 
-## Supabase
+## Apple server verification and native pin
+
+- `POCKET_APPLE_ENVIRONMENT` — server only; exactly `Production` or `Sandbox`. Sandbox is rejected on Vercel production. No automatic environment fallback.
+- `POCKET_APPLE_SIGNING_KEY` — server-only App Store In-App Purchase private signing key; never a public environment variable.
+- `POCKET_APPLE_KEY_ID` — server-only key identifier matching the In-App Purchase key.
+- `POCKET_APPLE_ISSUER_ID` — server-only App Store Connect issuer identifier.
+- `POCKET_APPLE_ROOT_CERTIFICATES_BASE64` — server-only JSON array of base64 DER Apple root certificates obtained from Apple's PKI distribution and independently validated. Never accept certificate roots from a client.
+- `POCKET_APPLE_APP_ID` — numeric App Store application ID for the verified bundle (existing Pocket listing: 6806004581).
+- `CAPACITOR_SERVER_URL` — immutable verified HTTPS deployment URL ending in `/pocket`; production and mutable branch aliases are rejected.
+- `CAPACITOR_SERVER_REVISION` — exact 40-character commit served by that immutable URL. Native verification must match it before sync/build.
+
+Apple configuration is not activated by source integration. Missing configuration or failed signature/status checks deny access. Purchases lacking an account token must not be silently reassigned; verified legacy ownership migration and server-controlled first-free consumption remain release blockers.
+
+## Supabase credentials
 - `NEXT_PUBLIC_SUPABASE_URL` — public project URL.
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — public publishable key.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — temporary legacy public fallback.
@@ -92,3 +107,48 @@ Values belong in the deployment secret/configuration manager. Never commit popul
 Never expose server secrets with `NEXT_PUBLIC_` or `VITE_` prefixes. Rotate credentials immediately after suspected exposure. OpenAI Responses requests explicitly use `store: false`; Pocket Bullseye retains deterministic fallback output when AI is unavailable.
 
 <!-- Pocket Bullseye launch-gate verification marker: documentation validated on 2026-08-20. -->
+# Pending scanner-test ledger configuration
+
+The cumulative spending hold remains unconditional. None of these settings
+authorises a billable call or replaces reconciled historical dollar evidence.
+Do not enable a real ledger until the owner separately approves exact spending.
+
+- `POCKET_TEST_SPEND_LEDGER_KEY`: reconciled shared ledger, never per-process allowance.
+- `POCKET_TEST_OPENAI_PROJECT_ID`: verified billing project, supplied to the provider SDK and checked by the ledger.
+- `POCKET_TEST_SPEND_APPROVAL_REF`: separate exact owner approval recorded in that ledger.
+- `POCKET_TEST_MODEL_COST_BOUNDS`: JSON object by exact model with `maxOutputTokens`, `maxCostMicroUsd`, and `fullContextCostBoundEvidenceRef`. Bounds must conservatively cover the full allowed model input context plus maximum output, using verified current prices, including image input. No guessed dollar estimates.
+
+Each main/precision/rescue/context provider call reserves its own amount and
+claims dispatch atomically. Receipts persist request/response IDs, model and
+usage without chart content. Unsettled or failed calls stay counted; token
+usage is not substituted for authoritative charged dollars.
+
+## Separate six-case benchmark pilot (approved ceiling: USD $5)
+
+These variables belong only to the new owner-approved pilot recorded in PR
+comment `6165012632`. They do not modify, settle or infer headroom in the
+historical $2 ledger above. The pilot is denied unless every value is present,
+the private ledger is independently enabled, and the exact candidate matches.
+
+- `POCKET_BENCHMARK_PILOT_ENABLED`: exact `true` only after independent gates pass; default false.
+- `POCKET_BENCHMARK_LEDGER_KEY`: one durable pilot ledger shared by all six named cases.
+- `POCKET_BENCHMARK_OPENAI_PROJECT_ID`: exact verified provider project passed to the SDK and checked by SQL.
+- `POCKET_BENCHMARK_APPROVAL_REF`: immutable reference to the approved $5 scope.
+- `POCKET_BENCHMARK_CANDIDATE_SHA`: full 40-character candidate commit.
+- `POCKET_BENCHMARK_MODEL_COST_BOUNDS`: JSON keyed by exact model. Every entry pins `serviceTier=default`, maximum output, text characters, complete response-format bytes, decoded image count/bytes/width/height/pixels, worst-case micro-USD and pricing-evidence reference.
+- `POCKET_BENCHMARK_CALL_PLAN`: exactly three deterministic slots—`main`, `primary_precision`, `rescue_precision`—each pinning model/tier, output, text, complete response format, decoded image count/bytes/width/height/pixels, worst-case micro-USD and evidence reference. This supports distinct main/precision bounds even when both use the same model. The complete worst-case total is reserved before dispatch.
+
+Named cases cannot be reclaimed, concurrent retransmits cannot dispatch the
+same slot twice, the private ledger allowlists no more than six exact case IDs,
+and a previous unresolved charge blocks the next case.
+Unused conditional rescue is voided only while still reserved. Submitted calls
+remain committed through crashes/timeouts until an immutable provider receipt
+and authoritative dollar settlement exist. Provisional synthetic-case output
+is stored with a SHA-256 digest but the endpoint returns only
+`PENDING_AUTHORITATIVE_SETTLEMENT`; TP/FP/FN and acceptance are released only
+through the result path after every required call settles and the final
+cumulative-cap veto passes. A conflicting provisional measurement is rejected.
+
+Pocket scan entitlement rollout requires the `pocket_scan_entitlements` migration and authoritative Stripe backfill. Founding awards and terminal Pro/Elite tiers are not Pocket access. Native Apple subscriptions and the advertised first free iPhone analysis require their own verified server entitlement integration before distribution. Do not deploy this guard to production as a stand-alone migration-free change.
+
+- `POCKET_FIRST_FREE_ENABLED` — server-only trial routing switch, default off. Also requires the private durable policy to be enabled in the same verified environment. Release hold prevents production activation. Allows at most three preflights and one analysis per verified account/email; no client/native flag grants access.

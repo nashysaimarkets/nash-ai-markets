@@ -1,3 +1,5 @@
+import { withPocketFirstFreeRequest } from "../../../lib/server/pocket-first-free";
+import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
@@ -28,6 +30,9 @@ const schema = {
 } as const;
 
 export async function POST(request: Request) {
+  const accessError = await requirePocketScanAccess(request);
+  if (accessError) return accessError;
+  return withPocketFirstFreeRequest(request, async () => {
   let image = "";
   let contextImage = "";
   try {
@@ -75,4 +80,5 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
   }
+  });
 }

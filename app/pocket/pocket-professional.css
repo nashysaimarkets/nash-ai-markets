@@ -1,0 +1,40 @@
+/* Professional restraint pass: depth without theatre. */
+.psApp{background:#090c0f}
+.psResults{background:#0a0d10}
+.psResultViewSwitch{gap:6px;padding:8px;border-bottom:1px solid rgba(255,255,255,.06);background:#0a0d10}
+.psResultViewSwitch button{border-radius:7px!important;border:1px solid rgba(255,255,255,.08)!important;background:#101419!important;box-shadow:none!important;letter-spacing:.08em!important;font-size:9px!important}
+.psResultViewSwitch button[data-active="true"]{background:#171d22!important;border-color:rgba(139,202,207,.28)!important;color:#eef5f5!important}
+.psVerdict,.psCommandDeck,.psDecisionEvents,.psLevelsSection,.psClarityClassic,.psBullseyePlan{box-shadow:none!important}
+.psVerdict{border:1px solid rgba(255,255,255,.08)!important;background:#0d1115!important}
+.psCommandDeck{border-color:rgba(255,255,255,.07)!important;background:#0b0f12!important}
+.psCommandDeck>header b{color:#7f9296!important}
+.psCommandDeck>nav button{border-radius:7px!important;box-shadow:none!important}
+.psCommandDeck>nav button[data-active="true"]{transform:none!important;box-shadow:inset 0 -2px 0 rgba(123,198,203,.55)!important}
+.psLaunchTarget,.psLockAtmosphere,.psLockSweep,.psRevealRadar{display:none!important}
+.psLockOn{background:#090c0f!important}
+.psLockArena{min-height:34px!important;background:none!important}
+.psLockRings,.psLockBracket{display:none!important}
+.psLockTelemetry>div,.psLockVerdict{box-shadow:none!important;border-color:rgba(255,255,255,.08)!important}
+.psPatternWatch,.psRiskDesk,.psSignalPulse{box-shadow:none!important}
+.psPatternWatch article,.psRiskDesk article{box-shadow:none!important}
+.psReportRail{background:rgba(9,12,15,.96)!important;border-color:rgba(255,255,255,.07)!important}
+.psReportRail a{font-size:8px!important;letter-spacing:.1em!important}
+.psShareCard{box-shadow:0 24px 80px rgba(0,0,0,.38)!important}
+@media(prefers-reduced-motion:no-preference){
+  .psCommandDeck>nav button,.psResultViewSwitch button{transition:border-color .16s ease,background .16s ease,color .16s ease!important}
+}
+
+.psScannerHealth{margin:10px 0 14px;padding:12px 14px;border:1px solid rgba(255,255,255,.07);border-radius:10px;background:#0b0f12}
+.psScannerHealth>header{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.psScannerHealth>header span{font-size:10px;font-weight:800;letter-spacing:.13em;color:#e8eeee}
+.psScannerHealth>header small{font-size:7px;letter-spacing:.1em;color:#6f7d80}
+.psScannerHealth>div{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.psScannerHealth article{display:grid;grid-template-columns:auto 1fr;gap:4px 7px;align-items:center;padding:8px;border:1px solid rgba(255,255,255,.055);border-radius:7px;background:#0d1216}
+.psScannerHealth article i{grid-row:1/3;width:7px;height:7px;border-radius:50%;background:#6a7477}
+.psScannerHealth article span{font-size:7px;letter-spacing:.1em;color:#7f8c8f}
+.psScannerHealth article strong{font-size:8px;letter-spacing:.07em;color:#b8c3c5}
+.psScannerHealth article[data-state="VERIFIED"] i{background:#65d49a}
+.psScannerHealth article[data-state="VERIFIED"] strong{color:#bfe8d1}
+.psScannerHealth article[data-state="PARTIAL"] i{background:#d7a85c}
+.psScannerHealth article[data-state="PARTIAL"] strong{color:#e1c997}
+@media(max-width:720px){.psScannerHealth>div{grid-template-columns:repeat(2,minmax(0,1fr))}.psScannerHealth>header{align-items:flex-start;flex-direction:column;gap:3px}}

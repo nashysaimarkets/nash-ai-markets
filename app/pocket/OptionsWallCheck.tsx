@@ -1,4 +1,5 @@
 "use client";
+import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 import { useState, type ChangeEvent } from "react";
 import type { OptionsWallResult } from "./options-wall";
@@ -31,7 +32,7 @@ export default function OptionsWallCheck({ ticker, levels }: { ticker: string; l
     if (!image || busy || !readyForComparison) return;
     setBusy(true); setError(""); setResult(null);
     try {
-      const response = await fetch("/api/pocket/options-wall", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, ticker, levels: levels.map(({ kind, price, label }) => ({ kind, price, label })) }) });
+      const response = await pocketAuthenticatedFetch("/api/pocket/options-wall", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ image, ticker, levels: levels.map(({ kind, price, label }) => ({ kind, price, label })) }) });
       const payload = await response.json() as { result?: OptionsWallResult; error?: string };
       if (!response.ok || !payload.result) throw new Error(payload.error || "The options check could not complete.");
       setResult(payload.result);

@@ -5,20 +5,23 @@ import { readFileSync } from "node:fs";
 const client = readFileSync("app/pocket/PocketBullseye.tsx", "utf8");
 const route = readFileSync("app/api/pocket/levels/route.ts", "utf8");
 
-test("the sixth command tile is a genuinely separate Signal Pulse", () => {
-  assert.match(client, /number: "06", label: "SIGNAL PULSE"/);
-  assert.match(client, /WHAT IS DEVELOPING NOW/);
+test("main scanner rail keeps liquidity first-class without a Signal Pulse command tile", () => {
+  assert.match(client, /label: "LIQUIDITY"/);
+  assert.doesNotMatch(client, /label: "SIGNAL PULSE"/);
+  assert.match(client, /WHAT POCKET ACTUALLY VERIFIED/);
 });
 
 test("Level Lab exposes a separate photo and levels-only rescan", () => {
   assert.match(client, /INDEPENDENT LEVEL LAB/);
   assert.match(client, /RESCAN LEVELS ONLY/);
-  assert.match(client, /fetch\("\/api\/pocket\/levels"/);
+  assert.match(client, /pocketAuthenticatedFetch\("\/api\/pocket\/levels"/);
 });
 
-test("Level Lab merges only price-map fields into the existing analysis", () => {
+test("Level Lab preserves the entire primary analysis and stores a source-isolated result", () => {
   const merge = client.slice(client.indexOf("async function rescanLevelsOnly"), client.indexOf("async function reanalyseResult"));
-  assert.match(merge, /setAnalysis\(\(current\)/);
+  assert.doesNotMatch(merge, /setAnalysis\(|setBattlefieldChart\(/);
+  assert.match(merge, /setLevelLabResult\(payload.levels\)/);
+  assert.match(merge, /chartConfirmation:levelLabConfirmation/);
   for (const protectedField of ["verdict:", "patterns:", "setupScore:", "nextSequence:", "riskFlags:"]) assert.doesNotMatch(merge, new RegExp(protectedField));
 });
 
