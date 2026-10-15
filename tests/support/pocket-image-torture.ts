@@ -130,7 +130,7 @@ function assertTortureScannerOutput(value: unknown) {
   const invalid = () => { throw new Error("Invalid scanner output in live torture response"); };
   if (!record(value)) return invalid();
   if (!Array.isArray(value.levels) || !Array.isArray(value.patterns) || !record(value.liquidity)) return invalid();
-  if (value.levels.some(level => !record(level) || typeof level.kind !== "string" || !level.kind || !Number.isFinite(level.y))) return invalid();
+  if (value.levels.some(level => !record(level) || !["support", "resistance"].includes(String(level.kind)) || !Number.isFinite(level.y))) return invalid();
   if (value.patterns.some(pattern => !record(pattern) || typeof pattern.name !== "string" || !pattern.name.trim())) return invalid();
   const liquidity = value.liquidity;
   if (!["NONE", "PARTIAL", "VERIFIED"].includes(String(liquidity.state)) || !Array.isArray(liquidity.zones)) return invalid();
