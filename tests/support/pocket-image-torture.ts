@@ -327,25 +327,24 @@ export function aggregateSeparateTortureReports(reports: unknown) {
     if (attempted.has(id)) throw new Error("Duplicate labelled case in benchmark reports");
     attempted.add(id);
     if (observed.exception != null || observed.error != null || observed.scored === false) continue;
-    if (observed.httpStatus !== undefined) {
-      if (typeof observed.httpStatus !== "number" || !Number.isInteger(observed.httpStatus) || observed.httpStatus < 100 || observed.httpStatus > 599) {
-        throw new Error("Invalid HTTP status in benchmark report");
-      }
-      if (observed.httpStatus < 200 || observed.httpStatus >= 300) {
-        // 422 is also the benchmark acceptance response for a completed, scored
-        // miss. Status alone never establishes provider completion/scoring.
-        if (observed.httpStatus !== 422 || observed.scored !== true ||
-            typeof observed.analysisHttpStatus !== "number" || !Number.isInteger(observed.analysisHttpStatus) ||
-            observed.analysisHttpStatus < 200 || observed.analysisHttpStatus >= 300) continue;
-      }
-    }
-    if (observed.scored === true && (typeof observed.analysisHttpStatus !== "number" ||
-        !Number.isInteger(observed.analysisHttpStatus) || observed.analysisHttpStatus < 200 || observed.analysisHttpStatus >= 300)) continue;
+    // A saved counter object without the final scoped ledger-release RPC and
+    // explicit completed analysis cannot be treated as a provider measurement.
+    // Keep validating any supplied metrics so malformed evidence fails loudly.
+    const sourceVerified = record.ledgerReleaseVerified === true && record.ledgerCaseId === id
+      && observed.scored === true
+      && (observed.httpStatus === 200 || observed.httpStatus === 422)
+      && observed.benchmarkHttpStatus === observed.httpStatus
+      && typeof observed.analysisHttpStatus === "number"
+      && Number.isInteger(observed.analysisHttpStatus)
+      && observed.analysisHttpStatus >= 200 && observed.analysisHttpStatus < 300;
     const rawMetrics = observed.caseMetrics;
     if (rawMetrics == null) continue; // Network/provider errors are attempts, not measurements.
     if (typeof rawMetrics !== "object" || Array.isArray(rawMetrics)) throw new Error("Invalid case metrics");
     const metricSet = rawMetrics as Record<string,unknown>;
     const sample = TORTURE_CASES.find(candidate => candidate.id === id)!;
+    const localMetrics: TortureMetrics = {
+      levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0},
+    };
     for (const scanner of ["levels","patterns","liquidity"] as const) {
       const raw = metricSet[scanner];
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid case metrics");
@@ -364,9 +363,13 @@ export function aggregateSeparateTortureReports(reports: unknown) {
       if (tp + fn !== expected || tp + fp > maxDetections) {
         throw new Error(`Invalid case metrics: impossible ${scanner} TP/FP/FN for ${id}`);
       }
-      totals[scanner].tp += tp;
-      totals[scanner].fp += fp;
-      totals[scanner].fn += fn;
+      localMetrics[scanner].tp += tp;
+      localMetrics[scanner].fp += fp;
+      localMetrics[scanner].fn += fn;
+    }
+    if (!sourceVerified) continue;
+    for (const scanner of ["levels","patterns","liquidity"] as const) {
+      for (const count of ["tp","fp","fn"] as const) totals[scanner][count] += localMetrics[scanner][count];
     }
     measured.push(id);
   }
