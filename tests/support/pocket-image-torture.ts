@@ -19,7 +19,7 @@ export type TortureCase = {
 export const TORTURE_CASES: TortureCase[] = [
   { id:"range-clear", market:"SYNTH-RANGE", timeframe:"30m", points:[72,65,35,28,62,70,40,30,64,69,42,33,58,61],
     expectedLevels:[{kind:"resistance",y:31,tolerance:7},{kind:"support",y:64,tolerance:7}], expectedPatterns:["RECTANGLE / RANGE"],
-    expectedLiquidity:{state:"VERIFIED",minimumZones:1,zones:[
+    expectedLiquidity:{state:"VERIFIED",minimumZones:2,zones:[
       {side:"BUY_SIDE",bases:["RANGE_HIGH","EQUAL_HIGHS"],y:31,tolerance:7,witnessIndices:[3,7,11]},
       {side:"SELL_SIDE",bases:["RANGE_LOW","EQUAL_LOWS"],y:64,tolerance:7,witnessIndices:[0,5,9]},
     ]} },
