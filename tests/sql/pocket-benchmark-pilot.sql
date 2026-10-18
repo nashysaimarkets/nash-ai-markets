@@ -120,6 +120,51 @@ begin
   assert (select status='submitted' and actual_microusd is null from private.pocket_benchmark_pilot_calls where ledger_key='qa-pilot' and case_id='range-clear' and slot='main'),'failed settlement changed call';
   perform public.void_pocket_benchmark_call('qa-pilot','range-clear','rescue_precision','not required');
   perform public.record_pocket_benchmark_measurement('qa-pilot','range-clear','{"tp":1,"fp":0,"fn":0,"precision":1,"recall":1,"latency_ms":10}'::jsonb);
+
+  -- Backend-managed provider receipts do not justify an arbitrary cost.
+  -- Both bogus zero and positive dollar claims must fail with no attestation.
+  for v_change in select unnest(array['0','100']) loop
+    failed:=false;
+    begin perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','main',v_change::bigint,'req-main');
+    exception when raise_exception then failed:=true; end;
+    assert failed,'unattested backend cost was settled';
+  end loop;
+  assert (select status='submitted' and actual_microusd is null
+    from private.pocket_benchmark_pilot_calls
+    where ledger_key='qa-pilot' and case_id='range-clear' and slot='main'),
+    'unattested cost changed the call';
+
+  -- Neither anon, authenticated nor service_role may self-attest prices.
+  assert not has_table_privilege('service_role','private.pocket_benchmark_pilot_cost_attestations','INSERT'),
+    'provider dispatch role can self-attest billing';
+
+  -- A separately authorised DBA would first verify the referenced external
+  -- billing report. These QA rows are synthetic: not evidence of real money.
+  insert into private.pocket_benchmark_pilot_cost_attestations
+    (ledger_key,case_id,slot,project_ref,provider_request_id,provider_response_id,
+     model,service_tier,actual_microusd,external_billing_evidence_ref,external_billing_evidence_sha256,reviewer_ref)
+  values
+    ('qa-pilot','range-clear','main','proj_qa','req-main','resp-main',
+     'verified-model','default',100,'qa-external-billing-main',repeat('1',64),'qa-independent-reviewer'),
+    ('qa-pilot','range-clear','primary_precision','proj_qa','req-precision','resp-precision',
+     'verified-model','default',200,'qa-external-billing-precision',repeat('2',64),'qa-independent-reviewer');
+
+  failed:=false;
+  begin perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','main',0,'req-main');
+  exception when raise_exception then failed:=true; end;
+  assert failed,'attested 100 microUSD allowed fake zero-cost settlement';
+
+  failed:=false;
+  begin update private.pocket_benchmark_pilot_cost_attestations set actual_microusd=0
+    where ledger_key='qa-pilot' and slot='main';
+  exception when raise_exception then failed:=true; end;
+  assert failed,'billing evidence modified after verification';
+
+  failed:=false;
+  begin truncate private.pocket_benchmark_pilot_cost_attestations cascade;
+  exception when raise_exception then failed:=true; end;
+  assert failed,'billing evidence was truncated';
+
   perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','main',100,'req-main');
   perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','primary_precision',200,'req-precision');
   r:=public.assert_pocket_benchmark_case_reconciled('qa-pilot','range-clear');
