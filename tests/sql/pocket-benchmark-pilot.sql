@@ -9,6 +9,8 @@ declare
   usage jsonb := '{"input_tokens":10,"output_tokens":5,"total_tokens":15}'::jsonb;
   r jsonb;
   failed boolean;
+  v_test_approval text;
+  v_change text;
   sha text := repeat('a',64);
 begin
   insert into private.pocket_benchmark_pilot_ledgers(ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
@@ -25,24 +27,24 @@ begin
 
   -- Case/whitespace aliases are rejected instead of silently treated as a
   -- second independently spendable authorisation.
-  for r in select to_jsonb(x) from unnest(array[
+  for v_test_approval in select unnest(array[
     'QA-BENCHMARK-APPROVAL-20261018',
     ' qa-benchmark-approval-20261018',
     'qa-benchmark-approval-20261018 ',
     'comment-06165012632'
-  ]) as x loop
+  ]) loop
     failed:=false;
     begin
       insert into private.pocket_benchmark_pilot_ledgers
         (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
-      values('qa-alias-ledger',5000000,'proj_qa',r #>> '{}',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+      values('qa-alias-ledger',5000000,'proj_qa',v_test_approval,repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
     exception when check_violation then failed:=true; end;
     assert failed,'approval alias created independent allowance';
   end loop;
 
   -- Neither approval identity, max dollars, application/model scope, evidence,
   -- nor allowed cases may be edited to reset prior spent/reserved budget.
-  for r in select to_jsonb(x) from unnest(array[
+  for v_change in select unnest(array[
     'cap_microusd=4000000',
     'project_ref=''other-project''',
     'owner_approval_ref=''qa-unrelated-approval''',
@@ -50,10 +52,10 @@ begin
     'pricing_evidence_ref=''other-pricing''',
     'allowed_case_ids=ARRAY[''double-top'']::text[]',
     'created_at=created_at + interval ''1 day'''
-  ]) as x loop
+  ]) loop
     failed:=false;
     begin
-      execute 'update private.pocket_benchmark_pilot_ledgers set ' || (r #>> '{}') || ' where ledger_key=''qa-pilot''';
+      execute 'update private.pocket_benchmark_pilot_ledgers set ' || v_change || ' where ledger_key=''qa-pilot''';
     exception when others then failed:=true; end;
     assert failed,'immutable approval scope changed';
   end loop;
