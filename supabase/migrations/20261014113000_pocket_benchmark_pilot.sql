@@ -4,15 +4,65 @@ create table private.pocket_benchmark_pilot_ledgers (
   ledger_key text primary key check (length(ledger_key) between 1 and 200),
   cap_microusd bigint not null check (cap_microusd between 1 and 5000000),
   project_ref text not null check (length(project_ref) between 1 and 200),
-  owner_approval_ref text not null check (length(owner_approval_ref) between 1 and 200),
+  -- One immutable, canonical ledger per owner approval. Reject rather than silently
+  -- normalise aliases, so a different ledger_key cannot reset the same $5 cap.
+  owner_approval_ref text not null unique,
   candidate_sha text not null check (candidate_sha ~ '^[0-9a-f]{40}$'),
   rate_tier text not null check (rate_tier = 'default'),
   pricing_evidence_ref text not null check (length(pricing_evidence_ref) between 1 and 500),
   allowed_case_ids text[] not null check (cardinality(allowed_case_ids) between 1 and 6),
   config_verified_at timestamptz,
   enabled boolean not null default false,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- Scope check is a table constraint because it binds several columns.
+  constraint pocket_benchmark_owner_approval_scope check (
+    owner_approval_ref = 'comment-6165012632'
+    or (
+      owner_approval_ref ~ '^qa-[a-z0-9][a-z0-9-]{2,119}$'
+      and project_ref = 'proj_qa'
+      and ledger_key like 'qa-%'
+    )
+  )
 );
+
+-- This pilot's approval record is append-only: toggling enabled never creates
+-- fresh spending allowance. Initial config verification (NULL -> timestamp)
+-- and deliberate enable/disable are the ONLY allowed ledger updates.
+create or replace function private.guard_pocket_benchmark_pilot_approval()
+returns trigger language plpgsql security invoker set search_path=pg_catalog as $$
+begin
+  if TG_OP='DELETE' then
+    raise exception 'benchmark approval cannot be deleted or reset';
+  end if;
+  if row(NEW.ledger_key,NEW.cap_microusd,NEW.project_ref,NEW.owner_approval_ref,
+         NEW.candidate_sha,NEW.rate_tier,NEW.pricing_evidence_ref,NEW.allowed_case_ids,NEW.created_at)
+     is distinct from
+     row(OLD.ledger_key,OLD.cap_microusd,OLD.project_ref,OLD.owner_approval_ref,
+         OLD.candidate_sha,OLD.rate_tier,OLD.pricing_evidence_ref,OLD.allowed_case_ids,OLD.created_at)
+     or (OLD.config_verified_at is not null
+         and NEW.config_verified_at is distinct from OLD.config_verified_at) then
+    raise exception 'benchmark approval scope and cap are immutable';
+  end if;
+  return NEW;
+end; $$;
+
+create trigger guard_pocket_benchmark_pilot_approval
+before update or delete on private.pocket_benchmark_pilot_ledgers
+for each row execute function private.guard_pocket_benchmark_pilot_approval();
+
+-- PostgreSQL TRUNCATE does not invoke row DELETE triggers. Deny the
+-- separate statement-level reset path as defence in depth.
+create or replace function private.block_pocket_benchmark_approval_truncate()
+returns trigger language plpgsql security invoker set search_path=pg_catalog as $$
+begin
+  raise exception 'benchmark approval ledger cannot be truncated';
+end; $$;
+
+create trigger block_pocket_benchmark_approval_truncate
+before truncate on private.pocket_benchmark_pilot_ledgers
+for each statement execute function private.block_pocket_benchmark_approval_truncate();
+
+revoke truncate on private.pocket_benchmark_pilot_ledgers from public,anon,authenticated,service_role;
 
 create table private.pocket_benchmark_pilot_cases (
   ledger_key text not null references private.pocket_benchmark_pilot_ledgers(ledger_key),
@@ -62,11 +112,50 @@ create table private.pocket_benchmark_pilot_calls (
   foreign key (ledger_key, case_id) references private.pocket_benchmark_pilot_cases(ledger_key, case_id)
 );
 
+-- Manual, independently checked cost evidence. Normal service_role dispatch cannot
+-- insert these rows; an authorised database administrator must check actual
+-- external billing records before attesting any charge (including a $0 charge).
+-- An evidence hash is an audit reference, not automatically a provider signature.
+create table private.pocket_benchmark_pilot_cost_attestations (
+  ledger_key text not null,
+  case_id text not null,
+  slot text not null,
+  project_ref text not null check (length(project_ref) between 1 and 200),
+  provider_request_id text not null check (length(provider_request_id) between 1 and 200),
+  provider_response_id text not null check (length(provider_response_id) between 1 and 200),
+  model text not null check (length(model) between 1 and 200),
+  service_tier text not null check (service_tier='default'),
+  actual_microusd bigint not null check (actual_microusd >= 0),
+  external_billing_evidence_ref text not null check (length(external_billing_evidence_ref) between 12 and 500),
+  external_billing_evidence_sha256 text not null check (external_billing_evidence_sha256 ~ '^[0-9a-f]{64}$'),
+  reviewer_ref text not null check (length(reviewer_ref) between 6 and 200),
+  verified_at timestamptz not null default now(),
+  primary key (ledger_key,case_id,slot),
+  unique (project_ref,provider_request_id),
+  foreign key (ledger_key,case_id,slot) references private.pocket_benchmark_pilot_calls(ledger_key,case_id,slot)
+);
+
+-- Attested evidence is append-only, even for privileged service callers.
+create or replace function private.block_pocket_benchmark_cost_attestation_change()
+returns trigger language plpgsql security invoker set search_path=pg_catalog as $$
+begin
+  raise exception 'benchmark billing attestation is immutable';
+end; $$;
+
+create trigger block_pocket_benchmark_cost_attestation_change
+before update or delete on private.pocket_benchmark_pilot_cost_attestations
+for each row execute function private.block_pocket_benchmark_cost_attestation_change();
+
+create trigger block_pocket_benchmark_cost_attestation_truncate
+before truncate on private.pocket_benchmark_pilot_cost_attestations
+for each statement execute function private.block_pocket_benchmark_cost_attestation_change();
+
 alter table private.pocket_benchmark_pilot_ledgers enable row level security;
 alter table private.pocket_benchmark_pilot_cases enable row level security;
 alter table private.pocket_benchmark_pilot_calls enable row level security;
+alter table private.pocket_benchmark_pilot_cost_attestations enable row level security;
 
-revoke all on private.pocket_benchmark_pilot_ledgers, private.pocket_benchmark_pilot_cases, private.pocket_benchmark_pilot_calls from public, anon, authenticated;
+revoke all on private.pocket_benchmark_pilot_ledgers, private.pocket_benchmark_pilot_cases, private.pocket_benchmark_pilot_calls, private.pocket_benchmark_pilot_cost_attestations from public, anon, authenticated, service_role;
 
 create or replace function private.claim_pocket_benchmark_case(
   p_ledger_key text, p_case_id text, p_project_ref text, p_owner_approval_ref text,
@@ -231,12 +320,27 @@ end; $$;
 
 create or replace function private.settle_pocket_benchmark_call(p_ledger_key text,p_case_id text,p_slot text,p_actual_microusd bigint,p_provider_request_id text)
 returns jsonb language plpgsql security definer set search_path=pg_catalog,private as $$
-declare v_call private.pocket_benchmark_pilot_calls%rowtype; v_cap bigint; v_total bigint;
+declare v_call private.pocket_benchmark_pilot_calls%rowtype; v_attest private.pocket_benchmark_pilot_cost_attestations%rowtype; v_cap bigint; v_total bigint;
 begin
   if p_actual_microusd is null or p_actual_microusd<0 or nullif(trim(p_provider_request_id),'') is null then raise exception 'invalid authoritative settlement'; end if;
   select cap_microusd into v_cap from private.pocket_benchmark_pilot_ledgers where ledger_key=p_ledger_key for update;
   select * into v_call from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot for update;
   if not found or v_call.status<>'submitted' or v_call.receipt_recorded_at is null or v_call.provider_request_id<>p_provider_request_id then raise exception 'submitted receipted call required'; end if;
+  -- A caller-controlled cost (including zero) is not independent evidence.
+  -- Only the separately permissioned administrator can insert append-only
+  -- attestations after verifying actual externally attributable billing.
+  select * into v_attest from private.pocket_benchmark_pilot_cost_attestations
+    where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot for update;
+  if not found
+    or v_attest.project_ref is distinct from v_call.project_ref
+    or v_attest.provider_request_id is distinct from v_call.provider_request_id
+    or v_attest.provider_response_id is distinct from v_call.provider_response_id
+    or v_attest.model is distinct from v_call.provider_model
+    or v_attest.service_tier is distinct from v_call.provider_service_tier
+    or v_attest.actual_microusd is distinct from p_actual_microusd
+    or nullif(trim(v_attest.external_billing_evidence_ref),'') is null
+    or nullif(trim(v_attest.reviewer_ref),'') is null
+  then raise exception 'independent billing attestation required'; end if;
   update private.pocket_benchmark_pilot_calls set status='settled',actual_microusd=p_actual_microusd,settled_at=now()
     where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot;
   select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_total
@@ -255,7 +359,15 @@ begin
   end if;
   select count(*) filter(where status in ('reserved','submitted')),
     count(*) filter(where slot in ('main','primary_precision') and status='settled' and actual_microusd is not null
-      and provider_usage is not null and receipt_recorded_at is not null),
+      and provider_usage is not null and receipt_recorded_at is not null
+      and exists (
+        select 1 from private.pocket_benchmark_pilot_cost_attestations a
+        where a.ledger_key=p_ledger_key and a.case_id=p_case_id and a.slot=private.pocket_benchmark_pilot_calls.slot
+          and a.actual_microusd=private.pocket_benchmark_pilot_calls.actual_microusd
+          and a.provider_request_id=private.pocket_benchmark_pilot_calls.provider_request_id
+          and a.provider_response_id=private.pocket_benchmark_pilot_calls.provider_response_id
+          and a.project_ref=private.pocket_benchmark_pilot_calls.project_ref
+      )),
     count(*) filter(where status='settled' and actual_microusd is null) into v_open,v_required,v_unknown
     from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id;
   select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_total

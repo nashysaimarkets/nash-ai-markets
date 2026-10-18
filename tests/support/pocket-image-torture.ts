@@ -19,7 +19,7 @@ export type TortureCase = {
 export const TORTURE_CASES: TortureCase[] = [
   { id:"range-clear", market:"SYNTH-RANGE", timeframe:"30m", points:[72,65,35,28,62,70,40,30,64,69,42,33,58,61],
     expectedLevels:[{kind:"resistance",y:31,tolerance:7},{kind:"support",y:64,tolerance:7}], expectedPatterns:["RECTANGLE / RANGE"],
-    expectedLiquidity:{state:"VERIFIED",minimumZones:1,zones:[
+    expectedLiquidity:{state:"VERIFIED",minimumZones:2,zones:[
       {side:"BUY_SIDE",bases:["RANGE_HIGH","EQUAL_HIGHS"],y:31,tolerance:7,witnessIndices:[3,7,11]},
       {side:"SELL_SIDE",bases:["RANGE_LOW","EQUAL_LOWS"],y:64,tolerance:7,witnessIndices:[0,5,9]},
     ]} },
@@ -130,7 +130,7 @@ function assertTortureScannerOutput(value: unknown) {
   const invalid = () => { throw new Error("Invalid scanner output in live torture response"); };
   if (!record(value)) return invalid();
   if (!Array.isArray(value.levels) || !Array.isArray(value.patterns) || !record(value.liquidity)) return invalid();
-  if (value.levels.some(level => !record(level) || typeof level.kind !== "string" || !level.kind || !Number.isFinite(level.y))) return invalid();
+  if (value.levels.some(level => !record(level) || !["support", "resistance"].includes(String(level.kind)) || !Number.isFinite(level.y))) return invalid();
   if (value.patterns.some(pattern => !record(pattern) || typeof pattern.name !== "string" || !pattern.name.trim())) return invalid();
   const liquidity = value.liquidity;
   if (!["NONE", "PARTIAL", "VERIFIED"].includes(String(liquidity.state)) || !Array.isArray(liquidity.zones)) return invalid();
@@ -238,8 +238,13 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
       new Set(points.map(point => `${point.x}:${point.y}`)).size === points.length &&
       Math.max(...points.map(point => point.x!)) - Math.min(...points.map(point => point.x!)) >= 8 &&
       Math.max(...points.map(point => point.y!)) - Math.min(...points.map(point => point.y!)) >= 3;
+    // A rectangle/range requires geometry enclosing actual chart space.
+    // A diagonal run of collinear anchors is not a defensible range signal.
+    const hasArea = points.length >= 3 && points.slice(2).some(point =>
+      Math.abs((points[1]!.x! - points[0]!.x!) * (point.y! - points[0]!.y!)
+        - (points[1]!.y! - points[0]!.y!) * (point.x! - points[0]!.x!)) > 1);
     const index = remainingPatterns.indexOf(name);
-    if (index >= 0 && validGeometry) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
+    if (index >= 0 && validGeometry && (name !== "RECTANGLE / RANGE" || hasArea)) { metrics.patterns.tp++; remainingPatterns.splice(index, 1); }
     else { metrics.patterns.fp++; failures.push(`${sample.id}: false pattern ${name}`); }
   }
   for (const name of remainingPatterns) { metrics.patterns.fn++; failures.push(`${sample.id}: missed pattern ${name}`); }
@@ -276,7 +281,8 @@ export function scoreTortureAnalysis(sample: TortureCase, body: ReturnType<typeo
   }
   expectedZones.forEach((_, index) => assignZone(index, new Set()));
   const validZones = zoneRecords.length === (actual?.zones?.length ?? 0) && zoneRecords.length > 0 &&
-    matchedZones.size === zoneRecords.length && matchedZones.size >= (expected.minimumZones ?? 0);
+    matchedZones.size === zoneRecords.length && matchedZones.size === expectedZones.length
+    && matchedZones.size >= (expected.minimumZones ?? 0);
   const correct = actualPositive && actual?.state === expected.state &&
     validZones &&
     (!expected.event || actual.event === expected.event) &&
@@ -322,25 +328,28 @@ export function aggregateSeparateTortureReports(reports: unknown) {
     if (attempted.has(id)) throw new Error("Duplicate labelled case in benchmark reports");
     attempted.add(id);
     if (observed.exception != null || observed.error != null || observed.scored === false) continue;
-    if (observed.httpStatus !== undefined) {
-      if (typeof observed.httpStatus !== "number" || !Number.isInteger(observed.httpStatus) || observed.httpStatus < 100 || observed.httpStatus > 599) {
-        throw new Error("Invalid HTTP status in benchmark report");
-      }
-      if (observed.httpStatus < 200 || observed.httpStatus >= 300) {
-        // 422 is also the benchmark acceptance response for a completed, scored
-        // miss. Status alone never establishes provider completion/scoring.
-        if (observed.httpStatus !== 422 || observed.scored !== true ||
-            typeof observed.analysisHttpStatus !== "number" || !Number.isInteger(observed.analysisHttpStatus) ||
-            observed.analysisHttpStatus < 200 || observed.analysisHttpStatus >= 300) continue;
-      }
-    }
-    if (observed.scored === true && (typeof observed.analysisHttpStatus !== "number" ||
-        !Number.isInteger(observed.analysisHttpStatus) || observed.analysisHttpStatus < 200 || observed.analysisHttpStatus >= 300)) continue;
+    // A saved counter object without the final scoped ledger-release RPC and
+    // explicit completed analysis cannot be treated as a provider measurement.
+    // Keep validating any supplied metrics so malformed evidence fails loudly.
+    const sourceVerified = record.ledgerReleaseVerified === true && record.ledgerCaseId === id
+      && observed.scored === true
+      && (observed.benchmarkHttpStatus === 200 || observed.benchmarkHttpStatus === 422)
+      && typeof observed.analysisHttpStatus === "number"
+      && Number.isInteger(observed.analysisHttpStatus)
+      && observed.analysisHttpStatus >= 200 && observed.analysisHttpStatus < 300
+      // The route preserves the analysis HTTP status even when benchmark
+      // acceptance fails. Older reports may put acceptance422 in httpStatus;
+      // both require explicit successful analysis and final ledger release.
+      && (observed.httpStatus === observed.analysisHttpStatus
+        || (observed.httpStatus === 422 && observed.benchmarkHttpStatus === 422));
     const rawMetrics = observed.caseMetrics;
     if (rawMetrics == null) continue; // Network/provider errors are attempts, not measurements.
     if (typeof rawMetrics !== "object" || Array.isArray(rawMetrics)) throw new Error("Invalid case metrics");
     const metricSet = rawMetrics as Record<string,unknown>;
     const sample = TORTURE_CASES.find(candidate => candidate.id === id)!;
+    const localMetrics: TortureMetrics = {
+      levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0},
+    };
     for (const scanner of ["levels","patterns","liquidity"] as const) {
       const raw = metricSet[scanner];
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid case metrics");
@@ -359,9 +368,13 @@ export function aggregateSeparateTortureReports(reports: unknown) {
       if (tp + fn !== expected || tp + fp > maxDetections) {
         throw new Error(`Invalid case metrics: impossible ${scanner} TP/FP/FN for ${id}`);
       }
-      totals[scanner].tp += tp;
-      totals[scanner].fp += fp;
-      totals[scanner].fn += fn;
+      localMetrics[scanner].tp += tp;
+      localMetrics[scanner].fp += fp;
+      localMetrics[scanner].fn += fn;
+    }
+    if (!sourceVerified) continue;
+    for (const scanner of ["levels","patterns","liquidity"] as const) {
+      for (const count of ["tp","fp","fn"] as const) totals[scanner][count] += localMetrics[scanner][count];
     }
     measured.push(id);
   }

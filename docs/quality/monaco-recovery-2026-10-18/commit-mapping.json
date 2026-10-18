@@ -1,0 +1,32 @@
+[
+  {
+    "original": "ca2ddace797487e45c5748fb01e25ae869c70e83",
+    "published": "d4cb7e1118bcc708dc2d1e8a5331109cee7e223c",
+    "tree": "73e937978e4e0b2ddfef8b87160445f5169d3fc3",
+    "message": "Repair benchmark release tests and retain scored acceptance misses"
+  },
+  {
+    "original": "2402eb827009133e325fab99aa29271ae4890469",
+    "published": "2271438541952179f9bba76915761d9b343b6244",
+    "tree": "03b6bea2d1332e804ea461cbd50e9eb55222b3e0",
+    "message": "Patch vulnerable web image and native dependencies with matching Swift pin"
+  },
+  {
+    "original": "ab9488181955830f9c587edc24fa2a33a8b39206",
+    "published": "92583ce8e85b0778467bf11950e12993c935e569",
+    "tree": "ddb4964eb354d42499723f8968ac40e352ed9569",
+    "message": "Reuse UUID-bound Stripe customer for Pocket resubscription"
+  },
+  {
+    "original": "767e2209e9e623b78f6c806df3e191d9a0c218ff",
+    "published": "b30492a739536e75f64fe2467c2562152c388594",
+    "tree": "d2c21428f34db888ac25422f6443ed1326a1c92e",
+    "message": "Patch React server Vite and transitive image HTTP dependencies"
+  },
+  {
+    "original": "7bca7eba096db3852f09093cdf786d062a11d784",
+    "published": "057a96a13fd28b573337ceb6efdfbd8ea9c83f21",
+    "tree": "686f1007eb34cc873a0b0be2aa59a6b15587c808",
+    "message": "Record isolated hard-blocker evidence and remaining release gates"
+  }
+]

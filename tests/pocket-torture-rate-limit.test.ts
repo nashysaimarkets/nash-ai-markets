@@ -9,7 +9,7 @@ const require=createRequire(import.meta.url);const sharp=require('sharp');
 
 test('one-case preview requests preserve distinct stable fixture rate-limit identities', async()=>{
  const route=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
- const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
+ const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('export async function GET('));
  const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
  const addresses:string[]=[];
  const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,mayRunLiveTorture:()=>true,isBenchmarkPilotSpendHeld:()=>false,
@@ -50,12 +50,13 @@ test('fifth same-IP analysis is locally limited with explicit origin and retry e
 
  test('actual preview handler distinguishes scored acceptance 422 from an unscored 422', async()=>{
  const route=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
- const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
+ const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('export async function GET('));
  const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
  let analysisStatus=200;
+ let storedMeasurement: unknown;
  const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,scoreTortureAnalysis,summarizeTortureMeasurements,unwrapTortureAnalysis,
  mayRunLiveTorture:()=>true,isBenchmarkPilotSpendHeld:()=>false,withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>({value:await run(),reconciliation:{reconciled:true,capExceeded:false,committedMicroUsd:1}}),
- recordPocketBenchmarkMeasurement:async()=>({ok:true}),releasePocketBenchmarkMeasurement:async()=>({released:false}),
+ recordPocketBenchmarkMeasurement:async(_id:string,measurement:unknown)=>{storedMeasurement=measurement;return {ok:true};},releasePocketBenchmarkMeasurement:async()=>({released:true,measurement:storedMeasurement}),
  analyse:async()=>Response.json(analysisStatus===200?{analysis:{levels:[],patterns:[],liquidity:{state:'NONE',event:'NONE',zones:[]}}}:{error:'Incomplete analysis'},{status:analysisStatus}),NextResponse:{json:Response.json}};
  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
  const get=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(helper+handler)+'\nreturn GET;')(...Object.values(bindings));
@@ -71,12 +72,13 @@ test('fifth same-IP analysis is locally limited with explicit origin and retry e
 
 test('preview preserves provider 429 and 503 diagnostics instead of rewriting them as benchmark 422', async()=>{
  const route=await readFile(new URL('../app/api/pocket/torture/route.ts',import.meta.url),'utf8');
- const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('type Counts='));
+ const helper=route.slice(route.indexOf('async function makePrecisionCrop('),route.indexOf('export async function GET('));
  const handler=route.slice(route.indexOf('export async function GET(')).replace('export async function','async function');
  let analysisStatus=429;
+ let storedMeasurement: unknown;
  const bindings={sharp,syntheticPrecisionCropSpec,TORTURE_CASES,syntheticSvg,buildTortureRequestPayload,tortureHttpFailure,scoreTortureAnalysis,summarizeTortureMeasurements,unwrapTortureAnalysis,
  mayRunLiveTorture:()=>true,isBenchmarkPilotSpendHeld:()=>false,withPocketTestSpendScope:async(_id:string,run:()=>Promise<unknown>)=>({value:await run(),reconciliation:{reconciled:true,capExceeded:false,committedMicroUsd:1}}),
- recordPocketBenchmarkMeasurement:async()=>({ok:true}),releasePocketBenchmarkMeasurement:async()=>({released:false}),
+ recordPocketBenchmarkMeasurement:async(_id:string,measurement:unknown)=>{storedMeasurement=measurement;return {ok:true};},releasePocketBenchmarkMeasurement:async()=>({released:true,measurement:storedMeasurement}),
  analyse:async()=>Response.json({error:analysisStatus===429?'Rate limited':'Unavailable'},{status:analysisStatus,headers:analysisStatus===429?{'x-pocket-rate-limit-source':'application'}:{}}),NextResponse:{json:Response.json}};
  const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
  const get=await new AsyncFunction(...Object.keys(bindings),stripTypeScriptTypes(helper+handler)+'\nreturn GET;')(...Object.values(bindings));

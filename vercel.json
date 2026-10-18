@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "monaco-cap-hardening-20261018": false,
+      "monaco-release-integration-reviewed-20261018": false
+    }
+  }
+}

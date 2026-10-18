@@ -14,6 +14,7 @@ test("all billed Pocket endpoints reject unauthorized access before reading uplo
   }
 });
 
+import { singleConfiguredSubscriptionItem } from "../app/lib/stripe-subscription-scope.ts";
 import { checkPocketScanAccess } from "../app/lib/server/pocket-scan-access.ts";
 
 test("Apple entitlement permits only a verified identity, leaves Stripe unchanged and fails closed on verification errors", async () => {
@@ -73,11 +74,12 @@ test("Pocket checkout requires a verified application account and copies its UUI
   assert.match(source, /subscription_data:[\s\S]*supabase_user_id: user!\.id/);
 });
 
-test("identity-binding migration removes email lookup and requires UUID, customer and exact subscription", async () => {
+test("identity-binding migration denies email lookup and requires UUID, customer and exact subscription", async () => {
   const sql = await readFile(new URL("../supabase/migrations/20261014143000_bind_pocket_web_subscription_identity.sql", import.meta.url), "utf8");
   assert.match(sql, /add column app_user_id uuid/);
   assert.match(sql, /add column stripe_customer_id text/);
-  assert.match(sql, /drop function public\.has_pocket_web_subscription\(text\)/);
+  assert.doesNotMatch(sql, /drop function/);
+  assert.match(sql, /has_pocket_web_subscription\(p_email text\)[\s\S]*select false/);
   assert.match(sql, /has_pocket_web_subscription\(p_user_id uuid\)/);
   assert.match(sql, /s\.app_user_id=p_user_id/);
   assert.match(sql, /s\.stripe_customer_id is not null/);
@@ -112,7 +114,7 @@ test("cancelled Pocket subscriptions revoke before a missing/deleted customer ca
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   const calls: unknown[] = [];
   const bindings = {
-    configuredOffering: () => ({ plan: "pocket", billingInterval: "month" }),
+    singleConfiguredSubscriptionItem: (items: {price:{id:string}}[]) => singleConfiguredSubscriptionItem(items, {STRIPE_POCKET_FOUNDING_PRICE_ID:"price-test"}),
     foundingSubscriptionActive: (status: string) => status === "active" || status === "trialing",
     customerEmail: async () => { throw new Error("deleted customer cannot supply email"); },
     createAdminClient: () => ({ rpc: async (name: string, args: unknown) => { calls.push([name, args]); return { error: null }; } }),

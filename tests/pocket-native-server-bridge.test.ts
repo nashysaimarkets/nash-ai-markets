@@ -40,3 +40,13 @@ test("native accessChanged notifications are server verified and listener lifecy
   assert.match(controls, /subscribeAppleAccessChanges/);
   assert.match(controls, /listener\?\.remove\(\)/);
 });
+
+test('native Swift package and JavaScript bridge use the same patched Capacitor release', async () => {
+  const pkg=JSON.parse(await readFile(new URL('../package.json',import.meta.url),'utf8'));
+  const swift=await readFile(new URL('../ios/App/CapApp-SPM/Package.swift',import.meta.url),'utf8');
+  const version=pkg.dependencies['@capacitor/ios'];
+  assert.equal(version,'8.5.3');
+  assert.equal(pkg.dependencies['@capacitor/core'],version);
+  assert.equal(pkg.devDependencies['@capacitor/cli'],version);
+  assert.ok(swift.includes(`capacitor-swift-pm.git", exact: "${version}"`));
+});

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import WebSubscriptionControls from "./WebSubscriptionControls";
 import { getAppleProductStatus, getAppleAccessStatus, isAppleNativeApp, purchaseAppleSubscription, restoreAppleSubscription, subscribeAppleAccessChanges, type AppleAccessStatus } from "./apple-storekit";
 
 export default function NativeSubscriptionControls() {
@@ -25,7 +26,7 @@ export default function NativeSubscriptionControls() {
       .catch(error => { if (active) setMessage(error instanceof Error ? error.message : "Apple access is unavailable."); });
     return () => { active = false; void subscription.then(listener => listener?.remove()).catch(() => undefined); };
   }, []);
-  if (!status) return null;
+  if (!status) return <WebSubscriptionControls />;
   async function run(kind: "purchase" | "restore") {
     if (actionRunning.current) return;
     actionRunning.current = true; setBusy(true); setMessage("");
@@ -43,7 +44,7 @@ export default function NativeSubscriptionControls() {
     <header><strong>{status.entitled ? "APPLE ACCESS VERIFIED" : "APPLE SUBSCRIPTION"}</strong></header>
     <p>{status.displayName}{status.displayPrice ? ` · ${status.displayPrice} per month` : " · price unavailable"}</p>
     <p>Sign in to your Pocket account to verify access. Subscriptions renew automatically until cancelled in your Apple Account settings.</p>
-    <div><a href="/login">Sign in</a>{" · "}<a href="/terms">Terms</a>{" · "}<a href="/privacy">Privacy</a></div>
+    <div><a href="/pocket/login">Sign in</a>{" · "}<a href="/terms">Terms</a>{" · "}<a href="/privacy">Privacy</a></div>
     <button type="button" disabled={busy || status.entitled || !status.productAvailable || !status.displayPrice} onClick={() => void run("purchase")}>Subscribe with Apple</button>{" "}
     <button type="button" disabled={busy} onClick={() => void run("restore")}>{busy ? "Checking Apple…" : "Restore Purchases"}</button>
     {message ? <p role="status">{message}</p> : null}

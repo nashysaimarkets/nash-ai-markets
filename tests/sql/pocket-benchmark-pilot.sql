@@ -9,11 +9,90 @@ declare
   usage jsonb := '{"input_tokens":10,"output_tokens":5,"total_tokens":15}'::jsonb;
   r jsonb;
   failed boolean;
+  v_test_approval text;
+  v_change text;
   sha text := repeat('a',64);
 begin
   insert into private.pocket_benchmark_pilot_ledgers(ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
-  values('qa-pilot',5000000,'proj_qa','comment-6165012632',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
-  r:=public.claim_pocket_benchmark_case('qa-pilot','range-clear','proj_qa','comment-6165012632',repeat('b',40),plan);
+  values('qa-pilot',5000000,'proj_qa','qa-benchmark-approval-20261018',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+  -- TRUNCATE fires statement triggers, NOT the DELETE row guard.
+  failed:=false;
+  begin truncate private.pocket_benchmark_pilot_ledgers cascade;
+  exception when raise_exception then failed:=true; end;
+  assert failed,'benchmark ledger TRUNCATE bypassed immutable approval';
+
+  -- A separate ledger key MUST NOT reuse the same approved $5 allowance.
+  -- This closes the independent-ledger aggregate spending loophole.
+  failed:=false;
+  begin
+    insert into private.pocket_benchmark_pilot_ledgers
+      (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
+    values('qa-duplicate-ledger',5000000,'proj_qa','qa-benchmark-approval-20261018',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+  exception when unique_violation then failed:=true; end;
+  assert failed,'second ledger reused owner approval with another ledger key';
+
+  -- Case/whitespace aliases are rejected instead of silently treated as a
+  -- second independently spendable authorisation.
+  for v_test_approval in select unnest(array[
+    'QA-BENCHMARK-APPROVAL-20261018',
+    ' qa-benchmark-approval-20261018',
+    'qa-benchmark-approval-20261018 ',
+    'comment-06165012632'
+  ]) loop
+    failed:=false;
+    begin
+      insert into private.pocket_benchmark_pilot_ledgers
+        (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
+      values('qa-alias-ledger',5000000,'proj_qa',v_test_approval,repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+    exception when check_violation then failed:=true; end;
+    assert failed,'approval alias created independent allowance';
+  end loop;
+
+  -- A fabricated second live approval or a QA-only approval in a live
+  -- project must not unlock additional $5 budgets.
+  for v_test_approval in select unnest(array[
+    'comment-1234567890',
+    'qa-another-approval'
+  ]) loop
+    failed:=false;
+    begin
+      insert into private.pocket_benchmark_pilot_ledgers
+        (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
+      values('live-forged-ledger',5000000,'proj_live',v_test_approval,repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+    exception when check_violation then failed:=true; end;
+    assert failed,'unapproved live pilot or QA ref granted additional allowance';
+  end loop;
+
+  -- Neither approval identity, max dollars, application/model scope, evidence,
+  -- nor allowed cases may be edited to reset prior spent/reserved budget.
+  for v_change in select unnest(array[
+    'cap_microusd=4000000',
+    'project_ref=''other-project''',
+    'owner_approval_ref=''qa-unrelated-approval''',
+    'candidate_sha=repeat(''a'',40)',
+    'pricing_evidence_ref=''other-pricing''',
+    'allowed_case_ids=ARRAY[''double-top'']::text[]',
+    'created_at=created_at + interval ''1 day'''
+  ]) loop
+    failed:=false;
+    begin
+      execute 'update private.pocket_benchmark_pilot_ledgers set ' || v_change || ' where ledger_key=''qa-pilot''';
+    exception when others then failed:=true; end;
+    assert failed,'immutable approval scope changed';
+  end loop;
+
+  failed:=false;
+  begin delete from private.pocket_benchmark_pilot_ledgers where ledger_key='qa-pilot';
+  exception when others then failed:=true; end;
+  assert failed,'approved ledger could be deleted and recreated for fresh allowance';
+
+  -- Even the approval verification timestamp cannot be reset after approval.
+  failed:=false;
+  begin update private.pocket_benchmark_pilot_ledgers set config_verified_at=null where ledger_key='qa-pilot';
+  exception when others then failed:=true; end;
+  assert failed,'approved ledger verification could be cleared';
+
+  r:=public.claim_pocket_benchmark_case('qa-pilot','range-clear','proj_qa','qa-benchmark-approval-20261018',repeat('b',40),plan);
   assert r->>'status'='reserved' and (r->>'committed_microusd')::bigint=300000,'complete reservation missing';
   assert public.submit_pocket_benchmark_call('qa-pilot','range-clear','main',sha)->>'claimed'='true';
   assert public.submit_pocket_benchmark_call('qa-pilot','range-clear','primary_precision',sha)->>'claimed'='true';
@@ -41,6 +120,51 @@ begin
   assert (select status='submitted' and actual_microusd is null from private.pocket_benchmark_pilot_calls where ledger_key='qa-pilot' and case_id='range-clear' and slot='main'),'failed settlement changed call';
   perform public.void_pocket_benchmark_call('qa-pilot','range-clear','rescue_precision','not required');
   perform public.record_pocket_benchmark_measurement('qa-pilot','range-clear','{"tp":1,"fp":0,"fn":0,"precision":1,"recall":1,"latency_ms":10}'::jsonb);
+
+  -- Backend-managed provider receipts do not justify an arbitrary cost.
+  -- Both bogus zero and positive dollar claims must fail with no attestation.
+  for v_change in select unnest(array['0','100']) loop
+    failed:=false;
+    begin perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','main',v_change::bigint,'req-main');
+    exception when raise_exception then failed:=true; end;
+    assert failed,'unattested backend cost was settled';
+  end loop;
+  assert (select status='submitted' and actual_microusd is null
+    from private.pocket_benchmark_pilot_calls
+    where ledger_key='qa-pilot' and case_id='range-clear' and slot='main'),
+    'unattested cost changed the call';
+
+  -- Neither anon, authenticated nor service_role may self-attest prices.
+  assert not has_table_privilege('service_role','private.pocket_benchmark_pilot_cost_attestations','INSERT'),
+    'provider dispatch role can self-attest billing';
+
+  -- A separately authorised DBA would first verify the referenced external
+  -- billing report. These QA rows are synthetic: not evidence of real money.
+  insert into private.pocket_benchmark_pilot_cost_attestations
+    (ledger_key,case_id,slot,project_ref,provider_request_id,provider_response_id,
+     model,service_tier,actual_microusd,external_billing_evidence_ref,external_billing_evidence_sha256,reviewer_ref)
+  values
+    ('qa-pilot','range-clear','main','proj_qa','req-main','resp-main',
+     'verified-model','default',100,'qa-external-billing-main',repeat('1',64),'qa-independent-reviewer'),
+    ('qa-pilot','range-clear','primary_precision','proj_qa','req-precision','resp-precision',
+     'verified-model','default',200,'qa-external-billing-precision',repeat('2',64),'qa-independent-reviewer');
+
+  failed:=false;
+  begin perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','main',0,'req-main');
+  exception when raise_exception then failed:=true; end;
+  assert failed,'attested 100 microUSD allowed fake zero-cost settlement';
+
+  failed:=false;
+  begin update private.pocket_benchmark_pilot_cost_attestations set actual_microusd=0
+    where ledger_key='qa-pilot' and slot='main';
+  exception when raise_exception then failed:=true; end;
+  assert failed,'billing evidence modified after verification';
+
+  failed:=false;
+  begin truncate private.pocket_benchmark_pilot_cost_attestations cascade;
+  exception when raise_exception then failed:=true; end;
+  assert failed,'billing evidence was truncated';
+
   perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','main',100,'req-main');
   perform public.settle_pocket_benchmark_call('qa-pilot','range-clear','primary_precision',200,'req-precision');
   r:=public.assert_pocket_benchmark_case_reconciled('qa-pilot','range-clear');

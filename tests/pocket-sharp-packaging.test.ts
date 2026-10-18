@@ -11,7 +11,7 @@ const sharp = require("sharp");
 test("Sharp and Linux libvips remain production dependencies", async () => {
   const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   const lock = JSON.parse(await readFile(new URL("../package-lock.json", import.meta.url), "utf8"));
-  assert.equal(pkg.dependencies.sharp, "0.35.0");
+  assert.equal(pkg.dependencies.sharp, "0.35.5");
   assert.equal(lock.packages[""].dependencies.sharp, pkg.dependencies.sharp);
   for (const name of ["sharp", "@img/sharp-linux-x64", "@img/sharp-libvips-linux-x64"]) {
     const entry = lock.packages[`node_modules/${name}`];
