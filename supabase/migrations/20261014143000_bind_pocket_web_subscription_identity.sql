@@ -120,6 +120,27 @@ returns boolean language sql stable security definer set search_path='' as $$
       and lower(trim(u.email))=s.email)
 $$;
 
+-- Lookup is UUID-bound even after subscription expiry. Checkout must reuse this
+-- customer; email-based discovery would reintroduce recreated-account access.
+create function private.get_pocket_web_customer(p_user_id uuid,p_email text)
+returns text language plpgsql stable security definer set search_path='' as $$
+declare customer_id text;
+begin
+  if p_user_id is null or not exists(select 1 from auth.users u where u.id=p_user_id
+    and u.email_confirmed_at is not null and not coalesce(u.is_anonymous,false)
+    and (u.banned_until is null or u.banned_until<=now())
+    and lower(trim(u.email))=lower(trim(p_email))) then
+    raise exception 'unverified_pocket_application_identity';
+  end if;
+  select i.stripe_customer_id into customer_id from private.pocket_web_identities i where i.app_user_id=p_user_id;
+  return customer_id;
+end $$;
+
+create function public.get_pocket_web_customer(p_user_id uuid,p_email text)
+returns text language sql stable security invoker set search_path='' as $$ select private.get_pocket_web_customer(p_user_id,p_email) $$;
+revoke all on function private.get_pocket_web_customer(uuid,text),public.get_pocket_web_customer(uuid,text) from public,anon,authenticated,service_role;
+grant execute on function private.get_pocket_web_customer(uuid,text),public.get_pocket_web_customer(uuid,text) to service_role;
+
 create function public.sync_pocket_web_subscription(p_app_user_id uuid,p_email text,p_stripe_customer_id text,p_stripe_subscription_id text,p_subscription_active boolean,p_current_period_end timestamptz,p_event_created_at bigint)
 returns void language sql security invoker set search_path='' as $$ select private.sync_pocket_web_subscription(p_app_user_id,p_email,p_stripe_customer_id,p_stripe_subscription_id,p_subscription_active,p_current_period_end,p_event_created_at) $$;
 create function public.link_pocket_web_subscription_identity(p_app_user_id uuid,p_email text,p_stripe_customer_id text,p_stripe_subscription_id text,p_evidence_ref text)

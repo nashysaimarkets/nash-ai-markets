@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "../../../../utils/supabase/server.ts";
+import { createAdminClient } from "../../../../utils/supabase/admin.ts";
 import { checkoutOffering, validFoundingProPrice, validPocketFoundingPrice } from "../../../lib/stripe-commercial.ts";
 import { campaignAttribution, campaignQuery } from "../../../lib/marketing-attribution.ts";
 
@@ -59,13 +60,25 @@ export async function POST(request: Request) {
     if (selected.offering.plan === "pocket" && (!user?.id || !verifiedEmail || !user.email_confirmed_at || user.is_anonymous)) {
       return NextResponse.redirect(new URL("/login?next=/pocket/founding", origin), 303);
     }
+    let pocketCustomer: string | null = null;
+    if (selected.offering.plan === "pocket") {
+      // Preserve the durable UUID/customer binding when a member resubscribes.
+      // Never select a customer by email or trust a customer ID from the form.
+      const { data, error } = await createAdminClient().rpc("get_pocket_web_customer", {
+        p_user_id: user!.id, p_email: verifiedEmail!,
+      });
+      if (error || (data !== null && (typeof data !== "string" || !/^cus_[A-Za-z0-9]+$/.test(data)))) {
+        throw new Error("Pocket customer identity lookup unavailable");
+      }
+      pocketCustomer = data;
+    }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: selected.priceId, quantity: 1 }],
       success_url: selected.offering.plan === "pocket" ? `${origin}/pocket/founding/welcome` : `${origin}/welcome`,
       cancel_url: selected.offering.plan === "pocket" ? `${origin}/pocket/founding?checkout=cancelled&${campaignQuery(attribution)}` : `${origin}/cancelled`,
       allow_promotion_codes: true,
-      customer_email: verifiedEmail,
+      ...(pocketCustomer ? { customer: pocketCustomer } : { customer_email: verifiedEmail }),
       client_reference_id: user?.id,
       metadata: { ...(user?.id ? { supabase_user_id: user.id } : {}), offering: selected.offering.plan === "pocket" ? "pocket_founding_650" : selected.offering.plan, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign },
       subscription_data: selected.offering.plan === "pocket" ? { metadata: { offering: "pocket_founding_650", supabase_user_id: user!.id, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign } } : undefined,

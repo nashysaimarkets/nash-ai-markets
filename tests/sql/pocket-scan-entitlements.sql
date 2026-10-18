@@ -16,6 +16,8 @@ begin
  perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',100);
  assert public.has_pocket_web_subscription(u1),'linked application UUID denied';
  assert not public.has_pocket_web_subscription(u2),'different application UUID accepted';
+ assert public.get_pocket_web_customer(u1,'qa-entitlement@example.invalid')='cus_qa_entitlement','checkout lost bound customer';
+ assert public.get_pocket_web_customer(u2,'qa-other-entitlement@example.invalid') is null,'unbound UUID inherited customer';
 
  -- Simulate a later account using the SAME email while preserving its
  -- DIFFERENT UUID. The old identity remains bound to its Stripe customer.
@@ -23,6 +25,7 @@ begin
  update auth.users set email='qa-entitlement@example.invalid' where id=u2;
  assert not public.has_pocket_web_subscription(u1),'old identity accessed subscription after email change';
  assert not public.has_pocket_web_subscription(u2),'recreated same-email identity inherited paid access';
+ assert public.get_pocket_web_customer(u2,'qa-entitlement@example.invalid') is null,'recreated same-email checkout inherited customer';
  failed:=false;
  begin
    perform public.sync_pocket_web_subscription(u2,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_recreated',true,now()+interval '1 day',101);
@@ -45,6 +48,7 @@ begin
 
  perform public.revoke_pocket_web_subscription('sub_qa_entitlement',101);
  assert not public.has_pocket_web_subscription(u1),'revoked access allowed';
+ assert public.get_pocket_web_customer(u1,'qa-entitlement@example.invalid')='cus_qa_entitlement','resubscribe lost permanent customer binding';
  perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',100);
  assert not public.has_pocket_web_subscription(u1),'stale activation allowed';
  perform public.sync_pocket_web_subscription(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '1 day',101);
@@ -67,6 +71,10 @@ begin
 
  update auth.users set email_confirmed_at=null where id=u1;
  assert not public.has_pocket_web_subscription(u1),'unverified application identity retained access';
+ failed:=false;
+ begin perform public.get_pocket_web_customer(u1,'qa-entitlement@example.invalid');
+ exception when others then failed:=true; end;
+ assert failed,'unverified user could resolve checkout customer';
  update auth.users set email_confirmed_at=now(),email='changed@example.invalid' where id=u1;
  assert not public.has_pocket_web_subscription(u1),'changed application email retained access';
 
@@ -76,5 +84,8 @@ begin
  assert has_function_privilege('service_role','public.link_pocket_web_subscription_identity(uuid,text,text,text,text)','execute');
  assert not has_table_privilege('service_role','private.pocket_web_subscriptions','select');
  assert not has_table_privilege('service_role','private.pocket_web_identities','select');
+ assert not has_function_privilege('anon','public.get_pocket_web_customer(uuid,text)','execute');
+ assert not has_function_privilege('authenticated','public.get_pocket_web_customer(uuid,text)','execute');
+ assert has_function_privilege('service_role','public.get_pocket_web_customer(uuid,text)','execute');
 end $$;
 select 'pocket_subscription_identity_sql_pass' as result;
