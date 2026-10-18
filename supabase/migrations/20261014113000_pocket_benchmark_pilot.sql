@@ -320,12 +320,27 @@ end; $$;
 
 create or replace function private.settle_pocket_benchmark_call(p_ledger_key text,p_case_id text,p_slot text,p_actual_microusd bigint,p_provider_request_id text)
 returns jsonb language plpgsql security definer set search_path=pg_catalog,private as $$
-declare v_call private.pocket_benchmark_pilot_calls%rowtype; v_cap bigint; v_total bigint;
+declare v_call private.pocket_benchmark_pilot_calls%rowtype; v_attest private.pocket_benchmark_pilot_cost_attestations%rowtype; v_cap bigint; v_total bigint;
 begin
   if p_actual_microusd is null or p_actual_microusd<0 or nullif(trim(p_provider_request_id),'') is null then raise exception 'invalid authoritative settlement'; end if;
   select cap_microusd into v_cap from private.pocket_benchmark_pilot_ledgers where ledger_key=p_ledger_key for update;
   select * into v_call from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot for update;
   if not found or v_call.status<>'submitted' or v_call.receipt_recorded_at is null or v_call.provider_request_id<>p_provider_request_id then raise exception 'submitted receipted call required'; end if;
+  -- A caller-controlled cost (including zero) is not independent evidence.
+  -- Only the separately permissioned administrator can insert append-only
+  -- attestations after verifying actual externally attributable billing.
+  select * into v_attest from private.pocket_benchmark_pilot_cost_attestations
+    where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot for update;
+  if not found
+    or v_attest.project_ref is distinct from v_call.project_ref
+    or v_attest.provider_request_id is distinct from v_call.provider_request_id
+    or v_attest.provider_response_id is distinct from v_call.provider_response_id
+    or v_attest.model is distinct from v_call.provider_model
+    or v_attest.service_tier is distinct from v_call.provider_service_tier
+    or v_attest.actual_microusd is distinct from p_actual_microusd
+    or nullif(trim(v_attest.external_billing_evidence_ref),'') is null
+    or nullif(trim(v_attest.reviewer_ref),'') is null
+  then raise exception 'independent billing attestation required'; end if;
   update private.pocket_benchmark_pilot_calls set status='settled',actual_microusd=p_actual_microusd,settled_at=now()
     where ledger_key=p_ledger_key and case_id=p_case_id and slot=p_slot;
   select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_total
@@ -344,7 +359,15 @@ begin
   end if;
   select count(*) filter(where status in ('reserved','submitted')),
     count(*) filter(where slot in ('main','primary_precision') and status='settled' and actual_microusd is not null
-      and provider_usage is not null and receipt_recorded_at is not null),
+      and provider_usage is not null and receipt_recorded_at is not null
+      and exists (
+        select 1 from private.pocket_benchmark_pilot_cost_attestations a
+        where a.ledger_key=p_ledger_key and a.case_id=p_case_id and a.slot=private.pocket_benchmark_pilot_calls.slot
+          and a.actual_microusd=private.pocket_benchmark_pilot_calls.actual_microusd
+          and a.provider_request_id=private.pocket_benchmark_pilot_calls.provider_request_id
+          and a.provider_response_id=private.pocket_benchmark_pilot_calls.provider_response_id
+          and a.project_ref=private.pocket_benchmark_pilot_calls.project_ref
+      )),
     count(*) filter(where status='settled' and actual_microusd is null) into v_open,v_required,v_unknown
     from private.pocket_benchmark_pilot_calls where ledger_key=p_ledger_key and case_id=p_case_id;
   select coalesce(sum(case when status='settled' then coalesce(actual_microusd,estimated_microusd) else estimated_microusd end),0) into v_total
