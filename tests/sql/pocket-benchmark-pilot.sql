@@ -12,8 +12,64 @@ declare
   sha text := repeat('a',64);
 begin
   insert into private.pocket_benchmark_pilot_ledgers(ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
-  values('qa-pilot',5000000,'proj_qa','comment-6165012632',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
-  r:=public.claim_pocket_benchmark_case('qa-pilot','range-clear','proj_qa','comment-6165012632',repeat('b',40),plan);
+  values('qa-pilot',5000000,'proj_qa','qa-benchmark-approval-20261018',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+  -- A separate ledger key MUST NOT reuse the same approved $5 allowance.
+  -- This closes the independent-ledger aggregate spending loophole.
+  failed:=false;
+  begin
+    insert into private.pocket_benchmark_pilot_ledgers
+      (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
+    values('qa-duplicate-ledger',5000000,'proj_qa','qa-benchmark-approval-20261018',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+  exception when unique_violation then failed:=true; end;
+  assert failed,'second ledger reused owner approval with another ledger key';
+
+  -- Case/whitespace aliases are rejected instead of silently treated as a
+  -- second independently spendable authorisation.
+  for r in select to_jsonb(x) from unnest(array[
+    'QA-BENCHMARK-APPROVAL-20261018',
+    ' qa-benchmark-approval-20261018',
+    'qa-benchmark-approval-20261018 ',
+    'comment-06165012632'
+  ]) as x loop
+    failed:=false;
+    begin
+      insert into private.pocket_benchmark_pilot_ledgers
+        (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
+      values('qa-alias-ledger',5000000,'proj_qa',r #>> '{}',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+    exception when check_violation then failed:=true; end;
+    assert failed,'approval alias created independent allowance';
+  end loop;
+
+  -- Neither approval identity, max dollars, application/model scope, evidence,
+  -- nor allowed cases may be edited to reset prior spent/reserved budget.
+  for r in select to_jsonb(x) from unnest(array[
+    'cap_microusd=4000000',
+    'project_ref=''other-project''',
+    'owner_approval_ref=''qa-unrelated-approval''',
+    'candidate_sha=repeat(''a'',40)',
+    'pricing_evidence_ref=''other-pricing''',
+    'allowed_case_ids=ARRAY[''double-top'']::text[]',
+    'created_at=created_at + interval ''1 day'''
+  ]) as x loop
+    failed:=false;
+    begin
+      execute 'update private.pocket_benchmark_pilot_ledgers set ' || (r #>> '{}') || ' where ledger_key=''qa-pilot''';
+    exception when others then failed:=true; end;
+    assert failed,'immutable approval scope changed';
+  end loop;
+
+  failed:=false;
+  begin delete from private.pocket_benchmark_pilot_ledgers where ledger_key='qa-pilot';
+  exception when others then failed:=true; end;
+  assert failed,'approved ledger could be deleted and recreated for fresh allowance';
+
+  -- Even the approval verification timestamp cannot be reset after approval.
+  failed:=false;
+  begin update private.pocket_benchmark_pilot_ledgers set config_verified_at=null where ledger_key='qa-pilot';
+  exception when others then failed:=true; end;
+  assert failed,'approved ledger verification could be cleared';
+
+  r:=public.claim_pocket_benchmark_case('qa-pilot','range-clear','proj_qa','qa-benchmark-approval-20261018',repeat('b',40),plan);
   assert r->>'status'='reserved' and (r->>'committed_microusd')::bigint=300000,'complete reservation missing';
   assert public.submit_pocket_benchmark_call('qa-pilot','range-clear','main',sha)->>'claimed'='true';
   assert public.submit_pocket_benchmark_call('qa-pilot','range-clear','primary_precision',sha)->>'claimed'='true';
