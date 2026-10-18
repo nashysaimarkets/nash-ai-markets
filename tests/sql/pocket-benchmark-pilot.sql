@@ -42,6 +42,21 @@ begin
     assert failed,'approval alias created independent allowance';
   end loop;
 
+  -- A fabricated second live approval or a QA-only approval in a live
+  -- project must not unlock additional $5 budgets.
+  for v_test_approval in select unnest(array[
+    'comment-1234567890',
+    'qa-another-approval'
+  ]) loop
+    failed:=false;
+    begin
+      insert into private.pocket_benchmark_pilot_ledgers
+        (ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
+      values('live-forged-ledger',5000000,'proj_live',v_test_approval,repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+    exception when check_violation then failed:=true; end;
+    assert failed,'unapproved live pilot or QA ref granted additional allowance';
+  end loop;
+
   -- Neither approval identity, max dollars, application/model scope, evidence,
   -- nor allowed cases may be edited to reset prior spent/reserved budget.
   for v_change in select unnest(array[
