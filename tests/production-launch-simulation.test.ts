@@ -108,7 +108,8 @@ test("production simulation: Founding Member submission requires current paid en
 test("production simulation: Stripe is signature-bound and unknown prices fail closed", async () => {
   const webhook = await source("app/api/stripe/webhook/route.ts");
   assert.match(webhook, /stripe\.webhooks\.constructEvent/);
-  assert.match(webhook, /matchedPlans\.length === 1/);
+  assert.match(webhook, /singleConfiguredSubscriptionItem\(subscription\.items\.data\)/);
+  assert.match(webhook, /!resolvedItem && foundingSubscriptionActive\(subscription\.status\)/);
   assert.doesNotMatch(webhook, /subscription\.metadata\.plan/);
   assert.match(webhook, /current_period_end/);
   assert.match(webhook, /invoice\.payment_failed/);

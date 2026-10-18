@@ -142,7 +142,8 @@ test("Stripe webhook rejects metadata-only and ambiguous plan mapping", async ()
     source("app/api/stripe/webhook/route.ts"),
     source("supabase/functions/stripe-webhook/index.ts"),
   ]);
-  assert.match(webhook, /matchedPlans\.length === 1/);
+  assert.match(webhook, /singleConfiguredSubscriptionItem\(subscription\.items\.data\)/);
+  assert.match(webhook, /!resolvedItem && foundingSubscriptionActive\(subscription\.status\)/);
   assert.doesNotMatch(webhook, /subscription\.metadata\.plan/);
   assert.match(webhook, /Cannot safely map Stripe subscription to membership/);
   assert.match(webhook, /stripe\.webhooks\.constructEvent/);

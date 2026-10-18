@@ -333,11 +333,15 @@ export function aggregateSeparateTortureReports(reports: unknown) {
     // Keep validating any supplied metrics so malformed evidence fails loudly.
     const sourceVerified = record.ledgerReleaseVerified === true && record.ledgerCaseId === id
       && observed.scored === true
-      && (observed.httpStatus === 200 || observed.httpStatus === 422)
-      && observed.benchmarkHttpStatus === observed.httpStatus
+      && (observed.benchmarkHttpStatus === 200 || observed.benchmarkHttpStatus === 422)
       && typeof observed.analysisHttpStatus === "number"
       && Number.isInteger(observed.analysisHttpStatus)
-      && observed.analysisHttpStatus >= 200 && observed.analysisHttpStatus < 300;
+      && observed.analysisHttpStatus >= 200 && observed.analysisHttpStatus < 300
+      // The route preserves the analysis HTTP status even when benchmark
+      // acceptance fails. Older reports may put acceptance422 in httpStatus;
+      // both require explicit successful analysis and final ledger release.
+      && (observed.httpStatus === observed.analysisHttpStatus
+        || (observed.httpStatus === 422 && observed.benchmarkHttpStatus === 422));
     const rawMetrics = observed.caseMetrics;
     if (rawMetrics == null) continue; // Network/provider errors are attempts, not measurements.
     if (typeof rawMetrics !== "object" || Array.isArray(rawMetrics)) throw new Error("Invalid case metrics");

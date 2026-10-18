@@ -14,6 +14,7 @@ test("all billed Pocket endpoints reject unauthorized access before reading uplo
   }
 });
 
+import { singleConfiguredSubscriptionItem } from "../app/lib/stripe-subscription-scope.ts";
 import { checkPocketScanAccess } from "../app/lib/server/pocket-scan-access.ts";
 
 test("Apple entitlement permits only a verified identity, leaves Stripe unchanged and fails closed on verification errors", async () => {
@@ -112,7 +113,7 @@ test("cancelled Pocket subscriptions revoke before a missing/deleted customer ca
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   const calls: unknown[] = [];
   const bindings = {
-    configuredOffering: () => ({ plan: "pocket", billingInterval: "month" }),
+    singleConfiguredSubscriptionItem: (items: {price:{id:string}}[]) => singleConfiguredSubscriptionItem(items, {STRIPE_POCKET_FOUNDING_PRICE_ID:"price-test"}),
     foundingSubscriptionActive: (status: string) => status === "active" || status === "trialing",
     customerEmail: async () => { throw new Error("deleted customer cannot supply email"); },
     createAdminClient: () => ({ rpc: async (name: string, args: unknown) => { calls.push([name, args]); return { error: null }; } }),
