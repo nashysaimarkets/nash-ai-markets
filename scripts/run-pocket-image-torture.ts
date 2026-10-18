@@ -1,5 +1,5 @@
 import { isBenchmarkPilotSpendHeld } from "../app/api/pocket/torture/spending-hold.ts";
-import { recordPocketBenchmarkMeasurement, withPocketTestSpendScope } from "../app/api/pocket/torture/provider-spend.ts";
+import { recordPocketBenchmarkMeasurement, releasePocketBenchmarkMeasurement, withPocketTestSpendScope } from "../app/api/pocket/torture/provider-spend.ts";
 import { tortureHttpFailure } from "../app/api/pocket/torture/http-failure.ts";
 import { POST } from "../app/api/pocket/analyse/route.ts";
 import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis, summarizeTortureMeasurements } from "../tests/support/pocket-image-torture.ts";
@@ -13,6 +13,17 @@ type Analysis = {
   patterns?: Array<{ name?: string }>;
   liquidity?: { state?: string; event?: string; zones?: unknown[] };
 };
+
+async function finalCliLedgerMeasurement(caseId: string, reconciliationPassed: boolean) {
+  if (!reconciliationPassed) return null;
+  const released = await releasePocketBenchmarkMeasurement(caseId);
+  if (released.released !== true) return null;
+  const measurement = released.measurement;
+  if (!measurement || typeof measurement !== "object" || Array.isArray(measurement)) {
+    throw new Error("Benchmark ledger did not release a valid case measurement");
+  }
+  return {...measurement, ledgerReleaseVerified: true, ledgerCaseId: caseId};
+}
 
 type Counts = { tp:number; fp:number; fn:number };
 const metrics: Record<"levels"|"patterns"|"liquidity",Counts> = {
@@ -76,10 +87,15 @@ for(const sample of selected){
 const summary = summarizeTortureMeasurements(TORTURE_CASES.map(sample=>sample.id),measuredCaseIds,metrics);
 if(measuredCaseIds.length===1){
   const measurement={...summary,casePass:failures.length===0,failures,observations,pass:summary.measurementComplete&&failures.length===0};
-  await recordPocketBenchmarkMeasurement(selected[0]!.id,measurement);
-  if(!reconciled){
-    console.log("IMAGE_TORTURE_PENDING_SETTLEMENT",JSON.stringify({caseId:selected[0]!.id,scored:false,committedMicroUsd}));
+  const caseId=selected[0]!.id;
+  await recordPocketBenchmarkMeasurement(caseId,measurement);
+  // The postflight reconciliation returned by the scoped run is necessary but
+  // not sufficient. A later ledger disable/revocation must still veto CLI
+  // publication, exactly as it does for the HTTP benchmark route.
+  const releasedMeasurement=await finalCliLedgerMeasurement(caseId,reconciled);
+  if(!releasedMeasurement){
+    console.log("IMAGE_TORTURE_PENDING_SETTLEMENT",JSON.stringify({caseId,scored:false,committedMicroUsd}));
     process.exitCode=2;
-  }else console.log("IMAGE_TORTURE_MEASUREMENTS",JSON.stringify(measurement));
+  }else console.log("IMAGE_TORTURE_MEASUREMENTS",JSON.stringify(releasedMeasurement));
 }else console.log("IMAGE_TORTURE_MEASUREMENTS",JSON.stringify(summary));
 if(failures.length){console.error("IMAGE_TORTURE_FAILURES\n"+failures.join("\n"));process.exitCode=1;}
