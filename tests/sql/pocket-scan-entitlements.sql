@@ -46,6 +46,21 @@ begin
  exception when others then failed:=true; end;
  assert failed,'application UUID accepted a second Stripe customer';
 
+ -- A deployed old webhook may renew only the existing exact durable identity.
+ perform public.sync_pocket_web_subscription('qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_entitlement',true,now()+interval '2 days',101);
+ assert public.has_pocket_web_subscription(u1),'compatible old renewal lost UUID access';
+ failed:=false;
+ begin
+   perform public.sync_pocket_web_subscription('qa-entitlement@example.invalid','cus_wrong','sub_qa_entitlement',true,now()+interval '2 days',102);
+ exception when others then failed:=true; end;
+ assert failed,'legacy producer changed bound Stripe customer';
+ perform public.sync_pocket_web_subscription('qa-other-entitlement@example.invalid','cus_unbound','sub_qa_unbound',true,now()+interval '1 day',100);
+ assert not public.has_pocket_web_subscription(u2),'legacy email event granted UUID access';
+ assert not public.has_pocket_web_subscription('qa-other-entitlement@example.invalid'::text),'legacy lookup granted email access';
+ assert exists(select 1 from private.pocket_web_subscriptions where stripe_subscription_id='sub_qa_unbound' and app_user_id is null and stripe_customer_id is null),'legacy producer inferred identity';
+ perform public.revoke_pocket_web_subscription('sub_qa_unbound',102);
+ perform public.sync_pocket_web_subscription('qa-other-entitlement@example.invalid','cus_unbound','sub_qa_unbound',true,now()+interval '1 day',101);
+ assert not exists(select 1 from private.pocket_web_subscriptions where stripe_subscription_id='sub_qa_unbound' and active),'legacy stale renewal undid revocation';
  perform public.revoke_pocket_web_subscription('sub_qa_entitlement',101);
  assert not public.has_pocket_web_subscription(u1),'revoked access allowed';
  assert public.get_pocket_web_customer(u1,'qa-entitlement@example.invalid')='cus_qa_entitlement','resubscribe lost permanent customer binding';
@@ -65,6 +80,13 @@ begin
    perform public.link_pocket_web_subscription_identity(u1,'wrong@example.invalid','cus_qa_entitlement','sub_qa_legacy','qa:receipt:legacy');
  exception when others then failed:=true; end;
  assert failed,'legacy link accepted mismatched email';
+ update auth.users set banned_until=now()+interval '1 day' where id=u1;
+ failed:=false;
+ begin
+   perform public.link_pocket_web_subscription_identity(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_legacy','qa:receipt:legacy');
+ exception when others then failed:=true; end;
+ assert failed,'banned user could link historical subscription';
+ update auth.users set banned_until=null where id=u1;
  perform public.link_pocket_web_subscription_identity(u1,'qa-entitlement@example.invalid','cus_qa_entitlement','sub_qa_legacy','qa:receipt:legacy');
  assert exists(select 1 from private.pocket_web_subscriptions where stripe_subscription_id='sub_qa_legacy'
    and app_user_id=u1 and stripe_customer_id='cus_qa_entitlement' and identity_evidence_ref='qa:receipt:legacy');
@@ -78,7 +100,9 @@ begin
  update auth.users set email_confirmed_at=now(),email='changed@example.invalid' where id=u1;
  assert not public.has_pocket_web_subscription(u1),'changed application email retained access';
 
- assert to_regprocedure('public.has_pocket_web_subscription(text)') is null,'email-only lookup still exists';
+ assert to_regprocedure('public.has_pocket_web_subscription(text)') is not null,'legacy signature was removed';
+ assert not public.has_pocket_web_subscription('qa-entitlement@example.invalid'::text),'email-only lookup granted access';
+ assert not has_function_privilege('anon','public.has_pocket_web_subscription(text)','execute');
  assert not has_function_privilege('anon','public.has_pocket_web_subscription(uuid)','execute');
  assert not has_function_privilege('authenticated','public.sync_pocket_web_subscription(uuid,text,text,text,boolean,timestamptz,bigint)','execute');
  assert has_function_privilege('service_role','public.link_pocket_web_subscription_identity(uuid,text,text,text,text)','execute');

@@ -15,8 +15,13 @@ export async function checkPocketScanAccess(deps: AccessDependencies): Promise<R
   try {
     const user = await deps.authenticate();
     if (!user?.id || !user.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
-    if (await deps.hasSubscription(user.id)) return null;
+    let webUnavailable = false;
+    try { if (await deps.hasSubscription(user.id)) return null; }
+    catch { webUnavailable = true; }
     if (user.id && deps.hasAppleSubscription && await deps.hasAppleSubscription(user.id)) return null;
+    // Independent signed Apple proof can succeed during a web-ledger outage.
+    // A web outage must never become first-free permission or a false expiry.
+    if (webUnavailable) throw new Error("Pocket web subscription lookup unavailable");
     if (user.id && deps.hasFirstFreeAccess && await deps.hasFirstFreeAccess(user)) return null;
     return Response.json({ error: "An active Pocket subscription is required to scan.", code: "POCKET_SUBSCRIPTION_REQUIRED" }, { status: 403 });
   } catch {
@@ -28,7 +33,16 @@ export async function requirePocketScanAccess(request?: Request): Promise<Respon
   // Only an internal benchmark scope can reach this branch; creating it first
   // enforces the spending hold, approved project and durable reservations.
   if (pocketTestProviderProject()) return null;
-  return checkPocketScanAccess({
+  return checkPocketScanAccess(pocketAccessDependencies(request, true));
+}
+
+/** Read-only subscription status never admits benchmark or first-free access. */
+export async function requirePocketSubscriptionAccess(request: Request): Promise<Response | null> {
+  return checkPocketScanAccess(pocketAccessDependencies(request, false));
+}
+
+function pocketAccessDependencies(request: Request | undefined, allowFirstFree: boolean): AccessDependencies {
+  return {
     authenticate: async () => {
       const { createClient } = await import("../../../utils/supabase/server.ts");
       const client = await createClient();
@@ -49,12 +63,12 @@ export async function requirePocketScanAccess(request?: Request): Promise<Respon
       return hasPocketAppleSubscription(userId, proof);
     },
     hasFirstFreeAccess: async (user) => {
-      if (!request || process.env.POCKET_FIRST_FREE_ENABLED !== "true") return false;
+      if (!allowFirstFree || !request || process.env.POCKET_FIRST_FREE_ENABLED !== "true") return false;
       const phase = new URL(request.url).pathname.split("/").at(-1);
       if (phase !== "preflight" && phase !== "analyse") return false;
       rememberPocketFirstFreeIdentity(request, { id: user.id!, email: user.email! });
       // The transactional wrapper, not this routing decision, grants admission.
       return true;
     },
-  });
+  };
 }

@@ -17,7 +17,8 @@ test("production simulation: passwordless authentication is fail-safe and redire
     source("app/dashboard/page.tsx"),
   ]);
   assert.match(login, /signInWithOtp/);
-  assert.match(login, /shouldCreateUser: true/);
+  assert.match(login, /existingAccountOnly = false/);
+  assert.match(login, /shouldCreateUser: !existingAccountOnly/);
   assert.match(callback, /exchangeCodeForSession/);
   assert.match(callback, /token_hash/);
   assert.match(callback, /verifyOtp/);

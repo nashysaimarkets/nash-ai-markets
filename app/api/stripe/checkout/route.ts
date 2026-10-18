@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     const verifiedEmail = user?.email?.trim().toLowerCase() || undefined;
     if (selected.offering.plan === "pocket" && (!user?.id || !verifiedEmail || !user.email_confirmed_at || user.is_anonymous)) {
-      return NextResponse.redirect(new URL("/login?next=/pocket/founding", origin), 303);
+      return NextResponse.redirect(new URL("/pocket/login?next=/pocket/founding", origin), 303);
     }
     let pocketCustomer: string | null = null;
     if (selected.offering.plan === "pocket") {

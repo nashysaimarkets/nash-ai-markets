@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import LoginForm from "./StagingLoginForm";
 import { BrandLogo } from "../components/BrandLogo";
 import { createClient } from "../../utils/supabase/server";
@@ -14,6 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Login() {
+  const requestHeaders = await headers();
+  const host = (requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "").split(",")[0]?.trim().toLowerCase();
+  if (host === "pocket.nashaimarkets.com") redirect("/pocket/login");
   const publicAuthConfig = resolveSupabasePublicConfig();
   try {
     const supabase = await createClient();

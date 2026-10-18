@@ -74,11 +74,12 @@ test("Pocket checkout requires a verified application account and copies its UUI
   assert.match(source, /subscription_data:[\s\S]*supabase_user_id: user!\.id/);
 });
 
-test("identity-binding migration removes email lookup and requires UUID, customer and exact subscription", async () => {
+test("identity-binding migration denies email lookup and requires UUID, customer and exact subscription", async () => {
   const sql = await readFile(new URL("../supabase/migrations/20261014143000_bind_pocket_web_subscription_identity.sql", import.meta.url), "utf8");
   assert.match(sql, /add column app_user_id uuid/);
   assert.match(sql, /add column stripe_customer_id text/);
-  assert.match(sql, /drop function public\.has_pocket_web_subscription\(text\)/);
+  assert.doesNotMatch(sql, /drop function/);
+  assert.match(sql, /has_pocket_web_subscription\(p_email text\)[\s\S]*select false/);
   assert.match(sql, /has_pocket_web_subscription\(p_user_id uuid\)/);
   assert.match(sql, /s\.app_user_id=p_user_id/);
   assert.match(sql, /s\.stripe_customer_id is not null/);
