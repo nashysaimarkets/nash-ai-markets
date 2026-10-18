@@ -97,5 +97,8 @@ if(measuredCaseIds.length===1){
     console.log("IMAGE_TORTURE_PENDING_SETTLEMENT",JSON.stringify({caseId,scored:false,committedMicroUsd}));
     process.exitCode=2;
   }else console.log("IMAGE_TORTURE_MEASUREMENTS",JSON.stringify(releasedMeasurement));
-}else console.log("IMAGE_TORTURE_MEASUREMENTS",JSON.stringify(summary));
+}else{
+  console.log("IMAGE_TORTURE_UNSCORED",JSON.stringify({...summary,scored:false,reason:"NO_SUCCESSFUL_MEASUREMENT"}));
+  process.exitCode=1;
+}
 if(failures.length){console.error("IMAGE_TORTURE_FAILURES\n"+failures.join("\n"));process.exitCode=1;}
