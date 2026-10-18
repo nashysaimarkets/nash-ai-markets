@@ -1,0 +1,56 @@
+name: Monaco exact-source release QA (never merge)
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/monaco-exact-source-ci.yml
+permissions:
+  contents: read
+jobs:
+  exact_source_quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      APP_VERSION: "ci"
+      BUILD_TIMESTAMP: "2026-08-15T00:00:00.000Z"
+      GIT_COMMIT_SHA: "97ae0c9062763bbe579b8b2f51cb0bac0b9f3c26"
+      NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_ci_placeholder"
+    steps:
+      - name: Checkout exact PR120 source SHA not GitHub merge commit
+        uses: actions/checkout@v4
+        with:
+          ref: "97ae0c9062763bbe579b8b2f51cb0bac0b9f3c26"
+          persist-credentials: false
+      - name: Assert exact source commit and tree
+        run: |
+          test "$(git rev-parse HEAD)" = "97ae0c9062763bbe579b8b2f51cb0bac0b9f3c26"
+          test "$(git rev-parse HEAD^{tree})" = "824a1d391e60d1013bb95560654a62eebf59d6f9"
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.19.0"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Scan repository for committed secrets
+        run: npm run security:scan
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Run unit tests
+        run: npm run test:unit
+      - name: Run component render tests
+        run: npm run test:render
+      - name: Simulate production safeguards
+        run: npm run simulate:production
+      - name: Validate operations documentation
+        run: npm run ops:validate
+      - name: Build and validate Sites artifact
+        run: npm run build
+      - name: Test rendered production artifact
+        run: npm run test:rendered
