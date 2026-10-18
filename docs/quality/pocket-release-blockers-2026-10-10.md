@@ -1,5 +1,11 @@
 # Pocket Bullseye master release register — 10 October 2026
 
+## 18 October isolated engineering addendum — candidate ownership unchanged
+
+RELEASE HOLD. The current evidence and PASS/FAIL/BLOCKED owner/action table are in [the hard-blocker checkpoint](monaco-hard-blocker-checkpoint-2026-10-18.md). This is a LOCAL prepared register update, not a candidate publication or ownership claim. Published PR112 remains `2bb9b1e1766a93fbb8b9cf97df98050964a9d3aa`; PR114 remains `69697ed74fb1894cea48a1b870e4d55b7b2c397c`. Tested local repair code is `767e2209e9e623b78f6c806df3e191d9a0c218ff` (984/984 tests, both production builds and isolated Sharp trace PASS). Sole Builder must reconcile historical claim #6182330717 before integration.
+
+New verified deltas: actual scored422 aggregation repaired; protected benchmark AsyncLocalStorage isolation proved without a new auth bypass; returning Pocket checkout reuses its UUID-bound Stripe customer; production dependency audit reduced to zero while 17 full-graph advisories remain; seven isolated SQL fixtures pass with rollback, while pg_cron and independent hosted QA remain blocked. Fresh production founding-function catalog still exhibits the same-email cancellation defect; the exact production function fails the isolated regression while the staging body passes. No production/customer change. Six genuine scanner cases remain unmeasured, separate $5 controls remain unproved, native/signed-commerce gates remain open. This dated addendum supersedes stale status claims below only within its explicitly evidenced scope.
+
 RELEASE HOLD. The owner's complete/verify/launch directive authorises candidate engineering and controlled release only after mandatory gates genuinely pass. It does not authorise unreconciled paid calls. Sole writer: this interactive Work Jimmy session; scheduled Scanner Fixer stays paused. Supporting automations are read-only. Never resume from an old checkpoint: resolve PR #112 head and check ownership first.
 
 ### 14 October separate benchmark-pilot successor
