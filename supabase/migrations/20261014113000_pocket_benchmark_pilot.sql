@@ -50,6 +50,20 @@ create trigger guard_pocket_benchmark_pilot_approval
 before update or delete on private.pocket_benchmark_pilot_ledgers
 for each row execute function private.guard_pocket_benchmark_pilot_approval();
 
+-- PostgreSQL TRUNCATE does not invoke row DELETE triggers. Deny the
+-- separate statement-level reset path as defence in depth.
+create or replace function private.block_pocket_benchmark_approval_truncate()
+returns trigger language plpgsql security invoker set search_path=pg_catalog as $$
+begin
+  raise exception 'benchmark approval ledger cannot be truncated';
+end; $$;
+
+create trigger block_pocket_benchmark_approval_truncate
+before truncate on private.pocket_benchmark_pilot_ledgers
+for each statement execute function private.block_pocket_benchmark_approval_truncate();
+
+revoke truncate on private.pocket_benchmark_pilot_ledgers from public,anon,authenticated,service_role;
+
 create table private.pocket_benchmark_pilot_cases (
   ledger_key text not null references private.pocket_benchmark_pilot_ledgers(ledger_key),
   case_id text not null check (case_id ~ '^[a-z0-9][a-z0-9-]{1,79}$'),
