@@ -89,3 +89,27 @@ test('CLI measurement publication must pass the final database release veto', as
     await assert.rejects(()=>malformed('range-clear',true),/valid case measurement/);
   }
 });
+
+
+test('CLI zero-measurement failure emits only an explicit unscored marker', async () => {
+  const source=await readFile(new URL('../scripts/run-pocket-image-torture.ts',import.meta.url),'utf8');
+  const branch=source.indexOf('}else{\n  console.log("IMAGE_TORTURE_UNSCORED"');
+  const bodyStart=source.indexOf('\n',branch)+1;
+  const bodyEnd=source.indexOf('\n}\nif(failures.length)',bodyStart);
+  assert.ok(branch>0 && bodyStart>branch && bodyEnd>bodyStart,'zero-measurement branch not found');
+  const calls:unknown[][]=[];
+  const state:{exitCode?:number}={};
+  new Function('summary','console','process',source.slice(bodyStart,bodyEnd))(
+    {measurementComplete:false,measuredCases:0},
+    {log:(...args:unknown[])=>calls.push(args)},
+    state,
+  );
+  assert.equal(state.exitCode,1);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0]![0],'IMAGE_TORTURE_UNSCORED');
+  assert.doesNotMatch(calls.flat().join(' '),/IMAGE_TORTURE_MEASUREMENTS/);
+  const payload=JSON.parse(String(calls[0]![1])) as Record<string,unknown>;
+  assert.equal(payload.scored,false);
+  assert.equal(payload.reason,'NO_SUCCESSFUL_MEASUREMENT');
+  assert.equal(payload.measuredCases,0);
+});
