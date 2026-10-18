@@ -15,6 +15,12 @@ declare
 begin
   insert into private.pocket_benchmark_pilot_ledgers(ledger_key,cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled)
   values('qa-pilot',5000000,'proj_qa','qa-benchmark-approval-20261018',repeat('b',40),'default','qa-pricing',array['range-clear'],now(),true);
+  -- TRUNCATE fires statement triggers, NOT the DELETE row guard.
+  failed:=false;
+  begin truncate private.pocket_benchmark_pilot_ledgers cascade;
+  exception when raise_exception then failed:=true; end;
+  assert failed,'benchmark ledger TRUNCATE bypassed immutable approval';
+
   -- A separate ledger key MUST NOT reuse the same approved $5 allowance.
   -- This closes the independent-ledger aggregate spending loophole.
   failed:=false;
