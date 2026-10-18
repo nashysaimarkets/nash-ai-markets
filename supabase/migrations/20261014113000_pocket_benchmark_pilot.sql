@@ -6,23 +6,23 @@ create table private.pocket_benchmark_pilot_ledgers (
   project_ref text not null check (length(project_ref) between 1 and 200),
   -- One immutable, canonical ledger per owner approval. Reject rather than silently
   -- normalise aliases, so a different ledger_key cannot reset the same $5 cap.
-  owner_approval_ref text not null unique check (
-    -- This is ONE specifically approved real pilot, not arbitrary caller-
-    -- supplied approval IDs. Synthetic QA refs are restricted to QA scope.
-    owner_approval_ref = 'comment-6165012632'
-    or (
-      owner_approval_ref ~ '^qa-[a-z0-9][a-z0-9-]{2,119}$'
-      and project_ref = 'proj_qa'
-      and ledger_key like 'qa-%'
-    )
-  ),
+  owner_approval_ref text not null unique,
   candidate_sha text not null check (candidate_sha ~ '^[0-9a-f]{40}$'),
   rate_tier text not null check (rate_tier = 'default'),
   pricing_evidence_ref text not null check (length(pricing_evidence_ref) between 1 and 500),
   allowed_case_ids text[] not null check (cardinality(allowed_case_ids) between 1 and 6),
   config_verified_at timestamptz,
   enabled boolean not null default false,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- Scope check is a table constraint because it binds several columns.
+  constraint pocket_benchmark_owner_approval_scope check (
+    owner_approval_ref = 'comment-6165012632'
+    or (
+      owner_approval_ref ~ '^qa-[a-z0-9][a-z0-9-]{2,119}$'
+      and project_ref = 'proj_qa'
+      and ledger_key like 'qa-%'
+    )
+  )
 );
 
 -- This pilot's approval record is append-only: toggling enabled never creates
