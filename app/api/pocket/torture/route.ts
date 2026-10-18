@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
-// @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
 import { isBenchmarkPilotSpendHeld } from "./spending-hold";

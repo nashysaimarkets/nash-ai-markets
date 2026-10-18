@@ -4,7 +4,6 @@ import { tortureHttpFailure } from "../app/api/pocket/torture/http-failure.ts";
 import { POST } from "../app/api/pocket/analyse/route.ts";
 import { TORTURE_CASES, syntheticSvg, syntheticPrecisionCropSpec, buildTortureRequestPayload, unwrapTortureAnalysis, scoreTortureAnalysis, summarizeTortureMeasurements } from "../tests/support/pocket-image-torture.ts";
 
-// @ts-expect-error sharp 0.35 exports omit its bundled declaration path under TS bundler resolution.
 const sharpModule = await import("sharp");
 const sharp = sharpModule.default;
 
