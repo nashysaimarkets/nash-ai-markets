@@ -112,11 +112,50 @@ create table private.pocket_benchmark_pilot_calls (
   foreign key (ledger_key, case_id) references private.pocket_benchmark_pilot_cases(ledger_key, case_id)
 );
 
+-- Manual, independently checked cost evidence. Normal service_role dispatch cannot
+-- insert these rows; an authorised database administrator must check actual
+-- external billing records before attesting any charge (including a $0 charge).
+-- An evidence hash is an audit reference, not automatically a provider signature.
+create table private.pocket_benchmark_pilot_cost_attestations (
+  ledger_key text not null,
+  case_id text not null,
+  slot text not null,
+  project_ref text not null check (length(project_ref) between 1 and 200),
+  provider_request_id text not null check (length(provider_request_id) between 1 and 200),
+  provider_response_id text not null check (length(provider_response_id) between 1 and 200),
+  model text not null check (length(model) between 1 and 200),
+  service_tier text not null check (service_tier='default'),
+  actual_microusd bigint not null check (actual_microusd >= 0),
+  external_billing_evidence_ref text not null check (length(external_billing_evidence_ref) between 12 and 500),
+  external_billing_evidence_sha256 text not null check (external_billing_evidence_sha256 ~ '^[0-9a-f]{64}$'),
+  reviewer_ref text not null check (length(reviewer_ref) between 6 and 200),
+  verified_at timestamptz not null default now(),
+  primary key (ledger_key,case_id,slot),
+  unique (project_ref,provider_request_id),
+  foreign key (ledger_key,case_id,slot) references private.pocket_benchmark_pilot_calls(ledger_key,case_id,slot)
+);
+
+-- Attested evidence is append-only, even for privileged service callers.
+create or replace function private.block_pocket_benchmark_cost_attestation_change()
+returns trigger language plpgsql security invoker set search_path=pg_catalog as $$
+begin
+  raise exception 'benchmark billing attestation is immutable';
+end; $$;
+
+create trigger block_pocket_benchmark_cost_attestation_change
+before update or delete on private.pocket_benchmark_pilot_cost_attestations
+for each row execute function private.block_pocket_benchmark_cost_attestation_change();
+
+create trigger block_pocket_benchmark_cost_attestation_truncate
+before truncate on private.pocket_benchmark_pilot_cost_attestations
+for each statement execute function private.block_pocket_benchmark_cost_attestation_change();
+
 alter table private.pocket_benchmark_pilot_ledgers enable row level security;
 alter table private.pocket_benchmark_pilot_cases enable row level security;
 alter table private.pocket_benchmark_pilot_calls enable row level security;
+alter table private.pocket_benchmark_pilot_cost_attestations enable row level security;
 
-revoke all on private.pocket_benchmark_pilot_ledgers, private.pocket_benchmark_pilot_cases, private.pocket_benchmark_pilot_calls from public, anon, authenticated;
+revoke all on private.pocket_benchmark_pilot_ledgers, private.pocket_benchmark_pilot_cases, private.pocket_benchmark_pilot_calls, private.pocket_benchmark_pilot_cost_attestations from public, anon, authenticated, service_role;
 
 create or replace function private.claim_pocket_benchmark_case(
   p_ledger_key text, p_case_id text, p_project_ref text, p_owner_approval_ref text,
