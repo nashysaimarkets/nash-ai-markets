@@ -5,6 +5,9 @@
  * NOT an authenticated multi-user integration or permission to redistribute IG data.
  * Wire to server-only secret storage and explicit broker approval before UI access.
  */
+const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_RESPONSE_BYTES = 1_048_576;
+
 export const IG_DEMO_API_ORIGIN = "https://demo-api.ig.com" as const;
 
 export type IgDemoSession = Readonly<{
@@ -19,10 +22,10 @@ export type IgDemoReadOnlyClient = Readonly<{
 }>;
 
 function requiredHeader(value: string, label: string): string {
-  if (typeof value !== "string" || !value.trim() || value.length > 4096 || /[\r\n]/.test(value)) {
+  if (typeof value !== "string" || !value.trim() || value.length > 4096 || /[^\x21-\x7e]/.test(value)) {
     throw new Error(`IG_DEMO_MISSING_OR_INVALID_${label}`);
   }
-  return value.trim();
+  return value;
 }
 
 /**
@@ -45,12 +48,18 @@ export function createIgDemoReadOnlyClient(
   const securityToken = requiredHeader(session.securityToken, "SECURITY_TOKEN");
 
   async function get(path: "/gateway/deal/accounts" | "/gateway/deal/positions", signal?: AbortSignal): Promise<unknown> {
-    let response: Response;
+    // Fail before transport, even if a test transport ignores cancellation.
+    if (signal?.aborted) throw new Error("IG_DEMO_CANCELLED");
+    const boundedSignal = AbortSignal.any([
+      AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      ...(signal ? [signal] : []),
+    ]);
     try {
-      response = await transport(`${IG_DEMO_API_ORIGIN}${path}`, {
+      const response = await transport(`${IG_DEMO_API_ORIGIN}${path}`, {
         method: "GET",
         headers: {
           Accept: "application/json",
+          "Content-Type": "application/json",
           "X-IG-API-KEY": apiKey,
           CST: cst,
           "X-SECURITY-TOKEN": securityToken,
@@ -59,20 +68,51 @@ export function createIgDemoReadOnlyClient(
         cache: "no-store",
         redirect: "error",
         credentials: "omit",
-        signal,
+        signal: boundedSignal,
       });
-    } catch {
+      if (boundedSignal.aborted) {
+        try { await response.body?.cancel(); } catch { /* Sanitised below. */ }
+        throw new Error("IG_DEMO_REQUEST_ABORTED");
+      }
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new Error(`IG_DEMO_HTTP_${response.status}`);
+      }
+      // Bound even chunked bodies; Content-Length alone is not trustworthy.
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("IG_DEMO_INVALID_RESPONSE");
+      const chunks: Uint8Array[] = [];
+      let size = 0;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (boundedSignal.aborted) throw new Error("IG_DEMO_REQUEST_ABORTED");
+          if (done) break;
+          size += value.byteLength;
+          if (size > MAX_RESPONSE_BYTES) throw new Error("IG_DEMO_RESPONSE_TOO_LARGE");
+          chunks.push(value);
+        }
+      } finally {
+        try { await reader.cancel(); } catch { /* Do not expose remote errors. */ }
+        reader.releaseLock();
+      }
+      const bytes = new Uint8Array(size);
+      let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+      try {
+        // Still unknown: this transport is not a validated customer-facing DTO.
+        return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
+      } catch {
+        throw new Error("IG_DEMO_INVALID_RESPONSE");
+      }
+    } catch (error) {
+      if (signal?.aborted) throw new Error("IG_DEMO_CANCELLED");
+      if (boundedSignal.aborted) throw new Error("IG_DEMO_TIMEOUT");
       // Never forward arbitrary remote/network errors containing secrets or URLs.
+      if (error instanceof Error && /^(IG_DEMO_HTTP_[45][0-9]{2}|IG_DEMO_RESPONSE_TOO_LARGE|IG_DEMO_INVALID_RESPONSE)$/.test(error.message)) {
+        throw new Error(error.message);
+      }
       throw new Error("IG_DEMO_TRANSPORT_UNAVAILABLE");
-    }
-    if (!response.ok) {
-      throw new Error(`IG_DEMO_HTTP_${response.status}`);
-    }
-    try {
-      // Shape stays unknown pending an actual, authorised demo-account contract test.
-      return await response.json() as unknown;
-    } catch {
-      throw new Error("IG_DEMO_INVALID_RESPONSE");
     }
   }
 
