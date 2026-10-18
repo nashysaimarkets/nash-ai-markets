@@ -56,3 +56,36 @@ test('immediate POST measurement must pass final database release veto', async (
     await assert.rejects(()=>run(record,async()=>({released:true,measurement}),'range-clear',{pass:true},true,2000,responses,200,publishedLedgerMeasurement),/valid case measurement/);
   }
 });
+
+
+test('CLI measurement publication must pass the final database release veto', async () => {
+  const source=await readFile(new URL('../scripts/run-pocket-image-torture.ts',import.meta.url),'utf8');
+  assert.match(source,/import \{[^}]*releasePocketBenchmarkMeasurement[^}]*\} from/);
+  const helperStart=source.indexOf('async function finalCliLedgerMeasurement(');
+  const helperEnd=source.indexOf('\ntype Counts =',helperStart);
+  assert.ok(helperStart>0 && helperEnd>helperStart,'CLI final release helper not found');
+  let releases=0;
+  const deny=async()=>{releases++;return {released:false};};
+  const finalCliLedgerMeasurement=new Function('releasePocketBenchmarkMeasurement',
+    stripTypeScriptTypes(source.slice(helperStart,helperEnd))+'; return finalCliLedgerMeasurement;'
+  )(deny) as (caseId:string,reconciled:boolean)=>Promise<Record<string,unknown>|null>;
+
+  assert.equal(await finalCliLedgerMeasurement('range-clear',false),null);
+  assert.equal(releases,0,'unreconciled case must not attempt final release');
+  assert.equal(await finalCliLedgerMeasurement('range-clear',true),null);
+  assert.equal(releases,1,'reconciled case must perform exactly one final release check');
+
+  const allow=new Function('releasePocketBenchmarkMeasurement',
+    stripTypeScriptTypes(source.slice(helperStart,helperEnd))+'; return finalCliLedgerMeasurement;'
+  )(async()=>({released:true,measurement:{pass:false,provenance:'settled'}})) as typeof finalCliLedgerMeasurement;
+  assert.deepEqual(await allow('range-clear',true),{
+    pass:false,provenance:'settled',ledgerReleaseVerified:true,ledgerCaseId:'range-clear',
+  });
+
+  for (const measurement of [undefined,null,[],true,'invalid']) {
+    const malformed=new Function('releasePocketBenchmarkMeasurement',
+      stripTypeScriptTypes(source.slice(helperStart,helperEnd))+'; return finalCliLedgerMeasurement;'
+    )(async()=>({released:true,measurement})) as typeof finalCliLedgerMeasurement;
+    await assert.rejects(()=>malformed('range-clear',true),/valid case measurement/);
+  }
+});
