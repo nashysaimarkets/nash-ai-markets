@@ -7,7 +7,14 @@ create table private.pocket_benchmark_pilot_ledgers (
   -- One immutable, canonical ledger per owner approval. Reject rather than silently
   -- normalise aliases, so a different ledger_key cannot reset the same $5 cap.
   owner_approval_ref text not null unique check (
-    owner_approval_ref ~ '^(comment-[1-9][0-9]{0,19}|qa-[a-z0-9][a-z0-9-]{2,119})$'
+    -- This is ONE specifically approved real pilot, not arbitrary caller-
+    -- supplied approval IDs. Synthetic QA refs are restricted to QA scope.
+    owner_approval_ref = 'comment-6165012632'
+    or (
+      owner_approval_ref ~ '^qa-[a-z0-9][a-z0-9-]{2,119}$'
+      and project_ref = 'proj_qa'
+      and ledger_key like 'qa-%'
+    )
   ),
   candidate_sha text not null check (candidate_sha ~ '^[0-9a-f]{40}$'),
   rate_tier text not null check (rate_tier = 'default'),
