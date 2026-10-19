@@ -2,18 +2,21 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import { stripTypeScriptTypes } from 'node:module';
+import { validFoundingProPrice, validPocketFoundingPrice } from '../app/lib/stripe-commercial.ts';
 
-async function runCheckout(data:unknown,error:unknown=null,plan='pocket',verified=true,active:unknown=false,activeError:unknown=null,requestOptions:{origin?:string;cancel?:'before'|'after-access';invalidForm?:boolean}={}) {
+type PriceFixture={active:boolean;currency:string;type:string;unit_amount:number|null;recurring:{interval:string;interval_count?:number}|null};
+async function runCheckout(data:unknown,error:unknown=null,plan='pocket',verified=true,active:unknown=false,activeError:unknown=null,requestOptions:{origin?:string;cancel?:'before'|'after-access';invalidForm?:boolean;price?:PriceFixture}={}) {
  const source=await readFile(new URL('../app/api/stripe/checkout/route.ts',import.meta.url),'utf8');
  const body=source.slice(source.indexOf('function requestOrigin(')).replace('export async function POST','async function POST');
  const sessions:Record<string,unknown>[]=[];const lookups:unknown[]=[];
  const user=verified?{id:'11111111-1111-4111-8111-111111111111',email:'member@example.invalid',email_confirmed_at:'2026-10-18',is_anonymous:false}:null;
  const controller=new AbortController();
  const bindings={
-  Stripe:class {checkout={sessions:{create:async(args:Record<string,unknown>)=>{sessions.push(args);return {url:'https://checkout.stripe.invalid/test'};}}};},
+  Stripe:class {prices={retrieve:async()=>requestOptions.price};checkout={sessions:{create:async(args:Record<string,unknown>)=>{sessions.push(args);return {url:'https://checkout.stripe.invalid/test'};}}};},
   createClient:async()=>({auth:{getUser:async()=>({data:{user}})}}),
   createAdminClient:()=>({rpc:async(name:string,args:unknown)=>{lookups.push({name,args});if(name==='has_pocket_web_subscription'&&requestOptions.cancel==='after-access')controller.abort();return name==='has_pocket_web_subscription'?{data:active,error:activeError}:{data,error};}}),
-  checkoutOffering:()=>({priceId:'price_qa',offering:{plan,foundingEligible:false}}),
+  checkoutOffering:()=>({priceId:'price_qa',offering:{plan,foundingEligible:Boolean(requestOptions.price)}}),
+  validFoundingProPrice,validPocketFoundingPrice,
   campaignAttribution:()=>({source:'direct',medium:'none',campaign:'none'}),campaignQuery:()=>'',
   NextResponse:{json:Response.json,redirect:(url:URL|string,status:number)=>new Response(null,{status,headers:{location:String(url)}})},
   console:{error:()=>{}},
@@ -94,4 +97,13 @@ test('checkout cancellation before work or after account lookup never creates a 
 test('malformed checkout form returns an explicit error before customer or session work',async()=>{
  const r=await runCheckout('cus_bound',null,'pocket',true,false,null,{invalidForm:true});
  assert.equal(r.response.status,400);assert.equal(r.sessions.length,0);assert.equal(r.lookups.length,0);
+});
+
+test('new founding checkout requires exactly one month per billing cycle',async()=>{
+ for(const plan of ['pocket','pro'])for(const intervalCount of [undefined,0,-1,1.5,3,1]){
+  const price:PriceFixture={active:true,currency:'gbp',type:'recurring',unit_amount:plan==='pocket'?499:1200,recurring:{interval:'month',...(intervalCount===undefined?{}:{interval_count:intervalCount})}};
+  const r=await runCheckout('cus_bound',null,plan,true,false,null,{price});
+  assert.equal(r.sessions.length,intervalCount===1?1:0,`${plan}: billing interval_count=${intervalCount}`);
+  if(intervalCount!==1){assert.equal(r.lookups.length,0);assert.match(r.response.headers.get('location')??'',/checkout=unavailable/);}
+ }
 });

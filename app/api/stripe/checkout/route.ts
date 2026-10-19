@@ -58,7 +58,9 @@ export async function POST(request: Request) {
     if (selected.offering.foundingEligible) {
       const price = await stripe.prices.retrieve(selected.priceId);
       const valid = selected.offering.plan === "pocket" ? validPocketFoundingPrice(price) : validFoundingProPrice(price);
-      if (!valid) {
+      // A monthly interval can still bill every 3 months. This check applies
+      // to new Checkout only; historical renewal eligibility stays unchanged.
+      if (!valid || price.recurring?.interval_count !== 1) {
         const unavailablePath = selected.offering.plan === "pocket"
           ? "/pocket/founding?checkout=unavailable&" + campaignQuery(attribution)
           : "/pricing?checkout=unavailable";
