@@ -1,0 +1,52 @@
+[
+  {
+    "file": "unit-final-source.log",
+    "sha256": "576b9469659fded5a1e6bc3f2621891aaa889421a0679fcdc7bb8df9a42f9ae1",
+    "bytes": 95735
+  },
+  {
+    "file": "lint-final.log",
+    "sha256": "0acba3eff2bf231cc9103bd63db6b80c18a259fbd8b19616a7f1f93f29718836",
+    "bytes": 1876
+  },
+  {
+    "file": "typecheck-final.log",
+    "sha256": "02cab144c5429988bba8590032c9415255e01720d77097dc52764339c63070b3",
+    "bytes": 184
+  },
+  {
+    "file": "secrets-final.log",
+    "sha256": "24c664b0ba452cfbc0e6bc8325ddad3628b40bba9dd678ad88387bb318cb05f1",
+    "bytes": 253
+  },
+  {
+    "file": "ops-final.log",
+    "sha256": "4e2ef54872d0a222db70bc664c019cc04d843a11b43a2c7a94812abff1b8f536",
+    "bytes": 273
+  },
+  {
+    "file": "demo-static-final.log",
+    "sha256": "8dce865b164bef48151305a369db33c4212d685bd8c9af2daedb4b6d2d4bf714",
+    "bytes": 392
+  },
+  {
+    "file": "render-final-source.log",
+    "sha256": "7ce6ca40ea3dfe6cf44ef82ee76a38c4d1d0ab23f1339665cf355c124cca4d86",
+    "bytes": 644
+  },
+  {
+    "file": "simulation-final-source.log",
+    "sha256": "e5318cbda83e9abe24d6f2b74b2346d414dcd1b84d41ccf192c4aae88b1a34f3",
+    "bytes": 1162
+  },
+  {
+    "file": "sites-build-final-source.log",
+    "sha256": "f640256d9982d3149cd1356ed8db3895d252ad7b94aa4dbefb1a55b8d7c55723",
+    "bytes": 5516
+  },
+  {
+    "file": "artifact-final-source.log",
+    "sha256": "cd423c2bca46db5d0badcbedaf4c5e637d6631ec90000f75b25ecf2a44840b8d",
+    "bytes": 388
+  }
+]
