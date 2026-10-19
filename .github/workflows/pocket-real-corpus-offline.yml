@@ -1,0 +1,40 @@
+name: Monaco original-market corpus OFFLINE QA
+
+on:
+  push:
+    branches:
+      - qa/monaco-real-corpus-adapter-20261019
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: "true"
+      POCKET_REAL_BENCHMARK_DISPATCH: "false"
+      POCKET_BENCHMARK_PILOT_ENABLED: "false"
+    steps:
+      - name: Checkout exact pushed isolated branch SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.19.0"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Real-market fixture and scoring safety tests (no external charts)
+        run: node --import tsx --test tests/pocket-real-benchmark-fixture.test.ts
+      - name: Verify production typecheck
+        run: npm run typecheck
+      - name: Verify no committed secrets
+        run: npm run security:scan
+      - name: Verify no billed requests dispatched
+        run: echo "No live provider calls or payment endpoints exist in this workflow. Six genuine scanner measurements remain UNMEASURED."
