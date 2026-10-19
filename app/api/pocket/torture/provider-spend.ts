@@ -1,3 +1,4 @@
+import { verifyPocketBenchmarkRuntime } from "./runtime-metadata.mjs";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash } from "node:crypto";
 import { type SpendLedgerRpc } from "./spend-ledger.ts";
@@ -47,6 +48,7 @@ type Scope = {
 };
 export type BenchmarkRun<T> = {
   value: T;
+  budgetAccounting?: { accounted: boolean; financiallySettled: false; reservedMicroUsd: number | null };
   reconciliation: { reconciled: boolean; capExceeded: boolean; committedMicroUsd: number | null };
 };
 const scopes = new AsyncLocalStorage<Scope>();
@@ -256,6 +258,14 @@ export async function withPocketTestSpendScope<T>(caseId: string, run: () => Pro
   const { bounds, plan } = parsePocketBenchmarkConfiguration();
   const { createAdminClient } = await import("../../../../utils/supabase/admin.ts");
   const client = createAdminClient();
+  const mode = process.env.POCKET_BENCHMARK_ACCOUNTING_MODE;
+  if (mode && mode !== "full-reservation-v2") throw new Error("Unknown benchmark accounting mode.");
+  const reservedMode = mode === "full-reservation-v2";
+  if (reservedMode) {
+    const evidence = await verifyPocketBenchmarkRuntime();
+    const binding = await invoke(client, "assert_pocket_benchmark_runtime_binding", { p_ledger_key: ledgerKey, p_evidence: evidence });
+    if (binding.binding_matches !== true) throw new Error("Verified benchmark runtime binding required.");
+  }
   const claim = await invoke(client, "claim_pocket_benchmark_case", {
     p_ledger_key: ledgerKey, p_case_id: caseId, p_project_ref: projectRef,
     p_owner_approval_ref: ownerApprovalRef, p_candidate_sha: candidateSha, p_plan: Object.values(plan),
@@ -266,10 +276,15 @@ export async function withPocketTestSpendScope<T>(caseId: string, run: () => Pro
   for (const slot of ["main", "primary_precision", "rescue_precision"] as const) {
     if (!scope.dispatched.has(slot)) await invoke(client, "void_pocket_benchmark_call", { p_ledger_key: ledgerKey, p_case_id: caseId, p_slot: slot, p_reason: "not required by completed conditional path" });
   }
+  const budget = reservedMode ? await invoke(client, "account_pocket_benchmark_reserved_case", { p_ledger_key: ledgerKey, p_case_id: caseId }) : null;
+  if (reservedMode && (budget?.accounted !== true || budget?.financially_settled !== false || budget?.actual_microusd !== null))
+    throw new Error("Reserved accounting cannot imply independent dollar settlement.");
   const postflight = await invoke(client, "assert_pocket_benchmark_case_reconciled", { p_ledger_key: ledgerKey, p_case_id: caseId });
   if (postflight.cap_exceeded === true) throw new Error("Benchmark case exceeds the pilot cap; scoring is vetoed.");
   return {
     value: result,
+    ...(budget ? { budgetAccounting: { accounted: budget.accounted === true, financiallySettled: false as const,
+      reservedMicroUsd: typeof budget.reserved_microusd === "number" ? budget.reserved_microusd : null } } : {}),
     reconciliation: {
       reconciled: postflight.reconciled === true,
       capExceeded: postflight.cap_exceeded === true,
@@ -332,4 +347,15 @@ export async function dispatchPocketAnalysisProviderCall<T extends ProviderRecei
   });
   if (receipt.ok !== true || receipt.status !== "submitted") throw new Error("Provider receipt persistence failed; charge remains unresolved.");
   return response;
+}
+
+
+/** Provisional receipt-backed evidence. Never represents independently billed settlement. */
+export async function readPocketReservedBenchmarkMeasurement(caseId: string) {
+  if (isBenchmarkPilotSpendHeld() || process.env.POCKET_BENCHMARK_ACCOUNTING_MODE !== "full-reservation-v2")
+    throw new Error("Reserved benchmark remains disabled.");
+  const client = await benchmarkAdmin();
+  return invoke(client, "read_pocket_benchmark_reserved_measurement", {
+    p_ledger_key: required("POCKET_BENCHMARK_LEDGER_KEY"), p_case_id: caseId,
+  });
 }

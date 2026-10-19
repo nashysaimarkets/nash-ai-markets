@@ -1,0 +1,69 @@
+name: Monaco reserved accounting isolated QA
+on:
+  push:
+    branches: [monaco-reserved-accounting-20261019]
+permissions:
+  contents: read
+jobs:
+  financial-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      POCKET_BENCHMARK_PILOT_ENABLED: 'false'
+      POCKET_REAL_BENCHMARK_DISPATCH: 'false'
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: 'false'
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+      - name: New runtime metadata regression tests only (no network)
+        run: node --test tests/pocket-runtime-metadata.test.mjs
+      - name: Install existing locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck changed server integration
+        run: npm run typecheck
+      - name: Verify no committed credentials
+        run: npm run security:scan
+      - name: Disposable PG17 schema and v2 tests
+        env:
+          QA_PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          create schema private;
+          create schema extensions;
+          create extension pgcrypto with schema extensions;
+          SQL
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261014113000_pocket_benchmark_pilot.sql > /tmp/monaco-schema.log
+          { echo 'begin; set local statement_timeout=45000;'; cat tests/sql/pocket-reserved-accounting-v2.sql; echo 'rollback;'; } | docker exec -i "$QA_PG_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 > /tmp/monaco-sql-tests.log
+          tail -n 6 /tmp/monaco-sql-tests.log
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -At -v ON_ERROR_STOP=1 <<'SQL'
+          do $$ begin assert (select count(*) from private.pocket_benchmark_pilot_ledgers)=0, 'QA rows persisted'; end; $$;
+          SQL
+      - name: Independent concurrent PostgreSQL sessions
+        env:
+          QA_PG_CONTAINER: ${{ job.services.postgres.id }}
+          POCKET_QA_DISPOSABLE_DATABASE: 'true'
+        run: |
+          export POCKET_QA_PSQL_COMMAND="[\"docker\",\"exec\",\"-i\",\"$QA_PG_CONTAINER\",\"psql\",\"-U\",\"postgres\",\"-v\",\"ON_ERROR_STOP=1\",\"-At\"]"
+          python3 tests/run-pocket-reserved-concurrency.py
+      - name: No billed requests
+        run: echo 'Only synthetic metadata fixtures and disposable PostgreSQL were used; live benchmark remains disabled.'
