@@ -122,3 +122,35 @@ export function parseIgDemoPositionSummaries(raw: unknown): readonly IgDemoPosit
   });
   return Object.freeze(result);
 }
+
+/**
+ * Narrow /markets/{epic} v3 specification. No bid, offer, names, quotes or
+ * conversion/risk calculation. Caller must have data rights before fetching.
+ * Keep decimal source strings and pip meaning rather than invent a cash value.
+ */
+export function parseIgDemoMarketSpecification(raw: unknown, requestedEpic: string) {
+  const root = record(raw);
+  const instrument = record(root.instrument);
+  const snapshot = record(root.snapshot);
+  const epic = identifier(instrument.epic);
+  if (epic !== requestedEpic) return contractError();
+  const type = instrument.type;
+  if (type !== "INDICES" && type !== "CURRENCIES" && type !== "COMMODITIES") return contractError();
+  const unit = instrument.unit;
+  if (unit !== "AMOUNT" && unit !== "CONTRACTS" && unit !== "SHARES") return contractError();
+  const decimal = (value: unknown): string => {
+    if (typeof value !== "string" || !/^\d{1,15}(\.\d{1,12})?$/.test(value) || !Number.isFinite(Number(value)) || Number(value) <= 0) return contractError();
+    return value;
+  };
+  const contractSize = decimal(instrument.contractSize);
+  const valueOfOnePip = decimal(instrument.valueOfOnePip);
+  const lotSize = finiteNumber(instrument.lotSize);
+  const scalingFactor = finiteNumber(snapshot.scalingFactor);
+  const onePipMeans = instrument.onePipMeans;
+  if (lotSize <= 0 || scalingFactor <= 0 || typeof onePipMeans !== "string" || !onePipMeans || onePipMeans.length > 96 || /[\x00-\x1f\x7f]/.test(onePipMeans)) return contractError();
+  if (!Array.isArray(instrument.currencies) || instrument.currencies.length < 1 || instrument.currencies.length > 20) return contractError();
+  const currencies = instrument.currencies.map((entry) => currencyCode(record(entry).code));
+  if (new Set(currencies).size !== currencies.length) return contractError();
+  return Object.freeze({ epic, type, unit, contractSize, valueOfOnePip, onePipMeans, lotSize, scalingFactor, currencies: Object.freeze(currencies) });
+}
+
