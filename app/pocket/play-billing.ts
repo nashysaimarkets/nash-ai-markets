@@ -1,4 +1,5 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
+import { blockedNativeAccess } from "./native-subscription-policy";
 
 export const GOOGLE_MONTHLY_PRODUCT_ID = "pocket_bullseye_monthly";
 
@@ -29,20 +30,19 @@ export function isGoogleNativeApp() {
 
 export async function getPlayAccessStatus(): Promise<PlayAccessStatus> {
   if (!isGoogleNativeApp()) throw new Error("Google Play Billing is available only in the Android app.");
-  return NativePlayBilling.getStatus({ productId: GOOGLE_MONTHLY_PRODUCT_ID });
+  return blockedNativeAccess(await NativePlayBilling.getStatus({ productId: GOOGLE_MONTHLY_PRODUCT_ID }), "google");
 }
 
 export async function purchasePlaySubscription(): Promise<PlayAccessStatus> {
-  if (!isGoogleNativeApp()) throw new Error("Google Play Billing is available only in the Android app.");
-  return NativePlayBilling.purchase({ productId: GOOGLE_MONTHLY_PRODUCT_ID });
+  throw new Error("Google Play purchases are unavailable until Pocket can verify current-account ownership. Restore an existing purchase or contact support before purchasing again.");
 }
 
 export async function restorePlaySubscription(): Promise<PlayAccessStatus> {
   if (!isGoogleNativeApp()) throw new Error("Google Play Billing is available only in the Android app.");
-  return NativePlayBilling.restore({ productId: GOOGLE_MONTHLY_PRODUCT_ID });
+  return blockedNativeAccess(await NativePlayBilling.restore({ productId: GOOGLE_MONTHLY_PRODUCT_ID }), "google");
 }
 
 export async function consumePlayFreeUse(): Promise<void> {
-  if (!isGoogleNativeApp()) return;
-  await NativePlayBilling.consumeFreeUse();
+  // First-free remains OFF. Device preferences cannot authorize or reset use.
 }
+

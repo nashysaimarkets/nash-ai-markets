@@ -68,15 +68,8 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
 
     @PluginMethod
     public void purchase(PluginCall call) {
-        String productId = productId(call);
-        synchronized (this) {
-            if (activePurchaseCall != null) {
-                call.reject("Another Google Play purchase is already in progress.");
-                return;
-            }
-            activePurchaseCall = call;
-        }
-        withBillingReady(call, () -> queryExistingBeforePurchase(call, productId));
+        // No native bypass of the server-verification HOLD or hidden JS offer.
+        call.reject("Google Play purchases are unavailable until Pocket can verify current-account ownership. Restore an existing purchase or contact support before purchasing again.");
     }
 
     @PluginMethod
@@ -184,10 +177,8 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
                 }
                 Purchase active = activePurchase(purchases, productId);
                 Purchase pending = pendingPurchase(purchases, productId);
-                if (active != null && !active.isAcknowledged()) {
-                    acknowledgeAndResolve(call, productId, productDetails, active);
-                    return;
-                }
+                // Recovery queries must not acknowledge purchases before a
+                // server has verified current-account ownership.
                 call.resolve(status(productId, productDetails, active != null ? active : pending, active != null, pending != null));
             });
         });
@@ -248,14 +239,14 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
     private JSObject status(String productId, ProductDetails details, Purchase purchase, boolean entitled, boolean pending) {
         JSObject result = new JSObject();
         result.put("isNative", true);
-        result.put("entitled", entitled);
-        result.put("freeUseConsumed", preferences.getBoolean(FREE_USE_KEY, false));
+        result.put("entitled", false);
+        result.put("serverVerificationRequired", true);
+        result.put("purchaseFound", purchase != null && isActivePurchase(purchase, productId));
+        result.put("freeUseConsumed", true);
         result.put("productId", productId);
         result.put("displayName", details == null ? DEFAULT_DISPLAY_NAME : details.getName());
         result.put("displayPrice", displayPrice(details));
         result.put("pending", pending);
-        if (purchase != null) result.put("purchaseToken", purchase.getPurchaseToken());
-        if (purchase != null && purchase.getOrderId() != null) result.put("orderId", purchase.getOrderId());
         return result;
     }
 
@@ -343,8 +334,8 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
     }
 
     private String playError(String prefix, BillingResult result) {
-        String detail = result == null ? "unknown response" : result.getDebugMessage();
-        return detail == null || detail.isBlank() ? prefix + "." : prefix + ": " + detail;
+        // Provider debug details may contain account/token data; keep UI opaque.
+        return prefix + ".";
     }
 
     private void resolvePurchase(PluginCall call, JSObject result) {
@@ -367,21 +358,7 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
     @Override
     protected void handleOnResume() {
         super.handleOnResume();
-        if (billingClient == null) return;
-        if (!billingClient.isReady()) return;
-        QueryPurchasesParams params = QueryPurchasesParams.newBuilder()
-            .setProductType(BillingClient.ProductType.SUBS)
-            .build();
-        billingClient.queryPurchasesAsync(params, (result, purchases) -> {
-            if (!isOk(result)) return;
-            Purchase active = activePurchase(purchases, DEFAULT_PRODUCT_ID);
-            if (active != null && !active.isAcknowledged()) {
-                AcknowledgePurchaseParams acknowledge = AcknowledgePurchaseParams.newBuilder()
-                    .setPurchaseToken(active.getPurchaseToken())
-                    .build();
-                billingClient.acknowledgePurchase(acknowledge, ignored -> {});
-            }
-        });
+        // No automatic store request or acknowledgement while HOLD is active.
     }
 
     @Override
@@ -391,3 +368,4 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
         super.handleOnDestroy();
     }
 }
+
