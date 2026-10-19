@@ -119,11 +119,15 @@ async function saveSubscription(
   if (plan === "pocket") {
     const fallbackId = applicationUserId(fallbackAppUserId);
     const metadataId = applicationUserId(subscription.metadata?.supabase_user_id);
+    if ((fallbackAppUserId != null && !fallbackId) || (subscription.metadata?.supabase_user_id != null && !metadataId)) throw new Error("Invalid subscription application identity");
     if (fallbackId && metadataId && fallbackId !== metadataId) throw new Error("Subscription application identity mismatch");
     const appUserId = fallbackId ?? metadataId;
-    if (!email || !appUserId || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
+    if (!email || offerings.length !== 1 || !validPocketFoundingPrice(offerings[0].item.price)) throw new Error("Cannot safely map Pocket founding subscription");
     const { error } = await createAdminClient().rpc("sync_pocket_web_subscription", {
-      p_app_user_id: appUserId,
+      // The compatibility overload can renew an audited existing exact
+      // subscription/customer binding. Without one it stores no UUID and grants
+      // no scanner access; an email never becomes an application identity.
+      ...(appUserId ? { p_app_user_id: appUserId } : {}),
       p_email: email,
       p_stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id,
       p_stripe_subscription_id: subscription.id,

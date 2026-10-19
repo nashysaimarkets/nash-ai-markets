@@ -1,0 +1,52 @@
+name: Monaco core offline QA
+
+on:
+  push:
+    branches: [monaco-master-126-20261019-b02d5dd]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monaco-core-offline-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: "true"
+      NEXT_TELEMETRY_DISABLED: "1"
+      GIT_COMMIT_SHA: ${{ github.sha }}
+      NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_ci_placeholder"
+      POCKET_BENCHMARK_PILOT_ENABLED: "false"
+      POCKET_REAL_BENCHMARK_DISPATCH: "false"
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.19.0"
+          cache: npm
+      - name: Install locked application dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check the packaged no-request demo and unpublished store copy
+        run: node --test docs/monaco-126/product-demo.test.mjs
+      - name: Install isolated PostgreSQL test engine outside the checkout
+        run: npm install --prefix "$RUNNER_TEMP/monaco-identity-qa" --no-audit --no-fund --save-exact @electric-sql/pglite@0.5.10
+      - name: Reproduce historical function defect then verify additive guard
+        run: |
+          export POCKET_QA_PGLITE_MODULE="$RUNNER_TEMP/monaco-identity-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node tests/run-pocket-identity-regression.mjs "$GITHUB_WORKSPACE"
+          node tests/run-pocket-identity-regression.mjs "$GITHUB_WORKSPACE" supabase/migrations/20261019190646_preserve_pocket_subscription_identity.sql --expect-rejected
+      - name: Build the native Node runtime with exact source identity
+        run: npx next build --webpack
+      - name: Verify isolated production Sharp and libvips trace
+        run: node scripts/verify-sharp-trace.mjs
+      - name: State evidence boundary
+        run: echo 'Offline source and packaging only; no hosted database, credentials, provider, StoreKit, device or release acceptance.'

@@ -14,6 +14,8 @@ const STAGING_ORIGINS = new Set([
   "https://nash-ai-markets-bullseye-staging.nashysinners.chatgpt.site",
 ]);
 
+const POCKET_ORIGIN = "https://pocket.nashaimarkets.com";
+
 const STAGING_SUPABASE_PROJECT = "pxlqvaddvghjjhenqmdh";
 
 /** Unique and git preview hosts for the nash-ai-markets Vercel project. */
@@ -23,6 +25,7 @@ const VERCEL_PREVIEW_ORIGIN =
 const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
 const ALLOWED_NEXT_PREFIXES = [
+  "/pocket",
   "/dashboard",
   "/terminal",
   "/brief",
@@ -58,7 +61,7 @@ export function isVercelPreviewOrigin(origin: string): boolean {
 export function isAllowedAuthOrigin(origin: string): boolean {
   const normalized = normalizeHttpOrigin(origin);
   if (!normalized) return false;
-  if (PRODUCTION_ORIGINS.has(normalized)) return true;
+  if (PRODUCTION_ORIGINS.has(normalized) || normalized === POCKET_ORIGIN) return true;
   if (STAGING_ORIGINS.has(normalized)) return true;
   if (LOCAL_ORIGIN.test(normalized)) return true;
   if (VERCEL_PREVIEW_ORIGIN.test(normalized)) return true;
@@ -119,12 +122,11 @@ export function resolveAuthRequestOrigin(request: Request): string {
 /**
  * Default landing after auth is the member Dashboard.
  * Callers may still pass an explicit allowlisted `next` (including /terminal).
- * Origin is accepted for call-site clarity; it does not change the default path,
- * and never rewrites production ↔ preview hosts.
+ * The dedicated Pocket host returns to its scanner; other hosts retain Dashboard.
+ * This never rewrites production ↔ preview hosts.
  */
 export function defaultPostAuthPath(origin?: string): string {
-  void origin;
-  return "/dashboard";
+  return normalizeHttpOrigin(origin ?? "") === POCKET_ORIGIN ? "/pocket" : "/dashboard";
 }
 
 /**

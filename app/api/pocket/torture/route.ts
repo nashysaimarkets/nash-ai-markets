@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 import { POST as analyse } from "../analyse/route";
 import { isBenchmarkPilotSpendHeld } from "./spending-hold";
 import { recordPocketBenchmarkMeasurement, releasePocketBenchmarkMeasurement, withPocketTestSpendScope } from "./provider-spend";
@@ -12,6 +11,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 async function makePrecisionCrop(image: Buffer) {
+  const sharp = (await import("sharp")).default;
   const spec = syntheticPrecisionCropSpec(900, 600);
   return sharp(image).extract({ left: spec.left, top: spec.top, width: spec.width, height: spec.height })
     .resize(spec.targetWidth, spec.targetHeight, { fit: "fill" }).jpeg({ quality: 92 }).toBuffer();
@@ -41,6 +41,7 @@ export async function GET(request:Request){
   if(requested && selected.length===0) return NextResponse.json({error:"Unknown torture case."},{status:400});
   // Exercise the deployed native package without invoking a paid AI provider.
   if(params.get("raster")==="1") {
+    const sharp = (await import("sharp")).default;
     const images=[];
     for(const sample of selected) {
       const image=await sharp(Buffer.from(syntheticSvg(sample))).png().toBuffer();
@@ -74,6 +75,7 @@ export async function GET(request:Request){
       return NextResponse.json({error:error instanceof Error ? error.message : String(error),caseId:requested,scored:false},{status:409});
     }
   }
+  const sharp = (await import("sharp")).default;
   const metrics:Record<"levels"|"patterns"|"liquidity",Counts>={levels:{tp:0,fp:0,fn:0},patterns:{tp:0,fp:0,fn:0},liquidity:{tp:0,fp:0,fn:0}};
   const failures:string[]=[]; const observations:unknown[]=[];
   const measuredCaseIds: string[] = [];

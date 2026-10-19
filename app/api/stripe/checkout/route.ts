@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     const verifiedEmail = user?.email?.trim().toLowerCase() || undefined;
     if (selected.offering.plan === "pocket" && (!user?.id || !verifiedEmail || !user.email_confirmed_at || user.is_anonymous)) {
-      return NextResponse.redirect(new URL("/login?next=/pocket/founding", origin), 303);
+      return NextResponse.redirect(new URL("/pocket/login?next=/pocket/founding", origin), 303);
     }
     let pocketCustomer: string | null = null;
     if (selected.offering.plan === "pocket") {
@@ -71,6 +71,9 @@ export async function POST(request: Request) {
         throw new Error("Pocket customer identity lookup unavailable");
       }
       pocketCustomer = data;
+      const { data: active, error: accessError } = await createAdminClient().rpc("has_pocket_web_subscription", { p_user_id: user!.id });
+      if (accessError || typeof active !== "boolean") throw new Error("Pocket subscription lookup unavailable");
+      if (active) return NextResponse.redirect(new URL("/pocket?subscription=active", origin), 303);
     }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

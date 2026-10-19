@@ -137,6 +137,14 @@ the private ledger is independently enabled, and the exact candidate matches.
 - `POCKET_BENCHMARK_CANDIDATE_SHA`: full 40-character candidate commit.
 - `POCKET_BENCHMARK_MODEL_COST_BOUNDS`: JSON keyed by exact model. Every entry pins `serviceTier=default`, maximum output, text characters, complete response-format bytes, decoded image count/bytes/width/height/pixels, worst-case micro-USD and pricing-evidence reference.
 - `POCKET_BENCHMARK_CALL_PLAN`: exactly three deterministic slots—`main`, `primary_precision`, `rescue_precision`—each pinning model/tier, output, text, complete response format, decoded image count/bytes/width/height/pixels, worst-case micro-USD and evidence reference. This supports distinct main/precision bounds even when both use the same model. The complete worst-case total is reserved before dispatch.
+- `POCKET_BENCHMARK_ACCOUNTING_MODE`: the reviewed isolated configuration pins `full-reservation-v2`. Any other nonempty value is rejected; an absent value retains the historical accounting path and is not authorisation for a benchmark. Full reservations remain distinct from independently evidenced actual settlement.
+- `POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED`: metadata-only verifier opt-in; exactly `true` permits fixed-origin GET checks using the existing authorised isolated executor. This flag does not enable inference, configure a ledger or attest live Sites.
+- `OPENAI_ADMIN_KEY`: existing server-only read-only administrator metadata credential required by the reviewed schema1 verifier; never supplied to a client, printed, exported or created for a probe.
+- `OPENAI_ORG_ID` and `OPENAI_PROJECT_ID`: when supplied to the isolated verifier, must match its reviewed intended organisation and project. A project setting is not proof of the process's actual key identity.
+- `OPENAI_BASE_URL`: alternate origins are rejected by the isolated runtime verifier.
+- `POCKET_REAL_BENCHMARK_DISPATCH`: separate real-image runner gate; left false until the exact source, corpus, financial and runtime gates are accepted. Metadata-only verification forces it false.
+
+The existing wrapper pins historical implementation `93f3fe282c6cab0196812aec989dddaa915bb986`; do not label a newer checkout with that SHA. An isolated executor and concealed live Sites runtime have separate identity acceptance. See `docs/monaco-126/runtime-separation-independent-review.md`.
 
 Named cases cannot be reclaimed, concurrent retransmits cannot dispatch the
 same slot twice, the private ledger allowlists no more than six exact case IDs,

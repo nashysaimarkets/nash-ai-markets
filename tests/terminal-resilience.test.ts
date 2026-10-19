@@ -71,7 +71,7 @@ test("login and callback paths sanitize errors and redirect destinations", async
   const [login, browserClient, callback, confirmation, implicit] = await Promise.all([
     readFile(new URL("../app/login/StagingLoginForm.tsx", import.meta.url), "utf8"),
     readFile(new URL("../utils/supabase/client.ts", import.meta.url), "utf8"),
-    readFile(new URL("../app/auth/callback/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/callback/AuthCallbackClient.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/confirm/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/implicit/page.tsx", import.meta.url), "utf8"),
   ]);

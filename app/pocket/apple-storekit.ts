@@ -4,6 +4,7 @@ import type { PluginListenerHandle } from "@capacitor/core";
 
 export const APPLE_MONTHLY_PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly";
 export type AppleAccessStatus = { isNative: boolean; entitled: boolean; freeUseConsumed: boolean; productId: string; displayName: string; displayPrice: string; productAvailable?: boolean; signedTransactionInfo?: string };
+export type AppleAccessVerificationPhase = "VERIFYING" | "VERIFIED" | "ERROR";
 type NativePlugin = {
   getStatus(options: { productId: string }): Promise<AppleAccessStatus>;
   purchase(options: { productId: string; appAccountToken: string }): Promise<AppleAccessStatus>;
@@ -46,17 +47,19 @@ export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
 
 /** Pending/out-of-app purchases arrive through StoreKit updates. Local events
  * immediately clear UI access, then independently refresh server verification. */
-export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccessStatus) => void): Promise<PluginListenerHandle> {
+export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccessStatus, verification?: AppleAccessVerificationPhase) => void): Promise<PluginListenerHandle> {
   let revision = 0;
   let active = true;
   if (!isAppleNativeApp()) return { remove: async () => { active = false; } };
   const listener = await native.addListener("accessChanged", status => {
     const current = ++revision;
     if (!active) return;
-    onStatus({ ...status, entitled: false });
+    onStatus({ ...status, entitled: false }, "VERIFYING");
     void verifyStatus(status).then(verified => {
-      if (active && current === revision) onStatus(verified);
-    }).catch(() => { /* The cleared status remains fail-closed on outages. */ });
+      if (active && current === revision) onStatus(verified, "VERIFIED");
+    }).catch(() => {
+      if (active && current === revision) onStatus({ ...status, entitled: false }, "ERROR");
+    });
   });
   return { remove: async () => { active = false; revision++; await listener.remove(); } };
 }

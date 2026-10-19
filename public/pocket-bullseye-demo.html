@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Pocket Bullseye — synthetic evidence example</title>
+  <style>
+    :root{color-scheme:dark;--bg:#101820;--panel:#18232d;--line:#344453;--text:#f4f1e9;--muted:#b7c4cf;--gold:#cabb97;--orange:#ffc078;--green:#80d6b2;--red:#ffb0ab}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:1200px;margin:auto;padding:24px}header{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{font-family:Georgia,serif;letter-spacing:.02em;font-size:24px}.tagline{color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}h1{font-family:Georgia,serif;font-weight:400;font-size:clamp(31px,5vw,51px);line-height:1.12;margin:30px 0 14px}h2{font-size:18px;margin:0 0 16px}h3{font-size:15px;margin:0 0 6px}p{margin:0 0 16px}.lead{color:var(--muted);max-width:760px;font-size:18px}.badge{display:inline-block;border:1px solid var(--gold);color:var(--gold);border-radius:5px;padding:5px 8px;font-size:12px;font-weight:700;letter-spacing:.06em}.notice{margin:22px 0;background:#232b30;border-left:3px solid var(--gold);padding:14px 16px;color:var(--muted);font-size:14px}.notice strong{color:var(--text)}.workspace{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px}.panel{min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.small{font-size:13px;color:var(--muted)}fieldset{margin:20px 0 18px;padding:0;border:0}legend{padding:0;margin:0 0 10px;color:var(--muted);font-size:14px}.scenarios{display:flex;gap:8px;flex-wrap:wrap}button{font:inherit;font-size:14px;min-height:44px;padding:10px 14px;border:1px solid #647584;border-radius:8px;background:#1a2731;color:var(--text);cursor:pointer}button:hover{background:#263746}button[aria-pressed="true"]{border-color:var(--gold);background:#3a372e}button:focus-visible,a:focus-visible{outline:3px solid var(--orange);outline-offset:3px}.chart-wrap{background:#111b24;border:1px solid var(--line);border-radius:8px;overflow:hidden}svg{display:block;width:100%;height:auto}.chart-note{padding:10px 12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.checklist{list-style:none;margin:18px 0 0;padding:0}.checklist li{padding:11px 0;border-top:1px solid var(--line);font-size:14px}.checklist strong{display:block;color:var(--text)}.ok{color:var(--green)}.hold{color:var(--orange)}.status{display:inline-block;background:#3a3022;color:var(--orange);padding:6px 10px;font-weight:700;font-size:13px;border-radius:5px}.reason{font-size:21px;font-family:Georgia,serif;line-height:1.3;margin:17px 0 12px}.explanation{color:var(--muted);font-size:14px}.evidence{margin-top:18px;display:grid;gap:12px}.evidence article{padding:13px;border:1px solid var(--line);border-radius:7px}.evidence p{margin:0;font-size:14px;color:var(--muted)}footer{margin:24px 0 0;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.next{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px}.next button{border-color:var(--orange);color:var(--orange)}#review-note{font-size:13px;color:var(--muted);margin:0}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(max-width:740px){main{padding:16px}header{align-items:flex-start}.brand{font-size:21px}.tagline{font-size:10px;max-width:200px;margin-top:4px}.workspace{grid-template-columns:minmax(0,1fr)}.panel{padding:16px}.lead{font-size:16px}.badge{font-size:10px}.scenarios button{flex:1 1 42%;padding:9px 8px}h1{margin-top:25px}.reason{font-size:20px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div><div class="brand">Pocket Bullseye</div><div class="tagline">Intelligence Before Execution.</div></div>
+    <span class="badge">SYNTHETIC DEMO</span>
+  </header>
+  <h1>Your chart.<br>A second opinion.</h1>
+  <p class="lead">Explore visible evidence, conflicting context and reasons to wait. Start with an example, then change what can be confirmed.</p>
+  <div class="notice"><strong>This is a local demonstration, not a scanner result.</strong> All candles, units and explanations below are fabricated examples. It makes no uploads, AI calls, market-data requests or purchases. The example code stores no inputs and sends no analytics.</div>
+  <fieldset>
+    <legend>Choose an example</legend>
+    <div class="scenarios">
+      <button type="button" data-scenario="range" aria-pressed="true">Range</button>
+      <button type="button" data-scenario="conflict" aria-pressed="false">Timeframe conflict</button>
+      <button type="button" data-scenario="axis" aria-pressed="false">Unclear price axis</button>
+      <button type="button" data-scenario="negative" aria-pressed="false">No clean pattern</button>
+    </div>
+  </fieldset>
+  <div class="workspace">
+    <section class="panel" aria-labelledby="chart-heading">
+      <div class="row"><h2 id="chart-heading">Synthetic chart · 30m</h2><span class="small" id="chart-label">Example units, not market prices</span></div>
+      <div class="chart-wrap">
+        <svg id="chart" viewBox="0 0 640 340" role="img" aria-labelledby="chart-title chart-description">
+          <title id="chart-title">Fabricated range chart</title>
+          <desc id="chart-description">Synthetic candles between two illustrative bands. No real instrument or prices.</desc>
+          <g id="chart-grid"></g><g id="chart-zones"></g><g id="chart-candles"></g><g id="chart-axis"></g>
+        </svg>
+        <div class="chart-note">SYNTHETIC · Examples show how limits are explained. They do not demonstrate model accuracy.</div>
+      </div>
+      <div class="evidence" id="evidence"></div>
+    </section>
+    <section class="panel" aria-labelledby="review-heading">
+      <h2 id="review-heading">Evidence review</h2>
+      <div id="result" role="status" aria-live="polite" aria-atomic="true">
+        <span class="status">DEMO HOLD</span>
+        <p class="reason" id="reason">No confirmed break of the illustrated range.</p>
+        <p class="explanation" id="explanation">The example stays between its fabricated levels. A range illustration is not a reason to enter a trade.</p>
+      </div>
+      <ul class="checklist" id="checklist"></ul>
+      <div class="next"><button type="button" id="review-button">I have reviewed this example</button><p id="review-note">No account or scan credit needed.</p></div>
+    </section>
+  </div>
+  <footer>Unpublished example for owner review. Pocket Bullseye does not place trades. A screenshot cannot establish hidden orders or future prices. AI can be wrong; independently verify findings. Trading involves risk of loss.</footer>
+</main>
+<script>
+(() => {
+  'use strict';
+  const scenarios = Object.freeze({
+    range: Object.freeze({
+      name: 'Range', axis: true, zones: true, description: 'Fabricated range chart',
+      reason: 'No confirmed break of the illustrated range.',
+      explanation: 'The example stays between its fabricated levels. A range illustration is not a reason to enter a trade.',
+      context: 'Additional timeframes are not supplied in this example.',
+      source: 'Example units: a lower band at 100 and upper band at 104. These are invented numbers, not a live quote.',
+      pattern: 'Range-like illustration only. No breakout, probability or profit target is asserted.',
+      values: [101.2,102.5,103.5,102.9,101.8,100.8,101.6,102.8,103.3,102.2,101.1,100.7,101.9,102.8,103.4,102.4,101.8,102.1]
+    }),
+    conflict: Object.freeze({
+      name: 'Timeframe conflict', axis: true, zones: true, description: 'Fabricated chart with conflicting higher-timeframe context',
+      reason: 'The illustrated timeframes disagree.',
+      explanation: 'The short-term range does not resolve the hypothetical higher-timeframe downward bias. Context is conflicting, so the example remains on HOLD.',
+      context: 'Fabricated 4h context: downward bias. Fabricated 30m context: sideways. This is predefined, not computed from a second chart.',
+      source: 'The synthetic 30m bands are 100 and 104. Conflicting context is written for the demonstration, not an actual market observation.',
+      pattern: 'A local range does not remove a conflict in context. No majority vote, confidence percentage or entry is produced.',
+      values: [101.2,102.5,103.5,102.9,101.8,100.8,101.6,102.8,103.3,102.2,101.1,100.7,101.9,102.8,103.4,102.4,101.8,102.1]
+    }),
+    axis: Object.freeze({
+      name: 'Unclear price axis', axis: false, zones: false, description: 'Fabricated chart with prices deliberately withheld',
+      reason: 'The price axis cannot be confirmed.',
+      explanation: 'The illustration withholds numerical levels when its price axis is unknown. In a real review, confirm a readable original source before interpreting any precise price.',
+      context: 'Instrument and timeframe labels would also require confirmation on an actual customer upload.',
+      source: 'Numerical price labels and level bands are withheld. Candle shape alone does not establish a usable price scale.',
+      pattern: 'No calibrated level, risk amount, entry or target can be supported by this example.',
+      values: [101.2,102.5,103.5,102.9,101.8,100.8,101.6,102.8,103.3,102.2,101.1,100.7,101.9,102.8,103.4,102.4,101.8,102.1]
+    }),
+    negative: Object.freeze({
+      name: 'No clean pattern', axis: true, zones: false, description: 'Fabricated irregular candles without a labelled pattern',
+      reason: 'No clean pattern is asserted.',
+      explanation: 'These irregular fabricated candles do not receive a forced pattern label. This is a designed negative example, not a measured model true negative.',
+      context: 'No second timeframe, official event feed or volume series is supplied. Missing context is not treated as a clear market.',
+      source: 'Synthetic unit labels are visible, but no independently supported support/resistance zone is declared in this example.',
+      pattern: 'No clean pattern. No volume profile, order-flow assertion or hidden-liquidity claim can be made from these data.',
+      values: [102.1,100.7,103.9,101.8,103.1,100.5,102.9,101.4,103.6,102.3,100.9,103.2,101.5,103.7,100.8,102.4,101.3,102.7]
+    })
+  });
+  const byId = id => document.getElementById(id);
+  const svgNode = (name, attrs, label) => {
+    const node = document.createElementNS('http://www.w3.org/2000/svg', name);
+    for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value));
+    if (label !== undefined) node.textContent = label;
+    return node;
+  };
+  const line = (target, x1, y1, x2, y2, color, dashed = false) => target.appendChild(svgNode('line', {x1,y1,x2,y2,stroke:color,'stroke-width':1,...(dashed ? {'stroke-dasharray':'5 5'} : {})}));
+  const priceToY = price => 290 - (price - 99) * 44;
+  let current = 'range';
+  const draw = scenario => {
+    ['chart-grid','chart-zones','chart-candles','chart-axis'].forEach(id => byId(id).replaceChildren());
+    byId('chart-title').textContent = scenario.description;
+    byId('chart-description').textContent = scenario.axis ? 'Fabricated candles in example units. No real instrument or prices.' : 'Fabricated candle shapes. Numeric labels and zones are withheld because the axis is unconfirmed.';
+    const grid = byId('chart-grid'), zones = byId('chart-zones'), axis = byId('chart-axis');
+    [100,101,102,103,104].forEach(value => {
+      const y = priceToY(value); line(grid,28,y,568,y,'#2d3c49');
+      if (scenario.axis) axis.appendChild(svgNode('text',{x:584,y:y+4,fill:'#b7c4cf','font-size':12}, String(value)));
+    });
+    if (scenario.zones) [100,104].forEach((value,index) => {
+      const y = priceToY(value);
+      zones.appendChild(svgNode('rect',{x:28,y:y-7,width:540,height:14,fill:index?'#ffb0ab':'#80d6b2',opacity:.15}));
+      line(zones,28,y,568,y,index?'#ffb0ab':'#80d6b2',true);
+    });
+    scenario.values.forEach((close,index) => {
+      const open = index === 0 ? close-.35 : scenario.values[index-1];
+      const high = Math.max(open,close)+.22, low = Math.min(open,close)-.22;
+      const x = 43 + index*29.8, color = close >= open ? '#80d6b2' : '#ffb0ab';
+      line(byId('chart-candles'),x,priceToY(high),x,priceToY(low),color);
+      byId('chart-candles').appendChild(svgNode('rect',{x:x-7,y:priceToY(Math.max(open,close)),width:14,height:Math.max(2,Math.abs(close-open)*44),fill:color}));
+    });
+    if (!scenario.axis) axis.appendChild(svgNode('text',{x:585,y:158,fill:'#ffc078','font-size':19},'?'));
+    axis.appendChild(svgNode('text',{x:28,y:320,fill:'#b7c4cf','font-size':12},'FABRICATED CANDLES · NOT A MARKET'));
+  };
+  const addEvidence = (title, detail) => {
+    const article = document.createElement('article'), heading = document.createElement('h3'), paragraph = document.createElement('p');
+    heading.textContent = title; paragraph.textContent = detail;
+    article.append(heading, paragraph); byId('evidence').appendChild(article);
+  };
+  const addCheck = (label, detail, confirmed) => {
+    const item = document.createElement('li'), title = document.createElement('strong'), text = document.createElement('span');
+    title.textContent = label; text.textContent = detail; text.className = confirmed ? 'ok' : 'hold';
+    item.append(title,text); byId('checklist').appendChild(item);
+  };
+  const render = key => {
+    const scenario = scenarios[key]; if (!scenario) return;
+    current = key;
+    document.querySelectorAll('[data-scenario]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.scenario===key)));
+    byId('reason').textContent = scenario.reason; byId('explanation').textContent = scenario.explanation;
+    byId('chart-label').textContent = scenario.axis ? 'Example units, not market prices' : 'Prices withheld · axis unconfirmed';
+    byId('evidence').replaceChildren(); byId('checklist').replaceChildren();
+    addEvidence('Visible source',scenario.source); addEvidence('Context and limits',scenario.context); addEvidence('What is not asserted',scenario.pattern);
+    addCheck('Source','Synthetic demonstration only',false);
+    addCheck('Price axis',scenario.axis ? 'Fabricated example scale is visible' : 'Unconfirmed — numerical output withheld',scenario.axis);
+    addCheck('Chart identity','No real instrument is represented',false);
+    addCheck('Timeframes',key==='conflict' ? 'Conflicting predefined context — HOLD' : 'Supporting chart evidence not supplied',false);
+    addCheck('Event and volume context','Not supplied — no all-clear is inferred',false);
+    byId('review-note').textContent = 'No account or scan credit needed.';
+    byId('review-button').disabled = false;
+    draw(scenario);
+  };
+  document.querySelectorAll('[data-scenario]').forEach(button => button.addEventListener('click',() => render(button.dataset.scenario)));
+  byId('review-button').addEventListener('click',() => {
+    byId('review-note').textContent = `Reviewed: ${scenarios[current].name}. This is a synthetic example, not trading advice. Nothing was stored or sent.`;
+  });
+  render('range');
+})();
+</script>
+</body>
+</html>
