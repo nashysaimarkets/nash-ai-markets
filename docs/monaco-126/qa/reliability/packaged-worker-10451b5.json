@@ -1,0 +1,24 @@
+{
+  "scope": "Actual in-process packaged Worker; no credentials/public runtime/provider; outbound fetch prohibited",
+  "sourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+  "cases": [
+    {
+      "name": "exact packaged build identity",
+      "status": 200,
+      "revision": "10451b5d612b90b3daceda4b1d317a83d74dffad"
+    },
+    {
+      "name": "plaintext localhost lookalike",
+      "status": 403
+    },
+    {
+      "name": "invalid form",
+      "status": 400
+    },
+    {
+      "name": "cancel before dispatch",
+      "status": 409
+    }
+  ],
+  "result": "PASS"
+}
