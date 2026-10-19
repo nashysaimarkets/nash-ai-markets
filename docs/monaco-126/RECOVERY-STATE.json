@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-19T20:36:25.414037Z",
+  "savedAtUtc": "2026-10-19T20:38:34.510186Z",
   "worker": {
     "id": "root-operation-monaco-20261019",
-    "status": "RUNNING",
-    "lastVerifiedActivityAtUtc": "2026-10-19T20:36:25.414037Z",
-    "activeTask": "Publish verified offline recovery proof and obtain exact-head recovery CI"
+    "status": "BLOCKED_EXTERNAL",
+    "lastVerifiedActivityAtUtc": "2026-10-19T20:38:34.510186Z",
+    "activeTask": "Safe source/recovery work completed; await exact external acceptance dependencies"
   },
   "ownership": {
     "branch": "monaco-coordination-126-20261019",
     "writer": "root",
     "leaseId": "issue126-root-coordination-20261019",
     "status": "EXCLUSIVE",
-    "expectedHead": "894678377ca88d9f4854821f860ca19ce9920667",
-    "expectedTree": "b1246a7e7da9f1efb17ae4185a97cc01c005924a",
+    "expectedHead": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+    "expectedTree": "b3630aaaedbe2edcd14bcedb6cf4d56086cc2640",
     "ownedPaths": [
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
@@ -25,13 +25,15 @@
       "vercel.json deploymentEnabled entry for this branch only",
       "docs/monaco-126/qa/recovery-proof.json"
     ],
-    "verificationBasis": "Latest issue126 comments6276395597/6276446527/6276561885; PR130 remote unchanged10451b5; new coordination remote ref404; delegated implementation is disjoint, root sole publisher, all reviewers read-only"
+    "verificationBasis": "Latest issue126 comments6276395597/6276446527/6276561885; PR130 remote unchanged10451b5; new coordination remote ref404; delegated implementation is disjoint, root sole publisher, all reviewers read-only",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/132",
+    "handoff": "Root has saved source; heartbeat/paused automation never conveys this lease to another writer. Reverify current heads and explicit handoff before post-crash writes."
   },
   "checkpoint": {
-    "lastVerifiedRemoteCommit": "894678377ca88d9f4854821f860ca19ce9920667",
-    "lastVerifiedRemoteTree": "b1246a7e7da9f1efb17ae4185a97cc01c005924a",
+    "lastVerifiedRemoteCommit": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+    "lastVerifiedRemoteTree": "b3630aaaedbe2edcd14bcedb6cf4d56086cc2640",
     "branch": "monaco-coordination-126-20261019",
-    "savedAtUtc": "2026-10-19T20:35:25.536217Z",
+    "savedAtUtc": "2026-10-19T20:38:34.510186Z",
     "identityResolution": "Newest immutable issue126 checkpoint externally attests the enclosing coordination commit/tree; self-hash cannot be embedded in this file. Fetch/compare that receipt and branch HEAD."
   },
   "tracks": {
@@ -102,9 +104,15 @@
       "activation": "UNINSTALLED/defaultHOLD; no issuer, provider inventory/cutover, first-customer provisioning or resubscription reconciliation"
     },
     "recovery": {
-      "sourceStatus": "IN_PROGRESS",
-      "externalAcceptance": "UNTESTED actual scheduled delivery/Work relaunch; offline source proof DONE",
-      "owner": "root plus disjoint UI agent offline scripts; reviewers read-only"
+      "sourceStatus": "DONE",
+      "externalAcceptance": "UNTESTED actual scheduled delivery; real Work relaunch unsupported",
+      "owner": "root plus disjoint UI agent offline scripts; reviewers read-only",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/132",
+      "verifiedSourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+      "ciRuns": [
+        39320756480
+      ],
+      "ciStatus": "DONE/SUCCESS; final documentation checkpoint resolves its own enclosing exact-head CI through latest issue receipt"
     },
     "priorEvidence": {
       "pushedCommit": "440a672143efb21997f9c1fb106f1c845208a885",
@@ -257,6 +265,23 @@
         "policy": "af418cd703de15cac24a73dbfe8c56695b6790a5f42adadff93e8a0dc96f6e06",
         "verifier": "e6be83f7b0b9818bec679303298ec8687845369626035590bdb46f58cb753f23"
       }
+    },
+    {
+      "id": "coordination-exact-source-CI",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+      "run": 39320756480,
+      "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39320756480",
+      "coverage": "Node22.19,29 local Git/process/refusal/watchdog checks, proof uploaded; offline only. Subsequent state-doc changes do not change policy/verifier hashes; enclosing commit acceptance resolved from issue receipt."
+    },
+    {
+      "id": "fresh-context-corrected-proof-review",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+      "reviewer": "recovery_reader originally forked without conversation history",
+      "coverage": "Corrected fields/actual--proof CLI, exact HEAD/tree and recomputed policy/verifier hashes match; saved29-case result and source scope independently reviewed; no tests or11green CI repeated"
     }
   ],
   "artifacts": {
@@ -272,35 +297,19 @@
     "deployedPreview": "BLOCKED/UNTESTED; no deployed attestation",
     "identityProofLimit": "Worker revision is configured build metadata, not an independent signed source attestation. Clean source10451b5 build and exact artifact hashes are recorded separately; no deployed source identity is proved."
   },
-  "pendingOperations": [
-    {
-      "id": "PR131-exactCI",
-      "status": "DONE",
-      "sha": "2994b2859ef7bcc22b9ee38a5b966e1806e47994"
-    },
-    {
-      "id": "offline-interrupted-handoff-proof",
-      "status": "DONE"
-    },
-    {
-      "id": "fresh-context-review",
-      "status": "DONE"
-    },
-    {
-      "id": "coordination-exactCI",
-      "status": "IN_PROGRESS"
-    }
-  ],
+  "pendingOperations": [],
   "watchdog": {
     "id": "6ad67a914bf48191b7f2d48d4325bf83",
     "title": "Monaco Crash Recovery",
-    "state": "ENABLED during active work",
+    "state": "PAUSED_BLOCKED_EXTERNAL",
     "schedule": "every2hours",
     "timezone": "Europe/London",
     "automaticWorkRelaunchSupported": false,
     "duplicatesCreated": 0,
     "alertPolicy": "One possible-stall alert per unchanged checkpoint; explicit RUNNING, verified >2h inactivity, no newer tools/CI/worker/handoff; never releases writer lease",
-    "oldStaleQaPaused": "6ad4a1dae13481919d0270149dc9eb69"
+    "oldStaleQaPaused": "6ad4a1dae13481919d0270149dc9eb69",
+    "pauseReason": "All independent known source tasks accepted; remaining release dependencies are external. Reuse and explicitly resume this one on active programme; never create another.",
+    "actualDelivery": "UNTESTED; offline policy proof does not establish real notification delivery/deduplication"
   },
   "approvals": {
     "productionDeploy": false,
@@ -338,15 +347,28 @@
     "IG authorised DEMO/licence acceptance; public brand/legal/privacy/marketing/publication approval"
   ],
   "nextSafeAction": {
-    "id": "coordination-exact-CI",
-    "status": "IN_PROGRESS",
-    "command": "GET https://api.github.com/repos/nashysaimarkets/nash-ai-markets/actions/runs?head_sha=<enclosing checkpoint SHA from latest issue126 receipt>&per_page=10",
+    "id": "read-new-external-or-owner-resumption-receipt",
+    "status": "BLOCKED_EXTERNAL",
+    "command": "GET https://api.github.com/repos/nashysaimarkets/nash-ai-markets/issues/126",
     "tool": "github.fetch",
-    "onFailure": "Inspect only failed job; repair affected recovery source; never infer actual scheduled delivery or true Work relaunch"
+    "when": "One read only on a new owner resumption or a new authenticated external receipt; follow newest checkpoint to current manifest. Do not poll/retest unchanged green work.",
+    "then": "Use returned comments count to fetch the final comments page (per_page3, page=max(1,ceil(comments/3)); include preceding page if necessary), then newest immutable receipt/manifest and current lease. Never mistake the first comments page for the latest. Resolve actual external dependency before any paid/live/credential/production step; no admissible new evidence means remainBLOCKED_EXTERNAL.",
+    "primaryDependency": "Authorised intended-project/key/model secure benchmark executor plus fresh runtime/financial/receipt admission; canonical labels/licence evidence separately incomplete."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
     "coordinationBaseTree": "b7f0e51118e770bb7da544828676bc0d6bbcb0b2",
     "checkoutIntent": "Undeployed proposal only. Future real dispatch requires preserving unresolved ledger; rollback toHOLD, never delete/reset or restore direct Pocketcreate."
+  },
+  "corpusAcceptance": {
+    "originalInputIntegrity": "6/6 PASS; hashes only",
+    "canonicalDeclarations": "3/6; no invented ground truth",
+    "missingPositiveDeclarations": [
+      "bear-flag5m",
+      "wedge15m"
+    ],
+    "negativeSelection": "Independent selection not verified",
+    "rightsAndSecondAnnotations": "UNVERIFIED; owner/licensor/independent annotator evidence required",
+    "genuineProviderCases": "0/6"
   }
 }
