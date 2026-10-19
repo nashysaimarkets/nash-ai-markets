@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "AUTHENTICATED_OWNER_DASHBOARD_ATTESTATION",
+  "observedAt": "2026-10-19T17:24:21Z",
+  "organisationId": "org-5vLRRzXwcigUx96TVE0rI3RW",
+  "organisationName": "Personal",
+  "observer": {
+    "userId": "user-DlYoRdGCCPjv7Bk5iEjduePV",
+    "organisationRole": "Owner"
+  },
+  "project": {
+    "id": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "name": "bullseye private pilot",
+    "status": "active",
+    "defaultServiceTier": "Standard"
+  },
+  "inventory": {
+    "complete": true,
+    "visibleResults": 2,
+    "filters": [],
+    "keys": [
+      {
+        "id": "key_EjND5GXtuqF2K0hp",
+        "name": "pocket bullseye staging",
+        "status": "Active",
+        "redactedValue": "sk-...aBgA",
+        "createdBy": "user-DlYoRdGCCPjv7Bk5iEjduePV",
+        "expiresAt": null,
+        "permissions": "Inherited"
+      },
+      {
+        "id": "key_HTa1GVGxw3MQq2QZ",
+        "name": "bullseye staging chart reader",
+        "status": "Revoked",
+        "redactedValue": "sk-...EQUA",
+        "createdBy": "user-X2fh1JUrkaUCu5RrTDRNvEAP",
+        "expiresAt": null,
+        "permissions": "Inherited"
+      }
+    ]
+  },
+  "sources": [
+    "https://platform.openai.com/settings/organization/general",
+    "https://platform.openai.com/settings/organization/people/members",
+    "https://platform.openai.com/settings/organization/projects",
+    "https://platform.openai.com/settings/proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "https://platform.openai.com/api-keys"
+  ],
+  "assurance": "Human-reviewed dashboard attestation, not a provider-signed export or proof of runtime ownership. Correlation requires a successful scoped model GET by the actual executor credential."
+}
