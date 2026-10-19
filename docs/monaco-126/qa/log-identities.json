@@ -48,5 +48,15 @@
     "file": "artifact-final-source.log",
     "sha256": "cd423c2bca46db5d0badcbedaf4c5e637d6631ec90000f75b25ecf2a44840b8d",
     "bytes": 388
+  },
+  {
+    "file": "sites-build-b5c3aaa.log",
+    "sha256": "6c0f6351dd91ebf1e3c9d1d349066d80cb555244a72ef457545271e186f536d7",
+    "bytes": 5834
+  },
+  {
+    "file": "artifact-b5c3aaa.log",
+    "sha256": "192d1d29bafba6d9c826c1032439ac1d733e21bbfe22079506fc4335611ffb26",
+    "bytes": 388
   }
 ]
