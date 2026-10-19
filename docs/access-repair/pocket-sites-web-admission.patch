@@ -1,0 +1,282 @@
+diff --git a/app/api/pocket/analyse/route.ts b/app/api/pocket/analyse/route.ts
+index e46c1b4..e2640d1 100644
+--- a/app/api/pocket/analyse/route.ts
++++ b/app/api/pocket/analyse/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { createReportTransport, reportTransportInstruction } from "../report-transport";
+ import { capacityRetrySeconds, noteCapacityExhausted, POCKET_CAPACITY_MESSAGE } from "../../../lib/server/pocket-provider-capacity";
+ import { precisionReceiptKey, readPrecisionReceipt, signPrecisionReceipt } from "../precision-receipt";
+@@ -273,6 +274,8 @@ const precisionOverlaySchema = {
+ } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   const crossOrigin = rejectCrossOrigin(request);
+   if (crossOrigin) return crossOrigin;
+   const routeStartedAt = Date.now();
+diff --git a/app/api/pocket/crypto-pressure/route.ts b/app/api/pocket/crypto-pressure/route.ts
+index c861970..d7878e5 100644
+--- a/app/api/pocket/crypto-pressure/route.ts
++++ b/app/api/pocket/crypto-pressure/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { NextResponse } from "next/server";
+ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+ import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+@@ -16,6 +17,8 @@ const schema = { type: "object", additionalProperties: false, properties: {
+ }, required: ["pair", "timeframe", "readable", "limitation", "fundingRatePct", "openInterestChangePct", "longShortRatio", "longLiquidations", "shortLiquidations", "clusters"] } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   let image: unknown, instrument: unknown, levels: unknown, chartDirection: unknown;
+   try { ({ image, instrument, levels, chartDirection } = await request.json()); }
+   catch { return NextResponse.json({ error: "Invalid derivatives screenshot." }, { status: 400 }); }
+diff --git a/app/api/pocket/follow-up/route.ts b/app/api/pocket/follow-up/route.ts
+index 3202959..a248eb0 100644
+--- a/app/api/pocket/follow-up/route.ts
++++ b/app/api/pocket/follow-up/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { NextResponse } from "next/server";
+ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+ import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
+@@ -23,6 +24,8 @@ const schema = {
+ } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   const crossOrigin = rejectCrossOrigin(request);
+   if (crossOrigin) return crossOrigin;
+   let question = "";
+diff --git a/app/api/pocket/levels/route.ts b/app/api/pocket/levels/route.ts
+index 85d41e9..0a18d80 100644
+--- a/app/api/pocket/levels/route.ts
++++ b/app/api/pocket/levels/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { NextResponse } from "next/server";
+ import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+ import { readBoundedJsonBody, RequestBodyTooLargeError } from "../../../lib/server/bounded-json-body";
+@@ -74,6 +75,8 @@ const schema = {
+ } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   const startedAt = Date.now();
+   const requestId = correlationId(request);
+   const crossOrigin = rejectCrossOrigin(request);
+diff --git a/app/api/pocket/liquidity/route.ts b/app/api/pocket/liquidity/route.ts
+index 4e17790..8618688 100644
+--- a/app/api/pocket/liquidity/route.ts
++++ b/app/api/pocket/liquidity/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { createHash } from "node:crypto";
+ import { NextResponse } from "next/server";
+ import { canonicalizePocketGeometry } from "../../../lib/pocket-geometry";
+@@ -99,6 +100,8 @@ function compatibleTimeframe(expected: string, returned: unknown) {
+ }
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   const startedAt = Date.now();
+   const crossOrigin = rejectCrossOrigin(request);
+   if (crossOrigin) return crossOrigin;
+diff --git a/app/api/pocket/options-wall/route.ts b/app/api/pocket/options-wall/route.ts
+index 029242f..a9643cd 100644
+--- a/app/api/pocket/options-wall/route.ts
++++ b/app/api/pocket/options-wall/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { NextResponse } from "next/server";
+ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+ import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
+@@ -17,6 +18,8 @@ const schema = {
+ } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   let image: unknown, ticker: unknown, levels: unknown;
+   try { ({ image, ticker, levels } = await request.json()); }
+   catch { return NextResponse.json({ error: "Invalid options profile upload." }, { status: 400 }); }
+diff --git a/app/api/pocket/preflight/route.ts b/app/api/pocket/preflight/route.ts
+index 2837ea0..c2e0675 100644
+--- a/app/api/pocket/preflight/route.ts
++++ b/app/api/pocket/preflight/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { pocketImageContent, validatePocketImages } from "../../../pocket/chart-images";
+ import { NextResponse } from "next/server";
+ import { classifyOpenAIFailure, createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+@@ -45,6 +46,8 @@ const schema = {
+ } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   const startedAt = Date.now();
+   const crossOrigin = rejectCrossOrigin(request);
+   if (crossOrigin) return crossOrigin;
+diff --git a/app/api/pocket/review/route.ts b/app/api/pocket/review/route.ts
+index 9a425cd..06f770c 100644
+--- a/app/api/pocket/review/route.ts
++++ b/app/api/pocket/review/route.ts
+@@ -1,3 +1,4 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
+ import { comparisonIdentity } from "../../../pocket/chart-session";
+ import { NextResponse } from "next/server";
+ import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
+@@ -48,6 +49,8 @@ const schema = {
+ } as const;
+ 
+ export async function POST(request: Request) {
++  const accessDenial = await requirePocketWebScanAccess();
++  if (accessDenial) return accessDenial;
+   const crossOrigin = rejectCrossOrigin(request);
+   if (crossOrigin) return crossOrigin;
+   let payload: { beforeImage?: unknown; afterImage?: unknown; lockedAnalysis?: unknown; currentAnalysis?: unknown; mode?: unknown };
+diff --git a/app/api/pocket/subscription-access/route.ts b/app/api/pocket/subscription-access/route.ts
+new file mode 100644
+index 0000000..5879591
+--- /dev/null
++++ b/app/api/pocket/subscription-access/route.ts
+@@ -0,0 +1,12 @@
++import { requirePocketWebScanAccess } from "../../../lib/server/pocket-web-scan-access";
++
++export const dynamic = "force-dynamic";
++export const runtime = "nodejs";
++
++/** Own server-verified account only; no payment, write or provider request. */
++export async function GET() {
++  const denial = await requirePocketWebScanAccess();
++  const headers = { "Cache-Control": "private, no-store", Vary: "Cookie" };
++  if (denial) return Response.json({ ...await denial.json(), entitled: false }, { status: denial.status, headers });
++  return Response.json({ entitled: true }, { headers });
++}
+diff --git a/app/lib/server/pocket-web-scan-access.ts b/app/lib/server/pocket-web-scan-access.ts
+new file mode 100644
+index 0000000..4d328e3
+--- /dev/null
++++ b/app/lib/server/pocket-web-scan-access.ts
+@@ -0,0 +1,47 @@
++type Identity = { id?: string; email?: string; email_confirmed_at?: string; is_anonymous?: boolean };
++type AccessDependencies = {
++  authenticate: () => Promise<Identity | null>;
++  hasSubscription: (userId: string) => Promise<boolean>;
++  hasAppleSubscription?: (userId: string) => Promise<boolean>;
++  hasFirstFreeAccess?: (user: Identity) => Promise<boolean>;
++};
++
++/** A verified identity and current Pocket subscription are both required.
++ * Founding awards, terminal tiers and client/local-storage assertions grant no access. */
++export async function checkPocketScanAccess(deps: AccessDependencies): Promise<Response | null> {
++  try {
++    const user = await deps.authenticate();
++    if (!user?.id || !user.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
++    let webUnavailable = false;
++    try { if (await deps.hasSubscription(user.id)) return null; }
++    catch { webUnavailable = true; }
++    if (user.id && deps.hasAppleSubscription && await deps.hasAppleSubscription(user.id)) return null;
++    // Independent signed Apple proof can succeed during a web-ledger outage.
++    // A web outage must never become first-free permission or a false expiry.
++    if (webUnavailable) throw new Error("Pocket web subscription lookup unavailable");
++    if (user.id && deps.hasFirstFreeAccess && await deps.hasFirstFreeAccess(user)) return null;
++    return Response.json({ error: "An active Pocket subscription is required to scan.", code: "POCKET_SUBSCRIPTION_REQUIRED" }, { status: 403 });
++  } catch {
++    return Response.json({ error: "Pocket access could not be verified. Please retry shortly.", code: "POCKET_ACCESS_UNAVAILABLE" }, { status: 503 });
++  }
++}
++
++/** Pocket Sites web admission; native uses its separately pinned production backend. */
++export async function requirePocketWebScanAccess(): Promise<Response | null> {
++  if (process.env.POCKET_WEB_SCANS_DISABLED === "true") {
++    return Response.json({ error: "Pocket access is temporarily unavailable.", code: "POCKET_ACCESS_UNAVAILABLE" }, { status: 503 });
++  }
++  return checkPocketScanAccess({
++    authenticate: async () => {
++      const { createClient } = await import("../../../utils/supabase/server.ts");
++      const { data: { user }, error } = await (await createClient()).auth.getUser();
++      return error ? null : user;
++    },
++    hasSubscription: async (userId) => {
++      const { createAdminClient } = await import("../../../utils/supabase/admin.ts");
++      const { data, error } = await createAdminClient().rpc("has_pocket_web_subscription", { p_user_id: userId });
++      if (error || typeof data !== "boolean") throw new Error("Pocket subscription lookup unavailable");
++      return data;
++    },
++  });
++}
+diff --git a/tests/pocket-web-worker-access.test.mjs b/tests/pocket-web-worker-access.test.mjs
+new file mode 100644
+index 0000000..a1ab65f
+--- /dev/null
++++ b/tests/pocket-web-worker-access.test.mjs
+@@ -0,0 +1,61 @@
++import assert from 'node:assert/strict';
++import test from 'node:test';
++
++// Runs the real packaged Worker with a closed, offline Supabase fixture.
++// Every unrecognised outbound request fails; no OpenAI or Apple call can occur.
++test('packaged Pocket web guard verifies response cookies, UUID-bound access and denials before all scanner dispatches', async () => {
++  process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://fixture.supabase.co';
++  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_fixture';
++  process.env.SUPABASE_SERVICE_ROLE_KEY = 'offline-service-role';
++  const user = { id: '11111111-1111-4111-8111-111111111111', email: 'qa@example.invalid', email_confirmed_at: '2026-10-19T00:00:00Z', aud: 'authenticated', role: 'authenticated', is_anonymous: false, app_metadata: {}, user_metadata: {}, identities: [], created_at: '2026-10-19T00:00:00Z' };
++  const token = [Buffer.from('{"alg":"HS256"}').toString('base64url'), Buffer.from(JSON.stringify({sub:user.id, exp:Math.floor(Date.now()/1000)+3600})).toString('base64url'), 'offline-fixture'].join('.');
++  let entitled = true;
++  let outage = false;
++  let unexpected = 0;
++  const originalFetch = globalThis.fetch;
++  globalThis.fetch = async (input, init) => {
++    const url = typeof input === 'string' ? input : input.url;
++    if (url === 'https://fixture.supabase.co/auth/v1/user') return Response.json(user);
++    if (url === 'https://fixture.supabase.co/rest/v1/rpc/has_pocket_web_subscription') {
++      assert.deepEqual(JSON.parse(init.body), { p_user_id: user.id });
++      return outage ? Response.json({ message: 'offline outage' }, { status: 503 }) : Response.json(entitled);
++    }
++    unexpected += 1;
++    throw new Error('Unexpected outbound request in offline test');
++  };
++  try {
++    const worker = (await import('../dist/server/index.js')).default;
++    const env = {};
++    const ctx = { waitUntil: () => {} };
++    const request = (path, init = {}) => worker.fetch(new Request('https://pocket.nashaimarkets.com' + path, init), env, ctx);
++    const session = await request('/api/auth/session', { method:'POST', headers:{origin:'https://pocket.nashaimarkets.com','content-type':'application/json'}, body:JSON.stringify({accessToken:token,refreshToken:'offline-fixture-refresh'}) });
++    assert.equal(session.status, 200);
++    const cookieHeaders = session.headers.getSetCookie();
++    assert.ok(cookieHeaders.length > 0);
++    const cookie = cookieHeaders.map(header => header.split(';')[0]).join('; ');
++    const account = await request('/api/pocket/account', { headers:{cookie} });
++    assert.equal(account.status, 200);
++    assert.deepEqual(await account.json(), {user_id:user.id, verified:true});
++    const access = await request('/api/pocket/subscription-access?user_id=attacker', {headers:{cookie}});
++    assert.equal(access.status, 200);
++    assert.deepEqual(await access.json(), {entitled:true});
++    assert.equal(access.headers.get('cache-control'), 'private, no-store');
++    assert.match(access.headers.get('vary'), /(?:^|,\s*)Cookie(?:,|$)/);
++    entitled = false;
++    const denied = await request('/api/pocket/subscription-access', {headers:{cookie}});
++    assert.equal(denied.status, 403);
++    for (const route of ['analyse','preflight','levels','liquidity','options-wall','crypto-pressure','review','follow-up']) {
++      const response = await request('/api/pocket/' + route, {method:'POST',headers:{cookie,'content-type':'application/json'},body:JSON.stringify({user_id:'attacker',entitled:true})});
++      assert.equal(response.status, 403, route);
++    }
++    outage = true;
++    assert.equal((await request('/api/pocket/subscription-access',{headers:{cookie}})).status,503);
++    assert.equal((await request('/api/pocket/subscription-access')).status,401);
++    process.env.POCKET_WEB_SCANS_DISABLED = 'true';
++    assert.equal((await request('/api/pocket/subscription-access',{headers:{cookie}})).status,503);
++    delete process.env.POCKET_WEB_SCANS_DISABLED;
++    assert.equal(unexpected, 0);
++  } finally {
++    globalThis.fetch = originalFetch;
++  }
++});
