@@ -78,18 +78,29 @@ export async function loadRealCase(dir:string,id:RealCaseId){
 }
 function price(v:unknown):number|null {
  if(typeof v==='number')return Number.isFinite(v)?v:null;
- if(typeof v==='string'&&/^-?\d+(\.\d+)?$/.test(v.trim()))return Number(v);
+ if(typeof v==='string'&&/^-?\d+(\.\d+)?$/.test(v.trim())){
+  const parsed=Number(v);
+  // Overflow becomes JSON null; nonzero decimals below the numeric range must
+  // not silently become a measured zero. Ordinary finite wrong prices stay.
+  return Number.isFinite(parsed)&&(parsed!==0||!/[1-9]/.test(v))?parsed:null;
+ }
  return null;
 }
 function px(v:unknown,span:number) {
  return typeof v==='number'&&Number.isFinite(v)&&v>=0&&v<=100?Math.round(v*span*10)/1000:null;
 }
-/** Produces independent-score.py observation shape in ORIGINAL IMAGE pixels. */
+/** Produces independent-score.py observation shape in ORIGINAL IMAGE pixels.
+ * Validate representability only: finite wrong hypotheses remain for FP/error
+ * scoring. This adapter's scored marker does not adjudicate reference labels;
+ * the runner retains its separate provisional/unscored release measurement. */
 export function realObservation(id:RealCaseId,data:unknown,latencyMs:number){
+ caseId(id);
+ if(!Number.isFinite(latencyMs)||latencyMs<0)throw Error('Invalid scanner latency.');
  if(!data||typeof data!=='object'||Array.isArray(data))throw Error('Unmeasurable scanner response.');
  const a=data as Record<string,unknown>;
  if(!Array.isArray(a.levels)||!Array.isArray(a.patterns)||!a.liquidity||typeof a.liquidity!=='object'||Array.isArray(a.liquidity)||!Array.isArray((a.liquidity as {zones?:unknown}).zones))throw Error('Missing scanners: not a measured NO SIGNAL.');
  const liq=a.liquidity as {event?:unknown;zones:unknown[]};
+ if(liq.zones.length&&typeof liq.event!=='string')throw Error('Invalid liquidity event evidence.');
  const levels=a.levels.map((v:unknown)=>{
   const l=v as Record<string,unknown>, y=px(l?.y,850),p=price(l?.price);
   if(!l||typeof l.kind!=='string'||p===null||y===null)throw Error('Invalid level evidence.');
