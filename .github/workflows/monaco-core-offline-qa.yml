@@ -2,7 +2,7 @@ name: Monaco core offline QA
 
 on:
   push:
-    branches: [monaco-master-126-20261019-b02d5dd]
+    branches: [monaco-master-126-20261019-b02d5dd, monaco-reliability-126-20261019]
 
 permissions:
   contents: read
