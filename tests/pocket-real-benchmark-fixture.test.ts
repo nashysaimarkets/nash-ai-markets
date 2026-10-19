@@ -35,7 +35,8 @@ test('all six external real-market PNGs pass strict original hash checks', {skip
   const verified=await loadRealCase(dir,caseId(id));
   assert.equal(verified.originalSha256,REAL_CASES[caseId(id)][0]);
   const bytes=await readFile(join(dir,id+'.scan-input.json'));
-  assert.throws(()=>verifyPackedCase(caseId(id),Buffer.concat([bytes,Buffer.from(' ')]),String(verified.input.chartConfirmation.currentPrice),String(verified.input.chartConfirmation.timeframe)),/hash mismatch/);
+  const confirmation=verified.input.chartConfirmation as {currentPrice:string;timeframe:string};
+  assert.throws(()=>verifyPackedCase(caseId(id),Buffer.concat([bytes,Buffer.from(' ')]),confirmation.currentPrice,confirmation.timeframe),/hash mismatch/);
  }
 });
 test('default runner is OFFLINE_ONLY and protected paid mode uses ledger release veto',async()=>{
