@@ -3,20 +3,20 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 
-function load(path: string, modules: Record<string, unknown>) {
+function load<T extends Record<string, unknown>>(path: string, modules: Record<string, unknown>): T {
   const source = readFileSync(new URL(path, import.meta.url), "utf8");
   const js = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const exports: Record<string, any> = {};
+  const exports: Record<string, unknown> = {};
   new Function("require", "exports", js)((id: string) => {
     assert.ok(id in modules, `Unexpected dependency: ${id}`);
     return modules[id];
   }, exports);
-  return exports;
+  return exports as T;
 }
 
 test("callback server passes runtime public credentials without requiring build-time values", () => {
   const config = { url: "https://runtime-fixture.supabase.co", key: "sb_publishable_fixture" };
-  const page = load("../app/auth/callback/page.tsx", {
+  const page = load<{ dynamic: string; default: () => { props: unknown } }>("../app/auth/callback/page.tsx", {
     "./AuthCallbackClient": { default: "callback" },
     "../../../utils/supabase/config": { resolveSupabasePublicConfig: () => config },
     "react/jsx-runtime": { jsx: (type: unknown, props: unknown) => ({ type, props }) },
@@ -39,7 +39,7 @@ test("callback exchanges the code using runtime settings then persists the serve
     fetch: async (url: string, init: RequestInit) => { calls.push(url); assert.equal(init.credentials, "same-origin"); return Response.json({ ok: true }); },
   });
   try {
-    const client = load("../app/auth/callback/AuthCallbackClient.tsx", {
+    const client = load<{ default: (props: { supabaseUrl: string; supabasePublishableKey: string }) => unknown }>("../app/auth/callback/AuthCallbackClient.tsx", {
       react: { useEffect: (effect: () => void) => effect() },
       "react/jsx-runtime": { jsx: () => null, jsxs: () => null },
       "../../../utils/supabase/client": { createClient: (override: unknown) => { settings = override; return { auth: { exchangeCodeForSession: async (code: string) => { assert.equal(code, "fixture-code"); return { data: { session: { access_token: "fixture-access", refresh_token: "fixture-refresh" } }, error: null }; } } }; } },

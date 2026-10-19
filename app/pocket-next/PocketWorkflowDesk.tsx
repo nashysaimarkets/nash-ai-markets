@@ -30,10 +30,10 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
  const [after,setAfter]=useState<string|null>(null),[reviewPrivacy,setReviewPrivacy]=useState(false),[review,setReview]=useState<Review|null>(null);
  const [labImage,setLabImage]=useState<string|null>(null),[labStatus,setLabStatus]=useState<PreflightStatus>('IDLE'),[labFacts,setLabFacts]=useState<ChartConfirmation|null>(null),[labResult,setLabResult]=useState<LevelResult|null>(null);
  const [labPrivacy,setLabPrivacy]=useState(false),[saving,setSaving]=useState(false);
+ const [currentLabRevision,setCurrentLabRevision]=useState(0);
  const [plan,setPlan]=useState<UserPlan>(EMPTY_PLAN);
  const [companyEvents,setCompanyEvents]=useState<CompanyEvent[]>([]),[companyChecked,setCompanyChecked]=useState(false);
  const generation=useRef(0),pending=useRef<AbortController|null>(null),pendingRoute=useRef(''),labRevision=useRef(0),savingRef=useRef(false);
- const currentLabRevision=labRevision.current;
  useEffect(()=>()=>{generation.current++;pending.current?.abort();},[]);
  const cancel=()=>{const wasPending=Boolean(pending.current);generation.current++;pending.current?.abort();pending.current=null;pendingRoute.current='';setBusy('');if(wasPending)setNotice('Tool request cancelled. No new result was accepted.');};
  const perform=async(route:string,body:unknown|(()=>Promise<unknown>),receive:(payload:Record<string,unknown>)=>void,method:'POST'|'GET'='POST')=>{
@@ -53,7 +53,7 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
  const load=async(file:File|undefined,kind:'after'|'lab')=>{
   if(!file)return;cancel();const token=generation.current;
   setError('');setNotice('Reading the selected image…');
-  try{const value=await readWorkflowImage(file);if(token!==generation.current)return;if(kind==='after'){setAfter(value);setReview(null);setReviewPrivacy(false);}else{labRevision.current++;setLabImage(value);setLabResult(null);setLabStatus('IDLE');setLabFacts(null);setLabPrivacy(false);}setNotice('');}
+  try{const value=await readWorkflowImage(file);if(token!==generation.current)return;if(kind==='after'){setAfter(value);setReview(null);setReviewPrivacy(false);}else{labRevision.current++;setCurrentLabRevision(labRevision.current);setLabImage(value);setLabResult(null);setLabStatus('IDLE');setLabFacts(null);setLabPrivacy(false);}setNotice('');}
   catch(e){if(token===generation.current){setNotice('');setError((e instanceof Error?e.message:'Image unavailable.')+' The previous selection was kept.');}}
  };
  const refresh=async()=>{const token=generation.current;try{const values=await listPocketDecisions();if(token===generation.current){setHistory(values);setNotice(values.length?'Device history loaded.':'No saved decisions on this device.');}}catch{if(token===generation.current)setError('Device history is unavailable in this browser.');}};

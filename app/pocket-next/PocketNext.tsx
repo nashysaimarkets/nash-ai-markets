@@ -486,7 +486,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
             <b>{CHART_SLOT_HINTS[index]}</b><small>{uploadingSlots[index] ? "READING" : slot.confirmation?.timeframe || workspaceSlotLabel(slot)}</small>
           </button>)}
         </div>
-        <p className="pnSlotHint">Suggested slots only. Confirm each image's actual instrument and timeframe below.</p>
+        <p className="pnSlotHint">Suggested slots only. Confirm each image’s actual instrument and timeframe below.</p>
 
         <div className="pnBias">
           <small>BIAS TO CHALLENGE</small>

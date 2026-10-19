@@ -8,7 +8,8 @@ import test from 'node:test';
 // Static safety and authored-copy guards only. These are NOT browser, scanner,
 // model-accuracy, native or production acceptance. Supported browser QA is separate.
 const directory = dirname(fileURLToPath(import.meta.url));
-const source = await readFile(resolve(directory, 'product-demo.html'), 'utf8');
+// Root packages the reviewed authored example as an unpublished candidate asset.
+const source = await readFile(resolve(directory, '../../public/pocket-bullseye-demo.html'), 'utf8');
 const copy = await readFile(resolve(directory, 'product-growth-assets.md'), 'utf8');
 
 test('unpublished synthetic example forbids requests and accidental upload/purchase entry points', () => {
