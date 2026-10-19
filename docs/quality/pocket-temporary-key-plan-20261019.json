@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "state": "DRAFT_NOT_CREATED",
+  "purpose": "TEMPORARY_METADATA_ACCESS_ONLY",
+  "organisationId": "org-5vLRRzXwcigUx96TVE0rI3RW",
+  "projectId": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+  "proposal": {
+    "name": "Pocket Bullseye Metadata Verification",
+    "ownerType": "user",
+    "expirationSeconds": 86400,
+    "scopes": ["api.model.read", "model.read"],
+    "dashboardSelection": "Restricted; List models: Read; every other category: None"
+  },
+  "key": null,
+  "ownerApprovalAt": null,
+  "observedAt": null,
+  "reviewedAt": null,
+  "observedBy": null,
+  "reviewedBy": null,
+  "sources": [
+    "https://platform.openai.com/api-keys",
+    "https://platform.openai.com/settings/proj_LTmAIE2Ve7gUAFJ9M74ZxIBI"
+  ],
+  "liveSitesBindingVerified": false,
+  "releaseAuthorized": false
+}
