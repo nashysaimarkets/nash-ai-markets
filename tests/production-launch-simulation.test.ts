@@ -12,12 +12,13 @@ const now = Date.parse("2026-07-17T12:00:00.000Z");
 test("production simulation: passwordless authentication is fail-safe and redirect-bound", async () => {
   const [login, callback, sessionRoute, dashboard] = await Promise.all([
     source("app/login/StagingLoginForm.tsx"),
-    source("app/auth/callback/page.tsx"),
+    source("app/auth/callback/AuthCallbackClient.tsx"),
     source("app/api/auth/session/route.ts"),
     source("app/dashboard/page.tsx"),
   ]);
   assert.match(login, /signInWithOtp/);
-  assert.match(login, /shouldCreateUser: true/);
+  assert.match(login, /existingAccountOnly = false/);
+  assert.match(login, /shouldCreateUser: !existingAccountOnly/);
   assert.match(callback, /exchangeCodeForSession/);
   assert.match(callback, /token_hash/);
   assert.match(callback, /verifyOtp/);

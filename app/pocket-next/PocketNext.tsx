@@ -16,6 +16,7 @@ import OriginalChartEvidence from "../pocket/OriginalChartEvidence";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "../pocket/chart-preflight";
 import { createChartRequestEpoch } from "../pocket/chart-request-identity";
 import { pocketAuthenticatedFetch } from "../pocket/apple-storekit";
+import { acceptWorkspaceReport, CHART_SLOT_HINTS, readWorkspaceImage, sameWorkspaceFacts, updateWorkspaceConfirmation, updateWorkspacePreflight, workspaceContext, workspaceSlotLabel, workspaceSlotTimeframe, type WorkspaceSource } from "./workspace-state";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type Intention = "LONG" | "SHORT" | "UNSURE";
@@ -73,10 +74,9 @@ type Analysis = {
 
 type PlotBounds = DevicePlotBounds;
 type LocalScan = DeviceLocalScan;
-type ChartSlot = { image: string | null; name: string; analysis: Analysis | null; localScan: LocalScan | null; confirmation: ChartConfirmation | null; status: PreflightStatus; revision: number; reportRevision?: number };
+type ChartSlot = WorkspaceSource<Analysis> & { name: string; localScan: LocalScan | null; reportIntention?: Intention };
 
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
-function emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null, localScan: null, confirmation: null, status: "IDLE", revision: 0 })); }
+function emptyChartSlots(): ChartSlot[] { return Array.from({ length: 5 }, () => ({ image: null, name: "", analysis: null, localScan: null, confirmation: null, status: "IDLE", revision: 0, runState: "IDLE", message: "" })); }
 const TABS: Array<{ id: Tab; label: string; short: string }> = [
   { id: "overview", label: "Overview", short: "OV" },
   { id: "levels", label: "Levels", short: "LV" },
@@ -87,17 +87,6 @@ const TABS: Array<{ id: Tab; label: string; short: string }> = [
 ];
 
 function clamp(value: number) { return Math.max(2, Math.min(98, Number.isFinite(value) ? value : 50)); }
-
-function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return reject(new Error("Use a JPEG, PNG or WebP chart."));
-    if (file.size > MAX_IMAGE_BYTES) return reject(new Error("Keep each chart under 8 MB."));
-    const reader = new FileReader();
-    reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read that chart."));
-    reader.onerror = () => reject(new Error("Could not read that chart."));
-    reader.readAsDataURL(file);
-  });
-}
 
 
 function withinPlot(y: number, bounds: PlotBounds, pad = 1.5) {
@@ -202,10 +191,10 @@ const DEMO_ANALYSIS: Analysis = {
 };
 
 function statusOf(analysis: Analysis, kind: "levels" | "patterns" | "liquidity" | "htf") {
-  if (kind === "levels") return analysis.levels.some((l) => ["support","resistance","pivot"].includes(l.kind) && /^-?\d/.test(l.price)) ? "VERIFIED" : analysis.levels.length ? "PARTIAL" : "NONE";
-  if (kind === "patterns") return analysis.patterns.some((p) => p.confidence !== "LOW" && p.status !== "AMBIGUOUS") ? "VERIFIED" : analysis.patterns.length ? "PARTIAL" : "NONE";
-  if (kind === "liquidity") return analysis.liquidity?.state ?? "NONE";
-  return analysis.higherTimeframe.provided ? "VERIFIED" : "NONE";
+  if (kind === "levels") return analysis.levels.some((l) => ["support","resistance","pivot"].includes(l.kind) && /^-?\d/.test(l.price)) ? "REPORTED" : analysis.levels.length ? "PARTIAL" : "NONE";
+  if (kind === "patterns") return analysis.patterns.some((p) => p.confidence !== "LOW" && p.status !== "AMBIGUOUS") ? "REPORTED" : analysis.patterns.length ? "PARTIAL" : "NONE";
+  if (kind === "liquidity") return analysis.liquidity?.state === "VERIFIED" ? "REPORTED" : analysis.liquidity?.state ?? "NONE";
+  return analysis.higherTimeframe.provided ? "REPORTED" : "NONE";
 }
 
 function statusLabel(value: string) { return value === "NONE" ? "NO EVIDENCE" : value; }
@@ -214,18 +203,31 @@ const UNAVAILABLE_MACRO: VerifiedMacroContext = {generatedAt:"",status:"unavaila
 export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContext?:VerifiedMacroContext} = {}) {
   const [charts, setCharts] = useState<ChartSlot[]>(emptyChartSlots);
   const [activeChart, setActiveChart] = useState(0);
+  const activeChartRef = useRef(activeChart);
+  activeChartRef.current = activeChart;
   const [intention, setIntention] = useState<Intention>("UNSURE");
   const [privacy, setPrivacy] = useState(false);
   const [active, setActive] = useState<Tab>("overview");
   const [busyChart, setBusyChart] = useState<number | null>(null);
   const [chartFocus, setChartFocus] = useState(false);
-  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [uploadingSlots, setUploadingSlots] = useState<boolean[]>(() => Array(5).fill(false));
   const requestActive = useRef(false);
   const chartEpoch = useRef(createChartRequestEpoch());
   const uploads = useRef([0, 0, 0, 0, 0]);
   const controllerRef = useRef<AbortController | null>(null);
+  const requestSource = useRef<{ index: number; revision: number; confirmation: ChartConfirmation } | null>(null);
+  const chartsRef = useRef(charts);
+  chartsRef.current = charts;
+  const demoSnapshot = useRef<{ charts: ChartSlot[]; activeChart: number; privacy: boolean } | null>(null);
   const [demoMode, setDemoMode] = useState(false);
-  const invalidate = () => { chartEpoch.current.invalidate(); controllerRef.current?.abort(); requestActive.current = false; setBusyChart(null); };
+  const invalidate = (reason = "Analysis cancelled. You can retry after checking the chart.") => {
+    const source = requestSource.current;
+    chartEpoch.current.invalidate(); controllerRef.current?.abort(); controllerRef.current = null;
+    requestSource.current = null; requestActive.current = false; setBusyChart(null);
+    if (source) setCharts(current => current.map((slot, index) => index === source.index && slot.revision === source.revision
+      ? { ...slot, runState: "CANCELLED", message: slot.analysis ? reason + " The previous report is still shown." : reason } : slot));
+  };
   useEffect(() => () => { chartEpoch.current.invalidate(); controllerRef.current?.abort(); uploads.current = uploads.current.map(n => n + 1); }, []);
   const centreRef = useRef<HTMLElement | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
@@ -236,6 +238,11 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
   const analysis = activeSlot?.analysis ?? null;
   const image = activeSlot?.image ?? null;
   const busy = busyChart !== null;
+  const uploading = uploadingSlots.some(Boolean);
+  const sourceStatus = uploadingSlots[activeChart] ? "READING IMAGE" : workspaceSlotLabel(activeSlot);
+  const analysisHold = !image ? "Add a source chart to begin." : !privacy ? "Confirm that personal details are removed from every uploaded chart."
+    : !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation ? "Check and lock this chart's instrument, timeframe and current price before analysis."
+    : busy ? `Chart ${Number(busyChart) + 1} is being analysed. You can cancel it below.` : "Ready for evidence-based analysis.";
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -276,12 +283,23 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
   useEffect(() => {
     if (!chartFocus) return;
     const previous = document.body.style.overflow;
+    const previousFocus = document.activeElement;
     document.body.style.overflow = "hidden";
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setChartFocus(false); };
+    chartRef.current?.querySelector<HTMLButtonElement>(".pnFocusButton")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setChartFocus(false);
+      if (event.key !== "Tab") return;
+      const controls = chartRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled),a[href],input:not(:disabled),[tabindex="0"]');
+      if (!controls?.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
   }, [chartFocus]);
 
@@ -293,25 +311,49 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
   };
 
   const loadChart = async (index: number, file?: File) => {
-    if (!file) return;
-    invalidate(); setDemoMode(false);
+    if (!file || demoMode) return;
+    invalidate("The source chart is being replaced; the current request was cancelled.");
     const revision = ++uploads.current[index];
-    setCharts(current => current.map((slot, i) => i === index ? { image: null, name: file.name, analysis: null, localScan: null, confirmation: null, status: "CHECKING", revision } : slot));
+    setUploadingSlots(current => current.map((value, i) => i === index ? true : value));
     try {
-      setError("");
-      const nextImage = await fileToDataUrl(file);
+      const nextImage = await readWorkspaceImage(file);
       if (uploads.current[index] !== revision) return;
-      setCharts(current => current.map((slot, i) => i === index ? { image: nextImage, name: file.name, analysis: null, localScan: null, confirmation: null, status: "CHECKING", revision } : slot));
+      setCharts(current => current.map((slot, i) => i === index ? { image: nextImage, name: file.name, analysis: null, localScan: null, confirmation: null, status: "CHECKING", revision, runState: "IDLE", message: "" } : slot));
+      setPrivacy(false);
+      setNotice("");
       setActiveChart(index);
-    } catch (e) { if (uploads.current[index] === revision) setError(e instanceof Error ? e.message : "Could not load that chart."); }
+    } catch (e) {
+      if (uploads.current[index] === revision) {
+        setCharts(current => current.map((slot, i) => i === index
+          ? { ...slot, message: (e instanceof Error ? e.message : "Could not load that chart.") + (slot.image ? " Your previous chart and report were kept." : "") } : slot));
+        setActiveChart(index);
+      }
+    } finally {
+      if (uploads.current[index] === revision) setUploadingSlots(current => current.map((value, i) => i === index ? false : value));
+    }
+  };
+
+  const changePreflight = (index: number, revision: number, status: PreflightStatus) => {
+    if (chartsRef.current[index]?.revision !== revision) return;
+    if (!preflightAllowsAnalysis(status) && requestSource.current?.index === index) invalidate("Chart facts were unlocked; the previous request was cancelled.");
+    setCharts(current => current.map((slot, i) => i === index ? { ...updateWorkspacePreflight(slot, revision, status), localScan: preflightAllowsAnalysis(status) ? slot.localScan : null } : slot));
+  };
+  const changeConfirmation = (index: number, revision: number, confirmation: ChartConfirmation | null) => {
+    if (chartsRef.current[index]?.revision !== revision) return;
+    const pending = requestSource.current;
+    if (pending?.index === index && !sameWorkspaceFacts(pending.confirmation, confirmation)) invalidate("Chart facts changed; the previous request was cancelled.");
+    setCharts(current => current.map((slot, i) => i === index ? updateWorkspaceConfirmation(slot, revision, confirmation) : slot));
   };
 
   const analyseChart = async (index: number, switchAfter = false) => {
     const slot = charts[index];
-    if (!slot?.image || !privacy || busy || requestActive.current || !preflightAllowsAnalysis(slot.status) || !slot.confirmation || demoMode) return;
+    if (!slot?.image || !privacy || busy || uploading || requestActive.current || !preflightAllowsAnalysis(slot.status) || !slot.confirmation || demoMode) return;
     const token = chartEpoch.current.snapshot();
     const controller = new AbortController(); controllerRef.current = controller;
-    requestActive.current = true; setBusyChart(index); setError("");
+    const confirmation = slot.confirmation;
+    requestSource.current = { index, revision: slot.revision, confirmation };
+    requestActive.current = true; setBusyChart(index); setNotice("");
+    setCharts(current => current.map((chart, i) => i === index ? { ...chart, runState: "RUNNING", message: "" } : chart));
     try {
       const precisionImage = await precisionCrop(slot.image);
       if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
@@ -322,45 +364,61 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis could not complete.");
-      setCharts(current => current.map((chart, i) => i === index && chart.revision === slot.revision ? { ...chart, analysis: payload.analysis ?? null, reportRevision:(chart.reportRevision??0)+1 } : chart));
+      const report = payload.analysis;
+      setCharts(current => current.map((chart, i) => {
+        if (i !== index) return chart;
+        const accepted = acceptWorkspaceReport(chart, slot.revision, confirmation, report);
+        return accepted === chart ? chart : { ...accepted, reportIntention: intention };
+      }));
       if (switchAfter) setActiveChart(index);
-      setActive("overview");
+      if (activeChartRef.current === index || switchAfter) setActive("overview");
     } catch (e) {
-      if (chartEpoch.current.isCurrent(token) && !controller.signal.aborted) setError(e instanceof Error ? e.message : "Analysis could not complete.");
+      if (chartEpoch.current.isCurrent(token) && !controller.signal.aborted) setCharts(current => current.map((chart, i) => i === index && chart.revision === slot.revision
+        ? { ...chart, runState: "ERROR", message: (e instanceof Error ? e.message : "Analysis could not complete.") + (chart.analysis ? " The previous report is still shown." : " No report was produced; retry only after checking the cause.") } : chart));
     } finally {
-      if (controllerRef.current === controller) { controllerRef.current = null; requestActive.current = false; setBusyChart(null); }
+      if (controllerRef.current === controller) { controllerRef.current = null; requestSource.current = null; requestActive.current = false; setBusyChart(null); }
     }
   };
 
   const run = async () => { await analyseChart(activeChart, false); };
 
   const selectChart = async (index: number) => {
-    const slot = charts[index];
-    if (!slot?.image || index === activeChart) return;
+    if (index === activeChart || (demoMode && !charts[index].image)) return;
     setActiveChart(index);
+    setActive("overview");
   };
 
   const openDemo = () => {
+    if (busy || uploading) return;
+    demoSnapshot.current = { charts, activeChart, privacy };
     invalidate(); setDemoMode(true); uploads.current = uploads.current.map(n => n + 1);
     const demo = emptyChartSlots();
-    demo[0] = { image: demoChart(), name: "Interface demo", analysis: DEMO_ANALYSIS, localScan: null, confirmation: null, status: "IDLE", revision: 0 };
+    demo[0] = { ...demo[0], image: demoChart(), name: "Interface demo", analysis: DEMO_ANALYSIS };
     setCharts(demo);
     setActiveChart(0);
     setActive("overview");
-    setPrivacy(true);
+    setPrivacy(false);
+    setNotice("");
   };
   const reset = () => {
     invalidate(); setDemoMode(false); uploads.current = uploads.current.map(n => n + 1);
-    setCharts(emptyChartSlots());
-    setActiveChart(0);
+    setCharts(demoSnapshot.current?.charts ?? emptyChartSlots());
+    setActiveChart(demoSnapshot.current?.activeChart ?? 0);
+    setPrivacy(demoSnapshot.current?.privacy ?? false);
+    demoSnapshot.current = null;
+    setUploadingSlots(Array(5).fill(false));
     setActive("overview");
     setChartFocus(false);
-    setError("");
+    setNotice("");
   };
   const share = async () => {
     if (!analysis) return;
-    const text = "Pocket Bullseye · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
-    try { if (navigator.share) await navigator.share({ title: "Pocket Bullseye", text }); else await navigator.clipboard?.writeText(text); } catch {}
+    const text = "Pocket Bullseye" + (demoMode ? " · SYNTHETIC INTERFACE DEMO" : "") + " · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
+    try {
+      if (navigator.share) await navigator.share({ title: "Pocket Bullseye", text });
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(text); setNotice("Decision summary copied."); }
+      else setNotice("Sharing is unavailable in this browser.");
+    } catch (e) { if (!(e instanceof Error && e.name === "AbortError")) setNotice("The summary could not be shared. Your report is still available."); }
   };
 
   const overlayMode = active;
@@ -395,84 +453,87 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
     bottom: "auto",
   } : undefined;
 
-  if (!analysis) return <main className="pnApp pnStartApp">
+  if (!analysis) return <main className="pnApp pnStartApp" aria-busy={busy || uploading}>
+    <a className="pnSkip" href="#pn-intake">Skip to chart workspace</a>
     <header className="pnTop">
-      <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Decision intelligence</small></div></div>
-      <div className="pnEngine"><i/> EVIDENCE BEFORE PRECISION</div>
+      <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Intelligence Before Execution.</small></div></div>
+      <div className="pnEngine"><i/> YOUR PRE-TRADE WORKSPACE</div>
     </header>
 
     <section className="pnStart">
       <article className="pnIntro">
         <p>PRE-TRADE DECISION WORKSPACE</p>
-        <h1>A second opinion.<br/><em>Not another signal.</em></h1>
+        <h1>Intelligence<br/><em>before execution.</em></h1>
         <span>Upload the chart you are actually looking at. Pocket separates visible evidence from assumptions, then shows what confirms the idea, what weakens it and when doing nothing is the better decision.</span>
         <div className="pnPrinciples">
           <div><b>01</b><strong>VERIFY</strong><small>Evidence before precision</small></div>
           <div><b>02</b><strong>CHALLENGE</strong><small>Bias gets tested</small></div>
           <div><b>03</b><strong>DECIDE</strong><small>Wait is a valid answer</small></div>
         </div>
+        <section className="pnSession" aria-label="Current workspace"><span>THIS SESSION</span><strong>{multiChart.loaded} / 5 charts</strong><p>{multiChart.ready} reports returned · each source keeps its own confirmation and report.</p><p>{workspaceContext(charts)}</p></section>
       </article>
 
-      <aside className="pnIntake">
-        <div className="pnIntakeHead"><span>NEW ANALYSIS</span><small>PRIMARY CHART REQUIRED</small></div>
-        <label className="pnDrop" data-loaded={charts[0].image ? "true" : "false"}>
-          {charts[0].image ? <img src={charts[0].image} alt="Selected main chart"/> : <div><b>+</b><strong>Add main chart</strong><span>JPEG · PNG · WEBP · max 8 MB</span></div>}
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(0,e.target.files?.[0])}/>
-          {charts[0].image ? <footer><strong>{charts[0].name}</strong><span>Tap to replace</span></footer> : null}
+      <aside className="pnIntake" id="pn-intake" aria-label="Five-chart workspace">
+        <div className="pnIntakeHead"><span>CHART {activeChart + 1} · {CHART_SLOT_HINTS[activeChart]} SLOT</span><small>{sourceStatus}</small></div>
+        <label className="pnDrop" data-loaded={image ? "true" : "false"}>
+          {image ? <img src={image} alt={`Selected chart ${activeChart + 1}`}/> : <div><b>+</b><strong>Add a source chart</strong><span>JPEG · PNG · WEBP · max 8 MB</span></div>}
+          <input aria-label={`${image ? "Replace" : "Add"} chart ${activeChart + 1}`} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>{void loadChart(activeChart,e.target.files?.[0]);e.target.value="";}}/>
+          {image ? <footer><strong>{activeSlot.name}</strong><span>Tap to replace</span></footer> : null}
         </label>
 
-        <div className="pnStartChartRail" aria-label="Optional charts">
-          <span>EXTRA CHARTS</span>
-          <div>
-            {charts.slice(1).map((slot, offset)=><label key={offset} className="pnStartSlot" data-loaded={Boolean(slot.image)}>
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(offset+1,e.target.files?.[0])}/>
-              <b>{offset+2}</b><small>{slot.image ? "READY" : "+"}</small>
-            </label>)}
-          </div>
+        <div className="pnIntakeSlots" aria-label="Select chart slot">
+          {charts.map((slot, index)=><button key={index} type="button" aria-pressed={activeChart===index} data-loaded={Boolean(slot.image)} onClick={()=>void selectChart(index)} aria-label={`Chart ${index+1}, suggested ${CHART_SLOT_HINTS[index]}, ${uploadingSlots[index] ? "reading image" : workspaceSlotLabel(slot)}`}>
+            <b>{CHART_SLOT_HINTS[index]}</b><small>{uploadingSlots[index] ? "READING" : slot.confirmation?.timeframe || workspaceSlotLabel(slot)}</small>
+          </button>)}
         </div>
+        <p className="pnSlotHint">Suggested slots only. Confirm each image's actual instrument and timeframe below.</p>
 
         <div className="pnBias">
           <small>BIAS TO CHALLENGE</small>
-          <div>{(["LONG","UNSURE","SHORT"] as Intention[]).map(v=><button key={v} type="button" data-active={intention===v} onClick={()=>{invalidate();setIntention(v);}}>{v==="UNSURE"?"NO BIAS":v}</button>)}</div>
+          <div>{(["LONG","UNSURE","SHORT"] as Intention[]).map(v=><button key={v} type="button" data-active={intention===v} aria-pressed={intention===v} onClick={()=>{invalidate("Your trading bias changed; run a new analysis after checking your inputs.");setIntention(v);}}>{v==="UNSURE"?"NO BIAS":v}</button>)}</div>
         </div>
 
         <NativeSubscriptionControls />
-        <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>setPrivacy(e.target.checked)}/><span><strong>Privacy check</strong>I removed account number, balance and personal notifications.</span></label>
+        <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>{if(!e.target.checked)invalidate("Privacy confirmation was removed; analysis was cancelled.");setPrivacy(e.target.checked);}}/><span><strong>Privacy check</strong>I removed account numbers, balances and personal notifications from every chart.</span></label>
 
-        <div className="pnChartSwitcher">{charts.map((slot, index) => slot.image ? <button key={index} type="button" onClick={() => setActiveChart(index)} aria-pressed={activeChart === index}>CHART {index + 1}</button> : null)}</div>
-        {activeSlot?.image && !demoMode ? <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={activeSlot.image} onStatus={status => setCharts(current => current.map((slot, index) => index === activeChart && slot.revision === activeSlot.revision ? { ...slot, status } : slot))} onConfirmation={confirmation => setCharts(current => current.map((slot, index) => index === activeChart && slot.revision === activeSlot.revision ? { ...slot, confirmation } : slot))} /> : null}
-        {busy ? <button type="button" onClick={invalidate}>CANCEL ANALYSIS</button> : null}
-        {error ? <p role="alert" className="pnError">{error}</p> : null}
-        <button className="pnRun" type="button" disabled={!activeSlot?.image || !privacy || busy || !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation} onClick={run}><span>{busyChart===0 ? "ANALYSING…" : "RUN ANALYSIS"}</span><b>→</b></button>
-        <button className="pnDemo" type="button" onClick={openDemo}>OPEN NO-CREDIT INTERFACE DEMO</button>
+        {image ? <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} /> : null}
+        <p className="pnHold" id="pn-analysis-hold" role="status">{analysisHold}</p>
+        {busy ? <button className="pnCancel" type="button" onClick={()=>invalidate()}>CANCEL CHART {Number(busyChart)+1} ANALYSIS</button> : null}
+        {activeSlot.message ? <p role={activeSlot.runState==="CANCELLED" ? "status" : "alert"} className="pnError">{activeSlot.message}</p> : null}
+        <button className="pnRun" type="button" aria-describedby="pn-analysis-hold" disabled={!image || !privacy || busy || uploading || !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation} onClick={run}><span>{busyChart===activeChart ? "ANALYSING…" : "ANALYSE CHART "+(activeChart+1)}</span><b aria-hidden="true">→</b></button>
+        <button className="pnDemo" type="button" disabled={busy||uploading} onClick={openDemo}>EXPLORE THE NO-CREDIT INTERFACE DEMO</button>
       </aside>
     </section>
   </main>;
 
   const stateTone = analysis.direction === "BULLISH" ? "bull" : analysis.direction === "BEARISH" ? "bear" : "wait";
 
-  return <main className="pnApp pnResultApp" data-tone={stateTone}>
+  return <main className="pnApp pnResultApp" data-tone={stateTone} aria-busy={busy || uploading}>
+    <a className="pnSkip" href="#pn-chart-workspace">Skip to chart evidence</a>
     <header className="pnTop pnResultTop">
-      <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>{analysis.instrument} · {analysis.timeframe}</small></div></div>
-      <div className="pnTopActions"><button type="button" onClick={share}>SHARE</button><button type="button" onClick={reset}>NEW ANALYSIS</button></div>
+      <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Intelligence Before Execution. · {analysis.instrument} · {analysis.timeframe}</small></div></div>
+      <div className="pnTopActions"><button type="button" onClick={share}>SHARE</button><button type="button" onClick={reset}>{demoMode ? "RETURN TO YOUR CHARTS" : "CLEAR WORKSPACE"}</button></div>
     </header>
 
     <section className="pnWorkspace">
       <nav className="pnTools" aria-label="Analysis views">
-        {TABS.map(tab=><button key={tab.id} type="button" data-active={active===tab.id} onClick={()=>selectTab(tab.id)}><b>{tab.short}</b><span>{tab.label}</span></button>)}
+        {TABS.map(tab=><button key={tab.id} type="button" data-active={active===tab.id} aria-pressed={active===tab.id} onClick={()=>selectTab(tab.id)}><b aria-hidden="true">{tab.short}</b><span>{tab.label}</span></button>)}
       </nav>
 
-      <section className="pnCentre" ref={centreRef}>
-        {demoMode ? <p role="status">INTERFACE DEMO · synthetic sample · no uploaded chart analysed</p> : <>
-          {activeSlot?.image && !demoMode ? activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <section className="psPreflight pnLockedFacts" data-locked="true" aria-label="Locked source chart facts"><strong>SOURCE CHART FACTS LOCKED</strong><p>{activeSlot.confirmation.instrument} · {activeSlot.confirmation.timeframe} · {activeSlot.confirmation.currentPrice}</p><button type="button" onClick={()=>{invalidate();setCharts(current=>current.map((slot,index)=>index===activeChart&&slot.revision===activeSlot.revision?{...slot,analysis:null,localScan:null,confirmation:null,status:"IDLE",reportRevision:(slot.reportRevision??0)+1}:slot));}}>Edit chart facts</button></section> : <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={activeSlot.image} onStatus={status => setCharts(current => current.map((slot, index) => index === activeChart && slot.revision === activeSlot.revision ? { ...slot, status } : slot))} onConfirmation={confirmation => setCharts(current => current.map((slot, index) => index === activeChart && slot.revision === activeSlot.revision ? { ...slot, confirmation } : slot))} /> : null}
-          <button type="button" disabled={busy || !activeSlot.confirmation || !preflightAllowsAnalysis(activeSlot.status)} onClick={() => void analyseChart(activeChart)}>RECHECK THIS CHART</button>
-          {busy ? <button type="button" onClick={invalidate}>CANCEL ANALYSIS</button> : null}
-          {error ? <p role="alert">{error}</p> : null}
-        </>}
+      <section className="pnCentre" ref={centreRef} id="pn-chart-workspace" aria-label="Chart evidence workspace">
+        {demoMode ? <p className="pnDemoBanner" role="status">INTERFACE DEMO · synthetic sample · no uploaded chart analysed · no credits used</p> : <section className="pnSourceControls" aria-label="Source and analysis controls">
+          {activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <section className="pnLockedFacts" aria-label="Locked source chart facts"><div><span>SOURCE FACTS LOCKED</span><strong>{activeSlot.confirmation.instrument} · {activeSlot.confirmation.timeframe} · {activeSlot.confirmation.currentPrice}</strong></div><button type="button" onClick={()=>changePreflight(activeChart,activeSlot.revision,"IDLE")}>Edit chart facts</button></section> : <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image??""} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} />}
+          {!privacy ? <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)}/><span><strong>Confirm upload privacy</strong>Personal details are removed from every uploaded chart.</span></label> : null}
+          <div className="pnSourceActions"><button type="button" disabled={busy || uploading || !privacy || !activeSlot.confirmation || !preflightAllowsAnalysis(activeSlot.status)} onClick={() => void analyseChart(activeChart)}>{busyChart===activeChart ? "ANALYSING CHART "+(activeChart+1) : "RECHECK THIS CHART"}</button>
+          {busy ? <button className="pnCancel" type="button" onClick={()=>invalidate()}>CANCEL CHART {Number(busyChart)+1}</button> : null}
+          <label className="pnReplace">Replace source<input type="file" aria-label={`Replace chart ${activeChart+1}`} accept="image/jpeg,image/png,image/webp" onChange={e=>{void loadChart(activeChart,e.target.files?.[0]);e.target.value="";}}/></label></div>
+          {activeSlot.message ? <p role={activeSlot.runState==="CANCELLED"?"status":"alert"} className="pnError">{activeSlot.message}</p> : null}
+        </section>}
+        {notice ? <p className="pnNotice" role="status">{notice}</p> : null}
         <header className="pnChartHeader">
           <div><small>ACTIVE VIEW</small><strong>{TABS.find(t=>t.id===active)?.label}</strong></div>
           <div className="pnQuality">
-            <span data-state={analysis.evidenceQuality.chartReadability==="CLEAR"?"VERIFIED":"PARTIAL"}>CHART {analysis.evidenceQuality.chartReadability}</span>
+            <span data-state={analysis.evidenceQuality.chartReadability==="CLEAR"?"REPORTED":"PARTIAL"}>CHART {analysis.evidenceQuality.chartReadability}</span>
             <span data-state={statusOf(analysis,"levels")}>LEVELS {statusLabel(statusOf(analysis,"levels"))}</span>
             <span data-state={statusOf(analysis,"patterns")}>PATTERN {statusLabel(statusOf(analysis,"patterns"))}</span>
             <span data-state={statusOf(analysis,"liquidity")}>LIQUIDITY {statusLabel(statusOf(analysis,"liquidity"))}</span>
@@ -497,15 +558,16 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
             type="button"
             data-active={activeChart===index}
             data-busy={busyChart===index}
+            aria-pressed={activeChart===index}
+            aria-label={`Chart ${index+1}, ${workspaceSlotTimeframe(slot, CHART_SLOT_HINTS[index], demoMode)}, ${demoMode ? "DEMO" : workspaceSlotLabel(slot)}`}
             onClick={()=>void selectChart(index)}
-            disabled={busy && busyChart!==index}
-          ><span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>{busyChart===index ? "AI…" : slot.analysis?.timeframe && slot.analysis.timeframe!=="UNKNOWN" ? slot.analysis.timeframe : slot.analysis ? "READY" : slot.localScan ? "DEVICE" : "SCAN…"}</strong></button> : <label key={index} className="pnChartAdd">
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>loadChart(index,e.target.files?.[0])}/>
-            <span>{index===0 ? "MAIN" : "C"+(index+1)}</span><strong>+</strong>
+          ><span>{workspaceSlotTimeframe(slot, CHART_SLOT_HINTS[index], demoMode)}</span><strong>{uploadingSlots[index] ? "READING" : demoMode ? "DEMO" : workspaceSlotLabel(slot)}</strong></button> : <label key={index} className="pnChartAdd" data-disabled={demoMode}>
+            <input aria-label={`Add chart ${index+1}, suggested ${CHART_SLOT_HINTS[index]}`} disabled={demoMode} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e)=>{void loadChart(index,e.target.files?.[0]);e.target.value="";}}/>
+            <span>{CHART_SLOT_HINTS[index]}</span><strong>{demoMode ? "—" : "+"}</strong>
           </label>)}
         </div>
 
-        <div className="pnChart" ref={chartRef} data-focus={chartFocus ? "true" : "false"}>
+        <div className="pnChart" ref={chartRef} data-focus={chartFocus ? "true" : "false"} role={chartFocus?"dialog":undefined} aria-modal={chartFocus?true:undefined} aria-label={chartFocus?"Focused source chart":undefined}>
           {demoMode ? <img ref={chartImageRef} src={image ?? ""} alt="Synthetic interface demo chart"/> : <OriginalChartEvidence layer={active === "patterns" ? "patterns" : active === "liquidity" ? "liquidity" : "levels"} image={image ?? ""} report={analysis} identityConfirmed={Boolean(activeSlot.confirmation) && preflightAllowsAnalysis(activeSlot.status)} /> }
           <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
           {demoMode && <svg style={overlayStyle} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
@@ -539,7 +601,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
           <span>{activeLocal ? `DEVICE · ${activeLocal.levels.length} LV · ${devicePatternCount} PT · ${activeLocal.liquidity.zones.length} LQ` : "SOURCE IMAGE PRESERVED"}</span>
           <span>{active==="levels" ? analysis.levelStory : active==="structure" ? analysis.marketStructure : active==="patterns" ? (patterns[0]?.evidence || "No defensible pattern is currently verified.") : active==="liquidity" ? (liquidity?.evidence || "No defensible liquidity event is currently verified.") : "Select a scanner to isolate its evidence on the chart."}</span>
         </footer>
-        {!demoMode && !deviceOnly && image && activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <PocketWorkflowDesk key={`workflow-${activeChart}-${activeSlot.revision}-${activeSlot.reportRevision??0}`} image={image} report={analysis} intention={intention} macroContext={macroContext}/> : null}
+        {!demoMode && !deviceOnly && image && activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <PocketWorkflowDesk key={`workflow-${activeChart}-${activeSlot.revision}-${activeSlot.reportRevision??0}`} image={image} report={analysis} intention={activeSlot.reportIntention??intention} macroContext={macroContext}/> : null}
       </section>
 
       <aside className="pnDecision">
@@ -556,12 +618,12 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
             <div className="pnTriptych"><article><small>NOW</small><strong>{analysis.nextSequence.now}</strong></article><article><small>CONFIRMS</small><strong>{analysis.nextSequence.confirmation}</strong></article><article><small>FAILS</small><strong>{analysis.nextSequence.failure}</strong></article></div>
             <section className="pnMiss"><small>STRONGEST COUNTER-EVIDENCE</small><strong>{analysis.whatYouMayBeMissing[0] || analysis.contradictions[0] || "No strong contradiction was returned."}</strong></section>
           </>}
-          <div className="pnRows pnMultiChart"><article><span>MULTI-CHART CONTEXT</span><strong>{multiChart.ready}/{multiChart.loaded || 1} reports returned</strong><small>{multiChart.structural} show structural references · {multiChart.cleanPatterns} show clean patterns · {multiChart.liquidityRefs} show liquidity references.</small></article><article><span>PRICE CONFLUENCE</span><strong>{multiChart.verifiedScales>=2 ? "Multiple model scales reported; original-pixel verification required" : "No verified price confluence established"}</strong><small>Pocket will only claim cross-timeframe price confluence when numeric scales are independently verified.</small></article></div>
+          <div className="pnRows pnMultiChart"><article><span>MULTI-CHART CONTEXT</span><strong>{multiChart.ready}/{multiChart.loaded || 1} reports returned</strong><small>{demoMode ? "Synthetic example only; your charts have not been compared." : workspaceContext(charts)}</small></article><article><span>PRICE CONFLUENCE</span><strong>{multiChart.verifiedScales>=2 ? "Multiple model scales reported; original-pixel verification required" : "No verified price confluence established"}</strong><small>Pocket will only claim cross-timeframe price confluence when numeric scales are independently verified.</small></article></div>
         </> : null}
 
         {active==="levels" ? <>
           {!demoMode && !deviceOnly ? <details className="pnToolDetails" open><summary>Options Wall Cross-check</summary><OptionsWallCheck key={`options-${activeChart}-${activeSlot.revision}`} ticker={analysis.ticker} levels={analysis.levels} /></details> : null}
-          <div className="pnDecisionLabel">VERIFIED PRICE REFERENCES</div>
+          <div className="pnDecisionLabel">REPORTED PRICE REFERENCES</div>
           <h2>{levels.length ? levels.length+" structural levels" : "Precision held"}</h2>
           <p>{analysis.levelStory}</p>
           <div className="pnRows">{levels.length ? levels.map((l,i)=><article key={i}><span>{l.kind.toUpperCase()}</span><strong>{l.price || "NO NUMERIC PRICE"}</strong><small>{l.label}</small></article>) : <article><span>NO VERIFIED LEVEL</span><strong>—</strong><small>Pocket withheld numeric precision.</small></article>}</div>
@@ -577,7 +639,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
         {active==="patterns" ? <>
           <div className="pnDecisionLabel">PATTERN REVIEW</div>
           <h2>{patterns.length ? patterns.length+" defensible read"+(patterns.length===1?"":"s") : "No clean pattern"}</h2>
-          <p>Pocket only keeps named structures that survive the geometry check.</p>
+          <p>Reported candidates stay separate from original-pixel checks. The chart overlay shows only candidates that pass those independent checks.</p>
           <div className="pnRows">{patterns.length ? patterns.map((p,i)=><article key={i}><span>{p.status} · {p.confidence ?? "LOW"}</span><strong>{p.name}</strong><small>{p.evidence}</small></article>) : <article><span>NO EVIDENCE</span><strong>Nothing forced.</strong><small>A wider or clearer chart may add evidence.</small></article>}</div>
         </> : null}
 
@@ -602,6 +664,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
             <div className="pnRows">{analysis.riskFlags.map((r,i)=><article key={i}><span>RISK {String(i+1).padStart(2,"0")}</span><strong>{r}</strong></article>)}<article><span>INVALIDATION</span><strong>{analysis.invalidation}</strong></article><article><span>TRADER TRAP</span><strong>{analysis.traderTrap}</strong></article></div>
           </>}
         </> : null}
+        {!demoMode ? <details className="pnToolDetails pnAccount"><summary>Account & subscription</summary><NativeSubscriptionControls /></details> : null}
       </aside>
     </section>
   </main>;

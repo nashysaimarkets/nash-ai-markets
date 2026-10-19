@@ -14,7 +14,7 @@ async function harness(claim: Record<string,unknown>) {
   const projectSource=provider.slice(provider.indexOf('export function pocketTestProviderProject()'),provider.indexOf('\nfunction completeProviderUsage'))
     .replace('export function','function');
   const guard=await readFile(new URL('../app/lib/server/pocket-scan-access.ts',import.meta.url),'utf8');
-  const guardSource=guard.slice(guard.indexOf('export async function requirePocketScanAccess(')).replace('export async function','async function');
+  const guardSource=guard.slice(guard.indexOf('export async function requirePocketScanAccess(')).replaceAll('export async function','async function');
   const calls: string[]=[];
   const config:Record<string,string>={POCKET_BENCHMARK_LEDGER_KEY:'qa-ledger',POCKET_BENCHMARK_OPENAI_PROJECT_ID:'proj_qa',POCKET_BENCHMARK_APPROVAL_REF:'qa-only',POCKET_BENCHMARK_CANDIDATE_SHA:'b'.repeat(40)};
   const bindings={

@@ -31,15 +31,17 @@ test("actual redesign handler blocks unconfirmed charts and abandons cancelled c
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   let dispatches = 0, cropResolve!: (value: null) => void;
   const crop = new Promise<null>(resolve => { cropResolve = resolve; });
-  const slot = { image: "A", status: "LOCKED", confirmation: null as unknown, revision: 1 };
+  const slot = { image: "A", status: "LOCKED", confirmation: null as unknown, revision: 1, analysis: null, runState: "IDLE" };
   const epoch = createChartRequestEpoch();
-  const bindings = { charts: [slot], privacy: true, busy: false, requestActive: { current: false }, demoMode: false, chartEpoch: { current: epoch }, controllerRef: { current: null }, preflightAllowsAnalysis: () => true, setBusyChart: () => {}, setError: () => {}, precisionCrop: async () => crop, pocketAuthenticatedFetch: async () => { dispatches++; throw new Error("transport reached"); }, intention: "UNSURE", setCharts: () => { throw new Error("stale result applied"); }, setActiveChart: () => {}, setActive: () => {} };
+  let updates=0;
+  const bindings = { charts: [slot], privacy: true, busy: false, uploading:false, requestActive: { current: false }, requestSource:{current:null}, demoMode: false, chartEpoch: { current: epoch }, controllerRef: { current: null }, preflightAllowsAnalysis: () => true, setBusyChart: () => {}, setNotice: () => {}, precisionCrop: async () => crop, pocketAuthenticatedFetch: async () => { dispatches++; throw new Error("transport reached"); }, intention: "UNSURE", setCharts: () => { updates++; }, setActiveChart: () => {}, setActive: () => {}, activeChartRef:{current:0} };
   const handler = await new AsyncFunction(...Object.keys(bindings), stripTypeScriptTypes(body) + "\nreturn analyseChart;")(...Object.values(bindings));
   await handler(0); assert.equal(dispatches, 0); assert.equal(bindings.requestActive.current, false);
   slot.confirmation = { instrument: "US 500", timeframe: "5m", currentPrice: "100" };
   const pending = handler(0);
   epoch.invalidate(); cropResolve(null); await pending;
   assert.equal(dispatches, 0); assert.equal(bindings.requestActive.current, false);
+  assert.equal(updates,1,'only the initial running state is applied; the cancelled crop never accepts a report');
 });
 
 test("professional preview exposes guarded existing cross-check and native subscription tools without dispatching them in demos", async () => {
@@ -51,7 +53,7 @@ test("professional preview exposes guarded existing cross-check and native subsc
 test('redesign workflows are isolated to a confirmed real source report; customer entrypoint is preserved',async()=>{
  const source=await readFile(new URL('../app/pocket-next/PocketNext.tsx',import.meta.url),'utf8');
  assert.match(source,/!demoMode && !deviceOnly && image && activeSlot.confirmation && preflightAllowsAnalysis\(activeSlot.status\).*<PocketWorkflowDesk/);
- assert.match(source,/reportRevision:\(chart.reportRevision\?\?0\)\+1/);
+ assert.match(source,/acceptWorkspaceReport\(chart, slot.revision, confirmation, report\)/);
  assert.match(source,/key=\{`workflow-\$\{activeChart\}-\$\{activeSlot.revision\}-\$\{activeSlot.reportRevision\?\?0\}`\}/);
  const customer=await readFile(new URL('../app/pocket/page.tsx',import.meta.url),'utf8');assert.match(customer,/<PocketBullseye macroContext=/);assert.doesNotMatch(customer,/<PocketNext/);
 });

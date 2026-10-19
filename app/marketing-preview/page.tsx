@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>> | Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function resolveState(raw: string | string[] | undefined): MarketingPreviewStateId {
@@ -37,7 +37,7 @@ export default async function MarketingPreviewPage({ searchParams }: PageProps) 
   // Hard production guard — this route must never render on Vercel Production.
   if (process.env.VERCEL_ENV === "production") notFound();
 
-  const params = searchParams instanceof Promise ? await searchParams : searchParams;
+  const params = await searchParams;
   const initialState = resolveState(params?.state);
   const initialPage = resolveMarketingPreviewPage(params?.view);
   const fixture = getMarketingPreviewFixture(initialState);

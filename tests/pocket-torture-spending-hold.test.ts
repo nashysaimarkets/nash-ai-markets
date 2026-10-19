@@ -56,3 +56,60 @@ test('immediate POST measurement must pass final database release veto', async (
     await assert.rejects(()=>run(record,async()=>({released:true,measurement}),'range-clear',{pass:true},true,2000,responses,200,publishedLedgerMeasurement),/valid case measurement/);
   }
 });
+
+
+test('CLI measurement publication must pass the final database release veto', async () => {
+  const source=await readFile(new URL('../scripts/run-pocket-image-torture.ts',import.meta.url),'utf8');
+  assert.match(source,/import \{[^}]*releasePocketBenchmarkMeasurement[^}]*\} from/);
+  const helperStart=source.indexOf('async function finalCliLedgerMeasurement(');
+  const helperEnd=source.indexOf('\ntype Counts =',helperStart);
+  assert.ok(helperStart>0 && helperEnd>helperStart,'CLI final release helper not found');
+  let releases=0;
+  const deny=async()=>{releases++;return {released:false};};
+  const finalCliLedgerMeasurement=new Function('releasePocketBenchmarkMeasurement',
+    stripTypeScriptTypes(source.slice(helperStart,helperEnd))+'; return finalCliLedgerMeasurement;'
+  )(deny) as (caseId:string,reconciled:boolean)=>Promise<Record<string,unknown>|null>;
+
+  assert.equal(await finalCliLedgerMeasurement('range-clear',false),null);
+  assert.equal(releases,0,'unreconciled case must not attempt final release');
+  assert.equal(await finalCliLedgerMeasurement('range-clear',true),null);
+  assert.equal(releases,1,'reconciled case must perform exactly one final release check');
+
+  const allow=new Function('releasePocketBenchmarkMeasurement',
+    stripTypeScriptTypes(source.slice(helperStart,helperEnd))+'; return finalCliLedgerMeasurement;'
+  )(async()=>({released:true,measurement:{pass:false,provenance:'settled'}})) as typeof finalCliLedgerMeasurement;
+  assert.deepEqual(await allow('range-clear',true),{
+    pass:false,provenance:'settled',ledgerReleaseVerified:true,ledgerCaseId:'range-clear',
+  });
+
+  for (const measurement of [undefined,null,[],true,'invalid']) {
+    const malformed=new Function('releasePocketBenchmarkMeasurement',
+      stripTypeScriptTypes(source.slice(helperStart,helperEnd))+'; return finalCliLedgerMeasurement;'
+    )(async()=>({released:true,measurement})) as typeof finalCliLedgerMeasurement;
+    await assert.rejects(()=>malformed('range-clear',true),/valid case measurement/);
+  }
+});
+
+
+test('CLI zero-measurement failure emits only an explicit unscored marker', async () => {
+  const source=await readFile(new URL('../scripts/run-pocket-image-torture.ts',import.meta.url),'utf8');
+  const branch=source.indexOf('}else{\n  console.log("IMAGE_TORTURE_UNSCORED"');
+  const bodyStart=source.indexOf('\n',branch)+1;
+  const bodyEnd=source.indexOf('\n}\nif(failures.length)',bodyStart);
+  assert.ok(branch>0 && bodyStart>branch && bodyEnd>bodyStart,'zero-measurement branch not found');
+  const calls:unknown[][]=[];
+  const state:{exitCode?:number}={};
+  new Function('summary','console','process',source.slice(bodyStart,bodyEnd))(
+    {measurementComplete:false,measuredCases:0},
+    {log:(...args:unknown[])=>calls.push(args)},
+    state,
+  );
+  assert.equal(state.exitCode,1);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0]![0],'IMAGE_TORTURE_UNSCORED');
+  assert.doesNotMatch(calls.flat().join(' '),/IMAGE_TORTURE_MEASUREMENTS/);
+  const payload=JSON.parse(String(calls[0]![1])) as Record<string,unknown>;
+  assert.equal(payload.scored,false);
+  assert.equal(payload.reason,'NO_SUCCESSFUL_MEASUREMENT');
+  assert.equal(payload.measuredCases,0);
+});

@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - release/bullseye-launch-candidate
+      - monaco-release-integration-reviewed-20261018
   pull_request:
     branches:
       - main
+      - qa/image-torture-corpus-2026-10-07
   workflow_dispatch:
 
 permissions:
@@ -26,13 +28,16 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
       APP_VERSION: "ci"
       BUILD_TIMESTAMP: "2026-08-15T00:00:00.000Z"
-      GIT_COMMIT_SHA: ${{ github.sha }}
+      GIT_COMMIT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_ci_placeholder"
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
       - name: Use Node.js 22
         uses: actions/setup-node@v4

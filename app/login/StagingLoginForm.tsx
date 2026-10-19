@@ -13,12 +13,12 @@ import {
 } from "../lib/auth/safe-auth-redirect";
 import { LOGIN_STING_PENDING_KEY } from "../components/BullseyeLoginSting";
 
-function resolveLoginRedirectTo(origin: string, search: string): { emailRedirectTo: string; next: string } {
+function resolveLoginRedirectTo(origin: string, search: string, fallback?: string): { emailRedirectTo: string; next: string } {
   if (!isAllowedAuthOrigin(origin)) {
     throw new Error("Untrusted login origin");
   }
   const requestedNext = new URLSearchParams(search).get("next");
-  const next = safeAuthNextPath(requestedNext, defaultPostAuthPath(origin));
+  const next = safeAuthNextPath(requestedNext, fallback ?? defaultPostAuthPath(origin));
   return { emailRedirectTo: buildEmailRedirectTo(origin, next), next };
 }
 
@@ -58,11 +58,15 @@ function messageForOtpRequestError(error: { code?: string; message?: string; sta
 }
 
 type StagingLoginFormProps = {
+  defaultNext?: "/pocket";
+  existingAccountOnly?: boolean;
   supabaseUrl: string;
   supabasePublishableKey: string;
 };
 
 export default function StagingLoginForm({
+  defaultNext,
+  existingAccountOnly = false,
   supabaseUrl,
   supabasePublishableKey,
 }: StagingLoginFormProps) {
@@ -102,6 +106,7 @@ export default function StagingLoginForm({
       const { emailRedirectTo, next } = resolveLoginRedirectTo(
         window.location.origin,
         window.location.search,
+        defaultNext,
       );
       form.setAttribute("data-email-redirect-to", emailRedirectTo);
       form.setAttribute("data-auth-next", next);
@@ -122,7 +127,7 @@ export default function StagingLoginForm({
       form.setAttribute("data-auth-redirect-ready", "false");
       form.removeAttribute("data-email-redirect-to");
     }
-  }, [supabaseUrl]);
+  }, [supabaseUrl, defaultNext]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -144,7 +149,7 @@ export default function StagingLoginForm({
         return;
       }
       formRef.current?.setAttribute("data-auth-provider-ready", "true");
-      const { emailRedirectTo, next } = resolveLoginRedirectTo(origin, window.location.search);
+      const { emailRedirectTo, next } = resolveLoginRedirectTo(origin, window.location.search, defaultNext);
       persistAuthNextCookie(next);
       formRef.current?.setAttribute("data-email-redirect-to", emailRedirectTo);
       formRef.current?.setAttribute("data-auth-next", next);
@@ -152,7 +157,7 @@ export default function StagingLoginForm({
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          shouldCreateUser: true,
+          shouldCreateUser: !existingAccountOnly,
           emailRedirectTo,
         },
       });
@@ -197,7 +202,7 @@ export default function StagingLoginForm({
 
   return (
     <form ref={formRef} className="accessForm" onSubmit={submit} data-auth-redirect-ready="false">
-      <label htmlFor="email">Membership email</label>
+      <label htmlFor="email">{existingAccountOnly ? "Pocket account email" : "Membership email"}</label>
       <div className="accessInputWrap">
         <span aria-hidden="true">@</span>
         <input
@@ -214,7 +219,7 @@ export default function StagingLoginForm({
           required
         />
       </div>
-      <p id="email-guidance">Use the same address you used for your NASH AI membership.</p>
+      <p id="email-guidance">{existingAccountOnly ? "Use the email address for your existing Pocket account." : "Use the same address you used for your NASH AI membership."}</p>
       <button type="submit" disabled={loading || cooldown > 0} aria-busy={loading}>
         <span>{loading ? "Requesting secure link…" : cooldown > 0 ? `Retry available in ${cooldown}s` : "Email me a secure sign-in link"}</span>
         <i aria-hidden="true">↗</i>

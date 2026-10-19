@@ -50,9 +50,9 @@ export default function PocketFoundingWelcome() {
     <main className="pfLaunch pfWelcome">
       <section className="pfWelcomeHero">
         <div className="pfWelcomeTarget" aria-hidden="true">🎯</div>
-        <span>PAYMENT CONFIRMATION RECEIVED</span>
+        <span>CHECK YOUR SUBSCRIPTION</span>
         <h1>Welcome to<br /><em>Pocket Bullseye.</em></h1>
-        <p className="pfWelcomeLead">Stripe is securely confirming your subscription and Founding 650 position. Use the same email address to access Pocket.</p>
+        <p className="pfWelcomeLead">Open Pocket with the verified account you used at checkout to check your subscription. A visit to this page does not confirm payment or scanner access.</p>
 
         <div className="pfWelcomeStatus"><i aria-hidden="true" /><div><strong>WHAT HAPPENS NOW</strong><p>Check for your Stripe receipt, then open Pocket. If access is still updating, wait briefly and retry—do not purchase twice.</p></div></div>
 

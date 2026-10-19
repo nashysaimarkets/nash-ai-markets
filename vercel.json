@@ -3,7 +3,13 @@
   "git": {
     "deploymentEnabled": {
       "monaco-cap-hardening-20261018": false,
-      "monaco-reserved-accounting-20261019": false
+      "monaco-reserved-accounting-20261019": false,
+      "monaco-release-integration-reviewed-20261018": false,
+      "monaco-master-126-20261019-b02d5dd": false,
+      "monaco-ui-126-20261019": false,
+      "monaco-scanner-126-20261019": false,
+      "monaco-product-126-20261019": false,
+      "monaco-ig-126-20261019": false
     }
   }
 }

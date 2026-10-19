@@ -83,12 +83,14 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
     ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
     .filter((item): item is ScaleAnchor => item.price !== null && item.price > 0 && item.y !== null && item.y >= 0 && item.y <= 100) : [];
   const scale = verifiedLinearScale(anchors);
-  const allowedBasis = new Set(["EQUAL_HIGHS", "EQUAL_LOWS", "PRIOR_SWING_HIGH", "PRIOR_SWING_LOW", "RANGE_HIGH", "RANGE_LOW"]);
   const zones = Array.isArray(source.zones) ? source.zones.flatMap((item) => {
     if (!item || typeof item !== "object") return [];
     const zone = item as JsonRecord;
     const side: "BUY_SIDE" | "SELL_SIDE" | null = zone.side === "BUY_SIDE" || zone.side === "SELL_SIDE" ? zone.side : null;
-    const basis = typeof zone.basis === "string" && allowedBasis.has(zone.basis) ? zone.basis : null;
+    const allowedBasis = side === "BUY_SIDE"
+      ? ["EQUAL_HIGHS", "PRIOR_SWING_HIGH", "RANGE_HIGH"]
+      : ["EQUAL_LOWS", "PRIOR_SWING_LOW", "RANGE_LOW"];
+    const basis = typeof zone.basis === "string" && allowedBasis.includes(zone.basis) ? zone.basis : null;
     const x = numericPrice(zone.x), x2 = numericPrice(zone.x2), y = numericPrice(zone.y), price = numericPrice(zone.price);
     if (!side || !basis || x === null || x2 === null || y === null || x < left || x2 > right || x2 - x < 8 || y < top || y > bottom) return [];
     const interval = zone.priceLow != null || zone.priceHigh != null;
@@ -121,7 +123,12 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
 }
 
 function verifiedLinearScale(items: ScaleAnchor[]) {
-  const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price || candidate.y === item.y) === index);
+  // Duplicate reads of the same tick are harmless. Conflicting labels or rows
+  // must invalidate the scale, rather than disappear during deduplication.
+  if (items.some((item, index) => items.slice(index + 1).some(candidate =>
+    (candidate.price === item.price && candidate.y !== item.y) ||
+    (candidate.y === item.y && candidate.price !== item.price)))) return null;
+  const unique = items.filter((item, index, all) => all.findIndex((candidate) => candidate.price === item.price && candidate.y === item.y) === index);
   if (unique.length < 2) return null;
   const ordered = [...unique].sort((a, b) => a.price - b.price);
   if (!ordered.every((item, index) => index === 0 || item.y < ordered[index - 1].y)) return null;
@@ -249,7 +256,10 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   const hasVerifiedScale = Boolean(verifiedLinearScale(verifiedAnchors as ScaleAnchor[]));
   if (hasVerifiedScale) {
     calibrated.evidenceQuality = { ...quality, scaleReadable: true };
-  } else if (quality.scaleReadable === false) {
+  } else {
+    // A prose claim of readability cannot restore numeric outputs after the
+    // geometry pass failed to establish a consistent scale.
+    calibrated.evidenceQuality = { ...quality, scaleReadable: false };
     calibrated.levels = Array.isArray(calibrated.levels)
       ? calibrated.levels.map((item) => item && typeof item === "object" ? { ...(item as JsonRecord), price: "" } : item)
       : [];
