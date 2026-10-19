@@ -10,11 +10,15 @@ export const dynamic = "force-dynamic";
 
 function requestOrigin(request: Request): string | null {
   try {
-    const origin = new URL(request.url).origin;
-    return origin.startsWith("https://") || origin.startsWith("http://localhost") ? origin : null;
+    const url = new URL(request.url);
+    return url.protocol === "https:" || (url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) ? url.origin : null;
   } catch {
     return null;
   }
+}
+
+function cancelledCheckout() {
+  return NextResponse.json({ error: "Checkout request cancelled" }, { status: 409 });
 }
 
 export async function POST(request: Request) {
@@ -23,7 +27,14 @@ export async function POST(request: Request) {
   if (!origin || requestOriginHeader !== origin) {
     return NextResponse.json({ error: "Checkout request rejected" }, { status: 403 });
   }
-  const form = await request.formData();
+  if (request.signal.aborted) return cancelledCheckout();
+  let form: FormData;
+  try { form = await request.formData(); }
+  catch {
+    if (request.signal.aborted) return cancelledCheckout();
+    return NextResponse.json({ error: "Invalid checkout form" }, { status: 400 });
+  }
+  if (request.signal.aborted) return cancelledCheckout();
   const attribution = campaignAttribution({
     utm_source: form.get("utm_source"),
     utm_medium: form.get("utm_medium"),
@@ -75,6 +86,10 @@ export async function POST(request: Request) {
       if (accessError || typeof active !== "boolean") throw new Error("Pocket subscription lookup unavailable");
       if (active) return NextResponse.redirect(new URL("/pocket?subscription=active", origin), 303);
     }
+    // Account/price lookups are asynchronous. An abandoned request must not
+    // begin session creation after those lookups return. Already dispatched
+    // Stripe operations cannot be undone by a later browser cancellation.
+    if (request.signal.aborted) return cancelledCheckout();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: selected.priceId, quantity: 1 }],
