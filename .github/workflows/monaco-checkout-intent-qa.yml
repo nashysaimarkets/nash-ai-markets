@@ -1,0 +1,59 @@
+name: Monaco checkout intent disposable QA
+on:
+  push:
+    branches: ['monaco-checkout-intent-proposal-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checkout-intent-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: checkout_intent_qa
+        options: >-
+          --health-cmd "pg_isready -U postgres -d checkout_intent_qa"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Offline durable intent regression tests
+        run: node --test tests/pocket-checkout-intent.test.ts
+      - name: Isolated route, helper and SQL recovery checks
+        run: |
+          npm install --prefix "$RUNNER_TEMP/checkout-intent-qa" --no-audit --no-fund --save-exact @electric-sql/pglite@0.5.10
+          export POCKET_CHECKOUT_QA_PGLITE_MODULE="$RUNNER_TEMP/checkout-intent-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node tests/run-pocket-checkout-pglite.mjs
+          node tests/run-pocket-checkout-independent.mjs
+          node tests/run-pocket-checkout-route-integration.mjs
+      - name: Synthetic schema and role/identity tests in disposable PostgreSQL 17
+        env:
+          QA_PG_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 < tests/sql/support/pocket-checkout-intent-bootstrap.sql > /tmp/checkout-bootstrap.log
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 < supabase/proposed/pocket-checkout-intent.sql > /tmp/checkout-proposal.log
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 < tests/sql/support/pocket-checkout-intent-helpers.sql > /tmp/checkout-helpers.log
+          python3 - <<'PY' | docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 > /tmp/checkout-sql-tests.log
+          from pathlib import Path
+          print('begin; set local statement_timeout=45000;')
+          print(Path('tests/sql/pocket-checkout-intent.sql').read_text())
+          print('rollback;')
+          print("do $$ begin assert (select count(*) from private.pocket_checkout_intents)=0; end $$;")
+          PY
+      - name: Real overlapping PostgreSQL sessions, no provider traffic
+        env:
+          QA_PG_CONTAINER: ${{ job.services.postgres.id }}
+          POCKET_CHECKOUT_QA_DISPOSABLE_DATABASE: 'true'
+        run: python3 tests/run-pocket-checkout-concurrency.py
