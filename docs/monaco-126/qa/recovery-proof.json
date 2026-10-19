@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "scope": "OFFLINE_LOCAL_FIXTURE",
+  "result": "PASS",
+  "generatedAtUtc": "2026-10-19T20:35:54.766Z",
+  "node": "v24.19.0",
+  "checks": [
+    {
+      "name": "stopped process leaves independently readable RUNNING manifest and exact pushed source receipt",
+      "result": "PASS",
+      "durationMs": 28.65
+    },
+    {
+      "name": "independent resume process verifies saved heads/owner and commits one allowlisted local action",
+      "result": "PASS",
+      "durationMs": 151.06
+    },
+    {
+      "name": "second independent resume saves a fresh receipt without another action or commit",
+      "result": "PASS",
+      "durationMs": 151.65
+    },
+    {
+      "name": "wrong owner cannot write or infer authority from a saved checkpoint",
+      "result": "PASS",
+      "durationMs": 163.7
+    },
+    {
+      "name": "changed local and remote heads refuse resume without overwriting the checkpoint",
+      "result": "PASS",
+      "durationMs": 125.85
+    },
+    {
+      "name": "watchdog: RUNNING stale with complete current evidence",
+      "result": "PASS",
+      "durationMs": 1.21
+    },
+    {
+      "name": "watchdog: PAUSED stays quiet",
+      "result": "PASS",
+      "durationMs": 0.03
+    },
+    {
+      "name": "watchdog: HANDOFF stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog: BLOCKED_EXTERNAL stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog: DONE stays quiet",
+      "result": "PASS",
+      "durationMs": 0.05
+    },
+    {
+      "name": "watchdog: recent RUNNING stays quiet",
+      "result": "PASS",
+      "durationMs": 0.19
+    },
+    {
+      "name": "watchdog: exactly two hours is not stalled",
+      "result": "PASS",
+      "durationMs": 0.04
+    },
+    {
+      "name": "watchdog: unknown heartbeat stays quiet",
+      "result": "PASS",
+      "durationMs": 0.03
+    },
+    {
+      "name": "watchdog: unknown lease stays quiet",
+      "result": "PASS",
+      "durationMs": 0.02
+    },
+    {
+      "name": "watchdog: expired lease stays quiet",
+      "result": "PASS",
+      "durationMs": 0.02
+    },
+    {
+      "name": "watchdog: active CI stays quiet",
+      "result": "PASS",
+      "durationMs": 0.1
+    },
+    {
+      "name": "watchdog: unknown CI stays quiet",
+      "result": "PASS",
+      "durationMs": 0.02
+    },
+    {
+      "name": "watchdog: active tools stay quiet",
+      "result": "PASS",
+      "durationMs": 0.06
+    },
+    {
+      "name": "watchdog: unknown tools stay quiet",
+      "result": "PASS",
+      "durationMs": 0.05
+    },
+    {
+      "name": "watchdog: active writer stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog: unknown writer stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog: explicit handoff stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog: successor claim stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog: unchecked successor stays quiet",
+      "result": "PASS",
+      "durationMs": 0.02
+    },
+    {
+      "name": "watchdog: unverified heads stay quiet",
+      "result": "PASS",
+      "durationMs": 0.11
+    },
+    {
+      "name": "watchdog: changed remote head stays quiet",
+      "result": "PASS",
+      "durationMs": 0.01
+    },
+    {
+      "name": "watchdog alert claim is durable and a second check of the same saved head is quiet",
+      "result": "PASS",
+      "durationMs": 3.19
+    },
+    {
+      "name": "stale heartbeat never grants a lease, wrong-owner resume, or an expired-lease write",
+      "result": "PASS",
+      "durationMs": 0.18
+    },
+    {
+      "name": "unproved DONE and arbitrary/paid actions cannot be inferred from a manifest",
+      "result": "PASS",
+      "durationMs": 27.22
+    }
+  ],
+  "networkRequests": 0,
+  "providerRequests": 0,
+  "realWorkSessionsResumed": 0,
+  "branchLeaseAcquisitions": 0,
+  "limits": [
+    "Local Git/file/process simulation only; not a real Work restart, hosted writer attestation, native/provider acceptance or hardware power-loss test.",
+    "Fixture manifests/receipts live outside the tracked throwaway worktree to avoid self-referential commit hashes; production durable checkpoint mapping belongs to RECOVERY-RUNBOOK.md.",
+    "Interrupted/inconsistent receipts, dirty/stale heads and stale locks require explicit owner reconciliation; heartbeat expiry never confers ownership."
+  ],
+  "processes": {
+    "savedByPid": 13,
+    "firstResumePid": 51,
+    "secondResumePid": 103
+  },
+  "checkpoints": {
+    "savedHead": "1d8c52f2fed3b24d2394f1cb62ccf3d3af7ffc13",
+    "savedTree": "426587c44e14d1e58cccf3c90bba8b7fc1913bbb",
+    "completedHead": "26723c77cda5ea7a2e5af8865fcc17d6a6a3a009",
+    "completedTree": "fec4f970af67b19497abf2294a3e342dbf27b745"
+  },
+  "localActionExecutions": 1,
+  "localActionCommits": 1,
+  "skipped": 0,
+  "sourceHashes": {
+    "policy": "af418cd703de15cac24a73dbfe8c56695b6790a5f42adadff93e8a0dc96f6e06",
+    "verifier": "e6be83f7b0b9818bec679303298ec8687845369626035590bdb46f58cb753f23"
+  }
+}

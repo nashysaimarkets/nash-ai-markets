@@ -1,0 +1,32 @@
+name: Monaco offline crash recovery proof
+on:
+  push:
+    branches: [monaco-coordination-126-20261019]
+permissions:
+  contents: read
+concurrency:
+  group: monaco-recovery-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  offline-recovery:
+    if: github.ref == 'refs/heads/monaco-coordination-126-20261019'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Prove independent local restart and read-only watchdog policy
+        run: node scripts/verify-monaco-recovery.mjs --proof artifacts/monaco-recovery-proof.json
+      - name: Preserve exact-checkout proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monaco-recovery-proof-${{ github.sha }}
+          path: artifacts/monaco-recovery-proof.json
+          if-no-files-found: error
+          retention-days: 7

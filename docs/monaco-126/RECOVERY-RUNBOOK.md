@@ -10,7 +10,7 @@ The authoritative contract is [issue126](https://github.com/nashysaimarkets/nash
 
 ## Current resumption order
 
-Check PR131's current exact-source CI first. Its2994b285 checkpoint fixes only two reproduced CI harness/config failures frombd50c47 (absolute PGlite path portability and central scope-variable documentation). Runtime route/helper/SQL hashes and their independent proofs are unchanged. Repair only actual failures. Then finish this branch's offline interrupted-handoff proof, fresh-context independent review and exact-head recovery CI; update the manifest with actual receipts. No release approval is implied by source acceptance.
+Check PR131's current exact-source CI first. Its2994b285 checkpoint fixes only two reproduced CI harness/config failures frombd50c47 (absolute PGlite path portability and central scope-variable documentation). Runtime route/helper/SQL hashes and their independent proofs are unchanged. Repair only actual failures. The29-case offline interrupted-handoff proof and fresh-context reconstruction have now passed; obtain this branch's exact-head recovery CI and update the manifest with its receipt. No release approval is implied by source acceptance.
 
 ## Ownership and rollback
 
@@ -35,3 +35,9 @@ Existing automation6ad67a914bf48191b7f2d48d4325bf83, Monaco Crash Recovery, runs
 Owner's existing active£4.99 binding/admission in Sitesv179 is accepted; do not repurchase, re-link or overwrite the live repair. Production/customer/Stripe/sharedDB/credentials/prices/stores/main remain untouched. Core release is analysis-only; IG is independent and OFF.
 
 Universal restart: Resume Operation Monaco from the newest verified checkpoint in issue126; read latest comments and manifest, positively verify writer ownership/current heads, execute the first unfinished safe action, reuse passed tests and save. No unapproved paid/live/merge/credential actions.
+
+## Offline rehearsal scope
+
+Run node scripts/verify-monaco-recovery.mjs --proof docs/monaco-126/qa/recovery-proof.json. The proof uses only temporary throwaway Git repositories, a local bare remote, filesystem receipts and distinct stopped/restarted Node processes. It commits one allowlisted local result once; another process records NOOP without a duplicate action/commit. Wrong owner, changed head and unknown/expired lease refuse. Its29cases also cover quiet watchdog states and an exclusively created one-alert receipt. Policy helpers are fixture-only and cannot launch Work, acquire a real lease, execute arbitrary manifest commands or send a notification. Actual automation delivery/deduplication and true Work relaunch are not proved.
+
+The fixture sub-schema uses worker/ownership/checkpoint/nextSafeAction plus independently supplied current observations, an unexpired explicit fixture owner receipt and a manifest digest. Real coordination identity uses an external GitHub issue receipt because the file cannot self-embed its enclosing commit. The production manifest is descriptive recovery state, never an automatic execution capability. Inconsistent receipts, intermediate power loss, dirty state or stale locks stay HOLD for explicit reconciliation; this is not a hardware power-loss test.

@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-19T20:33:09.770948+00:00",
+  "savedAtUtc": "2026-10-19T20:36:25.414037Z",
   "worker": {
     "id": "root-operation-monaco-20261019",
     "status": "RUNNING",
-    "lastVerifiedActivityAtUtc": "2026-10-19T20:31:23.919208+00:00",
-    "activeTask": "Persist recovery state and verify pending exact-head PR131 CI"
+    "lastVerifiedActivityAtUtc": "2026-10-19T20:36:25.414037Z",
+    "activeTask": "Publish verified offline recovery proof and obtain exact-head recovery CI"
   },
   "ownership": {
     "branch": "monaco-coordination-126-20261019",
     "writer": "root",
     "leaseId": "issue126-root-coordination-20261019",
     "status": "EXCLUSIVE",
-    "expectedHead": "ABSENT_NEW_BRANCH",
-    "expectedTree": null,
+    "expectedHead": "894678377ca88d9f4854821f860ca19ce9920667",
+    "expectedTree": "b1246a7e7da9f1efb17ae4185a97cc01c005924a",
     "ownedPaths": [
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
@@ -22,15 +22,16 @@
       "scripts/monaco-recovery-policy.mjs",
       "scripts/verify-monaco-recovery.mjs",
       ".github/workflows/monaco-recovery-qa.yml",
-      "vercel.json deploymentEnabled entry for this branch only"
+      "vercel.json deploymentEnabled entry for this branch only",
+      "docs/monaco-126/qa/recovery-proof.json"
     ],
     "verificationBasis": "Latest issue126 comments6276395597/6276446527/6276561885; PR130 remote unchanged10451b5; new coordination remote ref404; delegated implementation is disjoint, root sole publisher, all reviewers read-only"
   },
   "checkpoint": {
-    "lastVerifiedRemoteCommit": "10451b5d612b90b3daceda4b1d317a83d74dffad",
-    "lastVerifiedRemoteTree": "b7f0e51118e770bb7da544828676bc0d6bbcb0b2",
-    "branch": "monaco-reliability-126-20261019",
-    "savedAtUtc": "2026-10-19T20:30:25.836190+00:00",
+    "lastVerifiedRemoteCommit": "894678377ca88d9f4854821f860ca19ce9920667",
+    "lastVerifiedRemoteTree": "b1246a7e7da9f1efb17ae4185a97cc01c005924a",
+    "branch": "monaco-coordination-126-20261019",
+    "savedAtUtc": "2026-10-19T20:35:25.536217Z",
     "identityResolution": "Newest immutable issue126 checkpoint externally attests the enclosing coordination commit/tree; self-hash cannot be embedded in this file. Fetch/compare that receipt and branch HEAD."
   },
   "tracks": {
@@ -56,7 +57,8 @@
       "ciRuns": [
         39310022219
       ],
-      "activation": "OFF/unmounted; no authenticated provider acceptance"
+      "activation": "OFF/unmounted; no authenticated provider acceptance",
+      "tree": "c329c81b5b9a49a727fc2875e22ff63fb5b00d89"
     },
     "android": {
       "branch": "monaco-android-safety-126-20261019",
@@ -101,7 +103,7 @@
     },
     "recovery": {
       "sourceStatus": "IN_PROGRESS",
-      "externalAcceptance": "UNTESTED",
+      "externalAcceptance": "UNTESTED actual scheduled delivery/Work relaunch; offline source proof DONE",
       "owner": "root plus disjoint UI agent offline scripts; reviewers read-only"
     },
     "priorEvidence": {
@@ -230,6 +232,31 @@
       "unchangedProofSourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
       "reusedRun": 39317993998,
       "reason": "Only checkout server/protocol and QA/operations changes; no image/workspace/package dependency changed"
+    },
+    {
+      "id": "fresh-context-independent-reconstruction",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "894678377ca88d9f4854821f860ca19ce9920667",
+      "reviewer": "recovery_reader with fork_turns:none",
+      "coverage": "Read immutable manifest/runbook and latest issue comments, verified five PR/branch heads + coordination tree and11 named CI successes, next unfinished safe task, external gates/tests/rollback without prior chat memory",
+      "corrections": "Add omitted owned proof-output path and IG tree; remove stale activeTask CI-pending wording. Reconstruction passed, not rehearsal or actual Work relaunch acceptance."
+    },
+    {
+      "id": "offline-interrupted-handoff-proof",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "count": 29,
+      "passed": 29,
+      "skipped": 0,
+      "exitCode": 0,
+      "command": "node scripts/verify-monaco-recovery.mjs --proof docs/monaco-126/qa/recovery-proof.json",
+      "proof": "docs/monaco-126/qa/recovery-proof.json",
+      "coverage": "Stopped child checkpoint → independent child verifies local bare remote SHA/tree/owner → exactly one local action/commit → another child NOOP. Wrong owner, changed head, unknown/expired lease and watchdog state/alert-dedup negatives. No real Work restart, network, provider or real branch lease acquisition.",
+      "sourceHashes": {
+        "policy": "af418cd703de15cac24a73dbfe8c56695b6790a5f42adadff93e8a0dc96f6e06",
+        "verifier": "e6be83f7b0b9818bec679303298ec8687845369626035590bdb46f58cb753f23"
+      }
     }
   ],
   "artifacts": {
@@ -242,7 +269,8 @@
     "workerProof": "docs/monaco-126/qa/reliability/packaged-worker-10451b5.json",
     "workerCases": 4,
     "workerResult": "REAL PASS; outbound fetch prohibited",
-    "deployedPreview": "BLOCKED/UNTESTED; no deployed attestation"
+    "deployedPreview": "BLOCKED/UNTESTED; no deployed attestation",
+    "identityProofLimit": "Worker revision is configured build metadata, not an independent signed source attestation. Clean source10451b5 build and exact artifact hashes are recorded separately; no deployed source identity is proved."
   },
   "pendingOperations": [
     {
@@ -252,15 +280,15 @@
     },
     {
       "id": "offline-interrupted-handoff-proof",
-      "status": "IN_PROGRESS"
+      "status": "DONE"
     },
     {
       "id": "fresh-context-review",
-      "status": "UNTESTED"
+      "status": "DONE"
     },
     {
       "id": "coordination-exactCI",
-      "status": "UNTESTED"
+      "status": "IN_PROGRESS"
     }
   ],
   "watchdog": {
@@ -310,10 +338,11 @@
     "IG authorised DEMO/licence acceptance; public brand/legal/privacy/marketing/publication approval"
   ],
   "nextSafeAction": {
-    "id": "offline-interrupted-handoff-proof",
+    "id": "coordination-exact-CI",
     "status": "IN_PROGRESS",
-    "command": "node scripts/verify-monaco-recovery.mjs --output docs/monaco-126/qa/recovery-proof.json",
-    "dependency": "UI worker is preparing the three disjoint offline proof files; root verifies after frozen handoff. This pending command is not recorded PASS."
+    "command": "GET https://api.github.com/repos/nashysaimarkets/nash-ai-markets/actions/runs?head_sha=<enclosing checkpoint SHA from latest issue126 receipt>&per_page=10",
+    "tool": "github.fetch",
+    "onFailure": "Inspect only failed job; repair affected recovery source; never infer actual scheduled delivery or true Work relaunch"
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
