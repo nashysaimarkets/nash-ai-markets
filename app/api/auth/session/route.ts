@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "../../../../utils/supabase/server";
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { resolveSupabasePublicConfig } from "../../../../utils/supabase/config";
+import { createAuthCompatibleFetch } from "../../../../utils/supabase/auth-compatible-fetch";
 
 type SessionPayload = {
   accessToken?: unknown;
@@ -25,17 +28,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-  if (error || !data.session) {
-    return NextResponse.json({ ok: false }, { status: 401 });
+  try {
+    const { url, key } = resolveSupabasePublicConfig();
+    if (!url || !key) {
+      return NextResponse.json({ ok: false }, { status: 503 });
+    }
+    const cookieStore = await cookies();
+    const response = NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
+    // Write to the returned response, not the ambient Server Component cookie
+    // store, whose write errors the shared client deliberately suppresses.
+    const supabase = createServerClient(url, key, {
+      global: { fetch: createAuthCompatibleFetch(key) },
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll(items) {
+          for (const { name, value, options } of items) {
+            response.cookies.set(name, value, options);
+          }
+        },
+      },
+    });
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error || !data.session) {
+      return NextResponse.json({ ok: false }, { status: 401 });
+    }
+    // A successful token validation without a session cookie is not a login.
+    if (!response.headers.has("set-cookie")) {
+      return NextResponse.json({ ok: false }, { status: 503 });
+    }
+    return response;
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 503 });
   }
-
-  return NextResponse.json(
-    { ok: true },
-    { headers: { "Cache-Control": "no-store" } },
-  );
 }
