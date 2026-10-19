@@ -3,7 +3,8 @@
   "git": {
     "deploymentEnabled": {
       "feature/ntp-ig-demo-readonly-20261018": false,
-      "feature/ntp-ig-demo-response-contract-20261018": false
+      "feature/ntp-ig-demo-response-contract-20261018": false,
+      "monaco-ig-126-20261019": false
     }
   }
 }

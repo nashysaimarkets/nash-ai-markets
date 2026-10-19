@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   parseIgDemoAccountSummaries,
   parseIgDemoPositionSummaries,
+  parseIgDemoMarketSpecification,
 } from "../app/lib/server/ntp-ig-demo-response-contract.ts";
 
 const account = {
@@ -138,3 +139,31 @@ test("provider secrets never appear in schema errors", () => {
     assert.equal((error as Error).message, "IG_DEMO_UNEXPECTED_RESPONSE_CONTRACT");
   }
 });
+
+const spec = {
+  instrument: { epic: "IX.D.SPTRD.DAILY.IP", type: "INDICES", unit: "CONTRACTS", contractSize: "1", valueOfOnePip: "1.00", onePipMeans: "1 Point", lotSize: 1, currencies: [{ code: "GBP" }] },
+  snapshot: { scalingFactor: 1, bid: 5100, offer: 5101 },
+};
+
+test("market specification retains documented units/pip meaning without projecting quotes or calculated cash risk", () => {
+  const result = parseIgDemoMarketSpecification(spec, spec.instrument.epic);
+  assert.equal(result.epic, spec.instrument.epic);
+  assert.equal(result.valueOfOnePip, "1.00");
+  assert.equal(result.unit, "CONTRACTS");
+  assert.equal(result.onePipMeans, "1 Point");
+  assert.equal(Object.isFrozen(result), true);
+  assert.equal("bid" in result, false);
+  assert.equal("risk" in result, false);
+});
+
+test("market EPIC, units, numeric values and currency specifications must be independently valid", () => {
+  rejects(() => parseIgDemoMarketSpecification(spec, "ES"));
+  for (const patch of [
+    { valueOfOnePip: "£1" }, { valueOfOnePip: "1e3" }, { valueOfOnePip: "0" }, { valueOfOnePip: 1 },
+    { contractSize: "-1" }, { type: "SHARES" }, { unit: "POINTS" }, { lotSize: Number.NaN },
+    { currencies: [] }, { currencies: [{ code: "GBP" }, { code: "GBP" }] },
+    { onePipMeans: "private\nsecret" },
+  ]) rejects(() => parseIgDemoMarketSpecification({ ...spec, instrument: { ...spec.instrument, ...patch } }, spec.instrument.epic));
+  rejects(() => parseIgDemoMarketSpecification({ ...spec, snapshot: { scalingFactor: Infinity } }, spec.instrument.epic));
+});
+
