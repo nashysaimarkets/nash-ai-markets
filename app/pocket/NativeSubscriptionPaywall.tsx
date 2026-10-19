@@ -3,23 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  purchaseNativeSubscription,
   restoreNativeSubscription,
   type NativeAccessStatus,
 } from "./native-subscription";
 
-export default function NativeSubscriptionPaywall({ status, onUnlocked, onClose }: { status: NativeAccessStatus; onUnlocked: (status: NativeAccessStatus) => void; onClose: () => void }) {
-  const [action, setAction] = useState<"purchase" | "restore" | null>(null);
+export default function NativeSubscriptionPaywall({ status, onClose }: { status: NativeAccessStatus; onUnlocked: (status: NativeAccessStatus) => void; onClose: () => void }) {
+  const [action, setAction] = useState<"restore" | null>(null);
   const [message, setMessage] = useState("");
   const dialog = useRef<HTMLElement>(null);
   const close = useRef(onClose);
   const isGoogle = status.store === "google";
-  const storeName = isGoogle ? "Google Play" : "Apple";
-  const accountName = isGoogle ? "Google Play account" : "Apple Account";
-  const hasLocalisedPrice = !(isGoogle && status.displayPrice === "Google Play");
-  const purchaseLabel = hasLocalisedPrice
-    ? `SUBSCRIBE FOR ${status.displayPrice} / MONTH`
-    : "CONTINUE TO GOOGLE PLAY";
+  const storeName = isGoogle ? "Google Play" : status.store === "apple" ? "Apple" : "Pocket";
+  const accountName = isGoogle ? "Google Play account" : status.store === "apple" ? "Apple Account" : "Pocket account";
 
   useEffect(() => { close.current = onClose; }, [onClose]);
 
@@ -50,23 +45,17 @@ export default function NativeSubscriptionPaywall({ status, onUnlocked, onClose 
     return () => document.removeEventListener("keydown", containFocus);
   }, []);
 
-  async function run(kind: "purchase" | "restore") {
-    setAction(kind);
-    setMessage("");
+  async function restore() {
+    if (action !== null) return;
+    setAction("restore"); setMessage("");
     try {
-      const next = kind === "purchase" ? await purchaseNativeSubscription() : await restoreNativeSubscription();
-      if (next.pending) {
-        setMessage(`Your ${storeName} purchase is pending. Access will unlock after payment is confirmed.`);
-        return;
-      }
-      if (!next.entitled) {
-        setMessage(kind === "restore" ? `No active Pocket Bullseye subscription was found for this ${accountName}.` : "The purchase was not completed. You have not been charged.");
-        return;
-      }
-      onUnlocked(next);
-    } catch (caught) {
-      const text = caught instanceof Error ? caught.message : `${storeName} could not complete that request.`;
-      setMessage(/cancel/i.test(text) ? "Purchase cancelled. You have not been charged." : text);
+      const next = await restoreNativeSubscription();
+      setMessage(next.pending
+        ? "The store reports a pending purchase. Current-account verification is still required; no scanner access was granted."
+        : "Restore was checked. Store information alone cannot verify this Pocket account. Contact support before purchasing again.");
+      // Deliberately no onUnlocked: this branch has no current-account verifier.
+    } catch {
+      setMessage("Restore could not be checked. Retry shortly or contact support; no scanner access was granted.");
     } finally { setAction(null); }
   }
 
@@ -76,20 +65,16 @@ export default function NativeSubscriptionPaywall({ status, onUnlocked, onClose 
   // In WKWebView that makes fixed descendants use the full, scrolled app as
   // their containing block. Portal the paywall to body so inset: 0 always
   // covers the visible iPhone viewport, even when it opens far down the page.
-  return createPortal(<section ref={dialog} className="psApplePaywall" role="dialog" aria-modal="true" aria-label="Subscribe to Pocket Bullseye">
-    <div className="psApplePaywallGlow" aria-hidden="true"><i/><i/><b>🎯</b></div>
+  return createPortal(<section ref={dialog} className="psApplePaywall" role="dialog" aria-modal="true" aria-label="Pocket subscription verification">
     <button className="psApplePaywallClose" type="button" autoFocus onClick={onClose} aria-label="Close subscription screen">×</button>
-    <small>YOUR FREE ANALYSIS IS COMPLETE</small>
-    <h2>Keep Bullseye<br/><em>in your pocket.</em></h2>
-    <p>Unlock unlimited chart analysis, cinematic results and written decision support with a one-month auto-renewing subscription.</p>
-    <div className="psApplePlan">
-      <span>{status.displayName}</span>
-      <strong>{hasLocalisedPrice ? status.displayPrice : "LOCAL PRICE"}<small>{hasLocalisedPrice ? "/ month" : "shown by Google Play"}</small></strong>
-      <b>One month · cancel in your {accountName} settings</b>
-    </div>
-    <button className="psAppleSubscribe" type="button" disabled={action !== null} onClick={() => run("purchase")}>{action === "purchase" ? `CONNECTING TO ${storeName.toUpperCase()}…` : purchaseLabel}<b>→</b></button>
-    <button className="psAppleRestore" type="button" disabled={action !== null} onClick={() => run("restore")}>{action === "restore" ? `CHECKING ${accountName.toUpperCase()}…` : "RESTORE PURCHASES"}</button>
+    <small>ACCOUNT VERIFICATION REQUIRED</small>
+    <h2>Subscription verification is held.</h2>
+    <p>This candidate cannot verify current-account subscription ownership. New purchases and free analysis are unavailable here. Existing store information cannot unlock a scanner.</p>
+    <p>{status.displayName} · {storeName} recovery only</p>
+    <button className="psAppleRestore" type="button" disabled={action !== null} onClick={() => void restore()}>{action === "restore" ? "CHECKING EXISTING PURCHASES…" : "RESTORE PURCHASES"}</button>
+    <a href="/login?next=/pocket">Sign in to Pocket</a>{" · "}<a href="mailto:hello@nashaimarkets.com">Contact support</a>
     {message ? <p className="psApplePaywallMessage" role="alert">{message}</p> : null}
-    <footer>The displayed monthly price is charged to your {accountName} when you confirm. The subscription renews automatically each month at the displayed price unless cancelled {isGoogle ? "before the end of the current billing period" : "at least 24 hours before the end of the current period"}. Manage or cancel it in your {accountName} subscription settings, or use Restore Purchases above on another device. <a href="/terms" target="_blank" rel="noreferrer">Terms</a> · <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a></footer>
+    <footer>Manage an existing subscription in your {accountName} settings. Restore does not start a new purchase. <a href="/terms" target="_blank" rel="noreferrer">Terms</a> · <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a></footer>
   </section>, document.body);
 }
+

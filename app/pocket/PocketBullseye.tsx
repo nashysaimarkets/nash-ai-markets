@@ -1353,18 +1353,17 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       // Analyse used to race; a late rejection could clear the status after
       // the paywall opened and leave an empty, scroll-locked webview.
       const latest = await readNativeAccessStatus();
-      if (!latest.isNative) throw new Error("Native purchase status was not returned.");
       setNativeAccess(latest);
       return latest;
     } catch {
-      setError("App-store purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
+      setError("Pocket account verification is unavailable. Retry the check or contact support before purchasing again.");
       setNativeAccess(null);
       return null;
     }
   }
 
   function openSubscriptionPaywall(status: NativeAccessStatus | null) {
-    if (!status?.isNative) {
+    if (!status) {
       setError("App store purchase status is temporarily unavailable. Please check your connection and try again; you have not been charged.");
       return;
     }
@@ -1384,7 +1383,6 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   }
 
   async function requireNativeEntitlementForAdditionalRequest(): Promise<boolean> {
-    if (!isNativePocketApp()) return true;
     const latest = await refreshNativeAccess();
     if (!latest) return false;
     if (!latest.entitled) {
@@ -1970,16 +1968,11 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
 
   async function analyse() {
     if (!image || (!reviewTarget && (!contextImage || !detailImage || !fourHourImage)) || !privacyChecked || busy || analysisRequestActive.current) return;
-    let currentNativeAccess = nativeAccess;
-    if (isNativePocketApp()) {
-      currentNativeAccess = await refreshNativeAccess();
-      if (!currentNativeAccess) return;
-    }
-    if (reviewTarget && currentNativeAccess?.isNative && !currentNativeAccess.entitled) {
-      openSubscriptionPaywall(currentNativeAccess);
-      return;
-    }
-    if (!reviewTarget && currentNativeAccess?.isNative && currentNativeAccess.freeUseConsumed && !currentNativeAccess.entitled) {
+    // No native local flag, device first-free value or web fallback can admit.
+    // The source HOLD remains until the guarded backend is reconciled.
+    const currentNativeAccess = await refreshNativeAccess();
+    if (!currentNativeAccess) return;
+    if (!currentNativeAccess.entitled) {
       openSubscriptionPaywall(currentNativeAccess);
       return;
     }
@@ -2499,3 +2492,4 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     </main>
   );
 }
+

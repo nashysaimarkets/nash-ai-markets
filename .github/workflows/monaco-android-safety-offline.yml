@@ -1,0 +1,29 @@
+name: Monaco Android safety source HOLD
+on:
+  push:
+    branches: [monaco-android-safety-126-20261019]
+permissions:
+  contents: read
+concurrency:
+  group: monaco-android-safety-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  source-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      POCKET_BENCHMARK_PILOT_ENABLED: "false"
+      POCKET_REAL_BENCHMARK_DISPATCH: "false"
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.19.0"
+      - name: Test actual client gates and native source contracts without dependencies
+        run: node --test tests/pocket-android-server-admission.test.mjs
+      - name: Record evidence boundary
+        run: echo 'Offline source HOLD only; no runtime, store, device, build, provider or backend acceptance.'

@@ -23,7 +23,7 @@ test("Capacitor Android targets the current Play API level with the production p
   assert.match(activity, /registerPlugin\(PocketPlayBillingPlugin\.class\)/);
 });
 
-test("Google Play subscription bridge handles status, purchase, restore, pending and acknowledgement", async () => {
+test("Google Play historical bridge retains recovery metadata while purchase admission remains held", async () => {
   const [client, native, billing, terms, privacy] = await Promise.all([
     read("app/pocket/play-billing.ts"),
     read("app/pocket/native-subscription.ts"),
@@ -34,7 +34,8 @@ test("Google Play subscription bridge handles status, purchase, restore, pending
   assert.match(client, /pocket_bullseye_monthly/);
   assert.match(client, /registerPlugin<PlayBillingPlugin>\("PocketPlayBilling"\)/);
   assert.match(native, /Capacitor\.getPlatform\(\) === "android"/);
-  assert.match(native, /purchasePlaySubscription/);
+  assert.doesNotMatch(native, /purchasePlaySubscription|purchaseAppleSubscription/);
+  assert.match(native, /Purchases are unavailable/);
   assert.match(native, /restorePlaySubscription/);
   assert.match(billing, /@CapacitorPlugin\(name = "PocketPlayBilling"\)/);
   assert.match(billing, /queryProductDetailsAsync/);
@@ -51,16 +52,17 @@ test("Google Play subscription bridge handles status, purchase, restore, pending
   assert.match(privacy, /Apple or Google processes subscription purchases/);
 });
 
-test("Android free analysis is persisted before its completed result is exposed", async () => {
-  const [billing, pocket] = await Promise.all([
+test("Android first-free remains OFF despite historical device bookkeeping", async () => {
+  const [billing, pocket, policy] = await Promise.all([
     read("android/app/src/main/java/com/nashaimarkets/pocketbullseye/PocketPlayBillingPlugin.java"),
     read("app/pocket/PocketBullseye.tsx"),
+    read("app/pocket/native-subscription-policy.ts"),
   ]);
   assert.match(billing, /putBoolean\(FREE_USE_KEY, true\)\.commit\(\)/);
-  assert.match(billing, /freeUseConsumed/);
-  const consume = pocket.indexOf("await consumeNativeFreeUse()");
-  const expose = pocket.indexOf("setAnalysis(nextAnalysis)");
-  assert.ok(consume >= 0 && expose > consume);
+  assert.match(billing, /put\("freeUseConsumed", true\)/);
+  assert.match(policy, /entitled: false, freeUseConsumed: true/);
+  assert.match(pocket, /const currentNativeAccess = await refreshNativeAccess\(\)/);
+  assert.match(pocket, /if \(!currentNativeAccess\.entitled\)/);
 });
 
 test("Android project contains adaptive icons, splash assets and the offline fallback", async () => {

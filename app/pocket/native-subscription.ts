@@ -1,45 +1,8 @@
 import { Capacitor } from "@capacitor/core";
-import {
-  APPLE_MONTHLY_PRODUCT_ID,
-  consumeAppleFreeUse,
-  getAppleAccessStatus,
-  purchaseAppleSubscription,
-  restoreAppleSubscription,
-} from "./apple-storekit";
-import {
-  GOOGLE_MONTHLY_PRODUCT_ID,
-  consumePlayFreeUse,
-  getPlayAccessStatus,
-  purchasePlaySubscription,
-  restorePlaySubscription,
-} from "./play-billing";
-
-export type NativeStore = "apple" | "google" | "web";
-
-export type NativeAccessStatus = {
-  isNative: boolean;
-  store: NativeStore;
-  entitled: boolean;
-  freeUseConsumed: boolean;
-  productId: string;
-  displayName: string;
-  displayPrice: string;
-  transactionId?: string;
-  originalTransactionId?: string;
-  purchaseToken?: string;
-  orderId?: string;
-  pending?: boolean;
-};
-
-const webStatus: NativeAccessStatus = {
-  isNative: false,
-  store: "web",
-  entitled: true,
-  freeUseConsumed: false,
-  productId: APPLE_MONTHLY_PRODUCT_ID,
-  displayName: "Pocket Bullseye Monthly",
-  displayPrice: "£4.99",
-};
+import { APPLE_MONTHLY_PRODUCT_ID, getAppleAccessStatus, restoreAppleSubscription } from "./apple-storekit";
+import { GOOGLE_MONTHLY_PRODUCT_ID, getPlayAccessStatus, restorePlaySubscription } from "./play-billing";
+import { blockedNativeAccess, type NativeAccessStatus, type NativeStore } from "./native-subscription-policy";
+export type { NativeAccessStatus, NativeStore } from "./native-subscription-policy";
 
 export function nativeStore(): NativeStore {
   if (!Capacitor.isNativePlatform()) return "web";
@@ -48,37 +11,33 @@ export function nativeStore(): NativeStore {
   return "web";
 }
 
-export function isNativePocketApp() {
-  return nativeStore() !== "web";
-}
+export function isNativePocketApp() { return nativeStore() !== "web"; }
 
+/** Store metadata and browser fallbacks cannot prove current-account admission.
+ * This source HOLD has no credential, token, email or account-selection cache. */
 export async function getNativeAccessStatus(): Promise<NativeAccessStatus> {
   const store = nativeStore();
-  if (store === "apple") return { ...(await getAppleAccessStatus()), store };
-  if (store === "google") return { ...(await getPlayAccessStatus()), store };
-  return webStatus;
+  const metadata = store === "apple" ? await getAppleAccessStatus()
+    : store === "google" ? await getPlayAccessStatus() : null;
+  return blockedNativeAccess(metadata, store);
 }
 
 export async function purchaseNativeSubscription(): Promise<NativeAccessStatus> {
-  const store = nativeStore();
-  if (store === "apple") return { ...(await purchaseAppleSubscription()), store };
-  if (store === "google") return { ...(await purchasePlaySubscription()), store };
-  return webStatus;
+  throw new Error("Purchases are unavailable while Pocket account ownership verification is unresolved. Restore an existing purchase or contact support before purchasing again.");
 }
 
+/** Restore is available as recovery only and cannot unlock this branch. */
 export async function restoreNativeSubscription(): Promise<NativeAccessStatus> {
   const store = nativeStore();
-  if (store === "apple") return { ...(await restoreAppleSubscription()), store };
-  if (store === "google") return { ...(await restorePlaySubscription()), store };
-  return webStatus;
+  const metadata = store === "apple" ? await restoreAppleSubscription()
+    : store === "google" ? await restorePlaySubscription() : null;
+  return blockedNativeAccess(metadata, store);
 }
 
-export async function consumeNativeFreeUse(): Promise<void> {
-  const store = nativeStore();
-  if (store === "apple") await consumeAppleFreeUse();
-  if (store === "google") await consumePlayFreeUse();
-}
+/** Compatibility no-op: first-free stays OFF; no device credit is reset. */
+export async function consumeNativeFreeUse(): Promise<void> {}
 
 export function nativeProductIdFor(store: NativeStore) {
   return store === "google" ? GOOGLE_MONTHLY_PRODUCT_ID : APPLE_MONTHLY_PRODUCT_ID;
 }
+
