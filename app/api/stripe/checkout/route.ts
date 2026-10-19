@@ -4,6 +4,7 @@ import { createClient } from "../../../../utils/supabase/server.ts";
 import { createAdminClient } from "../../../../utils/supabase/admin.ts";
 import { checkoutOffering, validFoundingProPrice, validPocketFoundingPrice } from "../../../lib/stripe-commercial.ts";
 import { campaignAttribution, campaignQuery } from "../../../lib/marketing-attribution.ts";
+import { createPocketCheckoutStripeDriver, ensurePocketCheckoutIntent } from "../../../lib/server/pocket-checkout-intent.ts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
     // begin session creation after those lookups return. Already dispatched
     // Stripe operations cannot be undone by a later browser cancellation.
     if (request.signal.aborted) return cancelledCheckout();
-    const session = await stripe.checkout.sessions.create({
+    const parameters: Stripe.Checkout.SessionCreateParams = {
       mode: "subscription",
       line_items: [{ price: selected.priceId, quantity: 1 }],
       success_url: selected.offering.plan === "pocket" ? `${origin}/pocket/founding/welcome` : `${origin}/welcome`,
@@ -102,7 +103,40 @@ export async function POST(request: Request) {
       client_reference_id: user?.id,
       metadata: { ...(user?.id ? { supabase_user_id: user.id } : {}), offering: selected.offering.plan === "pocket" ? "pocket_founding_650" : selected.offering.plan, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign },
       subscription_data: selected.offering.plan === "pocket" ? { metadata: { offering: "pocket_founding_650", supabase_user_id: user!.id, acquisition_source: attribution.source, acquisition_medium: attribution.medium, acquisition_campaign: attribution.campaign } } : undefined,
-    });
+    };
+    if (selected.offering.plan === "pocket") {
+      // UNINSTALLED proposal: an existing binding alone cannot clear legacy
+      // sessions. Missing schema, scope or independent baseline remains HOLD.
+      const candidateSha = process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT_SHA ?? "";
+      const stripeAccountId = process.env.POCKET_CHECKOUT_STRIPE_ACCOUNT_ID ?? "";
+      const stripeMode = process.env.POCKET_CHECKOUT_STRIPE_MODE;
+      if (!pocketCustomer || !/^[a-f0-9]{40}$/.test(candidateSha) || !/^acct_[A-Za-z0-9]+$/.test(stripeAccountId) ||
+          (stripeMode !== "test" && stripeMode !== "live")) {
+        throw new Error("Pocket checkout proposal authority unavailable");
+      }
+      const livemode = stripeMode === "live";
+      const admin = createAdminClient();
+      const result = await ensurePocketCheckoutIntent({
+        scope: { userId: user!.id, email: verifiedEmail!, customerId: pocketCustomer, priceId: selected.priceId,
+          candidateSha, stripeAccountId, livemode, offer: "pocket_founding_650" },
+        parameters,
+      }, {
+        authorise: async () => {
+          const { data: { user: current }, error } = await supabase.auth.getUser();
+          if (error || !current?.id || !current.email || !current.email_confirmed_at || current.is_anonymous) return null;
+          return { userId: current.id, email: current.email, emailConfirmedAt: current.email_confirmed_at,
+            isAnonymous: false, stripeAccountId, livemode };
+        },
+        rpc: async (name, args) => {
+          const { data, error } = await admin.rpc(name, args);
+          return { data, error };
+        },
+        stripeDriver: createPocketCheckoutStripeDriver(stripe),
+      }, request.signal);
+      if (result.kind !== "READY") throw new Error("Pocket checkout intent remains on hold");
+      return NextResponse.redirect(result.url, 303);
+    }
+    const session = await stripe.checkout.sessions.create(parameters);
     if (!session.url) throw new Error("checkout_url_unavailable");
     return NextResponse.redirect(session.url, 303);
   } catch (error) {

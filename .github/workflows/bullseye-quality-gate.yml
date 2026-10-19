@@ -7,6 +7,7 @@ on:
       - monaco-release-integration-reviewed-20261018
       - monaco-master-126-20261019-b02d5dd
       - monaco-reliability-126-20261019
+      - monaco-checkout-intent-proposal-126-20261019
   pull_request:
     branches:
       - main
