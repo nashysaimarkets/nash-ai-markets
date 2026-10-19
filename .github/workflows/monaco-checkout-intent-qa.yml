@@ -16,7 +16,7 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: checkout_intent_qa
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres -d checkout_intent_qa"
           --health-interval 2s
           --health-timeout 5s
           --health-retries 15

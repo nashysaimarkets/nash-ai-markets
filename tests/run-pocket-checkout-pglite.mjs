@@ -1,8 +1,9 @@
 /** Optional local functional/ACL check; NOT evidence of PostgreSQL concurrency. */
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
+import { isAbsolute } from "node:path";
 const modulePath = process.env.POCKET_CHECKOUT_QA_PGLITE_MODULE;
-if (!modulePath || !modulePath.startsWith("/workspace/") || !modulePath.endsWith("/@electric-sql/pglite/dist/index.js")) throw Error("Explicit local PGlite module required");
+if (!modulePath || !isAbsolute(modulePath) || !modulePath.endsWith("/@electric-sql/pglite/dist/index.js")) throw Error("Explicit local PGlite module required");
 const { PGlite } = await import(pathToFileURL(modulePath).href);
 const db = new PGlite();
 try {

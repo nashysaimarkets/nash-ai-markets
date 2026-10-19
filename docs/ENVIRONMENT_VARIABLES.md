@@ -39,6 +39,8 @@ Apple configuration is not activated by source integration. Missing configuratio
 - `STRIPE_PRO_PRICE_ID` — Pro monthly Price ID.
 - `STRIPE_FOUNDING_PRO_PRICE_ID` — conditional Founding Pro Price ID.
 - `STRIPE_POCKET_FOUNDING_PRICE_ID` — Pocket Bullseye founding monthly Price ID.
+- `POCKET_CHECKOUT_STRIPE_ACCOUNT_ID` — proposed server-only expected Stripe Account ID; unconfigured on all hosts. Same-SDK account/Price observations must match. Not a credential or baseline override.
+- `POCKET_CHECKOUT_STRIPE_MODE` — proposed server-only exact `test` or `live` scope; unconfigured on all hosts. Missing/invalid values keep proposed Checkout on HOLD. Requires uninstalled schema and separately governed baseline authority; never enables first-customer or resubscription reconciliation.
 - `STRIPE_ELITE_PRICE_ID` — Elite monthly Price ID.
 - `STRIPE_PRO_ANNUAL_PRICE_ID` — Pro annual Price ID.
 - `STRIPE_ELITE_ANNUAL_PRICE_ID` — Elite annual Price ID.
