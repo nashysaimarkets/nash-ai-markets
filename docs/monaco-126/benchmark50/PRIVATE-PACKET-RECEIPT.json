@@ -15,5 +15,9 @@
   "persistence": "SAVED_VERIFIED",
   "libraryFileId": "libfile_3ece246350b08191a61fa4752958bfb1",
   "libraryVersion": 0,
-  "remoteFileId": "file_000000001ae0821184d2d3875f14580b"
+  "remoteFileId": "file_000000001ae0821184d2d3875f14580b",
+  "sourceCommit": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
+  "sourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25",
+  "codeEvidence": "qa/benchmark50/ACCEPTANCE-ENGINEERING.json",
+  "finalDocumentationCheckpointResolution": "Latest Issue126 immutable receipt"
 }

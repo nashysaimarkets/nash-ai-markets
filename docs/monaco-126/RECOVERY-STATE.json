@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T19:50:38.586121+00:00",
+  "savedAtUtc": "2026-10-20T19:52:18.617142+00:00",
   "worker": {
     "id": "root-benchmark50-3e0cde",
     "status": "BLOCKED_OWNER_GATES",
@@ -14,8 +14,8 @@
     "leaseId": "issue126-6299130800",
     "status": "FROZEN_HANDOFF",
     "baseCheckpoint": "856763146d293d91d22c2ce0e7700c9e73731187",
-    "expectedHead": "3ebca5551ea6632ba78d4f13a082ce8f040a5453",
-    "expectedHeadResolution": "Parent used for expected-head update; latest Issue126 immutable receipt names final enclosing documentation commit. Code hashes and privatepacket manifest bind exact artefacts.",
+    "expectedHead": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
+    "expectedHeadResolution": "Executable/sourcecheckpoint above; latest Issue126 receipt names enclosing documentation-only checkpoint; compare that expectedhead before any successor write.",
     "ownedPaths": [
       "scripts/prepare-monaco-benchmark50.py",
       "scripts/prepare-monaco-benchmark50-requests.mjs",
@@ -42,7 +42,10 @@
     "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
     "corpusSourceSha": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
     "corpusSourceTree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
-    "corpusBranch": "monaco-scanner-corpus-126-20261020-3e0cde"
+    "corpusBranch": "monaco-scanner-corpus-126-20261020-3e0cde",
+    "benchmark50SourceSha": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
+    "benchmark50SourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25",
+    "benchmark50Branch": "monaco-benchmark50-126-20261020-3e0cde"
   },
   "tracks": {
     "core": {
@@ -295,7 +298,11 @@
         "persistence": "SAVED_VERIFIED",
         "libraryFileId": "libfile_3ece246350b08191a61fa4752958bfb1",
         "libraryVersion": 0,
-        "remoteFileId": "file_000000001ae0821184d2d3875f14580b"
+        "remoteFileId": "file_000000001ae0821184d2d3875f14580b",
+        "sourceCommit": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
+        "sourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25",
+        "codeEvidence": "qa/benchmark50/ACCEPTANCE-ENGINEERING.json",
+        "finalDocumentationCheckpointResolution": "Latest Issue126 immutable receipt"
       },
       "manifestSha256": "df8b9e3eeaaaebff5197cbb13ddae45d362281cd3479ee398339953ab1293b21",
       "exactRequests": {
@@ -315,7 +322,9 @@
         "distinctScopedTamperControlProbes": 36,
         "unresolvedProbeFailures": 0
       },
-      "scope": "Offline only; old packet/scorers/historicalledgers/key preserved; no metadata,paid,live,deploy,merge,outreach"
+      "scope": "Offline only; old packet/scorers/historicalledgers/key preserved; no metadata,paid,live,deploy,merge,outreach",
+      "sourceCommit": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
+      "sourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25"
     }
   },
   "tests": [
