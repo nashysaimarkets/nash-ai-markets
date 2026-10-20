@@ -25,6 +25,10 @@ async function account(proof?: string) {
 async function verifyStatus(status: AppleAccessStatus): Promise<AppleAccessStatus> {
   // StoreKit's local entitled/free-use flags cannot authorize server analysis.
   const verified = await account(status.signedTransactionInfo);
+  // Restore remains available during initialization. Its direct return must
+  // not bypass the subscription bridge's unknown/background presentation hold.
+  const currentAppState = await App.getState();
+  if (currentAppState?.isActive !== true) throw new Error("Return to the app and retry the Apple access check.");
   return { ...status, entitled: verified.entitled === true };
 }
 export async function getAppleProductStatus(): Promise<AppleAccessStatus> {
@@ -52,7 +56,8 @@ export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
 export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccessStatus, verification?: AppleAccessVerificationPhase) => void): Promise<PluginListenerHandle> {
   let revision = 0;
   let active = true;
-  let foreground = true;
+  let foreground: boolean | null = null;
+  let lifecycleEvents = 0;
   let latest: AppleAccessStatus = { ...webStatus, isNative: true };
   if (!isAppleNativeApp()) return { remove: async () => { active = false; } };
   const pending = () => onStatus({ ...latest, entitled: false }, "VERIFYING");
@@ -69,6 +74,22 @@ export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccess
       if (active && foreground && current === revision) onStatus({ ...latest, entitled: false }, "ERROR");
     });
   };
+  // The bridge owns foreground admission from the first synchronous callback.
+  // This also supersedes the controls' parallel legacy initialization path.
+  pending();
+  const observeAppState = (state: { isActive: unknown }) => {
+    if (!active) return;
+    if (typeof state?.isActive !== "boolean") {
+      foreground = null; revision++;
+      onStatus({ ...latest, entitled: false }, "ERROR");
+      return;
+    }
+    foreground = state.isActive;
+    if (!foreground) { revision++; pending(); return; }
+    // Expiry, cancellation and Pocket session changes need not emit a new
+    // StoreKit transaction. Refresh both native evidence and server access.
+    refresh(() => native.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID }));
+  };
   const listener = await native.addListener("accessChanged", status => {
     if (!active) return;
     latest = status;
@@ -79,17 +100,25 @@ export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccess
   try {
     appListener = await App.addListener("appStateChange", state => {
       if (!active) return;
-      foreground = state.isActive;
-      if (!foreground) { revision++; pending(); return; }
-      // Expiry, cancellation and Pocket session changes need not emit a new
-      // StoreKit transaction. Refresh both native evidence and server access.
-      refresh(() => native.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID }));
+      lifecycleEvents++;
+      observeAppState(state);
     });
   } catch (error) {
     active = false; revision++;
     await listener.remove();
     throw error;
   }
+  // appStateChange does not replay current state. An app already in the
+  // background must remain unknown/held until this observation completes.
+  // Any event since registration is newer authority than this initial snapshot.
+  void Promise.resolve().then(() => App.getState()).then(state => {
+    if (active && lifecycleEvents === 0) observeAppState(state);
+  }).catch(() => {
+    if (active && lifecycleEvents === 0) {
+      foreground = null; revision++;
+      onStatus({ ...latest, entitled: false }, "ERROR");
+    }
+  });
   return { remove: async () => {
     active = false; revision++;
     await Promise.all([listener.remove(), appListener.remove()]);

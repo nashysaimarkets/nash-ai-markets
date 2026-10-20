@@ -1,30 +1,31 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T12:24:46.770986Z",
+  "savedAtUtc": "2026-10-20T12:33:11.809608Z",
   "worker": {
     "id": "root-monaco-20261020-c10e55",
     "status": "RUNNING",
-    "lastVerifiedActivityAtUtc": "2026-10-20T12:24:46.770986Z",
-    "activeTask": "Finish independent scanner/native/provider-contract review findings; verify stable integration once"
+    "lastVerifiedActivityAtUtc": "2026-10-20T12:33:11.809608Z",
+    "activeTask": "Await stable exact-source CI/builds; all independent source review findings fixed"
   },
   "ownership": {
     "branch": "monaco-completion-126-20261020-c10e55",
     "writer": "root-monaco-20261020-c10e55",
     "leaseId": "issue126-root-completion-20261020-c10e55",
     "status": "EXCLUSIVE",
-    "expectedHead": null,
+    "expectedHead": "8c0877b7192be6ad49e86ee5ee0bf9e1fe944e0f",
     "ownedPaths": [
       "new successor source/tests/docs/workflow branch configuration only"
     ],
     "verificationBasis": "Issue126comment6290542426; frozenPR127\u2013132heads unchanged, new disjoint local successor; root sole remote publisher; three disjoint local implementers and read-only independent reviewer",
-    "handoff": "Never claim older frozen branch leases. Resolve this enclosing commit/tree using newest issue receipt and compare exact remote HEAD before edits."
+    "handoff": "Never claim older frozen branch leases. Resolve this enclosing commit/tree using newest issue receipt and compare exact remote HEAD before edits.",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/133"
   },
   "checkpoint": {
-    "lastVerifiedRemoteCommit": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
-    "lastVerifiedRemoteTree": "f3e36c7d9ea3730626cf97bb572252fa564be48a",
+    "lastVerifiedRemoteCommit": "8c0877b7192be6ad49e86ee5ee0bf9e1fe944e0f",
+    "lastVerifiedRemoteTree": "3b0d162233b3bb6ba3f20c6f8f8eea5e5504ed30",
     "branch": "monaco-completion-126-20261020-c10e55",
-    "savedAtUtc": "2026-10-20T12:24:46.770986Z",
+    "savedAtUtc": "2026-10-20T12:33:11.809608Z",
     "identityResolution": "Parent/source anchor above; newest issue126 external receipt identifies the enclosing successor commit/tree. A file cannot self-embed its enclosing commit."
   },
   "tracks": {
@@ -121,14 +122,15 @@
     },
     "completion": {
       "branch": "monaco-completion-126-20261020-c10e55",
-      "sourceStatus": "IN_PROGRESS",
+      "sourceStatus": "DONE_LOCAL_REVIEWED",
       "externalAcceptance": "BLOCKED",
       "base": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
-      "pushedCommit": null,
-      "pr": null,
+      "pushedCommit": "8c0877b7192be6ad49e86ee5ee0bf9e1fe944e0f",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/133",
       "changes": "RSI/pattern/liquidity/risk, abortable optional comparisons, native lifecycle and read-only Checkout inventory",
-      "independentReview": "IN_PROGRESS; initial-inactive native, RSI history/alternatives and Session metadata nullability being corrected",
-      "ciStatus": "PENDING stable source freeze"
+      "independentReview": "PASS; all recorded findings fixed",
+      "ciStatus": "PENDING exact-source freeze receipts",
+      "localAcceptance": "qa/completion/LOCAL-ACCEPTANCE.json"
     }
   },
   "tests": [
@@ -284,6 +286,18 @@
       "sourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
       "reviewer": "recovery_reader originally forked without conversation history",
       "coverage": "Corrected fields/actual--proof CLI, exact HEAD/tree and recomputed policy/verifier hashes match; saved29-case result and source scope independently reviewed; no tests or11green CI repeated"
+    },
+    {
+      "id": "completion1190full",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "count": 1190,
+      "passed": 1190,
+      "skipped": 0,
+      "failed": 0,
+      "command": "POCKET_REAL_CORPUS_DIRECTORY=<unchanged private prepared pack> npm run test:unit",
+      "sourceShaResolution": "Enclosing frozen successor externally attested by issue126",
+      "limits": "No provider analysis; six hashes integrity only"
     }
   ],
   "artifacts": {
@@ -301,25 +315,7 @@
   },
   "pendingOperations": [
     {
-      "id": "independent-native-initial-state",
-      "status": "IN_PROGRESS",
-      "owner": "native_finish",
-      "paidOrLive": false
-    },
-    {
-      "id": "independent-rsi-alternatives-history",
-      "status": "IN_PROGRESS",
-      "owner": "scanner_finish",
-      "paidOrLive": false
-    },
-    {
-      "id": "inventory-nullable-metadata",
-      "status": "IN_PROGRESS",
-      "owner": "checkout_inventory",
-      "paidOrLive": false
-    },
-    {
-      "id": "stable-integration-qa",
+      "id": "completion-exact-source-ci",
       "status": "PENDING",
       "owner": "root",
       "paidOrLive": false
@@ -328,14 +324,14 @@
   "watchdog": {
     "id": "6ad67a914bf48191b7f2d48d4325bf83",
     "title": "Monaco Crash Recovery",
-    "state": "PAUSED_PENDING_SAVED_RUNNING_RECEIPT",
+    "state": "ENABLED_ACTIVE",
     "schedule": "every2hours",
     "timezone": "Europe/London",
     "automaticWorkRelaunchSupported": false,
     "duplicatesCreated": 0,
     "alertPolicy": "One possible-stall alert per unchanged checkpoint; explicit RUNNING, verified >2h inactivity, no newer tools/CI/worker/handoff; never releases writer lease",
     "oldStaleQaPaused": "6ad4a1dae13481919d0270149dc9eb69",
-    "pauseReason": "Will reuse only the existing watchdog after verified remote RUNNING save; no duplicate worker/relaunch.",
+    "pauseReason": "Existing watchdog resumed after verified running remote receipt6290825677; pause on terminal external hold, no new worker or actual Work relaunch.",
     "actualDelivery": "UNTESTED; offline policy proof does not establish real notification delivery/deduplication"
   },
   "approvals": {
@@ -375,11 +371,11 @@
     "IG authorised DEMO/licence acceptance; public brand/legal/privacy/marketing/publication approval"
   ],
   "nextSafeAction": {
-    "id": "reconcile-local-reviewed-followup-commits",
+    "id": "read-exact-successor-ci-receipts",
     "status": "IN_PROGRESS",
-    "command": "git status --short; compare independent findings with local followup commits before cherry-pick",
-    "when": "This active owned successor only; after interruption reconcile actual remote/local receipts and writer ownership first",
-    "primaryDependency": "Three active offline independent findings; genuine scanner executor/licence/financial gates remain separate"
+    "command": "Read GitHub Actions runs for the enclosing completion source SHA once after publication",
+    "when": "Await actual terminal runs; on interruption verify current root ownership and immutable issue receipt before any writes",
+    "primaryDependency": "Source build/CI receipts only; genuine six-case executor/licence/financial/device gates remain external"
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

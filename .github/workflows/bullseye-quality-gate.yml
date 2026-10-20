@@ -64,6 +64,14 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      - name: Run offline independent completion proofs
+        run: |
+          node docs/monaco-126/qa/completion/independent-acceptance.mjs "$GITHUB_WORKSPACE" "$GITHUB_WORKSPACE"
+          node docs/monaco-126/qa/completion/inventory-independent.mjs "$GITHUB_WORKSPACE"
+          node docs/monaco-126/qa/completion/native-verify-independent.mjs "$GITHUB_WORKSPACE"
+          node docs/monaco-126/qa/completion/liquidity-independent.mjs "$GITHUB_WORKSPACE"
+          node --test docs/monaco-126/qa/completion/comparison-native-review.mjs
+
       - name: Run component render tests
         run: npm run test:render
 

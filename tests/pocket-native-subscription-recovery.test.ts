@@ -106,15 +106,15 @@ test("failed account verification hides an otherwise known product purchase and 
   assert.equal(removed.state.writes, writes);
 });
 
-async function actualBridge(verifyStatus: (status: AppleAccessStatus) => Promise<AppleAccessStatus>) {
+async function actualBridge(verifyStatus: (status: AppleAccessStatus) => Promise<AppleAccessStatus>, appState: () => Promise<{ isActive: boolean }> = async () => ({ isActive: true })) {
   const source = await readFile(new URL("../app/pocket/apple-storekit.ts", import.meta.url), "utf8");
   const start = source.indexOf("export async function subscribeAppleAccessChanges");
   const end = source.indexOf("/** Every billed route", start);
   assert.ok(start >= 0 && end > start, "the actual event bridge must be present");
   let emit!: (status: AppleAccessStatus) => void;
-  const native = { addListener: async (_event: string, callback: (status: AppleAccessStatus) => void) => { emit = callback; return { remove: async () => {} }; } };
+  const native = { getStatus: async () => known, addListener: async (_event: string, callback: (status: AppleAccessStatus) => void) => { emit = callback; return { remove: async () => {} }; } };
   const code = stripTypeScriptTypes(source.slice(start, end).replace(/^export /, ""));
-  const subscribe = new Function("native", "App", "verifyStatus", "isAppleNativeApp", "webStatus", "APPLE_MONTHLY_PRODUCT_ID", code + "\nreturn subscribeAppleAccessChanges;")(native, { addListener: async () => ({ remove: async () => {} }) }, verifyStatus, () => true, { ...known, isNative: false }, known.productId) as NonNullable<Parameters<typeof mountRecovery>[0]["subscribe"]>;
+  const subscribe = new Function("native", "App", "verifyStatus", "isAppleNativeApp", "webStatus", "APPLE_MONTHLY_PRODUCT_ID", code + "\nreturn subscribeAppleAccessChanges;")(native, { getState: appState, addListener: async () => ({ remove: async () => {} }) }, verifyStatus, () => true, { ...known, isNative: false }, known.productId) as NonNullable<Parameters<typeof mountRecovery>[0]["subscribe"]>;
   return { subscribe, emit: (status: AppleAccessStatus) => emit(status) };
 }
 
@@ -194,5 +194,21 @@ test("listener registration failure after a verified initialization clears the e
   assert.equal(fixture.state.phase, "ERROR");
   assert.equal(fixture.state.status, null);
   assert.equal(nativeSubscriptionView(fixture.state.status, fixture.state.phase).showPurchase, false);
+  fixture.cleanup();
+});
+
+test("actual bridge holds parallel controls initialization until current foreground state is known", async () => {
+  let resolve!: (value: { isActive: boolean }) => void;
+  const snapshot = new Promise<{ isActive: boolean }>(done => { resolve = done; });
+  const bridge = await actualBridge(async value => ({ ...value, entitled: true }), () => snapshot);
+  let accessChecks = 0;
+  const fixture = await mountRecovery({ product: Promise.resolve(known), access: async () => { accessChecks++; return { ...known, entitled: true }; }, subscribe: bridge.subscribe });
+  await flush();
+  assert.equal(fixture.state.phase, "CHECKING");
+  assert.notEqual(fixture.state.status?.entitled, true);
+  assert.equal(accessChecks, 0, "the parallel initializer cannot bypass the bridge's unknown app-state hold");
+  resolve({ isActive: false }); await flush();
+  assert.equal(fixture.state.phase, "CHECKING");
+  assert.notEqual(fixture.state.status?.entitled, true);
   fixture.cleanup();
 });

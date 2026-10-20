@@ -1,0 +1,36 @@
+{
+  "passed": 5,
+  "failed": 2,
+  "cases": [
+    {
+      "name": "RSI explicit valid numeric extremes",
+      "status": "PASS"
+    },
+    {
+      "name": "RSI negative/uncertain/conflicting data rejected",
+      "status": "PASS"
+    },
+    {
+      "name": "RSI alternative or historical readings cannot become current values",
+      "status": "FAIL",
+      "error": "RSI:65 or 35\n\n65 !== null\n"
+    },
+    {
+      "name": "risk math remains finite for ordinary and extreme inputs",
+      "status": "PASS"
+    },
+    {
+      "name": "short targets never contain nonpositive or nonfinite numbers",
+      "status": "PASS"
+    },
+    {
+      "name": "named reversals preserve mirrored positive paths and reject monotonic paths",
+      "status": "PASS"
+    },
+    {
+      "name": "actual native bridge must not verify an initially inactive application",
+      "status": "FAIL",
+      "error": "initial App.getState observation required"
+    }
+  ]
+}

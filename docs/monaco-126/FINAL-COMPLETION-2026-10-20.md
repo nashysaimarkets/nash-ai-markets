@@ -10,11 +10,13 @@ Owner contract: issue126 and the20October final completion directive. Root alone
 - Native app lifecycle refresh clears stale presentation on background return and rechecks current StoreKit evidence against the current server account. Listener registration failures keep retry/error presentation and cannot be overwritten by late initialization.
 - Added a bounded server-only GET inventory collector for the exact bound Stripe customer/account/mode, including subscriptions, Checkout Sessions and subscription schedules. It returns minimal hashed observations, **authorisesCheckout:false**, and unresolved-obligation blockers. It does not attest a baseline, install SQL, provision customers, wire an issuer, clear legacy/in-flight writers or activate Checkout.
 
-## Verification at this intermediate save
+## Stable source verification
 
-Reused unchanged exact-head receipts: PR1301074/1074local+3CI; PR1313CI including actual disposablePG17races; PR13229/29offline recovery. The new source invalidates only its affected application proof. New author runs: scanner99/99, native24/24, inventory32/32; root optional-comparison22/22,0skips. Counts overlap and must not be added. Strict TypeScript and focused lint pass on the reviewed author source; final integration checks are pending.
+Local combined suite **1190/1190PASS,0SKIP**, including the private original-input hashes;4component renders and8production safeguards pass. StrictTypeScript, focusedlint(0warnings), secrets1072candidates and operationsdocs pass. Wholelint has0errors; its10warnings are8previous source warnings plus2unused-import warnings in the copied historical QA artifact script. No new application warning is introduced. Initial full run1188/1189failed a legacy source assertion that expected direct component authentication. It was repaired with an actual shared-transport test proving fresh synthetic AppleJWS per request, no local entitlement flags, and cancellation preservation; targeted16/16and then full1190/1190pass.
 
-Independent review is active and already found actual additional edges: initial inactive native state, ambiguous/historical RSI, and provider-nullable Session metadata. Their follow-up fixes and exact acceptance will be recorded before final source freeze. Root optional hook/component StrictMode/context review3/3passed; actual source harness is preserved with the final evidence. No final exact-source build or CI PASS is claimed at this intermediate save.
+Independent review found and corrected initial inactive native state/directRestore bypass, ambiguous/historical RSI and nullable legacy Session metadata. Accepted independent source matrices:7scanner/native,6liquidity,12inventory,8actual native verification/Restore,3actual hook/wrapperStrictMode checks,26native foreground/control tests; counts overlap. Portable exact-source harnesses and red/green receipts are in qa/completion and run in qualityCI. Both legacy RSI UI sites are wired to the reviewed helper. Native bridge/control and inventory/scanner source hashes are in LOCAL-ACCEPTANCE.json. These are source/mock checks, not real purchases or provider accuracy.
+
+Reused unchanged exact-head receipts: PR1301074/1074local+3CI; PR1313CI including actual disposablePG17races; PR13229/29offline recovery. SQL/protocol/recovery source is unchanged, so its prior proof is reused. Final exact-source CI, two production builds, Sharp and synthetic mobile/image acceptance remain INPROGRESS until their actual remote receipts exist. No final build PASS is claimed in advance.
 
 ## Real release gates
 
@@ -24,4 +26,4 @@ Shared-live `pxlqvaddvghjjhenqmdh` is unchanged; all persistent install/customer
 
 ## Next and rollback
 
-Finish only the active independent-review findings, run one stable affected integration/full candidate check, save exact remote SHA/tree/CI and update the recovery manifest. Do not re-run unrelated accepted SQL/recovery tests. Rollback is the frozen PR131 source or a guarded HOLD path; preserve all unresolved ledger/identity data. Nothing has been deployed, so no live rollback is needed.
+All independent-review findings are fixed. Complete the final exact-source CI/build receipts, save exact remote SHA/tree and update the recovery manifest. Do not re-run unrelated accepted SQL/recovery tests. Rollback is the frozen PR131 source or a guarded HOLD path; preserve all unresolved ledger/identity data. Nothing has been deployed, so no live rollback is needed.

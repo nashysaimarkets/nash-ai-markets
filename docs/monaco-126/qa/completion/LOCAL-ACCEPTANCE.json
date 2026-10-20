@@ -1,0 +1,84 @@
+{
+  "status": "REAL PASS",
+  "scope": "offline source/injected provider and native evidence only",
+  "sourceShaResolution": "Enclosing frozen source commit/tree is externally attested by newest issue126 receipt; no self-hash",
+  "localFullUnit": {
+    "tests": 1190,
+    "passed": 1190,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 5923.990048,
+    "privateCorpus": "6 original-input hashes verified; not six provider results"
+  },
+  "initialFullUnit": {
+    "tests": 1189,
+    "passed": 1188,
+    "failed": 1,
+    "skipped": 0,
+    "failure": "Legacy direct-call source assertion after shared authenticated transport refactor; corrected with actual fresh-JWS/request/cancellation test"
+  },
+  "componentRender": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0
+  },
+  "productionSafeguards": {
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "strictTypeScript": "PASS",
+  "focusedLint": "0errors/0warnings",
+  "wholeLint": "0errors;8existing source warnings +2historical copied QA-script warnings",
+  "secrets": "PASS1072candidates",
+  "operationsDocs": "PASS",
+  "independent": {
+    "scannerNative": 7,
+    "liquidity": 6,
+    "inventory": 12,
+    "nativeVerificationRestore": 8,
+    "comparisonHookWrappers": 3,
+    "nativeControlForegroundSuites": 26,
+    "countsOverlap": true
+  },
+  "providers": {
+    "genuineScannerCases": 0,
+    "required": 6,
+    "paidCalls": 0,
+    "brokerCalls": 0,
+    "storesOrSignedDevice": false
+  },
+  "ci": "PENDING final remote source freeze",
+  "proofCommand": "quality workflow runs all five portable independent harnesses",
+  "rollback": "Undeployed source only; preserve existing guarded admission and unresolved ledgers",
+  "sourceHashes": {
+    "app/api/pocket/analyse/route.ts": "5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294",
+    "app/api/pocket/analysis-calibration.ts": "b6a7d92ef764293570b8fe70795a32a65e006029bfd2245e967744ca69c37f25",
+    "app/api/pocket/liquidity-chain.ts": "f4f3280c36782d74593d13c2df437f5be23c862a35be63ef53d7a6c275da9262",
+    "app/lib/server/pocket-checkout-inventory.ts": "caa0ee4941829e75751ba67369865fa83b86a08160c0277a5d7517e895835d91",
+    "app/pocket/CryptoDerivativesCheck.tsx": "432c9bfd16cff7ca9ce2a270c01c30463006899fa08ee4d5451da3bf886cd9eb",
+    "app/pocket/NativeSubscriptionControls.tsx": "a6fb2c260388b5d092938d241734ca4f62c49fa2c737d63a91f79d8858bc2c10",
+    "app/pocket/OptionsWallCheck.tsx": "0d66e6b7de14fb5db6639427571980ab76e32fa6b32c261b7c702d6bed752bb7",
+    "app/pocket/PocketBullseye.tsx": "53787af16d2d74d0be7f218a49f46416def7971ba601dba1c2f6f7d38136c4be",
+    "app/pocket/apple-storekit.ts": "b715b15137c7f38b41ff0fcc1c6900fe1e198c78cd4bdff79002ec165078e16e",
+    "app/pocket/crypto-derivatives.ts": "3da8c84aa632b0f42864a58bfc4668efb0c783846ae92a98ae718e89a94c0093",
+    "app/pocket/indicator-reading.ts": "9930257acc605332ef17e093bc0718590d16bab39fd6dc88edfaa7ca83404317",
+    "app/pocket/options-wall.ts": "d872dd09bcc44de5dc3fb9953f38789c1537d177a1c29d31c281fda285c111b1",
+    "app/pocket/pocket-chart-toolkit.ts": "4d48d18afc8d55ed32f8241b2fa5889fb190944c08c3f86f6ad7c78cc6ddda8f",
+    "app/pocket/pocket-risk-desk.ts": "f312004ff4c81b4852697d38ac070aa8a318633e073e925106458463608d72d4",
+    "app/pocket/screenshot-comparison-session.ts": "f0fa1df174cc89e327725334f300a3f05897e54ccb371cf0da6b11eb9b5647b2",
+    "app/pocket/use-screenshot-comparison.ts": "1c06841bb302b9e3a1764159ea40d455a57acbe6548ada4f539d7d9557801df9",
+    "tests/pocket-checkout-inventory.test.ts": "93bce51f57ee32b334ccb2f58aff07d156aab461e1dd9847163fe48d140c0faa",
+    "tests/pocket-comparison-session.test.ts": "56f5713c0c49cb2a19fdffa50a90141c9b6938d21d96fc732a882cb0ca601f37",
+    "tests/pocket-crypto-derivatives.test.ts": "ae08517994ead43dd5b787c52f43f79acac369ed56d329cb597a76ab5794c22f",
+    "tests/pocket-indicator-reading.test.ts": "d07d25bb6b3a81dcf07e07e4c1779cec15a686bcc0c4895f20f02ab47f952ff6",
+    "tests/pocket-liquidity-event-evidence.test.ts": "ea68a9034497472ba35791a12b50d38951effe8ca6b05907d4b50f4f649da184",
+    "tests/pocket-native-foreground-recovery.test.ts": "a285cdd5875a1cfdd04a667705e414b9ee6753fdcacf147230beae26c87d7600",
+    "tests/pocket-native-server-bridge.test.ts": "205911050258981bceedb98a5edb2b715391379a02ead1f00651461ef657ec54",
+    "tests/pocket-native-subscription-recovery.test.ts": "4a934cf419560da17460a77d90d178f514e847b3fa6b0d1198ced93da1383a6b",
+    "tests/pocket-options-wall.test.ts": "78e23de8841b0a887eb7b55578d3cd9b92fa20bd1e8bb40406bad9ceeb84a1a3",
+    "tests/pocket-pattern-turn-evidence.test.ts": "3db3b4ab66cbe513c943116ed54ce5a4137902aa2f29ad117c68b4cb86fedbfe",
+    "tests/pocket-risk-numeric-boundaries.test.ts": "9973c68d00fae8439c3af3ea82f926244cd0f89f86414e509e119c235cb633b5",
+    "tests/support/pocket-comparison-baseline.mjs": "f58b35c7c9ccb8434da3ad8cdaa2e01b5d03feffd36a34fb922eef3919a2ecc7"
+  }
+}

@@ -20,12 +20,12 @@ for(const name of ['OptionsWallCheck','CryptoDerivativesCheck']){
  let uploading=view.attach({currentTarget:{files:[{name:'old',type:'image/png',size:1}],value:'x'}});readers.shift().onload();await uploading;
  view=render(a);const check=view.check();render(b);
  resolveFetch({ok:true,json:async()=>({result:{symbol:a.ticker,status:'MATCHED',matches:[],observations:[],message:'old'}})});await check;
- try{assert.equal(values[4],null,'new chart context must not receive old provider result');}catch(e){failures++;process.stdout.write(`${name}: reproduced stale-result FAIL (${values[4]?.symbol})\n`);}
+ try{assert.equal(values[4],null,'new chart context must not receive old provider result');}catch{failures++;process.stdout.write(`${name}: reproduced stale-result FAIL (${values[4]?.symbol})\n`);}
  view=render(b);
  const first=view.attach({currentTarget:{files:[{name:'first',type:'image/png',size:1}],value:'x'}});
  const second=view.attach({currentTarget:{files:[{name:'second',type:'image/png',size:1}],value:'x'}});
  readers[1].onload();await second;readers[0].onload();await first;
- try{assert.match(values[0],/second$/,'latest chosen screenshot must win');}catch(e){failures++;process.stdout.write(`${name}: reproduced reversed-file-read FAIL\n`);}
+ try{assert.match(values[0],/second$/,'latest chosen screenshot must win');}catch{failures++;process.stdout.write(`${name}: reproduced reversed-file-read FAIL\n`);}
 }
 process.stdout.write(`${failures}/4 unsafe baseline cases reproduced; no provider calls\n`);
 process.exitCode=failures===4?0:1;

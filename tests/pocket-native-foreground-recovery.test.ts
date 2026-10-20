@@ -19,6 +19,8 @@ async function actualForegroundBridge(options: {
   readStatus?: () => Promise<AppleAccessStatus>;
   registrationError?: boolean;
   isNative?: boolean;
+  appState?: () => Promise<{ isActive: boolean }>;
+  registration?: Promise<void>;
 } = {}) {
   const source = await readFile(new URL("../app/pocket/apple-storekit.ts", import.meta.url), "utf8");
   const start = source.indexOf("export async function subscribeAppleAccessChanges");
@@ -27,13 +29,14 @@ async function actualForegroundBridge(options: {
   let notify!: (value: AppleAccessStatus) => void;
   let lifecycle: ((value: { isActive: boolean }) => void) | null = null;
   const observations: Array<{ status: AppleAccessStatus; phase?: AppleAccessVerificationPhase }> = [];
-  const state = { storeRemoved: 0, appRemoved: 0, reads: 0, verifies: [] as AppleAccessStatus[], registrations: 0 };
+  const state = { storeRemoved: 0, appRemoved: 0, reads: 0, verifies: [] as AppleAccessStatus[], registrations: 0, stateReads: 0 };
   const native = {
     addListener: async (_name: string, callback: typeof notify) => { notify = callback; state.registrations++; return { remove: async () => { state.storeRemoved++; } }; },
     getStatus: async () => { state.reads++; return options.readStatus ? options.readStatus() : status; },
   };
-  const App = { addListener: async (_name: string, callback: NonNullable<typeof lifecycle>) => {
+  const App = { getState: async () => { state.stateReads++; return options.appState ? options.appState() : { isActive: true }; }, addListener: async (_name: string, callback: NonNullable<typeof lifecycle>) => {
     if (options.registrationError) throw new Error("Lifecycle listener unavailable");
+    await options.registration;
     lifecycle = callback; state.registrations++;
     return { remove: async () => { state.appRemoved++; } };
   } };
@@ -135,7 +138,7 @@ test("partial listener registration failure removes the registered StoreKit list
   await assert.rejects(fixture.subscribe(), /Lifecycle listener unavailable/);
   assert.equal(fixture.state.storeRemoved, 1);
   fixture.emit(); await flush();
-  assert.equal(fixture.observations.length, 0);
+  assert.equal(fixture.observations.filter(value => value.phase === "VERIFIED").length, 0);
 });
 
 test("web subscription controls never register native lifecycle or StoreKit listeners", async () => {
@@ -144,4 +147,102 @@ test("web subscription controls never register native lifecycle or StoreKit list
   await handle.remove();
   assert.equal(fixture.state.registrations, 0);
   assert.equal(fixture.observations.length, 0);
+});
+
+test("initial background state holds StoreKit events until a real foreground transition", async () => {
+  const fixture = await actualForegroundBridge({ appState: async () => ({ isActive: false }) });
+  const handle = await fixture.subscribe();
+  fixture.emit(); await flush();
+  assert.equal(fixture.state.stateReads, 1);
+  assert.equal(fixture.state.verifies.length, 0);
+  assert.equal(fixture.observations.at(-1)?.phase, "VERIFYING");
+  assert.equal(fixture.observations.at(-1)?.status.entitled, false);
+  fixture.lifecycle(true); await flush();
+  assert.equal(fixture.state.verifies.length, 1);
+  await handle.remove();
+});
+
+test("backgrounding before lifecycle registration completes cannot be mistaken for an initial active app", async () => {
+  const registration = deferred<void>();
+  const fixture = await actualForegroundBridge({ registration: registration.promise, appState: async () => ({ isActive: false }) });
+  const subscribing = fixture.subscribe(); await flush();
+  fixture.emit(); await flush();
+  assert.equal(fixture.state.verifies.length, 0, "foreground state is unknown until the post-registration snapshot");
+  registration.resolve(); const handle = await subscribing; await flush();
+  fixture.emit(); await flush();
+  assert.equal(fixture.state.verifies.length, 0);
+  assert.equal(fixture.state.stateReads, 1);
+  await handle.remove();
+});
+
+test("a late active snapshot cannot overwrite a newer background event", async () => {
+  const snapshot = deferred<{ isActive: boolean }>();
+  const fixture = await actualForegroundBridge({ appState: () => snapshot.promise });
+  const handle = await fixture.subscribe();
+  fixture.lifecycle(false); snapshot.resolve({ isActive: true }); await flush();
+  fixture.emit(); await flush();
+  assert.equal(fixture.state.verifies.length, 0);
+  assert.equal(fixture.observations.at(-1)?.phase, "VERIFYING");
+  await handle.remove();
+});
+
+test("a late inactive snapshot cannot undo a newer foreground event or duplicate its status check", async () => {
+  const snapshot = deferred<{ isActive: boolean }>();
+  const fixture = await actualForegroundBridge({ appState: () => snapshot.promise, verify: async value => value });
+  const handle = await fixture.subscribe();
+  fixture.lifecycle(true); await flush();
+  assert.equal(fixture.observations.at(-1)?.phase, "VERIFIED");
+  snapshot.resolve({ isActive: false }); await flush();
+  assert.equal(fixture.state.reads, 1);
+  assert.equal(fixture.observations.at(-1)?.phase, "VERIFIED");
+  await handle.remove();
+});
+
+test("initial app state rejection and malformed state expose recovery without verifying native access", async () => {
+  for (const appState of [async () => { throw new Error("State unavailable"); }, async () => ({ isActive: undefined }) as unknown as { isActive: boolean }]) {
+    const fixture = await actualForegroundBridge({ appState });
+    const handle = await fixture.subscribe(); await flush();
+    assert.equal(fixture.observations.at(-1)?.phase, "ERROR");
+    assert.equal(fixture.observations.at(-1)?.status.entitled, false);
+    assert.equal(fixture.state.verifies.length, 0);
+    await handle.remove();
+    assert.equal(fixture.state.storeRemoved, 1);
+    assert.equal(fixture.state.appRemoved, 1);
+  }
+});
+
+test("unmount during initial app state lookup prevents any later native read or presentation update", async () => {
+  const snapshot = deferred<{ isActive: boolean }>();
+  const fixture = await actualForegroundBridge({ appState: () => snapshot.promise });
+  const handle = await fixture.subscribe();
+  await handle.remove(); const count = fixture.observations.length;
+  snapshot.resolve({ isActive: true }); await flush();
+  assert.equal(fixture.observations.length, count);
+  assert.equal(fixture.state.reads, 0);
+  assert.equal(fixture.state.verifies.length, 0);
+});
+
+async function actualDirectVerification(appState: () => Promise<{ isActive: boolean }>, entitled = true) {
+  const source = await readFile(new URL("../app/pocket/apple-storekit.ts", import.meta.url), "utf8");
+  const start = source.indexOf("async function verifyStatus");
+  const end = source.indexOf("export async function getAppleProductStatus", start);
+  assert.ok(start >= 0 && end > start, "exercise the shared direct purchase/restore verification boundary");
+  const code = stripTypeScriptTypes(source.slice(start, end));
+  return new Function("account", "App", code + "\nreturn verifyStatus;")(async () => ({ entitled }), { getState: appState }) as (value: AppleAccessStatus) => Promise<AppleAccessStatus>;
+}
+
+test("direct purchase/restore results cannot publish access when the current app state is inactive, unknown or unavailable", async () => {
+  for (const appState of [
+    async () => ({ isActive: false }),
+    async () => ({ isActive: undefined }) as unknown as { isActive: boolean },
+    async () => { throw new Error("App state unavailable"); },
+  ]) {
+    const verify = await actualDirectVerification(appState);
+    await assert.rejects(verify(status));
+  }
+});
+
+test("direct active-app verification still trusts the current server entitlement rather than StoreKit local flags", async () => {
+  const verify = await actualDirectVerification(async () => ({ isActive: true }), false);
+  assert.equal((await verify(status)).entitled, false);
 });
