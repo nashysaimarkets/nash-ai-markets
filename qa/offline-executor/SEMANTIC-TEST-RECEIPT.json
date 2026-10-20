@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "kind": "SYNTHETIC_CODE_REGRESSION_RECEIPT",
+  "recordedAt": "2026-10-20T20:23:41.136108+00:00",
+  "workspace": "/workspace/scratch/3e0cde3338d9/monaco-executor",
+  "sourceHashes": {
+    "scripts/pocket-monaco-semantic-proposal.ts": "e8420f88b89f9cb3bbfb23327d52346cdbb412ffe5208168b057aa959a41538a",
+    "tests/pocket-monaco-semantic-proposal.test.ts": "3e0447ebca4ff0f604aa0f349a4902a55836a397f616740fc7f40b9be7caf821",
+    "docs/monaco-126/benchmark50/SEMANTIC-RULES-PROPOSAL.md": "58a8e4a5e110fcf408200625ba446549cc15b773b3fdebe0fd356ce7317a9c71"
+  },
+  "commands": [
+    {
+      "command": "node --test --test-reporter=spec tests/pocket-monaco-semantic-proposal.test.ts",
+      "exitCode": 0,
+      "tests": 32,
+      "passed": 32,
+      "failed": 0,
+      "evidence": "Observed final tool result; raw stdout was not persisted before context compaction.",
+      "rawOutputPath": null,
+      "executedAt": null
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc --noEmit --target es2022 --module esnext --moduleResolution bundler --allowImportingTsExtensions --strict --esModuleInterop --skipLibCheck scripts/pocket-monaco-semantic-proposal.ts tests/pocket-monaco-semantic-proposal.test.ts",
+      "exitCode": 0,
+      "observedOutput": "No output.",
+      "rawOutputPath": null,
+      "executedAt": null
+    }
+  ],
+  "historyLimitations": [
+    "Earlier development failure and resolved-fix transcripts were not persisted and are unavailable after context compaction. This receipt does not claim uninterrupted first-attempt success.",
+    "Raw final 32-test output was not persisted. Aggregate counts and exit status are retained from the observed result; no substitute raw transcript is fabricated.",
+    "The documentation was expanded after the successful code test and typecheck; module and test bytes were unchanged. No redundant green-suite rerun was performed."
+  ],
+  "legacyPreservation": {
+    "command": "git diff --exit-code -- scripts/pocket-monaco-measurement.ts scripts/pocket-monaco-benchmark50-report.ts",
+    "exitCode": 0,
+    "observedOutput": "No output."
+  },
+  "proposalStatus": "DRAFT",
+  "acceptance": "BLOCKED",
+  "actualProviderResults": 0,
+  "acceptedSemanticMeasurements": 0,
+  "paidCalls": 0,
+  "limitations": [
+    "Synthetic regression fixtures are not benchmark accuracy or genuine provider evidence.",
+    "Default executable pattern/instrument rule tables remain empty; human references, verified unit/tick data and independently reviewed concrete rules are missing.",
+    "Successful diagnostics do not verify full image topology, quantitative family materiality or all generic-pattern confirmation directions.",
+    "Matching reuses the old scorer once and does not rematch semantically tied/coincident hypotheses.",
+    "DRAFT status permanently blocks acceptance even with a matching supplied review record in this successor."
+  ]
+}
