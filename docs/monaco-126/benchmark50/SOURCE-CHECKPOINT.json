@@ -1,0 +1,13 @@
+{
+  "sourceCommit": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
+  "sourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25",
+  "localTestedSourceCommit": "90cfdb6",
+  "localAndRemoteTreeMatch": true,
+  "priorSource": "3ebca5551ea6632ba78d4f13a082ce8f040a5453",
+  "priorBranchBase": "856763146d293d91d22c2ce0e7700c9e73731187",
+  "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/137",
+  "sourceHashesReceipt": "qa/benchmark50/ACCEPTANCE-ENGINEERING.json",
+  "automaticDeployment": false,
+  "providerCalls": 0,
+  "paidDispatchAuthorised": false
+}

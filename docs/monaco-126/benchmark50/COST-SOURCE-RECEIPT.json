@@ -1,0 +1,217 @@
+{
+  "status": "AUTOMATED_ADVISORY_NOT_EXECUTION_OR_HUMAN_APPROVAL",
+  "retrievedAtUtcDate": "2026-10-20",
+  "baseCommit": "856763146d293d91d22c2ce0e7700c9e73731187",
+  "metadataQueries": 0,
+  "providerCalls": 0,
+  "ledgerMutations": 0,
+  "sources": [
+    {
+      "id": "model",
+      "url": "https://developers.openai.com/api/docs/models/gpt-5-mini",
+      "webRefs": [
+        "turn21view0",
+        "turn22view0",
+        "turn22view1"
+      ],
+      "excerpt": "400,000 context window",
+      "facts": {
+        "snapshot": "gpt-5-mini-2025-08-07",
+        "contextTokens": 400000,
+        "inputUsdPerMillion": "0.25",
+        "cachedInputUsdPerMillion": "0.025",
+        "outputUsdPerMillion": "2.00",
+        "deprecated": true
+      }
+    },
+    {
+      "id": "api",
+      "url": "https://developers.openai.com/api/reference/ruby/resources/responses/methods/create",
+      "webRefs": [
+        "turn26search2",
+        "turn29view0",
+        "turn29view1",
+        "turn29view2"
+      ],
+      "excerpt": "including visible output tokens and reasoning tokens",
+      "facts": {
+        "maxOutputTokensIncludesReasoning": true,
+        "defaultTier": "standard pricing"
+      }
+    },
+    {
+      "id": "images",
+      "url": "https://developers.openai.com/api/docs/guides/images-vision",
+      "webRefs": [
+        "turn21view2",
+        "turn22view3",
+        "turn23view0",
+        "turn25view0"
+      ],
+      "excerpt": "Image tokens and the rest of your prompt must also fit the model\u2019s input and context limits.",
+      "facts": {
+        "currentGpt5MiniPatchMultiplier": "1.2",
+        "globalProcessedPatchLimitPerImage": 30000,
+        "old1536BudgetNotReliedOn": true,
+        "fullContextIncludesImageTokens": true
+      }
+    },
+    {
+      "id": "reasoning",
+      "url": "https://developers.openai.com/api/docs/guides/reasoning",
+      "webRefs": [
+        "turn23view1",
+        "turn24view0",
+        "turn24view1"
+      ],
+      "excerpt": "billed as output tokens",
+      "facts": {
+        "reasoningBilledAsOutput": true,
+        "incompleteMayIncurCharges": true
+      }
+    },
+    {
+      "id": "pricing",
+      "url": "https://developers.openai.com/api/docs/pricing",
+      "webRefs": [
+        "turn21view1",
+        "turn26search0"
+      ],
+      "excerpt": "not priced separately",
+      "facts": {
+        "responsesSeparateApiCharge": false,
+        "renderedOldModelRowMissing": true,
+        "modelSpecificRatesSource": "model"
+      }
+    },
+    {
+      "id": "deprecation",
+      "url": "https://developers.openai.com/api/docs/deprecations",
+      "webRefs": [
+        "turn24view4"
+      ],
+      "excerpt": "Dec 11, 2026",
+      "facts": {
+        "snapshot": "gpt-5-mini-2025-08-07",
+        "scheduledShutdown": "2026-12-11",
+        "modelSubstitutionAuthorised": false
+      }
+    },
+    {
+      "id": "data",
+      "url": "https://developers.openai.com/api/docs/guides/your-data",
+      "webRefs": [
+        "turn23view2",
+        "turn24view2",
+        "turn24view3",
+        "turn25view2",
+        "turn25view3"
+      ],
+      "excerpt": "unless you explicitly opt in",
+      "facts": {
+        "noTrainingDefault": true,
+        "defaultAbuseMonitoringRetentionDays": 30,
+        "exceptions": "legal/safety; image/file safety review; prompt-cache application state",
+        "storeFalseDoesNotEstablishZdr": true,
+        "accountControlsNotQueried": true
+      }
+    }
+  ],
+  "calculation": {
+    "method": "400000 input tokens at full uncached rate plus output cap; intentionally no subtraction for output context space",
+    "inputRateUsdPerMillion": "0.25",
+    "outputRateUsdPerMillion": "2.00",
+    "slots": [
+      {
+        "slot": "main",
+        "maxOutputTokens": 7000,
+        "maxInputTokens": 400000,
+        "maxCostMicroUsd": 114000,
+        "maxCostUsd": "0.114000"
+      },
+      {
+        "slot": "primary_precision",
+        "maxOutputTokens": 1400,
+        "maxInputTokens": 400000,
+        "maxCostMicroUsd": 102800,
+        "maxCostUsd": "0.102800"
+      },
+      {
+        "slot": "rescue_precision",
+        "maxOutputTokens": 1400,
+        "maxInputTokens": 400000,
+        "maxCostMicroUsd": 102800,
+        "maxCostUsd": "0.102800"
+      }
+    ],
+    "perChartMicroUsd": 319600,
+    "groups": [
+      {
+        "charts": 6,
+        "maxSends": 18,
+        "ceilingMicroUsd": 1917600,
+        "ceilingUsd": "1.917600"
+      },
+      {
+        "charts": 44,
+        "maxSends": 132,
+        "ceilingMicroUsd": 14062400,
+        "ceilingUsd": "14.062400"
+      },
+      {
+        "charts": 50,
+        "maxSends": 150,
+        "ceilingMicroUsd": 15980000,
+        "ceilingUsd": "15.980000"
+      }
+    ],
+    "noCharTokenEstimate": true,
+    "noCacheDiscount": true,
+    "noBatchDiscount": true,
+    "inputContextIncludesImages": true,
+    "retryCount": 0,
+    "additionalSendAuthorised": false,
+    "taxAndFxOutsideTokenCeiling": true
+  },
+  "authority": {
+    "historical2DollarLedgerSeparateAndHeld": true,
+    "sixCaseAggregateCapMicroUsd": 5000000,
+    "sixCaseRemainingBalanceNotAsserted": true,
+    "new44CaseApproval": false,
+    "full50CaseApproval": false,
+    "paidDispatchAuthorised": false,
+    "humanReferenceAcceptance": false,
+    "legalAcceptance": false,
+    "negativeAmendmentApproved": false
+  },
+  "files": [
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/scripts/pocket-monaco-measurement.ts",
+      "sha256": "c66d1c2329d55aa9f062d1b19f57535e54c62df89343183a15b4fc0536d39df3"
+    },
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/app/api/pocket/analyse/route.ts",
+      "sha256": "5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294"
+    },
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/app/lib/server/openai.ts",
+      "sha256": "c5b7f3a946ae859054e6a95b3275d2d5a1af2e898d7ad5d90ec96e913cc355fc"
+    },
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/app/api/pocket/torture/provider-spend.ts",
+      "sha256": "3d52facf8fd8d9f2784ecafd41ea2911c812394d658cfc9669c43031791e58ce"
+    },
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/scripts/prepare-monaco-request-previews.mjs",
+      "sha256": "763322066e2aa094c29e0d4313f31b5fa72a75b5e26353cd374e2226d770d0ad"
+    },
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/docs/monaco-126/benchmark50/NEGATIVE-PROTOCOL-PROPOSAL.md",
+      "sha256": "d682aadf60993b632b8e9064cf5f69265b01c628198b2b0d5cb9596ebe5eb96c"
+    },
+    {
+      "path": "/workspace/scratch/3e0cde3338d9/monaco50/docs/monaco-126/benchmark50/COST-SECURITY-PLAN.md",
+      "sha256": "2120bc24d712c1dc404098f3cabbe10bb955a14865dd3b9e7abcf268f970605d"
+    }
+  ]
+}

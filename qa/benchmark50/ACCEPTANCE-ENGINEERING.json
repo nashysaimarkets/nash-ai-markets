@@ -1,0 +1,33 @@
+{
+  "status": "OFFLINE_ENGINEERING_PASS_NOT_SCANNER_ACCEPTANCE",
+  "sourceHashes": {
+    "scripts/prepare-monaco-benchmark50.py": "52a1dfcce066ba54a85888edbec33e6356a406662b2d9b03b7f96a35cbfd463f",
+    "scripts/prepare-monaco-benchmark50-requests.mjs": "7a5ede3c4c696fc3d9ed22bf8c2841fffcbd8aa2a7f181aff374323e48049c5b",
+    "scripts/pocket-monaco-benchmark50-report.ts": "44ab53c694347b41fb769dd8c5630c4e981b9e799be70d91f25eb612f13fb4c2",
+    "tests/run-monaco-benchmark50-negatives.py": "dffcbfe03c35e3d60d4bc0b72d7541583bde9012a8e2493b69584552af6453ba",
+    "tests/pocket-monaco-benchmark50-report.test.ts": "43332343dca9ca996e867daea6ba471bf574f81ef763faac010904d985ffdb0c",
+    "app/api/pocket/analyse/route.ts": "5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294",
+    "scripts/pocket-monaco-measurement.ts": "c66d1c2329d55aa9f062d1b19f57535e54c62df89343183a15b4fc0536d39df3"
+  },
+  "manifestSha256": "df8b9e3eeaaaebff5197cbb13ddae45d362281cd3479ee398339953ab1293b21",
+  "finalCasesValidated": 50,
+  "preparedRequests": 150,
+  "reportingTestsPassed": 98,
+  "distinctSourceTamperControlProbesAcrossScopedRuns": 36,
+  "unresolvedProbeFailures": 0,
+  "providerCalls": 0,
+  "providerMeasurements": 0,
+  "humanReviews": 0,
+  "acceptedCases": 0,
+  "unchangedLegacyFiles": [
+    "scripts/prepare-monaco-source-candidates.py",
+    "scripts/assemble-monaco-source-intake.py",
+    "scripts/verify-monaco-source-intake.py",
+    "scripts/prepare-monaco-request-previews.mjs",
+    "scripts/pocket-monaco-measurement.ts"
+  ],
+  "receiptFiles": {
+    "benchmark50-report-test-receipt.json": "7c34e52a1cadb0ea1e17c02001dd3885f4fd8faad359963c30e9f6684cb51a25",
+    "benchmark50-source-test-receipt.json": "645c3b6a489c2ffb85baf747308295b925093a5549d6e20a217e63762d5b299f"
+  }
+}
