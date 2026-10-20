@@ -8,6 +8,7 @@ on:
       - monaco-master-126-20261019-b02d5dd
       - monaco-reliability-126-20261019
       - monaco-checkout-intent-proposal-126-20261019
+      - monaco-completion-126-20261020-c10e55
   pull_request:
     branches:
       - main

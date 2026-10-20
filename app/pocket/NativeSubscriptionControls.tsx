@@ -32,7 +32,11 @@ export default function NativeSubscriptionControls() {
       setPhase(verification === "VERIFIED" ? "READY" : verification === "ERROR" ? "ERROR" : "CHECKING");
       setMessage(verification === "ERROR" ? "Apple subscription verification failed. Restore Purchases or retry the check. Contact support before purchasing again." : "");
     }).catch(error => {
-      if (active) setMessage(error instanceof Error ? error.message : "Apple updates are unavailable. Try Restore Purchases.");
+      if (active) {
+        revision.current++;
+        setStatus(null); setPhase("ERROR");
+        setMessage(error instanceof Error ? error.message : "Apple updates are unavailable. Restore Purchases or retry the check.");
+      }
       return null;
     });
     void getAppleProductStatus().then(next => { if (!active || initial !== revision.current) return null; setStatus(next); return getAppleAccessStatus(); })

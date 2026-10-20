@@ -114,7 +114,7 @@ async function actualBridge(verifyStatus: (status: AppleAccessStatus) => Promise
   let emit!: (status: AppleAccessStatus) => void;
   const native = { addListener: async (_event: string, callback: (status: AppleAccessStatus) => void) => { emit = callback; return { remove: async () => {} }; } };
   const code = stripTypeScriptTypes(source.slice(start, end).replace(/^export /, ""));
-  const subscribe = new Function("native", "verifyStatus", "isAppleNativeApp", code + "\nreturn subscribeAppleAccessChanges;")(native, verifyStatus, () => true) as NonNullable<Parameters<typeof mountRecovery>[0]["subscribe"]>;
+  const subscribe = new Function("native", "App", "verifyStatus", "isAppleNativeApp", "webStatus", "APPLE_MONTHLY_PRODUCT_ID", code + "\nreturn subscribeAppleAccessChanges;")(native, { addListener: async () => ({ remove: async () => {} }) }, verifyStatus, () => true, { ...known, isNative: false }, known.productId) as NonNullable<Parameters<typeof mountRecovery>[0]["subscribe"]>;
   return { subscribe, emit: (status: AppleAccessStatus) => emit(status) };
 }
 
@@ -140,8 +140,8 @@ test("actual bridge pending → verified accepts only the server result and igno
   const resolves: Array<(value: AppleAccessStatus) => void> = [];
   const bridge = await actualBridge(() => new Promise(resolve => resolves.push(resolve)));
   const fixture = await mountRecovery({ product: new Promise(() => {}), subscribe: bridge.subscribe });
-  bridge.emit({ ...known, entitled: true });
-  bridge.emit({ ...known, entitled: true });
+  bridge.emit({ ...known, entitled: true }); await flush();
+  bridge.emit({ ...known, entitled: true }); await flush();
   resolves[0]({ ...known, entitled: true }); await flush();
   assert.equal(fixture.state.phase, "CHECKING", "an earlier event cannot finish the current verification");
   assert.equal(fixture.state.status?.entitled, false);
@@ -158,6 +158,41 @@ test("an unmarked legacy event remains unverified and cannot reopen a purchase o
   fixture.notify({ ...known, entitled: true });
   assert.equal(fixture.state.phase, "CHECKING");
   assert.equal(fixture.state.status?.entitled, false);
+  assert.equal(nativeSubscriptionView(fixture.state.status, fixture.state.phase).showPurchase, false);
+  fixture.cleanup();
+});
+
+test("failed native listener registration holds access and rejects a later successful initialization", async () => {
+  let resolve!: (value: AppleAccessStatus) => void;
+  const product = new Promise<AppleAccessStatus>(done => { resolve = done; });
+  let accessChecks = 0;
+  const fixture = await mountRecovery({
+    product,
+    access: async () => { accessChecks++; return { ...known, entitled: true }; },
+    subscribe: async () => { throw new Error("Native lifecycle updates unavailable"); },
+  });
+  await flush();
+  assert.equal(fixture.state.phase, "ERROR");
+  assert.equal(fixture.state.status, null);
+  assert.equal(nativeSubscriptionView(fixture.state.status, fixture.state.phase).showPurchase, false);
+  assert.equal(nativeSubscriptionView(fixture.state.status, fixture.state.phase).showRetry, true);
+  resolve(known); await flush();
+  assert.equal(fixture.state.phase, "ERROR", "a listenerless initialization cannot restore a stale verified badge or purchase offer");
+  assert.equal(fixture.state.status, null);
+  assert.equal(accessChecks, 0, "superseded product initialization must not start another account check");
+  fixture.cleanup();
+});
+
+test("listener registration failure after a verified initialization clears the existing access presentation", async () => {
+  let reject!: (error: Error) => void;
+  const registration = new Promise<{ remove: () => Promise<void> }>((_resolve, fail) => { reject = fail; });
+  const fixture = await mountRecovery({ product: Promise.resolve(known), subscribe: () => registration });
+  await flush();
+  assert.equal(fixture.state.phase, "READY");
+  assert.equal(fixture.state.status?.entitled, true);
+  reject(new Error("Native updates registration failed late")); await flush();
+  assert.equal(fixture.state.phase, "ERROR");
+  assert.equal(fixture.state.status, null);
   assert.equal(nativeSubscriptionView(fixture.state.status, fixture.state.phase).showPurchase, false);
   fixture.cleanup();
 });

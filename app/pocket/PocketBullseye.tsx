@@ -20,6 +20,7 @@ import LevelProvenancePanel from "./LevelProvenancePanel";
 import OptionsWallCheck from "./OptionsWallCheck";
 import CryptoDerivativesCheck from "./CryptoDerivativesCheck";
 import { numericLevelPrice } from "./level-verification";
+import { readVisibleRsi } from "./indicator-reading";
 import { correctionPatch, type AccuracyFeedback } from "./accuracy-feedback";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "./chart-preflight";
 
@@ -213,8 +214,7 @@ function BubbleChartLab({ analysis, sourceImage, onOpenReport, onShare }: { anal
   const structural = analysis.levels.filter((level) => numericLevel(level.price) !== null && ["support", "resistance", "pivot"].includes(level.kind));
   const swingHigh = [...structural].sort((a, b) => clampY(a.y) - clampY(b.y))[0];
   const swingLow = [...structural].sort((a, b) => clampY(b.y) - clampY(a.y))[0];
-  const rsiMatch = analysis.momentum.match(/RSI[^0-9]{0,18}(\d{1,3}(?:\.\d+)?)/i);
-  const rsi = rsiMatch ? Math.max(0, Math.min(100, Number(rsiMatch[1]))) : null;
+  const rsi = readVisibleRsi(analysis.momentum);
   const shortRead = analysis.summary.length > 180 ? `${analysis.summary.slice(0, 177).trim()}…` : analysis.summary;
   return <section className="psBubbleLab" data-direction={analysis.direction}>
     <div className="psBubbleField" aria-hidden="true"><i/><i/><i/><i/><i/></div>
@@ -373,8 +373,7 @@ function ChartXRay({ analysis, sourceImage, identityConfirmed, onAddChart, onRea
   const current = numericLevel(analysis.currentPrice ?? "");
   const rankedLevels = rankChartLevels(numericLevels, current, contextLevels, analysis.evidenceQuality.scaleReadable);
   const range = calculateRangePosition(current, rankedLevels);
-  const rsiMatch = analysis.momentum.match(/RSI[^0-9]{0,18}(\d{1,3}(?:\.\d+)?)/i);
-  const rsi = rsiMatch ? Math.max(0, Math.min(100, Number(rsiMatch[1]))) : null;
+  const rsi = readVisibleRsi(analysis.momentum);
   const formatPrice = (value: number) => new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 }).format(value);
   return <section className="psChartXRay" data-layer={layer}>
     <header><div><span>⌖ BULLSEYE PATTERN X-RAY</span><small>VISIBLE FORMATIONS · DRAWN ON YOUR CHART</small></div><strong>1 FOCUSED TOOL</strong></header>

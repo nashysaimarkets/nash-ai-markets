@@ -1,5 +1,6 @@
 "use client";
 import { Capacitor, registerPlugin } from "@capacitor/core";
+import { App } from "@capacitor/app";
 import type { PluginListenerHandle } from "@capacitor/core";
 
 export const APPLE_MONTHLY_PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly";
@@ -45,23 +46,54 @@ export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
   return verifyStatus(await native.restore({ productId: APPLE_MONTHLY_PRODUCT_ID }));
 }
 
-/** Pending/out-of-app purchases arrive through StoreKit updates. Local events
- * immediately clear UI access, then independently refresh server verification. */
+/** StoreKit events and foreground return immediately clear UI access, then
+ * independently refresh server verification. Background work cannot restore
+ * a previously verified badge before the current Pocket session is checked. */
 export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccessStatus, verification?: AppleAccessVerificationPhase) => void): Promise<PluginListenerHandle> {
   let revision = 0;
   let active = true;
+  let foreground = true;
+  let latest: AppleAccessStatus = { ...webStatus, isNative: true };
   if (!isAppleNativeApp()) return { remove: async () => { active = false; } };
-  const listener = await native.addListener("accessChanged", status => {
+  const pending = () => onStatus({ ...latest, entitled: false }, "VERIFYING");
+  const refresh = (read: () => Promise<AppleAccessStatus>) => {
     const current = ++revision;
-    if (!active) return;
-    onStatus({ ...status, entitled: false }, "VERIFYING");
-    void verifyStatus(status).then(verified => {
-      if (active && current === revision) onStatus(verified, "VERIFIED");
+    pending();
+    void Promise.resolve().then(read).then(status => {
+      if (!active || !foreground || current !== revision) return null;
+      latest = status;
+      return verifyStatus(status);
+    }).then(verified => {
+      if (verified && active && foreground && current === revision) onStatus(verified, "VERIFIED");
     }).catch(() => {
-      if (active && current === revision) onStatus({ ...status, entitled: false }, "ERROR");
+      if (active && foreground && current === revision) onStatus({ ...latest, entitled: false }, "ERROR");
     });
+  };
+  const listener = await native.addListener("accessChanged", status => {
+    if (!active) return;
+    latest = status;
+    if (!foreground) { revision++; pending(); return; }
+    refresh(async () => status);
   });
-  return { remove: async () => { active = false; revision++; await listener.remove(); } };
+  let appListener: PluginListenerHandle;
+  try {
+    appListener = await App.addListener("appStateChange", state => {
+      if (!active) return;
+      foreground = state.isActive;
+      if (!foreground) { revision++; pending(); return; }
+      // Expiry, cancellation and Pocket session changes need not emit a new
+      // StoreKit transaction. Refresh both native evidence and server access.
+      refresh(() => native.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID }));
+    });
+  } catch (error) {
+    active = false; revision++;
+    await listener.remove();
+    throw error;
+  }
+  return { remove: async () => {
+    active = false; revision++;
+    await Promise.all([listener.remove(), appListener.remove()]);
+  } };
 }
 
 /** Every billed route rechecks this evidence server-side, including restoration,

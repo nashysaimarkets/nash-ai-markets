@@ -5,6 +5,14 @@ export type DerivativesRead = {
 };
 export type DerivativesResult = { status: "CONTEXT" | "UNVERIFIED"; symbol: string; message: string; observations: string[]; conflict: string };
 
+export function isDerivativesResult(value: unknown, context?: Record<string, unknown>): value is DerivativesResult {
+  if (!value || typeof value !== "object") return false;
+  const result = value as DerivativesResult;
+  return (result.status === "CONTEXT" || result.status === "UNVERIFIED") && typeof result.symbol === "string" && typeof result.message === "string" && typeof result.conflict === "string" &&
+    Array.isArray(result.observations) && result.observations.length <= 5 && result.observations.every(item => typeof item === "string") &&
+    (result.status === "CONTEXT" ? result.observations.length > 0 && (!context || typeof context.ticker === "string" && cryptoBase(result.symbol) !== null && cryptoBase(result.symbol) === cryptoBase(context.ticker)) : result.observations.length === 0);
+}
+
 export function cryptoBase(value: string): string | null {
   const normalized = value.trim().toUpperCase().replace(/^[A-Z0-9_-]+:/, "").replace(/[\s/_-]/g, "");
   const match = /^(BTC|ETH|SOL|XRP|BNB|DOGE|ADA)(?:USDT|USDC|USD|PERP)?$/.exec(normalized);
@@ -24,9 +32,11 @@ export function crossCheckDerivatives(read: DerivativesRead, ticker: string, str
   const observations = fields.filter(([, value]) => value.trim()).map(([label, value]) => `${label}: ${value.trim().slice(0, 48)}`);
   if (!observations.length) return empty("No legible derivatives metric was found in the screenshot.");
   const lower = structure.toLowerCase();
-  const up = /\b(uptrend|higher highs|higher lows|bullish)\b/.test(lower) && !/\b(downtrend|lower highs|lower lows|bearish)\b/.test(lower);
-  const down = /\b(downtrend|lower highs|lower lows|bearish)\b/.test(lower) && !/\b(uptrend|higher highs|higher lows|bullish)\b/.test(lower);
-  const funding = Number(read.fundingRate.replace(/[%+,\s]/g, ""));
+  const uncertain = /\b(not|no|without|unclear|unconfirmed|potential|possible|may)\b/.test(lower);
+  const up = !uncertain && /\b(uptrend|higher highs|higher lows|bullish)\b/.test(lower) && !/\b(downtrend|lower highs|lower lows|bearish)\b/.test(lower);
+  const down = !uncertain && /\b(downtrend|lower highs|lower lows|bearish)\b/.test(lower) && !/\b(uptrend|higher highs|higher lows|bullish)\b/.test(lower);
+  const visibleFunding = read.fundingRate.trim();
+  const funding = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)\s*%?$/.test(visibleFunding) ? Number(visibleFunding.replace(/\s*%$/, "")) : NaN;
   const positiveFunding = read.fundingRate.trim() !== "" && Number.isFinite(funding) && funding > 0;
   const negativeFunding = read.fundingRate.trim() !== "" && Number.isFinite(funding) && funding < 0;
   const conflict = up && negativeFunding ? "Price structure is rising while the visible funding rate is negative. These observations differ; the rate does not establish a reversal."

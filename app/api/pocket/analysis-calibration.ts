@@ -1,4 +1,4 @@
-import { assessProductionLiquidityChain } from "./liquidity-chain.ts";
+import { assessProductionLiquidityChain, corroborateLiquidityEvent } from "./liquidity-chain.ts";
 import { exactAxisPrice } from "../../pocket/axis-verification.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -35,6 +35,24 @@ const PATTERN_NAMES = new Set([
   "CUP & HANDLE", "RECTANGLE / RANGE", "TREND CHANNEL", "BREAKOUT & RETEST",
 ]);
 
+function hasNamedReversalTurns(name: string, points: { x: number; y: number }[]) {
+  const shoulders = name === "HEAD & SHOULDERS" || name === "INVERSE H&S";
+  const double = name === "DOUBLE TOP" || name === "DOUBLE BOTTOM";
+  if (!shoulders && !double) return true;
+  // Image y increases downward. Invert bottom/inverse paths so the same exact
+  // peak/trough relationships apply, without guessing tolerance or symmetry.
+  const inverse = name === "INVERSE H&S" || name === "DOUBLE BOTTOM";
+  const ys = points.map(point => inverse ? -point.y : point.y);
+  const length = shoulders ? 5 : 3;
+  return ys.some((_value, start) => {
+    const turn = ys.slice(start, start + length);
+    if (turn.length !== length) return false;
+    return shoulders
+      ? turn[0] < turn[1] && turn[2] < Math.min(turn[0], turn[4]) && turn[4] < turn[3]
+      : turn[0] < turn[1] && turn[2] < turn[1];
+  });
+}
+
 function calibratedPatterns(value: unknown, candlesReadable: boolean) {
   if (!candlesReadable || !Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -57,6 +75,7 @@ function calibratedPatterns(value: unknown, candlesReadable: boolean) {
     });
     if (rawPoints.length !== points.length || !PATTERN_NAMES.has(name) || !evidence || !confirmation || !invalidation || points.length < 3) return [];
     if (new Set(points.map(point => `${point.x}:${point.y}`)).size !== points.length) return [];
+    if (points.some((point, index) => index > 0 && point.x <= points[index - 1].x) || !hasNamedReversalTurns(name, points)) return [];
     const xs = points.map((point) => point.x), ys = points.map((point) => point.y);
     const xSpan = Math.max(...xs) - Math.min(...xs), ySpan = Math.max(...ys) - Math.min(...ys);
     if (xSpan < 8 || ySpan < 3) return [];
@@ -117,7 +136,7 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
   if (!zones.length || !evidence) return empty;
   const chain = assessProductionLiquidityChain(source.observations, quality, boundsValue, zones);
   const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation && chain.status === "VERIFIED" ? "VERIFIED" : "PARTIAL";
-  return { state, event, confidence, evidence, confirmation, invalidation, zones,
+  return { state, event: chain.status === "VERIFIED" ? corroborateLiquidityEvent(event, source.observations, zones) : "NONE", confidence, evidence, confirmation, invalidation, zones,
     observations: chain.status === "VERIFIED" ? source.observations : [],
     evidenceChain: {status:chain.status,reasons:chain.reasons} };
 }
