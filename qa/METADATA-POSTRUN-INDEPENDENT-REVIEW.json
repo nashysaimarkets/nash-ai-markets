@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "metadata_security_review",
+  "reviewedAtUtc": "2026-10-20T17:39:19Z",
+  "status": "PASS",
+  "sources": [
+    "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39467424486"
+  ],
+  "basis": "Reviewer independently fetched GitHub run, job and sanitized logs; no provider request or remote mutation.",
+  "runId": 39467424486,
+  "jobId": 118782343631,
+  "attempt": 1,
+  "sourceSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
+  "sourceTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
+  "metadataVerifiedAt": "2026-10-20T17:36:37.674Z",
+  "actualRunnerTests": {
+    "tests": 67,
+    "passed": 67,
+    "failed": 0,
+    "skipped": 0
+  },
+  "executionIntegrityPassed": true,
+  "deadlineRespected": true,
+  "evidenceHashMatches": true,
+  "scope": "Isolated temporary key model METADATA access only",
+  "providerInferenceRequests": 0,
+  "liveSitesBindingVerified": false,
+  "paidDispatchEnabled": false,
+  "financiallySettled": false,
+  "releaseAuthorized": false
+}

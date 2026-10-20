@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 3,
+  "reportKind": "TEMPORARY_METADATA_ACCESS_ONLY",
+  "status": "VERIFIED_TEMPORARY_MODEL_METADATA_ACCESS",
+  "organisationId": "org-5vLRRzXwcigUx96TVE0rI3RW",
+  "projectId": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+  "temporaryKeyTrackingId": "key_WQtXX6p9qXaV7yrJ",
+  "temporaryCredentialFingerprintSha256": "6bfdc6f3265c761bc06256ddfddc1700e76be20ee82ed65042c319927f99a790",
+  "scopes": [
+    "api.model.read",
+    "model.read"
+  ],
+  "model": "gpt-5-mini-2025-08-07",
+  "providerMetadataRequestId": "fe6ae966-582e-42e3-a189-8b83f222859a",
+  "dashboardReviewedAt": "2026-10-20T17:33:18.550Z",
+  "temporaryKeyExpiresAt": null,
+  "temporaryKeyExpiryDate": "2026-10-21",
+  "providerTimestampPrecision": "DASHBOARD_DATE_ONLY",
+  "metadataExecutionNotAfter": "2026-10-20T17:42:21.551Z",
+  "verifiedAt": "2026-10-20T17:36:37.674Z",
+  "evidenceSha256": "bacbe7ba0f273b9420b5765c0a79d070af59349f63594e0793585989ba394a0a",
+  "liveSitesBindingVerified": false,
+  "existingPilotKeyBindingVerified": false,
+  "releaseAuthorized": false,
+  "paidDispatchEnabled": false,
+  "financiallySettled": false,
+  "providerInferenceRequests": 0,
+  "projectName": "bullseye private pilot",
+  "keyName": "Pocket Bullseye Metadata Verification",
+  "providerMetadataRequests": 1,
+  "workflow": {
+    "runId": 39467424486,
+    "jobId": 118782343631,
+    "attempt": 1,
+    "sourceSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
+    "sourceTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39467424486",
+    "jobConclusion": "success",
+    "targetedTests": {
+      "tests": 67,
+      "passed": 67,
+      "failed": 0,
+      "skipped": 0
+    }
+  }
+}

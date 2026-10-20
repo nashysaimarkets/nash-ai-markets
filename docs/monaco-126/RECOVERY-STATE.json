@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T17:34:55.495522+00:00",
+  "savedAtUtc": "2026-10-20T17:39:50.325326+00:00",
   "worker": {
     "id": "root-monaco-metadata-resume-20261020-bc684c",
-    "status": "READY_FOR_SINGLE_METADATA_RUN",
-    "lastVerifiedActivityAtUtc": "2026-10-20T16:33:00Z",
-    "activeTask": "Fresh setup evidence and final independent security review passed; introduce protected immutable runner branch once, approve exact source, execute one fixed GET."
+    "status": "METADATA_COMPLETE_OTHER_RELEASE_GATES_HOLD",
+    "lastVerifiedActivityAtUtc": "2026-10-20T17:36:37.674Z",
+    "activeTask": "Single approved protected metadata verification REAL PASS; no repeat. Recovery and remaining readiness evidence reconciled; no inference or release action authorized by this receipt."
   },
   "ownership": {
-    "branch": "monaco-benchmark-access-126-20261020-c10e55",
+    "branch": "monaco-metadata-receipt-126-20261020-bc684c",
     "writer": "root-monaco-metadata-resume-20261020-bc684c",
     "leaseId": "issue126-6297074659",
-    "status": "EXCLUSIVE",
+    "status": "RECEIPT_ONLY",
     "expectedHead": null,
     "ownedPaths": [
       "scripts/verify-pocket-temporary-key.mjs",
@@ -25,8 +25,8 @@
       "qa/PROTECTED-METADATA-INDEPENDENT-REVIEW.json plus harness/results/log",
       "vercel.json branch-only deployment guards"
     ],
-    "verificationBasis": "Protected branch independently404/absent; preparation frozen atde42685f; user resumed specifically authorized metadata only.",
-    "handoff": "Never update this immutable executor branch; no retry without distinct approval. Exact enclosing SHA/tree in newest issue receipt.",
+    "verificationBasis": "Issue126 actual result6297186615; protected executor frozen at961bf540; new disjoint receipt branch with deployment disabled before publication.",
+    "handoff": "Do not update/recreate/rerun protected executor. This receipt supersedes old metadata BLOCKED states; retain application/paid/native/provider gates independently.",
     "pr": null
   },
   "checkpoint": {
@@ -34,8 +34,10 @@
     "applicationTree": "814ce4abebfc604702f001c4fcdcaa356300b67d",
     "previousReceiptSha": "d54a171204b6462ce6b15138062a543ac5e8e875",
     "toolingParentSha": "9e289181e524ac2419bcba7eb139795337b6c173",
-    "branch": "monaco-benchmark-access-preparation-126-20261020-c10e55",
-    "identityResolution": "Newest issue126 receipt records enclosing exact preparation commit/tree. This branch is metadata tooling, NOT the application launch candidate."
+    "branch": "monaco-metadata-receipt-126-20261020-bc684c",
+    "identityResolution": "Newest Issue126 receipt records enclosing exact receipt commit/tree; application source remains6609a006, not this older metadata-tooling lineage.",
+    "receiptBaseSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
+    "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b"
   },
   "tracks": {
     "core": {
@@ -166,15 +168,15 @@
       "retry": "Do not push to this frozen branch; every push triggers its workflow. No repeated attempt authorised."
     },
     "protectedMetadataAccess": {
-      "sourceStatus": "INDEPENDENTLY_REVIEWED_FINAL_SOURCE",
-      "externalAcceptance": "READY_FOR_ONE_GET",
-      "branch": "monaco-benchmark-access-preparation-126-20261020-c10e55",
+      "sourceStatus": "FROZEN_EXECUTED_ONCE",
+      "externalAcceptance": "REAL_PASS_METADATA_ONLY",
+      "branch": "monaco-benchmark-access-126-20261020-c10e55",
       "environmentId": 24832009664,
       "environmentName": "monaco-benchmark-metadata",
       "requiredReviewer": "nashysaimarkets",
       "adminBypass": false,
       "allowedBranch": "monaco-benchmark-access-126-20261020-c10e55",
-      "allowedBranchCreated": false,
+      "allowedBranchCreated": true,
       "rulesetId": 25488994,
       "rulesetActive": true,
       "bypassActors": [],
@@ -191,8 +193,8 @@
       "secretFormClosureObserved": true,
       "savedSecretPresenceVerified": true,
       "secretName": "MONACO_BENCHMARK_OPENAI_API_KEY",
-      "credentialedRunDispatched": false,
-      "metadataRequests": 0,
+      "credentialedRunDispatched": true,
+      "metadataRequests": 1,
       "inferenceRequests": 0,
       "currentOwnerId": "user-jy2Gr5ZRQ3EPWerlbY1MDHDM",
       "historicalKeyCreatorId": "user-DlYoRdGCCPjv7Bk5iEjduePV",
@@ -200,7 +202,22 @@
       "keyExpiryDate": "2026-10-21",
       "timestampPrecision": "DASHBOARD_DATE_ONLY",
       "executionNotAfter": "2026-10-20T17:42:21.551Z",
-      "independentReview": "qa/METADATA-RESUME-INDEPENDENT-REVIEW.json"
+      "independentReview": "qa/METADATA-RESUME-INDEPENDENT-REVIEW.json",
+      "sourceSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
+      "sourceTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
+      "workflowRunId": 39467424486,
+      "workflowJobId": 118782343631,
+      "workflowRunAttempt": 1,
+      "workflowConclusion": "success",
+      "verifiedAt": "2026-10-20T17:36:37.674Z",
+      "evidence": "qa/METADATA-VERIFICATION-2026-10-20.json",
+      "temporaryCredentialFingerprintSha256": "6bfdc6f3265c761bc06256ddfddc1700e76be20ee82ed65042c319927f99a790",
+      "providerMetadataRequestId": "fe6ae966-582e-42e3-a189-8b83f222859a",
+      "providerExactTimestampsKnown": false,
+      "retry": "FORBIDDEN: completed one-run approval; immutable branch and local deadline retained",
+      "credentialLifecycle": "No new key/rotation/revocation/deletion in this run; dashboard expiry21Oct, local execution admission ends17:42:21.551Z. Dedicated restricted secret retained encrypted.",
+      "credentialedExecutionAllowed": false,
+      "postRunIndependentReview": "qa/METADATA-POSTRUN-INDEPENDENT-REVIEW.json"
     }
   },
   "tests": [
@@ -404,6 +421,21 @@
       "realCredentials": false,
       "proof": "qa/PROTECTED-METADATA-INDEPENDENT-REVIEW.json",
       "limits": "No actual key/inventory/storage/model-access acceptance; preparation branch only."
+    },
+    {
+      "id": "protected-metadata-real-execution",
+      "result": "REAL_PASS_METADATA_ONLY",
+      "sourceSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
+      "tree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
+      "run": 39467424486,
+      "job": 118782343631,
+      "attempt": 1,
+      "targetedTestsPassed": 67,
+      "targetedTestsFailed": 0,
+      "targetedTestsSkipped": 0,
+      "providerMetadataRequests": 1,
+      "providerInferenceRequests": 0,
+      "evidence": "qa/METADATA-VERIFICATION-2026-10-20.json"
     }
   ],
   "artifacts": {
@@ -465,7 +497,7 @@
     "Frozen PR127/128/129/130/131/132 source heads"
   ],
   "externalGates": [
-    "One reviewed immutable protected metadata run pending; exact secret storage/inventory/scopes/protections confirmed. Exact provider timestamps unknown and not fabricated; local authority expires17:42:21.551Z.",
+    "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
     "Legitimate licensed canonical bear-flag5m/wedge15m plus independently selected negative/rights/second annotation evidence; genuine0/6",
     "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
     "Uninstalled checkout intent issuer/exclusive cutover/provider inventory; first-customer provisioning/reconciliation still unimplemented/unaccepted, not supplied by collector",
@@ -475,11 +507,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "one-protected-metadata-get",
-    "status": "READY",
-    "command": "Create reviewed exact protected branch once; verify remote SHA/tree then approve only matching metadata environment run. Inspect sanitized outcome; no retries/inference.",
-    "when": "Only after browser capability is restored or owner supplies genuine nonsecret dashboard evidence; no repeated blind retries.",
-    "primaryDependency": "GitHub protected-environment execution of exact reviewed source."
+    "id": "continue-from-existing-release-gates-not-metadata",
+    "status": "RELEASE_HOLD",
+    "command": "Reuse PR133 source1190/threeCI successes. Continue isolated uninstalled Checkout issuer/provisioning/reconciliation engineering under existing ownership rules; actual activation requires provider inventory/exclusive cutover/shared-live approval. Resolve licensed independent corpus, finance and signed-device evidence separately. Do not create/retry metadata runner or spend/deploy/merge.",
+    "primaryDependency": "No remaining metadata owner action. Genuine scanner cases0/6; licensed canonical labels/rights/independent negatives plus separately authorized inference/finance; native signed/device resources and actual provider/release gates remain.",
+    "prohibitedNextAction": "Repeated metadata GET, inference scope expansion, generic secret fallback, protected branch update, weakening paid or live-Sites gates"
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
@@ -496,5 +528,14 @@
     "negativeSelection": "Independent selection not verified",
     "rightsAndSecondAnnotations": "UNVERIFIED; owner/licensor/independent annotator evidence required",
     "genuineProviderCases": "0/6"
-  }
+  },
+  "completedGates": [
+    {
+      "id": "isolated-restricted-key-metadata",
+      "result": "REAL_PASS",
+      "evidence": "qa/METADATA-VERIFICATION-2026-10-20.json",
+      "notLiveSitesAttestation": true,
+      "notPaidAdmission": true
+    }
+  ]
 }
