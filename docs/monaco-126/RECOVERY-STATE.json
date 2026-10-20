@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T17:53:33.932807+00:00",
+  "savedAtUtc": "2026-10-20T18:05:14.870542+00:00",
   "worker": {
     "id": "root-release-completion-f8cd93",
     "status": "RUNNING",
-    "activeTask": "Checkout code and disposable functional tests complete; scanner evidence preparation and exact-source acceptance next. Metadata remains completed; do not rerun."
+    "activeTask": "191affected Node checks +40 actual TS/disposable SQL checks pass; exact-source CI/PG17 concurrency/native compile pending. Scanner0/6; metadata complete."
   },
   "ownership": {
     "branch": "monaco-release-completion-126-20261020-f8cd93",
     "writer": "root-release-completion-f8cd93",
     "leaseId": "issue126-6297316630",
     "status": "EXCLUSIVE_DISJOINT",
-    "expectedHead": "6609a006c997bc95aa5985f75f5997717f1671a0",
+    "expectedHead": "e1e279024ab0068242a234a9b8be93b458546b40",
     "ownedPaths": [
       "app/lib/server/pocket-checkout-completion.ts",
       "supabase/proposed/pocket-checkout*.sql",
@@ -20,7 +20,10 @@
       "scripts/pocket-monaco-*",
       "tests/pocket-monaco-*",
       "docs/monaco-126",
-      "vercel.json"
+      "vercel.json",
+      "app/pocket/apple-storekit.ts",
+      "tests/pocket-native-request-boundary.test.ts",
+      ".github/workflows/monaco-release-completion-qa.yml"
     ],
     "verificationBasis": "Remote PR133 exact6609a006; new branch absent before local worktree creation; all earlier branches frozen."
   },
@@ -99,7 +102,7 @@
         39319553179
       ],
       "ciStatus": "DONE: all3 exact-head checks SUCCESS; unchanged image/workspace proof reused by impact mapping",
-      "activation": "UNINSTALLED/defaultHOLD; no issuer, provider inventory/cutover, first-customer provisioning or resubscription reconciliation"
+      "activation": "UNINSTALLED/defaultHOLD. Issuer/provisioning/reconciliation implementation now exists on isolated releaseCompletion successor; real authority/cutover/provider/shared-live activation remains unaccepted."
     },
     "recovery": {
       "sourceStatus": "DONE",
@@ -205,21 +208,22 @@
       "workflowRunAttempt": 1,
       "workflowConclusion": "success",
       "verifiedAt": "2026-10-20T17:36:37.674Z",
-      "evidence": "qa/METADATA-VERIFICATION-2026-10-20.json",
+      "evidence": "https://github.com/nashysaimarkets/nash-ai-markets/blob/7baacfb1f9ebaf25d25172acd781b354ee59fd72/qa/METADATA-VERIFICATION-2026-10-20.json",
       "temporaryCredentialFingerprintSha256": "6bfdc6f3265c761bc06256ddfddc1700e76be20ee82ed65042c319927f99a790",
       "providerMetadataRequestId": "fe6ae966-582e-42e3-a189-8b83f222859a",
       "providerExactTimestampsKnown": false,
       "retry": "FORBIDDEN: completed one-run approval; immutable branch and local deadline retained",
       "credentialLifecycle": "No new key/rotation/revocation/deletion in this run; dashboard expiry21Oct, local execution admission ends17:42:21.551Z. Dedicated restricted secret retained encrypted.",
       "credentialedExecutionAllowed": false,
-      "postRunIndependentReview": "qa/METADATA-POSTRUN-INDEPENDENT-REVIEW.json"
+      "postRunIndependentReview": "https://github.com/nashysaimarkets/nash-ai-markets/blob/7baacfb1f9ebaf25d25172acd781b354ee59fd72/qa/METADATA-POSTRUN-INDEPENDENT-REVIEW.json"
     },
     "releaseCompletion": {
-      "sourceStatus": "IN_PROGRESS",
+      "sourceStatus": "IMPLEMENTED_LOCAL_ACCEPTANCE_PASS",
       "activation": "UNMOUNTED / UNINSTALLED / no live activation",
-      "changes": "Checkout governed issuer, single Customer dispatch/provisioning, known Customer recovery, known Session GET reconciliation and terminal intent retention",
-      "tests": "96 affected Node checks plus28 real TypeScript-to-disposable-PGlite cases; existing SQL/actual-route harnesses pass; strict TS and focused lint pass",
-      "limits": "No real provider, hosted SQL or new PG multi-session evidence yet. All prior1190/three CI source proofs retained; this delta does not re-attest unchanged code."
+      "changes": "Checkout issuer/provisioning/recovery/reconciliation with retained receipts; canonical corpus/raster/crop/evidence validators and scoring; native signed-proof request confinement",
+      "tests": "191affected Node checks +40 TypeScript-to-PGlite cases; strict TS/lint/security PASS; original1190/three CI proofs retained",
+      "limits": "No real provider, hosted SQL or new PG multi-session evidence yet. All prior1190/three CI source proofs retained; this delta does not re-attest unchanged code.",
+      "ciStatus": "PENDING exact-source workflow after publication"
     }
   },
   "tests": [
@@ -455,7 +459,9 @@
     "completionSource": "6609a006c997bc95aa5985f75f5997717f1671a0",
     "completionBuilds": "3 exact-source CI PASS; FINAL-CI-RECEIPTS.json. No deployed preview identity or signed artifact proof."
   },
-  "pendingOperations": [],
+  "pendingOperations": [
+    "Publish exact reviewed source and run affected-source CI once; preserve frozen previous branches. No provider/metadata/deploy action."
+  ],
   "watchdog": {
     "id": "6ad67a914bf48191b7f2d48d4325bf83",
     "title": "Monaco Crash Recovery",
@@ -466,19 +472,19 @@
     "duplicatesCreated": 0,
     "alertPolicy": "One possible-stall alert per unchanged checkpoint; explicit RUNNING, verified >2h inactivity, no newer tools/CI/worker/handoff; never releases writer lease",
     "oldStaleQaPaused": "6ad4a1dae13481919d0270149dc9eb69",
-    "pauseReason": "BLOCKED_EXTERNAL browser transport; fresh redacted key inventory/storage confirmation unavailable. No duplicate worker or automated Work relaunch.",
+    "pauseReason": "Existing watchdog remains paused; no settings changed. Metadata complete. Licensed corpus, provider/finance, signed devices and live activation remain external; current Work session independently executes safe source tasks.",
     "actualDelivery": "UNTESTED; offline policy proof does not establish real notification delivery/deduplication"
   },
   "approvals": {
     "productionDeploy": false,
     "mainMerge": false,
     "persistentSharedLiveSql": false,
-    "newCredentials": "One isolated current-owner key in existing pilot org/project only, approved20Oct17:10Europe/London; no admin/new project/production credentials.",
+    "newCredentials": false,
     "storesRelease": false,
     "igOrders": false,
     "outreachPublication": false,
     "benchmark": "Existing separate max$5 approval does not bypass runtime/financial/licence admission; no dispatch permitted here",
-    "benchmarkCredentialSetup": "APPROVED scoped proposal d54a171; access setup and metadata verification only. No paid dispatch, production, shared-live SQL or release."
+    "benchmarkCredentialSetup": "Historical scoped metadata setup COMPLETE; no further credential action authorised in this continuation."
   },
   "budget": {
     "reservationsPerformedThisContinuation": 0,
@@ -502,18 +508,18 @@
     "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
     "Legitimate licensed canonical bear-flag5m/wedge15m plus independently selected negative/rights/second annotation evidence; genuine0/6",
     "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
-    "Uninstalled checkout intent issuer/exclusive cutover/provider inventory; first-customer provisioning/reconciliation still unimplemented/unaccepted, not supplied by collector",
+    "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
     "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
     "Signed iOS/Android resources, physical devices and real store/customer lifecycle acceptance",
     "Actual IGDEMO/provider/data rights separately; core launch independent",
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "continue-from-existing-release-gates-not-metadata",
-    "status": "RELEASE_HOLD",
-    "command": "Reuse PR133 source1190/threeCI successes. Continue isolated uninstalled Checkout issuer/provisioning/reconciliation engineering under existing ownership rules; actual activation requires provider inventory/exclusive cutover/shared-live approval. Resolve licensed independent corpus, finance and signed-device evidence separately. Do not create/retry metadata runner or spend/deploy/merge.",
-    "primaryDependency": "No remaining metadata owner action. Genuine scanner cases0/6; licensed canonical labels/rights/independent negatives plus separately authorized inference/finance; native signed/device resources and actual provider/release gates remain.",
-    "prohibitedNextAction": "Repeated metadata GET, inference scope expansion, generic secret fallback, protected branch update, weakening paid or live-Sites gates"
+    "id": "verify-affected-exact-source-ci",
+    "status": "IN_PROGRESS",
+    "command": "Inspect the new monaco-release-completion affected-source CI; fix only a concrete failure. Once accepted, save receipt and await licensed independently annotated six-case corpus. Do not rerun metadata or unrelated1190tests.",
+    "primaryDependency": "Rights-approved canonical chart packet + independent labels: bear-flag5m, wedge15m, selected negative, and existing three rights/review proof.",
+    "prohibitedNextAction": "Paid inference/key permissions/production/database/customer/merge/deployment/store actions without specific applicable approval."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
@@ -535,7 +541,7 @@
     {
       "id": "isolated-restricted-key-metadata",
       "result": "REAL_PASS",
-      "evidence": "qa/METADATA-VERIFICATION-2026-10-20.json",
+      "evidence": "https://github.com/nashysaimarkets/nash-ai-markets/blob/7baacfb1f9ebaf25d25172acd781b354ee59fd72/qa/METADATA-VERIFICATION-2026-10-20.json",
       "notLiveSitesAttestation": true,
       "notPaidAdmission": true
     }

@@ -11,6 +11,14 @@ create table private.pocket_checkout_fences (
   valid_until timestamptz not null,
   check(valid_until>fenced_at)
 );
+create table private.pocket_checkout_fence_history (
+  receipt_sha256 text primary key,
+  scope jsonb not null,
+  evidence jsonb not null,
+  fenced_at timestamptz not null,
+  valid_until timestamptz not null
+);
+alter table private.pocket_checkout_baselines add column inventory_text text;
 create table private.pocket_customer_provisions (
   id uuid primary key default gen_random_uuid(),
   app_user_id uuid not null unique references auth.users(id),
@@ -25,17 +33,18 @@ create table private.pocket_customer_provisions (
   check((state='BOUND')=(customer_id is not null))
 );
 create table private.pocket_checkout_reconciliations (
-  intent_id uuid primary key references private.pocket_checkout_intents(intent_id),
-  receipt_sha256 text not null unique,
+  intent_id uuid not null references private.pocket_checkout_intents(intent_id),
+  receipt_sha256 text primary key,
   inventory_text text not null,
   fence_sha256 text not null,
   session jsonb not null,
   recorded_at timestamptz not null default clock_timestamp()
 );
 alter table private.pocket_checkout_fences enable row level security;
+alter table private.pocket_checkout_fence_history enable row level security;
 alter table private.pocket_customer_provisions enable row level security;
 alter table private.pocket_checkout_reconciliations enable row level security;
-revoke all on private.pocket_checkout_fences,private.pocket_customer_provisions,private.pocket_checkout_reconciliations from public,anon,authenticated,service_role,pocket_checkout_verifier;
+revoke all on private.pocket_checkout_fences,private.pocket_checkout_fence_history,private.pocket_customer_provisions,private.pocket_checkout_reconciliations from public,anon,authenticated,service_role,pocket_checkout_verifier;
 
 create function private.checkout_base_scope_ok(s jsonb) returns boolean language sql immutable set search_path='' as $$
   select coalesce(jsonb_typeof(s)='object' and (select count(*) from jsonb_object_keys(s))=6
@@ -62,6 +71,7 @@ begin
   digest:=encode(sha256(convert_to(jsonb_build_object('scope',p_scope,'evidence',p_evidence)::text,'UTF8')),'hex');
   insert into private.pocket_checkout_fences values(p_scope,digest,p_evidence,f,v)
     on conflict(scope) do update set receipt_sha256=excluded.receipt_sha256,evidence=excluded.evidence,fenced_at=excluded.fenced_at,valid_until=excluded.valid_until;
+  insert into private.pocket_checkout_fence_history values(digest,p_scope,p_evidence,f,v) on conflict(receipt_sha256) do nothing;
   return jsonb_build_object('kind','FENCED','receipt_sha256',digest);
 end $$;
 create function private.get_pocket_checkout_fence(p_scope jsonb) returns jsonb language sql security definer set search_path='' as $$
@@ -114,6 +124,7 @@ begin
   select * into strict f from private.pocket_checkout_fences where scope=s-'intentId'-'customerId';
   perform private.attest_pocket_checkout_baseline((s->>'intentId')::uuid,(s->>'userId')::uuid,s->>'customerId',s->>'stripeAccountId',(s->>'livemode')::boolean,s->>'candidateSha',
     p_inventory_sha256,p_fence_sha256,f.fenced_at,(e->>'inventoryStartedAt')::timestamptz,(e->>'inventoryCompletedAt')::timestamptz,true,0,0);
+  update private.pocket_checkout_baselines set inventory_text=p_inventory_text where intent_id=(s->>'intentId')::uuid;
   return jsonb_build_object('kind','ISSUED','id',s->>'intentId');
 end $$;
 create function private.enroll_pocket_customer_provision(p_scope jsonb,p_enrollment_sha256 text,p_fence_sha256 text) returns jsonb language plpgsql security definer set search_path='' as $$
@@ -151,6 +162,7 @@ begin
   select * into strict r from private.pocket_customer_provisions where id=p_id and scope=p_scope for update;
   if r.state<>'PREPARED' or r.approved_until<=clock_timestamp() or not private.checkout_user_ok(r.app_user_id)
     or exists(select 1 from private.pocket_web_identities where app_user_id=r.app_user_id)
+    or exists(select 1 from private.pocket_web_subscriptions s join auth.users a on a.id=r.app_user_id where s.app_user_id=r.app_user_id or lower(trim(s.email))=lower(trim(a.email)))
     or not exists(select 1 from private.pocket_checkout_fences where scope=p_scope and receipt_sha256=r.fence_sha256 and valid_until>clock_timestamp())
     then return jsonb_build_object('kind','HOLD'); end if;
   update private.pocket_customer_provisions set state='DISPATCHED',token=gen_random_uuid() where id=r.id returning * into r;
@@ -214,13 +226,13 @@ begin
   if e->'blockers'->'openCheckout' is distinct from to_jsonb(case when is_open then 1 else 0 end)
     or (select count(*) from jsonb_array_elements(e->'checkoutSessions') x where x->>'status'='open')<>(case when is_open then 1 else 0 end)
     then raise exception 'checkout_reconcile_other_session'; end if;
+  insert into private.pocket_checkout_reconciliations values(r.intent_id,p_inventory_sha256,p_inventory_text,p_fence_sha256,p_session,clock_timestamp()) on conflict(receipt_sha256) do nothing;
   if is_open then
     if r.expires_at<=extract(epoch from clock_timestamp()) or coalesce(p_session->>'url','') !~ '^https://checkout[.]stripe[.]com/c/pay/[^[:space:]]+$' then raise exception 'checkout_reconcile_url_invalid'; end if;
     update private.pocket_checkout_intents set state='READY',stripe_session_id=p_session->>'id',session_projection=p_session-'subscription'-'payment_status',updated_at=clock_timestamp() where intent_id=r.intent_id;
     return jsonb_build_object('kind','RECOVERED','id',r.intent_id);
   end if;
   -- Preserve old intent, token, hashes and receipt permanently; no delete/reset.
-  insert into private.pocket_checkout_reconciliations values(r.intent_id,p_inventory_sha256,p_inventory_text,p_fence_sha256,p_session,clock_timestamp());
   update private.pocket_checkout_intents set state='RECONCILED',stripe_session_id=p_session->>'id',session_projection=p_session,updated_at=clock_timestamp() where intent_id=r.intent_id;
   return jsonb_build_object('kind','RECONCILED','id',r.intent_id);
 end $$;

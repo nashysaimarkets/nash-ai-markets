@@ -13,3 +13,13 @@ Offline proof at the first checkpoint:96 affected existing/new Node checks;28 ac
 Rollback: leave operations unmounted, retain all unresolved/terminal ledger records, revert runtime changes only. Never delete or reset a dispatch to clear a HOLD or restore the old unguarded creation path. This continuation cannot authorize deployment, hosted DDL, customer writes or release.
 
 Current official contracts consulted: https://docs.stripe.com/api/checkout/sessions/create ; https://docs.stripe.com/api/idempotent_requests ; https://docs.stripe.com/webhooks . The supplied Stripe skill reference URLs returned404; exact official API pages and installed pinned SDK types were used. No live Stripe account data was queried.
+
+## Native boundary regression
+
+The shared native request helper could carry signed Apple evidence to a caller-supplied external URL, follow a redirect with that evidence, or retain a caller's stale transaction when StoreKit returned none. An actual-source10-case matrix reproduced1PASS/9FAIL. The helper now accepts only local Pocket API paths on iOS, snapshots/clears the proof header before the asynchronous native read, adds only current evidence, disables redirect following and uses same-origin credentials. Web transport behavior stays unchanged. All53affected Apple/native tests pass offline, including the new10/10; no signed StoreKit/device claim is made.
+
+## Additional acceptance preparation
+
+The scanner validator/scorer and private-packet CLI are documented in SCANNER-EVIDENCE-REQUIREMENTS-2026-10-20.md. Forty-two affected corpus/scoring tests pass, including decoded precision-crop pixel checks, distinct negative controls, maximum-cardinality matching, retained wrong-price errors, duplicate-case rejection and separation of synthetic from genuine evidence. The original immutable pack is not altered. Checkout now retains complete baseline inventory and historical fence evidence;40actual TypeScript-to-PGlite checks pass, including direct forged-count/hash/scope/expiry negatives and durable open→terminal recovery.
+
+Exact-source CI runs only affected tests, strict typecheck/lint/security, disposable SQL, the three existing and three new genuine PostgreSQL17 transaction races, and the changed native web bridge production compile. No deployment job, runtime secrets, metadata call or inference is present. CI results remain pending until linked in the issue receipt; old1190/three CI proofs are retained separately rather than relabelled as evidence for these new files.
