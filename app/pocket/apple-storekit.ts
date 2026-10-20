@@ -131,9 +131,19 @@ export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccess
 export async function pocketAuthenticatedFetch(input: string, init: RequestInit = {}): Promise<Response> {
   init.signal?.throwIfAborted();
   if (!isAppleNativeApp()) return fetch(input, init);
-  const status = await native.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID });
-  init.signal?.throwIfAborted();
+  // Native proof is private account evidence, not a general-purpose fetch header.
+  // Resolve against a fixed sentinel so this boundary is also testable without DOM state.
+  const target = new URL(input, "https://pocket-request.invalid");
+  if (!input.startsWith("/api/pocket/") || input.includes("\\") || target.origin !== "https://pocket-request.invalid" ||
+      target.hash || input.split("?")[0] !== target.pathname || !/^\/api\/pocket\/[a-z0-9/-]+$/i.test(target.pathname)) {
+    throw new Error("Native account evidence requires a local Pocket API endpoint.");
+  }
   const headers = new Headers(init.headers);
+  headers.delete("x-pocket-apple-transaction");
+  const options = { ...init, headers };
+  const status = await native.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID });
+  options.signal?.throwIfAborted();
   if (status.signedTransactionInfo) headers.set("x-pocket-apple-transaction", status.signedTransactionInfo);
-  return fetch(input, { ...init, headers });
+  // An API redirect must never forward signed evidence to another origin.
+  return fetch(input, { ...options, redirect: "error", credentials: "same-origin" });
 }

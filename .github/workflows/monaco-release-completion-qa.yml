@@ -1,0 +1,83 @@
+name: Monaco release completion affected acceptance
+on:
+  push:
+    branches: ['monaco-release-completion-126-20261020-f8cd93']
+permissions:
+  contents: read
+concurrency:
+  group: monaco-release-completion-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  affected-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      GIT_COMMIT_SHA: ${{ github.sha }}
+      NEXT_PUBLIC_SUPABASE_URL: 'https://ci-placeholder.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_ci_placeholder'
+      POCKET_BENCHMARK_PILOT_ENABLED: 'false'
+      POCKET_REAL_BENCHMARK_DISPATCH: 'false'
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: 'false'
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: checkout_intent_qa
+        options: >-
+          --health-cmd "pg_isready -U postgres -d checkout_intent_qa"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+      - name: Exact source and deployment guard
+        run: |
+          test "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"
+          node -e "const c=require('./vercel.json');if(c.git.deploymentEnabled['monaco-release-completion-126-20261020-f8cd93']!==false)process.exit(1)"
+      - name: Install unchanged locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Only affected regression suites
+        run: >-
+          node --test tests/pocket-checkout-completion.test.ts tests/pocket-checkout-intent.test.ts
+          tests/pocket-checkout-inventory.test.ts tests/pocket-checkout-customer.test.ts tests/pocket-legacy-renewal.test.ts tests/commercial-launch.test.ts
+          tests/pocket-monaco-corpus-coverage.test.ts tests/pocket-monaco-measurement.test.ts
+          tests/pocket-native-request-boundary.test.ts tests/pocket-native-foreground-recovery.test.ts
+          tests/pocket-native-subscription-recovery.test.ts tests/pocket-native-server-bridge.test.ts
+          tests/pocket-apple-access.test.ts tests/pocket-apple-events.test.ts
+      - name: Typecheck, changed-source lint, security
+        run: |
+          npm run typecheck
+          npx eslint app/lib/server/pocket-checkout-completion.ts app/pocket/apple-storekit.ts scripts/pocket-monaco-measurement.ts tests/pocket-checkout-completion.test.ts tests/run-pocket-checkout-completion.mjs tests/pocket-monaco-measurement.test.ts tests/pocket-native-request-boundary.test.ts
+          npm run security:scan
+          git diff --check
+      - name: Disposable SQL and actual TypeScript integration
+        run: |
+          npm install --prefix "$RUNNER_TEMP/completion-qa" --no-audit --no-fund --save-exact @electric-sql/pglite@0.5.10
+          export POCKET_CHECKOUT_QA_PGLITE_MODULE="$RUNNER_TEMP/completion-qa/node_modules/@electric-sql/pglite/dist/index.js"
+          node tests/run-pocket-checkout-pglite.mjs
+          node tests/run-pocket-checkout-independent.mjs
+          node tests/run-pocket-checkout-route-integration.mjs
+          node tests/run-pocket-checkout-completion.mjs
+      - name: Real PostgreSQL17 overlapping transactions
+        env:
+          QA_PG_CONTAINER: ${{ job.services.postgres.id }}
+          POCKET_CHECKOUT_QA_DISPOSABLE_DATABASE: 'true'
+        run: |
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 < tests/sql/support/pocket-checkout-intent-bootstrap.sql > /tmp/bootstrap.log
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 < supabase/proposed/pocket-checkout-intent.sql > /tmp/intent.log
+          docker exec -i "$QA_PG_CONTAINER" psql -U postgres -d checkout_intent_qa -v ON_ERROR_STOP=1 < tests/sql/support/pocket-checkout-intent-helpers.sql > /tmp/helpers.log
+          python3 tests/run-pocket-checkout-completion-concurrency.py
+      - name: Native web bridge production compile
+        run: npx next build --webpack
+      - name: Evidence boundary
+        run: echo 'No metadata/provider/paid/native-device/hosted-DB/deployment acceptance; unchanged1190 source proof retained separately.'

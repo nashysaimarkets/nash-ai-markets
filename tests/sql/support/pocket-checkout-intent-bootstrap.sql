@@ -7,7 +7,7 @@ create schema auth;
 create schema private;
 grant usage on schema private to service_role;
 create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,is_anonymous boolean default false,banned_until timestamptz);
-create table private.pocket_web_identities(app_user_id uuid primary key,stripe_customer_id text not null unique,unique(app_user_id,stripe_customer_id));
+create table private.pocket_web_identities(app_user_id uuid primary key,stripe_customer_id text not null unique,evidence_ref text not null default 'synthetic',unique(app_user_id,stripe_customer_id));
 create table private.pocket_web_subscriptions(stripe_subscription_id text primary key,app_user_id uuid,email text,stripe_customer_id text,active boolean,current_period_end timestamptz);
 create function private.has_pocket_web_subscription(p_user_id uuid) returns boolean language sql stable security definer set search_path='' as $$
   select exists(select 1 from private.pocket_web_subscriptions s join auth.users u on u.id=s.app_user_id
