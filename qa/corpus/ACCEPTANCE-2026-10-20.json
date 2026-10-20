@@ -1,0 +1,87 @@
+{
+  "status": "OFFLINE_CORPUS_PREPARATION_PASS_NOT_SCANNER_ACCEPTANCE",
+  "savedAtUtc": "2026-10-20T18:42:00.740817+00:00",
+  "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
+  "acceptedApplicationSource": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
+  "sourceHashes": {
+    "scripts/prepare-monaco-source-candidates.py": "44958f3877cc24fe5b5eaa9fb368b3e9fe8c87d11ad480355b1f904786e24937",
+    "scripts/assemble-monaco-source-intake.py": "010760845e42253b94b12b09325ba6a19b38440c3a0b0cfe12759ceeaa3a4f13",
+    "scripts/verify-monaco-source-intake.py": "d7e97967902929b48f83df6e5950b265a8d00a7a6324eb4793c9abcb26966e2a",
+    "scripts/prepare-monaco-request-previews.mjs": "763322066e2aa094c29e0d4313f31b5fa72a75b5e26353cd374e2226d770d0ad",
+    "tests/test_monaco_source_candidates.py": "a67ffac26257e17aa34f5cbf9d1799d227cc3852c96cb98563f68a37f3eec5e4",
+    "tests/run-monaco-source-intake-negatives.py": "361555f72bbde330a0b9230f78d5871ac86bedbab540f8dc3d6809b3e651ad24",
+    "docs/monaco-126/corpus/CANDIDATE-SELECTION.json": "b9c94b7f5dc47b76d4ce22445e5b148febfa62d1de7876d47989e6a2e20e03ef"
+  },
+  "sourceUnitTests": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0
+  },
+  "intakeTamperTests": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0
+  },
+  "packetIntegrityCases": 6,
+  "sourceMinuteRows": 9728,
+  "exactCrossTimeframeMatches": 2638,
+  "selectedRealBars": 56,
+  "independentlyCheckedWickPixels": 112,
+  "retainedOriginalHashes": 3,
+  "repairedPrecisionCrops": {
+    "beforeMaxRgb": [
+      60,
+      62,
+      70
+    ],
+    "afterMaxRgb": [
+      0,
+      0,
+      0
+    ],
+    "thresholdMaximumUnchanged": 40
+  },
+  "requestPreviews": 18,
+  "requestPreviewReview": "PASS_AUTOMATED_ADVISORY_ONLY",
+  "packetManifestSha256": "8bdcd4d0711c0cd3bded667c70c2d5cfd3db3f241bf36c32e7f3e24e7790dc34",
+  "providerCalls": 0,
+  "metadataCalls": 0,
+  "newCredentials": 0,
+  "paidCostUsd": 0,
+  "independentHumanReviews": 0,
+  "genuineScannerMeasurements": 0,
+  "acceptedCanonicalCases": 0,
+  "productionChanged": false,
+  "legacyApplicationTestsRepeated": false,
+  "evidence": [
+    "source-unit-tests.txt",
+    "intake-tamper-results.json",
+    "intake-integrity.json",
+    "AUTOMATED-ADVISORY.json",
+    "REQUEST-PREVIEW-ADVISORY.json"
+  ],
+  "limitations": [
+    "All reference labels provisional; strict negative undecided",
+    "Original three source rights unresolved",
+    "Automated advisory is not human reference/legal acceptance",
+    "Preview macro policy/executor and price bounds not approved"
+  ],
+  "unchangedApplicationSourceVerified": true,
+  "publicRawDataExcluded": true,
+  "requestPreviewValidation": {
+    "envelopesMatchedExistingValidator": 18,
+    "changedRouteSourceRejected": true,
+    "providerCalls": 0,
+    "ledgerCalls": 0,
+    "financialAdmission": false
+  },
+  "secretPatternScan": {
+    "status": "PASS",
+    "versionControlCandidates": 1110,
+    "command": "npm run security:scan"
+  },
+  "preparedSourceCommit": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+  "localReviewedCommit": "f9560bdf064bf4fc8f54e49196c658b819c5c8c4",
+  "sourceTree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+  "githubUpload": "Git Data API tree exactly equals local reviewed tree; shell lacks GitHub login. No new credential."
+}

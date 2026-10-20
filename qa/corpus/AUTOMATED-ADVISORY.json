@@ -1,0 +1,215 @@
+{
+  "reviewType": "AUTOMATED_ADVISORY_NOT_HUMAN_REFERENCE_ACCEPTANCE",
+  "reviewer": "distinct automated rights_review agent",
+  "reviewedAtUtc": "2026-10-20T18:33:50.927223+00:00",
+  "packet": "scanner-review-packet-v3",
+  "sourceHashes": {
+    "scripts/prepare-monaco-source-candidates.py": "44958f3877cc24fe5b5eaa9fb368b3e9fe8c87d11ad480355b1f904786e24937",
+    "scripts/assemble-monaco-source-intake.py": "010760845e42253b94b12b09325ba6a19b38440c3a0b0cfe12759ceeaa3a4f13",
+    "scripts/verify-monaco-source-intake.py": "d7e97967902929b48f83df6e5950b265a8d00a7a6324eb4793c9abcb26966e2a",
+    "tests/test_monaco_source_candidates.py": "a67ffac26257e17aa34f5cbf9d1799d227cc3852c96cb98563f68a37f3eec5e4",
+    "tests/run-monaco-source-intake-negatives.py": "361555f72bbde330a0b9230f78d5871ac86bedbab540f8dc3d6809b3e651ad24",
+    "docs/monaco-126/corpus/CANDIDATE-SELECTION.json": "b9c94b7f5dc47b76d4ce22445e5b148febfa62d1de7876d47989e6a2e20e03ef"
+  },
+  "packetManifestSha256": "8bdcd4d0711c0cd3bded667c70c2d5cfd3db3f241bf36c32e7f3e24e7790dc34",
+  "checks": {
+    "targetedTests": {
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "sixCaseIntakeAudit": "OFFLINE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+    "allArtifactHashes": {
+      "passed": 24,
+      "failed": 0
+    },
+    "embeddedOriginals": {
+      "passed": 6,
+      "failed": 0
+    },
+    "rawMinuteMatchedNewBars": 56,
+    "actualHighLowPixelEndpoints": 112,
+    "legacyPrecisionRepaired": [
+      {
+        "caseId": "range-clear-01",
+        "legacyMeanRgb": 0.5318309762929562,
+        "legacyMaxRgb": 60,
+        "losslessMaxRgb": 0,
+        "unchangedOutsidePrecision": true
+      },
+      {
+        "caseId": "double-top-01",
+        "legacyMeanRgb": 0.47852872856459655,
+        "legacyMaxRgb": 62,
+        "losslessMaxRgb": 0,
+        "unchangedOutsidePrecision": true
+      },
+      {
+        "caseId": "head-shoulders-01",
+        "legacyMeanRgb": 0.8336069549771128,
+        "legacyMaxRgb": 70,
+        "losslessMaxRgb": 0,
+        "unchangedOutsidePrecision": true
+      }
+    ],
+    "candidateGeometry": {
+      "frd-spy-bear-flag-5m-01": {
+        "anchors": 8,
+        "humanAccepted": false
+      },
+      "frd-spy-wedge-15m-01": {
+        "anchors": 6,
+        "humanAccepted": false,
+        "fittedSlopePerBar": {
+          "high": 0.1314285714285818,
+          "low": 0.1714864864864918
+        }
+      },
+      "frd-spy-negative-5m-01": {
+        "anchors": 0,
+        "humanAccepted": false
+      }
+    },
+    "existingAcceptanceAndDispatchCodeUnchangedFrom8aa7b8e": [
+      "scripts/pocket-monaco-measurement.ts",
+      "scripts/verify-monaco-scanner-evidence.mjs",
+      "scripts/run-pocket-real-image-benchmark.ts"
+    ]
+  },
+  "repairedPriorDefects": [
+    "Wrong timeframe rejected before writes",
+    "Duplicate case ID and scenario rejected before writes",
+    "Unknown scenario rejected before writes"
+  ],
+  "semanticAdvisory": {
+    "bearFlag": "Improved observed downward pole and multi-contact near-flat consolidation; flag versus rectangle/retracement remains human decision.",
+    "wedge": "Three strictly rising highs and lows; fitted lower boundary slope exceeds upper. More defensible candidate, but containment/tolerances and semantic wedge acceptance remain human decision.",
+    "negative": "Still cannot prove strict absence of all S/R, pattern and liquidity features; must not accept empty truth automatically."
+  },
+  "canonicalCasesAccepted": 0,
+  "independentHumanReviews": 0,
+  "providerCalls": 0,
+  "dispatchAuthorised": false,
+  "productionReadiness": false,
+  "finalFollowupAtUtc": "2026-10-20T18:37:14.430886+00:00",
+  "priorSourceHashes": {
+    "scripts/prepare-monaco-source-candidates.py": "44958f3877cc24fe5b5eaa9fb368b3e9fe8c87d11ad480355b1f904786e24937",
+    "scripts/assemble-monaco-source-intake.py": "010760845e42253b94b12b09325ba6a19b38440c3a0b0cfe12759ceeaa3a4f13",
+    "scripts/verify-monaco-source-intake.py": "79298041d302e4dcd6312f24e0a73542c31672a7864298b2d9e7a4c82958080c",
+    "tests/test_monaco_source_candidates.py": "a67ffac26257e17aa34f5cbf9d1799d227cc3852c96cb98563f68a37f3eec5e4",
+    "docs/monaco-126/corpus/CANDIDATE-SELECTION.json": "b9c94b7f5dc47b76d4ce22445e5b148febfa62d1de7876d47989e6a2e20e03ef"
+  },
+  "finalFollowupChecks": {
+    "currentIntake": {
+      "status": "OFFLINE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+      "cases": [
+        {
+          "caseId": "range-clear-01",
+          "hashes": true,
+          "raster": true,
+          "embeddedInput": true,
+          "calibration": true,
+          "anchorCount": 5,
+          "rightsAccepted": false,
+          "referenceAccepted": false
+        },
+        {
+          "caseId": "double-top-01",
+          "hashes": true,
+          "raster": true,
+          "embeddedInput": true,
+          "calibration": true,
+          "anchorCount": 3,
+          "rightsAccepted": false,
+          "referenceAccepted": false
+        },
+        {
+          "caseId": "head-shoulders-01",
+          "hashes": true,
+          "raster": true,
+          "embeddedInput": true,
+          "calibration": true,
+          "anchorCount": 5,
+          "rightsAccepted": false,
+          "referenceAccepted": false
+        },
+        {
+          "caseId": "frd-spy-bear-flag-5m-01",
+          "hashes": true,
+          "raster": true,
+          "embeddedInput": true,
+          "calibration": true,
+          "anchorCount": 8,
+          "rightsAccepted": false,
+          "referenceAccepted": false
+        },
+        {
+          "caseId": "frd-spy-wedge-15m-01",
+          "hashes": true,
+          "raster": true,
+          "embeddedInput": true,
+          "calibration": true,
+          "anchorCount": 6,
+          "rightsAccepted": false,
+          "referenceAccepted": false
+        },
+        {
+          "caseId": "frd-spy-negative-5m-01",
+          "hashes": true,
+          "raster": true,
+          "embeddedInput": true,
+          "calibration": true,
+          "anchorCount": 0,
+          "rightsAccepted": false,
+          "referenceAccepted": false
+        }
+      ],
+      "dispatchAuthorised": false,
+      "genuineMeasurements": 0,
+      "independentHumanReviews": 0
+    },
+    "previouslyReproducedDefects": [
+      {
+        "case": "nan-tick",
+        "status": "PASS_REJECTED",
+        "reason": "nonfinite JSON number"
+      },
+      {
+        "case": "legacy-tamper",
+        "status": "PASS_REJECTED",
+        "reason": "artifact hash mismatch"
+      },
+      {
+        "case": "crop-metadata",
+        "status": "PASS_REJECTED",
+        "reason": "precision crop metadata mismatch"
+      }
+    ],
+    "repeatedOtherTests": false
+  },
+  "resolvedVerifierDefects": [
+    {
+      "id": "NONFINITE-TICK",
+      "repro": "Set calibration.ticks[0].y=NaN in copied candidate label and update its manifest hash.",
+      "observed": "OFFLINE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+      "fix": "Reject nonfinite JSON numbers recursively.",
+      "status": "RESOLVED_OFFLINE_REPRO_NOW_REJECTED"
+    },
+    {
+      "id": "LEGACY-HASH-UNCHECKED",
+      "repro": "Tamper legacy-input file without updating its manifest hash.",
+      "observed": "OFFLINE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+      "fix": "Load and hash-check legacy input, and bind retained original pins.",
+      "status": "RESOLVED_OFFLINE_REPRO_NOW_REJECTED"
+    },
+    {
+      "id": "CROP-METADATA-UNCHECKED",
+      "repro": "Set original precisionRect.top=52 while fixed crop and input stay unchanged.",
+      "observed": "OFFLINE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+      "fix": "Validate exact rectangle or use validated recorded rect for comparison.",
+      "status": "RESOLVED_OFFLINE_REPRO_NOW_REJECTED"
+    }
+  ],
+  "outstandingCodeFindings": [],
+  "finalStatus": "OFFLINE_PREPARATION_ADVISORY_PASS_HUMAN_REFERENCE_AND_RIGHTS_ACCEPTANCE_STILL_BLOCKED"
+}

@@ -1,0 +1,102 @@
+{
+  "sourceZipSha256": "f6031429ed0903be2a580be29529c37b6b017164d8b118c8d6267d2706148073",
+  "sourceUrl": "https://frd001.s3.us-east-2.amazonaws.com/frd_sample_etf_SPY.zip",
+  "sourceLandingPage": "https://firstratedata.com/free-intraday-data",
+  "sourceTimezone": "America/New_York",
+  "adjustment": "split-adjusted per ZIP README",
+  "status": "CANDIDATES_ONLY_HUMAN_ADJUDICATION_REQUIRED",
+  "selectionMethod": "Offline exploration of genuine vendor OHLCV; technical heuristics then visual review. No scanner/model predictions used. Not a random or representative accuracy sample.",
+  "cases": [
+    {
+      "caseId": "frd-spy-bear-flag-5m-01",
+      "scenario": "bear-flag",
+      "minutes": 5,
+      "timeframe": "5m",
+      "start": "2026-10-12 11:55:00",
+      "end": "2026-10-12 14:15:00",
+      "reason": "Revised after automated reviewer rejected the first sparse-contact rebound. Genuine downward pole followed by near-flat consolidation, three local upper contacts and multiple lower contacts, then lower close. Flag versus rectangle classification still requires human adjudication.",
+      "scope": "Candidate bear-flag geometry only. S/R and liquidity hypotheses remain unadjudicated and cannot automatically count as false positives.",
+      "anchors": [
+        {
+          "timestamp": "2026-10-12 11:55:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-12 12:50:00",
+          "field": "low"
+        },
+        {
+          "timestamp": "2026-10-12 13:00:00",
+          "field": "low"
+        },
+        {
+          "timestamp": "2026-10-12 13:10:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-12 13:20:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-12 13:35:00",
+          "field": "low"
+        },
+        {
+          "timestamp": "2026-10-12 13:55:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-12 14:15:00",
+          "field": "close"
+        }
+      ]
+    },
+    {
+      "caseId": "frd-spy-wedge-15m-01",
+      "scenario": "wedge",
+      "minutes": 15,
+      "timeframe": "15m",
+      "start": "2026-10-05 12:15:00",
+      "end": "2026-10-05 15:15:00",
+      "reason": "Revised after automated reviewer rejected weak descending envelope. This genuine rising-envelope candidate has three strictly rising upper extrema and three strictly rising lower extrema, with fitted lower boundary rising faster. Canonical wedge classification/containment still requires human adjudication.",
+      "scope": "Candidate rising-wedge geometry only; no confirmed breakout or trade is asserted. Other features unadjudicated.",
+      "anchors": [
+        {
+          "timestamp": "2026-10-05 12:45:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-05 13:00:00",
+          "field": "low"
+        },
+        {
+          "timestamp": "2026-10-05 13:45:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-05 14:00:00",
+          "field": "low"
+        },
+        {
+          "timestamp": "2026-10-05 14:15:00",
+          "field": "high"
+        },
+        {
+          "timestamp": "2026-10-05 14:45:00",
+          "field": "low"
+        }
+      ]
+    },
+    {
+      "caseId": "frd-spy-negative-5m-01",
+      "scenario": "negative-no-signal",
+      "minutes": 5,
+      "timeframe": "5m",
+      "start": "2026-10-09 12:30:00",
+      "end": "2026-10-09 13:35:00",
+      "reason": "Readable short choppy window proposed as a directional-pattern abstention control. Empty proposed feature list is NOT established absence of all support/resistance or liquidity features.",
+      "scope": "Human must either accept the strict all-feature negative required by the current scorer, explicitly approve a separately versioned target-specific protocol, or reject/replace this candidate. No silent weakening of the existing negative gate.",
+      "anchors": []
+    }
+  ]
+}

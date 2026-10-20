@@ -1,0 +1,158 @@
+{
+  "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
+  "status": "SIX_CANDIDATE_SLOTS_ASSEMBLED_NOT_ACCEPTED",
+  "genuineMeasurements": 0,
+  "dispatchAuthorised": false,
+  "cases": [
+    {
+      "caseId": "range-clear-01",
+      "scenario": "range-clear",
+      "timeframe": "30m",
+      "rasterSha256": "eab89b05051a24f9f4721d25634223ab2f1dd2b9fba6c1c1764d707d1ced2beb",
+      "inputSha256": "54601aa204895fe6991c4f0bc6cc4349e53053e607ed6f221a76943c648f8894",
+      "labelSha256": "3167cd2c101ae7c19afc43bc785af4c4b9bf75357221fe3927b08acf53f8cd97",
+      "firstBar": "2026-03-27T14:00:00+00:00",
+      "lastBar": "2026-03-31T02:30:00+00:00",
+      "sourceRightsStatus": "UNVERIFIED_DATA_SCOPE_AND_PROCESSOR_RIGHTS",
+      "independentReviewStatus": "PENDING_HUMAN",
+      "canonicalCaseAccepted": false
+    },
+    {
+      "caseId": "double-top-01",
+      "scenario": "double-top",
+      "timeframe": "1h",
+      "rasterSha256": "1981b9c89e5e11d4e8011f9149457360d7e27137c5c7ab666384e7485ae37871",
+      "inputSha256": "47b19233a1803ce1296ea46c9e59f8803423e1185bbe3c038fbc3b97cfecd9b8",
+      "labelSha256": "f8d16529f45c6bc0bff674de97d9d9073c5dcb4a78c7edb6c183e8feb61e9c42",
+      "firstBar": "2026-04-05T23:00:00+00:00",
+      "lastBar": "2026-04-07T17:00:00+00:00",
+      "sourceRightsStatus": "UNVERIFIED_DATA_SCOPE_AND_PROCESSOR_RIGHTS",
+      "independentReviewStatus": "PENDING_HUMAN",
+      "canonicalCaseAccepted": false
+    },
+    {
+      "caseId": "head-shoulders-01",
+      "scenario": "head-shoulders",
+      "timeframe": "4h",
+      "rasterSha256": "4d29ac52ab63330f4caff56150dcd76ab55b46f626f5e2a183201ca8ecdc03ce",
+      "inputSha256": "0d4e5a6186f21d8624d06a758ae7fe329217088c08f9a65e57951795e505dbcb",
+      "labelSha256": "d6683cd7437bbc7208d193dbde2bee15cab3f83895b48e5e0a8bd20cfc8e1dd9",
+      "firstBar": "2026-05-06T04:00:00+00:00",
+      "lastBar": "2026-05-20T04:00:00+00:00",
+      "sourceRightsStatus": "UNVERIFIED_DATA_SCOPE_AND_PROCESSOR_RIGHTS",
+      "independentReviewStatus": "PENDING_HUMAN",
+      "canonicalCaseAccepted": false
+    },
+    {
+      "caseId": "frd-spy-bear-flag-5m-01",
+      "scenario": "bear-flag",
+      "timeframe": "5m",
+      "rasterSha256": "d2277fadcea7c84ab500614f9d69e1ae7a7acae4b28f4e8cc6ec428711a640f7",
+      "inputSha256": "fd6eb8064864889fcff3e80f13188a34f991a683c86980ac48f0ca7484ca4c05",
+      "labelSha256": "726c73ae7c813bcc2b1df48296993bf743d055e075ce0afa4cb21ea85c104910",
+      "firstBar": "2026-10-12T11:55:00-04:00",
+      "lastBar": "2026-10-12T14:15:00-04:00",
+      "sourceRightsStatus": "PUBLISHED_RENDER_AND_PROCESSOR_GRANT_FOUND_EXECUTOR_SCOPE_PENDING",
+      "independentReviewStatus": "PENDING_HUMAN",
+      "canonicalCaseAccepted": false
+    },
+    {
+      "caseId": "frd-spy-wedge-15m-01",
+      "scenario": "wedge",
+      "timeframe": "15m",
+      "rasterSha256": "2da8d62cf20c67658521fc4d22d79b509ca01e78d9eb2bdb76ae92ac02559618",
+      "inputSha256": "5ed2fc0aef4efd1f573a9ccf7120fdc376776a2da8a5071928bda8d9254887a1",
+      "labelSha256": "9b15acebe6c5106e399bdbf3b78bdbba1c3e1f3ddf19ea81e3abdd86e8311797",
+      "firstBar": "2026-10-05T12:15:00-04:00",
+      "lastBar": "2026-10-05T15:15:00-04:00",
+      "sourceRightsStatus": "PUBLISHED_RENDER_AND_PROCESSOR_GRANT_FOUND_EXECUTOR_SCOPE_PENDING",
+      "independentReviewStatus": "PENDING_HUMAN",
+      "canonicalCaseAccepted": false
+    },
+    {
+      "caseId": "frd-spy-negative-5m-01",
+      "scenario": "negative-no-signal",
+      "timeframe": "5m",
+      "rasterSha256": "9029b022e8fa31139bf0abd98998a75c5e70948f40b1e66c634bda927b592eef",
+      "inputSha256": "52af1a225c8139180171c1f69222217e3b23a6f9dd9ba497a780aecd3bd7e277",
+      "labelSha256": "02d8aef8c0acee79f9693eaf612be54fc8237e362393b6249fee992f7d6a3f15",
+      "firstBar": "2026-10-09T12:30:00-04:00",
+      "lastBar": "2026-10-09T13:35:00-04:00",
+      "sourceRightsStatus": "PUBLISHED_RENDER_AND_PROCESSOR_GRANT_FOUND_EXECUTOR_SCOPE_PENDING",
+      "independentReviewStatus": "PENDING_HUMAN",
+      "canonicalCaseAccepted": false
+    }
+  ],
+  "sourceValidation": {
+    "status": "SOURCE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+    "sourceZipSha256": "f6031429ed0903be2a580be29529c37b6b017164d8b118c8d6267d2706148073",
+    "minuteFileSha256": "5582677553bbd1f76c16c9e2bf1c156095ccc8bd4a1033e6bcf0e8790b3d027e",
+    "minuteRows": 9728,
+    "observedStart": "2026-10-05T04:00:00-04:00",
+    "observedEnd": "2026-10-19T19:59:00-04:00",
+    "crossTimeframe": [
+      {
+        "minutes": 5,
+        "bars": 2110,
+        "exactDecimalMatch": true
+      },
+      {
+        "minutes": 30,
+        "bars": 352,
+        "exactDecimalMatch": true
+      },
+      {
+        "minutes": 60,
+        "bars": 176,
+        "exactDecimalMatch": true
+      }
+    ],
+    "dispatchAuthorised": false,
+    "providerCalls": 0,
+    "independentHumanReviews": 0
+  },
+  "precisionRepairs": [
+    {
+      "caseId": "range-clear-01",
+      "legacyInputSha256": "55f965d8b8f38f10cf5fd336601c1a3ab3f7750cc2fbe0d3f4b7f18ae93c2bf9",
+      "proposedInputSha256": "54601aa204895fe6991c4f0bc6cc4349e53053e607ed6f221a76943c648f8894",
+      "originalRasterUnchanged": true,
+      "beforeMeanAbsoluteRgbError": 0.5318309762929562,
+      "beforeMaximumRgbError": 60,
+      "afterMeanAbsoluteRgbError": 0,
+      "afterMaximumRgbError": 0,
+      "existingThresholdsUnchanged": {
+        "mean": 3,
+        "maximum": 40
+      }
+    },
+    {
+      "caseId": "double-top-01",
+      "legacyInputSha256": "2ac8933cc0592bcc7243e7c98a3ecea731045c10ca0ed2bbe2f9427e3289d7ea",
+      "proposedInputSha256": "47b19233a1803ce1296ea46c9e59f8803423e1185bbe3c038fbc3b97cfecd9b8",
+      "originalRasterUnchanged": true,
+      "beforeMeanAbsoluteRgbError": 0.47852872856459655,
+      "beforeMaximumRgbError": 62,
+      "afterMeanAbsoluteRgbError": 0,
+      "afterMaximumRgbError": 0,
+      "existingThresholdsUnchanged": {
+        "mean": 3,
+        "maximum": 40
+      }
+    },
+    {
+      "caseId": "head-shoulders-01",
+      "legacyInputSha256": "8003d0ba17370d732fe9b94bd903631b6bbe553650991bd8973722c2b6632ffc",
+      "proposedInputSha256": "0d4e5a6186f21d8624d06a758ae7fe329217088c08f9a65e57951795e505dbcb",
+      "originalRasterUnchanged": true,
+      "beforeMeanAbsoluteRgbError": 0.8336069549771128,
+      "beforeMaximumRgbError": 70,
+      "afterMeanAbsoluteRgbError": 0,
+      "afterMaximumRgbError": 0,
+      "existingThresholdsUnchanged": {
+        "mean": 3,
+        "maximum": 40
+      }
+    }
+  ]
+}

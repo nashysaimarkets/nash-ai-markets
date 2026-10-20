@@ -1,34 +1,33 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T18:09:47.821811+00:00",
+  "savedAtUtc": "2026-10-20T18:46:17.641078+00:00",
   "worker": {
-    "id": "root-release-completion-f8cd93",
+    "id": "root-scanner-corpus-3e0cde",
     "status": "BLOCKED_EXTERNAL",
-    "activeTask": "Authorised source implementation and exact-source affected acceptance COMPLETE. No running worker/CI or pending safe mutation; await licensed independent chart packet. Metadata remains COMPLETE.",
-    "lastVerifiedActivityAtUtc": "2026-10-20T18:09:47.821811+00:00"
+    "activeTask": "All independently executable corpus preparation,26regressions,6integrity cases and18request previews complete. Await original data rights,6human references and specific inference/finance/security admission.",
+    "lastVerifiedActivityAtUtc": "2026-10-20T18:46:17.641078+00:00"
   },
   "ownership": {
-    "branch": "monaco-release-completion-126-20261020-f8cd93",
-    "writer": "root-release-completion-f8cd93",
-    "leaseId": "issue126-6297316630",
+    "branch": "monaco-scanner-corpus-126-20261020-3e0cde",
+    "writer": "root-scanner-corpus-3e0cde",
+    "leaseId": "issue126-6297930794",
     "status": "FROZEN_HANDOFF",
+    "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
     "expectedHead": null,
+    "expectedHeadResolution": "Latest Issue126 immutable receipt gives enclosing documentation commit; executable source d7e50f498f7d094b6e9ab56a562c17af204113c4 and source hashes in qa/corpus/ACCEPTANCE-2026-10-20.json",
     "ownedPaths": [
-      "app/lib/server/pocket-checkout-completion.ts",
-      "supabase/proposed/pocket-checkout*.sql",
-      "tests/*checkout*",
-      "scripts/pocket-monaco-*",
-      "tests/pocket-monaco-*",
-      "docs/monaco-126",
-      "vercel.json",
-      "app/pocket/apple-storekit.ts",
-      "tests/pocket-native-request-boundary.test.ts",
-      ".github/workflows/monaco-release-completion-qa.yml"
+      "scripts/*monaco-source*",
+      "scripts/prepare-monaco-request-previews.mjs",
+      "tests/*monaco*source*",
+      "docs/monaco-126/corpus",
+      "qa/corpus",
+      "docs/monaco-126/RECOVERY-STATE.json",
+      "docs/monaco-126/RECOVERY-RUNBOOK.md",
+      "vercel.json"
     ],
-    "verificationBasis": "Remote PR133 exact6609a006; new branch absent before local worktree creation; all earlier branches frozen.",
-    "expectedHeadResolution": "Latest Issue126 immutable receipt/enclosing commit; accepted executable source is f5e820b0 and hashes are pinned in qa/release-completion/ACCEPTANCE-2026-10-20.json",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/135"
+    "verificationBasis": "New remote branch absent before work; earlier heads frozen; only this isolated successor mutated.",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/136"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -38,7 +37,10 @@
     "branch": "monaco-release-completion-126-20261020-f8cd93",
     "identityResolution": "Latest Issue126 receipt gives enclosing documentation commit/tree. Executable/test/workflow source hashes remain identical to accepted f5e820b0.",
     "receiptBaseSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
-    "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b"
+    "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
+    "corpusSourceSha": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+    "corpusSourceTree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+    "corpusBranch": "monaco-scanner-corpus-126-20261020-3e0cde"
   },
   "tracks": {
     "core": {
@@ -237,6 +239,24 @@
       ],
       "localAcceptance": "qa/release-completion/ACCEPTANCE-2026-10-20.json",
       "frozen": true
+    },
+    "scannerCorpus": {
+      "branch": "monaco-scanner-corpus-126-20261020-3e0cde",
+      "sourceStatus": "DONE_WITHIN_OFFLINE_SCOPE",
+      "externalAcceptance": "BLOCKED",
+      "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
+      "receipt": "qa/corpus/ACCEPTANCE-2026-10-20.json",
+      "genuineMeasurements": 0,
+      "canonicalCasesAccepted": 0,
+      "newSourceCandidates": 3,
+      "preservedOriginalRasters": 3,
+      "requestPreviews": 18,
+      "humanReferenceReviews": 0,
+      "pushedCommit": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+      "tree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/136",
+      "frozen": true,
+      "privatePacketReceipt": "docs/monaco-126/corpus/PRIVATE-PACKET-RECEIPT.json"
     }
   },
   "tests": [
@@ -469,6 +489,18 @@
       "skipped": 0,
       "coverage": "Affected commerce/scanner/native checks, original SQL harnesses, TS/lint/security and native web production compile",
       "receipt": "qa/release-completion/ACCEPTANCE-2026-10-20.json"
+    },
+    {
+      "id": "scanner-corpus-preparation",
+      "result": "OFFLINE_PASS_NOT_SCANNER_ACCEPTANCE",
+      "sourceSha": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+      "receipt": "qa/corpus/ACCEPTANCE-2026-10-20.json",
+      "newRegressionPass": 26,
+      "skipped": 0,
+      "intakeCasesPass": 6,
+      "requestPreviewsVerified": 18,
+      "genuineMeasurements": 0,
+      "providerCalls": 0
     }
   ],
   "artifacts": {
@@ -516,7 +548,8 @@
     "providerCallsThisContinuation": 0,
     "aggregateActualCostUsd": null,
     "historical2Usd": "UNRECONCILED; unknown is not settled",
-    "ledgerChanges": "NONE"
+    "ledgerChanges": "NONE",
+    "paidCostUsdThisContinuation": 0
   },
   "untouchedAssets": [
     "main and PR112/120/123/125",
@@ -531,7 +564,7 @@
   ],
   "externalGates": [
     "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
-    "Legitimate licensed canonical bear-flag5m/wedge15m plus independently selected negative/rights/second annotation evidence; genuine0/6",
+    "Six real candidate slots assembled. Existing3 still need applicable data/AI-processing permission; all6 need human independent labels and strict-negative adjudication. No more source download is needed for this packet.",
     "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
     "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
     "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
@@ -540,11 +573,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "licensed-independent-six-case-evidence",
+    "id": "rights-and-independent-human-reference",
     "status": "BLOCKED_EXTERNAL",
-    "command": "Obtain the rights-approved canonical packet and independent labels specified in SCANNER-EVIDENCE-REQUIREMENTS-2026-10-20.md, then run the offline packet validator. Do not rerun metadata. After packet review, separately resolve specific inference/finance/executor approval; no dispatch is authorised here.",
-    "primaryDependency": "Rights-approved canonical original chart packet and distinct independent annotation: missing5m bear-flag,15m wedge,accepted negative,rights/review evidence for all six.",
-    "prohibitedNextAction": "Inference/key scope changes, hosted SQL/customer/production mutation, deployment/merge/store release without specific applicable approval."
+    "command": "Use the saved63file private packet and corpus/REFERENCE-REVIEW-TEMPLATE.json to obtain applicable rights for the3existing originals and independent human adjudication for6cases, especially the strict negative. Then export accepted CorpusCase evidence and run only newly affected offline gates. No search/download/test/metadata repeat; no paid dispatch.",
+    "primaryDependency": "Attributable data/AI-processing grant for existing3 and qualified independent human reference review.",
+    "prohibitedNextAction": "No new key, paid analysis, shared-live SQL, production, deploy, merge or licensing bypass."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
@@ -552,15 +585,14 @@
     "checkoutIntent": "Undeployed proposal only. Future real dispatch requires preserving unresolved ledger; rollback toHOLD, never delete/reset or restore direct Pocketcreate."
   },
   "corpusAcceptance": {
-    "originalInputIntegrity": "6/6 PASS; hashes only",
-    "canonicalDeclarations": "3/6; no invented ground truth",
-    "missingPositiveDeclarations": [
-      "bear-flag5m",
-      "wedge15m"
-    ],
-    "negativeSelection": "Independent selection not verified",
-    "rightsAndSecondAnnotations": "UNVERIFIED; owner/licensor/independent annotator evidence required",
-    "genuineProviderCases": "0/6"
+    "originalRasters": "Three matching original rasters and legacy inputs unchanged/pinned",
+    "candidateSlots": "6/6 assembled; labels provisional",
+    "newSource": "FirstRate Data free SPY sample; published rendering/service-provider-on-behalf grant found; actual executor scope pending",
+    "negativeSelection": "Readable real candidate prepared; strict all-feature-empty reference not accepted",
+    "rightsAndSecondAnnotations": "Original data rights unresolved; all6 human reference reviews pending",
+    "offlineIntegrity": "6/6 PASS,26new regressions PASS; separate automated advisory not human acceptance",
+    "genuineProviderCases": "0/6",
+    "evidence": "qa/corpus/ACCEPTANCE-2026-10-20.json"
   },
   "completedGates": [
     {

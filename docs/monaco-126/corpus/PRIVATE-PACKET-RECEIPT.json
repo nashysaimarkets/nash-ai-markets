@@ -1,0 +1,14 @@
+{
+  "filename": "monaco-six-case-review-packet-2026-10-20.zip",
+  "bytes": 2272591,
+  "sha256": "d00415cd223dd9fdfe7ee15409b301d2600ccd720a5ac713a5f240e3b2493453",
+  "fileCount": 63,
+  "sourceCommit": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+  "sourceTree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+  "inventorySha256": "693fa906810f9c6042574405a568a99ca2bc35327683fa6e770eb9bebd898f97",
+  "zipAndMemberHashes": "PASS",
+  "persistence": "SAVED_VERIFIED",
+  "libraryFileId": "libfile_e95550e63554819198aac3bc815ec1b5",
+  "libraryVersion": 1,
+  "remoteFileId": "file_00000000177082309d085abfd9de7e48"
+}
