@@ -1,0 +1,12 @@
+{
+  "passed": 6,
+  "failed": 0,
+  "cases": [
+    "pool-only",
+    "defended-sweep",
+    "event-before-pool",
+    "wrong-row",
+    "wrong-side",
+    "low-confidence"
+  ]
+}

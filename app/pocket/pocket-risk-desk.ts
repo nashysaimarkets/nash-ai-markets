@@ -1,3 +1,5 @@
+import { exactAxisPrice } from "./axis-verification.ts";
+
 export type RiskDeskInput = {
   accountValue: string;
   riskPercent: string;
@@ -14,9 +16,10 @@ export type RiskDeskCalculation = {
 };
 
 function positiveNumber(value: string) {
-  const parsed = Number(value.replaceAll(",", "").trim());
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  return exactAxisPrice(value);
 }
+
+const finitePositive = (value: number) => Number.isFinite(value) && value > 0 ? value : null;
 
 export function calculateRiskDesk(input: RiskDeskInput): RiskDeskCalculation {
   const accountValue = positiveNumber(input.accountValue);
@@ -25,14 +28,13 @@ export function calculateRiskDesk(input: RiskDeskInput): RiskDeskCalculation {
   const stopDistance = positiveNumber(input.stopDistance);
   const valuePerPoint = positiveNumber(input.valuePerPoint);
   const cashRisk = accountValue !== null && riskPercent !== null
-    ? accountValue * riskPercent / 100
+    ? finitePositive(accountValue * (riskPercent / 100))
     : null;
   const riskPerUnit = stopDistance !== null && valuePerPoint !== null
-    ? stopDistance * valuePerPoint
+    ? finitePositive(stopDistance * valuePerPoint)
     : null;
-  const units = cashRisk !== null && riskPerUnit !== null
-    ? Math.max(0, Math.floor(cashRisk / riskPerUnit))
-    : null;
+  const rawUnits = cashRisk !== null && riskPerUnit !== null ? Math.floor(cashRisk / riskPerUnit) : null;
+  const units = rawUnits !== null && Number.isSafeInteger(rawUnits) && rawUnits >= 0 ? rawUnits : null;
 
   return { accountValue, riskPercent, cashRisk, riskPerUnit, units };
 }

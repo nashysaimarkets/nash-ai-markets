@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
+  "savedAtUtc": "2026-10-20T12:33:11.809608Z",
+  "worker": {
+    "id": "root-monaco-20261020-c10e55",
+    "status": "RUNNING",
+    "lastVerifiedActivityAtUtc": "2026-10-20T12:33:11.809608Z",
+    "activeTask": "Await stable exact-source CI/builds; all independent source review findings fixed"
+  },
+  "ownership": {
+    "branch": "monaco-completion-126-20261020-c10e55",
+    "writer": "root-monaco-20261020-c10e55",
+    "leaseId": "issue126-root-completion-20261020-c10e55",
+    "status": "EXCLUSIVE",
+    "expectedHead": "8c0877b7192be6ad49e86ee5ee0bf9e1fe944e0f",
+    "ownedPaths": [
+      "new successor source/tests/docs/workflow branch configuration only"
+    ],
+    "verificationBasis": "Issue126comment6290542426; frozenPR127\u2013132heads unchanged, new disjoint local successor; root sole remote publisher; three disjoint local implementers and read-only independent reviewer",
+    "handoff": "Never claim older frozen branch leases. Resolve this enclosing commit/tree using newest issue receipt and compare exact remote HEAD before edits.",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/133"
+  },
+  "checkpoint": {
+    "lastVerifiedRemoteCommit": "8c0877b7192be6ad49e86ee5ee0bf9e1fe944e0f",
+    "lastVerifiedRemoteTree": "3b0d162233b3bb6ba3f20c6f8f8eea5e5504ed30",
+    "branch": "monaco-completion-126-20261020-c10e55",
+    "savedAtUtc": "2026-10-20T12:33:11.809608Z",
+    "identityResolution": "Parent/source anchor above; newest issue126 external receipt identifies the enclosing successor commit/tree. A file cannot self-embed its enclosing commit."
+  },
+  "tracks": {
+    "core": {
+      "branch": "monaco-master-126-20261019-b02d5dd",
+      "pushedCommit": "b5c3aaac1c8dc02e16cd6c017682843d04ab3a64",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/127",
+      "sourceStatus": "DONE",
+      "externalAcceptance": "BLOCKED",
+      "tree": "7a3bef9ca21f12fcfd71e20a7d9d854ef88d62f4",
+      "ciRuns": [
+        39312866402,
+        39312866380,
+        39312875802
+      ]
+    },
+    "ig": {
+      "branch": "monaco-ig-126-20261019",
+      "pushedCommit": "a8fc14cacc845d841af6946c78e6fa4da6f1cb7b",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/128",
+      "sourceStatus": "DONE",
+      "externalAcceptance": "BLOCKED",
+      "ciRuns": [
+        39310022219
+      ],
+      "activation": "OFF/unmounted; no authenticated provider acceptance",
+      "tree": "c329c81b5b9a49a727fc2875e22ff63fb5b00d89"
+    },
+    "android": {
+      "branch": "monaco-android-safety-126-20261019",
+      "pushedCommit": "2780f94c18f88b48c7da8a1151d5c109724a8e1c",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/129",
+      "sourceStatus": "DONE",
+      "externalAcceptance": "BLOCKED",
+      "tree": "212cff506ea4053861c1f3c7fa7da1942ffa0b4b",
+      "ciRuns": [
+        39313631556
+      ],
+      "activation": "Recovery-only source HOLD; no Google provider/build/device acceptance"
+    },
+    "reliability": {
+      "branch": "monaco-reliability-126-20261019",
+      "pushedCommit": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/130",
+      "sourceStatus": "DONE",
+      "externalAcceptance": "BLOCKED",
+      "tree": "b7f0e51118e770bb7da544828676bc0d6bbcb0b2",
+      "ciRuns": [
+        39317988422,
+        39317988423,
+        39317993998
+      ],
+      "ciStatus": "DONE: all3SUCCESS"
+    },
+    "checkoutIntent": {
+      "branch": "monaco-checkout-intent-proposal-126-20261019",
+      "pushedCommit": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/131",
+      "sourceStatus": "DONE",
+      "externalAcceptance": "BLOCKED",
+      "tree": "f3e36c7d9ea3730626cf97bb572252fa564be48a",
+      "ciRuns": [
+        39319553095,
+        39319553157,
+        39319553179
+      ],
+      "ciStatus": "DONE: all3 exact-head checks SUCCESS; unchanged image/workspace proof reused by impact mapping",
+      "activation": "UNINSTALLED/defaultHOLD; no issuer, provider inventory/cutover, first-customer provisioning or resubscription reconciliation"
+    },
+    "recovery": {
+      "sourceStatus": "DONE",
+      "externalAcceptance": "UNTESTED actual scheduled delivery; real Work relaunch unsupported",
+      "owner": "root plus disjoint UI agent offline scripts; reviewers read-only",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/132",
+      "verifiedSourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+      "ciRuns": [
+        39320756480
+      ],
+      "ciStatus": "DONE/SUCCESS; final documentation checkpoint resolves its own enclosing exact-head CI through latest issue receipt"
+    },
+    "priorEvidence": {
+      "pushedCommit": "440a672143efb21997f9c1fb106f1c845208a885",
+      "branch": "monaco-evidence-126-20261019",
+      "status": "DONE",
+      "frozen": true
+    },
+    "appearanceGrowthBrand": {
+      "sourceStatus": "DONE",
+      "externalAcceptance": "BLOCKED",
+      "evidence": "https://github.com/nashysaimarkets/nash-ai-markets/blob/b5c3aaac1c8dc02e16cd6c017682843d04ab3a64/docs/monaco-126/ACCEPTANCE.md",
+      "publicName": "Pocket Bullseye",
+      "legalClearance": false,
+      "publication": "No assets sent/published; metrics unknown; reported subscriber count1 owner"
+    },
+    "completion": {
+      "branch": "monaco-completion-126-20261020-c10e55",
+      "sourceStatus": "DONE_LOCAL_REVIEWED",
+      "externalAcceptance": "BLOCKED",
+      "base": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
+      "pushedCommit": "8c0877b7192be6ad49e86ee5ee0bf9e1fe944e0f",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/133",
+      "changes": "RSI/pattern/liquidity/risk, abortable optional comparisons, native lifecycle and read-only Checkout inventory",
+      "independentReview": "PASS; all recorded findings fixed",
+      "ciStatus": "PENDING exact-source freeze receipts",
+      "localAcceptance": "qa/completion/LOCAL-ACCEPTANCE.json"
+    }
+  },
+  "tests": [
+    {
+      "id": "PR130-full-local",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+      "command": "POCKET_REAL_CORPUS_DIRECTORY=<prepared original corpus> npm run test:unit",
+      "count": 1074,
+      "passed": 1074,
+      "skipped": 0,
+      "durationSeconds": null,
+      "durationNote": "Not retained; no rerun merely for duration"
+    },
+    {
+      "id": "PR130-exactCI",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+      "runs": [
+        39317988422,
+        39317988423,
+        39317993998
+      ],
+      "coverage": "Full unit/render/safeguards, TS/lint/secrets/ops, Sites and native Node builds, Sharp/libvips, actual synthetic image/mobile/browser checks; private-corpus integrity skip expected in CI, not accuracy"
+    },
+    {
+      "id": "PR131-route-red-green",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "bd50c47e592af0d2eb13c418e12c63bbe9aea289",
+      "baselineSourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+      "baseline": {
+        "tests": 15,
+        "passed": 9,
+        "failed": 6,
+        "exitCode": 1
+      },
+      "fixed": {
+        "tests": 15,
+        "passed": 15,
+        "skipped": 0,
+        "exitCode": 0
+      },
+      "command": "node --test tests/pocket-checkout-customer.test.ts; baseline via POCKET_QA_CHECKOUT_ROUTE_FILE"
+    },
+    {
+      "id": "PR131-affected",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "bd50c47e592af0d2eb13c418e12c63bbe9aea289",
+      "command": "node --test tests/pocket-checkout-customer.test.ts tests/pocket-checkout-intent.test.ts tests/pocket-legacy-renewal.test.ts tests/commercial-launch.test.ts",
+      "count": 59,
+      "passed": 59,
+      "skipped": 0,
+      "exitCode": 0,
+      "durationSeconds": 0.660853629,
+      "unchangedRuntimeHashesCarryForwardTo": "2994b2859ef7bcc22b9ee38a5b966e1806e47994"
+    },
+    {
+      "id": "PR131-independent-SQL-route",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "command": "POCKET_CHECKOUT_QA_PGLITE_MODULE=<isolated pinned0.5.10 module> node tests/run-pocket-checkout-independent.mjs; node tests/run-pocket-checkout-route-integration.mjs",
+      "coverage": "12 direct role/scope cases; actual route/helper/SQL baseline/cancel/lostack/READY reuse;1 mockedcreate/claim/persist",
+      "limits": "PGlite not actual two-session evidence; auth/provider mocked"
+    },
+    {
+      "id": "PR131-CI-harness-fixes",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
+      "previousFailedRuns": [
+        39319071598,
+        39319071597
+      ],
+      "command": "Relocate pinned PGlite loader to /tmp absolute path; node tests/run-pocket-checkout-pglite.mjs; npm run ops:validate",
+      "exitCode": 0,
+      "coverage": "Accept local absolute pinned-engine paths; central scope variables documented; runtime/helper/SQL unchanged"
+    },
+    {
+      "id": "PG17-real-races",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
+      "run": 39319553095,
+      "coverage": "Actual disposable PostgreSQL17 three overlapping-session races PASS; single grant, webhook-first block, claim-first result retained with redirect withheld; no hosted DB/provider",
+      "job": 118289748175
+    },
+    {
+      "id": "six-genuine-provider-cases",
+      "status": "BLOCKED",
+      "result": "BLOCKED",
+      "completed": 0,
+      "required": 6,
+      "metrics": null
+    },
+    {
+      "id": "signed-device/manual-preview",
+      "status": "BLOCKED",
+      "result": "BLOCKED",
+      "reason": "No physical/signed native resources; explicit manual browser URL/authority denial, no retry/workaround"
+    },
+    {
+      "id": "PR131-image-workspace-impact",
+      "status": "DONE",
+      "result": "NOT APPLICABLE to rerun",
+      "command": "git diff --exit-code 10451b5 2994b285 -- app/pocket app/pocket-next app/api/pocket scripts/verify-pocket-{raster-browser,workflows,next-local,customer-lab}-free.mjs package.json package-lock.json",
+      "exitCode": 0,
+      "unchangedProofSourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+      "reusedRun": 39317993998,
+      "reason": "Only checkout server/protocol and QA/operations changes; no image/workspace/package dependency changed"
+    },
+    {
+      "id": "fresh-context-independent-reconstruction",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "894678377ca88d9f4854821f860ca19ce9920667",
+      "reviewer": "recovery_reader with fork_turns:none",
+      "coverage": "Read immutable manifest/runbook and latest issue comments, verified five PR/branch heads + coordination tree and11 named CI successes, next unfinished safe task, external gates/tests/rollback without prior chat memory",
+      "corrections": "Add omitted owned proof-output path and IG tree; remove stale activeTask CI-pending wording. Reconstruction passed, not rehearsal or actual Work relaunch acceptance."
+    },
+    {
+      "id": "offline-interrupted-handoff-proof",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "count": 29,
+      "passed": 29,
+      "skipped": 0,
+      "exitCode": 0,
+      "command": "node scripts/verify-monaco-recovery.mjs --proof docs/monaco-126/qa/recovery-proof.json",
+      "proof": "docs/monaco-126/qa/recovery-proof.json",
+      "coverage": "Stopped child checkpoint \u2192 independent child verifies local bare remote SHA/tree/owner \u2192 exactly one local action/commit \u2192 another child NOOP. Wrong owner, changed head, unknown/expired lease and watchdog state/alert-dedup negatives. No real Work restart, network, provider or real branch lease acquisition.",
+      "sourceHashes": {
+        "policy": "af418cd703de15cac24a73dbfe8c56695b6790a5f42adadff93e8a0dc96f6e06",
+        "verifier": "e6be83f7b0b9818bec679303298ec8687845369626035590bdb46f58cb753f23"
+      }
+    },
+    {
+      "id": "coordination-exact-source-CI",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+      "run": 39320756480,
+      "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39320756480",
+      "coverage": "Node22.19,29 local Git/process/refusal/watchdog checks, proof uploaded; offline only. Subsequent state-doc changes do not change policy/verifier hashes; enclosing commit acceptance resolved from issue receipt."
+    },
+    {
+      "id": "fresh-context-corrected-proof-review",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "3d47ce0c9ed90174c6e9932475ef5491232ef098",
+      "reviewer": "recovery_reader originally forked without conversation history",
+      "coverage": "Corrected fields/actual--proof CLI, exact HEAD/tree and recomputed policy/verifier hashes match; saved29-case result and source scope independently reviewed; no tests or11green CI repeated"
+    },
+    {
+      "id": "completion1190full",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "count": 1190,
+      "passed": 1190,
+      "skipped": 0,
+      "failed": 0,
+      "command": "POCKET_REAL_CORPUS_DIRECTORY=<unchanged private prepared pack> npm run test:unit",
+      "sourceShaResolution": "Enclosing frozen successor externally attested by issue126",
+      "limits": "No provider analysis; six hashes integrity only"
+    }
+  ],
+  "artifacts": {
+    "reliabilitySourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+    "reliabilityTree": "b7f0e51118e770bb7da544828676bc0d6bbcb0b2",
+    "aggregateSha256": "a90a9a657bb5a57c64565cec9cc428ca86648b7137789c38afa3d159fc557ac0",
+    "files": 221,
+    "bytes": 48523774,
+    "identityFile": "docs/monaco-126/qa/reliability/artifact-manifest-10451b5.json",
+    "workerProof": "docs/monaco-126/qa/reliability/packaged-worker-10451b5.json",
+    "workerCases": 4,
+    "workerResult": "REAL PASS; outbound fetch prohibited",
+    "deployedPreview": "BLOCKED/UNTESTED; no deployed attestation",
+    "identityProofLimit": "Worker revision is configured build metadata, not an independent signed source attestation. Clean source10451b5 build and exact artifact hashes are recorded separately; no deployed source identity is proved."
+  },
+  "pendingOperations": [
+    {
+      "id": "completion-exact-source-ci",
+      "status": "PENDING",
+      "owner": "root",
+      "paidOrLive": false
+    }
+  ],
+  "watchdog": {
+    "id": "6ad67a914bf48191b7f2d48d4325bf83",
+    "title": "Monaco Crash Recovery",
+    "state": "ENABLED_ACTIVE",
+    "schedule": "every2hours",
+    "timezone": "Europe/London",
+    "automaticWorkRelaunchSupported": false,
+    "duplicatesCreated": 0,
+    "alertPolicy": "One possible-stall alert per unchanged checkpoint; explicit RUNNING, verified >2h inactivity, no newer tools/CI/worker/handoff; never releases writer lease",
+    "oldStaleQaPaused": "6ad4a1dae13481919d0270149dc9eb69",
+    "pauseReason": "Existing watchdog resumed after verified running remote receipt6290825677; pause on terminal external hold, no new worker or actual Work relaunch.",
+    "actualDelivery": "UNTESTED; offline policy proof does not establish real notification delivery/deduplication"
+  },
+  "approvals": {
+    "productionDeploy": false,
+    "mainMerge": false,
+    "persistentSharedLiveSql": false,
+    "newCredentials": false,
+    "storesRelease": false,
+    "igOrders": false,
+    "outreachPublication": false,
+    "benchmark": "Existing separate max$5 approval does not bypass runtime/financial/licence admission; no dispatch permitted here"
+  },
+  "budget": {
+    "reservationsPerformedThisContinuation": 0,
+    "providerCallsThisContinuation": 0,
+    "aggregateActualCostUsd": null,
+    "historical2Usd": "UNRECONCILED; unknown is not settled",
+    "ledgerChanges": "NONE"
+  },
+  "untouchedAssets": [
+    "main and PR112/120/123/125",
+    "Sitesv179/environment34 source and credentials",
+    "owner accepted active\u00a34.99 UUID/customer admission",
+    "shared-live Supabase pxlqvaddvghjjhenqmdh and native backend",
+    "live Stripe customers/subscriptions/prices",
+    "Apple/Google listings/signed builds",
+    "all six original fixture/source pins",
+    "IG provider sessions/orders",
+    "Frozen PR127/128/129/130/131/132 source heads"
+  ],
+  "externalGates": [
+    "Secure intended project/key/model executor + fresh metadata/cost/receipt admission for six genuinecases",
+    "Shared-live SQL specific approval, accepted impact/rollback/independentQA",
+    "Actual independent Checkout baseline issuer/inventory/exclusive cutover; first-customer/reconciliation separately unimplemented",
+    "Signed native resources and physical iPhone/Android acceptance",
+    "Manual matching deployed preview blocked; no policy workaround",
+    "IG authorised DEMO/licence acceptance; public brand/legal/privacy/marketing/publication approval"
+  ],
+  "nextSafeAction": {
+    "id": "read-exact-successor-ci-receipts",
+    "status": "IN_PROGRESS",
+    "command": "Read GitHub Actions runs for the enclosing completion source SHA once after publication",
+    "when": "Await actual terminal runs; on interruption verify current root ownership and immutable issue receipt before any writes",
+    "primaryDependency": "Source build/CI receipts only; genuine six-case executor/licence/financial/device gates remain external"
+  },
+  "rollback": {
+    "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+    "coordinationBaseTree": "b7f0e51118e770bb7da544828676bc0d6bbcb0b2",
+    "checkoutIntent": "Undeployed proposal only. Future real dispatch requires preserving unresolved ledger; rollback toHOLD, never delete/reset or restore direct Pocketcreate."
+  },
+  "corpusAcceptance": {
+    "originalInputIntegrity": "6/6 PASS; hashes only",
+    "canonicalDeclarations": "3/6; no invented ground truth",
+    "missingPositiveDeclarations": [
+      "bear-flag5m",
+      "wedge15m"
+    ],
+    "negativeSelection": "Independent selection not verified",
+    "rightsAndSecondAnnotations": "UNVERIFIED; owner/licensor/independent annotator evidence required",
+    "genuineProviderCases": "0/6"
+  }
+}

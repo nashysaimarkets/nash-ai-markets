@@ -38,3 +38,23 @@ export function assessProductionLiquidityChain(observations: unknown, quality: R
   }
   return zones.length ? assessment : blocked("NO_DEFENSIBLE_ZONE");
 }
+
+/** A pool and an event are separate claims. Repeated highs/lows alone do not
+ * demonstrate that a later sweep, reclaim or rejection has occurred. */
+export function corroborateLiquidityEvent(event: string, observations: unknown, zones: Zone[]): string {
+  const kind = event === "SWEEP" || event === "RECLAIM" ? "sweep-reclaim" : event === "REJECTION" ? "rejection" : null;
+  if (!kind || !Array.isArray(observations)) return "NONE";
+  const evidence = observations.filter((point): point is LiquidityEvidence => Boolean(point && typeof point === "object" &&
+    typeof point.x === "number" && typeof point.y === "number" && Number.isFinite(point.x) && Number.isFinite(point.y) &&
+    (point.confidence === "HIGH" || point.confidence === "MEDIUM")));
+  for (const zone of zones) {
+    const side = zone.side === "BUY_SIDE" ? "buy-side" : "sell-side";
+    const structuralKind = zone.side === "BUY_SIDE" ? "equal-highs" : "equal-lows";
+    const local = evidence.filter(point => point.side === side && point.x >= zone.x && point.x <= zone.x2 && Math.abs(point.y - zone.y) <= 3);
+    for (const witness of local.filter(point => point.kind === kind)) {
+      const prior = local.filter(point => point.kind === structuralKind && point.x < witness.x);
+      if (prior.length >= 2 && Math.max(...prior.map(point => point.x)) - Math.min(...prior.map(point => point.x)) >= 5) return event;
+    }
+  }
+  return "NONE";
+}

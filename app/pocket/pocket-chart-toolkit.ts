@@ -1,3 +1,5 @@
+import { exactAxisPrice } from "./axis-verification.ts";
+
 export type ToolkitDirection = "LONG" | "SHORT";
 
 export type NumericChartLevel = {
@@ -102,11 +104,13 @@ export function calculateRangePosition(currentPrice: number | null, levels: Nume
 }
 
 export function calculateRTargets(entryText: string, stopText: string, direction: ToolkitDirection) {
-  const entry = Number(entryText.replaceAll(",", "").trim());
-  const stop = Number(stopText.replaceAll(",", "").trim());
-  if (!Number.isFinite(entry) || !Number.isFinite(stop) || entry <= 0 || stop <= 0 || entry === stop) return null;
+  const entry = exactAxisPrice(entryText);
+  const stop = exactAxisPrice(stopText);
+  if (entry === null || stop === null || entry === stop || (direction !== "LONG" && direction !== "SHORT")) return null;
   if ((direction === "LONG" && stop >= entry) || (direction === "SHORT" && stop <= entry)) return null;
   const risk = Math.abs(entry - stop);
   const sign = direction === "LONG" ? 1 : -1;
-  return { entry, stop, risk, targets: [1, 1.5, 2, 3].map((multiple) => ({ multiple, price: entry + risk * multiple * sign })) };
+  const targets = [1, 1.5, 2, 3].map((multiple) => ({ multiple, price: entry + risk * multiple * sign }))
+    .filter((target) => Number.isFinite(target.price) && target.price > 0);
+  return Number.isFinite(risk) && targets.length ? { entry, stop, risk, targets } : null;
 }

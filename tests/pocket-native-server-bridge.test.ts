@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { stripTypeScriptTypes } from "node:module";
 import test from "node:test";
+import { createScreenshotComparison } from "../app/pocket/screenshot-comparison-session.ts";
 
 test("native purchases bind the verified Pocket account and return signed Apple evidence", async () => {
   const native = await readFile(new URL("../ios/App/App/PocketStoreKitPlugin.swift", import.meta.url), "utf8");
@@ -17,10 +19,40 @@ test("native billed requests carry signed evidence without accepting device enti
   assert.match(bridge, /appAccountToken/);
   assert.doesNotMatch(bridge, /entitled: true/);
   assert.doesNotMatch(bridge, /localStorage/);
-  for (const path of ["PocketBullseye.tsx", "ChartPreflightPanel.tsx", "OptionsWallCheck.tsx", "CryptoDerivativesCheck.tsx"]) {
+  for (const path of ["PocketBullseye.tsx", "ChartPreflightPanel.tsx"]) {
     const source = await readFile(new URL(`../app/pocket/${path}`, import.meta.url), "utf8");
     assert.match(source, /pocketAuthenticatedFetch\(/, `${path} must pass signed proof to its billed route`);
   }
+  for (const path of ["OptionsWallCheck.tsx", "CryptoDerivativesCheck.tsx"]) {
+    const source = await readFile(new URL(`../app/pocket/${path}`, import.meta.url), "utf8");
+    assert.match(source, /useScreenshotComparison</, `${path} must use the shared authenticated comparison path`);
+  }
+  const hook = await readFile(new URL("../app/pocket/use-screenshot-comparison.ts", import.meta.url), "utf8");
+  assert.match(hook, /fetch: pocketAuthenticatedFetch/);
+});
+
+test("the real shared comparison transport adds fresh native JWS and preserves cancellation", async () => {
+  const source = await readFile(new URL("../app/pocket/apple-storekit.ts", import.meta.url), "utf8");
+  const code = stripTypeScriptTypes(source.slice(source.indexOf("export async function pocketAuthenticatedFetch")).replace(/^export /, ""));
+  let proof = "signed-synthetic-one";
+  const calls: { url: string; init: RequestInit }[] = [];
+  const authenticated = new Function("isAppleNativeApp", "native", "APPLE_MONTHLY_PRODUCT_ID", "fetch", code + ";return pocketAuthenticatedFetch;")(
+    () => true, { getStatus: async () => ({ signedTransactionInfo: proof, entitled: true, freeUseConsumed: false }) }, "existing-product",
+    async (url: string, init: RequestInit) => { calls.push({ url, init }); return Response.json({ result: { symbol: "AAPL" } }); },
+  ) as (url: string, init: RequestInit) => Promise<Response>;
+  const session = createScreenshotComparison<{ symbol: string }>({ endpoint: "/api/pocket/options-wall", failureMessage: "Unavailable", fetch: authenticated,
+    publish: () => {}, read: async () => "data:image/png;base64,test", validate: (raw): raw is { symbol: string } => Boolean(raw && typeof raw === "object" && "symbol" in raw) });
+  await session.attach({ name: "chart", size: 1, type: "image/png" }); await session.check({ ticker: "AAPL" });
+  proof = "signed-synthetic-two"; await session.check({ ticker: "AAPL" });
+  assert.equal(calls.length, 2);
+  assert.equal(new Headers(calls[0].init.headers).get("x-pocket-apple-transaction"), "signed-synthetic-one");
+  assert.equal(new Headers(calls[1].init.headers).get("x-pocket-apple-transaction"), "signed-synthetic-two");
+  assert.equal(calls[0].init.signal instanceof AbortSignal, true);
+  assert.equal("entitled" in JSON.parse(String(calls[0].init.body)), false);
+  assert.equal("freeUseConsumed" in JSON.parse(String(calls[0].init.body)), false);
+  const controller = new AbortController(); controller.abort();
+  await assert.rejects(authenticated("/api/pocket/options-wall", { signal: controller.signal })); assert.equal(calls.length, 2);
+  session.dispose();
 });
 
 test("fresh purchase and subscription updates deliver their exact verified JWS before the entitlement stream catches up", async () => {

@@ -27,3 +27,33 @@ test("never creates matches from missing levels, invalid prices or distant strik
   assert.equal(crossCheckOptionsWall(read, "AAPL", [{ kind: "resistance", price: "201.50", label: "" }]).status, "NO_OVERLAP");
   assert.equal(crossCheckOptionsWall({ ...read, rows: [{ ...read.rows[0], expiry: "" }] }, "AAPL", levels).status, "UNVERIFIED");
 });
+
+test("holds malformed price notation rather than inventing an overlap", () => {
+  for (const price of ["2,00.25", "2e2", "0xc8", "+200"]) {
+    assert.equal(crossCheckOptionsWall(read, "AAPL", [{ kind: "support", price, label: "bad input" }]).status, "UNVERIFIED", price);
+  }
+});
+test("unknown aliases and impossible expiry labels never count as options evidence", () => {
+  assert.equal(crossCheckOptionsWall({ ...read, symbol: "UNKNOWN" }, " unknown ", levels).status, "UNVERIFIED");
+  for (const expiry of ["unconfirmed", "2026-02-30", "2026-13-01"]) {
+    assert.equal(crossCheckOptionsWall({ ...read, rows: [{ ...read.rows[0], expiry }] }, "AAPL", levels).status, "UNVERIFIED", expiry);
+  }
+});
+
+test("runtime options response validation rejects missing collections and impossible rows", async () => {
+  const { isOptionsWallResult } = await import("../app/pocket/options-wall.ts");
+  const good = crossCheckOptionsWall(read, "AAPL", levels);
+  assert.equal(isOptionsWallResult(good), true);
+  assert.equal(isOptionsWallResult({ ...good, matches: undefined }), false);
+  assert.equal(isOptionsWallResult({ ...good, matches: [] }), false);
+  assert.equal(isOptionsWallResult({ ...good, rows: [{ ...read.rows[0], volume: Infinity }] }), false);
+  assert.equal(isOptionsWallResult({ ...good, matches: [{ ...good.matches[0], level: null }] }), false);
+  assert.equal(isOptionsWallResult(null), false);
+});
+
+test("a positive options result must match the frozen submitted symbol", async () => {
+  const { isOptionsWallResult } = await import("../app/pocket/options-wall.ts");
+  const good = crossCheckOptionsWall(read, "AAPL", levels);
+  assert.equal(isOptionsWallResult(good, { ticker: "NASDAQ:AAPL" }), true);
+  assert.equal(isOptionsWallResult(good, { ticker: "MSFT" }), false);
+});

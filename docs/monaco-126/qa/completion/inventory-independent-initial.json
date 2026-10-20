@@ -1,0 +1,55 @@
+{
+  "passed": 11,
+  "failed": 1,
+  "cases": [
+    {
+      "name": "same SDK read-only empty receipt retains nonauthorizing digest",
+      "status": "PASS"
+    },
+    {
+      "name": "nullable Checkout metadata from pinned Stripe contract is accepted",
+      "status": "FAIL",
+      "error": "Expected values to be strictly equal:\n\n'HOLD' !== 'COMPLETE'\n"
+    },
+    {
+      "name": "foreign supplied ownership metadata denies rather than becoming proof",
+      "status": "PASS"
+    },
+    {
+      "name": "pending future subscription schedule is explicitly retained as a blocker",
+      "status": "PASS"
+    },
+    {
+      "name": "unknown completed-session underlying cannot be called reconciled",
+      "status": "PASS"
+    },
+    {
+      "name": "matched terminal underlying permits evidence without granting access",
+      "status": "PASS"
+    },
+    {
+      "name": "pagination preserves last observed ID despite sorting final receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate cursor/object replies fail closed",
+      "status": "PASS"
+    },
+    {
+      "name": "nonterminal subscriptions stay blocked even without open Checkout",
+      "status": "PASS"
+    },
+    {
+      "name": "hostile list metadata and impossible modes produce no partial receipt",
+      "status": "PASS"
+    },
+    {
+      "name": "before-auth cancellation makes zero provider reads",
+      "status": "PASS"
+    },
+    {
+      "name": "unbranded reader copies cannot supply a forged inventory",
+      "status": "PASS"
+    }
+  ]
+}

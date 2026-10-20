@@ -1,0 +1,34 @@
+{
+  "verifiedAtUtc": "2026-10-19T20:34:28.399184+00:00",
+  "runs": {
+    "reliability": {
+      "sourceSha": "10451b5d612b90b3daceda4b1d317a83d74dffad",
+      "ids": [
+        39317988422,
+        39317988423,
+        39317993998
+      ],
+      "status": "REAL PASS",
+      "urls": [
+        "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39317988422",
+        "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39317988423",
+        "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39317993998"
+      ]
+    },
+    "checkoutIntent": {
+      "sourceSha": "2994b2859ef7bcc22b9ee38a5b966e1806e47994",
+      "ids": [
+        39319553157,
+        39319553179,
+        39319553095
+      ],
+      "status": "REAL PASS",
+      "urls": [
+        "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39319553157",
+        "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39319553179",
+        "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39319553095"
+      ]
+    }
+  },
+  "limits": "Unchanged exact-source image/workspace proof reused from PR130; SQL races disposablePG17, all provider/auth data synthetic; no hosted or signed-device acceptance"
+}
