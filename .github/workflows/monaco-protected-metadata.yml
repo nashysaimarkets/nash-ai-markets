@@ -1,0 +1,45 @@
+name: Monaco protected metadata only
+
+on:
+  push:
+    branches: [monaco-benchmark-access-126-20261020-c10e55]
+    paths:
+      - .github/workflows/monaco-protected-metadata.yml
+      - scripts/verify-pocket-temporary-key.mjs
+      - scripts/run-pocket-metadata-ci.py
+      - docs/quality/pocket-temporary-key-plan-20261019.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monaco-protected-metadata
+  cancel-in-progress: false
+
+jobs:
+  metadata:
+    if: github.repository == 'nashysaimarkets/nash-ai-markets' && github.ref == 'refs/heads/monaco-benchmark-access-126-20261020-c10e55'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    environment: monaco-benchmark-metadata
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Record immutable source identity
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git rev-parse HEAD HEAD^{tree}
+      - name: Offline affected tests without credentials
+        run: node --test tests/pocket-temporary-key-plan.test.mjs tests/pocket-metadata-ci.test.mjs
+      - name: Verify tracked execution files remain unchanged after tests
+        run: |
+          git diff --exit-code HEAD -- scripts/verify-pocket-temporary-key.mjs scripts/run-pocket-metadata-ci.py docs/quality/pocket-temporary-key-plan-20261019.json .github/workflows/monaco-protected-metadata.yml
+          test -z "$(git status --porcelain)"
+      - name: One fixed metadata GET only
+        env:
+          MONACO_BENCHMARK_OPENAI_API_KEY: ${{ secrets.MONACO_BENCHMARK_OPENAI_API_KEY }}
+        run: python3 -I scripts/run-pocket-metadata-ci.py --metadata-only

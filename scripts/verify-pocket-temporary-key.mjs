@@ -4,14 +4,14 @@ import { fileURLToPath } from 'node:url';
 
 const ORG = 'org-5vLRRzXwcigUx96TVE0rI3RW';
 const PROJECT = 'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI';
-const OWNER = 'user-DlYoRdGCCPjv7Bk5iEjduePV';
+const OWNER = 'user-jy2Gr5ZRQ3EPWerlbY1MDHDM';
 const MODEL = 'gpt-5-mini-2025-08-07';
 const NAME = 'Pocket Bullseye Metadata Verification';
 const SCOPES = ['api.model.read', 'model.read'];
 const EXISTING_IDS = ['key_EjND5GXtuqF2K0hp', 'key_HTa1GVGxw3MQq2QZ'];
 const EXISTING_MASK_SUFFIXES = ['aBgA', 'EQUA'];
 const PLAN_URL = new URL('../docs/quality/pocket-temporary-key-plan-20261019.json', import.meta.url);
-const PLAN_SHA256 = '48d04a8651afdbf50c4ed65d5a1747aa131f4c155b607a0d6b7eb859ab9bde21';
+const PLAN_SHA256 = '4158cb05e13ddde8d3cf20530fc5e6a7e6de84c051af9c2a6822dfc518fc3fc3';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const stop = reason => { throw new Error(reason); };
 const exactScopes = value => Array.isArray(value) && value.length === 2
@@ -50,6 +50,31 @@ export function reviewTemporaryKeyPlan(plan, now = Date.now()) {
   const mask = typeof key.redactedValue === 'string'
     && /^(sk-)(?:\.{3}|…)([A-Za-z0-9_-]{4,16})$/.exec(key.redactedValue);
   if (!mask || EXISTING_MASK_SUFFIXES.includes(mask[2])) stop('TEMPORARY_KEY_COULD_MATCH_EXISTING_KEY');
+  const inventory = plan.inventory;
+  if (!inventory || inventory.complete !== true || !Array.isArray(inventory.filters)
+      || inventory.filters.length !== 0 || !Array.isArray(inventory.keys)
+      || inventory.keys.length === 0 || inventory.visibleResults !== inventory.keys.length)
+    stop('INVALID_TEMPORARY_KEY_INVENTORY');
+  const ids = new Set();
+  const matches = [];
+  for (const row of inventory.keys) {
+    if (!row || typeof row.id !== 'string' || !/^key_[A-Za-z0-9]+$/.test(row.id)
+        || ids.has(row.id) || typeof row.name !== 'string' || !row.name.trim()
+        || !['Active', 'Revoked'].includes(row.status)
+        || typeof row.createdBy !== 'string' || !row.createdBy.trim()
+        || (row.expiresAt !== null && (typeof row.expiresAt !== 'string'
+          || !Number.isFinite(Date.parse(row.expiresAt))))) stop('INVALID_TEMPORARY_KEY_INVENTORY');
+    ids.add(row.id);
+    const rowMask = typeof row.redactedValue === 'string'
+      && /^(sk-)(?:\.{3}|…)([A-Za-z0-9_-]{4,16})$/.exec(row.redactedValue);
+    if (!rowMask) stop('INVALID_TEMPORARY_KEY_INVENTORY');
+    if (row.status === 'Active' && (row.expiresAt === null || Date.parse(row.expiresAt) > now)
+        && (rowMask[2].endsWith(mask[2]) || mask[2].endsWith(rowMask[2]))) matches.push(row);
+  }
+  if (matches.length !== 1 || matches[0].id !== key.id || matches[0].name !== key.name
+      || matches[0].createdBy !== key.createdBy || matches[0].redactedValue !== key.redactedValue
+      || matches[0].expiresAt !== key.expiresAt || !exactScopes(matches[0].scopes))
+    stop('TEMPORARY_KEY_INVENTORY_CORRELATION_FAILED');
   if (!Array.isArray(plan.sources) || plan.sources.length !== 2
       || !plan.sources.includes('https://platform.openai.com/api-keys')
       || !plan.sources.includes('https://platform.openai.com/settings/' + PROJECT)) stop('INVALID_TEMPORARY_PLAN');
@@ -107,6 +132,7 @@ export async function verifyTemporaryMetadataKey() {
 const SAFE_REASONS = new Set(['TEMPORARY_PLAN_NOT_PINNED', 'TEMPORARY_KEY_NOT_CREATED_OR_REVIEWED',
   'INVALID_TEMPORARY_PLAN', 'INVALID_TEMPORARY_KEY_IDENTITY_OR_SCOPES', 'TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID',
   'TEMPORARY_KEY_COULD_MATCH_EXISTING_KEY', 'USE_TEMPORARY_METADATA_INPUT_ONLY',
+  'INVALID_TEMPORARY_KEY_INVENTORY', 'TEMPORARY_KEY_INVENTORY_CORRELATION_FAILED',
   'TEMPORARY_CREDENTIAL_MISMATCH', 'TEMPORARY_METADATA_GET_FAILED']);
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "state": "DRAFT_NOT_CREATED",
+  "state": "CREATED_NOT_YET_INDEPENDENTLY_REVIEWED",
   "purpose": "TEMPORARY_METADATA_ACCESS_ONLY",
   "organisationId": "org-5vLRRzXwcigUx96TVE0rI3RW",
   "projectId": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
@@ -8,11 +8,14 @@
     "name": "Pocket Bullseye Metadata Verification",
     "ownerType": "user",
     "expirationSeconds": 86400,
-    "scopes": ["api.model.read", "model.read"],
+    "scopes": [
+      "api.model.read",
+      "model.read"
+    ],
     "dashboardSelection": "Restricted; List models: Read; every other category: None"
   },
   "key": null,
-  "ownerApprovalAt": null,
+  "ownerApprovalAt": "2026-10-20T16:10:00Z",
   "observedAt": null,
   "reviewedAt": null,
   "observedBy": null,
@@ -22,5 +25,17 @@
     "https://platform.openai.com/settings/proj_LTmAIE2Ve7gUAFJ9M74ZxIBI"
   ],
   "liveSitesBindingVerified": false,
-  "releaseAuthorized": false
+  "releaseAuthorized": false,
+  "approvalReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6295516588",
+  "accessSetupStatus": {
+    "keyCreationObserved": true,
+    "restrictedSelection": "List models: Read; every other category: None",
+    "expirationSelection": "1 day",
+    "secretSubmissionObserved": true,
+    "secretFormClosedAfterSubmission": true,
+    "savedSecretRowVerified": false,
+    "newKeyInventoryVerified": false,
+    "credentialedExecutionAllowed": false,
+    "blocker": "Cloud browser transport disconnected before inventory/storage confirmation"
+  }
 }

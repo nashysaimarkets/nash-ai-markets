@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "independent_acceptance",
+  "reviewedAtUtc": "2026-10-20T16:33:51.599742+00:00",
+  "sourceBaseSha": "9e289181e524ac2419bcba7eb139795337b6c173",
+  "reviewedSourceHashes": {
+    "scripts/verify-pocket-temporary-key.mjs": "df05f8a1e7413655c8199ea0348939687189a6844db113610d2d1e58348d4c57",
+    "scripts/run-pocket-metadata-ci.py": "c009e3a2c208448e7073d352ed868f23d1ef2b8e43fbe18b963a2876dad643ed",
+    ".github/workflows/monaco-protected-metadata.yml": "c1b3ea67962d4b52e6ca31ada24c77aebc7b5e1b3f1065d838e45e7d03045351",
+    "docs/quality/pocket-temporary-key-plan-20261019.json": "4158cb05e13ddde8d3cf20530fc5e6a7e6de84c051af9c2a6822dfc518fc3fc3",
+    "tests/pocket-temporary-key-plan.test.mjs": "1e0f6a2e8266fa629474f126f77bc8494b4fed7efb36c51ebcc3af36b6191610",
+    "tests/pocket-metadata-ci.test.mjs": "f1ad9be08458666df4e98a8ac41a4042c7ba4484310627a2222fb71117300840",
+    "vercel.json": "66bb6f3eba541e1d7e22b6c27b7dcf401688828d995185f32dcc290001562ec1"
+  },
+  "sourceStatus": "OFFLINE_PREPARATION_PASS",
+  "actualAccessStatus": "BLOCKED_EXTERNAL",
+  "targetedTests": {
+    "tests": 49,
+    "pass": 49,
+    "fail": 0,
+    "skipped": 0
+  },
+  "independentChecks": {
+    "passed": 15,
+    "failed": 0,
+    "realCredentialsUsed": false,
+    "realProviderRequests": 0
+  },
+  "verifiedStaticControls": [
+    "Exact allowed branch trigger and job ref guard",
+    "Protected metadata environment named on job",
+    "Pinned checkout action, immutable github.sha, read-only token and no persisted credentials",
+    "Offline tests precede explicit credential step; tracked execution files and clean worktree rechecked",
+    "Dedicated secret input forwarded only through sanitized child environment; no key in argv/file/output",
+    "Both preparation and future allowed branch Vercel automatic deployment disabled",
+    "Fresh full inventory, owner, scopes, expiry, correlation and pinned digest required; unreviewed plan fails before fetch"
+  ],
+  "identityReview": "Temporary verifier pins newly observed current Owner only; historical verifier and historical inventory creators are preserved.",
+  "externalReceipts": {
+    "keyCreation": "Owner run reports observed creation with one-day restricted selection",
+    "secretSubmission": "Form closure reported; saved row presence remains unverified",
+    "trackingId": null,
+    "actualExpiry": null,
+    "freshFullInventoryVerified": false,
+    "modelMetadataGetExecuted": false
+  },
+  "notClaimed": [
+    "Actual protected environment/ruleset settings independently queried",
+    "Credential storage or new key identity proven",
+    "Actual model access verified",
+    "Paid/inference dispatch enabled",
+    "Live Sites key binding or production release approved"
+  ],
+  "nextAction": "Restore authorised browser transport, reconcile existing created key and saved environment secret without creating another key, capture redacted fresh inventory and actual expiry, then independently review new pinned attestation before any allowed-branch publication/credentialed GET."
+}

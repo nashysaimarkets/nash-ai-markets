@@ -1,0 +1,68 @@
+{
+  "passed": 15,
+  "failed": 0,
+  "realCredentialsUsed": false,
+  "realProviderRequests": 0,
+  "cases": [
+    {
+      "name": "fresh synthetic full inventory admits a dedicated restricted metadata credential",
+      "status": "PASS"
+    },
+    {
+      "name": "reject filtered",
+      "status": "PASS"
+    },
+    {
+      "name": "reject truncated",
+      "status": "PASS"
+    },
+    {
+      "name": "reject duplicate",
+      "status": "PASS"
+    },
+    {
+      "name": "reject overlap",
+      "status": "PASS"
+    },
+    {
+      "name": "reject wrongOwner",
+      "status": "PASS"
+    },
+    {
+      "name": "reject wrongScope",
+      "status": "PASS"
+    },
+    {
+      "name": "reject wrongExpiry",
+      "status": "PASS"
+    },
+    {
+      "name": "reject revokedNew",
+      "status": "PASS"
+    },
+    {
+      "name": "reject historicalNewOwner",
+      "status": "PASS"
+    },
+    {
+      "name": "reject oldObservation",
+      "status": "PASS"
+    },
+    {
+      "name": "reject futureReview",
+      "status": "PASS"
+    },
+    {
+      "name": "old/admin credential inputs cannot be used as fallback",
+      "status": "PASS"
+    },
+    {
+      "name": "unreviewed pinned plan makes zero fetches even if called directly",
+      "status": "PASS"
+    },
+    {
+      "name": "CI adapter isolates environment and passes no credential in argv",
+      "status": "PASS"
+    }
+  ]
+}

@@ -4,7 +4,9 @@
     "deploymentEnabled": {
       "monaco-cap-hardening-20261018": false,
       "monaco-reserved-accounting-20261019": false,
-      "monaco-no-admin-metadata-20261019": false
+      "monaco-no-admin-metadata-20261019": false,
+      "monaco-benchmark-access-126-20261020-c10e55": false,
+      "monaco-benchmark-access-preparation-126-20261020-c10e55": false
     }
   }
 }

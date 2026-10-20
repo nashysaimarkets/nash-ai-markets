@@ -9,7 +9,8 @@ import { spawnSync } from 'node:child_process';
 import { readTemporaryKeyPlan, reviewTemporaryKeyPlan, checkTemporaryCredential, verifyTemporaryMetadataKey }
   from '../scripts/verify-pocket-temporary-key.mjs';
 
-const draft = readTemporaryKeyPlan();
+const pinned = readTemporaryKeyPlan();
+const draft = { ...structuredClone(pinned), state: 'DRAFT_NOT_CREATED', key: null, ownerApprovalAt: null };
 const observed = Date.parse('2026-10-19T17:45:00Z');
 const now = observed + 2000;
 const credential = ['sk', 'proj', 'SYNTHETIC_TEMPORARY_NOT_A_REAL_KEY', 'wX9Z'].join('-');
@@ -17,22 +18,39 @@ const plan = { ...structuredClone(draft), state: 'CREATED_AND_INDEPENDENTLY_REVI
   ownerApprovalAt: '2026-10-19T17:44:00Z', observedAt: '2026-10-19T17:45:00Z', reviewedAt: '2026-10-19T17:45:01Z',
   observedBy: 'synthetic-owner', reviewedBy: 'synthetic-independent-reviewer',
   key: { id: 'key_SYNTHETICTEMPONLY', name: draft.proposal.name, status: 'Active',
-    createdBy: 'user-DlYoRdGCCPjv7Bk5iEjduePV', scopes: ['api.model.read', 'model.read'],
+    createdBy: 'user-jy2Gr5ZRQ3EPWerlbY1MDHDM', scopes: ['api.model.read', 'model.read'],
     redactedValue: 'sk-...wX9Z', createdAt: '2026-10-19T17:44:30Z', expiresAt: '2026-10-20T17:44:30Z' }
 };
+plan.inventory = { complete: true, filters: [], visibleResults: 3, keys: [
+  { id: 'key_EjND5GXtuqF2K0hp', name: 'existing synthetic row', status: 'Active',
+    createdBy: 'user-DlYoRdGCCPjv7Bk5iEjduePV', redactedValue: 'sk-...aBgA', expiresAt: null },
+  { id: 'key_HTa1GVGxw3MQq2QZ', name: 'revoked synthetic row', status: 'Revoked',
+    createdBy: 'user_synthetic', redactedValue: 'sk-...EQUA', expiresAt: null },
+  structuredClone(plan.key)
+] };
 
-test('published draft cannot authorise a key, prompt for a secret or make a network request', async () => {
+test('pinned plan without a credential cannot prompt for a secret or make a network request', async () => {
   assert.equal(draft.state, 'DRAFT_NOT_CREATED'); assert.equal(draft.key, null); assert.equal(draft.ownerApprovalAt, null);
-  const savedFetch = globalThis.fetch; let calls = 0;
+  const savedFetch = globalThis.fetch, savedEnv = { ...process.env }; let calls = 0;
   try {
+    for (const name of Object.keys(process.env)) delete process.env[name];
     globalThis.fetch = async () => { calls++; throw new Error('Forbidden network'); };
-    await assert.rejects(verifyTemporaryMetadataKey(), /TEMPORARY_KEY_NOT_CREATED_OR_REVIEWED/);
+    await assert.rejects(verifyTemporaryMetadataKey(), /TEMPORARY_KEY_NOT_CREATED_OR_REVIEWED|TEMPORARY_CREDENTIAL_MISMATCH|TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID/);
     assert.equal(calls, 0);
-  } finally { globalThis.fetch = savedFetch; }
+  } finally {
+    globalThis.fetch = savedFetch;
+    for (const name of Object.keys(process.env)) delete process.env[name]; Object.assign(process.env, savedEnv);
+  }
   const launcher = fileURLToPath(new URL('../scripts/run-pocket-metadata-temporary.py', import.meta.url));
   const result = spawnSync('python', [launcher, '--metadata-only'], { encoding: 'utf8', env: { PATH: process.env.PATH } });
   assert.equal(result.status, 1); assert.ok(!result.stderr.includes('Temporary metadata key (hidden'));
-  assert.equal(JSON.parse(result.stderr).reason, 'TEMPORARY_KEY_NOT_CREATED_OR_REVIEWED');
+  assert.ok(result.stderr.includes('TEMPORARY_KEY_NOT_CREATED_OR_REVIEWED')
+    || result.stderr.includes('TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID')
+    || result.stderr.includes('Owner-controlled interactive terminal required'));
+});
+
+test('an uncreated draft is rejected even when copied from a real pinned plan', () => {
+  assert.throws(() => reviewTemporaryKeyPlan(draft, now), /TEMPORARY_KEY_NOT_CREATED_OR_REVIEWED/);
 });
 
 test('only a separately approved, freshly reviewed one-day read-only temporary plan is eligible', () => {
@@ -48,6 +66,7 @@ for (const [name, mutate] of Object.entries({
   readerMaskCollision: p => p.key.redactedValue = 'sk-...EQUA',
   wrongProject: p => p.projectId = 'proj_other',
   wrongOwner: p => p.key.createdBy = 'user_other',
+  historicalOwner: p => p.key.createdBy = 'user-DlYoRdGCCPjv7Bk5iEjduePV',
   revoked: p => p.key.status = 'Revoked',
   inferenceScope: p => p.key.scopes.push('api.model.request'),
   writeScope: p => p.key.scopes.push('api.files.write'),
@@ -61,6 +80,27 @@ for (const [name, mutate] of Object.entries({
   liveBindingClaim: p => p.liveSitesBindingVerified = true,
   releaseClaim: p => p.releaseAuthorized = true
 })) test('temporary-key review rejects ' + name, () => {
+  const changed = structuredClone(plan); mutate(changed);
+  assert.throws(() => reviewTemporaryKeyPlan(changed, now));
+});
+
+for (const [name, mutate] of Object.entries({
+  absent: p => delete p.inventory,
+  partial: p => p.inventory.complete = false,
+  filtered: p => p.inventory.filters.push('Active'),
+  truncated: p => p.inventory.visibleResults++,
+  duplicateId: p => p.inventory.keys[0].id = p.key.id,
+  invalidMask: p => p.inventory.keys[0].redactedValue = 'sk-FAKEwX9Z',
+  absentNewKey: p => { p.inventory.keys.pop(); p.inventory.visibleResults--; },
+  sameMask: p => p.inventory.keys[0].redactedValue = p.key.redactedValue,
+  suffixOverlap: p => { p.key.redactedValue = 'sk-...longwX9Z'; p.inventory.keys[2].redactedValue = p.key.redactedValue;
+    p.inventory.keys[0].redactedValue = 'sk-...wX9Z'; },
+  wrongScope: p => p.inventory.keys[2].scopes.push('api.model.request'),
+  wrongOwner: p => p.inventory.keys[2].createdBy = 'user_other',
+  wrongExpiry: p => p.inventory.keys[2].expiresAt = null,
+  revokedMatch: p => p.inventory.keys[2].status = 'Revoked',
+  malformedOtherExpiry: p => p.inventory.keys[0].expiresAt = 'invalid'
+})) test('complete inventory admission rejects ' + name, () => {
   const changed = structuredClone(plan); mutate(changed);
   assert.throws(() => reviewTemporaryKeyPlan(changed, now));
 });
