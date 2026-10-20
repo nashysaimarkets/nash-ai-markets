@@ -154,5 +154,11 @@
   "handoffReceipt": "FIRST-SIX-HANDOFF-RECEIPT.json",
   "paidDispatchAuthorised": false,
   "productionReleaseAuthorised": false,
-  "ownerRequest": "Assign two qualified independent humans to their separate first-six packages; return references and resolve weak canonical/negative/rubric decisions. Then approve the exact candidate/security/finance scope and specific A run. B requires its own references/freeze and separate additional budget decision. No outreach/hiring authorised."
+  "ownerRequest": "Assign two qualified independent humans to their separate first-six packages; return references and resolve weak canonical/negative/rubric decisions. Then approve the exact candidate/security/finance scope and specific A run. B requires its own references/freeze and separate additional budget decision. No outreach/hiring authorised.",
+  "preparedSuccessor": {
+    "sourceCommit": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+    "sourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138",
+    "executionAuthority": false
+  }
 }

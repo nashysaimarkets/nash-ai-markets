@@ -1,4 +1,4 @@
-## Latest continuation: offline executor and first-six handoff
+## Latest continuation: PR138 — offline executor and first-six handoff
 
 Resume the latest Issue126 receipt on `monaco-offline-executor-126-20261020-3e0cde`, parent PR137 `5d9fc4e7cc28d26a352d7d976db850f443e0b7e0`. Verify ownership and expected head. Deployment is disabled; earlier branches and the original 50-case packet remain frozen. `qa/offline-executor/ACCEPTANCE-ENGINEERING.json` binds the new code/test receipts. Do not rerun accepted data/source/application/Checkout/native/metadata work.
 

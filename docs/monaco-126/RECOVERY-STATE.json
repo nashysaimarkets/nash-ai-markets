@@ -14,8 +14,8 @@
     "leaseId": "issue126-6300301344",
     "status": "FROZEN_HANDOFF",
     "baseCheckpoint": "5d9fc4e7cc28d26a352d7d976db850f443e0b7e0",
-    "expectedHead": "5d9fc4e7cc28d26a352d7d976db850f443e0b7e0",
-    "expectedHeadResolution": "Parent shown until enclosing GitHub source receipt; latest immutable Issue126 receipt names successor exact head. Compare expected head before writes.",
+    "expectedHead": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+    "expectedHeadResolution": "This is the verified executable/tested source checkpoint. The latest immutable Issue126 receipt names the enclosing documentation-only head; compare that head before any successor write.",
     "ownedPaths": [
       "scripts/pocket-monaco-offline-executor.ts",
       "scripts/pocket-monaco-semantic-proposal.ts",
@@ -29,7 +29,7 @@
       "vercel.json"
     ],
     "verificationBasis": "Parent exact5d9fc4e verified; no newer Issue126 receipt; successor absent then sole-writer claim6300301344; earlier branches untouched.",
-    "pr": null
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -45,7 +45,10 @@
     "corpusBranch": "monaco-scanner-corpus-126-20261020-3e0cde",
     "benchmark50SourceSha": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
     "benchmark50SourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25",
-    "benchmark50Branch": "monaco-benchmark50-126-20261020-3e0cde"
+    "benchmark50Branch": "monaco-benchmark50-126-20261020-3e0cde",
+    "offlineExecutorSourceSha": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+    "offlineExecutorSourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
+    "offlineExecutorBranch": "monaco-offline-executor-126-20261020-3e0cde"
   },
   "tracks": {
     "core": {
@@ -349,7 +352,10 @@
         "packagingTamperProbes": 4,
         "targetedTypechecks": "PASS",
         "semanticRawLogLimitation": "See bound semantic test receipt; raw stdout not retained"
-      }
+      },
+      "sourceCommit": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+      "sourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138"
     }
   },
   "tests": [
