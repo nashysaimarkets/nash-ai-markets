@@ -1,0 +1,48 @@
+{
+  "status": "OFFLINE_PASS_NOT_ACCEPTANCE",
+  "manifestSha256": "4fe9ef9572cbeda6aacf4620090cddc7278eac0efe791ef5b691034f46edb6ce",
+  "casesChecked": 6,
+  "checks": [
+    {
+      "caseId": "d001",
+      "status": "OFFLINE_SOURCE_GEOMETRY_INPUT_PASS_NOT_ACCEPTANCE",
+      "rasterSha256": "6e12f80e278403b681583957555b312982fc2df7e76b3d0d576d717169a008ec",
+      "bars": 20
+    },
+    {
+      "caseId": "d002",
+      "status": "OFFLINE_SOURCE_GEOMETRY_INPUT_PASS_NOT_ACCEPTANCE",
+      "rasterSha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+      "bars": 34
+    },
+    {
+      "caseId": "d003",
+      "status": "OFFLINE_SOURCE_GEOMETRY_INPUT_PASS_NOT_ACCEPTANCE",
+      "rasterSha256": "b381e53f95db0e82937db5fc0667f8fb9fd2052c1f1a8b1497602d6ff1e2edce",
+      "bars": 16
+    },
+    {
+      "caseId": "d004",
+      "status": "OFFLINE_SOURCE_GEOMETRY_INPUT_PASS_NOT_ACCEPTANCE",
+      "rasterSha256": "d2277fadcea7c84ab500614f9d69e1ae7a7acae4b28f4e8cc6ec428711a640f7",
+      "bars": 29
+    },
+    {
+      "caseId": "d005",
+      "status": "OFFLINE_SOURCE_GEOMETRY_INPUT_PASS_NOT_ACCEPTANCE",
+      "rasterSha256": "2da8d62cf20c67658521fc4d22d79b509ca01e78d9eb2bdb76ae92ac02559618",
+      "bars": 13
+    },
+    {
+      "caseId": "d006",
+      "status": "OFFLINE_SOURCE_GEOMETRY_INPUT_PASS_NOT_ACCEPTANCE",
+      "rasterSha256": "9029b022e8fa31139bf0abd98998a75c5e70948f40b1e66c634bda927b592eef",
+      "bars": 14
+    }
+  ],
+  "sourceZipPins": 4,
+  "crossTimeframeComparisons": 12,
+  "providerCalls": 0,
+  "humanReviews": 0,
+  "semanticAccepted": 0
+}

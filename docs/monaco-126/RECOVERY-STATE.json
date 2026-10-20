@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T18:46:17.641078+00:00",
+  "savedAtUtc": "2026-10-20T19:33:50.632171+00:00",
   "worker": {
-    "id": "root-scanner-corpus-3e0cde",
-    "status": "BLOCKED_EXTERNAL",
-    "activeTask": "All independently executable corpus preparation,26regressions,6integrity cases and18request previews complete. Await original data rights,6human references and specific inference/finance/security admission.",
-    "lastVerifiedActivityAtUtc": "2026-10-20T18:46:17.641078+00:00"
+    "id": "root-benchmark50-3e0cde",
+    "status": "ACTIVE_OFFLINE",
+    "activeTask": "Six licensed replacement candidates saved separately; 44 held-out preparation underway. No human acceptance, paid calls or release authority.",
+    "lastVerifiedActivityAtUtc": "2026-10-20T19:33:50.632171+00:00"
   },
   "ownership": {
-    "branch": "monaco-scanner-corpus-126-20261020-3e0cde",
-    "writer": "root-scanner-corpus-3e0cde",
-    "leaseId": "issue126-6297930794",
-    "status": "FROZEN_HANDOFF",
-    "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
+    "branch": "monaco-benchmark50-126-20261020-3e0cde",
+    "writer": "root-benchmark50-3e0cde",
+    "leaseId": "issue126-6299130800",
+    "status": "SOLE_WRITER",
+    "baseCheckpoint": "856763146d293d91d22c2ce0e7700c9e73731187",
     "expectedHead": null,
-    "expectedHeadResolution": "Latest Issue126 immutable receipt gives enclosing documentation commit; executable source d7e50f498f7d094b6e9ab56a562c17af204113c4 and source hashes in qa/corpus/ACCEPTANCE-2026-10-20.json",
+    "expectedHeadResolution": "Latest Issue126 receipt names enclosing GitHub commit. Initial successor creation requires absent remote ref; subsequent updates expected-head guarded.",
     "ownedPaths": [
       "scripts/*monaco-source*",
       "scripts/prepare-monaco-request-previews.mjs",
@@ -27,7 +27,7 @@
       "vercel.json"
     ],
     "verificationBasis": "New remote branch absent before work; earlier heads frozen; only this isolated successor mutated.",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/136"
+    "pr": null
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -257,6 +257,32 @@
       "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/136",
       "frozen": true,
       "privatePacketReceipt": "docs/monaco-126/corpus/PRIVATE-PACKET-RECEIPT.json"
+    },
+    "benchmark50": {
+      "status": "SIX_PREPARED_44_IN_PROGRESS",
+      "prepared": 6,
+      "rightsGrantFound": 6,
+      "humanReviewed": 0,
+      "providerCalls": 0,
+      "accepted": 0,
+      "firstSixPacket": {
+        "filename": "monaco-six-replacements-v2.1-2026-10-20.zip",
+        "bytes": 2498653,
+        "sha256": "7497576e82bcc03442b9e373b8dbf74b58c9c9026342232e6981bc5e2b203a3f",
+        "fileCount": 80,
+        "inventorySha256": "8022c528076a8ead2edd90d97ca4c6b2c920d1749e4b7ef54f452e23459c0b7d",
+        "preservesPacketSha256": "d00415cd223dd9fdfe7ee15409b301d2600ccd720a5ac713a5f240e3b2493453",
+        "prepared": 6,
+        "sourceLicensed": 6,
+        "humanReviewed": 0,
+        "providerCalls": 0,
+        "accepted": 0,
+        "libraryFileId": "libfile_74692952b7f48191b09866a2d0db10fd",
+        "libraryVersion": 0,
+        "remoteFileId": "file_00000000e458824684eb86ca21dab90c",
+        "persistence": "SAVED_VERIFIED"
+      },
+      "scope": "Offline only; no approvals expanded; old packets frozen"
     }
   },
   "tests": [
