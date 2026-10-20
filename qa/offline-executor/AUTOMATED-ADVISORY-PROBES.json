@@ -1,0 +1,53 @@
+{
+  "kind": "AUTOMATED_ENGINEERING_ADVISORY_NOT_HUMAN_REFERENCE_ACCEPTANCE",
+  "sourceSha256": "7a17f3ebd8ffd0194f1934c3da4da92c529b38de42e300fb3a1ef17ba3240b75",
+  "sourceSha256After": "7a17f3ebd8ffd0194f1934c3da4da92c529b38de42e300fb3a1ef17ba3240b75",
+  "testFixtureSourceSha256": "eb7ec2a107cbf2b8cf5b80ed678cb16c35aaf4fa51afc6198d280c6bc5496423",
+  "providerCalls": 0,
+  "findings": [
+    {
+      "probe": "old_idempotent_receipt_must_not_release_new_case",
+      "defectReproduced": false,
+      "firstStatus": "MOCK_COMPLETE",
+      "activeBefore": "d002",
+      "activeAfter": "d002",
+      "recoveryError": null,
+      "thirdWhileSecondPaused": null,
+      "secondResult": {
+        "status": "MOCK_COMPLETE",
+        "measurement": "SYNTHETIC_ENGINEERING_ONLY",
+        "providerCalls": 0,
+        "financiallySettled": false,
+        "actualMicroUsd": null
+      }
+    },
+    {
+      "probe": "inert_transport_rejects_executable_accessors",
+      "defectReproduced": false,
+      "getterCalls": 0,
+      "getterAccepted": false,
+      "getterError": "Error: No mock accessors",
+      "toJsonCalls": 0,
+      "toJsonAccepted": false,
+      "toJsonError": "Error: No executable mock data"
+    },
+    {
+      "probe": "caller_cannot_remove_fixed_source_pins",
+      "defectReproduced": false,
+      "emptyPinInventoryAccepted": false,
+      "error": "TypeError: Cannot delete property 'app/api/pocket/analyse/route.ts' of #<Object>",
+      "restored": true
+    },
+    {
+      "probe": "explicitly_incomplete_response_is_not_complete",
+      "defectReproduced": false,
+      "result": {
+        "status": "TECHNICAL_FAILURE",
+        "measurement": "UNMEASURED",
+        "reason": "Incomplete/failed response is unmeasured",
+        "providerCalls": 0
+      },
+      "journalStatus": "TECHNICAL_FAILURE"
+    }
+  ]
+}

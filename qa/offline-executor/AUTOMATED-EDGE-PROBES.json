@@ -1,0 +1,30 @@
+{
+  "kind": "AUTOMATED_ENGINEERING_ADVISORY_NOT_HUMAN_REFERENCE_ACCEPTANCE",
+  "sourceSha256": "95a39f4abddccad97e9fdcfa108b704b889466f942d618f37bda88b8e36a39fc",
+  "sourceSha256After": "95a39f4abddccad97e9fdcfa108b704b889466f942d618f37bda88b8e36a39fc",
+  "providerCalls": 0,
+  "findings": [
+    {
+      "probe": "proxy_traps_do_not_execute_in_data_validation",
+      "defectReproduced": false,
+      "trapCalls": 0,
+      "accepted": false,
+      "error": "Error: No mock proxies"
+    },
+    {
+      "probe": "caller_cannot_replace_original_cancellation_after_start",
+      "defectReproduced": false,
+      "originalSignalAborted": true,
+      "result": {
+        "status": "CANCELLED",
+        "measurement": "UNMEASURED",
+        "reason": "Cancelled",
+        "providerCalls": 0
+      },
+      "slotsSent": [
+        "main"
+      ],
+      "journalCancelled": true
+    }
+  ]
+}

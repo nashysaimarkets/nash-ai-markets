@@ -1,35 +1,35 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T19:52:18.617142+00:00",
+  "savedAtUtc": "2026-10-20T20:22:45.823142+00:00",
   "worker": {
-    "id": "root-benchmark50-3e0cde",
+    "id": "root-offline-executor-3e0cde",
     "status": "BLOCKED_OWNER_GATES",
-    "activeTask": "Offline50candidate preparation complete and privately saved; humanreferences, weak4hcanonical qualification, protocol amendment/freeze and paidA/Bfinance/security approval remain. No independent executable preparation left pending.",
-    "lastVerifiedActivityAtUtc": "2026-10-20T19:50:38.586121+00:00"
+    "activeTask": "Offline execution adapter, DRAFT semantic rules and two saved first-six blinded handoffs complete. Only actual human-reference/protocol and specific finance/security/run decisions remain; no more data preparation or retries.",
+    "lastVerifiedActivityAtUtc": "2026-10-20T20:22:45.823142+00:00"
   },
   "ownership": {
-    "branch": "monaco-benchmark50-126-20261020-3e0cde",
-    "writer": "root-benchmark50-3e0cde",
-    "leaseId": "issue126-6299130800",
+    "branch": "monaco-offline-executor-126-20261020-3e0cde",
+    "writer": "root-offline-executor-3e0cde",
+    "leaseId": "issue126-6300301344",
     "status": "FROZEN_HANDOFF",
-    "baseCheckpoint": "856763146d293d91d22c2ce0e7700c9e73731187",
-    "expectedHead": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
-    "expectedHeadResolution": "Executable/sourcecheckpoint above; latest Issue126 receipt names enclosing documentation-only checkpoint; compare that expectedhead before any successor write.",
+    "baseCheckpoint": "5d9fc4e7cc28d26a352d7d976db850f443e0b7e0",
+    "expectedHead": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+    "expectedHeadResolution": "This is the verified executable/tested source checkpoint. The latest immutable Issue126 receipt names the enclosing documentation-only head; compare that head before any successor write.",
     "ownedPaths": [
-      "scripts/prepare-monaco-benchmark50.py",
-      "scripts/prepare-monaco-benchmark50-requests.mjs",
-      "scripts/pocket-monaco-benchmark50-report.ts",
-      "tests/run-monaco-benchmark50-negatives.py",
-      "tests/pocket-monaco-benchmark50-report.test.ts",
+      "scripts/pocket-monaco-offline-executor.ts",
+      "scripts/pocket-monaco-semantic-proposal.ts",
+      "scripts/package-monaco-first-six-review-handoffs.py",
+      "tests/pocket-monaco-offline-executor.test.ts",
+      "tests/pocket-monaco-semantic-proposal.test.ts",
       "docs/monaco-126/benchmark50",
-      "qa/benchmark50",
+      "qa/offline-executor",
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
       "vercel.json"
     ],
-    "verificationBasis": "New remote branch absent before work; earlier heads frozen; only this isolated successor mutated.",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/137"
+    "verificationBasis": "Parent exact5d9fc4e verified; no newer Issue126 receipt; successor absent then sole-writer claim6300301344; earlier branches untouched.",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -45,7 +45,10 @@
     "corpusBranch": "monaco-scanner-corpus-126-20261020-3e0cde",
     "benchmark50SourceSha": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
     "benchmark50SourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25",
-    "benchmark50Branch": "monaco-benchmark50-126-20261020-3e0cde"
+    "benchmark50Branch": "monaco-benchmark50-126-20261020-3e0cde",
+    "offlineExecutorSourceSha": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+    "offlineExecutorSourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
+    "offlineExecutorBranch": "monaco-offline-executor-126-20261020-3e0cde"
   },
   "tracks": {
     "core": {
@@ -325,6 +328,34 @@
       "scope": "Offline only; old packet/scorers/historicalledgers/key preserved; no metadata,paid,live,deploy,merge,outreach",
       "sourceCommit": "cdbeb1b05ebea70f06fbab3454f41d6d2f605a2c",
       "sourceTree": "3c94f95a1488ce2f1a3eae010fcd12f1e0341b25"
+    },
+    "offlineExecution": {
+      "status": "OFFLINE_ENGINEERING_COMPLETE_HUMAN_GATES_PENDING",
+      "parentCheckpoint": "5d9fc4e7cc28d26a352d7d976db850f443e0b7e0",
+      "mounted": false,
+      "realProviderTransportAvailable": false,
+      "deploymentEnabled": false,
+      "adapter": "scripts/pocket-monaco-offline-executor.ts",
+      "semanticRules": "DRAFT_NOT_ACCEPTANCE",
+      "humanReviewed": 0,
+      "providerCalls": 0,
+      "scannerAccepted": 0,
+      "firstSixHandoffReceipt": "docs/monaco-126/benchmark50/FIRST-SIX-HANDOFF-RECEIPT.json",
+      "approvalRecord": "docs/monaco-126/benchmark50/APPROVAL-RECORD.json",
+      "testsReceipt": "qa/offline-executor/ACCEPTANCE-ENGINEERING.json",
+      "remaining": "Two qualified independent human references; weak4h canonical qualification and target-negative/semantic protocol decisions; exact candidate freeze; processor/finance admission; explicit A and separate B paid authority.",
+      "tests": {
+        "regressionsPassed": 84,
+        "adapterNew": 43,
+        "semanticNew": 32,
+        "existingEnvelopeDependency": 9,
+        "packagingTamperProbes": 4,
+        "targetedTypechecks": "PASS",
+        "semanticRawLogLimitation": "See bound semantic test receipt; raw stdout not retained"
+      },
+      "sourceCommit": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+      "sourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138"
     }
   },
   "tests": [
@@ -632,7 +663,7 @@
   ],
   "externalGates": [
     "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
-    "Six real candidate slots assembled. Existing3 still need applicable data/AI-processing permission; all6 need human independent labels and strict-negative adjudication. No more source download is needed for this packet.",
+    "50-case replacement packet has documented source grants; original rights-blocked legacy images are preserved but no longer a dependency. Actual processor scope and two independent human reference decisions remain. Weak4hH&S is unaccepted. No licensing research/download repeats.",
     "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
     "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
     "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
@@ -641,11 +672,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "rights-and-independent-human-reference",
+    "id": "first-six-blinded-human-reference-and-consolidated-approval",
     "status": "BLOCKED_EXTERNAL",
-    "command": "Use the saved63file private packet and corpus/REFERENCE-REVIEW-TEMPLATE.json to obtain applicable rights for the3existing originals and independent human adjudication for6cases, especially the strict negative. Then export accepted CorpusCase evidence and run only newly affected offline gates. No search/download/test/metadata repeat; no paid dispatch.",
-    "primaryDependency": "Attributable data/AI-processing grant for existing3 and qualified independent human reference review.",
-    "prohibitedNextAction": "No new key, paid analysis, shared-live SQL, production, deploy, merge or licensing bypass."
+    "command": "Use benchmark50/FIRST-SIX-HANDOFF-RECEIPT.json to give each qualified human only their own saved package. Complete benchmark50/APPROVAL-RECORD.json decisions; no outreach is authorised to the agent. Once actual references/decisions exist, perform only newly affected preparation under the then-current authority. No data regeneration, licensing/metadata repeat or mock retry.",
+    "primaryDependency": "Qualified primary and separate independent human references; approved rubric/amendment and weak4h decision; specific finance/security/A-run authority (B separate).",
+    "prohibitedNextAction": "No paid/live smoke test, key, credential/permission expansion, live/database/customer mutation, deploy, merge, release or unapproved outreach."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

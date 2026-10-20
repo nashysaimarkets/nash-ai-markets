@@ -1,0 +1,42 @@
+{
+  "status": "SAVED_PRIVATE_BLINDED_HANDOFFS_NOT_REVIEWED",
+  "parentPacketSha256": "3283ccd5317216581dab638961c0d529d432fa860291639fbf50cd2a332f4fca",
+  "manifestSha256": "df8b9e3eeaaaebff5197cbb13ddae45d362281cd3479ee398339953ab1293b21",
+  "packages": [
+    {
+      "role": "primary",
+      "filename": "monaco-first-six-primary-review.zip",
+      "sha256": "d74011671dd72b093a57999186ae55e6b164cb50840be4847fef5f370e2c5c6d",
+      "bytes": 187168,
+      "libraryFileId": "libfile_52939234ce108191bedce065ec5f1f29",
+      "fileId": "file_00000000a8708243bc51cb4be61c0f21",
+      "version": 0
+    },
+    {
+      "role": "independent",
+      "filename": "monaco-first-six-independent-review.zip",
+      "sha256": "6c79c5eac927436dc9961649872aa215e78648883876c3088e76e8292a7c6770",
+      "bytes": 187175,
+      "libraryFileId": "libfile_af264ddd57a48191a6188dc53abcd07b",
+      "fileId": "file_00000000d07881f4933a19bd698c7305",
+      "version": 0
+    }
+  ],
+  "membersPerPackage": 9,
+  "unchangedWorksheetRowsPerPackage": 6,
+  "unchangedImagesPerPackage": 6,
+  "reviewersAssigned": 0,
+  "humanReviewedCases": 0,
+  "providerCalls": 0,
+  "checks": [
+    "Exact archive member allowlist",
+    "Original worksheet row byte spans",
+    "Original role alias order and image SHA256",
+    "Complete PNG decoding and neutral metadata",
+    "No proposals, coordinator map, other role, scanner output or future/source data",
+    "Four in-memory tamper probes rejected"
+  ],
+  "privatePackagingReceiptSha256": "f554225dd2cb1829eb4167fdf3ffd154a41f937233fbfb04f85e3a4ab2aa4c16",
+  "privateCoordinatorMap": "Preserved only in original private 50-case packet; not included in either handoff",
+  "recovery": "Recover each own private file and verify its SHA256. Give each reviewer only their assigned package. No outreach sent."
+}

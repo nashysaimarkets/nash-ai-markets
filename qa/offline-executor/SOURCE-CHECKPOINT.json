@@ -1,0 +1,21 @@
+{
+  "sourceCommit": "ca684be9f4e24e69d35ee5d487756f34a785c068",
+  "sourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
+  "localTestedSourceCommit": "6be5b5354dc25e56648b7caa708be54f18b73021",
+  "localAndRemoteTreeMatch": true,
+  "parentCheckpoint": "5d9fc4e7cc28d26a352d7d976db850f443e0b7e0",
+  "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138",
+  "branch": "monaco-offline-executor-126-20261020-3e0cde",
+  "sourceHashesReceipt": "qa/offline-executor/ACCEPTANCE-ENGINEERING.json",
+  "automaticDeployment": false,
+  "rawSemanticTestLogRetained": false,
+  "semanticAggregateReceiptRetained": true,
+  "prepared": 50,
+  "sourceGrants": 50,
+  "humanReviewed": 0,
+  "providerCalls": 0,
+  "scannerAccepted": 0,
+  "approvalRecord": "docs/monaco-126/benchmark50/APPROVAL-RECORD.json",
+  "privateHandoffReceipt": "docs/monaco-126/benchmark50/FIRST-SIX-HANDOFF-RECEIPT.json",
+  "finalHeadResolution": "Latest Issue126 receipt gives enclosing documentation-only head; executable/test files remain exact."
+}

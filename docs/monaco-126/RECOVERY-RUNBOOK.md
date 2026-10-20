@@ -1,3 +1,15 @@
+## Latest continuation: PR138 — offline executor and first-six handoff
+
+Resume the latest Issue126 receipt on `monaco-offline-executor-126-20261020-3e0cde`, parent PR137 `5d9fc4e7cc28d26a352d7d976db850f443e0b7e0`. Verify ownership and expected head. Deployment is disabled; earlier branches and the original 50-case packet remain frozen. `qa/offline-executor/ACCEPTANCE-ENGINEERING.json` binds the new code/test receipts. Do not rerun accepted data/source/application/Checkout/native/metadata work.
+
+The unmounted adapter has only inert mock transport and disposable durable storage. It checks explicit scope, exact artifacts, separate A/B budgets, one-chart lease, duplicate claims, conditional rescue, cancellation, uncertain exposure and immutable receipt recovery. It cannot run a real provider or activate a live ledger. `benchmark50/OFFLINE-EXECUTOR.md` records its limits. Semantic rules remain a separate DRAFT; old thresholds/scorer/reporting are unchanged.
+
+Two separate first-six packages are saved; recover using `benchmark50/FIRST-SIX-HANDOFF-RECEIPT.json` and verify the ZIP hashes. Each human receives only their own package. Do not expose the coordinator map, proposals, other reviewer's work or scanner answers. Do not repackage or regenerate the 50-case dataset. Weak4hH&S remains unaccepted. Human reviewed0; provider calls0; genuine accepted0.
+
+The sole current owner decision bundle is `benchmark50/APPROVAL-RECORD.json`. Obtain qualified independent first-six references, adjudicate the weak canonical/negative/semantic rules, freeze exact artifacts, approve actual processor/security and financial scope, then specifically authorise any paid A run. A requires at least$1.9176 headroom under the existing aggregate$5 ceiling; B needs separate$14.0624 direct-token authority plus any applicable cash allowance. No unused balance or actual charge is claimed. Existing metadata verification/key and historical accounting are unchanged. Only genuine human decisions remain before further meaningful safe work; stop retries.
+
+The prior checkpoints below are historical recovery evidence, not instructions to restart licensing or metadata tasks.
+
 ## Latest continuation: PR137 —50-chart preparation
 
 Resume the latest Issue126 expected-head receipt on `monaco-benchmark50-126-20261020-3e0cde`; do not restart PR136 or its completed tests. Automatic deployment is disabled. Current complete privatepacket recovery is in `benchmark50/PRIVATE-PACKET-RECEIPT.json`; original and first-six replacement packets remain preserved separately. Verify the archive and FILE-INVENTORY hashes locally, not by re-downloading vendor samples or rechecking metadata. The final packet includes source ZIPs, SHA-pinned rights evidence,50case data/rasters/inputs/calibrations/proposals, two blank reviewer folders, first-six coordinator priorities,150exact request objects, raw-observations empty file and scoped test receipts.
