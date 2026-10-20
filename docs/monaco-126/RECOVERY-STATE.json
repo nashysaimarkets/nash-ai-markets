@@ -1,18 +1,19 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T18:05:14.870542+00:00",
+  "savedAtUtc": "2026-10-20T18:09:47.821811+00:00",
   "worker": {
     "id": "root-release-completion-f8cd93",
-    "status": "RUNNING",
-    "activeTask": "191affected Node checks +40 actual TS/disposable SQL checks pass; exact-source CI/PG17 concurrency/native compile pending. Scanner0/6; metadata complete."
+    "status": "BLOCKED_EXTERNAL",
+    "activeTask": "Authorised source implementation and exact-source affected acceptance COMPLETE. No running worker/CI or pending safe mutation; await licensed independent chart packet. Metadata remains COMPLETE.",
+    "lastVerifiedActivityAtUtc": "2026-10-20T18:09:47.821811+00:00"
   },
   "ownership": {
     "branch": "monaco-release-completion-126-20261020-f8cd93",
     "writer": "root-release-completion-f8cd93",
     "leaseId": "issue126-6297316630",
-    "status": "EXCLUSIVE_DISJOINT",
-    "expectedHead": "e1e279024ab0068242a234a9b8be93b458546b40",
+    "status": "FROZEN_HANDOFF",
+    "expectedHead": null,
     "ownedPaths": [
       "app/lib/server/pocket-checkout-completion.ts",
       "supabase/proposed/pocket-checkout*.sql",
@@ -25,15 +26,17 @@
       "tests/pocket-native-request-boundary.test.ts",
       ".github/workflows/monaco-release-completion-qa.yml"
     ],
-    "verificationBasis": "Remote PR133 exact6609a006; new branch absent before local worktree creation; all earlier branches frozen."
+    "verificationBasis": "Remote PR133 exact6609a006; new branch absent before local worktree creation; all earlier branches frozen.",
+    "expectedHeadResolution": "Latest Issue126 immutable receipt/enclosing commit; accepted executable source is f5e820b0 and hashes are pinned in qa/release-completion/ACCEPTANCE-2026-10-20.json",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/135"
   },
   "checkpoint": {
-    "applicationSourceSha": "6609a006c997bc95aa5985f75f5997717f1671a0",
-    "applicationTree": "814ce4abebfc604702f001c4fcdcaa356300b67d",
-    "previousReceiptSha": "7baacfb1f9ebaf25d25172acd781b354ee59fd72",
+    "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
+    "applicationTree": "d9643eb6b6962b3956207855da1c9ada4dfe181b",
+    "previousReceiptSha": "e1e279024ab0068242a234a9b8be93b458546b40",
     "toolingParentSha": "9e289181e524ac2419bcba7eb139795337b6c173",
     "branch": "monaco-release-completion-126-20261020-f8cd93",
-    "identityResolution": "Newest Issue126 receipt records enclosing exact receipt commit/tree; application source remains6609a006, not this older metadata-tooling lineage.",
+    "identityResolution": "Latest Issue126 receipt gives enclosing documentation commit/tree. Executable/test/workflow source hashes remain identical to accepted f5e820b0.",
     "receiptBaseSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
     "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b"
   },
@@ -218,12 +221,22 @@
       "postRunIndependentReview": "https://github.com/nashysaimarkets/nash-ai-markets/blob/7baacfb1f9ebaf25d25172acd781b354ee59fd72/qa/METADATA-POSTRUN-INDEPENDENT-REVIEW.json"
     },
     "releaseCompletion": {
-      "sourceStatus": "IMPLEMENTED_LOCAL_ACCEPTANCE_PASS",
+      "sourceStatus": "DONE_WITHIN_AUTHORISED_SCOPE",
       "activation": "UNMOUNTED / UNINSTALLED / no live activation",
       "changes": "Checkout issuer/provisioning/recovery/reconciliation with retained receipts; canonical corpus/raster/crop/evidence validators and scoring; native signed-proof request confinement",
       "tests": "191affected Node checks +40 TypeScript-to-PGlite cases; strict TS/lint/security PASS; original1190/three CI proofs retained",
-      "limits": "No real provider, hosted SQL or new PG multi-session evidence yet. All prior1190/three CI source proofs retained; this delta does not re-attest unchanged code.",
-      "ciStatus": "PENDING exact-source workflow after publication"
+      "limits": "No genuine model/provider/device acceptance; no live activation. Separate verifier/cutover/shared-live/security reviews remain.",
+      "ciStatus": "REAL PASS exact-source workflow39471764318 attempt1",
+      "externalAcceptance": "BLOCKED",
+      "branch": "monaco-release-completion-126-20261020-f8cd93",
+      "pushedCommit": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
+      "tree": "d9643eb6b6962b3956207855da1c9ada4dfe181b",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/135",
+      "ciRuns": [
+        39471764318
+      ],
+      "localAcceptance": "qa/release-completion/ACCEPTANCE-2026-10-20.json",
+      "frozen": true
     }
   },
   "tests": [
@@ -442,6 +455,20 @@
       "providerMetadataRequests": 1,
       "providerInferenceRequests": 0,
       "evidence": "qa/METADATA-VERIFICATION-2026-10-20.json"
+    },
+    {
+      "id": "release-completion-affected-source",
+      "status": "DONE",
+      "result": "REAL PASS",
+      "sourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
+      "run": 39471764318,
+      "job": 118797345230,
+      "affectedNodePass": 191,
+      "typescripSqlPass": 40,
+      "realPostgresRacesPass": 6,
+      "skipped": 0,
+      "coverage": "Affected commerce/scanner/native checks, original SQL harnesses, TS/lint/security and native web production compile",
+      "receipt": "qa/release-completion/ACCEPTANCE-2026-10-20.json"
     }
   ],
   "artifacts": {
@@ -459,9 +486,7 @@
     "completionSource": "6609a006c997bc95aa5985f75f5997717f1671a0",
     "completionBuilds": "3 exact-source CI PASS; FINAL-CI-RECEIPTS.json. No deployed preview identity or signed artifact proof."
   },
-  "pendingOperations": [
-    "Publish exact reviewed source and run affected-source CI once; preserve frozen previous branches. No provider/metadata/deploy action."
-  ],
+  "pendingOperations": [],
   "watchdog": {
     "id": "6ad67a914bf48191b7f2d48d4325bf83",
     "title": "Monaco Crash Recovery",
@@ -515,11 +540,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "verify-affected-exact-source-ci",
-    "status": "IN_PROGRESS",
-    "command": "Inspect the new monaco-release-completion affected-source CI; fix only a concrete failure. Once accepted, save receipt and await licensed independently annotated six-case corpus. Do not rerun metadata or unrelated1190tests.",
-    "primaryDependency": "Rights-approved canonical chart packet + independent labels: bear-flag5m, wedge15m, selected negative, and existing three rights/review proof.",
-    "prohibitedNextAction": "Paid inference/key permissions/production/database/customer/merge/deployment/store actions without specific applicable approval."
+    "id": "licensed-independent-six-case-evidence",
+    "status": "BLOCKED_EXTERNAL",
+    "command": "Obtain the rights-approved canonical packet and independent labels specified in SCANNER-EVIDENCE-REQUIREMENTS-2026-10-20.md, then run the offline packet validator. Do not rerun metadata. After packet review, separately resolve specific inference/finance/executor approval; no dispatch is authorised here.",
+    "primaryDependency": "Rights-approved canonical original chart packet and distinct independent annotation: missing5m bear-flag,15m wedge,accepted negative,rights/review evidence for all six.",
+    "prohibitedNextAction": "Inference/key scope changes, hosted SQL/customer/production mutation, deployment/merge/store release without specific applicable approval."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

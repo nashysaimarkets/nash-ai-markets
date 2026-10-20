@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "savedAtUtc": "2026-10-20T18:09:47.821811+00:00",
+  "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/135",
+  "sourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
+  "sourceTree": "d9643eb6b6962b3956207855da1c9ada4dfe181b",
+  "ciRun": 39471764318,
+  "ciJob": 118797345230,
+  "ciAttempt": 1,
+  "ciConclusion": "success",
+  "ciUrl": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39471764318",
+  "baselineSource": "6609a006c997bc95aa5985f75f5997717f1671a0",
+  "reusedBaselineTests": 1190,
+  "reusedBaselineRuns": [
+    39423239151,
+    39423239149,
+    39423245474
+  ],
+  "affectedNodeTests": {
+    "total": 191,
+    "pass": 191,
+    "fail": 0,
+    "skipped": 0
+  },
+  "actualTypescriptDisposableSqlTests": {
+    "total": 40,
+    "pass": 40,
+    "fail": 0,
+    "skipped": 0
+  },
+  "additionalSqlProof": [
+    "Original SQL function/ACL/rollback harness PASS",
+    "12/12 existing independent-role assertions PASS",
+    "Actual route/helper/SQL lost-acknowledgement recovery harness PASS"
+  ],
+  "realPostgres17Races": {
+    "total": 6,
+    "pass": 6,
+    "description": "Three dispatch/webhook and three provisioning/recovery overlapping transaction races; synthetic data only"
+  },
+  "typecheck": "PASS",
+  "changedSourceLint": "PASS",
+  "secretScan": "PASS 1084 tracked candidates in CI",
+  "nativeWebProductionBuild": "PASS",
+  "nativeRegressionBefore": {
+    "total": 10,
+    "pass": 1,
+    "fail": 9,
+    "skipped": 0
+  },
+  "nativeRegressionAfter": {
+    "total": 10,
+    "pass": 10,
+    "fail": 0,
+    "skipped": 0
+  },
+  "sourceHashes": {
+    ".github/workflows/monaco-release-completion-qa.yml": "87f4eb540e38727bad487cf4da2212c49094a83a6814247567451d85d287da22",
+    "app/lib/server/pocket-checkout-completion.ts": "7da161bf98300b03f24eab0f44000ca5e81046807da67bfda7ce9ef814fbda38",
+    "app/pocket/apple-storekit.ts": "91d59ee2e78ec55fa025b21a3e36fc0c6a7e232a4d690d8b88f9b57e9358c142",
+    "scripts/pocket-monaco-measurement.ts": "c66d1c2329d55aa9f062d1b19f57535e54c62df89343183a15b4fc0536d39df3",
+    "scripts/verify-monaco-scanner-evidence.mjs": "061f4336afb83faa7b1307e14e165df767d98e19abe5111e44162a06050abc06",
+    "supabase/proposed/pocket-checkout-completion.sql": "e3eb31b17ec3d44028839f9f61870f17fd1ea146279e72874f97db13e6e08b06",
+    "supabase/proposed/pocket-checkout-intent.sql": "4728700409f68a533ce75b38e9359cabf81d5f1418b00504463b872b8e869b4d",
+    "tests/pocket-checkout-completion.test.ts": "d80869d261b0da239451f942ab06705a6f7c6e418fa0c9151078411a24d83d99",
+    "tests/pocket-monaco-measurement.test.ts": "1fee7ac91e08f2eb06279d9b126551bbf471c3881075cb6bcd3d89b2775b4ad5",
+    "tests/pocket-native-request-boundary.test.ts": "82f23ea244a6a22dad0c12f0dc94d4d45615b7f92c00aadd9ed8eb981ac3a6e0",
+    "tests/run-pocket-checkout-completion-concurrency.py": "6aa1ca640cc8edf1a30f6e2845f8cd6598b9425b565c4a0968969ed08f4daab7",
+    "tests/run-pocket-checkout-completion.mjs": "1917566a2fe8ca217b32c1913f48e60eab231da115d5540f0691e961ff572081",
+    "tests/sql/support/pocket-checkout-intent-bootstrap.sql": "cf5791b53c0fc59be82b6af82dab90d1404b167bdfc6c3c988d06b5948dec51e",
+    "vercel.json": "1c62f66794c50ae44eb607591426a9aedd1e5d30d93b89d3ee37981b3b35c9cc"
+  },
+  "sourceHashManifestSha256": "589f89199af50fa3d4372cb7efcbaf6073be5d4c396aa8e64d4530cee6702180",
+  "warningBoundary": "Successful build reports process.cwd/process.version Edge-runtime import warnings in unchanged Next/Supabase dependencies plus upstream Actions Node deprecations; not a warning-free or deployed runtime claim.",
+  "metadata": "COMPLETE at7baacfb1; zero repeated calls",
+  "genuineProviderCases": 0,
+  "requiredProviderCases": 6,
+  "realCustomerWrites": 0,
+  "hostedDatabaseChanges": 0,
+  "deployments": 0,
+  "newCredentials": 0,
+  "paidInferenceRequests": 0,
+  "productionReady": false,
+  "activation": "UNMOUNTED/UNINSTALLED; Vercel branch disabled",
+  "independentReview": "CI executes exact source independently of local runtime. Separate human/security review and real provider/device acceptance remain required before activation; no independent live sign-off claimed.",
+  "nextExternalDependency": "Rights-approved canonical original chart packet and distinct independent annotation: missing5m bear-flag,15m wedge,accepted negative,rights/review evidence for all six.",
+  "scannerCli": "PASS: exact-source six-case synthetic packet yields PACK_CONTRACT_PASS/dispatch false; escaping/nonexistent artifact path rejected. No licensed corpus or provider claim."
+}
