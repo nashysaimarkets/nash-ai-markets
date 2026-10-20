@@ -1,0 +1,68 @@
+{
+  "status": "OFFLINE_INTEGRITY_PASS_NOT_ACCEPTANCE",
+  "cases": [
+    {
+      "caseId": "range-clear-01",
+      "hashes": true,
+      "raster": true,
+      "embeddedInput": true,
+      "calibration": true,
+      "anchorCount": 5,
+      "rightsAccepted": false,
+      "referenceAccepted": false
+    },
+    {
+      "caseId": "double-top-01",
+      "hashes": true,
+      "raster": true,
+      "embeddedInput": true,
+      "calibration": true,
+      "anchorCount": 3,
+      "rightsAccepted": false,
+      "referenceAccepted": false
+    },
+    {
+      "caseId": "head-shoulders-01",
+      "hashes": true,
+      "raster": true,
+      "embeddedInput": true,
+      "calibration": true,
+      "anchorCount": 5,
+      "rightsAccepted": false,
+      "referenceAccepted": false
+    },
+    {
+      "caseId": "frd-spy-bear-flag-5m-01",
+      "hashes": true,
+      "raster": true,
+      "embeddedInput": true,
+      "calibration": true,
+      "anchorCount": 8,
+      "rightsAccepted": false,
+      "referenceAccepted": false
+    },
+    {
+      "caseId": "frd-spy-wedge-15m-01",
+      "hashes": true,
+      "raster": true,
+      "embeddedInput": true,
+      "calibration": true,
+      "anchorCount": 6,
+      "rightsAccepted": false,
+      "referenceAccepted": false
+    },
+    {
+      "caseId": "frd-spy-negative-5m-01",
+      "hashes": true,
+      "raster": true,
+      "embeddedInput": true,
+      "calibration": true,
+      "anchorCount": 0,
+      "rightsAccepted": false,
+      "referenceAccepted": false
+    }
+  ],
+  "dispatchAuthorised": false,
+  "genuineMeasurements": 0,
+  "independentHumanReviews": 0
+}

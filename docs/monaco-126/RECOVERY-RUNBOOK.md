@@ -1,4 +1,8 @@
-# Resume release completion after metadata
+# Resume the six-case corpus handoff
+
+Latest continuation: branch `monaco-scanner-corpus-126-20261020-3e0cde`, base PR135 `8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a`, writer root3e0cde, Issue126 claim6297930794. Read its newest issue receipt and `corpus/README.md` first. Three existing originals and three new real-source candidates are now assembled; do not repeat source searches or downloads. Original GetData rights and all human reference acceptance remain unresolved. The private intake passes6 integrity checks and26 new regressions; lossless precision derivatives fix three old JPEG failures without changing originals or legacy pins.18 offline request previews are prepared, not admitted or dispatched. See `qa/corpus/ACCEPTANCE-2026-10-20.json` and `corpus/REVIEW-AND-RUN-GATES.md` for exact evidence and external actions.
+
+The earlier release-completion history below remains unchanged evidence, not the next task.
 
 Read newest Issue126 receipt first. Metadata is COMPLETE at7baacfb1; never rerun, replace or expand that key. Existing application proof is frozen PR133 at6609a006 (1190checks/three CI successes). The first source continuation checkpoint is e1e27902, on disjoint no-deploy branch monaco-release-completion-126-20261020-f8cd93, owned by root f8cd93. Earlier branches stay frozen.
 
@@ -6,6 +10,6 @@ Read RECOVERY-STATE.json and RELEASE-COMPLETION-2026-10-20.md. Verify remote hea
 
 The workflow monaco-release-completion-qa.yml uses no runtime secrets and no metadata/inference/deployment. Its exact-source outcome is SUCCESS; reuse this proof while the pinned executable hashes remain unchanged. Receipt-only updates may use skip-ci after proving executable source hashes unchanged. Do not rerun unchanged1190tests or infer real provider/native acceptance from fixtures.
 
-Final receipt and source-hash proofs are saved; GitHub Actions retains the logs. First unavoidable external dependency is the rights-approved canonical chart packet with independent labels described in SCANNER-EVIDENCE-REQUIREMENTS-2026-10-20.md. Bear-flag5m and wedge15m are missing; negative selection plus rights/second review of all cases remains unaccepted. Scanner genuine0/6. Specific inference/finance admission, commerce verifier/cutover/shared-live approval and signed physical iPhone/Android acceptance remain separate gates.
+Final release-completion receipt and source-hash proofs are saved; GitHub Actions retains the logs. Its then-missing bear-flag5m/wedge15m images now have real-source proposals in the corpus successor. Rights and human annotation acceptance, including strict negative selection, remain open. Scanner genuine0/6. Specific inference/finance admission, commerce verifier/cutover/shared-live approval and signed physical iPhone/Android acceptance remain separate gates.
 
 No paid inference, credentials/permissions, database/customer/production changes, deployments, merges or store releases are authorised here. Proposed SQL is outside migrations; Checkout helpers are not mounted. Rollback keeps HOLD and every unresolved/reconciled ledger record. A new session must establish ownership or use a disjoint branch; an inactive watchdog never grants another writer's lease.
