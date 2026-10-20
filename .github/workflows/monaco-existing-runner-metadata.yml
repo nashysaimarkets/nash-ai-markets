@@ -1,0 +1,33 @@
+name: Monaco existing runner metadata only
+on:
+  push:
+    branches: [monaco-metadata-runner-126-20261020-c10e55]
+permissions:
+  contents: read
+concurrency:
+  group: monaco-metadata-runner-single-c10e55
+  cancel-in-progress: false
+jobs:
+  metadata-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Open the previously reviewed immutable verifier
+        uses: actions/checkout@v4
+        with:
+          ref: b02d5dd7a44c61fbdb6d99c60e365700d9f66d92
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - name: Verify exact unchanged runtime metadata implementation
+        run: |
+          set -euo pipefail
+          printf '%s\n' '2f62f1ffbe63d254d1f52ece19c021484050595577f178a7ea002698b37fbcce  app/api/pocket/torture/runtime-metadata.mjs' | sha256sum --check --status
+      - name: One authorised metadata check; missing existing credentials stops before network
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_ADMIN_KEY: ${{ secrets.OPENAI_ADMIN_KEY }}
+          POCKET_BENCHMARK_PILOT_ENABLED: 'false'
+          POCKET_REAL_BENCHMARK_DISPATCH: 'false'
+        run: bash scripts/verify-pocket-benchmark-isolated.sh --metadata-only
