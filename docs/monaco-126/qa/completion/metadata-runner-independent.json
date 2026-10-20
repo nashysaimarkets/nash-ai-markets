@@ -1,0 +1,43 @@
+{
+  "passed": 6,
+  "failed": 0,
+  "realProviderRequests": 0,
+  "results": [
+    {
+      "name": "both existing credentials absent",
+      "status": "PASS",
+      "exit": 1,
+      "fetchCalls": 0
+    },
+    {
+      "name": "existing runtime credential absent",
+      "status": "PASS",
+      "exit": 1,
+      "fetchCalls": 0
+    },
+    {
+      "name": "existing administrator capability absent",
+      "status": "PASS",
+      "exit": 1,
+      "fetchCalls": 0
+    },
+    {
+      "name": "wrong runtime key shape",
+      "status": "PASS",
+      "exit": 1,
+      "fetchCalls": 0
+    },
+    {
+      "name": "wrong command cannot execute verifier",
+      "status": "PASS",
+      "exit": 2,
+      "fetchCalls": 0
+    },
+    {
+      "name": "immutable source and bounded workflow static checks",
+      "status": "PASS",
+      "runtimeSha256": "2f62f1ffbe63d254d1f52ece19c021484050595577f178a7ea002698b37fbcce",
+      "wrapperSha256": "224d8700873aeaa70bb5db823c4d2a243b63ffc67805c5dcd8d9e5d07a23825e"
+    }
+  ]
+}

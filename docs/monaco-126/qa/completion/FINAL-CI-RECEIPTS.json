@@ -1,0 +1,84 @@
+{
+  "sourceSha": "6609a006c997bc95aa5985f75f5997717f1671a0",
+  "sourceTree": "814ce4abebfc604702f001c4fcdcaa356300b67d",
+  "sourcePR": 133,
+  "localFull": {
+    "tests": 1190,
+    "passed": 1190,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ci": [
+    {
+      "id": 39423245474,
+      "name": "Bullseye image torture",
+      "sha": "6609a006c997bc95aa5985f75f5997717f1671a0",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39423245474"
+    },
+    {
+      "id": 39423239149,
+      "name": "Monaco core offline QA",
+      "sha": "6609a006c997bc95aa5985f75f5997717f1671a0",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39423239149"
+    },
+    {
+      "id": 39423239151,
+      "name": "Bullseye quality gate",
+      "sha": "6609a006c997bc95aa5985f75f5997717f1671a0",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39423239151"
+    }
+  ],
+  "qualitySummary": [
+    "Secret-pattern scan passed across 1072 version-control candidates.",
+    "Production operations documentation matches the implemented variable surface."
+  ],
+  "ciPrivateCorpus": {
+    "tests": 1190,
+    "passed": 1189,
+    "failed": 0,
+    "skipped": 1,
+    "reason": "Private original-input hash pack absent on hosted runner; local private-pack check passed. Not scanner accuracy."
+  },
+  "paidScannerStep": {
+    "status": "SKIPPED",
+    "genuineCases": 0,
+    "required": 6
+  },
+  "metadataAttempt": {
+    "status": "BLOCKED_EXTERNAL",
+    "run": 39423929550,
+    "job": 118631563762,
+    "reason": "Existing isolated runtime and read-only administrator credentials are unavailable.",
+    "providerInferenceRequests": 0,
+    "metadataRequests": 0,
+    "environmentPresence": [
+      {
+        "name": "OPENAI_API_KEY",
+        "configuredNonempty": false
+      },
+      {
+        "name": "OPENAI_ADMIN_KEY",
+        "configuredNonempty": false
+      }
+    ],
+    "sha": "3b4011957f053c85d44f3aa20c526694c6b8e725",
+    "tree": "124fede7497cbd77f06509bb53fbdb548eb2d1f4",
+    "pr": 134,
+    "sourceWorkflow": "monaco-existing-runner-metadata.yml",
+    "result": "FAIL/CAPABILITY BLOCKED",
+    "branchFrozen": true,
+    "retryAuthorised": false
+  },
+  "limits": [
+    "No deployed source identity or signed/device/provider acceptance",
+    "No account/customer/schema/credential/pricing/main/store/broker/marketing mutation",
+    "Checkout collector not issuer, reconciliation or first-customer activation"
+  ],
+  "productionReady": false
+}
