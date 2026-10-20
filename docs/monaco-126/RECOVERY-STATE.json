@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T18:42:00.740817+00:00",
+  "savedAtUtc": "2026-10-20T18:46:17.641078+00:00",
   "worker": {
     "id": "root-scanner-corpus-3e0cde",
-    "status": "RUNNING",
-    "activeTask": "Six-case real-source packet assembled;26new regressions and6integrity checks pass. Final request-preview advisory and durable packet/GitHub handoff in progress. Metadata/application tests not repeated.",
-    "lastVerifiedActivityAtUtc": "2026-10-20T18:42:00.740817+00:00"
+    "status": "BLOCKED_EXTERNAL",
+    "activeTask": "All independently executable corpus preparation,26regressions,6integrity cases and18request previews complete. Await original data rights,6human references and specific inference/finance/security admission.",
+    "lastVerifiedActivityAtUtc": "2026-10-20T18:46:17.641078+00:00"
   },
   "ownership": {
     "branch": "monaco-scanner-corpus-126-20261020-3e0cde",
     "writer": "root-scanner-corpus-3e0cde",
     "leaseId": "issue126-6297930794",
-    "status": "ACTIVE_DISJOINT",
+    "status": "FROZEN_HANDOFF",
     "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
     "expectedHead": null,
-    "expectedHeadResolution": "Enclosing new-branch commit plus latest Issue126 receipt",
+    "expectedHeadResolution": "Latest Issue126 immutable receipt gives enclosing documentation commit; executable source d7e50f498f7d094b6e9ab56a562c17af204113c4 and source hashes in qa/corpus/ACCEPTANCE-2026-10-20.json",
     "ownedPaths": [
       "scripts/*monaco-source*",
       "scripts/prepare-monaco-request-previews.mjs",
@@ -26,7 +26,8 @@
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
       "vercel.json"
     ],
-    "verificationBasis": "New remote branch absent before work; earlier heads frozen; only this isolated successor mutated."
+    "verificationBasis": "New remote branch absent before work; earlier heads frozen; only this isolated successor mutated.",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/136"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -36,7 +37,10 @@
     "branch": "monaco-release-completion-126-20261020-f8cd93",
     "identityResolution": "Latest Issue126 receipt gives enclosing documentation commit/tree. Executable/test/workflow source hashes remain identical to accepted f5e820b0.",
     "receiptBaseSha": "961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3",
-    "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b"
+    "receiptBaseTree": "d22a8e4f9bf48c1f21ba422912788f5875232c1b",
+    "corpusSourceSha": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+    "corpusSourceTree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+    "corpusBranch": "monaco-scanner-corpus-126-20261020-3e0cde"
   },
   "tracks": {
     "core": {
@@ -238,7 +242,7 @@
     },
     "scannerCorpus": {
       "branch": "monaco-scanner-corpus-126-20261020-3e0cde",
-      "sourceStatus": "OFFLINE_PREPARATION_PASS",
+      "sourceStatus": "DONE_WITHIN_OFFLINE_SCOPE",
       "externalAcceptance": "BLOCKED",
       "baseCheckpoint": "8aa7b8e02ce78629aebb8036fe6ca1ad9f69689a",
       "receipt": "qa/corpus/ACCEPTANCE-2026-10-20.json",
@@ -247,7 +251,12 @@
       "newSourceCandidates": 3,
       "preservedOriginalRasters": 3,
       "requestPreviews": 18,
-      "humanReferenceReviews": 0
+      "humanReferenceReviews": 0,
+      "pushedCommit": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+      "tree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/136",
+      "frozen": true,
+      "privatePacketReceipt": "docs/monaco-126/corpus/PRIVATE-PACKET-RECEIPT.json"
     }
   },
   "tests": [
@@ -480,6 +489,18 @@
       "skipped": 0,
       "coverage": "Affected commerce/scanner/native checks, original SQL harnesses, TS/lint/security and native web production compile",
       "receipt": "qa/release-completion/ACCEPTANCE-2026-10-20.json"
+    },
+    {
+      "id": "scanner-corpus-preparation",
+      "result": "OFFLINE_PASS_NOT_SCANNER_ACCEPTANCE",
+      "sourceSha": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+      "receipt": "qa/corpus/ACCEPTANCE-2026-10-20.json",
+      "newRegressionPass": 26,
+      "skipped": 0,
+      "intakeCasesPass": 6,
+      "requestPreviewsVerified": 18,
+      "genuineMeasurements": 0,
+      "providerCalls": 0
     }
   ],
   "artifacts": {
@@ -527,7 +548,8 @@
     "providerCallsThisContinuation": 0,
     "aggregateActualCostUsd": null,
     "historical2Usd": "UNRECONCILED; unknown is not settled",
-    "ledgerChanges": "NONE"
+    "ledgerChanges": "NONE",
+    "paidCostUsdThisContinuation": 0
   },
   "untouchedAssets": [
     "main and PR112/120/123/125",
@@ -551,11 +573,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "finalise-corpus-handoff",
-    "status": "IN_PROGRESS",
-    "command": "Finish separate request-preview advisory and save exact packet/GitHub receipts. Then stop on documented source-rights/human-reference/executor-finance gates; do not rerun previous research/tests/metadata.",
-    "primaryDependency": "Actual rights evidence for original3 and attributable human review for6; see corpus/REVIEW-AND-RUN-GATES.md",
-    "prohibitedNextAction": "No paid inference, keys, hosted SQL, production, deployment, merge or licensing bypass."
+    "id": "rights-and-independent-human-reference",
+    "status": "BLOCKED_EXTERNAL",
+    "command": "Use the saved63file private packet and corpus/REFERENCE-REVIEW-TEMPLATE.json to obtain applicable rights for the3existing originals and independent human adjudication for6cases, especially the strict negative. Then export accepted CorpusCase evidence and run only newly affected offline gates. No search/download/test/metadata repeat; no paid dispatch.",
+    "primaryDependency": "Attributable data/AI-processing grant for existing3 and qualified independent human reference review.",
+    "prohibitedNextAction": "No new key, paid analysis, shared-live SQL, production, deploy, merge or licensing bypass."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

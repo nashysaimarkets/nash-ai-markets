@@ -54,7 +54,7 @@
   "productionChanged": false,
   "legacyApplicationTestsRepeated": false,
   "evidence": [
-    "source-unit-tests.log",
+    "source-unit-tests.txt",
     "intake-tamper-results.json",
     "intake-integrity.json",
     "AUTOMATED-ADVISORY.json",
@@ -79,5 +79,9 @@
     "status": "PASS",
     "versionControlCandidates": 1110,
     "command": "npm run security:scan"
-  }
+  },
+  "preparedSourceCommit": "d7e50f498f7d094b6e9ab56a562c17af204113c4",
+  "localReviewedCommit": "f9560bdf064bf4fc8f54e49196c658b819c5c8c4",
+  "sourceTree": "b1889e45052b7ddc577a2d24672c6b7ef7b08b3c",
+  "githubUpload": "Git Data API tree exactly equals local reviewed tree; shell lacks GitHub login. No new credential."
 }
