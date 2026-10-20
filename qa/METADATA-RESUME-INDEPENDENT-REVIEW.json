@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "metadata_security_review",
+  "reviewedAtUtc": "2026-10-20T17:33:33Z",
+  "sourceStatus": "FINAL_PASS_FOR_ONE_METADATA_GET",
+  "baseSha": "de42685ffff07abd160669e0bd70d8907ccc46da",
+  "reviewedSourceHashes": {
+    "scripts/verify-pocket-temporary-key.mjs": "f64e3fc779c3086c9bc7319a08634435c97e57f8c606f5b8bcd3b928f721d4f7",
+    "scripts/run-pocket-metadata-ci.py": "c009e3a2c208448e7073d352ed868f23d1ef2b8e43fbe18b963a2876dad643ed",
+    ".github/workflows/monaco-protected-metadata.yml": "c1b3ea67962d4b52e6ca31ada24c77aebc7b5e1b3f1065d838e45e7d03045351",
+    "docs/quality/pocket-temporary-key-plan-20261019.json": "bacbe7ba0f273b9420b5765c0a79d070af59349f63594e0793585989ba394a0a",
+    "tests/pocket-temporary-key-plan.test.mjs": "6dc418e6130def4a6a776449cfba7900e865f09c23fd823e5174de284c55e285",
+    "tests/pocket-metadata-ci.test.mjs": "f1ad9be08458666df4e98a8ac41a4042c7ba4484310627a2222fb71117300840",
+    "qa/protected-metadata-independent.mjs": "86741a13e94d5ea5a7bde4cac7a73115adc012208cfe917ca9b95a21fb78075a",
+    "vercel.json": "66bb6f3eba541e1d7e22b6c27b7dcf401688828d995185f32dcc290001562ec1"
+  },
+  "targetedTests": {
+    "tests": 67,
+    "passCount": 67,
+    "fail": 0,
+    "skipped": 0,
+    "observedBy": "root; not rerun by reviewer"
+  },
+  "independentHarness": {
+    "passed": 15,
+    "failed": 0,
+    "realProviderRequests": 0,
+    "realCredentialsUsed": false,
+    "observedBy": "root"
+  },
+  "independentReview": "Read-only source, plan/digest, credential-free preflight, date precision/deadline, full-inventory collision, scope and immutable workflow controls reviewed independently.",
+  "liveEvidenceBasis": "Parent authenticated read-only DOM observations; reviewer assessed captured nonsecret evidence, not a separate dashboard/API query.",
+  "providerExactTimestampsKnown": false,
+  "executionNotAfter": "2026-10-20T17:42:21.551Z",
+  "allowedMetadataRequests": 1,
+  "allowedInferenceRequests": 0,
+  "releaseAuthorized": false,
+  "liveSitesBindingVerified": false
+}

@@ -11,11 +11,44 @@ const SCOPES = ['api.model.read', 'model.read'];
 const EXISTING_IDS = ['key_EjND5GXtuqF2K0hp', 'key_HTa1GVGxw3MQq2QZ'];
 const EXISTING_MASK_SUFFIXES = ['aBgA', 'EQUA'];
 const PLAN_URL = new URL('../docs/quality/pocket-temporary-key-plan-20261019.json', import.meta.url);
-const PLAN_SHA256 = '4158cb05e13ddde8d3cf20530fc5e6a7e6de84c051af9c2a6822dfc518fc3fc3';
+const PLAN_SHA256 = 'bacbe7ba0f273b9420b5765c0a79d070af59349f63594e0793585989ba394a0a';
 const hash = value => createHash('sha256').update(value).digest('hex');
 const stop = reason => { throw new Error(reason); };
 const exactScopes = value => Array.isArray(value) && value.length === 2
   && [...value].sort().join(',') === SCOPES.join(',');
+const CREATION_RECEIPT = 'https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6295910084';
+const isDay = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+  && Number.isFinite(Date.parse(value + 'T00:00:00Z'))
+  && new Date(value + 'T00:00:00Z').toISOString().slice(0, 10) === value;
+
+function reviewTimes(plan, now) {
+  const key = plan.key;
+  const [approved, observed, reviewed] = [plan.ownerApprovalAt, plan.observedAt, plan.reviewedAt]
+    .map(value => typeof value === 'string' ? Date.parse(value) : Number.NaN);
+  if (!Number.isFinite(now) || [approved, observed, reviewed].some(value => !Number.isFinite(value))
+      || approved > observed || observed > reviewed || reviewed > now
+      || typeof plan.observedBy !== 'string' || !plan.observedBy.trim()
+      || typeof plan.reviewedBy !== 'string' || !plan.reviewedBy.trim()
+      || plan.observedBy.trim() === plan.reviewedBy.trim()) stop('TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID');
+  if (key.timestampPrecision === 'DASHBOARD_DATE_ONLY') {
+    // A short local authorization window is NOT the provider's exact expiry.
+    // The dashboard renders only dates; never invent provider timestamps.
+    const until = Date.parse(plan.executionNotAfter ?? '');
+    if (key.createdAt !== null || key.expiresAt !== null || !isDay(key.createdDate) || !isDay(key.expiresDate)
+        || Date.parse(key.expiresDate) - Date.parse(key.createdDate) !== 86400000
+        || key.expirationSelection !== '1 day' || plan.creationSelectionReceipt !== CREATION_RECEIPT
+        || !Number.isFinite(until) || now >= until || until <= reviewed || until > observed + 600000
+        || plan.providerExactTimestampsKnown !== false)
+      stop('TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID');
+  } else {
+    const created = typeof key.createdAt === 'string' ? Date.parse(key.createdAt) : Number.NaN;
+    const expires = typeof key.expiresAt === 'string' ? Date.parse(key.expiresAt) : Number.NaN;
+    if (key.timestampPrecision !== undefined || !Number.isFinite(created) || !Number.isFinite(expires)
+        || approved > created || created > observed || now - observed > 3600000
+        || expires <= now || expires <= created || expires - created > 86400000)
+      stop('TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID');
+  }
+}
 
 // No caller-controlled manifest path or digest. Replace the draft only after
 // actual owner approval, creation and independent fresh dashboard review.
@@ -38,15 +71,7 @@ export function reviewTemporaryKeyPlan(plan, now = Date.now()) {
   if (!key || typeof key.id !== 'string' || !/^key_[A-Za-z0-9]+$/.test(key.id)
       || EXISTING_IDS.includes(key.id) || key.name !== NAME || key.status !== 'Active'
       || key.createdBy !== OWNER || !exactScopes(key.scopes)) stop('INVALID_TEMPORARY_KEY_IDENTITY_OR_SCOPES');
-  const times = [plan.ownerApprovalAt, key.createdAt, plan.observedAt, plan.reviewedAt, key.expiresAt]
-    .map(value => typeof value === 'string' ? Date.parse(value) : Number.NaN);
-  const [approved, created, observed, reviewed, expires] = times;
-  if (!Number.isFinite(now) || times.some(value => !Number.isFinite(value))
-      || approved > created || created > observed || observed > reviewed || reviewed > now
-      || now - observed > 3600000 || expires <= now || expires <= created || expires - created > 86400000
-      || typeof plan.observedBy !== 'string' || !plan.observedBy.trim()
-      || typeof plan.reviewedBy !== 'string' || !plan.reviewedBy.trim()
-      || plan.observedBy.trim() === plan.reviewedBy.trim()) stop('TEMPORARY_KEY_REVIEW_OR_EXPIRY_INVALID');
+  reviewTimes(plan, now);
   const mask = typeof key.redactedValue === 'string'
     && /^(sk-)(?:\.{3}|…)([A-Za-z0-9_-]{4,16})$/.exec(key.redactedValue);
   if (!mask || EXISTING_MASK_SUFFIXES.includes(mask[2])) stop('TEMPORARY_KEY_COULD_MATCH_EXISTING_KEY');
@@ -62,6 +87,8 @@ export function reviewTemporaryKeyPlan(plan, now = Date.now()) {
         || ids.has(row.id) || typeof row.name !== 'string' || !row.name.trim()
         || !['Active', 'Revoked'].includes(row.status)
         || typeof row.createdBy !== 'string' || !row.createdBy.trim()
+        || (row.timestampPrecision !== undefined && (row.timestampPrecision !== 'DASHBOARD_DATE_ONLY'
+          || row.createdAt !== null || row.expiresAt !== null || !isDay(row.createdDate) || !isDay(row.expiresDate)))
         || (row.expiresAt !== null && (typeof row.expiresAt !== 'string'
           || !Number.isFinite(Date.parse(row.expiresAt))))) stop('INVALID_TEMPORARY_KEY_INVENTORY');
     ids.add(row.id);
@@ -73,7 +100,10 @@ export function reviewTemporaryKeyPlan(plan, now = Date.now()) {
   }
   if (matches.length !== 1 || matches[0].id !== key.id || matches[0].name !== key.name
       || matches[0].createdBy !== key.createdBy || matches[0].redactedValue !== key.redactedValue
-      || matches[0].expiresAt !== key.expiresAt || !exactScopes(matches[0].scopes))
+      || matches[0].expiresAt !== key.expiresAt || !exactScopes(matches[0].scopes)
+      || matches[0].timestampPrecision !== key.timestampPrecision
+      || matches[0].createdDate !== key.createdDate || matches[0].expiresDate !== key.expiresDate
+      || matches[0].expirationSelection !== key.expirationSelection)
     stop('TEMPORARY_KEY_INVENTORY_CORRELATION_FAILED');
   if (!Array.isArray(plan.sources) || plan.sources.length !== 2
       || !plan.sources.includes('https://platform.openai.com/api-keys')
@@ -122,6 +152,9 @@ export async function verifyTemporaryMetadataKey() {
     temporaryKeyTrackingId: plan.key.id, temporaryCredentialFingerprintSha256: hash(env.OPENAI_METADATA_VERIFICATION_KEY),
     scopes: SCOPES, model: MODEL, providerMetadataRequestId: requestId,
     dashboardReviewedAt: plan.reviewedAt, temporaryKeyExpiresAt: plan.key.expiresAt,
+    temporaryKeyExpiryDate: plan.key.expiresDate ?? null,
+    providerTimestampPrecision: plan.key.timestampPrecision ?? 'EXACT',
+    metadataExecutionNotAfter: plan.executionNotAfter ?? null,
     verifiedAt: new Date().toISOString(), evidenceSha256: PLAN_SHA256,
     liveSitesBindingVerified: false, existingPilotKeyBindingVerified: false,
     releaseAuthorized: false, paidDispatchEnabled: false, financiallySettled: false,

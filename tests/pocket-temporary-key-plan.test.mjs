@@ -180,3 +180,45 @@ for (const [name, change] of Object.entries({
     error => error.message === 'TEMPORARY_METADATA_GET_FAILED' && !error.message.includes(credential));
   assert.equal(calls, 1);
 });
+
+const datePlan = () => {
+  const p = structuredClone(plan);
+  p.key.createdAt = null; p.key.expiresAt = null;
+  Object.assign(p.key, { timestampPrecision: 'DASHBOARD_DATE_ONLY', createdDate: '2026-10-19',
+    expiresDate: '2026-10-20', expirationSelection: '1 day' });
+  p.inventory.keys[2] = structuredClone(p.key);
+  p.creationSelectionReceipt = 'https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6295910084';
+  p.providerExactTimestampsKnown = false;
+  p.executionNotAfter = new Date(observed + 600000).toISOString();
+  return p;
+};
+
+test('date precision authorizes only a short local window without inventing provider timestamps', () => {
+  const p = datePlan();
+  assert.deepEqual(reviewTemporaryKeyPlan(p, now), { prefix: 'sk-', suffix: 'wX9Z' });
+  assert.equal(p.key.createdAt, null); assert.equal(p.key.expiresAt, null);
+  assert.throws(() => reviewTemporaryKeyPlan(p, observed + 600000));
+});
+
+for (const [name, mutate] of Object.entries({
+  noReceipt: p => delete p.creationSelectionReceipt,
+  wrongReceipt: p => p.creationSelectionReceipt += '-other',
+  falsePrecision: p => p.providerExactTimestampsKnown = true,
+  fabricatedCreatedTime: p => p.key.createdAt = '2026-10-19T17:44:30Z',
+  fabricatedExpiryTime: p => p.key.expiresAt = '2026-10-20T17:44:30Z',
+  missingCreatedDate: p => delete p.key.createdDate,
+  invalidExpiryDate: p => p.key.expiresDate = '2026-02-30',
+  lifetimeDateMismatch: p => p.key.expiresDate = '2026-10-21',
+  wrongSelection: p => p.key.expirationSelection = 'Never',
+  missingDeadline: p => delete p.executionNotAfter,
+  longDeadline: p => p.executionNotAfter = new Date(observed + 600001).toISOString(),
+  expiredDeadline: p => p.executionNotAfter = new Date(now).toISOString(),
+  futureObservation: p => p.observedAt = new Date(now + 1).toISOString(),
+  missingInventoryPrecision: p => delete p.inventory.keys[2].timestampPrecision,
+  inventoryExpiryDateMismatch: p => p.inventory.keys[2].expiresDate = '2026-10-21',
+  inventorySelectionMismatch: p => p.inventory.keys[2].expirationSelection = 'Never',
+  uncertainExpiryMaskCollision: p => { p.inventory.keys[0].redactedValue = p.key.redactedValue;
+    p.inventory.keys[0].expiresAt = null; }
+})) test('date precision fails closed for ' + name, () => {
+  const p = datePlan(); mutate(p); assert.throws(() => reviewTemporaryKeyPlan(p, now));
+});

@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T16:33:00Z",
+  "savedAtUtc": "2026-10-20T17:34:55.495522+00:00",
   "worker": {
-    "id": "root-monaco-20261020-c10e55",
-    "status": "BLOCKED_EXTERNAL",
+    "id": "root-monaco-metadata-resume-20261020-bc684c",
+    "status": "READY_FOR_SINGLE_METADATA_RUN",
     "lastVerifiedActivityAtUtc": "2026-10-20T16:33:00Z",
-    "activeTask": "Approved isolated key setup partially completed; browser transport unavailable before fresh inventory/storage confirmation. No allowed executor branch exists."
+    "activeTask": "Fresh setup evidence and final independent security review passed; introduce protected immutable runner branch once, approve exact source, execute one fixed GET."
   },
   "ownership": {
-    "branch": "monaco-benchmark-access-preparation-126-20261020-c10e55",
-    "writer": "root-monaco-20261020-c10e55",
-    "leaseId": "issue126-root-benchmark-access-preparation-20261020-c10e55",
+    "branch": "monaco-benchmark-access-126-20261020-c10e55",
+    "writer": "root-monaco-metadata-resume-20261020-bc684c",
+    "leaseId": "issue126-6297074659",
     "status": "EXCLUSIVE",
     "expectedHead": null,
     "ownedPaths": [
@@ -25,8 +25,8 @@
       "qa/PROTECTED-METADATA-INDEPENDENT-REVIEW.json plus harness/results/log",
       "vercel.json branch-only deployment guards"
     ],
-    "verificationBasis": "Issue1266295910084; root sole publisher; new branch creation only. Frozen source branches untouched.",
-    "handoff": "Compare latest immutable issue receipt and remote head; never update protected allowed executor branch or release secret without fresh independently reviewed inventory and exact source.",
+    "verificationBasis": "Protected branch independently404/absent; preparation frozen atde42685f; user resumed specifically authorized metadata only.",
+    "handoff": "Never update this immutable executor branch; no retry without distinct approval. Exact enclosing SHA/tree in newest issue receipt.",
     "pr": null
   },
   "checkpoint": {
@@ -166,8 +166,8 @@
       "retry": "Do not push to this frozen branch; every push triggers its workflow. No repeated attempt authorised."
     },
     "protectedMetadataAccess": {
-      "sourceStatus": "REVIEWED_OFFLINE_PREPARATION",
-      "externalAcceptance": "BLOCKED_BROWSER_TRANSPORT",
+      "sourceStatus": "INDEPENDENTLY_REVIEWED_FINAL_SOURCE",
+      "externalAcceptance": "READY_FOR_ONE_GET",
       "branch": "monaco-benchmark-access-preparation-126-20261020-c10e55",
       "environmentId": 24832009664,
       "environmentName": "monaco-benchmark-metadata",
@@ -182,21 +182,25 @@
       "restrictDeletions": true,
       "blockForcePushes": true,
       "keyCreated": true,
-      "keyTrackingId": null,
+      "keyTrackingId": "key_WQtXX6p9qXaV7yrJ",
       "keyExpiresAt": null,
       "expirationSelection": "1 day",
       "permissionsSelection": "Restricted; List models Read; all other categories None",
-      "newKeyInventoryVerified": false,
+      "newKeyInventoryVerified": true,
       "secretSubmissionObserved": true,
       "secretFormClosureObserved": true,
-      "savedSecretPresenceVerified": false,
+      "savedSecretPresenceVerified": true,
       "secretName": "MONACO_BENCHMARK_OPENAI_API_KEY",
       "credentialedRunDispatched": false,
       "metadataRequests": 0,
       "inferenceRequests": 0,
       "currentOwnerId": "user-jy2Gr5ZRQ3EPWerlbY1MDHDM",
       "historicalKeyCreatorId": "user-DlYoRdGCCPjv7Bk5iEjduePV",
-      "samePersonClaimed": false
+      "samePersonClaimed": false,
+      "keyExpiryDate": "2026-10-21",
+      "timestampPrecision": "DASHBOARD_DATE_ONLY",
+      "executionNotAfter": "2026-10-20T17:42:21.551Z",
+      "independentReview": "qa/METADATA-RESUME-INDEPENDENT-REVIEW.json"
     }
   },
   "tests": [
@@ -461,7 +465,7 @@
     "Frozen PR127/128/129/130/131/132 source heads"
   ],
   "externalGates": [
-    "Fresh complete unfiltered new-key inventory, actual expiry/scopes/current-owner binding, saved protected secret confirmation and independent review; browser transport unavailable. Exact allowed executor branch remains absent.",
+    "One reviewed immutable protected metadata run pending; exact secret storage/inventory/scopes/protections confirmed. Exact provider timestamps unknown and not fabricated; local authority expires17:42:21.551Z.",
     "Legitimate licensed canonical bear-flag5m/wedge15m plus independently selected negative/rights/second annotation evidence; genuine0/6",
     "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
     "Uninstalled checkout intent issuer/exclusive cutover/provider inventory; first-customer provisioning/reconciliation still unimplemented/unaccepted, not supplied by collector",
@@ -471,11 +475,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "verify-approved-key-setup",
-    "status": "BLOCKED_EXTERNAL",
-    "command": "Restore supported browser access; verify protected saved secret and fresh redacted pilot key inventory. No raw key in chat/log/files. Confirm actual trackingID, creator, scopes, expiry, complete inventory and owner context; independently review and pin plan before creating immutable allowed executor branch.",
+    "id": "one-protected-metadata-get",
+    "status": "READY",
+    "command": "Create reviewed exact protected branch once; verify remote SHA/tree then approve only matching metadata environment run. Inspect sanitized outcome; no retries/inference.",
     "when": "Only after browser capability is restored or owner supplies genuine nonsecret dashboard evidence; no repeated blind retries.",
-    "primaryDependency": "Cloud browser exec-server transport disconnected; saved-secret row and new key inventory not verified. Key creation1day selection observed."
+    "primaryDependency": "GitHub protected-environment execution of exact reviewed source."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

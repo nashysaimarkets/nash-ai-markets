@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "state": "CREATED_NOT_YET_INDEPENDENTLY_REVIEWED",
+  "state": "CREATED_AND_INDEPENDENTLY_REVIEWED",
   "purpose": "TEMPORARY_METADATA_ACCESS_ONLY",
   "organisationId": "org-5vLRRzXwcigUx96TVE0rI3RW",
   "projectId": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
@@ -14,12 +14,29 @@
     ],
     "dashboardSelection": "Restricted; List models: Read; every other category: None"
   },
-  "key": null,
+  "key": {
+    "id": "key_WQtXX6p9qXaV7yrJ",
+    "name": "Pocket Bullseye Metadata Verification",
+    "status": "Active",
+    "createdBy": "user-jy2Gr5ZRQ3EPWerlbY1MDHDM",
+    "creatorDisplayName": "Chris Nash",
+    "scopes": [
+      "api.model.read",
+      "model.read"
+    ],
+    "redactedValue": "sk-...QOAA",
+    "createdAt": null,
+    "expiresAt": null,
+    "timestampPrecision": "DASHBOARD_DATE_ONLY",
+    "createdDate": "2026-10-20",
+    "expiresDate": "2026-10-21",
+    "expirationSelection": "1 day"
+  },
   "ownerApprovalAt": "2026-10-20T16:10:00Z",
-  "observedAt": null,
-  "reviewedAt": null,
-  "observedBy": null,
-  "reviewedBy": null,
+  "observedAt": "2026-10-20T17:32:21.551Z",
+  "reviewedAt": "2026-10-20T17:33:18.550Z",
+  "observedBy": "root-monaco-metadata-resume-20261020-bc684c",
+  "reviewedBy": "metadata_security_review",
   "sources": [
     "https://platform.openai.com/api-keys",
     "https://platform.openai.com/settings/proj_LTmAIE2Ve7gUAFJ9M74ZxIBI"
@@ -33,9 +50,77 @@
     "expirationSelection": "1 day",
     "secretSubmissionObserved": true,
     "secretFormClosedAfterSubmission": true,
-    "savedSecretRowVerified": false,
-    "newKeyInventoryVerified": false,
-    "credentialedExecutionAllowed": false,
-    "blocker": "Cloud browser transport disconnected before inventory/storage confirmation"
+    "savedSecretRowVerified": true,
+    "newKeyInventoryVerified": true,
+    "credentialedExecutionAllowed": true,
+    "blocker": null
+  },
+  "providerExactTimestampsKnown": false,
+  "creationSelectionReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6295910084",
+  "executionNotAfter": "2026-10-20T17:42:21.551Z",
+  "inventory": {
+    "complete": true,
+    "filters": [],
+    "visibleResults": 3,
+    "keys": [
+      {
+        "id": "key_WQtXX6p9qXaV7yrJ",
+        "name": "Pocket Bullseye Metadata Verification",
+        "status": "Active",
+        "createdBy": "user-jy2Gr5ZRQ3EPWerlbY1MDHDM",
+        "creatorDisplayName": "Chris Nash",
+        "scopes": [
+          "api.model.read",
+          "model.read"
+        ],
+        "redactedValue": "sk-...QOAA",
+        "createdAt": null,
+        "expiresAt": null,
+        "timestampPrecision": "DASHBOARD_DATE_ONLY",
+        "createdDate": "2026-10-20",
+        "expiresDate": "2026-10-21",
+        "expirationSelection": "1 day"
+      },
+      {
+        "id": "key_EjND5GXtuqF2K0hp",
+        "name": "pocket bullseye staging",
+        "status": "Active",
+        "createdBy": "user-DlYoRdGCCPjv7Bk5iEjduePV",
+        "redactedValue": "sk-...aBgA",
+        "expiresAt": null
+      },
+      {
+        "id": "key_HTa1GVGxw3MQq2QZ",
+        "name": "bullseye staging chart reader",
+        "status": "Revoked",
+        "createdBy": "user-X2fh1JUrkaUCu5RrTDRNvEAP",
+        "redactedValue": "sk-...EQUA",
+        "expiresAt": null
+      }
+    ]
+  },
+  "dashboardObservation": {
+    "projectName": "bullseye private pilot",
+    "selectedPermissionCount": 2,
+    "listModels": "Read",
+    "allOtherCategories": "None",
+    "permissionDocumentation": "https://developers.openai.com/api/docs/guides/rbac",
+    "currentOwnerIdentityBasis": "Current Owner ID verified in de42685f; fresh matching dashboard creator display name Chris Nash; historical creator preserved separately.",
+    "providerExactTimestamps": "UNKNOWN: only created and expiry dates rendered; local execution deadline is not provider expiry."
+  },
+  "protectedRunner": {
+    "environmentName": "monaco-benchmark-metadata",
+    "environmentId": 24832009664,
+    "secretName": "MONACO_BENCHMARK_OPENAI_API_KEY",
+    "savedEncryptedSecretCount": 1,
+    "reviewer": "nashysaimarkets",
+    "adminBypass": false,
+    "allowedBranch": "monaco-benchmark-access-126-20261020-c10e55",
+    "rulesetId": 25488994,
+    "rulesetActive": true,
+    "bypassActors": [],
+    "immutableUpdates": true,
+    "immutableDeletes": true,
+    "immutableForcePushes": true
   }
 }
