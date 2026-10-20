@@ -17,7 +17,7 @@ end $$;
 
 create table private.pocket_checkout_intents (
   intent_id uuid primary key default gen_random_uuid(),
-  app_user_id uuid not null unique,
+  app_user_id uuid not null,
   stripe_customer_id text not null check(stripe_customer_id ~ '^cus_[A-Za-z0-9]+$'),
   stripe_account_id text not null check(stripe_account_id ~ '^acct_[A-Za-z0-9]+$'),
   livemode boolean not null,
@@ -26,7 +26,7 @@ create table private.pocket_checkout_intents (
   price_id text not null check(price_id ~ '^price_[A-Za-z0-9]+$'),
   candidate_sha text not null check(candidate_sha ~ '^[a-f0-9]{40}$'),
   seed jsonb not null check(jsonb_typeof(seed)='object' and octet_length(seed::text)<=12000),
-  state text not null default 'BASELINE_REQUIRED' check(state in('BASELINE_REQUIRED','PREPARED','DISPATCHED','READY')),
+  state text not null default 'BASELINE_REQUIRED' check(state in('BASELINE_REQUIRED','PREPARED','DISPATCHED','READY','RECONCILED')),
   parameters_text text,
   parameters_sha256 text,
   expires_at bigint,
@@ -44,6 +44,7 @@ create table private.pocket_checkout_intents (
   check((dispatch_count=0)=(dispatch_token is null)),
   check((stripe_session_id is null)=(session_projection is null))
 );
+create unique index pocket_checkout_one_unresolved_user on private.pocket_checkout_intents(app_user_id) where state<>'RECONCILED';
 create table private.pocket_checkout_baselines (
   intent_id uuid primary key references private.pocket_checkout_intents(intent_id),
   receipt_sha256 text not null unique check(receipt_sha256 ~ '^[a-f0-9]{64}$'),
@@ -101,8 +102,8 @@ begin
   if private.has_pocket_web_subscription(p_user_id) then return jsonb_build_object('kind','HOLD','reason','ACTIVE_SUBSCRIPTION'); end if;
   insert into private.pocket_checkout_intents(app_user_id,verified_email,stripe_customer_id,stripe_account_id,livemode,offer,price_id,candidate_sha,seed)
   values(p_user_id,p_email,p_customer_id,p_stripe_account_id,p_livemode,p_offer,p_price_id,p_candidate_sha,p_seed)
-  on conflict(app_user_id) do nothing;
-  select * into strict r from private.pocket_checkout_intents where app_user_id=p_user_id for update;
+  on conflict(app_user_id) where state<>'RECONCILED' do nothing;
+  select * into strict r from private.pocket_checkout_intents where app_user_id=p_user_id and state<>'RECONCILED' for update;
   if r.verified_email<>p_email or r.stripe_customer_id<>p_customer_id or r.stripe_account_id<>p_stripe_account_id
     or r.livemode<>p_livemode or r.offer<>p_offer or r.price_id<>p_price_id or r.candidate_sha<>p_candidate_sha or r.seed<>p_seed
     then return jsonb_build_object('kind','HOLD','reason','IMMUTABLE_SCOPE_CONFLICT'); end if;
