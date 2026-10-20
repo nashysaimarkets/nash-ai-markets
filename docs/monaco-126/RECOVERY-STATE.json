@@ -1,33 +1,35 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T19:33:50.632171+00:00",
+  "savedAtUtc": "2026-10-20T19:50:38.586121+00:00",
   "worker": {
     "id": "root-benchmark50-3e0cde",
-    "status": "ACTIVE_OFFLINE",
-    "activeTask": "Six licensed replacement candidates saved separately; 44 held-out preparation underway. No human acceptance, paid calls or release authority.",
-    "lastVerifiedActivityAtUtc": "2026-10-20T19:33:50.632171+00:00"
+    "status": "BLOCKED_OWNER_GATES",
+    "activeTask": "Offline50candidate preparation complete and privately saved; humanreferences, weak4hcanonical qualification, protocol amendment/freeze and paidA/Bfinance/security approval remain. No independent executable preparation left pending.",
+    "lastVerifiedActivityAtUtc": "2026-10-20T19:50:38.586121+00:00"
   },
   "ownership": {
     "branch": "monaco-benchmark50-126-20261020-3e0cde",
     "writer": "root-benchmark50-3e0cde",
     "leaseId": "issue126-6299130800",
-    "status": "SOLE_WRITER",
+    "status": "FROZEN_HANDOFF",
     "baseCheckpoint": "856763146d293d91d22c2ce0e7700c9e73731187",
-    "expectedHead": null,
-    "expectedHeadResolution": "Latest Issue126 receipt names enclosing GitHub commit. Initial successor creation requires absent remote ref; subsequent updates expected-head guarded.",
+    "expectedHead": "3ebca5551ea6632ba78d4f13a082ce8f040a5453",
+    "expectedHeadResolution": "Parent used for expected-head update; latest Issue126 immutable receipt names final enclosing documentation commit. Code hashes and privatepacket manifest bind exact artefacts.",
     "ownedPaths": [
-      "scripts/*monaco-source*",
-      "scripts/prepare-monaco-request-previews.mjs",
-      "tests/*monaco*source*",
-      "docs/monaco-126/corpus",
-      "qa/corpus",
+      "scripts/prepare-monaco-benchmark50.py",
+      "scripts/prepare-monaco-benchmark50-requests.mjs",
+      "scripts/pocket-monaco-benchmark50-report.ts",
+      "tests/run-monaco-benchmark50-negatives.py",
+      "tests/pocket-monaco-benchmark50-report.test.ts",
+      "docs/monaco-126/benchmark50",
+      "qa/benchmark50",
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
       "vercel.json"
     ],
     "verificationBasis": "New remote branch absent before work; earlier heads frozen; only this isolated successor mutated.",
-    "pr": null
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/137"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -259,30 +261,61 @@
       "privatePacketReceipt": "docs/monaco-126/corpus/PRIVATE-PACKET-RECEIPT.json"
     },
     "benchmark50": {
-      "status": "SIX_PREPARED_44_IN_PROGRESS",
-      "prepared": 6,
-      "rightsGrantFound": 6,
+      "status": "OFFLINE_PREPARATION_COMPLETE_EXTERNAL_GATES_PENDING",
+      "preparedDistinct": 50,
+      "development": 6,
+      "heldout": 44,
+      "categoryCounts": {
+        "clear_pattern": 15,
+        "structure": 15,
+        "near_miss": 10,
+        "phone": 10
+      },
+      "sourceLicenceGrants": 50,
       "humanReviewed": 0,
+      "executed": 0,
+      "measured": 0,
+      "passed": 0,
       "providerCalls": 0,
-      "accepted": 0,
-      "firstSixPacket": {
-        "filename": "monaco-six-replacements-v2.1-2026-10-20.zip",
-        "bytes": 2498653,
-        "sha256": "7497576e82bcc03442b9e373b8dbf74b58c9c9026342232e6981bc5e2b203a3f",
-        "fileCount": 80,
-        "inventorySha256": "8022c528076a8ead2edd90d97ca4c6b2c920d1749e4b7ef54f452e23459c0b7d",
-        "preservesPacketSha256": "d00415cd223dd9fdfe7ee15409b301d2600ccd720a5ac713a5f240e3b2493453",
-        "prepared": 6,
-        "sourceLicensed": 6,
+      "firstSixReadiness": "SOURCE_AND_INPUT_READY_NOT_ACCEPTED_WEAK4H_HUMAN_AND_PROTOCOL_GATES",
+      "privatePacket": {
+        "filename": "monaco-50-real-market-review-packet-v2.3-2026-10-20.zip",
+        "bytes": 14179716,
+        "sha256": "3283ccd5317216581dab638961c0d529d432fa860291639fbf50cd2a332f4fca",
+        "fileCount": 533,
+        "inventorySha256": "5b2040b653f6e2f702719d65826fe3989ab83ff732eb7ffd55426a91519961cc",
+        "manifestSha256": "df8b9e3eeaaaebff5197cbb13ddae45d362281cd3479ee398339953ab1293b21",
+        "zipAndMemberHashes": "PASS",
+        "preparedDistinct": 50,
+        "sourceLicenceGrantCases": 50,
         "humanReviewed": 0,
         "providerCalls": 0,
-        "accepted": 0,
-        "libraryFileId": "libfile_74692952b7f48191b09866a2d0db10fd",
+        "measured": 0,
+        "passed": 0,
+        "persistence": "SAVED_VERIFIED",
+        "libraryFileId": "libfile_3ece246350b08191a61fa4752958bfb1",
         "libraryVersion": 0,
-        "remoteFileId": "file_00000000e458824684eb86ca21dab90c",
-        "persistence": "SAVED_VERIFIED"
+        "remoteFileId": "file_000000001ae0821184d2d3875f14580b"
       },
-      "scope": "Offline only; no approvals expanded; old packets frozen"
+      "manifestSha256": "df8b9e3eeaaaebff5197cbb13ddae45d362281cd3479ee398339953ab1293b21",
+      "exactRequests": {
+        "scopeA": 18,
+        "scopeB": 132,
+        "total": 150,
+        "paidRunAuthorised": false
+      },
+      "costBoundsMicroUsd": {
+        "scopeA": 1917600,
+        "scopeB": 14062400,
+        "total": 15980000
+      },
+      "tests": {
+        "reportingPassed": 98,
+        "sourceCasesPassed": 50,
+        "distinctScopedTamperControlProbes": 36,
+        "unresolvedProbeFailures": 0
+      },
+      "scope": "Offline only; old packet/scorers/historicalledgers/key preserved; no metadata,paid,live,deploy,merge,outreach"
     }
   },
   "tests": [

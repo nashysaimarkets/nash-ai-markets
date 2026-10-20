@@ -15,7 +15,15 @@ spec=importlib.util.spec_from_file_location('monaco_source_core',Path(__file__).
 core=importlib.util.module_from_spec(spec);sys.modules[spec.name]=core;spec.loader.exec_module(core)
 encode,digest=core.encode,core.digest
 def strict_json(raw):
- return json.loads(raw,parse_constant=lambda x: (_ for _ in ()).throw(ValueError('nonfinite JSON '+x)))
+ value=json.loads(raw,parse_constant=lambda x: (_ for _ in ()).throw(ValueError('nonfinite JSON '+x)))
+ def finite(x):
+  if isinstance(x,float) and not math.isfinite(x):raise ValueError('nonfinite JSON number')
+  if isinstance(x,dict):
+   for y in x.values():finite(y)
+  elif isinstance(x,list):
+   for y in x:finite(y)
+ finite(value);return value
+RIGHTS_PINS={'frd-license.html': '1d26752ee925a447b9aa68d7736dd3d7687e2830256a7d184d1ed26b31b923cb', 'RIGHTS-RESEARCH.md': '4b508ae962bb2c1857ca54c11d5dba689b2639a1fc809a15b25728ae71dc5693', 'frd-faq.html': 'a3b757eeea426e4fbd0aa6c5338a7a9ff2dc145e269ca6831f758a0dfeb4f69c'}
 RIGHTS='PUBLISHED_COMMERCIAL_RENDER_AND_PROCESSOR_GRANT_EXECUTOR_SCOPE_PENDING'
 CANONICAL={'range-clear':'30m','double-top':'1h','head-shoulders':'4h','bear-flag':'5m','wedge':'15m','negative-no-signal':'5m'}
 ALLOCATION={'clear_pattern':15,'structure':15,'near_miss':10,'phone':10}
@@ -40,6 +48,11 @@ def parse_crypto_csv(data,minutes):
   result.append(core.Bar(t,o,h,l,c,v))
  if not result:raise ValueError('empty crypto data')
  return result
+
+LEGACY_PINS={
+ 'd004':dict(rasterSha256='d2277fadcea7c84ab500614f9d69e1ae7a7acae4b28f4e8cc6ec428711a640f7',inputSha256='fd6eb8064864889fcff3e80f13188a34f991a683c86980ac48f0ca7484ca4c05',barsSha256='7971d2a8c33a08fba7fa8464aa85c87bd6e931e35fa023eb3f02d3146ac30db3',labelSha256='726c73ae7c813bcc2b1df48296993bf743d055e075ce0afa4cb21ea85c104910'),
+ 'd005':dict(rasterSha256='2da8d62cf20c67658521fc4d22d79b509ca01e78d9eb2bdb76ae92ac02559618',inputSha256='5ed2fc0aef4efd1f573a9ccf7120fdc376776a2da8a5071928bda8d9254887a1',barsSha256='7ff826cbf983475b7893e0d6c3dff32ebdf97b036342890e2db6c27bae90f11c',labelSha256='9b15acebe6c5106e399bdbf3b78bdbba1c3e1f3ddf19ea81e3abdd86e8311797'),
+ 'd006':dict(rasterSha256='9029b022e8fa31139bf0abd98998a75c5e70948f40b1e66c634bda927b592eef',inputSha256='52af1a225c8139180171c1f69222217e3b23a6f9dd9ba497a780aecd3bd7e277',barsSha256='d33c0c71b69e3fe60367c917898869222684050a29c9bb4ab029f8623b0f5d55',labelSha256='02d8aef8c0acee79f9693eaf612be54fc8237e362393b6249fee992f7d6a3f15')}
 
 def load_source(symbol,path):
  info=SOURCE_INFO[symbol];raw=path.read_bytes()
@@ -127,11 +140,13 @@ def dates_between(start,end):
 
 def validate_manifest(m,complete=True):
  cases=m['cases'];ids=[c['caseId'] for c in cases]
+ if m['categoryCounts']!=dict(Counter(c['category'] for c in cases)) or m['splitCounts']!=dict(Counter(c['split'] for c in cases)):raise ValueError('summary counts mismatch')
  if len(ids)!=len(set(ids)) or any(not re.fullmatch(r'[a-z0-9-]{1,80}',x) for x in ids):raise ValueError('case identity')
  if complete and (len(cases)!=50 or Counter(c['split'] for c in cases)!={'development':6,'heldout':44} or Counter(c['category'] for c in cases)!=ALLOCATION):raise ValueError('allocation')
  if any(c['split'] not in ['development','heldout'] or c['category'] not in ALLOCATION for c in cases):raise ValueError('invalid split/category')
  dev=[c for c in cases if c['split']=='development']
  if len(dev)!=6 or {c['scenario']:c['timeframe'] for c in dev}!=CANONICAL:raise ValueError('canonical six changed')
+ if m.get('heldoutInferencePermitted') is not False or m.get('referenceFreeze') is not None or m.get('protocolFreeze') is not None:raise ValueError('preparation execution/freeze claim')
  if m['acceptedCases']!=0 or m['dispatchAuthorised'] is not False or m['providerCalls']!=0 or m['humanReviewedCases']!=0:raise ValueError('preparation is not acceptance')
  if len({c['rasterSha256'] for c in cases})!=len(cases) or len({c['barsSha256'] for c in cases})!=len(cases):raise ValueError('duplicate underlying chart')
  groups={};dev_dates=set()
@@ -139,6 +154,10 @@ def validate_manifest(m,complete=True):
  for c in cases:
   if c['groupId'] in groups and groups[c['groupId']]!=c['split']:raise ValueError('group split leakage')
   groups[c['groupId']]=c['split']
+  if c['canonicalCaseAccepted'] is not False or c['humanReferenceStatus']!='PENDING_TWO_SEPARATE_QUALIFIED_HUMANS':raise ValueError('per-case acceptance claim')
+  if c['legacyHashes'] is not None:
+   if c['caseId'] not in LEGACY_PINS or c['legacyHashes']!=LEGACY_PINS[c['caseId']] or any(c[k]!=LEGACY_PINS[c['caseId']][k] for k in ['rasterSha256','inputSha256','barsSha256']):raise ValueError('legacy pin exemption')
+  elif c['caseId'] in LEGACY_PINS:raise ValueError('legacy preservation required')
   if c['symbol'] not in SOURCE_INFO or c['sourceFamily']!=SOURCE_INFO[c['symbol']]['family'] or c['instrument']!=SOURCE_INFO[c['symbol']]['instrument'] or c['sourceZipSha256']!=SOURCE_INFO[c['symbol']]['sha256'] or c['sourceUrl']!=SOURCE_INFO[c['symbol']]['url'] or c['rightsStatus']!=RIGHTS:raise ValueError('source metadata pin')
   n=c['timeframeMinutes']
   if n not in [1,5,15,30,60,240] or c['timeframe']!=(f'{n//60}h' if n>=60 else f'{n}m'):raise ValueError('manifest timeframe')
@@ -186,11 +205,15 @@ def validate_selection(plan):
 def build(source_root,selection,legacy,output):
  plan=strict_json(selection.read_text());validate_selection(plan)
  if output.exists():raise ValueError('immutable output already exists')
+ rights={name:(source_root/'rights'/name).read_bytes() for name in RIGHTS_PINS}
+ if any(digest(rights[n])!=h for n,h in RIGHTS_PINS.items()):raise ValueError('rights evidence pin mismatch')
+ rights_evidence=[dict(path='rights/'+n,sha256=h) for n,h in sorted(RIGHTS_PINS.items())]
  data={};source_reports=[]
  for symbol,filename in plan['sourceFiles'].items():
   rows,receipt=load_source(symbol,source_root/filename);data[symbol]=rows;source_reports.append(receipt)
  output.mkdir(mode=0o700)
- for folder in ['images','inputs','proposals','data','calibration','sources','reviews/primary','reviews/independent','reviews/private-coordinator']:(output/folder).mkdir(parents=True,mode=0o700)
+ for folder in ['images','inputs','proposals','data','calibration','sources','rights','reviews/primary','reviews/independent','reviews/private-coordinator']:(output/folder).mkdir(parents=True,mode=0o700)
+ for n,b in rights.items():(output/'rights'/n).write_bytes(b)
  for s in source_reports:shutil.copyfile(source_root/plan['sourceFiles'][s['symbol']],output/'sources'/f"{s['symbol']}.zip")
  cases=[]
  legacy_manifest=strict_json((legacy/'SIX-CASE-INTAKE.json').read_text());old={c['caseId']:c for c in legacy_manifest['cases']}
@@ -222,13 +245,13 @@ def build(source_root,selection,legacy,output):
   paths=dict(imagePath=f'images/{cid}.png',inputPath=f'inputs/{cid}.json',labelPath=f'proposals/{cid}.json',barsPath=f'data/{cid}.json',calibrationPath=f'calibration/{cid}.json')
   for k,raw in [('imagePath',png),('inputPath',inp),('labelPath',labbytes),('barsPath',rawbars),('calibrationPath',calbytes)]: (output/paths[k]).write_bytes(raw)
   raw_minute=[r for r in data[symbol] if rows[0].timestamp<=r.timestamp<rows[-1].timestamp+timedelta(minutes=c['minutes'])]
-  record=dict(caseId=cid,split=c['split'],category=c['category'],groupId=c['groupId'],scenario=c['scenario'],symbol=symbol,instrument=info['instrument'],sourceFamily=info['family'],timeframe=c['timeframe'],timeframeMinutes=c['minutes'],sourceZipSha256=info['sha256'],sourceUrl=info['url'],sourcePath=f'sources/{symbol}.zip',sourceMinuteWindowSha256=digest(encode([core.serialize_bar(r) for r in raw_minute])),firstBar=rows[0].timestamp.isoformat(),lastBar=rows[-1].timestamp.isoformat(),sourceCutoff=(rows[-1].timestamp+timedelta(minutes=c['minutes'])).isoformat(),bars=len(rows),observedMinuteRows=sum(r.source_count for r in rows),missingMinuteSlots=sum(c['minutes']-r.source_count for r in rows),sessionGaps=[dict(after=a.timestamp.isoformat(),before=b.timestamp.isoformat()) for a,b in zip(rows,rows[1:]) if b.timestamp-a.timestamp>timedelta(minutes=c['minutes'])],**paths,rasterSha256=digest(png),inputSha256=digest(inp),labelSha256=digest(labbytes),barsSha256=digest(rawbars),calibrationSha256=digest(calbytes),width=cal['width'],height=cal['height'],appearance=c.get('appearance','reused-desktop-light'),cropMapping=cal['cropMapping'],rightsStatus=RIGHTS,humanReferenceStatus='PENDING_TWO_SEPARATE_QUALIFIED_HUMANS',canonicalCaseAccepted=False,legacyHashes=oldhashes,replacesLegacyCaseId=c.get('replacesLegacyCaseId'))
+  record=dict(caseId=cid,split=c['split'],category=c['category'],groupId=c['groupId'],scenario=c['scenario'],symbol=symbol,instrument=info['instrument'],sourceFamily=info['family'],timeframe=c['timeframe'],timeframeMinutes=c['minutes'],sourceZipSha256=info['sha256'],sourceUrl=info['url'],sourcePath=f'sources/{symbol}.zip',sourceMinuteWindowSha256=digest(encode([core.serialize_bar(r) for r in raw_minute])),firstBar=rows[0].timestamp.isoformat(),lastBar=rows[-1].timestamp.isoformat(),sourceCutoff=(rows[-1].timestamp+timedelta(minutes=c['minutes'])).isoformat(),bars=len(rows),observedMinuteRows=sum(r.source_count for r in rows),missingMinuteSlots=sum(c['minutes']-r.source_count for r in rows),sessionGaps=[dict(after=a.timestamp.isoformat(),before=b.timestamp.isoformat()) for a,b in zip(rows,rows[1:]) if b.timestamp-a.timestamp>timedelta(minutes=c['minutes'])],**paths,rasterSha256=digest(png),inputSha256=digest(inp),labelSha256=digest(labbytes),barsSha256=digest(rawbars),calibrationSha256=digest(calbytes),width=cal['width'],height=cal['height'],appearance=c.get('appearance','reused-desktop-light'),cropMapping=cal['cropMapping'],rightsStatus=RIGHTS,rightsEvidenceSha256=digest(encode(rights_evidence)),licenceSha256=RIGHTS_PINS['frd-license.html'],licencePath='rights/frd-license.html',humanReferenceStatus='PENDING_TWO_SEPARATE_QUALIFIED_HUMANS',canonicalCaseAccepted=False,legacyHashes=oldhashes,replacesLegacyCaseId=c.get('replacesLegacyCaseId'))
   cases.append(record)
- manifest=dict(schemaVersion=2,status='PREPARED_CANDIDATES_NOT_ACCEPTED',candidateScannerRouteSha256='5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294',baseCheckpoint='856763146d293d91d22c2ce0e7700c9e73731187',sourceReports=source_reports,cases=cases,acceptedCases=0,humanReviewedCases=0,providerCalls=0,dispatchAuthorised=False,categoryCounts=dict(Counter(c['category'] for c in cases)),splitCounts=dict(Counter(c['split'] for c in cases)),referenceFreeze=None,protocolFreeze=None,heldoutInferencePermitted=False,sourceSelectionSha256=digest(selection.read_bytes()))
+ manifest=dict(schemaVersion=2,status='PREPARED_CANDIDATES_NOT_ACCEPTED',candidateScannerRouteSha256='5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294',baseCheckpoint='856763146d293d91d22c2ce0e7700c9e73731187',sourceReports=source_reports,rightsEvidence=rights_evidence,cases=cases,acceptedCases=0,humanReviewedCases=0,providerCalls=0,dispatchAuthorised=False,categoryCounts=dict(Counter(c['category'] for c in cases)),splitCounts=dict(Counter(c['split'] for c in cases)),referenceFreeze=None,protocolFreeze=None,heldoutInferencePermitted=False,sourceSelectionSha256=digest(selection.read_bytes()))
  validate_manifest(manifest,complete=len(cases)==50)
  (output/'BENCHMARK50.json').write_bytes(encode(manifest));(output/'SELECTION.private.json').write_bytes(selection.read_bytes())
  if len(cases)>=6:
-  (output/'SIX-CASE-REPLACEMENTS-v2.json').write_bytes(encode({**manifest,'cases':[c for c in cases if c['split']=='development'],'status':'VERSIONED_SIX_REPLACEMENT_CANDIDATES_NOT_ACCEPTED'}))
+  (output/'SIX-CASE-REPLACEMENTS-v2.json').write_bytes(encode({**manifest,'cases':[c for c in cases if c['split']=='development'],'status':'VERSIONED_SIX_REPLACEMENT_CANDIDATES_NOT_ACCEPTED','categoryCounts':dict(Counter(c['category'] for c in cases if c['split']=='development')),'splitCounts':{'development':6}}))
  # Generic aliases in independent deterministic orders. Reviewer receives only their
  # assigned directory, never proposals/selection or the coordinator map.
  aliases={};review_order={}
@@ -245,8 +268,15 @@ def build(source_root,selection,legacy,output):
 
 def verify(root,complete=True):
  m=strict_json((root/'BENCHMARK50.json').read_text());validate_manifest(m,complete)
+ subset=strict_json((root/'SIX-CASE-REPLACEMENTS-v2.json').read_text());validate_manifest(subset,False)
+ if subset['cases']!=[c for c in m['cases'] if c['split']=='development']:raise ValueError('six subset mismatch')
+ rights_evidence=[dict(path='rights/'+n,sha256=h) for n,h in sorted(RIGHTS_PINS.items())]
+ if m.get('rightsEvidence')!=rights_evidence:raise ValueError('rights manifest mismatch')
+ for e in rights_evidence:
+  if digest(safe_file(root,e['path']).read_bytes())!=e['sha256']:raise ValueError('rights artifact mismatch')
  cached={};checks=[]
  for c in m['cases']:
+  if c.get('rightsEvidenceSha256')!=digest(encode(rights_evidence)) or c.get('licenceSha256')!=RIGHTS_PINS['frd-license.html'] or c.get('licencePath')!='rights/frd-license.html':raise ValueError('per-case rights binding')
   artifacts={}
   for key,sha in [('imagePath','rasterSha256'),('inputPath','inputSha256'),('labelPath','labelSha256'),('barsPath','barsSha256'),('calibrationPath','calibrationSha256')]:
    raw=safe_file(root,c[key]).read_bytes()
@@ -313,6 +343,8 @@ def verify(root,complete=True):
    if set(sheet)!=set(['reviewId','image','imageSha256','instrument','timeframe','readable','reviewerName','qualifications','reviewedAt','independenceAttestation','tools','notes']):raise ValueError('blind answer fields')
    if any(sheet[x] is not None for x in ['readable','reviewerName','qualifications','reviewedAt','independenceAttestation','notes']):raise ValueError('prefilled human review')
    if sheet['tools']!={t:dict(state=None,features=[],uncertainty=None) for t in ['pattern_watch','support_resistance','liquidity_pools','liquidity_events']}:raise ValueError('prefilled target answers')
+   sourcecase=next(c for c in m['cases'] if c['rasterSha256']==sheet['imageSha256'])
+   if sheet['instrument']!=sourcecase['instrument'] or sheet['timeframe']!=sourcecase['timeframe']:raise ValueError('blind source facts mismatch')
    if digest(safe_file(root,'reviews/'+role+'/'+sheet['image']).read_bytes())!=sheet['imageSha256']:raise ValueError('blind image hash')
  return dict(status='OFFLINE_PASS_NOT_ACCEPTANCE',manifestSha256=digest((root/'BENCHMARK50.json').read_bytes()),casesChecked=len(checks),checks=checks,sourceZipPins=len(cached),crossTimeframeComparisons=len(cached)*3,providerCalls=0,humanReviews=0,semanticAccepted=0)
 
