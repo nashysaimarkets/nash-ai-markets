@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T06:11:33.920256+00:00",
+  "savedAtUtc": "2026-10-21T06:19:09.373665+00:00",
   "worker": {
     "id": "root-internal-diagnostics-3e0cde",
-    "status": "BLOCKED_PAID_EXECUTOR_SECURITY_FINANCE_AUTHORITY",
-    "activeTask": "Owner-authorised no-human internal diagnostic protocol, independent first-six source oracle and mock provider integration complete. No two-reviewer request for this track. Real dispatch disabled; original expert acceptance unresolved.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T06:11:33.920256+00:00"
+    "status": "BLOCKED_EXECUTOR_SECURITY_FINANCE_CAPABILITIES_PAID_SCOPE_APPROVED",
+    "activeTask": "First-six conditional paid scope approved in owner chat/Issue126 receipt6309459418. No reviewer or repeated paid-approval request. Existing isolated inference binding, actual processor/security evidence and authoritative budget headroom remain unverified; no admissible new capability evidence; dispatch disabled.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T06:19:09.373665+00:00"
   },
   "ownership": {
     "branch": "monaco-internal-diagnostics-126-20261021-3e0cde",
     "writer": "root-internal-diagnostics-3e0cde",
     "leaseId": "issue126-6309011401",
-    "status": "FROZEN_CONDITIONAL_PAID_HANDOFF",
+    "status": "FROZEN_APPROVED_SCOPE_CAPABILITY_HANDOFF",
     "baseCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
-    "expectedHead": "579b781335e352034c5970dca06cc01b49ed81bb",
-    "expectedHeadResolution": "This is the remotely verified executable/tested source checkpoint and matching tree. Latest Issue126 receipt identifies the enclosing documentation-only head; compare that head before any successor write.",
+    "expectedHead": "d3b240372407c45e4ef787d690ba762309590092",
+    "expectedHeadResolution": "Approval-record-only continuation verified remote d3b240372407c45e4ef787d690ba762309590092. Latest Issue126 receipt gives enclosing documentation head. Executable source remains579b781335e352034c5970dca06cc01b49ed81bb.",
     "ownedPaths": [
       "scripts/pocket-monaco-offline-executor.ts",
       "scripts/pocket-monaco-diagnostic-provider.ts",
@@ -364,7 +364,7 @@
     },
     "internalDiagnostics": {
       "sourceStatus": "OFFLINE_COMPLETE",
-      "externalAcceptance": "BLOCKED_PAID_EXECUTOR_SECURITY_FINANCE_NOT_HUMAN_REFERENCES",
+      "externalAcceptance": "BLOCKED_EXECUTOR_SECURITY_FINANCE_NOT_PAID_SCOPE_OR_HUMAN_REFERENCES",
       "branch": "monaco-internal-diagnostics-126-20261021-3e0cde",
       "parentCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
       "protocol": "MONACO_INTERNAL_DIAGNOSTICS_V1",
@@ -383,7 +383,8 @@
       "realDispatchEnabled": false,
       "pushedSourceCommit": "579b781335e352034c5970dca06cc01b49ed81bb",
       "sourceTree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
-      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139"
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139",
+      "conditionalPaidApprovalReceipt": "issue126-6309459418"
     }
   },
   "tests": [
@@ -673,9 +674,13 @@
       "authorised": true,
       "ownerReceipt": "issue126-6309011401",
       "scope": "First six internal development diagnostics only; source geometry and separate pattern-rule conformance. No human-reference annotations required.",
-      "paidRunAuthorised": false,
+      "paidRunAuthorised": true,
       "expertAcceptance": "UNRESOLVED_UNCHANGED",
-      "doNotAskForTwoReviewersForThisTrack": true
+      "doNotAskForTwoReviewersForThisTrack": true,
+      "conditionalPaidScopeOnly": true,
+      "paidApprovalReceipt": "issue126-6309459418",
+      "executionAdmitted": false,
+      "doNotAskForPaidScopeApprovalAgain": true
     }
   },
   "budget": {
@@ -711,11 +716,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "conditional-first-six-internal-diagnostic-paid-run-decision",
-    "status": "BLOCKED_EXTERNAL_EXECUTOR_SECURITY_FINANCE_AND_SPECIFIC_PAID_AUTHORITY",
-    "command": "Use internal-diagnostics/APPROVAL-RECORD.json and EXECUTION-AND-APPROVAL.md for the ONE conditional paid-run request. First-six <=18 calls, zero retries, <=$1.9176 direct-token bound under existing aggregate $5; proceed only with an already authorised isolated inference-executor/key binding, accepted actual processor conditions and authoritative headroom. No reviewer request for this internal track.",
-    "primaryDependency": "Specific A paid authority plus currently unverified existing inference executor/credential binding, actual processor-security acceptance and authoritative budget headroom. Metadata-only runner is not inference-capable; no live ledger installation authorised.",
-    "prohibitedNextAction": "Do not repeat the32 semantic checks, accepted tests, metadata verification, licensing research, source windows or packet generation; no new keys/permission expansion/live database/customer/production changes/deployment/merge/B inference. If no admissible new evidence exists, stop retries."
+    "id": "satisfy-existing-isolated-executor-processor-and-ledger-preconditions",
+    "status": "BLOCKED_EXTERNAL_CAPABILITIES_NOT_RUN_APPROVAL",
+    "command": "First-six paid scope is conditionally approved: internal-diagnostics/OWNER-PAID-APPROVAL.json. Do not ask for it or for two reviewers again. Accept only new admissible evidence establishing an already-authorised isolated inference executor/existing-key binding, actual processor/security conditions and authoritative >=$1.9176 headroom under aggregate$5. Freeze that evidence before any dispatch. If it is absent, stop retries.",
+    "primaryDependency": "Named existing inference-capable isolated executor/credential and authoritative ledger/headroom evidence, plus actual processor conditions. Current protected runner is metadata-only; last read-only catalog found no pilot ledger. The approval does not authorise establishing these through new credentials, permission expansion or live/database changes.",
+    "prohibitedNextAction": "No repeated completed tests, metadata or catalog/licensing investigations without new evidence; no new keys/permissions/live database/customer/production changes/deployments/merges/B run. No spending until all existing conditions are satisfied."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
@@ -748,6 +753,8 @@
     "originalExpertProtocol": "PRESERVED_UNRESOLVED",
     "internalHumanReferenceRequirement": false,
     "safeWorkComplete": true,
-    "actualPaidDispatch": false
+    "actualPaidDispatch": false,
+    "conditionalPaidScopeApprovalReceipt": "issue126-6309459418",
+    "doNotAskForPaidScopeApprovalAgain": true
   }
 }

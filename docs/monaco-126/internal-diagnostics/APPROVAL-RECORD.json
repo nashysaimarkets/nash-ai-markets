@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "FIRST_SIX_INTERNAL_DIAGNOSTICS_CONDITIONAL_APPROVAL_RECORD",
-  "status": "PAID_RUN_NOT_AUTHORISED_EXECUTOR_AND_HEADROOM_UNVERIFIED",
+  "status": "CONDITIONAL_PAID_SCOPE_APPROVED_EXECUTION_BLOCKED",
   "amendment": {
     "issue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
     "receiptId": 6309011401,
@@ -48,9 +48,15 @@
     "verifiedHeadroomMicroUsd": null,
     "priorSpentReservedUnresolvedMicroUsd": null,
     "requiredHeadroomMicroUsd": 1917600,
-    "specificPaidRunApproval": null,
+    "specificPaidRunApproval": {
+      "receipt": "issue126-6309459418",
+      "record": "OWNER-PAID-APPROVAL.json",
+      "conditional": true,
+      "executionAdmitted": false
+    },
     "cashAllowanceApproved": false,
-    "headroomEvidence": "qa/internal-diagnostics/EXECUTOR-BUDGET-EVIDENCE.json"
+    "headroomEvidence": "qa/internal-diagnostics/EXECUTOR-BUDGET-EVIDENCE.json",
+    "conditionalPaidScopeApproved": true
   },
   "scopeB": {
     "caseIds": "e001-e044",
@@ -76,11 +82,14 @@
     "Exact previously authorised isolated inference executor and existing credential/project binding; no new key or permission expansion",
     "Actual on-behalf processing, retention, training, territory, private artifact/log handling accepted against retained FirstRate grants; store=false is not ZDR",
     "Authoritative durable A ledger and verified headroom >=1917600 including all earlier spent/reserved/unresolved exposure; historical $2 separate; cash allowance resolved",
-    "One specific paid first-six run approval tied to exact source/plan/protocol/oracle; final executor/ledger evidence freeze before dispatch"
+    "Freeze the actual executor/ledger/security evidence against the already approved source/plan/protocol/oracle before dispatch; do not request the same paid-scope approval again."
   ],
   "weak4h": "d003 pattern UNSCORED_WEAK_4H; no positive label or replacement",
   "realDispatchEnabled": false,
-  "ownerRequest": "Approve one internal diagnostic run d001-d006 only, exact saved candidate/plan/protocol/oracle and gpt-5-mini-2025-08-07: <=18 sends, zero retries/failover, <=$1.9176 direct-token exposure inside the aggregate $5 ceiling, only after existing isolated inference-executor binding, actual processor/security acceptance and authoritative >=$1.9176 headroom are verified. Otherwise stop without dispatch. No human references required for this track; no B run, new credentials, metadata rerun, live/database changes, deployment or merge included.",
   "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139",
-  "sourceRemoteTreeVerified": true
+  "sourceRemoteTreeVerified": true,
+  "approvedRequest": "Approve one internal diagnostic run d001-d006 only, exact saved candidate/plan/protocol/oracle and gpt-5-mini-2025-08-07: <=18 sends, zero retries/failover, <=$1.9176 direct-token exposure inside the aggregate $5 ceiling, only after existing isolated inference-executor binding, actual processor/security acceptance and authoritative >=$1.9176 headroom are verified. Otherwise stop without dispatch. No human references required for this track; no B run, new credentials, metadata rerun, live/database changes, deployment or merge included.",
+  "ownerRequest": null,
+  "paidApprovalRecord": "OWNER-PAID-APPROVAL.json",
+  "doNotAskForPaidScopeApprovalAgain": true
 }
