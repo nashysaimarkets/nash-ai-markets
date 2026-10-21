@@ -1,0 +1,95 @@
+{
+  "kind": "PROTECTED_FIRST_SIX_COMPOSITION_AND_ACTION_ACCEPTANCE",
+  "recordedAt": "2026-10-21T19:40:12.912Z",
+  "status": "PASS_OFFLINE_COMPOSITION_AND_RUNTIME_IMPORT_ONLY",
+  "repository": "nashysaimarkets/nash-ai-markets",
+  "branch": "monaco-launch-completion-126-20261021-e48b82",
+  "baseCommitAtRecording": "8270f182ee3f88a802528b9b08c57452a7373278",
+  "provenance": "Output files reproduce retained genuine tool stdout from the completed checks below. They were saved after execution; no checks were rerun to create this receipt. File hashes describe the current unchanged source/test files and current supporting modules/locks at receipt creation, not a published commit.",
+  "runtime": {
+    "node": "v24.19.0",
+    "packages": {
+      "openai": "6.48.0",
+      "pg": "8.16.3",
+      "@actions/artifact": "6.3.1"
+    }
+  },
+  "checks": [
+    {
+      "name": "protected-runner",
+      "command": "node --test --test-isolation=none tests/pocket-monaco-protected-runner.test.mjs",
+      "toolChunkId": "639414",
+      "exitCode": 0,
+      "tests": 12,
+      "passed": 12,
+      "failed": 0,
+      "durationMs": 4487.750403,
+      "mode": "Synthetic provider/SQL/artifact clients; real encryption, unpacking and local module fixtures.",
+      "outputPath": "qa/protected-runner/protected-runner.test-output.txt",
+      "outputSha256": "d62621e7a4eb6a5176f28d01c6845dbd4276b76bb633198be08a6314fba1bb1d"
+    },
+    {
+      "name": "local-action",
+      "command": "node --test --test-isolation=none tests/pocket-monaco-local-action.test.mjs",
+      "toolChunkId": "810720",
+      "exitCode": 0,
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "durationMs": 117.764726,
+      "mode": "Synthetic child-process boundary plus one real local Node --version probe; hosted entry was not launched.",
+      "outputPath": "qa/protected-runner/local-action.test-output.txt",
+      "outputSha256": "11be21ce3f398aba8916d40e570c2db6cd312e61f87416b47b35adf4639defe8"
+    },
+    {
+      "name": "installed-runtime-import",
+      "command": "node --input-type=module -e \"import {loadPinnedRuntime} from './scripts/pocket-monaco-protected-runner.mjs'; const runtime=await loadPinnedRuntime('/workspace/scratch/e48b82be4dc1/monaco-runtime-check'); console.log(JSON.stringify({status:'PINNED_RUNTIME_IMPORTED',versions:runtime.versions,constructors:['OpenAI','Client','ArtifactClient'].map(key=>typeof runtime[key]),clientsConstructed:0,providerRequests:0}));\"",
+      "toolChunkId": "a082c2",
+      "exitCode": 0,
+      "mode": "Real installed official SDK modules loaded; constructor exports checked, no constructors invoked.",
+      "outputPath": "qa/protected-runner/runtime-import.output.json",
+      "outputSha256": "ac8e32826ee664005844c1f5083d85429ccb7f0b1d0ae85bd232deff2676b1d1"
+    }
+  ],
+  "totals": {
+    "syntheticChecks": 17,
+    "passed": 17,
+    "failed": 0,
+    "actualInstalledRuntimeImports": 1,
+    "realLocalNodeVersionProbes": 1,
+    "liveClientsConstructed": 0,
+    "networkRequests": 0,
+    "providerMetadataRequests": 0,
+    "providerInferenceRequests": 0,
+    "ledgerConnections": 0,
+    "ledgerWrites": 0,
+    "hostedArtifactUploads": 0,
+    "hostedFirstSixRuns": 0
+  },
+  "noAdmissionClaims": [
+    "No live credential authentication, hosted artifact retention, provider authenticity, billing settlement or launch acceptance is established by these checks."
+  ],
+  "reviewedConstraints": {
+    "requestedEncryptedArtifactRetentionDays": 7,
+    "sdkUploadRetries": "Official artifact SDK can retry internal upload/create/finalize operations; these synthetic checks do not prove hosted delivery. OpenAI transport remains maxRetries:0.",
+    "credentialState": "Actual existing inference credential was absent; no metadata credential fallback was used."
+  },
+  "filesSha256": {
+    "scripts/pocket-monaco-protected-runner.mjs": "c499d85b90777bf95b448db3fae010d49677a01d3a2453c7cad8a3661407dde6",
+    "tests/pocket-monaco-protected-runner.test.mjs": "36e2790b6e0c92a5621e4ef99e16ad51d6a29dae56138e51beeaee3daed5519b",
+    ".github/actions/monaco-first-six/action.yml": "f1aa7a208c52538bbf8f3c1ddcc4852232a7d885ab4f88280c45732c9ecebace",
+    ".github/actions/monaco-first-six/entry.cjs": "c9253cca483bdbcd75ba3e52d0a5cfc47c2ae9ca411b7df37057bd540df2fc32",
+    "tests/pocket-monaco-local-action.test.mjs": "399051382c7a5b2148f7d8bf167261b6e81d15b0391f35e5d487063f361f06e5",
+    "tools/monaco-first-six-runtime/package.json": "2ea1d8ce8fa8f559a2a220d683ac3a0d4ee74684d4b45e202811d542c371e5d6",
+    "tools/monaco-first-six-runtime/package-lock.json": "c0310e235942f9c90bdfc3393266502463d32551b6d8942bd63012543eff3ef0",
+    "scripts/pocket-monaco-executor-bootstrap.mjs": "7ccdc527068017a75a9e66eb7b9ce101b67657169f4a7580556ff360d3c92774",
+    "scripts/pocket-monaco-confidential-transport.mjs": "6e9cb779490d6a1d52d41f734d3ef63e580c1f69bc38dabbc067954ad0562ac2",
+    "scripts/pocket-monaco-first-six-bundle.mjs": "157130d455715aef05ab66cb4c2c2179e82c704ff458ff8871e042344504664e",
+    "scripts/pocket-monaco-neon-port.ts": "48505921b1f073adde33c9a01836a6fb702f95b55eaa6328363dc303b0a742f2",
+    "scripts/pocket-monaco-setup-preflight.mjs": "3b63fd5fc0df41c56b65e93e3a0315c9bda71f4c9bfb1881362389d8480fe257",
+    "scripts/pocket-monaco-first-six-executor.ts": "0b0a38b34385c24b83a270a2718049cd162f2678297751cfff53c08614b1866f",
+    "scripts/pocket-monaco-isolated-executor.mjs": "d69c5acd55c74f44b99838776ae3ec48180507af98d67982b63db09b1a41d0e0",
+    "scripts/pocket-monaco-executor-effects.mjs": "4d9b4866f0146bed7082f98ea01ae828edfbb32410da3275415063c5e1b5ec6b",
+    "docs/monaco-126/internal-diagnostics/FIRST-SIX-PROVIDER-PLAN.json": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0"
+  }
+}

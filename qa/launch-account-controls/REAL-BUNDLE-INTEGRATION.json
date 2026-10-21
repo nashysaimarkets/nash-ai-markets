@@ -1,0 +1,21 @@
+{
+  "kind": "REAL_SIX_ONLY_BUNDLE_OFFLINE_INTEGRATION",
+  "status": "PASS",
+  "recordedAtUtc": "2026-10-21T19:42:30.141Z",
+  "caseIds": [
+    "d001",
+    "d002",
+    "d003",
+    "d004",
+    "d005",
+    "d006"
+  ],
+  "frozenRequests": 18,
+  "bundleSha256": "8b7b3bb3cb0d7122cb6cad0b5936e12c5d5d3f83e725d5fd42c81e5ae1d4e2f0",
+  "originalExactByteMaterialAndSourceChecksPassed": true,
+  "heldoutPayloadsRead": 0,
+  "providerRequests": 0,
+  "ledgerOperations": 0,
+  "hostedTransportVerified": false,
+  "sourceSha256": "0b0a38b34385c24b83a270a2718049cd162f2678297751cfff53c08614b1866f"
+}

@@ -1,5 +1,5 @@
 {
-  "kind": "NEON_FREE_LEDGER_INSTALLED_CREDENTIAL_STORED_EXECUTION_DISABLED",
+  "kind": "PROTECTED_RUNNER_PREPARED_INFERENCE_SECRET_MISSING_EXECUTION_DISABLED",
   "sourceBranch": "monaco-launch-completion-126-20261021-e48b82",
   "invocationBranch": "monaco-first-six-inference-126-20261021",
   "environment": "monaco-first-six-inference",
@@ -41,12 +41,13 @@
     "canonicalAllowanceRef": "comment-6165012632",
     "aggregateCapMicroUsd": 5000000,
     "requiredHeadroomMicroUsd": 1917600,
-    "spentMicroUsd": null,
-    "reservedMicroUsd": null,
-    "unresolvedMicroUsd": null,
-    "availableMicroUsd": null,
+    "spentMicroUsd": 0,
+    "reservedMicroUsd": 0,
+    "unresolvedMicroUsd": 0,
+    "availableMicroUsd": 5000000,
     "priorBudgetImported": false,
-    "enabledAllowanceRows": 0
+    "enabledAllowanceRows": 0,
+    "budgetEvidenceCutoffUtc": "2026-10-21T19:17:33.937Z"
   },
   "secrets": {
     "existingInferenceKeyEnvironmentSecret": "MONACO_FIRST_SIX_OPENAI_API_KEY",
@@ -59,19 +60,22 @@
     "ledgerRunnerPasswordIssued": true,
     "ledgerGitHubSecretStored": true,
     "neonConsoleConnectionVerified": true,
-    "credentialHandoffStatus": "STORED_PRESENCE_VERIFIED_AUTHENTICATION_UNVERIFIED",
+    "credentialHandoffStatus": "LEDGER_STORED_INFERENCE_KEY_MISSING",
     "passwordIssueAttemptCompleted": false,
     "credentialValueObserved": false,
     "ledgerCredentialAuthenticationVerified": false,
     "ledgerProviderManagedRoleAuthenticationVerified": true,
     "ledgerGitHubSecretAuthenticationVerified": false,
-    "runtimeRoleLoginEnabled": false
+    "runtimeRoleLoginEnabled": false,
+    "inferenceGitHubSecretStored": false,
+    "inferenceSecretPresenceEvidence": "qa/launch-account-controls/GITHUB-SECRET-PRESENCE.json",
+    "existingInferenceBindingVerified": false
   },
   "requiredEvidence": {
     "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
     "existingCredentialBinding": null,
-    "processorSecurityAcceptance": null,
-    "authoritativeBudgetCarryIn": null,
+    "processorSecurityAcceptance": "docs/monaco-126/isolated-runner/PROCESSOR-SECURITY-ACCEPTANCE.json",
+    "authoritativeBudgetCarryIn": "docs/monaco-126/isolated-runner/BUDGET-CARRY-IN.json",
     "zeroCostCapacity": "qa/neon-ledger/COST-CAPACITY.json",
     "neonIdentity": "docs/monaco-126/isolated-runner/NEON-IDENTITY-EVIDENCE.json",
     "neonAmendment": "docs/monaco-126/isolated-runner/OWNER-NEON-AMENDMENT.json",
@@ -81,9 +85,10 @@
   },
   "paidScopeReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418",
   "planSha256": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0",
-  "approvalMeaning": "Permission to set up only; never inferred from paid scope or test pass",
+  "approvalMeaning": "Current owner full launch authority permits necessary setup and execution within the existing first-six paid scope; missing credentials, actual admission and immutable source binding still prevent execution. Additional purchase scope requires approval.",
   "environmentInstalled": true,
   "environmentProtectionVerified": true,
   "environmentUrl": "https://github.com/nashysaimarkets/nash-ai-markets/settings/environments/24916350021/edit",
-  "invocationBranchExists": false
+  "invocationBranchExists": false,
+  "credentialReplacementMeaning": "This prepared plan remains pinned to the existing key identity. A necessary replacement may be set up securely under current owner authority, but requires actual new-identity/source binding; do not fabricate the old key ID or silently reuse another credential."
 }

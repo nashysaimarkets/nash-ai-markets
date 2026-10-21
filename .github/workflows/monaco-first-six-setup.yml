@@ -1,12 +1,7 @@
-name: Monaco first-six setup only
-# TEMPLATE ONLY / NOT FOR STANDALONE INVOCATION.
-# Both literal immutable pins are deliberately unbound. Before first creation
-# of the protected invocation branch, the final reviewed one-shot wrapper must
-# combine accepted preflight and execution-phase bootstrap with private mounts.
-# Never consume that branch for this setup template, then repush or rerun it.
-# Do not create the invocation branch or replace it with an input/github.sha.
-# Independent review must pin the accepted source and lock invocation branch
-# updates/deletion/force-push before approving its protected environment job.
+name: Monaco protected first-six one-shot
+# Prepared wrapper: the invocation branch does not exist and pins stay unbound
+# until the actual credential binding and ledger admission are verified.
+# Source, evidence and wrapper commits are separate; never rerun this job.
 on:
   push:
     branches: [monaco-first-six-inference-126-20261021]
@@ -18,22 +13,20 @@ concurrency:
 env:
   REVIEWED_SETUP_SOURCE_SHA: UNBOUND
   REVIEWED_SETUP_EVIDENCE_SHA: UNBOUND
-defaults:
-  run:
-    working-directory: runner-source
+  NODE_OPTIONS: ''
+  NODE_PATH: ''
 jobs:
-  setup-only:
+  first-six:
     if: github.repository == 'nashysaimarkets/nash-ai-markets' && github.ref == 'refs/heads/monaco-first-six-inference-126-20261021' && github.run_attempt == 1 && github.event.repository.private == false
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     environment: monaco-first-six-inference
     steps:
-      - name: Reject unbound reviewed source before checkout or secrets
-        working-directory: .
+      - name: Require immutable reviewed pins
         shell: bash
         run: |
-          [[ "$REVIEWED_SETUP_SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'SETUP HOLD: reviewed immutable source is not bound'; exit 1; }
-          [[ "$REVIEWED_SETUP_EVIDENCE_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'SETUP HOLD: reviewed immutable evidence is not bound'; exit 1; }
+          [[ "$REVIEWED_SETUP_SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'HOLD: reviewed source is unbound'; exit 1; }
+          [[ "$REVIEWED_SETUP_EVIDENCE_SHA" =~ ^[a-f0-9]{40}$ ]] || { echo 'HOLD: reviewed evidence is unbound'; exit 1; }
           test "$GITHUB_RUN_ATTEMPT" = 1
       - id: source_checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -49,44 +42,49 @@ jobs:
           path: runner-evidence
           sparse-checkout: |
             docs/monaco-126/isolated-runner
-            qa/isolated-runner
+            qa/launch-account-controls
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24.19.0'
-      - name: Check actual source and complete nonsecret setup evidence
+      - name: Verify actual checkouts and preserve the exact Node binary
         shell: bash
+        run: |
+          test "$(git -C runner-source rev-parse HEAD)" = "$REVIEWED_SETUP_SOURCE_SHA"
+          test "$(git -C runner-evidence rev-parse HEAD)" = "$REVIEWED_SETUP_EVIDENCE_SHA"
+          test "$(node --version)" = v24.19.0
+          printf 'CHECKED_OUT_SOURCE_SHA=%s\n' "$(git -C runner-source rev-parse HEAD)" >> "$GITHUB_ENV"
+          printf 'CHECKED_OUT_EVIDENCE_SHA=%s\n' "$(git -C runner-evidence rev-parse HEAD)" >> "$GITHUB_ENV"
+          printf 'MONACO_PINNED_NODE_EXECUTABLE=%s\n' "$(node -p process.execPath)" >> "$GITHUB_ENV"
+      - name: Install the committed isolated runtime without install scripts
+        working-directory: runner-source
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/monaco-first-six-runtime"
+          cp tools/monaco-first-six-runtime/package.json tools/monaco-first-six-runtime/package-lock.json "$RUNNER_TEMP/monaco-first-six-runtime/"
+          npm ci --prefix "$RUNNER_TEMP/monaco-first-six-runtime" --ignore-scripts --no-audit --no-fund --fetch-retries=0 --fetch-timeout=15000
+      - name: Verify source unchanged before any credentialed operation
+        shell: bash
+        run: |
+          git -C runner-source diff --exit-code HEAD
+          test -z "$(git -C runner-source status --porcelain)"
+          git -C runner-evidence diff --exit-code HEAD
+          test -z "$(git -C runner-evidence status --porcelain)"
+      - name: Execute the protected one-shot JavaScript action
+        uses: ./runner-source/.github/actions/monaco-first-six
         env:
-          NODE_OPTIONS: ''
-        run: |
-          test "$(git rev-parse HEAD)" = "$REVIEWED_SETUP_SOURCE_SHA"
-          test "$(git -C ../runner-evidence rev-parse HEAD)" = "$REVIEWED_SETUP_EVIDENCE_SHA"
-          CHECKED_OUT_SOURCE_SHA="$(git rev-parse HEAD)" CHECKED_OUT_EVIDENCE_SHA="$(git -C ../runner-evidence rev-parse HEAD)" node scripts/pocket-monaco-setup-preflight.mjs --check-config
-      - name: Offline new setup refusal tests without credentials
-        run: node --test tests/pocket-monaco-setup-preflight.test.mjs
-      - name: Prepare previously used SQL driver without credentials or install scripts
-        run: |
-          mkdir -p "$RUNNER_TEMP/monaco-setup"
-          cp tools/monaco-sql-driver/package.json tools/monaco-sql-driver/package-lock.json "$RUNNER_TEMP/monaco-setup/"
-          npm ci --prefix "$RUNNER_TEMP/monaco-setup" --ignore-scripts --no-audit --no-fund
-      - name: Verify tracked source unchanged after preparation
-        run: |
-          git diff --exit-code HEAD
-          test -z "$(git status --porcelain)"
-          git -C ../runner-evidence diff --exit-code HEAD
-          test -z "$(git -C ../runner-evidence status --porcelain)"
-      - name: Inspect fixed ledger only; no metadata or inference
-        env:
-          NODE_OPTIONS: ''
           MONACO_FIRST_SIX_OPENAI_API_KEY: ${{ secrets.MONACO_FIRST_SIX_OPENAI_API_KEY }}
           MONACO_FIRST_SIX_LEDGER_KEY: ${{ secrets.MONACO_FIRST_SIX_LEDGER_KEY }}
-        run: |
-          CHECKED_OUT_SOURCE_SHA="$(git rev-parse HEAD)" CHECKED_OUT_EVIDENCE_SHA="$(git -C ../runner-evidence rev-parse HEAD)" node scripts/pocket-monaco-setup-preflight.mjs --inspect-ledger
-      - name: Confirm no source or output files were written
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Confirm source trees remain unchanged
         if: always() && steps.source_checkout.outcome == 'success' && steps.evidence_checkout.outcome == 'success'
+        shell: bash
         run: |
-          git diff --exit-code HEAD
-          test -z "$(git status --porcelain)"
-          git -C ../runner-evidence diff --exit-code HEAD
-          test -z "$(git -C ../runner-evidence status --porcelain)"
-# No schedule, dispatch input, artifact/cache upload, provider transport or seed SQL.
-
+          git -C runner-source diff --exit-code HEAD
+          test -z "$(git -C runner-source status --porcelain)"
+          git -C runner-evidence diff --exit-code HEAD
+          test -z "$(git -C runner-evidence status --porcelain)"
+# No schedule, dispatch inputs, plaintext uploads or provider retry/failover.
+# GitHub supplies scoped artifact credentials to the local JavaScript action.
+# Public handoff key: one-day immutable artifact. Encrypted results: seven days.
+# Artifact SDK storage retries never cause an inference resend.
+# Preserve private decrypted results before ciphertext artifact expiry.

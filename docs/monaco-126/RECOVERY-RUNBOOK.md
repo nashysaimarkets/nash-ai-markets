@@ -1,14 +1,16 @@
-# Current continuation: manual launch completion, all schedules off
+# Current continuation: protected runner prepared, secure inference key missing
 
-Read **LAUNCH-CHECKLIST-2026-10-21.md**, **OWNER-LAUNCH-AMENDMENT-2026-10-21.json** and the latest Issue126 receipt first. This current owner amendment supersedes historical blanket procedural no-deploy/no-merge/no-store permissions below; actual acceptance and separate purchase approval remain necessary. Do not ask for the same engineering permission again.
+Read LAUNCH-CHECKLIST-2026-10-21.md, OWNER-LAUNCH-AMENDMENT-2026-10-21.json and the newest Issue #126 receipt. Necessary launch work is authorised; extra purchases still need approval. All schedules remain off. Resume PR #142 from the published commit in the latest receipt, preserving other branches.
 
-Resume the new disjoint branch monaco-launch-completion-126-20261021-e48b82 from the final receipt, preserving PR1418b88d5e and the separately owned f7baa6 source. Runner source and54accepted offline checks recovered; no old suite rerun. A separate Neon-only probe removes the circular demand for paid-admission evidence before testing a password. It never reads an OpenAI key or budget rows. Use qa/neon-auth-probe and qa/launch-completion for the actual new proof and limits.
+The recovered 54-check runner evidence and 15 new auth-probe checks remain accepted. A further 45 focused checks passed for encrypted transport, the protected CLI, local action and bounded ciphertext relay. Exact locked runtime constructor imports passed. Source is prepared; no hosted inference occurred.
 
-Actual provider-managed login as the restricted Neon runner succeeded; all privilege/schema guards matched. NOLOGIN was restored. GitHub's saved password has NOT been authenticated. Backend pg_stat_ssl was false, which does not establish the external transport; the reviewed client probe must verify its actual TLS socket. No provider requests, allowance creation or spending occurred.
+The previous signed-out-account blocker is closed. Real account controls, fresh costs/activity and live obligations were inspected. The private pilot was removed from all three training-data sharing selections and verified after reload. Recorded original-$5 exposure is zero at the snapshot, with its partial-day and settlement limits preserved. No allowance has been seeded.
 
-OpenAI account inspection is access-blocked: this workspace shows the Platform login page. Current usage and data-sharing controls remain unobserved. Obtain one secure signed-in session, then inspect the already known project without metadata reruns, new keys or technical-ID questions. Finish actual private packet/output transport and protected execution; Library files do not automatically become a runner mount.
+Actual GitHub inspection found the inference API secret missing; the ledger password is already present. Finish the prepared secure owner key entry, then verify the real key binding and GitHub-stored password, refresh any changed exposure, seed immutable admission, and pin reviewed source/evidence/wrapper commits. Do not ask for another ledger reset, technical IDs, two human reviewers for internal diagnostics or another first-six scope approval. A necessary replacement inference key must be bound under its actual new identity.
 
-Do not request another ledger password handoff, two human reviewers for internal diagnostics, another first-six scope approval, or a third Supabase project. All67paused schedules remain off. Full app/device/commerce/release tasks are consolidated in the launch checklist. The sections below are retained history.
+The confidential six-only bundle and recipient decryption key are privately saved; see qa/launch-account-controls/INPUT-OUTPUT-PREPARATION.json. Use the run-bound public artifact and data-only ciphertext ref, freeze the first commit, retain encrypted outputs only after remote acknowledgement, and preserve private results before seven-day expiry. The future relay ref must also contain a minimal Vercel disable for its exact branch and no workflows. The invocation branch remains absent and literal workflow pins remain UNBOUND.
+
+Real cases remain 0/6. Follow the consolidated commerce, integration, device/store and launch tasks next. No automatic continuation or schedule is enabled. The sections below are retained historical evidence and do not override this current checkpoint.
 
 # Current continuation: protected ledger secret saved
 

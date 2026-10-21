@@ -10,6 +10,7 @@ import {isAbsolute, relative, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {validateSetupEvidence, PINS} from './pocket-monaco-setup-preflight.mjs';
 import {createResponsesTransport, createPrivateArtifactSink} from './pocket-monaco-executor-effects.mjs';
+import {createEncryptedArtifactSink, ENCRYPTED_ARTIFACT_KIND} from './pocket-monaco-confidential-transport.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const requireValue = ok => {if (!ok) throw Error('EXPLICIT_BOOTSTRAP_BINDING_REFUSED');};
@@ -33,20 +34,39 @@ export function validatePrivateArtifactLocation(evidence, directory) {
   return canonical;
 }
 
+/** The existing private-artifact acceptance can name either a real persistent
+ * private directory or an encrypted, remotely acknowledged Actions destination.
+ * This chooses the concrete effect; it grants no execution/budget admission.
+ */
+export function createBootstrapPrivateArtifacts({evidence, context, privateOutputDirectory, encryptedArtifacts}) {
+  if (encryptedArtifacts === undefined) {
+    return createPrivateArtifactSink({directory:validatePrivateArtifactLocation(evidence,privateOutputDirectory)});
+  }
+  const accepted = evidence?.processorSecurityAcceptance?.privateArtifactLocation;
+  requireValue(privateOutputDirectory === undefined && accepted?.kind === ENCRYPTED_ARTIFACT_KIND
+    && accepted.repository === PINS.repository && context?.repository === accepted.repository
+    && context.sourceSha === context.reviewedSourceSha && typeof accepted.acceptanceRef === 'string'
+    && accepted.acceptanceRef.trim());
+  return createEncryptedArtifactSink({run:{repository:context.repository,runId:context.runId,
+    runAttempt:context.runAttempt,sourceSha:context.sourceSha},
+    recipientPublicKeyPem:encryptedArtifacts.recipientPublicKeyPem,
+    expectedRecipientPublicKeySha256:accepted.recipientPublicKeySha256,
+    retentionDays:accepted.retentionDays,artifactClient:encryptedArtifacts.artifactClient});
+}
+
 export async function prepareFirstSixBootstrap({config, evidence, context, responsesClient,
-  sqlClient, privateOutputDirectory, inputPaths}) {
+  sqlClient, privateOutputDirectory, encryptedArtifacts, inputPaths}) {
   try {
     const admission = validateSetupEvidence(config,evidence,context,'execution');
     // Verify the credential actually held by the supplied existing client. No
     // key is returned, printed, persisted or passed into any ledger operation.
     requireValue(typeof responsesClient?.apiKey === 'string'
       && hash(responsesClient.apiKey) === admission.identity.keyFingerprintSha256);
-    const directory = validatePrivateArtifactLocation(evidence,privateOutputDirectory);
+    const privateArtifacts = createBootstrapPrivateArtifacts({evidence,context,privateOutputDirectory,encryptedArtifacts});
     requireValue(inputPaths && ['packetDirectory','objectiveReferencePath','protocolPath'].every(k=>
       typeof inputPaths[k] === 'string' && isAbsolute(inputPaths[k])));
     const paths = structuredClone(inputPaths);
     const transport = createResponsesTransport(responsesClient);
-    const privateArtifacts = createPrivateArtifactSink({directory});
     const [{createNeonSqlPort}, {createFrozenFirstSixExecutor,loadFrozenFirstSixInputs}] = await Promise.all([
       import('./pocket-monaco-neon-port.ts'), import('./pocket-monaco-first-six-executor.ts'),
     ]);
@@ -82,6 +102,6 @@ export async function prepareFirstSixBootstrap({config, evidence, context, respo
       }});
   } catch {
     return {kind:'UNMOUNTED_FIRST_SIX_BOOTSTRAP',status:'HOLD',executionAdmitted:false,
-      reason:'Existing evidence, credential or persistent private-location binding incomplete.'};
+      reason:'Existing evidence, credential or private-artifact destination binding incomplete.'};
   }
 }

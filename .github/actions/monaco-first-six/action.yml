@@ -1,0 +1,5 @@
+name: Monaco first-six protected runner
+description: Run the reviewed one-shot entry using the exact pinned Node runtime.
+runs:
+  using: node24
+  main: entry.cjs

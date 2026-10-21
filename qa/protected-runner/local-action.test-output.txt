@@ -1,0 +1,13 @@
+✔ missing artifact runtime credentials and insufficient retention fail before spawning any binary (8.759015ms)
+✔ an incorrect or failed real-version probe prevents the hosted entry from starting (4.054278ms)
+✔ only the pinned binary and fixed entry are launched; runtime credentials remain inherited and signals are forwarded (4.020101ms)
+✔ child errors fail without leaking text and signal exits remain failures (3.270644ms)
+✔ the actual local Node version probe succeeds without running the hosted entry or a network operation (31.16622ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.764726

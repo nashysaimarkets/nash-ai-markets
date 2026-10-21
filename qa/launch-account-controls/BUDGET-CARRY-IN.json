@@ -1,0 +1,68 @@
+{
+  "kind": "ORIGINAL_FIVE_DOLLAR_PRIOR_EXPOSURE_SNAPSHOT_V1",
+  "recordedAtUtc": "2026-10-21T19:37:42.355255+00:00",
+  "observedLedgerAtUtc": "2026-10-21T19:17:33.937Z",
+  "canonicalAllowanceRef": "comment-6165012632",
+  "allowanceApprovedDate": "2026-10-14",
+  "evidenceComplete": true,
+  "aggregateCapMicroUsd": 5000000,
+  "historicalAccountingKeptSeparate": true,
+  "cashAllowanceApproved": true,
+  "spentMicroUsd": 0,
+  "reservedMicroUsd": 0,
+  "unresolvedMicroUsd": 0,
+  "availableMicroUsd": 5000000,
+  "requiredFirstSixHeadroomMicroUsd": 1917600,
+  "carryInImported": false,
+  "providerFinancialSettlementClaimed": false,
+  "costExport": {
+    "sha256": "d556e3737baf159ba575a3cb60ad4453151fb7a98419397c3bc2f394ea7c51c7",
+    "coverageStartsUtc": "2026-09-21T00:00:00Z",
+    "lastBucketEndUtc": "2026-10-22T00:00:00Z",
+    "lastBucketPartialAtExport": true,
+    "targetProjectRecordedUsd": "0",
+    "organizationRecordedUsd": "3.9648286",
+    "organizationRecordedUsdSince20261014": "0",
+    "emptyDatePlaceholderRows": 19,
+    "unattributedChargeRows": 0
+  },
+  "activityExport": {
+    "sha256": "2185b622ed8883eba07dc923abe9427f9feb71b21274ee48a80a0860c3eaa7df",
+    "keyTrackingId": "key_EjND5GXtuqF2K0hp",
+    "targetProjectOctoberRequests": 3,
+    "targetProjectOctoberInputTokens": 13348,
+    "targetProjectOctoberOutputTokens": 5380,
+    "targetProjectOctoberTotalTokens": 18728,
+    "pinnedModelRequests": 0
+  },
+  "liveInventory": {
+    "allPilotLedgerRows": 0,
+    "canonicalAllowanceRows": 0,
+    "cases": 0,
+    "calls": 0,
+    "reserved": 0,
+    "submittedUnsettled": 0,
+    "settled": 0,
+    "voided": 0,
+    "costAttestations": 0,
+    "budgetAccounts": 0,
+    "priorBudgetRows": 0,
+    "bindingRows": 0,
+    "requestPins": 0,
+    "runnerCanLogin": false,
+    "githubInProgressRuns": 0,
+    "githubQueuedRuns": 0
+  },
+  "historicalInventory": "Previously accepted Oct14/18 pilot SQL was rolled back/uninstalled; Oct21 05:47:14.815057 Supabase catalogue showed no pilot/config/account tables. Historical $2 remains separate.",
+  "privateEvidence": {
+    "libraryFileId": "libfile_4ef44ce00d548191a077a0354330cdfc",
+    "filename": "Pocket-Bullseye-private-launch-evidence-2026-10-21.zip",
+    "sha256": "6f8e026c1a975fac73dc903c7fa8bdeda354a4aa79c86e6395f2c5539e74f777"
+  },
+  "interpretation": "Zero recorded exposure is supported jointly by fresh provider cost/activity exports, live obligations inventory and accepted historical inventory, not merely by an empty new ledger. No allowance has been reset or seeded.",
+  "limitations": [
+    "The provider export is an as-of snapshot with a partial current-day bucket, not future coverage or final request-level settlement.",
+    "Recheck for new activity or obligations before seeding if execution resumes after this checkpoint; preserve this original evidence.",
+    "Existing October requests remain in the activity history; they are not the six pinned diagnostic cases."
+  ]
+}

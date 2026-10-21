@@ -1,20 +1,20 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T18:51:08.435842+00:00",
+  "savedAtUtc": "2026-10-21T19:41:49.078847+00:00",
   "worker": {
     "id": "root-launch-e48b82",
-    "status": "CHECKPOINTING_MANUAL_LAUNCH_WORK",
-    "activeTask": "Recover reviewed runner, resolve auth-only circular dependency and save all launch tasks; actual OpenAI account access remains unavailable.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T18:51:08.435842+00:00"
+    "status": "CHECKPOINTED_SECURE_INFERENCE_KEY_HANDOFF",
+    "activeTask": "Protected runner and confidential delivery source complete; actual inference key absent from GitHub, pending secure owner entry. Account controls and budget observation gaps closed.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T19:41:49.078847+00:00"
   },
   "ownership": {
     "branch": "monaco-launch-completion-126-20261021-e48b82",
     "writer": "root-launch-e48b82",
-    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6323653166",
-    "status": "EXCLUSIVE_DISJOINT_SOURCE_WRITER",
+    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6324449296",
+    "status": "RELEASED_BY_ENCLOSING_PUBLICATION_RECEIPT",
     "baseCheckpoint": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
-    "expectedHead": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
+    "expectedHead": "b134a3e2df8927a336d871170cc36de409db4fe8",
     "expectedHeadResolution": "The final Issue126 receipt supplies the enclosing published commit; the expectedHead above is the frozen parent, not a claim about the successor branch. Resume the saved successor after verifying its actual head.",
     "otherBranchesUntouched": true,
     "recoveredWorker": "f7baa6 local runner work read/copied; its original branch and files untouched",
@@ -37,7 +37,18 @@
       "docs/monaco-126/OWNER-LAUNCH-AMENDMENT-2026-10-21.json",
       "docs/monaco-126/isolated-runner/SETUP-*",
       ".github/workflows/monaco-first-six-setup.yml",
-      "vercel.json"
+      "vercel.json",
+      "scripts/pocket-monaco-confidential-transport.mjs",
+      "scripts/pocket-monaco-first-six-bundle.mjs",
+      "scripts/pocket-monaco-protected-runner.mjs",
+      "scripts/pocket-monaco-github-input-relay.mjs",
+      "scripts/pocket-monaco-hosted-entry.mjs",
+      ".github/actions/monaco-first-six",
+      "tools/monaco-first-six-runtime",
+      "qa/confidential-transport",
+      "qa/protected-runner",
+      "qa/github-input-relay",
+      "qa/launch-account-controls"
     ]
   },
   "checkpoint": {
@@ -71,7 +82,8 @@
     "neonLedgerSourceTree": "f2bec613166a6d84191eceadb9088b4690701a2b",
     "launchContinuationParent": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
     "launchContinuationBranch": "monaco-launch-completion-126-20261021-e48b82",
-    "launchChecklist": "docs/monaco-126/LAUNCH-CHECKLIST-2026-10-21.md"
+    "launchChecklist": "docs/monaco-126/LAUNCH-CHECKLIST-2026-10-21.md",
+    "protectedRunnerContinuationParent": "b134a3e2df8927a336d871170cc36de409db4fe8"
   },
   "tracks": {
     "core": {
@@ -571,7 +583,7 @@
       "exitCode": 0,
       "command": "node scripts/verify-monaco-recovery.mjs --proof docs/monaco-126/qa/recovery-proof.json",
       "proof": "docs/monaco-126/qa/recovery-proof.json",
-      "coverage": "Stopped child checkpoint → independent child verifies local bare remote SHA/tree/owner → exactly one local action/commit → another child NOOP. Wrong owner, changed head, unknown/expired lease and watchdog state/alert-dedup negatives. No real Work restart, network, provider or real branch lease acquisition.",
+      "coverage": "Stopped child checkpoint \u2192 independent child verifies local bare remote SHA/tree/owner \u2192 exactly one local action/commit \u2192 another child NOOP. Wrong owner, changed head, unknown/expired lease and watchdog state/alert-dedup negatives. No real Work restart, network, provider or real branch lease acquisition.",
       "sourceHashes": {
         "policy": "af418cd703de15cac24a73dbfe8c56695b6790a5f42adadff93e8a0dc96f6e06",
         "verifier": "e6be83f7b0b9818bec679303298ec8687845369626035590bdb46f58cb753f23"
@@ -703,6 +715,23 @@
       "run": 39598675588,
       "receipt": "qa/neon-ledger/ACCEPTANCE.json",
       "limits": "No runner secret binding, provider execution or authoritative budget acceptance"
+    },
+    {
+      "name": "protected-runner-continuation",
+      "status": "PASS_OFFLINE_ONLY",
+      "confidentialTransportAndBundle": 13,
+      "protectedCli": 12,
+      "localAction": 5,
+      "githubCiphertextRelay": 15,
+      "totalNewFocusedChecks": 45,
+      "officialRuntimeConstructorImports": "PASS",
+      "hostedInferenceRequests": 0,
+      "liveDeliveryAcceptance": false,
+      "receipts": [
+        "qa/confidential-transport/ACCEPTANCE.json",
+        "qa/protected-runner/ACCEPTANCE.json",
+        "qa/github-input-relay/ACCEPTANCE.json"
+      ]
     }
   ],
   "artifacts": {
@@ -746,7 +775,7 @@
     "igOrders": false,
     "outreachPublication": false,
     "benchmark": "Existing separate max$5 approval does not bypass runtime/financial/licence admission; no dispatch permitted here",
-    "benchmarkCredentialSetup": "Prior setup approval plus current Neon-only amendment permit the restricted ledger credential and protected GitHub binding. No new OpenAI credential or permission expansion.",
+    "benchmarkCredentialSetup": "Current full launch authority covers necessary secure setup; the prepared frozen plan uses the existing key identity. Any necessary replacement requires actual new-identity binding, never a fabricated legacy tracking ID.",
     "internalDiagnosticsWithoutHumans": {
       "authorised": true,
       "ownerReceipt": "issue126-6309011401",
@@ -762,7 +791,7 @@
     "neonLedgerSetup": {
       "kind": "OWNER_NEON_ZERO_COST_LEDGER_AMENDMENT_V1",
       "recordedDate": "2026-10-21",
-      "ownerDirective": "OPERATION MONACO — ZERO-COST TEST LEDGER ALTERNATIVE",
+      "ownerDirective": "OPERATION MONACO \u2014 ZERO-COST TEST LEDGER ALTERNATIVE",
       "issueReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6315474964",
       "supersedes": "Only the proposed third Supabase ledger provider; earlier approvals preserved",
       "authorised": "One isolated Neon Free project, necessary restricted database credential and approved protected GitHub storage, after $0/capacity/compatibility/security checks",
@@ -798,20 +827,21 @@
   "budget": {
     "reservationsPerformedThisContinuation": 0,
     "providerCallsThisContinuation": 0,
-    "aggregateActualCostUsd": null,
+    "aggregateActualCostUsd": 0,
     "historical2Usd": "UNRECONCILED; unknown is not settled",
     "ledgerChanges": "One isolated Neon Free ledger schema and immutable non-secret physical identity installed; no allowance/baseline/request/call rows and no reset of historic evidence.",
     "paidCostUsdThisContinuation": 0,
-    "verifiedFirstSixHeadroomMicroUsd": null,
-    "latestEvidence": "qa/isolated-runner/BUDGET-RECONCILIATION.json",
-    "headroomReason": "Saved exports end18Oct and lack complete programme/key/request linkage; current prior spent/reserved/unresolved remain unknown. No absent-ledger reset.",
+    "verifiedFirstSixHeadroomMicroUsd": 5000000,
+    "latestEvidence": "docs/monaco-126/isolated-runner/BUDGET-CARRY-IN.json",
+    "headroomReason": "Fresh authoritative cost/activity exports plus live/historical obligations inventory support zero recorded exposure against original $5 at cutoff; no ledger import/reset. Partial-day and non-final-settlement limits retained.",
     "authOnlyChanges": "Temporarily enabled existing restricted role, ran one fixed catalog query through provider-managed role login, restored NOLOGIN. No allowance/baseline/request/call rows created.",
-    "currentAccountAccess": "OpenAI usage page is signed out in current browser; no new billing or sharing evidence obtained."
+    "currentAccountAccess": "Signed-in actual private-pilot account verified; account/sharing observations saved.",
+    "priorBudgetImported": false
   },
   "untouchedAssets": [
     "main and PR112/120/123/125",
     "Sitesv179/environment34 source and credentials",
-    "owner accepted active£4.99 UUID/customer admission",
+    "owner accepted active\u00a34.99 UUID/customer admission",
     "shared-live Supabase pxlqvaddvghjjhenqmdh and native backend",
     "live Stripe customers/subscriptions/prices",
     "Apple/Google listings/signed builds",
@@ -820,21 +850,20 @@
     "Frozen PR127/128/129/130/131/132 source heads"
   ],
   "externalGates": [
-    "Current signed-in OpenAI Platform access for read-only project controls/current usage; do not rerun metadata or ask for new key/IDs.",
-    "Authoritative original$5 prior exposure/reservations through execution cutoff; retain historical$2 separately and import conservative carry-in; >=1917600microUSD required.",
-    "Existing inference-key/source/request binding, confidential private packet/output path and reviewed one-shot protected execution wrapper; GitHub saved password still unauthenticated.",
-    "Firstsix real diagnostics0/6, subsequent measured fixes and separately authorised held-out evaluation; no two-reviewer prerequisite for internal diagnostics.",
-    "Compatible commerce mounting, shared-live cutover, customer/signed-event acceptance under current owner authority.",
-    "Existing Mac/Xcode/signing and physical iPhone; existing Android/Play signing/resources and real device/store lifecycles.",
-    "One final integrated source/preview acceptance, compatible production/store release, rollback and launch monitoring.",
-    "IGdemo and rebrand remain independent of core launch."
+    "Actual private-pilot inference key is absent from the protected GitHub environment/repository. Complete prepared secure owner entry; bind real key identity/fingerprint. Do not reuse metadata key or reset the stored ledger password.",
+    "Actual GitHub-secret ledger authentication, immutable original-$5 carry-in/request/binding import, invocation controls and reviewed source/evidence/wrapper pins; hosted delivery and retention proof remain pending.",
+    "First six real diagnostics remain 0/6; measured scanner fixes then a separately purchased held-out evaluation when ready.",
+    "Compatible commerce mounting, customer/signed-event acceptance and integration of one matching release candidate.",
+    "Existing Mac/Xcode/signing and physical iPhone; Android/Play signing and real device/store lifecycle evidence.",
+    "One final combined-source gate, compatible production/store release, rollback and launch monitoring.",
+    "IG demo/rebrand/later competitor features are independent of core launch."
   ],
   "nextSafeAction": {
-    "id": "continue-authenticated-account-and-protected-runner",
-    "status": "MANUAL_LAUNCH_WORK_CHECKPOINTED_ACCESS_GAP",
-    "command": "Read LAUNCH-CHECKLIST-2026-10-21.md and newest Issue126 receipt. Keep all schedulesoff. Reuse recovered54-check runner evidence and new auth-probe evidence. Use an authenticated OpenAI Platform session to verify current usage and actual project controls once; finish private transfer/wrapper and GitHub-secret authentication. No resets/paste/repeated approval or metadata rerun. Continue remaining independent launch tasks without treating prior blanket procedural prohibitions as current authority.",
-    "primaryDependency": "Current workspace browser reaches OpenAI login. Budget and actual account controls remain unobserved; real provider run not ready.",
-    "prohibitedNextAction": "No new purchase/paid scope, fabricated zero baseline, secrets in chat/source, repeated password handoff, revived schedules, or unverified release."
+    "id": "complete-secure-inference-key-and-admit-first-six",
+    "status": "SOURCE_SAVED_INFERENCE_SECRET_MISSING",
+    "command": "Read the newest Issue126 receipt and complete launch checklist; keep schedules off. Complete the prepared direct GitHub inference-key entry, bind actual identity and authenticate the stored ledger password, refresh changed exposure, seed immutable admission and bind reviewed source/evidence/wrapper. Then run six diagnostics once. Do not repeat accepted suites, metadata verification, ledger password resets or scope approval.",
+    "primaryDependency": "MONACO_FIRST_SIX_OPENAI_API_KEY is actually missing; source code and confidential input/output route are prepared but not live-proven.",
+    "prohibitedNextAction": "No secrets in chat/source, metadata-key fallback, fabricated credential identity, new paid scope without approval, revived schedules, repeated inference or unverified release."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
