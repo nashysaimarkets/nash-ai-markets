@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "kind": "LOCAL_OFFLINE_ISOLATED_SQL_BRIDGE_PROOF",
+  "recordedAtUtc": "2026-10-21T09:34:37.651047+00:00",
+  "parentCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
+  "sourceHashes": {
+    "scripts/pocket-monaco-runner-bridge.ts": "71a0a3005517e353d45f02a7dd0c17feec0f329251c0bd94c0be3e0f4e0eaeae",
+    "supabase/proposed/monaco-isolated-runner.sql": "1af63b6badcafa7c0fd23f6a398098626c3457f6f5f85657bcde2296476750ed",
+    "tests/pocket-monaco-runner-bridge.test.ts": "7f7c5dcd3bf27a384ad0df69a9109d2d74c9a282d03863c6671059f6a32fe899"
+  },
+  "originalSqlSha256": "2c0586c0cc785ac896374e3d0d6989a2e2e4c924c7ebd176c67c0565ca49f2b3",
+  "unchanged128CheckEvidence": {
+    "receipt": "qa/internal-diagnostics/ACCEPTANCE-ENGINEERING.json",
+    "sha256": "7c2f3e9064d795121e4637b665d1c221c45f58ce10673ea72b704a9e35b1e036",
+    "hashesVerifiedUnchanged": true,
+    "testsRerun": false
+  },
+  "checks": {
+    "sqlBridge": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 25326.026719,
+      "command": "MONACO_RUNNER_QA_PGLITE_MODULE=<existing local PGlite0.5.10 module> node --import tsx --test tests/pocket-monaco-runner-bridge.test.ts",
+      "receipt": "qa/isolated-runner/final-tests.log",
+      "receiptSha256": "1d6bcd3230836acdb1c7b7ff378c8dc1b5d03987d64f1783fb8345d312098075"
+    },
+    "targetedStrictTypeScript": {
+      "exitCode": 0,
+      "command": "tsc --noEmit --allowImportingTsExtensions --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck --strict scripts/pocket-monaco-runner-bridge.ts tests/pocket-monaco-runner-bridge.test.ts",
+      "receipt": "qa/isolated-runner/typecheck-final.log",
+      "receiptSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "initialHarnessFailure": "Initial pgcrypto extension-registration fixture failed; corrected PGlite constructor options before final passing tests. Intermediate raw logs retained locally, not bulk-published."
+  },
+  "coverage": [
+    "unknown prior exposure denied",
+    "complete18-slot inventory",
+    "full-run headroom boundary",
+    "shared-live and wrong identity denied",
+    "immutable baseline and receipt",
+    "duplicate claims and held-out denial",
+    "lost submit acknowledgement: no retry, retain reservation",
+    "same SQL reservation accounting with carry-in",
+    "local durable database close/reopen",
+    "larger actual cost retains combined cap",
+    "client error sanitization and no credential payload",
+    "real dispatch always disabled"
+  ],
+  "nodeVersion": "24.19.0",
+  "pgliteVersion": "0.5.10",
+  "syntheticBalancesOnly": true,
+  "headroomMicroUsd": null,
+  "realProviderCalls": 0,
+  "metadataCalls": 0,
+  "hostedDatabaseWrites": 0,
+  "credentialChanges": 0,
+  "paidExposureUsd": 0,
+  "realDispatchEnabled": false,
+  "limitations": [
+    "PGlite single-session/local disk is not hosted PostgreSQL overlapping-session proof",
+    "No provider/scanner acceptance or private packet read",
+    "No actual credential possession/binding or processor acceptance",
+    "Authoritative prior budget remains unknown",
+    "No runnable hosted job or installed ledger; new infrastructure needs setup authority"
+  ],
+  "automations": "UNTOUCHED"
+}

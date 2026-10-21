@@ -1,0 +1,29 @@
+✔ empty installed proposal denies before any case reservation (50.243831ms)
+✔ missing prior budget remains unknown and blocks, never zero (87.45102ms)
+✔ maximum permitted prior exposure includes all 18 reservations (141.520343ms)
+✔ one microdollar too much prior exposure blocks whole run (51.938305ms)
+✔ shared-live project cannot be seeded (9.117163ms)
+✔ partial frozen request inventory cannot admit a run (55.416436ms)
+✔ wrong runtime key/source/backend identity fails before claim (94.773196ms)
+✔ old metadata-only key is rejected locally (7.676753ms)
+✔ extra credential-shaped fields never enter an RPC payload (20.165848ms)
+✔ unknown inspector output cannot lead to a reservation (19.020287ms)
+✔ raw client failure text cannot leak through the bridge (5.947526ms)
+✔ second chart waits for unresolved first chart (85.588041ms)
+✔ duplicate first-six claims do not create fresh allowance (102.545615ms)
+✔ held-out case rejected without database calls (33.357617ms)
+✔ wrong request hash rejected before submit and by SQL bypass path (89.768024ms)
+✔ lost submit acknowledgement retains submitted reservation, never retries (254.090119ms)
+✔ immutable receipt recovery and reservation accounting reuse existing SQL (267.568487ms)
+✔ runtime roles cannot fabricate carry-in evidence or reset it (56.602333ms)
+✔ declared approvals or completed mocks cannot enable provider dispatch (111.543446ms)
+✔ larger settled cost cannot omit prior exposure from its cap check (75.16608ms)
+✔ durable SQL close/reopen preserves unknown submissions and denies replay (10945.863066ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25326.026719
