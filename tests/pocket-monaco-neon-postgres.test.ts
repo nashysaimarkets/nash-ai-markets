@@ -72,4 +72,22 @@ await run('raw response and chart payload storage paths are denied by SQL',async
  const port=createNeonSqlPort(c,f.n,f.identity);const r=await port.rpc('record_pocket_benchmark_receipt',{p_ledger_key:ledger,p_case_id:'d001',p_slot:'main',p_provider_request_id:'qa-req',p_response_id:'qa-resp',p_model:plan.model,p_service_tier:'default',p_usage:{input_tokens:1,output_tokens:1,total_tokens:2,raw_response:'forbidden'},p_envelope_sha256:fp('d001','main')});assert.ok(r.error);
 });
 await run('aggregate cap applies to larger actual costs; no second allowance or held-out run',async f=>{await f.seed();const b=f.bridge(await f.connect());await b.claim('d001');await assert.rejects(()=>f.admin.query("update private.pocket_benchmark_pilot_calls set actual_microusd=2000000 where slot='main'"));await assert.rejects(()=>b.claim('e001'));await assert.rejects(()=>f.admin.query("insert into private.pocket_benchmark_pilot_ledgers select 'second-allowance',cap_microusd,project_ref,owner_approval_ref,candidate_sha,rate_tier,pricing_evidence_ref,allowed_case_ids,config_verified_at,enabled,created_at from private.pocket_benchmark_pilot_ledgers"));},3082400);
+await run('later-slot validation failure rolls back earlier reservations and the case row',async f=>{
+ await f.seed();const c=await f.connect();const port=createNeonSqlPort(c,f.n,f.identity);
+ const intercepted={rpc:async(name:string,args:Record<string,unknown>)=>{
+  const altered=structuredClone(args);
+  if(name==='claim_pocket_benchmark_case')(altered.p_plan as any[])[2].maxCostMicroUsd=102801;
+  return port.rpc(name,altered);
+ }};
+ await assert.rejects(()=>createIsolatedLedgerBridge(intercepted,ledger,f.identity).claim('d001'));
+ assert.equal(await count(f,'pocket_benchmark_pilot_cases'),0);assert.equal(await count(f,'pocket_benchmark_pilot_calls'),0);
+});
+await test('installation succeeds for a database owner with CREATEROLE but no superuser or bypass RLS',async()=>{
+ await control.query('drop role monaco_ledger_runner');
+ await control.query('create role monaco_qa_owner login nosuperuser createdb createrole noinherit noreplication nobypassrls');
+ await control.query('create database monaco_neon_owner_qa owner monaco_qa_owner');
+ const owner=new Client({...config,user:'monaco_qa_owner',database:'monaco_neon_owner_qa'});await owner.connect();
+ try{await owner.query(prepareNeonLedgerSql());const r=await owner.query("select rolcanlogin,rolsuper,rolbypassrls from pg_roles where rolname='monaco_ledger_runner'");assert.ok(Object.values(r.rows[0]).every(x=>x===false));}
+ finally{await owner.end();await control.query('drop database monaco_neon_owner_qa');await control.query('drop role monaco_qa_owner');}
+});
 await control.end();
