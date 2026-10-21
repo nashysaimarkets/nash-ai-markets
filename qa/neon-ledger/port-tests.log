@@ -1,0 +1,13 @@
+✔ Neon canonical identity is independent of Supabase 20-letter identifiers (3.640242ms)
+✔ connection pins certificate hostname, database and least-privilege role without URI overrides (0.498505ms)
+✔ fixed parameterized dispatcher rejects arbitrary SQL before query; single attempt on failure (1.124298ms)
+✔ transport freezes verified identity and cannot enable dispatch (3.860209ms)
+✔ schema adapter reuses pinned sources and installs no compatibility roles or budget seed (8.534795ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 657.348495

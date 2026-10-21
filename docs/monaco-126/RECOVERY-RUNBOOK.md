@@ -1,3 +1,20 @@
+# Current continuation: protected ledger secret saved
+
+MONACO_FIRST_SIX_LEDGER_KEY is present in monaco-first-six-inference. Owner review, no administrator bypass and exact branch restriction verified. See isolated-runner/CREDENTIAL-STORAGE-RECEIPT.json. No more password handoff is needed. The role remains NOLOGIN; secret presence is not proof of correct authentication. Continue the existing independently owned runner/security/budget work; preserve unknown prior exposure and disabled inference. Historical handoff instructions below are superseded.
+
+# Latest continuation: Neon Free ledger installed; secure credential handoff pending
+
+Resume PR141 at the latest Issue126 checkpoint, tested source2c5bbe11534ca288939025566fe7f097b23b26ff. Parent PR140/f4ee155 remains frozen. Read isolated-runner/SETUP-DECISION.md, SETUP-CONFIG.json and qa/neon-ledger/ACCEPTANCE.json first. This supersedes all historical third-Supabase capacity stops below.
+
+Installed: one Neon Free London ledger, restricted NOLOGIN role, immutable verified physical identity, protected GitHub environment with owner review/no admin bypass and exact invocation-branch restriction.42 affected checks pass, including16 realPG17 checks and strict TypeScript. Current runtime password is not issued/stored; no credentialed job exists. Budget carry-in remains UNKNOWN, not zero, and no allowance is enabled. Original128 unaffected checks are reused.
+
+Next: the correct Neon console sign-in is verified. Complete the prepared secure credential-generation/copy handoff, then paste directly into the named GitHub environment secret without reading clipboard/secret values. The connector issuance attempt did not complete; automatic review blocked screenshot/password revelation. No repeated sign-in, metadata verification, tests or first-six approvals needed. Keep NOLOGIN until storage and existing runner/processor/budget gates are verified. See isolated-runner/SETUP-DECISION.md for exact handoff and restrictions.
+
+No OpenAI key changes/metadata rerun, extra44, Supabase mutations, production deployment/merge, store release, or Work automation changes. Never reset prior spending/history.
+
+---
+# Historical checkpoints — superseded by the Neon continuation above
+
 # Latest outcome: setup approved; zero-cost capacity stop
 
 The owner replied “Approved” to the exact setup package at checkpoint `c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d`. `isolated-runner/OWNER-SETUP-APPROVAL.json` preserves it. Do not ask for the same setup, first-six paid approval or two chart reviewers again.

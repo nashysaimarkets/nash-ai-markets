@@ -1,0 +1,36 @@
+Selected original result lines; full log: https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39598675588
+2026-10-21T12:19:54.0421388Z ##[group]Run node_modules/.bin/tsc --noEmit --allowImportingTsExtensions --allowJs --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck --strict scripts/pocket-monaco-runner-bridge.ts scripts/pocket-monaco-neon-port.ts tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-neon-postgres.test.ts
+2026-10-21T12:19:54.0422580Z [36;1mnode_modules/.bin/tsc --noEmit --allowImportingTsExtensions --allowJs --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck --strict scripts/pocket-monaco-runner-bridge.ts scripts/pocket-monaco-neon-port.ts tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-neon-postgres.test.ts[0m
+2026-10-21T12:19:55.1654846Z ✔ Neon canonical identity is independent of Supabase 20-letter identifiers (0.767599ms)
+2026-10-21T12:19:55.1683135Z ✔ connection pins certificate hostname, database and least-privilege role without URI overrides (0.203813ms)
+2026-10-21T12:19:55.1687040Z ✔ fixed parameterized dispatcher rejects arbitrary SQL before query; single attempt on failure (0.246476ms)
+2026-10-21T12:19:55.1688315Z ✔ transport freezes verified identity and cannot enable dispatch (1.064971ms)
+2026-10-21T12:19:55.1689343Z ✔ schema adapter reuses pinned sources and installs no compatibility roles or budget seed (0.858504ms)
+2026-10-21T12:19:55.1784350Z ℹ tests 5
+2026-10-21T12:19:55.1785251Z ℹ pass 5
+2026-10-21T12:19:55.1785424Z ℹ fail 0
+2026-10-21T12:19:55.1785636Z ℹ cancelled 0
+2026-10-21T12:19:55.1785852Z ℹ skipped 0
+2026-10-21T12:19:55.1804478Z ℹ duration_ms 108.538113
+2026-10-21T12:19:55.4915998Z ✔ empty installed ledger cannot reserve and never assumes unused budget (163.556591ms)
+2026-10-21T12:19:55.6672536Z ✔ missing carry-in remains unknown after verified Neon schema binding (175.927304ms)
+2026-10-21T12:19:55.7501260Z ✔ exact aggregate cap boundary includes carry-in and all18 request reservations (82.650814ms)
+2026-10-21T12:19:55.8275370Z ✔ one microdollar above permitted carry-in rejects atomically (77.003112ms)
+2026-10-21T12:19:55.8980121Z ✔ runtime role has no table, schema creation, membership or private function privileges (70.341642ms)
+2026-10-21T12:19:55.9858748Z ✔ concurrent duplicate claims create exactly one case and three reservations (87.617168ms)
+2026-10-21T12:19:56.0869158Z ✔ concurrent different charts cannot bypass one-chart outstanding exposure lock (100.832369ms)
+2026-10-21T12:19:56.1728976Z ✔ concurrent submit owns exactly one provider dispatch entitlement (85.635693ms)
+2026-10-21T12:19:56.2635736Z ✔ crashed connection rolls back uncommitted atomic reservation (90.352245ms)
+2026-10-21T12:19:56.3571336Z ✔ committed unknown submission survives connection crash and denies retry or void (93.304262ms)
+2026-10-21T12:19:56.4437580Z ✔ immutable prior exposure and receipt resist reset even through admin DML (86.403062ms)
+2026-10-21T12:19:56.5189360Z ✔ unknown or fabricated project/branch/database/key identity cannot reserve (75.083499ms)
+2026-10-21T12:19:56.6034646Z ✔ raw response and chart payload storage paths are denied by SQL (84.224898ms)
+2026-10-21T12:19:56.6854143Z ✔ aggregate cap applies to larger actual costs; no second allowance or held-out run (81.765599ms)
+2026-10-21T12:19:56.7683631Z ✔ later-slot validation failure rolls back earlier reservations and the case row (82.707918ms)
+2026-10-21T12:19:56.8307924Z ✔ installation succeeds for a database owner with CREATEROLE but no superuser or bypass RLS (62.309834ms)
+2026-10-21T12:19:56.8442976Z ℹ tests 16
+2026-10-21T12:19:56.8443661Z ℹ pass 16
+2026-10-21T12:19:56.8443846Z ℹ fail 0
+2026-10-21T12:19:56.8444033Z ℹ cancelled 0
+2026-10-21T12:19:56.8444525Z ℹ skipped 0
+2026-10-21T12:19:56.8444929Z ℹ duration_ms 1627.355308
