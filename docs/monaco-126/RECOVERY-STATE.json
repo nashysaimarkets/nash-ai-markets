@@ -5,7 +5,7 @@
   "worker": {
     "id": "root-neon-ledger-ac5040",
     "status": "LEDGER_INSTALLED_SECURE_HANDOFF_PENDING",
-    "activeTask": "Neon console sign-in verified. Restricted password generation/copy handoff prepared; protected GitHub storage pending. No inference admitted.",
+    "activeTask": "Neon ledger credential stored in protected GitHub environment; presence/protection verified without reading value. Existing execution gates remain; inference disabled.",
     "lastVerifiedActivityAtUtc": "2026-10-21T12:25:48.347Z"
   },
   "ownership": {
@@ -426,10 +426,11 @@
       "sourceCommit": "2c5bbe11534ca288939025566fe7f097b23b26ff",
       "pr": 141,
       "acceptance": "qa/neon-ledger/ACCEPTANCE.json",
-      "credentials": "NOLOGIN; issuance not completed; user generation/copy and concealed protected storage pending",
+      "credentials": "STORED_PRESENCE_VERIFIED; NOLOGIN; authentication not yet tested",
       "budget": "UNKNOWN_NOT_ZERO",
       "consoleSignInVerified": true,
-      "handoff": "See isolated-runner/SETUP-DECISION.md; do not read/reveal password or clipboard values."
+      "handoff": "Completed. Do not repeat sign-in, reset, copy or secret-entry requests.",
+      "credentialStorageReceipt": "docs/monaco-126/isolated-runner/CREDENTIAL-STORAGE-RECEIPT.json"
     }
   },
   "tests": [
@@ -563,7 +564,7 @@
       "exitCode": 0,
       "command": "node scripts/verify-monaco-recovery.mjs --proof docs/monaco-126/qa/recovery-proof.json",
       "proof": "docs/monaco-126/qa/recovery-proof.json",
-      "coverage": "Stopped child checkpoint \u2192 independent child verifies local bare remote SHA/tree/owner \u2192 exactly one local action/commit \u2192 another child NOOP. Wrong owner, changed head, unknown/expired lease and watchdog state/alert-dedup negatives. No real Work restart, network, provider or real branch lease acquisition.",
+      "coverage": "Stopped child checkpoint → independent child verifies local bare remote SHA/tree/owner → exactly one local action/commit → another child NOOP. Wrong owner, changed head, unknown/expired lease and watchdog state/alert-dedup negatives. No real Work restart, network, provider or real branch lease acquisition.",
       "sourceHashes": {
         "policy": "af418cd703de15cac24a73dbfe8c56695b6790a5f42adadff93e8a0dc96f6e06",
         "verifier": "e6be83f7b0b9818bec679303298ec8687845369626035590bdb46f58cb753f23"
@@ -751,7 +752,7 @@
     "neonLedgerSetup": {
       "kind": "OWNER_NEON_ZERO_COST_LEDGER_AMENDMENT_V1",
       "recordedDate": "2026-10-21",
-      "ownerDirective": "OPERATION MONACO \u2014 ZERO-COST TEST LEDGER ALTERNATIVE",
+      "ownerDirective": "OPERATION MONACO — ZERO-COST TEST LEDGER ALTERNATIVE",
       "issueReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6315474964",
       "supersedes": "Only the proposed third Supabase ledger provider; earlier approvals preserved",
       "authorised": "One isolated Neon Free project, necessary restricted database credential and approved protected GitHub storage, after $0/capacity/compatibility/security checks",
@@ -782,7 +783,7 @@
   "untouchedAssets": [
     "main and PR112/120/123/125",
     "Sitesv179/environment34 source and credentials",
-    "owner accepted active\u00a34.99 UUID/customer admission",
+    "owner accepted active£4.99 UUID/customer admission",
     "shared-live Supabase pxlqvaddvghjjhenqmdh and native backend",
     "live Stripe customers/subscriptions/prices",
     "Apple/Google listings/signed builds",
@@ -801,10 +802,10 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "secure-neon-console-connection-for-protected-secret-transfer",
-    "status": "SECURE_CONNECTION_PENDING",
-    "command": "Resume latest Issue126/PR141. Authenticate the already connected Neon account in the secure browser handoff; do not ask for technical IDs or secrets in chat. Then issue only the new restricted runner database password through the provider and store it in protected environment monaco-first-six-inference as MONACO_FIRST_SIX_LEDGER_KEY, without exposing it. Verify role identity and credential binding. Preserve prior budget as unknown until authoritative import. No inference.",
-    "primaryDependency": "Neon connector is connected; console session for safe UI-to-UI credential handoff is not signed in. GitHub connector has no secret-write endpoint.",
+    "id": "existing-isolated-runner-security-budget-completion",
+    "status": "LEDGER_SECRET_STORED_EXECUTION_GATES_PENDING",
+    "command": "Resume latest Issue126 and the separate runner-completion branch owned by f7baa6. Ledger secret presence/protection is verified; do not repeat password handoff. Complete existing executor/key binding, processor-security and authoritative budget conditions before controlled authentication or inference. Keep NOLOGIN and inference disabled until applicable checks authorize activation.",
+    "primaryDependency": "Existing reviewed execution/security and authoritative prior-budget evidence; stored password correctness is not proven by secret presence.",
     "prohibitedNextAction": "No OpenAI key creation, metadata rerun, two reviewers, allowance reset, extra44, plan upgrade, Supabase changes, deployment, merge or automation changes."
   },
   "rollback": {

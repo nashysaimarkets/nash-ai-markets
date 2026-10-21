@@ -1,3 +1,7 @@
+# Current continuation: protected ledger secret saved
+
+MONACO_FIRST_SIX_LEDGER_KEY is present in monaco-first-six-inference. Owner review, no administrator bypass and exact branch restriction verified. See isolated-runner/CREDENTIAL-STORAGE-RECEIPT.json. No more password handoff is needed. The role remains NOLOGIN; secret presence is not proof of correct authentication. Continue the existing independently owned runner/security/budget work; preserve unknown prior exposure and disabled inference. Historical handoff instructions below are superseded.
+
 # Latest continuation: Neon Free ledger installed; secure credential handoff pending
 
 Resume PR141 at the latest Issue126 checkpoint, tested source2c5bbe11534ca288939025566fe7f097b23b26ff. Parent PR140/f4ee155 remains frozen. Read isolated-runner/SETUP-DECISION.md, SETUP-CONFIG.json and qa/neon-ledger/ACCEPTANCE.json first. This supersedes all historical third-Supabase capacity stops below.

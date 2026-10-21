@@ -1,3 +1,7 @@
+# Current setup: ledger credential stored; execution disabled
+
+The owner completed password entry. GitHub shows MONACO_FIRST_SIX_LEDGER_KEY in the correct protected environment; owner review, disabled administrator bypass and exact invocation-branch restriction were reverified. See CREDENTIAL-STORAGE-RECEIPT.json. No password value was inspected. Storage presence is verified; database authentication is not yet tested. The role remains NOLOGIN. Do not repeat sign-in, initialization, reset, copy or entry requests without fresh evidence of a problem. Existing runner/key, processor-security and authoritative budget gates remain. The records below describe the earlier setup and failed handoff and are superseded for credential-storage status.
+
 # Current setup: isolated Neon Free ledger installed, credential handoff pending
 
 The owner’s 21 October Neon-only amendment supersedes the proposed third Supabase project. The original setup approval remains saved in OWNER-SETUP-APPROVAL.json; first-six paid approval and internal-diagnostics amendment remain unchanged. Do not ask for those approvals or two human reviewers again. Original proposal: immutable PR140 checkpoint f4ee155f42a32aa50350c79f27674226542d6a7f.
