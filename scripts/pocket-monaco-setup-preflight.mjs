@@ -110,8 +110,9 @@ export async function inspectSetupLedger(config, evidence, context, credentials,
     requireFact(typeof credentials?.existingKey === 'string' &&
       hash(credentials.existingKey) === admission.identity.keyFingerprintSha256,
     'SETUP_EXISTING_KEY_MISMATCH');
+    // Same provider-compatible minimum as the auth probe and SQL transport.
     requireFact(typeof credentials?.ledgerPassword === 'string' &&
-      credentials.ledgerPassword.length >= 24, 'SETUP_LEDGER_CREDENTIAL_MISSING');
+      credentials.ledgerPassword.length >= 12, 'SETUP_LEDGER_CREDENTIAL_MISSING');
     const options = dependencies.connectionOptions(admission.neon, credentials.ledgerPassword);
     // The existing inspection RPC takes FOR UPDATE locks to read an atomic
     // balance; a read-only transaction would reject it. This entry point only

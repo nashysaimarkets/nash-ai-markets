@@ -116,6 +116,7 @@ function validateContext(context, identityEvidenceBytes) {
  * Password reads occur only after the immutable source/evidence checks. */
 export async function probeNeonAuthentication({context, identityEvidenceBytes, readLedgerPassword, createClient}) {
   let client;
+  let failedCheck = 'LEDGER_IDENTITY';
   const common = {kind:'MONACO_NEON_AUTH_ONLY_V1', providerRequests:0, databaseWrites:0,
     paidDispatchEnabled:false, budgetHeadroom:'NOT_INSPECTED',
     githubSecretBinding:'NOT_ATTESTED_BY_THIS_LIBRARY',
@@ -123,23 +124,32 @@ export async function probeNeonAuthentication({context, identityEvidenceBytes, r
   try {
     const admission = validateContext(context, identityEvidenceBytes);
     requireValue(typeof readLedgerPassword === 'function' && typeof createClient === 'function');
+    failedCheck = 'LEDGER_PASSWORD_INPUT';
     const password = readLedgerPassword();
-    requireValue(typeof password === 'string' && password.length >= 24);
+    // Neon documents 12+ character composition, not a 24-character minimum.
+    // This shape check is not authentication; TLS, login and ACL checks follow.
+    requireValue(typeof password === 'string' && password.length >= 12);
+    failedCheck = 'LEDGER_CLIENT';
     client = createClient({host:NEON_AUTH_PINS.endpointHost, port:5432,
       database:NEON_AUTH_PINS.databaseName, user:NEON_AUTH_PINS.roleName, password,
       ssl:{rejectUnauthorized:true, servername:NEON_AUTH_PINS.endpointHost},
       options:'-c default_transaction_read_only=on', connectionTimeoutMillis:10000,
       statement_timeout:15000, query_timeout:20000, application_name:'monaco-neon-auth-only'});
+    failedCheck = 'LEDGER_CONNECTION';
     await client.connect();
+    failedCheck = 'LEDGER_TLS';
     const tlsSocket = verifiedClientTls(client);
+    failedCheck = 'LEDGER_QUERY';
     const result = await client.query(NEON_AUTH_CATALOG_SQL);
+    failedCheck = 'LEDGER_TLS';
     requireValue(verifiedClientTls(client) === tlsSocket);
+    failedCheck = 'LEDGER_CATALOG';
     validateNeonAuthCatalog(result?.rows);
     return {...common, status:'PASS', ...admission, passwordAuthenticationVerified:true,
       limitedPrivilegesVerified:true, schemaShapeVerified:true, clientTlsVerified:true,
       backendTlsObserved:result.rows[0].tls_active};
   } catch {
-    return {...common, status:'HOLD',
+    return {...common, status:'HOLD', failedCheck,
       reason:'Pinned source, identity evidence, authentication or catalog checks failed; no retry performed.'};
   } finally {
     if (client) {try {await client.end();} catch { /* Never expose driver errors. */ }}

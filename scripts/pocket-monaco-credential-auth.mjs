@@ -6,23 +6,36 @@ import {pathToFileURL} from 'node:url';
 import {probeNeonAuthentication} from './pocket-monaco-neon-auth-probe.mjs';
 const hash=x=>createHash('sha256').update(x).digest('hex');
 const requireValue=x=>{if(!x)throw Error('CREDENTIAL_AUTH_HOLD');};
+// Only code-owned stage names may cross the public log boundary. Never forward
+// a driver error, exception message, credential length, prefix or partial value.
+const ledgerFailureStages=new Set(['LEDGER_IDENTITY','LEDGER_PASSWORD_INPUT','LEDGER_CLIENT',
+ 'LEDGER_CONNECTION','LEDGER_TLS','LEDGER_QUERY','LEDGER_CATALOG']);
 export async function authenticateStoredCredentials({context,identityBytes,storageBytes,readInferenceKey,readLedgerPassword,createClient,probe=probeNeonAuthentication}){
+ let failedCheck='INVOCATION';
  try{
+  // Snapshot before any asynchronous probe; callers cannot relabel accepted evidence.
+  context={...context};identityBytes=Buffer.from(identityBytes);storageBytes=Buffer.from(storageBytes);
   requireValue(context.repository==='nashysaimarkets/nash-ai-markets' && context.ref==='refs/heads/monaco-first-six-inference-126-20261021' && context.event==='push' && context.attempt==='1');
+  failedCheck='SOURCE';
   requireValue(/^[a-f0-9]{40}$/.test(context.reviewedSourceSha??'') && context.sourceSha===context.reviewedSourceSha);
+  failedCheck='STORAGE_EVIDENCE';
   requireValue(/^[a-f0-9]{64}$/.test(context.reviewedStorageSha256??'') && hash(storageBytes)===context.reviewedStorageSha256);
+  failedCheck='STORAGE_IDENTITY';
   const storage=JSON.parse(Buffer.from(storageBytes).toString('utf8'));
   requireValue(storage.kind==='INFERENCE_CREDENTIAL_STORED_RUNTIME_BINDING_PENDING' && storage.keyTrackingId==='key_aD5pc20EZBLGECNC' && storage.projectId==='proj_LTmAIE2Ve7gUAFJ9M74ZxIBI' && storage.environment==='monaco-first-six-inference' && storage.secretName==='MONACO_FIRST_SIX_OPENAI_API_KEY' && storage.secretPresent===true && storage.secretValuesRecorded===false);
+  failedCheck='INFERENCE_KEY_INPUT';
   const key=readInferenceKey();requireValue(typeof key==='string' && /^sk-proj-[A-Za-z0-9_-]{40,}$/.test(key));
+  failedCheck='LEDGER_AUTHENTICATION';
   const auth=await probe({context,identityEvidenceBytes:identityBytes,readLedgerPassword,createClient});
-  requireValue(auth.status==='PASS' && auth.passwordAuthenticationVerified===true && auth.clientTlsVerified===true && auth.databaseWrites===0 && auth.providerRequests===0);
+  if(auth?.status!=='PASS' && ledgerFailureStages.has(auth?.failedCheck))failedCheck=auth.failedCheck;
+  requireValue(auth?.status==='PASS' && auth.passwordAuthenticationVerified===true && auth.clientTlsVerified===true && auth.databaseWrites===0 && auth.providerRequests===0);
   return {kind:'MONACO_PROTECTED_CREDENTIAL_AUTH_V1',status:'PASS',sourceSha:context.sourceSha,
    runId:context.runId,keyTrackingId:storage.keyTrackingId,projectId:storage.projectId,
    keyFingerprintSha256:hash(key),storageEvidenceSha256:hash(storageBytes),
    keyIdentityBasis:'OWNER_COMPLETED_CONTROL_PLANE_CREATION_AND_DIRECT_SECRET_TRANSFER',
    providerAuthenticationVerified:false,providerRequests:0,databaseWrites:0,paidDispatchEnabled:false,
    ledgerAuthentication:{...auth,githubSecretBinding:'MONACO_FIRST_SIX_LEDGER_KEY_FROM_PROTECTED_ENVIRONMENT'}};
- }catch{return {kind:'MONACO_PROTECTED_CREDENTIAL_AUTH_V1',status:'HOLD',providerRequests:0,databaseWrites:0,paidDispatchEnabled:false,reason:'Protected credential authentication failed; no values or driver details retained.'};}
+ }catch{return {kind:'MONACO_PROTECTED_CREDENTIAL_AUTH_V1',status:'HOLD',failedCheck,providerRequests:0,databaseWrites:0,paidDispatchEnabled:false,reason:'Protected credential authentication failed; no values or driver details retained.'};}
 }
 if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href){
  try{
