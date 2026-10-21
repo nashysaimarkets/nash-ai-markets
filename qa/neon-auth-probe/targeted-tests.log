@@ -1,0 +1,23 @@
+✔ auth-only succeeds without budget, processor or provider state; exactly one fixed catalog query (41.753139ms)
+✔ fixed connection uses only pinned endpoint, database and role with verified TLS, read-only mode and timeouts (2.797425ms)
+✔ wrong repository, unreviewed source and altered evidence refuse before any password access (10.111607ms)
+✔ even hash-pinned evidence cannot substitute any configured Neon target field (6.708666ms)
+✔ malformed evidence bytes and wrong evidence kind refuse without exposing parser input (4.733447ms)
+✔ missing or short ledger password never creates a database client (4.744367ms)
+✔ every missing, null, false or string-valued security fact refuses catalog acceptance (4.496134ms)
+✔ backend TLS false is observational; a certificate-verified client socket is still mandatory (3.058518ms)
+✔ declared TLS config, plain objects and unverified/wrong-host client sockets cannot authenticate (19.023707ms)
+✔ client socket substitution during the query cannot reuse earlier TLS proof (3.590235ms)
+✔ wrong database, SET ROLE-style identity or extra/missing result rows refuse (0.964941ms)
+✔ connect failures never retry, query, or disclose credentials; the client is closed (2.786839ms)
+✔ query failure and rejected catalog each close once and do not retry (6.037791ms)
+✔ accepted source/evidence identity cannot change across asynchronous connection (4.646094ms)
+✔ fixed SQL has no statement chaining, private table access or ledger/provider entrypoint invocation (5.766905ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 210.114842

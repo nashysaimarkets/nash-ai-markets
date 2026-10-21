@@ -19,7 +19,9 @@
       "monaco-offline-executor-126-20261020-3e0cde": false,
       "monaco-internal-diagnostics-126-20261021-3e0cde": false,
       "monaco-isolated-runner-126-20261021-694d2e": false,
-      "monaco-neon-ledger-126-20261021-ac5040": false
+      "monaco-neon-ledger-126-20261021-ac5040": false,
+      "monaco-launch-completion-126-20261021-e48b82": false,
+      "monaco-ledger-auth-126-20261021": false
     }
   }
 }

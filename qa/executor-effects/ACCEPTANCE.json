@@ -1,0 +1,26 @@
+{
+  "kind": "MONACO_EXECUTOR_EFFECTS_OFFLINE_ACCEPTANCE_V1",
+  "command": "node --test --test-isolation=none tests/pocket-monaco-executor-effects.test.mjs",
+  "exitCode": 0,
+  "durationSeconds": 1.723,
+  "tests": 16,
+  "passed": 16,
+  "failed": 0,
+  "sourceSha256": {
+    "scripts/pocket-monaco-executor-effects.mjs": "4d9b4866f0146bed7082f98ea01ae828edfbb32410da3275415063c5e1b5ec6b",
+    "tests/pocket-monaco-executor-effects.test.mjs": "593c161fc160dcda719947b63e39b0de7d5049161ea854a5f0c36b04a9ff800f"
+  },
+  "rawLog": "qa/executor-effects/targeted-tests.log",
+  "independentReview": "PASS: bounded inert effect adapters and synthetic local filesystem. Explicit SDK metadata retention and immutable in-memory existing-key binding reviewed.",
+  "fingerprintCompatibility": "Matches frozen original app/api/pocket/torture/provider-spend.ts canonical image-redacted fingerprint algorithm.",
+  "limits": [
+    "No real SDK construction or invocation",
+    "No network/provider/metadata/ledger calls",
+    "No credential or private packet read",
+    "Local fsync durability only; no persistent private mount or hosted retention acceptance",
+    "No original sources changed and no broad suites rerun"
+  ],
+  "providerRequests": 0,
+  "credentialedJobExecuted": false,
+  "finalRunReason": "One concrete mutable-client key gap fixed after initial15-check acceptance. Repeated only affected effects16 checks; no prior setup/core/app suites rerun."
+}

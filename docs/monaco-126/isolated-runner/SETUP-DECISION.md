@@ -1,3 +1,11 @@
+# Current continuation: independent authentication and recovered runner
+
+The21October manual-launch amendment authorises necessary setup while keeping extra purchases separate. See ../OWNER-LAUNCH-AMENDMENT-2026-10-21.json and ../LAUNCH-CHECKLIST-2026-10-21.md. Protected password storage remains COMPLETE. No reset/paste step is required.
+
+The recovered original54check runner remains inert. A fixed Neon-only connection probe can check authentication and restricted privileges without an inference key, budget seed or processor admission. The actual provider-managed role login succeeded, privileges/schema matched and NOLOGIN was restored; see qa/neon-auth-probe/HOSTED-AUTHENTICATION.json. This does not verify GitHub's password or externalTLS. The final client probe independently checks actual certificate-protected transport. The setup workflow remains an UNBOUND template; no credentialed branch was invoked. Its SQL-driver dependency graph is now locked.
+
+Current account controls/budget require an authenticated OpenAI session; current workspace reaches sign-in. Real private packet/output transport and the final protected one-shot wrapper still need completion. No paid execution or baseline is manufactured. Historical setup instructions below are superseded where inconsistent.
+
 # Current setup: ledger credential stored; execution disabled
 
 The owner completed password entry. GitHub shows MONACO_FIRST_SIX_LEDGER_KEY in the correct protected environment; owner review, disabled administrator bypass and exact invocation-branch restriction were reverified. See CREDENTIAL-STORAGE-RECEIPT.json. No password value was inspected. Storage presence is verified; database authentication is not yet tested. The role remains NOLOGIN. Do not repeat sign-in, initialization, reset, copy or entry requests without fresh evidence of a problem. Existing runner/key, processor-security and authoritative budget gates remain. The records below describe the earlier setup and failed handoff and are superseded for credential-storage status.

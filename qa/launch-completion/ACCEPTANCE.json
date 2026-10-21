@@ -1,0 +1,60 @@
+{
+  "kind": "MONACO_MANUAL_LAUNCH_CONTINUATION_ACCEPTANCE_V1",
+  "savedAtUtc": "2026-10-21T18:53:34.385309+00:00",
+  "parentCommit": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
+  "ownerAmendment": "docs/monaco-126/OWNER-LAUNCH-AMENDMENT-2026-10-21.json",
+  "retainedRunnerChecks": 54,
+  "retainedRunnerHashes": {
+    "scripts/pocket-monaco-setup-preflight.mjs": "3b63fd5fc0df41c56b65e93e3a0315c9bda71f4c9bfb1881362389d8480fe257",
+    "tests/pocket-monaco-setup-preflight.test.mjs": "4b0e773289399f9b4364fa6a0ee1b542b49a247f8d59ca212311a755e2a3c7c2",
+    "scripts/pocket-monaco-executor-effects.mjs": "4d9b4866f0146bed7082f98ea01ae828edfbb32410da3275415063c5e1b5ec6b",
+    "tests/pocket-monaco-executor-effects.test.mjs": "593c161fc160dcda719947b63e39b0de7d5049161ea854a5f0c36b04a9ff800f",
+    "scripts/pocket-monaco-isolated-executor.mjs": "d69c5acd55c74f44b99838776ae3ec48180507af98d67982b63db09b1a41d0e0",
+    "scripts/pocket-monaco-first-six-executor.ts": "0b0a38b34385c24b83a270a2718049cd162f2678297751cfff53c08614b1866f",
+    "scripts/pocket-monaco-executor-bootstrap.mjs": "8e0c0efeed196f4f3372f7585345c451e249c60fb52fb546b878fb62d68ea37a",
+    "tests/pocket-monaco-isolated-executor.test.mjs": "cc4bd39c864db8c93f6743f67884ab14c94fb6cc71409935dd8389a361698ce8",
+    "tests/pocket-monaco-first-six-executor.test.mjs": "65d528a38bab65be8fc87834d6b2f36bffb611b909eb75e44c6473f8fb864b47",
+    "qa/executor-orchestration/core-tests.log": "d01e39e75642a7598ce2eeb59d2d77acee46364a0a9e60dd583284102269ad66",
+    "qa/executor-orchestration/strict-adapter-tests.log": "a96fbd4ffc4ecc5ac2397a7a8801fcfa182e47baaacec9573402d651d3fae91f"
+  },
+  "newAuthProbeChecks": 15,
+  "newAuthProbeAcceptance": "qa/neon-auth-probe/ACCEPTANCE.json",
+  "hostedAuthentication": "qa/neon-auth-probe/HOSTED-AUTHENTICATION.json",
+  "hostedRoleAuthentication": true,
+  "hostedRoleRestoredNoLogin": true,
+  "githubSecretAuthentication": false,
+  "clientTlsHandshakeObserved": false,
+  "driverLock": {
+    "packages": 14,
+    "version": "pg8.16.3",
+    "sha256": "0eeab249c79bc52a988a669413f07eeb6b57c90792883d0f8b77eaac76abe818",
+    "sourceLockSha256": "9465cbc4abe102799acb48b252d8ca495452ff6bff3ec1722f1a7a4185385cbb",
+    "offlinePackageLockResolution": "PASS",
+    "originalTemplateChange": "Replace mutable transitive npm install with reviewed14-package npm ci lock. Template stays UNBOUND and uninvoked."
+  },
+  "retainedProof": {
+    "ledgerChecks": 42,
+    "internalDiagnosticChecks": 128,
+    "applicationChecks": 1190,
+    "repeated": false
+  },
+  "actualProviderRequests": 0,
+  "actualMeasuredCases": 0,
+  "paidCostUsd": 0,
+  "newCredentials": 0,
+  "budgetSeedsOrReservations": 0,
+  "protectedWorkflowInvocations": 0,
+  "productionChanges": 0,
+  "deployment": false,
+  "releaseReadiness": false,
+  "openaiAccountAccess": "SIGNED_OUT_OBSERVED",
+  "schedules": {
+    "active": 0,
+    "paused": 67,
+    "completed": 11
+  },
+  "checklist": "docs/monaco-126/LAUNCH-CHECKLIST-2026-10-21.md",
+  "review": "Independent agent review of recovered execution effects, budget/identity guards, auth-only separation and TLS boundary; root read corrected source and validated retained hosted catalog without a second query.",
+  "publicationSecretScan": "qa/launch-completion/SECRET-SCAN.json",
+  "limitation": "Standard Node secret gate could not spawn git under current executor policy; equivalent independent pattern/self-test scan passed. No exact-source hosted CI or production readiness is claimed."
+}

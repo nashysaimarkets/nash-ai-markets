@@ -1,40 +1,44 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T12:25:48.347Z",
+  "savedAtUtc": "2026-10-21T18:51:08.435842+00:00",
   "worker": {
-    "id": "root-neon-ledger-ac5040",
-    "status": "LEDGER_INSTALLED_SECURE_HANDOFF_PENDING",
-    "activeTask": "Neon ledger credential stored in protected GitHub environment; presence/protection verified without reading value. Existing execution gates remain; inference disabled.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T12:25:48.347Z"
+    "id": "root-launch-e48b82",
+    "status": "CHECKPOINTING_MANUAL_LAUNCH_WORK",
+    "activeTask": "Recover reviewed runner, resolve auth-only circular dependency and save all launch tasks; actual OpenAI account access remains unavailable.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T18:51:08.435842+00:00"
   },
   "ownership": {
-    "branch": "monaco-neon-ledger-126-20261021-ac5040",
-    "writer": "root-neon-ledger-ac5040",
-    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6315474964",
-    "status": "FROZEN_HANDOFF",
-    "baseCheckpoint": "f4ee155f42a32aa50350c79f27674226542d6a7f",
-    "expectedHead": "2c5bbe11534ca288939025566fe7f097b23b26ff",
-    "expectedHeadResolution": "Final Issue126 receipt pins enclosing documentation commit; tested source is 2c5bbe11534ca288939025566fe7f097b23b26ff",
+    "branch": "monaco-launch-completion-126-20261021-e48b82",
+    "writer": "root-launch-e48b82",
+    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6323653166",
+    "status": "EXCLUSIVE_DISJOINT_SOURCE_WRITER",
+    "baseCheckpoint": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
+    "expectedHead": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
+    "expectedHeadResolution": "The final Issue126 receipt supplies the enclosing published commit; the expectedHead above is the frozen parent, not a claim about the successor branch. Resume the saved successor after verifying its actual head.",
+    "otherBranchesUntouched": true,
+    "recoveredWorker": "f7baa6 local runner work read/copied; its original branch and files untouched",
     "ownedPaths": [
-      "scripts/pocket-monaco-runner-bridge.ts",
-      "supabase/proposed/monaco-isolated-runner.sql",
-      "tests/pocket-monaco-runner-bridge.test.ts",
-      "docs/monaco-126/isolated-runner",
-      "qa/isolated-runner",
-      "docs/monaco-126/RECOVERY-STATE.json",
-      "docs/monaco-126/RECOVERY-RUNBOOK.md",
-      "vercel.json",
-      "database/neon",
-      "scripts/pocket-monaco-neon-port.ts",
-      "scripts/prepare-monaco-neon-ledger.mjs",
-      "tests/pocket-monaco-neon-port.test.ts",
-      "tests/pocket-monaco-neon-postgres.test.ts",
-      "qa/neon-ledger",
-      ".github/workflows/monaco-neon-ledger-qa.yml"
-    ],
-    "verificationBasis": "Parent/Issue126 verified before local clone; proposed branch absent; claim6312387711 is coordination evidence, not an atomic lease; first published tree disables deployments.",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/141"
+      "scripts/pocket-monaco-*executor*",
+      "scripts/pocket-monaco-setup-preflight.mjs",
+      "scripts/pocket-monaco-neon-auth-probe.mjs",
+      "tests/pocket-monaco-*executor*",
+      "tests/pocket-monaco-setup-preflight.test.mjs",
+      "tests/pocket-monaco-neon-auth-probe.test.mjs",
+      "tools/monaco-sql-driver",
+      "qa/executor-completion",
+      "qa/executor-effects",
+      "qa/executor-orchestration",
+      "qa/setup-preflight",
+      "qa/neon-auth-probe",
+      "qa/launch-completion",
+      "docs/monaco-126/RECOVERY-*",
+      "docs/monaco-126/LAUNCH-CHECKLIST-2026-10-21.md",
+      "docs/monaco-126/OWNER-LAUNCH-AMENDMENT-2026-10-21.json",
+      "docs/monaco-126/isolated-runner/SETUP-*",
+      ".github/workflows/monaco-first-six-setup.yml",
+      "vercel.json"
+    ]
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -64,7 +68,10 @@
     "isolatedRunnerSourceTree": "9a8c798c010e63fba07f4deff23510f095290772",
     "neonLedgerSourceSha": "2c5bbe11534ca288939025566fe7f097b23b26ff",
     "neonLedgerBranch": "monaco-neon-ledger-126-20261021-ac5040",
-    "neonLedgerSourceTree": "f2bec613166a6d84191eceadb9088b4690701a2b"
+    "neonLedgerSourceTree": "f2bec613166a6d84191eceadb9088b4690701a2b",
+    "launchContinuationParent": "8b88d5eff668808888632b1e2f05b5c415f2dbbb",
+    "launchContinuationBranch": "monaco-launch-completion-126-20261021-e48b82",
+    "launchChecklist": "docs/monaco-126/LAUNCH-CHECKLIST-2026-10-21.md"
   },
   "tracks": {
     "core": {
@@ -717,22 +724,25 @@
   "watchdog": {
     "id": "6ad67a914bf48191b7f2d48d4325bf83",
     "title": "Monaco Crash Recovery",
-    "state": "PAUSED_BLOCKED_EXTERNAL",
+    "state": "ALL_SCHEDULES_PAUSED_BY_OWNER",
     "schedule": "every2hours",
     "timezone": "Europe/London",
     "automaticWorkRelaunchSupported": false,
     "duplicatesCreated": 0,
     "alertPolicy": "One possible-stall alert per unchanged checkpoint; explicit RUNNING, verified >2h inactivity, no newer tools/CI/worker/handoff; never releases writer lease",
     "oldStaleQaPaused": "6ad4a1dae13481919d0270149dc9eb69",
-    "pauseReason": "Existing watchdog remains paused; no settings changed. Metadata complete. Licensed corpus, provider/finance, signed devices and live activation remain external; current Work session independently executes safe source tasks.",
-    "actualDelivery": "UNTESTED; offline policy proof does not establish real notification delivery/deduplication"
+    "pauseReason": "Owner21October request: stop all scheduled work; scheduler shows zero enabled,67paused,11completed, no nextpage. Do not create/resume schedules.",
+    "actualDelivery": "UNTESTED; offline policy proof does not establish real notification delivery/deduplication",
+    "activeTasks": 0,
+    "pausedTasks": 67,
+    "completedTasks": 11
   },
   "approvals": {
-    "productionDeploy": false,
-    "mainMerge": false,
-    "persistentSharedLiveSql": false,
+    "productionDeploy": true,
+    "mainMerge": true,
+    "persistentSharedLiveSql": true,
     "newCredentials": false,
-    "storesRelease": false,
+    "storesRelease": true,
     "igOrders": false,
     "outreachPublication": false,
     "benchmark": "Existing separate max$5 approval does not bypass runtime/financial/licence admission; no dispatch permitted here",
@@ -767,6 +777,22 @@
       "productionOrMergeAllowed": false,
       "automationsChanged": false,
       "requestSameApprovalAgain": false
+    },
+    "legacyPreLaunchAmendmentFlags": {
+      "productionDeploy": false,
+      "mainMerge": false,
+      "persistentSharedLiveSql": false,
+      "newCredentials": false,
+      "storesRelease": false,
+      "igOrders": false,
+      "outreachPublication": false
+    },
+    "launchCompletionAmendment": {
+      "record": "docs/monaco-126/OWNER-LAUNCH-AMENDMENT-2026-10-21.json",
+      "receipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6323653166",
+      "meaning": "Necessary launch actions authorised after actual technical/security/device acceptance. Do not ask repeatedly. Earlier blanket no-deployment/no-merge/no-store procedural restrictions are superseded; paid-scope and preservation conditions remain.",
+      "extraPurchasesRequireApproval": true,
+      "credentialsMeaning": "Reuse existing secure credentials; broad owner authority covers necessary secure setup, but does not imply disclosure or unneeded replacement."
     }
   },
   "budget": {
@@ -778,7 +804,9 @@
     "paidCostUsdThisContinuation": 0,
     "verifiedFirstSixHeadroomMicroUsd": null,
     "latestEvidence": "qa/isolated-runner/BUDGET-RECONCILIATION.json",
-    "headroomReason": "Saved exports end18Oct and lack complete programme/key/request linkage; current prior spent/reserved/unresolved remain unknown. No absent-ledger reset."
+    "headroomReason": "Saved exports end18Oct and lack complete programme/key/request linkage; current prior spent/reserved/unresolved remain unknown. No absent-ledger reset.",
+    "authOnlyChanges": "Temporarily enabled existing restricted role, ran one fixed catalog query through provider-managed role login, restored NOLOGIN. No allowance/baseline/request/call rows created.",
+    "currentAccountAccess": "OpenAI usage page is signed out in current browser; no new billing or sharing evidence obtained."
   },
   "untouchedAssets": [
     "main and PR112/120/123/125",
@@ -792,21 +820,21 @@
     "Frozen PR127/128/129/130/131/132 source heads"
   ],
   "externalGates": [
-    "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
-    "INTERNAL DIAGNOSTICS AMENDMENT6309011401: no human reviewers required for first-six internal source/rule diagnostics. Original expert-reference/release acceptance remains unresolved, but do not ask for two reviewers as the next diagnostic action. Weak4h unscored; 44 held-out unchanged. Source grants retained; no licensing research repeats.",
-    "Neon ledger installed; runner credential secure handoff pending. Existing isolated inference executor/key binding, actual processor-security acceptance and authoritative headroom >=1917600 microUSD within original aggregate$5 remain required.",
-    "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
-    "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
-    "Signed iOS/Android resources, physical devices and real store/customer lifecycle acceptance",
-    "Actual IGDEMO/provider/data rights separately; core launch independent",
-    "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
+    "Current signed-in OpenAI Platform access for read-only project controls/current usage; do not rerun metadata or ask for new key/IDs.",
+    "Authoritative original$5 prior exposure/reservations through execution cutoff; retain historical$2 separately and import conservative carry-in; >=1917600microUSD required.",
+    "Existing inference-key/source/request binding, confidential private packet/output path and reviewed one-shot protected execution wrapper; GitHub saved password still unauthenticated.",
+    "Firstsix real diagnostics0/6, subsequent measured fixes and separately authorised held-out evaluation; no two-reviewer prerequisite for internal diagnostics.",
+    "Compatible commerce mounting, shared-live cutover, customer/signed-event acceptance under current owner authority.",
+    "Existing Mac/Xcode/signing and physical iPhone; existing Android/Play signing/resources and real device/store lifecycles.",
+    "One final integrated source/preview acceptance, compatible production/store release, rollback and launch monitoring.",
+    "IGdemo and rebrand remain independent of core launch."
   ],
   "nextSafeAction": {
-    "id": "existing-isolated-runner-security-budget-completion",
-    "status": "LEDGER_SECRET_STORED_EXECUTION_GATES_PENDING",
-    "command": "Resume latest Issue126 and the separate runner-completion branch owned by f7baa6. Ledger secret presence/protection is verified; do not repeat password handoff. Complete existing executor/key binding, processor-security and authoritative budget conditions before controlled authentication or inference. Keep NOLOGIN and inference disabled until applicable checks authorize activation.",
-    "primaryDependency": "Existing reviewed execution/security and authoritative prior-budget evidence; stored password correctness is not proven by secret presence.",
-    "prohibitedNextAction": "No OpenAI key creation, metadata rerun, two reviewers, allowance reset, extra44, plan upgrade, Supabase changes, deployment, merge or automation changes."
+    "id": "continue-authenticated-account-and-protected-runner",
+    "status": "MANUAL_LAUNCH_WORK_CHECKPOINTED_ACCESS_GAP",
+    "command": "Read LAUNCH-CHECKLIST-2026-10-21.md and newest Issue126 receipt. Keep all schedulesoff. Reuse recovered54-check runner evidence and new auth-probe evidence. Use an authenticated OpenAI Platform session to verify current usage and actual project controls once; finish private transfer/wrapper and GitHub-secret authentication. No resets/paste/repeated approval or metadata rerun. Continue remaining independent launch tasks without treating prior blanket procedural prohibitions as current authority.",
+    "primaryDependency": "Current workspace browser reaches OpenAI login. Budget and actual account controls remain unobserved; real provider run not ready.",
+    "prohibitedNextAction": "No new purchase/paid scope, fabricated zero baseline, secrets in chat/source, repeated password handoff, revived schedules, or unverified release."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

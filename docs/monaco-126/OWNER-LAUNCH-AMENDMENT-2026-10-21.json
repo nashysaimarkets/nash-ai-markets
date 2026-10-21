@@ -1,0 +1,27 @@
+{
+  "kind": "OWNER_MANUAL_LAUNCH_COMPLETION_AMENDMENT_V1",
+  "date": "2026-10-21",
+  "owner": "Nash",
+  "receipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6323653166",
+  "request": "Stop all scheduled works. List ALL tasks to launch the new app. Full approval for necessary work. Ask before extra purchases. Extreme data saving.",
+  "necessaryLaunchWorkAuthorised": true,
+  "repeatEngineeringApprovalRequired": false,
+  "additionalPurchasesRequireSeparateApproval": true,
+  "newPaidScopeAssumed": false,
+  "scope": [
+    "Necessary engineering, integrations, secure setup and testing",
+    "Verified compatible production/database cutover and main integration after actual acceptance",
+    "Store submission/release after platform/device acceptance"
+  ],
+  "conditions": [
+    "Retain accurate proof of scanner, security, finance and device acceptance",
+    "Reuse existing credentials and infrastructure when sufficient; do not disclose secrets",
+    "Preserve current customer ownership, price and financial history",
+    "No broker dealing or unsolicited person-directed outreach",
+    "Do not treat authority as evidence or automatically activate a paid workflow"
+  ],
+  "allSchedulesMustRemainOff": true,
+  "existingFirstSixConditionalPaidApprovalPreserved": true,
+  "extra44PaidScopeAuthorised": false,
+  "historicalUnresolvedAmountsRemainUnknown": true
+}
