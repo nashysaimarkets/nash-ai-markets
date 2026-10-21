@@ -16,7 +16,8 @@
       "monaco-release-completion-126-20261020-f8cd93": false,
       "monaco-scanner-corpus-126-20261020-3e0cde": false,
       "monaco-benchmark50-126-20261020-3e0cde": false,
-      "monaco-offline-executor-126-20261020-3e0cde": false
+      "monaco-offline-executor-126-20261020-3e0cde": false,
+      "monaco-internal-diagnostics-126-20261021-3e0cde": false
     }
   }
 }

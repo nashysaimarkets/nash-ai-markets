@@ -9,6 +9,8 @@ import { tmpdir } from 'node:os';
 import { join, dirname, relative, isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { types } from 'node:util';
+import { isDeepStrictEqual } from 'node:util';
+import { INTERNAL_DIAGNOSTIC_PROTOCOL } from './pocket-monaco-internal-diagnostics.ts';
 import { verifyPocketBenchmarkEnvelope, type BenchmarkCallSlot } from '../app/api/pocket/torture/provider-spend.ts';
 import { recoverPrecisionGeometry } from '../app/api/pocket/precision-fallback.ts';
 import { calibratePocketAnalysis } from '../app/api/pocket/analysis-calibration.ts';
@@ -108,6 +110,10 @@ export function assertAdmission(admission: Admission | undefined, material: Case
   }
   check(admission.reviews.find(r=>r.kind==='primary')!.reviewer !== admission.reviews.find(r=>r.kind==='independent')!.reviewer, 'Separate reference reviewers required');
   check(admission.reviews.length===6, 'Unknown/duplicate approval');
+  return {binding:clone(b),...verifyMaterial(material)};
+}
+/** Common exact-byte checks; no human/paid admission is implied by this pure result. */
+export function verifyMaterial(material:CaseMaterial) {
   verifyScannerSources();
   for (const name of ['input','image','bars','sourceZip','licence','calibration'] as const) {
     const a=material.artifacts[name]; check(a && isHash(a.sha256) && sha256(a.bytes)===a.sha256, `Exact ${name} hash mismatch`);
@@ -130,7 +136,7 @@ export function assertAdmission(admission: Admission | undefined, material: Case
     check(JSON.stringify(urls)===JSON.stringify(slot==='rescue_precision' && input.precisionImage?[imageUrl,input.precisionImage]:[imageUrl]), 'Request/input image scope mismatch');
     envelopes[slot]=envelope;
   }
-  return {binding:clone(b),envelopes,input};
+  return {envelopes,input};
 }
 
 type Receipt = { _request_id: string; id: string; model: string; service_tier: string;
@@ -163,7 +169,7 @@ export function createMockTransport(steps: MockStep[]) {
   return {transport:token,sends:()=>[...state.sends],release:()=>state.release?.()};
 }
 type CallState={status:'reserved'|'submitted'|'voided';requestHash:string;fingerprint:string;cost:number;receipt?:Receipt;receiptSha256?:string};
-type CaseState={scope:'A'|'B';digest:string;calls:Record<Slot,CallState>;status:'ACTIVE'|'UNCERTAIN'|'CANCELLED'|'TECHNICAL_FAILURE'|'MOCK_COMPLETE';raw:Partial<Record<Slot,Receipt>>;analysis?:unknown;budgetAccounted:boolean;latencyMs:number|null;cancelled:boolean};
+type CaseState={protocolTrack:string;scope:'A'|'B';digest:string;calls:Record<Slot,CallState>;status:'ACTIVE'|'UNCERTAIN'|'CANCELLED'|'TECHNICAL_FAILURE'|'MOCK_COMPLETE';raw:Partial<Record<Slot,Receipt>>;analysis?:unknown;budgetAccounted:boolean;latencyMs:number|null;cancelled:boolean};
 type Journal={kind:typeof OFFLINE_ONLY;version:1;bindings:Partial<Record<'A'|'B',Binding>>;activeCase:string|null;cases:Record<string,CaseState>;events:{rpc:string;caseId:string;slot?:Slot}[]};
 export type Store=Readonly<{kind:typeof OFFLINE_ONLY;directory:string}>;
 const stores=new WeakSet<Store>();
@@ -247,13 +253,58 @@ export async function runOfflineCase(args:{admission?:Admission;material:CaseMat
   const {store,transport,signal}=args;
   const m=structuredClone(args.material);const a=args.admission?clone(args.admission):undefined;
   check(mocks.has(transport),'Only branded inert mock transport allowed');check(stores.has(store),'Only disposable storage allowed');
-  const admitted=assertAdmission(a,m);const b=admitted.binding;const id=m.caseId;const started=performance.now();
+  const admitted=assertAdmission(a,m);
+  return executeAdmittedMockCase({m,admitted,store,transport,signal,track:'EXPERT_ACCEPTANCE_FIXTURE'});
+}
+
+export const INTERNAL_DIAGNOSTICS_MODE='INTERNAL_DIAGNOSTIC_OFFLINE_V1' as const;
+export type DiagnosticAdmission={
+  kind:typeof INTERNAL_DIAGNOSTICS_MODE; binding:Binding; ownerAmendmentRef:'issue126-6309011401';
+  budgetEvidenceKind:'DISPOSABLE_SIMULATION_NOT_OWNER_BALANCE'; objectiveReference:Artifact; protocol:Artifact;
+};
+export function diagnosticFreezeSha256(binding:Binding){
+  const {freezeSha256:_excluded,...rest}=binding;
+  return sha256(JSON.stringify({kind:INTERNAL_DIAGNOSTICS_MODE,binding:rest}));
+}
+/** Owner-authorised internal diagnostics: source references replace human annotations only here. */
+export function assertDiagnosticAdmission(a:DiagnosticAdmission|undefined,m:CaseMaterial){
+  check(a?.kind===INTERNAL_DIAGNOSTICS_MODE && a.ownerAmendmentRef==='issue126-6309011401','Internal diagnostic owner amendment required');
+  const b=a.binding;
+  check(a.budgetEvidenceKind==='DISPOSABLE_SIMULATION_NOT_OWNER_BALANCE','Offline budget must not claim actual headroom');
+  check(b.mode===OFFLINE_ONLY && b.scope==='A' && m.scope==='A' && /^d00[1-6]$/.test(m.caseId),'Only existing first-six diagnostic cases allowed');
+  const ids=['d001','d002','d003','d004','d005','d006'];
+  check(JSON.stringify(b.caseIds)===JSON.stringify(ids) && Object.keys(b.caseDigests).length===6 && ids.every(id=>isHash(b.caseDigests[id])),'Exact first-six diagnostic scope required');
+  check(b.ledgerKey==='offline-A' && b.capMicroUsd===5000000 && money(b.priorExposureMicroUsd) && b.priorExposureMicroUsd!+6*CASE_BOUND<=b.capMicroUsd,'Diagnostic simulation budget invalid');
+  check(b.model===MODEL && b.candidateSha==='f5e820b0bd7bf095153e31d692a10fb3640ba16e' && b.scannerSourcesSha256===sha256(JSON.stringify(SOURCE_PINS)),'Exact diagnostic scanner identity required');
+  check(b.freezeSha256===diagnosticFreezeSha256(b) && b.manifestSha256===PACKET_PINS.manifest && b.manifestSha256===m.manifestSha256 && b.requestInventorySha256===PACKET_PINS.requests && b.caseDigests[m.caseId]===materialDigest(m),'Diagnostic source/request/freeze binding mismatch');
+  check(a.objectiveReference && sha256(a.objectiveReference.bytes)===a.objectiveReference.sha256 && b.referenceSha256===a.objectiveReference.sha256,'Objective reference hash mismatch');
+  check(a.protocol && sha256(a.protocol.bytes)===a.protocol.sha256 && b.protocolSha256===a.protocol.sha256,'Diagnostic protocol hash mismatch');
+  const protocol=JSON.parse(Buffer.from(a.protocol.bytes).toString('utf8'));
+  check(isDeepStrictEqual(protocol,INTERNAL_DIAGNOSTIC_PROTOCOL),'Separate exact diagnostic protocol required');
+  const oracle=JSON.parse(Buffer.from(a.objectiveReference.bytes).toString('utf8'));
+  check(oracle.schemaVersion===1 && oracle.kind==='MONACO_INTERNAL_SOURCE_REFERENCE' && oracle.packetManifestSha256===PACKET_PINS.manifest && isDeepStrictEqual(oracle.caseIds,ids),'Exact first-six source oracle required');
+  check(Array.isArray(oracle.cases) && isDeepStrictEqual(oracle.cases.map((c:Json)=>c.caseId),ids),'Complete first-six oracle required');
+  const c=oracle.cases.find((row:Json)=>row.caseId===m.caseId);const identity=c?.identities;
+  for(const [field,artifact] of Object.entries({inputSha256:'input',imageSha256:'image',barsSha256:'bars',sourceZipSha256:'sourceZip',calibrationSha256:'calibration'}))
+    check(identity?.[field]===m.artifacts[artifact as keyof CaseMaterial['artifacts']].sha256,'Oracle/case artifact binding mismatch');
+  check(c.objective?.aggregation?.exactOhlcvMatch===true && isHash(oracle.sourceCalculatorSha256),'Independent source calculation required');
+  check(sha256(readFileSync(join(root,'scripts/monaco-diagnostic-source-reference.py')))===oracle.sourceCalculatorSha256,'Source calculator drift');
+  return {binding:clone(b),...verifyMaterial(m)};
+}
+export async function runOfflineDiagnosticCase(args:{admission?:DiagnosticAdmission;material:CaseMaterial;store:Store;transport:Transport;signal?:AbortSignal}){
+  const {store,transport,signal}=args;const m=structuredClone(args.material);const a=args.admission?structuredClone(args.admission):undefined;
+  check(mocks.has(transport),'Only branded inert mock transport allowed');check(stores.has(store),'Only disposable storage allowed');
+  const admitted=assertDiagnosticAdmission(a,m);
+  return executeAdmittedMockCase({m,admitted,store,transport,signal,track:INTERNAL_DIAGNOSTICS_MODE});
+}
+async function executeAdmittedMockCase({m,admitted,store,transport,signal,track}:{m:CaseMaterial;admitted:{binding:Binding;input:Json};store:Store;transport:Transport;signal?:AbortSignal;track:string}){
+  const b=admitted.binding;const id=m.caseId;const started=performance.now();
   if(signal?.aborted)return {status:'CANCELLED_BEFORE_CLAIM',measurement:'UNMEASURED',providerCalls:0 as const};
   transact(store,state=>{
     check(!state.activeCase,'One-chart concurrency: previous case unresolved');check(!state.cases[id],'Duplicate case dispatch rejected');
     if(state.bindings[b.scope])check(JSON.stringify(state.bindings[b.scope])===JSON.stringify(b),'Durable scope cannot be reseeded');else state.bindings[b.scope]=b;
     check(exposure(state,b.scope)+CASE_BOUND<=b.capMicroUsd,'Separate aggregate budget exceeded');
-    state.cases[id]={scope:b.scope,digest:materialDigest(m),status:'ACTIVE',budgetAccounted:false,raw:{},latencyMs:null,cancelled:false,
+    state.cases[id]={protocolTrack:track,scope:b.scope,digest:materialDigest(m),status:'ACTIVE',budgetAccounted:false,raw:{},latencyMs:null,cancelled:false,
       calls:Object.fromEntries(SLOTS.map(slot=>[slot,{status:'reserved',cost:COSTS[slot],requestHash:m.requests[slot].sha256,fingerprint:m.requests[slot].fingerprint}])) as Record<Slot,CallState>};
     state.activeCase=id;state.events.push({rpc:'claim_pocket_benchmark_case',caseId:id});
   });

@@ -1,35 +1,37 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-20T20:22:45.823142+00:00",
+  "savedAtUtc": "2026-10-21T06:06:30.059907+00:00",
   "worker": {
-    "id": "root-offline-executor-3e0cde",
-    "status": "BLOCKED_OWNER_GATES",
-    "activeTask": "Offline execution adapter, DRAFT semantic rules and two saved first-six blinded handoffs complete. Only actual human-reference/protocol and specific finance/security/run decisions remain; no more data preparation or retries.",
-    "lastVerifiedActivityAtUtc": "2026-10-20T20:22:45.823142+00:00"
+    "id": "root-internal-diagnostics-3e0cde",
+    "status": "BLOCKED_PAID_EXECUTOR_SECURITY_FINANCE_AUTHORITY",
+    "activeTask": "Owner-authorised no-human internal diagnostic protocol, independent first-six source oracle and mock provider integration complete. No two-reviewer request for this track. Real dispatch disabled; original expert acceptance unresolved.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T06:06:30.059907+00:00"
   },
   "ownership": {
-    "branch": "monaco-offline-executor-126-20261020-3e0cde",
-    "writer": "root-offline-executor-3e0cde",
-    "leaseId": "issue126-6300301344",
-    "status": "FROZEN_HANDOFF",
-    "baseCheckpoint": "5d9fc4e7cc28d26a352d7d976db850f443e0b7e0",
-    "expectedHead": "ca684be9f4e24e69d35ee5d487756f34a785c068",
-    "expectedHeadResolution": "This is the verified executable/tested source checkpoint. The latest immutable Issue126 receipt names the enclosing documentation-only head; compare that head before any successor write.",
+    "branch": "monaco-internal-diagnostics-126-20261021-3e0cde",
+    "writer": "root-internal-diagnostics-3e0cde",
+    "leaseId": "issue126-6309011401",
+    "status": "PREPARING_FROZEN_HANDOFF",
+    "baseCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
+    "expectedHead": null,
+    "expectedHeadResolution": "Latest immutable Issue126 receipt supplies enclosing exact head; verify it before successor writes. Source checkpoint added after remote tree verification.",
     "ownedPaths": [
       "scripts/pocket-monaco-offline-executor.ts",
-      "scripts/pocket-monaco-semantic-proposal.ts",
-      "scripts/package-monaco-first-six-review-handoffs.py",
-      "tests/pocket-monaco-offline-executor.test.ts",
-      "tests/pocket-monaco-semantic-proposal.test.ts",
-      "docs/monaco-126/benchmark50",
-      "qa/offline-executor",
+      "scripts/pocket-monaco-diagnostic-provider.ts",
+      "scripts/pocket-monaco-internal-diagnostics.ts",
+      "scripts/monaco-diagnostic-source-reference.py",
+      "tests/pocket-monaco-diagnostic-provider.test.ts",
+      "tests/pocket-monaco-internal-diagnostics.test.ts",
+      "tests/test_monaco_diagnostic_source_reference.py",
+      "docs/monaco-126/internal-diagnostics",
+      "qa/internal-diagnostics",
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
       "vercel.json"
     ],
-    "verificationBasis": "Parent exact5d9fc4e verified; no newer Issue126 receipt; successor absent then sole-writer claim6300301344; earlier branches untouched.",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138"
+    "verificationBasis": "Parent ab1ef077 verified remote; no newer issue receipt before amendment6309011401; successor absent then sole-writer claim; deployment disabled; prior branch unchanged.",
+    "pr": null
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -356,6 +358,26 @@
       "sourceCommit": "ca684be9f4e24e69d35ee5d487756f34a785c068",
       "sourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
       "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/138"
+    },
+    "internalDiagnostics": {
+      "sourceStatus": "OFFLINE_COMPLETE",
+      "externalAcceptance": "BLOCKED_PAID_EXECUTOR_SECURITY_FINANCE_NOT_HUMAN_REFERENCES",
+      "branch": "monaco-internal-diagnostics-126-20261021-3e0cde",
+      "parentCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
+      "protocol": "MONACO_INTERNAL_DIAGNOSTICS_V1",
+      "protocolSha256": "4386a29b59718138437ddaf5d0a53b3c77f442acf161e8472aac45cee7773bf5",
+      "sourceReferenceSha256": "06fd2b201ecefbda4c7746a24ea5c5470e8679fdee2740dcac81cd3c5f8dd424",
+      "sourceObjectiveCheckedCases": 6,
+      "affectedEngineeringChecksPassed": 128,
+      "humanReviewedCases": 0,
+      "providerExecutedCases": 0,
+      "expertAcceptedCases": 0,
+      "weak4h": "UNSCORED_WEAK_4H",
+      "heldout44": "UNCHANGED_NOT_ADMITTED",
+      "approvalRecord": "internal-diagnostics/APPROVAL-RECORD.json",
+      "engineeringReceipt": "qa/internal-diagnostics/ACCEPTANCE-ENGINEERING.json",
+      "privateOracleRecovery": "internal-diagnostics/PRIVATE-REFERENCE-RECEIPT.json",
+      "realDispatchEnabled": false
     }
   },
   "tests": [
@@ -640,7 +662,15 @@
     "igOrders": false,
     "outreachPublication": false,
     "benchmark": "Existing separate max$5 approval does not bypass runtime/financial/licence admission; no dispatch permitted here",
-    "benchmarkCredentialSetup": "Historical scoped metadata setup COMPLETE; no further credential action authorised in this continuation."
+    "benchmarkCredentialSetup": "Historical scoped metadata setup COMPLETE; no further credential action authorised in this continuation.",
+    "internalDiagnosticsWithoutHumans": {
+      "authorised": true,
+      "ownerReceipt": "issue126-6309011401",
+      "scope": "First six internal development diagnostics only; source geometry and separate pattern-rule conformance. No human-reference annotations required.",
+      "paidRunAuthorised": false,
+      "expertAcceptance": "UNRESOLVED_UNCHANGED",
+      "doNotAskForTwoReviewersForThisTrack": true
+    }
   },
   "budget": {
     "reservationsPerformedThisContinuation": 0,
@@ -648,7 +678,10 @@
     "aggregateActualCostUsd": null,
     "historical2Usd": "UNRECONCILED; unknown is not settled",
     "ledgerChanges": "NONE",
-    "paidCostUsdThisContinuation": 0
+    "paidCostUsdThisContinuation": 0,
+    "verifiedFirstSixHeadroomMicroUsd": null,
+    "latestEvidence": "qa/internal-diagnostics/EXECUTOR-BUDGET-EVIDENCE.json",
+    "headroomReason": "Read-only 2026-10-21 catalog confirms no benchmark pilot ledger/calls/accounts/configs installed; absent does not imply zero exposure."
   },
   "untouchedAssets": [
     "main and PR112/120/123/125",
@@ -663,7 +696,7 @@
   ],
   "externalGates": [
     "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
-    "50-case replacement packet has documented source grants; original rights-blocked legacy images are preserved but no longer a dependency. Actual processor scope and two independent human reference decisions remain. Weak4hH&S is unaccepted. No licensing research/download repeats.",
+    "INTERNAL DIAGNOSTICS AMENDMENT6309011401: no human reviewers required for first-six internal source/rule diagnostics. Original expert-reference/release acceptance remains unresolved, but do not ask for two reviewers as the next diagnostic action. Weak4h unscored; 44 held-out unchanged. Source grants retained; no licensing research repeats.",
     "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
     "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
     "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
@@ -672,11 +705,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "first-six-blinded-human-reference-and-consolidated-approval",
-    "status": "BLOCKED_EXTERNAL",
-    "command": "Use benchmark50/FIRST-SIX-HANDOFF-RECEIPT.json to give each qualified human only their own saved package. Complete benchmark50/APPROVAL-RECORD.json decisions; no outreach is authorised to the agent. Once actual references/decisions exist, perform only newly affected preparation under the then-current authority. No data regeneration, licensing/metadata repeat or mock retry.",
-    "primaryDependency": "Qualified primary and separate independent human references; approved rubric/amendment and weak4h decision; specific finance/security/A-run authority (B separate).",
-    "prohibitedNextAction": "No paid/live smoke test, key, credential/permission expansion, live/database/customer mutation, deploy, merge, release or unapproved outreach."
+    "id": "conditional-first-six-internal-diagnostic-paid-run-decision",
+    "status": "BLOCKED_EXTERNAL_EXECUTOR_SECURITY_FINANCE_AND_SPECIFIC_PAID_AUTHORITY",
+    "command": "Use internal-diagnostics/APPROVAL-RECORD.json and EXECUTION-AND-APPROVAL.md for the ONE conditional paid-run request. First-six <=18 calls, zero retries, <=$1.9176 direct-token bound under existing aggregate $5; proceed only with an already authorised isolated inference-executor/key binding, accepted actual processor conditions and authoritative headroom. No reviewer request for this internal track.",
+    "primaryDependency": "Specific A paid authority plus currently unverified existing inference executor/credential binding, actual processor-security acceptance and authoritative budget headroom. Metadata-only runner is not inference-capable; no live ledger installation authorised.",
+    "prohibitedNextAction": "Do not repeat the32 semantic checks, accepted tests, metadata verification, licensing research, source windows or packet generation; no new keys/permission expansion/live database/customer/production changes/deployment/merge/B inference. If no admissible new evidence exists, stop retries."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
@@ -701,5 +734,14 @@
       "notLiveSitesAttestation": true,
       "notPaidAdmission": true
     }
-  ]
+  ],
+  "internalDiagnosticsAmendment": {
+    "date": "2026-10-21",
+    "ownerReceiptId": 6309011401,
+    "priorityOverHistoricalReviewerRequests": true,
+    "originalExpertProtocol": "PRESERVED_UNRESOLVED",
+    "internalHumanReferenceRequirement": false,
+    "safeWorkComplete": true,
+    "actualPaidDispatch": false
+  }
 }

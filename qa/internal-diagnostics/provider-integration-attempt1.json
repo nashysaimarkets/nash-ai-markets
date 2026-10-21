@@ -1,0 +1,16 @@
+{
+  "command": [
+    "node",
+    "--import",
+    "tsx",
+    "--test",
+    "tests/pocket-monaco-diagnostic-provider.test.ts",
+    "tests/pocket-monaco-offline-executor.test.ts"
+  ],
+  "startedAtUtc": "2026-10-21T05:58:44.591538+00:00",
+  "finishedAtUtc": "2026-10-21T05:58:47.761772+00:00",
+  "exitCode": 1,
+  "rawLog": "qa/internal-diagnostics/provider-integration-attempt1.log",
+  "rawLogSha256": "7461874345b8b1920cac8c5462f90af9e3850ed3b6099dc096aac2aab33efdf6",
+  "providerCalls": 0
+}

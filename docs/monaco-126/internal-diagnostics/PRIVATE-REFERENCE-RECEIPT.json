@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "SEPARATE_PRIVATE_SOURCE_ORACLE_RECOVERY",
+  "status": "SAVED_NOT_HUMAN_REFERENCE_OR_SCANNER_RESULT",
+  "libraryFileId": "libfile_d77bddb8a55881918beacd6cb3cf6548",
+  "fileId": "file_00000000e16c8243a8e90c55e45f0f14",
+  "version": 0,
+  "fileName": "monaco-first-six-source-reference-v1-2026-10-21.private.json",
+  "libraryPath": "/monaco-first-six-source-reference-v1-2026-10-21.private.json",
+  "bytes": 406287,
+  "sha256": "06fd2b201ecefbda4c7746a24ea5c5470e8679fdee2740dcac81cd3c5f8dd424",
+  "packetRecovery": "../benchmark50/PRIVATE-PACKET-RECEIPT.json",
+  "packetSha256": "3283ccd5317216581dab638961c0d529d432fa860291639fbf50cd2a332f4fca",
+  "caseIds": [
+    "d001",
+    "d002",
+    "d003",
+    "d004",
+    "d005",
+    "d006"
+  ],
+  "calculator": "scripts/monaco-diagnostic-source-reference.py",
+  "calculatorSha256": "a9277fa2fa5646967477ff65833e77fdfd30f5f7404ad5cf29f0f5f177a2108b",
+  "publicEvidence": "qa/internal-diagnostics/SOURCE-REFERENCE.public-receipt.json",
+  "instructions": "Recover this separately saved private JSON through its Library identity. Verify SHA256 before use with the unchanged packet. Do not commit source prices, witness times or market-data arrays to public GitHub; do not regenerate or overwrite the original packet.",
+  "humanReferencesRequiredForInternalDiagnostics": false,
+  "expertAcceptance": "UNRESOLVED",
+  "providerCalls": 0
+}

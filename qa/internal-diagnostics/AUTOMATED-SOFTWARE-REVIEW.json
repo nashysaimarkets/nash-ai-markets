@@ -1,0 +1,32 @@
+{
+  "kind": "AUTOMATED_CODE_REVIEW_NOT_HUMAN_CHART_ACCEPTANCE",
+  "reviewer": "rights_review automated software agent",
+  "scope": [
+    "scripts/pocket-monaco-diagnostic-provider.ts",
+    "scripts/pocket-monaco-offline-executor.ts",
+    "tests/pocket-monaco-diagnostic-provider.test.ts"
+  ],
+  "findings": [
+    {
+      "finding": "Real-packet oracle was not immutable-hash pinned",
+      "resolution": "Pinned independently calculated SHA at plan preparation and inventory admission"
+    },
+    {
+      "finding": "Integration code map excluded from plan freeze",
+      "resolution": "Plan digest binds admission and integrationSourceHashes"
+    },
+    {
+      "finding": "Mock fixture omitted liquidity.confidence",
+      "resolution": "Added LOW; failed log retained, focused repair passed"
+    },
+    {
+      "finding": "Partial processor declarations passed every(values)",
+      "resolution": "Require all five named booleans explicitly true"
+    }
+  ],
+  "closure": "All four closed by bounded read-only inspection; no remaining findings in that closure scope",
+  "reviewedProviderSha256": "03cdac702bbd10a013972d44fe4faeccbcdb0918e559da87856d6b47025f1455",
+  "testsRerunByReviewer": 0,
+  "humanReferences": 0,
+  "providerCalls": 0
+}
