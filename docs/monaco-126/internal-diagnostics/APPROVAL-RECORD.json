@@ -13,8 +13,8 @@
     "humanVerificationClaimed": false
   },
   "parentCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
-  "sourceCheckpoint": null,
-  "sourceTree": null,
+  "sourceCheckpoint": "579b781335e352034c5970dca06cc01b49ed81bb",
+  "sourceTree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
   "preparedCases": 50,
   "sourceGrantedCases": 50,
   "humanReviewedCases": 0,
@@ -80,5 +80,7 @@
   ],
   "weak4h": "d003 pattern UNSCORED_WEAK_4H; no positive label or replacement",
   "realDispatchEnabled": false,
-  "ownerRequest": "Approve one internal diagnostic run d001-d006 only, exact saved candidate/plan/protocol/oracle and gpt-5-mini-2025-08-07: <=18 sends, zero retries/failover, <=$1.9176 direct-token exposure inside the aggregate $5 ceiling, only after existing isolated inference-executor binding, actual processor/security acceptance and authoritative >=$1.9176 headroom are verified. Otherwise stop without dispatch. No human references required for this track; no B run, new credentials, metadata rerun, live/database changes, deployment or merge included."
+  "ownerRequest": "Approve one internal diagnostic run d001-d006 only, exact saved candidate/plan/protocol/oracle and gpt-5-mini-2025-08-07: <=18 sends, zero retries/failover, <=$1.9176 direct-token exposure inside the aggregate $5 ceiling, only after existing isolated inference-executor binding, actual processor/security acceptance and authoritative >=$1.9176 headroom are verified. Otherwise stop without dispatch. No human references required for this track; no B run, new credentials, metadata rerun, live/database changes, deployment or merge included.",
+  "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139",
+  "sourceRemoteTreeVerified": true
 }

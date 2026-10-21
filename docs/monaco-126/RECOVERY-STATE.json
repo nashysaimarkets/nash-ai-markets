@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T06:06:30.059907+00:00",
+  "savedAtUtc": "2026-10-21T06:11:33.920256+00:00",
   "worker": {
     "id": "root-internal-diagnostics-3e0cde",
     "status": "BLOCKED_PAID_EXECUTOR_SECURITY_FINANCE_AUTHORITY",
     "activeTask": "Owner-authorised no-human internal diagnostic protocol, independent first-six source oracle and mock provider integration complete. No two-reviewer request for this track. Real dispatch disabled; original expert acceptance unresolved.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T06:06:30.059907+00:00"
+    "lastVerifiedActivityAtUtc": "2026-10-21T06:11:33.920256+00:00"
   },
   "ownership": {
     "branch": "monaco-internal-diagnostics-126-20261021-3e0cde",
     "writer": "root-internal-diagnostics-3e0cde",
     "leaseId": "issue126-6309011401",
-    "status": "PREPARING_FROZEN_HANDOFF",
+    "status": "FROZEN_CONDITIONAL_PAID_HANDOFF",
     "baseCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
-    "expectedHead": null,
-    "expectedHeadResolution": "Latest immutable Issue126 receipt supplies enclosing exact head; verify it before successor writes. Source checkpoint added after remote tree verification.",
+    "expectedHead": "579b781335e352034c5970dca06cc01b49ed81bb",
+    "expectedHeadResolution": "This is the remotely verified executable/tested source checkpoint and matching tree. Latest Issue126 receipt identifies the enclosing documentation-only head; compare that head before any successor write.",
     "ownedPaths": [
       "scripts/pocket-monaco-offline-executor.ts",
       "scripts/pocket-monaco-diagnostic-provider.ts",
@@ -31,7 +31,7 @@
       "vercel.json"
     ],
     "verificationBasis": "Parent ab1ef077 verified remote; no newer issue receipt before amendment6309011401; successor absent then sole-writer claim; deployment disabled; prior branch unchanged.",
-    "pr": null
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -50,7 +50,10 @@
     "benchmark50Branch": "monaco-benchmark50-126-20261020-3e0cde",
     "offlineExecutorSourceSha": "ca684be9f4e24e69d35ee5d487756f34a785c068",
     "offlineExecutorSourceTree": "3e59d3cbd6bbe0a6c45f6325f36df3fa77330d9c",
-    "offlineExecutorBranch": "monaco-offline-executor-126-20261020-3e0cde"
+    "offlineExecutorBranch": "monaco-offline-executor-126-20261020-3e0cde",
+    "internalDiagnosticsSourceSha": "579b781335e352034c5970dca06cc01b49ed81bb",
+    "internalDiagnosticsSourceTree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
+    "internalDiagnosticsBranch": "monaco-internal-diagnostics-126-20261021-3e0cde"
   },
   "tracks": {
     "core": {
@@ -377,7 +380,10 @@
       "approvalRecord": "internal-diagnostics/APPROVAL-RECORD.json",
       "engineeringReceipt": "qa/internal-diagnostics/ACCEPTANCE-ENGINEERING.json",
       "privateOracleRecovery": "internal-diagnostics/PRIVATE-REFERENCE-RECEIPT.json",
-      "realDispatchEnabled": false
+      "realDispatchEnabled": false,
+      "pushedSourceCommit": "579b781335e352034c5970dca06cc01b49ed81bb",
+      "sourceTree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139"
     }
   },
   "tests": [

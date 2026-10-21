@@ -88,5 +88,12 @@
     "deploymentDisabledForSuccessor": true,
     "gitDiffCheck": "PASS for source/docs; raw logs excluded to preserve observed whitespace byte-for-byte",
     "stagedFileCountBeforeThisReceiptUpdate": 40
+  },
+  "verifiedGitHubSource": {
+    "sha": "579b781335e352034c5970dca06cc01b49ed81bb",
+    "tree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139",
+    "localAndRemoteTreesEqual": true,
+    "applicationOrProviderRuntimeChanged": false
   }
 }
