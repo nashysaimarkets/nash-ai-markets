@@ -1,3 +1,16 @@
+# Latest continuation: Neon Free ledger installed; secure credential handoff pending
+
+Resume PR141 at the latest Issue126 checkpoint, tested source2c5bbe11534ca288939025566fe7f097b23b26ff. Parent PR140/f4ee155 remains frozen. Read isolated-runner/SETUP-DECISION.md, SETUP-CONFIG.json and qa/neon-ledger/ACCEPTANCE.json first. This supersedes all historical third-Supabase capacity stops below.
+
+Installed: one Neon Free London ledger, restricted NOLOGIN role, immutable verified physical identity, protected GitHub environment with owner review/no admin bypass and exact invocation-branch restriction.42 affected checks pass, including16 realPG17 checks and strict TypeScript. Current runtime password is not issued/stored; no credentialed job exists. Budget carry-in remains UNKNOWN, not zero, and no allowance is enabled. Original128 unaffected checks are reused.
+
+Next: secure Neon console sign-in for concealed transfer of the new restricted role password to MONACO_FIRST_SIX_LEDGER_KEY in the existing protected GitHub environment. Connector connection exists; no technical IDs/credentials in chat needed. Do not expose a value or substitute owner credentials. Keep NOLOGIN until storage verified. Then verify the existing runner/processor/budget conditions; do not dispatch beforehand. Do not request the existing setup/first-six approvals or two chart reviewers again.
+
+No OpenAI key changes/metadata rerun, extra44, Supabase mutations, production deployment/merge, store release, or Work automation changes. Never reset prior spending/history.
+
+---
+# Historical checkpoints — superseded by the Neon continuation above
+
 # Latest outcome: setup approved; zero-cost capacity stop
 
 The owner replied “Approved” to the exact setup package at checkpoint `c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d`. `isolated-runner/OWNER-SETUP-APPROVAL.json` preserves it. Do not ask for the same setup, first-six paid approval or two chart reviewers again.

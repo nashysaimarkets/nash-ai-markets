@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T09:53:38.792693+00:00",
+  "savedAtUtc": "2026-10-21T12:25:48.347Z",
   "worker": {
-    "id": "root-isolated-runner-694d2e",
-    "status": "OWNER_SETUP_APPROVED_STOPPED_NO_FREE_CAPACITY",
-    "activeTask": "Owner setup approval recorded. Newly checked organisation plan is Free with two active projects, exhausting the documented two-project allowance; $0-only setup stops before provisioning. Do not re-request setup or first-six paid approval.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T09:53:38.792693+00:00"
+    "id": "root-neon-ledger-ac5040",
+    "status": "LEDGER_INSTALLED_SECURE_HANDOFF_PENDING",
+    "activeTask": "Neon Free ledger installed and restricted; secure Neon console connection needed only to complete approved credential transfer into protected GitHub environment. No inference admitted.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T12:25:48.347Z"
   },
   "ownership": {
-    "branch": "monaco-isolated-runner-126-20261021-694d2e",
-    "writer": "root-isolated-runner-694d2e",
-    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6312387711",
-    "status": "FROZEN_APPROVED_SETUP_CAPACITY_STOP",
-    "baseCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
-    "expectedHead": "c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d",
-    "expectedHeadResolution": "This documentation-only continuation uses expected head c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d. Final Issue126 receipt resolves enclosing saved head; executable source remains918e9d28866998e9211e6e10f5d0a8f84955bebd.",
+    "branch": "monaco-neon-ledger-126-20261021-ac5040",
+    "writer": "root-neon-ledger-ac5040",
+    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6315474964",
+    "status": "FROZEN_HANDOFF",
+    "baseCheckpoint": "f4ee155f42a32aa50350c79f27674226542d6a7f",
+    "expectedHead": "2c5bbe11534ca288939025566fe7f097b23b26ff",
+    "expectedHeadResolution": "Final Issue126 receipt pins enclosing documentation commit; tested source is 2c5bbe11534ca288939025566fe7f097b23b26ff",
     "ownedPaths": [
       "scripts/pocket-monaco-runner-bridge.ts",
       "supabase/proposed/monaco-isolated-runner.sql",
@@ -24,10 +24,17 @@
       "qa/isolated-runner",
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
-      "vercel.json"
+      "vercel.json",
+      "database/neon",
+      "scripts/pocket-monaco-neon-port.ts",
+      "scripts/prepare-monaco-neon-ledger.mjs",
+      "tests/pocket-monaco-neon-port.test.ts",
+      "tests/pocket-monaco-neon-postgres.test.ts",
+      "qa/neon-ledger",
+      ".github/workflows/monaco-neon-ledger-qa.yml"
     ],
     "verificationBasis": "Parent/Issue126 verified before local clone; proposed branch absent; claim6312387711 is coordination evidence, not an atomic lease; first published tree disables deployments.",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140"
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/141"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -54,7 +61,10 @@
     "isolatedRunnerBranch": "monaco-isolated-runner-126-20261021-694d2e",
     "isolatedRunnerSourceSha": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
     "isolatedRunnerSourceResolution": "Tested bridge/SQL/test source and deployment-disabled tree published and returned by GitHub PR140; final documentation head resolved by Issue126 receipt.",
-    "isolatedRunnerSourceTree": "9a8c798c010e63fba07f4deff23510f095290772"
+    "isolatedRunnerSourceTree": "9a8c798c010e63fba07f4deff23510f095290772",
+    "neonLedgerSourceSha": "2c5bbe11534ca288939025566fe7f097b23b26ff",
+    "neonLedgerBranch": "monaco-neon-ledger-126-20261021-ac5040",
+    "neonLedgerSourceTree": "f2bec613166a6d84191eceadb9088b4690701a2b"
   },
   "tracks": {
     "core": {
@@ -406,6 +416,18 @@
       "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
       "capacityEvidence": "qa/isolated-runner/APPROVED-SETUP-CAPACITY.json",
       "freeSlotsAvailable": 0
+    },
+    "neonLedger": {
+      "status": "INSTALLED_DISABLED",
+      "provider": "Neon Free",
+      "project": "bitter-grass-28096464",
+      "branch": "br-aged-mode-zaa9u7lr",
+      "database": "monaco_ledger",
+      "sourceCommit": "2c5bbe11534ca288939025566fe7f097b23b26ff",
+      "pr": 141,
+      "acceptance": "qa/neon-ledger/ACCEPTANCE.json",
+      "credentials": "NOLOGIN; not issued or stored yet",
+      "budget": "UNKNOWN_NOT_ZERO"
     }
   },
   "tests": [
@@ -660,6 +682,17 @@
       "receipt": "qa/isolated-runner/ACCEPTANCE.json",
       "strictTypeScript": "PASS",
       "limits": "Synthetic local PGlite; not hosted concurrency/provider proof"
+    },
+    {
+      "id": "neon-ledger-compatibility",
+      "status": "DONE",
+      "result": "REAL_PASS_OFFLINE_AND_HOSTED_SCHEMA",
+      "uniqueAffectedChecks": 42,
+      "pg17Checks": 16,
+      "sourceSha": "2c5bbe11534ca288939025566fe7f097b23b26ff",
+      "run": 39598675588,
+      "receipt": "qa/neon-ledger/ACCEPTANCE.json",
+      "limits": "No runner secret binding, provider execution or authoritative budget acceptance"
     }
   ],
   "artifacts": {
@@ -700,7 +733,7 @@
     "igOrders": false,
     "outreachPublication": false,
     "benchmark": "Existing separate max$5 approval does not bypass runtime/financial/licence admission; no dispatch permitted here",
-    "benchmarkCredentialSetup": "Historical scoped metadata setup COMPLETE; no further credential action authorised in this continuation.",
+    "benchmarkCredentialSetup": "Prior setup approval plus current Neon-only amendment permit the restricted ledger credential and protected GitHub binding. No new OpenAI credential or permission expansion.",
     "internalDiagnosticsWithoutHumans": {
       "authorised": true,
       "ownerReceipt": "issue126-6309011401",
@@ -712,6 +745,25 @@
       "paidApprovalReceipt": "issue126-6309459418",
       "executionAdmitted": false,
       "doNotAskForPaidScopeApprovalAgain": true
+    },
+    "neonLedgerSetup": {
+      "kind": "OWNER_NEON_ZERO_COST_LEDGER_AMENDMENT_V1",
+      "recordedDate": "2026-10-21",
+      "ownerDirective": "OPERATION MONACO \u2014 ZERO-COST TEST LEDGER ALTERNATIVE",
+      "issueReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6315474964",
+      "supersedes": "Only the proposed third Supabase ledger provider; earlier approvals preserved",
+      "authorised": "One isolated Neon Free project, necessary restricted database credential and approved protected GitHub storage, after $0/capacity/compatibility/security checks",
+      "maximumInfrastructureCostUsd": 0,
+      "noCardPaidTrialUpgradeOrOverage": true,
+      "doNotTouchExistingSupabase": true,
+      "newOpenAIKeyOrMetadataExpansion": false,
+      "metadataRerun": false,
+      "paidScopeReceipt": "issue126-6309459418",
+      "extra44Allowed": false,
+      "allowanceResetAllowed": false,
+      "productionOrMergeAllowed": false,
+      "automationsChanged": false,
+      "requestSameApprovalAgain": false
     }
   },
   "budget": {
@@ -719,7 +771,7 @@
     "providerCallsThisContinuation": 0,
     "aggregateActualCostUsd": null,
     "historical2Usd": "UNRECONCILED; unknown is not settled",
-    "ledgerChanges": "PROPOSED_SQL_ONLY; local synthetic disposable DB21checks; no hosted writes",
+    "ledgerChanges": "One isolated Neon Free ledger schema and immutable non-secret physical identity installed; no allowance/baseline/request/call rows and no reset of historic evidence.",
     "paidCostUsdThisContinuation": 0,
     "verifiedFirstSixHeadroomMicroUsd": null,
     "latestEvidence": "qa/isolated-runner/BUDGET-RECONCILIATION.json",
@@ -739,7 +791,7 @@
   "externalGates": [
     "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
     "INTERNAL DIAGNOSTICS AMENDMENT6309011401: no human reviewers required for first-six internal source/rule diagnostics. Original expert-reference/release acceptance remains unresolved, but do not ask for two reviewers as the next diagnostic action. Weak4h unscored; 44 held-out unchanged. Source grants retained; no licensing research repeats.",
-    "First-six isolated setup proposal only: immutable prior exposure plus new reservations within aggregate$5, actual processor/binding evidence and zero-cost setup permission; no shared-live install.",
+    "Neon ledger installed; runner credential secure handoff pending. Existing isolated inference executor/key binding, actual processor-security acceptance and authoritative headroom >=1917600 microUSD within original aggregate$5 remain required.",
     "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
     "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
     "Signed iOS/Android resources, physical devices and real store/customer lifecycle acceptance",
@@ -747,11 +799,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "stop-approved-setup-at-zero-cost-capacity-condition",
-    "status": "STOPPED_NO_RETRY",
-    "command": "Approval is saved; do not ask again. Current Free organisation has two active projects, so no third isolated project can be created under the approved $0/free-capacity condition. Do not retry, pause live projects, upgrade, change roles or move organisations. Resume only on new admissible free-capacity evidence or separately authorised revised setup.",
-    "primaryDependency": "The approved configuration has no available free project slot; this is a capacity limit, not missing owner setup approval.",
-    "prohibitedNextAction": "No creation probe, new account/organisation workaround, plan upgrade, live-project pause/deletion, credential change or inference. Automation unchanged."
+    "id": "secure-neon-console-connection-for-protected-secret-transfer",
+    "status": "SECURE_CONNECTION_PENDING",
+    "command": "Resume latest Issue126/PR141. Authenticate the already connected Neon account in the secure browser handoff; do not ask for technical IDs or secrets in chat. Then issue only the new restricted runner database password through the provider and store it in protected environment monaco-first-six-inference as MONACO_FIRST_SIX_LEDGER_KEY, without exposing it. Verify role identity and credential binding. Preserve prior budget as unknown until authoritative import. No inference.",
+    "primaryDependency": "Neon connector is connected; console session for safe UI-to-UI credential handoff is not signed in. GitHub connector has no secret-write endpoint.",
+    "prohibitedNextAction": "No OpenAI key creation, metadata rerun, two reviewers, allowance reset, extra44, plan upgrade, Supabase changes, deployment, merge or automation changes."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
