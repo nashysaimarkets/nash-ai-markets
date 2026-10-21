@@ -1,3 +1,27 @@
+# Latest outcome: setup approved; zero-cost capacity stop
+
+The owner replied “Approved” to the exact setup package at checkpoint `c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d`. `isolated-runner/OWNER-SETUP-APPROVAL.json` preserves it. Do not ask for the same setup, first-six paid approval or two chart reviewers again.
+
+New authoritative read-only account evidence: organisation `pvepbcawhvzgpeqvpkjn` is Free; both known projects are ACTIVE_HEALTHY. Official Supabase billing FAQ permits two active free projects. The approved third isolated project therefore has no free slot. `qa/isolated-runner/APPROVED-SETUP-CAPACITY.json` records the evidence and inference. The earlier $0 price quote did not establish quota.
+
+The approved stop condition has been applied before provisioning: no create attempt, environment/credential change, new cost, provider call, live-project change or automation action. No tests or metadata verification were repeated. Do not retry or work around the quota by pausing live projects, upgrading, changing memberships or creating organisations. Continue only if new evidence satisfies the saved zero-cost capacity condition or a revised configuration is separately authorised. The final Issue126 receipt gives this documentation checkpoint; executable source remains `918e9d28866998e9211e6e10f5d0a8f84955bebd`.
+
+The implementation and proposed configuration below remain intact historical context; the owner decision is now saved.
+
+# Current continuation: isolated runner and durable prior-budget bridge
+
+Resume the newest Issue126 receipt for branch `monaco-isolated-runner-126-20261021-694d2e`, parent PR139 checkpoint `3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4`, coordination claim6312387711. Earlier branches remain frozen. PR140 source `918e9d28866998e9211e6e10f5d0a8f84955bebd`, tree `9a8c798c010e63fba07f4deff23510f095290772`. The enclosing final receipt pins the documentation checkpoint; do not treat the older PR139 SHA as the latest successor. Deployments are disabled for this branch.
+
+Read `isolated-runner/SETUP-DECISION.md` and `qa/isolated-runner/ACCEPTANCE.json`. Completed: minimal injected SQL bridge, immutable carry-in exposure, exact isolated identity and18request pins, live-backend denial and conservative combined cap. All21new local checks and strict targeted TS pass; original128checks/source hashes are reused unchanged. No charts, private packet, metadata or full suites were rerun.
+
+The runner/ledger remain proposed-only. The next owner decision is the single concrete zero-cost-only setup package: isolated project plus necessary database credential, protected runner environment and secure binding of the existing inference key, with read-only processor/budget evidence. No new OpenAI key, permission widening, plan upgrade, live project pausing or recurring execution. $0 project quote does not prove free capacity; stop if zero-cost availability cannot be established.
+
+Budget exports end18October and cannot resolve current prior spent/reserved/unresolved amounts. All remain unknown; do not seed zero. Reconcile authoritative records through final cutoff, including other paths against the existing aggregate allowance. Preserve historic$2 separately. Processor acceptance and final secret/source/backend binding also require actual evidence. Real dispatch remains structurally disabled; declaration of approval or synthetic test success never enables it.
+
+Internal-diagnostics amendment and existing conditional first-six approval remain intact: no two-reviewer request; ambiguous/weak4h unscored; d001-d006 only, <=18sends, zero retries/failover, <=$1.9176 within aggregate$5 after verified headroom. Extra44/B excluded. Automation untouched. Do not repeat completed work while awaiting this setup decision.
+
+The sections below are historical; this continuation controls the current next task.
+
 ## Current continuation — PR139 internal-diagnostics amendment, 21 October 2026
 
 Resume the newest Issue126 receipt on `monaco-internal-diagnostics-126-20261021-3e0cde`, parent PR138 `ab1ef077885dae5e3b878c394ea68f5025208dd2`. Verified executable source `579b781335e352034c5970dca06cc01b49ed81bb`, tree `41c3e8b35d2f8bc2c190b34d43e58682b6f17aab`; latest Issue126 receipt gives the enclosing documentation head. Verify expected head and ownership; automatic deployment is disabled. The owner amendment is recorded in Issue126 receipt6309011401. **The owner has no qualified chart reviewers: do not ask for two reviewers for INTERNAL DEVELOPMENT DIAGNOSTICS.** The original expert-reference/release protocol remains unresolved and separate; its historical reviewer requests below are not the current next action.

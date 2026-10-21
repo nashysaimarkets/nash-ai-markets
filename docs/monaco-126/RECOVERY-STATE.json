@@ -1,37 +1,33 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T06:19:09.373665+00:00",
+  "savedAtUtc": "2026-10-21T09:53:38.792693+00:00",
   "worker": {
-    "id": "root-internal-diagnostics-3e0cde",
-    "status": "BLOCKED_EXECUTOR_SECURITY_FINANCE_CAPABILITIES_PAID_SCOPE_APPROVED",
-    "activeTask": "First-six conditional paid scope approved in owner chat/Issue126 receipt6309459418. No reviewer or repeated paid-approval request. Existing isolated inference binding, actual processor/security evidence and authoritative budget headroom remain unverified; no admissible new capability evidence; dispatch disabled.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T06:19:09.373665+00:00"
+    "id": "root-isolated-runner-694d2e",
+    "status": "OWNER_SETUP_APPROVED_STOPPED_NO_FREE_CAPACITY",
+    "activeTask": "Owner setup approval recorded. Newly checked organisation plan is Free with two active projects, exhausting the documented two-project allowance; $0-only setup stops before provisioning. Do not re-request setup or first-six paid approval.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T09:53:38.792693+00:00"
   },
   "ownership": {
-    "branch": "monaco-internal-diagnostics-126-20261021-3e0cde",
-    "writer": "root-internal-diagnostics-3e0cde",
-    "leaseId": "issue126-6309011401",
-    "status": "FROZEN_APPROVED_SCOPE_CAPABILITY_HANDOFF",
-    "baseCheckpoint": "ab1ef077885dae5e3b878c394ea68f5025208dd2",
-    "expectedHead": "d3b240372407c45e4ef787d690ba762309590092",
-    "expectedHeadResolution": "Approval-record-only continuation verified remote d3b240372407c45e4ef787d690ba762309590092. Latest Issue126 receipt gives enclosing documentation head. Executable source remains579b781335e352034c5970dca06cc01b49ed81bb.",
+    "branch": "monaco-isolated-runner-126-20261021-694d2e",
+    "writer": "root-isolated-runner-694d2e",
+    "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6312387711",
+    "status": "FROZEN_APPROVED_SETUP_CAPACITY_STOP",
+    "baseCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
+    "expectedHead": "c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d",
+    "expectedHeadResolution": "This documentation-only continuation uses expected head c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d. Final Issue126 receipt resolves enclosing saved head; executable source remains918e9d28866998e9211e6e10f5d0a8f84955bebd.",
     "ownedPaths": [
-      "scripts/pocket-monaco-offline-executor.ts",
-      "scripts/pocket-monaco-diagnostic-provider.ts",
-      "scripts/pocket-monaco-internal-diagnostics.ts",
-      "scripts/monaco-diagnostic-source-reference.py",
-      "tests/pocket-monaco-diagnostic-provider.test.ts",
-      "tests/pocket-monaco-internal-diagnostics.test.ts",
-      "tests/test_monaco_diagnostic_source_reference.py",
-      "docs/monaco-126/internal-diagnostics",
-      "qa/internal-diagnostics",
+      "scripts/pocket-monaco-runner-bridge.ts",
+      "supabase/proposed/monaco-isolated-runner.sql",
+      "tests/pocket-monaco-runner-bridge.test.ts",
+      "docs/monaco-126/isolated-runner",
+      "qa/isolated-runner",
       "docs/monaco-126/RECOVERY-STATE.json",
       "docs/monaco-126/RECOVERY-RUNBOOK.md",
       "vercel.json"
     ],
-    "verificationBasis": "Parent ab1ef077 verified remote; no newer issue receipt before amendment6309011401; successor absent then sole-writer claim; deployment disabled; prior branch unchanged.",
-    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139"
+    "verificationBasis": "Parent/Issue126 verified before local clone; proposed branch absent; claim6312387711 is coordination evidence, not an atomic lease; first published tree disables deployments.",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -53,7 +49,12 @@
     "offlineExecutorBranch": "monaco-offline-executor-126-20261020-3e0cde",
     "internalDiagnosticsSourceSha": "579b781335e352034c5970dca06cc01b49ed81bb",
     "internalDiagnosticsSourceTree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
-    "internalDiagnosticsBranch": "monaco-internal-diagnostics-126-20261021-3e0cde"
+    "internalDiagnosticsBranch": "monaco-internal-diagnostics-126-20261021-3e0cde",
+    "isolatedRunnerParentSha": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
+    "isolatedRunnerBranch": "monaco-isolated-runner-126-20261021-694d2e",
+    "isolatedRunnerSourceSha": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
+    "isolatedRunnerSourceResolution": "Tested bridge/SQL/test source and deployment-disabled tree published and returned by GitHub PR140; final documentation head resolved by Issue126 receipt.",
+    "isolatedRunnerSourceTree": "9a8c798c010e63fba07f4deff23510f095290772"
   },
   "tracks": {
     "core": {
@@ -385,6 +386,26 @@
       "sourceTree": "41c3e8b35d2f8bc2c190b34d43e58682b6f17aab",
       "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/139",
       "conditionalPaidApprovalReceipt": "issue126-6309459418"
+    },
+    "isolatedRunner": {
+      "sourceStatus": "OFFLINE_IMPLEMENTED_AND_TESTED",
+      "externalAcceptance": "SETUP_APPROVED_STOPPED_NO_FREE_CAPACITY",
+      "branch": "monaco-isolated-runner-126-20261021-694d2e",
+      "parentCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
+      "proposal": "docs/monaco-126/isolated-runner/SETUP-DECISION.md",
+      "engineeringReceipt": "qa/isolated-runner/ACCEPTANCE.json",
+      "newTestsPassed": 21,
+      "existing128TestsReused": true,
+      "realDispatchEnabled": false,
+      "installedLedger": false,
+      "existingKeyBound": false,
+      "headroomMicroUsd": null,
+      "pushedSourceCommit": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
+      "sourceTree": "9a8c798c010e63fba07f4deff23510f095290772",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140",
+      "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
+      "capacityEvidence": "qa/isolated-runner/APPROVED-SETUP-CAPACITY.json",
+      "freeSlotsAvailable": 0
     }
   },
   "tests": [
@@ -629,6 +650,16 @@
       "requestPreviewsVerified": 18,
       "genuineMeasurements": 0,
       "providerCalls": 0
+    },
+    {
+      "id": "isolated-runner-local-sql-bridge",
+      "result": "PASS",
+      "count": 21,
+      "passed": 21,
+      "failed": 0,
+      "receipt": "qa/isolated-runner/ACCEPTANCE.json",
+      "strictTypeScript": "PASS",
+      "limits": "Synthetic local PGlite; not hosted concurrency/provider proof"
     }
   ],
   "artifacts": {
@@ -688,11 +719,11 @@
     "providerCallsThisContinuation": 0,
     "aggregateActualCostUsd": null,
     "historical2Usd": "UNRECONCILED; unknown is not settled",
-    "ledgerChanges": "NONE",
+    "ledgerChanges": "PROPOSED_SQL_ONLY; local synthetic disposable DB21checks; no hosted writes",
     "paidCostUsdThisContinuation": 0,
     "verifiedFirstSixHeadroomMicroUsd": null,
-    "latestEvidence": "qa/internal-diagnostics/EXECUTOR-BUDGET-EVIDENCE.json",
-    "headroomReason": "Read-only 2026-10-21 catalog confirms no benchmark pilot ledger/calls/accounts/configs installed; absent does not imply zero exposure."
+    "latestEvidence": "qa/isolated-runner/BUDGET-RECONCILIATION.json",
+    "headroomReason": "Saved exports end18Oct and lack complete programme/key/request linkage; current prior spent/reserved/unresolved remain unknown. No absent-ledger reset."
   },
   "untouchedAssets": [
     "main and PR112/120/123/125",
@@ -708,7 +739,7 @@
   "externalGates": [
     "METADATA TASK COMPLETE, not a blocker and not to repeat. Inference-capable executor/finance/config admission remains separate; restricted metadata key cannot authorize inference. Existing live Sites key remains unattested.",
     "INTERNAL DIAGNOSTICS AMENDMENT6309011401: no human reviewers required for first-six internal source/rule diagnostics. Original expert-reference/release acceptance remains unresolved, but do not ask for two reviewers as the next diagnostic action. Weak4h unscored; 44 held-out unchanged. Source grants retained; no licensing research repeats.",
-    "Aggregate$5 full reservations, request-linked independent costs/receipts, reviewed exact config and shared-live schema decision before any inference",
+    "First-six isolated setup proposal only: immutable prior exposure plus new reservations within aggregate$5, actual processor/binding evidence and zero-cost setup permission; no shared-live install.",
     "Checkout code implemented and locally tested on releaseCompletion successor; separately authenticated verifier, actual provider inventory/exclusive cutover/enrollment review and shared-live install/real provider acceptance remain external.",
     "Specifically approved shared-live SQL impact/locking/rollback/independent acceptance",
     "Signed iOS/Android resources, physical devices and real store/customer lifecycle acceptance",
@@ -716,16 +747,17 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "satisfy-existing-isolated-executor-processor-and-ledger-preconditions",
-    "status": "BLOCKED_EXTERNAL_CAPABILITIES_NOT_RUN_APPROVAL",
-    "command": "First-six paid scope is conditionally approved: internal-diagnostics/OWNER-PAID-APPROVAL.json. Do not ask for it or for two reviewers again. Accept only new admissible evidence establishing an already-authorised isolated inference executor/existing-key binding, actual processor/security conditions and authoritative >=$1.9176 headroom under aggregate$5. Freeze that evidence before any dispatch. If it is absent, stop retries.",
-    "primaryDependency": "Named existing inference-capable isolated executor/credential and authoritative ledger/headroom evidence, plus actual processor conditions. Current protected runner is metadata-only; last read-only catalog found no pilot ledger. The approval does not authorise establishing these through new credentials, permission expansion or live/database changes.",
-    "prohibitedNextAction": "No repeated completed tests, metadata or catalog/licensing investigations without new evidence; no new keys/permissions/live database/customer/production changes/deployments/merges/B run. No spending until all existing conditions are satisfied."
+    "id": "stop-approved-setup-at-zero-cost-capacity-condition",
+    "status": "STOPPED_NO_RETRY",
+    "command": "Approval is saved; do not ask again. Current Free organisation has two active projects, so no third isolated project can be created under the approved $0/free-capacity condition. Do not retry, pause live projects, upgrade, change roles or move organisations. Resume only on new admissible free-capacity evidence or separately authorised revised setup.",
+    "primaryDependency": "The approved configuration has no available free project slot; this is a capacity limit, not missing owner setup approval.",
+    "prohibitedNextAction": "No creation probe, new account/organisation workaround, plan upgrade, live-project pause/deletion, credential change or inference. Automation unchanged."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",
     "coordinationBaseTree": "b7f0e51118e770bb7da544828676bc0d6bbcb0b2",
-    "checkoutIntent": "Undeployed proposal only. Future real dispatch requires preserving unresolved ledger; rollback toHOLD, never delete/reset or restore direct Pocketcreate."
+    "checkoutIntent": "Undeployed proposal only. Future real dispatch requires preserving unresolved ledger; rollback toHOLD, never delete/reset or restore direct Pocketcreate.",
+    "isolatedRunner": "Before use remove new bindings/disable job and delete only verified unused project. After any reservation/submission retain ledger and receipts; no reset or destructive deletion; original inference key unchanged."
   },
   "corpusAcceptance": {
     "originalRasters": "Three matching original rasters and legacy inputs unchanged/pinned",

@@ -1,0 +1,60 @@
+{
+  "kind": "APPROVED_SETUP_STOPPED_FREE_CAPACITY_UNAVAILABLE",
+  "sourceBranch": "monaco-isolated-runner-126-20261021-694d2e",
+  "invocationBranch": "monaco-first-six-inference-126-20261021",
+  "environment": "monaco-first-six-inference",
+  "reviewer": "nashysaimarkets",
+  "administratorBypass": false,
+  "repositoryTokenPermissions": {
+    "contents": "read"
+  },
+  "concurrency": {
+    "group": "monaco-first-six-existing-five-dollar-allowance",
+    "cancelInProgress": false,
+    "maxChartsInFlight": 1,
+    "maxCallsInFlight": 1
+  },
+  "acceptedRunAttempt": 1,
+  "automaticWorkTasks": false,
+  "credentialedTriggerInstalled": false,
+  "realDispatchEnabled": false,
+  "ledger": {
+    "projectName": "monaco-first-six-ledger",
+    "organisationId": "pvepbcawhvzgpeqvpkjn",
+    "region": "eu-west-2",
+    "backendRef": null,
+    "maximumNewMonthlyCostUsd": 0,
+    "freeCapacityVerified": false,
+    "schemaFiles": [
+      "supabase/migrations/20261014113000_pocket_benchmark_pilot.sql",
+      "supabase/proposed/monaco-isolated-runner.sql"
+    ],
+    "canonicalAllowanceRef": "comment-6165012632",
+    "aggregateCapMicroUsd": 5000000,
+    "requiredHeadroomMicroUsd": 1917600,
+    "spentMicroUsd": null,
+    "reservedMicroUsd": null,
+    "unresolvedMicroUsd": null,
+    "availableFreeSlots": 0,
+    "capacityCheckComplete": true,
+    "freeCapacityAvailable": false
+  },
+  "secrets": {
+    "existingInferenceKeyEnvironmentSecret": "MONACO_FIRST_SIX_OPENAI_API_KEY",
+    "existingInferenceKeyTrackingId": "key_EjND5GXtuqF2K0hp",
+    "existingInferenceProject": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "isolatedLedgerCredentialEnvironmentSecret": "MONACO_FIRST_SIX_LEDGER_KEY",
+    "newOpenAIKeyAllowed": false,
+    "valuesRecorded": false
+  },
+  "requiredEvidence": {
+    "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
+    "existingCredentialBinding": null,
+    "processorSecurityAcceptance": null,
+    "authoritativeBudgetCarryIn": null,
+    "zeroCostCapacity": "qa/isolated-runner/APPROVED-SETUP-CAPACITY.json:FAIL_NO_FREE_SLOT"
+  },
+  "paidScopeReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418",
+  "planSha256": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0",
+  "approvalMeaning": "Permission to set up only; never inferred from paid scope or test pass"
+}
