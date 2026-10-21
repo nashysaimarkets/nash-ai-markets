@@ -1,7 +1,7 @@
 name: Monaco Neon ledger disposable PostgreSQL QA
 on:
   push:
-    branches: [monaco-neon-ledger-126-20261021-ac5040]
+    branches: [monaco-neon-ledger-126-20261021-ac5040, monaco-launch-completion-126-20261021-e48b82]
     paths:
       - 'database/neon/**'
       - 'scripts/*monaco*neon*'
@@ -39,10 +39,10 @@ jobs:
       - name: Strict affected-source typecheck
         run: node_modules/.bin/tsc --noEmit --allowImportingTsExtensions --allowJs --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck --strict scripts/pocket-monaco-runner-bridge.ts scripts/pocket-monaco-neon-port.ts tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-neon-postgres.test.ts
       - name: Identity, TLS and no-retry adapter checks
-        run: node --test tests/pocket-monaco-neon-port.test.ts
+        run: node --test tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-setup-preflight.test.mjs tests/pocket-monaco-isolated-executor.test.mjs tests/pocket-monaco-protected-runner.test.mjs
       - name: Atomicity, independent sessions, crash recovery, history and aggregate cap
         env:
           MONACO_QA_DISPOSABLE_POSTGRES: 'true'
-        run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-qa/node_modules/pg/lib/index.js" node --test tests/pocket-monaco-neon-postgres.test.ts
+        run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-qa/node_modules/pg/lib/index.js" node --test --test-concurrency=1 tests/pocket-monaco-neon-postgres.test.ts tests/pocket-monaco-neon-key-amendment.test.mjs
       - name: Boundary
         run: echo 'Synthetic local PG17 only. No environment or secrets; no Neon, OpenAI, metadata, production, deploy, timer, cache or artifacts.'

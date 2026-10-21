@@ -20,7 +20,7 @@ async function fixture(prior:number|null=0){
  const n:NeonIdentity={organizationId:'org-synthetic-qa',projectId:'synthetic-qa-project',branchId:'br-synthetic-qa',
   endpointHost:'ep-synthetic-qa.eu-west-2.aws.neon.tech',databaseName:db,roleName:'monaco_ledger_runner',controlPlaneEvidenceSha256:'1'.repeat(64)};
  const identity={environment:'monaco-first-six-inference',sourceSha:'a'.repeat(40),backendRef:validateNeonIdentity(n),
-  projectRef:'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',keyTrackingId:'key_EjND5GXtuqF2K0hp',keyFingerprintSha256:'b'.repeat(64),planSha256:FROZEN_PLAN_SHA256};
+  projectRef:'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',keyTrackingId:'key_aD5pc20EZBLGECNC',keyFingerprintSha256:'b'.repeat(64),planSha256:FROZEN_PLAN_SHA256};
  const connections:any[]=[];
  const connect=async()=>{const c=new Client({...config,database:db,user:'monaco_ledger_runner'});await c.connect();connections.push(c);return c;};
  const bridge=(c:any,other=identity)=>createIsolatedLedgerBridge(createNeonSqlPort(c,n,other),ledger,other);

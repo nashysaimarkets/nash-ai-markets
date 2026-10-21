@@ -7,7 +7,7 @@ import {createIsolatedLedgerBridge,FROZEN_PLAN_SHA256} from '../scripts/pocket-m
 const n:NeonIdentity={organizationId:'org-synthetic-qa',projectId:'synthetic-qa-project',branchId:'br-synthetic-qa',
  endpointHost:'ep-synthetic-qa.eu-west-2.aws.neon.tech',databaseName:'monaco_ledger',roleName:'monaco_ledger_runner',controlPlaneEvidenceSha256:'1'.repeat(64)};
 const identity={environment:'monaco-first-six-inference',sourceSha:'a'.repeat(40),backendRef:validateNeonIdentity(n),
- projectRef:'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',keyTrackingId:'key_EjND5GXtuqF2K0hp',keyFingerprintSha256:'b'.repeat(64),planSha256:FROZEN_PLAN_SHA256};
+ projectRef:'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',keyTrackingId:'key_aD5pc20EZBLGECNC',keyFingerprintSha256:'b'.repeat(64),planSha256:FROZEN_PLAN_SHA256};
 test('Neon canonical identity is independent of Supabase 20-letter identifiers',()=>{
  assert.equal(identity.backendRef,'neon:synthetic-qa-project/br-synthetic-qa/monaco_ledger');
  assert.throws(()=>validateNeonIdentity({...n,endpointHost:'pxlqvaddvghjjhenqmdh.supabase.co'}));

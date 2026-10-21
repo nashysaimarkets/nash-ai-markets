@@ -36,7 +36,7 @@ export function createIsolatedLedgerBridge(port:RpcPort,ledgerKey:string,identit
  check(JSON.stringify(Object.keys(identity).sort())===JSON.stringify(['environment','sourceSha','backendRef','projectRef','keyTrackingId','keyFingerprintSha256','planSha256'].sort()),'Only non-secret runner identity fields allowed');
  check(identity.environment===RUNNER_ENVIRONMENT&&identity.planSha256===FROZEN_PLAN_SHA256,'Runner/plan binding required');
  check((/^[a-z]{20}$/.test(identity.backendRef)||/^neon:[a-z0-9-]{3,100}\/br-[a-z0-9-]{3,100}\/[a-z_][a-z0-9_]{0,62}$/.test(identity.backendRef))&&!['pxlqvaddvghjjhenqmdh','opmgzchnmcgnsfwpmysc'].includes(identity.backendRef),'Shared-live backend prohibited');
- check(identity.projectRef==='proj_LTmAIE2Ve7gUAFJ9M74ZxIBI'&&identity.keyTrackingId==='key_EjND5GXtuqF2K0hp','Existing inference-key binding required');
+ check(identity.projectRef==='proj_LTmAIE2Ve7gUAFJ9M74ZxIBI'&&identity.keyTrackingId==='key_aD5pc20EZBLGECNC','Existing inference-key binding required');
  check(/^[a-f0-9]{40}$/.test(identity.sourceSha)&&/^[a-f0-9]{64}$/.test(identity.keyFingerprintSha256),'Exact runner identity required');
  const bound=structuredClone(identity);
  async function rpc(name:string,args:Record<string,unknown>){

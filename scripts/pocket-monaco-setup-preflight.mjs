@@ -13,7 +13,7 @@ export const PINS = Object.freeze({
   branch: 'monaco-first-six-inference-126-20261021',
   environment: 'monaco-first-six-inference',
   project: 'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',
-  keyTrackingId: 'key_EjND5GXtuqF2K0hp',
+  keyTrackingId: 'key_aD5pc20EZBLGECNC',
   model: 'gpt-5-mini-2025-08-07',
   planSha256: '9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0',
   paidScopeReceipt: 'https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418',

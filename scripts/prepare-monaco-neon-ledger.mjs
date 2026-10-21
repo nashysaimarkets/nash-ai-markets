@@ -8,6 +8,9 @@ function pinned(path,expected){const s=readFileSync(new URL(path,root),'utf8');i
 export function prepareNeonLedgerSql(){
  let base=pinned('supabase/migrations/20261014113000_pocket_benchmark_pilot.sql','2c0586c0cc785ac896374e3d0d6989a2e2e4c924c7ebd176c67c0565ca49f2b3');
  let extension=pinned('supabase/proposed/monaco-isolated-runner.sql','1af63b6badcafa7c0fd23f6a398098626c3457f6f5f85657bcde2296476750ed');
+ const oldKeyCheck="existing_key_tracking_id text not null check(existing_key_tracking_id='key_EjND5GXtuqF2K0hp')";
+ if(!extension.includes(oldKeyCheck))throw Error('Exact authorised key adapter anchor missing');
+ extension=extension.replace(oldKeyCheck,"existing_key_tracking_id text not null check(existing_key_tracking_id='key_aD5pc20EZBLGECNC')");
  const oldBackend="backend_ref text not null check(backend_ref ~ '^[a-z]{20}$'\n   and backend_ref not in ('pxlqvaddvghjjhenqmdh','opmgzchnmcgnsfwpmysc'))";
  const oldStaging="check(staging_ref ~ '^[a-z]{20}$' and staging_ref not in ('pxlqvaddvghjjhenqmdh','opmgzchnmcgnsfwpmysc'))";
  if(!extension.includes(oldBackend)||!extension.includes(oldStaging))throw Error('Exact backend adapter anchors missing');

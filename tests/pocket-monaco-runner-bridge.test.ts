@@ -12,10 +12,10 @@ const {PGlite}=await import(pathToFileURL(modulePath!).href);
 const {pgcrypto}=await import(pathToFileURL(join(modulePath!,'../contrib/pgcrypto.js')).href);
 const root=new URL('../',import.meta.url);
 const baseSql=readFileSync(new URL('supabase/migrations/20261014113000_pocket_benchmark_pilot.sql',root),'utf8');
-const extension=readFileSync(new URL('supabase/proposed/monaco-isolated-runner.sql',root),'utf8');
+const extension=readFileSync(new URL('supabase/proposed/monaco-isolated-runner.sql',root),'utf8').replace("existing_key_tracking_id='key_EjND5GXtuqF2K0hp'","existing_key_tracking_id='key_aD5pc20EZBLGECNC'");
 const plan=loadFrozenRunnerPlan();
 const identity:RunnerIdentity={environment:'monaco-first-six-inference',sourceSha:'a'.repeat(40),backendRef:'q'.repeat(20),
- projectRef:'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',keyTrackingId:'key_EjND5GXtuqF2K0hp',keyFingerprintSha256:'b'.repeat(64),planSha256:FROZEN_PLAN_SHA256};
+ projectRef:'proj_LTmAIE2Ve7gUAFJ9M74ZxIBI',keyTrackingId:'key_aD5pc20EZBLGECNC',keyFingerprintSha256:'b'.repeat(64),planSha256:FROZEN_PLAN_SHA256};
 const ledger='monaco-first-six-aggregate';
 const functions:Record<string,string[]>={inspect_monaco_isolated_runner:['p_key','p_identity'],
  claim_pocket_benchmark_case:['p_ledger_key','p_case_id','p_project_ref','p_owner_approval_ref','p_candidate_sha','p_plan'],
@@ -65,6 +65,7 @@ await check('one microdollar too much prior exposure blocks whole run',async()=>
 await check('shared-live project cannot be seeded',async()=>{await assert.rejects(()=>seed(0,{backend:'pxlqvaddvghjjhenqmdh'}));});
 await check('partial frozen request inventory cannot admit a run',async()=>{await seed(0,{partial:true});await assert.rejects(()=>bridge().claim('d001'));});
 await check('wrong runtime key/source/backend identity fails before claim',async()=>{await seed();for(const field of ['keyFingerprintSha256','sourceSha','backendRef'] as const){const changed={...identity,[field]:field==='sourceSha'?'f'.repeat(40):field==='backendRef'?'w'.repeat(20):'f'.repeat(64)};await assert.rejects(()=>createIsolatedLedgerBridge(port,ledger,changed).claim('d001'));}});
+await check('previous inference key is rejected locally',async()=>{assert.throws(()=>createIsolatedLedgerBridge(port,ledger,{...identity,keyTrackingId:'key_EjND5GXtuqF2K0hp'}));assert.equal(calls,0);});
 await check('old metadata-only key is rejected locally',async()=>{assert.throws(()=>createIsolatedLedgerBridge(port,ledger,{...identity,keyTrackingId:'key_WQtXX6p9qXaV7yrJ'}));assert.equal(calls,0);});
 await check('extra credential-shaped fields never enter an RPC payload',async()=>{assert.throws(()=>createIsolatedLedgerBridge(port,ledger,{...identity,apiKey:'SYNTHETIC-NOT-A-SECRET'} as RunnerIdentity));assert.equal(calls,0);});
 await check('unknown inspector output cannot lead to a reservation',async()=>{let n=0;const bad={rpc:async()=>{n++;return{data:{},error:null};}};await assert.rejects(()=>createIsolatedLedgerBridge(bad,ledger,identity).claim('d001'));assert.equal(n,1);});
