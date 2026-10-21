@@ -1,0 +1,48 @@
+name: Monaco Neon ledger disposable PostgreSQL QA
+on:
+  push:
+    branches: [monaco-neon-ledger-126-20261021-ac5040]
+    paths:
+      - 'database/neon/**'
+      - 'scripts/*monaco*neon*'
+      - 'scripts/pocket-monaco-runner-bridge.ts'
+      - 'tests/*monaco*neon*'
+      - '.github/workflows/monaco-neon-ledger-qa.yml'
+permissions:
+  contents: read
+jobs:
+  disposable-ledger:
+    if: github.repository == 'nashysaimarkets/nash-ai-markets' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 2s
+          --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.19.0'
+      - name: Install only affected test dependencies; no app build, cache or artifacts
+        run: |
+          npm install --prefix "$RUNNER_TEMP/monaco-qa" --ignore-scripts --no-audit --no-fund pg@8.16.3 typescript@5.9.3 @types/node@22.19.19 @supabase/supabase-js@2.110.2
+          ln -s "$RUNNER_TEMP/monaco-qa/node_modules" node_modules
+      - name: Strict affected-source typecheck
+        run: node_modules/.bin/tsc --noEmit --allowImportingTsExtensions --allowJs --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck --strict scripts/pocket-monaco-runner-bridge.ts scripts/pocket-monaco-neon-port.ts tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-neon-postgres.test.ts
+      - name: Identity, TLS and no-retry adapter checks
+        run: node --test tests/pocket-monaco-neon-port.test.ts
+      - name: Atomicity, independent sessions, crash recovery, history and aggregate cap
+        env:
+          MONACO_QA_DISPOSABLE_POSTGRES: 'true'
+        run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-qa/node_modules/pg/lib/index.js" node --test tests/pocket-monaco-neon-postgres.test.ts
+      - name: Boundary
+        run: echo 'Synthetic local PG17 only. No environment or secrets; no Neon, OpenAI, metadata, production, deploy, timer, cache or artifacts.'
