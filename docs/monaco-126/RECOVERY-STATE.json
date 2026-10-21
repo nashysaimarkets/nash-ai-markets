@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T09:36:29.072397+00:00",
+  "savedAtUtc": "2026-10-21T09:53:38.792693+00:00",
   "worker": {
     "id": "root-isolated-runner-694d2e",
-    "status": "OFFLINE_IMPLEMENTATION_COMPLETE_SETUP_DECISION_PENDING",
-    "activeTask": "Completed minimal isolated SQL/bridge extension and21new checks; one exact zero-cost-only protected-runner/ledger/existing-key setup proposal awaits permission. No hosted installation or paid execution.",
-    "lastVerifiedActivityAtUtc": "2026-10-21T09:34:37.651047+00:00"
+    "status": "OWNER_SETUP_APPROVED_STOPPED_NO_FREE_CAPACITY",
+    "activeTask": "Owner setup approval recorded. Newly checked organisation plan is Free with two active projects, exhausting the documented two-project allowance; $0-only setup stops before provisioning. Do not re-request setup or first-six paid approval.",
+    "lastVerifiedActivityAtUtc": "2026-10-21T09:53:38.792693+00:00"
   },
   "ownership": {
     "branch": "monaco-isolated-runner-126-20261021-694d2e",
     "writer": "root-isolated-runner-694d2e",
     "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6312387711",
-    "status": "FROZEN_SOURCE_SETUP_DECISION_PENDING",
+    "status": "FROZEN_APPROVED_SETUP_CAPACITY_STOP",
     "baseCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
-    "expectedHead": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
-    "expectedHeadResolution": "Source published atomically at918e9d28866998e9211e6e10f5d0a8f84955bebd; GitHub PR140 returned exact head/base. This documentation-only receipt advances with expected-head lease; final enclosing checkpoint is pinned in Issue126.",
+    "expectedHead": "c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d",
+    "expectedHeadResolution": "This documentation-only continuation uses expected head c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d. Final Issue126 receipt resolves enclosing saved head; executable source remains918e9d28866998e9211e6e10f5d0a8f84955bebd.",
     "ownedPaths": [
       "scripts/pocket-monaco-runner-bridge.ts",
       "supabase/proposed/monaco-isolated-runner.sql",
@@ -389,7 +389,7 @@
     },
     "isolatedRunner": {
       "sourceStatus": "OFFLINE_IMPLEMENTED_AND_TESTED",
-      "externalAcceptance": "SETUP_PROPOSAL_ONLY_NOT_HOSTED",
+      "externalAcceptance": "SETUP_APPROVED_STOPPED_NO_FREE_CAPACITY",
       "branch": "monaco-isolated-runner-126-20261021-694d2e",
       "parentCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
       "proposal": "docs/monaco-126/isolated-runner/SETUP-DECISION.md",
@@ -402,7 +402,10 @@
       "headroomMicroUsd": null,
       "pushedSourceCommit": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
       "sourceTree": "9a8c798c010e63fba07f4deff23510f095290772",
-      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140"
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140",
+      "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
+      "capacityEvidence": "qa/isolated-runner/APPROVED-SETUP-CAPACITY.json",
+      "freeSlotsAvailable": 0
     }
   },
   "tests": [
@@ -744,11 +747,11 @@
     "Final matching deployed source, privacy/legal/production/store/publication owner decisions"
   ],
   "nextSafeAction": {
-    "id": "approve-specific-zero-cost-isolated-setup",
-    "status": "ONE_SETUP_PERMISSION_DECISION",
-    "command": "Read isolated-runner/SETUP-DECISION.md. Request only isolated project/database credential + protected runner environment + secure existing-key binding and read-only account evidence; cost$0 conditional on verified capacity, otherwise stop. No OpenAI key creation or scope reapproval.",
-    "primaryDependency": "New hosted setup/binding authority is absent; existing paid-scan approval is not setup authority. Free capacity is not established by $0 quote.",
-    "prohibitedNextAction": "No automation changes, repeat metadata, charts/test rebuild, new provider key/permission expansion, live project use, spending, deployment/main merge, held-out44 or paid dispatch before all existing conditions."
+    "id": "stop-approved-setup-at-zero-cost-capacity-condition",
+    "status": "STOPPED_NO_RETRY",
+    "command": "Approval is saved; do not ask again. Current Free organisation has two active projects, so no third isolated project can be created under the approved $0/free-capacity condition. Do not retry, pause live projects, upgrade, change roles or move organisations. Resume only on new admissible free-capacity evidence or separately authorised revised setup.",
+    "primaryDependency": "The approved configuration has no available free project slot; this is a capacity limit, not missing owner setup approval.",
+    "prohibitedNextAction": "No creation probe, new account/organisation workaround, plan upgrade, live-project pause/deletion, credential change or inference. Automation unchanged."
   },
   "rollback": {
     "coordinationBase": "10451b5d612b90b3daceda4b1d317a83d74dffad",

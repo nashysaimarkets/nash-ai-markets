@@ -1,5 +1,5 @@
 {
-  "kind": "PROPOSED_ONLY_NOT_DEPLOYED",
+  "kind": "APPROVED_SETUP_STOPPED_FREE_CAPACITY_UNAVAILABLE",
   "sourceBranch": "monaco-isolated-runner-126-20261021-694d2e",
   "invocationBranch": "monaco-first-six-inference-126-20261021",
   "environment": "monaco-first-six-inference",
@@ -34,7 +34,10 @@
     "requiredHeadroomMicroUsd": 1917600,
     "spentMicroUsd": null,
     "reservedMicroUsd": null,
-    "unresolvedMicroUsd": null
+    "unresolvedMicroUsd": null,
+    "availableFreeSlots": 0,
+    "capacityCheckComplete": true,
+    "freeCapacityAvailable": false
   },
   "secrets": {
     "existingInferenceKeyEnvironmentSecret": "MONACO_FIRST_SIX_OPENAI_API_KEY",
@@ -45,11 +48,11 @@
     "valuesRecorded": false
   },
   "requiredEvidence": {
-    "setupApproval": null,
+    "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
     "existingCredentialBinding": null,
     "processorSecurityAcceptance": null,
     "authoritativeBudgetCarryIn": null,
-    "zeroCostCapacity": null
+    "zeroCostCapacity": "qa/isolated-runner/APPROVED-SETUP-CAPACITY.json:FAIL_NO_FREE_SLOT"
   },
   "paidScopeReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418",
   "planSha256": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0",

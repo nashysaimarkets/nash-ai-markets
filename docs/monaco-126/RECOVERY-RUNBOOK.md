@@ -1,3 +1,13 @@
+# Latest outcome: setup approved; zero-cost capacity stop
+
+The owner replied “Approved” to the exact setup package at checkpoint `c13d6b19b10f394b07168ab56d08d6ed5cb1cf0d`. `isolated-runner/OWNER-SETUP-APPROVAL.json` preserves it. Do not ask for the same setup, first-six paid approval or two chart reviewers again.
+
+New authoritative read-only account evidence: organisation `pvepbcawhvzgpeqvpkjn` is Free; both known projects are ACTIVE_HEALTHY. Official Supabase billing FAQ permits two active free projects. The approved third isolated project therefore has no free slot. `qa/isolated-runner/APPROVED-SETUP-CAPACITY.json` records the evidence and inference. The earlier $0 price quote did not establish quota.
+
+The approved stop condition has been applied before provisioning: no create attempt, environment/credential change, new cost, provider call, live-project change or automation action. No tests or metadata verification were repeated. Do not retry or work around the quota by pausing live projects, upgrading, changing memberships or creating organisations. Continue only if new evidence satisfies the saved zero-cost capacity condition or a revised configuration is separately authorised. The final Issue126 receipt gives this documentation checkpoint; executable source remains `918e9d28866998e9211e6e10f5d0a8f84955bebd`.
+
+The implementation and proposed configuration below remain intact historical context; the owner decision is now saved.
+
 # Current continuation: isolated runner and durable prior-budget bridge
 
 Resume the newest Issue126 receipt for branch `monaco-isolated-runner-126-20261021-694d2e`, parent PR139 checkpoint `3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4`, coordination claim6312387711. Earlier branches remain frozen. PR140 source `918e9d28866998e9211e6e10f5d0a8f84955bebd`, tree `9a8c798c010e63fba07f4deff23510f095290772`. The enclosing final receipt pins the documentation checkpoint; do not treat the older PR139 SHA as the latest successor. Deployments are disabled for this branch.
