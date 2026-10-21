@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "MONACO_SOURCE_REFERENCE_OFFLINE_TEST_RECEIPT",
+  "status": "PASS_AUTOMATED_ENGINEERING_ONLY",
+  "calculatorSha256": "a9277fa2fa5646967477ff65833e77fdfd30f5f7404ad5cf29f0f5f177a2108b",
+  "testSourceSha256": "d4bfb50b701c7fa851e17dea01faf067eb2b2cbbfe13c260ea52f09ca49a2970",
+  "sourceReferenceSha256": "06fd2b201ecefbda4c7746a24ea5c5470e8679fdee2740dcac81cd3c5f8dd424",
+  "publicSourceReceiptSha256": "f2939fc5ad868e827dcba25557cdd75567fc2bd51ee0c1411799d698f0c2fa9f",
+  "unitTestCommand": "python3 -m unittest tests/test_monaco_diagnostic_source_reference.py",
+  "unitTestsExecuted": 9,
+  "unitTestsPassed": 9,
+  "unitTestsFailed": 0,
+  "observedUnitTestResult": "Ran 9 tests in 0.034s; OK; exit_code=0",
+  "integrationCasesChecked": 6,
+  "integrationBarsChecked": 126,
+  "integrationOhlcPointsChecked": 504,
+  "sourceMinuteObservationsChecked": 6441,
+  "sourceArchivesChecked": 4,
+  "axisTicksChecked": 42,
+  "providerCalls": 0,
+  "genuineScannerMeasurements": 0,
+  "semanticLabelsAccepted": 0,
+  "limitations": [
+    "Unit fixtures are synthetic engineering tests and are not source reference evidence.",
+    "Integration reference derives only from the existing first-six pinned source archives and original raster/calibration artifacts.",
+    "No held-out case files, proposal labels or reviewer annotations were opened.",
+    "No packet files were modified."
+  ]
+}

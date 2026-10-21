@@ -1,0 +1,35 @@
+# Internal development diagnostics — owner amendment, 21 October 2026
+
+Issue126 amendment receipt6309011401 supersedes the two-reviewer request **for this internal diagnostic track only**. The owner has no qualified chart reviewers. Do not resume the old reviewer request as a prerequisite for these diagnostics. The original expert-reference protocol and release acceptance remain unresolved and unchanged. No human verification is claimed.
+
+`PROTOCOL-v1.json` is a separate source/geometry protocol. `FIRST-SIX-PROVIDER-PLAN.json` binds the existing d001–d006 inputs, all18 request slots, independently calculated source reference, scanner/model and integration-source hashes. d003's weak4h H&S and ambiguous/low-confidence interpretations stay unscored. Empty pattern output is not a support/resistance negative. Candle-derived liquidity witnesses do not establish resting orders. None of the44 held-out cases is admitted; their dataset, split and original acceptance requirements are preserved.
+
+## Completed integration
+
+`pocket-monaco-diagnostic-provider.ts` connects the frozen request plan to the existing disposable adapter and diagnostic normalizer. It admits the independently calculated oracle by exact hash, binds integration-source hashes into the plan freeze, and preserves raw main/precision/rescue receipts separately from scanner postprocessing. Calibration may remove claims and copy supplied chart identity/current price; those supplied values are not independent provider readings. Objective source agreement, existing pattern-rule conformance and semantic interpretation have separate fields. Synthetic receipts always remain engineering evidence.
+
+The existing journal still reserves all three slots before one chart, submits before transport, rejects duplicates, conditionally uses rescue, retains uncertain exposure, and supports immutable receipt recovery. The old expert path still requires its reference/approval fixtures. No second spending system or dataset was built. Real dispatch throws unconditionally; environment variables and declared approvals cannot activate it. There is no imported SDK client, runtime-metadata invocation, live route or RPC in the new integration module.
+
+## Exact executor and financial evidence
+
+The **verified existing secure executor is metadata-only**: GitHub Actions run39467424486/job118782343631/attempt1, workflow `.github/workflows/monaco-protected-metadata.yml`, source961bf540b4533f6d214c7d1a1dfbf1f55d36b5d3, protected environment `monaco-benchmark-metadata`, branch `monaco-benchmark-access-126-20261020-c10e55`. Its saved secret name is `MONACO_BENCHMARK_OPENAI_API_KEY`; the recorded temporary credential has model-read permissions only. It cannot run inference and was not read, changed or reverified.
+
+The separately recorded existing inference-key candidate is `key_EjND5GXtuqF2K0hp` / `pocket bullseye staging`, in project `proj_LTmAIE2Ve7gUAFJ9M74ZxIBI`, organisation `org-5vLRRzXwcigUx96TVE0rI3RW`. The19October inventory does **not** establish its current binding to an isolated executor. No securely bound inference executor is presently verified. The shared live Sites environment is not an isolated executor and must not be used.
+
+The read-only catalog query at21October05:47:14.815057UTC found no `private.pocket_benchmark_pilot_ledgers`, `pilot_calls`, `budget_accounts` or `budget_configs` in project `pxlqvaddvghjjhenqmdh`. The historical test ledger exists; it is separate and unreconciled. No customer rows were read and no table was created. **Verified numeric headroom is unknown**, not$5 or$0. The existing aggregate A ceiling remains$5; the run requires at least$1.9176 available, so prior spent+reserved+unresolved must be at most$3.0824, with any tax/FX cash allowance resolved separately within the approved cash ceiling. See `qa/internal-diagnostics/EXECUTOR-BUDGET-EVIDENCE.json`.
+
+The old `withPocketTestSpendScope` imports the live admin client and, in full-reservation mode, performs runtime metadata verification. It was not called. This amendment does not authorise repeating metadata, installing a ledger in the shared live database, relaxing its binding checks, or turning ordinary provider dispatch into a benchmark path. A secure inference binding and authoritative durable ledger must already be available under appropriate authority; otherwise the paid run remains blocked even if its cost is approved.
+
+## Approved conditional paid scope
+
+The owner replied “Approved”; Issue126 receipt6309459418 and `OWNER-PAID-APPROVAL.json` preserve that conditional authority. Do not ask for the same run approval again. Execution remains blocked by the existing executor/security/ledger conditions below.
+
+Approved scope: **one internal diagnostic run of d001–d006 only**, using application candidate `f5e820b0bd7bf095153e31d692a10fb3640ba16e`, the exact saved plan/protocol/oracle and the successor integration-source checkpoint recorded in `APPROVAL-RECORD.json`; model `gpt-5-mini-2025-08-07`, default tier, low reasoning, `store=false`, absent context/corrections, no tools, and `macroEvents=[]`. Reserve main114000 + primary102800 + conditional rescue102800 microUSD per chart; output caps7000/1400/1400. Execute serially, one chart and one call in flight, **at most18 sends, zero retries/failover, at most$1.9176 direct-token exposure within the existing aggregate$5 ceiling**.
+
+This run may proceed only after the exact already-authorised isolated executor and existing inference credential/project are bound; the actual on-behalf processor, retention, training, territory and private-artifact handling are accepted against the retained source grants; and authoritative A headroom of at least$1.9176 is verified including reserved/unresolved exposure. `store=false` alone does not establish zero retention. Freeze the final executor/ledger/approval evidence and private outputs, then reconcile every submission, request ID, usage and uncertain outcome. If any condition fails, stop without dispatch. No new keys, permission expansion, metadata rerun, production/customer/database change, deployment, merge, or held-out run is included.
+
+ScopeB remains outside this request:44 held-out charts, at most132 sends/$14.0624 retained direct-token bound, separate additional budget, original reference/protocol/exposure freeze requirements. The legacy expert acceptance and release decision are also outside this request. Price/rule diagnostics cannot establish trading accuracy or production readiness.
+
+## Resume
+
+Recover the unchanged50-case packet using `benchmark50/PRIVATE-PACKET-RECEIPT.json` and the separate source oracle using `PRIVATE-REFERENCE-RECEIPT.json`. Do not regenerate either, rescreen4h windows, repeat licensing/metadata investigations, repeat the recovered32 semantic checks, or seek two reviewers for this internal track. The paid-scope decision is recorded. The current next step requires new admissible evidence of the named existing executor/security/authoritative-budget capabilities; without it, stop retries and do not ask for the same approval again.

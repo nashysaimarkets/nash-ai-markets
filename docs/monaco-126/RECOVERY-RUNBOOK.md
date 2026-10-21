@@ -1,4 +1,18 @@
-## Latest continuation: PR138 — offline executor and first-six handoff
+## Current continuation — PR139 internal-diagnostics amendment, 21 October 2026
+
+Resume the newest Issue126 receipt on `monaco-internal-diagnostics-126-20261021-3e0cde`, parent PR138 `ab1ef077885dae5e3b878c394ea68f5025208dd2`. Verified executable source `579b781335e352034c5970dca06cc01b49ed81bb`, tree `41c3e8b35d2f8bc2c190b34d43e58682b6f17aab`; latest Issue126 receipt gives the enclosing documentation head. Verify expected head and ownership; automatic deployment is disabled. The owner amendment is recorded in Issue126 receipt6309011401. **The owner has no qualified chart reviewers: do not ask for two reviewers for INTERNAL DEVELOPMENT DIAGNOSTICS.** The original expert-reference/release protocol remains unresolved and separate; its historical reviewer requests below are not the current next action.
+
+Read `internal-diagnostics/EXECUTION-AND-APPROVAL.md`, `APPROVAL-RECORD.json`, and `qa/internal-diagnostics/ACCEPTANCE-ENGINEERING.json`. The separately versioned protocol uses an independently calculated source oracle, checks objective prices/coordinates, reports existing-rule conformance separately, and keeps weak/ambiguous interpretations unscored. Six source cases/126 bars/504 OHLC coordinates checked;128 unique affected engineering checks pass, including the32 semantic checks rerun exactly once with raw logs retained. Zero real provider diagnostics, zero human references, zero scanner acceptance. Original50 packet, grants, all44 held-out cases, old acceptance rules and metadata key remain untouched.
+
+The unmounted mock integration preserves existing reservation/concurrency/receipt recovery. Real dispatch is structurally disabled. Exact existing secure executor39467424486 is metadata-only; no isolated inference-key binding is verified. The read-only21October catalog found no installed benchmark pilot ledger; numeric headroom is unknown, not an unused$5. Read `qa/internal-diagnostics/EXECUTOR-BUDGET-EVIDENCE.json`; do not repeat that query without admissible new evidence or install anything in the shared live database.
+
+The owner replied “Approved” to that exact first-six conditional paid request; Issue126 receipt6309459418 and `internal-diagnostics/OWNER-PAID-APPROVAL.json` retain the authority. Do not ask for this approval again. Scope remains at most18 calls, zero retries/failover and at most$1.9176 direct-token exposure inside aggregate$5, only after existing isolated inference binding, actual processor conditions and authoritative headroom are verified. These capabilities remain unverified; no newer evidence was supplied. The approval does not authorise new keys/permissions, live/database changes, B, deployment, merge or release. Stop retries until admissible capability evidence arrives; no completed tests/metadata/catalog/licensing investigation is to be repeated merely because cost was approved.
+
+Recover the independently saved private source reference through `internal-diagnostics/PRIVATE-REFERENCE-RECEIPT.json`; recover the existing unchanged packet through `benchmark50/PRIVATE-PACKET-RECEIPT.json`. Do not publish private market-data arrays or regenerate the packet.
+
+The following sections are historical recovery records. The amendment above takes precedence for the current internal diagnostic track.
+
+## Historical continuation: PR138 — offline executor and first-six handoff
 
 Resume the latest Issue126 receipt on `monaco-offline-executor-126-20261020-3e0cde`, parent PR137 `5d9fc4e7cc28d26a352d7d976db850f443e0b7e0`. Verify ownership and expected head. Deployment is disabled; earlier branches and the original 50-case packet remain frozen. `qa/offline-executor/ACCEPTANCE-ENGINEERING.json` binds the new code/test receipts. Do not rerun accepted data/source/application/Checkout/native/metadata work.
 
@@ -10,7 +24,7 @@ The sole current owner decision bundle is `benchmark50/APPROVAL-RECORD.json`. Ob
 
 The prior checkpoints below are historical recovery evidence, not instructions to restart licensing or metadata tasks.
 
-## Latest continuation: PR137 —50-chart preparation
+## Historical continuation: PR137 —50-chart preparation
 
 Resume the latest Issue126 expected-head receipt on `monaco-benchmark50-126-20261020-3e0cde`; do not restart PR136 or its completed tests. Automatic deployment is disabled. Current complete privatepacket recovery is in `benchmark50/PRIVATE-PACKET-RECEIPT.json`; original and first-six replacement packets remain preserved separately. Verify the archive and FILE-INVENTORY hashes locally, not by re-downloading vendor samples or rechecking metadata. The final packet includes source ZIPs, SHA-pinned rights evidence,50case data/rasters/inputs/calibrations/proposals, two blank reviewer folders, first-six coordinator priorities,150exact request objects, raw-observations empty file and scoped test receipts.
 
