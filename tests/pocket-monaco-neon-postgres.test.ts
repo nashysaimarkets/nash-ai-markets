@@ -7,7 +7,7 @@ import {prepareNeonLedgerSql} from '../scripts/prepare-monaco-neon-ledger.mjs';
 import {createNeonSqlPort,validateNeonIdentity,type NeonIdentity} from '../scripts/pocket-monaco-neon-port.ts';
 import {createIsolatedLedgerBridge,loadFrozenRunnerPlan,FROZEN_PLAN_SHA256} from '../scripts/pocket-monaco-runner-bridge.ts';
 assert.equal(process.env.MONACO_QA_DISPOSABLE_POSTGRES,'true','Disposable local PostgreSQL only');
-const {Client}=await import(pathToFileURL(process.env.MONACO_QA_PG_MODULE!).href);
+const {Client}=(await import(pathToFileURL(process.env.MONACO_QA_PG_MODULE!).href)).default;
 const config={host:'127.0.0.1',port:5432,user:'postgres',database:'postgres',connectionTimeoutMillis:5000};
 const control=new Client(config);await control.connect();
 const plan=loadFrozenRunnerPlan();let serial=0;
