@@ -1,6 +1,6 @@
 # Current continuation: isolated runner and durable prior-budget bridge
 
-Resume the newest Issue126 receipt for branch `monaco-isolated-runner-126-20261021-694d2e`, parent PR139 checkpoint `3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4`, coordination claim6312387711. Earlier branches remain frozen. The enclosing final receipt pins the actual source/checkpoint; do not treat the older PR139 SHA as the latest successor. Deployments are disabled for this branch.
+Resume the newest Issue126 receipt for branch `monaco-isolated-runner-126-20261021-694d2e`, parent PR139 checkpoint `3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4`, coordination claim6312387711. Earlier branches remain frozen. PR140 source `918e9d28866998e9211e6e10f5d0a8f84955bebd`, tree `9a8c798c010e63fba07f4deff23510f095290772`. The enclosing final receipt pins the documentation checkpoint; do not treat the older PR139 SHA as the latest successor. Deployments are disabled for this branch.
 
 Read `isolated-runner/SETUP-DECISION.md` and `qa/isolated-runner/ACCEPTANCE.json`. Completed: minimal injected SQL bridge, immutable carry-in exposure, exact isolated identity and18request pins, live-backend denial and conservative combined cap. All21new local checks and strict targeted TS pass; original128checks/source hashes are reused unchanged. No charts, private packet, metadata or full suites were rerun.
 

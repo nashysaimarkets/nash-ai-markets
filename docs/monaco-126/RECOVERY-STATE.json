@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-21T09:34:37.651047+00:00",
+  "savedAtUtc": "2026-10-21T09:36:29.072397+00:00",
   "worker": {
     "id": "root-isolated-runner-694d2e",
     "status": "OFFLINE_IMPLEMENTATION_COMPLETE_SETUP_DECISION_PENDING",
@@ -12,10 +12,10 @@
     "branch": "monaco-isolated-runner-126-20261021-694d2e",
     "writer": "root-isolated-runner-694d2e",
     "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6312387711",
-    "status": "ISOLATED_SUCCESSOR_NO_PREVIOUS_BRANCH_WRITE",
+    "status": "FROZEN_SOURCE_SETUP_DECISION_PENDING",
     "baseCheckpoint": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
-    "expectedHead": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
-    "expectedHeadResolution": "The final Issue126 receipt resolves the enclosing published checkpoint; no self-referential source SHA is invented. Atomic new-branch creation followed by expected-head updates only.",
+    "expectedHead": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
+    "expectedHeadResolution": "Source published atomically at918e9d28866998e9211e6e10f5d0a8f84955bebd; GitHub PR140 returned exact head/base. This documentation-only receipt advances with expected-head lease; final enclosing checkpoint is pinned in Issue126.",
     "ownedPaths": [
       "scripts/pocket-monaco-runner-bridge.ts",
       "supabase/proposed/monaco-isolated-runner.sql",
@@ -27,7 +27,7 @@
       "vercel.json"
     ],
     "verificationBasis": "Parent/Issue126 verified before local clone; proposed branch absent; claim6312387711 is coordination evidence, not an atomic lease; first published tree disables deployments.",
-    "pr": null
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140"
   },
   "checkpoint": {
     "applicationSourceSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
@@ -52,8 +52,9 @@
     "internalDiagnosticsBranch": "monaco-internal-diagnostics-126-20261021-3e0cde",
     "isolatedRunnerParentSha": "3e6dfd3f6db6bccebf7e178f85008d79ed5fb1a4",
     "isolatedRunnerBranch": "monaco-isolated-runner-126-20261021-694d2e",
-    "isolatedRunnerSourceSha": null,
-    "isolatedRunnerSourceResolution": "Final Issue126 receipt and next documentation checkpoint pin this source; prior application/diagnostic source pins remain unchanged."
+    "isolatedRunnerSourceSha": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
+    "isolatedRunnerSourceResolution": "Tested bridge/SQL/test source and deployment-disabled tree published and returned by GitHub PR140; final documentation head resolved by Issue126 receipt.",
+    "isolatedRunnerSourceTree": "9a8c798c010e63fba07f4deff23510f095290772"
   },
   "tracks": {
     "core": {
@@ -398,7 +399,10 @@
       "realDispatchEnabled": false,
       "installedLedger": false,
       "existingKeyBound": false,
-      "headroomMicroUsd": null
+      "headroomMicroUsd": null,
+      "pushedSourceCommit": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
+      "sourceTree": "9a8c798c010e63fba07f4deff23510f095290772",
+      "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140"
     }
   },
   "tests": [

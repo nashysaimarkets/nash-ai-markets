@@ -64,5 +64,11 @@
     "Authoritative prior budget remains unknown",
     "No runnable hosted job or installed ledger; new infrastructure needs setup authority"
   ],
-  "automations": "UNTOUCHED"
+  "automations": "UNTOUCHED",
+  "verifiedGitHubSource": {
+    "commit": "918e9d28866998e9211e6e10f5d0a8f84955bebd",
+    "tree": "9a8c798c010e63fba07f4deff23510f095290772",
+    "pr": "https://github.com/nashysaimarkets/nash-ai-markets/pull/140",
+    "verification": "Git Data tree matches local git write-tree; atomic new branch creation; PR140 returned exact head and original base. Later documentation-only checkpoint preserves these executable hashes."
+  }
 }
