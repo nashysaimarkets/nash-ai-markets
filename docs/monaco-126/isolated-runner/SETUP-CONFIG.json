@@ -57,7 +57,11 @@
     "valuesRecorded": false,
     "isolatedLedgerCredentialFormat": "Password only; endpoint/database/role separately pinned; URI overrides forbidden",
     "ledgerRunnerPasswordIssued": false,
-    "ledgerGitHubSecretStored": false
+    "ledgerGitHubSecretStored": false,
+    "neonConsoleConnectionVerified": true,
+    "credentialHandoffStatus": "USER_GENERATE_AND_COPY_THEN_CONCEALED_GITHUB_PASTE_PENDING",
+    "passwordIssueAttemptCompleted": false,
+    "credentialValueObserved": false
   },
   "requiredEvidence": {
     "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",

@@ -5,7 +5,7 @@
   "worker": {
     "id": "root-neon-ledger-ac5040",
     "status": "LEDGER_INSTALLED_SECURE_HANDOFF_PENDING",
-    "activeTask": "Neon Free ledger installed and restricted; secure Neon console connection needed only to complete approved credential transfer into protected GitHub environment. No inference admitted.",
+    "activeTask": "Neon console sign-in verified. Restricted password generation/copy handoff prepared; protected GitHub storage pending. No inference admitted.",
     "lastVerifiedActivityAtUtc": "2026-10-21T12:25:48.347Z"
   },
   "ownership": {
@@ -426,8 +426,10 @@
       "sourceCommit": "2c5bbe11534ca288939025566fe7f097b23b26ff",
       "pr": 141,
       "acceptance": "qa/neon-ledger/ACCEPTANCE.json",
-      "credentials": "NOLOGIN; not issued or stored yet",
-      "budget": "UNKNOWN_NOT_ZERO"
+      "credentials": "NOLOGIN; issuance not completed; user generation/copy and concealed protected storage pending",
+      "budget": "UNKNOWN_NOT_ZERO",
+      "consoleSignInVerified": true,
+      "handoff": "See isolated-runner/SETUP-DECISION.md; do not read/reveal password or clipboard values."
     }
   },
   "tests": [
