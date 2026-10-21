@@ -1,5 +1,6 @@
 name: Monaco protected credential authentication only
 # Owner-protected check. No OpenAI request, ledger RPC, budget admission or deployment.
+# Corrected-source check: issue126-6327117179; do not rerun the failed original job.
 on:
   push:
     branches: [monaco-first-six-inference-126-20261021]
@@ -9,7 +10,7 @@ concurrency:
   group: monaco-first-six-existing-five-dollar-allowance
   cancel-in-progress: false
 env:
-  REVIEWED_AUTH_SOURCE_SHA: 9f01b7e9b99295e046cf1d0e7dc4dbd2dd2c3b88
+  REVIEWED_AUTH_SOURCE_SHA: 622b38323e7733ddef90ae54243f9594dc60fde3
   REVIEWED_IDENTITY_SHA256: 32c788992c1909a8c704e35744f94ebb6df82fd121cff4878653a1d1da03dfc1
   REVIEWED_STORAGE_SHA256: 0d8800d8b052454e2ce1a5b72addb3c059c4b8895fb0757942f7bd6294d854c8
   NODE_OPTIONS: ''
