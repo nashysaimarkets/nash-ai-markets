@@ -1,0 +1,55 @@
+name: Monaco Google ownership isolated PostgreSQL QA
+on:
+  push:
+    branches: [monaco-google-verifier-126-20261021-9d42]
+    paths:
+      - 'app/api/pocket/google-subscription-ownership.mjs'
+      - 'database/google/**'
+      - 'tests/pocket-google-ownership*'
+      - 'qa/google-ownership/**'
+      - '.github/workflows/monaco-google-ownership-qa.yml'
+permissions:
+  contents: read
+jobs:
+  ownership-only:
+    if: github.repository == 'nashysaimarkets/nash-ai-markets' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['127.0.0.1:5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 2s --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Verify new source, retained log and unchanged provider verifier
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {gunzipSync} from 'node:zlib';
+          const h=b=>createHash('sha256').update(b).digest('hex');
+          const r=JSON.parse(readFileSync('qa/google-ownership/ACCEPTANCE.json','utf8'));
+          for(const [p,d] of Object.entries(r.sourceSha256))if(h(readFileSync(p))!==d)throw Error('New source hash mismatch');
+          if(h(readFileSync('app/api/pocket/google-subscription-verifier.mjs'))!==r.reusedVerifierSha256)throw Error('Previously verified source changed');
+          const log=gunzipSync(Buffer.from(readFileSync(r.localLog,'utf8').trim(),'base64'));
+          if(h(log)!==r.localLogSha256)throw Error('Local log mismatch');
+          console.log('Source and retained evidence hashes match');
+          JS
+      - name: New ownership boundary and actual verifier composition tests only
+        run: node --test tests/pocket-google-ownership.test.mjs tests/pocket-google-ownership-integration.test.mjs
+      - name: Real disposable PostgreSQL ownership, rollback, permissions and overlapping sessions
+        env:
+          MONACO_QA_DISPOSABLE_POSTGRES: 'true'
+        run: python3 tests/pocket-google-ownership-postgres.py
+# No hosted database, credentials, Google request, deployment, package install or schedule.
