@@ -1,0 +1,42 @@
+name: Monaco Google purchase verifier offline QA
+on:
+  push:
+    branches: [monaco-google-verifier-126-20261021-9d42]
+    paths:
+      - 'app/api/pocket/google-subscription-verifier.mjs'
+      - 'tests/pocket-google-subscription-verifier.test.mjs'
+      - 'qa/google-subscription-verifier/**'
+      - '.github/workflows/monaco-google-verifier-qa.yml'
+permissions:
+  contents: read
+jobs:
+  verifier-only:
+    if: github.repository == 'nashysaimarkets/nash-ai-markets' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Verify reviewed source and retained local log
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {gunzipSync} from 'node:zlib';
+          const receipt=JSON.parse(readFileSync('qa/google-subscription-verifier/ACCEPTANCE.json','utf8'));
+          const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+          for(const [path,expected] of Object.entries(receipt.sourceSha256)) {
+            if(hash(readFileSync(path))!==expected)throw Error('Reviewed source mismatch');
+          }
+          const log=gunzipSync(Buffer.from(readFileSync(receipt.log,'utf8').trim(),'base64'));
+          if(hash(log)!==receipt.logSha256)throw Error('Retained log mismatch');
+          console.log('Reviewed source and local log hashes match');
+          JS
+      - name: Run only the new offline verifier suite
+        run: node --test tests/pocket-google-subscription-verifier.test.mjs
+# No environment, provider credential, package install, deployment or schedule.
