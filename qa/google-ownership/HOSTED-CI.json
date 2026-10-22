@@ -1,0 +1,31 @@
+{
+  "kind": "GOOGLE_OWNERSHIP_EXACT_SOURCE_CI_RECEIPT_V1",
+  "sourceSha": "79ad9edead907f54207f7a97d26f507b16bca0ee",
+  "sourceTree": "6e9528791f456a6d62511e31eb8135c70e6a9fc8",
+  "workflowRun": 39732018691,
+  "job": 119668981246,
+  "runAttempt": 1,
+  "conclusion": "success",
+  "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39732018691",
+  "runtime": "Node24.19.0 and disposable PostgreSQL17",
+  "verification": {
+    "newSourceAndRetainedLogHashes": "PASS",
+    "originalVerifierSourceHashUnchanged": "PASS",
+    "nodeBoundaryAndCompositionChecks": 19,
+    "postgresChecks": 15,
+    "uniqueNewChecks": 34,
+    "genuinelyOverlappingSessionCases": 3,
+    "local15OverlapNode19": true,
+    "failures": 0,
+    "skips": 0
+  },
+  "evidenceBasis": "Exact-head check run and completed job/step receipts; required Node and Python test processes returned success. Raw stdout remains in GitHub job logs. Initial ACCEPTANCE.json's hosted-pending fields are superseded by this receipt, not rewritten as prior local proof.",
+  "original35VerifierChecks": "Reused by matching original source hash; not rerun or counted as new tests.",
+  "providerRequests": 0,
+  "hostedDatabaseChanges": 0,
+  "liveBillingActivation": false,
+  "deployment": false,
+  "schedulesRestarted": false,
+  "independentReviewer": false,
+  "limits": "Disposable database and synthetic Google/account responses, not live Google, customer, device or release acceptance. Runtime wiring, acknowledgement/reconciliation and per-scanner admission remain."
+}
