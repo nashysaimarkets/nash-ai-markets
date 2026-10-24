@@ -14,6 +14,9 @@ import {fileURLToPath, pathToFileURL} from 'node:url';
 import {PINS, readEvidenceFile, validateSetupEvidence} from './pocket-monaco-setup-preflight.mjs';
 import {createNeonSqlPort, neonConnectionOptions} from './pocket-monaco-neon-port.ts';
 import {prepareFirstSixBootstrap} from './pocket-monaco-executor-bootstrap.mjs';
+import {prepareContinuationBootstrap} from './pocket-monaco-continuation-bootstrap.mjs';
+import {CONTINUATION,CONTINUATION_IDS,validateContinuationEvidence,validateContinuationInspection}
+  from './pocket-monaco-continuation-admission.mjs';
 import {createInputHandoff, ENCRYPTED_ARTIFACT_KIND,
   recipientPublicKeySha256} from './pocket-monaco-confidential-transport.mjs';
 import {unpackFirstSixBundle} from './pocket-monaco-first-six-bundle.mjs';
@@ -67,11 +70,14 @@ export function loadProtectedRunnerInputs(env, sourceRoot = ROOT) {
   requireValue(hash(plan) === PINS.planSha256 && JSON.parse(plan).model === PINS.model);
   const evidence = Object.fromEntries(['existingCredentialBinding','processorSecurityAcceptance',
     'authoritativeBudgetCarryIn'].map(key => [key,readEvidenceFile(evidenceRoot,config.requiredEvidence?.[key])]));
+  if(config.executionMode===CONTINUATION.mode) evidence.continuationAdmission=readEvidenceFile(
+    evidenceRoot,config.requiredEvidence?.continuationAdmission);
   const context = {repository:env.GITHUB_REPOSITORY, event:env.GITHUB_EVENT_NAME, ref:env.GITHUB_REF,
     runId:env.GITHUB_RUN_ID, runAttempt:env.GITHUB_RUN_ATTEMPT,
     reviewedSourceSha:env.REVIEWED_SETUP_SOURCE_SHA, sourceSha:env.CHECKED_OUT_SOURCE_SHA,
     reviewedEvidenceSha:env.REVIEWED_SETUP_EVIDENCE_SHA, evidenceSha:env.CHECKED_OUT_EVIDENCE_SHA};
-  validateSetupEvidence(config,evidence,context,'execution');
+  if(config.executionMode===CONTINUATION.mode) validateContinuationEvidence(config,evidence,context);
+  else validateSetupEvidence(config,evidence,context,'execution');
   return {config,evidence,context};
 }
 
@@ -160,17 +166,22 @@ export function createStdinEnvelopeReceiver(stream) {
   };
 }
 
-function publicSummary(result, {context,entered,authenticated,stage}) {
+function publicSummary(result, {context,entered,authenticated,stage,continuation=false}) {
+  const ids=continuation?CONTINUATION_IDS:['d001','d002','d003','d004','d005','d006'];
+  const maximum=continuation?CONTINUATION.maximumAdditionalSends:18;
   const allowed = new Set(['HOLD','COMPLETED','CANCELLED','UNCERTAIN','TECHNICAL_FAILURE']);
   let status = allowed.has(result?.status) ? result.status : entered ? 'UNCERTAIN' : 'HOLD';
-  const attempts = amount(result?.transportSendAttempts) && result.transportSendAttempts <= 18
+  const attempts = amount(result?.transportSendAttempts) && result.transportSendAttempts <= maximum
     ? result.transportSendAttempts : entered ? null : 0;
   const retained = Array.isArray(result?.cases)
-    ? new Set(result.cases.filter(row => /^d00[1-6]$/.test(row?.caseId)
+    ? new Set(result.cases.filter(row => ids.includes(row?.caseId)
       && row.status === 'DIAGNOSTIC_RETAINED').map(row => row.caseId)).size : 0;
-  if (status === 'COMPLETED' && (attempts === null || attempts < 6 || retained !== 6
-    || result.cases.length !== 6)) status = 'UNCERTAIN';
-  return {kind:'MONACO_PROTECTED_FIRST_SIX_RUN',status,stage,
+  if (status === 'COMPLETED' && (attempts === null || attempts < ids.length || retained !== ids.length
+    || result.cases.length !== ids.length)) status = 'UNCERTAIN';
+  return {kind:continuation?'MONACO_PROTECTED_FIRST_FIVE_CONTINUATION_RUN':'MONACO_PROTECTED_FIRST_SIX_RUN',status,stage,
+    ...(continuation?{predecessorRunId:CONTINUATION.originalRunId,previousCasesAttempted:1,
+      previousTransportSendAttempts:CONTINUATION.previousTransportSendAttempts,
+      combinedTransportSendAttempts:attempts===null?null:attempts+CONTINUATION.previousTransportSendAttempts}:{}),
     sourceSha:context?.sourceSha ?? null,evidenceSha:context?.evidenceSha ?? null,
     ledgerAuthenticationVerified:authenticated,bootstrapInvocations:entered ? 1 : 0,
     transportSendAttempts:attempts,providerMetadataRequests:0,
@@ -183,6 +194,14 @@ function publicSummary(result, {context,entered,authenticated,stage}) {
  * and the real bootstrap; a synthetic result establishes no hosted evidence.
  */
 export async function runProtectedFirstSix(args, {prepareBootstrap = prepareFirstSixBootstrap} = {}) {
+  return await runProtectedExecution(args,{prepareBootstrap,continuation:false});
+}
+
+export async function runProtectedContinuation(args, {prepareBootstrap = prepareContinuationBootstrap} = {}) {
+  return await runProtectedExecution(args,{prepareBootstrap,continuation:true});
+}
+
+async function runProtectedExecution(args,{prepareBootstrap,continuation}) {
   let sqlClient, unpacked, entered = false, authenticated = false, stage = 'EVIDENCE', context;
   const controller = new AbortController(), stop = () => controller.abort();
   args.signal?.addEventListener('abort',stop,{once:true});
@@ -190,7 +209,9 @@ export async function runProtectedFirstSix(args, {prepareBootstrap = prepareFirs
   try {
     const snapshot = structuredClone({config:args.config,evidence:args.evidence,context:args.context});
     const {config,evidence} = snapshot;
-    const admission = validateSetupEvidence(config,evidence,snapshot.context,'execution');
+    requireValue(continuation ? config.executionMode===CONTINUATION.mode : config.executionMode!==CONTINUATION.mode);
+    const admission = continuation ? validateContinuationEvidence(config,evidence,snapshot.context)
+      : validateSetupEvidence(config,evidence,snapshot.context,'execution');
     context = snapshot.context;
     const {input,output,run} = deliveryBinding(evidence,context), runtime = args.runtime;
     requireValue(Object.entries(RUNTIME_PACKAGES).every(([name,version]) => runtime?.versions?.[name] === version)
@@ -213,7 +234,9 @@ export async function runProtectedFirstSix(args, {prepareBootstrap = prepareFirs
       && [balance.prior_exposure_microusd,balance.new_commitments_microusd,balance.remaining_microusd].every(amount)
       && balance.prior_exposure_microusd === admission.priorExposureMicroUsd
       && balance.prior_exposure_microusd + balance.new_commitments_microusd + balance.remaining_microusd === PINS.cap
-      && balance.remaining_microusd >= PINS.requiredHeadroom && !controller.signal.aborted);
+      && balance.remaining_microusd >= (continuation?CONTINUATION.maximumAdditionalExposureMicroUsd:PINS.requiredHeadroom)
+      && !controller.signal.aborted);
+    if(continuation)validateContinuationInspection(balance,admission.identity,{initial:true});
     authenticated = true;
     const responsesClient = new runtime.OpenAI({apiKey:key,project:PINS.project,organization:OPENAI_ORGANIZATION,
       baseURL:'https://api.openai.com/v1',maxRetries:0,timeout:60000,logLevel:'off'});
@@ -238,10 +261,10 @@ export async function runProtectedFirstSix(args, {prepareBootstrap = prepareFirs
       && !controller.signal.aborted);
     stage = 'EXECUTION'; entered = true;
     const result = await bootstrap.runOnce({signal:controller.signal});
-    return publicSummary(result,{context,entered,authenticated,stage});
+    return publicSummary(result,{context,entered,authenticated,stage,continuation});
   } catch {
     return publicSummary({status:entered ? 'UNCERTAIN' : controller.signal.aborted ? 'CANCELLED' : 'HOLD'},
-      {context,entered,authenticated,stage});
+      {context,entered,authenticated,stage,continuation});
   } finally {
     controller.abort(); args.signal?.removeEventListener('abort',stop);
     try { unpacked?.cleanup(); } catch { /* Unique private temporary input directory only. */ }
