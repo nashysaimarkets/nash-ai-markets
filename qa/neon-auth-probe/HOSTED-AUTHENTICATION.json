@@ -1,0 +1,65 @@
+{
+  "kind": "MONACO_NEON_ROLE_AUTHENTICATION_RECEIPT_V1",
+  "startedAtUtc": "2026-10-21T18:46:57.957Z",
+  "authority": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6323653166",
+  "target": {
+    "projectId": "bitter-grass-28096464",
+    "branchId": "br-aged-mode-zaa9u7lr",
+    "endpointId": "ep-silent-fire-za1s230f",
+    "databaseName": "monaco_ledger",
+    "role": "monaco_ledger_runner"
+  },
+  "initialRoleLogin": false,
+  "providerRequests": 0,
+  "newCredentials": 0,
+  "credentialValuesObserved": false,
+  "githubStoredPasswordVerified": false,
+  "budgetInspected": false,
+  "allowanceCreated": false,
+  "activation": "CONTROLLED_LOGIN_ENABLED",
+  "catalogRows": [
+    {
+      "database_name": "monaco_ledger",
+      "current_role": "monaco_ledger_runner",
+      "session_role": "monaco_ledger_runner",
+      "tls_active": false,
+      "can_login": true,
+      "limited_role": true,
+      "no_memberships": true,
+      "database_connect": true,
+      "database_no_create_or_temp": true,
+      "public_usage": true,
+      "public_no_create": true,
+      "private_schemas_denied": true,
+      "rpc_shape": true,
+      "rpc_execute": true,
+      "other_entrypoints_denied": true,
+      "private_tables_denied": true,
+      "private_sequences_denied": true,
+      "expected_tables_rls": true,
+      "immutable_guards_present": true
+    }
+  ],
+  "probeToolError": false,
+  "noLoginRestore": "COMPLETED",
+  "finishedAtUtc": "2026-10-21T18:47:18.924Z",
+  "status": "SERVER_ROLE_AUTHENTICATED_PRIVILEGES_VERIFIED_TRANSPORT_ATTESTATION_INCOMPLETE",
+  "serverAuthenticationVerified": true,
+  "temporaryRoleStateChanges": 2,
+  "catalogValidation": {
+    "identity": true,
+    "restrictedPrivileges": true,
+    "expectedSchema": true,
+    "backendPgStatSsl": false,
+    "validatedAgainstCorrectedCatalogValidator": true,
+    "validationSourceSha256": "114b7206aaff18daaf5e71f0e3a9947a8f081f8f26192f18390dc9c64f443218"
+  },
+  "transportInterpretation": "pg_stat_ssl reported false. This catalog field does not attest the connector's external transport; no end-to-end TLS or GitHub-secret PASS is claimed.",
+  "remaining": [
+    "Verify actual certificate-protected pg-client connection using the stored GitHub credential",
+    "Current OpenAI account access for controls and authoritative spending",
+    "Final private input/output transport and protected one-shot wrapper"
+  ],
+  "clientTlsVerified": false,
+  "clientTlsEvidence": "Not observable through provider-managed connector; do not infer from backend pg_stat_ssl."
+}

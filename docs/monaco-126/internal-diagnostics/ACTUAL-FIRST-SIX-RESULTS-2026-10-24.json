@@ -1,0 +1,627 @@
+{
+  "kind": "ACTUAL_FIRST_SIX_DIAGNOSTIC_CHECKPOINT",
+  "observedAtUtc": "2026-10-24T10:41:21.239Z",
+  "status": "SIX_ATTEMPTS_RETAINED_ACCURACY_NOT_ACCEPTED",
+  "originalRunId": "40083992183",
+  "continuationRunId": "40086015008",
+  "continuationJobId": "120849000937",
+  "continuationConclusion": "success",
+  "sourceSha": "f3d86adeddffa7d4bfbcd7390ce92fcafeb2651c",
+  "evidenceSha": "6ac76987c9a66260cf6fe3ba24745b20c6286aaf",
+  "wrapperSha": "8fb7ca85d2af2a10849cfad27c5b58581ace22db",
+  "frozenScannerSha": "f5e820b0bd7bf095153e31d692a10fb3640ba16e",
+  "frozenPlanSha256": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0",
+  "counts": {
+    "diagnosticAttempts": 6,
+    "genuineRetainedProviderResponses": 14,
+    "originalProviderResponses": 2,
+    "continuationProviderResponses": 12,
+    "completedMainResponses": 6,
+    "completedPrimaryPrecisionResponses": 2,
+    "truncatedPrimaryPrecisionResponses": 4,
+    "completedOriginalConditionalRescues": 2,
+    "originalHostedDiagnosticRecords": 0,
+    "continuationHostedDiagnosticRecords": 5,
+    "offlineRecoveredRawMainRecords": 1,
+    "rawMainObjectiveMeasurements": 6,
+    "formallyScoredPostprocessedCases": 0,
+    "postprocessedUnavailableForIncompletePrecision": 4,
+    "postprocessedRejectedForMissingObservationArray": 2,
+    "rawMainAxisAnchors": {
+      "total": 18,
+      "CONFORMANT": 0,
+      "NONCONFORMANT": 18,
+      "UNSCORED": 0
+    },
+    "rawMainLevels": {
+      "total": 19,
+      "CONFORMANT": 0,
+      "NONCONFORMANT": 11,
+      "UNSCORED": 8
+    },
+    "rawMainPatterns": {
+      "assertions": 1,
+      "geometryNonconformant": 1,
+      "semanticTruth": "UNSCORED"
+    },
+    "instrumentAndTimeframeMatchInput": 6
+  },
+  "cases": [
+    {
+      "caseId": "d001",
+      "chart": "ES continuous futures, 30m",
+      "runId": "40083992183",
+      "evidenceKind": "SEPARATE_OFFLINE_RECOVERY_OF_RETAINED_MAIN_ONLY",
+      "hostedDiagnosticRetained": false,
+      "providerResponses": [
+        {
+          "slot": "main",
+          "sha256": "ba64006482df5f35e269e5d9202fe8f91d80d7618a7e7973303240c33a90fcb7",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 7000,
+          "inputTokens": 4711,
+          "outputTokens": 2298,
+          "reasoningTokens": 576,
+          "outputTextChars": 6411,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "primary_precision",
+          "sha256": "f396f9c82dc772d74c836973ca1a72549c1c6e7687f5feeb87f41c77591ad9b0",
+          "status": "incomplete",
+          "incompleteReason": "max_output_tokens",
+          "maxOutputTokens": 1400,
+          "inputTokens": 2025,
+          "outputTokens": 1400,
+          "reasoningTokens": 832,
+          "outputTextChars": 1363,
+          "outputJsonValid": false
+        }
+      ],
+      "rawAxis": {
+        "assertions": 4,
+        "conformant": 0,
+        "nonconformant": 4,
+        "minimumErrorPixels": 18.500585872106708,
+        "maximumErrorPixels": 118.99941412788098
+      },
+      "rawLevelSummary": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 2,
+        "unscored": 1,
+        "emptyOutput": false,
+        "trueNegatives": null,
+        "semanticTp": null,
+        "semanticFp": null,
+        "semanticFn": null
+      },
+      "originalPostprocessedMeasurement": {
+        "status": "UNMEASURED",
+        "reason": "NO_COMPLETED_PRECISION_OR_RETAINED_POSTPROCESSED_OUTPUT"
+      },
+      "latency": {
+        "kind": "PROVIDER_MAIN_SERVER_TIMESTAMP_INTERVAL_ONLY",
+        "milliseconds": 35000,
+        "comparableWithContinuationCaseIntervals": false
+      },
+      "interpretation": "Main completed; precision truncated. Four axis anchors and both scored horizontal levels fail. No official postprocessed result."
+    },
+    {
+      "caseId": "d002",
+      "chart": "BTC crypto, 1h",
+      "runId": "40086015008",
+      "evidenceKind": "HOSTED_CONTINUATION_DIAGNOSTIC",
+      "hostedDiagnosticRetained": true,
+      "providerResponses": [
+        {
+          "slot": "main",
+          "sha256": "5e6f4782358211fa3476e7e0e5874b7a10bca663890f49936a1955a15d918960",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 7000,
+          "inputTokens": 4710,
+          "outputTokens": 2373,
+          "reasoningTokens": 576,
+          "outputTextChars": 6944,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "primary_precision",
+          "sha256": "7c081fe1cb6a7b03b6e5b3d433bfd24d08d8fda0742d5aa23b19634df27582cb",
+          "status": "incomplete",
+          "incompleteReason": "max_output_tokens",
+          "maxOutputTokens": 1400,
+          "inputTokens": 2025,
+          "outputTokens": 1344,
+          "reasoningTokens": 1344,
+          "outputTextChars": 0,
+          "outputJsonValid": false
+        }
+      ],
+      "rawAxis": {
+        "assertions": 4,
+        "conformant": 0,
+        "nonconformant": 4,
+        "minimumErrorPixels": 8.499995627845616,
+        "maximumErrorPixels": 31.499999999999332
+      },
+      "rawLevelSummary": {
+        "assertions": 4,
+        "conformant": 0,
+        "nonconformant": 3,
+        "unscored": 1,
+        "emptyOutput": false,
+        "trueNegatives": null,
+        "semanticTp": null,
+        "semanticFp": null,
+        "semanticFn": null
+      },
+      "originalPostprocessedMeasurement": {
+        "status": "UNMEASURED",
+        "reason": "PROVIDER_OUTPUT_INCOMPLETE"
+      },
+      "latency": {
+        "kind": "HOSTED_CASE_START_THROUGH_ACCOUNTING_BEFORE_DIAGNOSTIC_RETENTION",
+        "milliseconds": 55145.864214999994,
+        "deployedHttpLatency": false
+      },
+      "interpretation": "Main completed; precision exhausted its allowance in reasoning and emitted no text. Four axis anchors and three scored horizontal levels fail."
+    },
+    {
+      "caseId": "d003",
+      "chart": "AAPL stock, 4h",
+      "runId": "40086015008",
+      "evidenceKind": "HOSTED_CONTINUATION_DIAGNOSTIC",
+      "hostedDiagnosticRetained": true,
+      "providerResponses": [
+        {
+          "slot": "main",
+          "sha256": "c9e1dd6873208e6669961cbfe509c89107aa6a19f1f89db56bd6d92571b5ad42",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 7000,
+          "inputTokens": 4709,
+          "outputTokens": 2336,
+          "reasoningTokens": 704,
+          "outputTextChars": 5971,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "primary_precision",
+          "sha256": "96fa72a43c7dae671220f00b2c6cf08c55fbaff73e99848b2d765a1642ba4d28",
+          "status": "incomplete",
+          "incompleteReason": "max_output_tokens",
+          "maxOutputTokens": 1400,
+          "inputTokens": 2025,
+          "outputTokens": 1400,
+          "reasoningTokens": 1216,
+          "outputTextChars": 402,
+          "outputJsonValid": false
+        }
+      ],
+      "rawAxis": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 3,
+        "minimumErrorPixels": 24.699999999999395,
+        "maximumErrorPixels": 60.6000000000006
+      },
+      "rawLevelSummary": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 2,
+        "unscored": 1,
+        "emptyOutput": false,
+        "trueNegatives": null,
+        "semanticTp": null,
+        "semanticFp": null,
+        "semanticFn": null
+      },
+      "originalPostprocessedMeasurement": {
+        "status": "UNMEASURED",
+        "reason": "PROVIDER_OUTPUT_INCOMPLETE"
+      },
+      "latency": {
+        "kind": "HOSTED_CASE_START_THROUGH_ACCOUNTING_BEFORE_DIAGNOSTIC_RETENTION",
+        "milliseconds": 66994.28613599998,
+        "deployedHttpLatency": false
+      },
+      "interpretation": "Main completed; precision truncated. Three axis anchors and both scored horizontal levels fail. Pattern absence is unscored, including the protocol weak-4h restriction."
+    },
+    {
+      "caseId": "d004",
+      "chart": "SPY ETF (FirstRate Data), 5m",
+      "runId": "40086015008",
+      "evidenceKind": "HOSTED_CONTINUATION_DIAGNOSTIC",
+      "hostedDiagnosticRetained": true,
+      "providerResponses": [
+        {
+          "slot": "main",
+          "sha256": "016a49518c06d5ae924201212076ac3145d611e5b297cd522863c55328ec0ad7",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 7000,
+          "inputTokens": 4714,
+          "outputTokens": 1781,
+          "reasoningTokens": 192,
+          "outputTextChars": 5939,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "primary_precision",
+          "sha256": "5660d3856b0647654e7fff2db86cdf40893d1ead4b4b2d091527db0a22d16c72",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 1400,
+          "inputTokens": 2025,
+          "outputTokens": 1094,
+          "reasoningTokens": 704,
+          "outputTextChars": 911,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "rescue_precision",
+          "sha256": "1cc7274afa060112c55519c00148a29416f9dcb6620f96fe6767726a9f57dee5",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 1400,
+          "inputTokens": 2070,
+          "outputTokens": 1295,
+          "reasoningTokens": 896,
+          "outputTextChars": 950,
+          "outputJsonValid": true
+        }
+      ],
+      "rawAxis": {
+        "assertions": 2,
+        "conformant": 0,
+        "nonconformant": 2,
+        "minimumErrorPixels": 24.000000000009617,
+        "maximumErrorPixels": 36.999999999990024
+      },
+      "rawLevelSummary": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 2,
+        "unscored": 1,
+        "emptyOutput": false,
+        "trueNegatives": null,
+        "semanticTp": null,
+        "semanticFp": null,
+        "semanticFn": null
+      },
+      "originalPostprocessedMeasurement": {
+        "status": "UNMEASURED",
+        "reason": "MALFORMED_OBSERVATIONS"
+      },
+      "latency": {
+        "kind": "HOSTED_CASE_START_THROUGH_ACCOUNTING_BEFORE_DIAGNOSTIC_RETENTION",
+        "milliseconds": 62775.11488099999,
+        "deployedHttpLatency": false
+      },
+      "interpretation": "Main, primary and original rescue completed. Two raw-main axis anchors and both horizontal levels fail. Postprocessed scoring is refused by MALFORMED_OBSERVATIONS."
+    },
+    {
+      "caseId": "d005",
+      "chart": "SPY ETF (FirstRate Data), 15m",
+      "runId": "40086015008",
+      "evidenceKind": "HOSTED_CONTINUATION_DIAGNOSTIC",
+      "hostedDiagnosticRetained": true,
+      "providerResponses": [
+        {
+          "slot": "main",
+          "sha256": "7b5b75c5f92242d4d40c1b5e293b778458450803d90e3e00074fef8a539d8409",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 7000,
+          "inputTokens": 4714,
+          "outputTokens": 2189,
+          "reasoningTokens": 320,
+          "outputTextChars": 6954,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "primary_precision",
+          "sha256": "ea7150cc1d9281867972d60d13171698bb9b4dfc544e8f91657b0b34f96ab14d",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 1400,
+          "inputTokens": 2025,
+          "outputTokens": 1299,
+          "reasoningTokens": 1088,
+          "outputTextChars": 523,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "rescue_precision",
+          "sha256": "29028c9d15af0e5dc2ffac4b7399f2db3491fddcb5050309facf5ab992634511",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 1400,
+          "inputTokens": 2070,
+          "outputTokens": 1350,
+          "reasoningTokens": 1088,
+          "outputTextChars": 599,
+          "outputJsonValid": true
+        }
+      ],
+      "rawAxis": {
+        "assertions": 2,
+        "conformant": 0,
+        "nonconformant": 2,
+        "minimumErrorPixels": 103.98000000001207,
+        "maximumErrorPixels": 682.6900000000071
+      },
+      "rawLevelSummary": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 0,
+        "unscored": 3,
+        "emptyOutput": false,
+        "trueNegatives": null,
+        "semanticTp": null,
+        "semanticFp": null,
+        "semanticFn": null
+      },
+      "originalPostprocessedMeasurement": {
+        "status": "UNMEASURED",
+        "reason": "MALFORMED_OBSERVATIONS"
+      },
+      "latency": {
+        "kind": "HOSTED_CASE_START_THROUGH_ACCOUNTING_BEFORE_DIAGNOSTIC_RETENTION",
+        "milliseconds": 68454.31886599999,
+        "deployedHttpLatency": false
+      },
+      "interpretation": "All three responses completed. Raw main uses 0.xx coordinates despite full-image-percent instructions; both axis anchors and the asserted channel geometry fail. Approximate-price horizontals and pivot remain unscored. Postprocessed scoring is refused by MALFORMED_OBSERVATIONS."
+    },
+    {
+      "caseId": "d006",
+      "chart": "SPY ETF (FirstRate Data), 5m",
+      "runId": "40086015008",
+      "evidenceKind": "HOSTED_CONTINUATION_DIAGNOSTIC",
+      "hostedDiagnosticRetained": true,
+      "providerResponses": [
+        {
+          "slot": "main",
+          "sha256": "fced81e7db1382663b3110115641ba1353c5dc51bd22fe4e49f535d5e5762f17",
+          "status": "completed",
+          "incompleteReason": null,
+          "maxOutputTokens": 7000,
+          "inputTokens": 4714,
+          "outputTokens": 2254,
+          "reasoningTokens": 576,
+          "outputTextChars": 6167,
+          "outputJsonValid": true
+        },
+        {
+          "slot": "primary_precision",
+          "sha256": "c325ebe09646a5c0ee662dbf930ff378406bac4f797b67e95c9813d4620aa4b8",
+          "status": "incomplete",
+          "incompleteReason": "max_output_tokens",
+          "maxOutputTokens": 1400,
+          "inputTokens": 2025,
+          "outputTokens": 1400,
+          "reasoningTokens": 1152,
+          "outputTextChars": 518,
+          "outputJsonValid": false
+        }
+      ],
+      "rawAxis": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 3,
+        "minimumErrorPixels": 103.96300000001995,
+        "maximumErrorPixels": 682.817499999985
+      },
+      "rawLevelSummary": {
+        "assertions": 3,
+        "conformant": 0,
+        "nonconformant": 2,
+        "unscored": 1,
+        "emptyOutput": false,
+        "trueNegatives": null,
+        "semanticTp": null,
+        "semanticFp": null,
+        "semanticFn": null
+      },
+      "originalPostprocessedMeasurement": {
+        "status": "UNMEASURED",
+        "reason": "PROVIDER_OUTPUT_INCOMPLETE"
+      },
+      "latency": {
+        "kind": "HOSTED_CASE_START_THROUGH_ACCOUNTING_BEFORE_DIAGNOSTIC_RETENTION",
+        "milliseconds": 59068.82076500001,
+        "deployedHttpLatency": false
+      },
+      "interpretation": "Main completed; precision truncated. Raw main uses 0.xx coordinates despite percent instructions. Three axis anchors and both horizontal levels fail."
+    }
+  ],
+  "budget": {
+    "aggregateAllowanceMicroUsd": 5000000,
+    "committedUpperBoundMicroUsd": 1506400,
+    "remainingMicroUsd": 3493600,
+    "actualProviderMicroUsd": null,
+    "financiallySettled": false,
+    "costAttestations": 0,
+    "reservedAccountCount": 6,
+    "submittedCalls": 14,
+    "receiptedCalls": 14,
+    "voidedSlots": 4,
+    "d001Unchanged": true,
+    "frozenRequestPinCount": 18,
+    "frozenRequestPinsSha256": "90c4291252904ab977314d5c8010615bea2571c7efc5cddc0ae16df9f7d31165"
+  },
+  "accessCleanup": {
+    "verifiedAtUtc": "2026-10-24T10:39:45.697Z",
+    "runnerCanLogin": false,
+    "runnerSessions": 0,
+    "cleanupVerified": true
+  },
+  "retention": {
+    "originalArchiveSha256": "84b16feb3670c724a44bde6d68a65dc9a42e6e606761e31bdbad94d627cc3002",
+    "continuationArchiveSha256": "480a0a6f0463590627dd82a19a50e7318d89f5dd4325c42d5c6864e93ef7578e",
+    "continuationArchiveBytes": 1260941,
+    "all14ProviderRecordsMatchLedgerRequestResponseModelAndUsage": true,
+    "all17SuccessorPlaintextHashesVerified": true,
+    "separateRecoveryArchiveSha256": "6268ae4b3cbaf694196383378c4dc9ea5b107be967e3dcec0c40d3e382677aec",
+    "separateRecoveryArchiveBytes": 26467
+  },
+  "validation": {
+    "exactSourceCiRunId": "40085717845",
+    "testsPassed": 47,
+    "testsFailed": 0,
+    "testsSkipped": 0,
+    "postgresVersion": "17.11",
+    "nodeVersion": "24.19.0"
+  },
+  "latency": {
+    "continuationCaseMilliseconds": {
+      "minimum": 55145.864214999994,
+      "median": 62775.11488099999,
+      "maximum": 68454.31886599999
+    },
+    "d001MainServerIntervalMilliseconds": 35000,
+    "mixedLatencyAverageComputed": false,
+    "caveat": "Successor values cover sequential hosted provider calls, retention/receipts and accounting before final diagnostic retention, not deployed HTTP/UI latency. d001 is main-provider server time only."
+  },
+  "originalPostprocessingInterfaceIssue": {
+    "caseIds": [
+      "d004",
+      "d005"
+    ],
+    "hostedReason": "MALFORMED_OBSERVATIONS",
+    "producer": "app/api/pocket/analysis-calibration.ts: calibratedLiquidity empty object omits observations",
+    "consumer": "scripts/pocket-monaco-internal-diagnostics.ts: normalizer requires liquidity.observations array",
+    "rawResponsesCompleted": true,
+    "originalHostedMeasurementsRemain": "UNMEASURED",
+    "recoveryStatus": "SEPARATE_OFFLINE_PARTIAL_GEOMETRY_RECOVERY_AVAILABLE; original hosted result unchanged"
+  },
+  "separateOfflineRecovery": {
+    "status": "RECOVERED_PARTIAL_GEOMETRY_FROM_ORIGINAL_COMPLETED_RESPONSES",
+    "summary": {
+      "kind": "SEPARATE_OFFLINE_PARTIAL_GEOMETRY_RECOVERY_SUMMARY",
+      "createdAtUtc": "2026-10-24T10:47:18.949Z",
+      "originalRunId": "40086015008",
+      "originalExecutableSha": "f3d86adeddffa7d4bfbcd7390ce92fcafeb2651c",
+      "cases": [
+        {
+          "caseId": "d004",
+          "derivedSha256": "8787a2c92f07a5e2bfbff6816006c11ee734591828f494e304058d9454cf9042",
+          "axis": {
+            "assertions": 3,
+            "conformant": 0,
+            "nonconformant": 3,
+            "unscored": 0,
+            "semanticTp": null,
+            "semanticFp": null,
+            "semanticFn": null,
+            "trueNegatives": null
+          },
+          "levels": {
+            "assertions": 3,
+            "conformant": 0,
+            "nonconformant": 1,
+            "unscored": 2,
+            "semanticTp": null,
+            "semanticFp": null,
+            "semanticFn": null,
+            "trueNegatives": null
+          },
+          "liquidityObservations": {
+            "status": "UNAVAILABLE",
+            "reason": "OMITTED_BY_ORIGINAL_CALIBRATION",
+            "count": null,
+            "assertions": null
+          },
+          "quality": {
+            "readable": true,
+            "scaleReadable": true
+          }
+        },
+        {
+          "caseId": "d005",
+          "derivedSha256": "39a685f16a0c958b986fbf17a82b48e21535e245b763dfd6df204f8bc8c48e23",
+          "axis": {
+            "assertions": 3,
+            "conformant": 0,
+            "nonconformant": 3,
+            "unscored": 0,
+            "semanticTp": null,
+            "semanticFp": null,
+            "semanticFn": null,
+            "trueNegatives": null
+          },
+          "levels": {
+            "assertions": 1,
+            "conformant": 0,
+            "nonconformant": 0,
+            "unscored": 1,
+            "semanticTp": null,
+            "semanticFp": null,
+            "semanticFn": null,
+            "trueNegatives": null
+          },
+          "liquidityObservations": {
+            "status": "UNAVAILABLE",
+            "reason": "OMITTED_BY_ORIGINAL_CALIBRATION",
+            "count": null,
+            "assertions": null
+          },
+          "quality": {
+            "readable": true,
+            "scaleReadable": true
+          }
+        }
+      ],
+      "originalHostedPostprocessedStatusUnchanged": "UNMEASURED/MALFORMED_OBSERVATIONS",
+      "adapterSha256": "addaf98b817b505ac997b2ec36f4dbc666163d8e379ec75f3dec0ce4d1049aa5",
+      "driverSha256": "1874273c9131c7bb7d335f258769d3fb7b216d5c15230bace84c623fea10be49",
+      "selectedBundleEntries": [
+        {
+          "path": "objective-reference.json",
+          "sha256": "06fd2b201ecefbda4c7746a24ea5c5470e8679fdee2740dcac81cd3c5f8dd424"
+        },
+        {
+          "path": "protocol.json",
+          "sha256": "4386a29b59718138437ddaf5d0a53b3c77f442acf161e8472aac45cee7773bf5"
+        },
+        {
+          "path": "packet/inputs/d004.json",
+          "sha256": "fd6eb8064864889fcff3e80f13188a34f991a683c86980ac48f0ca7484ca4c05"
+        },
+        {
+          "path": "packet/inputs/d005.json",
+          "sha256": "5ed2fc0aef4efd1f573a9ccf7120fdc376776a2da8a5071928bda8d9254887a1"
+        }
+      ],
+      "derivedObjectsOriginallyRetained": false,
+      "observationsInserted": false,
+      "providerCalls": 0,
+      "databaseCalls": 0,
+      "privateKeyReads": 0,
+      "heldOutPayloadsRead": 0,
+      "expertAccepted": false,
+      "tradingInterpretation": "UNSCORED"
+    },
+    "independentImplementationReview": {
+      "status": "PASS",
+      "sha256": "e275a8b38c3aad7869c9746d3eefd835f77db33273e76c796a53fc33ee6dbfef",
+      "scope": "Original source/artifact hashes and independent original-pixel projection arithmetic; observations absent, original hosted results unchanged"
+    },
+    "originalHostedArtifactsUnchanged": true,
+    "newProviderCalls": 0,
+    "sourceOracleToleranceUnchanged": true,
+    "semanticAcceptance": false
+  },
+  "scope": {
+    "additionalHeldOutCasesRead": 0,
+    "extraProviderRetries": 0,
+    "d001Replay": false,
+    "allSchedulesRemainOff": true,
+    "releaseReady": false,
+    "expertAccepted": false,
+    "tradingInterpretation": "UNSCORED"
+  }
+}

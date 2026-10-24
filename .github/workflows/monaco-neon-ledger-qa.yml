@@ -1,12 +1,16 @@
 name: Monaco Neon ledger disposable PostgreSQL QA
 on:
   push:
-    branches: [monaco-neon-ledger-126-20261021-ac5040]
+    branches: [monaco-neon-ledger-126-20261021-ac5040, monaco-launch-completion-126-20261021-e48b82]
     paths:
       - 'database/neon/**'
       - 'scripts/*monaco*neon*'
       - 'scripts/pocket-monaco-runner-bridge.ts'
+      - 'scripts/pocket-monaco-credential-auth.mjs'
+      - 'scripts/pocket-monaco-setup-preflight.mjs'
       - 'tests/*monaco*neon*'
+      - 'tests/pocket-monaco-credential-auth.test.mjs'
+      - 'tests/pocket-monaco-auth-repair.test.mjs'
       - '.github/workflows/monaco-neon-ledger-qa.yml'
 permissions:
   contents: read
@@ -25,24 +29,42 @@ jobs:
           --health-cmd pg_isready --health-interval 2s
           --health-timeout 5s --health-retries 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24.19.0'
       - name: Install only affected test dependencies; no app build, cache or artifacts
         run: |
-          npm install --prefix "$RUNNER_TEMP/monaco-qa" --ignore-scripts --no-audit --no-fund pg@8.16.3 typescript@5.9.3 @types/node@22.19.19 @supabase/supabase-js@2.110.2
+          npm install --prefix "$RUNNER_TEMP/monaco-qa" --ignore-scripts --no-audit --no-fund --fetch-retries=0 --fetch-timeout=15000 pg@8.16.3 typescript@5.9.3 @types/node@22.19.19 @supabase/supabase-js@2.110.2
           ln -s "$RUNNER_TEMP/monaco-qa/node_modules" node_modules
+      - name: Verify repaired source and retained log hashes
+        run: |
+          node --input-type=module <<'JS'
+          import {readFileSync} from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {gunzipSync} from 'node:zlib';
+          const base='qa/credential-auth-repair/';
+          const receipt=JSON.parse(readFileSync(base+'ACCEPTANCE.json','utf8'));
+          const hash=b=>createHash('sha256').update(b).digest('hex');
+          for(const [path,expected] of Object.entries(receipt.sourceSha256)) {
+            if(hash(readFileSync(path))!==expected)throw Error('Published source does not match tested bytes: '+path);
+          }
+          for(const [name,expected] of Object.entries(receipt.logs)) {
+            const raw=gunzipSync(Buffer.from(readFileSync(base+name+'.gz.b64','utf8').trim(),'base64'));
+            if(hash(raw)!==expected)throw Error('Retained test log does not match receipt: '+name);
+          }
+          console.log('Tested-source and retained-log hashes verified');
+          JS
       - name: Strict affected-source typecheck
         run: node_modules/.bin/tsc --noEmit --allowImportingTsExtensions --allowJs --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck --strict scripts/pocket-monaco-runner-bridge.ts scripts/pocket-monaco-neon-port.ts tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-neon-postgres.test.ts
       - name: Identity, TLS and no-retry adapter checks
-        run: node --test tests/pocket-monaco-neon-port.test.ts
+        run: node --test tests/pocket-monaco-neon-port.test.ts tests/pocket-monaco-setup-preflight.test.mjs tests/pocket-monaco-isolated-executor.test.mjs tests/pocket-monaco-protected-runner.test.mjs tests/pocket-monaco-credential-auth.test.mjs tests/pocket-monaco-auth-repair.test.mjs
       - name: Atomicity, independent sessions, crash recovery, history and aggregate cap
         env:
           MONACO_QA_DISPOSABLE_POSTGRES: 'true'
-        run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-qa/node_modules/pg/lib/index.js" node --test tests/pocket-monaco-neon-postgres.test.ts
+        run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-qa/node_modules/pg/lib/index.js" node --test --test-concurrency=1 tests/pocket-monaco-neon-postgres.test.ts tests/pocket-monaco-neon-key-amendment.test.mjs
       - name: Boundary
         run: echo 'Synthetic local PG17 only. No environment or secrets; no Neon, OpenAI, metadata, production, deploy, timer, cache or artifacts.'

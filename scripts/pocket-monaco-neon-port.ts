@@ -16,7 +16,8 @@ export function validateNeonIdentity(n:NeonIdentity){
  * password stays in the caller's protected memory. No logging, defaults or retries. */
 export function neonConnectionOptions(n:NeonIdentity,password:string){
  validateNeonIdentity(n);
- if(typeof password!=='string'||password.length<24)throw Error('Protected database credential missing');
+ // Match Neon's documented 12+ character composition; never replace TLS/server authentication.
+ if(typeof password!=='string'||password.length<12)throw Error('Protected database credential missing');
  return {host:n.endpointHost,port:5432,database:n.databaseName,user:n.roleName,password,
   ssl:{rejectUnauthorized:true,servername:n.endpointHost},connectionTimeoutMillis:10000,
   statement_timeout:15000,query_timeout:20000,application_name:'monaco-first-six-ledger'};

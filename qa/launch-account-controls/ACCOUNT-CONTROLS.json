@@ -1,0 +1,45 @@
+{
+  "kind": "ACTUAL_PRIVATE_PILOT_PROCESSOR_CONTROLS_V1",
+  "recordedAtUtc": "2026-10-21T19:37:42.355255+00:00",
+  "ownerAuthority": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6323653166",
+  "organizationId": "org-5vLRRzXwcigUx96TVE0rI3RW",
+  "projectId": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+  "projectName": "bullseye private pilot",
+  "observedSignedIn": true,
+  "dataResidency": "Global",
+  "defaultServiceTier": "Standard",
+  "apiLogging": "Enabled per call",
+  "requestStoreFalsePinned": true,
+  "zeroDataRetentionClaimed": false,
+  "sharingBefore": {
+    "modelFeedback": "all projects",
+    "evaluationsAndFineTuning": "all projects",
+    "apiInputsAndOutputs": "all projects"
+  },
+  "sharingAfterReload": {
+    "modelFeedback": [
+      "Default project"
+    ],
+    "evaluationsAndFineTuning": [
+      "Default project"
+    ],
+    "apiInputsAndOutputs": [
+      "Default project"
+    ]
+  },
+  "privatePilotExcludedFromAllThreeSharingControls": true,
+  "otherProjectSelectionPreserved": true,
+  "changesSavedAndReloadVerified": true,
+  "providerInferenceRequests": 0,
+  "newPurchases": 0,
+  "privateEvidence": {
+    "libraryFileId": "libfile_4ef44ce00d548191a077a0354330cdfc",
+    "filename": "Pocket-Bullseye-private-launch-evidence-2026-10-21.zip",
+    "sha256": "6f8e026c1a975fac73dc903c7fa8bdeda354a4aa79c86e6395f2c5539e74f777"
+  },
+  "limitations": [
+    "Project API logging remains enabled per call; frozen Responses requests require store=false.",
+    "These are actual observed settings, not a zero-retention guarantee.",
+    "Provider processing on the owner behalf and absence of a licence retention deadline are supported by the already accepted rights record."
+  ]
+}

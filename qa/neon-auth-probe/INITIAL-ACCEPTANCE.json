@@ -1,0 +1,17 @@
+{
+  "kind": "MONACO_NEON_AUTH_PROBE_OFFLINE_ACCEPTANCE_V1",
+  "checks": 12,
+  "passed": 12,
+  "failed": 0,
+  "scope": "Synthetic injected client and source/evidence/catalog refusal boundaries only; no hosted authentication proof.",
+  "sourceSha256": {
+    "scripts/pocket-monaco-neon-auth-probe.mjs": "817f9e8e2f39c456918d4e7fabb036925a8d2a31cac55fb016bd9f6b157d58bd",
+    "tests/pocket-monaco-neon-auth-probe.test.mjs": "7a2da3e581199f42db347182e6add2483ea0bc5eefd298a795a99b8d67246ecb"
+  },
+  "logSha256": "d4d202fcd6add49c2aeb460e89040b0dfa46d7a78de29f076bf7231a6d75553f",
+  "providerRequests": 0,
+  "databaseConnections": 0,
+  "databaseWrites": 0,
+  "githubSecretReads": 0,
+  "priorTestsRepeated": 0
+}

@@ -1,0 +1,603 @@
+diff --git a/app/api/pocket/analyse/route.ts b/app/api/pocket/analyse/route.ts
+index eae6be8..02dd11b 100644
+--- a/app/api/pocket/analyse/route.ts
++++ b/app/api/pocket/analyse/route.ts
+@@ -380,7 +380,8 @@ export async function POST(request: Request) {
+           ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
+         ],
+       }],
+-      max_output_tokens: 1400,
++      // Precision v2: reasoning and the complete strict JSON share this cap.
++      max_output_tokens: 4000,
+       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
+       };
+       return dispatchPocketAnalysisProviderCall(rescue ? "rescue_precision" : "primary_precision", precisionEnvelope as unknown as Record<string, unknown>, () => client.responses.create(precisionEnvelope));
+@@ -388,6 +389,7 @@ export async function POST(request: Request) {
+     const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
+       try {
+         const first = await requestPrecision(chartImage);
++        if (first.status !== "completed") return null;
+         try {
+           const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
+           if (parsed && Array.isArray(parsed.levels)) {
+@@ -404,6 +406,7 @@ export async function POST(request: Request) {
+             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
+             if (parsed.levels.length === 0 || missingSide) {
+               const rescue = await requestPrecision(chartImage, true, readingCrop);
++              if (rescue.status !== "completed") return first;
+               const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
+               if (rescued) {
+                 const merged = recoverPrecisionGeometry(parsed, rescued);
+diff --git a/docs/monaco-126/precision-v2-output-budget/COST-BOUND.json b/docs/monaco-126/precision-v2-output-budget/COST-BOUND.json
+new file mode 100644
+index 0000000..567b40b
+--- /dev/null
++++ b/docs/monaco-126/precision-v2-output-budget/COST-BOUND.json
+@@ -0,0 +1,65 @@
++{
++  "kind": "POCKET_PRECISION_OUTPUT_V2_PROPOSED_COST_BOUND",
++  "status": "OFFLINE_PROPOSAL_NOT_EXECUTION_AUTHORITY",
++  "retainedPricing": {
++    "path": "docs/monaco-126/benchmark50/COST-SOURCE-RECEIPT.json",
++    "sha256": "92518507a42dcc4468a766febb22b2bb941bd5fe96a4cead67f2456ee2507da4",
++    "recordedAtUtcDate": "2026-10-20",
++    "notRefreshedLive": true,
++    "model": "gpt-5-mini-2025-08-07",
++    "serviceTier": "default",
++    "inputUsdPerMillion": "0.25",
++    "outputUsdPerMillion": "2.00"
++  },
++  "method": {
++    "fullUncachedInputContextTokens": 400000,
++    "subtractOutputFromInputBound": false,
++    "includesImageTokens": true,
++    "reasoningIncludedInOutputCap": true,
++    "characterTokenEstimates": false,
++    "cacheDiscount": false,
++    "batchDiscount": false,
++    "taxAndFxIncluded": false
++  },
++  "slots": [
++    {
++      "slot": "main",
++      "oldMaxOutputTokens": 7000,
++      "proposedMaxOutputTokens": 7000,
++      "oldUpperBoundMicroUsd": 114000,
++      "proposedUpperBoundMicroUsd": 114000
++    },
++    {
++      "slot": "primary_precision",
++      "oldMaxOutputTokens": 1400,
++      "proposedMaxOutputTokens": 4000,
++      "oldUpperBoundMicroUsd": 102800,
++      "proposedUpperBoundMicroUsd": 108000
++    },
++    {
++      "slot": "rescue_precision",
++      "oldMaxOutputTokens": 1400,
++      "proposedMaxOutputTokens": 4000,
++      "oldUpperBoundMicroUsd": 102800,
++      "proposedUpperBoundMicroUsd": 108000
++    }
++  ],
++  "perChart": {
++    "oldUpperBoundMicroUsd": 319600,
++    "proposedUpperBoundMicroUsd": 330000
++  },
++  "sixCharts": {
++    "maximumSends": 18,
++    "oldUpperBoundMicroUsd": 1917600,
++    "proposedUpperBoundMicroUsd": 1980000,
++    "increaseMicroUsd": 62400,
++    "proposedUpperBoundUsd": "1.980000"
++  },
++  "scope": "Six single-chart cases, each with main, primary precision and existing optional rescue; no extra context-chart pair",
++  "actualBilledCostAsserted": false,
++  "sharedAllowanceHeadroomAsserted": false,
++  "currentFrozenPlanChanged": false,
++  "providerCalls": 0,
++  "databaseMutations": 0,
++  "paidDispatchAuthorised": false
++}
+diff --git a/docs/monaco-126/precision-v2-output-budget/OFFLINE-VALIDATION.json b/docs/monaco-126/precision-v2-output-budget/OFFLINE-VALIDATION.json
+new file mode 100644
+index 0000000..10f9708
+--- /dev/null
++++ b/docs/monaco-126/precision-v2-output-budget/OFFLINE-VALIDATION.json
+@@ -0,0 +1,61 @@
++{
++  "kind": "POCKET_PRECISION_OUTPUT_V2_OFFLINE_VALIDATION",
++  "status": "PASS",
++  "observedAtUtc": "2026-10-24T10:29:54.614Z",
++  "nodeVersion": "v24.22.1",
++  "baseSourceSha": "9e82c6d25dcb7f589e2328b2efc7910033d8fcdc",
++  "originalRouteSha256": "5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294",
++  "candidateRouteSha256": "87129e07791ac7e0a20130d6fd9261b25b9d0fc4b902c6bacb5131d94b00cf02",
++  "currentWorkingRepoRouteUnchanged": true,
++  "tests": [
++    {
++      "command": "node tests/pocket-precision-output-v2.test.ts",
++      "path": "tests/pocket-precision-output-v2.test.ts",
++      "tests": 9,
++      "passed": 9,
++      "failed": 0,
++      "skipped": 0,
++      "testFileSha256": "25435041b706be8f9296881dc962db15c6f0e5604355eca02438d5a2a01c011a"
++    },
++    {
++      "command": "node tests/pocket-confirmed-facts.test.ts",
++      "path": "tests/pocket-confirmed-facts.test.ts",
++      "tests": 5,
++      "passed": 5,
++      "failed": 0,
++      "skipped": 0,
++      "testFileSha256": "51627fae3e41613486befc03528fad4c1283edebceb08695a313158235f34310"
++    },
++    {
++      "command": "node tests/pocket-test-provider-spend.test.ts",
++      "path": "tests/pocket-test-provider-spend.test.ts",
++      "tests": 9,
++      "passed": 9,
++      "failed": 0,
++      "skipped": 0,
++      "testFileSha256": "ec24b5363c7fae9153060c3f502962df7ea73c3caecf28fb6a89892a9b6daba4"
++    }
++  ],
++  "totalTests": 23,
++  "failedTests": 0,
++  "skippedTests": 0,
++  "testResultsSha256": "0f2a8cd8edae536a96f96567d00aca030262c0e7ceca1795cc400dc0f1580f69",
++  "retainedResponseControl": {
++    "path": "docs/monaco-126/precision-v2-output-budget/RETAINED-RESPONSE-CONTROL.json",
++    "sha256": "8dab574496dd686deb524f3b65e74654e9dc4bf53c3458998547ab857447285d",
++    "originalResponseSha256": "f396f9c82dc772d74c836973ca1a72549c1c6e7687f5feeb87f41c77591ad9b0",
++    "status": "PASS",
++    "rawResponseUnchanged": true
++  },
++  "costBoundSha256": "a8f72de66f617393c2d0860081f1b783b9159db2529a42acc3128c8a2dedeb74",
++  "providerCalls": 0,
++  "databaseCalls": 0,
++  "privateKeyReads": 0,
++  "paidDispatchAuthorised": false,
++  "fullApplicationTypecheckRun": false,
++  "fullApplicationBuildRun": false,
++  "limitations": [
++    "Offline handling and envelope compatibility only",
++    "No new completion, accuracy, calibration, latency or production readiness claim"
++  ]
++}
+diff --git a/docs/monaco-126/precision-v2-output-budget/PROPOSAL.md b/docs/monaco-126/precision-v2-output-budget/PROPOSAL.md
+new file mode 100644
+index 0000000..fa15e83
+--- /dev/null
++++ b/docs/monaco-126/precision-v2-output-budget/PROPOSAL.md
+@@ -0,0 +1,66 @@
++# Precision output budget v2 — offline scanner proposal
++
++**Status: prepared and tested offline; not deployed and not admitted to any paid run.**
++
++The patch is based on executable `9e82c6d25dcb7f589e2328b2efc7910033d8fcdc` and lives in an isolated worktree. The current frozen six-case plan, its 1,400-token requests, and the d002–d006 continuation remain unchanged.
++
++## Proven fault and the narrow correction
++
++The retained d001 primary precision response from run `40083992183` reports `status: incomplete` and `incomplete_details.reason: max_output_tokens`. It used all 1,400 output tokens, including 832 reasoning tokens, and its 1,363-character text is invalid, unfinished JSON. Its retained file SHA-256 is `f396f9c82dc772d74c836973ca1a72549c1c6e7687f5feeb87f41c77591ad9b0`. The provider completed the main response separately. These observations establish the output-limit failure in that precision attempt; they do not establish the scanner's accuracy or prove that a larger cap will always finish.
++
++The production change in `app/api/pocket/analyse/route.ts` is limited to:
++
++1. Raise the shared precision envelope from **1,400 to 4,000 output tokens**. Both the primary and existing conditional rescue use that same builder. The optional context-image precision path also uses it.
++2. Ignore a primary precision response unless its actual status is `completed`, before parsing it or considering the existing rescue condition.
++3. If the existing conditional rescue is not completed, retain the original completed primary as the fallback. Never parse the incomplete rescue or issue a further call.
++
++The model selection, `low` reasoning effort, strict JSON schema, `store: false`, service tier, prompts, images, geometry calibration and 7,000-token main envelope are unchanged. The existing rescue condition still requires a completed, parsed primary with empty levels or a missing price side. An incomplete or malformed primary does not gain a new rescue/retry path. No provider response status is rewritten and no partial JSON is repaired.
++
++The added completion checks also close an existing edge case: an incomplete response whose text happens to parse as JSON must not be accepted as completed precision. Downstream verified-main geometry recovery remains as before; rejecting precision does not by itself erase independently usable main geometry.
++
++## Offline verification
++
++The new `tests/pocket-precision-output-v2.test.ts` executes the actual route's precision builder and control-flow slices with synthetic transport responses. Its nine checks cover both envelopes, a representative structured output with four anchors and eight levels, incomplete and malformed primary output, existing rescue eligibility, incomplete rescue fallback, transport failure, and the unchanged envelope validator's rejection of 4,000-token requests under a 1,400-token plan.
++
++The retained real response is separately replayed only as an offline fixture. Its bytes and status are unchanged. The proposed route rejects its unfinished precision, makes one mock primary attempt, and creates no rescue attempt. This is a regression check of handling, not a regenerated provider response or evidence that 4,000 tokens would have completed that request.
++
++Commands, from this proposal worktree:
++
++```bash
++node tests/pocket-precision-output-v2.test.ts
++node tests/pocket-confirmed-facts.test.ts
++node tests/pocket-test-provider-spend.test.ts
++```
++
++The existing confirmed-facts test changes one synthetic response to include its actual intended `completed` status. No production scanner fixture or frozen request is edited. See the accompanying offline validation receipt for the exact source/test hashes and results. No full application build or live quality claim is made by this targeted proposal.
++
++## Revised upper bound under the retained pricing method
++
++The calculation reuses `docs/monaco-126/benchmark50/COST-SOURCE-RECEIPT.json`, recorded on 2026-10-20. It is not a new pricing quote. The method reserves the full 400,000-token input context at $0.25 per million, plus the complete output cap at $2.00 per million. It does not subtract output space from the input bound, estimate image/text tokens from characters, or take a cache/batch discount. Reasoning is included in the output allowance.
++
++| Planned slot | Old output cap | Proposed output cap | Old bound | Proposed bound |
++| --- | ---: | ---: | ---: | ---: |
++| Main | 7,000 | 7,000 | $0.114000 | $0.114000 |
++| Primary precision | 1,400 | 4,000 | $0.102800 | $0.108000 |
++| Existing conditional rescue | 1,400 | 4,000 | $0.102800 | $0.108000 |
++| One chart, all three slots | — | — | $0.319600 | $0.330000 |
++| Six charts, at most 18 sends | — | — | $1.917600 | **$1.980000** |
++
++The maximum increase is **$0.062400 for six charts**. These are conservative reservation bounds, not actual billed totals. The six-chart calculation covers one image case per chart with the existing optional reading crop; it does not price an additional context-chart precision pair. Tax and currency conversion remain outside this token calculation. Machine-readable integer-micro-dollar arithmetic is in `COST-BOUND.json`.
++
++## What a future versioned execution plan must change
++
++This application patch is not sufficient to run the frozen benchmark with a larger cap. Its existing guards should continue to reject the mismatch.
++
++| Boundary | Required future versioned work |
++| --- | --- |
++| Exact scanner source | Record the new route/executable hashes and explicitly identify this precision-v2 candidate. Keep original scanner and protocol evidence unchanged. |
++| Request preview extraction | Use a new version of `prepare-monaco-request-previews.mjs` that pins the new route hash and expects 4,000 for both precision slots. The old extractor intentionally rejects the changed route. |
++| Provider plan and fingerprints | Generate new exact request bytes, hashes and fingerprints, with 4,000-token precision caps and 108,000 micro-dollar precision reservations. Record a new plan digest. The original plan and raw receipts remain immutable. |
++| JavaScript/TypeScript execution guards | Version the fixed 1,400-token checks and costs in the offline executor, runner bridge, executor-effects envelope check, isolated receipt validator and applicable continuation/first-six wrapper. Bind the new source, plan and honest evidence identity; do not bypass or silently broaden the old guards. |
++| Generic application envelope validator | No validator relaxation is needed. `verifyPocketBenchmarkEnvelope` already requires equality with the slot's configured output limit. The future call-plan configuration must say 4,000/108,000 for precision and retain a matching model cost bound. The existing 7,000-token/114,000 micro-dollar model-wide maximum can encompass these per-slot bounds under the same retained rates. |
++| Database claim and reservation | The frozen migration's `claim_pocket_benchmark_case` explicitly fixes 7,000/1,400. Its immutable `pocket_benchmark_reserved_bound` fixes 114,000/102,800/102,800. A separately reviewed version-aware admission/accounting path is required for the new exact cap/cost tuple. Do not rewrite historical reservations, receipts, accounting digests, immutable helpers or original request pins. |
++| Scope and shared allowance | Existing chart identities are one-shot and the old run has already claimed them. A future plan needs explicit new versioned attempt identities/scope, while retaining the previous attempts and their cost commitments. It must account for all prior exposure under the existing shared allowance; neither a new ledger name nor a new plan resets that allowance. Actual authoritative headroom and current pricing must be checked before any future dispatch. |
++| Accounting and retention | Keep submit-before-send, private response retention, authentic receipt IDs, both mandatory main/primary receipts, accounting before the next chart, and hard stops for ambiguous transport/receipt/account acknowledgements. No automatic resend, hidden failover or extra rescue path. |
++
++Increasing the cap makes more output room available. Completion, chart-reading quality, calibration, latency within the unchanged endpoint timeout, and useful app behaviour still require genuine future evaluation on the new version. This proposal authorizes none of those future sends and claims none of those outcomes.
+diff --git a/docs/monaco-126/precision-v2-output-budget/RETAINED-RESPONSE-CONTROL.json b/docs/monaco-126/precision-v2-output-budget/RETAINED-RESPONSE-CONTROL.json
+new file mode 100644
+index 0000000..6f0ad20
+--- /dev/null
++++ b/docs/monaco-126/precision-v2-output-budget/RETAINED-RESPONSE-CONTROL.json
+@@ -0,0 +1,41 @@
++{
++  "kind": "POCKET_PRECISION_V2_RETAINED_RESPONSE_OFFLINE_CONTROL",
++  "status": "PASS",
++  "observedAtUtc": "2026-10-24T10:28:18.219Z",
++  "nodeVersion": "v24.22.1",
++  "proposalVersion": "POCKET_PRECISION_OUTPUT_V2",
++  "baseSourceSha": "9e82c6d25dcb7f589e2328b2efc7910033d8fcdc",
++  "candidateRouteSha256": "87129e07791ac7e0a20130d6fd9261b25b9d0fc4b902c6bacb5131d94b00cf02",
++  "verificationScriptSha256": "3b10987c2ade71dfee670fdfcc808d1c30d50a5c6a9949026d70f48cd80464e2",
++  "retained": {
++    "originalRunId": "40083992183",
++    "caseId": "d001",
++    "slot": "primary_precision",
++    "sha256": "f396f9c82dc772d74c836973ca1a72549c1c6e7687f5feeb87f41c77591ad9b0",
++    "status": "incomplete",
++    "incompleteReason": "max_output_tokens",
++    "inputTokens": 2025,
++    "outputTokens": 1400,
++    "reasoningTokens": 832,
++    "totalTokens": 3425,
++    "outputTextChars": 1363,
++    "outputTextIsValidJson": false
++  },
++  "handling": {
++    "precisionResult": "UNAVAILABLE",
++    "mockPrimaryCalls": 1,
++    "mockRescueCalls": 0,
++    "rawResponseUnchanged": true,
++    "incompleteJsonRepaired": false,
++    "completedStatusFabricated": false
++  },
++  "providerCalls": 0,
++  "databaseCalls": 0,
++  "privateKeyReads": 0,
++  "paidDispatchAuthorised": false,
++  "limitations": [
++    "Retained 1400-token output was not regenerated",
++    "No claim that 4000 tokens completes a future response",
++    "No live chart accuracy, latency, calibration or quality evidence"
++  ]
++}
+diff --git a/docs/monaco-126/precision-v2-output-budget/TEST-RESULTS.txt b/docs/monaco-126/precision-v2-output-budget/TEST-RESULTS.txt
+new file mode 100644
+index 0000000..d04ea46
+--- /dev/null
++++ b/docs/monaco-126/precision-v2-output-budget/TEST-RESULTS.txt
+@@ -0,0 +1,56 @@
++COMMAND: node tests/pocket-precision-output-v2.test.ts
++(node:2) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
++(Use `node --trace-warnings ...` to show where the warning was created)
++✔ the shared production builder caps primary and rescue at 4000 and retains strict JSON (3.515725ms)
++✔ completed representative precision is returned unchanged without a rescue (0.9014ms)
++✔ truncated precision is not repaired and does not trigger a new retry (0.339899ms)
++✔ non-completed primary is rejected even when its text is syntactically complete JSON (1.606845ms)
++✔ completed missing-side primary preserves the existing one-rescue path (2.847005ms)
++✔ an incomplete rescue cannot overwrite the completed primary or trigger a further call (1.188563ms)
++✔ malformed completed JSON remains rejected by the actual downstream geometry path (0.712823ms)
++✔ transport failure returns unavailable precision after one attempt (0.725576ms)
++✔ the unchanged envelope validator rejects v2 under 1400 and accepts only the matching 4000 plan (3.566301ms)
++ℹ tests 9
++ℹ suites 0
++ℹ pass 9
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 27.054711
++
++COMMAND: node tests/pocket-confirmed-facts.test.ts
++✔ actual server parser accepts ordinary trader-confirmed numeric prices (10.013222ms)
++(node:2) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
++(Use `node --trace-warnings ...` to show where the warning was created)
++✔ actual precision merge preserves locked chart facts before calibration (4.905169ms)
++✔ blank current prices and blank level prices cannot satisfy both precision sides as zero (2.853548ms)
++✔ actual analyse endpoint rejects malformed supplied confirmations before provider setup (51.617747ms)
++✔ actual analyse endpoint rejects context without explicit instrument-match confirmation (6.674637ms)
++ℹ tests 5
++ℹ suites 0
++ℹ pass 5
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 88.649483
++
++COMMAND: node tests/pocket-test-provider-spend.test.ts
++✔ new benchmark scope remains held without explicit pilot activation (2.175724ms)
++✔ actual provider envelope is inspected and fingerprinted (1.453091ms)
++✔ one verified model supports distinct main and precision slot bounds (0.842045ms)
++✔ unpriced features, tier drift, image overflow and output drift fail closed (0.550455ms)
++✔ all alternate and unknown provider envelope shapes fail closed (1.168417ms)
++✔ image bytes are decoded and MIME metadata and dimensions are verified (0.940172ms)
++✔ routes pass the exact request object, deterministic slots and pinned tier (5.895624ms)
++✔ pilot SQL is isolated, deterministic, six-case bounded and postflight-vetoed (1.564857ms)
++✔ provisional scanner evidence is withheld until authoritative settlement (4.194062ms)
++ℹ tests 9
++ℹ suites 0
++ℹ pass 9
++ℹ fail 0
++ℹ cancelled 0
++ℹ skipped 0
++ℹ todo 0
++ℹ duration_ms 32.142973
+diff --git a/docs/monaco-126/precision-v2-output-budget/TEST-SUMMARY.json b/docs/monaco-126/precision-v2-output-budget/TEST-SUMMARY.json
+new file mode 100644
+index 0000000..837798d
+--- /dev/null
++++ b/docs/monaco-126/precision-v2-output-budget/TEST-SUMMARY.json
+@@ -0,0 +1,26 @@
++[
++  {
++    "command": "node tests/pocket-precision-output-v2.test.ts",
++    "path": "tests/pocket-precision-output-v2.test.ts",
++    "tests": 9,
++    "passed": 9,
++    "failed": 0,
++    "skipped": 0
++  },
++  {
++    "command": "node tests/pocket-confirmed-facts.test.ts",
++    "path": "tests/pocket-confirmed-facts.test.ts",
++    "tests": 5,
++    "passed": 5,
++    "failed": 0,
++    "skipped": 0
++  },
++  {
++    "command": "node tests/pocket-test-provider-spend.test.ts",
++    "path": "tests/pocket-test-provider-spend.test.ts",
++    "tests": 9,
++    "passed": 9,
++    "failed": 0,
++    "skipped": 0
++  }
++]
+diff --git a/scripts/verify-pocket-precision-v2-retained.mjs b/scripts/verify-pocket-precision-v2-retained.mjs
+new file mode 100644
+index 0000000..d91fac6
+--- /dev/null
++++ b/scripts/verify-pocket-precision-v2-retained.mjs
+@@ -0,0 +1,59 @@
++/** Offline control replay of the already-retained d001 response. No provider or database client. */
++import assert from 'node:assert/strict';
++import {readFile,writeFile} from 'node:fs/promises';
++import {basename,resolve} from 'node:path';
++import {createHash} from 'node:crypto';
++import {stripTypeScriptTypes} from 'node:module';
++
++const args=process.argv.slice(2);
++assert.ok(args.length===4&&args[0]==='--retained'&&args[2]==='--out',
++  'Usage: --retained /private/retained-primary-response.json --out /local/validation-receipt.json');
++assert.equal(basename(args[1]),'monaco-encrypted-40083992183-9e82c6d25dcb-d001-provider-response-primary_precision.json');
++const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
++const bytes=await readFile(resolve(args[1]));
++const retainedSha256='f396f9c82dc772d74c836973ca1a72549c1c6e7687f5feeb87f41c77591ad9b0';
++assert.equal(hash(bytes),retainedSha256,'The exact retained response is required; no synthetic substitute');
++const response=JSON.parse(bytes);
++assert.equal(response.status,'incomplete');
++assert.deepEqual(response.incomplete_details,{reason:'max_output_tokens'});
++assert.equal(response.usage.output_tokens,1400);
++assert.equal(response.usage.output_tokens_details.reasoning_tokens,832);
++assert.equal(response.output_text.length,1363);
++assert.throws(()=>JSON.parse(response.output_text));
++
++const source=await readFile(new URL('../app/api/pocket/analyse/route.ts',import.meta.url),'utf8');
++const start=source.indexOf('    const safePrecision = async');
++const end=source.indexOf('    const [response, precisionResult',start);
++assert.ok(start>=0&&end>start);
++const make=new Function('requestPrecision','recoverPrecisionGeometry',
++  stripTypeScriptTypes(source.slice(start,end))+'\nreturn safePrecision;');
++const before=structuredClone(response),mockCalls=[];
++const safePrecision=make(async(...requestArgs)=>{mockCalls.push(requestArgs);return response;},
++  ()=>{throw Error('Incomplete response must never reach geometry recovery');});
++const result=await safePrecision('offline-fixture-only','retained-control',null);
++assert.equal(result,null);
++assert.equal(mockCalls.length,1);
++assert.equal(mockCalls[0].length,1,'No rescue request may be synthesized');
++assert.deepEqual(response,before,'Provider status and text must remain unchanged');
++assert.equal(hash(await readFile(resolve(args[1]))),retainedSha256);
++
++const receipt={
++  kind:'POCKET_PRECISION_V2_RETAINED_RESPONSE_OFFLINE_CONTROL',
++  status:'PASS',observedAtUtc:new Date().toISOString(),nodeVersion:process.version,
++  proposalVersion:'POCKET_PRECISION_OUTPUT_V2',
++  baseSourceSha:'9e82c6d25dcb7f589e2328b2efc7910033d8fcdc',
++  candidateRouteSha256:hash(source),verificationScriptSha256:hash(await readFile(new URL(import.meta.url))),
++  retained:{originalRunId:'40083992183',caseId:'d001',slot:'primary_precision',sha256:retainedSha256,
++    status:response.status,incompleteReason:response.incomplete_details.reason,
++    inputTokens:response.usage.input_tokens,outputTokens:response.usage.output_tokens,
++    reasoningTokens:response.usage.output_tokens_details.reasoning_tokens,
++    totalTokens:response.usage.total_tokens,outputTextChars:response.output_text.length,outputTextIsValidJson:false},
++  handling:{precisionResult:'UNAVAILABLE',mockPrimaryCalls:1,mockRescueCalls:0,rawResponseUnchanged:true,
++    incompleteJsonRepaired:false,completedStatusFabricated:false},
++  providerCalls:0,databaseCalls:0,privateKeyReads:0,paidDispatchAuthorised:false,
++  limitations:['Retained 1400-token output was not regenerated','No claim that 4000 tokens completes a future response',
++    'No live chart accuracy, latency, calibration or quality evidence'],
++};
++await writeFile(resolve(args[3]),JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});
++console.log(JSON.stringify({status:receipt.status,retainedSha256,candidateRouteSha256:receipt.candidateRouteSha256,
++  providerCalls:0,databaseCalls:0,mockPrimaryCalls:1,mockRescueCalls:0}));
+diff --git a/tests/pocket-confirmed-facts.test.ts b/tests/pocket-confirmed-facts.test.ts
+index 33c362d..3aa4f05 100644
+--- a/tests/pocket-confirmed-facts.test.ts
++++ b/tests/pocket-confirmed-facts.test.ts
+@@ -46,7 +46,7 @@ test("blank current prices and blank level prices cannot satisfy both precision
+     { currentPrice: "", levels: [{ price: "-10" }, { price: "10" }] },
+   ]) {
+     let calls = 0;
+-    const read = make(async () => { calls++; return { output_text: JSON.stringify(first) }; }, recoverPrecisionGeometry);
++    const read = make(async () => { calls++; return { status: "completed", output_text: JSON.stringify(first) }; }, recoverPrecisionGeometry);
+     await read("image", "test", null);
+     assert.equal(calls, 2);
+   }
+diff --git a/tests/pocket-precision-output-v2.test.ts b/tests/pocket-precision-output-v2.test.ts
+new file mode 100644
+index 0000000..ed0a94f
+--- /dev/null
++++ b/tests/pocket-precision-output-v2.test.ts
+@@ -0,0 +1,138 @@
++/** Offline tests of the actual route slices. Every request and response here is synthetic. */
++import assert from "node:assert/strict";
++import test from "node:test";
++import { readFile } from "node:fs/promises";
++import { stripTypeScriptTypes } from "node:module";
++import { recoverPrecisionGeometry } from "../app/api/pocket/precision-fallback.ts";
++import { verifyPocketBenchmarkEnvelope } from "../app/api/pocket/torture/provider-spend.ts";
++
++const route = await readFile(new URL("../app/api/pocket/analyse/route.ts", import.meta.url), "utf8");
++const slice = (start: string, end: string) => {
++  const from = route.indexOf(start), to = route.indexOf(end, from);
++  assert.ok(from >= 0 && to > from);
++  return route.slice(from, to);
++};
++const make = new Function("model", "process", "client", "dispatchPocketAnalysisProviderCall", "recoverPrecisionGeometry", "console",
++  stripTypeScriptTypes(slice("const schema =", "export async function POST")
++    + slice("    const precisionInstructions =", "    const [response, precisionResult"))
++  + "\nreturn { requestPrecision, safePrecision };");
++const merge = new Function("initial", "precisionResult", "recoverPrecisionGeometry",
++  stripTypeScriptTypes("let analysis = initial, contextPrecisionResult = null, chartConfirmation = null;\n"
++    + slice('    if (analysis && typeof analysis === "object")', "    const calibrated = calibratePocketAnalysis"))
++  + "\nreturn analysis;");
++const model = "gpt-5-mini-2025-08-07";
++const image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
++const precision = {
++  plotBounds: { left: 8, top: 10, right: 90, bottom: 90 },
++  priceScaleAnchors: [{ price: 120, y: 10 }, { price: 110, y: 30 }, { price: 90, y: 70 }, { price: 80, y: 90 }],
++  levels: [
++    { kind: "support", label: "Lower shelf", price: "95", x: 8, y: 60, x2: 90, y2: 60 },
++    { kind: "support", label: "Range floor", price: "90", x: 8, y: 70, x2: 90, y2: 70 },
++    { kind: "resistance", label: "Upper shelf", price: "105", x: 8, y: 40, x2: 90, y2: 40 },
++    { kind: "resistance", label: "Range ceiling", price: "110", x: 8, y: 30, x2: 90, y2: 30 },
++    { kind: "pivot", label: "Swing low", price: "92", x: 25, y: 66, x2: 25, y2: 66 },
++    { kind: "pivot", label: "Swing high", price: "108", x: 50, y: 34, x2: 50, y2: 34 },
++    { kind: "pivot", label: "Lower swing", price: "89", x: 75, y: 72, x2: 75, y2: 72 },
++    { kind: "zone", label: "Repeated reaction", price: "90", x: 40, y: 68, x2: 60, y2: 72 },
++  ],
++  currentPrice: "100", confidence: "MEDIUM", limitation: "Synthetic structured-output fixture; no chart accuracy claim.",
++};
++const completed = (data = precision) => ({ status: "completed", output_text: JSON.stringify(data) });
++const missingSide = () => completed({ ...precision, levels: precision.levels.filter(level => Number(level.price) < 100) });
++function harness(responses: unknown[]) {
++  const calls: { slot: string; envelope: Record<string, unknown> }[] = [], errors: unknown[][] = [];
++  const client = { responses: { create: async () => {
++    assert.ok(responses.length, "Unexpected extra provider call");
++    const response = responses.shift();
++    if (response instanceof Error) throw response;
++    return response;
++  } } };
++  const dispatch = (slot: string, envelope: Record<string, unknown>, send: () => Promise<unknown>) => {
++    calls.push({ slot, envelope: structuredClone(envelope) }); return send();
++  };
++  return { ...make(model, { env: {} }, client, dispatch, recoverPrecisionGeometry, { error: (...args: unknown[]) => errors.push(args) }), calls, errors };
++}
++
++test("the shared production builder caps primary and rescue at 4000 and retains strict JSON", async () => {
++  const h = harness([completed(), completed()]);
++  await h.requestPrecision(image); await h.requestPrecision(image, true, image);
++  assert.deepEqual(h.calls.map(({ slot }: { slot: string }) => slot), ["primary_precision", "rescue_precision"]);
++  for (const { envelope } of h.calls) {
++    assert.equal(envelope.model, model); assert.equal(envelope.max_output_tokens, 4000);
++    assert.equal(envelope.service_tier, "default"); assert.equal(envelope.store, false);
++    assert.deepEqual(envelope.reasoning, { effort: "low" });
++    assert.equal(envelope.text.format.type, "json_schema"); assert.equal(envelope.text.format.strict, true);
++    assert.equal(envelope.text.format.schema.additionalProperties, false);
++    assert.deepEqual(Object.keys(precision).sort(), [...envelope.text.format.schema.required].sort());
++    assert.equal(precision.levels.length, envelope.text.format.schema.properties.levels.maxItems);
++    assert.equal(precision.priceScaleAnchors.length, envelope.text.format.schema.properties.priceScaleAnchors.maxItems);
++  }
++  assert.equal(h.calls[0].envelope.input[0].content.length, 2);
++  assert.equal(h.calls[1].envelope.input[0].content.length, 3);
++  assert.match(slice("    const analysisEnvelope:", "    const analysisRequest ="), /max_output_tokens: 7000/);
++});
++
++test("completed representative precision is returned unchanged without a rescue", async () => {
++  const first = completed(), before = structuredClone(first), h = harness([first]);
++  assert.equal(await h.safePrecision(image, "synthetic", null), first);
++  assert.deepEqual(first, before); assert.equal(h.calls.length, 1);
++});
++
++test("truncated precision is not repaired and does not trigger a new retry", async () => {
++  const first = { status: "incomplete", incomplete_details: { reason: "max_output_tokens" }, output_text: '{"plotBounds":' };
++  const before = structuredClone(first), h = harness([first]);
++  assert.equal(await h.safePrecision(image, "synthetic", null), null);
++  assert.equal(h.calls.length, 1); assert.deepEqual(first, before);
++});
++
++test("non-completed primary is rejected even when its text is syntactically complete JSON", async () => {
++  for (const status of ["incomplete", "failed", "cancelled", undefined]) {
++    const h = harness([{ ...completed(), status }]);
++    assert.equal(await h.safePrecision(image, "synthetic", null), null); assert.equal(h.calls.length, 1);
++  }
++});
++
++test("completed missing-side primary preserves the existing one-rescue path", async () => {
++  const h = harness([missingSide(), completed()]);
++  const result = await h.safePrecision(image, "synthetic", image);
++  const parsed = JSON.parse(result.output_text);
++  assert.deepEqual(h.calls.map(({ slot }: { slot: string }) => slot), ["primary_precision", "rescue_precision"]);
++  assert.ok(parsed.levels.some((level: { price: string }) => Number(level.price) > 100));
++  assert.ok(parsed.levels.some((level: { price: string }) => Number(level.price) < 100));
++  assert.equal("status" in result, false, "Merged geometry must not impersonate a completed provider receipt");
++});
++
++test("an incomplete rescue cannot overwrite the completed primary or trigger a further call", async () => {
++  for (const output_text of ['{"plotBounds":', JSON.stringify(precision)]) {
++    const first = missingSide(), rescue = { ...completed(), status: "incomplete", output_text }, before = structuredClone(rescue);
++    const h = harness([first, rescue]);
++    assert.equal(await h.safePrecision(image, "synthetic", image), first);
++    assert.equal(h.calls.length, 2); assert.deepEqual(rescue, before);
++  }
++});
++
++test("malformed completed JSON remains rejected by the actual downstream geometry path", async () => {
++  const first = { status: "completed", output_text: '{"levels":' }, h = harness([first]);
++  const result = await h.safePrecision(image, "synthetic", null);
++  const analysis = merge({ levels: [], priceScaleAnchors: [] }, result, recoverPrecisionGeometry);
++  assert.deepEqual(analysis.levels, []); assert.deepEqual(analysis.priceScaleAnchors, []); assert.equal(h.calls.length, 1);
++});
++
++test("transport failure returns unavailable precision after one attempt", async () => {
++  const h = harness([new Error("synthetic transport failure")]);
++  assert.equal(await h.safePrecision(image, "synthetic", null), null);
++  assert.equal(h.calls.length, 1); assert.equal(h.errors.length, 1);
++});
++
++test("the unchanged envelope validator rejects v2 under 1400 and accepts only the matching 4000 plan", async () => {
++  const h = harness([completed(), completed()]);
++  await h.requestPrecision(image); await h.requestPrecision(image, true, image);
++  for (const { slot, envelope } of h.calls) {
++    const call = { slot, model, serviceTier: "default", maxOutputTokens: 1400, maxInputTextChars: 30000,
++      maxSchemaBytes: 30000, maxImages: 2, maxImageBytes: 4000000, maxImageWidth: 4096, maxImageHeight: 4096,
++      maxImagePixels: 16777216, maxCostMicroUsd: 102800, costBoundEvidenceRef: "synthetic-old-bound" };
++    assert.throws(() => verifyPocketBenchmarkEnvelope(slot, envelope, { plan: { [slot]: call } } as never), /planned model\/output bound/);
++    const revised = { ...call, maxOutputTokens: 4000, maxCostMicroUsd: 108000, costBoundEvidenceRef: "synthetic-v2-bound" };
++    assert.equal(verifyPocketBenchmarkEnvelope(slot, envelope, { plan: { [slot]: revised } } as never).maxOutputTokens, 4000);
++  }
++});

@@ -1,3 +1,17 @@
+# Current continuation: protected runner prepared, secure inference key missing
+
+Read LAUNCH-CHECKLIST-2026-10-21.md, OWNER-LAUNCH-AMENDMENT-2026-10-21.json and the newest Issue #126 receipt. Necessary launch work is authorised; extra purchases still need approval. All schedules remain off. Resume PR #142 from the published commit in the latest receipt, preserving other branches.
+
+The recovered 54-check runner evidence and 15 new auth-probe checks remain accepted. A further 45 focused checks passed for encrypted transport, the protected CLI, local action and bounded ciphertext relay. Exact locked runtime constructor imports passed. Source is prepared; no hosted inference occurred.
+
+The previous signed-out-account blocker is closed. Real account controls, fresh costs/activity and live obligations were inspected. The private pilot was removed from all three training-data sharing selections and verified after reload. Recorded original-$5 exposure is zero at the snapshot, with its partial-day and settlement limits preserved. No allowance has been seeded.
+
+Actual GitHub inspection found the inference API secret missing; the ledger password is already present. Finish the prepared secure owner key entry, then verify the real key binding and GitHub-stored password, refresh any changed exposure, seed immutable admission, and pin reviewed source/evidence/wrapper commits. Do not ask for another ledger reset, technical IDs, two human reviewers for internal diagnostics or another first-six scope approval. A necessary replacement inference key must be bound under its actual new identity.
+
+The confidential six-only bundle and recipient decryption key are privately saved; see qa/launch-account-controls/INPUT-OUTPUT-PREPARATION.json. Use the run-bound public artifact and data-only ciphertext ref, freeze the first commit, retain encrypted outputs only after remote acknowledgement, and preserve private results before seven-day expiry. The future relay ref must also contain a minimal Vercel disable for its exact branch and no workflows. The invocation branch remains absent and literal workflow pins remain UNBOUND.
+
+Real cases remain 0/6. Follow the consolidated commerce, integration, device/store and launch tasks next. No automatic continuation or schedule is enabled. The sections below are retained historical evidence and do not override this current checkpoint.
+
 # Current continuation: protected ledger secret saved
 
 MONACO_FIRST_SIX_LEDGER_KEY is present in monaco-first-six-inference. Owner review, no administrator bypass and exact branch restriction verified. See isolated-runner/CREDENTIAL-STORAGE-RECEIPT.json. No more password handoff is needed. The role remains NOLOGIN; secret presence is not proof of correct authentication. Continue the existing independently owned runner/security/budget work; preserve unknown prior exposure and disabled inference. Historical handoff instructions below are superseded.

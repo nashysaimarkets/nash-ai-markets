@@ -1,0 +1,44 @@
+{
+  "observedAtUtc": "2026-10-24T09:46:34.3879822Z",
+  "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/39680394456",
+  "jobId": 119501055643,
+  "attempt": 1,
+  "result": {
+    "kind": "MONACO_PROTECTED_CREDENTIAL_AUTH_V1",
+    "status": "PASS",
+    "sourceSha": "622b38323e7733ddef90ae54243f9594dc60fde3",
+    "runId": "39680394456",
+    "keyTrackingId": "key_aD5pc20EZBLGECNC",
+    "projectId": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e",
+    "storageEvidenceSha256": "0d8800d8b052454e2ce1a5b72addb3c059c4b8895fb0757942f7bd6294d854c8",
+    "keyIdentityBasis": "OWNER_COMPLETED_CONTROL_PLANE_CREATION_AND_DIRECT_SECRET_TRANSFER",
+    "providerAuthenticationVerified": false,
+    "providerRequests": 0,
+    "databaseWrites": 0,
+    "paidDispatchEnabled": false,
+    "ledgerAuthentication": {
+      "kind": "MONACO_NEON_AUTH_ONLY_V1",
+      "providerRequests": 0,
+      "databaseWrites": 0,
+      "paidDispatchEnabled": false,
+      "budgetHeadroom": "NOT_INSPECTED",
+      "githubSecretBinding": "MONACO_FIRST_SIX_LEDGER_KEY_FROM_PROTECTED_ENVIRONMENT",
+      "projectBranchIdentity": "REUSED_PINNED_CONTROL_PLANE_EVIDENCE",
+      "status": "PASS",
+      "sourceSha": "622b38323e7733ddef90ae54243f9594dc60fde3",
+      "identityEvidenceSha256": "32c788992c1909a8c704e35744f94ebb6df82fd121cff4878653a1d1da03dfc1",
+      "passwordAuthenticationVerified": true,
+      "limitedPrivilegesVerified": true,
+      "schemaShapeVerified": true,
+      "clientTlsVerified": true,
+      "backendTlsObserved": false
+    }
+  },
+  "cleanup": {
+    "observedAtUtc": "2026-10-24T09:46:56.109Z",
+    "canLogin": false,
+    "runnerSessions": 0,
+    "passwordValidityDeadlineUtc": "2026-10-24T09:50:59.162Z"
+  }
+}

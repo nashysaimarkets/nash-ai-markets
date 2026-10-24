@@ -1,0 +1,56 @@
+{
+  "kind": "MONACO_CREDENTIAL_COMPATIBILITY_REPAIR_V1",
+  "date": "2026-10-21",
+  "parentSource": "9f01b7e9b99295e046cf1d0e7dc4dbd2dd2c3b88",
+  "claim": "issue126-6326744156",
+  "failedHostedRun": 39674500397,
+  "failedHostedJob": 119480669314,
+  "findings": [
+    "Three >=24-character password input checks incorrectly reject provider-supported 12-23-character passwords before any connection.",
+    "Public HOLD omitted all failure-stage information; only code-owned allowlisted stage names are now emitted.",
+    "Outer authentication result could be relabelled by caller mutation during await; context and evidence bytes now snapshot before validation."
+  ],
+  "officialPasswordContract": "https://neon.com/docs/manage/roles#manage-roles-with-sql",
+  "exactHostedFailureCause": "NOT_YET_PROVEN: saved GitHub credential values/lengths were never inspected; previous hosted result lacks stage detail.",
+  "localRuntime": "Node v22.16.0 with --experimental-strip-types (not production Node24 acceptance)",
+  "redGreen": {
+    "newRegressionTests": 19,
+    "baselinePass": 4,
+    "baselineFail": 15,
+    "fixedPass": 19,
+    "originalAuthRegressionsPass": 4,
+    "fixedTotal": 23,
+    "failed": 0,
+    "skipped": 0
+  },
+  "localCommand": "node --experimental-strip-types --test tests/pocket-monaco-auth-repair.test.mjs tests/pocket-monaco-credential-auth.test.mjs",
+  "security": {
+    "tlsCertificateAndHostnameChecks": "unchanged",
+    "fixedRoleEndpointAndSchemaGuards": "unchanged",
+    "existingKeyIdentityAndEvidencePins": "unchanged",
+    "privateDriverErrors": "never emitted",
+    "passwordValuesRead": false,
+    "databaseMutations": 0,
+    "providerRequests": 0,
+    "paidRequests": 0,
+    "newCredentials": 0,
+    "schedulesChanged": false
+  },
+  "sourceSha256": {
+    "scripts/pocket-monaco-credential-auth.mjs": "2784f88fbe738e7ce9d81ba210311971e8c0b1ac17ab74f6073031ed3df8591f",
+    "scripts/pocket-monaco-neon-auth-probe.mjs": "8ec2c7ac6ef7079e94d474ba086a0f0e37d32afdfa051238ef8090c56a248f27",
+    "scripts/pocket-monaco-neon-port.ts": "f4f53ab561b9f6698b1ad43a6b0256601cb1ebb4e16b3a55ba68109a4c2f6696",
+    "scripts/pocket-monaco-setup-preflight.mjs": "312291171c255158b00603045044e84172de7fefe936b8f2dcf7da41fd2416a7",
+    "tests/pocket-monaco-auth-repair.test.mjs": "4544e2739b2775902cdb41a04aae7b048939e13b473e1031a7c000a91770d375",
+    ".github/workflows/monaco-neon-ledger-qa.yml": "0c2b3ca7fd242681ac6bd360b9f55fe67d83ddb714b3777ec807649c656e6e44"
+  },
+  "logs": {
+    "baseline.log": "70c71d8e6a93ea9d9dbc6592a9e298406ad88037104480072796c72de557bd82",
+    "targeted.log": "fff9be217af9dc49b5064238e46dd5a8d42cda180495a8429460b3420e18e2ef"
+  },
+  "ci": "Existing no-secret disposable PG17 workflow extended with affected auth regressions. Exact-source Node24/strict-TS result must be recorded separately.",
+  "liveState": "NOLOGIN command succeeded in prior receipt6326654722; its follow-up read was blocked. This continuation did not query or mutate Neon.",
+  "next": "Review exact-source CI, then create a corrected protected credential-only run with normal owner gate. Never rerun old attempt2 or bypass the gate. Coordinate bounded LOGIN/NOLOGIN only with the authorised operator. Do not recreate either credential. Paid admission remains separate.",
+  "scannerExecuted": 0,
+  "releaseReady": false
+}

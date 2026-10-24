@@ -1,0 +1,9 @@
+{
+  "name": "monaco-isolated-sql-driver",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Locked driver used only by the protected no-inference database probe",
+  "dependencies": {
+    "pg": "8.16.3"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "kind": "MONACO_RUNNER_CONTINUATION_OFFLINE_ACCEPTANCE_V1",
+  "savedAtUtc": "2026-10-21T18:13:49Z",
+  "baseCommit": "4e528b887f6f42e83ccdd915b47781f4a58a25aa",
+  "totalUniqueAffectedChecks": 54,
+  "passed": 54,
+  "failed": 0,
+  "skipped": 0,
+  "receipts": [
+    {
+      "receipt": "qa/setup-preflight/ACCEPTANCE.json",
+      "uniqueAffectedChecks": 15,
+      "status": "PASS"
+    },
+    {
+      "receipt": "qa/executor-effects/ACCEPTANCE.json",
+      "uniqueAffectedChecks": 16,
+      "status": "PASS"
+    },
+    {
+      "receipt": "qa/executor-orchestration/ACCEPTANCE.json",
+      "uniqueAffectedChecks": 23,
+      "status": "PASS"
+    }
+  ],
+  "verifiedSourceAndLogSha256": {
+    "scripts/pocket-monaco-setup-preflight.mjs": "3b63fd5fc0df41c56b65e93e3a0315c9bda71f4c9bfb1881362389d8480fe257",
+    "tests/pocket-monaco-setup-preflight.test.mjs": "4b0e773289399f9b4364fa6a0ee1b542b49a247f8d59ca212311a755e2a3c7c2",
+    ".github/workflows/monaco-first-six-setup.yml": "7dd2297f15c289250334fed8fe2ece3e518910eb93b35c2911f7b11ba8dd353b",
+    "scripts/pocket-monaco-executor-effects.mjs": "4d9b4866f0146bed7082f98ea01ae828edfbb32410da3275415063c5e1b5ec6b",
+    "tests/pocket-monaco-executor-effects.test.mjs": "593c161fc160dcda719947b63e39b0de7d5049161ea854a5f0c36b04a9ff800f",
+    "scripts/pocket-monaco-isolated-executor.mjs": "d69c5acd55c74f44b99838776ae3ec48180507af98d67982b63db09b1a41d0e0",
+    "scripts/pocket-monaco-first-six-executor.ts": "0b0a38b34385c24b83a270a2718049cd162f2678297751cfff53c08614b1866f",
+    "scripts/pocket-monaco-executor-bootstrap.mjs": "8e0c0efeed196f4f3372f7585345c451e249c60fb52fb546b878fb62d68ea37a",
+    "tests/pocket-monaco-isolated-executor.test.mjs": "cc4bd39c864db8c93f6743f67884ab14c94fb6cc71409935dd8389a361698ce8",
+    "tests/pocket-monaco-first-six-executor.test.mjs": "65d528a38bab65be8fc87834d6b2f36bffb611b909eb75e44c6473f8fb864b47",
+    "qa/executor-orchestration/core-tests.log": "d01e39e75642a7598ce2eeb59d2d77acee46364a0a9e60dd583284102269ad66",
+    "qa/executor-orchestration/strict-adapter-tests.log": "a96fbd4ffc4ecc5ac2397a7a8801fcfa182e47baaacec9573402d651d3fae91f"
+  },
+  "independentReview": "PASS for inert source preparation; all concrete reported findings resolved",
+  "reviewFindingsResolved": [
+    "Separate executable/evidence pins",
+    "Accounting-lock-compatible inspection",
+    "Current headroom includes commitments",
+    "Known all-voided cancellation",
+    "Frozen manifest licence binding",
+    "SDK metadata preserved across cloning",
+    "Existing client key immutable between sends",
+    "Disabled dispatch refuses before key read",
+    "Current ownership and authentication no-retry recovery"
+  ],
+  "originalProofReused": {
+    "diagnostics": 128,
+    "ledger": 42,
+    "application": "Existing recorded source proof reused; no application rebuild"
+  },
+  "actualProviderCalls": 0,
+  "genuineDiagnosticCases": 0,
+  "credentialedWorkflowExecutions": 0,
+  "hostedDatabaseWrites": 0,
+  "privatePacketReads": 0,
+  "newBudgetBaseline": false,
+  "originalPinnedFilesChanged": false,
+  "workflowTemplateOnly": true,
+  "remaining": "Owner credential generation/copy and protected storage; existing inference binding, authoritative budget and actual processor/persistent-private-storage evidence; final one-shot protected wrapper before first invocation-branch creation. No launch/hosted acceptance claimed."
+}
