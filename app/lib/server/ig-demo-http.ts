@@ -40,8 +40,14 @@ export function createIgDemoHttp(deps: IgDemoHttpDependencies) {
       if(body.action!=='disconnect' && !user.permitted) return reply({error:'ACCESS_DENIED'},403);
       const connection=await awaitIgDemoAbortable(deps.connection(user.ownerId),signal);
       if(body.action==='disconnect') return reply(await connection.disconnect(signal));
+      const stillAuthorised=async()=>{
+        const current=await awaitIgDemoAbortable(deps.authorise(request),signal);
+        return current?.ownerId===user.ownerId && current.permitted===true;
+      };
       if(body.action==='connect') {
+        if(!await stillAuthorised()) return reply({error:'ACCESS_DENIED'},403);
         const credential=await awaitIgDemoAbortable(deps.credentials(user.ownerId),signal);
+        if(!await stillAuthorised()) return reply({error:'ACCESS_DENIED'},403);
         await connection.connect(credential,signal);
       }
       // Only a server-registered, owner-bound source can establish broker product identity.

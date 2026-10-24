@@ -51,3 +51,14 @@ test('loopback HTTP POST exercises boundary with lifecycle fixtures and same-ori
  await new Promise<void>(resolve=>server.listen(0,'127.0.0.1',resolve));const address=server.address();assert.ok(address && typeof address==='object');
  try {const url=`http://127.0.0.1:${address.port}`;const good=await fetch(url,{method:'POST',headers:{origin:'http://localhost','content-type':'application/json','x-pocket-ig-demo':'1'},body:JSON.stringify({action:'connect'})});assert.equal(good.status,200);assert.equal((await good.json()).account.accountId,'DEMO1');const before=h.calls.length;const denied=await fetch(url,{method:'POST',headers:{origin:'https://evil.invalid','content-type':'application/json','x-pocket-ig-demo':'1'},body:JSON.stringify({action:'refresh'})});assert.equal(denied.status,403);assert.equal(h.calls.length,before);}finally{server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
 });
+test('revoked identity while connection resolves must not read managed vault', async()=>{
+ const h=harness();
+ const handle=createIgDemoHttp({...h.deps,connection:async()=>{h.user(null);return h.connection;}});
+ const response=await handle(req({action:'connect'}));
+ assert.equal(h.vaultReads(),0);assert.equal(response.status,403);assert.equal(h.calls.length,0);
+});
+test('identity changes during vault resolution must not start broker login', async()=>{
+ const h=harness();let connects=0;
+ const handle=createIgDemoHttp({...h.deps,connection:async()=>({...h.connection,connect:async(...args:Parameters<typeof h.connection.connect>)=>{connects++;return h.connection.connect(...args);}}),credentials:async()=>{h.user({ownerId:other,permitted:true});return {identifier:'demo',password:'mock-password',selectedAccountId:'DEMO1'};}});
+ const response=await handle(req({action:'connect'}));assert.equal(connects,0);assert.equal(response.status,403);assert.equal(h.calls.length,0);
+});

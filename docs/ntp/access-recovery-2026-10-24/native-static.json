@@ -1,0 +1,15 @@
+{
+  "plist_parses": true,
+  "bundle_ids": [
+    "com.nashaimarkets.pocketbullseye"
+  ],
+  "versions": [
+    "1.2.14"
+  ],
+  "builds": [
+    "47"
+  ],
+  "camera_disclosure": true,
+  "photos_disclosure": true,
+  "signing_entitlement_files": []
+}

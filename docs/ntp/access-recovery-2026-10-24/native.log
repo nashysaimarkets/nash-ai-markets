@@ -1,0 +1,60 @@
+(node:12) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ background invalidates in-flight verification and holds local access until foreground recheck (16.403689ms)
+✔ resume reads fresh native evidence and accepts only the current Pocket server result (3.674869ms)
+✔ failed native resume checks expose ERROR rather than stale verified access (2.106177ms)
+✔ a newer StoreKit event supersedes an older foreground snapshot (1.592917ms)
+✔ background StoreKit updates stay unverified and resume rechecks rather than publishing access (2.853465ms)
+✔ teardown removes both native listeners and suppresses all late foreground results (5.388375ms)
+✔ partial listener registration failure removes the registered StoreKit listener (6.097041ms)
+✔ web subscription controls never register native lifecycle or StoreKit listeners (2.848937ms)
+✔ initial background state holds StoreKit events until a real foreground transition (1.288547ms)
+✔ backgrounding before lifecycle registration completes cannot be mistaken for an initial active app (1.488719ms)
+✔ a late active snapshot cannot overwrite a newer background event (6.935881ms)
+✔ a late inactive snapshot cannot undo a newer foreground event or duplicate its status check (6.530201ms)
+✔ initial app state rejection and malformed state expose recovery without verifying native access (3.250317ms)
+✔ unmount during initial app state lookup prevents any later native read or presentation update (1.435044ms)
+✔ direct purchase/restore results cannot publish access when the current app state is inactive, unknown or unavailable (2.709801ms)
+✔ direct active-app verification still trusts the current server entitlement rather than StoreKit local flags (0.788724ms)
+(node:13) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ native proof cannot escape Pocket endpoint: https://outside.example/api/pocket/analyse (16.220682ms)
+✔ native proof cannot escape Pocket endpoint: //outside.example/api/pocket/analyse (3.670338ms)
+✔ native proof cannot escape Pocket endpoint: /api/pocket/../../outside (1.518417ms)
+✔ native proof cannot escape Pocket endpoint: /api/pocket/\outside (1.651138ms)
+✔ native proof cannot escape Pocket endpoint: /api/pocket/analyse#fragment (2.727336ms)
+✔ native proof cannot escape Pocket endpoint: /api/pocket/%2e%2e/outside (2.564577ms)
+✔ native proof cannot escape Pocket endpoint: /api/stripe/checkout (1.596993ms)
+✔ native transport drops caller-supplied stale Apple proof when StoreKit has none (10.476745ms)
+✔ native transport refuses redirect following and includes only fresh proof (11.255206ms)
+✔ web transport retains existing fetch contract without StoreKit access (6.667493ms)
+✔ native purchases bind the verified Pocket account and return signed Apple evidence (15.26474ms)
+✔ native billed requests carry signed evidence without accepting device entitled/free-use flags (7.154513ms)
+(node:14) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the real shared comparison transport adds fresh native JWS and preserves cancellation (12.787349ms)
+✔ fresh purchase and subscription updates deliver their exact verified JWS before the entitlement stream catches up (2.041171ms)
+✔ native accessChanged notifications are server verified and listener lifecycle is wired into customer controls (4.108232ms)
+✔ native Swift package and JavaScript bridge use the same patched Capacitor release (2.691007ms)
+✔ native initialization failure has visible recovery without a price or purchase offer (1.812325ms)
+✔ cached product data cannot offer a purchase during loading or failed account verification (0.332847ms)
+✔ ready Apple products keep existing price and entitlement behavior without a web purchase fallback (0.550511ms)
+(node:20) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ actual native product rejection leaves a native error state instead of the empty web state (15.342203ms)
+✔ late initialization failure cannot overwrite a newer verified subscription update (2.500953ms)
+✔ failed account verification hides an otherwise known product purchase and unmount suppresses late failures (7.916988ms)
+✔ actual bridge pending → rejection keeps local entitlement cleared and exposes recovery without purchase (7.325186ms)
+✔ actual bridge pending → verified accepts only the server result and ignores an obsolete verification (4.454221ms)
+✔ an unmarked legacy event remains unverified and cannot reopen a purchase offer (1.141892ms)
+✔ failed native listener registration holds access and rejects a later successful initialization (1.805723ms)
+✔ listener registration failure after a verified initialization clears the existing access presentation (1.3871ms)
+✔ actual bridge holds parallel controls initialization until current foreground state is known (2.311452ms)
+ℹ tests 44
+ℹ suites 0
+ℹ pass 44
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 278.445085

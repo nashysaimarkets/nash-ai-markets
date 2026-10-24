@@ -1,0 +1,56 @@
+✔ real lifecycle through HTTP boundary projects redacted account positions then revokes (20.277881ms)
+✔ CSRF, injected owner/credentials, untrusted chart proof and invalid actions dispatch zero requests (4.10395ms)
+✔ anonymous/unpaid/wrong-owner cannot connect, revoked entitlement can disconnect (6.364186ms)
+✔ disabled actual customer route cannot be enabled by request (1.090895ms)
+✔ cancelled slow authorisation settles without vault or transport (4.132084ms)
+✔ server-owned provenance enables exact matching; mismatch stays HOLD (4.311896ms)
+✔ streamed oversize request stops before consuming entire hostile body (1.106707ms)
+✔ loopback HTTP POST exercises boundary with lifecycle fixtures and same-origin denial (38.309966ms)
+✖ revoked identity while connection resolves must not read managed vault (1.52858ms)
+✖ identity changes during vault resolution must not start broker login (0.923252ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 299.798971
+
+✖ failing tests:
+
+test at repo/tests/ig-demo-http.test.ts:54:1
+✖ revoked identity while connection resolves must not read managed vault (1.52858ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/scratch/a6f4b2ce0ead/repo/tests/ig-demo-http.test.ts:58:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at repo/tests/ig-demo-http.test.ts:60:1
+✖ identity changes during vault resolution must not start broker login (0.923252ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///workspace/scratch/a6f4b2ce0ead/repo/tests/ig-demo-http.test.ts:63:62)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
