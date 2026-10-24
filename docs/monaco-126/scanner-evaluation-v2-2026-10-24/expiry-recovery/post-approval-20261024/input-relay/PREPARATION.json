@@ -1,0 +1,20 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_OFFLINE_INPUT_RELAY",
+  "caseId": "v2-d002",
+  "scopeId": "pocket-scanner-evaluation-v2-20261024",
+  "run": {
+    "repository": "nashysaimarkets/nash-ai-markets",
+    "runId": "40105387615",
+    "runAttempt": "1",
+    "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79"
+  },
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "bundleSha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
+  "branch": "monaco-first-six-input-40105387615",
+  "published": false,
+  "dispatchAuthorised": false,
+  "envelopeSha256": "2d9529fb46af0d4b85257c887665fa126d028ee58bb0a4b74827724e06f3c794",
+  "envelopeBytes": 1044621,
+  "providerCalls": 0,
+  "databaseCalls": 0
+}

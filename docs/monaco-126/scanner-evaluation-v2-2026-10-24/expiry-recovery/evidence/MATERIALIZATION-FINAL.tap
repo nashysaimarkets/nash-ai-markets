@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: RPC amendment changes exactly one expression and binds the observed original attributes
+ok 1 - RPC amendment changes exactly one expression and binds the observed original attributes
+  ---
+  duration_ms: 3.259621
+  type: 'test'
+  ...
+# Subtest: missing, old, proposed, denied, or mismatched owner authority cannot materialize a grant
+ok 2 - missing, old, proposed, denied, or mismatched owner authority cannot materialize a grant
+  ---
+  duration_ms: 17.876775
+  type: 'test'
+  ...
+# Subtest: synthetic complete material uses one atomic install and grant with original permit untouched
+ok 3 - synthetic complete material uses one atomic install and grant with original permit untouched
+  ---
+  duration_ms: 3.166743
+  type: 'test'
+  ...
+# Subtest: wrong or stale official/ledger evidence fails before materialization
+ok 4 - wrong or stale official/ledger evidence fails before materialization
+  ---
+  duration_ms: 9.500116
+  type: 'test'
+  ...
+# Subtest: lease bounds reject expiry, insufficient login room and more than sixty minutes
+ok 5 - lease bounds reject expiry, insufficient login room and more than sixty minutes
+  ---
+  duration_ms: 6.706651
+  type: 'test'
+  ...
+# Subtest: final result audit uses microsecond claim/submission bounds and permits late bookkeeping
+ok 6 - final result audit uses microsecond claim/submission bounds and permits late bookkeeping
+  ---
+  duration_ms: 7.719855
+  type: 'test'
+  ...
+# Subtest: new activation retains original history guards and substitutes only the verified lease deadline
+ok 7 - new activation retains original history guards and substitutes only the verified lease deadline
+  ---
+  duration_ms: 7.544055
+  type: 'test'
+  ...
+# Subtest: generated root-only opener performs lease audit before reading the private key
+ok 8 - generated root-only opener performs lease audit before reading the private key
+  ---
+  duration_ms: 1.089064
+  type: 'test'
+  ...
+# Subtest: tampered recovery module initializer is refused before import or any private-key read
+ok 9 - tampered recovery module initializer is refused before import or any private-key read
+  ---
+  duration_ms: 73.733667
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 188.910999

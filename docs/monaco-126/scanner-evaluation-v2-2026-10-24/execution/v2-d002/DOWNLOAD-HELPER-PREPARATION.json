@@ -1,0 +1,16 @@
+{
+  "kind": "D002_OFFICIAL_ARTIFACT_DOWNLOAD_HELPER_PREPARATION",
+  "sourcePath": "scanner-evaluation-v2-execution/download-official-artifact.py",
+  "sourceSha256": "9eddb1eccd72675b4e4eb8e9155c690876df09828c02baf9f8f30f069fa61b10",
+  "outputPath": "scanner-evaluation-v2-execution/download-official-artifact-v2-d002.py",
+  "outputSha256": "46429e6bf89e14f10b6b22b69ee0c4f7dfb8e3431a44c21e3b7b2f197e81b9b3",
+  "onlyChanges": [
+    "runId 40095819408 to 40105387615",
+    "wrapper 6702f4c153b18b4caa1df82565c8bbf24bfb573b to b7f2927f2c9438b18a9ce042904259a4acd11323",
+    "encrypted artifact source-case prefix d001 to d002"
+  ],
+  "runtimeSourceUnchanged": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "status": "PREPARED_NOT_INVOKED_NO_ARTIFACT_EXISTS_YET",
+  "privateKeyRead": false,
+  "networkCalls": 0
+}

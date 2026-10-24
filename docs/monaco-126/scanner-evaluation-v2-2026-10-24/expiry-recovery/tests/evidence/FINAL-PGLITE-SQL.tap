@@ -1,0 +1,138 @@
+# Local engine: PostgreSQL 18.6 (PGlite 0.5.10) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit
+# Single-connection WASM SQL/role tests; no network, hosted DB, provider or multi-session concurrency claim.
+TAP version 13
+# Subtest: expired unused original permit remains denied before any amendment, without a new claim or hold
+ok 1 - expired unused original permit remains denied before any amendment, without a new claim or hold
+  ---
+  duration_ms: 55.816051
+  type: 'test'
+  ...
+# Subtest: install requires a separately recorded amendment and exact accepted RPC preimage
+ok 2 - install requires a separately recorded amendment and exact accepted RPC preimage
+  ---
+  duration_ms: 39.586635
+  type: 'test'
+  ...
+# Subtest: installed code without a lease and NULL/missing helper lookup fail closed
+ok 3 - installed code without a lease and NULL/missing helper lookup fail closed
+  ---
+  duration_ms: 71.504211
+  type: 'test'
+  ...
+# Subtest: approved exact-identity lease composes with unchanged inspection and runs mandatory slots once with full hold
+ok 4 - approved exact-identity lease composes with unchanged inspection and runs mandatory slots once with full hold
+  ---
+  duration_ms: 433.229837
+  type: 'test'
+  ...
+# Subtest: lease cannot authorize changed run, job, source, wrapper, evidence, case, project, plan or key identity
+ok 5 - lease cannot authorize changed run, job, source, wrapper, evidence, case, project, plan or key identity
+  ---
+  duration_ms: 207.92203
+  type: 'test'
+  ...
+# Subtest: grant rejects missing and JSON-null approval and comment timestamps
+ok 6 - grant rejects missing and JSON-null approval and comment timestamps
+  ---
+  duration_ms: 111.512902
+  type: 'test'
+  ...
+# Subtest: declined, proposed, comment-only and missing owner decisions roll back the whole install and grant
+ok 7 - declined, proposed, comment-only and missing owner decisions roll back the whole install and grant
+  ---
+  duration_ms: 602.634664
+  type: 'test'
+  ...
+# Subtest: grant rejects mismatched scope, permit, identity, previous evidence and stale observed evidence
+ok 8 - grant rejects mismatched scope, permit, identity, previous evidence and stale observed evidence
+  ---
+  duration_ms: 204.99175
+  type: 'test'
+  ...
+# Subtest: grant cannot exceed its 60 minute lease, original scope, or reuse original authority
+ok 9 - grant cannot exceed its 60 minute lease, original scope, or reuse original authority
+  ---
+  duration_ms: 139.319574
+  type: 'test'
+  ...
+# Subtest: existing permit, original scope, and lease cannot be updated, deleted, truncated or reissued
+ok 10 - existing permit, original scope, and lease cannot be updated, deleted, truncated or reissued
+  ---
+  duration_ms: 105.4023
+  type: 'test'
+  ...
+# Subtest: runner cannot grant a lease, read private witnesses, or call private helpers
+ok 11 - runner cannot grant a lease, read private witnesses, or call private helpers
+  ---
+  duration_ms: 51.716406
+  type: 'test'
+  ...
+# Subtest: revoked scope refuses lease grant and cannot become current
+ok 12 - revoked scope refuses lease grant and cannot become current
+  ---
+  duration_ms: 84.860212
+  type: 'test'
+  ...
+# Subtest: revoked v2-d002-attempt-1 refuses lease grant and cannot become current
+ok 13 - revoked v2-d002-attempt-1 refuses lease grant and cannot become current
+  ---
+  duration_ms: 78.429136
+  type: 'test'
+  ...
+# Subtest: revocation after valid grant still blocks claim and subsequent dispatch
+ok 14 - revocation after valid grant still blocks claim and subsequent dispatch
+  ---
+  duration_ms: 120.534965
+  type: 'test'
+  ...
+# Subtest: revocation after submitted mandatory slots permits late receipts and accounting, but no new dispatch
+ok 15 - revocation after submitted mandatory slots permits late receipts and accounting, but no new dispatch
+  ---
+  duration_ms: 149.932011
+  type: 'test'
+  ...
+# Subtest: lease expiry blocks remaining dispatch while retaining late authentic receipts and full reservation
+ok 16 - lease expiry blocks remaining dispatch while retaining late authentic receipts and full reservation
+  ---
+  duration_ms: 1299.616857
+  type: 'test'
+  ...
+# Subtest: unknown submission cannot be completed or released; explicit stop retains full claim
+ok 17 - unknown submission cannot be completed or released; explicit stop retains full claim
+  ---
+  duration_ms: 183.788558
+  type: 'test'
+  ...
+# Subtest: a previously claimed expired attempt cannot receive recovery
+ok 18 - a previously claimed expired attempt cannot receive recovery
+  ---
+  duration_ms: 5826.810976
+  type: 'test'
+  ...
+# Subtest: a previously submitted expired attempt cannot receive recovery
+ok 19 - a previously submitted expired attempt cannot receive recovery
+  ---
+  duration_ms: 5828.143624
+  type: 'test'
+  ...
+# Subtest: expired original scope stays expired and cannot be rescued by an unused-permit lease
+ok 20 - expired original scope stays expired and cannot be rescued by an unused-permit lease
+  ---
+  duration_ms: 6769.455986
+  type: 'test'
+  ...
+# Subtest: actual generated owner PRE, POST and terminal reconciliation SQL expose exact protocol and unchanged history
+ok 21 - actual generated owner PRE, POST and terminal reconciliation SQL expose exact protocol and unchanged history
+  ---
+  duration_ms: 4437.674445
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 26855.885568

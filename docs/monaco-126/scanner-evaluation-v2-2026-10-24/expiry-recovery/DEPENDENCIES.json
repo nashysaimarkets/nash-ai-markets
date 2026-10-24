@@ -1,0 +1,108 @@
+{
+  "kind": "EXPIRY_RECOVERY_RECONSTRUCTION_DEPENDENCIES",
+  "status": "OFFLINE_UNAPPROVED",
+  "publicationRoot": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery",
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "metadata": [
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/d002-preparation/POST-PERMIT-OBSERVATION.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/d002-preparation/POST-PERMIT-OBSERVATION.json",
+      "sha256": "a781dcb5c946530a5e51d9c908904fdf7ba08bdbdbeca5b5b1608f969abd803d",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/d002-preparation/INSTALLED-ORIGINAL-RPC-OBSERVATION.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/d002-preparation/INSTALLED-ORIGINAL-RPC-OBSERVATION.json",
+      "sha256": "522f9a7a75e24d2bb35a4f4d546d652da7f02d764c6303e127c8dbc7ba8a5ec5",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/ACTIVATE-v2-d002-40105387615.sql",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/ACTIVATE-v2-d002-40105387615.sql",
+      "sha256": "a39ad1adfd0714cfdcb3e3f3632ce9c4ac75cf0494ac35b8f008e8159630acf2",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/ROOT-ONLY-DECRYPT-v2-d002.mjs",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/ROOT-ONLY-DECRYPT-v2-d002.mjs",
+      "sha256": "ae22066903fbb8dd9d9caf8f67c672f8c66aa9a57a3f28c7078146312c4f7169",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/RECONCILE-v2-d002-40105387615.sql",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/RECONCILE-v2-d002-40105387615.sql",
+      "sha256": "7db4ce57072fea378875a978317dc9f79062d0174f12a35740d8e9722dd994e4",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/permit-v2-d002/ADMISSION-MANIFEST.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/permit-v2-d002/ADMISSION-MANIFEST.json",
+      "sha256": "c7e8f64d7c5af02c9ade369628362d6b6d020e7632e7dde89505eba816c4ec0f",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/permit-v2-d002/LEDGER-CONFIG.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/permit-v2-d002/LEDGER-CONFIG.json",
+      "sha256": "789f4c6a6f4913cd7ae9e171c74234f9c8aa8f836e2f212cf12b8246545694b0",
+      "purpose": "PINNED_ACCEPTED_OPERATION_OR_OWNER_METADATA"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/d002-preparation/OFFICIAL-PENDING-RUN.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/d002-preparation/OFFICIAL-PENDING-RUN.json",
+      "sha256": "9a020c3a3a4e489b8ba35a824b22809c51eb6532300ee49e02528d810bd212d4",
+      "purpose": "SYNTHETIC_TEST_BASELINE_ONLY_NOT_FRESH_AUTHORITY"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/d002-preparation/OFFICIAL-PENDING-JOBS.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/d002-preparation/OFFICIAL-PENDING-JOBS.json",
+      "sha256": "0a1b5f045dd4ae16b7186c347b7715fedb33c48ed72ab7c84ed5d870ef0c4ad0",
+      "purpose": "SYNTHETIC_TEST_BASELINE_ONLY_NOT_FRESH_AUTHORITY"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-execution/d002-preparation/OFFICIAL-PENDING-ENVIRONMENT.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution/d002-preparation/OFFICIAL-PENDING-ENVIRONMENT.json",
+      "sha256": "dc29eff87c94a17e351d631d24e5c8b88ca582a503918bbf730ddf9f73abab20",
+      "purpose": "SYNTHETIC_TEST_BASELINE_ONLY_NOT_FRESH_AUTHORITY"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/private-six/results/v2-run40095819408/LEDGER.json",
+      "publication": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/prior-v2-d001-LEDGER.json",
+      "sha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd",
+      "purpose": "PRIOR_OWNER_LEDGER_METADATA_ONLY_NO_PAYLOAD_OR_KEY"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2/database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "acceptedCheckoutRelative": "database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "sha256": "a6231f2acd4efdbad7fa05b23dfee4ec496c2fb9c61327f2929d236705553161",
+      "purpose": "UNCHANGED_ACCEPTED_SOURCE_20783_OR_ITS_RETAINED_IDENTITY"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2/docs/monaco-126/scanner-evaluation-v2-2026-10-24/PLAN.json",
+      "acceptedCheckoutRelative": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/PLAN.json",
+      "sha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+      "purpose": "UNCHANGED_ACCEPTED_SOURCE_20783_OR_ITS_RETAINED_IDENTITY"
+    },
+    {
+      "source": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2/docs/monaco-126/scanner-evaluation-v2-2026-10-24/SOURCE-IDENTITY.json",
+      "acceptedCheckoutRelative": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/SOURCE-IDENTITY.json",
+      "sha256": "93f34edf7f536ae670da5091aebe87d91828549cc6cc53bd7514a9990d077e13",
+      "purpose": "UNCHANGED_ACCEPTED_SOURCE_20783_OR_ITS_RETAINED_IDENTITY"
+    }
+  ],
+  "privateKeysRequiredForPreparation": false,
+  "providerPayloadsRequiredForPreparation": false,
+  "futureFreshInputsNotSupplied": [
+    "new official owner amendment comment",
+    "exact current owner response record",
+    "independent exact-source review",
+    "fresh official protected pending run/job/environment",
+    "fresh pre-grant owner ledger",
+    "absolute new lease deadline"
+  ],
+  "environmentOverrides": {
+    "POCKET_RECOVERY_EXECUTION_ROOT": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/execution",
+    "POCKET_RECOVERY_ACCEPTED_ROOT": "separate checkout of accepted runtime plus retained SOURCE-IDENTITY",
+    "POCKET_RECOVERY_PRIOR_LEDGER_PATH": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/inputs/prior-v2-d001-LEDGER.json",
+    "POCKET_RECOVERY_SOURCE_ROOT": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery"
+  }
+}

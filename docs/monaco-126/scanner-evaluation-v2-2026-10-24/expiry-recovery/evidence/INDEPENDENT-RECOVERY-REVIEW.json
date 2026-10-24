@@ -1,0 +1,237 @@
+{
+  "kind": "POCKET_SCANNER_UNUSED_PERMIT_RECOVERY_INDEPENDENT_REVIEW",
+  "reviewer": "scanner_independent_review",
+  "reviewedAtUtc": "2026-10-24T16:43:24.772643+00:00",
+  "decision": "ACCEPTED",
+  "status": "ACCEPTED_FOR_PRESENTATION_TO_OWNER_ONLY",
+  "proposalSha256": "b70a4e2371e6832ed7f7b717f0b4b8a0e9665a24ba45c9fe565f1cafe5820602",
+  "installSqlSha256": "b44fb933c442c4e78b5e55af9581ea706569ed6fc3ef78faa62cdf27aefbb306",
+  "rpcAfterSha256": "f3d5660d04f08facf5409c8484e0d4f13a70e33508975df4a6dadda9add3b4df",
+  "rpcBeforeSha256": "00fd1d5ef2f81cc022c31f6160ca7022bef794513bec4ef8efbe66e98a0feb87",
+  "acceptanceMeaning": "Independent acceptance of the frozen offline proposal and stated local evidence. It may be presented to the owner for the exact new protocol-amendment decision. It is not an owner approval, live admission, installation, lease, LOGIN, environment release or paid execution authorisation.",
+  "scope": {
+    "scopeId": "pocket-scanner-evaluation-v2-20261024",
+    "caseId": "v2-d002",
+    "attemptId": "v2-d002-attempt-1",
+    "runId": "40105387615",
+    "jobId": "120905891814",
+    "runAttempt": "1",
+    "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+    "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+    "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "originalPermitDeadlineUtc": "2026-10-24T15:50:00Z",
+    "originalScopeDeadlineUtc": "2026-10-25T12:40:25Z",
+    "maximumNewLeases": 1,
+    "maximumLeaseSeconds": 3600,
+    "maximumLoginSeconds": 1200,
+    "newProviderAttempts": 0,
+    "additionalBudgetMicroUsd": 0,
+    "existingCaseBoundMicroUsd": 330000,
+    "existingAggregateCapMicroUsd": 5000000
+  },
+  "sourceReview": [
+    "Original installed RPC body exactly matches the accepted frozen source and retained owner observation:14707 bytes. Proposed RPC body is identical except the one per-permit-expiry expression; original scope expiry, admitted-at checks, revocation, identity, ordinal, cap, at-most-once claims/submissions and late bookkeeping are preserved.",
+    "The new lease table is additive and fixed to this exact d002 case/attempt; its primary/unique constraints and immutable UPDATE/DELETE/TRUNCATE guards prevent a second lease or renewal. Original scope/permit/pins/history and old triggers are not rewritten or disabled.",
+    "Grant validation uses the accepted aggregate-locking original-history check, exact physical owner, entire typed original scope/permit and d001 witnesses, all18 request pins, current prior receipt digest, one prior account, no d002 activity, no unknown outcomes/stops/relevant revocations, and inactive restricted runner with no sessions. Grant time is database-assigned and its deadline cannot exceed60 minutes or original scope expiry.",
+    "No-activity is checked at grant. The same current lease remains usable after the legitimate first claim. Lookup compares full original witnesses and prior evidence and fails explicitly false for missing/mismatched evidence; the RPC expression independently coalesces false so SQL NULL cannot reopen an expired permit.",
+    "Owner authority is a new separately recorded canonical amendment with an exact affirmative prompt, affirmative recorded response, both hashes and timestamps, exact proposal/target and comment-body hash. Old/proposed/declined/comment-only/null authority is rejected. Real owner consent still must be verified by root from the actual conversation and official comment; synthetic fixtures are not authority.",
+    "Materializer composes one transaction containing local bindings, additive schema, exact RPC replacement, postimage/attribute checks and validated initial lease INSERT. A rejected grant rolls back the schema/RPC changes. No operational standalone-install CLI is supplied.",
+    "New activation and reconciliation variants preserve the expired original permit, bind the separately observed lease/protocol and bound LOGIN inside that lease and original scope. Terminal audit checks claim/submission times to microsecond precision while allowing legitimate later receipt/accounting timestamps.",
+    "Generated root-only opener verifies all three frozen recovery source hashes before dynamic import, then validates the exact lease/protocol before private-key access. Accepted archive/authentication/raw retention behavior remains intact; the actual altered-module initializer control was rejected before import."
+  ],
+  "resolvedFindings": [
+    {
+      "finding": "Expired permit has no accepted renewal path.",
+      "resolution": "Preserved as immutable history. The candidate is an explicit new owner-reviewable protocol amendment, with default authority HOLD."
+    },
+    {
+      "finding": "SQL NULL could otherwise skip an expiry or approval denial.",
+      "resolution": "Lookup returns/coalesces false; required authority timestamps and fields reject absent/JSON-null values. Actual SQL negatives pass."
+    },
+    {
+      "finding": "Hash and target markers alone could misclassify a proposed or rejection question as approval.",
+      "resolution": "Builder and database require one exact affirmative prompt and approved canonical decision/body. A reverse rejection question plus Yes with recomputed matching hashes is rejected."
+    },
+    {
+      "finding": "Recovery module initializer could run before its source bytes were checked.",
+      "resolution": "Generated opener embeds all three approved source hashes and verifies them before importing the module. Actual tampered initializer stayed unexecuted."
+    },
+    {
+      "finding": "Presentation prompt had one trailing LF unlike the authority-bound prompt.",
+      "resolution": "Final request artifact is exactly606 bytes without LF and equals the canonical rendered request. Source/proposal hash unchanged."
+    }
+  ],
+  "validation": {
+    "materialization": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "tapSha256": "a3b2b25a5e4673475d1073c6b44bcd52dee47e6a0d0a748ae495d03faf30408a",
+      "testSha256": "292e65f145dbdd0e2aeeee7b6765006adca4e95285300c676a66ea9e5ee36cd5",
+      "scope": "Offline source-delta, authority, freshness, bounds, activation/audit and actual generated-opener pre-import tamper controls."
+    },
+    "actualSql": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "receiptSha256": "40c2599c549dbb732dcb4c8217262d82c1b4044a384dc240d46854c385dbd3c1",
+      "tapSha256": "9f6a9cc320f3a8d2c2a62519dbf8bb19c4f2e5fb086fd7c7fea7c543344cf769",
+      "engine": "PostgreSQL 18.6 (PGlite 0.5.10) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+      "scope": "Actual accepted old/v2 SQL and proposed SQL, roles, real public RPC, generated PRE/POST/terminal queries, natural expiry and state transitions in disposable synthetic databases. Negative operations require database SQLSTATE errors; RPC/helpers are not mocked."
+    },
+    "distinctTests": 30,
+    "reviewerReranTests": false,
+    "independentVerification": "Reviewer read source and test/fixture semantics, matched all frozen source/test/TAP/generated-file hashes, reconstructed the canonical proposal hash, compared installed/accepted/proposed RPC bodies, and parsed actual9+21 passing assertions and zero failure/skip/cancel summaries. Earlier20 SQL checks are a repeated subset, not additional tests.",
+    "concurrency": "The shared aggregate-lock call and one-lease uniqueness were reviewed in source. PGlite uses one connection; multi-session contention/race behavior was not experimentally established here.",
+    "compatibility": "PGlite0.5.10/PostgreSQL18.6/WASM is actual SQL/role evidence, not hosted PostgreSQL17, network authentication, TLS or real active-session cleanup proof. Historical accepted PG17 tests remain separate unaffected evidence."
+  },
+  "permissionBoundary": {
+    "mayPresentProposalToOwner": true,
+    "actualOwnerAmendmentReceived": false,
+    "mayInstallOrGrantFromThisReceiptAlone": false,
+    "mayActivateOrReleaseFromThisReceiptAlone": false,
+    "mayCallProviderFromThisReceiptAlone": false,
+    "exactRequestPath": "scanner-evaluation-v2-execution/expiry-recovery/proposal/OWNER-AMENDMENT-REQUEST.txt",
+    "exactRequestSha256": "b7acff72ac5374e7a901952dcfe72ad82eba8bb4e3b449d541a40c3f858556d7",
+    "exactRequestBytes": 606,
+    "permissionNeeded": "Explicit approval of this reviewed additive protocol amendment and one non-renewable recovery lease for the already waiting same d002 run/job/attempt. No additional spending, provider retry, new run, new credentials, future case, budget increase or extension of original scope is proposed.",
+    "afterApproval": "Record the actual affirmative response and exact prompt plus a new canonical owner amendment; independently obtain fresh post-approval pending-run and full ledger evidence, materialize/review the exact atomic grant, observe the committed lease/protocol, then review bounded activation and release only the same protected first attempt. Keep full accounting/cleanup and post-d002 reassessment requirements."
+  },
+  "accountingAndResultLimits": {
+    "lastFullReviewedAggregateHeldMicroUsd": 1836400,
+    "aggregateAfterOneFutureD002ClaimMicroUsd": 2166400,
+    "caseHoldReleasedByUnusedRescue": false,
+    "actualMicroUsd": null,
+    "financiallySettled": false,
+    "scannerAccuracyAccepted": false,
+    "repairedBrowserSourceSeparate": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+    "newPaidResultExists": false
+  },
+  "inputs": [
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/lease-schema.sql",
+      "sha256": "2718ea6f0f8ef7f244fbb1b1f967911c38e566efc24f6e8fe4541808bfb9586c",
+      "bytes": 19633
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/recovery-builder.mjs",
+      "sha256": "8ac79b5a9c863615b742b59c0d6343b501e437269b8a14f6229beca296ffc762",
+      "bytes": 18546
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/recovery-operations.mjs",
+      "sha256": "4f8448201233c36dcf37402d8473bb19f68c13e95c686dd409135514c9ebc877",
+      "bytes": 14607
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/PROPOSAL-MANIFEST.json",
+      "sha256": "73d0d374226cee9e279cf9c9ab6c160093af5688adb9cc895cf3dd5f6b396ecb",
+      "bytes": 1821
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/INSTALL-PROPOSAL.sql",
+      "sha256": "b44fb933c442c4e78b5e55af9581ea706569ed6fc3ef78faa62cdf27aefbb306",
+      "bytes": 35326
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/RPC-CHANGE.diff",
+      "sha256": "6c861647b41236a0832eed430596ef4b7acf513742d9cc8c9c0c11de8f615657",
+      "bytes": 226
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/OWNER-AMENDMENT-REQUEST.txt",
+      "sha256": "b7acff72ac5374e7a901952dcfe72ad82eba8bb4e3b449d541a40c3f858556d7",
+      "bytes": 606
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/OWNER-DECISION.HOLD.json",
+      "sha256": "b4af39aae92fc88e5845bb99f21feab08a33fcc79306545798f4832d9ff1f65a",
+      "bytes": 99
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/GRANT-INPUTS.HOLD.json",
+      "sha256": "ca10f72e11ce84b092d3dc48f6b79b42cfbc005af22913c9ababba0d987871cc",
+      "bytes": 149
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/PRE-GRANT-OBSERVATION.sql",
+      "sha256": "3b284aa27a55bba041da3fe53fccd41c3eb516e563c167966a52a593370e97b1",
+      "bytes": 6927
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/POST-LEASE-OBSERVATION.sql",
+      "sha256": "f04dd26d3e8d305583fc4df936bb0c249217e8508d4be77e8c220dc4a4c1d79f",
+      "bytes": 8033
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/RECONCILE-RECOVERED-v2-d002.sql",
+      "sha256": "f04dd26d3e8d305583fc4df936bb0c249217e8508d4be77e8c220dc4a4c1d79f",
+      "bytes": 8033
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/proposal/ROOT-ONLY-DECRYPT-RECOVERED-v2-d002.mjs",
+      "sha256": "1a02313b0a7f8b653f4f85fc333791f322831c8a18ad40fc35d9de52130e4003",
+      "bytes": 18041
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/tests/recovery-materialization.test.mjs",
+      "sha256": "292e65f145dbdd0e2aeeee7b6765006adca4e95285300c676a66ea9e5ee36cd5",
+      "bytes": 11963
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/tests/expiry-recovery-pglite.test.mjs",
+      "sha256": "981b34d12cf2473111cfc3cf874622746b4b3352916be57b7b2df5c5b4944460",
+      "bytes": 20358
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/tests/support/expiry-recovery-fixture.mjs",
+      "sha256": "3ed9a7be7b377e951767cc368b177b70e869b764d340960bf09945e41b7cbd22",
+      "bytes": 15840
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/evidence/MATERIALIZATION-FINAL.tap",
+      "sha256": "a3b2b25a5e4673475d1073c6b44bcd52dee47e6a0d0a748ae495d03faf30408a",
+      "bytes": 2280
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/evidence/FINAL-MATERIALIZATION-RECEIPT.json",
+      "sha256": "40d31783845b79749df1577e1cba0edd8c132c6fad7f4946e7601ae743be7c4a",
+      "bytes": 4143
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/tests/evidence/FINAL-PGLITE-SQL.tap",
+      "sha256": "9f6a9cc320f3a8d2c2a62519dbf8bb19c4f2e5fb086fd7c7fea7c543344cf769",
+      "bytes": 5531
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/expiry-recovery/tests/evidence/FINAL-PGLITE-SQL-RECEIPT.json",
+      "sha256": "40c2599c549dbb732dcb4c8217262d82c1b4044a384dc240d46854c385dbd3c1",
+      "bytes": 4302
+    }
+  ],
+  "installedPreimageObservation": {
+    "path": "scanner-evaluation-v2-execution/d002-preparation/INSTALLED-ORIGINAL-RPC-OBSERVATION.json",
+    "sha256": "522f9a7a75e24d2bb35a4f4d546d652da7f02d764c6303e127c8dbc7ba8a5ec5",
+    "observedAtUtc": "2026-10-24T16:19:54.835Z"
+  },
+  "expiryFinding": {
+    "path": "scanner-evaluation-v2-review/execution/EXPIRED-UNUSED-v2-d002-40105387615-CONTRACT-REVIEW.json",
+    "sha256": "76bcf22e13476dee8a9862c8ef136e9e41ba7bb4feb33be0fab93edeacdb3fc9"
+  },
+  "effectsByThisReviewer": {
+    "remoteCalls": 0,
+    "remoteWrites": 0,
+    "databaseQueries": 0,
+    "providerCalls": 0,
+    "credentialReads": 0,
+    "privateKeyReads": 0,
+    "privateChartOrCalibrationReads": 0,
+    "heldoutReads": 0,
+    "testReruns": 0,
+    "productionSourceEdits": 0
+  }
+}

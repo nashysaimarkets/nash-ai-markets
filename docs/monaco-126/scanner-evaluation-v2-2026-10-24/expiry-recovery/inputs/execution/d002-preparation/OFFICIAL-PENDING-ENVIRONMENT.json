@@ -1,0 +1,40 @@
+[
+  {
+    "environment": {
+      "id": 24916350021,
+      "node_id": "EN_kwDOTWGF-c8AAAAFzSFURQ",
+      "name": "monaco-first-six-inference",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/environments/monaco-first-six-inference",
+      "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/deployments/activity_log?environments_filter=monaco-first-six-inference"
+    },
+    "wait_timer": 0,
+    "wait_timer_started_at": null,
+    "current_user_can_approve": true,
+    "reviewers": [
+      {
+        "type": "User",
+        "reviewer": {
+          "login": "nashysaimarkets",
+          "id": 304009440,
+          "node_id": "U_kgDOEh7Q4A",
+          "avatar_url": "https://avatars.githubusercontent.com/u/304009440?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/nashysaimarkets",
+          "html_url": "https://github.com/nashysaimarkets",
+          "followers_url": "https://api.github.com/users/nashysaimarkets/followers",
+          "following_url": "https://api.github.com/users/nashysaimarkets/following{/other_user}",
+          "gists_url": "https://api.github.com/users/nashysaimarkets/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/nashysaimarkets/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/nashysaimarkets/subscriptions",
+          "organizations_url": "https://api.github.com/users/nashysaimarkets/orgs",
+          "repos_url": "https://api.github.com/users/nashysaimarkets/repos",
+          "events_url": "https://api.github.com/users/nashysaimarkets/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/nashysaimarkets/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        }
+      }
+    ]
+  }
+]

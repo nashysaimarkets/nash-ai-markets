@@ -1,0 +1,59 @@
+{
+  "approval": {
+    "kind": "POCKET_SCANNER_EVALUATION_V2_EXTENSION_APPROVAL",
+    "status": "APPROVED",
+    "approvedBy": "OWNER",
+    "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+    "scopeId": "pocket-scanner-evaluation-v2-20261024",
+    "originalAllowanceRef": "comment-6165012632",
+    "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "allowedCaseIds": [
+      "v2-d001",
+      "v2-d002",
+      "v2-d003",
+      "v2-d004",
+      "v2-d005",
+      "v2-d006"
+    ],
+    "maximumAdditionalCases": 6,
+    "maximumAdditionalSends": 18,
+    "maximumAdditionalMicroUsd": 1980000,
+    "aggregateCapMicroUsd": 5000000,
+    "originalHeldMicroUsd": 1506400,
+    "retries": 0,
+    "approvedAt": "2026-10-24T12:40:25.000Z",
+    "validUntil": "2026-10-25T12:40:25.000Z",
+    "approvalBodySha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2"
+  },
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "carryIn": {
+    "observedAt": "2026-10-24T15:04:27.850958+00:00",
+    "originalCases": 6,
+    "originalSlots": 18,
+    "actualMicroUsd": null,
+    "originalVoided": 4,
+    "runnerCanLogin": false,
+    "runnerSessions": 0,
+    "originalAccounts": 6,
+    "originalReceipts": 14,
+    "originalPinsSha256": "90c4291252904ab977314d5c8010615bea2571c7efc5cddc0ae16df9f7d31165",
+    "originalHeldMicroUsd": 1506400,
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64"
+  },
+  "attempt": {
+    "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+    "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+    "runId": "40105387615",
+    "jobId": "120905891814",
+    "runAttempt": "1",
+    "validUntil": "2026-10-24T15:50:00.000Z",
+    "caseId": "v2-d002",
+    "admissionEvidenceSha256": "19f1d10da46e434799b7582ede0e213a0e77f01187eec3740020dd0e002a2773",
+    "reassessmentEvidenceSha256": "26f4def92e19eda7b9715afc7e4383229314f64b3275758711a896b8fdba816c",
+    "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447"
+  },
+  "mode": "next-case",
+  "planPath": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2/docs/monaco-126/scanner-evaluation-v2-2026-10-24/PLAN.json"
+}

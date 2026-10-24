@@ -1,0 +1,123 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_D002_EXPIRED_UNUSED_PERMIT_CONTRACT_REVIEW",
+  "reviewer": "scanner_independent_review",
+  "reviewedAtUtc": "2026-10-24T16:17:42.592575+00:00",
+  "status": "HOLD_NO_RENEWAL_PATH_IN_CURRENT_ACCEPTED_CONTRACT",
+  "identity": {
+    "caseId": "v2-d002",
+    "attemptId": "v2-d002-attempt-1",
+    "runId": "40105387615",
+    "jobId": "120905891814",
+    "runAttempt": "1",
+    "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+    "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+    "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79"
+  },
+  "retainedDatabaseObservation": {
+    "observed_at": "2026-10-24T16:14:19.321Z",
+    "admitted_at": "2026-10-24T15:07:25.068Z",
+    "valid_until": "2026-10-24T15:50:00.000Z",
+    "permit_current": false,
+    "claimed": false,
+    "sent": false,
+    "runner_can_login": false,
+    "runner_sessions": "0"
+  },
+  "observationProvenance": "Root performed and retained the authoritative owner read. Reviewer verified exact extraction from its raw connector response; no new DB query. Root additionally reports the same protected run remains waiting on attempt1 with zero steps and that no activation/release/provider call occurred.",
+  "scopeApprovalStillWithinWindowAtObservation": true,
+  "scopeApprovalExpiresAtUtc": "2026-10-25T12:40:25.000Z",
+  "sourceFindings": [
+    {
+      "source": "database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "lines": "66-77",
+      "finding": "Permit is unique by case_id, attempt_id and identity, with primary key(scope_id,case_id). valid_until must be after admitted_at and at most60 minutes after admitted_at. A second row for this same case/attempt is rejected."
+    },
+    {
+      "source": "database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "lines": "138-146",
+      "finding": "All v2 tables, explicitly including permits, have immutable BEFORE UPDATE/DELETE and no_reset BEFORE TRUNCATE triggers. Copying the old record elsewhere would not authorise rewriting it."
+    },
+    {
+      "source": "scripts/prepare-pocket-scanner-evaluation-v2-ledger.mjs",
+      "lines": "79-91,128-130",
+      "finding": "Only scope-and-first-case and next-case modes exist. The bounded deadline is validated and one new permit is INSERTed. There is no renewal, replacement or conflict-update mode."
+    },
+    {
+      "source": "database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "lines": "249-299",
+      "finding": "The RPC selects that one stored permit, preserves full identity and original-history/cap guards, and denies expired scope or permit. inspect and begin_case remain denied; submit_slot cannot dispatch after expiry."
+    },
+    {
+      "source": "database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "lines": "309-358",
+      "finding": "Late receipt_slot/finish_case support bookkeeping for actual submitted/claimed work. They do not issue a new permit, reserve an unused case, fabricate mandatory receipts or start an expired unclaimed case."
+    },
+    {
+      "source": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/EXECUTION-ORDER.md",
+      "finding": "The operator sequence requires an independently inspected immutable named-run permit. Expiry can permit evidence recording but blocks new submissions; no unused-permit renewal procedure is supplied."
+    },
+    {
+      "source": "scanner-evaluation-v2-execution/static-v2-d002/OWNER-APPROVAL-BODY.txt",
+      "finding": "Owner funding/scope approval remains bounded at24 hours, zero retries and the fixed reviewed runtime/plan. It separately states each named run permit expires within60 minutes and contains no approved renewal mechanism."
+    }
+  ],
+  "conclusion": "There is no supported execution continuation using the current expired permit under the existing accepted schema/builder/RPC. A still-current overall approval does not itself renew the per-run deadline. Keep the job unreleased and runner NOLOGIN.",
+  "forbiddenWorkarounds": [
+    "In-place deadline or admitted_at update, including after copying the original row elsewhere.",
+    "Disabling immutability/no-reset triggers, replacing/deleting/truncating a permit, changing the database clock, or reinstalling/resetting the scope.",
+    "Re-inserting the same case under a new run or attempt, treating late-bookkeeping RPCs as dispatch authority, or fabricating completion/absence/accounting."
+  ],
+  "missingConcreteAmendment": "A separately reviewed and explicitly owner-authorised protocol amendment for one expired but unused permit could introduce an append-only, bounded recovery lease for the exact same case/run/job/attempt, preserving every original record and all identity/budget/no-retry controls. That capability is not present or authorised for installation by this finding. Offline preparation of such a concrete amendment has now been assigned by root.",
+  "permissionsAnalysis": {
+    "newSpendingApprovalNeeded": false,
+    "newRunRetryOrCaseAuthorised": false,
+    "newKeysNeeded": false,
+    "existingScopeExpiryMustRemainUnchanged": true,
+    "requiredBeforeInstallation": "Explicit owner authority for the concrete reviewed recovery amendment and one same-identity unused-permit lease; original budget and call-count approval remains unchanged."
+  },
+  "priorReviews": "The earlier admission/activation/opener reviews remain accurate historical snapshots. Their proposal acceptance does not override the stored15:50 deadline and is no longer a live activation authorisation. Preserve those bytes.",
+  "accounting": "No d002 claim or submission is present in this authoritative snapshot. The most recent full balance review before expiry remains original1506400 plus v2-d001330000 =1836400 microUSD; this limited expiry read did not independently refresh aggregate totals or actual billing.",
+  "inputs": [
+    {
+      "path": "scanner-evaluation-v2-execution/d002-preparation/EXPIRED-UNUSED-PERMIT-OBSERVATION.json",
+      "sha256": "7f51293ec8d0c8609abf03f9f4c87a05937417f9e14122a420e83110ed15c337",
+      "bytes": 1094
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/static-v2-d002/OWNER-APPROVAL.json",
+      "sha256": "bf43e0f13b07c66c7248bff0de5521cc37a8654a1f7b42abadf764a4ff74bceb",
+      "bytes": 1018
+    },
+    {
+      "path": "scanner-evaluation-v2-execution/static-v2-d002/OWNER-APPROVAL-BODY.txt",
+      "sha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+      "bytes": 2750
+    },
+    {
+      "path": "scanner-evaluation-v2/docs/monaco-126/scanner-evaluation-v2-2026-10-24/EXECUTION-ORDER.md",
+      "sha256": "fbde25c26c5f8c6ee21079b7acbb40fe26ac7be7efa31810f1aa3c385b8bcb32",
+      "bytes": 7734
+    },
+    {
+      "path": "scanner-evaluation-v2/database/neon/proposed/20261024-scanner-evaluation-v2.sql",
+      "sha256": "a6231f2acd4efdbad7fa05b23dfee4ec496c2fb9c61327f2929d236705553161",
+      "bytes": 31836
+    },
+    {
+      "path": "scanner-evaluation-v2/scripts/prepare-pocket-scanner-evaluation-v2-ledger.mjs",
+      "sha256": "8d5986914a85114f23343a7e75cdd1ea765e82063bf4eaae559d4dd227f8c0be",
+      "bytes": 13182
+    }
+  ],
+  "effects": {
+    "databaseQueries": 0,
+    "remoteCalls": 0,
+    "remoteWrites": 0,
+    "providerCalls": 0,
+    "credentialReads": 0,
+    "privateKeyReads": 0,
+    "privateImageOrCalibrationReads": 0,
+    "testsRerun": 0,
+    "sourceEdits": 0
+  }
+}

@@ -1,0 +1,4 @@
+--- accepted RPC expiry
++++ proposed RPC expiry
+-p.valid_until<=clock_timestamp() THEN 'expired'
++(p.valid_until<=clock_timestamp() AND NOT coalesce(private.monaco_scanner_eval_v2_unused_lease_active(p),false)) THEN 'expired'
