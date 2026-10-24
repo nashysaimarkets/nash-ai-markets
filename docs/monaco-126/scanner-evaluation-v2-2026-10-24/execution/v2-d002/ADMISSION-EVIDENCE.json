@@ -1,0 +1,281 @@
+{
+  "reviewer": "scanner_independent_review",
+  "reviewedAt": "2026-10-24T14:52:15.357000+00:00",
+  "status": "STATIC_PREPARATION_REVIEW_ACCEPTED_WITH_OPERATIONAL_GATES",
+  "usableAsStaticAdmissionEvidence": true,
+  "scopeId": "pocket-scanner-evaluation-v2-20261024",
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "applicationSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+  "approvalBodySha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+  "approvedAt": "2026-10-24T12:40:25.000Z",
+  "validUntil": "2026-10-25T12:40:25.000Z",
+  "ownerSpendingScopeApproved": true,
+  "ownerScopeRequiresNoRepeatSpendingQuestion": true,
+  "caseId": "v2-d002",
+  "sourceCaseId": "d002",
+  "attemptId": "v2-d002-attempt-1",
+  "caseOrdinal": 2,
+  "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+  "inputPins": {
+    "bundleSha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
+    "imageSha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+    "calibrationSha256": "a209504af5d82a9bb07a43060ad5230e8292a3bd5af22a87c0414198871398a0",
+    "inputSha256": "3f52bbd2d50677fe166e50eafdd211af552d2dd447746eb6fcabde794904eec3",
+    "source": "Existing accepted plan and preparation receipt; no bundle, image or calibration was opened for this review."
+  },
+  "lastRetainedAccounting": {
+    "observedAt": "2026-10-24T13:01:59.36827+00:00",
+    "freshForNextPermit": false,
+    "previousCaseId": "v2-d001",
+    "previousAccountedAt": "2026-10-24T13:00:59.426395+00:00",
+    "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+    "ledgerSha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd",
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "originalHeldMicroUsd": 1506400,
+    "v2HeldMicroUsd": 330000,
+    "aggregateHeldMicroUsd": 1836400,
+    "v2Claims": 1,
+    "v2Accounts": 1,
+    "v2Submissions": 3,
+    "v2Receipts": 3,
+    "unreceiptedSubmissions": 0,
+    "stops": 0,
+    "actualMicroUsd": null,
+    "financiallySettled": false,
+    "runnerCanLogin": false,
+    "runnerSessions": 0,
+    "meaning": "Historical post-d001 observation only. This is not a current database check or proof that d002 is presently unused."
+  },
+  "currentCarryIn": {
+    "status": "NOT_YET_SUPPLIED",
+    "mustBeWithin15MinutesAtPermitBuild": true,
+    "mustConfirmExactOriginalHistory": true,
+    "mustConfirmPriorAccountDigest": true,
+    "mustConfirmNoUnresolvedClaim": true,
+    "mustConfirmNamedCaseUnused": true,
+    "mustConfirmNoLoginAndZeroSessions": true,
+    "mustConfirmScopeAndPermitNotRevokedOrExpired": true
+  },
+  "repairedSourceEvidence": {
+    "sourceManifestSha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+    "detectorSha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "axisHelperSha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+    "driverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+    "independentGeometryReviewSha256": "ae201f753bc19c02383c365f90b8cb02142956e9b6779ac820ad9befb7e1116b",
+    "geometrySummary": {
+      "casesScored": 5,
+      "candidateHints": 13,
+      "placedCandidates": 13,
+      "omittedCandidates": 0,
+      "plotEdges": 20,
+      "ocrGridAnchors": 35,
+      "renderedLines": 13,
+      "maxPlotEdgeErrorPixels": 0,
+      "maxAnchorRowErrorPixels": 0.5000000000001137,
+      "maxProjectedEndpointErrorPixels": 0.5000000000001137,
+      "maxRenderedEndpointErrorPixels": 0.5000000000001137,
+      "maxRenderedPlacementDeltaPixels": 0,
+      "allEmittedGeometryWithinOnePixel": true,
+      "allEligibleCandidatesPlaced": true
+    },
+    "d005": {
+      "geometry": "UNMEASURED",
+      "semantics": "UNSCORED",
+      "exactEligibleCandidates": 0,
+      "reason": "Approximation-marked support/resistance prices and unsupported approximate pivot remain ineligible.",
+      "verifiedAbsence": false
+    },
+    "semanticAccuracy": "UNSCORED",
+    "freshHostedCi": {
+      "status": "ACCEPTED_EXACT_SOURCE",
+      "independentAcceptancePath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/EXACT-SOURCE-CI-INDEPENDENT-ACCEPTANCE.json",
+      "independentAcceptanceSha256": "a73dd83beec7f5d67d0b2e938a85cd639f35287abd785d62d3a18a563c86ac77",
+      "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+      "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+      "affectedRunId": 40103559042,
+      "affectedJobId": 120900470073,
+      "automaticImageRunId": 40103564070,
+      "automaticImageJobId": 120900485010,
+      "automaticImageMergeCheckout": "a9f864ec0854a807330fadfb4701dab8148fb1b8",
+      "completeMergeTreeEqualsSource": true,
+      "terminalProofReceived": true,
+      "exactCheckoutAccepted": true,
+      "gatesAccepted": true,
+      "affectedTests": 75,
+      "legacyLifecycleChecks": 12,
+      "recoveryLifecycleChecks": 21,
+      "publicOriginalPixelMaximumError": 0.5,
+      "wholeProjectTypeScript": "PASS",
+      "productionBuild": "PASS",
+      "lintErrors": 0,
+      "lintWarnings": 5,
+      "labelledPaidCorpus": "SKIPPED",
+      "meaning": "Final combined browser-source engineering acceptance; no fresh model result, deployment or operational permit is inferred."
+    },
+    "acceptedPublishedCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+    "acceptedPublishedTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd"
+  },
+  "paidVersusBrowserBoundary": {
+    "paidRuntimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "paidDiagnosticApplicationSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "paidDiagnosticMustRemainUnmodified": true,
+    "futureBrowserSourceSha": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+    "futureBrowserObservation": "A separately named free observation must bind the eventual authenticated raw MAIN response hash, original image and its own exact source/driver. Existing retained MAIN geometry cannot establish that future result.",
+    "rawResponsesMustRemainUnchanged": true
+  },
+  "evidence": {
+    "boundaryAssessment": {
+      "path": "scanner-evaluation-v2-execution/NEXT-PAID-CASE-BOUNDARY-ASSESSMENT.md",
+      "sha256": "44e1d0ff7ca81f05f06a0ebb9bcae55f421f653d038aa831689db84ec21a044e"
+    },
+    "priorOutcome": {
+      "path": "scanner-evaluation-v2-review/execution/OUTCOME-v2-d001-40095819408-REVIEW.json",
+      "sha256": "549cd5c282891c1d4ace3d4010d142e23e22e23b7f4c7ce2724a16279fdd9333"
+    },
+    "priorLedger": {
+      "path": "private-six/results/v2-run40095819408/LEDGER.json",
+      "sha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd"
+    },
+    "geometryReview": {
+      "path": "scanner-image-geometry-repair-evidence/exact-anchor-revision/INDEPENDENT-ONE-PIXEL-REVIEW.json",
+      "sha256": "ae201f753bc19c02383c365f90b8cb02142956e9b6779ac820ad9befb7e1116b"
+    },
+    "helperSourceReview": {
+      "path": "scanner-image-geometry-repair-evidence/INDEPENDENT-EXACT-ANCHOR-SOURCE-ACCEPTANCE.json",
+      "sha256": "c26e911e5c0d0ad1721fc219efc684a45b40335b640e659bb55c36666f5c8789"
+    },
+    "detectorSourceReview": {
+      "path": "scanner-image-geometry-repair-evidence/INDEPENDENT-GRID-ASSOCIATION-SOURCE-ACCEPTANCE.json",
+      "sha256": "bee9550dab60a5e867f1b162eae02d427abb4f0ce9854406b33292eb65862766"
+    },
+    "runnerCleanup": {
+      "path": "scanner-evaluation-v2-execution/CLEANUP-v2-d001-40095819408.json",
+      "sha256": "77180425eb78aba004fbb61dcd11b7b7528d18831737827129b8ee6e0233db14"
+    },
+    "branchCleanup": {
+      "path": "scanner-evaluation-v2-execution/BRANCH-PERMISSIONS-CLEANUP-v2-d001.json",
+      "sha256": "476583540a89808551b7fcab7df567a9861ec903728a98fb928f59de50c0273b"
+    },
+    "preparationReceipt": {
+      "path": "scanner-evaluation-v2/docs/monaco-126/scanner-evaluation-v2-2026-10-24/PREPARATION-RECEIPT.json",
+      "sha256": "a5b4a9f9b5a2651e01bb78d876af3c5479ea6f38e092d364b75a7f0f68b6fda9"
+    },
+    "finalCombinedCi": {
+      "path": "scanner-image-geometry-repair-evidence/exact-anchor-revision/EXACT-SOURCE-CI-INDEPENDENT-ACCEPTANCE.json",
+      "sha256": "a73dd83beec7f5d67d0b2e938a85cd639f35287abd785d62d3a18a563c86ac77"
+    }
+  },
+  "noFuturePaidRunIdentityEmbedded": true,
+  "postPushExactRunReviewStillRequired": true,
+  "dispatchDisposition": "HOLD_UNTIL_FRESH_CARRY_IN_ACTUAL_PROTECTED_RUN_AND_EXACT_PERMIT",
+  "allFiveRemainingPaidCasesCurrentlyHeld": true,
+  "reviewerActions": {
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "hostedMutations": 0,
+    "credentialsRead": 0,
+    "privateKeyReads": 0,
+    "heldOutPayloadReads": 0,
+    "imageReads": 0,
+    "calibrationReads": 0,
+    "newTests": 0,
+    "remoteWrites": 0,
+    "additionalSpendingApprovalRequests": 0
+  },
+  "kind": "INDEPENDENT_V2_PRE_PUSH_ADMISSION_EVIDENCE",
+  "meaning": "Final independent static preparation evidence for the second named case within the existing approval. The accepted static materializer may hash this record; current carry-in, actual protected run identity, exact next-case permit and bounded activation remain separate required gates before dispatch.",
+  "approvalBoundaries": {
+    "originalAllowanceRef": "comment-6165012632",
+    "maximumNewCases": 6,
+    "maximumProviderSubmissions": 18,
+    "maximumAttemptsPerCase": 1,
+    "retries": 0,
+    "maximumAdditionalMicroUsd": 1980000,
+    "maximumCombinedMicroUsd": 3486400,
+    "unchangedAggregateCapMicroUsd": 5000000,
+    "namedCaseMaximumMicroUsd": 330000,
+    "maximumNamedCaseSubmissions": 3,
+    "mainMaxOutputTokens": 7000,
+    "precisionMaxOutputTokens": 4000,
+    "existingRescuePredicateUnchanged": true,
+    "noMainOnlySubstitution": true
+  },
+  "requestPins": [
+    {
+      "slot": "main",
+      "requestId": "v2-d002-main-2a5a3eb40c635e70",
+      "requestSha256": "2a5a3eb40c635e7030f71bc792220ea4d3f80d726d7fa0efbe065a1102cfec76",
+      "fingerprint": "661b5ad27df69a887b6aac1a9b1365efcab0be17c73607a0bd56669338486488",
+      "maxOutputTokens": 7000,
+      "costBoundMicroUsd": 114000,
+      "model": "gpt-5-mini-2025-08-07",
+      "serviceTier": "default"
+    },
+    {
+      "slot": "primary_precision",
+      "requestId": "v2-d002-primary_precision-55aba81625d4ae64",
+      "requestSha256": "55aba81625d4ae641a737698127b59e7eaae1c3473728b2cc375f44cc2a98cfa",
+      "fingerprint": "af01d2aa8a11b6eba8c5987ae4139d420a7cfdab4b4ef4195d3a6e9cf3a34471",
+      "maxOutputTokens": 4000,
+      "costBoundMicroUsd": 108000,
+      "model": "gpt-5-mini-2025-08-07",
+      "serviceTier": "default"
+    },
+    {
+      "slot": "rescue_precision",
+      "requestId": "v2-d002-rescue_precision-4e7529d88cf5d859",
+      "requestSha256": "4e7529d88cf5d8591c20facd937be1eb301692c4c79a9fe4fc6f60a1c20204b8",
+      "fingerprint": "1321e10e57a516828b3e1773c071646fa6c6a9c13ca3818d8de9942638a87cc3",
+      "maxOutputTokens": 4000,
+      "costBoundMicroUsd": 108000,
+      "model": "gpt-5-mini-2025-08-07",
+      "serviceTier": "default"
+    }
+  ],
+  "acceptedRuntimeEvidenceReused": {
+    "runId": 40093995597,
+    "offlineTestsPassed": 44,
+    "postgresTestsPassed": 14,
+    "independentAcceptanceSha256": "5a503e7a26aadae0e873c103ae473055ef79934de39b7a93628884a3a62d350f",
+    "reusedWithoutRerun": true,
+    "applicationToThisRecord": "Accepted unchanged runner/ledger protocol; not evidence that the newly repaired browser source has passed its pending gates."
+  },
+  "installedLedgerBoundary": {
+    "scopeAndMigrationAlreadyInstalled": true,
+    "allEighteenV2RequestPinsAlreadyInstalled": true,
+    "nextBuilderMode": "next-case",
+    "permittedNextDatabasePreparation": "One case-bound permit only after the actual protected run identity and fresh carry-in exist.",
+    "doNotReinstallMigrationScopeOrPins": true,
+    "preserveOriginalSixCasesFourVoidsFourteenReceiptsEighteenPinsAndHolds": true,
+    "preserveConsumedV2D001Attempt": true
+  },
+  "protectedEnvironment": {
+    "name": "monaco-first-six-inference",
+    "id": 24916350021,
+    "requiredReviewer": "nashysaimarkets",
+    "adminBypassAllowed": false,
+    "exactProposedBranch": "monaco-scanner-evaluation-v2-run-v2-d002",
+    "currentBranchAccessObserved": false,
+    "lastRetainedCleanupRemovedTemporaryRules": true,
+    "restoringAlreadyApprovedExactBranchRequiresNewScopeQuestion": false,
+    "mustPreserveExistingReviewGateSecretsAndNoWildcards": true
+  },
+  "remainingConditions": [
+    "Prepare separate immutable static evidence and reviewed wrapper bytes from the accepted materializer; static content must not embed its own future commit or unknown paid run/job IDs.",
+    "Observe the actual first-attempt protected job and bind source, evidence, wrapper, run, job, branch and environment before the next-case permit.",
+    "Use fresh owner carry-in and the preceding account digest; independently review the one-permit SQL and post-permit observation before bounded activation.",
+    "Use d002-specific activation, reconciliation and artifact-opening materials. The first-case-only guards and hardcoded d001/run/job values must not be reused unchanged.",
+    "Retain every submitted result, preserve full holds and perform terminal NOLOGIN/zero-session and temporary-branch cleanup; unknown outcome or failed retention stops dispatch without retry."
+  ],
+  "staticMaterializationReady": true,
+  "providerDispatchAllowedByThisRecord": false,
+  "operationalBindingPassed": false,
+  "supersedesProvisionalRecordForStaticEvidence": {
+    "path": "scanner-evaluation-v2-review/execution/DRAFT-v2-d002-PRE-PUSH-ADMISSION.json",
+    "sha256": "a53c000147714b5b4f0eb11bc0ccf61b6895a31348079f03736101c4fcedca27",
+    "draftRemainsUnchangedAndUnusable": true
+  },
+  "currentCiRequirementSatisfied": true
+}

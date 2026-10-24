@@ -1,7 +1,7 @@
 {
   "kind": "POCKET_SCANNER_EVALUATION_V2_RUN_ADMISSION",
   "status": "EXECUTION_APPROVED",
-  "caseId": "v2-d001",
+  "caseId": "v2-d002",
   "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
   "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
   "scopeApproval": {
@@ -14,8 +14,8 @@
     "maximumNewMicroUsd": 1980000,
     "aggregateCapMicroUsd": 5000000
   },
-  "admissionEvidenceSha256": "e6474ca7873819e5112e6a24189e4e971ffdf74b994f314bbd2ddea057cadb9b",
-  "reassessmentEvidenceSha256": "8c7e599768a74ef23cbb40d384a4ec942e308e6dd8e0d73ac4a1aba0e217196d",
+  "admissionEvidenceSha256": "19f1d10da46e434799b7582ede0e213a0e77f01187eec3740020dd0e002a2773",
+  "reassessmentEvidenceSha256": "26f4def92e19eda7b9715afc7e4383229314f64b3275758711a896b8fdba816c",
   "neon": {
     "organizationId": "org-icy-butterfly-11039021",
     "projectId": "bitter-grass-28096464",
@@ -26,7 +26,7 @@
     "controlPlaneEvidenceSha256": "32c788992c1909a8c704e35744f94ebb6df82fd121cff4878653a1d1da03dfc1"
   },
   "input": {
-    "bundleSha256": "91da0d22a88dcee0d27d342d524f77354d559312406d4f51fd579ba025e6f7a0",
+    "bundleSha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
     "maxWaitMs": 300000
   },
   "output": {
@@ -35,5 +35,5 @@
     "recipientPublicKeySha256": "ee6a572a222e2f9f97df38f4d082935c582909095b720070a0399ee31a1773da"
   },
   "note": "Recorded owner scope; one named case. Actual source/evidence/wrapper/run/job identities remain independently derived and require an exact post-push database permit. This local file does not activate or dispatch anything.",
-  "previousCaseReceiptSha256": null
+  "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447"
 }

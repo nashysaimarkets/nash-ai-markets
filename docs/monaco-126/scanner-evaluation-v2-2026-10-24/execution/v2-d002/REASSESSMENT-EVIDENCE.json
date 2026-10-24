@@ -1,0 +1,253 @@
+{
+  "reviewer": "scanner_independent_review",
+  "reviewedAt": "2026-10-24T14:52:15.357000+00:00",
+  "status": "NEXT_NAMED_CASE_REASSESSMENT_ACCEPTED_WITH_OPERATIONAL_GATES",
+  "usableAsStaticAdmissionEvidence": true,
+  "scopeId": "pocket-scanner-evaluation-v2-20261024",
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "applicationSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+  "approvalBodySha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+  "approvedAt": "2026-10-24T12:40:25.000Z",
+  "validUntil": "2026-10-25T12:40:25.000Z",
+  "ownerSpendingScopeApproved": true,
+  "ownerScopeRequiresNoRepeatSpendingQuestion": true,
+  "caseId": "v2-d002",
+  "sourceCaseId": "d002",
+  "attemptId": "v2-d002-attempt-1",
+  "caseOrdinal": 2,
+  "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+  "inputPins": {
+    "bundleSha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
+    "imageSha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+    "calibrationSha256": "a209504af5d82a9bb07a43060ad5230e8292a3bd5af22a87c0414198871398a0",
+    "inputSha256": "3f52bbd2d50677fe166e50eafdd211af552d2dd447746eb6fcabde794904eec3",
+    "source": "Existing accepted plan and preparation receipt; no bundle, image or calibration was opened for this review."
+  },
+  "lastRetainedAccounting": {
+    "observedAt": "2026-10-24T13:01:59.36827+00:00",
+    "freshForNextPermit": false,
+    "previousCaseId": "v2-d001",
+    "previousAccountedAt": "2026-10-24T13:00:59.426395+00:00",
+    "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+    "ledgerSha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd",
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "originalHeldMicroUsd": 1506400,
+    "v2HeldMicroUsd": 330000,
+    "aggregateHeldMicroUsd": 1836400,
+    "v2Claims": 1,
+    "v2Accounts": 1,
+    "v2Submissions": 3,
+    "v2Receipts": 3,
+    "unreceiptedSubmissions": 0,
+    "stops": 0,
+    "actualMicroUsd": null,
+    "financiallySettled": false,
+    "runnerCanLogin": false,
+    "runnerSessions": 0,
+    "meaning": "Historical post-d001 observation only. This is not a current database check or proof that d002 is presently unused."
+  },
+  "currentCarryIn": {
+    "status": "NOT_YET_SUPPLIED",
+    "mustBeWithin15MinutesAtPermitBuild": true,
+    "mustConfirmExactOriginalHistory": true,
+    "mustConfirmPriorAccountDigest": true,
+    "mustConfirmNoUnresolvedClaim": true,
+    "mustConfirmNamedCaseUnused": true,
+    "mustConfirmNoLoginAndZeroSessions": true,
+    "mustConfirmScopeAndPermitNotRevokedOrExpired": true
+  },
+  "repairedSourceEvidence": {
+    "sourceManifestSha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+    "detectorSha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "axisHelperSha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+    "driverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+    "independentGeometryReviewSha256": "ae201f753bc19c02383c365f90b8cb02142956e9b6779ac820ad9befb7e1116b",
+    "geometrySummary": {
+      "casesScored": 5,
+      "candidateHints": 13,
+      "placedCandidates": 13,
+      "omittedCandidates": 0,
+      "plotEdges": 20,
+      "ocrGridAnchors": 35,
+      "renderedLines": 13,
+      "maxPlotEdgeErrorPixels": 0,
+      "maxAnchorRowErrorPixels": 0.5000000000001137,
+      "maxProjectedEndpointErrorPixels": 0.5000000000001137,
+      "maxRenderedEndpointErrorPixels": 0.5000000000001137,
+      "maxRenderedPlacementDeltaPixels": 0,
+      "allEmittedGeometryWithinOnePixel": true,
+      "allEligibleCandidatesPlaced": true
+    },
+    "d005": {
+      "geometry": "UNMEASURED",
+      "semantics": "UNSCORED",
+      "exactEligibleCandidates": 0,
+      "reason": "Approximation-marked support/resistance prices and unsupported approximate pivot remain ineligible.",
+      "verifiedAbsence": false
+    },
+    "semanticAccuracy": "UNSCORED",
+    "freshHostedCi": {
+      "status": "ACCEPTED_EXACT_SOURCE",
+      "independentAcceptancePath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/EXACT-SOURCE-CI-INDEPENDENT-ACCEPTANCE.json",
+      "independentAcceptanceSha256": "a73dd83beec7f5d67d0b2e938a85cd639f35287abd785d62d3a18a563c86ac77",
+      "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+      "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+      "affectedRunId": 40103559042,
+      "affectedJobId": 120900470073,
+      "automaticImageRunId": 40103564070,
+      "automaticImageJobId": 120900485010,
+      "automaticImageMergeCheckout": "a9f864ec0854a807330fadfb4701dab8148fb1b8",
+      "completeMergeTreeEqualsSource": true,
+      "terminalProofReceived": true,
+      "exactCheckoutAccepted": true,
+      "gatesAccepted": true,
+      "affectedTests": 75,
+      "legacyLifecycleChecks": 12,
+      "recoveryLifecycleChecks": 21,
+      "publicOriginalPixelMaximumError": 0.5,
+      "wholeProjectTypeScript": "PASS",
+      "productionBuild": "PASS",
+      "lintErrors": 0,
+      "lintWarnings": 5,
+      "labelledPaidCorpus": "SKIPPED",
+      "meaning": "Final combined browser-source engineering acceptance; no fresh model result, deployment or operational permit is inferred."
+    },
+    "acceptedPublishedCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+    "acceptedPublishedTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd"
+  },
+  "paidVersusBrowserBoundary": {
+    "paidRuntimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "paidDiagnosticApplicationSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "paidDiagnosticMustRemainUnmodified": true,
+    "futureBrowserSourceSha": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+    "futureBrowserObservation": "A separately named free observation must bind the eventual authenticated raw MAIN response hash, original image and its own exact source/driver. Existing retained MAIN geometry cannot establish that future result.",
+    "rawResponsesMustRemainUnchanged": true
+  },
+  "evidence": {
+    "boundaryAssessment": {
+      "path": "scanner-evaluation-v2-execution/NEXT-PAID-CASE-BOUNDARY-ASSESSMENT.md",
+      "sha256": "44e1d0ff7ca81f05f06a0ebb9bcae55f421f653d038aa831689db84ec21a044e"
+    },
+    "priorOutcome": {
+      "path": "scanner-evaluation-v2-review/execution/OUTCOME-v2-d001-40095819408-REVIEW.json",
+      "sha256": "549cd5c282891c1d4ace3d4010d142e23e22e23b7f4c7ce2724a16279fdd9333"
+    },
+    "priorLedger": {
+      "path": "private-six/results/v2-run40095819408/LEDGER.json",
+      "sha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd"
+    },
+    "geometryReview": {
+      "path": "scanner-image-geometry-repair-evidence/exact-anchor-revision/INDEPENDENT-ONE-PIXEL-REVIEW.json",
+      "sha256": "ae201f753bc19c02383c365f90b8cb02142956e9b6779ac820ad9befb7e1116b"
+    },
+    "helperSourceReview": {
+      "path": "scanner-image-geometry-repair-evidence/INDEPENDENT-EXACT-ANCHOR-SOURCE-ACCEPTANCE.json",
+      "sha256": "c26e911e5c0d0ad1721fc219efc684a45b40335b640e659bb55c36666f5c8789"
+    },
+    "detectorSourceReview": {
+      "path": "scanner-image-geometry-repair-evidence/INDEPENDENT-GRID-ASSOCIATION-SOURCE-ACCEPTANCE.json",
+      "sha256": "bee9550dab60a5e867f1b162eae02d427abb4f0ce9854406b33292eb65862766"
+    },
+    "runnerCleanup": {
+      "path": "scanner-evaluation-v2-execution/CLEANUP-v2-d001-40095819408.json",
+      "sha256": "77180425eb78aba004fbb61dcd11b7b7528d18831737827129b8ee6e0233db14"
+    },
+    "branchCleanup": {
+      "path": "scanner-evaluation-v2-execution/BRANCH-PERMISSIONS-CLEANUP-v2-d001.json",
+      "sha256": "476583540a89808551b7fcab7df567a9861ec903728a98fb928f59de50c0273b"
+    },
+    "preparationReceipt": {
+      "path": "scanner-evaluation-v2/docs/monaco-126/scanner-evaluation-v2-2026-10-24/PREPARATION-RECEIPT.json",
+      "sha256": "a5b4a9f9b5a2651e01bb78d876af3c5479ea6f38e092d364b75a7f0f68b6fda9"
+    },
+    "finalCombinedCi": {
+      "path": "scanner-image-geometry-repair-evidence/exact-anchor-revision/EXACT-SOURCE-CI-INDEPENDENT-ACCEPTANCE.json",
+      "sha256": "a73dd83beec7f5d67d0b2e938a85cd639f35287abd785d62d3a18a563c86ac77"
+    }
+  },
+  "noFuturePaidRunIdentityEmbedded": true,
+  "postPushExactRunReviewStillRequired": true,
+  "dispatchDisposition": "HOLD_UNTIL_FRESH_CARRY_IN_ACTUAL_PROTECTED_RUN_AND_EXACT_PERMIT",
+  "allFiveRemainingPaidCasesCurrentlyHeld": true,
+  "reviewerActions": {
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "hostedMutations": 0,
+    "credentialsRead": 0,
+    "privateKeyReads": 0,
+    "heldOutPayloadReads": 0,
+    "imageReads": 0,
+    "calibrationReads": 0,
+    "newTests": 0,
+    "remoteWrites": 0,
+    "additionalSpendingApprovalRequests": 0
+  },
+  "kind": "INDEPENDENT_V2_NAMED_CASE_REASSESSMENT_EVIDENCE",
+  "decision": "PROCEED_WITH_V2_D002_ONLY_AFTER_EXACT_POST_PUSH_OPERATIONAL_GATES",
+  "substantiveQuestionStillUnanswered": [
+    "Does the unchanged admitted d002 main/primary-precision flow actually complete under the accepted 7000/4000 output caps, with rescue only if its frozen predicate requires it?",
+    "Do those newly acquired response bytes satisfy the original coordinate contract and produce a complete retained, accountable outcome under the frozen app2812 diagnostic?",
+    "Does a new authenticated completed MAIN response supply exact numeric candidates and corroborating readings that the separately accepted repaired browser source can place within the unchanged one-original-pixel reference?"
+  ],
+  "whyOneCaseIsInformative": "The completed first revised case establishes one operational outcome, and the free five-chart repair replay establishes geometry for existing MAIN responses. Neither acquires a new d002 precision/rescue response under the revised cap or measures the repaired consumer against a new d002 MAIN. One already approved named attempt supplies that missing observation; it does not establish broad reliability or semantic accuracy.",
+  "whyThisDoesNotReplayKnownDefectsForTheirOwnSake": "The invalid-bound handling, pixel-region association and exact-anchor losses have been repaired and independently checked offline. This proposed run evaluates the still-unobserved bounded acquisition/composition question. Its frozen paid diagnostic may still show old-source geometry failure and must be reported honestly; the repaired-source result is separate.",
+  "priorCaseOutcome": {
+    "caseId": "v2-d001",
+    "runId": 40095819408,
+    "accountedAt": "2026-10-24T13:00:59.426395+00:00",
+    "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+    "executionAndAccounting": "ACCEPTED",
+    "mainAndBothPrecisionResponses": "COMPLETED",
+    "frozenPaidDiagnosticGeometry": "FAILED",
+    "originalOutcomeUnchanged": true,
+    "fullHeldMicroUsd": 330000,
+    "actualBilling": "UNKNOWN"
+  },
+  "boundedCost": {
+    "caseMaximumMicroUsd": 330000,
+    "lastKnownAggregateHeldMicroUsd": 1836400,
+    "expectedAggregateHoldAfterD002ClaimMicroUsd": 2166400,
+    "expectedV2HeldAfterD002ClaimMicroUsd": 660000,
+    "remainingBelowSharedCeilingAfterClaimMicroUsd": 2833600,
+    "remainingApprovedV2ExposureAfterClaimMicroUsd": 1320000,
+    "retainedFullCaseHoldAfterUnusedRescueOrUncertainOutcome": true,
+    "actualMicroUsd": null,
+    "financiallySettled": false,
+    "meaning": "Conservative commitments only, conditional on unchanged fresh carry-in; not an actual-cost or billing attestation."
+  },
+  "originalInputsAndOracleReusedUnmodified": true,
+  "effectiveOriginalPixelTolerance": 1.0,
+  "noOraclePassedToBrowser": true,
+  "completionCriteria": [
+    "Every submitted slot has an authenticated retained response and provider identity/usage metadata; incomplete status is recorded as incomplete, not parseable-success.",
+    "Frozen app2812 diagnostic and any repaired-source browser observation each retain their own explicit source identity and exact raw-response lineage.",
+    "Current case is retained/accounted or conservatively stopped; no unknown submission is retried and the full reservation stays held.",
+    "Independently review the named case, accounting and cleanup before deciding on v2-d003; all later cases remain HOLD."
+  ],
+  "noSuccessAssumed": {
+    "freshModelCompletion": "UNTESTED",
+    "freshModelCoordinateConformance": "UNTESTED",
+    "newMainRepairedBrowserGeometry": "UNTESTED",
+    "semanticInterpretation": "UNSCORED",
+    "emptyOutputIsNotTrueNegative": true,
+    "d005AbsenceVerified": false,
+    "heldOutGeneralization": "UNTESTED",
+    "deployedHttpAndPhysicalDeviceLatency": "UNACCEPTED"
+  },
+  "beforeAnotherCase": "Stop after this one named attempt; independently reconcile retained provider outcomes, both explicit diagnostic/source layers, original-coordinate errors, scope identities, full held accounting and NOLOGIN/zero sessions. No v2-d003 permit follows automatically.",
+  "finalizationRequiresNewBudgetApproval": false,
+  "finalizationRequiresCurrentCiEvidence": false,
+  "operationalBindingPassed": false,
+  "staticMaterializationReady": true,
+  "providerDispatchAllowedByThisRecord": false,
+  "supersedesProvisionalRecordForStaticEvidence": {
+    "path": "scanner-evaluation-v2-review/execution/DRAFT-v2-d002-REASSESSMENT.json",
+    "sha256": "83cd8dae03b93e2b2e386166d764d5dac259b2525665b2768a84e92cbbf35e66",
+    "draftRemainsUnchangedAndUnusable": true
+  },
+  "currentCiRequirementSatisfied": true,
+  "substantiveReassessmentAccepted": true,
+  "finalizationDisposition": "The previously pending final CI evidence is now accepted. This new record is final for static materialization; it does not mark live execution ready."
+}
