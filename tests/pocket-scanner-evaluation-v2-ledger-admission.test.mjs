@@ -10,6 +10,9 @@ test('real frozen application plan produces 18 new pinned requests and one 33000
  assert.equal(r.maximumCombinedMicroUsd,3486400);assert.equal(r.maximumAdditionalMicroUsd,1980000);
  assert.equal(r.identity.evaluation.caseId,'v2-d001');assert.equal(r.identity.evaluation.sourceCaseId,'d001');
  assert.equal(r.identity.evaluation.attemptId,'v2-d001-attempt-1');assert.equal(r.identity.planSha256,p.planSha256);
+ assert.deepEqual(r.expectedAdmission,{approvalRef:c.approval.approvalRef,approvalBodySha256:c.approval.approvalBodySha256,
+  admissionEvidenceSha256:c.attempt.admissionEvidenceSha256,reassessmentEvidenceSha256:c.attempt.reassessmentEvidenceSha256,
+  previousCaseReceiptSha256:null});
  assert.match(r.admissionSql,/INSERT INTO private.monaco_scanner_eval_v2_permits/);
  assert.doesNotMatch(r.admissionSql,/ALTER ROLE|UPDATE private|DELETE FROM|TRUNCATE|CREATE ROLE|CREATE DATABASE/);
  assert.equal(r.financiallySettled,false);assert.equal(r.actualMicroUsd,null);
@@ -45,6 +48,7 @@ test('old runs, attempts, case IDs and missing per-case reassessment are refused
  }
  assert.throws(()=>buildEvaluationV2Admission(admissionFixture({caseId:'v2-d002'})),/preceding/);
  const next=buildEvaluationV2Admission(admissionFixture({caseId:'v2-d002',previousCaseReceiptSha256:'f'.repeat(64)}));
+ assert.equal(next.expectedAdmission.previousCaseReceiptSha256,'f'.repeat(64));
  assert.doesNotMatch(next.admissionSql,/INSERT INTO private.monaco_scanner_eval_v2_scopes/);
  assert.match(next.admissionSql,/Previous retained\/accounted case must match reassessment/);
 });

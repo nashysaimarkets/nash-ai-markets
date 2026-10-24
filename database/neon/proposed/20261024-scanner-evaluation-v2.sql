@@ -278,6 +278,11 @@ BEGIN
  IF p_operation='inspect' THEN
   IF p_args<>'{}'::jsonb THEN RAISE EXCEPTION 'Inspect has no arguments'; END IF;
   RETURN result||jsonb_build_object('allowed',denied IS NULL AND state IS NULL,'reason',coalesce(denied,CASE WHEN state IS NOT NULL THEN 'already_started' END),
+   -- The runtime compares its static evidence with these independently stored
+   -- immutable owner records before any chart transfer or provider operation.
+   'admission',jsonb_build_object('approvalRef',s.approval_ref,'approvalBodySha256',s.approval_evidence_sha256,
+    'admissionEvidenceSha256',p.admission_evidence_sha256,'reassessmentEvidenceSha256',p.reassessment_evidence_sha256,
+    'previousCaseReceiptSha256',p.previous_case_receipt_sha256),
    'slots',(SELECT coalesce(jsonb_agg(jsonb_build_object('slot',x.slot,'requestId',x.request_id,'fingerprint',x.fingerprint,'requestSha256',x.request_sha256,
     'status',CASE WHEN r.slot IS NOT NULL THEN 'receipted' WHEN d.slot IS NOT NULL THEN 'submitted' WHEN state='completed' AND x.slot='rescue_precision' THEN 'voided' ELSE 'reserved' END) ORDER BY x.slot),'[]'::jsonb)
     FROM private.monaco_scanner_eval_v2_pins x LEFT JOIN private.monaco_scanner_eval_v2_submissions d USING(scope_id,case_id,slot)

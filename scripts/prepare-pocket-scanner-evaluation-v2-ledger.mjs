@@ -130,6 +130,9 @@ INSERT INTO private.monaco_scanner_eval_v2_permits(scope_id,case_id,attempt_id,i
 COMMIT;
 `;
  return {kind:'POCKET_SCANNER_EVALUATION_V2_ADMISSION_PROPOSAL',executed:false,mode,identity,planSha256,
+  expectedAdmission:{approvalRef:approval.approvalRef,approvalBodySha256:approval.approvalBodySha256,
+   admissionEvidenceSha256:attempt.admissionEvidenceSha256,reassessmentEvidenceSha256:attempt.reassessmentEvidenceSha256,
+   previousCaseReceiptSha256:attempt.previousCaseReceiptSha256},
   originalHeldMicroUsd:1506400,caseBoundMicroUsd:330000,maximumAdditionalMicroUsd:1980000,maximumCombinedMicroUsd:3486400,
   financiallySettled:false,actualMicroUsd:null,admissionSql:sql,admissionSqlSha256:hash(sql)};
 }

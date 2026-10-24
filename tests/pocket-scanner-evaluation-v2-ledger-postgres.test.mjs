@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 import {createEvaluationSqlPort,createEvaluationLedgerBridge,validateEvaluationIdentity} from '../scripts/pocket-scanner-evaluation-v2-bridge.mjs';
+import {validateRunAdmission,expectedAdmissionFromConfig} from '../scripts/pocket-scanner-evaluation-v2-hosted-entry.mjs';
+import {generateRecipientKeyPair} from '../scripts/pocket-monaco-confidential-transport.mjs';
 import {prepareNeonLedgerSql} from '../scripts/prepare-monaco-neon-ledger.mjs';
 import {admissionFixture,buildEvaluationV2Admission,P,plan} from './support/pocket-scanner-evaluation-v2-ledger-fixture.mjs';
 assert.equal(process.env.MONACO_QA_DISPOSABLE_POSTGRES,'true','Disposable localhost PostgreSQL required');
@@ -31,6 +33,21 @@ const submitArgs=(id,slot)=>{const r=row(id,slot);return {slot,requestId:r.reque
 const receiptArgs=(id,slot)=>({slot,requestId:row(id,slot).requestId,providerRequestId:`synthetic-v2-request-${id}-${slot}`,
  responseId:`synthetic-v2-response-${id}-${slot}`,model:'gpt-5-mini-2025-08-07',serviceTier:'default',usage:{input_tokens:1,output_tokens:1,total_tokens:2},responseSha256:'f'.repeat(64)});
 const finishArgs=id=>({diagnosticSha256:'a'.repeat(64),diagnosticArtifactId:String(97000000000+Number(id.at(-1)))});
+const recipient=generateRecipientKeyPair();
+function hostedInput(c){
+ const a=c.approval,t=c.attempt,caseId=t.caseId;
+ return {caseId,planBytes:c.planBytes,
+  context:{repository:'nashysaimarkets/nash-ai-markets',event:'push',ref:`refs/heads/monaco-scanner-evaluation-v2-run-${caseId}`,
+   sourceSha:c.runtimeSourceSha,evidenceSha:t.evidenceSha,wrapperSha:t.wrapperSha,runId:t.runId,jobId:t.jobId,runAttempt:t.runAttempt},
+  config:{kind:'POCKET_SCANNER_EVALUATION_V2_RUN_ADMISSION',status:'EXECUTION_APPROVED',caseId,
+   runtimeSourceSha:c.runtimeSourceSha,planSha256:a.planSha256,
+   scopeApproval:{status:a.status,scopeId:a.scopeId,approvalRef:a.approvalRef,ownerDirectiveSha256:a.approvalBodySha256,
+    planSha256:a.planSha256,appSourceSha:a.appSourceSha,maximumNewMicroUsd:a.maximumAdditionalMicroUsd,aggregateCapMicroUsd:a.aggregateCapMicroUsd},
+   admissionEvidenceSha256:t.admissionEvidenceSha256,reassessmentEvidenceSha256:t.reassessmentEvidenceSha256,
+   previousCaseReceiptSha256:t.previousCaseReceiptSha256,
+   input:{bundleSha256:'f'.repeat(64),maxWaitMs:300000},
+   output:{retentionDays:7,recipientPublicKeyPem:recipient.publicKeyPem,recipientPublicKeySha256:recipient.publicKeySha256}}};
+}
 await control.query('create role monaco_ledger_owner login nosuperuser createrole noinherit nobypassrls');
 
 async function fixture(body){
@@ -107,10 +124,28 @@ await test('new admission preserves original history and privileges, and refuses
   await assert.rejects(()=>f.owner.query(sql));
  await f.activate();const r=await f.connect();
  assert.deepEqual(validateEvaluationIdentity(f.prepared.identity),f.prepared.identity);
- const bridge=createEvaluationLedgerBridge(createEvaluationSqlPort(r,n,f.prepared.identity),f.prepared.identity);
+ const input=hostedInput(f.config),identity=validateRunAdmission(input),expected=expectedAdmissionFromConfig(input.config);
+ assert.deepEqual(identity,f.prepared.identity);assert.deepEqual(expected,f.prepared.expectedAdmission);
+ const bridge=createEvaluationLedgerBridge(createEvaluationSqlPort(r,n,identity),identity,expected);
  const state=await bridge.inspect();
  assert.equal(state.allowed,true);assert.equal(state.originalCommitmentsMicroUsd,1506400);assert.equal(state.remainingMicroUsd,3493600);
+ assert.deepEqual(state.admission,expected);
  await assert.rejects(()=>r.query('select * from private.monaco_scanner_eval_v2_pins'));
+ assert.equal(await f.digest(),f.before);
+}));
+await test('hosted approval and reassessment hashes must equal independently admitted records before a claim',()=>fixture(async f=>{
+ await f.admit();await f.activate();const r=await f.connect();
+ for(const mutate of [c=>c.scopeApproval.ownerDirectiveSha256='f'.repeat(64),c=>c.admissionEvidenceSha256='f'.repeat(64),
+  c=>c.reassessmentEvidenceSha256='f'.repeat(64),c=>c.previousCaseReceiptSha256='f'.repeat(64),
+  c=>c.scopeApproval.approvalRef='https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-88888888888',
+  c=>delete c.reassessmentEvidenceSha256]){
+  const input=hostedInput(f.config);mutate(input.config);
+  await assert.rejects(async()=>{
+   const identity=validateRunAdmission(input),expected=expectedAdmissionFromConfig(input.config);
+   await createEvaluationLedgerBridge(createEvaluationSqlPort(r,n,identity),identity,expected).inspect();
+  });
+ }
+ assert.equal((await f.owner.query('select count(*)::int as n from private.monaco_scanner_eval_v2_claims')).rows[0].n,0);
  assert.equal(await f.digest(),f.before);
 }));
 await test('wrong approval, source, plan, key, run, case, project and extra fields never claim',()=>fixture(async f=>{
@@ -201,6 +236,9 @@ await test('every new case needs separate reassessment; all six keep330000 each 
  await f.admit();await f.activate();let runner=await f.connect(),p=f.prepared;
  for(const [index,id] of P.caseIds.entries()){
   if(index){const next=await f.next(id);runner=next.runner;p=next.prepared;}
+  const port=createEvaluationSqlPort(runner,n,p.identity);
+  assert.deepEqual((await createEvaluationLedgerBridge(port,p.identity,p.expectedAdmission).inspect()).admission,p.expectedAdmission);
+  if(index)await assert.rejects(()=>createEvaluationLedgerBridge(port,p.identity,{...p.expectedAdmission,previousCaseReceiptSha256:'f'.repeat(64)}).inspect());
   assert.equal((await rpc(runner,p.identity,'begin_case')).allowed,true);
   const final=await complete(runner,p.identity,{rescue:index===3});
   assert.equal(final.status,'completed');assert.equal(final.financiallySettled,false);assert.equal(final.actualMicroUsd,null);
