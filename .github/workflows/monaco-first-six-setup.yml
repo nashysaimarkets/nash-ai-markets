@@ -1,6 +1,6 @@
-name: Monaco protected first-six one-shot
-# One-shot execution wrapper: exact credential binding and original allowance
-# were admitted after protected authentication and independent review.
+name: Monaco protected remaining-five continuation
+# One-shot continuation wrapper: d002-d006 only under the original allowance.
+# d001 receipts and the spent-slot ledger remain immutable; no replay or reset.
 # Source, evidence and wrapper commits are separate; never rerun this job.
 on:
   push:
@@ -11,8 +11,8 @@ concurrency:
   group: monaco-first-six-existing-five-dollar-allowance
   cancel-in-progress: false
 env:
-  REVIEWED_SETUP_SOURCE_SHA: 9e82c6d25dcb7f589e2328b2efc7910033d8fcdc
-  REVIEWED_SETUP_EVIDENCE_SHA: 4ebb6a4023d7a01ca5188d54f592264acf48644b
+  REVIEWED_SETUP_SOURCE_SHA: f3d86adeddffa7d4bfbcd7390ce92fcafeb2651c
+  REVIEWED_SETUP_EVIDENCE_SHA: 6ac76987c9a66260cf6fe3ba24745b20c6286aaf
   NODE_OPTIONS: ''
   NODE_PATH: ''
 jobs:
@@ -70,7 +70,7 @@ jobs:
           git -C runner-evidence diff --exit-code HEAD
           test -z "$(git -C runner-evidence status --porcelain)"
       - name: Execute the protected one-shot JavaScript action
-        uses: ./runner-source/.github/actions/monaco-first-six
+        uses: ./runner-source/.github/actions/monaco-first-six-continuation
         env:
           MONACO_FIRST_SIX_OPENAI_API_KEY: ${{ secrets.MONACO_FIRST_SIX_OPENAI_API_KEY }}
           MONACO_FIRST_SIX_LEDGER_KEY: ${{ secrets.MONACO_FIRST_SIX_LEDGER_KEY }}
