@@ -1,3 +1,4 @@
+import '../../app/pocket-next/pocket-next.css';
 import "../../app/pocket/pocket.css";
 import "../../app/pocket/pocket-launch-polish.css";
 import "../../app/pocket/pocket-launch-depth.css";
@@ -35,5 +36,4 @@ import "../../app/pocket/pocket-liquidity-guard.css";
 import "../../app/pocket/pocket-professional.css";
 import React from 'react';import {createRoot} from 'react-dom/client';
 import PocketNext from '../../app/pocket-next/PocketNext';
-import '../../app/pocket-next/pocket-next.css';
 createRoot(document.getElementById('root')!).render(<PocketNext igDemoAvailable igDemoOwnerScope="synthetic-browser-owner"/>);

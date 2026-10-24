@@ -21,6 +21,7 @@ jobs:
         with:
           node-version: '24'
       - name: Locked dependencies without cache or artifact billing
+        id: dependencies
         run: npm ci --no-audit --no-fund
       - name: Affected Android and scanner security tests
         run: node --import tsx --test tests/pocket-android-rc.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-google-postgres-ports.test.mjs tests/pocket-native-request-boundary.test.ts tests/pocket-native-account-boundary.test.ts tests/pocket-next-integration.test.ts tests/ig-demo-chart-binding.test.ts
@@ -29,10 +30,12 @@ jobs:
           POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
         run: node tests/run-pocket-rc-browser.mjs
       - name: TypeScript and production build
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         run: |
           npm run typecheck
           npm run build
       - name: Debug Android compile only, synthetic backend pins
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
         env:
           CAPACITOR_SERVER_URL: https://offline-acceptance.invalid/pocket
           CAPACITOR_SERVER_REVISION: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

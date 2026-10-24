@@ -379,4 +379,3 @@ public class PocketPlayBillingPlugin extends Plugin implements PurchasesUpdatedL
         super.handleOnDestroy();
     }
 }
-
