@@ -1,0 +1,52 @@
+name: Monaco premium finish isolated acceptance
+on:
+  push:
+    branches: [monaco-premium-finish-20261025-baf]
+    paths: ['app/**','database/google/**','scripts/build-pocket-premium-preview.mjs','tests/**','.github/workflows/monaco-premium-finish.yml']
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: monaco_android_acceptance
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['127.0.0.1:5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Locked dependencies
+        id: dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Affected runtime tests
+        run: node --import tsx --test tests/pocket-google-finish.test.ts tests/pocket-google-postgres-ports.test.mjs tests/pocket-google-runtime.test.mjs tests/pocket-android-rc.test.ts
+      - name: Genuine disposable revocation SQL
+        env:
+          MONACO_DISPOSABLE_PG: 'YES'
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: monaco_android_acceptance
+        run: |
+          npm install --prefix "$RUNNER_TEMP/monaco-pg" pg@8.16.3 --ignore-scripts --no-audit --no-fund --package-lock=false
+          export MONACO_PG_MODULE="$RUNNER_TEMP/monaco-pg/node_modules/pg/lib/index.js"
+          node --test tests/integration/google-reconciliation-postgres.test.mjs
+      - name: iPhone-sized interaction accessibility and exact source preview
+        env:
+          POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
+        run: node tests/run-pocket-iphone-finish.mjs
+      - name: TypeScript and production build
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: |
+          npm run typecheck
+          npm run build
