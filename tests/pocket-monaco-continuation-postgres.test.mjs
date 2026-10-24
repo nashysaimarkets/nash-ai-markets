@@ -167,6 +167,13 @@ await test('overlapping claims reserve d002 once; unresolved successor receipt b
   p_envelope_sha256:fingerprint('d002','main')});assert.equal(replay.claimed,false);
  assert.equal((await inspect(f.owner,f.prepared.identity)).new_commitments_microusd,536400);
  assert.equal((await f.owner.query('select * from private.pocket_benchmark_budget_accounts where case_id=\'d001\'')).rows[0].receipt_sha256,f.account.receipt_sha256);
+ await rpc(left,f.prepared.identity,'record_pocket_benchmark_receipt',receiptArgs('d002','main'));
+ for(const slot of ['primary_precision','rescue_precision'])await rpc(left,f.prepared.identity,'void_pocket_benchmark_call',{
+  p_ledger_key:P.ledgerKey,p_case_id:'d002',p_slot:slot,p_reason:'Not dispatched; existing rescue/cancellation predicate'});
+ await assert.rejects(()=>rpc(left,f.prepared.identity,'account_pocket_benchmark_reserved_case',{
+  p_ledger_key:P.ledgerKey,p_case_id:'d002'}),/complete bounded receipts required/);
+ assert.equal((await f.owner.query('select count(*)::int as n from private.pocket_benchmark_budget_accounts')).rows[0].n,1);
+ assert.equal((await rpc(left,f.prepared.identity,'claim_pocket_benchmark_case',claimArgs('d003'))).reason,'previous_case_unresolved');
 }));
 await test('all five untouched cases progress through the real eight-field Neon port and reach only the original combined bound',()=>fixture(async f=>{
  const beforeDigest=await historicalDigest(f.owner);await f.install();await f.admit();await f.activate();const runner=await f.connect();

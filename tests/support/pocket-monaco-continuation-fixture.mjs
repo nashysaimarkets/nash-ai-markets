@@ -34,6 +34,9 @@ export function fixture({rescue=false}={}) {
       async voidUnused(id,slot){events.push(['void',id,slot]);assert.equal(states.get(id)[slot],'reserved');
         states.get(id)[slot]='voided';return {ok:true,status:'voided'};},
       async account(id){events.push(['account',id]);assert.ok(Object.values(states.get(id)).every(s=>['receipted','voided'].includes(s)));
+        // Match the immutable SQL accountant: both mandatory primary receipts
+        // must exist; an unattempted/voided primary cannot complete a case.
+        assert.equal(states.get(id).main,'receipted');assert.equal(states.get(id).primary_precision,'receipted');
         assert.equal(accounted.has(id),false);accounted.add(id);
         return {accounted:true,accounting_status:'FULL_RESERVATION_HELD',financially_settled:false};},
     },

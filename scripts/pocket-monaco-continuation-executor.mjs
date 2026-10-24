@@ -134,13 +134,14 @@ export function createContinuationExecutor({ledger, transport, privateArtifacts,
         if (ack?.claim?.allowed === false) return {...summary, reason:'CLAIM_REFUSED'};
         requireValue(ack?.claim?.allowed === true && ack.claim.status === 'reserved' && ack.claim.idempotent === false);
         ownsClaim = true;
-        const main = await send('main');
-        if(main.status==='completed') {
-          const precision = await send('primary_precision');
-          // Keep the original frozen predicate and its completed-response scope.
-          // Truncated JSON never creates new rescue eligibility.
-          if(precision.status==='completed' && needsRescue(precision.output_text)) await send('rescue_precision');
-        }
+        await send('main');
+        // Both distinct frozen primary calls are mandatory for the unchanged
+        // accountant, including after a receipted, known main output limit.
+        // send() still rejects any unknown main outcome before this next call.
+        const precision = await send('primary_precision');
+        // Keep the original frozen predicate and its completed-response scope.
+        // Truncated JSON never creates new rescue eligibility.
+        if(precision.status==='completed' && needsRescue(precision.output_text)) await send('rescue_precision');
         stage = 'VOID';
         requireValue(await voidReserved());
         stage = 'ACCOUNT';

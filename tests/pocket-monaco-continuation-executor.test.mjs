@@ -29,10 +29,31 @@ test('known primary truncation is retained unchanged, gets no new rescue eligibi
   for(const c of f.finished){assert.equal(c.raw.primary_precision.status,'incomplete');assert.equal(c.raw.primary_precision.output_text,'{"synthetic":');}
   assert.ok([...f.states.values()].every(s=>s.rescue_precision==='voided'));
 });
-test('known main truncation remains unmeasurable and voids unattempted precision slots',async()=>{
+test('known main truncation retains both mandatory distinct receipts and original completed-primary rescue eligibility',async()=>{
+  for(const rescue of [false,true]){
+    const f=fixture({rescue}),send=f.transport.send;
+    f.transport.send=async a=>a.slot==='main'?truncated(await send(a)):send(a);
+    const r=await f.executor().run(materials());assert.equal(r.status,'COMPLETED');
+    assert.equal(r.transportSendAttempts,rescue?15:10);assert.equal(f.accounted.size,5);
+    assert.equal(f.events.filter(e=>e[0]==='rescue-predicate').length,5);
+    assert.ok(f.finished.every(c=>c.raw.main.status==='incomplete'&&c.raw.primary_precision.status==='completed'));
+    assert.ok([...f.states.values()].every(s=>s.main==='receipted'&&s.primary_precision==='receipted'
+      &&s.rescue_precision===(rescue?'receipted':'voided')));
+    for(const id of CONTINUATION_IDS){
+      assert.deepEqual(f.events.filter(e=>e[0]==='send'&&e[1]===id).map(e=>e[2]),rescue?slots:slots.slice(0,2));
+      const accountAt=f.events.findIndex(e=>e[0]==='account'&&e[1]===id);
+      assert.ok(accountAt>f.events.findIndex(e=>e[0]==='receipt'&&e[1]===id&&e[2]==='primary_precision'));
+      const next=CONTINUATION_IDS[CONTINUATION_IDS.indexOf(id)+1];
+      if(next)assert.ok(accountAt<f.events.findIndex(e=>e[0]==='claim'&&e[1]===next));
+    }
+  }
+});
+test('known limits in both mandatory calls still account without a rescue or fabricated completion',async()=>{
   const f=fixture(),send=f.transport.send;f.transport.send=async a=>truncated(await send(a));
-  const r=await f.executor().run(materials());assert.equal(r.status,'COMPLETED');assert.equal(r.transportSendAttempts,5);
-  assert.ok([...f.states.values()].every(s=>s.main==='receipted'&&s.primary_precision==='voided'&&s.rescue_precision==='voided'));
+  const r=await f.executor().run(materials());assert.equal(r.status,'COMPLETED');assert.equal(r.transportSendAttempts,10);
+  assert.equal(f.accounted.size,5);assert.equal(f.events.some(e=>e[0]==='rescue-predicate'),false);
+  assert.ok(f.finished.every(c=>c.raw.main.status==='incomplete'&&c.raw.primary_precision.status==='incomplete'));
+  assert.ok([...f.states.values()].every(s=>s.main==='receipted'&&s.primary_precision==='receipted'&&s.rescue_precision==='voided'));
 });
 test('truncated original rescue is retained without any further send or relabelling',async()=>{
   const f=fixture({rescue:true}),send=f.transport.send;
@@ -43,9 +64,14 @@ test('truncated original rescue is retained without any further send or relabell
 test('unknown incomplete reasons, errors and refusals stop before another chart',async()=>{
   for(const edit of [r=>r.incomplete_details.reason='content_filter',r=>delete r.incomplete_details,
     r=>r.error={code:'synthetic'},r=>r.status='failed']){
-    const f=fixture(),send=f.transport.send;f.transport.send=async a=>{const r=truncated(await send(a));edit(r);return r;};
-    const r=await f.executor().run(materials());assert.equal(r.status,'TECHNICAL_FAILURE');assert.equal(r.transportSendAttempts,1);
-    assert.equal(f.events.filter(e=>e[0]==='claim').length,1);assert.equal(f.accounted.size,1);
+    for(const failedSlot of ['main','primary_precision']){
+      const f=fixture(),send=f.transport.send;
+      f.transport.send=async a=>{const r=await send(a);if(a.slot!==failedSlot)return r;const failed=truncated(r);edit(failed);return failed;};
+      const r=await f.executor().run(materials());assert.equal(r.status,failedSlot==='main'?'UNCERTAIN':'TECHNICAL_FAILURE');
+      assert.equal(r.transportSendAttempts,failedSlot==='main'?1:2);
+      assert.equal(f.events.filter(e=>e[0]==='claim').length,1);assert.equal(f.accounted.size,failedSlot==='main'?0:1);
+      assert.equal(f.events.some(e=>e[0]==='send'&&e[2]==='rescue_precision'),false);
+    }
   }
 });
 test('missing, mismatched or changed predecessor/source/run admission has no claim',async()=>{
