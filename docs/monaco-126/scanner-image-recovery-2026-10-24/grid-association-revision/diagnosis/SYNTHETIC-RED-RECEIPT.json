@@ -1,0 +1,22 @@
+{
+  "kind": "SYNTHETIC_GRID_ASSOCIATION_RED_CONTROLS",
+  "sourceHashes": {
+    "app/pocket/image-plot-region.ts": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+    "tests/pocket-image-plot-region.test.ts": "c520fb5d879a45c911f14f926eda1ca2957edb707fda80ff8478737be3f632f9",
+    "tests/support/pocket-image-plot-raster.ts": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a",
+    "app/pocket/chart-grid-rows.ts": "3e330814d35db34f2cc133f01682391887c5b9fdae222ed491d6df161eb326d8"
+  },
+  "command": "node --test-reporter=tap --test-name-pattern='antialiased axis glyph|visible inset-panel|side-edge endpoints' tests/pocket-image-plot-region.test.ts",
+  "exitCode": 1,
+  "checks": 3,
+  "expectedFailureCount": 2,
+  "missingBorderControlPassed": true,
+  "failureReasonBoth": "NO_COHERENT_GRID_RECTANGLE",
+  "capturedTapSha256": "cfeb94366bd6a5265f32f22c68d84196c7495025bd00c84b7a0b97b961a66053",
+  "fixtureRefinement": "Earlier exploratory glyph halo variants either connected glyph masks or had vertically uniform fringes. The final synthetic control isolates low-coverage rounded edge samples at grid-row height, with intact separate digit cores; no production algorithm was changed during fixture refinement. Earlier exploratory logs are retained.",
+  "privateImageInputToSyntheticTests": false,
+  "productionSourceChangedBeforeRed": false,
+  "calibrationReads": 0,
+  "oracleReads": 0,
+  "heldOutReads": 0
+}

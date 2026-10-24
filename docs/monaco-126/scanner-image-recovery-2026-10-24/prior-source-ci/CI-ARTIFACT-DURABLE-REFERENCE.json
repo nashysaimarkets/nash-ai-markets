@@ -1,0 +1,15 @@
+{
+  "kind": "OFFICIAL_IMAGE_RECOVERY_CI_ARTIFACT",
+  "runId": 40100260065,
+  "jobId": 120890776823,
+  "artifactId": 12562661993,
+  "bytes": 14763,
+  "sha256": "39ec2fb821af6e8435657db1eee67776b691da13e2b489641cf5fcc2d786d099",
+  "libraryFileId": "libfile_9318bde5d44881918664f91d0401572e",
+  "filename": "Pocket-Bullseye-Image-Recovery-CI-2026-10-24.zip",
+  "sourceCommit": "156417b4443068309a33c3364438948499775fad",
+  "sourceTree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+  "containsPrivateImage": false,
+  "containsCredentials": false,
+  "xattrsApplied": true
+}

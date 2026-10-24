@@ -1,0 +1,51 @@
+{
+  "kind": "INDEPENDENT_GRID_ASSOCIATION_PRE_REPAIR_REVIEW",
+  "createdAt": "2026-10-24T14:17:33.369902+00:00",
+  "reviewer": "scanner_independent_review",
+  "status": "DIAGNOSIS_CORROBORATED_CANDIDATE_REVIEW_PENDING",
+  "historicalAcceptedSource": "156417b4443068309a33c3364438948499775fad",
+  "reviewedDetectorSha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+  "diagnosticTrace": {
+    "path": "grid-row-diagnosis/FROZEN-DETECTOR-TRACE.json",
+    "sha256": "f4799a6ddf8bcd07d7c90d96d8b4e244e51ea2cf73f7fa514cb78222d7c1bb73",
+    "instrumentationReviewed": true,
+    "instrumentationEffect": "Exact source is hash-checked and log-only insertions capture internal bands, edge seeds and corroborating rows; no calibration or reference coordinates enter detection."
+  },
+  "findings": [
+    {
+      "cases": [
+        "d002",
+        "d003"
+      ],
+      "finding": "Label fringe pixels extend horizontal runs; the endpoint grouping isolates border rows or moves edge searches into the text column. Both cases stop before legacy chartGridRows is called."
+    },
+    {
+      "cases": [
+        "d004",
+        "d006"
+      ],
+      "finding": "All four original-pixel borders are already measured. The unchanged legacy chartGridRows returns five interior rows but omits both borders; the detector then rejects the rectangle."
+    }
+  ],
+  "proposedMethodConstraints": [
+    "Long-gap bridging must be justified by actual observed colored candle occlusion, not a pixel elsewhere or an arbitrary blank gap into the axis text.",
+    "Both vertical edges and both horizontal borders must retain original-pixel support; no border may be inferred solely from side-edge endpoints or borrowed from another panel.",
+    "Measured border rows may complement independently corroborated interior rows, retaining the complete-row uniform-spacing check; no regular subset may hide contradictory or missing rows.",
+    "Keep existing contrast, coverage, spacing, one-pixel acceptance, size/component/rectangle limits and all ambiguity controls unchanged.",
+    "Missing/clipped horizontal borders, unrelated same-y evidence, touching and separated multiple panels, and volume-only layouts must continue to abstain."
+  ],
+  "remainingCaseBoundary": "d005 has no eligible horizontal candidate hints. Detector association changes do not supply missing semantic candidates or make this case a negative acceptance.",
+  "acceptanceBoundary": "Prior exact-source CI acceptance applies only to revision 156417. A changed detector requires its own source-bound review and affected validation; this receipt is diagnosis only.",
+  "reviewerEffects": {
+    "sourceEdits": 0,
+    "testsRun": 0,
+    "browserReruns": 0,
+    "rasterReads": 0,
+    "calibrationReads": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "remoteMutations": 0
+  }
+}

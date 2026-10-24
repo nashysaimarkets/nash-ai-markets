@@ -1,0 +1,11 @@
+# Interim grid-association observation checkpoint — 24 October 2026
+
+The executable branch source is still `156417b4443068309a33c3364438948499775fad`. This documentation checkpoint preserves an independently reviewed, **not-yet-published source candidate**, its complete three-file patch against that source, and actual browser observations. It does not claim a six-case pass or new hosted acceptance.
+
+The candidate detector is pinned in `SOURCE-MANIFEST.json` at SHA256 `819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48`. Eighteen focused detector tests and narrow strict TypeScript passed after the two new recognition controls failed on the old detector. All five eligible saved development pairs subsequently passed through real browser grid detection and verified OCR: d001 placed4 candidates, d0022, d0032, d0041 and d0062. Independent one-original-pixel scoring is in progress. No reference calibration was passed to the browser.
+
+The observations exposed a separate projection defect: an exact observed top tick on d002 and d004 is discarded because its global fitted row lies slightly above the measured boundary. It is inside the verified numeric price domain. A separate synthetic regression and minimal direct-observed-anchor repair are in progress; non-anchor fitting, out-of-domain rejection and all evidence checks must remain unchanged. These observations and source pins remain immutable historical evidence when that helper changes.
+
+The d005 MAIN response contains support/resistance kinds with explicitly approximate prices, plus an unsupported approximate pivot. Its unchanged exact-price eligibility HOLD is not verified absence. No new OCR replay is claimed for d005.
+
+Root writer claim6384437116 remains ACTIVE. Revised paid cases v2-d002–v2-d006 remain HOLD, the44 held-out cases are untouched, schedules are OFF and no provider/DB call, inference spend, deployment, main merge, Apple release or pricing change was made. Existing runner cleanup and budget history remain closed/preserved. Historical source156 CI acceptance and its durable official artifact are under `../prior-source-ci/`; the initial five failures and independent review remain under `../initial-five-replay/`.

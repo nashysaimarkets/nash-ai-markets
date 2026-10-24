@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: measures a light grid and its adjacent right text column without model or price inputs
+ok 1 - measures a light grid and its adjacent right text column without model or price inputs
+  ---
+  duration_ms: 187.160694
+  type: 'test'
+  ...
+# Subtest: shift, size, dark theme and left-side labels do not use a fixed screen crop
+ok 2 - shift, size, dark theme and left-side labels do not use a fixed screen crop
+  ---
+  duration_ms: 673.84372
+  type: 'test'
+  ...
+# Subtest: antialiased axis glyph fringes cannot extend the visible plotting borders
+ok 3 - antialiased axis glyph fringes cannot extend the visible plotting borders
+  ---
+  duration_ms: 449.997239
+  type: 'test'
+  ...
+# Subtest: visible inset-panel borders remain measured when only interior grid rows pass the legacy sampler
+ok 4 - visible inset-panel borders remain measured when only interior grid rows pass the legacy sampler
+  ---
+  duration_ms: 97.842243
+  type: 'test'
+  ...
+# Subtest: side-edge endpoints cannot invent a missing horizontal border in an inset panel
+ok 5 - side-edge endpoints cannot invent a missing horizontal border in an inset panel
+  ---
+  duration_ms: 153.062464
+  type: 'test'
+  ...
+# Subtest: two-pixel grid strokes are measured at their centres
+ok 6 - two-pixel grid strokes are measured at their centres
+  ---
+  duration_ms: 45.941255
+  type: 'test'
+  ...
+# Subtest: a volume panel outside a single measured price panel is not a second price chart
+ok 7 - a volume panel outside a single measured price panel is not a second price chart
+  ---
+  duration_ms: 104.189738
+  type: 'test'
+  ...
+# Subtest: two vertically stacked price panels abstain instead of selecting the largest
+ok 8 - two vertically stacked price panels abstain instead of selecting the largest
+  ---
+  duration_ms: 115.520065
+  type: 'test'
+  ...
+# Subtest: touching price panels cannot borrow their shared border and grid as one price rectangle
+ok 9 - touching price panels cannot borrow their shared border and grid as one price rectangle
+  ---
+  duration_ms: 98.796812
+  type: 'test'
+  ...
+# Subtest: touching price and volume panels abstain even though volume bars are not candle witnesses
+ok 10 - touching price and volume panels abstain even though volume bars are not candle witnesses
+  ---
+  duration_ms: 79.367548
+  type: 'test'
+  ...
+# Subtest: side-by-side price charts abstain even when their grid rows align
+ok 11 - side-by-side price charts abstain even when their grid rows align
+  ---
+  duration_ms: 96.827649
+  type: 'test'
+  ...
+# Subtest: grid-only and volume-only rectangles cannot establish a price panel
+ok 12 - grid-only and volume-only rectangles cannot establish a price panel
+  ---
+  duration_ms: 70.344585
+  type: 'test'
+  ...
+# Subtest: a missing vertical boundary, clipped boundary or weak grid remains unknown
+ok 13 - a missing vertical boundary, clipped boundary or weak grid remains unknown
+  ---
+  duration_ms: 72.645069
+  type: 'test'
+  ...
+# Subtest: unresolved and competing axis columns abstain without inventing an OCR crop
+ok 14 - unresolved and competing axis columns abstain without inventing an OCR crop
+  ---
+  duration_ms: 44.863808
+  type: 'test'
+  ...
+# Subtest: nonuniform repeated rules do not claim a coherent grid rectangle
+ok 15 - nonuniform repeated rules do not claim a coherent grid rectangle
+  ---
+  duration_ms: 13.90099
+  type: 'test'
+  ...
+# Subtest: malformed, oversized and transparent inputs fail without a guessed rectangle
+ok 16 - malformed, oversized and transparent inputs fail without a guessed rectangle
+  ---
+  duration_ms: 6.562969
+  type: 'test'
+  ...
+# Subtest: recovery holds a correctly sized raster above its original-pixel budget without resizing
+ok 17 - recovery holds a correctly sized raster above its original-pixel budget without resizing
+  ---
+  duration_ms: 0.465125
+  type: 'test'
+  ...
+# Subtest: dense small flat components hold before unbounded baseline comparisons even below the pixel budget
+ok 18 - dense small flat components hold before unbounded baseline comparisons even below the pixel budget
+  ---
+  duration_ms: 166.494759
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2510.654996
