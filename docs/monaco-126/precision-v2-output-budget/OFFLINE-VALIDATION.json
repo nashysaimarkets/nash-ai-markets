@@ -1,0 +1,61 @@
+{
+  "kind": "POCKET_PRECISION_OUTPUT_V2_OFFLINE_VALIDATION",
+  "status": "PASS",
+  "observedAtUtc": "2026-10-24T10:29:54.614Z",
+  "nodeVersion": "v24.22.1",
+  "baseSourceSha": "9e82c6d25dcb7f589e2328b2efc7910033d8fcdc",
+  "originalRouteSha256": "5a59b0cde257ad8ab885af9c9171198fe9732ad3a286efda301c6226903b7294",
+  "candidateRouteSha256": "87129e07791ac7e0a20130d6fd9261b25b9d0fc4b902c6bacb5131d94b00cf02",
+  "currentWorkingRepoRouteUnchanged": true,
+  "tests": [
+    {
+      "command": "node tests/pocket-precision-output-v2.test.ts",
+      "path": "tests/pocket-precision-output-v2.test.ts",
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "testFileSha256": "25435041b706be8f9296881dc962db15c6f0e5604355eca02438d5a2a01c011a"
+    },
+    {
+      "command": "node tests/pocket-confirmed-facts.test.ts",
+      "path": "tests/pocket-confirmed-facts.test.ts",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "testFileSha256": "51627fae3e41613486befc03528fad4c1283edebceb08695a313158235f34310"
+    },
+    {
+      "command": "node tests/pocket-test-provider-spend.test.ts",
+      "path": "tests/pocket-test-provider-spend.test.ts",
+      "tests": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "testFileSha256": "ec24b5363c7fae9153060c3f502962df7ea73c3caecf28fb6a89892a9b6daba4"
+    }
+  ],
+  "totalTests": 23,
+  "failedTests": 0,
+  "skippedTests": 0,
+  "testResultsSha256": "0f2a8cd8edae536a96f96567d00aca030262c0e7ceca1795cc400dc0f1580f69",
+  "retainedResponseControl": {
+    "path": "docs/monaco-126/precision-v2-output-budget/RETAINED-RESPONSE-CONTROL.json",
+    "sha256": "8dab574496dd686deb524f3b65e74654e9dc4bf53c3458998547ab857447285d",
+    "originalResponseSha256": "f396f9c82dc772d74c836973ca1a72549c1c6e7687f5feeb87f41c77591ad9b0",
+    "status": "PASS",
+    "rawResponseUnchanged": true
+  },
+  "costBoundSha256": "a8f72de66f617393c2d0860081f1b783b9159db2529a42acc3128c8a2dedeb74",
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "privateKeyReads": 0,
+  "paidDispatchAuthorised": false,
+  "fullApplicationTypecheckRun": false,
+  "fullApplicationBuildRun": false,
+  "limitations": [
+    "Offline handling and envelope compatibility only",
+    "No new completion, accuracy, calibration, latency or production readiness claim"
+  ]
+}

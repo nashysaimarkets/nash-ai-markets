@@ -1,0 +1,26 @@
+[
+  {
+    "command": "node tests/pocket-precision-output-v2.test.ts",
+    "path": "tests/pocket-precision-output-v2.test.ts",
+    "tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0
+  },
+  {
+    "command": "node tests/pocket-confirmed-facts.test.ts",
+    "path": "tests/pocket-confirmed-facts.test.ts",
+    "tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0
+  },
+  {
+    "command": "node tests/pocket-test-provider-spend.test.ts",
+    "path": "tests/pocket-test-provider-spend.test.ts",
+    "tests": 9,
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0
+  }
+]
