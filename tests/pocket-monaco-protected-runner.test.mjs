@@ -109,6 +109,31 @@ function fixture() {
 }
 const run = f => runProtectedFirstSix(f,{prepareBootstrap:f.prepareBootstrap});
 
+test('provider-supported 12-to-23-character ledger passwords reach authenticated execution',async()=>{
+  for (const length of [12,23]) {
+    const f=fixture();f.credentials.ledgerPassword='p'.repeat(length);
+    const result=await run(f);
+    assert.equal(result.status,'COMPLETED');
+    assert.equal(result.ledgerAuthenticationVerified,true);
+    assert.equal(f.calls.options.password,f.credentials.ledgerPassword);
+    assert.equal(f.calls.options.ssl.rejectUnauthorized,true);
+    assert.equal(f.calls.events.includes('pg:connect'),true);
+    assert.equal(f.calls.run,1);assert.equal(f.calls.close,1);
+    assert.equal(f.calls.provider,0);
+  }
+});
+
+test('missing or shorter-than-12-character ledger passwords stop before any client or provider work',async()=>{
+  for (const password of [undefined,'','p'.repeat(11)]) {
+    const f=fixture();f.credentials.ledgerPassword=password;
+    const result=await run(f);
+    assert.equal(result.status,'HOLD');
+    assert.equal(result.transportSendAttempts,0);
+    assert.deepEqual(f.calls.events,[]);
+    assert.equal(f.calls.provider,0);
+  }
+});
+
 test('the composed one-shot path authenticates before encrypted delivery, pins SDK options and cleans private inputs',async()=>{
   const f=fixture(), result=await run(f);
   assert.equal(result.status,'COMPLETED');assert.equal(result.bootstrapInvocations,1);

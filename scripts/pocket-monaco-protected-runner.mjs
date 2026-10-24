@@ -198,7 +198,7 @@ export async function runProtectedFirstSix(args, {prepareBootstrap = prepareFirs
       && typeof args.receiveInputOnce === 'function' && typeof prepareBootstrap === 'function');
     const key = args.credentials?.existingKey, password = args.credentials?.ledgerPassword;
     requireValue(typeof key === 'string' && key.trim() && hash(key) === admission.identity.keyFingerprintSha256
-      && typeof password === 'string' && password.length >= 24 && !controller.signal.aborted);
+      && typeof password === 'string' && password.length >= 12 && !controller.signal.aborted);
     stage = 'LEDGER_AUTHENTICATION';
     sqlClient = new runtime.Client(neonConnectionOptions(admission.neon,password));
     sqlClient.on('error',stop); // Discard driver text, which can contain credentials.
