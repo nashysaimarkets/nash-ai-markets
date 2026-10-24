@@ -1,0 +1,1 @@
+PASS: browser bundle contains no broker host, session headers, server lifecycle or credentials. Browser requests only same-origin private adapter.

@@ -683,3 +683,11 @@
  .pnChartSwitcher{position:fixed;left:8px;right:8px;bottom:calc(74px + env(safe-area-inset-bottom));min-height:58px;padding:5px;gap:4px;z-index:59;background:#101b2a;border-color:#607087;backdrop-filter:none}.pnChartSwitcher button,.pnChartAdd{min-height:46px;padding:6px 3px;gap:5px}.pnChartSwitcher button span,.pnChartAdd span{font-size:10px}.pnChartSwitcher button strong,.pnChartAdd strong{font-size:7px}.pnChart[data-focus=true]{padding:70px 8px 8px}.pnChart[data-focus=true] .pnFocusButton{min-height:44px}
 }
 @media(prefers-reduced-motion:reduce){.pnApp *,.pnApp *::before,.pnApp *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Private IG DEMO opt-in; no customer activation is implied by these styles. */
+.pnIgDemo { margin-block: 18px; padding: 16px; border: 1px solid #b9a87a55; border-radius: 16px; background: #131a24; color: #f2efe7; min-width: 0; }
+.pnIgDemo > label { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; }
+.pnIgDemo input { width: 20px; height: 20px; accent-color: #b9a87a; flex-shrink: 0; }
+.pnIgDemo > p { font-size: 13px; line-height: 1.6; color: #c6cbd1; }
+.pnIgDemo button { min-height: 44px; padding: 10px 12px; margin: 4px; border: 1px solid #b9a87a77; border-radius: 8px; background: transparent; color: inherit; }
+.pnIgDemo :is(button,input,a):focus-visible { outline: 2px solid #e6d9b5; outline-offset: 3px; }

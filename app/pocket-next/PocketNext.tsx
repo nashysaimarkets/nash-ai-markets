@@ -6,6 +6,7 @@ import {createPrecisionReadingCrop as precisionCrop} from "../pocket/precision-r
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DeviceLocalScan, DevicePlotBounds } from "./device-geometry";
 import ChartPreflightPanel from "../pocket/ChartPreflightPanel";
+import IgDemoWorkspace from "../components/IgDemoWorkspace";
 import NativeSubscriptionControls from "../pocket/NativeSubscriptionControls";
 import PersonalRiskDesk from "../pocket/PersonalRiskDesk";
 import PocketWorkflowDesk from "./PocketWorkflowDesk";
@@ -203,7 +204,7 @@ function statusOf(analysis: Analysis, kind: "levels" | "patterns" | "liquidity" 
 function statusLabel(value: string) { return value === "NONE" ? "NO EVIDENCE" : value; }
 
 const UNAVAILABLE_MACRO: VerifiedMacroContext = {generatedAt:"",status:"unavailable",observations:[],releases:[],filings:[],availableSources:[],unavailableSources:[]};
-export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContext?:VerifiedMacroContext} = {}) {
+export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailable=false,igDemoOwnerScope}:{macroContext?:VerifiedMacroContext;igDemoAvailable?:boolean;igDemoOwnerScope?:string} = {}) {
   const [charts, setCharts] = useState<ChartSlot[]>(emptyChartSlots);
   const [activeChart, setActiveChart] = useState(0);
   const activeChartRef = useRef(activeChart);
@@ -499,6 +500,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
         </div>
 
         <NativeSubscriptionControls />
+        <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} contextKey={`${activeChart}:${activeSlot.revision}:${activeSlot.status}:${JSON.stringify(activeSlot.confirmation)}`} />
         <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>{if(!e.target.checked)invalidate("Privacy confirmation was removed; analysis was cancelled.");setPrivacy(e.target.checked);}}/><span><strong>Privacy check</strong>I removed account numbers, balances and personal notifications from every chart.</span></label>
 
         {image ? <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} /> : null}
@@ -670,6 +672,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
             <div className="pnRows">{analysis.riskFlags.map((r,i)=><article key={i}><span>RISK {String(i+1).padStart(2,"0")}</span><strong>{r}</strong></article>)}<article><span>INVALIDATION</span><strong>{analysis.invalidation}</strong></article><article><span>TRADER TRAP</span><strong>{analysis.traderTrap}</strong></article></div>
           </>}
         </> : null}
+        {!demoMode ? <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} contextKey={`${activeChart}:${activeSlot.revision}:${activeSlot.status}:${JSON.stringify(activeSlot.confirmation)}`} /> : null}
         {!demoMode ? <details className="pnToolDetails pnAccount"><summary>Account & subscription</summary><NativeSubscriptionControls /></details> : null}
       </aside>
     </section>
