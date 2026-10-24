@@ -1,3 +1,49 @@
+# Current continuation — d002 permit expired unused, 24 October 2026
+
+**Current override: `v2-d002` remains HOLD. Its original permit expired unused; the same first-attempt protected run is still waiting.** No d002 activation, protected release or provider call occurred. The accepted image repair and its completed CI/geometry evidence remain valid and unchanged.
+
+## Exact observed expiry
+
+The [authoritative retained observation](scanner-evaluation-v2-2026-10-24/execution/v2-d002/EXPIRED-UNUSED-PERMIT-OBSERVATION.json), SHA256 `7f51293ec8d0c8609abf03f9f4c87a05937417f9e14122a420e83110ed15c337`, records:
+
+| Field | Recorded value |
+|---|---|
+| Case / attempt | `v2-d002` / `v2-d002-attempt-1` |
+| Run / job / attempt | `40105387615` / `120905891814` / `1` |
+| Wrapper | `b7f2927f2c9438b18a9ce042904259a4acd11323` |
+| Static evidence | `778a47fce8405dca6b22f14a3c7b55e858f5e71e` |
+| Permit admitted | 24 October 2026, 15:07:25.068 UTC |
+| Permit expired | **24 October 2026, 15:50:00 UTC** |
+| Owner observation | **24 October 2026, 16:14:19.321 UTC** |
+| Permit current / claimed / sent | **false / false / false** |
+| Runner | **NOLOGIN, zero sessions** |
+
+Root reports that this exact run/job remains waiting behind its protected environment. The permit expired before activation. This is not a paid scan, provider failure, consumed case or reason to reset a case identity. The current contract makes the permit immutable and has **no renewal operation**.
+
+## Current continuation boundary
+
+The [independent contract review](scanner-evaluation-v2-2026-10-24/execution/v2-d002/EXPIRED-UNUSED-v2-d002-40105387615-CONTRACT-REVIEW.json), SHA256 `76bcf22e13476dee8a9862c8ef136e9e41ba7bb4feb33be0fab93edeacdb3fc9`, confirms **HOLD: no renewal path in the current accepted contract**. A still-current overall spending scope does not itself renew the expired per-run deadline.
+
+The proposed recovery is a narrowly additive **offline expiry amendment** for the exact unused attempt and the same waiting run. `precision_contract_fix` is preparing the implementation and actual local SQL checks; `scanner_independent_review` is reviewing it independently. It is **not approved, not installed and not an effective lease**. The concrete proposal publication and final amendment-review receipt are **PENDING / NOT CREATED**. The separate owner-decision document is expressly proposed text, not authority.
+
+**Next action:** prepare, test and independently review the concrete amendment, then publish its exact source, actual SQL results and review. **Only then request the new one-time unused-test-window recovery permission.** This is not another scan or an additional spending-approval request: the already approved d002 limit remains USD 0.33. The proposed window would be at most 60 minutes and inside the unchanged scope deadline, 25 October 2026 at 12:40:25 UTC; no window has been issued. Until distinct amendment authority and actual installation/lease observations exist, preserve the original permit and history, keep the exact pending run waiting, and keep activation, protected release and provider dispatch on HOLD. Do not infer readiness from an offline draft or silently edit/delete/reissue the old permit. No later case follows automatically.
+
+Root writer claim [6384437116](https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384437116), extended by [6384669426](https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384669426), remains **ACTIVE**. One temporary rule for `monaco-scanner-evaluation-v2-run-v2-d002` remains in the existing protected environment, with its review gate maintained, so the **same** waiting run can remain available if legitimately amended. This is not an activated runner or an open release gate.
+
+`ACTIVE-RUN-CLEANUP-REQUIRED.json` remains unchanged and false. It still records the completed historical d001 cleanup; d002 was never activated. The earlier six temporary branch-rule removals remain historical evidence. They must not be described as proof that the currently retained d002 rule has been removed.
+
+## Accepted repair and preserved scope
+
+The accepted executable remains **`a3b108d59d4cd530b326a0e9a106e671aaead265`**, tree **`4424bffcba24f8285fae5e945f99eaa9fc956dcd`**, with documentation checkpoint **`546cd04ca84f71b1830d5712c85a424f0a2e3fc2`**, tree **`366afbcbabb211d73274620552c2aeb67fafd4a9`**. Its independently accepted **75/75 affected checks**, exact-source CI and **13/13 eligible horizontal candidates across five saved development pairs** are unchanged. Maximum saved geometry error remains **0.5000000000001137 original pixels**, with zero DOM/projection delta and unchanged one-pixel tolerance. These are geometry-only results; semantics remain unscored and d005 retains its approximate-price eligibility HOLD.
+
+The frozen paid runtime `20783ed5e8eb95a11df86b0d60766ffcbbf4fa79` and app `2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc` remain distinct from the repaired browser source. The original paid d001 geometry failure and full USD 0.33 hold remain unchanged. Last retained aggregate exposure remains USD 1.8364; actual billed cost is unknown. The cited expired d002 observation contains no claim or submission and is not a new financial reconciliation.
+
+Cases `v2-d002` through `v2-d006` remain **HOLD**; all **44 held-outs remain untouched**. Schedules remain **OFF**. No main merge, deployment, Apple/store release, pricing change, new key or new paid result is claimed. Preserve all prior approvals, receipts, consumed identities and accounting history.
+
+## Preserved earlier checkpoint — historical next action
+
+The complete accepted checkpoint follows unchanged. Its repair/CI evidence remains accepted; this expiry record supersedes its former next-step and branch-cleanup status. Resolve the enclosing publication from the containing commit and latest Issue #126 receipt rather than embedding a self-referential SHA.
+
 # Current continuation — published combined image recovery, 24 October 2026
 
 **Current override: the published combined source has independently accepted exact-source CI and geometry-only review for all 13 eligible candidates on five retained development pairs.** Continue [draft PR #147](https://github.com/nashysaimarkets/nash-ai-markets/pull/147) on `monaco-scanner-image-geometry-126-20261024`. The executable source is **`a3b108d59d4cd530b326a0e9a106e671aaead265`**, tree **`4424bffcba24f8285fae5e945f99eaa9fc956dcd`**. The [combined source manifest](scanner-image-recovery-2026-10-24/exact-anchor-revision/SOURCE-MANIFEST.json) is SHA256 `d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934`; its documentation parent is `7e8acec2d2f12734a4b570b0743f683be9c190d6`, tree `516543d233c2534a66f82b6134b6ff2a06f63d98`. Preserve the executable source pin separately from documentation-only successors and the older source `156417`.

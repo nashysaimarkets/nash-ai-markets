@@ -1,0 +1,30 @@
+{
+  "kind": "EXPIRED_UNUSED_D002_PERMIT_OBSERVATION",
+  "runId": "40105387615",
+  "jobId": "120905891814",
+  "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+  "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+  "databaseObservation": {
+    "observed_at": "2026-10-24T16:14:19.321Z",
+    "admitted_at": "2026-10-24T15:07:25.068Z",
+    "valid_until": "2026-10-24T15:50:00.000Z",
+    "permit_current": false,
+    "claimed": false,
+    "sent": false,
+    "runner_can_login": false,
+    "runner_sessions": "0"
+  },
+  "raw": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"observed_at\": \"2026-10-24T16:14:19.321Z\",\n    \"admitted_at\": \"2026-10-24T15:07:25.068Z\",\n    \"valid_until\": \"2026-10-24T15:50:00.000Z\",\n    \"permit_current\": false,\n    \"claimed\": false,\n    \"sent\": false,\n    \"runner_can_login\": false,\n    \"runner_sessions\": \"0\"\n  }\n]"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "paidDispatch": false,
+  "activation": false,
+  "status": "HOLD_REVIEW_SUPPORTED_CONTINUATION"
+}
