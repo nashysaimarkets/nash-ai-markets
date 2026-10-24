@@ -19,6 +19,15 @@ import type { IgDemoChartIdentity, IgDemoPanelSnapshot } from "../ig-demo-panel.
 
 type Access = Readonly<{ ownerId: string; premium: boolean; optedIn: boolean }>;
 type CredentialInput = Readonly<{ identifier: string; password: string; selectedAccountId: string }>;
+export type IgDemoStoredSession = Readonly<{
+  ownerId: string;
+  environment: "DEMO";
+  apiKey: string;
+  cst: string;
+  securityToken: string;
+  accountId: string;
+  expiresAt: number;
+}>;
 type RecordState = Readonly<{
   session: IgDemoSession;
   accountId: string;
@@ -38,6 +47,10 @@ export type IgDemoConnectionOptions = Readonly<{
   igCommercialApproval?: boolean;
   accountPositionDisplayRights?: boolean;
   now?: () => number;
+  /** Server-only decrypted, owner-bound state; never accepted from browser input. */
+  restoredSession?: IgDemoStoredSession;
+  /** Private server persistence sink; never included in the public lifecycle surface. */
+  captureSession?: (session: IgDemoStoredSession) => void;
 }>;
 
 function fail(code: string): never { throw new Error(`IG_DEMO_${code}`); }
@@ -89,6 +102,15 @@ export function createIgDemoConnection(options: IgDemoConnectionOptions) {
   const active = new Set<AbortController>();
   let readBusy = false;
   let cooldownUntil = 0;
+  if (options.restoredSession) {
+    const saved = options.restoredSession;
+    if (saved.ownerId !== ownerId || saved.environment !== "DEMO" || saved.apiKey !== apiKey ||
+        !Number.isSafeInteger(saved.expiresAt) || saved.expiresAt <= now() || saved.expiresAt > now() + 300_000) return fail("INVALID_SESSION");
+    generation = 1;
+    record = Object.freeze({session: Object.freeze({apiKey, cst: secret(saved.cst), securityToken: secret(saved.securityToken)}),
+      accountId: id(saved.accountId), expiresAt: saved.expiresAt, generation});
+    status = "CONNECTED";
+  }
 
   function invalidate(next: typeof status): void {
     generation++;
@@ -170,6 +192,9 @@ export function createIgDemoConnection(options: IgDemoConnectionOptions) {
     return result;
   }
 
+  function capture(): void {
+    if(record && record.expiresAt > now()) options.captureSession?.(Object.freeze({ownerId,environment:"DEMO",...record.session,accountId:record.accountId,expiresAt:record.expiresAt}));
+  }
   return Object.freeze({
     state() { return Object.freeze({ environment: "DEMO" as const, connectionId, status, generation }); },
     async connect(input: CredentialInput, signal?: AbortSignal): Promise<Readonly<{ environment: "DEMO"; connectionId: string; status: "CONNECTED"; generation: number }>> {
@@ -204,6 +229,7 @@ export function createIgDemoConnection(options: IgDemoConnectionOptions) {
         // Conservative local cache lifetime, not a claim about provider token expiry.
         record = Object.freeze({ session, accountId: selectedAccountId, expiresAt: now() + 300_000, generation: expected });
         status = "CONNECTED";
+        capture();
         return Object.freeze({ environment: "DEMO", connectionId, status: "CONNECTED", generation: expected });
       } catch (error) {
         const superseded = expected !== generation;
@@ -237,6 +263,7 @@ export function createIgDemoConnection(options: IgDemoConnectionOptions) {
         await access(bound.generation, op.signal);
         current(bound.generation);
         if (op.signal.aborted) return fail("CANCELLED");
+        capture();
         return Object.freeze({
           environment: "DEMO", connectionId, status: "CONNECTED", generation: bound.generation,
           observedAt: new Date(now()).toISOString(), expiresAt: new Date(bound.expiresAt).toISOString(),

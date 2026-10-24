@@ -1,0 +1,7 @@
+0d89a7fd2445437224e5b6e454fceb997b06525dda440f5fc9576ce5d1e49e41  app/lib/server/ig-demo-shared.ts
+ead8128ebdcd0145faa88a9787b542f36cf48a1beecd0485a4e475d5d586a2d2  app/lib/server/ig-demo-postgres.ts
+1ab3b3fc1393e8df3fc4fcc3ccbbb8dc5cc92c6fb3005a563dda6f36caaa851e  app/lib/server/ig-demo-http.ts
+f02317aedd3dad7a9d69bebca422e05587f734241762af81c83fbbe704dcbd78  app/lib/server/ntp-ig-demo-connection.ts
+ed661306a87dc9e8993274cb89166b890b82da023dc12fb43d329f9e97f965dc  scripts/pocket-native-manifest.mjs
+1b33306f523b47ce04ce9798158ab5f5f0429bbba380299b89c9683dd491fbbf  scripts/verify-capacitor-server.mjs
+848aaa7dc43f06789080ac955a45a127e1c5f10090a4b40a9c0ad3fb11b0df1c  docs/ntp/ig-offline-2026-10-24/UNINSTALLED-storage.sql
