@@ -1032,5 +1032,44 @@
     ],
     "schedules": "OFF",
     "publicationResolution": "Final Issue126 receipt contains evidence SHA; earlier writer claims are historical."
+  },
+  "premiumFinishContinuation": {
+    "branch": "monaco-premium-finish-20261025-baf",
+    "writer": "premium-finish-baf",
+    "writerStatus": "RELEASED_AFTER_PUBLICATION",
+    "claim": 6390643938,
+    "parent": "7f88c2a8d5403f60c95618b51e9e3a55aef6d9b1",
+    "source": "15141db6899b53834d9e3f2984e8b4e5d78531f2",
+    "tree": "69d4923664823175f8eadf073a16a001de171e9e",
+    "checkpoint": "docs/ntp/premium-finish-2026-10-25/README.md",
+    "tests": {
+      "node": 44,
+      "actualPostgres": 5,
+      "iphoneSizedBrowser": 12,
+      "fail": 0,
+      "skip": 0
+    },
+    "ciRun": 40141817082,
+    "ciJob": 121014964382,
+    "accessibility": "ZERO_AXE_WCAG_A_AA_VIOLATIONS_INTAKE_AND_REPORT_NOT_FULL_HUMAN_AUDIT",
+    "productionBuild": "PASS",
+    "independentReview": "ACCEPTED_OFFLINE_SCOPE",
+    "preview": {
+      "deployment": "DISABLED",
+      "libraryFile": "libfile_cc112962d13c81919eb2d1435bd04a50",
+      "sha256": "8d2fa25ab8ea8a7e41f11fc61d7be338caa1c6db9c5da4e987764e21b364480d",
+      "services": "DISABLED",
+      "nativeOrSafariAcceptance": false
+    },
+    "preserved": "108Node/18browser,Androiddebug,72prior and actualIGPostgres evidence",
+    "externalGates": [
+      "Concrete trusted runtime/OAuth/notification/current-revocation adapter configuration",
+      "IG DEMO enablement/vault/issuer/rights",
+      "Private signed native packages/device sessions",
+      "Commercial data/display permissions"
+    ],
+    "unknownTokenReconciliation": "HOLD_MANUAL_REVIEW_NO_TOMBSTONE_CLAIM",
+    "smallestOwnerDecision": "Authorise exact-SHA isolated preview hosting for convenient phone inspection; no deployment yet",
+    "schedules": "OFF"
   }
 }

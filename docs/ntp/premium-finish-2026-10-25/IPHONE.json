@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "source": "15141db6899b53834d9e3f2984e8b4e5d78531f2",
+  "tree": "69d4923664823175f8eadf073a16a001de171e9e",
+  "checks": [
+    "iPhone-sized intake WCAG A/AA automated scan: zero violations",
+    "five actual uploads retained",
+    "invalid replacement preserves previous image",
+    "valid replacement clears confirmation and holds scan",
+    "pending analysis can be cancelled and controls recover",
+    "late cancelled result cannot mount a report",
+    "server error retains source and allows deliberate retry",
+    "synthetic overlay and unverified safeguards visible",
+    "keyboard Escape closes focused chart",
+    "iPhone-sized report WCAG A/AA automated scan: zero violations",
+    "390px viewport has no horizontal page overflow",
+    "exported exact-source offline HTML runs under its CSP and blocks services"
+  ],
+  "browser": "155.0.8059.39",
+  "errors": [],
+  "syntheticScanRequests": 2,
+  "providerCalls": 0,
+  "scope": "Chromium iPhone-sized emulation, not Safari or native device"
+}

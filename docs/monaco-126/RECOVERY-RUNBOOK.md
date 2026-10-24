@@ -1,3 +1,7 @@
+## Latest premium finish — 25 October 2026
+
+Resume monaco-premium-finish-20261025-baf/source15141db6899b53834d9e3f2984e8b4e5d78531f2/tree69d4923664823175f8eadf073a16a001de171e9e. Final evidence SHA is in newest Issue126 receipt.44 Node+5realPG+12iPhone-sized checks PASS; Axe0violations both views, exact-source TS/build PASS in40141817082. Independent acceptance and downloadable source-bound offline preview saved. Prior108+18/debug/concurrency evidence preserved. Actual trusted service adapters/configuration, unknown-token/manual policy, IG, signed device/Safari and rights remain distinct. Smallest owner decision: authorise isolated exact-source preview hosting for phone inspection. No deployment performed. See docs/ntp/premium-finish-2026-10-25/README.md. Writer released after publication.
+
 ## Latest premium/Android candidate — 2026-10-24
 
 Resume isolated monaco-premium-android-rc-20261024-baf/source58eb0f51404567c8914549d5efe84c1509935ec1/tree916be37f7fff600d386e376efd6795624cf94f02. Evidence SHA is in newest Issue126 receipt.108 Node/render +18 Chromium checks PASS; exact-source TypeScript/build and Android debug compile PASS in40138586652. Prior72 and genuine PostgreSQL evidence preserved. Offline preview candidate only; configuration/device/commercial gates remain. See docs/ntp/premium-android-rc-2026-10-24/README.md. Writer released after final publication. No deployment/main/store/schedules.

@@ -1,0 +1,617 @@
+﻿2026-10-24T23:13:09.9329146Z Current runner version: '2.338.0'
+2026-10-24T23:13:09.9356591Z ##[group]Runner Image Provisioner
+2026-10-24T23:13:09.9357571Z Hosted Compute Agent
+2026-10-24T23:13:09.9358167Z Version: 20261021.618
+2026-10-24T23:13:09.9358836Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-24T23:13:09.9359621Z Build Date: 2026-10-21T00:45:21Z
+2026-10-24T23:13:09.9360322Z Worker ID: {c9c35a2e-df90-4a56-8ac4-77639d7e7d3b}
+2026-10-24T23:13:09.9361086Z Region: eastus
+2026-10-24T23:13:09.9361631Z Cloud: Azure
+2026-10-24T23:13:09.9362524Z ##[endgroup]
+2026-10-24T23:13:09.9364515Z ##[group]Operating System
+2026-10-24T23:13:09.9365314Z Ubuntu
+2026-10-24T23:13:09.9366272Z 24.04.5
+2026-10-24T23:13:09.9366859Z LTS
+2026-10-24T23:13:09.9367467Z ##[endgroup]
+2026-10-24T23:13:09.9368101Z ##[group]Runner Image
+2026-10-24T23:13:09.9368695Z Image: ubuntu-24.04
+2026-10-24T23:13:09.9369309Z Version: 20261012.334.1
+2026-10-24T23:13:09.9370706Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T23:13:09.9372443Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-24T23:13:09.9373462Z ##[endgroup]
+2026-10-24T23:13:09.9374943Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T23:13:09.9377539Z Contents: read
+2026-10-24T23:13:09.9378292Z Metadata: read
+2026-10-24T23:13:09.9378907Z ##[endgroup]
+2026-10-24T23:13:09.9381289Z Secret source: Actions
+2026-10-24T23:13:09.9382354Z Cache mode: write
+2026-10-24T23:13:09.9383259Z Prepare workflow directory
+2026-10-24T23:13:09.9839455Z Prepare all required actions
+2026-10-24T23:13:09.9890154Z Getting action download info
+2026-10-24T23:13:10.2133858Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-24T23:13:10.3445261Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-24T23:13:10.5560255Z Complete job name: acceptance
+2026-10-24T23:13:10.6271510Z ##[group]Checking docker version
+2026-10-24T23:13:10.6284648Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2026-10-24T23:13:10.7446965Z '1.48'
+2026-10-24T23:13:10.7463560Z Docker daemon API version: '1.48'
+2026-10-24T23:13:10.7464394Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2026-10-24T23:13:10.7651425Z '1.48'
+2026-10-24T23:13:10.7664164Z Docker client API version: '1.48'
+2026-10-24T23:13:10.7672256Z ##[endgroup]
+2026-10-24T23:13:10.7675678Z ##[group]Clean up resources from previous jobs
+2026-10-24T23:13:10.7681788Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=080a0a"
+2026-10-24T23:13:10.7843933Z ##[command]/usr/bin/docker network prune --force --filter "label=080a0a"
+2026-10-24T23:13:10.7993983Z ##[endgroup]
+2026-10-24T23:13:10.7994936Z ##[group]Create local container network
+2026-10-24T23:13:10.8006922Z ##[command]/usr/bin/docker network create --label 080a0a github_network_7e6afa9876634835899c00e36293619b
+2026-10-24T23:13:10.8606229Z 86ca8e8056e68342785a924f4beddca66f88cbcab6e055287f5e48a979f7afa4
+2026-10-24T23:13:10.8629525Z ##[endgroup]
+2026-10-24T23:13:10.8657978Z ##[group]Starting postgres service container
+2026-10-24T23:13:10.8680206Z ##[command]/usr/bin/docker pull postgres:17
+2026-10-24T23:13:11.1242389Z 17: Pulling from library/postgres
+2026-10-24T23:13:11.2308427Z f2be67225471: Pulling fs layer
+2026-10-24T23:13:11.2309993Z e0428ef87eb8: Pulling fs layer
+2026-10-24T23:13:11.2311292Z c9b382b1f732: Pulling fs layer
+2026-10-24T23:13:11.2312539Z 0f6d195ee345: Pulling fs layer
+2026-10-24T23:13:11.2313783Z d1b142a2d3ac: Pulling fs layer
+2026-10-24T23:13:11.2314868Z 2ab475e318db: Pulling fs layer
+2026-10-24T23:13:11.2315649Z bee16f784947: Pulling fs layer
+2026-10-24T23:13:11.2316480Z 633cb7982454: Pulling fs layer
+2026-10-24T23:13:11.2316986Z 0ec7842b4287: Pulling fs layer
+2026-10-24T23:13:11.2317486Z 515b4b00cc07: Pulling fs layer
+2026-10-24T23:13:11.2317999Z 90d33c82e6b4: Pulling fs layer
+2026-10-24T23:13:11.2318850Z a5bccd2244f9: Pulling fs layer
+2026-10-24T23:13:11.2319355Z d38aaa71d21a: Pulling fs layer
+2026-10-24T23:13:11.2319852Z 99b43abe6052: Pulling fs layer
+2026-10-24T23:13:11.2320330Z 0ec7842b4287: Waiting
+2026-10-24T23:13:11.2320776Z 2ab475e318db: Waiting
+2026-10-24T23:13:11.2321216Z 0f6d195ee345: Waiting
+2026-10-24T23:13:11.2321651Z 515b4b00cc07: Waiting
+2026-10-24T23:13:11.2322080Z d1b142a2d3ac: Waiting
+2026-10-24T23:13:11.2322507Z 90d33c82e6b4: Waiting
+2026-10-24T23:13:11.2322994Z a5bccd2244f9: Waiting
+2026-10-24T23:13:11.2323433Z d38aaa71d21a: Waiting
+2026-10-24T23:13:11.2323870Z bee16f784947: Waiting
+2026-10-24T23:13:11.2324303Z 633cb7982454: Waiting
+2026-10-24T23:13:11.2324793Z 99b43abe6052: Waiting
+2026-10-24T23:13:11.3332529Z e0428ef87eb8: Verifying Checksum
+2026-10-24T23:13:11.3334465Z e0428ef87eb8: Download complete
+2026-10-24T23:13:11.3659363Z c9b382b1f732: Verifying Checksum
+2026-10-24T23:13:11.3661373Z c9b382b1f732: Download complete
+2026-10-24T23:13:11.3843344Z 0f6d195ee345: Verifying Checksum
+2026-10-24T23:13:11.3846184Z 0f6d195ee345: Download complete
+2026-10-24T23:13:11.4324562Z 2ab475e318db: Verifying Checksum
+2026-10-24T23:13:11.4334333Z 2ab475e318db: Download complete
+2026-10-24T23:13:11.4370392Z d1b142a2d3ac: Verifying Checksum
+2026-10-24T23:13:11.4371889Z d1b142a2d3ac: Download complete
+2026-10-24T23:13:11.4426437Z f2be67225471: Verifying Checksum
+2026-10-24T23:13:11.4427743Z f2be67225471: Download complete
+2026-10-24T23:13:11.4585592Z bee16f784947: Verifying Checksum
+2026-10-24T23:13:11.4587467Z bee16f784947: Download complete
+2026-10-24T23:13:11.4683011Z 633cb7982454: Verifying Checksum
+2026-10-24T23:13:11.4685005Z 633cb7982454: Download complete
+2026-10-24T23:13:11.4873078Z 515b4b00cc07: Download complete
+2026-10-24T23:13:11.5011024Z 90d33c82e6b4: Verifying Checksum
+2026-10-24T23:13:11.5012313Z 90d33c82e6b4: Download complete
+2026-10-24T23:13:11.5184041Z a5bccd2244f9: Verifying Checksum
+2026-10-24T23:13:11.5185714Z a5bccd2244f9: Download complete
+2026-10-24T23:13:11.5299006Z d38aaa71d21a: Verifying Checksum
+2026-10-24T23:13:11.5305115Z d38aaa71d21a: Download complete
+2026-10-24T23:13:11.5428127Z 99b43abe6052: Download complete
+2026-10-24T23:13:12.0290551Z 0ec7842b4287: Verifying Checksum
+2026-10-24T23:13:12.0291214Z 0ec7842b4287: Download complete
+2026-10-24T23:13:12.5916183Z f2be67225471: Pull complete
+2026-10-24T23:13:15.7761686Z e0428ef87eb8: Pull complete
+2026-10-24T23:13:15.9531859Z c9b382b1f732: Pull complete
+2026-10-24T23:13:16.0021435Z 0f6d195ee345: Pull complete
+2026-10-24T23:13:16.3166092Z d1b142a2d3ac: Pull complete
+2026-10-24T23:13:16.3998299Z 2ab475e318db: Pull complete
+2026-10-24T23:13:16.4098064Z bee16f784947: Pull complete
+2026-10-24T23:13:16.4205329Z 633cb7982454: Pull complete
+2026-10-24T23:13:19.4879147Z 0ec7842b4287: Pull complete
+2026-10-24T23:13:19.5030059Z 515b4b00cc07: Pull complete
+2026-10-24T23:13:19.5120616Z 90d33c82e6b4: Pull complete
+2026-10-24T23:13:19.5208918Z a5bccd2244f9: Pull complete
+2026-10-24T23:13:19.5325700Z d38aaa71d21a: Pull complete
+2026-10-24T23:13:19.5412616Z 99b43abe6052: Pull complete
+2026-10-24T23:13:19.5448086Z Digest: sha256:b8faeff7712663c2773a190181e1246e37e364b887611c04658c28b44e2408fe
+2026-10-24T23:13:19.5460287Z Status: Downloaded newer image for postgres:17
+2026-10-24T23:13:19.5469580Z docker.io/library/postgres:17
+2026-10-24T23:13:19.5533414Z ##[command]/usr/bin/docker create --name d07c842d4d0d4c9cb8f447ce7f464e02_postgres17_bcd07d --label 080a0a --network github_network_7e6afa9876634835899c00e36293619b --network-alias postgres -p 127.0.0.1:5432:5432 --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10 -e "POSTGRES_DB=monaco_android_acceptance" -e "POSTGRES_HOST_AUTH_METHOD=trust" -e GITHUB_ACTIONS=true -e CI=true postgres:17
+2026-10-24T23:13:19.5800887Z f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:19.5827195Z ##[command]/usr/bin/docker start f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:19.9493928Z f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:19.9514553Z ##[command]/usr/bin/docker ps --all --filter id=f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2026-10-24T23:13:19.9657857Z f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896 Up Less than a second (health: starting)
+2026-10-24T23:13:19.9685477Z ##[command]/usr/bin/docker port f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:19.9841380Z 5432/tcp -> 127.0.0.1:5432
+2026-10-24T23:13:19.9894892Z ##[endgroup]
+2026-10-24T23:13:19.9903927Z ##[group]Waiting for all services to be ready
+2026-10-24T23:13:19.9918675Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:20.0079137Z starting
+2026-10-24T23:13:20.0109079Z postgres service is starting, waiting 2 seconds before checking again.
+2026-10-24T23:13:22.0116426Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:22.0253515Z starting
+2026-10-24T23:13:22.0266866Z postgres service is starting, waiting 3 seconds before checking again.
+2026-10-24T23:13:25.8713220Z ##[command]/usr/bin/docker inspect --format="{{if .Config.Healthcheck}}{{print .State.Health.Status}}{{end}}" f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:13:25.8855986Z healthy
+2026-10-24T23:13:25.8873349Z postgres service is healthy.
+2026-10-24T23:13:25.8873776Z ##[endgroup]
+2026-10-24T23:13:25.9179114Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+2026-10-24T23:13:25.9179828Z with:
+2026-10-24T23:13:25.9180077Z   persist-credentials: false
+2026-10-24T23:13:25.9180368Z   repository: nashysaimarkets/nash-ai-markets
+2026-10-24T23:13:25.9183074Z   token: ***
+2026-10-24T23:13:25.9183300Z   ssh-strict: true
+2026-10-24T23:13:25.9250722Z   ssh-user: git
+2026-10-24T23:13:25.9250958Z   clean: true
+2026-10-24T23:13:25.9251201Z   sparse-checkout-cone-mode: true
+2026-10-24T23:13:25.9251492Z   fetch-depth: 1
+2026-10-24T23:13:25.9251704Z   fetch-tags: false
+2026-10-24T23:13:25.9251918Z   show-progress: true
+2026-10-24T23:13:25.9252157Z   lfs: false
+2026-10-24T23:13:25.9252380Z   submodules: false
+2026-10-24T23:13:25.9252593Z   set-safe-directory: true
+2026-10-24T23:13:25.9256566Z env:
+2026-10-24T23:13:25.9256810Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:25.9257144Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:25.9257426Z ##[endgroup]
+2026-10-24T23:13:26.0289952Z Syncing repository: nashysaimarkets/nash-ai-markets
+2026-10-24T23:13:26.0291965Z ##[group]Getting Git version info
+2026-10-24T23:13:26.0292643Z Working directory is '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T23:13:26.0293796Z [command]/usr/bin/git version
+2026-10-24T23:13:26.0364801Z git version 2.55.0
+2026-10-24T23:13:26.0387639Z ##[endgroup]
+2026-10-24T23:13:26.0403305Z Temporarily overriding HOME='/home/runner/work/_temp/e606c15b-83d9-4aa8-af62-853646bd3532' before making global git config changes
+2026-10-24T23:13:26.0404716Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T23:13:26.0410351Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T23:13:26.0475024Z Deleting the contents of '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T23:13:26.0479999Z ##[group]Initializing the repository
+2026-10-24T23:13:26.0486350Z [command]/usr/bin/git init /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T23:13:26.0635259Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-24T23:13:26.0636632Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-24T23:13:26.0641422Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-24T23:13:26.0643027Z hint: call:
+2026-10-24T23:13:26.0643532Z hint:
+2026-10-24T23:13:26.0644301Z hint: 	git config --global init.defaultBranch <name>
+2026-10-24T23:13:26.0645134Z hint:
+2026-10-24T23:13:26.0646154Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-24T23:13:26.0647454Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-24T23:13:26.0648568Z hint:
+2026-10-24T23:13:26.0649207Z hint: 	git branch -m <name>
+2026-10-24T23:13:26.0649840Z hint:
+2026-10-24T23:13:26.0650822Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-24T23:13:26.0652902Z Initialized empty Git repository in /home/runner/work/nash-ai-markets/nash-ai-markets/.git/
+2026-10-24T23:13:26.0657261Z [command]/usr/bin/git remote add origin https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T23:13:26.0713414Z ##[endgroup]
+2026-10-24T23:13:26.0713852Z ##[group]Disabling automatic garbage collection
+2026-10-24T23:13:26.0721040Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-24T23:13:26.0758804Z ##[endgroup]
+2026-10-24T23:13:26.0759724Z ##[group]Setting up auth
+2026-10-24T23:13:26.0771101Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T23:13:26.0801366Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T23:13:26.1227462Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T23:13:26.1268155Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T23:13:26.1500463Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-24T23:13:26.1560634Z ##[endgroup]
+2026-10-24T23:13:26.1561281Z ##[group]Fetching the repository
+2026-10-24T23:13:26.1570841Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +15141db6899b53834d9e3f2984e8b4e5d78531f2:refs/remotes/origin/monaco-premium-finish-20261025-baf
+2026-10-24T23:13:26.6968885Z From https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T23:13:26.6970455Z  * [new ref]         15141db6899b53834d9e3f2984e8b4e5d78531f2 -> origin/monaco-premium-finish-20261025-baf
+2026-10-24T23:13:26.6977358Z ##[endgroup]
+2026-10-24T23:13:26.6978039Z ##[group]Determining the checkout info
+2026-10-24T23:13:26.6979775Z ##[endgroup]
+2026-10-24T23:13:26.6987344Z [command]/usr/bin/git sparse-checkout disable
+2026-10-24T23:13:26.7055415Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-24T23:13:26.7095722Z ##[group]Checking out the ref
+2026-10-24T23:13:26.7104129Z [command]/usr/bin/git checkout --progress --force -B monaco-premium-finish-20261025-baf refs/remotes/origin/monaco-premium-finish-20261025-baf
+2026-10-24T23:13:26.8460952Z Switched to a new branch 'monaco-premium-finish-20261025-baf'
+2026-10-24T23:13:26.8468849Z branch 'monaco-premium-finish-20261025-baf' set up to track 'origin/monaco-premium-finish-20261025-baf'.
+2026-10-24T23:13:26.8477743Z ##[endgroup]
+2026-10-24T23:13:26.8537937Z [command]/usr/bin/git log -1 --format=%H
+2026-10-24T23:13:26.8572246Z 15141db6899b53834d9e3f2984e8b4e5d78531f2
+2026-10-24T23:13:26.8591279Z ##[group]Removing auth
+2026-10-24T23:13:26.8591977Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T23:13:26.8631404Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T23:13:26.8882083Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T23:13:26.8915448Z http.https://github.com/.extraheader
+2026-10-24T23:13:26.8926645Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-24T23:13:26.8968478Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T23:13:26.9208200Z ##[endgroup]
+2026-10-24T23:13:26.9479078Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+2026-10-24T23:13:26.9479500Z with:
+2026-10-24T23:13:26.9479699Z   node-version: 24
+2026-10-24T23:13:26.9479911Z   always-auth: false
+2026-10-24T23:13:26.9480130Z   check-latest: false
+2026-10-24T23:13:26.9482728Z   token: ***
+2026-10-24T23:13:26.9482926Z env:
+2026-10-24T23:13:26.9483123Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:26.9483388Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:26.9483665Z ##[endgroup]
+2026-10-24T23:13:27.0998739Z Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64
+2026-10-24T23:13:27.1003009Z (node:2699) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T23:13:27.1004171Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T23:13:27.1006330Z ##[group]Environment details
+2026-10-24T23:13:29.9464108Z node: v24.21.0
+2026-10-24T23:13:29.9464519Z npm: 11.19.0
+2026-10-24T23:13:29.9465134Z yarn: 1.22.22
+2026-10-24T23:13:29.9466284Z ##[endgroup]
+2026-10-24T23:13:29.9607246Z ##[group]Run npm ci --no-audit --no-fund
+2026-10-24T23:13:29.9607668Z npm ci --no-audit --no-fund
+2026-10-24T23:13:29.9902996Z shell: /usr/bin/bash -e {0}
+2026-10-24T23:13:29.9903389Z env:
+2026-10-24T23:13:29.9903676Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:29.9904061Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:29.9904475Z ##[endgroup]
+2026-10-24T23:13:36.3162854Z npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+2026-10-24T23:13:36.3378126Z npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+2026-10-24T23:13:36.5178287Z npm warn deprecated jsrsasign@11.1.5: This package is no longer maintained.
+2026-10-24T23:13:37.3571431Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-24T23:13:51.8753617Z
+2026-10-24T23:13:51.8754384Z added 660 packages in 22s
+2026-10-24T23:13:51.8772565Z npm warn install-scripts 7 packages have install scripts not yet covered by allowScripts:
+2026-10-24T23:13:51.8774036Z npm warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)
+2026-10-24T23:13:51.8775147Z npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+2026-10-24T23:13:51.8776552Z npm warn install-scripts   esbuild@0.28.1 (postinstall: node install.js)
+2026-10-24T23:13:51.8777967Z npm warn install-scripts   tesseract.js@6.0.1 (postinstall: opencollective-postinstall || true)
+2026-10-24T23:13:51.8779441Z npm warn install-scripts   unrs-resolver@1.11.1 (postinstall: napi-postinstall unrs-resolver 1.11.1 check)
+2026-10-24T23:13:51.8780780Z npm warn install-scripts   workerd@1.20260515.1 (postinstall: node install.js)
+2026-10-24T23:13:51.8781876Z npm warn install-scripts   esbuild@0.27.3 (postinstall: node install.js)
+2026-10-24T23:13:51.8782612Z npm warn install-scripts
+2026-10-24T23:13:51.8783727Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+2026-10-24T23:13:51.9601842Z ##[group]Run node --import tsx --test tests/pocket-google-finish.test.ts tests/pocket-google-postgres-ports.test.mjs tests/pocket-google-runtime.test.mjs tests/pocket-android-rc.test.ts
+2026-10-24T23:13:51.9603602Z node --import tsx --test tests/pocket-google-finish.test.ts tests/pocket-google-postgres-ports.test.mjs tests/pocket-google-runtime.test.mjs tests/pocket-android-rc.test.ts
+2026-10-24T23:13:51.9681084Z shell: /usr/bin/bash -e {0}
+2026-10-24T23:13:51.9681435Z env:
+2026-10-24T23:13:51.9681705Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:51.9682071Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:51.9682443Z ##[endgroup]
+2026-10-24T23:13:52.5438253Z ✔ Android pins exact backend before ephemeral proof handoff (50.075538ms)
+2026-10-24T23:13:52.5440272Z ✔ Android rejects foreign endpoint before native bridge (0.946102ms)
+2026-10-24T23:13:52.5441774Z ✔ backend mismatch cannot read purchase token (1.387424ms)
+2026-10-24T23:13:52.5848585Z ✔ stalled native identity, status, network and body terminate (33.418203ms)
+2026-10-24T23:13:52.5860980Z ✔ pre-cancel suppresses all native and network work (0.804137ms)
+2026-10-24T23:13:52.5892885Z ✔ malformed, oversized and wrong-type proof rejected (2.853474ms)
+2026-10-24T23:13:52.5912319Z ✔ malformed and oversized manifest never forwards proof (2.772002ms)
+2026-10-24T23:13:52.5913899Z ✔ unconfigured actual route returns HOLD503 (1.400048ms)
+2026-10-24T23:13:52.5915386Z ✔ authenticated restore and scan use request-scoped runtime (2.323949ms)
+2026-10-24T23:13:52.5917449Z ✔ wrong origin, account and runtime binding fail closed (1.268783ms)
+2026-10-24T23:13:52.5926658Z ✔ client proof cannot supply authentication or entitlement (0.981729ms)
+2026-10-24T23:13:52.5928199Z ✔ cancellation cannot return a late entitlement (0.625786ms)
+2026-10-24T23:13:52.5931145Z ✔ shared scanner guard admits independent Google proof during web outage (0.28978ms)
+2026-10-24T23:13:52.5932805Z ✔ shared guard denies Google without authenticated account (0.218016ms)
+2026-10-24T23:13:52.5934030Z ✔ Google admission leaves scanner POST body readable (1.014379ms)
+2026-10-24T23:13:52.5935326Z ✔ scanner keeps own cancellation and accepts reports beyond metadata limit (0.955199ms)
+2026-10-24T23:13:52.5937057Z ✔ Android without Play purchase preserves verified web admission path (0.600808ms)
+2026-10-24T23:13:52.6103166Z ✔ bootstrap requires explicit sandbox identity without reads or activation (2.885694ms)
+2026-10-24T23:13:52.6107183Z ✔ configured auth and storage identity mismatch denies before purchase query (30.496397ms)
+2026-10-24T23:13:52.6108899Z ✔ request-scoped runtime reauthenticates owner and does not consume scanner body (7.659104ms)
+2026-10-24T23:13:52.6110294Z ✔ bootstrap snapshots configuration and selected ports (2.339417ms)
+2026-10-24T23:13:52.6111767Z ✔ trusted event plus authoritative current voiding reconciles without granting entitlement (2.911623ms)
+2026-10-24T23:13:52.6113258Z ✔ wrong issuer/audience/scope and stale deliveries cannot write (2.242206ms)
+2026-10-24T23:13:52.6114492Z ✔ unknown token is unresolved and never reported revoked (0.678915ms)
+2026-10-24T23:13:52.6116045Z ✔ notification cannot grant or revoke from an active/expired/unconfirmed read (2.173858ms)
+2026-10-24T23:13:52.6117437Z ✔ verification timeout and pre-cancellation cause no commit (19.368152ms)
+2026-10-24T23:13:52.6118690Z ✔ ambiguous post-dispatch timeout stays UNCERTAIN with no retry (19.208123ms)
+2026-10-24T23:13:52.6120145Z ✔ lookup only sends a token hash through fixed SQL and returns immutable metadata (2.709115ms)
+2026-10-24T23:13:52.6121381Z ✔ invalid hash or cancelled lookup cannot reach database (0.86441ms)
+2026-10-24T23:13:52.6122553Z ✔ unknown SQL and invalid commit arity cannot reach database (0.409734ms)
+2026-10-24T23:13:52.6123879Z ✔ storage errors and malformed lookup receipts are redacted without retry (0.959156ms)
+2026-10-24T23:13:52.6429044Z ✔ actual verifier and recorder compose into uncached single-request admission (55.419454ms)
+2026-10-24T23:13:52.6436159Z ✔ pending acknowledgement holds by default without side effects (3.117085ms)
+2026-10-24T23:13:52.6438672Z ✔ opt-in trusted acknowledgement is followed by authoritative re-verification (2.129556ms)
+2026-10-24T23:13:52.6441363Z ✔ ack response alone cannot admit an unchanged pending purchase (1.866507ms)
+2026-10-24T23:13:52.6678768Z ✔ ambiguous or stalled acknowledgement holds for reconciliation without retry (28.201344ms)
+2026-10-24T23:13:52.6681697Z ✔ cancellation during acknowledgement cannot admit or trigger retry (1.612474ms)
+2026-10-24T23:13:52.6991252Z ✔ unknown commit never reaches acknowledgement or admission (25.689855ms)
+2026-10-24T23:13:52.7006283Z ✔ every scanner admission rechecks revocation instead of caching successful access (1.844405ms)
+2026-10-24T23:13:52.7008726Z ✔ revocation during final account await is observed before admission (0.908081ms)
+2026-10-24T23:13:52.7010370Z ✔ cross-app or environment binding cannot authorize a scan (1.458576ms)
+2026-10-24T23:13:52.7011839Z ✔ expired malformed wrong-product and denied subscriptions cannot reach commit (1.442096ms)
+2026-10-24T23:13:52.7027190Z ✔ malformed signal and pre-cancellation perform no provider work (0.466981ms)
+2026-10-24T23:13:52.7030258Z ✔ configuration and trusted services are captured before asynchronous work (0.451601ms)
+2026-10-24T23:13:52.7152822Z ℹ tests 44
+2026-10-24T23:13:52.7159267Z ℹ suites 0
+2026-10-24T23:13:52.7160081Z ℹ pass 44
+2026-10-24T23:13:52.7160742Z ℹ fail 0
+2026-10-24T23:13:52.7161372Z ℹ cancelled 0
+2026-10-24T23:13:52.7161930Z ℹ skipped 0
+2026-10-24T23:13:52.7162392Z ℹ todo 0
+2026-10-24T23:13:52.7162957Z ℹ duration_ms 704.000158
+2026-10-24T23:13:52.7296084Z ##[group]Run npm install --prefix "$RUNNER_TEMP/monaco-pg" pg@8.16.3 --ignore-scripts --no-audit --no-fund --package-lock=false
+2026-10-24T23:13:52.7297048Z npm install --prefix "$RUNNER_TEMP/monaco-pg" pg@8.16.3 --ignore-scripts --no-audit --no-fund --package-lock=false
+2026-10-24T23:13:52.7297731Z export MONACO_PG_MODULE="$RUNNER_TEMP/monaco-pg/node_modules/pg/lib/index.js"
+2026-10-24T23:13:52.7298291Z node --test tests/integration/google-reconciliation-postgres.test.mjs
+2026-10-24T23:13:52.7365529Z shell: /usr/bin/bash -e {0}
+2026-10-24T23:13:52.7366102Z env:
+2026-10-24T23:13:52.7366334Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:52.7366641Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:52.7367003Z   MONACO_DISPOSABLE_PG: YES
+2026-10-24T23:13:52.7367274Z   PGHOST: 127.0.0.1
+2026-10-24T23:13:52.7367504Z   PGPORT: 5432
+2026-10-24T23:13:52.7367746Z   PGDATABASE: monaco_android_acceptance
+2026-10-24T23:13:52.7368046Z ##[endgroup]
+2026-10-24T23:13:53.5194434Z
+2026-10-24T23:13:53.5195022Z added 14 packages in 711ms
+2026-10-24T23:13:53.6778095Z ✔ unknown revocation stays unresolved, never false success (12.270343ms)
+2026-10-24T23:13:53.6816655Z ✔ known token scope conflict cannot revoke another account (2.905842ms)
+2026-10-24T23:13:53.6935614Z ✔ concurrent duplicate revocations are idempotent and monotonic (11.779759ms)
+2026-10-24T23:13:53.7016100Z ✔ browser cannot execute revoke and runtime cannot directly mutate table (7.576618ms)
+2026-10-24T23:13:53.7151751Z ✔ rollback does not persist revocation (10.958112ms)
+2026-10-24T23:13:53.7284408Z ℹ tests 5
+2026-10-24T23:13:53.7285026Z ℹ suites 0
+2026-10-24T23:13:53.7285526Z ℹ pass 5
+2026-10-24T23:13:53.7286183Z ℹ fail 0
+2026-10-24T23:13:53.7286652Z ℹ cancelled 0
+2026-10-24T23:13:53.7287063Z ℹ skipped 0
+2026-10-24T23:13:53.7287454Z ℹ todo 0
+2026-10-24T23:13:53.7287920Z ℹ duration_ms 163.664262
+2026-10-24T23:13:53.7388763Z ##[group]Run node tests/run-pocket-iphone-finish.mjs
+2026-10-24T23:13:53.7389217Z node tests/run-pocket-iphone-finish.mjs
+2026-10-24T23:13:53.7456960Z shell: /usr/bin/bash -e {0}
+2026-10-24T23:13:53.7457303Z env:
+2026-10-24T23:13:53.7457555Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:53.7457897Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:53.7458348Z   POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
+2026-10-24T23:13:53.7458775Z ##[endgroup]
+2026-10-24T23:13:56.3013475Z AXE []
+2026-10-24T23:13:58.5046430Z AXE_DEMO []
+2026-10-24T23:13:58.7662336Z IPHONE_RESULT {"status":"PASS","source":"15141db6899b53834d9e3f2984e8b4e5d78531f2","tree":"69d4923664823175f8eadf073a16a001de171e9e","checks":["iPhone-sized intake WCAG A/AA automated scan: zero violations","five actual uploads retained","invalid replacement preserves previous image","valid replacement clears confirmation and holds scan","pending analysis can be cancelled and controls recover","late cancelled result cannot mount a report","server error retains source and allows deliberate retry","synthetic overlay and unverified safeguards visible","keyboard Escape closes focused chart","iPhone-sized report WCAG A/AA automated scan: zero violations","390px viewport has no horizontal page overflow","exported exact-source offline HTML runs under its CSP and blocks services"],"browser":"155.0.8059.39","errors":[],"syntheticScanRequests":2,"providerCalls":0,"scope":"Chromium iPhone-sized emulation, not Safari or native device"}
+2026-10-24T23:13:58.8945474Z ##[group]Run npm run typecheck
+2026-10-24T23:13:58.8946092Z npm run typecheck
+2026-10-24T23:13:58.8946344Z npm run build
+2026-10-24T23:13:58.9009867Z shell: /usr/bin/bash -e {0}
+2026-10-24T23:13:58.9010141Z env:
+2026-10-24T23:13:58.9010367Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T23:13:58.9010672Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T23:13:58.9010985Z ##[endgroup]
+2026-10-24T23:13:59.0125253Z
+2026-10-24T23:13:59.0126136Z > nash-ai-markets-bullseye@1.0.0-rc.2 typecheck
+2026-10-24T23:13:59.0126810Z > tsc --noEmit --incremental false
+2026-10-24T23:13:59.0127120Z
+2026-10-24T23:14:15.9412908Z
+2026-10-24T23:14:15.9413722Z > nash-ai-markets-bullseye@1.0.0-rc.2 build
+2026-10-24T23:14:15.9414446Z > bash scripts/build-verified.sh
+2026-10-24T23:14:15.9414742Z
+2026-10-24T23:14:16.0069199Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T23:14:16.0110185Z Running verified vinext build...
+2026-10-24T23:14:16.3521816Z
+2026-10-24T23:14:16.3522475Z   vinext build  (Vite 8.0.16)
+2026-10-24T23:14:16.3522812Z
+2026-10-24T23:14:16.4751493Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T23:14:17.8192594Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T23:14:17.8271968Z [vinext] middleware.ts is deprecated in Next.js 16. Rename to proxy.ts and export a default or named proxy function.
+2026-10-24T23:14:17.8973274Z [1/5] analyze client references...
+2026-10-24T23:14:17.9384767Z
+2026-10-24T23:14:20.3358018Z transforming...✓ 875 modules transformed.
+2026-10-24T23:14:20.4873920Z rendering chunks...
+2026-10-24T23:14:20.5006276Z ✓ built in 2.60s
+2026-10-24T23:14:20.5070912Z [2/5] analyze server references...
+2026-10-24T23:14:20.5255422Z
+2026-10-24T23:14:20.9530987Z transforming...✓ 357 modules transformed.
+2026-10-24T23:14:20.9570329Z rendering chunks...
+2026-10-24T23:14:20.9597990Z ✓ built in 451ms
+2026-10-24T23:14:20.9778897Z [3/5] build rsc environment...
+2026-10-24T23:14:20.9979537Z
+2026-10-24T23:14:22.6242835Z transforming...✓ 1167 modules transformed.
+2026-10-24T23:14:23.1010903Z rendering chunks...
+2026-10-24T23:14:23.3352752Z computing gzip size...
+2026-10-24T23:14:23.3842761Z ✓ built in 2.40s
+2026-10-24T23:14:23.3890653Z [4/5] build client environment...
+2026-10-24T23:14:23.4072958Z
+2026-10-24T23:14:23.7527557Z transforming...✓ 385 modules transformed.
+2026-10-24T23:14:23.8699922Z rendering chunks...
+2026-10-24T23:14:23.9787271Z computing gzip size...
+2026-10-24T23:14:24.0010678Z ✓ built in 610ms
+2026-10-24T23:14:24.0153525Z [5/5] build ssr environment...
+2026-10-24T23:14:24.0321576Z
+2026-10-24T23:14:24.5197529Z transforming...✓ 399 modules transformed.
+2026-10-24T23:14:24.6584999Z rendering chunks...
+2026-10-24T23:14:24.7228389Z computing gzip size...
+2026-10-24T23:14:24.7477661Z ✓ built in 731ms
+2026-10-24T23:14:24.7558015Z
+2026-10-24T23:14:24.7559592Z   Route (app)
+2026-10-24T23:14:24.7560597Z   ┌ ƒ /
+2026-10-24T23:14:24.7561313Z   ├ ? /about
+2026-10-24T23:14:24.7561971Z   ├ ƒ /admin/commercial
+2026-10-24T23:14:24.7562691Z   ├ ƒ /admin/founding-100
+2026-10-24T23:14:24.7563404Z   ├ ƒ /admin/visual-preview
+2026-10-24T23:14:24.7564132Z   ├ λ /api/auth/redirect-probe
+2026-10-24T23:14:24.7564816Z   ├ λ /api/auth/session
+2026-10-24T23:14:24.7565490Z   ├ λ /api/auth/supabase-config-probe
+2026-10-24T23:14:24.7566534Z   ├ λ /api/founding-member
+2026-10-24T23:14:24.7567337Z   ├ λ /api/ideas
+2026-10-24T23:14:24.7568069Z   ├ λ /api/ideas/:id
+2026-10-24T23:14:24.7568814Z   ├ λ /api/journal
+2026-10-24T23:14:24.7569613Z   ├ λ /api/market/candles
+2026-10-24T23:14:24.7570205Z   ├ λ /api/marketing/visit
+2026-10-24T23:14:24.7571052Z   ├ λ /api/membership/preview
+2026-10-24T23:14:24.7571591Z   ├ λ /api/onboarding
+2026-10-24T23:14:24.7572088Z   ├ λ /api/openai/health
+2026-10-24T23:14:24.7572586Z   ├ λ /api/pocket/analyse
+2026-10-24T23:14:24.7573091Z   ├ λ /api/pocket/apple-account
+2026-10-24T23:14:24.7573596Z   ├ λ /api/pocket/apple-notifications
+2026-10-24T23:14:24.7574083Z   ├ λ /api/pocket/billing-portal
+2026-10-24T23:14:24.7574587Z   ├ λ /api/pocket/build-manifest
+2026-10-24T23:14:24.7575100Z   ├ λ /api/pocket/crypto-derivatives
+2026-10-24T23:14:24.7575584Z   ├ λ /api/pocket/events
+2026-10-24T23:14:24.7576404Z   ├ λ /api/pocket/follow-up
+2026-10-24T23:14:24.7577042Z   ├ λ /api/pocket/google-account
+2026-10-24T23:14:24.7577421Z   ├ λ /api/pocket/ig-demo
+2026-10-24T23:14:24.7577755Z   ├ λ /api/pocket/levels
+2026-10-24T23:14:24.7578111Z   ├ λ /api/pocket/options-wall
+2026-10-24T23:14:24.7578472Z   ├ λ /api/pocket/preflight
+2026-10-24T23:14:24.7578813Z   ├ λ /api/pocket/review
+2026-10-24T23:14:24.7579145Z   ├ λ /api/pocket/subscription-access
+2026-10-24T23:14:24.7579492Z   ├ λ /api/pocket/torture
+2026-10-24T23:14:24.7579894Z   ├ λ /api/profile
+2026-10-24T23:14:24.7580462Z   ├ λ /api/second-opinion
+2026-10-24T23:14:24.7580939Z   ├ λ /api/stripe/checkout
+2026-10-24T23:14:24.7581581Z   ├ λ /api/stripe/portal
+2026-10-24T23:14:24.7581909Z   ├ λ /api/stripe/webhook
+2026-10-24T23:14:24.7582221Z   ├ λ /api/waitlist
+2026-10-24T23:14:24.7582583Z   ├ λ /api/youtube/oauth/callback
+2026-10-24T23:14:24.7583004Z   ├ ƒ /archive
+2026-10-24T23:14:24.7583575Z   ├ ƒ /archive/:date
+2026-10-24T23:14:24.7584097Z   ├ ƒ /auth/callback
+2026-10-24T23:14:24.7584668Z   ├ λ /auth/confirm
+2026-10-24T23:14:24.7585353Z   ├ ? /auth/implicit
+2026-10-24T23:14:24.7586406Z   ├ λ /auth/signout
+2026-10-24T23:14:24.7587104Z   ├ ƒ /brief
+2026-10-24T23:14:24.7587736Z   ├ ? /cancelled
+2026-10-24T23:14:24.7588437Z   ├ ? /contact
+2026-10-24T23:14:24.7589007Z   ├ ƒ /dashboard
+2026-10-24T23:14:24.7589513Z   ├ ƒ /dev/logo-concepts
+2026-10-24T23:14:24.7590003Z   ├ ƒ /dev/terminal-chart
+2026-10-24T23:14:24.7590485Z   ├ ƒ /founding-member
+2026-10-24T23:14:24.7591009Z   ├ ? /help
+2026-10-24T23:14:24.7591477Z   ├ ƒ /ideas
+2026-10-24T23:14:24.7591976Z   ├ ƒ /ideas/:id
+2026-10-24T23:14:24.7592450Z   ├ ? /join
+2026-10-24T23:14:24.7592953Z   ├ ƒ /journal
+2026-10-24T23:14:24.7593444Z   ├ ƒ /launch-preview
+2026-10-24T23:14:24.7593928Z   ├ ? /login
+2026-10-24T23:14:24.7594540Z   ├ ƒ /marketing-preview
+2026-10-24T23:14:24.7595113Z   ├ ? /membership-required
+2026-10-24T23:14:24.7595603Z   ├ ƒ /methodology
+2026-10-24T23:14:24.7596430Z   ├ ? /onboarding
+2026-10-24T23:14:24.7596930Z   ├ ƒ /performance
+2026-10-24T23:14:24.7597444Z   ├ ? /pocket
+2026-10-24T23:14:24.7597944Z   ├ ? /pocket-next
+2026-10-24T23:14:24.7598420Z   ├ ? /pocket/founding
+2026-10-24T23:14:24.7599059Z   ├ ? /pocket/founding/welcome
+2026-10-24T23:14:24.7599564Z   ├ ? /pocket/login
+2026-10-24T23:14:24.7600070Z   ├ ? /preferences
+2026-10-24T23:14:24.7601153Z   ├ ƒ /pricing
+2026-10-24T23:14:24.7601722Z   ├ ? /privacy
+2026-10-24T23:14:24.7602271Z   ├ ƒ /profile
+2026-10-24T23:14:24.7602617Z   ├ ƒ /replay
+2026-10-24T23:14:24.7602919Z   ├ ƒ /results
+2026-10-24T23:14:24.7603560Z   ├ ƒ /review
+2026-10-24T23:14:24.7603875Z   ├ ƒ /reviews
+2026-10-24T23:14:24.7604186Z   ├ ? /risk-disclaimer
+2026-10-24T23:14:24.7604497Z   ├ ƒ /second-opinion
+2026-10-24T23:14:24.7604803Z   ├ ƒ /terminal
+2026-10-24T23:14:24.7605108Z   ├ ƒ /terminal/diagnostics
+2026-10-24T23:14:24.7605422Z   ├ ? /terms
+2026-10-24T23:14:24.7605719Z   ├ ? /waitlist
+2026-10-24T23:14:24.7606338Z   └ ? /welcome
+2026-10-24T23:14:24.7606513Z
+2026-10-24T23:14:24.7606819Z   λ API  ƒ Dynamic  ? Unknown
+2026-10-24T23:14:24.7606985Z
+2026-10-24T23:14:24.7607249Z   ? Some routes could not be classified. vinext currently uses static analysis
+2026-10-24T23:14:24.7607832Z     and cannot detect dynamic API usage (headers(), cookies(), etc.) at build time.
+2026-10-24T23:14:24.7608368Z     Automatic classification will be improved in a future release.
+2026-10-24T23:14:24.7608640Z
+2026-10-24T23:14:24.7608866Z   Build complete. Run `vinext start` to start the production server.
+2026-10-24T23:14:24.7609149Z
+2026-10-24T23:14:24.9713630Z Validated Sites artifact: ESM Worker default.fetch and hosting manifest are present.
+2026-10-24T23:14:24.9886200Z Post job cleanup.
+2026-10-24T23:14:25.1207032Z (node:3480) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T23:14:25.1208726Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T23:14:25.1410777Z Post job cleanup.
+2026-10-24T23:14:25.2366647Z [command]/usr/bin/git version
+2026-10-24T23:14:25.2415013Z git version 2.55.0
+2026-10-24T23:14:25.2460326Z Temporarily overriding HOME='/home/runner/work/_temp/06139afa-2464-43ee-bcd6-b0a0b6cb3c09' before making global git config changes
+2026-10-24T23:14:25.2462091Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T23:14:25.2468966Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T23:14:25.2513836Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T23:14:25.2557485Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T23:14:25.2857113Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T23:14:25.2895688Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T23:14:25.3312377Z Print service container logs: d07c842d4d0d4c9cb8f447ce7f464e02_postgres17_bcd07d
+2026-10-24T23:14:25.3318937Z ##[command]/usr/bin/docker logs --details f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:14:25.3489543Z  ********************************************************************************
+2026-10-24T23:14:25.3490533Z  WARNING: POSTGRES_HOST_AUTH_METHOD has been set to "trust". This will allow
+2026-10-24T23:14:25.3491471Z  The files belonging to this database system will be owned by user "postgres".
+2026-10-24T23:14:25.3492325Z  This user must also own the server process.
+2026-10-24T23:14:25.3492820Z
+2026-10-24T23:14:25.3493306Z  The database cluster will be initialized with locale "en_US.utf8".
+2026-10-24T23:14:25.3494111Z  The default database encoding has accordingly been set to "UTF8".
+2026-10-24T23:14:25.3494964Z  The default text search configuration will be set to "english".
+2026-10-24T23:14:25.3495543Z
+2026-10-24T23:14:25.3496327Z  Data page checksums are disabled.
+2026-10-24T23:14:25.3496762Z
+2026-10-24T23:14:25.3497261Z  fixing permissions on existing directory /var/lib/postgresql/data ... ok
+2026-10-24T23:14:25.3497788Z  creating subdirectories ... ok
+2026-10-24T23:14:25.3498125Z  selecting dynamic shared memory implementation ... posix
+2026-10-24T23:14:25.3498498Z  selecting default "max_connections" ... 100
+2026-10-24T23:14:25.3498810Z  selecting default "shared_buffers" ... 128MB
+2026-10-24T23:14:25.3499112Z  selecting default time zone ... Etc/UTC
+2026-10-24T23:14:25.3499396Z  creating configuration files ... ok
+2026-10-24T23:14:25.3499683Z  running bootstrap script ... ok
+2026-10-24T23:14:25.3499988Z  performing post-bootstrap initialization ... ok
+2026-10-24T23:14:25.3500308Z  syncing data to disk ... ok
+2026-10-24T23:14:25.3500544Z
+2026-10-24T23:14:25.3501099Z
+2026-10-24T23:14:25.3501330Z  Success. You can now start the database server using:
+2026-10-24T23:14:25.3501631Z
+2026-10-24T23:14:25.3501883Z      pg_ctl -D /var/lib/postgresql/data -l logfile start
+2026-10-24T23:14:25.3502194Z
+2026-10-24T23:14:25.3502874Z  waiting for server to start....2026-10-24 23:13:20.601 UTC [49] LOG:  starting PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-24T23:14:25.3503767Z  2026-10-24 23:13:20.602 UTC [49] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-10-24T23:14:25.3504338Z  2026-10-24 23:13:20.604 UTC [52] LOG:  database system was shut down at 2026-10-24 23:13:20 UTC
+2026-10-24T23:14:25.3504866Z  2026-10-24 23:13:20.607 UTC [49] LOG:  database system is ready to accept connections
+2026-10-24T23:14:25.3505251Z   done
+2026-10-24T23:14:25.3505440Z  server started
+2026-10-24T23:14:25.3505643Z  CREATE DATABASE
+2026-10-24T23:14:25.3506176Z
+2026-10-24T23:14:25.3506497Z
+2026-10-24T23:14:25.3507031Z  /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-10-24T23:14:25.3507696Z
+2026-10-24T23:14:25.3507971Z  2026-10-24 23:13:20.791 UTC [49] LOG:  received fast shutdown request
+2026-10-24T23:14:25.3508502Z  waiting for server to shut down....2026-10-24 23:13:20.791 UTC [49] LOG:  aborting any active transactions
+2026-10-24T23:14:25.3509220Z  2026-10-24 23:13:20.794 UTC [49] LOG:  background worker "logical replication launcher" (PID 55) exited with exit code 1
+2026-10-24T23:14:25.3509760Z  2026-10-24 23:13:20.794 UTC [50] LOG:  shutting down
+2026-10-24T23:14:25.3510153Z  2026-10-24 23:13:20.794 UTC [50] LOG:  checkpoint starting: shutdown immediate
+2026-10-24T23:14:25.3511261Z  2026-10-24 23:13:20.811 UTC [50] LOG:  checkpoint complete: wrote 925 buffers (5.6%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=0.003 s, total=0.018 s; sync files=301, longest=0.002 s, average=0.001 s; distance=4256 kB, estimate=4256 kB; lsn=0/1917930, redo lsn=0/1917930
+2026-10-24T23:14:25.3512341Z  2026-10-24 23:13:20.818 UTC [49] LOG:  database system is shut down
+2026-10-24T23:14:25.3512670Z   done
+2026-10-24T23:14:25.3513093Z  server stopped
+2026-10-24T23:14:25.3513294Z
+2026-10-24T23:14:25.3513528Z  PostgreSQL init process complete; ready for start up.
+2026-10-24T23:14:25.3513834Z
+2026-10-24T23:14:25.3514162Z           anyone with access to the Postgres port to access your database without
+2026-10-24T23:14:25.3514629Z           a password, even if POSTGRES_PASSWORD is set. See PostgreSQL
+2026-10-24T23:14:25.3514988Z           documentation about "trust":
+2026-10-24T23:14:25.3515338Z           https://www.postgresql.org/docs/current/auth-trust.html
+2026-10-24T23:14:25.3526187Z           In Docker's default configuration, this is effectively any other
+2026-10-24T23:14:25.3527104Z           container on the same system.
+2026-10-24T23:14:25.3527693Z
+2026-10-24T23:14:25.3528160Z           It is not recommended to use POSTGRES_HOST_AUTH_METHOD=trust. Replace
+2026-10-24T23:14:25.3528981Z           it with "-e POSTGRES_PASSWORD=password" instead to set a password in
+2026-10-24T23:14:25.3529451Z           "docker run".
+2026-10-24T23:14:25.3529729Z  ********************************************************************************
+2026-10-24T23:14:25.3530153Z  initdb: warning: enabling "trust" authentication for local connections
+2026-10-24T23:14:25.3530862Z  initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-10-24T23:14:25.3531834Z  2026-10-24 23:13:20.914 UTC [1] LOG:  starting PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-24T23:14:25.3532600Z  2026-10-24 23:13:20.914 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-10-24T23:14:25.3533077Z  2026-10-24 23:13:20.914 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-10-24T23:14:25.3533595Z  2026-10-24 23:13:20.915 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-10-24T23:14:25.3534401Z  2026-10-24 23:13:20.918 UTC [65] LOG:  database system was shut down at 2026-10-24 23:13:20 UTC
+2026-10-24T23:14:25.3534923Z  2026-10-24 23:13:20.923 UTC [1] LOG:  database system is ready to accept connections
+2026-10-24T23:14:25.3535379Z  2026-10-24 23:13:25.009 UTC [76] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3536172Z  2026-10-24 23:13:30.079 UTC [85] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3536578Z  2026-10-24 23:13:35.171 UTC [93] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3536970Z  2026-10-24 23:13:40.281 UTC [101] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3537369Z  2026-10-24 23:13:45.369 UTC [109] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3537755Z  2026-10-24 23:13:50.452 UTC [117] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3538292Z  2026-10-24 23:13:53.696 UTC [122] ERROR:  permission denied for schema pocket_google_ownership at character 8
+2026-10-24T23:14:25.3538958Z  2026-10-24 23:13:53.696 UTC [122] STATEMENT:  select pocket_google_ownership.revoke_known_token($1,$2,$3,$4)
+2026-10-24T23:14:25.3539511Z  2026-10-24 23:13:53.698 UTC [121] ERROR:  permission denied for table tokens
+2026-10-24T23:14:25.3540035Z  2026-10-24 23:13:53.698 UTC [121] STATEMENT:  update pocket_google_ownership.tokens set revoked=false
+2026-10-24T23:14:25.3540546Z  2026-10-24 23:13:55.538 UTC [131] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3540951Z  2026-10-24 23:14:00.616 UTC [139] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3541334Z  2026-10-24 23:14:05.701 UTC [147] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3541715Z  2026-10-24 23:14:10.775 UTC [155] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3542097Z  2026-10-24 23:14:15.844 UTC [163] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3542481Z  2026-10-24 23:14:20.912 UTC [171] FATAL:  role "root" does not exist
+2026-10-24T23:14:25.3549531Z Stop and remove container: d07c842d4d0d4c9cb8f447ce7f464e02_postgres17_bcd07d
+2026-10-24T23:14:25.3554944Z ##[command]/usr/bin/docker rm --force f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:14:25.5178585Z f9b20808f40916f4bc56be622517603ea5da4d269f1c371d68a5b7711d0d7896
+2026-10-24T23:14:25.5210654Z Remove container network: github_network_7e6afa9876634835899c00e36293619b
+2026-10-24T23:14:25.5215319Z ##[command]/usr/bin/docker network rm github_network_7e6afa9876634835899c00e36293619b
+2026-10-24T23:14:25.6229565Z github_network_7e6afa9876634835899c00e36293619b
+2026-10-24T23:14:25.6321675Z Cleaning up orphan processes
+2026-10-24T23:14:25.6781300Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
