@@ -66,6 +66,7 @@ jobs:
         run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-first-six-runtime/node_modules/pg/lib/index.js" node scripts/verify-pocket-scanner-evaluation-v2.mjs --postgres
       - name: Confirm source remains unchanged
         run: |
+          node scripts/check-secrets.mjs
           git diff --check
           git diff --exit-code HEAD
           test -z "$(git status --porcelain --untracked-files=no)"

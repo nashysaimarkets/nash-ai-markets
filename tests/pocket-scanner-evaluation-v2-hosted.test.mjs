@@ -15,6 +15,7 @@ function fixture(){
     scopeApproval:{status:'APPROVED',scopeId:V2.scopeId,ownerDirectiveSha256:'d'.repeat(64),planSha256:sha256(planBytes),appSourceSha:V2.appSourceSha,
       approvalRef:'https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-999999999999',maximumNewMicroUsd:1980000,aggregateCapMicroUsd:5000000},
     admissionEvidenceSha256:'e'.repeat(64),reassessmentEvidenceSha256:'f'.repeat(64),previousCaseReceiptSha256:null,input:{bundleSha256:'1'.repeat(64),maxWaitMs:300000},
+    neon:JSON.parse(readFileSync(new URL('../docs/monaco-126/scanner-evaluation-v2-2026-10-24/RUN-ADMISSION.HOLD.json',import.meta.url))).neon,
     output:{retentionDays:7,recipientPublicKeyPem:key.publicKeyPem,recipientPublicKeySha256:key.publicKeySha256}};
   return {config,context,caseId,planBytes};
 }
