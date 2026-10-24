@@ -1,13 +1,10 @@
 'use client';
 import {useEffect, useMemo, useState} from 'react';
 import IgDemoPositionPanel from './IgDemoPositionPanel';
-import {createIgDemoWorkspace, type IgDemoWorkspaceState, type IgDemoAction} from '../lib/ig-demo-workspace';
+import {createIgDemoWorkspace, type IgDemoWorkspaceState} from '../lib/ig-demo-workspace';
 
-async function send(action: IgDemoAction, signal: AbortSignal, chartToken?:string) {
-  const response = await fetch('/api/pocket/ig-demo', {method:'POST', credentials:'same-origin', cache:'no-store', redirect:'error', signal, headers:{'Content-Type':'application/json','X-Pocket-IG-Demo':'1'}, body:JSON.stringify({action,...(chartToken?{chartToken}:{})})});
-  if (!response.ok) throw Error(response.status===429 ? 'RATE_LIMITED':'UNAVAILABLE');
-  return response.json();
-}
+import {sendIgDemoAction} from '../lib/ig-demo-client';
+
 /** Host must supply a server-reviewed availability flag; opting in cannot enable the backend. */
 export default function IgDemoWorkspace({available=false, contextKey, ownerScope, chartToken}:{available?:boolean;contextKey:string;ownerScope?:string;chartToken?:string}) {
   if(!available || !ownerScope) return null;
@@ -16,7 +13,7 @@ export default function IgDemoWorkspace({available=false, contextKey, ownerScope
 function IgDemoWorkspaceSession({chartToken}:{chartToken?:string}) {
   const [optedIn,setOptedIn] = useState(false);
   const [state,setState] = useState<IgDemoWorkspaceState>({snapshot:null,busy:false});
-  const controller=useMemo(()=>createIgDemoWorkspace((action,signal)=>send(action,signal,chartToken),setState),[chartToken]);
+  const controller=useMemo(()=>createIgDemoWorkspace((action,signal)=>sendIgDemoAction(action,signal,chartToken),setState),[chartToken]);
   useEffect(()=>{ controller.reset(); return ()=>controller.reset(); },[controller]);
   useEffect(()=>{
     const hide=()=>controller.reset();

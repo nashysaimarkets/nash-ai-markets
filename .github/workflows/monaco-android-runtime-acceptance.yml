@@ -1,0 +1,45 @@
+name: Monaco Android runtime PostgreSQL acceptance
+on:
+  push:
+    branches: [monaco-offline-completion-20261024-baf]
+    paths:
+      - .github/workflows/monaco-android-runtime-acceptance.yml
+      - tests/integration/google-runtime-postgres.test.mjs
+      - 'app/api/pocket/google-subscription-*.mjs'
+      - 'database/google/*.sql'
+permissions:
+  contents: read
+jobs:
+  isolated-postgres:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: monaco_android_acceptance
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Install isolated test client only
+        run: npm install --prefix "$RUNNER_TEMP/monaco-pg-client" --ignore-scripts --no-audit --no-fund pg@8.16.3
+      - name: Actual SQL runtime composition
+        env:
+          MONACO_DISPOSABLE_PG: 'YES'
+          PGHOST: 127.0.0.1
+          PGPORT: '5432'
+          PGDATABASE: monaco_android_acceptance
+        run: MONACO_PG_MODULE="$RUNNER_TEMP/monaco-pg-client/node_modules/pg/lib/index.js" node --test tests/integration/google-runtime-postgres.test.mjs
