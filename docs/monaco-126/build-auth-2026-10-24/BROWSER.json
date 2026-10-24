@@ -1,0 +1,96 @@
+{
+  "results": [
+    {
+      "case": "d001",
+      "status": "ANALYSIS UNVERIFIED · PRICE POSITIONS CHECKED\n\nUNVERIFIED MODEL ANALYSIS — prices, patterns, liquidity and trading conclusions are suggestions until independently checked. A checked price position does not verify a candle extreme, trading role or hidden orders.\n\n7747.3533 · POSITION CHECKED · pivot role UNVERIFIED\n7732.4183 · POSITION CHECKED · support role UNVERIFIED\n\nPatterns and liquidity: UNVERIFIED. Empty output does not establish absence. Setup scores and trading decisions are unverified model opinions.",
+      "lines": [
+        {
+          "x1": 840,
+          "x2": 1247,
+          "y1": 300.0006280278219,
+          "y2": 300.0006280278219
+        },
+        {
+          "x1": 840,
+          "x2": 1247,
+          "y1": 562.7147887089345,
+          "y2": 562.7147887089345
+        }
+      ]
+    },
+    {
+      "case": "d002",
+      "status": "ANALYSIS UNVERIFIED · PRICE POSITIONS CHECKED\n\nUNVERIFIED MODEL ANALYSIS — prices, patterns, liquidity and trading conclusions are suggestions until independently checked. A checked price position does not verify a candle extreme, trading role or hidden orders.\n\n83986.9411 · POSITION CHECKED · resistance role UNVERIFIED\n84654.0416 · POSITION CHECKED · resistance role UNVERIFIED\n81318.5389 · POSITION CHECKED · support role UNVERIFIED\n\nPatterns and liquidity: UNVERIFIED. Empty output does not establish absence. Setup scores and trading decisions are unverified model opinions.",
+      "lines": [
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 212,
+          "y2": 212
+        },
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 125,
+          "y2": 125
+        },
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 563,
+          "y2": 563
+        }
+      ]
+    },
+    {
+      "case": "d003",
+      "status": "ANALYSIS UNVERIFIED · PRICE POSITIONS CHECKED\n\nUNVERIFIED MODEL ANALYSIS — prices, patterns, liquidity and trading conclusions are suggestions until independently checked. A checked price position does not verify a candle extreme, trading role or hidden orders.\n\n351.3292 · POSITION CHECKED · resistance role UNVERIFIED\n339.1608 · POSITION CHECKED · support role UNVERIFIED\n\nPatterns and liquidity: UNVERIFIED. Empty output does not establish absence. Setup scores and trading decisions are unverified model opinions.",
+      "lines": [
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 125,
+          "y2": 125
+        },
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 650,
+          "y2": 650
+        }
+      ]
+    },
+    {
+      "case": "d004",
+      "status": "ANALYSIS UNVERIFIED · PRICE POSITIONS CHECKED\n\nUNVERIFIED MODEL ANALYSIS — prices, patterns, liquidity and trading conclusions are suggestions until independently checked. A checked price position does not verify a candle extreme, trading role or hidden orders.\n\n779.2864 · POSITION CHECKED · resistance role UNVERIFIED\n777.1636 · POSITION CHECKED · support role UNVERIFIED\n\nPatterns and liquidity: UNVERIFIED. Empty output does not establish absence. Setup scores and trading decisions are unverified model opinions.",
+      "lines": [
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 105,
+          "y2": 105
+        },
+        {
+          "x1": 90,
+          "x2": 1250.0000000000002,
+          "y1": 690,
+          "y2": 690
+        }
+      ]
+    },
+    {
+      "case": "d005",
+      "status": "ANALYSIS UNVERIFIED · PRICE CHECK HOLD\n\nUNVERIFIED MODEL ANALYSIS — prices, patterns, liquidity and trading conclusions are suggestions until independently checked. A checked price position does not verify a candle extreme, trading role or hidden orders.\n\nNo current-image price placement is verified. Reported prices remain UNVERIFIED.\n\nPatterns and liquidity: UNVERIFIED. Empty output does not establish absence. Setup scores and trading decisions are unverified model opinions.",
+      "lines": []
+    }
+  ],
+  "checks": [
+    "fifth scan denied by unchanged four-analysis window",
+    "fifth chart accepted only after isolated virtual budget window expiry",
+    "switch retains d002 image-bound three price positions",
+    "unlock clears proof"
+  ],
+  "errors": [],
+  "external": [],
+  "scope": "Real next start production HTTP/auth and actual browser. Only upstream auth/entitlement/provider fixtures and local Node clock are controlled. Original four-request quota preserved."
+}

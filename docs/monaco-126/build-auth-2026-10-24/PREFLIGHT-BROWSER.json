@@ -1,0 +1,18 @@
+{
+  "checks": [
+    {
+      "scenario": "malformed",
+      "status": "PASS",
+      "http": 503,
+      "manualConfirmationRequired": true
+    },
+    {
+      "scenario": "incomplete",
+      "status": "PASS",
+      "http": 503,
+      "manualConfirmationRequired": true
+    }
+  ],
+  "errors": [],
+  "analysisDispatched": false
+}

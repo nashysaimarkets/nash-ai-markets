@@ -1,0 +1,26 @@
+✔ preserves legitimate READY response (2.377826ms)
+✔ preserves legitimate LIMITED response (0.191404ms)
+✔ preserves legitimate RETAKE response (0.151887ms)
+✔ reject empty (0.434171ms)
+✔ reject null (0.117209ms)
+✔ reject array (0.225448ms)
+✔ reject enum array (0.152676ms)
+✔ reject confidence object (0.511833ms)
+✔ reject missing issues (0.144601ms)
+✔ reject string boolean (0.302999ms)
+✔ reject context coercion (0.147654ms)
+✔ reject too many issues (0.141896ms)
+✔ reject oversized label (0.087897ms)
+✔ reject parseable provider incomplete (0.146497ms)
+✔ reject parseable provider failed (0.159864ms)
+✔ reject parseable provider cancelled (0.415698ms)
+✔ reject parseable provider undefined (0.163474ms)
+✔ reject malformed JSON and blank text (0.337004ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169.127936

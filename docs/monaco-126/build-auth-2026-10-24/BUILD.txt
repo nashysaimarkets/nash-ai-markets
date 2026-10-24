@@ -1,0 +1,121 @@
+▲ Next.js 16.3.8 (webpack)
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+✓ Running next.config.ts took 102ms
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+✓ Compiled successfully in 8.2s
+  Running TypeScript ...
+  Finished TypeScript in 5.2s ...
+  Collecting page data using 8 workers ...
+  Generating static pages using 8 workers (0/40) ...
+  Generating static pages using 8 workers (10/40)
+  Generating static pages using 8 workers (20/40)
+  Generating static pages using 8 workers (30/40)
+✓ Generating static pages using 8 workers (40/40) in 681ms
+[verified-macro-context] {"route":"/pocket-next","status":"unavailable","observationCount":0,"releaseCount":0,"availableSources":["BEA","BLS","Federal Reserve","New York Fed","Treasury"],"unavailableSources":["Census","SEC"],"durationMs":7}
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ○ /about
+├ ƒ /admin/commercial
+├ ƒ /admin/founding-100
+├ ƒ /admin/visual-preview
+├ ƒ /api/auth/redirect-probe
+├ ƒ /api/auth/session
+├ ƒ /api/auth/supabase-config-probe
+├ ƒ /api/founding-member
+├ ƒ /api/ideas
+├ ƒ /api/ideas/[id]
+├ ƒ /api/journal
+├ ƒ /api/market/candles
+├ ƒ /api/marketing/visit
+├ ƒ /api/membership/preview
+├ ƒ /api/onboarding
+├ ƒ /api/openai/health
+├ ƒ /api/pocket/analyse
+├ ƒ /api/pocket/apple-account
+├ ƒ /api/pocket/apple-notifications
+├ ƒ /api/pocket/billing-portal
+├ ƒ /api/pocket/build-manifest
+├ ƒ /api/pocket/crypto-derivatives
+├ ƒ /api/pocket/events
+├ ƒ /api/pocket/follow-up
+├ ƒ /api/pocket/levels
+├ ƒ /api/pocket/options-wall
+├ ƒ /api/pocket/preflight
+├ ƒ /api/pocket/review
+├ ƒ /api/pocket/subscription-access
+├ ƒ /api/pocket/torture
+├ ƒ /api/profile
+├ ƒ /api/second-opinion
+├ ƒ /api/stripe/checkout
+├ ƒ /api/stripe/portal
+├ ƒ /api/stripe/webhook
+├ ƒ /api/waitlist
+├ ƒ /api/youtube/oauth/callback
+├ ƒ /archive
+├ ƒ /archive/[date]
+├ ƒ /auth/callback
+├ ƒ /auth/confirm
+├ ○ /auth/implicit
+├ ƒ /auth/signout
+├ ƒ /brief
+├ ○ /cancelled
+├ ○ /contact
+├ ƒ /dashboard
+├ ƒ /dev/logo-concepts
+├ ƒ /dev/terminal-chart
+├ ƒ /founding-member
+├ ○ /help
+├ ƒ /ideas
+├ ƒ /ideas/[id]
+├ ƒ /join
+├ ƒ /journal
+├ ƒ /launch-preview
+├ ƒ /login
+├ ○ /manifest.webmanifest
+├ ƒ /marketing-preview
+├ ƒ /membership-required
+├ ƒ /methodology
+├ ƒ /onboarding
+├ ƒ /performance
+├ ○ /pocket
+├ ƒ /pocket-next
+├ ƒ /pocket/founding
+├ ○ /pocket/founding/welcome
+├ ƒ /pocket/login
+├ ƒ /preferences
+├ ƒ /pricing
+├ ○ /privacy
+├ ƒ /profile
+├ ƒ /replay
+├ ƒ /results
+├ ƒ /review
+├ ƒ /reviews
+├ ○ /risk-disclaimer
+├ ○ /robots.txt
+├ ƒ /second-opinion
+├ ○ /sitemap.xml
+├ ƒ /terminal
+├ ƒ /terminal/diagnostics
+├ ○ /terms
+├ ƒ /waitlist
+└ ○ /welcome
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

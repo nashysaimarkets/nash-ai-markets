@@ -1,0 +1,1126 @@
+{
+  "source": "60f096f0f1451316426d26a264468b5a4505b822",
+  "tests": [
+    {
+      "name": "subscription-access/no-cookie",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "subscription-access/bad",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "subscription-access/unpaid",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "subscription-access/expired",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "subscription-access/revoked",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "subscription-access/unconfirmed",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "subscription-access/anonymous",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "subscription-access/rpc-error",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "subscription-access/rpc-malformed",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "subscription-access/same-email-new-id",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "analyse/no-cookie",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "analyse/bad",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "analyse/unpaid",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "analyse/expired",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "analyse/revoked",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "analyse/unconfirmed",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "analyse/anonymous",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "analyse/rpc-error",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "analyse/rpc-malformed",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "analyse/same-email-new-id",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "levels/no-cookie",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "levels/bad",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "levels/unpaid",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "levels/expired",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "levels/revoked",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "levels/unconfirmed",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "levels/anonymous",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "levels/rpc-error",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "levels/rpc-malformed",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "levels/same-email-new-id",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "preflight/no-cookie",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "preflight/bad",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "preflight/unpaid",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "preflight/expired",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "preflight/revoked",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "preflight/unconfirmed",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "preflight/anonymous",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "preflight/rpc-error",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "preflight/rpc-malformed",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "preflight/same-email-new-id",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "paid-access",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "name": "forged-client-access",
+      "status": "PASS",
+      "http": 403
+    },
+    {
+      "name": "forged-apple-proof",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "unauth-malformed-body",
+      "status": "PASS",
+      "http": 401
+    },
+    {
+      "name": "paid-malformed-upload",
+      "status": "PASS",
+      "http": 400
+    },
+    {
+      "name": "analyse/valid",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "name": "analyse/malformed",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "analyse/incomplete",
+      "status": "PASS",
+      "http": 503
+    },
+    {
+      "name": "levels/valid",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "name": "levels/malformed",
+      "status": "PASS",
+      "http": 502
+    },
+    {
+      "name": "levels/incomplete",
+      "status": "PASS",
+      "http": 502
+    },
+    {
+      "name": "preflight/valid",
+      "status": "PASS",
+      "http": 200
+    },
+    {
+      "name": "preflight/malformed",
+      "status": "FAIL",
+      "http": 200,
+      "unexpectedBody": {
+        "preflight": {}
+      }
+    },
+    {
+      "name": "preflight/incomplete",
+      "status": "FAIL",
+      "http": 200,
+      "unexpectedBody": {
+        "preflight": {
+          "status": "READY",
+          "instrument": "BTC",
+          "instrumentConfidence": "HIGH",
+          "timeframe": "1h",
+          "timeframeConfidence": "HIGH",
+          "currentPrice": "83250.07",
+          "currentPriceConfidence": "HIGH",
+          "priceScaleVisible": true,
+          "candlesReadable": true,
+          "enoughHistory": true,
+          "sameInstrument": null,
+          "issues": [],
+          "guidance": "Check chart facts."
+        }
+      }
+    },
+    {
+      "name": "client-cancellation",
+      "status": "PASS",
+      "providerTransportStillConnectedAfterClientAbort": true,
+      "localProviderRequests": 1,
+      "meaning": "Client abort observed; server upstream cancellation is a separate assertion"
+    }
+  ],
+  "calls": [
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "path": "/auth/v1/token",
+      "method": "POST",
+      "mode": "normal"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000007"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "path": "/auth/v1/token",
+      "method": "POST",
+      "mode": "normal"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000007"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "path": "/auth/v1/token",
+      "method": "POST",
+      "mode": "normal"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000007"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "path": "/auth/v1/token",
+      "method": "POST",
+      "mode": "normal"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "revoked"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unconfirmed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "anonymous"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-error"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000006"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "rpc-malformed"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000007"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "same-email-new-id"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000008"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "unpaid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "normal",
+      "schema": "pocket_bullseye_chart_analysis",
+      "completed": true
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "normal",
+      "schema": "pocket_bullseye_precision_overlays",
+      "completed": true
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "normal",
+      "schema": "pocket_bullseye_precision_overlays",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "malformed",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "malformed",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "malformed",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "malformed",
+      "schema": "pocket_bullseye_chart_analysis",
+      "completed": true
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "malformed",
+      "schema": "pocket_bullseye_precision_overlays",
+      "completed": true
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "malformed",
+      "schema": "pocket_bullseye_precision_overlays",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "incomplete",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "incomplete",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "incomplete",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "incomplete",
+      "schema": "pocket_bullseye_chart_analysis",
+      "completed": true
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "incomplete",
+      "schema": "pocket_bullseye_precision_overlays",
+      "completed": true
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "incomplete",
+      "schema": "pocket_bullseye_precision_overlays",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "normal",
+      "schema": "pocket_bullseye_level_lab",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "malformed",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "malformed",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "malformed",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "malformed",
+      "schema": "pocket_bullseye_level_lab",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "incomplete",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "incomplete",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "incomplete",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "incomplete",
+      "schema": "pocket_bullseye_level_lab",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "normal",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "normal",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "normal",
+      "schema": "pocket_chart_preflight",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "malformed",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "malformed",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "malformed",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "malformed",
+      "schema": "pocket_chart_preflight",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "incomplete",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "incomplete",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "incomplete",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "incomplete",
+      "schema": "pocket_chart_preflight",
+      "completed": true
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "pending",
+      "kind": "paid"
+    },
+    {
+      "path": "/auth/v1/user",
+      "method": "GET",
+      "mode": "pending",
+      "kind": "paid"
+    },
+    {
+      "path": "/rest/v1/rpc/has_pocket_web_subscription",
+      "method": "POST",
+      "mode": "pending",
+      "userId": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "path": "/v1/responses",
+      "method": "POST",
+      "mode": "pending",
+      "schema": "pocket_bullseye_level_lab",
+      "completed": true,
+      "closed": true
+    }
+  ],
+  "passed": 53,
+  "failed": 2,
+  "scope": "Actual compiled Next HTTP/middleware/cookie/SDK boundaries; isolated local identity/entitlement/provider upstream fixtures, not hosted GoTrue/RLS or live subscription evidence",
+  "paidCalls": 0,
+  "liveWrites": 0
+}

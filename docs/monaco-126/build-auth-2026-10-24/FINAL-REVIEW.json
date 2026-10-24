@@ -1,0 +1,86 @@
+{
+  "status": "ACCEPTED",
+  "sourceBaseline": "60f096f0f1451316426d26a264468b5a4505b822",
+  "sourceHashes": {
+    "app/api/pocket/analyse/route.ts": "366343b58fb924a1bce966b76a731da0a7e7f92f342bc98c5539ecd7adb1a970",
+    "app/api/pocket/levels/route.ts": "ece3e531e474a56ad30287506977546a36426a65179a2aa4eaf331f4f7735e37",
+    "app/api/pocket/preflight/route.ts": "81fbcf058bdd38ed2a0eab286a93b8f89f123b015f2fd742b1a98d8663b2d7e0",
+    "app/pocket/ChartPreflightPanel.tsx": "8c979213fb33a441d402908975307af85e21cdbf6968c871b89b6ca1b7977573",
+    "app/pocket/chart-preflight.ts": "5f1ad6ba8b65cf4c87fcb0f061cf759c21714d68100b1c454872ccceedec6738",
+    "tests/pocket-preflight-response.test.ts": "d9799aa7fe082680179927823d655e8ef1948c4196bb667991ebde60db19bd8c",
+    "scripts/offline-geist-fonts.cjs": "4e207cd466da90a0cbaea89a11c4131b6e69beb22871ed4827a9f17d575089dd",
+    "qa/offline-fonts/manifest.json": "3e77173789df2e946b5ddd8ac2ddc0b4bec8442330d82fbc222f1ebf008c4d55",
+    "qa/offline-fonts/OFL.txt": "942560b236adfa83745b2c64e5fc09ebaf91cb331751b1157eb92187e5d6e930",
+    "vercel.json": "28bede42de5168ade63783ceec16ae4500e8b9e68474ad1830a0cfb11ce4df5e"
+  },
+  "independentPreflightControls": {
+    "pass": 18,
+    "fail": 0
+  },
+  "fixReview": [
+    "Strict enum strings/no array coercion",
+    "Required bounded strings and boolean evidence fields",
+    "Provider completed status required before output parse",
+    "Browser validates transport before displaying lockable facts",
+    "Actual Request.signal passed to SDK for MAIN/primary-context-rescue precision/preflight/LevelLab"
+  ],
+  "pendingRegression": [],
+  "fontReview": "FONT-REVIEW.json:13exact cache pins independently verified,11OFLmetadata records reviewed",
+  "limitations": [
+    "Does not claim provider cancels work after accepting request",
+    "No live Supabase/DB verification",
+    "Existing client epoch remains necessary even when HTTP abort propagates"
+  ],
+  "sourceMutationsByReviewer": 0,
+  "externalCalls": 0,
+  "reviewedAt": "2026-10-24T20:34:38.184265+00:00",
+  "evidenceHashes": {
+    "HTTP.json": "826b560e856fcfeac8df13a6c4db519964d60ddf9f979376612421031597d705",
+    "HTTP-BASELINE-RED.json": "61ca1e0e9d0fd92942bc2278df07c3c7f8a57673b57b1916b3212bb51ff330d5",
+    "http.mjs": "acadfcfc3d48369742bfd6dada87036bde76c3fc78fb55402060293dcb0cd48a",
+    "BROWSER.json": "ec2da375b50e68cf73114e7bd234292546b594638e8d51707dca5863b4f7bfa1",
+    "browser-http.mjs": "cf7b22219771b6fdf900c7f5d7b06e6ecf3dd5a7fc88206932d152c5531fe640",
+    "COORDINATES.json": "7dcd0b083e3c344feeeff7291c80589790d0f1d62bb9eaad0e68c1521f99ef17",
+    "BUILD.txt": "aaf3556584b2c34e233b9c69c9302f6a20e9babc73b8cd7baa404e5e742af4d5",
+    "BUILD-60f096-PASS.txt": "089a24491072f5283864b67fdbb9e427b38ce93ad2f1d1a6ed4abd07364aff11",
+    "runtime-network.cjs": "28f7d3bf85b47d875dc11a0b1ca9db093dd56d000cf1b568b2e98c6c12eaf392",
+    "FONTS.json": "dc9cd969ca29262257bea0005928b8290da7b51d7a0a110656f2e5ef5df93e6a",
+    "FONT-LICENSES.json": "10f4f90ea3f21a2718e9d4bea3a63d0b9777b943409091d37c20c0152ad3e229",
+    "PREFLIGHT-BROWSER.json": "456bee241c172a443d96035a3d22fea77f4564d0af83f1ae853a1b76cd0c20ea"
+  },
+  "httpReview": {
+    "passed": 57,
+    "failed": 0,
+    "reviewType": "Independently inspected harness/assertions/results; root executed HTTP suite. Not57additional independent executions.",
+    "denialCases": "401missing/expired/revoked/unconfirmed/anonymous,403unpaid/UUIDreplacement,503RPCerror/malformed across4routes; provider dispatchzero ondenial",
+    "preflightRedGreen": "Baseline parseable incomplete and emptyobject accepted200; repaired503",
+    "cancellation": "3actual HTTP client aborts:2MAIN+precision sockets,1LevelLab,1preflight upstreamres.close; no extra dispatch counted",
+    "scope": "Actual production Nextserver HTTP,middleware,SSRcookie,SDK/RPC/client integration. Identity/entitlement/provider upstream servers simulated locally; NOhostedGoTrue/RLS/livesubscription validation."
+  },
+  "productionBrowserReview": {
+    "charts": 5,
+    "errors": 0,
+    "externalRequests": 0,
+    "quota": "Sameauthcookie/IP; original4analysiswindow enforced with fifth429; only isolatedNodeclock advanced31minutes for fifth200",
+    "switchUnlock": "PASS",
+    "d005": "HOLD",
+    "coordinateRows": 9,
+    "maximumErrorPixels": 0.49999562784540785,
+    "unchangedTolerancePixels": 1,
+    "manualFallbackFollowup": "2/2PASS: malformed/incomplete503, manual confirmation required, no analysis dispatched"
+  },
+  "buildReview": "Baseline60f096 and patched productionbuild logs completed; original cached fonts used with no sourcefontdesignchange",
+  "remainingCodeBlockers": [],
+  "releaseGate": "Finish final durable-font adapter build receipt and save Issue126 checkpoint. Hosted identity/database semantics remain untested by these isolated fixtures; no deployment approval implied.",
+  "reviewedCommit": "2dd188ca336e7fad1d3d3ca36abfb88839cbd566",
+  "durableFontsReview": {
+    "status": "PASS",
+    "byteIdenticalOriginalCachedFonts": 11,
+    "cssChangedOnlyRelativeURLRewrites": 2,
+    "manifestAllHashesVerified": true,
+    "helperBothFamiliesResolveExistingLocalFiles": true,
+    "unexpectedOriginAndFamilyRejected": true,
+    "OFLTextIncluded": true,
+    "limit": "Explicit Next local-response adapter; not enabled automatically in app; final rebuild using durable adapter pending at receipt update"
+  }
+}

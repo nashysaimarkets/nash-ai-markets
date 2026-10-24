@@ -1,0 +1,17 @@
+✔ preflight requires a confirmation lock before full analysis (0.951446ms)
+✔ unavailable preflight cannot silently authorise analysis (0.883883ms)
+✔ mismatched context stays blocked even with acknowledgement (0.37285ms)
+✔ unknown context requires explicit acknowledgement (0.24289ms)
+✔ manual fallback needs visible scale, valid facts, and readable chart (0.839925ms)
+(node:16) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ actual lock callback never confirms mismatched or unacknowledged context (21.850767ms)
+✔ direct analysis dispatch cannot bypass an unavailable preflight (5.919335ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 315.939193
