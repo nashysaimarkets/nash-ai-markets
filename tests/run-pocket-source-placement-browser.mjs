@@ -11,7 +11,9 @@ const require=createRequire(sourceRoot+'/package.json');
 const entry=resolve(process.env.POCKET_QA_BROWSER_ENTRY || sourceRoot+'/tests/support/pocket-source-placement-browser.tsx');
 const output=resolve(process.env.POCKET_QA_BROWSER_OUT || sourceRoot+'/qa/scanner-repair/source-placement-browser.json');
 const {build}=await import(process.env.POCKET_QA_ESBUILD_MODULE || pathToFileURL(require.resolve('esbuild')).href);
-const {chromium}=await import(process.env.POCKET_QA_PLAYWRIGHT_MODULE || pathToFileURL(require.resolve('playwright')).href);
+const playwrightModule=await import(process.env.POCKET_QA_PLAYWRIGHT_MODULE || pathToFileURL(require.resolve('playwright')).href);
+const chromium=playwrightModule.chromium ?? playwrightModule.default?.chromium;
+assert.equal(typeof chromium?.launch,'function','The locked Playwright module must expose Chromium');
 const built=await build({
  stdin:{contents:await readFile(entry,'utf8'),loader:'tsx',resolveDir:sourceRoot+'/tests/support',sourcefile:'pocket-source-placement-browser.tsx'},
  bundle:true,write:false,format:'iife',platform:'browser',target:'es2022',jsx:'automatic',
