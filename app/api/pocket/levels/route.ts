@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       ] }],
       max_output_tokens: 1600,
       text: { format: { type: "json_schema", name: "pocket_bullseye_level_lab", strict: true, schema } },
-    });
+    }, { signal: request.signal });
     const levels = completedLevelLabResponse(response);
     return NextResponse.json({ levels }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {

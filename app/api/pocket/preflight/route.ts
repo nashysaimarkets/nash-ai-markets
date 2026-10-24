@@ -1,3 +1,4 @@
+import { completedChartPreflight } from "../../../pocket/chart-preflight";
 import { withPocketFirstFreeRequest } from "../../../lib/server/pocket-first-free";
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
@@ -73,10 +74,8 @@ export async function POST(request: Request) {
       ] }],
       max_output_tokens: 800,
       text: { format: { type: "json_schema", name: "pocket_chart_preflight", strict: true, schema } },
-    });
-    const output = response.output_text?.trim();
-    if (!output) throw new Error("empty preflight");
-    return NextResponse.json({ preflight: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
+    }, { signal: request.signal });
+    return NextResponse.json({ preflight: completedChartPreflight(response) }, { headers: pocketBudgetHeaders(budget) });
   } catch {
     return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
   }

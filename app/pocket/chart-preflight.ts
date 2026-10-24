@@ -46,3 +46,26 @@ export function canLockChartFacts(facts: {
     && (!facts.hasContext || facts.sameInstrument === true
       || (facts.sameInstrument === null && facts.contextAcknowledged));
 }
+
+/** Untrusted provider/browser transport must never manufacture lockable chart facts. */
+export function validateChartPreflight(value: unknown): ChartPreflight {
+  const fail = () => { throw new Error("Preflight HOLD: incomplete or malformed chart facts."); };
+  if (!value || typeof value !== "object" || Array.isArray(value)) return fail();
+  const v = value as Record<string, unknown>;
+  const oneOf = (x: unknown, allowed: readonly string[]) => typeof x === "string" && allowed.includes(x);
+  const text = (x: unknown, max: number) => typeof x === "string" && x.length <= max;
+  if (!oneOf(v.status, ["READY", "LIMITED", "RETAKE"]) ||
+      !text(v.instrument, 40) || !text(v.timeframe, 30) || !text(v.currentPrice, 30) || !text(v.guidance, 180) ||
+      !["instrumentConfidence", "timeframeConfidence", "currentPriceConfidence"].every(k => oneOf(v[k], ["HIGH", "MEDIUM", "LOW", "UNKNOWN"])) ||
+      !["priceScaleVisible", "candlesReadable", "enoughHistory"].every(k => typeof v[k] === "boolean") ||
+      !(v.sameInstrument === null || typeof v.sameInstrument === "boolean") ||
+      !Array.isArray(v.issues) || v.issues.length > 4 || !v.issues.every(x => text(x, 100))) return fail();
+  return value as ChartPreflight;
+}
+
+export function completedChartPreflight(response: {status?: unknown; output_text?: unknown}): ChartPreflight {
+  if (response.status !== "completed" || typeof response.output_text !== "string" || !response.output_text.trim()) {
+    throw new Error("Preflight HOLD: provider response did not complete.");
+  }
+  return validateChartPreflight(JSON.parse(response.output_text));
+}

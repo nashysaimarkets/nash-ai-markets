@@ -2,7 +2,7 @@
 import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { canLockChartFacts, type ChartConfirmation, type ChartPreflight, type PreflightStatus } from "./chart-preflight";
+import { validateChartPreflight, canLockChartFacts, type ChartConfirmation, type ChartPreflight, type PreflightStatus } from "./chart-preflight";
 
 type ChartPreflightPanelProps = {
   image: string;
@@ -49,7 +49,7 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
         const payload = await response.json() as { preflight?: ChartPreflight; error?: string };
         if (!active) return;
         if (!response.ok || !payload.preflight) throw new Error(payload.error || "Preflight unavailable");
-        const next = payload.preflight;
+        const next = validateChartPreflight(payload.preflight);
         setResult(next);
         setInstrument(next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument);
         setTimeframe(next.timeframeConfidence === "UNKNOWN" ? "" : next.timeframe);

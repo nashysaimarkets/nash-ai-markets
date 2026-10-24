@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {validateChartPreflight,completedChartPreflight} from '../app/pocket/chart-preflight.ts';
+const valid={status:'READY',instrument:'BTC',instrumentConfidence:'HIGH',timeframe:'1h',timeframeConfidence:'HIGH',currentPrice:'83250.07',currentPriceConfidence:'HIGH',priceScaleVisible:true,candlesReadable:true,enoughHistory:true,sameInstrument:null,issues:[],guidance:'Check chart facts.'};
+for(const status of ['READY','LIMITED','RETAKE'])test(`preserves legitimate ${status} response`,()=>{const v={...valid,status};assert.equal(validateChartPreflight(v),v);assert.deepEqual(completedChartPreflight({status:'completed',output_text:JSON.stringify(v)}),v);});
+for(const [name,value] of [['empty',{}],['null',null],['array',[]],['enum array',{...valid,status:['READY']}],['confidence object',{...valid,instrumentConfidence:{}}],['missing issues',{...valid,issues:undefined}],['string boolean',{...valid,priceScaleVisible:'true'}],['context coercion',{...valid,sameInstrument:[]}],['too many issues',{...valid,issues:Array(5).fill('x')}],['oversized label',{...valid,instrument:'x'.repeat(41)}]])test(`reject ${name}`,()=>assert.throws(()=>validateChartPreflight(value),/Preflight HOLD/));
+for(const status of ['incomplete','failed','cancelled',undefined])test(`reject parseable provider ${status}`,()=>assert.throws(()=>completedChartPreflight({status,output_text:JSON.stringify(valid)}),/did not complete/));
+test('reject malformed JSON and blank text',()=>{assert.throws(()=>completedChartPreflight({status:'completed',output_text:'{'}));assert.throws(()=>completedChartPreflight({status:'completed',output_text:''}));});

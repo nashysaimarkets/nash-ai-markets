@@ -352,7 +352,7 @@ export async function POST(request: Request) {
       max_output_tokens: 7000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_chart_analysis", strict: true, schema } },
     };
-    const analysisRequest = dispatchPocketAnalysisProviderCall("main", analysisEnvelope as unknown as Record<string, unknown>, () => client.responses.create(analysisEnvelope));
+    const analysisRequest = dispatchPocketAnalysisProviderCall("main", analysisEnvelope as unknown as Record<string, unknown>, () => client.responses.create(analysisEnvelope, { signal: request.signal }));
     const precisionInstructions = [
         "You are the precision chart-geometry pass for Pocket Bullseye. Analyse only the first uploaded chart image.",
         "Return geometry in percentages of the complete uploaded image. Do not write a market report and do not infer hidden values.",
@@ -386,7 +386,7 @@ export async function POST(request: Request) {
       max_output_tokens: 4000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
       };
-      return dispatchPocketAnalysisProviderCall(rescue ? "rescue_precision" : "primary_precision", precisionEnvelope as unknown as Record<string, unknown>, () => client.responses.create(precisionEnvelope));
+      return dispatchPocketAnalysisProviderCall(rescue ? "rescue_precision" : "primary_precision", precisionEnvelope as unknown as Record<string, unknown>, () => client.responses.create(precisionEnvelope, { signal: request.signal }));
     };
     const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
