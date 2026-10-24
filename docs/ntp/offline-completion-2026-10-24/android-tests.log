@@ -1,0 +1,48 @@
+✔ unchanged real verifier composes with the new ownership write path (15.024217ms)
+✔ wrong product, expired purchase or wrong account stops before SQL (7.745607ms)
+✔ caller cannot substitute config or verifier while composition imports (1.491579ms)
+✔ authoritative commit conflict cannot be overruled by a passing Google response (2.374033ms)
+✔ one fixed parameterized autocommit statement records ownership but never entitlement (4.257799ms)
+✔ known duplicate receipt is recorded without claiming a new ownership row (0.816861ms)
+✔ linked replacement hash is carried in the same statement (0.460049ms)
+✔ client cannot supply a forged verification result or account (0.554468ms)
+✔ malformed or mismatched candidates never reach SQL (1.698322ms)
+✔ account switches before commit never bind the purchase to the new account (1.382858ms)
+✔ stale, future or expired verification refuses without a write (0.672961ms)
+✔ candidate and configuration are snapshotted across asynchronous work (0.361188ms)
+✔ cancel before or during verification cannot dispatch a database write (0.7421ms)
+✔ cancellation after a confirmed commit is not misreported as rollback (0.49133ms)
+✔ lost commit acknowledgement preserves uncertainty, never retries or exposes driver errors (0.372928ms)
+✔ missing, extra or forged commit receipts remain uncertain (1.086339ms)
+✔ only fixed database denial codes are returned (1.223515ms)
+✔ an acknowledgement for another owner/token/scope is never accepted (1.011053ms)
+✔ invalid input/configuration is rejected before verification (0.887652ms)
+✔ stalled account recheck honours cancellation without dispatching SQL (9.782108ms)
+✔ stalled commit becomes UNCERTAIN without retry or false rollback (10.750934ms)
+✔ late commit acknowledgement does not mutate the returned uncertain result (11.058997ms)
+✔ cancellation in queued pre-dispatch gap cannot write or claim uncertain commit (0.73754ms)
+✔ lookup only sends a token hash through fixed SQL and returns immutable metadata (2.110305ms)
+✔ invalid hash or cancelled lookup cannot reach database (0.585725ms)
+✔ unknown SQL and invalid commit arity cannot reach database (0.30101ms)
+✔ storage errors and malformed lookup receipts are redacted without retry (0.578091ms)
+✔ actual verifier and recorder compose into uncached single-request admission (12.699138ms)
+✔ pending acknowledgement holds by default without side effects (4.051965ms)
+✔ opt-in trusted acknowledgement is followed by authoritative re-verification (2.143082ms)
+✔ ack response alone cannot admit an unchanged pending purchase (1.949539ms)
+✔ ambiguous or stalled acknowledgement holds for reconciliation without retry (27.572995ms)
+✔ cancellation during acknowledgement cannot admit or trigger retry (0.909623ms)
+✔ unknown commit never reaches acknowledgement or admission (26.496069ms)
+✔ every scanner admission rechecks revocation instead of caching successful access (1.066282ms)
+✔ revocation during final account await is observed before admission (0.798132ms)
+✔ cross-app or environment binding cannot authorize a scan (1.451599ms)
+✔ expired malformed wrong-product and denied subscriptions cannot reach commit (1.189249ms)
+✔ malformed signal and pre-cancellation perform no provider work (0.269529ms)
+✔ configuration and trusted services are captured before asynchronous work (0.487672ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.100202

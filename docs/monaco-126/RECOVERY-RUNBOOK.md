@@ -1,3 +1,7 @@
+# Latest offline completion — 24 October 2026
+
+Read [offline completion](../ntp/offline-completion-2026-10-24/README.md) and latest Issue126 receipt first. Source7f8fdfc;72 targeted tests PASS. Genuine multi-backend PostgreSQL gate now PASS at a268e349/run40136673147; actual Android SQL composition PASS at7f8fdfc/run40137181801. Both disposable containers removed. No repeat PG runtime search or PGlite substitute. Older BLOCKED PostgreSQL statements below are superseded. Independent review accepted offline scope; actual provider/native/scanner bindings and signed-device gates remain. Owner need not supply credentials/hardware now. Writer releases after publication; schedules OFF.
+
 # Latest isolated integration continuation — 24 October 2026
 
 Read [integration acceptance](../ntp/integration-acceptance-2026-10-24/README.md) and latest Issue126 receipt first. Tested source78c77ae;104 tests PASS and independent review accepted for offline preparation. No hosted/native-device acceptance claimed. Writer releases after publication. Earlier active claims below are historical, not fresh authority. Do not repeat Apple login/artifact searches or existing Android35+34 evidence. Next: disposable multi-backend PostgreSQL acceptance; no production or provider activity.

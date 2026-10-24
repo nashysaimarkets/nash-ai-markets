@@ -962,5 +962,40 @@
     "schedules": "OFF",
     "nextSafeAction": "Disposable local PostgreSQL multi-backend concurrency acceptance; preserve all prior passing evidence.",
     "publicationResolution": "Latest Issue126 receipt records exact evidence SHA; unchanged historic fields are not current active-writer instructions."
+  },
+  "offlineCompletionContinuation": {
+    "savedAtUtc": "2026-10-24T22:10:25.052620+00:00",
+    "branch": "monaco-offline-completion-20261024-baf",
+    "writer": "offline-completion-baf",
+    "writerStatus": "RELEASED_AFTER_PUBLICATION",
+    "claim": 6390025433,
+    "source": "7f8fdfc0871e0bcc02bb40ec5d95bc4db723bd74",
+    "tree": "0739aab88b6844afa847c450e0d841089b7c4beb",
+    "checkpoint": "docs/ntp/offline-completion-2026-10-24/README.md",
+    "tests": {
+      "androidNode": 40,
+      "igClientWorkspace": 14,
+      "render": 2,
+      "nativePostgres": 10,
+      "androidActualPostgres": 6,
+      "fail": 0,
+      "skip": 0
+    },
+    "pgRun": 40136673147,
+    "androidRun": 40137181801,
+    "disposableDatabaseCleanup": "PASS_CONTAINER_AND_NETWORK_REMOVED",
+    "independentReview": "ACCEPTED_OFFLINE_COMPOSITION",
+    "predecessorCount": "104 verified;304 not substantiated;do not sum overlaps",
+    "noNewOwnerActionRequested": true,
+    "schedules": "OFF",
+    "nextSafeEngineering": "Target-specific Android native/scanner and authenticated notification reconciliation integration; preserve accepted source modules.",
+    "remainingRealGates": [
+      "IG DEMO enablement/rights/configuration",
+      "actual runtime/provider/native bindings",
+      "signed iOS bytes and exact candidate pin",
+      "signed iPhone/Play-device acceptance",
+      "Apple account-holder agreements before later submission"
+    ],
+    "publicationResolution": "Latest Issue126 receipt has exact evidence commit; prior active-writer claims below are historical."
   }
 }

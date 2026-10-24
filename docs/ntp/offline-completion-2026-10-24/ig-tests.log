@@ -1,0 +1,22 @@
+✔ browser bridge forwards opaque reference only through fixed local route (5.674611ms)
+✔ malformed JSON/media type and advertised/streamed oversize fail closed (5.85322ms)
+✔ cancellation bounds stalled response body and cancels stream (5.914581ms)
+✔ late response after cancellation cannot resurrect or keep body open (0.943629ms)
+✔ 429 remains rate-limited and other upstream details remain redacted (1.721306ms)
+✔ invalid reference or already cancelled request cannot reach transport (0.461309ms)
+✔ rejected header or HTTP status cancels noncooperative body before reading (1.044345ms)
+✔ fixed browser deadline bounds noncooperative transport (1.109273ms)
+✔ strict view rejects LIVE, tokens, malformed numbers, duplicates and expired data (2.414506ms)
+✔ connect/refresh/disconnect use one state and remove account data (1.615828ms)
+✔ late response cannot resurrect chart-change, logout or cancellation state (0.526519ms)
+✔ newer disconnect wins over delayed connect (0.592906ms)
+✔ noncooperative timeout and hostile failure remove old data (5.938484ms)
+✔ expiry clears snapshot without polling (51.668231ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 234.859446

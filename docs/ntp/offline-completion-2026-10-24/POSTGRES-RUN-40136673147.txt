@@ -1,0 +1,20 @@
+2026-10-24T22:00:49.9887152Z INDEPENDENT_BACKENDS 86,87
+2026-10-24T22:00:49.9921553Z ✔ real independent PostgreSQL sessions and restricted runtime identity (6.951495ms)
+2026-10-24T22:00:50.0112655Z ✔ native PostgreSQL RLS blocks cross-owner, application and browser access (19.860333ms)
+2026-10-24T22:00:50.0257120Z ✔ overlapping revoke fences a blocked stale save on another backend (14.736621ms)
+2026-10-24T22:00:50.0674101Z QUOTA_OVERLAP_PROVED 6
+2026-10-24T22:00:50.0701980Z ✔ overlapping shared application/account quota reservations cannot overbook (42.681224ms)
+2026-10-24T22:00:50.0868045Z ✔ same-account concurrent cap enforced independently of application cap (17.211598ms)
+2026-10-24T22:00:50.1017510Z ✔ concurrent revocations are monotonic and conditional cleanup preserves newer state (15.218804ms)
+2026-10-24T22:00:50.1193396Z ✔ rollback releases row contention without leaking generation or connection context (17.250291ms)
+2026-10-24T22:00:51.1268268Z ✔ lock timeout fails closed and pooled client recovers after lock release (1007.085946ms)
+2026-10-24T22:00:51.1362255Z ✔ quota expiration uses actual database clock and preserves current reservations (9.371284ms)
+2026-10-24T22:00:51.1447064Z ✔ native rollback of inserted quota charge does not consume allowance (4.146781ms)
+2026-10-24T22:00:51.1641229Z ℹ tests 10
+2026-10-24T22:00:51.1647834Z ℹ pass 10
+2026-10-24T22:00:51.1648321Z ℹ fail 0
+2026-10-24T22:00:51.1649311Z ℹ skipped 0
+2026-10-24T22:00:51.5191601Z  2026-10-24 22:00:37.949 UTC [1] LOG:  starting PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-24T22:00:51.5216769Z  waiting for server to start....2026-10-24 22:00:37.645 UTC [49] LOG:  starting PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-24T22:00:51.5233334Z Stop and remove container: 6c6ebf4458a744488fc89d6213ea676c_postgres17_d3e4c9
+2026-10-24T22:00:51.7038733Z Remove container network: github_network_c34c5f3470344642a99f1fa440f3e97d

@@ -1,0 +1,14 @@
+2026-10-24T22:07:36.3206722Z ✔ real database runtime claims ownership and admits only after fresh verification (54.107645ms)
+2026-10-24T22:07:36.3227120Z ✔ real ownership conflict denies another account before synthetic provider read (3.232857ms)
+2026-10-24T22:07:36.3262411Z ✔ real revocation tombstone denies next uncached scanner check (3.724183ms)
+2026-10-24T22:07:36.3305932Z ✔ real ownership plus synthetic pending acknowledgement remains HOLD by default (4.366464ms)
+2026-10-24T22:07:36.3366986Z ✔ acknowledgement recovery reuses actual owner and re-verifies before admission (5.056087ms)
+2026-10-24T22:07:36.3514276Z ✔ lookup is denied to browser roles and runtime cannot mutate ownership tables (15.329995ms)
+2026-10-24T22:07:36.3706691Z ℹ tests 6
+2026-10-24T22:07:36.3709003Z ℹ pass 6
+2026-10-24T22:07:36.3709394Z ℹ fail 0
+2026-10-24T22:07:36.3710155Z ℹ skipped 0
+2026-10-24T22:07:36.7424050Z  2026-10-24 22:07:28.270 UTC [1] LOG:  starting PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-24T22:07:36.7439999Z  waiting for server to start....2026-10-24 22:07:27.959 UTC [49] LOG:  starting PostgreSQL 17.11 (Debian 17.11-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-24T22:07:36.7456148Z Stop and remove container: b4ded9cc629047bf94a99171b6a526af_postgres17_0b5838
+2026-10-24T22:07:36.9353286Z Remove container network: github_network_faf3a530415c451db181dbdea0f4f4d3

@@ -1,0 +1,10 @@
+✔ customer panel is absent without availability and trusted owner scope (4.753236ms)
+✔ configured private panel still requires explicit browser opt-in and contains no credential form (4.232313ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 380.619738
