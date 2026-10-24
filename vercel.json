@@ -31,7 +31,8 @@
       "monaco-ig-premium-20261024-c3ee": false,
       "monaco-access-20261024": false,
       "monaco-ig-offline-20261024": false,
-      "monaco-integration-acceptance-20261024-baf": false
+      "monaco-integration-acceptance-20261024-baf": false,
+      "monaco-offline-completion-20261024-baf": false
     }
   }
 }
