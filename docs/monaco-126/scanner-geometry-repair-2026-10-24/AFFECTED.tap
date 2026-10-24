@@ -1,0 +1,418 @@
+TAP version 13
+# Subtest: explicit NONE and empty observations survive calibration so independent geometry remains measurable
+ok 1 - explicit NONE and empty observations survive calibration so independent geometry remains measurable
+  ---
+  duration_ms: 6.376015
+  type: 'test'
+  ...
+# Subtest: each early NONE exit retains explicitly supplied empty observations
+ok 2 - each early NONE exit retains explicitly supplied empty observations
+  ---
+  duration_ms: 1.540566
+  type: 'test'
+  ...
+# Subtest: missing observations are never fabricated as an empty array on early or blocked-chain paths
+ok 3 - missing observations are never fabricated as an empty array on early or blocked-chain paths
+  ---
+  duration_ms: 1.975258
+  type: 'test'
+  ...
+# Subtest: malformed observations retain their malformed meaning through every calibration path
+ok 4 - malformed observations retain their malformed meaning through every calibration path
+  ---
+  duration_ms: 6.840603
+  type: 'test'
+  ...
+# Subtest: discarded zones cannot erase nonempty witnesses and masquerade as a known-empty NONE result
+ok 5 - discarded zones cannot erase nonempty witnesses and masquerade as a known-empty NONE result
+  ---
+  duration_ms: 1.051219
+  type: 'test'
+  ...
+# Subtest: a blocked evidence chain preserves the reported witness without granting verification
+ok 6 - a blocked evidence chain preserves the reported witness without granting verification
+  ---
+  duration_ms: 0.409827
+  type: 'test'
+  ...
+# Subtest: absent liquidity cannot acquire fabricated observations
+ok 7 - absent liquidity cannot acquire fabricated observations
+  ---
+  duration_ms: 0.341862
+  type: 'test'
+  ...
+# Subtest: retained main inverted bounds stay invalid instead of manufacturing bottom101 and a readable scale
+ok 8 - retained main inverted bounds stay invalid instead of manufacturing bottom101 and a readable scale
+  ---
+  duration_ms: 0.520612
+  type: 'test'
+  ...
+# Subtest: invalid bounds cannot be repaired by defaulting or clamping despite three consistent anchors
+ok 9 - invalid bounds cannot be repaired by defaulting or clamping despite three consistent anchors
+  ---
+  duration_ms: 1.368571
+  type: 'test'
+  ...
+# Subtest: an omitted bounds property stays omitted while all dependent geometry is withheld
+ok 10 - an omitted bounds property stays omitted while all dependent geometry is withheld
+  ---
+  duration_ms: 0.792359
+  type: 'test'
+  ...
+# Subtest: missing or malformed level arrays do not bypass the invalid-bounds scale gate
+ok 11 - missing or malformed level arrays do not bypass the invalid-bounds scale gate
+  ---
+  duration_ms: 0.251687
+  type: 'test'
+  ...
+# Subtest: invalid-bound liquidity stays blocked and preserves empty, missing, malformed and rejected witnesses
+ok 12 - invalid-bound liquidity stays blocked and preserves empty, missing, malformed and rejected witnesses
+  ---
+  duration_ms: 0.295224
+  type: 'test'
+  ...
+# Subtest: a reported NONE does not turn invalid bounds into a verified empty result
+ok 13 - a reported NONE does not turn invalid bounds into a verified empty result
+  ---
+  duration_ms: 0.10685
+  type: 'test'
+  ...
+# Subtest: calibration cannot make empty bounds eligible for independent original-pixel placement
+ok 14 - calibration cannot make empty bounds eligible for independent original-pixel placement
+  ---
+  duration_ms: 1.387566
+  type: 'test'
+  ...
+# Subtest: valid percentage geometry keeps existing calibration and verified liquidity behavior
+ok 15 - valid percentage geometry keeps existing calibration and verified liquidity behavior
+  ---
+  duration_ms: 0.418701
+  type: 'test'
+  ...
+# Subtest: retained fractional coordinates stay literal percentages without a minimum-size repair or unit guess
+ok 16 - retained fractional coordinates stay literal percentages without a minimum-size repair or unit guess
+  ---
+  duration_ms: 0.424295
+  type: 'test'
+  ...
+# Subtest: non-object analysis inputs retain their existing no-crash behavior
+ok 17 - non-object analysis inputs retain their existing no-crash behavior
+  ---
+  duration_ms: 0.117925
+  type: 'test'
+  ...
+# Subtest: benchmark preserves both sides: US500 30m range
+ok 18 - benchmark preserves both sides: US500 30m range
+  ---
+  duration_ms: 0.845404
+  type: 'test'
+  ...
+# Subtest: benchmark preserves both sides: US500 4h structure
+ok 19 - benchmark preserves both sides: US500 4h structure
+  ---
+  duration_ms: 0.143663
+  type: 'test'
+  ...
+# Subtest: benchmark preserves both sides: decimal equity
+ok 20 - benchmark preserves both sides: decimal equity
+  ---
+  duration_ms: 0.166561
+  type: 'test'
+  ...
+# Subtest: legacy saved decisions are migrated without changing chart bytes
+ok 21 - legacy saved decisions are migrated without changing chart bytes
+  ---
+  duration_ms: 0.281897
+  type: 'test'
+  ...
+# Subtest: invalid local records are skipped instead of breaking the vault
+ok 22 - invalid local records are skipped instead of breaking the vault
+  ---
+  duration_ms: 0.150342
+  type: 'test'
+  ...
+# Subtest: poor evidence always fails closed and cannot retain an inflated grade
+ok 23 - poor evidence always fails closed and cannot retain an inflated grade
+  ---
+  duration_ms: 0.141184
+  type: 'test'
+  ...
+# Subtest: score and grade are made internally consistent for readable charts
+ok 24 - score and grade are made internally consistent for readable charts
+  ---
+  duration_ms: 0.470093
+  type: 'test'
+  ...
+# Subtest: one-more-view prompts exclude trader plan fields
+ok 25 - one-more-view prompts exclude trader plan fields
+  ---
+  duration_ms: 0.467579
+  type: 'test'
+  ...
+# Subtest: readable price anchors calibrate horizontal levels into the candle plot
+ok 26 - readable price anchors calibrate horizontal levels into the candle plot
+  ---
+  duration_ms: 0.220947
+  type: 'test'
+  ...
+# Subtest: readable candles preserve visual support and resistance when exact scale prices cannot be verified
+ok 27 - readable candles preserve visual support and resistance when exact scale prices cannot be verified
+  ---
+  duration_ms: 0.265109
+  type: 'test'
+  ...
+# Subtest: dedicated scale anchors override a conservative prose-pass scale flag
+ok 28 - dedicated scale anchors override a conservative prose-pass scale flag
+  ---
+  duration_ms: 0.146291
+  type: 'test'
+  ...
+# Subtest: verified linear scale accepts extrapolated levels that remain inside the plot
+ok 29 - verified linear scale accepts extrapolated levels that remain inside the plot
+  ---
+  duration_ms: 0.18848
+  type: 'test'
+  ...
+# Subtest: mislabelled horizontal levels are classified by current market location
+ok 30 - mislabelled horizontal levels are classified by current market location
+  ---
+  duration_ms: 0.158464
+  type: 'test'
+  ...
+# Subtest: unverified levels retain visual geometry while out-of-scale verified claims fail closed
+ok 31 - unverified levels retain visual geometry while out-of-scale verified claims fail closed
+  ---
+  duration_ms: 0.193823
+  type: 'test'
+  ...
+# Subtest: a price whose claimed pixel row disagrees with the scale is withheld
+ok 32 - a price whose claimed pixel row disagrees with the scale is withheld
+  ---
+  duration_ms: 0.1042
+  type: 'test'
+  ...
+# Subtest: two wide scale anchors restore a geometrically matching level
+ok 33 - two wide scale anchors restore a geometrically matching level
+  ---
+  duration_ms: 0.117847
+  type: 'test'
+  ...
+# Subtest: a small mobile reading-crop offset keeps a scale-verified level
+ok 34 - a small mobile reading-crop offset keeps a scale-verified level
+  ---
+  duration_ms: 0.368879
+  type: 'test'
+  ...
+# Subtest: the personal risk desk calculates from explicit customer inputs only
+ok 35 - the personal risk desk calculates from explicit customer inputs only
+  ---
+  duration_ms: 0.218706
+  type: 'test'
+  ...
+# Subtest: the complete Pocket journey retains privacy, failure and duplicate-request safeguards
+ok 36 - the complete Pocket journey retains privacy, failure and duplicate-request safeguards
+  ---
+  duration_ms: 28.054543
+  type: 'test'
+  ...
+# Subtest: server beta budgets stop duplicate cost before the provider is called
+ok 37 - server beta budgets stop duplicate cost before the provider is called
+  ---
+  duration_ms: 23.714863
+  type: 'test'
+  ...
+# Subtest: beta budgets are isolated by action and requester and reset after the window
+ok 38 - beta budgets are isolated by action and requester and reset after the window
+  ---
+  duration_ms: 0.537365
+  type: 'test'
+  ...
+# Subtest: live torture harness rasterizes synthetic SVG fixtures before declaring PNG
+ok 39 - live torture harness rasterizes synthetic SVG fixtures before declaring PNG
+  ---
+  duration_ms: 1.052189
+  type: 'test'
+  ...
+# Subtest: production liquidity is verified only with independent spatial screenshot observations
+ok 40 - production liquidity is verified only with independent spatial screenshot observations
+  ---
+  duration_ms: 0.300316
+  type: 'test'
+  ...
+# Subtest: zone endpoints and prose cannot substitute for missing or duplicate evidence
+ok 41 - zone endpoints and prose cannot substitute for missing or duplicate evidence
+  ---
+  duration_ms: 0.28801
+  type: 'test'
+  ...
+# Subtest: a verified chain on another row, side or outside the zone does not verify this zone
+ok 42 - a verified chain on another row, side or outside the zone does not verify this zone
+  ---
+  duration_ms: 0.409353
+  type: 'test'
+  ...
+# Subtest: malformed and out-of-plot observations fail closed without throwing
+ok 43 - malformed and out-of-plot observations fail closed without throwing
+  ---
+  duration_ms: 0.241748
+  type: 'test'
+  ...
+# Subtest: unclear charts and unverified bounds cannot earn an Evidence Chain verification
+ok 44 - unclear charts and unverified bounds cannot earn an Evidence Chain verification
+  ---
+  duration_ms: 0.315664
+  type: 'test'
+  ...
+# Subtest: the provider schema and prompt request real observations rather than invented endpoint evidence
+ok 45 - the provider schema and prompt request real observations rather than invented endpoint evidence
+  ---
+  duration_ms: 0.302025
+  type: 'test'
+  ...
+# Subtest: Evidence Chain never upgrades a NONE or PARTIAL provider state
+ok 46 - Evidence Chain never upgrades a NONE or PARTIAL provider state
+  ---
+  duration_ms: 0.163861
+  type: 'test'
+  ...
+# Subtest: one corroborated zone cannot verify a second uncorroborated displayed zone
+ok 47 - one corroborated zone cannot verify a second uncorroborated displayed zone
+  ---
+  duration_ms: 0.131215
+  type: 'test'
+  ...
+# Subtest: production interval contract retains exact endpoints and rejects incomplete or uncovered ranges
+ok 48 - production interval contract retains exact endpoints and rejects incomplete or uncovered ranges
+  ---
+  duration_ms: 0.533442
+  type: 'test'
+  ...
+# Subtest: a verified repeated-high pool does not certify a sweep from prose alone
+ok 49 - a verified repeated-high pool does not certify a sweep from prose alone
+  ---
+  duration_ms: 0.331443
+  type: 'test'
+  ...
+# Subtest: event kind, side, row and confidence must match the defended pool
+ok 50 - event kind, side, row and confidence must match the defended pool
+  ---
+  duration_ms: 0.484897
+  type: 'test'
+  ...
+# Subtest: a sweep must occur after the two visible extrema, never before or at them
+ok 51 - a sweep must occur after the two visible extrema, never before or at them
+  ---
+  duration_ms: 9.386514
+  type: 'test'
+  ...
+# Subtest: two distinct same-side structural observations are required before the event
+ok 52 - two distinct same-side structural observations are required before the event
+  ---
+  duration_ms: 0.773591
+  type: 'test'
+  ...
+# Subtest: explicit later matching observations retain sweep, reclaim and rejection events
+ok 53 - explicit later matching observations retain sweep, reclaim and rejection events
+  ---
+  duration_ms: 0.687165
+  type: 'test'
+  ...
+# Subtest: an unrequested event is never manufactured from an observation
+ok 54 - an unrequested event is never manufactured from an observation
+  ---
+  duration_ms: 0.312819
+  type: 'test'
+  ...
+# Subtest: every pattern vertex requires a distinct correctly ordered original candle endpoint
+ok 55 - every pattern vertex requires a distinct correctly ordered original candle endpoint
+  ---
+  duration_ms: 1.32437
+  type: 'test'
+  ...
+# Subtest: liquidity rows require independent prices and distinct correct-side endpoints; an unsupported third touch is not dropped
+ok 56 - liquidity rows require independent prices and distinct correct-side endpoints; an unsupported third touch is not dropped
+  ---
+  duration_ms: 1.239307
+  type: 'test'
+  ...
+# Subtest: compressed candles require a regular mixed-color run; histograms, isolated rectangles and malformed rasters stay absent
+ok 57 - compressed candles require a regular mixed-color run; histograms, isolated rectangles and malformed rasters stay absent
+  ---
+  duration_ms: 42.312917
+  type: 'test'
+  ...
+# Subtest: dedicated liquidity intervals preserve exact price endpoints, including zero-width lines
+ok 58 - dedicated liquidity intervals preserve exact price endpoints, including zero-width lines
+  ---
+  duration_ms: 0.868702
+  type: 'test'
+  ...
+# Subtest: original levels use independently read original-price pixels, not reported row coordinates
+ok 59 - original levels use independently read original-price pixels, not reported row coordinates
+  ---
+  duration_ms: 0.217117
+  type: 'test'
+  ...
+# Subtest: unconfirmed identity, model-only anchors, wrong axis readings and uncertain scale hold all placement
+ok 60 - unconfirmed identity, model-only anchors, wrong axis readings and uncertain scale hold all placement
+  ---
+  duration_ms: 0.330179
+  type: 'test'
+  ...
+# Subtest: uncovered prices, another source, malformed prices and invalid bounds are never extrapolated or repaired
+ok 61 - uncovered prices, another source, malformed prices and invalid bounds are never extrapolated or repaired
+  ---
+  duration_ms: 0.226194
+  type: 'test'
+  ...
+# Subtest: drops a named pattern when geometry is too weak to defend
+ok 62 - drops a named pattern when geometry is too weak to defend
+  ---
+  duration_ms: 0.355688
+  type: 'test'
+  ...
+# Subtest: keeps a defensible pattern with meaningful geometry
+ok 63 - keeps a defensible pattern with meaningful geometry
+  ---
+  duration_ms: 0.293032
+  type: 'test'
+  ...
+# Subtest: downgrades low-confidence confirmed patterns instead of presenting false certainty
+ok 64 - downgrades low-confidence confirmed patterns instead of presenting false certainty
+  ---
+  duration_ms: 0.205684
+  type: 'test'
+  ...
+# Subtest: removes all pattern claims when candles are unreadable
+ok 65 - removes all pattern claims when candles are unreadable
+  ---
+  duration_ms: 0.126811
+  type: 'test'
+  ...
+# Subtest: production pattern schema requires three evidence anchors just like the post-model gate
+ok 66 - production pattern schema requires three evidence anchors just like the post-model gate
+  ---
+  duration_ms: 7.226747
+  type: 'test'
+  ...
+# Subtest: mixed malformed pattern geometry fails closed
+ok 67 - mixed malformed pattern geometry fails closed
+  ---
+  duration_ms: 0.618479
+  type: 'test'
+  ...
+# Subtest: repeated points cannot impersonate three distinct visible pattern anchors
+ok 68 - repeated points cannot impersonate three distinct visible pattern anchors
+  ---
+  duration_ms: 0.226934
+  type: 'test'
+  ...
+1..68
+# tests 68
+# suites 0
+# pass 68
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 283.314282

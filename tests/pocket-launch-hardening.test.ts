@@ -47,7 +47,7 @@ test("poor evidence always fails closed and cannot retain an inflated grade", ()
   assert.equal(result.setupScore.grade, "D");
   assert.equal(result.ticker, "UNKNOWN");
   assert.equal(result.timeframe, "UNKNOWN");
-  assert.equal(result.levels[0].price, "");
+  assert.deepEqual(result.levels, [], "Missing plotting bounds cannot retain drawable geometry");
   assert.deepEqual(result.fibLevels, []);
 });
 

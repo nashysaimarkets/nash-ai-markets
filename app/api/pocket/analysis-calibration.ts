@@ -1,4 +1,4 @@
-import { assessProductionLiquidityChain, corroborateLiquidityEvent } from "./liquidity-chain.ts";
+import { assessProductionLiquidityChain, corroborateLiquidityEvent, validPlotBounds } from "./liquidity-chain.ts";
 import { exactAxisPrice } from "../../pocket/axis-verification.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -98,9 +98,12 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
   const evidence = typeof source.evidence === "string" ? source.evidence.trim() : "";
   const confirmation = typeof source.confirmation === "string" ? source.confirmation.trim() : "";
   const invalidation = typeof source.invalidation === "string" ? source.invalidation.trim() : "";
-  const bounds = boundsValue && typeof boundsValue === "object" ? boundsValue as JsonRecord : {};
-  const left = boundedPercent(bounds.left, 4), top = boundedPercent(bounds.top, 5);
-  const right = Math.max(left + 1, boundedPercent(bounds.right, 96)), bottom = Math.max(top + 1, boundedPercent(bounds.bottom, 95));
+  if (!validPlotBounds(boundsValue)) {
+    const chain = assessProductionLiquidityChain(source.observations, quality, boundsValue, []);
+    return { ...empty, state: "PARTIAL", confidence, evidence, confirmation, invalidation,
+      evidenceChain: { status: chain.status, reasons: chain.reasons } };
+  }
+  const { left, top, right, bottom } = boundsValue;
   const anchors = Array.isArray(anchorsValue) ? anchorsValue.flatMap((item) => item && typeof item === "object"
     ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
     .filter((item): item is ScaleAnchor => item.price !== null && item.price > 0 && item.y !== null && item.y >= 0 && item.y <= 100) : [];
@@ -174,6 +177,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
   const score = analysis.setupScore && typeof analysis.setupScore === "object"
     ? analysis.setupScore as JsonRecord
     : {};
+  const plotBounds = validPlotBounds(analysis.plotBounds) ? analysis.plotBounds : null;
 
   const unreadable = quality.chartReadability === "POOR" || quality.candlesReadable === false;
   const overall = unreadable ? Math.min(54, boundedScore(score.overall)) : boundedScore(score.overall);
@@ -189,12 +193,8 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     ).slice(0, 2);
   }
 
-  if (Array.isArray(analysis.levels) && analysis.plotBounds && typeof analysis.plotBounds === "object") {
-    const rawBounds = analysis.plotBounds as JsonRecord;
-    const left = boundedPercent(rawBounds.left, 4);
-    const top = boundedPercent(rawBounds.top, 5);
-    const right = Math.max(left + 1, boundedPercent(rawBounds.right, 96));
-    const bottom = Math.max(top + 1, boundedPercent(rawBounds.bottom, 95));
+  if (Array.isArray(analysis.levels) && plotBounds) {
+    const { left, top, right, bottom } = plotBounds;
     const anchors = Array.isArray(analysis.priceScaleAnchors) ? analysis.priceScaleAnchors
       .flatMap((item) => item && typeof item === "object" ? [{ price: numericPrice((item as JsonRecord).price), y: numericPrice((item as JsonRecord).y) }] : [])
       .filter((item): item is { price: number; y: number } => item.price !== null && item.price > 0 && item.y !== null && item.y >= 0 && item.y <= 100)
@@ -252,6 +252,11 @@ export function calibratePocketAnalysis(value: unknown): unknown {
         y2: horizontal ? y : Math.max(top, Math.min(bottom, boundedPercent(level.y2, y))),
       }];
     });
+  } else if (!plotBounds) {
+    // Preserve the raw missing/malformed bounds as unknown evidence. Filtering
+    // drawable claims does not repair the plot or assert that no structure exists.
+    calibrated.levels = [];
+    calibrated.fibLevels = [];
   }
 
   calibrated.liquidity = calibratedLiquidity(
@@ -275,7 +280,7 @@ export function calibratePocketAnalysis(value: unknown): unknown {
     : [];
   // The dedicated geometry pass is authoritative for numeric overlays. Do not
   // erase its verified prices because the broader prose pass was conservative.
-  const hasVerifiedScale = Boolean(verifiedLinearScale(verifiedAnchors as ScaleAnchor[]));
+  const hasVerifiedScale = Boolean(plotBounds && verifiedLinearScale(verifiedAnchors as ScaleAnchor[]));
   if (hasVerifiedScale) {
     calibrated.evidenceQuality = { ...quality, scaleReadable: true };
   } else {

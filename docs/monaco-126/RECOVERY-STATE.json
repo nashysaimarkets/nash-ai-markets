@@ -1,4 +1,32 @@
 {
+  "currentContinuation": {
+    "asOfUtc": "2026-10-24T13:21:00Z",
+    "status": "BOUNDS_REPAIR_REVIEWED_HOSTED_CI_PENDING",
+    "branch": "monaco-scanner-geometry-repair-126-20261024",
+    "checkpoint": "docs/monaco-126/scanner-geometry-repair-2026-10-24/CHECKPOINT.md",
+    "baseCommit": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+    "sourceCommitResolution": "Read enclosing publication and latest Issue126 receipt; never substitute unchanged base for repaired source.",
+    "writerClaim": 6384437116,
+    "writerClaimExtension": 6384669426,
+    "writerStatus": "ACTIVE",
+    "firstRevisedPaidCase": "COMPLETE_GEOMETRY_FAILED",
+    "paidOutcomeCommit": "b4d5a71c8077f43a83c29e551eb4cce5bb463e19",
+    "frozenPaidRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "remainingPaidCases": "HOLD",
+    "runnerLogin": false,
+    "runnerSessions": 0,
+    "temporaryEnvironmentBranchRulesRemoved": true,
+    "migrationAlreadyInstalled": true,
+    "doNotRepeat": [
+      "key setup",
+      "scope approval",
+      "migration installation",
+      "consumed case execution",
+      "unchanged acceptance suites"
+    ],
+    "schedules": "OFF",
+    "historicalFieldsBelow": "Preserved historical snapshots. This currentContinuation and newer Issue126 receipts take precedence."
+  },
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
   "savedAtUtc": "2026-10-21T19:41:49.078847+00:00",

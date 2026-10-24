@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: retained main inverted bounds stay invalid instead of manufacturing bottom101 and a readable scale
+ok 1 - retained main inverted bounds stay invalid instead of manufacturing bottom101 and a readable scale
+  ---
+  duration_ms: 4.110275
+  type: 'test'
+  ...
+# Subtest: invalid bounds cannot be repaired by defaulting or clamping despite three consistent anchors
+ok 2 - invalid bounds cannot be repaired by defaulting or clamping despite three consistent anchors
+  ---
+  duration_ms: 1.770373
+  type: 'test'
+  ...
+# Subtest: an omitted bounds property stays omitted while all dependent geometry is withheld
+ok 3 - an omitted bounds property stays omitted while all dependent geometry is withheld
+  ---
+  duration_ms: 2.315465
+  type: 'test'
+  ...
+# Subtest: missing or malformed level arrays do not bypass the invalid-bounds scale gate
+ok 4 - missing or malformed level arrays do not bypass the invalid-bounds scale gate
+  ---
+  duration_ms: 0.25773
+  type: 'test'
+  ...
+# Subtest: invalid-bound liquidity stays blocked and preserves empty, missing, malformed and rejected witnesses
+ok 5 - invalid-bound liquidity stays blocked and preserves empty, missing, malformed and rejected witnesses
+  ---
+  duration_ms: 0.400918
+  type: 'test'
+  ...
+# Subtest: a reported NONE does not turn invalid bounds into a verified empty result
+ok 6 - a reported NONE does not turn invalid bounds into a verified empty result
+  ---
+  duration_ms: 0.222335
+  type: 'test'
+  ...
+# Subtest: calibration cannot make empty bounds eligible for independent original-pixel placement
+ok 7 - calibration cannot make empty bounds eligible for independent original-pixel placement
+  ---
+  duration_ms: 2.218018
+  type: 'test'
+  ...
+# Subtest: valid percentage geometry keeps existing calibration and verified liquidity behavior
+ok 8 - valid percentage geometry keeps existing calibration and verified liquidity behavior
+  ---
+  duration_ms: 0.494781
+  type: 'test'
+  ...
+# Subtest: retained fractional coordinates stay literal percentages without a minimum-size repair or unit guess
+ok 9 - retained fractional coordinates stay literal percentages without a minimum-size repair or unit guess
+  ---
+  duration_ms: 0.385359
+  type: 'test'
+  ...
+# Subtest: non-object analysis inputs retain their existing no-crash behavior
+ok 10 - non-object analysis inputs retain their existing no-crash behavior
+  ---
+  duration_ms: 0.271759
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 95.538353

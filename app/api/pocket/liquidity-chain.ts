@@ -2,15 +2,22 @@ import { assessLiquidity, type LiquidityEvidence, type LiquidityAssessment } fro
 
 type RecordValue = Record<string, unknown>;
 type Zone = {side: "BUY_SIDE" | "SELL_SIDE"; x: number; x2: number; y: number};
+type PlotBounds = {left: number; top: number; right: number; bottom: number};
 const blocked = (reason: string): LiquidityAssessment => ({status:"BLOCKED",zones:[],reasons:[reason]});
+
+/** Structural percentage validity only; this does not verify source pixels. */
+export function validPlotBounds(bounds: unknown): bounds is PlotBounds {
+  if (!bounds || typeof bounds !== "object" || Array.isArray(bounds)) return false;
+  const plot = bounds as RecordValue;
+  const {left, top, right, bottom} = plot;
+  return [left,top,right,bottom].every(value => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100) &&
+    (left as number) < (right as number) && (top as number) < (bottom as number);
+}
 
 /** Only explicit screenshot observations are evidence; line endpoints are never synthesized. */
 export function assessProductionLiquidityChain(observations: unknown, quality: RecordValue, bounds: unknown, zones: Zone[]): LiquidityAssessment {
-  const plot = bounds && typeof bounds === "object" ? bounds as RecordValue : {};
-  const {left, top, right, bottom} = plot;
-  const validBounds = [left,top,right,bottom].every(value => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100) &&
-    (left as number) < (right as number) && (top as number) < (bottom as number);
-  if (!validBounds) return blocked("PLOT_BOUNDS_UNVERIFIED");
+  if (!validPlotBounds(bounds)) return blocked("PLOT_BOUNDS_UNVERIFIED");
+  const {left, top, right, bottom} = bounds;
   if (!Array.isArray(observations)) return blocked("INSUFFICIENT_EVIDENCE");
   if (observations.length > 12) return blocked("INVALID_EVIDENCE_CONTRACT");
   if (observations.some(point => !point || typeof point !== "object" ||
