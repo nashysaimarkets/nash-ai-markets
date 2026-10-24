@@ -46,7 +46,7 @@ test("blank current prices and blank level prices cannot satisfy both precision 
     { currentPrice: "", levels: [{ price: "-10" }, { price: "10" }] },
   ]) {
     let calls = 0;
-    const read = make(async () => { calls++; return { output_text: JSON.stringify(first) }; }, recoverPrecisionGeometry);
+    const read = make(async () => { calls++; return { status: "completed", output_text: JSON.stringify(first) }; }, recoverPrecisionGeometry);
     await read("image", "test", null);
     assert.equal(calls, 2);
   }

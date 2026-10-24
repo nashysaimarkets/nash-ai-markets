@@ -85,9 +85,12 @@ function calibratedPatterns(value: unknown, candlesReadable: boolean) {
 }
 
 function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsValue: unknown, anchorsValue: unknown, quality: JsonRecord) {
-  const empty = { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [] };
+  const source = value && typeof value === "object" ? value as JsonRecord : {};
+  // Preserve the witness field even when claims are held. Explicit [] means
+  // no reported witnesses; missing/malformed or rejected nonempty evidence
+  // must not be rewritten as known-empty by the calibration/scorer boundary.
+  const empty = { state: "NONE", event: "NONE", confidence: "LOW", evidence: "", confirmation: "", invalidation: "", zones: [], observations: source.observations };
   if (!candlesReadable || !value || typeof value !== "object") return empty;
-  const source = value as JsonRecord;
   const rawState = source.state === "VERIFIED" || source.state === "PARTIAL" ? source.state : "NONE";
   if (rawState === "NONE") return empty;
   const confidence = source.confidence === "HIGH" || source.confidence === "MEDIUM" ? source.confidence : "LOW";
@@ -137,7 +140,7 @@ function calibratedLiquidity(value: unknown, candlesReadable: boolean, boundsVal
   const chain = assessProductionLiquidityChain(source.observations, quality, boundsValue, zones);
   const state = rawState === "VERIFIED" && confidence !== "LOW" && confirmation && invalidation && chain.status === "VERIFIED" ? "VERIFIED" : "PARTIAL";
   return { state, event: chain.status === "VERIFIED" ? corroborateLiquidityEvent(event, source.observations, zones) : "NONE", confidence, evidence, confirmation, invalidation, zones,
-    observations: chain.status === "VERIFIED" ? source.observations : [],
+    observations: source.observations,
     evidenceChain: {status:chain.status,reasons:chain.reasons} };
 }
 
