@@ -1,14 +1,14 @@
 {
   "currentContinuation": {
-    "asOfUtc": "2026-10-24T16:22:54.312419+00:00",
-    "status": "V2_D002_UNUSED_PERMIT_EXPIRED_SAME_RUN_WAITING_OFFLINE_AMENDMENT_ONLY",
+    "asOfUtc": "2026-10-24T16:46:55.138Z",
+    "status": "V2_D002_RECOVERY_PROPOSAL_PUBLISHED_TESTED_REVIEWED_AWAITING_DISTINCT_OWNER_AMENDMENT",
     "branch": "monaco-scanner-image-geometry-126-20261024",
     "pullRequest": "https://github.com/nashysaimarkets/nash-ai-markets/pull/147",
     "pullRequestState": "DRAFT",
     "checkpoint": "docs/monaco-126/scanner-image-recovery-2026-10-24/CHECKPOINT.md",
-    "baselineCanonicalFilesCommit": "156417b4443068309a33c3364438948499775fad",
-    "latestKnownDocumentationCommit": "546cd04ca84f71b1830d5712c85a424f0a2e3fc2",
-    "latestKnownDocumentationTree": "366afbcbabb211d73274620552c2aeb67fafd4a9",
+    "baselineCanonicalFilesCommit": "64db45a872031cb5c4754112b5c3a0991be8c0bb",
+    "latestKnownDocumentationCommit": "64db45a872031cb5c4754112b5c3a0991be8c0bb",
+    "latestKnownDocumentationTree": "077dd6db6a365229bba11a957652ceb5aa9cb78f",
     "historicalPublishedExecutableSourceCommit": "156417b4443068309a33c3364438948499775fad",
     "historicalPublishedExecutableSourceTree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
     "candidateSourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
@@ -301,7 +301,7 @@
       "repairAdditionalReservationMicroUsd": 0,
       "originalHistoryPreserved": true,
       "noRefundOrResetClaimed": true,
-      "observationMeaning": "Preserved last retained accounting. The expired d002 permit was unclaimed/unsent in the cited observation and added no case reservation there; actual billed costs remain unknown. This draft is not a new financial database reconciliation."
+      "observationMeaning": "Preserved last retained accounting. The expired d002 permit was unclaimed/unsent in the cited observation and added no case reservation there; actual billed costs remain unknown. This draft is not a new financial database reconciliation. The local synthetic SQL suite and proposal publication add no actual claim, provider call or billing evidence."
     },
     "runnerLogin": false,
     "runnerSessions": 0,
@@ -332,13 +332,13 @@
       "consumed case execution",
       "unchanged acceptance suites"
     ],
-    "historicalFieldsBelow": "The previously accepted repair/CI currentContinuation is retained intact as the last continuationHistory entry, alongside all earlier stages. Its successful repair evidence remains accepted; its former next-case preparation and all-branch-cleanup wording is superseded by this exact expired-unused d002 record. Other older top-level fields remain historical snapshots.",
-    "nextSafeAction": "Prepare the bounded additive unused-test expiry amendment, complete actual offline SQL checks and independent review, and publish its concrete source/test/review evidence. Then request only the new one-time test-window recovery permission; no additional scan or spending approval is requested. The current immutable permit has no renewal path, so keep the same run40105387615/job120905891814 waiting, runner NOLOGIN/zero sessions and all paid dispatch HOLD. Do not install, activate or release until distinct amendment authority and the exact actual lease/identity/history/budget/role observations are complete. Keep root ownership ACTIVE and preserve the single exact protected branch rule while this legitimate continuation is prepared.",
-    "writerContinuationReason": "Root retains ownership while the exact unused-expiry continuation is prepared and independently reviewed offline.",
+    "historicalFieldsBelow": "All previous continuationHistory entries and the prior expired-unused currentContinuation are retained unchanged. This proposal checkpoint supersedes only the unfinished amendment-preparation next step. The original expiry, accepted app/image evidence, holds and cleanup observations remain separate historical records.",
+    "nextSafeAction": "Present the published, tested and independently reviewed concrete expiry-recovery proposal and its exact affirmative approval prompt. Ask only for the new one-time unused-test-window amendment, not another scan, key, budget or spending approval. Until that distinct owner decision is recorded and the exact fresh lease/identity/history/budget/role witnesses are independently accepted, keep the same run40105387615/job120905891814 pending and all paid dispatch HOLD. Do not install, activate or release from this proposal alone.",
+    "writerContinuationReason": "Root retains ownership while the published proposal awaits the distinct one-time owner amendment and the same pending run remains protected.",
     "nextNamedCasePreparation": {
       "caseId": "v2-d002",
       "sourceCaseId": "d002",
-      "status": "HOLD_EXPIRED_UNUSED_PERMIT_CURRENT_CONTRACT_HAS_NO_RENEWAL",
+      "status": "HOLD_AWAITING_DISTINCT_OWNER_EXPIRY_AMENDMENT",
       "existingOwnerApprovalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
       "authorityAssessment": "Root read the existing owner approval and received an independent bounded assessment permitting the next named case under the unchanged approved runner, followed by a separately source-bound browser measurement.",
       "unchangedPaidRuntimeCommit": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
@@ -346,9 +346,9 @@
       "separateBrowserMeasurementSourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
       "separateBrowserMeasurementSourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
       "requiresBeforePaidDispatch": [
-        "A legitimate separately authorised and independently reviewed expiry-recovery amendment, if pursued",
-        "Actual installation and independently observed exact lease/permit state under that amendment",
-        "Fresh exact case/run/source/identity/history/budget/role witnesses and bounded activation/protected release"
+        "Distinct owner approval of this concrete one-time unused-test-window amendment",
+        "Fresh exact pending-run/ledger/identity/history/budget/role witnesses; one reviewed atomic install and grant while runner remains NOLOGIN",
+        "Independent committed lease/protocol observation, bounded activation, protected release, and normal terminal reconciliation/cleanup"
       ],
       "executionReady": false,
       "paidStatus": "HOLD",
@@ -358,14 +358,15 @@
       "preserveConsumedCasesAndExistingLedgerHistory": true,
       "completedPrerequisites": [
         "Independently accepted combined exact-source CI",
-        "Independently accepted geometry-only result for 13 eligible candidates on five retained development pairs"
+        "Independently accepted geometry-only result for 13 eligible candidates on five retained development pairs",
+        "Published bounded unused-permit recovery proposal with 21 actual local SQL/generator checks, 9 materialization/source-integrity checks and independent source review"
       ],
       "originalPermitRemainsImmutable": true,
       "actualRunMustRemainSameIfLegitimatelyAmended": true,
       "originalPermitExpiry": "2026-10-24T15:50:00.000Z",
       "existingApprovalDoesNotSelfAmendExpiredPermit": true
     },
-    "enclosingDocumentationCommitResolution": "Use the Git commit containing this checkpoint and the latest Issue126 publication receipt. The documentation head is intentionally resolved from its enclosing publication, not embedded as an unknown or self-referential SHA. The executable source pin remains a3b108d59d4cd530b326a0e9a106e671aaead265.",
+    "enclosingDocumentationCommitResolution": "Resolve this checkpoint publication from its containing Git commit and latest Issue126 receipt. The concrete proposal publication is separately pinned; no unknown or self-referential documentation SHA is embedded.",
     "acceptedRepairPublication": {
       "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
       "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
@@ -413,29 +414,95 @@
       }
     },
     "expiryRecoveryAmendment": {
-      "status": "OFFLINE_IMPLEMENTATION_AND_SQL_CHECKS_IN_PROGRESS_NOT_APPROVED_NOT_INSTALLED",
-      "preparationDirectory": "scanner-evaluation-v2-execution/expiry-recovery",
-      "author": "precision_contract_fix",
-      "independentReviewer": "scanner_independent_review",
-      "independentAmendmentReviewStatus": "PENDING",
-      "independentAmendmentReviewReceipt": "PENDING_NOT_CREATED",
-      "concreteProposalPublication": "PENDING_NOT_CREATED",
-      "ownerRecoveryDecisionDraft": {
-        "path": "scanner-evaluation-v2-execution/d002-preparation/OWNER-RECOVERY-DECISION-DRAFT.md",
-        "sha256": "e17f863aa999bfab729fc30a8aa06d25e3a3e435770e5248a8de461f0050a3c7",
-        "status": "PROPOSED_ONLY_NOT_AUTHORITY"
+      "status": "PUBLISHED_TESTED_INDEPENDENTLY_REVIEWED_NOT_APPROVED_NOT_INSTALLED",
+      "publication": {
+        "commit": "7d3b310b92ab992196825202aee0d891c04e5fb1",
+        "tree": "82726f26e3ba1c75d7e32cb6421d7478b4326616",
+        "parentCommit": "b4d5a71c8077f43a83c29e551eb4cce5bb463e19",
+        "parentTree": "4f3be585b4af279429c48f018741eebf09e35208",
+        "pullRequest": "https://github.com/nashysaimarkets/nash-ai-markets/pull/148",
+        "publishedAtUtc": "2026-10-24T16:45:55Z",
+        "proposalManifest": {
+          "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/proposal/PROPOSAL-MANIFEST.json",
+          "sha256": "73d0d374226cee9e279cf9c9ab6c160093af5688adb9cc895cf3dd5f6b396ecb"
+        },
+        "proposalSha256": "b70a4e2371e6832ed7f7b717f0b4b8a0e9665a24ba45c9fe565f1cafe5820602",
+        "installSqlSha256": "b44fb933c442c4e78b5e55af9581ea706569ed6fc3ef78faa62cdf27aefbb306"
+      },
+      "tests": {
+        "actualSql": {
+          "status": "PASS_OFFLINE_SYNTHETIC_ONLY",
+          "passed": 21,
+          "total": 21,
+          "failed": 0,
+          "skipped": 0,
+          "receipt": {
+            "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/tests/evidence/FINAL-PGLITE-SQL-RECEIPT.json",
+            "sha256": "40c2599c549dbb732dcb4c8217262d82c1b4044a384dc240d46854c385dbd3c1"
+          },
+          "tap": {
+            "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/tests/evidence/FINAL-PGLITE-SQL.tap",
+            "sha256": "9f6a9cc320f3a8d2c2a62519dbf8bb19c4f2e5fb086fd7c7fea7c543344cf769"
+          },
+          "engine": "PostgreSQL 18.6 (PGlite 0.5.10) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+          "limits": "PostgreSQL18.6/PGlite WASM, one connection per disposable database with role switching. No hosted PG17, network authentication, TLS, real session cleanup or concurrent lock proof."
+        },
+        "materialization": {
+          "status": "PASS_OFFLINE",
+          "passed": 9,
+          "total": 9,
+          "failed": 0,
+          "skipped": 0,
+          "receipt": {
+            "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/evidence/FINAL-MATERIALIZATION-RECEIPT.json",
+            "sha256": "40d31783845b79749df1577e1cba0edd8c132c6fad7f4946e7601ae743be7c4a"
+          },
+          "tap": {
+            "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/evidence/MATERIALIZATION-FINAL.tap",
+            "sha256": "a3b2b25a5e4673475d1073c6b44bcd52dee47e6a0d0a748ae495d03faf30408a"
+          },
+          "scope": "Owner-decision/materializer and generated-opener source-integrity checks; no private key is read."
+        },
+        "countsHaveDifferentScopes": true
+      },
+      "independentAmendmentReviewStatus": "ACCEPTED",
+      "independentAmendmentReviewReceipt": {
+        "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/evidence/INDEPENDENT-RECOVERY-REVIEW.json",
+        "sha256": "8685ccd61ec3999a9b6c3a8178d853e8c6d7b94907a6ea78be1f8d669eace41e"
       },
       "distinctOwnerAmendmentApprovalRef": "NOT_CREATED",
       "approved": false,
       "installed": false,
       "effectiveLeaseObserved": false,
+      "activationPerformed": false,
+      "protectedReleasePerformed": false,
       "authorisesCurrentDispatch": false,
-      "scope": "Proposed single immutable unused-test execution window for the exact d002 attempt and same waiting run, preserving original scope/permit/history and unchanged paid runtime/app. No extra scan or spending allowance.",
-      "currentContract": "IMMUTABLE_PERMIT_NO_RENEWAL",
-      "ownerDecisionSequence": "Prepare, actually test and independently review the concrete amendment; publish the exact proposal and evidence; then request only new unused-test-window recovery permission. Existing spending approval remains recorded and is not requested again.",
-      "maximumProposedWindowMinutes": 60,
+      "exactOwnerApprovalPrompt": {
+        "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/expiry-recovery/proposal/OWNER-AMENDMENT-REQUEST.txt",
+        "sha256": "b7acff72ac5374e7a901952dcfe72ad82eba8bb4e3b449d541a40c3f858556d7"
+      },
+      "currentContract": "IMMUTABLE_EXPIRED_PERMIT_NO_RENEWAL_INSTALLED",
+      "proposedProtocol": "ONE_NEW_IMMUTABLE_UNUSED_ATTEMPT_LEASE",
+      "caseId": "v2-d002",
+      "attemptId": "v2-d002-attempt-1",
+      "runId": "40105387615",
+      "jobId": "120905891814",
+      "runAttempt": "1",
+      "originalPermitValidUntil": "2026-10-24T15:50:00.000Z",
+      "maximumLeases": 1,
+      "maximumLeaseMinutes": 60,
+      "maximumLoginMinutes": 20,
+      "retries": 0,
       "existingScopeExpiry": "2026-10-25T12:40:25.000Z",
-      "proposalWindowIsNotAnIssuedLease": true
+      "additionalBudgetMicroUsd": 0,
+      "caseBoundMicroUsd": 330000,
+      "aggregateCapMicroUsd": 5000000,
+      "originalScopePermitHistoryAndPaidRuntimeUnchanged": true,
+      "originalRowsMayNotBeUpdatedDeletedOrReissued": true,
+      "unusedGrantPreconditions": "Exact unchanged expired permit and original scope; no target claim, send, receipt, account, stop or revocation; completed d001 evidence, original digest/cap and inactive restricted runner must match.",
+      "runtimeBoundary": "The unchanged paid runner validates its original identity/admission. Lease authority remains enforced by the reviewed SQL and separate owner observations; no new runtime identity fields or broadened table grants.",
+      "lateAccounting": "After a legitimate submitted call, late authentic receipts and accounting remain permitted while new dispatch expires or is revoked. Full reservation is retained; no refund or settlement is inferred.",
+      "ownerDecisionSequence": "Present the concrete published proposal and exact affirmative prompt; request only distinct one-time unused-test-window recovery permission. A later Yes must be bound to that prompt and recorded as the separate immutable owner amendment before installation."
     },
     "historicalD001Cleanup": {
       "status": "CLOSED_VERIFIED_HISTORICAL",
@@ -461,7 +528,8 @@
       "cleanupRequired": false,
       "unchangedByDraftAuthor": true,
       "meaning": "Unchanged false historical d001 cleanup guard. D002 has not been activated; do not mark activation or cleanup performed."
-    }
+    },
+    "runnerObservationScope": "The 16:14:19.321Z expired-unused observation records NOLOGIN/zero sessions and no d002 claim/send. This offline documentation preparation makes no new hosted observation."
   },
   "continuationHistory": [
     {
@@ -1015,6 +1083,470 @@
         ]
       },
       "enclosingDocumentationCommitResolution": "Use the Git commit containing this checkpoint and the latest Issue126 publication receipt. The documentation head is intentionally resolved from its enclosing publication, not embedded as an unknown or self-referential SHA. The executable source pin remains a3b108d59d4cd530b326a0e9a106e671aaead265."
+    },
+    {
+      "asOfUtc": "2026-10-24T16:22:54.312419+00:00",
+      "status": "V2_D002_UNUSED_PERMIT_EXPIRED_SAME_RUN_WAITING_OFFLINE_AMENDMENT_ONLY",
+      "branch": "monaco-scanner-image-geometry-126-20261024",
+      "pullRequest": "https://github.com/nashysaimarkets/nash-ai-markets/pull/147",
+      "pullRequestState": "DRAFT",
+      "checkpoint": "docs/monaco-126/scanner-image-recovery-2026-10-24/CHECKPOINT.md",
+      "baselineCanonicalFilesCommit": "156417b4443068309a33c3364438948499775fad",
+      "latestKnownDocumentationCommit": "546cd04ca84f71b1830d5712c85a424f0a2e3fc2",
+      "latestKnownDocumentationTree": "366afbcbabb211d73274620552c2aeb67fafd4a9",
+      "historicalPublishedExecutableSourceCommit": "156417b4443068309a33c3364438948499775fad",
+      "historicalPublishedExecutableSourceTree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+      "candidateSourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+      "candidateSourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+      "candidateSourcePublicationStatus": "PUBLISHED_FROZEN_SOURCE",
+      "candidateSourceManifest": {
+        "path": "docs/monaco-126/scanner-image-recovery-2026-10-24/exact-anchor-revision/SOURCE-MANIFEST.json",
+        "sha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+        "parentCommit": "7e8acec2d2f12734a4b570b0743f683be9c190d6",
+        "parentTree": "516543d233c2534a66f82b6134b6ff2a06f63d98",
+        "sourceFiles": 22,
+        "changedFiles": [
+          {
+            "path": "app/pocket/image-axis-verification.ts",
+            "sha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3"
+          },
+          {
+            "path": "app/pocket/image-plot-region.ts",
+            "sha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48"
+          },
+          {
+            "path": "tests/pocket-image-axis-verification.test.ts",
+            "sha256": "f9486479c2c024088323abc0186dbf168ebae4a575a8769730911c9f33cfcdcf"
+          },
+          {
+            "path": "tests/pocket-image-plot-region.test.ts",
+            "sha256": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2"
+          },
+          {
+            "path": "tests/support/pocket-image-plot-raster.ts",
+            "sha256": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a"
+          }
+        ],
+        "frozen": true
+      },
+      "sourceCommitResolution": "Executable source a3b108d59d4cd530b326a0e9a106e671aaead265, tree4424bffcba24f8285fae5e945f99eaa9fc956dcd, has independently accepted exact-source CI. Historical source156 acceptance and documentation parent7e8acec2 remain separate. Resolve the enclosing documentation publication from the commit containing this checkpoint and the latest Issue126 receipt.",
+      "independentComponentSourceReviews": {
+        "gridAssociation": {
+          "status": "PASS",
+          "receiptFileName": "INDEPENDENT-GRID-ASSOCIATION-SOURCE-ACCEPTANCE.json",
+          "sha256": "bee9550dab60a5e867f1b162eae02d427abb4f0ce9854406b33292eb65862766"
+        },
+        "exactObservedAnchor": {
+          "status": "PASS",
+          "receiptFileName": "INDEPENDENT-EXACT-ANCHOR-SOURCE-ACCEPTANCE.json",
+          "sha256": "c26e911e5c0d0ad1721fc219efc684a45b40335b640e659bb55c36666f5c8789"
+        },
+        "scope": "Accepted component source and captured synthetic controls, with separately bound fresh combined geometry and independently accepted exact-source hosted gates below."
+      },
+      "finalCombinedRetainedObservations": {
+        "status": "COMPLETE_ALL_13_ELIGIBLE_CANDIDATES_PLACED",
+        "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+        "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+        "sourceManifestSha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+        "sourceCases": [
+          "d001",
+          "d002",
+          "d003",
+          "d004",
+          "d006"
+        ],
+        "results": [
+          {
+            "sourceCaseId": "d001",
+            "eligibleCandidates": 4,
+            "placedCandidates": 4,
+            "omittedCandidates": 0,
+            "geometry": "PASS_GEOMETRY_ONLY",
+            "semantics": "UNSCORED"
+          },
+          {
+            "sourceCaseId": "d002",
+            "eligibleCandidates": 3,
+            "placedCandidates": 3,
+            "omittedCandidates": 0,
+            "geometry": "PASS_GEOMETRY_ONLY",
+            "semantics": "UNSCORED"
+          },
+          {
+            "sourceCaseId": "d003",
+            "eligibleCandidates": 2,
+            "placedCandidates": 2,
+            "omittedCandidates": 0,
+            "geometry": "PASS_GEOMETRY_ONLY",
+            "semantics": "UNSCORED"
+          },
+          {
+            "sourceCaseId": "d004",
+            "eligibleCandidates": 2,
+            "placedCandidates": 2,
+            "omittedCandidates": 0,
+            "geometry": "PASS_GEOMETRY_ONLY",
+            "semantics": "UNSCORED"
+          },
+          {
+            "sourceCaseId": "d006",
+            "eligibleCandidates": 2,
+            "placedCandidates": 2,
+            "omittedCandidates": 0,
+            "geometry": "PASS_GEOMETRY_ONLY",
+            "semantics": "UNSCORED"
+          }
+        ],
+        "newMetrics": {
+          "plotEdges": {
+            "count": 20,
+            "maxErrorOriginalPixels": 0
+          },
+          "ocrGridAnchors": {
+            "count": 35,
+            "maxErrorOriginalPixels": 0.5000000000001137
+          },
+          "projectedCandidates": {
+            "count": 13,
+            "maxEndpointErrorOriginalPixels": 0.5000000000001137
+          },
+          "renderedSvgLines": {
+            "count": 13,
+            "maxEndpointErrorOriginalPixels": 0.5000000000001137,
+            "maxProjectionDeltaOriginalPixels": 0
+          }
+        },
+        "diagnosticToleranceOriginalPixels": 1,
+        "priorMetricsRemainHistorical": true,
+        "newProviderCalls": 0,
+        "acceptanceScope": "Geometry of the 13 eligible exact horizontal candidates on five retained development pairs only; not semantic accuracy, verified absence, six-case acceptance or a new paid result."
+      },
+      "finalCombinedIndependentGeometryReview": {
+        "status": "PASS_ALL_13_ELIGIBLE_CANDIDATES_GEOMETRY_ONLY",
+        "receiptPath": "docs/monaco-126/scanner-image-recovery-2026-10-24/exact-anchor-revision/INDEPENDENT-ONE-PIXEL-REVIEW.json",
+        "receiptSha256": "ae201f753bc19c02383c365f90b8cb02142956e9b6779ac820ad9befb7e1116b",
+        "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+        "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+        "acceptedGeometryCaseCount": 5,
+        "acceptedCoordinateCounts": {
+          "plotEdges": 20,
+          "ocrGridAnchors": 35,
+          "projectedCandidates": 13,
+          "renderedSvgLines": 13
+        },
+        "allEligibleCandidatesPlaced": true,
+        "omittedCandidates": 0,
+        "semantics": "UNSCORED",
+        "d005": "UNCHANGED_APPROXIMATE_PRICE_ELIGIBILITY_HOLD"
+      },
+      "hostedAcceptance": {
+        "status": "ACCEPTED_EXACT_SOURCE",
+        "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+        "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+        "runs": [
+          {
+            "kind": "AFFECTED_IMAGE_RECOVERY",
+            "runId": 40103559042,
+            "jobId": 120900470073,
+            "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40103559042",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "actualCheckout": "a3b108d59d4cd530b326a0e9a106e671aaead265"
+          },
+          {
+            "kind": "AUTOMATIC_IMAGE_GATE",
+            "runId": 40103564070,
+            "jobId": 120900485010,
+            "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40103564070",
+            "status": "COMPLETED",
+            "conclusion": "SUCCESS",
+            "actualCheckout": "a9f864ec0854a807330fadfb4701dab8148fb1b8",
+            "completeTreeMatchesSource": true,
+            "completeTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd"
+          }
+        ],
+        "independentAcceptancePath": "docs/monaco-126/scanner-image-recovery-2026-10-24/exact-anchor-revision/EXACT-SOURCE-CI-INDEPENDENT-ACCEPTANCE.json",
+        "independentAcceptanceSha256": "a73dd83beec7f5d67d0b2e938a85cd639f35287abd785d62d3a18a563c86ac77",
+        "integrityCompanion": {
+          "path": "docs/monaco-126/scanner-image-recovery-2026-10-24/exact-anchor-revision/INDEPENDENT-HOSTED-INTEGRITY-CHECK.json",
+          "sha256": "aab04c7b5a2ee406df384a8ac25ffafbacc7591346ae5f955cac9fc114ca027f"
+        },
+        "affectedTests": {
+          "passed": 75,
+          "total": 75,
+          "failed": 0,
+          "skipped": 0
+        },
+        "mountedBrowserChecks": {
+          "legacy": 12,
+          "recovery": 21,
+          "ocrBoundary": "Controlled lifecycle OCR boundary; actual hook/selectors/SVG and, for recovery, detector/verifier/raster."
+        },
+        "actualPublicBrowserOcr": {
+          "status": "PASS",
+          "input": "PUBLIC_SYNTHETIC_ORIGINAL",
+          "sameOriginTesseractExecuted": true,
+          "expectedCandidates": 2,
+          "placedCandidates": 2,
+          "maximumCoordinateErrorOriginalPixels": 0.5,
+          "maximumDomProjectionDeltaOriginalPixels": 0,
+          "diagnosticToleranceOriginalPixels": 1,
+          "providerCalls": 0,
+          "semantics": "UNVERIFIED"
+        },
+        "completeSourceTypeScript": "PASS",
+        "productionBuild": "PASS",
+        "lint": {
+          "errors": 0,
+          "warnings": 5,
+          "warningScope": "Unused declarations LockOnReveal, BullseyeCommandArena, BubbleChartLab, range and SignalPulse in PocketBullseye."
+        },
+        "secretPatternScan": {
+          "status": "PASS",
+          "versionControlCandidates": 1459
+        },
+        "automaticImageGate": {
+          "nativeRasterTestsPassed": 11,
+          "nativeRasterTestsTotal": 11,
+          "realRasterCanvasOcrFixtures": 6,
+          "readableFixtures": 5,
+          "correctlyHeldDegradedFixtures": 1,
+          "mobileDecisionChecks": 13,
+          "redesignIntakeChecks": 10,
+          "levelLabSourceIsolationChecks": 4,
+          "productionBuild": "PASS",
+          "isolatedSharpLibvipsTrace": "PASS",
+          "paidCorpus": "SKIPPED",
+          "artifactCount": 0
+        },
+        "officialAffectedArtifact": {
+          "id": 12563319937,
+          "bytes": 15208,
+          "sha256": "0426d184361f3cd09690d5a01936640498f644803074c0403652993e54e896a0",
+          "memberCount": 13,
+          "durableReferencePath": "docs/monaco-126/scanner-image-recovery-2026-10-24/exact-anchor-revision/CI-ARTIFACT-DURABLE-REFERENCE.json",
+          "durableReferenceSha256": "94b3c777d0208dcf408e84697864a3c4382d3685f17522f24479cf9986254e13",
+          "libraryFileId": "libfile_5f46dc3138a08191a3dc77832dbcb58c",
+          "retainedZipUnmodified": true
+        },
+        "historicalSource156RunsDoNotSubstitute": true,
+        "countsHaveDifferentScopesDoNotSum": true,
+        "paidCaseReadinessGranted": false,
+        "physicalDeviceOrDeploymentAcceptanceGranted": false
+      },
+      "d005ExactPriceHold": {
+        "sourceCaseId": "d005",
+        "status": "HOLD_NO_ELIGIBLE_EXACT_HORIZONTAL_PRICE_HINTS",
+        "geometry": "UNMEASURED",
+        "semantics": "UNSCORED",
+        "verifiedAbsence": false,
+        "newBrowserOrOcrReplay": false,
+        "reason": "The retained MAIN prices are explicitly approximate; the exact-price selector remains unchanged."
+      },
+      "candidateProvenance": "UNVERIFIED",
+      "patternOrLiquidityAuthorityGranted": false,
+      "recoveryAuthorityScope": "Independent horizontal placement only. New recovery evidence does not make a held legacy axis or unavailable candle geometry usable for pattern/liquidity claims.",
+      "unscoredOrUnaccepted": [
+        "support/resistance meaning",
+        "candidate recall",
+        "pattern accuracy",
+        "liquidity accuracy",
+        "verified absence",
+        "held-out generalization",
+        "physical-device latency",
+        "deployed HTTP latency",
+        "production release"
+      ],
+      "firstRevisedPaidCase": "COMPLETE_GEOMETRY_FAILED",
+      "originalPaidRun": 40095819408,
+      "originalPaidRunResult": "FAILED_GEOMETRY_UNCHANGED",
+      "paidOutcomeCommit": "b4d5a71c8077f43a83c29e551eb4cce5bb463e19",
+      "frozenPaidRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+      "remainingPaidCases": "HOLD",
+      "remainingPaidCaseIds": [
+        "v2-d002",
+        "v2-d003",
+        "v2-d004",
+        "v2-d005",
+        "v2-d006"
+      ],
+      "heldOutCases": {
+        "count": 44,
+        "status": "UNTOUCHED"
+      },
+      "budget": {
+        "v2D001HeldMicroUsd": 330000,
+        "v2D001HeldUsd": "0.33",
+        "aggregateHeldMicroUsd": 1836400,
+        "aggregateHeldUsd": "1.8364",
+        "existingAggregateCapMicroUsd": 5000000,
+        "actualBilledCostUsd": null,
+        "settlementStatus": "UNKNOWN_UNRECONCILED",
+        "repairAdditionalProviderCalls": 0,
+        "repairAdditionalReservationMicroUsd": 0,
+        "originalHistoryPreserved": true,
+        "noRefundOrResetClaimed": true,
+        "observationMeaning": "Preserved last retained accounting. The expired d002 permit was unclaimed/unsent in the cited observation and added no case reservation there; actual billed costs remain unknown. This draft is not a new financial database reconciliation."
+      },
+      "runnerLogin": false,
+      "runnerSessions": 0,
+      "temporaryEnvironmentBranchRulesRemoved": false,
+      "runnerCleanupStatus": "NOLOGIN_ZERO_SESSIONS_OBSERVED_D002_NEVER_ACTIVATED_D001_CLEANUP_HISTORICAL",
+      "migrationAlreadyInstalled": true,
+      "firstCasePermitConsumed": true,
+      "writerClaim": 6384437116,
+      "writerClaimExtension": 6384669426,
+      "writerStatus": "ACTIVE",
+      "writerReleaseReceipt": "NOT_RELEASED_ACTIVE",
+      "documentationPublicationStatus": "RESOLVE_FROM_ENCLOSING_PUBLICATION_AND_LATEST_ISSUE_126_RECEIPT",
+      "schedules": "OFF",
+      "unchanged": [
+        "main",
+        "production deployment",
+        "Apple/store release",
+        "pricing",
+        "44 held-out cases",
+        "original paid-run result",
+        "existing credentials and approvals",
+        "consumed case/ledger history"
+      ],
+      "doNotRepeat": [
+        "key setup",
+        "scope approval",
+        "migration installation",
+        "consumed case execution",
+        "unchanged acceptance suites"
+      ],
+      "historicalFieldsBelow": "The previously accepted repair/CI currentContinuation is retained intact as the last continuationHistory entry, alongside all earlier stages. Its successful repair evidence remains accepted; its former next-case preparation and all-branch-cleanup wording is superseded by this exact expired-unused d002 record. Other older top-level fields remain historical snapshots.",
+      "nextSafeAction": "Prepare the bounded additive unused-test expiry amendment, complete actual offline SQL checks and independent review, and publish its concrete source/test/review evidence. Then request only the new one-time test-window recovery permission; no additional scan or spending approval is requested. The current immutable permit has no renewal path, so keep the same run40105387615/job120905891814 waiting, runner NOLOGIN/zero sessions and all paid dispatch HOLD. Do not install, activate or release until distinct amendment authority and the exact actual lease/identity/history/budget/role observations are complete. Keep root ownership ACTIVE and preserve the single exact protected branch rule while this legitimate continuation is prepared.",
+      "writerContinuationReason": "Root retains ownership while the exact unused-expiry continuation is prepared and independently reviewed offline.",
+      "nextNamedCasePreparation": {
+        "caseId": "v2-d002",
+        "sourceCaseId": "d002",
+        "status": "HOLD_EXPIRED_UNUSED_PERMIT_CURRENT_CONTRACT_HAS_NO_RENEWAL",
+        "existingOwnerApprovalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+        "authorityAssessment": "Root read the existing owner approval and received an independent bounded assessment permitting the next named case under the unchanged approved runner, followed by a separately source-bound browser measurement.",
+        "unchangedPaidRuntimeCommit": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+        "unchangedPaidAppCommit": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+        "separateBrowserMeasurementSourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+        "separateBrowserMeasurementSourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+        "requiresBeforePaidDispatch": [
+          "A legitimate separately authorised and independently reviewed expiry-recovery amendment, if pursued",
+          "Actual installation and independently observed exact lease/permit state under that amendment",
+          "Fresh exact case/run/source/identity/history/budget/role witnesses and bounded activation/protected release"
+        ],
+        "executionReady": false,
+        "paidStatus": "HOLD",
+        "repeatSpendingApprovalRequired": false,
+        "newKeySetupRequested": false,
+        "newBudgetRequested": false,
+        "preserveConsumedCasesAndExistingLedgerHistory": true,
+        "completedPrerequisites": [
+          "Independently accepted combined exact-source CI",
+          "Independently accepted geometry-only result for 13 eligible candidates on five retained development pairs"
+        ],
+        "originalPermitRemainsImmutable": true,
+        "actualRunMustRemainSameIfLegitimatelyAmended": true,
+        "originalPermitExpiry": "2026-10-24T15:50:00.000Z",
+        "existingApprovalDoesNotSelfAmendExpiredPermit": true
+      },
+      "enclosingDocumentationCommitResolution": "Use the Git commit containing this checkpoint and the latest Issue126 publication receipt. The documentation head is intentionally resolved from its enclosing publication, not embedded as an unknown or self-referential SHA. The executable source pin remains a3b108d59d4cd530b326a0e9a106e671aaead265.",
+      "acceptedRepairPublication": {
+        "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+        "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+        "documentationCommit": "546cd04ca84f71b1830d5712c85a424f0a2e3fc2",
+        "documentationTree": "366afbcbabb211d73274620552c2aeb67fafd4a9",
+        "sourcePublicationReceiptSha256": "351ae97dead0c8453f1a04a35932c8c10f50758c30ab0d9c4f6d326883430130",
+        "engineeringAcceptance": "75_OF_75_AFFECTED_CHECKS_AND_EXACT_SOURCE_CI_ACCEPTED",
+        "retainedGeometryAcceptance": "13_OF_13_ELIGIBLE_EXACT_CANDIDATES_ON_FIVE_RETAINED_DEVELOPMENT_PAIRS_WITHIN_ONE_ORIGINAL_PIXEL",
+        "geometryMeaningUnchanged": "Geometry only; semantic interpretation remains unscored; d005 approximate-price eligibility HOLD and 44 held-outs untouched."
+      },
+      "currentD002Expiry": {
+        "caseId": "v2-d002",
+        "sourceCaseId": "d002",
+        "attemptId": "v2-d002-attempt-1",
+        "scopeId": "pocket-scanner-evaluation-v2-20261024",
+        "runId": "40105387615",
+        "jobId": "120905891814",
+        "runAttempt": "1",
+        "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+        "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+        "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+        "paidAppSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+        "permitAdmittedAt": "2026-10-24T15:07:25.068Z",
+        "permitValidUntil": "2026-10-24T15:50:00.000Z",
+        "observedAt": "2026-10-24T16:14:19.321Z",
+        "permitCurrent": false,
+        "claimed": false,
+        "sent": false,
+        "runnerCanLogin": false,
+        "runnerSessions": 0,
+        "activationPerformed": false,
+        "protectedReleasePerformed": false,
+        "providerCalls": 0,
+        "pendingRunStatus": "WAITING_PROTECTED_SAME_FIRST_ATTEMPT",
+        "pendingRunStatusSource": "Current root-supplied observation; this draft author performed no remote check.",
+        "authoritativeObservation": {
+          "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/execution/v2-d002/EXPIRED-UNUSED-PERMIT-OBSERVATION.json",
+          "sha256": "7f51293ec8d0c8609abf03f9f4c87a05937417f9e14122a420e83110ed15c337"
+        },
+        "reason": "The original immutable permit expired before activation while the same protected run was still waiting. The current contract provides no renewal operation. Expiry is not a paid scan, case claim, provider failure or authority to reset/replay the attempt.",
+        "independentContractReview": {
+          "path": "docs/monaco-126/scanner-evaluation-v2-2026-10-24/execution/v2-d002/EXPIRED-UNUSED-v2-d002-40105387615-CONTRACT-REVIEW.json",
+          "sha256": "76bcf22e13476dee8a9862c8ef136e9e41ba7bb4feb33be0fab93edeacdb3fc9",
+          "status": "HOLD_NO_RENEWAL_PATH_IN_CURRENT_ACCEPTED_CONTRACT"
+        }
+      },
+      "expiryRecoveryAmendment": {
+        "status": "OFFLINE_IMPLEMENTATION_AND_SQL_CHECKS_IN_PROGRESS_NOT_APPROVED_NOT_INSTALLED",
+        "preparationDirectory": "scanner-evaluation-v2-execution/expiry-recovery",
+        "author": "precision_contract_fix",
+        "independentReviewer": "scanner_independent_review",
+        "independentAmendmentReviewStatus": "PENDING",
+        "independentAmendmentReviewReceipt": "PENDING_NOT_CREATED",
+        "concreteProposalPublication": "PENDING_NOT_CREATED",
+        "ownerRecoveryDecisionDraft": {
+          "path": "scanner-evaluation-v2-execution/d002-preparation/OWNER-RECOVERY-DECISION-DRAFT.md",
+          "sha256": "e17f863aa999bfab729fc30a8aa06d25e3a3e435770e5248a8de461f0050a3c7",
+          "status": "PROPOSED_ONLY_NOT_AUTHORITY"
+        },
+        "distinctOwnerAmendmentApprovalRef": "NOT_CREATED",
+        "approved": false,
+        "installed": false,
+        "effectiveLeaseObserved": false,
+        "authorisesCurrentDispatch": false,
+        "scope": "Proposed single immutable unused-test execution window for the exact d002 attempt and same waiting run, preserving original scope/permit/history and unchanged paid runtime/app. No extra scan or spending allowance.",
+        "currentContract": "IMMUTABLE_PERMIT_NO_RENEWAL",
+        "ownerDecisionSequence": "Prepare, actually test and independently review the concrete amendment; publish the exact proposal and evidence; then request only new unused-test-window recovery permission. Existing spending approval remains recorded and is not requested again.",
+        "maximumProposedWindowMinutes": 60,
+        "existingScopeExpiry": "2026-10-25T12:40:25.000Z",
+        "proposalWindowIsNotAnIssuedLease": true
+      },
+      "historicalD001Cleanup": {
+        "status": "CLOSED_VERIFIED_HISTORICAL",
+        "temporaryEnvironmentBranchRulesRemoved": 6,
+        "runnerNoLoginAndZeroSessionsVerifiedAtPriorCleanup": true,
+        "doesNotDescribeTheCurrentPendingD002BranchRule": true
+      },
+      "currentTemporaryBranchRule": {
+        "branch": "monaco-scanner-evaluation-v2-run-v2-d002",
+        "count": 1,
+        "exists": true,
+        "protectedEnvironment": "monaco-first-six-inference",
+        "reviewGateMaintained": true,
+        "reason": "Root retains the single exact temporary rule so the same waiting protected run remains usable only if a legitimate amendment is approved, installed and independently verified.",
+        "source": "Current root-supplied operational status; not a new permission or activation by this draft author."
+      },
+      "activeRunCleanupGuard": {
+        "path": "scanner-evaluation-v2-execution/ACTIVE-RUN-CLEANUP-REQUIRED.json",
+        "sha256": "8ae7257999e49c129e22a61c9fd512e2238f734fe1ab3a2f508715fb9ff57fa4",
+        "observedCaseId": "v2-d001",
+        "observedRunId": "40095819408",
+        "runnerLoginEnabled": false,
+        "cleanupRequired": false,
+        "unchangedByDraftAuthor": true,
+        "meaning": "Unchanged false historical d001 cleanup guard. D002 has not been activated; do not mark activation or cleanup performed."
+      }
     }
   ],
   "schemaVersion": 1,
