@@ -1,0 +1,58 @@
+{
+  "kind": "INDEPENDENT_V2_EXECUTION_ORDER_REVIEW",
+  "status": "ORDER_REVIEWED_AWAITING_CONCRETE_FIRST_RUN_ADMISSION",
+  "generatedAt": "2026-10-24T12:38:32.898545+00:00",
+  "ownerScope": {
+    "reportedByParent": "Explicit YES to up to six revised scans, maximum USD1.98 additional within original USD5 ceiling; start one at USD0.33 and reassess before more",
+    "approvalMustNotBeRequestedAgain": true,
+    "immutableApprovalRef": "AWAITING_PARENT_RECORD_FOR_INDEPENDENT_FETCH"
+  },
+  "firstCase": "v2-d001",
+  "sourceCaseId": "d001",
+  "attemptId": "v2-d001-attempt-1",
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "docsCheckpointSha": "83ac6a595d53a336d8f1b82ca7284f3470b16a05",
+  "docsParentIsAcceptedRuntime": true,
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "reviewedFilesStillMatch": {
+    "scripts/pocket-scanner-evaluation-v2-hosted-entry.mjs": "1e1e3955e92ad8e8e75ac2dd7ae59d2b838645ca9f4dec35256e34d310967f7d",
+    "scripts/pocket-scanner-evaluation-v2-operator.mjs": "643c400f15cc3e9b7f1c23fd1848ad0425d01ca8c2f128d138306b6e2b412d3e",
+    "scripts/prepare-pocket-scanner-evaluation-v2-ledger.mjs": "8d5986914a85114f23343a7e75cdd1ea765e82063bf4eaae559d4dd227f8c0be",
+    "database/neon/proposed/20261024-scanner-evaluation-v2.sql": "a6231f2acd4efdbad7fa05b23dfee4ec496c2fb9c61327f2929d236705553161",
+    ".github/actions/pocket-scanner-evaluation-v2/entry.cjs": "c769c6db1cf517a4b7f41bd26ee73c8d981109a0cf78bddd5c023b740edd02e8",
+    "docs/monaco-126/scanner-evaluation-v2-2026-10-24/PLAN.json": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "docs/monaco-126/scanner-evaluation-v2-2026-10-24/RUN-WORKFLOW.yml.template": "f2efa94abe4692d7ed0e783dc9463fb5f62f7a9a2c466f809c762c04b3b6e1a8"
+  },
+  "reusedAcceptance": {
+    "runId": 40093995597,
+    "offlinePassed": 44,
+    "postgresPassed": 14,
+    "testsRepeated": 0
+  },
+  "practicalSetupChecks": [
+    "Before push, verify that the existing protected environment allows the exact new branch and pauses the job until the post-push permit is installed.",
+    "Pre-stage the existing public output-recipient PEM matching ee6a572a222e2f9f97df38f4d082935c582909095b720070a0399ee31a1773da; reviewer will not read the private key.",
+    "Pre-stage the input-relay materializer; runner handoff wait is bounded at 300000 ms.",
+    "Keep the runner NOLOGIN with zero sessions for additive installation and admission; use carry-in observed within 15 minutes and permit validity at most 60 minutes.",
+    "Static admission and reassessment digests identify independent pre-push records; exact future run/job review is a separate post-push receipt whose IDs are bound in SQL."
+  ],
+  "observedImplementationBlockers": [],
+  "requiredNextEvidence": [
+    "Immutable new owner-scope reference/body hash and separate writer claim",
+    "Fresh original ledger history/accounting and existing role state",
+    "Concrete static config and review-record hashes",
+    "Materialized wrapper/source/evidence pins",
+    "Actual pending first-attempt run/job and exact SQL admission"
+  ],
+  "actions": {
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "hostedMutations": 0,
+    "privateKeyReads": 0,
+    "heldoutPayloadReads": 0,
+    "newTests": 0,
+    "spendingApprovalRequests": 0
+  },
+  "authority": "Read-only reviewer; root alone performs remote writes, hosted database mutations and approved paid execution."
+}

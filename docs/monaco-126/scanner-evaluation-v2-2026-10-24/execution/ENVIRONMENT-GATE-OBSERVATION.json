@@ -1,0 +1,38 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_ENVIRONMENT_OBSERVATION",
+  "observedAt": "2026-10-24T12:43:00Z",
+  "observationTimePrecision": "minute",
+  "url": "https://github.com/nashysaimarkets/nash-ai-markets/settings/environments/24916350021/edit",
+  "environment": "monaco-first-six-inference",
+  "environmentId": 24916350021,
+  "requiredReviewersEnabled": true,
+  "reviewers": [
+    "nashysaimarkets"
+  ],
+  "preventSelfReview": false,
+  "adminBypassAllowed": false,
+  "waitTimerEnabled": false,
+  "branchPolicy": "selected",
+  "allowedBranches": [
+    "monaco-first-six-inference-126-20261021"
+  ],
+  "existingSecrets": [
+    "MONACO_FIRST_SIX_LEDGER_KEY",
+    "MONACO_FIRST_SIX_OPENAI_API_KEY"
+  ],
+  "secretLastUpdated": "2026-10-21",
+  "proposedAdditionalBranches": [
+    "monaco-scanner-evaluation-v2-run-v2-d001",
+    "monaco-scanner-evaluation-v2-run-v2-d002",
+    "monaco-scanner-evaluation-v2-run-v2-d003",
+    "monaco-scanner-evaluation-v2-run-v2-d004",
+    "monaco-scanner-evaluation-v2-run-v2-d005",
+    "monaco-scanner-evaluation-v2-run-v2-d006"
+  ],
+  "status": "BRANCH_PERMISSION_CONFIRMATION_REQUIRED",
+  "mutationPerformed": false,
+  "scanScopeApproved": true,
+  "permissionReason": "Browser action-time confirmation policy requires confirmation before adding branch access to existing environment secrets.",
+  "noWildcard": true,
+  "retainOwnerReview": true
+}
