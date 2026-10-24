@@ -1,0 +1,324 @@
+﻿2026-10-24T13:21:27.7697335Z Current runner version: '2.338.0'
+2026-10-24T13:21:27.7722660Z ##[group]Runner Image Provisioner
+2026-10-24T13:21:27.7723566Z Hosted Compute Agent
+2026-10-24T13:21:27.7724160Z Version: 20261012.601
+2026-10-24T13:21:27.7724943Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-24T13:21:27.7725682Z Build Date: 2026-10-12T17:48:21Z
+2026-10-24T13:21:27.7726463Z Worker ID: {820ff180-1d10-4a5a-93ff-12253177f083}
+2026-10-24T13:21:27.7727192Z Region: westus2
+2026-10-24T13:21:27.7727750Z Cloud: Azure
+2026-10-24T13:21:27.7728368Z ##[endgroup]
+2026-10-24T13:21:27.7730097Z ##[group]Operating System
+2026-10-24T13:21:27.7731503Z Ubuntu
+2026-10-24T13:21:27.7732119Z 24.04.5
+2026-10-24T13:21:27.7732654Z LTS
+2026-10-24T13:21:27.7733260Z ##[endgroup]
+2026-10-24T13:21:27.7733865Z ##[group]Runner Image
+2026-10-24T13:21:27.7734548Z Image: ubuntu-24.04
+2026-10-24T13:21:27.7735143Z Version: 20261012.334.1
+2026-10-24T13:21:27.7736585Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T13:21:27.7738260Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-24T13:21:27.7739275Z ##[endgroup]
+2026-10-24T13:21:27.7740393Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T13:21:27.7743022Z Contents: read
+2026-10-24T13:21:27.7743717Z Metadata: read
+2026-10-24T13:21:27.7744330Z ##[endgroup]
+2026-10-24T13:21:27.7746532Z Secret source: Actions
+2026-10-24T13:21:27.7747541Z Cache mode: write
+2026-10-24T13:21:27.7748570Z Prepare workflow directory
+2026-10-24T13:21:27.8298029Z Prepare all required actions
+2026-10-24T13:21:27.8346098Z Getting action download info
+2026-10-24T13:21:28.1641916Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-24T13:21:28.2758667Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-24T13:21:28.3614740Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-24T13:21:28.5636874Z Complete job name: geometry-repair
+2026-10-24T13:21:28.6479513Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+2026-10-24T13:21:28.6480598Z with:
+2026-10-24T13:21:28.6481298Z   ref: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:28.6481964Z   persist-credentials: false
+2026-10-24T13:21:28.6482519Z   repository: nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:28.6486397Z   token: ***
+2026-10-24T13:21:28.6486827Z   ssh-strict: true
+2026-10-24T13:21:28.6487265Z   ssh-user: git
+2026-10-24T13:21:28.6487686Z   clean: true
+2026-10-24T13:21:28.6488143Z   sparse-checkout-cone-mode: true
+2026-10-24T13:21:28.6488666Z   fetch-depth: 1
+2026-10-24T13:21:28.6489093Z   fetch-tags: false
+2026-10-24T13:21:28.6489535Z   show-progress: true
+2026-10-24T13:21:28.6489985Z   lfs: false
+2026-10-24T13:21:28.6490405Z   submodules: false
+2026-10-24T13:21:28.6490843Z   set-safe-directory: true
+2026-10-24T13:21:28.6491758Z env:
+2026-10-24T13:21:28.6492159Z   CI: true
+2026-10-24T13:21:28.6492577Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:21:28.6493195Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:28.6493973Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:21:28.6494821Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:21:28.6495567Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:21:28.6496133Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:21:28.6496738Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:21:28.6497494Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:21:28.6498177Z ##[endgroup]
+2026-10-24T13:21:28.7540538Z Syncing repository: nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:28.7543813Z ##[group]Getting Git version info
+2026-10-24T13:21:28.7545246Z Working directory is '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T13:21:28.7547878Z [command]/usr/bin/git version
+2026-10-24T13:21:28.7655755Z git version 2.55.0
+2026-10-24T13:21:28.7686956Z ##[endgroup]
+2026-10-24T13:21:28.7696849Z Temporarily overriding HOME='/home/runner/work/_temp/e70bfb54-da69-44b5-a6f4-f048e1fd38b3' before making global git config changes
+2026-10-24T13:21:28.7704408Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T13:21:28.7706548Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T13:21:28.7758695Z Deleting the contents of '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T13:21:28.7763455Z ##[group]Initializing the repository
+2026-10-24T13:21:28.7768550Z [command]/usr/bin/git init /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T13:21:28.7890273Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-24T13:21:28.7892525Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-24T13:21:28.7894433Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-24T13:21:28.7896118Z hint: call:
+2026-10-24T13:21:28.7897175Z hint:
+2026-10-24T13:21:28.7898424Z hint: 	git config --global init.defaultBranch <name>
+2026-10-24T13:21:28.7899853Z hint:
+2026-10-24T13:21:28.7901609Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-24T13:21:28.7903602Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-24T13:21:28.7905053Z hint:
+2026-10-24T13:21:28.7906072Z hint: 	git branch -m <name>
+2026-10-24T13:21:28.7907424Z hint:
+2026-10-24T13:21:28.7908863Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-24T13:21:28.7911352Z Initialized empty Git repository in /home/runner/work/nash-ai-markets/nash-ai-markets/.git/
+2026-10-24T13:21:28.7915095Z [command]/usr/bin/git remote add origin https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:28.7963211Z ##[endgroup]
+2026-10-24T13:21:28.7964405Z ##[group]Disabling automatic garbage collection
+2026-10-24T13:21:28.7968562Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-24T13:21:28.8003174Z ##[endgroup]
+2026-10-24T13:21:28.8004889Z ##[group]Setting up auth
+2026-10-24T13:21:28.8010580Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T13:21:28.8047322Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T13:21:28.8519639Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T13:21:28.8571830Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T13:21:28.8837671Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-24T13:21:28.8892252Z ##[endgroup]
+2026-10-24T13:21:28.8894004Z ##[group]Fetching the repository
+2026-10-24T13:21:28.8909412Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:29.6719415Z From https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:29.6722271Z  * branch            97925f7620313ba6a6ebc377c9c9340a42889875 -> FETCH_HEAD
+2026-10-24T13:21:29.6727675Z ##[endgroup]
+2026-10-24T13:21:29.6729722Z ##[group]Determining the checkout info
+2026-10-24T13:21:29.6731913Z ##[endgroup]
+2026-10-24T13:21:29.6735215Z [command]/usr/bin/git sparse-checkout disable
+2026-10-24T13:21:29.6791158Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-24T13:21:29.6824167Z ##[group]Checking out the ref
+2026-10-24T13:21:29.6830458Z [command]/usr/bin/git checkout --progress --force 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:29.7878831Z Note: switching to '97925f7620313ba6a6ebc377c9c9340a42889875'.
+2026-10-24T13:21:29.7880470Z 
+2026-10-24T13:21:29.7881720Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-24T13:21:29.7883514Z changes and commit them, and you can discard any commits you make in this
+2026-10-24T13:21:29.7885978Z state without impacting any branches by switching back to a branch.
+2026-10-24T13:21:29.7887770Z 
+2026-10-24T13:21:29.7888892Z If you want to create a new branch to retain commits you create, you may
+2026-10-24T13:21:29.7891708Z do so (now or later) by using -c with the switch command. Example:
+2026-10-24T13:21:29.7893312Z 
+2026-10-24T13:21:29.7893972Z   git switch -c <new-branch-name>
+2026-10-24T13:21:29.7895066Z 
+2026-10-24T13:21:29.7895807Z Or undo this operation with:
+2026-10-24T13:21:29.7897098Z 
+2026-10-24T13:21:29.7897964Z   git switch -
+2026-10-24T13:21:29.7899129Z 
+2026-10-24T13:21:29.7901092Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-24T13:21:29.7903142Z 
+2026-10-24T13:21:29.7904714Z HEAD is now at 97925f7 fix(pocket): reject invalid plot bounds without inventing geometry
+2026-10-24T13:21:29.7911244Z ##[endgroup]
+2026-10-24T13:21:29.7946813Z [command]/usr/bin/git log -1 --format=%H
+2026-10-24T13:21:29.7984266Z 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:29.7994549Z ##[group]Removing auth
+2026-10-24T13:21:29.7998097Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T13:21:29.8034919Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T13:21:29.8264653Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T13:21:29.8294008Z http.https://github.com/.extraheader
+2026-10-24T13:21:29.8303379Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-24T13:21:29.8343418Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T13:21:29.8571380Z ##[endgroup]
+2026-10-24T13:21:29.9017400Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+2026-10-24T13:21:29.9019189Z with:
+2026-10-24T13:21:29.9020049Z   node-version: 24.19.0
+2026-10-24T13:21:29.9021271Z   cache: npm
+2026-10-24T13:21:29.9022179Z   always-auth: false
+2026-10-24T13:21:29.9023156Z   check-latest: false
+2026-10-24T13:21:29.9033516Z   token: ***
+2026-10-24T13:21:29.9034414Z env:
+2026-10-24T13:21:29.9035220Z   CI: true
+2026-10-24T13:21:29.9036103Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:21:29.9037388Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:29.9039147Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:21:29.9041292Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:21:29.9043016Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:21:29.9044300Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:21:29.9045669Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:21:29.9047450Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:21:29.9049007Z ##[endgroup]
+2026-10-24T13:21:30.0524643Z Attempting to download 24.19.0...
+2026-10-24T13:21:30.0638140Z (node:2581) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T13:21:30.0641386Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T13:21:31.0847207Z Acquiring 24.19.0 - x64 from https://github.com/actions/node-versions/releases/download/24.19.0-30872449280/node-24.19.0-linux-x64.tar.gz
+2026-10-24T13:21:31.6544124Z Extracting ...
+2026-10-24T13:21:31.6675595Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/fd75ce71-558f-4e39-a8ec-94df2516679a -f /home/runner/work/_temp/a82ce9f1-8b3e-4737-b28b-fd49f14ae5f8
+2026-10-24T13:21:32.9056125Z Adding to the cache ...
+2026-10-24T13:21:34.9494169Z ##[group]Environment details
+2026-10-24T13:21:35.1810515Z node: v24.19.0
+2026-10-24T13:21:35.1811239Z npm: 11.17.0
+2026-10-24T13:21:35.1811642Z yarn: 1.22.22
+2026-10-24T13:21:35.1812233Z ##[endgroup]
+2026-10-24T13:21:35.1838364Z [command]/opt/hostedtoolcache/node/24.19.0/x64/bin/npm config get cache
+2026-10-24T13:21:35.2778387Z /home/runner/.npm
+2026-10-24T13:21:35.5260329Z npm cache is not found
+2026-10-24T13:21:35.5448336Z ##[group]Run test "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"
+2026-10-24T13:21:35.5448865Z [36;1mtest "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"[0m
+2026-10-24T13:21:35.5449632Z [36;1mnode -e "const c=require('./vercel.json'); if(c.git.deploymentEnabled['monaco-scanner-geometry-repair-126-20261024']!==false)process.exit(1)"[0m
+2026-10-24T13:21:35.5708037Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:21:35.5708381Z env:
+2026-10-24T13:21:35.5708595Z   CI: true
+2026-10-24T13:21:35.5708813Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:21:35.5709138Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:35.5709598Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:21:35.5710075Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:21:35.5710483Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:21:35.5710796Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:21:35.5711461Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:21:35.5711895Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:21:35.5712304Z ##[endgroup]
+2026-10-24T13:21:35.6167284Z ##[group]Run npm ci --no-audit --no-fund --fetch-retries=0
+2026-10-24T13:21:35.6167803Z [36;1mnpm ci --no-audit --no-fund --fetch-retries=0[0m
+2026-10-24T13:21:35.6234429Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:21:35.6234761Z env:
+2026-10-24T13:21:35.6234962Z   CI: true
+2026-10-24T13:21:35.6235171Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:21:35.6235483Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:35.6235959Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:21:35.6236418Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:21:35.6236801Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:21:35.6237089Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:21:35.6237409Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:21:35.6237807Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:21:35.6238217Z ##[endgroup]
+2026-10-24T13:21:40.3964764Z npm warn deprecated jsrsasign@11.1.5: This package is no longer maintained.
+2026-10-24T13:21:40.8393268Z npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+2026-10-24T13:21:40.8934577Z npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+2026-10-24T13:21:40.9142155Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-24T13:21:56.1333513Z 
+2026-10-24T13:21:56.1334156Z added 659 packages in 20s
+2026-10-24T13:21:56.1351458Z npm warn allow-scripts 7 packages have install scripts not yet covered by allowScripts:
+2026-10-24T13:21:56.1352689Z npm warn allow-scripts   esbuild@0.18.20 (postinstall: node install.js)
+2026-10-24T13:21:56.1353688Z npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+2026-10-24T13:21:56.1354824Z npm warn allow-scripts   esbuild@0.28.1 (postinstall: node install.js)
+2026-10-24T13:21:56.1356107Z npm warn allow-scripts   tesseract.js@6.0.1 (postinstall: opencollective-postinstall || true)
+2026-10-24T13:21:56.1358101Z npm warn allow-scripts   unrs-resolver@1.11.1 (postinstall: napi-postinstall unrs-resolver 1.11.1 check)
+2026-10-24T13:21:56.1359442Z npm warn allow-scripts   workerd@1.20260515.1 (postinstall: node install.js)
+2026-10-24T13:21:56.1360564Z npm warn allow-scripts   esbuild@0.27.3 (postinstall: node install.js)
+2026-10-24T13:21:56.1361589Z npm warn allow-scripts
+2026-10-24T13:21:56.1362856Z npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+2026-10-24T13:21:56.2126132Z ##[group]Run node scripts/verify-pocket-scanner-geometry-repair.mjs
+2026-10-24T13:21:56.2127443Z [36;1mnode scripts/verify-pocket-scanner-geometry-repair.mjs[0m
+2026-10-24T13:21:56.2212982Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:21:56.2213421Z env:
+2026-10-24T13:21:56.2213741Z   CI: true
+2026-10-24T13:21:56.2214029Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:21:56.2214339Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:56.2215026Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:21:56.2215787Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:21:56.2216446Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:21:56.2216941Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:21:56.2217474Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:21:56.2218149Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:21:56.2218663Z ##[endgroup]
+2026-10-24T13:21:56.4445278Z {"file":"tests/pocket-calibration-plot-bounds.test.ts","sourceSha256":"01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea","status":"PASS","tests":10,"pass":10,"fail":0,"skipped":0,"exitCode":0,"logSha256":"8977712113b8824585d41f6ce9fbd8acbe98abea6be1c956496d34ac04eb679a"}
+2026-10-24T13:21:56.6498394Z {"file":"tests/pocket-launch-hardening.test.ts","sourceSha256":"6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78","status":"PASS","tests":19,"pass":19,"fail":0,"skipped":0,"exitCode":0,"logSha256":"b65ae926f732d1d8dde76387ea55aab39c887596b00a44b1dfef0d9a7fb0fb0d"}
+2026-10-24T13:21:56.8423195Z {"file":"tests/pocket-calibration-observations-contract.test.ts","sourceSha256":"95ae5e5f754badefffb0458ef77c42ff2585fbad44b0d23cc89b3699ff9da09a","status":"PASS","tests":7,"pass":7,"fail":0,"skipped":0,"exitCode":0,"logSha256":"39d38a84c0a6e1425997032ba2b2416fe815565cc7ea721e8b99438ce0d58aa8"}
+2026-10-24T13:21:56.9783714Z {"file":"tests/pocket-liquidity-chain-integration.test.ts","sourceSha256":"8310dcc24e6dcc4987cd6be595be5adf3dabb681e0ae85fad3d4b48d13824273","status":"PASS","tests":9,"pass":9,"fail":0,"skipped":0,"exitCode":0,"logSha256":"cbe2424587deffa6efb7466003ac7eab3e16a75fcdc192635351ec4412d2f823"}
+2026-10-24T13:21:57.1149128Z {"file":"tests/pocket-liquidity-event-evidence.test.ts","sourceSha256":"ea68a9034497472ba35791a12b50d38951effe8ca6b05907d4b50f4f649da184","status":"PASS","tests":6,"pass":6,"fail":0,"skipped":0,"exitCode":0,"logSha256":"2a8f3d74186c5ce38ecd5c41548bf2d1486b2af4845942b5892d01e828308db9"}
+2026-10-24T13:21:57.2416802Z {"file":"tests/pocket-pattern-calibration.test.ts","sourceSha256":"b7b81e6c3bd7050e763f6f770b17fd91ef072a6608c81d4e748cfd160c30ed7d","status":"PASS","tests":5,"pass":5,"fail":0,"skipped":0,"exitCode":0,"logSha256":"56810e7a82695cb7abe72c492a71dce3725e364bd77b3d7a04c612064799aff3"}
+2026-10-24T13:21:57.3637508Z {"file":"tests/pocket-pattern-malformed-geometry.test.ts","sourceSha256":"1bb8bd0816584c9853df8672c68fd154ed5ab3b851d430a0618089f9b7b55dbe","status":"PASS","tests":2,"pass":2,"fail":0,"skipped":0,"exitCode":0,"logSha256":"13d76b1e04beed35c487ec83c2f4b6b7d34173a6572063bfe4fbd794b5b0500c"}
+2026-10-24T13:21:57.4661528Z {"file":"tests/pocket-original-levels.test.ts","sourceSha256":"186d5b5417dabd055649d272ebd9fffb8d718c6251fb515566e1ad8b6714edb8","status":"PASS","tests":3,"pass":3,"fail":0,"skipped":0,"exitCode":0,"logSha256":"97ad3a127e360d9f24fc2b4b852b4ace7da8e1a986134bf5f034987f45cabe09"}
+2026-10-24T13:21:57.6459036Z {"file":"tests/pocket-original-geometry.test.ts","sourceSha256":"784f42d07da26c68549d73af6709106bf16ae4531c694634a4bd4a5a642a5221","status":"PASS","tests":4,"pass":4,"fail":0,"skipped":0,"exitCode":0,"logSha256":"605915fc2962e17b35b66c121cdf498b6b05c6504c55d923836d0d2290ad456f"}
+2026-10-24T13:21:57.7615217Z {"file":"tests/pocket-chart-benchmark.test.ts","sourceSha256":"8eba8560f2c4fd65fa86d77bd84cf8a9fedbaee20c4db04021c1511ee10c63ce","status":"PASS","tests":3,"pass":3,"fail":0,"skipped":0,"exitCode":0,"logSha256":"90363b976877ddf0e9193fd7706e97af1c986964a131058ece9ff8376a839c3c"}
+2026-10-24T13:21:57.7617000Z {"status":"PASS","totals":{"tests":68,"pass":68,"fail":0,"skipped":0},"suites":10}
+2026-10-24T13:21:57.7676717Z ##[group]Run npm run typecheck
+2026-10-24T13:21:57.7677039Z [36;1mnpm run typecheck[0m
+2026-10-24T13:21:57.7677470Z [36;1mnpx eslint app/api/pocket/analysis-calibration.ts app/api/pocket/liquidity-chain.ts[0m
+2026-10-24T13:21:57.7677940Z [36;1mnpm run security:scan[0m
+2026-10-24T13:21:57.7678204Z [36;1mgit diff --check[0m
+2026-10-24T13:21:57.7743044Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:21:57.7743299Z env:
+2026-10-24T13:21:57.7743483Z   CI: true
+2026-10-24T13:21:57.7743678Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:21:57.7743972Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:21:57.7744394Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:21:57.7744852Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:21:57.7745235Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:21:57.7745510Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:21:57.7745853Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:21:57.7746241Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:21:57.7746592Z ##[endgroup]
+2026-10-24T13:21:57.8794186Z 
+2026-10-24T13:21:57.8794827Z > nash-ai-markets-bullseye@1.0.0-rc.2 typecheck
+2026-10-24T13:21:57.8795302Z > tsc --noEmit --incremental false
+2026-10-24T13:21:57.8795547Z 
+2026-10-24T13:22:15.6156875Z 
+2026-10-24T13:22:15.6157711Z > nash-ai-markets-bullseye@1.0.0-rc.2 security:scan
+2026-10-24T13:22:15.6158174Z > node scripts/check-secrets.mjs
+2026-10-24T13:22:15.6158370Z 
+2026-10-24T13:22:15.7825073Z Secret-pattern scan passed across 1357 version-control candidates.
+2026-10-24T13:22:15.8509220Z ##[group]Run actions/upload-artifact@v4
+2026-10-24T13:22:15.8509525Z with:
+2026-10-24T13:22:15.8509887Z   name: pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:22:15.8510341Z   path: qa/scanner-geometry-repair-ci
+2026-10-24T13:22:15.8510618Z   if-no-files-found: error
+2026-10-24T13:22:15.8510844Z   retention-days: 30
+2026-10-24T13:22:15.8511340Z   compression-level: 6
+2026-10-24T13:22:15.8511554Z   overwrite: false
+2026-10-24T13:22:15.8511764Z   include-hidden-files: false
+2026-10-24T13:22:15.8511996Z env:
+2026-10-24T13:22:15.8512173Z   CI: true
+2026-10-24T13:22:15.8512363Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:22:15.8512677Z   GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875
+2026-10-24T13:22:15.8513086Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:22:15.8513526Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:22:15.8513927Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T13:22:15.8514201Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T13:22:15.8514491Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T13:22:15.8514875Z   POCKET_SCANNER_GEOMETRY_QA_OUTPUT: qa/scanner-geometry-repair-ci
+2026-10-24T13:22:15.8515234Z ##[endgroup]
+2026-10-24T13:22:16.0219601Z (node:2898) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T13:22:16.0220438Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T13:22:16.0352259Z With the provided path, there will be 11 files uploaded
+2026-10-24T13:22:16.0353877Z Artifact name is valid!
+2026-10-24T13:22:16.0354895Z Root directory input is valid!
+2026-10-24T13:22:16.4249831Z Beginning upload of artifact content to blob storage
+2026-10-24T13:22:16.4646323Z (node:2898) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-24T13:22:16.7311141Z Uploaded bytes 8384
+2026-10-24T13:22:16.8093875Z Finished uploading artifact content to blob storage!
+2026-10-24T13:22:16.8095017Z SHA256 digest of uploaded artifact zip is 59eaf37cb97384103cf2ddeae593eb7dbb1d30a02351cdf7934a522248217059
+2026-10-24T13:22:16.8096014Z Finalizing artifact upload
+2026-10-24T13:22:17.2686036Z Artifact pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875.zip successfully finalized. Artifact ID 12561214323
+2026-10-24T13:22:17.2688990Z Artifact pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875 has been successfully uploaded! Final size is 8384 bytes. Artifact ID is 12561214323
+2026-10-24T13:22:17.2694932Z Artifact download URL: https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40097778572/artifacts/12561214323
+2026-10-24T13:22:17.2875247Z Post job cleanup.
+2026-10-24T13:22:17.4094930Z (node:2910) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T13:22:17.4096677Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T13:22:17.4353349Z [command]/usr/bin/tar --posix -cf cache.tzst --exclude cache.tzst -P -C /home/runner/work/nash-ai-markets/nash-ai-markets --files-from manifest.txt --use-compress-program zstdmt
+2026-10-24T13:22:18.2404000Z (node:2910) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-24T13:22:19.2262628Z Sent 0 of 306650885 (0.0%), 0.0 MBs/sec
+2026-10-24T13:22:20.2237666Z Sent 38215429 of 306650885 (12.5%), 18.2 MBs/sec
+2026-10-24T13:22:20.3118150Z Sent 306650885 of 306650885 (100.0%), 140.1 MBs/sec
+2026-10-24T13:22:20.6098783Z Cache saved with the key: node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd
+2026-10-24T13:22:20.6269883Z Post job cleanup.
+2026-10-24T13:22:20.7198847Z [command]/usr/bin/git version
+2026-10-24T13:22:20.7247073Z git version 2.55.0
+2026-10-24T13:22:20.7295216Z Temporarily overriding HOME='/home/runner/work/_temp/ef27562f-85a6-4db7-8415-2d9571234b85' before making global git config changes
+2026-10-24T13:22:20.7296439Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T13:22:20.7301829Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T13:22:20.7401827Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T13:22:20.7442650Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T13:22:20.7713520Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T13:22:20.7751321Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T13:22:20.8177017Z Cleaning up orphan processes
+2026-10-24T13:22:20.8625499Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

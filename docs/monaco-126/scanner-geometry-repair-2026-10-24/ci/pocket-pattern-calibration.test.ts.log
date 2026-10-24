@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: drops a named pattern when geometry is too weak to defend
+ok 1 - drops a named pattern when geometry is too weak to defend
+  ---
+  duration_ms: 2.222434
+  type: 'test'
+  ...
+# Subtest: keeps a defensible pattern with meaningful geometry
+ok 2 - keeps a defensible pattern with meaningful geometry
+  ---
+  duration_ms: 1.297186
+  type: 'test'
+  ...
+# Subtest: downgrades low-confidence confirmed patterns instead of presenting false certainty
+ok 3 - downgrades low-confidence confirmed patterns instead of presenting false certainty
+  ---
+  duration_ms: 0.203877
+  type: 'test'
+  ...
+# Subtest: removes all pattern claims when candles are unreadable
+ok 4 - removes all pattern claims when candles are unreadable
+  ---
+  duration_ms: 0.22737
+  type: 'test'
+  ...
+# Subtest: production pattern schema requires three evidence anchors just like the post-model gate
+ok 5 - production pattern schema requires three evidence anchors just like the post-model gate
+  ---
+  duration_ms: 6.217631
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18.094001

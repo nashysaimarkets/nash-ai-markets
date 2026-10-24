@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: a verified repeated-high pool does not certify a sweep from prose alone
+ok 1 - a verified repeated-high pool does not certify a sweep from prose alone
+  ---
+  duration_ms: 4.268411
+  type: 'test'
+  ...
+# Subtest: event kind, side, row and confidence must match the defended pool
+ok 2 - event kind, side, row and confidence must match the defended pool
+  ---
+  duration_ms: 3.841209
+  type: 'test'
+  ...
+# Subtest: a sweep must occur after the two visible extrema, never before or at them
+ok 3 - a sweep must occur after the two visible extrema, never before or at them
+  ---
+  duration_ms: 11.807342
+  type: 'test'
+  ...
+# Subtest: two distinct same-side structural observations are required before the event
+ok 4 - two distinct same-side structural observations are required before the event
+  ---
+  duration_ms: 0.451825
+  type: 'test'
+  ...
+# Subtest: explicit later matching observations retain sweep, reclaim and rejection events
+ok 5 - explicit later matching observations retain sweep, reclaim and rejection events
+  ---
+  duration_ms: 0.473995
+  type: 'test'
+  ...
+# Subtest: an unrequested event is never manufactured from an observation
+ok 6 - an unrequested event is never manufactured from an observation
+  ---
+  duration_ms: 0.190582
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33.967486

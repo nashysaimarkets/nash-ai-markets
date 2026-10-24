@@ -1,0 +1,127 @@
+{
+  "kind": "POCKET_SCANNER_GEOMETRY_REPAIR_AFFECTED_REGRESSIONS",
+  "status": "PASS",
+  "observedAtUtc": "2026-10-24T13:21:57.759Z",
+  "sourceCommit": "97925f7620313ba6a6ebc377c9c9340a42889875",
+  "runtime": "v24.19.0",
+  "results": [
+    {
+      "file": "tests/pocket-calibration-plot-bounds.test.ts",
+      "sourceSha256": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+      "status": "PASS",
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "8977712113b8824585d41f6ce9fbd8acbe98abea6be1c956496d34ac04eb679a"
+    },
+    {
+      "file": "tests/pocket-launch-hardening.test.ts",
+      "sourceSha256": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+      "status": "PASS",
+      "tests": 19,
+      "pass": 19,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "b65ae926f732d1d8dde76387ea55aab39c887596b00a44b1dfef0d9a7fb0fb0d"
+    },
+    {
+      "file": "tests/pocket-calibration-observations-contract.test.ts",
+      "sourceSha256": "95ae5e5f754badefffb0458ef77c42ff2585fbad44b0d23cc89b3699ff9da09a",
+      "status": "PASS",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "39d38a84c0a6e1425997032ba2b2416fe815565cc7ea721e8b99438ce0d58aa8"
+    },
+    {
+      "file": "tests/pocket-liquidity-chain-integration.test.ts",
+      "sourceSha256": "8310dcc24e6dcc4987cd6be595be5adf3dabb681e0ae85fad3d4b48d13824273",
+      "status": "PASS",
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "cbe2424587deffa6efb7466003ac7eab3e16a75fcdc192635351ec4412d2f823"
+    },
+    {
+      "file": "tests/pocket-liquidity-event-evidence.test.ts",
+      "sourceSha256": "ea68a9034497472ba35791a12b50d38951effe8ca6b05907d4b50f4f649da184",
+      "status": "PASS",
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "2a8f3d74186c5ce38ecd5c41548bf2d1486b2af4845942b5892d01e828308db9"
+    },
+    {
+      "file": "tests/pocket-pattern-calibration.test.ts",
+      "sourceSha256": "b7b81e6c3bd7050e763f6f770b17fd91ef072a6608c81d4e748cfd160c30ed7d",
+      "status": "PASS",
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "56810e7a82695cb7abe72c492a71dce3725e364bd77b3d7a04c612064799aff3"
+    },
+    {
+      "file": "tests/pocket-pattern-malformed-geometry.test.ts",
+      "sourceSha256": "1bb8bd0816584c9853df8672c68fd154ed5ab3b851d430a0618089f9b7b55dbe",
+      "status": "PASS",
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "13d76b1e04beed35c487ec83c2f4b6b7d34173a6572063bfe4fbd794b5b0500c"
+    },
+    {
+      "file": "tests/pocket-original-levels.test.ts",
+      "sourceSha256": "186d5b5417dabd055649d272ebd9fffb8d718c6251fb515566e1ad8b6714edb8",
+      "status": "PASS",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "97ad3a127e360d9f24fc2b4b852b4ace7da8e1a986134bf5f034987f45cabe09"
+    },
+    {
+      "file": "tests/pocket-original-geometry.test.ts",
+      "sourceSha256": "784f42d07da26c68549d73af6709106bf16ae4531c694634a4bd4a5a642a5221",
+      "status": "PASS",
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "605915fc2962e17b35b66c121cdf498b6b05c6504c55d923836d0d2290ad456f"
+    },
+    {
+      "file": "tests/pocket-chart-benchmark.test.ts",
+      "sourceSha256": "8eba8560f2c4fd65fa86d77bd84cf8a9fedbaee20c4db04021c1511ee10c63ce",
+      "status": "PASS",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "90363b976877ddf0e9193fd7706e97af1c986964a131058ece9ff8376a839c3c"
+    }
+  ],
+  "totals": {
+    "tests": 68,
+    "pass": 68,
+    "fail": 0,
+    "skipped": 0
+  },
+  "providerCalls": 0,
+  "liveAcceptance": false
+}

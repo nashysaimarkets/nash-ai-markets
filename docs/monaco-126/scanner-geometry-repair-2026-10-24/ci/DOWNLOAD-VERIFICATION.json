@@ -1,0 +1,70 @@
+{
+  "artifactId": 12561214323,
+  "archiveBytes": 8384,
+  "archiveSha256": "59eaf37cb97384103cf2ddeae593eb7dbb1d30a02351cdf7934a522248217059",
+  "sourceCommit": "97925f7620313ba6a6ebc377c9c9340a42889875",
+  "status": "PASS",
+  "totals": {
+    "tests": 68,
+    "pass": 68,
+    "fail": 0,
+    "skipped": 0
+  },
+  "entries": [
+    {
+      "path": "AFFECTED-REGRESSIONS.json",
+      "bytes": 4043,
+      "sha256": "899eca9c7c0fe0f5c9b7ffc637fa1391d9c9af4df080dad71a565eea320f0c89"
+    },
+    {
+      "path": "pocket-calibration-observations-contract.test.ts.log",
+      "bytes": 1758,
+      "sha256": "39d38a84c0a6e1425997032ba2b2416fe815565cc7ea721e8b99438ce0d58aa8"
+    },
+    {
+      "path": "pocket-calibration-plot-bounds.test.ts.log",
+      "bytes": 2546,
+      "sha256": "8977712113b8824585d41f6ce9fbd8acbe98abea6be1c956496d34ac04eb679a"
+    },
+    {
+      "path": "pocket-chart-benchmark.test.ts.log",
+      "bytes": 617,
+      "sha256": "90363b976877ddf0e9193fd7706e97af1c986964a131058ece9ff8376a839c3c"
+    },
+    {
+      "path": "pocket-launch-hardening.test.ts.log",
+      "bytes": 4176,
+      "sha256": "b65ae926f732d1d8dde76387ea55aab39c887596b00a44b1dfef0d9a7fb0fb0d"
+    },
+    {
+      "path": "pocket-liquidity-chain-integration.test.ts.log",
+      "bytes": 2188,
+      "sha256": "cbe2424587deffa6efb7466003ac7eab3e16a75fcdc192635351ec4412d2f823"
+    },
+    {
+      "path": "pocket-liquidity-event-evidence.test.ts.log",
+      "bytes": 1397,
+      "sha256": "2a8f3d74186c5ce38ecd5c41548bf2d1486b2af4845942b5892d01e828308db9"
+    },
+    {
+      "path": "pocket-original-geometry.test.ts.log",
+      "bytes": 1223,
+      "sha256": "605915fc2962e17b35b66c121cdf498b6b05c6504c55d923836d0d2290ad456f"
+    },
+    {
+      "path": "pocket-original-levels.test.ts.log",
+      "bytes": 918,
+      "sha256": "97ad3a127e360d9f24fc2b4b852b4ace7da8e1a986134bf5f034987f45cabe09"
+    },
+    {
+      "path": "pocket-pattern-calibration.test.ts.log",
+      "bytes": 1134,
+      "sha256": "56810e7a82695cb7abe72c492a71dce3725e364bd77b3d7a04c612064799aff3"
+    },
+    {
+      "path": "pocket-pattern-malformed-geometry.test.ts.log",
+      "bytes": 495,
+      "sha256": "13d76b1e04beed35c487ec83c2f4b6b7d34173a6572063bfe4fbd794b5b0500c"
+    }
+  ]
+}

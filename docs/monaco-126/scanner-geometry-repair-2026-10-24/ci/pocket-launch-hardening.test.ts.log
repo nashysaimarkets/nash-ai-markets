@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: legacy saved decisions are migrated without changing chart bytes
+ok 1 - legacy saved decisions are migrated without changing chart bytes
+  ---
+  duration_ms: 2.945279
+  type: 'test'
+  ...
+# Subtest: invalid local records are skipped instead of breaking the vault
+ok 2 - invalid local records are skipped instead of breaking the vault
+  ---
+  duration_ms: 0.355256
+  type: 'test'
+  ...
+# Subtest: poor evidence always fails closed and cannot retain an inflated grade
+ok 3 - poor evidence always fails closed and cannot retain an inflated grade
+  ---
+  duration_ms: 1.071519
+  type: 'test'
+  ...
+# Subtest: score and grade are made internally consistent for readable charts
+ok 4 - score and grade are made internally consistent for readable charts
+  ---
+  duration_ms: 0.32492
+  type: 'test'
+  ...
+# Subtest: one-more-view prompts exclude trader plan fields
+ok 5 - one-more-view prompts exclude trader plan fields
+  ---
+  duration_ms: 0.915881
+  type: 'test'
+  ...
+# Subtest: readable price anchors calibrate horizontal levels into the candle plot
+ok 6 - readable price anchors calibrate horizontal levels into the candle plot
+  ---
+  duration_ms: 1.649015
+  type: 'test'
+  ...
+# Subtest: readable candles preserve visual support and resistance when exact scale prices cannot be verified
+ok 7 - readable candles preserve visual support and resistance when exact scale prices cannot be verified
+  ---
+  duration_ms: 0.566285
+  type: 'test'
+  ...
+# Subtest: dedicated scale anchors override a conservative prose-pass scale flag
+ok 8 - dedicated scale anchors override a conservative prose-pass scale flag
+  ---
+  duration_ms: 0.438109
+  type: 'test'
+  ...
+# Subtest: verified linear scale accepts extrapolated levels that remain inside the plot
+ok 9 - verified linear scale accepts extrapolated levels that remain inside the plot
+  ---
+  duration_ms: 0.433952
+  type: 'test'
+  ...
+# Subtest: mislabelled horizontal levels are classified by current market location
+ok 10 - mislabelled horizontal levels are classified by current market location
+  ---
+  duration_ms: 0.660389
+  type: 'test'
+  ...
+# Subtest: unverified levels retain visual geometry while out-of-scale verified claims fail closed
+ok 11 - unverified levels retain visual geometry while out-of-scale verified claims fail closed
+  ---
+  duration_ms: 0.521593
+  type: 'test'
+  ...
+# Subtest: a price whose claimed pixel row disagrees with the scale is withheld
+ok 12 - a price whose claimed pixel row disagrees with the scale is withheld
+  ---
+  duration_ms: 0.30323
+  type: 'test'
+  ...
+# Subtest: two wide scale anchors restore a geometrically matching level
+ok 13 - two wide scale anchors restore a geometrically matching level
+  ---
+  duration_ms: 0.317967
+  type: 'test'
+  ...
+# Subtest: a small mobile reading-crop offset keeps a scale-verified level
+ok 14 - a small mobile reading-crop offset keeps a scale-verified level
+  ---
+  duration_ms: 0.283825
+  type: 'test'
+  ...
+# Subtest: the personal risk desk calculates from explicit customer inputs only
+ok 15 - the personal risk desk calculates from explicit customer inputs only
+  ---
+  duration_ms: 0.537733
+  type: 'test'
+  ...
+# Subtest: the complete Pocket journey retains privacy, failure and duplicate-request safeguards
+ok 16 - the complete Pocket journey retains privacy, failure and duplicate-request safeguards
+  ---
+  duration_ms: 21.417993
+  type: 'test'
+  ...
+# Subtest: server beta budgets stop duplicate cost before the provider is called
+ok 17 - server beta budgets stop duplicate cost before the provider is called
+  ---
+  duration_ms: 29.632336
+  type: 'test'
+  ...
+# Subtest: beta budgets are isolated by action and requester and reset after the window
+ok 18 - beta budgets are isolated by action and requester and reset after the window
+  ---
+  duration_ms: 1.774076
+  type: 'test'
+  ...
+# Subtest: live torture harness rasterizes synthetic SVG fixtures before declaring PNG
+ok 19 - live torture harness rasterizes synthetic SVG fixtures before declaring PNG
+  ---
+  duration_ms: 1.186841
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75.039014

@@ -20,5 +20,11 @@
   "frozenPaidRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
   "providerCalls": 0,
   "hostedDatabaseCalls": 0,
-  "scannerAccuracyAccepted": false
+  "scannerAccuracyAccepted": false,
+  "testedSourceCommit": "97925f7620313ba6a6ebc377c9c9340a42889875",
+  "testedSourceTree": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+  "hostedAcceptance": "PASS",
+  "focusedRun": 40097778572,
+  "imageRun": 40097797530,
+  "independentCIReceiptSha256": "4ae982c107a31f057b2b653a370a96a7e237f9fb86e970731b7f1686c0554eec"
 }

@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: mixed malformed pattern geometry fails closed
+ok 1 - mixed malformed pattern geometry fails closed
+  ---
+  duration_ms: 2.685299
+  type: 'test'
+  ...
+# Subtest: repeated points cannot impersonate three distinct visible pattern anchors
+ok 2 - repeated points cannot impersonate three distinct visible pattern anchors
+  ---
+  duration_ms: 0.256684
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14.50287

@@ -1,0 +1,177 @@
+{
+  "commit": {
+    "sha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+    "node_id": "C_kwDOTWGF-doAKDk3OTI1Zjc2MjAzMTNiYTZhNmViYzM3N2M5YzkzNDBhNDI4ODk4NzU",
+    "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/97925f7620313ba6a6ebc377c9c9340a42889875",
+    "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/97925f7620313ba6a6ebc377c9c9340a42889875",
+    "author": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:21:18Z"
+    },
+    "committer": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:21:18Z"
+    },
+    "tree": {
+      "sha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/trees/244d7af95228d619d0b1ebb60e9b93ea764d9255"
+    },
+    "message": "fix(pocket): reject invalid plot bounds without inventing geometry",
+    "parents": [
+      {
+        "sha": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/b118c7a38a35514eb4cbd4cc86b3341de91a5ca5"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "treeSha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+  "treeTruncated": false,
+  "blobs": [
+    {
+      "path": ".github/workflows/bullseye-image-torture.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "983ac8a4125c4ec781421c81ffa60e75999c131e",
+      "size": 3304,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/983ac8a4125c4ec781421c81ffa60e75999c131e"
+    },
+    {
+      "path": ".github/workflows/pocket-scanner-geometry-repair-qa.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "002ce369d469911bf0f544d54b0ab84b1dae76e1",
+      "size": 2501,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/002ce369d469911bf0f544d54b0ab84b1dae76e1"
+    },
+    {
+      "path": "app/api/pocket/analyse/route.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "154f0513e0db6657b179f96c4f799c5ea5731eab",
+      "size": 40999,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/154f0513e0db6657b179f96c4f799c5ea5731eab"
+    },
+    {
+      "path": "app/api/pocket/analysis-calibration.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ce177dbdd7efe03a5dda569349b4f354cf4b749",
+      "size": 18122,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/5ce177dbdd7efe03a5dda569349b4f354cf4b749"
+    },
+    {
+      "path": "app/api/pocket/liquidity-chain.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7f2bc0914961e6cbd56597ba9060de5348e69433",
+      "size": 4434,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/7f2bc0914961e6cbd56597ba9060de5348e69433"
+    },
+    {
+      "path": "app/api/pocket/precision-fallback.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd725171558050f589b447591f3e52ffd40752d4",
+      "size": 3968,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/fd725171558050f589b447591f3e52ffd40752d4"
+    },
+    {
+      "path": "app/pocket/OriginalChartEvidence.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "83539bd6c7332859a4a86a2988ad8bb9b85a85b5",
+      "size": 4063,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/83539bd6c7332859a4a86a2988ad8bb9b85a85b5"
+    },
+    {
+      "path": "app/pocket/PocketBullseye.tsx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4bf6822024a16c006e56cbc3f118d1edaaf68b8a",
+      "size": 133045,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/4bf6822024a16c006e56cbc3f118d1edaaf68b8a"
+    },
+    {
+      "path": "app/pocket/original-pixel-geometry.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "914546d18b9b2f8d7ab86f643e6e38f0c449caf0",
+      "size": 5613,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/914546d18b9b2f8d7ab86f643e6e38f0c449caf0"
+    },
+    {
+      "path": "app/pocket/original-pixel-levels.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aeb9c0ac8fcf6e41cea53285295f0ae0078b2097",
+      "size": 4431,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/aeb9c0ac8fcf6e41cea53285295f0ae0078b2097"
+    },
+    {
+      "path": "app/pocket/source-placement.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ef5488d8caabf6ff4ec1fb75209db6982079930",
+      "size": 1587,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/9ef5488d8caabf6ff4ec1fb75209db6982079930"
+    },
+    {
+      "path": "app/pocket/use-original-chart-measurement.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebd5dfb3ba104176f15e4ebfe8b0a5867b5ca264",
+      "size": 3629,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/ebd5dfb3ba104176f15e4ebfe8b0a5867b5ca264"
+    },
+    {
+      "path": "scripts/pocket-monaco-internal-diagnostics.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6266438c630462995e7bb1e75f44c5ead7eff584",
+      "size": 25558,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/6266438c630462995e7bb1e75f44c5ead7eff584"
+    },
+    {
+      "path": "scripts/verify-pocket-scanner-geometry-repair.mjs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8fd75d8c3b4ff9c9cf169f12895e03140aaef9a7",
+      "size": 2668,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/8fd75d8c3b4ff9c9cf169f12895e03140aaef9a7"
+    },
+    {
+      "path": "tests/pocket-calibration-plot-bounds.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "939ea80001aa055ab89e699a843b2b2c62ab6c0b",
+      "size": 9405,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/939ea80001aa055ab89e699a843b2b2c62ab6c0b"
+    },
+    {
+      "path": "tests/pocket-launch-hardening.test.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "423ba0e43f036aeda893cd699b6a14d2a028fa83",
+      "size": 24313,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/423ba0e43f036aeda893cd699b6a14d2a028fa83"
+    },
+    {
+      "path": "vercel.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "469e8af570ba8827025fe6fc9622b0201a631df9",
+      "size": 1333,
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/blobs/469e8af570ba8827025fe6fc9622b0201a631df9"
+    }
+  ]
+}
