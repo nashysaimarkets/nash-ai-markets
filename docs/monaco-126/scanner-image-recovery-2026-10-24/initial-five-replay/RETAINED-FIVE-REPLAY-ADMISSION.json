@@ -1,0 +1,406 @@
+{
+  "kind": "RETAINED_FIRST_SIX_FIVE_CASE_OFFLINE_REPLAY_INPUT_ADMISSION",
+  "createdAtUtc": "2026-10-24T14:08:03.403Z",
+  "status": "ALL_FIVE_RETAINED_INPUT_PAIRS_AVAILABLE",
+  "sourceCaseIds": [
+    "d002",
+    "d003",
+    "d004",
+    "d005",
+    "d006"
+  ],
+  "frozenReplaySource": {
+    "commit": "156417b4443068309a33c3364438948499775fad",
+    "tree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+    "publicationPath": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/SOURCE-PUBLICATION.json",
+    "publicationSha256": "78b4cb20396964526c0876fb85ea30c75bf68a649f955a7126b30ea75574ae66",
+    "sourceManifestPath": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/PUBLICATION-SOURCE-MANIFEST.json",
+    "sourceManifestSha256": "5ce1490b1ae8a2cece9c37f91c91e7ef40829e42e57461a42c3ef2f5517dc3fe",
+    "metadataPredicateSources": [
+      {
+        "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/app/pocket/source-price-candidates.ts",
+        "sha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+        "publishedManifestMatch": true
+      },
+      {
+        "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/app/pocket/source-placement.ts",
+        "sha256": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+        "publishedManifestMatch": true
+      }
+    ]
+  },
+  "metadataSources": {
+    "preparationReceipt": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/PREPARATION-RECEIPT.json",
+      "sha256": "a5b4a9f9b5a2651e01bb78d876af3c5479ea6f38e092d364b75a7f0f68b6fda9"
+    },
+    "plan": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/PLAN.json",
+      "sha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109"
+    },
+    "retentionManifests": [
+      {
+        "path": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-d002.json",
+        "sha256": "efe91f01fd995efe613dbae24a33f0b0674b1dcd2922566ecc39ef7bb1a1c7bd"
+      },
+      {
+        "path": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-batch2.json",
+        "sha256": "87c07d54166eb39f20c4df7c0143b51f581d62df61b3ae6a8f747c8d64b7e70f"
+      },
+      {
+        "path": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-batch3.json",
+        "sha256": "fdedf408f840b02f7a35bba563f7c47998bedc55b391dac7e6e03607c354c5a7"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "sourceCaseId": "d002",
+      "bundleCaseId": "v2-d002",
+      "inputAvailability": "RETAINED_BINDINGS_VERIFIED",
+      "bundle": {
+        "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/v2-d002.bundle.gz",
+        "sha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
+        "bytes": 782618,
+        "preparationEntry": "v2-d002",
+        "preparationMatch": true
+      },
+      "image": {
+        "entry": "artifacts/image",
+        "sha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+        "encodedPayloadPresent": true,
+        "planImageHashMatch": true,
+        "originalDiagnosticImageHashMatch": true,
+        "imageDataDecodedByThisInventory": false
+      },
+      "completedMain": {
+        "path": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d002-provider-response-main.json",
+        "sha256": "5e6f4782358211fa3476e7e0e5874b7a10bca663890f49936a1955a15d918960",
+        "bytes": 44113,
+        "status": "completed",
+        "error": null,
+        "incompleteDetails": null,
+        "validJsonObject": true,
+        "providerResponseId": "resp_09e0f4b8b128f127016adc896f7c1887d09ef41bfb554866ef",
+        "providerRequestId": "req_c47dda78bbb942018e60a4de2633884c",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "retainedRunId": "40086015008"
+      },
+      "bindings": {
+        "retentionManifestPath": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-d002.json",
+        "retentionManifestSha256": "efe91f01fd995efe613dbae24a33f0b0674b1dcd2922566ecc39ef7bb1a1c7bd",
+        "retainedArtifactName": "monaco-encrypted-40086015008-f3d86adeddff-d002-provider-response-main",
+        "responseMatchesRetentionManifest": true,
+        "diagnosticPath": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d002-diagnostic-output-final.json",
+        "diagnosticSha256": "a39c4fafd82d0a0ecfe99bbc011e7d89ef8c3254e58ef9a5c6f6eda7cc589bd0",
+        "responseMatchesDiagnosticRawMainHash": true,
+        "diagnosticSourceCaseMatches": true,
+        "imageMatchesDiagnosticSourceIdentity": true
+      },
+      "collectorEligibility": {
+        "status": "ELIGIBLE_FOR_IMAGE_RECOVERY_ATTEMPT",
+        "predicate": "sourceImageRecoveryEligible({...rawMain,sourcePriceCandidates:collectSourcePriceCandidates(rawMain)})",
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "horizontalPriceHints": 3,
+        "distinctNumericAxisHints": 4,
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0,
+        "malformedLimitations": false,
+        "unsupportedScale": false,
+        "reasons": [],
+        "geometryStatus": "NOT_RUN",
+        "ocrStatus": "NOT_RUN",
+        "placementStatus": "NOT_PROMISED"
+      }
+    },
+    {
+      "sourceCaseId": "d003",
+      "bundleCaseId": "v2-d003",
+      "inputAvailability": "RETAINED_BINDINGS_VERIFIED",
+      "bundle": {
+        "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/v2-d003.bundle.gz",
+        "sha256": "49a57fee34837f4fdaffba1415278823350cff786489d438e74a9433d1fa2aa1",
+        "bytes": 475218,
+        "preparationEntry": "v2-d003",
+        "preparationMatch": true
+      },
+      "image": {
+        "entry": "artifacts/image",
+        "sha256": "b381e53f95db0e82937db5fc0667f8fb9fd2052c1f1a8b1497602d6ff1e2edce",
+        "encodedPayloadPresent": true,
+        "planImageHashMatch": true,
+        "originalDiagnosticImageHashMatch": true,
+        "imageDataDecodedByThisInventory": false
+      },
+      "completedMain": {
+        "path": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d003-provider-response-main.json",
+        "sha256": "c9e1dd6873208e6669961cbfe509c89107aa6a19f1f89db56bd6d92571b5ad42",
+        "bytes": 44065,
+        "status": "completed",
+        "error": null,
+        "incompleteDetails": null,
+        "validJsonObject": true,
+        "providerResponseId": "resp_0b07116d00ffc026016adc89a76a4c87d084584e40b7babe85",
+        "providerRequestId": "req_3fe8a7c7a9c74e76bea90b97b5a82861",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "retainedRunId": "40086015008"
+      },
+      "bindings": {
+        "retentionManifestPath": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-batch2.json",
+        "retentionManifestSha256": "87c07d54166eb39f20c4df7c0143b51f581d62df61b3ae6a8f747c8d64b7e70f",
+        "retainedArtifactName": "monaco-encrypted-40086015008-f3d86adeddff-d003-provider-response-main",
+        "responseMatchesRetentionManifest": true,
+        "diagnosticPath": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d003-diagnostic-output-final.json",
+        "diagnosticSha256": "aa551388e20cb45a2e822f867ea372ae405a69fe53ddb4a5cab73bddc864f61c",
+        "responseMatchesDiagnosticRawMainHash": true,
+        "diagnosticSourceCaseMatches": true,
+        "imageMatchesDiagnosticSourceIdentity": true
+      },
+      "collectorEligibility": {
+        "status": "ELIGIBLE_FOR_IMAGE_RECOVERY_ATTEMPT",
+        "predicate": "sourceImageRecoveryEligible({...rawMain,sourcePriceCandidates:collectSourcePriceCandidates(rawMain)})",
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "horizontalPriceHints": 2,
+        "distinctNumericAxisHints": 3,
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0,
+        "malformedLimitations": false,
+        "unsupportedScale": false,
+        "reasons": [],
+        "geometryStatus": "NOT_RUN",
+        "ocrStatus": "NOT_RUN",
+        "placementStatus": "NOT_PROMISED"
+      }
+    },
+    {
+      "sourceCaseId": "d004",
+      "bundleCaseId": "v2-d004",
+      "inputAvailability": "RETAINED_BINDINGS_VERIFIED",
+      "bundle": {
+        "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/v2-d004.bundle.gz",
+        "sha256": "bb8932c6bbcb346373369ecca4c4bba08091abe9887db00d805f927950b144ac",
+        "bytes": 464743,
+        "preparationEntry": "v2-d004",
+        "preparationMatch": true
+      },
+      "image": {
+        "entry": "artifacts/image",
+        "sha256": "d2277fadcea7c84ab500614f9d69e1ae7a7acae4b28f4e8cc6ec428711a640f7",
+        "encodedPayloadPresent": true,
+        "planImageHashMatch": true,
+        "originalDiagnosticImageHashMatch": true,
+        "imageDataDecodedByThisInventory": false
+      },
+      "completedMain": {
+        "path": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d004-provider-response-main.json",
+        "sha256": "016a49518c06d5ae924201212076ac3145d611e5b297cd522863c55328ec0ad7",
+        "bytes": 37729,
+        "status": "completed",
+        "error": null,
+        "incompleteDetails": null,
+        "validJsonObject": true,
+        "providerResponseId": "resp_00b0d712f26139b3016adc89eb743887d0b681517896cef907",
+        "providerRequestId": "req_e19b2f33b6a54f39b271cd0c654bdb6a",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "retainedRunId": "40086015008"
+      },
+      "bindings": {
+        "retentionManifestPath": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-batch2.json",
+        "retentionManifestSha256": "87c07d54166eb39f20c4df7c0143b51f581d62df61b3ae6a8f747c8d64b7e70f",
+        "retainedArtifactName": "monaco-encrypted-40086015008-f3d86adeddff-d004-provider-response-main",
+        "responseMatchesRetentionManifest": true,
+        "diagnosticPath": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d004-diagnostic-output-final.json",
+        "diagnosticSha256": "66c8342e1ed98f757ee98210d7ae6972a1d6d88946decc1fb92a14e70f5f9a72",
+        "responseMatchesDiagnosticRawMainHash": true,
+        "diagnosticSourceCaseMatches": true,
+        "imageMatchesDiagnosticSourceIdentity": true
+      },
+      "collectorEligibility": {
+        "status": "ELIGIBLE_FOR_IMAGE_RECOVERY_ATTEMPT",
+        "predicate": "sourceImageRecoveryEligible({...rawMain,sourcePriceCandidates:collectSourcePriceCandidates(rawMain)})",
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "horizontalPriceHints": 2,
+        "distinctNumericAxisHints": 2,
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0,
+        "malformedLimitations": false,
+        "unsupportedScale": false,
+        "reasons": [],
+        "geometryStatus": "NOT_RUN",
+        "ocrStatus": "NOT_RUN",
+        "placementStatus": "NOT_PROMISED"
+      }
+    },
+    {
+      "sourceCaseId": "d005",
+      "bundleCaseId": "v2-d005",
+      "inputAvailability": "RETAINED_BINDINGS_VERIFIED",
+      "bundle": {
+        "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/v2-d005.bundle.gz",
+        "sha256": "abe2949e9b26429d44c76cb775b37afc42d8d38630165f1b751598d0f1f4388b",
+        "bytes": 457147,
+        "preparationEntry": "v2-d005",
+        "preparationMatch": true
+      },
+      "image": {
+        "entry": "artifacts/image",
+        "sha256": "2da8d62cf20c67658521fc4d22d79b509ca01e78d9eb2bdb76ae92ac02559618",
+        "encodedPayloadPresent": true,
+        "planImageHashMatch": true,
+        "originalDiagnosticImageHashMatch": true,
+        "imageDataDecodedByThisInventory": false
+      },
+      "completedMain": {
+        "path": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d005-provider-response-main.json",
+        "sha256": "7b5b75c5f92242d4d40c1b5e293b778458450803d90e3e00074fef8a539d8409",
+        "bytes": 41659,
+        "status": "completed",
+        "error": null,
+        "incompleteDetails": null,
+        "validJsonObject": true,
+        "providerResponseId": "resp_03bfcec5b1b49d48016adc8a2b7c8087d083ce03902c185c77",
+        "providerRequestId": "req_9861b9eaa85948e68310e40e72355826",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "retainedRunId": "40086015008"
+      },
+      "bindings": {
+        "retentionManifestPath": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-batch3.json",
+        "retentionManifestSha256": "fdedf408f840b02f7a35bba563f7c47998bedc55b391dac7e6e03607c354c5a7",
+        "retainedArtifactName": "monaco-encrypted-40086015008-f3d86adeddff-d005-provider-response-main",
+        "responseMatchesRetentionManifest": true,
+        "diagnosticPath": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d005-diagnostic-output-final.json",
+        "diagnosticSha256": "7c2e6e07e098e8c25adcaab2f5f8ce64abc19c6b6b4517fc2a9edd0ac4dd42f6",
+        "responseMatchesDiagnosticRawMainHash": true,
+        "diagnosticSourceCaseMatches": true,
+        "imageMatchesDiagnosticSourceIdentity": true
+      },
+      "collectorEligibility": {
+        "status": "HOLD_METADATA_INELIGIBLE",
+        "predicate": "sourceImageRecoveryEligible({...rawMain,sourcePriceCandidates:collectSourcePriceCandidates(rawMain)})",
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "horizontalPriceHints": 0,
+        "distinctNumericAxisHints": 2,
+        "rejectedLevels": 3,
+        "rejectedAxisPrices": 0,
+        "malformedLimitations": false,
+        "unsupportedScale": false,
+        "reasons": [
+          "NO_ELIGIBLE_HORIZONTAL_PRICE_HINTS"
+        ],
+        "geometryStatus": "NOT_RUN",
+        "ocrStatus": "NOT_RUN",
+        "placementStatus": "NOT_PROMISED"
+      }
+    },
+    {
+      "sourceCaseId": "d006",
+      "bundleCaseId": "v2-d006",
+      "inputAvailability": "RETAINED_BINDINGS_VERIFIED",
+      "bundle": {
+        "path": "/workspace/scratch/616faf3e8649/scanner-evaluation-v2-private/v2-d006.bundle.gz",
+        "sha256": "0c78f838c996aa2be3f6f2157c2efc2e85befba3c17298df0b293806ec6a48f5",
+        "bytes": 464482,
+        "preparationEntry": "v2-d006",
+        "preparationMatch": true
+      },
+      "image": {
+        "entry": "artifacts/image",
+        "sha256": "9029b022e8fa31139bf0abd98998a75c5e70948f40b1e66c634bda927b592eef",
+        "encodedPayloadPresent": true,
+        "planImageHashMatch": true,
+        "originalDiagnosticImageHashMatch": true,
+        "imageDataDecodedByThisInventory": false
+      },
+      "completedMain": {
+        "path": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d006-provider-response-main.json",
+        "sha256": "fced81e7db1382663b3110115641ba1353c5dc51bd22fe4e49f535d5e5762f17",
+        "bytes": 42447,
+        "status": "completed",
+        "error": null,
+        "incompleteDetails": null,
+        "validJsonObject": true,
+        "providerResponseId": "resp_0f1a5a097ba55d24016adc8a710ca887d096b20b273d57ea46",
+        "providerRequestId": "req_a0e6a41d4087415d8de31d36ee42a502",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "retainedRunId": "40086015008"
+      },
+      "bindings": {
+        "retentionManifestPath": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-DECRYPTED-40086015008-batch3.json",
+        "retentionManifestSha256": "fdedf408f840b02f7a35bba563f7c47998bedc55b391dac7e6e03607c354c5a7",
+        "retainedArtifactName": "monaco-encrypted-40086015008-f3d86adeddff-d006-provider-response-main",
+        "responseMatchesRetentionManifest": true,
+        "diagnosticPath": "/workspace/scratch/616faf3e8649/private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d006-diagnostic-output-final.json",
+        "diagnosticSha256": "4a665147a71494f17c2bb4d8bc03dcbfb2851d97a9d4c57aebd52d25a0fd73b2",
+        "responseMatchesDiagnosticRawMainHash": true,
+        "diagnosticSourceCaseMatches": true,
+        "imageMatchesDiagnosticSourceIdentity": true
+      },
+      "collectorEligibility": {
+        "status": "ELIGIBLE_FOR_IMAGE_RECOVERY_ATTEMPT",
+        "predicate": "sourceImageRecoveryEligible({...rawMain,sourcePriceCandidates:collectSourcePriceCandidates(rawMain)})",
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "horizontalPriceHints": 2,
+        "distinctNumericAxisHints": 3,
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0,
+        "malformedLimitations": false,
+        "unsupportedScale": false,
+        "reasons": [],
+        "geometryStatus": "NOT_RUN",
+        "ocrStatus": "NOT_RUN",
+        "placementStatus": "NOT_PROMISED"
+      }
+    }
+  ],
+  "summary": {
+    "retainedInputPairsAvailable": 5,
+    "completedMainResponses": 5,
+    "metadataEligibleCases": [
+      "d002",
+      "d003",
+      "d004",
+      "d006"
+    ],
+    "metadataHeldCases": [
+      "d005"
+    ],
+    "missingInputEvidence": []
+  },
+  "scope": {
+    "authenticatedInputAvailabilityDoesNotPromisePlacement": true,
+    "remainingPaidCases": "HOLD",
+    "authorizesProviderDispatch": false,
+    "providerCalls": 0,
+    "additionalSpend": 0,
+    "imageDecodes": 0,
+    "imageDetectorCalls": 0,
+    "ocrCalls": 0,
+    "projectionCalls": 0,
+    "browserRuns": 0,
+    "testRuns": 0,
+    "privateKeyReads": 0,
+    "decryptionOperations": 0,
+    "heldOutReads": 0,
+    "codeChanges": 0,
+    "oracleChanges": 0,
+    "networkCalls": 0
+  },
+  "notes": [
+    "The historical monaco-encrypted filenames name already retained plaintext response JSON; no decryption was performed.",
+    "Image identities were checked through hash-bound preparation, plan and original diagnostic metadata without decoding image payloads.",
+    "Only pure candidate collection and the metadata eligibility predicate were executed.",
+    "The image bundle containers also include prepared provider requests; this receipt does not use or authorize them.",
+    "d005 has authenticated inputs but no eligible horizontal price hints; it must remain held unless the unchanged production path independently establishes eligible evidence.",
+    "Root remains sole replay executor; use the frozen source and reporting-only driver without fixture-specific success assumptions."
+  ]
+}

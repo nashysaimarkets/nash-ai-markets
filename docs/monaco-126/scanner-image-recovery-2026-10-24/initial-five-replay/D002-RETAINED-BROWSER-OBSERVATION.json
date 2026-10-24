@@ -1,0 +1,83 @@
+{
+  "kind": "RETAINED_DEVELOPMENT_IMAGE_RECOVERY_OBSERVATION",
+  "status": "RECORDED",
+  "observedAtUtc": "2026-10-24T14:08:34.838Z",
+  "input": "RETAINED_MAIN_REPLAY",
+  "imageSha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+  "mainResponseSha256": "5e6f4782358211fa3476e7e0e5874b7a10bca663890f49936a1955a15d918960",
+  "sourceHashes": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/pocket/use-original-chart-measurement.ts": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+    "app/pocket/source-placement.ts": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+    "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+    "app/pocket/image-plot-region.ts": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+    "app/pocket/image-axis-verification.ts": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+    "app/pocket/browser-image-axis-ocr.ts": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+    "app/pocket/level-provenance.ts": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+    "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4"
+  },
+  "driverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+  "node": "v24.22.1",
+  "playwright": "1.55.1",
+  "browser": "140.0.7339.186",
+  "result": {
+    "dimensions": [
+      1400,
+      850
+    ],
+    "legacyAxis": {
+      "status": "held",
+      "reason": "Original model geometry is unavailable."
+    },
+    "pixelsNull": true,
+    "imageRecovery": {
+      "region": {
+        "status": "held",
+        "reason": "NO_COHERENT_GRID_RECTANGLE"
+      },
+      "axis": null
+    },
+    "placement": {
+      "levels": [],
+      "reason": "The image does not provide a unique readable chart and price scale. Try a clearer screenshot."
+    },
+    "provenance": [],
+    "candidateCount": 3,
+    "calibratedLevelCount": 4,
+    "calibratedScaleReadable": false,
+    "elapsedMs": 180.09999999776483,
+    "rendered": [
+      {
+        "header": "ORIGINAL CHART LEVELS",
+        "status": "The image does not provide a unique readable chart and price scale. Try a clearer screenshot.",
+        "lines": [],
+        "polylines": 0,
+        "rectangles": 0
+      },
+      {
+        "header": "ORIGINAL CHART PATTERNS",
+        "status": "No patterns candidates passed original candle-endpoint checks.",
+        "lines": [],
+        "polylines": 0,
+        "rectangles": 0
+      },
+      {
+        "header": "ORIGINAL CHART LIQUIDITY",
+        "status": "No liquidity candidates passed original candle-endpoint checks.",
+        "lines": [],
+        "polylines": 0,
+        "rectangles": 0
+      }
+    ]
+  },
+  "errors": [],
+  "blockedExternalRequests": [],
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "limitations": [
+    "MAIN candidate replay through current calibration and mounted browser; no fresh provider/API request",
+    "Identity confirmation enabled for this controlled placement assay",
+    "No semantic support/resistance, pattern, liquidity, held-out corpus or physical-device latency acceptance",
+    "Independent one-pixel oracle comparison is separate and never supplied to the runtime"
+  ]
+}

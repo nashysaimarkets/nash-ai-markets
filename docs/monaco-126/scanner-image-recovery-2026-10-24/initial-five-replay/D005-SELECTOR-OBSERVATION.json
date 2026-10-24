@@ -1,0 +1,39 @@
+{
+  "kind": "RETAINED_DEVELOPMENT_SELECTOR_OBSERVATION",
+  "caseId": "d005",
+  "status": "HOLD_BEFORE_OCR",
+  "sourceCommit": "156417b4443068309a33c3364438948499775fad",
+  "responseSha256": "7b5b75c5f92242d4d40c1b5e293b778458450803d90e3e00074fef8a539d8409",
+  "imageSha256": "2da8d62cf20c67658521fc4d22d79b509ca01e78d9eb2bdb76ae92ac02559618",
+  "candidateEnvelope": {
+    "version": "source-price-candidates-v1",
+    "source": "PRIMARY",
+    "origin": "MAIN",
+    "provenance": "UNVERIFIED",
+    "levelInput": "PRESENT",
+    "axisInput": "PRESENT",
+    "levels": [],
+    "axisPrices": [
+      772.5496,
+      776.9054
+    ],
+    "rejectedLevels": 3,
+    "rejectedAxisPrices": 0
+  },
+  "rawKinds": [
+    "resistance",
+    "support",
+    "pivot"
+  ],
+  "calibratedScaleReadable": false,
+  "placement": {
+    "levels": [],
+    "reason": "Chart identity or scale needs clearer evidence."
+  },
+  "browserRun": false,
+  "ocrCalls": 0,
+  "providerCalls": 0,
+  "verifiedAbsence": false,
+  "geometry": "UNMEASURED",
+  "semantics": "UNSCORED"
+}
