@@ -1,0 +1,83 @@
+{
+  "kind": "INDEPENDENT_RETAINED_AND_MALFORMED_CLAIM_LAYER_REVIEW",
+  "cases": [
+    {
+      "case": "original-d001",
+      "accepted": true,
+      "levels": 3,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "original-d002",
+      "accepted": true,
+      "levels": 4,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "original-d003",
+      "accepted": true,
+      "levels": 3,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "original-d004",
+      "accepted": true,
+      "levels": 3,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "original-d005",
+      "accepted": true,
+      "levels": 3,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "original-d006",
+      "accepted": true,
+      "levels": 3,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "v2-d001",
+      "accepted": true,
+      "levels": 4,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    },
+    {
+      "case": "v2-d002",
+      "accepted": true,
+      "levels": 4,
+      "pricesPreserved": true,
+      "rawUnchanged": true
+    }
+  ],
+  "defects": [
+    {
+      "name": "pattern.timeframe object",
+      "accepted": false,
+      "error": "Error: Scanner result HOLD: incomplete or malformed report. No result was accepted."
+    },
+    {
+      "name": "contextBattlefield.levels object",
+      "accepted": false,
+      "error": "Error: Scanner result HOLD: incomplete or malformed report. No result was accepted."
+    },
+    {
+      "name": "pattern confidence object",
+      "accepted": false,
+      "error": "Error: Scanner result HOLD: incomplete or malformed report. No result was accepted."
+    },
+    {
+      "name": "contextBattlefield null member",
+      "accepted": false,
+      "error": "Error: Scanner result HOLD: incomplete or malformed report. No result was accepted."
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 "use client";
+import {prepareLevelLabReport} from "../pocket/scanner-claims";
 /* Private originals remain local data URLs. */
 /* eslint-disable @next/next/no-img-element */
 import {useEffect,useRef,useState} from 'react';
@@ -69,7 +70,7 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
   await perform('levels',async()=>({image:source,precisionImage:await createPrecisionReadingCrop(source),chartConfirmation:labFacts}),payload=>{
    const result=payload.levels as LevelResult|undefined;
    if(!result||!Array.isArray(result.levels)||result.levels.some(level=>!level||typeof level.price!=='string'||typeof level.label!=='string'||typeof level.kind!=='string'))throw new Error('Level scan returned an invalid result.');
-   setLabResult(result);
+   setLabResult(prepareLevelLabReport(result));
   });
  };
  return <section className="pnWorkflow" aria-label="Decision workflows" aria-busy={Boolean(busy)||reading}>
@@ -89,7 +90,7 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
    <form onSubmit={e=>{e.preventDefault();if(!question.trim())return;setReply(null);void perform('follow-up',{analysis:report,question:question.trim()},payload=>{const result=payload.reply as Reply|undefined;if(!result||typeof result.answer!=='string'||typeof result.caution!=='string'||typeof result.nextCheck!=='string'||!Array.isArray(result.evidence)||result.evidence.some(item=>typeof item!=='string'))throw new Error('Follow-up returned an invalid result.');setReply(result);});}}>
     <label>Your question<input aria-label="Ask a follow-up question" maxLength={180} value={question} onChange={e=>setQuestion(e.target.value)}/></label><button disabled={Boolean(busy)||reading||!question.trim()}>Ask Bullseye</button>
    </form>
-   {reply?<article aria-label="Follow-up answer"><p>{reply.answer}</p><ul>{reply.evidence.map((item,i)=><li key={i}>{item}</li>)}</ul><p>{reply.caution}</p><strong>{reply.nextCheck}</strong></article>:null}
+   {reply?<article aria-label="Follow-up answer"><strong>UNVERIFIED MODEL RESPONSE</strong><p>{reply.answer}</p><ul>{reply.evidence.map((item,i)=><li key={i}>{item}</li>)}</ul><p>{reply.caution}</p><strong>{reply.nextCheck}</strong></article>:null}
   </details>
   <details open><summary>Decision history & process review</summary>
    <p>Saved screenshots and decisions stay on this device.</p><button type="button" onClick={()=>void refresh()}>Load saved decisions</button>
@@ -106,11 +107,11 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
    {macroContext.releases.length?<ol>{macroContext.releases.slice(0,8).map(event=><li key={event.id}><time>{date(event.scheduledAt)}</time> · {event.name} · {event.agency} · {event.risk} impact{event.sourceUrl&&/^https:\/\//.test(event.sourceUrl)?<a href={event.sourceUrl} target="_blank" rel="noreferrer">Official source</a>:null}</li>)}</ol>:<p>No verified scheduled macro rows are available. An unavailable calendar does not mean no event risk.</p>}
    {isCompanyCalendarEligible(report)?<><button type="button" disabled={Boolean(busy)||reading} onClick={()=>{setCompanyChecked(false);setCompanyEvents([]);void perform('events?symbol='+encodeURIComponent(report.ticker),null,payload=>{if(payload.symbol!==report.ticker||!Array.isArray(payload.events)||payload.events.some(event=>!event||typeof event!=='object'||typeof event.id!=='string'||typeof event.date!=='string'||typeof event.detail!=='string'||typeof event.source!=='string'||!['EARNINGS','DIVIDEND','SPLIT'].includes(event.type)))throw new Error('Company calendar returned an invalid or mismatched result.');setCompanyEvents(payload.events as CompanyEvent[]);setCompanyChecked(true);},'GET');}}>Check {report.ticker} company events</button>{companyEvents.length?<ul>{companyEvents.map(event=><li key={event.id}>{event.date} · {event.type} · {event.detail} · {event.source} · SYMBOL MATCHED</li>)}</ul>:companyChecked?<p>No symbol-matched company event was returned in the connected feed window.</p>:null}</>:<p>Company events require a confidently identified listed company; this panel supplies macro timing only.</p>}
   </details>
-  <details open><summary>Standalone Level Lab</summary>
+  <details open><summary>Standalone Level Lab · UNVERIFIED</summary>
    <p>Scan another source image for levels. Results stay separate from your main chart and report.</p>
    <label>Level Lab chart<input aria-label="Add separate chart for Level Lab" type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{void load(e.target.files?.[0],'lab');e.target.value='';}}/></label>
    {labImage?<><ChartPreflightPanel key={currentLabRevision} image={labImage} onStatus={status=>{if(currentLabRevision!==labRevision.current)return;if(!preflightAllowsAnalysis(status)){if(pendingRoute.current==='levels')cancel();setLabFacts(null);setLabResult(null);}setLabStatus(status);}} onConfirmation={facts=>{if(currentLabRevision!==labRevision.current)return;if(!sameWorkspaceFacts(labFacts,facts)){if(pendingRoute.current==='levels')cancel();setLabResult(null);}setLabFacts(facts);}}/><label><input type="checkbox" checked={labPrivacy} onChange={e=>{if(!e.target.checked&&pendingRoute.current==='levels')cancel();setLabPrivacy(e.target.checked);}}/>I removed personal details from this Level Lab chart.</label><button type="button" disabled={!labFacts||!labPrivacy||!preflightAllowsAnalysis(labStatus)||Boolean(busy)||reading} onClick={()=>void scanLevels()}>Scan this chart for levels</button><OriginalChartEvidence image={labImage} report={labResult&&canOverlayLevelLab(labResult,labFacts)?labResult:null} identityConfirmed={preflightAllowsAnalysis(labStatus)&&Boolean(labFacts)}/></>:null}
-   {labResult?<article aria-label="Separate Level Lab result"><h3>{labResult.levels.length?labResult.levels.length+' reported level candidates':'NO RESULT · no defensible levels returned'}</h3><p>{labResult.levelStory}</p><p>{labResult.confidence} reported confidence · {labResult.limitation}</p><ul>{labResult.levels.map((level,i)=><li key={i}>{level.kind} · {level.price||'No numeric price'} · {level.label}</li>)}</ul><p>{canOverlayLevelLab(labResult,labFacts)?'Source facts match. Original-image overlay still requires independent price-label and grid verification.':'Source identity or exact price agreement remains unverified; original-image placement is held.'}</p></article>:null}
+   {labResult?<article aria-label="Separate Level Lab result"><h3>{labResult.levels.length?labResult.levels.length+' reported level candidates':'NO RESULT · no defensible levels returned'}</h3><p>{labResult.levelStory}</p><p>UNVERIFIED MODEL LEVELS · {labResult.limitation}</p><ul>{labResult.levels.map((level,i)=><li key={i}>{level.kind} · {level.price||'No numeric price'} · UNVERIFIED candidate</li>)}</ul><p>{canOverlayLevelLab(labResult,labFacts)?'Source facts match. Original-image overlay still requires independent price-label and grid verification.':'Source identity or exact price agreement remains unverified; original-image placement is held.'}</p></article>:null}
   </details>
  </section>;
 }

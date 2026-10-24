@@ -1,0 +1,87 @@
+{
+  "reviewer": "independent claims_review agent",
+  "reviewStatus": "ACCEPTED_CODE",
+  "reviewedAt": "2026-10-24T20:22:52.980408+00:00",
+  "acceptedSource": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+  "sourceHashes": {
+    "app/api/pocket/analyse/route.ts": "e69bda5a2864033cee53c001ba00c7c489c86473cf2cc5c33f04ef1034aa9300",
+    "app/api/pocket/levels/route.ts": "695ef21aa1394fbc1099d5cae07b04fb19b7d0fb2aa26f01bafe57d528c5568a",
+    "app/pocket-next/PocketNext.tsx": "4328eef843d4806b4dc1454fff89410c16203b043699efd2e3305cafcbaa5774",
+    "app/pocket-next/PocketWorkflowDesk.tsx": "36e6d48666fe5f496ab3f4224dd9894e8229f7021beb38b173faf6d06671b5b7",
+    "app/pocket/PocketBullseye.tsx": "dfffdfbad94967a016caa1af3e15efe53ec5f420fdb30580b9a2d904fb75a289",
+    "app/pocket/workflow-plan.ts": "5ac36dd48c718c114ac2c6f037fdd7013f2a04231fff2f2e747259560d48e5bc",
+    "app/pocket/scanner-claims.ts": "d243ff8564494709be4fd286d37db3ee67313d9fd73596aa6891d8de7070da71",
+    "app/pocket/ScannerClaimStatus.tsx": "06b802e2d1a3347d5399ea20a61f28386e1f9dfdd2ad9bd3175b5c803ed36cb0",
+    "tests/pocket-scanner-claims.test.ts": "3a3c7220f5f58001322142a0fbceb42b34ceaac767d15a20c0f0b3bb25286d11",
+    "vercel.json": "94fa865e58e40a5d48e8b4aea9028d3887ee2b9193bc5f6d9f4ff311ea3ee31a"
+  },
+  "geometryUnchangedFromAcceptedSource": {
+    "app/pocket/source-placement.ts": true,
+    "app/pocket/original-pixel-geometry.ts": true,
+    "app/pocket/OriginalChartEvidence.tsx": true,
+    "app/pocket/use-original-chart-measurement.ts": true
+  },
+  "independentChecks": {
+    "targetedControls": {
+      "pass": 20,
+      "fail": 0,
+      "distinctFromRootRun": false
+    },
+    "retainedMainPositives": {
+      "pass": 8,
+      "fail": 0,
+      "pricesAndRawRetainedUnchanged": true
+    },
+    "enumOptionalCounterexamples": {
+      "rejected": 7,
+      "accepted": 0
+    },
+    "nestedOptionalCounterexamples": {
+      "rejected": 4,
+      "accepted": 0,
+      "overlapsEnumSet": 2
+    },
+    "actualLevelLabRouteSlice": {
+      "completedAccepted": true,
+      "incompleteRejected": true,
+      "scope": "Success path extracted verbatim; real guard; JSON/header adapters stubbed; no HTTP/auth"
+    },
+    "diffCheck": "PASS",
+    "useClientDirectiveOrdering": "PASS"
+  },
+  "resolvedFindings": [
+    "Optional pattern/context nested shape crashes",
+    "Cache validation precedes numeric proof scan",
+    "LevelLab parseable incomplete acceptance",
+    "String coercion let JSON arrays impersonate enum fields",
+    "Unsupported pattern absence and defensible wording"
+  ],
+  "browserEvidenceReviewed": {
+    "files": {
+      "BROWSER.json": "7fe1b23ebd37c815c8981fb5b00efd10adb7cf8a1248b0ede0a29a2980e685f4",
+      "COORDINATES.json": "7dcd0b083e3c344feeeff7291c80589790d0f1d62bb9eaad0e68c1521f99ef17",
+      "STYLED-LEGACY.json": "c56a05ec28eeab74f2458c7158df0dfbf32a90373c65cfbac6c796b906963f6d",
+      "legacy-claims.png": "d3de4f9af0305f9fbc27f847ec307211b10d3d5b03d7ba97db3b53f02e7042a8",
+      "browser.mjs": "bfa86349ed91a6112425e6c8c20f1ecc69401b3a843c2e958829feb6d19c719e",
+      "compare.py": "df3ea1b1373e6f3372cd05061fe86c28efd06f7c261740cdba7fb088bcdc4627"
+    },
+    "fiveChartCases": 5,
+    "lifecycleChecks": 6,
+    "status": "PASS",
+    "styledLegacy": "PASS; screenshot independently inspected; grade notice readable without clipping at390px",
+    "coordinateRows": 9,
+    "maximumErrorPixels": 0.49999562784540785,
+    "unchangedTolerancePixels": 1,
+    "d005": "HOLD",
+    "providerCalls": 0,
+    "externalRequests": 0,
+    "scope": "Actual components and original styles; local retained-response transport/native boundary stub; no production HTTP/auth execution",
+    "semanticLimit": "Axis position only; does not establish candle extremes, role correctness or trading accuracy"
+  },
+  "remainingCodeBlockers": [],
+  "releaseGate": "Offline production build remains blocked by unavailable Geist/GeistMono font fetch; exact-source commit/checkpoint required. Production release remains unapproved; subjective trading conclusions UNSCORED.",
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "heldoutAccess": false,
+  "styleFollowupReview": "Accepted single local small-label typography fix; only PocketBullseye.tsx changed since prior source pin; notice clearly readable in styled screenshot."
+}

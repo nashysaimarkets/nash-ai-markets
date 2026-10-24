@@ -1,0 +1,35 @@
+{
+  "kind": "INDEPENDENT_OPTIONAL_AND_ENUM_REVIEW",
+  "mutations": [
+    {
+      "name": "verdict array",
+      "accepted": true
+    },
+    {
+      "name": "confidence array",
+      "accepted": true
+    },
+    {
+      "name": "direction array",
+      "accepted": true
+    },
+    {
+      "name": "grade array",
+      "accepted": true
+    },
+    {
+      "name": "level.kind array",
+      "accepted": true
+    },
+    {
+      "name": "pattern.timeframe object",
+      "accepted": false
+    },
+    {
+      "name": "contextBattlefield.levels object",
+      "accepted": false
+    }
+  ],
+  "levelLabIncompleteGuard": "PASS",
+  "levelLabCompletedPositive": "PASS"
+}

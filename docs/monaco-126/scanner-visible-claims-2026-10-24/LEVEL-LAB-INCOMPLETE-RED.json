@@ -1,0 +1,10 @@
+{
+  "kind": "INDEPENDENT_LEVEL_LAB_INCOMPLETE_REPRODUCTION",
+  "sourceSha256": "f7a1a4b7686e82a86d9558e2eb738f7825ceafc537d2071f8e46879eec6104e6",
+  "status": "DEFECT_REPRODUCED",
+  "providerStatus": "incomplete",
+  "parseableTextAccepted": true,
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "syntheticResponseOnly": true
+}

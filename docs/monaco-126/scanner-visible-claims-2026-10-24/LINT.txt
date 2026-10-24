@@ -1,0 +1,9 @@
+
+/workspace/scratch/35c5363ca2aa/claims-app/app/pocket/PocketBullseye.tsx
+  127:10  warning  'LockOnReveal' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+  169:10  warning  'BullseyeCommandArena' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  217:10  warning  'BubbleChartLab' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  380:9   warning  'range' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  528:10  warning  'SignalPulse' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+
+✖ 5 problems (0 errors, 5 warnings)

@@ -1,0 +1,134 @@
+{
+  "status": "PASS",
+  "tolerancePixels": 1,
+  "checkedPriceRows": [
+    {
+      "case": "d001",
+      "price": "7747.3533",
+      "expectedOriginalY": 300.0005858721125,
+      "actualOriginalCoordinates": {
+        "x1": 840,
+        "x2": 1247,
+        "y1": 300.0006280278219,
+        "y2": 300.0006280278219
+      },
+      "maximumPriceRowErrorPixels": 4.215570942278646e-05,
+      "status": "PASS",
+      "calibrationSha256": "e57e1420368b454f6751580d87641c052ca754c6abb6e2baf04109676f3171ae"
+    },
+    {
+      "case": "d001",
+      "price": "7732.4183",
+      "expectedOriginalY": 562.5005858721125,
+      "actualOriginalCoordinates": {
+        "x1": 840,
+        "x2": 1247,
+        "y1": 562.7147887089345,
+        "y2": 562.7147887089345
+      },
+      "maximumPriceRowErrorPixels": 0.2142028368219826,
+      "status": "PASS",
+      "calibrationSha256": "e57e1420368b454f6751580d87641c052ca754c6abb6e2baf04109676f3171ae"
+    },
+    {
+      "case": "d002",
+      "price": "83986.9411",
+      "expectedOriginalY": 212.4999956278454,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 212,
+        "y2": 212
+      },
+      "maximumPriceRowErrorPixels": 0.49999562784540785,
+      "status": "PASS",
+      "calibrationSha256": "a209504af5d82a9bb07a43060ad5230e8292a3bd5af22a87c0414198871398a0"
+    },
+    {
+      "case": "d002",
+      "price": "84654.0416",
+      "expectedOriginalY": 125.0,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 125,
+        "y2": 125
+      },
+      "maximumPriceRowErrorPixels": 0.0,
+      "status": "PASS",
+      "calibrationSha256": "a209504af5d82a9bb07a43060ad5230e8292a3bd5af22a87c0414198871398a0"
+    },
+    {
+      "case": "d002",
+      "price": "81318.5389",
+      "expectedOriginalY": 562.5000043721546,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 563,
+        "y2": 563
+      },
+      "maximumPriceRowErrorPixels": 0.499995627845351,
+      "status": "PASS",
+      "calibrationSha256": "a209504af5d82a9bb07a43060ad5230e8292a3bd5af22a87c0414198871398a0"
+    },
+    {
+      "case": "d003",
+      "price": "351.3292",
+      "expectedOriginalY": 125.0,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 125,
+        "y2": 125
+      },
+      "maximumPriceRowErrorPixels": 0.0,
+      "status": "PASS",
+      "calibrationSha256": "f952870c93060e0f630e9a694471fe82d39316cc995bd1aa850c98babf579ff9"
+    },
+    {
+      "case": "d003",
+      "price": "339.1608",
+      "expectedOriginalY": 650.0,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 650,
+        "y2": 650
+      },
+      "maximumPriceRowErrorPixels": 0.0,
+      "status": "PASS",
+      "calibrationSha256": "f952870c93060e0f630e9a694471fe82d39316cc995bd1aa850c98babf579ff9"
+    },
+    {
+      "case": "d004",
+      "price": "779.2864",
+      "expectedOriginalY": 105.0,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 105,
+        "y2": 105
+      },
+      "maximumPriceRowErrorPixels": 0.0,
+      "status": "PASS",
+      "calibrationSha256": "e34dda4f56c636f79315890ca9fd6b6611b3b1424387984e191fdd3af07864e4"
+    },
+    {
+      "case": "d004",
+      "price": "777.1636",
+      "expectedOriginalY": 690.0,
+      "actualOriginalCoordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 690,
+        "y2": 690
+      },
+      "maximumPriceRowErrorPixels": 0.0,
+      "status": "PASS",
+      "calibrationSha256": "e34dda4f56c636f79315890ca9fd6b6611b3b1424387984e191fdd3af07864e4"
+    }
+  ],
+  "maximumErrorPixels": 0.49999562784540785,
+  "limitations": "Axis position only. Horizontal extent does not establish candle attribution. No trading or support/resistance semantic score. d005 remains HOLD."
+}

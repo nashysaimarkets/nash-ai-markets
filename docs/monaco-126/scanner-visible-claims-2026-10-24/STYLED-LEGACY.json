@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "results": [],
+  "lifecycle": [
+    "customer legacy UI retained d002 renders unverified with checked placement"
+  ],
+  "errors": [],
+  "external": [],
+  "requests": [
+    "/api/pocket/subscription-access",
+    "/api/pocket/subscription-access",
+    "/api/pocket/preflight",
+    "/api/pocket/analyse"
+  ],
+  "providerCalls": 0,
+  "scope": "Actual UI components/local transport, native plugin boundary stub; not production HTTP/auth or paid execution"
+}

@@ -1,3 +1,4 @@
+import {prepareScannerReport} from "../../../pocket/scanner-claims";
 import { withPocketFirstFreeRequest } from "../../../lib/server/pocket-first-free";
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
@@ -499,7 +500,7 @@ export async function POST(request: Request) {
     // Keep primary candidates out of the separately calibrated context chart.
     calibrated.sourcePriceCandidates = sourcePriceCandidates;
     return NextResponse.json(
-      { analysis: calibrated },
+      { analysis: prepareScannerReport(calibrated) },
       { headers: pocketBudgetHeaders(budget) },
     );
   } catch (error) {

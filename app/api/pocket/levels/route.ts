@@ -1,3 +1,4 @@
+import { completedLevelLabResponse } from "../../../pocket/scanner-claims";
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
@@ -70,9 +71,8 @@ export async function POST(request: Request) {
       max_output_tokens: 1600,
       text: { format: { type: "json_schema", name: "pocket_bullseye_level_lab", strict: true, schema } },
     });
-    const output = response.output_text?.trim();
-    if (!output) throw new Error("The level scan returned no result.");
-    return NextResponse.json({ levels: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
+    const levels = completedLevelLabResponse(response);
+    return NextResponse.json({ levels }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     console.error("[pocket-bullseye] independent level scan failed", error instanceof Error ? error.message : "unknown");
     return NextResponse.json({ error: "The independent level scan could not complete. Please retry with a clearer price scale." }, { status: 502, headers: pocketBudgetHeaders(budget) });

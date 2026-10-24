@@ -1,0 +1,25 @@
+{
+  "targeted": {
+    "passed": 20,
+    "failed": 0
+  },
+  "affectedIntegration": {
+    "passed": 8,
+    "failed": 0
+  },
+  "fullTypeScript": "PASS",
+  "scopedTypeScript": "PASS",
+  "changedFileLint": {
+    "errors": 0,
+    "preExistingWarnings": 5
+  },
+  "nextProductionBuild": {
+    "status": "BLOCKED",
+    "cause": "Offline denial of Geist/Geist Mono font retrieval",
+    "networkGuard": "no-network.cjs"
+  },
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "spending": 0,
+  "heldoutReads": 0
+}

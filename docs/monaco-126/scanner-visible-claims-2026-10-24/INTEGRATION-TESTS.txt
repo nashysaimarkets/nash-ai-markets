@@ -1,0 +1,18 @@
+✔ redesign analysis retains image-bound confirmation, cancellation and server entitlement transport (11.097048ms)
+✔ redesign never overlays another chart's report or automatically runs the unqualified device scanner (3.186574ms)
+(node:12) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ actual redesign handler blocks unconfirmed charts and abandons cancelled crop work before transport (7.288715ms)
+✔ professional preview exposes guarded existing cross-check and native subscription tools without dispatching them in demos (4.162719ms)
+✔ redesign workflows are isolated to a confirmed real source report; customer entrypoint is preserved (3.129826ms)
+✔ user prices require valid direction and exact correctly ordered positive values (1.450948ms)
+✔ company event eligibility rejects indices, uncertain identity and malformed ticker (0.772856ms)
+✔ export distinguishes user-defined prices from source evidence and omits invalid price plans (0.415596ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 366.962531

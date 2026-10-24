@@ -2,6 +2,8 @@
 import {createPrecisionReadingCrop} from "./precision-reading-crop";
 import {canOverlayLevelLab,type LevelLabSource} from "./level-lab-source";
 import OriginalChartEvidence from "./OriginalChartEvidence";
+import ScannerClaimStatus from "./ScannerClaimStatus";
+import { prepareScannerReport, prepareLevelLabReport, UNVERIFIED_SCANNER_NOTICE } from "./scanner-claims";
 import { useOriginalChartMeasurement } from "./use-original-chart-measurement";
 import { sourceLevelPlacement, type OriginalChartMeasurement, type SourceLevelPlacement } from "./source-placement";
 import type { SourcePriceCandidates } from "./source-price-candidates";
@@ -207,7 +209,7 @@ function BullseyeCommandArena({ analysis, sourceImage, onOpenReport, onShare }: 
     </div>
     <nav className="psArenaDock" aria-label="Command Arena views">{modes.map((item) => <button key={item.id} type="button" data-active={mode === item.id} onClick={() => setMode(item.id)}><i>{item.icon}</i><span>{item.label}</span></button>)}</nav>
     <div className="psArenaActions"><button type="button" onClick={onOpenReport}>OPEN FULL INTELLIGENCE <b>→</b></button><button type="button" onClick={onShare} aria-label="Share result">↗</button></div>
-    <footer className="psArenaLegal">CONDITIONAL DECISION SUPPORT · VERIFY ON YOUR ORIGINAL CHART</footer>
+    <footer className="psArenaLegal">UNVERIFIED MODEL ANALYSIS · VERIFY ON YOUR ORIGINAL CHART</footer>
   </section>;
 }
 
@@ -383,9 +385,9 @@ function ChartXRay({ analysis, sourceImage, identityConfirmed, measurement, onAd
     <OriginalChartEvidence image={sourceImage} report={analysis} identityConfirmed={identityConfirmed} measurement={measurement} layer="patterns" />
     <div className="psXRayCounts psPatternOnlyCounts" aria-label="Pattern X-Ray summary"><article data-tone="verified"><strong>{drawablePatterns.filter((item) => item.confidence === "HIGH").length}</strong><span>HIGH-CONFIDENCE REPORTS</span></article><article data-tone="uncertain"><strong>{drawablePatterns.length}</strong><span>REPORTED CANDIDATES</span></article><article data-tone="missing"><strong>{drawablePatterns.filter((item) => item.status === "FORMING" || item.status === "AMBIGUOUS").length}</strong><span>NEEDS CONFIRMING</span></article></div>
     <article className="psXRayRead" aria-live="polite">
-      {layer === "patterns" ? <><small>PATTERN SCAN · VISIBLE GEOMETRY ONLY</small>{drawablePatterns.length ? <div className="psPatternXRayRead">{drawablePatterns.map((pattern) => <section key={`${pattern.name}-${pattern.status}`} data-status={pattern.status}><div><strong>{pattern.name}</strong><b>{pattern.status}</b></div><p>{pattern.evidence}</p><span>CONFIRMS IF · {pattern.confirmation}</span></section>)}</div> : <div className="psToolkitEmpty"><strong>NO CLEAN PATTERN VISIBLE</strong><p>This chart does not contain enough defensible geometry for a gallery pattern.</p><span>Try a wider 30m, 1h or 4h chart showing more candles.</span></div>}</> : null}
+      {layer === "patterns" ? <><small>PATTERN SCAN · VISIBLE GEOMETRY ONLY</small>{drawablePatterns.length ? <div className="psPatternXRayRead">{drawablePatterns.map((pattern) => <section key={`${pattern.name}-${pattern.status}`} data-status={pattern.status}><div><strong>{pattern.name}</strong><b>UNVERIFIED · REPORTED {pattern.status}</b></div><p>{pattern.evidence}</p><span>CONFIRMS IF · {pattern.confirmation}</span></section>)}</div> : <div className="psToolkitEmpty"><strong>PATTERN HOLD · NO VERIFIED CANDIDATE</strong><p>No pattern geometry was verified. This does not establish that a pattern is absent.</p><span>Try a wider 30m, 1h or 4h chart showing more candles.</span></div>}</> : null}
       {layer === "levels" ? <><small>SUPPORT + RESISTANCE CANDIDATES · SOURCE PLACEMENT</small>{rankedLevels.filter((item) => item.kind !== "pivot").length ? <div className="psLevelRanking">{rankedLevels.filter((item) => item.kind !== "pivot").slice(0, 5).map((item, index) => <section key={`${item.kind}-${item.price}`} data-kind={item.kind} data-confidence={item.verification}><i>{index + 1}</i><div><span>{item.kind.toUpperCase()} · PIXEL PLACEMENT VERIFIED</span><strong>{formatPrice(item.price)}</strong><small>{item.distance === null ? "DISTANCE NEEDS CURRENT PRICE" : `${formatPrice(item.distance)} PTS · ${item.distancePercent!.toFixed(2)}% AWAY`} · {item.reason.replaceAll("_", " ")}</small></div></section>)}</div> : <div className="psToolkitEmpty"><strong>EXACT LEVELS NOT VERIFIED</strong><p>{analysis.levelStory}</p><span>Attach a clearer price-scale chart, then reanalyse.</span></div>}</> : null}
-      {layer === "swings" ? <><small>SWING MAP · VISIBLE TURNING POINTS</small>{swingLevels.length ? <ul>{swingLevels.slice(0, 5).map((item) => <li key={`${item.label}-${item.x}-${item.y}`}>{item.label}{item.price ? ` · ${item.price}` : ""}</li>)}</ul> : <div className="psToolkitEmpty"><strong>NO CLEAN SWINGS MARKED</strong><p>The screenshot did not provide a defensible swing point.</p></div>}</> : null}
+      {layer === "swings" ? <><small>SWING MAP · VISIBLE TURNING POINTS</small>{swingLevels.length ? <ul>{swingLevels.slice(0, 5).map((item) => <li key={`${item.label}-${item.x}-${item.y}`}>{item.label}{item.price ? ` · ${item.price}` : ""}</li>)}</ul> : <div className="psToolkitEmpty"><strong>NO CLEAN SWINGS MARKED</strong><p>No swing point was verified; this does not establish absence.</p></div>}</> : null}
       {layer === "fib" ? <><small>FIBONACCI · REPORTED SWING ANCHORS</small>{analysis.fibLevels.length ? <div className="psFibXRayRead">{analysis.fibLevels.map((item) => <span key={`${item.ratio}-${item.price}`}><b>{item.ratio}</b><strong>{item.price}</strong></span>)}</div> : <div className="psToolkitEmpty"><strong>FIBONACCI NOT AVAILABLE</strong><p>Two reliable priced swing anchors were not visible.</p></div>}</> : null}
       {layer === "rsi" ? <><small>RSI · READ ONLY WHEN THE INDICATOR IS VISIBLE</small><div className="psToolkitScore"><strong>{rsi === null ? "—" : Math.round(rsi)}<small>{rsi === null ? "" : "/100"}</small></strong><span>{rsi === null ? "No readable RSI panel was supplied. Bullseye will not estimate it from price candles." : analysis.momentum}</span></div></> : null}
     </article>
@@ -496,7 +498,7 @@ function PatternWatch({ analysis }: { analysis: Analysis }) {
   return <section className="psPatternWatch">
     <header><div><span>◫ PATTERN WATCH</span><small>30M · 1H · 4H STRUCTURE CHECK</small></div><button type="button" onClick={() => setGuideOpen((open) => !open)}>{guideOpen ? "HIDE GALLERY" : "SHOW GALLERY"}</button></header>
     <div className="psPatternFrames">{["30M","1H","4H"].map((frame) => <span key={frame} data-supplied={suppliedFrames.some((value) => value.toUpperCase().replace("MIN", "M").replace("HOUR", "H").includes(frame))}>{frame}<small>{suppliedFrames.some((value) => value.toUpperCase().replace("MIN", "M").replace("HOUR", "H").includes(frame)) ? "CHART READ" : "NOT SUPPLIED"}</small></span>)}</div>
-    {analysis.patterns.length ? <div className="psPatternSignals">{analysis.patterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || analysis.timeframe} · {pattern.confidence ?? "LOW"} CONFIDENCE</small><strong>{pattern.name}</strong></div><b>{pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone"><strong>NO SIGNIFICANT PATTERN VERIFIED</strong><p>The chart does not currently show a clean named formation. Bullseye will not force a label onto ordinary price noise.</p></div>}
+    {analysis.patterns.length ? <div className="psPatternSignals">{analysis.patterns.map((pattern, index) => <article key={`${pattern.name}-${index}`} data-status={pattern.status} data-confidence={pattern.confidence ?? "LOW"}><header><div><small>{pattern.timeframe || analysis.timeframe} · UNVERIFIED MODEL PATTERN</small><strong>{pattern.name}</strong></div><b>UNVERIFIED · REPORTED {pattern.status}</b></header><p>{pattern.evidence}</p><div><span>CONFIRMS IF</span><strong>{pattern.confirmation || "The visible boundary breaks and holds."}</strong></div><div><span>INVALID IF</span><strong>{pattern.invalidation}</strong></div><button type="button" onClick={() => selectGuide(pattern.name)}>WHAT DOES THIS MEAN? →</button></article>)}</div> : <div className="psPatternNone"><strong>PATTERN HOLD · NO VERIFIED CANDIDATE</strong><p>No pattern passed the available checks. This does not establish that the chart contains no pattern.</p></div>}
     {guideOpen ? <div className="psPatternGuide"><nav aria-label="Choose a chart pattern">{PATTERN_GUIDE.map((item) => <button key={item.name} type="button" data-active={selected.name === item.name} onClick={() => setSelectedGuide(item.name)}>{item.name}</button>)}</nav><article><header><div><small>{selected.family}</small><strong>{selected.name}</strong></div><svg viewBox="0 0 100 100" aria-hidden="true"><polyline points={selected.path}/><line x1="5" y1="76" x2="95" y2="76"/></svg></header><dl><div><dt>LOOK FOR</dt><dd>{selected.look}</dd></div><div><dt>CONFIRMATION</dt><dd>{selected.confirms}</dd></div><div><dt>COMMON TRAP</dt><dd>{selected.trap}</dd></div></dl><footer>A shape is not a signal by itself. Wait for the stated boundary or neckline confirmation.</footer></article></div> : null}
   </section>;
 }
@@ -506,13 +508,13 @@ function LiquidityGuard({ analysis, sourceImage, identityConfirmed, measurement 
   return <section className="psLiquidityGuard" data-state={read.state}>
     <header>
       <div><span>LIQUIDITY GUARD</span><small>VISIBLE STRUCTURE ONLY · NO ORDER-BOOK CLAIMS</small></div>
-      <strong>{read.state === "NONE" ? "NO EVIDENCE" : read.state + " · " + read.confidence}</strong>
+      <strong>{read.state === "NONE" ? "HOLD" : "UNVERIFIED MODEL INTERPRETATION"}</strong>
     </header>
     <OriginalChartEvidence image={sourceImage} report={analysis} identityConfirmed={identityConfirmed} measurement={measurement} layer="liquidity" />
     {read.state === "NONE" ? <div className="psLiquidityEmpty"><strong>NO VERIFIED LIQUIDITY STRUCTURE</strong><p>Pocket will not invent stop pools or hidden orders from ordinary price noise.</p></div> :
       <div className="psLiquidityReadout">
-        <article><small>VISIBLE EVIDENCE</small><strong>{read.evidence}</strong></article>
-        <article><small>CURRENT EVENT</small><strong>{read.event}</strong></article>
+        <article><small>UNVERIFIED MODEL OBSERVATION</small><strong>{read.evidence}</strong></article>
+        <article><small>UNVERIFIED EVENT CLAIM</small><strong>{read.event}</strong></article>
         <article><small>CONFIRMS IF</small><strong>{read.confirmation || "No defensible confirmation condition was returned."}</strong></article>
         <article><small>INVALID IF</small><strong>{read.invalidation || "No defensible invalidation condition was returned."}</strong></article>
       </div>}
@@ -581,12 +583,12 @@ function ResultCard({ analysis, onClose, onShare }: { analysis: Analysis; onClos
   return <section className="psResultCardModal" role="dialog" aria-modal="true" aria-label="Shareable Pocket Bullseye result card">
     <div className="psShareCard">
       <header><span>POCKET BULLSEYE</span><button type="button" onClick={onClose} aria-label="Close result card">×</button></header>
-      <div className="psShareIdentity"><small>PRIVATE DECISION AUDIT</small><strong>{analysis.instrument}</strong><span>{analysis.timeframe}</span></div>
+      <div className="psShareIdentity"><small>UNVERIFIED MODEL ANALYSIS</small><strong>{analysis.instrument}</strong><span>{analysis.timeframe}</span></div>
       <div className="psShareScore"><strong>{analysis.setupScore.grade}</strong><div><span>{analysis.setupScore.overall}<small>/100</small></span><b data-direction={analysis.direction}>{analysis.direction}</b><em>{analysis.verdict.replaceAll("_", " ")}</em></div></div>
       <h2>{analysis.verdictHeadline}</h2>
       {verified.length ? <div className="psShareLevels">{verified.map((level, index) => <article key={`${level.kind}-${level.price}-${index}`} data-kind={level.kind}><small>{level.kind.toUpperCase()}</small><strong>{level.price}</strong></article>)}</div> : null}
       <article className="psShareNext"><small>CLARITY IMPROVES WHEN</small><p>{analysis.nextSequence.confirmation}</p></article>
-      <footer><span>CONDITIONAL DECISION SUPPORT</span><small>NOT A TRADE INSTRUCTION · VERIFY ON SOURCE PLATFORM</small></footer>
+      <footer><span>UNVERIFIED MODEL ANALYSIS</span><small>NOT A TRADE INSTRUCTION · VERIFY ON SOURCE PLATFORM</small></footer>
       <div className="psShareActions"><button type="button" onClick={onClose}>BACK TO RESULT</button><button type="button" onClick={onShare}>SAVE / SHARE CARD ↗</button></div>
     </div>
   </section>;
@@ -931,7 +933,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const payload = await response.json() as { levels?: LevelLabSource&{levelStory?:string;limitation?:string}; error?: string };
       if (!isCurrent()) return;
       if (!response.ok || !payload.levels || !Array.isArray(payload.levels.levels) || payload.levels.levels.some(level=>!level||typeof level.kind!=="string"||typeof level.price!=="string"||typeof level.label!=="string")) throw new Error(payload.error || "The independent level scan could not complete.");
-      setLevelLabResult(payload.levels);
+      setLevelLabResult(prepareLevelLabReport(payload.levels));
       setLevelLabStatus("updated");
     } catch (caught) {
       if (!isCurrent()) return;
@@ -1030,7 +1032,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
         // A held/empty result must never become sticky. Only reuse evidence
         // that contains an independently verified structural price level.
         requireCurrentChart();
-        if (cached && hasVerifiedStructuralLevel(cached)) return cached;
+        if (cached) { try { const checked = prepareScannerReport(cached); if (hasVerifiedStructuralLevel(checked)) return checked; } catch { /* Invalid cached report is never displayed. */ } }
       }
       const [precisionImage, contextPrecisionImage] = await Promise.all([
         createPrecisionReadingCrop(image),
@@ -1046,7 +1048,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       requireCurrentChart();
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis is temporarily unavailable.");
-      payload.analysis.levels = payload.analysis.levels.map((level) => ({ ...level, y: clampY(level.y) }));
+      payload.analysis = prepareScannerReport(payload.analysis);
       if (hasVerifiedStructuralLevel(payload.analysis)) {
         await analysisCacheSave(cacheKey, payload.analysis).catch(() => undefined);
       }
@@ -1119,6 +1121,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
   async function shareDecision() {
     if (!analysis) return;
     const summary = [
+      UNVERIFIED_SCANNER_NOTICE,
       `Pocket Bullseye · ${analysis.instrument} · ${analysis.timeframe}`,
       `Grade ${analysis.setupScore.grade} (${analysis.setupScore.overall}/100) · ${analysis.verdict.replaceAll("_", " ")}`,
       analysis.verdictHeadline,
@@ -1165,7 +1168,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
     context.strokeStyle = "#2d3b42"; context.beginPath(); context.moveTo(78, nextY); context.lineTo(1002, nextY); context.stroke();
     nextY += 62; context.fillStyle = "#d9b45b"; context.font = "700 23px monospace"; context.fillText("CLARITY IMPROVES WHEN", 78, nextY);
     nextY += 49; context.fillStyle = "#c4cec9"; context.font = "500 31px sans-serif"; wrap(analysis.nextSequence.confirmation, 78, nextY, 924, 43, 5);
-    context.fillStyle = "#68777f"; context.font = "700 19px monospace"; context.fillText("CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION", 78, 1250);
+    context.fillStyle = "#68777f"; context.font = "700 19px monospace"; context.fillText("UNVERIFIED MODEL ANALYSIS · NOT A TRADE INSTRUCTION", 78, 1250);
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) return;
     const file = new File([blob], "pocket-bullseye-result.png", { type: "image/png" });
@@ -1254,14 +1257,15 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <span>POCKET BULLSEYE · PRIVATE RESULT</span>
             <button type="button" onClick={() => { primaryUploadEpoch.current.invalidate(); contextUploadEpoch.current.invalidate(); invalidateChartWork(); setImmersive(false); setAnalysis(null); setContextImage(null); setContextFileName(""); setBattlefieldChart("primary"); setResultView("report"); setShowResultReveal(false); }}>NEW CHART</button>
           </div>
+          <ScannerClaimStatus report={analysis} image={image} measurement={sourceMeasurement} confirmed={sourceIdentityConfirmed} />
           <nav className="psResultViewSwitch" aria-label="Choose result view"><button type="button" data-active={resultView === "cinema"} aria-pressed={resultView === "cinema"} onClick={() => setResultView("cinema")}>FOCUS VIEW</button><button type="button" data-active={resultView === "report"} aria-pressed={resultView === "report"} onClick={() => openResultReport()}>EVIDENCE REPORT</button></nav>
           {resultView === "cinema" ? <MarketStory analysis={analysis} sourceImage={image ?? ""} placement={primaryPlacement} onShare={() => setShowResultCard(true)} onOpenReport={openResultReport} viewerName={viewerName.trim()} intention={intention} /> : <div className="psWrittenReport">
           <nav className="psReportRail" aria-label="Written result sections"><a href="#bullseye-verdict">VERDICT</a><a href="#bullseye-events">EVENTS</a><a href="#bullseye-levels">LEVELS</a><a href="#bullseye-evidence">EVIDENCE</a><a href="#bullseye-feedback">FEEDBACK</a></nav>
           <header id="bullseye-verdict" className="psVerdict">
             <p><i /> BULLSEYE PRE-TRADE DECISION AUDIT</p>
-            <div className="psVerdictTop"><h1><small>SETUP GRADE</small><em data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</em></h1><div><small>{analysis.setupScore.overall}/100</small><strong data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</strong></div></div>
+            <div className="psVerdictTop"><h1><small style={{fontSize:12,lineHeight:1.4,letterSpacing:"0.08em",display:"block"}}>UNVERIFIED MODEL GRADE</small><em data-grade={analysis.setupScore.grade}>{analysis.setupScore.grade}</em></h1><div><small>{analysis.setupScore.overall}/100</small><strong data-verdict={analysis.verdict}>{analysis.verdict.replaceAll("_", " ")}</strong></div></div>
             <h2>{analysis.verdictHeadline}</h2><span>{analysis.summary}</span>
-            <b>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</b>
+            <b>UNVERIFIED MODEL ANALYSIS · NOT A TRADE INSTRUCTION</b>
           </header>
           <ScannerHealth analysis={analysis} placement={primaryPlacement} />
           <PocketCommandDeck identityConfirmed={sourceIdentityConfirmed} measurement={sourceMeasurement} placement={primaryPlacement} analysis={analysis} sourceImage={image ?? ""} onResultCard={() => setShowResultCard(true)} onAddChart={addResultContextFile} onReanalyse={reanalyseResult} hasContext={Boolean(contextImage)} reanalysing={refinementStatus === "analysing"} />
@@ -1334,7 +1338,7 @@ export default function PocketBullseye({ macroContext }: { macroContext: Verifie
             <div className="psRevealVerdict"><span data-direction={analysis.direction}>{analysis.direction}</span><strong>{analysis.verdict.replaceAll("_", " ")}</strong></div>
             <h2>{analysis.verdictHeadline}</h2>
             <button type="button" onClick={() => { setResultView("cinema"); setShowResultReveal(false); }}>START MY CINEMATIC RESULT <b>→</b></button>
-            <small>CONDITIONAL DECISION SUPPORT · NOT A TRADE INSTRUCTION</small>
+            <small>UNVERIFIED MODEL ANALYSIS · NOT A TRADE INSTRUCTION</small>
           </section>
         )}
         {showResultCard ? <ResultCard analysis={combinedAnalysis} onClose={() => setShowResultCard(false)} onShare={shareResultCard} /> : null}

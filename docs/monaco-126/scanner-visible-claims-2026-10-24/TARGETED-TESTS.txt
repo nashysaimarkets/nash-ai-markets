@@ -1,0 +1,28 @@
+✔ valid report keeps legitimate price, coordinates, narrative and model score (2.623955ms)
+✔ model cannot elevate itself with USER VERIFIED label or forged placement (0.311789ms)
+✔ ingestion does not mutate retained response (1.089389ms)
+✔ incomplete,failed,cancelled provider-shaped objects cannot enter rendering (0.616152ms)
+✔ missing required report fields are not replaced with invented values (0.426582ms)
+✔ malformed narrative arrays cannot crash later rendering (0.285199ms)
+✔ NaN Infinity and malformed coordinates rejected (0.372313ms)
+✔ malformed pattern geometry rejected (0.378331ms)
+✔ malformed nested context rejected (0.262012ms)
+✔ reversed liquidity-side regression holds events without rewriting retained observations (0.606321ms)
+✔ legitimate side observations and reported candidate not suppressed (0.240878ms)
+✔ raw confidence and self-reported anchors grant no image proof (0.614176ms)
+✔ empty output remains unverified, never verified absence (0.171049ms)
+✔ top-level nonobjects rejected (0.171288ms)
+✔ pattern optional render fields reject objects (0.302425ms)
+✔ context levels cannot bypass validation or gain authority (0.354827ms)
+✔ Level Lab rejects parseable incomplete output (reported regression) (0.217375ms)
+✔ completed legitimate Level Lab response retains prices and coordinates (1.662312ms)
+✔ Level Lab malformed narrative and identity rejected (0.309526ms)
+✔ JSON arrays cannot impersonate enums through string coercion (0.362634ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 185.407024

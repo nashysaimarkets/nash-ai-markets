@@ -1,0 +1,9 @@
+{
+  "kind": "INDEPENDENT_ACTUAL_LEVEL_LAB_ROUTE_SLICE",
+  "sourceSha256": "695ef21aa1394fbc1099d5cae07b04fb19b7d0fb2aa26f01bafe57d528c5568a",
+  "incompleteRejected": true,
+  "completedAccepted": true,
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "scope": "Actual route success-path code executed with real guard and stubbed JSON/header adapters; no HTTP/auth execution"
+}

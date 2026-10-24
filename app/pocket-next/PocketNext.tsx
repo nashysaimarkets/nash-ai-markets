@@ -13,6 +13,9 @@ import type { VerifiedMacroContext } from "../lib/macro-data";
 import OptionsWallCheck from "../pocket/OptionsWallCheck";
 import CryptoDerivativesCheck from "../pocket/CryptoDerivativesCheck";
 import OriginalChartEvidence from "../pocket/OriginalChartEvidence";
+import ScannerClaimStatus from "../pocket/ScannerClaimStatus";
+import {prepareScannerReport, UNVERIFIED_SCANNER_NOTICE} from "../pocket/scanner-claims";
+import {useOriginalChartMeasurement} from "../pocket/use-original-chart-measurement";
 import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "../pocket/chart-preflight";
 import { createChartRequestEpoch } from "../pocket/chart-request-identity";
 import { pocketAuthenticatedFetch } from "../pocket/apple-storekit";
@@ -364,7 +367,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
       const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
       if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis could not complete.");
-      const report = payload.analysis;
+      const report = prepareScannerReport(payload.analysis);
       setCharts(current => current.map((chart, i) => {
         if (i !== index) return chart;
         const accepted = acceptWorkspaceReport(chart, slot.revision, confirmation, report);
@@ -413,7 +416,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
   };
   const share = async () => {
     if (!analysis) return;
-    const text = "Pocket Bullseye" + (demoMode ? " · SYNTHETIC INTERFACE DEMO" : "") + " · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
+    const text = UNVERIFIED_SCANNER_NOTICE + "\nPocket Bullseye" + (demoMode ? " · SYNTHETIC INTERFACE DEMO" : "") + " · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
     try {
       if (navigator.share) await navigator.share({ title: "Pocket Bullseye", text });
       else if (navigator.clipboard) { await navigator.clipboard.writeText(text); setNotice("Decision summary copied."); }
@@ -434,6 +437,8 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
   const patterns = mergeOverlayPatterns(analysis?.patterns ?? [], activeLocal?.patterns ?? [], plotBounds);
   const devicePatternCount = activeLocal?.patterns.filter(pattern => pattern.confidence !== "LOW" || pattern.status === "CONFIRMED" || pattern.status === "FAILED").length ?? 0;
   const liquidity = mergeOverlayLiquidity(analysis?.liquidity, activeLocal?.liquidity, plotBounds);
+  const claimConfirmed = !demoMode && Boolean(activeSlot?.confirmation && preflightAllowsAnalysis(activeSlot.status));
+  const claimMeasurement = useOriginalChartMeasurement(image, analysis, claimConfirmed);
   const deviceOnly = Boolean(activeLocal && !activeSlot?.analysis);
   const multiChart = useMemo(() => {
     const loaded = charts.filter(slot=>slot.image).length;
@@ -515,6 +520,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
       <div className="pnTopActions"><button type="button" onClick={share}>SHARE</button><button type="button" onClick={reset}>{demoMode ? "RETURN TO YOUR CHARTS" : "CLEAR WORKSPACE"}</button></div>
     </header>
 
+    <ScannerClaimStatus report={analysis} image={image} measurement={claimMeasurement} confirmed={claimConfirmed} />
     <section className="pnWorkspace">
       <nav className="pnTools" aria-label="Analysis views">
         {TABS.map(tab=><button key={tab.id} type="button" data-active={active===tab.id} aria-pressed={active===tab.id} onClick={()=>selectTab(tab.id)}><b aria-hidden="true">{tab.short}</b><span>{tab.label}</span></button>)}
@@ -568,7 +574,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
         </div>
 
         <div className="pnChart" ref={chartRef} data-focus={chartFocus ? "true" : "false"} role={chartFocus?"dialog":undefined} aria-modal={chartFocus?true:undefined} aria-label={chartFocus?"Focused source chart":undefined}>
-          {demoMode ? <img ref={chartImageRef} src={image ?? ""} alt="Synthetic interface demo chart"/> : <OriginalChartEvidence layer={active === "patterns" ? "patterns" : active === "liquidity" ? "liquidity" : "levels"} image={image ?? ""} report={analysis} identityConfirmed={Boolean(activeSlot.confirmation) && preflightAllowsAnalysis(activeSlot.status)} /> }
+          {demoMode ? <img ref={chartImageRef} src={image ?? ""} alt="Synthetic interface demo chart"/> : <OriginalChartEvidence measurement={claimMeasurement} layer={active === "patterns" ? "patterns" : active === "liquidity" ? "liquidity" : "levels"} image={image ?? ""} report={analysis} identityConfirmed={Boolean(activeSlot.confirmation) && preflightAllowsAnalysis(activeSlot.status)} /> }
           <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
           {demoMode && <svg style={overlayStyle} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
             <defs>
@@ -612,7 +618,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
             <h2>{levels.length} levels · {patterns.length} pattern read{patterns.length===1?"":"s"} · {liquidity?.zones.length ?? 0} liquidity reference{(liquidity?.zones.length ?? 0)===1?"":"s"}</h2>
             <p>No setup score or risk grade is shown because this chart has not used the AI judgement layer.</p>
           </> : <>
-            <div className="pnVerdict"><span>{analysis.verdict.replaceAll("_"," ")}</span><b>{analysis.setupScore.overall}</b><small>/100 · GRADE {analysis.setupScore.grade}</small></div>
+            <p>UNVERIFIED MODEL SCORE · NOT ACCURACY</p><div className="pnVerdict"><span>{analysis.verdict.replaceAll("_"," ")}</span><b>{analysis.setupScore.overall}</b><small>/100 · GRADE {analysis.setupScore.grade}</small></div>
             <h2>{analysis.verdictHeadline}</h2>
             <p>{analysis.summary}</p>
             <div className="pnTriptych"><article><small>NOW</small><strong>{analysis.nextSequence.now}</strong></article><article><small>CONFIRMS</small><strong>{analysis.nextSequence.confirmation}</strong></article><article><small>FAILS</small><strong>{analysis.nextSequence.failure}</strong></article></div>
@@ -626,29 +632,29 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO}:{macroContex
           <div className="pnDecisionLabel">REPORTED PRICE REFERENCES</div>
           <h2>{levels.length ? levels.length+" structural levels" : "Precision held"}</h2>
           <p>{analysis.levelStory}</p>
-          <div className="pnRows">{levels.length ? levels.map((l,i)=><article key={i}><span>{l.kind.toUpperCase()}</span><strong>{l.price || "NO NUMERIC PRICE"}</strong><small>{l.label}</small></article>) : <article><span>NO VERIFIED LEVEL</span><strong>—</strong><small>Pocket withheld numeric precision.</small></article>}</div>
+          <div className="pnRows">{levels.length ? levels.map((l,i)=><article key={i}><span>{l.kind.toUpperCase()} · UNVERIFIED</span><strong>{l.price || "NO NUMERIC PRICE"}</strong><small>Reported candidate; see price-position checks above.</small></article>) : <article><span>NO VERIFIED LEVEL</span><strong>—</strong><small>Pocket withheld numeric precision.</small></article>}</div>
         </> : null}
 
         {active==="structure" ? <>
           <div className="pnDecisionLabel">MARKET STRUCTURE</div>
-          <h2>{analysis.direction} · {analysis.confidence}</h2>
+          <h2>{analysis.direction} · UNVERIFIED MODEL VIEW</h2>
           <p>{analysis.marketStructure}</p>
           <div className="pnRows"><article><span>MOMENTUM</span><strong>{analysis.momentum}</strong></article><article><span>HIGHER TIMEFRAME</span><strong>{analysis.higherTimeframe.alignment}</strong><small>{analysis.higherTimeframe.summary}</small></article><article><span>BULL CASE</span><strong>{analysis.bullishCase}</strong></article><article><span>BEAR CASE</span><strong>{analysis.bearishCase}</strong></article></div>
         </> : null}
 
         {active==="patterns" ? <>
           <div className="pnDecisionLabel">PATTERN REVIEW</div>
-          <h2>{patterns.length ? patterns.length+" defensible read"+(patterns.length===1?"":"s") : "No clean pattern"}</h2>
+          <h2>{patterns.length ? patterns.length+" reported candidate"+(patterns.length===1?"":"s") : "PATTERN HOLD · no verified candidate"}</h2>
           <p>Reported candidates stay separate from original-pixel checks. The chart overlay shows only candidates that pass those independent checks.</p>
-          <div className="pnRows">{patterns.length ? patterns.map((p,i)=><article key={i}><span>{p.status} · {p.confidence ?? "LOW"}</span><strong>{p.name}</strong><small>{p.evidence}</small></article>) : <article><span>NO EVIDENCE</span><strong>Nothing forced.</strong><small>A wider or clearer chart may add evidence.</small></article>}</div>
+          <div className="pnRows">{patterns.length ? patterns.map((p,i)=><article key={i}><span>UNVERIFIED · REPORTED {p.status}</span><strong>{p.name}</strong><small>{p.evidence}</small></article>) : <article><span>NO EVIDENCE</span><strong>Nothing forced.</strong><small>A wider or clearer chart may add evidence.</small></article>}</div>
         </> : null}
 
         {active==="liquidity" ? <>
           {!demoMode && !deviceOnly ? <CryptoDerivativesCheck key={`crypto-${activeChart}-${activeSlot.revision}`} ticker={analysis.ticker !== "UNKNOWN" ? analysis.ticker : analysis.instrument} structure={analysis.marketStructure} /> : null}
           <div className="pnDecisionLabel">LIQUIDITY GUARD</div>
-          <h2>{liquidity?.state==="VERIFIED" ? liquidity.event : liquidity?.state==="PARTIAL" ? "Liquidity references" : "No verified event"}</h2>
+          <h2>{liquidity?.state==="NONE" || !liquidity ? "LIQUIDITY HOLD" : "UNVERIFIED LIQUIDITY CLAIMS"}</h2>
           <p>{liquidity?.evidence || "Pocket does not infer hidden orders or stop placement from ordinary price noise."}</p>
-          <div className="pnRows"><article><span>STATE</span><strong>{liquidity?.state ?? "NONE"}</strong><small>{liquidity?.confidence ?? "LOW"} confidence</small></article><article><span>CONFIRMS</span><strong>{liquidity?.confirmation || "No defensible trigger."}</strong></article><article><span>INVALIDATES</span><strong>{liquidity?.invalidation || "No defensible invalidation."}</strong></article></div>
+          <div className="pnRows"><article><span>STATE</span><strong>UNVERIFIED</strong><small>Model claim; no hidden-order proof</small></article><article><span>CONFIRMS</span><strong>{liquidity?.confirmation || "No defensible trigger."}</strong></article><article><span>INVALIDATES</span><strong>{liquidity?.invalidation || "No defensible invalidation."}</strong></article></div>
         </> : null}
 
         {active==="risk" ? <>
