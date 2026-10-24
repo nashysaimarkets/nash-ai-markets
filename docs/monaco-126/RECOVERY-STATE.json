@@ -934,5 +934,33 @@
     "actualPaidDispatch": false,
     "conditionalPaidScopeApprovalReceipt": "issue126-6309459418",
     "doNotAskForPaidScopeApprovalAgain": true
+  },
+  "integrationAcceptanceContinuation": {
+    "savedAtUtc": "2026-10-24T21:49:58.538490+00:00",
+    "worker": "integration-acceptance-baf",
+    "writerStatus": "RELEASED_AFTER_PUBLICATION",
+    "branch": "monaco-integration-acceptance-20261024-baf",
+    "parent": "5397b738c7b64d38936bf80c2cb24fee11cebd90",
+    "testedSource": "78c77ae58b8e097a596d10e34d2b6763f0ea7938",
+    "testedTree": "6ba074cd5a2cfb827d4d1a25d470a2f002662628",
+    "checkpoint": "docs/ntp/integration-acceptance-2026-10-24/README.md",
+    "claim": 6389889115,
+    "tests": {
+      "ig": 25,
+      "embeddedPostgres": 10,
+      "native": 62,
+      "render": 7,
+      "fail": 0,
+      "skip": 0
+    },
+    "independentReview": "ACCEPTED_OFFLINE_SCOPE",
+    "multiBackendPostgres": "BLOCKED_RUNTIME_UNAVAILABLE",
+    "hostedVault": "UNCONFIGURED",
+    "igDemo": "OFF_NO_REQUESTS",
+    "signedPackage": "NOT_RECOVERED",
+    "signedDevice": "BLOCKED_DISTINCT_GATE",
+    "schedules": "OFF",
+    "nextSafeAction": "Disposable local PostgreSQL multi-backend concurrency acceptance; preserve all prior passing evidence.",
+    "publicationResolution": "Latest Issue126 receipt records exact evidence SHA; unchanged historic fields are not current active-writer instructions."
   }
 }

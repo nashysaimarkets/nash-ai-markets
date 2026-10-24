@@ -1,3 +1,7 @@
+# Latest isolated integration continuation — 24 October 2026
+
+Read [integration acceptance](../ntp/integration-acceptance-2026-10-24/README.md) and latest Issue126 receipt first. Tested source78c77ae;104 tests PASS and independent review accepted for offline preparation. No hosted/native-device acceptance claimed. Writer releases after publication. Earlier active claims below are historical, not fresh authority. Do not repeat Apple login/artifact searches or existing Android35+34 evidence. Next: disposable multi-backend PostgreSQL acceptance; no production or provider activity.
+
 # Current continuation — isolated bounds repair, 24 October 2026
 
 Read [scanner-geometry-repair-2026-10-24/CHECKPOINT.md](scanner-geometry-repair-2026-10-24/CHECKPOINT.md) and the latest Issue126 receipt. The bounds repair passes 68 distinct checks, independent source review and both hosted gates on exact source97925f. The separate image-derived recovery candidate is in progress and not yet accepted. It contains invalid geometry, without claiming recovered chart accuracy.

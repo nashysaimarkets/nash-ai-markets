@@ -1,0 +1,33 @@
+✔ premium chart reference forwards only exact owner and source context (1.501552ms)
+✔ replaced chart, changed confirmation or different owner drops reference (0.335527ms)
+✔ screenshots do not create provenance and expired/malformed references hold (0.472675ms)
+✔ two server instances share encrypted session, quota and revocation (29.760027ms)
+✔ cipher rejects cross owner/purpose, tampering and wrong key (0.740101ms)
+✔ LIVE, missing and mismatched credentials fail before broker transport (4.240771ms)
+✔ quota exhaustion is shared; no request without reservation (1.8162ms)
+✔ vault/store outage and missing commercial rights fail closed (3.086103ms)
+✔ expired persisted session cannot be revived on another instance (4.129742ms)
+✔ late login cannot overwrite cross-instance disconnect (1.87255ms)
+✔ provenance binds owner, immutable revision, expiry and exact product (14.872346ms)
+✔ withdrawn consent still permits shared disconnect without vault reads (3.178253ms)
+✔ Postgres binding parameterises owner and serialises quota transaction; no database used (0.984895ms)
+✔ Postgres quota denial does not insert and transaction errors rollback/redact (0.668709ms)
+✔ disconnect fences connect while managed-vault read is pending (1.441554ms)
+✔ failure cleanup bumps epoch so late same-generation save cannot revive session (3.859876ms)
+✔ corrupt or expired encrypted session is conditionally revoked before transport (7.35113ms)
+✔ feature/rights disabled still permits authenticated shared deletion only (4.787087ms)
+✔ pool connection failure redacted at storage boundary (0.39682ms)
+✔ two Postgres adapter instances share rolling application/account quotas using isolated transaction simulation (1.551839ms)
+✔ cancel during vault read clears fenced state and cannot invoke transport (4.427733ms)
+✔ truthy malformed access flag cannot read vault or connect (0.543888ms)
+✔ HTTP final owner logout conditionally erases the observed session without new auth (2.370376ms)
+✔ identity loss between persisted connect and auto-snapshot revokes request fence (1.475178ms)
+✔ provenance callback outage after connect clears persisted request session (1.174022ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 299.179402

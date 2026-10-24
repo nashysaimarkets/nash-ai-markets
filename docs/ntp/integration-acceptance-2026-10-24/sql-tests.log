@@ -1,0 +1,18 @@
+✔ real SQL: ciphertext roundtrip and owner/purpose authentication (17.811419ms)
+✔ real SQL: browser roles cannot read or write any private table (27.280733ms)
+✔ real SQL: RLS denies unfiltered cross-owner and cross-application reads (9.925742ms)
+✔ real SQL: runtime cannot mutate credential/provenance authority (7.687829ms)
+✔ real SQL: generation CAS/revocation fence and user isolation (28.041202ms)
+✔ real SQL: uppercase UUID uses canonical owner context (6.595644ms)
+✔ real SQL: rollback preserves generation and transaction context does not leak (8.382299ms)
+✔ real SQL: quotas share application/account budget and expire by DB clock (34.504086ms)
+✔ real SQL: provenance requires owner, token hash, application and unexpired row (22.57276ms)
+✔ real SQL: disabled vault entry fails closed and all tables force RLS (5.208264ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2736.537361
