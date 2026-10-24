@@ -1,3 +1,7 @@
+## Latest premium/Android candidate — 2026-10-24
+
+Resume isolated monaco-premium-android-rc-20261024-baf/source58eb0f51404567c8914549d5efe84c1509935ec1/tree916be37f7fff600d386e376efd6795624cf94f02. Evidence SHA is in newest Issue126 receipt.108 Node/render +18 Chromium checks PASS; exact-source TypeScript/build and Android debug compile PASS in40138586652. Prior72 and genuine PostgreSQL evidence preserved. Offline preview candidate only; configuration/device/commercial gates remain. See docs/ntp/premium-android-rc-2026-10-24/README.md. Writer released after final publication. No deployment/main/store/schedules.
+
 # Latest offline completion — 24 October 2026
 
 Read [offline completion](../ntp/offline-completion-2026-10-24/README.md) and latest Issue126 receipt first. Source7f8fdfc;72 targeted tests PASS. Genuine multi-backend PostgreSQL gate now PASS at a268e349/run40136673147; actual Android SQL composition PASS at7f8fdfc/run40137181801. Both disposable containers removed. No repeat PG runtime search or PGlite substitute. Older BLOCKED PostgreSQL statements below are superseded. Independent review accepted offline scope; actual provider/native/scanner bindings and signed-device gates remain. Owner need not supply credentials/hardware now. Writer releases after publication; schedules OFF.

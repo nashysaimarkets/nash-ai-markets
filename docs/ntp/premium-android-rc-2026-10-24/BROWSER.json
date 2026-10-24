@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "checks": [
+    "1440:actual premium five-slot mount",
+    "1440:five actual image slots retain separate sources",
+    "1440:opt-in account display synthetic transport",
+    "1440:unknown screenshot provenance HOLD",
+    "1440:chart change clears IG owner/context view",
+    "1440:synthetic overlay clearly labelled",
+    "1440:scanner unverified claims visible",
+    "1440:no viewport overflow",
+    "1440:demo return preserves private five-chart workspace",
+    "390:actual premium five-slot mount",
+    "390:five actual image slots retain separate sources",
+    "390:opt-in account display synthetic transport",
+    "390:unknown screenshot provenance HOLD",
+    "390:chart change clears IG owner/context view",
+    "390:synthetic overlay clearly labelled",
+    "390:scanner unverified claims visible",
+    "390:no viewport overflow",
+    "390:demo return preserves private five-chart workspace"
+  ],
+  "browser": "155.0.8059.39",
+  "errors": [],
+  "interceptedRequests": 7,
+  "providerCalls": 0,
+  "scope": "Mounted actual React/CSS; synthetic HTTP only, no provider or device acceptance"
+}

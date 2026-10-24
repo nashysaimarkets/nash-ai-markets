@@ -1,0 +1,804 @@
+﻿2026-10-24T22:26:49.3220038Z Current runner version: '2.338.0'
+2026-10-24T22:26:49.3245414Z ##[group]Runner Image Provisioner
+2026-10-24T22:26:49.3246445Z Hosted Compute Agent
+2026-10-24T22:26:49.3247081Z Version: 20261021.618
+2026-10-24T22:26:49.3247699Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-24T22:26:49.3248486Z Build Date: 2026-10-21T00:45:21Z
+2026-10-24T22:26:49.3249168Z Worker ID: {0e614e5a-dc1a-4cc5-a639-b98878653b17}
+2026-10-24T22:26:49.3249904Z Region: westus3
+2026-10-24T22:26:49.3250495Z Cloud: Azure
+2026-10-24T22:26:49.3251020Z ##[endgroup]
+2026-10-24T22:26:49.3253166Z ##[group]Operating System
+2026-10-24T22:26:49.3253886Z Ubuntu
+2026-10-24T22:26:49.3254522Z 24.04.5
+2026-10-24T22:26:49.3255091Z LTS
+2026-10-24T22:26:49.3255603Z ##[endgroup]
+2026-10-24T22:26:49.3256214Z ##[group]Runner Image
+2026-10-24T22:26:49.3256826Z Image: ubuntu-24.04
+2026-10-24T22:26:49.3257373Z Version: 20261012.334.1
+2026-10-24T22:26:49.3258708Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T22:26:49.3260743Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-24T22:26:49.3261803Z ##[endgroup]
+2026-10-24T22:26:49.3263246Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T22:26:49.3265142Z Contents: read
+2026-10-24T22:26:49.3265736Z Metadata: read
+2026-10-24T22:26:49.3266400Z ##[endgroup]
+2026-10-24T22:26:49.3268850Z Secret source: Actions
+2026-10-24T22:26:49.3269936Z Cache mode: write
+2026-10-24T22:26:49.3270843Z Prepare workflow directory
+2026-10-24T22:26:49.3704313Z Prepare all required actions
+2026-10-24T22:26:49.3756326Z Getting action download info
+2026-10-24T22:26:49.6926321Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-24T22:26:49.8651206Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-24T22:26:50.0556236Z Complete job name: acceptance
+2026-10-24T22:26:50.1423938Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+2026-10-24T22:26:50.1425022Z with:
+2026-10-24T22:26:50.1425476Z   persist-credentials: false
+2026-10-24T22:26:50.1426042Z   repository: nashysaimarkets/nash-ai-markets
+2026-10-24T22:26:50.1430154Z   token: ***
+2026-10-24T22:26:50.1430595Z   ssh-strict: true
+2026-10-24T22:26:50.1431038Z   ssh-user: git
+2026-10-24T22:26:50.1431461Z   clean: true
+2026-10-24T22:26:50.1431910Z   sparse-checkout-cone-mode: true
+2026-10-24T22:26:50.1432818Z   fetch-depth: 1
+2026-10-24T22:26:50.1433257Z   fetch-tags: false
+2026-10-24T22:26:50.1433696Z   show-progress: true
+2026-10-24T22:26:50.1434146Z   lfs: false
+2026-10-24T22:26:50.1434550Z   submodules: false
+2026-10-24T22:26:50.1435010Z   set-safe-directory: true
+2026-10-24T22:26:50.1435789Z env:
+2026-10-24T22:26:50.1436217Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:26:50.1436770Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:26:50.1437331Z ##[endgroup]
+2026-10-24T22:26:50.2454344Z Syncing repository: nashysaimarkets/nash-ai-markets
+2026-10-24T22:26:50.2457341Z ##[group]Getting Git version info
+2026-10-24T22:26:50.2458928Z Working directory is '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T22:26:50.2460688Z [command]/usr/bin/git version
+2026-10-24T22:26:50.2522320Z git version 2.55.0
+2026-10-24T22:26:50.2624473Z ##[endgroup]
+2026-10-24T22:26:50.2633001Z Temporarily overriding HOME='/home/runner/work/_temp/6dc5c24e-32ee-4b8e-8652-440c5c4b5d31' before making global git config changes
+2026-10-24T22:26:50.2636298Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T22:26:50.2639488Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T22:26:50.2644393Z Deleting the contents of '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T22:26:50.2646956Z ##[group]Initializing the repository
+2026-10-24T22:26:50.2648660Z [command]/usr/bin/git init /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T22:26:50.2770588Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-24T22:26:50.2773199Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-24T22:26:50.2775637Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-24T22:26:50.2777368Z hint: call:
+2026-10-24T22:26:50.2778847Z hint:
+2026-10-24T22:26:50.2780967Z hint: 	git config --global init.defaultBranch <name>
+2026-10-24T22:26:50.2782716Z hint:
+2026-10-24T22:26:50.2784296Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-24T22:26:50.2786023Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-24T22:26:50.2787307Z hint:
+2026-10-24T22:26:50.2788067Z hint: 	git branch -m <name>
+2026-10-24T22:26:50.2788905Z hint:
+2026-10-24T22:26:50.2790072Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-24T22:26:50.2792239Z Initialized empty Git repository in /home/runner/work/nash-ai-markets/nash-ai-markets/.git/
+2026-10-24T22:26:50.2805144Z [command]/usr/bin/git remote add origin https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T22:26:50.2855861Z ##[endgroup]
+2026-10-24T22:26:50.2857150Z ##[group]Disabling automatic garbage collection
+2026-10-24T22:26:50.2860277Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-24T22:26:50.2897307Z ##[endgroup]
+2026-10-24T22:26:50.2899116Z ##[group]Setting up auth
+2026-10-24T22:26:50.2910125Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T22:26:50.2974405Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T22:26:50.3363929Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T22:26:50.3401616Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T22:26:50.3634482Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-24T22:26:50.3678457Z ##[endgroup]
+2026-10-24T22:26:50.3679477Z ##[group]Fetching the repository
+2026-10-24T22:26:50.3689300Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +58eb0f51404567c8914549d5efe84c1509935ec1:refs/remotes/origin/monaco-premium-android-rc-20261024-baf
+2026-10-24T22:26:51.7007681Z From https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T22:26:51.7010261Z  * [new ref]         58eb0f51404567c8914549d5efe84c1509935ec1 -> origin/monaco-premium-android-rc-20261024-baf
+2026-10-24T22:26:51.7016062Z ##[endgroup]
+2026-10-24T22:26:51.7017372Z ##[group]Determining the checkout info
+2026-10-24T22:26:51.7019010Z ##[endgroup]
+2026-10-24T22:26:51.7023389Z [command]/usr/bin/git sparse-checkout disable
+2026-10-24T22:26:51.7086069Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-24T22:26:51.7121288Z ##[group]Checking out the ref
+2026-10-24T22:26:51.7129225Z [command]/usr/bin/git checkout --progress --force -B monaco-premium-android-rc-20261024-baf refs/remotes/origin/monaco-premium-android-rc-20261024-baf
+2026-10-24T22:26:51.8434047Z Switched to a new branch 'monaco-premium-android-rc-20261024-baf'
+2026-10-24T22:26:51.8438795Z branch 'monaco-premium-android-rc-20261024-baf' set up to track 'origin/monaco-premium-android-rc-20261024-baf'.
+2026-10-24T22:26:51.8449006Z ##[endgroup]
+2026-10-24T22:26:51.8506494Z [command]/usr/bin/git log -1 --format=%H
+2026-10-24T22:26:51.8535992Z 58eb0f51404567c8914549d5efe84c1509935ec1
+2026-10-24T22:26:51.8546696Z ##[group]Removing auth
+2026-10-24T22:26:51.8549882Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T22:26:51.8586350Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T22:26:51.8817524Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T22:26:51.8846291Z http.https://github.com/.extraheader
+2026-10-24T22:26:51.8856277Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-24T22:26:51.8894705Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T22:26:51.9128094Z ##[endgroup]
+2026-10-24T22:26:51.9472978Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+2026-10-24T22:26:51.9474296Z with:
+2026-10-24T22:26:51.9474765Z   node-version: 24
+2026-10-24T22:26:51.9475355Z   always-auth: false
+2026-10-24T22:26:51.9475952Z   check-latest: false
+2026-10-24T22:26:51.9486271Z   token: ***
+2026-10-24T22:26:51.9486764Z env:
+2026-10-24T22:26:51.9487257Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:26:51.9488019Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:26:51.9488819Z ##[endgroup]
+2026-10-24T22:26:52.0927271Z Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64
+2026-10-24T22:26:52.0930696Z (node:2335) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T22:26:52.0934505Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T22:26:52.0936683Z ##[group]Environment details
+2026-10-24T22:26:52.5019502Z node: v24.21.0
+2026-10-24T22:26:52.5021705Z npm: 11.19.0
+2026-10-24T22:26:52.5023266Z yarn: 1.22.22
+2026-10-24T22:26:52.5025896Z ##[endgroup]
+2026-10-24T22:26:52.5273387Z ##[group]Run npm ci --no-audit --no-fund
+2026-10-24T22:26:52.5274900Z npm ci --no-audit --no-fund
+2026-10-24T22:26:52.5532649Z shell: /usr/bin/bash -e {0}
+2026-10-24T22:26:52.5533799Z env:
+2026-10-24T22:26:52.5534779Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:26:52.5535997Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:26:52.5537269Z ##[endgroup]
+2026-10-24T22:26:57.5973346Z npm warn deprecated jsrsasign@11.1.5: This package is no longer maintained.
+2026-10-24T22:26:57.7340118Z npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+2026-10-24T22:26:57.7673222Z npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+2026-10-24T22:26:57.9610105Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-24T22:27:12.7735051Z
+2026-10-24T22:27:12.7736018Z added 660 packages in 20s
+2026-10-24T22:27:12.7762995Z npm warn install-scripts 7 packages have install scripts not yet covered by allowScripts:
+2026-10-24T22:27:12.7764489Z npm warn install-scripts   esbuild@0.18.20 (postinstall: node install.js)
+2026-10-24T22:27:12.7765981Z npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+2026-10-24T22:27:12.7767461Z npm warn install-scripts   esbuild@0.28.1 (postinstall: node install.js)
+2026-10-24T22:27:12.7769123Z npm warn install-scripts   tesseract.js@6.0.1 (postinstall: opencollective-postinstall || true)
+2026-10-24T22:27:12.7771099Z npm warn install-scripts   unrs-resolver@1.11.1 (postinstall: napi-postinstall unrs-resolver 1.11.1 check)
+2026-10-24T22:27:12.7773225Z npm warn install-scripts   workerd@1.20260515.1 (postinstall: node install.js)
+2026-10-24T22:27:12.7774611Z npm warn install-scripts   esbuild@0.27.3 (postinstall: node install.js)
+2026-10-24T22:27:12.7775413Z npm warn install-scripts
+2026-10-24T22:27:12.7776611Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+2026-10-24T22:27:12.8570372Z ##[group]Run node --import tsx --test tests/pocket-android-rc.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-google-postgres-ports.test.mjs tests/pocket-native-request-boundary.test.ts tests/pocket-native-account-boundary.test.ts tests/pocket-next-integration.test.ts tests/ig-demo-chart-binding.test.ts
+2026-10-24T22:27:12.8573412Z node --import tsx --test tests/pocket-android-rc.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-google-postgres-ports.test.mjs tests/pocket-native-request-boundary.test.ts tests/pocket-native-account-boundary.test.ts tests/pocket-next-integration.test.ts tests/ig-demo-chart-binding.test.ts
+2026-10-24T22:27:12.8643031Z shell: /usr/bin/bash -e {0}
+2026-10-24T22:27:12.8643295Z env:
+2026-10-24T22:27:12.8643495Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:27:12.8643774Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:27:12.8644053Z ##[endgroup]
+2026-10-24T22:27:13.1921784Z ✔ premium chart reference forwards only exact owner and source context (1.342499ms)
+2026-10-24T22:27:13.1977695Z ✔ replaced chart, changed confirmation or different owner drops reference (0.260466ms)
+2026-10-24T22:27:13.2011548Z ✔ screenshots do not create provenance and expired/malformed references hold (0.45475ms)
+2026-10-24T22:27:13.3870650Z ✔ Android pins exact backend before ephemeral proof handoff (54.43027ms)
+2026-10-24T22:27:13.3871884Z ✔ Android rejects foreign endpoint before native bridge (0.890915ms)
+2026-10-24T22:27:13.3907727Z ✔ backend mismatch cannot read purchase token (1.173293ms)
+2026-10-24T22:27:13.4394411Z ✔ stalled native identity, status, network and body terminate (40.879697ms)
+2026-10-24T22:27:13.4443620Z ✔ pre-cancel suppresses all native and network work (0.612064ms)
+2026-10-24T22:27:13.4445238Z ✔ malformed, oversized and wrong-type proof rejected (2.813868ms)
+2026-10-24T22:27:13.4446685Z ✔ malformed and oversized manifest never forwards proof (2.232623ms)
+2026-10-24T22:27:13.4447999Z ✔ unconfigured actual route returns HOLD503 (1.822155ms)
+2026-10-24T22:27:13.4449456Z ✔ authenticated restore and scan use request-scoped runtime (2.510261ms)
+2026-10-24T22:27:13.4493502Z ✔ wrong origin, account and runtime binding fail closed (1.218688ms)
+2026-10-24T22:27:13.4543932Z ✔ client proof cannot supply authentication or entitlement (1.168373ms)
+2026-10-24T22:27:13.4573671Z ✔ cancellation cannot return a late entitlement (0.741867ms)
+2026-10-24T22:27:13.4584475Z ✔ shared scanner guard admits independent Google proof during web outage (0.328293ms)
+2026-10-24T22:27:13.4586678Z ✔ shared guard denies Google without authenticated account (0.304318ms)
+2026-10-24T22:27:13.4588626Z ✔ Google admission leaves scanner POST body readable (1.31089ms)
+2026-10-24T22:27:13.4590801Z ✔ scanner keeps own cancellation and accepts reports beyond metadata limit (1.037269ms)
+2026-10-24T22:27:13.4593558Z ✔ Android without Play purchase preserves verified web admission path (0.80827ms)
+2026-10-24T22:27:13.4744280Z ✔ lookup only sends a token hash through fixed SQL and returns immutable metadata (2.673997ms)
+2026-10-24T22:27:13.4746196Z ✔ invalid hash or cancelled lookup cannot reach database (0.553465ms)
+2026-10-24T22:27:13.4750563Z ✔ unknown SQL and invalid commit arity cannot reach database (0.321431ms)
+2026-10-24T22:27:13.4752890Z ✔ storage errors and malformed lookup receipts are redacted without retry (0.774658ms)
+2026-10-24T22:27:13.5320046Z ✔ actual verifier and recorder compose into uncached single-request admission (58.877005ms)
+2026-10-24T22:27:13.5359172Z ✔ pending acknowledgement holds by default without side effects (1.705317ms)
+2026-10-24T22:27:13.5360982Z ✔ opt-in trusted acknowledgement is followed by authoritative re-verification (1.87839ms)
+2026-10-24T22:27:13.5393342Z ✔ ack response alone cannot admit an unchanged pending purchase (2.789684ms)
+2026-10-24T22:27:13.5576942Z ✔ ambiguous or stalled acknowledgement holds for reconciliation without retry (30.401545ms)
+2026-10-24T22:27:13.5594044Z ✔ cancellation during acknowledgement cannot admit or trigger retry (2.104864ms)
+2026-10-24T22:27:13.5968140Z ✔ unknown commit never reaches acknowledgement or admission (25.86111ms)
+2026-10-24T22:27:13.6053970Z ✔ every scanner admission rechecks revocation instead of caching successful access (1.46641ms)
+2026-10-24T22:27:13.6093558Z ✔ revocation during final account await is observed before admission (0.767033ms)
+2026-10-24T22:27:13.6113424Z ✔ cross-app or environment binding cannot authorize a scan (1.686481ms)
+2026-10-24T22:27:13.6119977Z ✔ expired malformed wrong-product and denied subscriptions cannot reach commit (4.797636ms)
+2026-10-24T22:27:13.6163747Z ✔ malformed signal and pre-cancellation perform no provider work (0.350796ms)
+2026-10-24T22:27:13.6177713Z ✔ configuration and trusted services are captured before asynchronous work (0.584963ms)
+2026-10-24T22:27:13.6506719Z (node:2533) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+2026-10-24T22:27:13.6533265Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-24T22:27:13.6583796Z ✔ account rejects malformed identity/entitlement null (57.690824ms)
+2026-10-24T22:27:13.6613297Z ✔ account rejects malformed identity/entitlement {} (1.701089ms)
+2026-10-24T22:27:13.6702284Z ✔ account rejects malformed identity/entitlement {"appAccountToken":"bad","entitled":true} (1.089597ms)
+2026-10-24T22:27:13.6744419Z ✔ account rejects malformed identity/entitlement {"appAccountToken":"00000000-0000-4000-8000-000000000001","entitled":"true"} (1.965493ms)
+2026-10-24T22:27:13.6749318Z ✔ account rejects malformed identity/entitlement {"appAccountToken":4,"entitled":true} (1.146021ms)
+2026-10-24T22:27:13.6783632Z ✔ account positive preserves verified boolean and prevents proof redirects (2.339722ms)
+2026-10-24T22:27:13.6803761Z ✔ account bounds noncooperative fetch without echoing provider error (24.343494ms)
+2026-10-24T22:27:13.7034216Z ✔ account bounds stalled stream and cancels body (22.434736ms)
+2026-10-24T22:27:13.7072731Z ✔ account rejects oversized and malformed JSON bodies (5.799107ms)
+2026-10-24T22:27:13.7079175Z ✔ account refuses upstream error content and invalid proof without disclosure (0.919137ms)
+2026-10-24T22:27:13.7081385Z ✔ cancelled noncooperative StoreKit wait terminates and late proof cannot fetch (2.986567ms)
+2026-10-24T22:27:13.7275710Z ✔ StoreKit timeout terminates without transport (20.618396ms)
+2026-10-24T22:27:13.7285823Z ✔ malformed StoreKit proof cannot reach fetch (1.482961ms)
+2026-10-24T22:27:13.7483190Z ✔ late account response after timeout cancels its body (20.30125ms)
+2026-10-24T22:27:13.7707530Z ✔ read-only native metadata timeout rejects and cleans late listener registration (20.963066ms)
+2026-10-24T22:27:13.7721136Z ✔ read-only native metadata preserves successful and rejected results (0.810886ms)
+2026-10-24T22:27:13.7934315Z ✔ timed-out listener registration suppresses late callbacks and removes late handle (21.638567ms)
+2026-10-24T22:27:13.8148490Z ✔ second listener timeout does not wait forever on first listener cleanup (21.644442ms)
+2026-10-24T22:27:13.8591014Z (node:2555) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+2026-10-24T22:27:13.8610043Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-24T22:27:13.8625276Z ✔ native proof cannot escape Pocket endpoint: https://outside.example/api/pocket/analyse (71.776609ms)
+2026-10-24T22:27:13.8717694Z ✔ native proof cannot escape Pocket endpoint: //outside.example/api/pocket/analyse (14.81224ms)
+2026-10-24T22:27:13.8808951Z ✔ native proof cannot escape Pocket endpoint: /api/pocket/../../outside (10.023434ms)
+2026-10-24T22:27:13.8843888Z ✔ native proof cannot escape Pocket endpoint: /api/pocket/\outside (3.380478ms)
+2026-10-24T22:27:13.8909640Z ✔ native proof cannot escape Pocket endpoint: /api/pocket/analyse#fragment (4.322258ms)
+2026-10-24T22:27:13.8976883Z ✔ native proof cannot escape Pocket endpoint: /api/pocket/%2e%2e/outside (6.702476ms)
+2026-10-24T22:27:13.8994773Z ✔ native proof cannot escape Pocket endpoint: /api/stripe/checkout (3.194249ms)
+2026-10-24T22:27:13.9353879Z ✔ native transport drops caller-supplied stale Apple proof when StoreKit has none (35.623765ms)
+2026-10-24T22:27:13.9427543Z ✔ native transport refuses redirect following and includes only fresh proof (4.182436ms)
+2026-10-24T22:27:13.9453553Z ✔ web transport retains existing fetch contract without StoreKit access (2.73432ms)
+2026-10-24T22:27:13.9754292Z ✔ redesign analysis retains image-bound confirmation, cancellation and server entitlement transport (10.69688ms)
+2026-10-24T22:27:13.9756299Z ✔ redesign never overlays another chart's report or automatically runs the unqualified device scanner (1.680881ms)
+2026-10-24T22:27:13.9758040Z (node:2567) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+2026-10-24T22:27:13.9759403Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-24T22:27:13.9761068Z ✔ actual redesign handler blocks unconfirmed charts and abandons cancelled crop work before transport (63.935496ms)
+2026-10-24T22:27:13.9763612Z ✔ professional preview exposes guarded existing cross-check and native subscription tools without dispatching them in demos (6.298639ms)
+2026-10-24T22:27:13.9793862Z ✔ redesign workflows are isolated to a confirmed real source report; candidate customer entrypoint mounts accepted premium workflow (1.91575ms)
+2026-10-24T22:27:13.9883864Z ℹ tests 70
+2026-10-24T22:27:13.9884513Z ℹ suites 0
+2026-10-24T22:27:13.9884956Z ℹ pass 70
+2026-10-24T22:27:13.9885336Z ℹ fail 0
+2026-10-24T22:27:13.9885736Z ℹ cancelled 0
+2026-10-24T22:27:13.9886182Z ℹ skipped 0
+2026-10-24T22:27:13.9886614Z ℹ todo 0
+2026-10-24T22:27:13.9887087Z ℹ duration_ms 1085.610092
+2026-10-24T22:27:14.0022505Z ##[group]Run node tests/run-pocket-rc-browser.mjs
+2026-10-24T22:27:14.0023189Z node tests/run-pocket-rc-browser.mjs
+2026-10-24T22:27:14.0111600Z shell: /usr/bin/bash -e {0}
+2026-10-24T22:27:14.0112323Z env:
+2026-10-24T22:27:14.0112671Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:27:14.0113157Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:27:14.0113764Z   POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
+2026-10-24T22:27:14.0114355Z ##[endgroup]
+2026-10-24T22:27:31.8027942Z {"status":"PASS","checks":["1440:actual premium five-slot mount","1440:five actual image slots retain separate sources","1440:opt-in account display synthetic transport","1440:unknown screenshot provenance HOLD","1440:chart change clears IG owner/context view","1440:synthetic overlay clearly labelled","1440:scanner unverified claims visible","1440:no viewport overflow","1440:demo return preserves private five-chart workspace","390:actual premium five-slot mount","390:five actual image slots retain separate sources","390:opt-in account display synthetic transport","390:unknown screenshot provenance HOLD","390:chart change clears IG owner/context view","390:synthetic overlay clearly labelled","390:scanner unverified claims visible","390:no viewport overflow","390:demo return preserves private five-chart workspace"],"browser":"155.0.8059.39","errors":[],"interceptedRequests":7,"providerCalls":0,"scope":"Mounted actual React/CSS; synthetic HTTP only, no provider or device acceptance"}
+2026-10-24T22:27:31.9318526Z ##[group]Run npm run typecheck
+2026-10-24T22:27:31.9318850Z npm run typecheck
+2026-10-24T22:27:31.9319086Z npm run build
+2026-10-24T22:27:31.9382782Z shell: /usr/bin/bash -e {0}
+2026-10-24T22:27:31.9383037Z env:
+2026-10-24T22:27:31.9383242Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:27:31.9383523Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:27:31.9383802Z ##[endgroup]
+2026-10-24T22:27:32.0413696Z
+2026-10-24T22:27:32.0414317Z > nash-ai-markets-bullseye@1.0.0-rc.2 typecheck
+2026-10-24T22:27:32.0415029Z > tsc --noEmit --incremental false
+2026-10-24T22:27:32.0415242Z
+2026-10-24T22:27:47.8479757Z
+2026-10-24T22:27:47.8481018Z > nash-ai-markets-bullseye@1.0.0-rc.2 build
+2026-10-24T22:27:47.8481546Z > bash scripts/build-verified.sh
+2026-10-24T22:27:47.8482359Z
+2026-10-24T22:27:47.9066049Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T22:27:47.9102996Z Running verified vinext build...
+2026-10-24T22:27:48.2196574Z
+2026-10-24T22:27:48.2197255Z   vinext build  (Vite 8.0.16)
+2026-10-24T22:27:48.2197767Z
+2026-10-24T22:27:48.3461942Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T22:27:49.5031743Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T22:27:49.5215342Z [vinext] middleware.ts is deprecated in Next.js 16. Rename to proxy.ts and export a default or named proxy function.
+2026-10-24T22:27:49.5647810Z [1/5] analyze client references...
+2026-10-24T22:27:49.6042527Z
+2026-10-24T22:27:51.8894289Z transforming...✓ 875 modules transformed.
+2026-10-24T22:27:52.0100573Z rendering chunks...
+2026-10-24T22:27:52.0230388Z ✓ built in 2.46s
+2026-10-24T22:27:52.0291507Z [2/5] analyze server references...
+2026-10-24T22:27:52.0457626Z
+2026-10-24T22:27:52.4358413Z transforming...✓ 357 modules transformed.
+2026-10-24T22:27:52.4390030Z rendering chunks...
+2026-10-24T22:27:52.4523443Z ✓ built in 422ms
+2026-10-24T22:27:52.4575603Z [3/5] build rsc environment...
+2026-10-24T22:27:52.4741243Z
+2026-10-24T22:27:54.0146786Z transforming...✓ 1167 modules transformed.
+2026-10-24T22:27:54.4843506Z rendering chunks...
+2026-10-24T22:27:54.6494539Z computing gzip size...
+2026-10-24T22:27:54.6994381Z ✓ built in 2.24s
+2026-10-24T22:27:54.7036597Z [4/5] build client environment...
+2026-10-24T22:27:54.7201777Z
+2026-10-24T22:27:55.0477339Z transforming...✓ 385 modules transformed.
+2026-10-24T22:27:55.1584299Z rendering chunks...
+2026-10-24T22:27:55.2579242Z computing gzip size...
+2026-10-24T22:27:55.2830006Z ✓ built in 578ms
+2026-10-24T22:27:55.2973550Z [5/5] build ssr environment...
+2026-10-24T22:27:55.3135119Z
+2026-10-24T22:27:55.7786681Z transforming...✓ 399 modules transformed.
+2026-10-24T22:27:55.8958804Z rendering chunks...
+2026-10-24T22:27:55.9604289Z computing gzip size...
+2026-10-24T22:27:55.9850031Z ✓ built in 686ms
+2026-10-24T22:27:55.9924475Z
+2026-10-24T22:27:55.9924948Z   Route (app)
+2026-10-24T22:27:55.9925463Z   ┌ ƒ /
+2026-10-24T22:27:55.9926046Z   ├ ? /about
+2026-10-24T22:27:55.9926618Z   ├ ƒ /admin/commercial
+2026-10-24T22:27:55.9927182Z   ├ ƒ /admin/founding-100
+2026-10-24T22:27:55.9927754Z   ├ ƒ /admin/visual-preview
+2026-10-24T22:27:55.9928343Z   ├ λ /api/auth/redirect-probe
+2026-10-24T22:27:55.9928805Z   ├ λ /api/auth/session
+2026-10-24T22:27:55.9929166Z   ├ λ /api/auth/supabase-config-probe
+2026-10-24T22:27:55.9929535Z   ├ λ /api/founding-member
+2026-10-24T22:27:55.9929882Z   ├ λ /api/ideas
+2026-10-24T22:27:55.9930251Z   ├ λ /api/ideas/:id
+2026-10-24T22:27:55.9930598Z   ├ λ /api/journal
+2026-10-24T22:27:55.9930943Z   ├ λ /api/market/candles
+2026-10-24T22:27:55.9931309Z   ├ λ /api/marketing/visit
+2026-10-24T22:27:55.9931930Z   ├ λ /api/membership/preview
+2026-10-24T22:27:55.9932680Z   ├ λ /api/onboarding
+2026-10-24T22:27:55.9933030Z   ├ λ /api/openai/health
+2026-10-24T22:27:55.9933371Z   ├ λ /api/pocket/analyse
+2026-10-24T22:27:55.9933750Z   ├ λ /api/pocket/apple-account
+2026-10-24T22:27:55.9934101Z   ├ λ /api/pocket/apple-notifications
+2026-10-24T22:27:55.9934454Z   ├ λ /api/pocket/billing-portal
+2026-10-24T22:27:55.9934808Z   ├ λ /api/pocket/build-manifest
+2026-10-24T22:27:55.9935154Z   ├ λ /api/pocket/crypto-derivatives
+2026-10-24T22:27:55.9935535Z   ├ λ /api/pocket/events
+2026-10-24T22:27:55.9935928Z   ├ λ /api/pocket/follow-up
+2026-10-24T22:27:55.9936287Z   ├ λ /api/pocket/google-account
+2026-10-24T22:27:55.9936634Z   ├ λ /api/pocket/ig-demo
+2026-10-24T22:27:55.9937203Z   ├ λ /api/pocket/levels
+2026-10-24T22:27:55.9937575Z   ├ λ /api/pocket/options-wall
+2026-10-24T22:27:55.9937945Z   ├ λ /api/pocket/preflight
+2026-10-24T22:27:55.9938308Z   ├ λ /api/pocket/review
+2026-10-24T22:27:55.9938665Z   ├ λ /api/pocket/subscription-access
+2026-10-24T22:27:55.9939033Z   ├ λ /api/pocket/torture
+2026-10-24T22:27:55.9939393Z   ├ λ /api/profile
+2026-10-24T22:27:55.9939732Z   ├ λ /api/second-opinion
+2026-10-24T22:27:55.9940072Z   ├ λ /api/stripe/checkout
+2026-10-24T22:27:55.9940411Z   ├ λ /api/stripe/portal
+2026-10-24T22:27:55.9940748Z   ├ λ /api/stripe/webhook
+2026-10-24T22:27:55.9941091Z   ├ λ /api/waitlist
+2026-10-24T22:27:55.9941429Z   ├ λ /api/youtube/oauth/callback
+2026-10-24T22:27:55.9941765Z   ├ ƒ /archive
+2026-10-24T22:27:55.9942288Z   ├ ƒ /archive/:date
+2026-10-24T22:27:55.9942670Z   ├ ƒ /auth/callback
+2026-10-24T22:27:55.9943043Z   ├ λ /auth/confirm
+2026-10-24T22:27:55.9943377Z   ├ ? /auth/implicit
+2026-10-24T22:27:55.9943692Z   ├ λ /auth/signout
+2026-10-24T22:27:55.9944018Z   ├ ƒ /brief
+2026-10-24T22:27:55.9944327Z   ├ ? /cancelled
+2026-10-24T22:27:55.9944802Z   ├ ? /contact
+2026-10-24T22:27:55.9945267Z   ├ ƒ /dashboard
+2026-10-24T22:27:55.9945590Z   ├ ƒ /dev/logo-concepts
+2026-10-24T22:27:55.9946152Z   ├ ƒ /dev/terminal-chart
+2026-10-24T22:27:55.9947879Z   ├ ƒ /founding-member
+2026-10-24T22:27:55.9948459Z   ├ ? /help
+2026-10-24T22:27:55.9949819Z   ├ ƒ /ideas
+2026-10-24T22:27:55.9950605Z   ├ ƒ /ideas/:id
+2026-10-24T22:27:55.9951302Z   ├ ? /join
+2026-10-24T22:27:55.9952188Z   ├ ƒ /journal
+2026-10-24T22:27:55.9952777Z   ├ ƒ /launch-preview
+2026-10-24T22:27:55.9953308Z   ├ ? /login
+2026-10-24T22:27:55.9953923Z   ├ ƒ /marketing-preview
+2026-10-24T22:27:55.9954446Z   ├ ? /membership-required
+2026-10-24T22:27:55.9954952Z   ├ ƒ /methodology
+2026-10-24T22:27:55.9955433Z   ├ ? /onboarding
+2026-10-24T22:27:55.9955965Z   ├ ƒ /performance
+2026-10-24T22:27:55.9956472Z   ├ ? /pocket
+2026-10-24T22:27:55.9956971Z   ├ ? /pocket-next
+2026-10-24T22:27:55.9957515Z   ├ ? /pocket/founding
+2026-10-24T22:27:55.9958062Z   ├ ? /pocket/founding/welcome
+2026-10-24T22:27:55.9958592Z   ├ ? /pocket/login
+2026-10-24T22:27:55.9959134Z   ├ ? /preferences
+2026-10-24T22:27:55.9959588Z   ├ ƒ /pricing
+2026-10-24T22:27:55.9960061Z   ├ ? /privacy
+2026-10-24T22:27:55.9960604Z   ├ ƒ /profile
+2026-10-24T22:27:55.9961233Z   ├ ƒ /replay
+2026-10-24T22:27:55.9961711Z   ├ ƒ /results
+2026-10-24T22:27:55.9962669Z   ├ ƒ /review
+2026-10-24T22:27:55.9963244Z   ├ ƒ /reviews
+2026-10-24T22:27:55.9963782Z   ├ ? /risk-disclaimer
+2026-10-24T22:27:55.9964401Z   ├ ƒ /second-opinion
+2026-10-24T22:27:55.9964965Z   ├ ƒ /terminal
+2026-10-24T22:27:55.9965500Z   ├ ƒ /terminal/diagnostics
+2026-10-24T22:27:55.9965969Z   ├ ? /terms
+2026-10-24T22:27:55.9966415Z   ├ ? /waitlist
+2026-10-24T22:27:55.9966862Z   └ ? /welcome
+2026-10-24T22:27:55.9967106Z
+2026-10-24T22:27:55.9967290Z   λ API  ƒ Dynamic  ? Unknown
+2026-10-24T22:27:55.9967520Z
+2026-10-24T22:27:55.9967893Z   ? Some routes could not be classified. vinext currently uses static analysis
+2026-10-24T22:27:55.9969008Z     and cannot detect dynamic API usage (headers(), cookies(), etc.) at build time.
+2026-10-24T22:27:55.9969933Z     Automatic classification will be improved in a future release.
+2026-10-24T22:27:55.9970408Z
+2026-10-24T22:27:55.9970783Z   Build complete. Run `vinext start` to start the production server.
+2026-10-24T22:27:55.9971255Z
+2026-10-24T22:27:56.1897615Z Validated Sites artifact: ESM Worker default.fetch and hosting manifest are present.
+2026-10-24T22:27:56.2023622Z ##[group]Run export JAVA_HOME="$JAVA_HOME_21_X64"
+2026-10-24T22:27:56.2024031Z export JAVA_HOME="$JAVA_HOME_21_X64"
+2026-10-24T22:27:56.2024332Z npx cap sync android
+2026-10-24T22:27:56.2024570Z cd android
+2026-10-24T22:27:56.2024781Z chmod +x gradlew
+2026-10-24T22:27:56.2025049Z ./gradlew assembleDebug --no-daemon
+2026-10-24T22:27:56.2086997Z shell: /usr/bin/bash -e {0}
+2026-10-24T22:27:56.2087265Z env:
+2026-10-24T22:27:56.2087464Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T22:27:56.2087743Z   NODE_OPTIONS: --max-old-space-size=4096
+2026-10-24T22:27:56.2088133Z   CAPACITOR_SERVER_URL: https://offline-acceptance.invalid/pocket
+2026-10-24T22:27:56.2088608Z   CAPACITOR_SERVER_REVISION: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+2026-10-24T22:27:56.2088986Z ##[endgroup]
+2026-10-24T22:27:56.9357919Z ✔ Copying web assets from NativeWeb to android/app/src/main/assets/public in 3.96ms
+2026-10-24T22:27:56.9365678Z ✔ Creating capacitor.config.json in android/app/src/main/assets in 585.98μs
+2026-10-24T22:27:56.9475001Z ✔ copy android in 33.50ms
+2026-10-24T22:27:56.9807847Z ✔ Updating Android plugins in 10.91ms
+2026-10-24T22:27:56.9826285Z [info] Found 5 Capacitor plugins for android:
+2026-10-24T22:27:56.9826830Z        @capacitor/app@8.1.1
+2026-10-24T22:27:56.9827137Z        @capacitor/camera@8.2.3
+2026-10-24T22:27:56.9827417Z        @capacitor/haptics@8.0.2
+2026-10-24T22:27:56.9827698Z        @capacitor/preferences@8.0.1
+2026-10-24T22:27:56.9827971Z        @capacitor/share@8.0.1
+2026-10-24T22:27:57.0131691Z ✔ update android in 54.75ms
+2026-10-24T22:27:57.0224469Z [info] Sync finished in 0.128s
+2026-10-24T22:28:00.0122621Z Downloading https://services.gradle.org/distributions/gradle-8.14.3-all.zip
+2026-10-24T22:28:03.7640304Z .....................10%.....................20%......................30%.....................40%......................50%.....................60%.....................70%......................80%.....................90%......................100%
+2026-10-24T22:28:07.4590196Z
+2026-10-24T22:28:07.4593784Z Welcome to Gradle 8.14.3!
+2026-10-24T22:28:07.4594066Z
+2026-10-24T22:28:07.4594363Z Here are the highlights of this release:
+2026-10-24T22:28:07.4594795Z  - Java 24 support
+2026-10-24T22:28:07.4595377Z  - GraalVM Native Image toolchain selection
+2026-10-24T22:28:07.4596123Z  - Enhancements to test reporting
+2026-10-24T22:28:07.4602343Z  - Build Authoring improvements
+2026-10-24T22:28:07.4622747Z
+2026-10-24T22:28:07.4651469Z For more details see https://docs.gradle.org/8.14.3/release-notes.html
+2026-10-24T22:28:07.4652168Z
+2026-10-24T22:28:07.6600221Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-10-24T22:28:09.3595387Z Daemon will be stopped at the end of the build
+2026-10-24T22:28:38.7587992Z
+2026-10-24T22:28:38.7666579Z > Configure project :app
+2026-10-24T22:28:38.7668041Z WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+2026-10-24T22:28:47.6632626Z
+2026-10-24T22:28:47.6633467Z > Configure project :capacitor-cordova-android-plugins
+2026-10-24T22:28:47.6634610Z WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+2026-10-24T22:28:58.4584139Z
+2026-10-24T22:28:58.4585095Z > Task :app:preBuild UP-TO-DATE
+2026-10-24T22:28:58.4585954Z > Task :app:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.4587242Z > Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+2026-10-24T22:28:58.5582779Z > Task :app:generateDebugBuildConfig
+2026-10-24T22:28:58.6623492Z > Task :capacitor-android:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6643405Z > Task :capacitor-android:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6663336Z > Task :app:javaPreCompileDebug
+2026-10-24T22:28:58.6673307Z > Task :capacitor-app:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6675283Z > Task :capacitor-app:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6676543Z > Task :capacitor-camera:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6677862Z > Task :capacitor-android:writeDebugAarMetadata
+2026-10-24T22:28:58.6679193Z > Task :capacitor-camera:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6680408Z > Task :capacitor-app:writeDebugAarMetadata
+2026-10-24T22:28:58.6681778Z > Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6683469Z > Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6684983Z > Task :capacitor-haptics:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6686390Z > Task :capacitor-camera:writeDebugAarMetadata
+2026-10-24T22:28:58.6687808Z > Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6689382Z > Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+2026-10-24T22:28:58.6690943Z > Task :capacitor-preferences:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6692300Z > Task :capacitor-haptics:writeDebugAarMetadata
+2026-10-24T22:28:58.6693812Z > Task :capacitor-preferences:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6723172Z > Task :capacitor-share:preBuild UP-TO-DATE
+2026-10-24T22:28:58.6724119Z > Task :capacitor-share:preDebugBuild UP-TO-DATE
+2026-10-24T22:28:58.6725105Z > Task :capacitor-preferences:writeDebugAarMetadata
+2026-10-24T22:28:58.6725985Z > Task :capacitor-share:writeDebugAarMetadata
+2026-10-24T22:28:58.6726922Z > Task :capacitor-android:processDebugNavigationResources
+2026-10-24T22:29:09.1587449Z > Task :capacitor-app:processDebugNavigationResources
+2026-10-24T22:29:09.1593438Z > Task :capacitor-camera:processDebugNavigationResources
+2026-10-24T22:29:09.1594349Z > Task :app:checkDebugAarMetadata
+2026-10-24T22:29:09.1595453Z > Task :capacitor-cordova-android-plugins:processDebugNavigationResources
+2026-10-24T22:29:09.1596692Z > Task :capacitor-haptics:processDebugNavigationResources
+2026-10-24T22:29:09.1597870Z > Task :capacitor-preferences:processDebugNavigationResources
+2026-10-24T22:29:09.1598958Z > Task :capacitor-share:processDebugNavigationResources
+2026-10-24T22:29:09.2585094Z > Task :app:processDebugNavigationResources
+2026-10-24T22:29:09.5591172Z > Task :app:generateDebugResValues
+2026-10-24T22:29:09.5592630Z > Task :capacitor-android:generateDebugResValues
+2026-10-24T22:29:09.5593662Z > Task :app:compileDebugNavigationResources
+2026-10-24T22:29:09.5594612Z > Task :capacitor-android:generateDebugResources
+2026-10-24T22:29:09.6593704Z > Task :capacitor-android:packageDebugResources
+2026-10-24T22:29:09.6594661Z > Task :capacitor-app:generateDebugResValues
+2026-10-24T22:29:09.6600262Z > Task :capacitor-app:generateDebugResources
+2026-10-24T22:29:09.6601182Z > Task :capacitor-app:packageDebugResources
+2026-10-24T22:29:09.6602396Z > Task :capacitor-camera:generateDebugResValues
+2026-10-24T22:29:09.6603352Z > Task :capacitor-camera:generateDebugResources
+2026-10-24T22:29:09.6604272Z > Task :capacitor-camera:packageDebugResources
+2026-10-24T22:29:09.6605334Z > Task :capacitor-cordova-android-plugins:generateDebugResValues
+2026-10-24T22:29:09.6606538Z > Task :capacitor-cordova-android-plugins:generateDebugResources
+2026-10-24T22:29:09.6607693Z > Task :capacitor-cordova-android-plugins:packageDebugResources
+2026-10-24T22:29:09.6610667Z > Task :capacitor-haptics:generateDebugResValues
+2026-10-24T22:29:09.6611689Z > Task :capacitor-haptics:generateDebugResources
+2026-10-24T22:29:09.7583619Z > Task :capacitor-haptics:packageDebugResources
+2026-10-24T22:29:09.7584697Z > Task :capacitor-preferences:generateDebugResValues
+2026-10-24T22:29:09.7586066Z > Task :capacitor-preferences:generateDebugResources
+2026-10-24T22:29:09.7587431Z > Task :capacitor-preferences:packageDebugResources
+2026-10-24T22:29:09.7588372Z > Task :capacitor-share:generateDebugResValues
+2026-10-24T22:29:09.7589279Z > Task :capacitor-share:generateDebugResources
+2026-10-24T22:29:09.7590156Z > Task :capacitor-share:packageDebugResources
+2026-10-24T22:29:09.8605372Z > Task :app:mapDebugSourceSetPaths
+2026-10-24T22:29:09.8626248Z > Task :app:generateDebugResources
+2026-10-24T22:29:11.8583273Z > Task :app:packageDebugResources
+2026-10-24T22:29:12.1582583Z > Task :app:mergeDebugResources
+2026-10-24T22:29:13.3602901Z > Task :app:createDebugCompatibleScreenManifests
+2026-10-24T22:29:13.3639724Z > Task :app:extractDeepLinksDebug
+2026-10-24T22:29:13.3663714Z > Task :capacitor-android:extractDeepLinksDebug
+2026-10-24T22:29:13.3692857Z > Task :capacitor-app:extractDeepLinksDebug
+2026-10-24T22:29:13.3722753Z > Task :capacitor-camera:extractDeepLinksDebug
+2026-10-24T22:29:13.4593315Z > Task :app:parseDebugLocalResources
+2026-10-24T22:29:13.4643179Z > Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+2026-10-24T22:29:13.4653382Z > Task :capacitor-app:processDebugManifest
+2026-10-24T22:29:13.4654172Z > Task :capacitor-android:processDebugManifest
+2026-10-24T22:29:13.4654887Z > Task :capacitor-camera:processDebugManifest
+2026-10-24T22:29:13.4655693Z > Task :capacitor-cordova-android-plugins:processDebugManifest
+2026-10-24T22:29:13.4656445Z > Task :capacitor-haptics:extractDeepLinksDebug
+2026-10-24T22:29:13.4657221Z > Task :capacitor-preferences:extractDeepLinksDebug
+2026-10-24T22:29:13.4657932Z > Task :capacitor-haptics:processDebugManifest
+2026-10-24T22:29:13.4658592Z > Task :capacitor-share:extractDeepLinksDebug
+2026-10-24T22:29:13.4659114Z > Task :capacitor-preferences:processDebugManifest
+2026-10-24T22:29:13.5584570Z > Task :capacitor-share:processDebugManifest
+2026-10-24T22:29:13.5623816Z > Task :capacitor-android:compileDebugLibraryResources
+2026-10-24T22:29:13.7593451Z > Task :app:processDebugMainManifest
+2026-10-24T22:29:13.8643303Z > Task :app:processDebugManifest
+2026-10-24T22:29:13.8703063Z > Task :app:processDebugManifestForPackage
+2026-10-24T22:29:13.8723852Z > Task :capacitor-app:compileDebugLibraryResources
+2026-10-24T22:29:13.9593598Z > Task :capacitor-android:parseDebugLocalResources
+2026-10-24T22:29:13.9594517Z > Task :capacitor-camera:compileDebugLibraryResources
+2026-10-24T22:29:13.9613144Z > Task :capacitor-app:parseDebugLocalResources
+2026-10-24T22:29:13.9618012Z > Task :capacitor-camera:parseDebugLocalResources
+2026-10-24T22:29:13.9643071Z > Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+2026-10-24T22:29:13.9673219Z > Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+2026-10-24T22:29:13.9674104Z > Task :capacitor-camera:generateDebugRFile
+2026-10-24T22:29:13.9690993Z > Task :capacitor-app:generateDebugRFile
+2026-10-24T22:29:13.9691776Z > Task :capacitor-android:generateDebugRFile
+2026-10-24T22:29:13.9693552Z > Task :capacitor-cordova-android-plugins:generateDebugRFile
+2026-10-24T22:29:13.9694453Z > Task :capacitor-haptics:compileDebugLibraryResources
+2026-10-24T22:29:14.0603457Z > Task :capacitor-preferences:compileDebugLibraryResources
+2026-10-24T22:29:14.0632777Z > Task :capacitor-haptics:parseDebugLocalResources
+2026-10-24T22:29:14.0662771Z > Task :capacitor-share:compileDebugLibraryResources
+2026-10-24T22:29:14.0685521Z > Task :capacitor-haptics:generateDebugRFile
+2026-10-24T22:29:14.0703059Z > Task :capacitor-preferences:parseDebugLocalResources
+2026-10-24T22:29:14.0732882Z > Task :capacitor-preferences:generateDebugRFile
+2026-10-24T22:29:14.0762981Z > Task :capacitor-android:javaPreCompileDebug
+2026-10-24T22:29:14.0774350Z > Task :capacitor-share:parseDebugLocalResources
+2026-10-24T22:29:14.0775119Z > Task :capacitor-app:javaPreCompileDebug
+2026-10-24T22:29:14.0775973Z > Task :capacitor-share:generateDebugRFile
+2026-10-24T22:29:20.9583931Z
+2026-10-24T22:29:20.9588390Z > Task :capacitor-android:compileDebugJavaWithJavac
+2026-10-24T22:29:20.9592917Z Note: Some input files use unchecked or unsafe operations.
+2026-10-24T22:29:20.9597031Z Note: Recompile with -Xlint:unchecked for details.
+2026-10-24T22:29:23.7612656Z
+2026-10-24T22:29:23.7643730Z > Task :capacitor-camera:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-10-24T22:29:23.7667192Z > Task :capacitor-camera:javaPreCompileDebug
+2026-10-24T22:29:23.7693573Z > Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+2026-10-24T22:29:23.7723569Z > Task :capacitor-haptics:javaPreCompileDebug
+2026-10-24T22:29:23.7751658Z > Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+2026-10-24T22:29:23.7769575Z > Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+2026-10-24T22:29:23.7782996Z > Task :capacitor-preferences:javaPreCompileDebug
+2026-10-24T22:29:23.7812820Z > Task :capacitor-share:javaPreCompileDebug
+2026-10-24T22:29:23.7842929Z > Task :capacitor-android:bundleLibCompileToJarDebug
+2026-10-24T22:29:23.8613354Z > Task :app:mergeDebugShaders
+2026-10-24T22:29:24.1582852Z > Task :capacitor-app:compileDebugJavaWithJavac
+2026-10-24T22:29:24.1605961Z > Task :capacitor-app:bundleLibCompileToJarDebug
+2026-10-24T22:29:24.5582612Z > Task :app:processDebugResources
+2026-10-24T22:29:31.0584584Z > Task :capacitor-haptics:compileDebugJavaWithJavac
+2026-10-24T22:29:31.0613285Z > Task :capacitor-haptics:bundleLibCompileToJarDebug
+2026-10-24T22:29:31.2582737Z > Task :capacitor-preferences:compileDebugJavaWithJavac
+2026-10-24T22:29:31.2606382Z > Task :capacitor-preferences:bundleLibCompileToJarDebug
+2026-10-24T22:29:31.4592761Z > Task :capacitor-share:compileDebugJavaWithJavac
+2026-10-24T22:29:31.5611519Z > Task :app:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5652724Z > Task :app:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.5666708Z > Task :capacitor-share:bundleLibCompileToJarDebug
+2026-10-24T22:29:31.5667707Z > Task :capacitor-android:mergeDebugShaders
+2026-10-24T22:29:31.5668644Z > Task :capacitor-android:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5692905Z > Task :capacitor-android:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.5722927Z > Task :capacitor-android:mergeDebugAssets
+2026-10-24T22:29:31.5736066Z > Task :capacitor-app:mergeDebugShaders
+2026-10-24T22:29:31.5748664Z > Task :capacitor-app:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5754501Z > Task :capacitor-app:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.5783435Z > Task :capacitor-app:mergeDebugAssets
+2026-10-24T22:29:31.5792429Z > Task :capacitor-camera:mergeDebugShaders
+2026-10-24T22:29:31.5793526Z > Task :capacitor-camera:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5794664Z > Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.5795700Z > Task :capacitor-camera:mergeDebugAssets
+2026-10-24T22:29:31.5796799Z > Task :capacitor-cordova-android-plugins:mergeDebugShaders
+2026-10-24T22:29:31.5798110Z > Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5799554Z > Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.5800881Z > Task :capacitor-cordova-android-plugins:mergeDebugAssets
+2026-10-24T22:29:31.5801901Z > Task :capacitor-haptics:mergeDebugShaders
+2026-10-24T22:29:31.5803185Z > Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5804230Z > Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.5805501Z > Task :capacitor-haptics:mergeDebugAssets
+2026-10-24T22:29:31.5806456Z > Task :capacitor-preferences:mergeDebugShaders
+2026-10-24T22:29:31.5807480Z > Task :capacitor-preferences:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.5808520Z > Task :capacitor-preferences:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.6595014Z > Task :capacitor-preferences:mergeDebugAssets
+2026-10-24T22:29:31.6622921Z > Task :capacitor-share:mergeDebugShaders
+2026-10-24T22:29:31.6739888Z > Task :capacitor-share:compileDebugShaders NO-SOURCE
+2026-10-24T22:29:31.6801671Z > Task :capacitor-share:generateDebugAssets UP-TO-DATE
+2026-10-24T22:29:31.6802704Z > Task :capacitor-share:mergeDebugAssets
+2026-10-24T22:29:31.8614868Z > Task :app:mergeDebugAssets
+2026-10-24T22:29:31.8642813Z > Task :capacitor-haptics:bundleLibRuntimeToJarDebug
+2026-10-24T22:29:31.8662666Z > Task :capacitor-app:bundleLibRuntimeToJarDebug
+2026-10-24T22:29:31.8672727Z > Task :app:compressDebugAssets
+2026-10-24T22:29:31.8702833Z > Task :capacitor-preferences:bundleLibRuntimeToJarDebug
+2026-10-24T22:29:33.0583265Z > Task :capacitor-share:bundleLibRuntimeToJarDebug
+2026-10-24T22:29:33.1582615Z > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+2026-10-24T22:29:33.1613290Z > Task :capacitor-android:bundleLibRuntimeToJarDebug
+2026-10-24T22:29:33.1632729Z > Task :app:desugarDebugFileDependencies
+2026-10-24T22:29:33.1667403Z > Task :app:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:33.1675181Z > Task :capacitor-android:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:33.1723207Z > Task :capacitor-app:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:33.1724559Z > Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:33.1743080Z > Task :capacitor-haptics:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:33.1768541Z > Task :capacitor-preferences:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:33.1803676Z > Task :capacitor-share:processDebugJavaRes NO-SOURCE
+2026-10-24T22:29:34.9583017Z > Task :capacitor-app:bundleLibRuntimeToDirDebug
+2026-10-24T22:29:34.9623130Z > Task :app:checkDebugDuplicateClasses
+2026-10-24T22:29:52.6591851Z
+2026-10-24T22:29:52.6603730Z > Task :capacitor-camera:compileDebugKotlin
+2026-10-24T22:29:52.6653633Z w: file:///home/runner/work/nash-ai-markets/nash-ai-markets/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/IonCameraFlow.kt:864:13 Condition is always 'false'.
+2026-10-24T22:30:04.9622978Z
+2026-10-24T22:30:04.9743427Z > Task :app:mergeExtDexDebug
+2026-10-24T22:30:16.2602817Z
+2026-10-24T22:30:16.2614540Z Note: /home/runner/work/nash-ai-markets/nash-ai-markets/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+2026-10-24T22:30:16.2616391Z Note: Recompile with -Xlint:unchecked for details.
+2026-10-24T22:30:16.2663222Z > Task :capacitor-camera:compileDebugJavaWithJavac
+2026-10-24T22:30:16.2720508Z
+2026-10-24T22:30:16.2733146Z > Task :capacitor-camera:bundleLibCompileToJarDebug
+2026-10-24T22:30:16.2782285Z > Task :capacitor-camera:bundleLibRuntimeToJarDebug
+2026-10-24T22:30:17.6583025Z > Task :app:compileDebugJavaWithJavac
+2026-10-24T22:30:17.8588474Z > Task :app:dexBuilderDebug
+2026-10-24T22:30:18.0583116Z > Task :app:mergeDebugGlobalSynthetics
+2026-10-24T22:30:18.0584256Z > Task :capacitor-camera:processDebugJavaRes
+2026-10-24T22:30:18.4637805Z > Task :capacitor-haptics:bundleLibRuntimeToDirDebug
+2026-10-24T22:30:18.4703646Z > Task :capacitor-preferences:bundleLibRuntimeToDirDebug
+2026-10-24T22:30:18.4753105Z > Task :capacitor-camera:bundleLibRuntimeToDirDebug
+2026-10-24T22:30:18.5623506Z > Task :capacitor-share:bundleLibRuntimeToDirDebug
+2026-10-24T22:30:18.5653333Z > Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug
+2026-10-24T22:30:18.5682866Z > Task :capacitor-android:bundleLibRuntimeToDirDebug
+2026-10-24T22:30:18.8582939Z > Task :app:mergeProjectDexDebug
+2026-10-24T22:30:18.8602673Z > Task :app:mergeDebugJniLibFolders
+2026-10-24T22:30:18.8683105Z > Task :capacitor-android:mergeDebugJniLibFolders
+2026-10-24T22:30:18.9646236Z > Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:18.9693459Z > Task :capacitor-android:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:18.9763441Z > Task :capacitor-app:mergeDebugJniLibFolders
+2026-10-24T22:30:18.9803444Z > Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:19.0603373Z > Task :capacitor-app:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:19.0663537Z > Task :capacitor-camera:mergeDebugJniLibFolders
+2026-10-24T22:30:19.0723140Z > Task :capacitor-camera:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:19.0783029Z > Task :capacitor-camera:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:19.0813180Z > Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders
+2026-10-24T22:30:19.0814408Z > Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:19.0873199Z > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:19.0903070Z > Task :capacitor-haptics:mergeDebugJniLibFolders
+2026-10-24T22:30:19.0932917Z > Task :capacitor-haptics:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:19.0963322Z > Task :capacitor-haptics:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:19.0992904Z > Task :capacitor-preferences:mergeDebugJniLibFolders
+2026-10-24T22:30:19.1002838Z > Task :capacitor-preferences:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:19.1590947Z > Task :capacitor-preferences:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:19.1593986Z > Task :capacitor-share:mergeDebugJniLibFolders
+2026-10-24T22:30:19.1595606Z > Task :capacitor-share:mergeDebugNativeLibs NO-SOURCE
+2026-10-24T22:30:19.1623031Z > Task :capacitor-share:copyDebugJniLibsProjectOnly
+2026-10-24T22:30:19.5583363Z > Task :app:mergeDebugJavaResource
+2026-10-24T22:30:20.8582579Z > Task :app:validateSigningDebug
+2026-10-24T22:30:21.0613519Z > Task :app:mergeLibDexDebug
+2026-10-24T22:30:21.0654632Z > Task :app:writeDebugAppMetadata
+2026-10-24T22:30:21.0670322Z > Task :app:mergeDebugNativeLibs
+2026-10-24T22:30:21.0670995Z > Task :app:writeDebugSigningConfigVersions
+2026-10-24T22:30:21.1582856Z
+2026-10-24T22:30:21.1583593Z > Task :app:stripDebugDebugSymbols
+2026-10-24T22:30:21.1585330Z Unable to strip the following libraries, packaging them as they are: libimage_processing_util_jni.so, libsurface_util_jni.so. Run with --info option to learn more.
+2026-10-24T22:30:21.2622545Z
+2026-10-24T22:30:21.2653150Z > Task :capacitor-android:checkDebugAarMetadata
+2026-10-24T22:30:21.2663165Z > Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:21.2664404Z > Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:28.1589387Z > Task :capacitor-android:extractDebugAnnotations
+2026-10-24T22:30:28.1639980Z > Task :capacitor-android:extractDeepLinksForAarDebug
+2026-10-24T22:30:28.1643063Z > Task :capacitor-android:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:28.1672787Z > Task :capacitor-android:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:28.1690713Z > Task :capacitor-android:prepareDebugArtProfile
+2026-10-24T22:30:28.1702855Z > Task :capacitor-android:prepareLintJarForPublish
+2026-10-24T22:30:28.1732639Z > Task :app:packageDebug
+2026-10-24T22:30:28.1742781Z > Task :app:createDebugApkListingFileRedirect
+2026-10-24T22:30:28.1766359Z > Task :app:assembleDebug
+2026-10-24T22:30:28.1792820Z > Task :capacitor-android:mergeDebugJavaResource
+2026-10-24T22:30:28.2626935Z > Task :capacitor-app:checkDebugAarMetadata
+2026-10-24T22:30:28.2657682Z > Task :capacitor-android:syncDebugLibJars
+2026-10-24T22:30:28.2682729Z > Task :capacitor-android:bundleDebugAar
+2026-10-24T22:30:28.2683422Z > Task :capacitor-android:assembleDebug
+2026-10-24T22:30:28.2684188Z > Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:28.2685066Z > Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:28.3614768Z > Task :capacitor-app:extractDebugAnnotations
+2026-10-24T22:30:28.3642966Z > Task :capacitor-app:extractDeepLinksForAarDebug
+2026-10-24T22:30:28.3682853Z > Task :capacitor-app:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:28.3709157Z > Task :capacitor-app:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:28.3742974Z > Task :capacitor-app:prepareDebugArtProfile
+2026-10-24T22:30:28.3792921Z > Task :capacitor-app:prepareLintJarForPublish
+2026-10-24T22:30:28.3862785Z > Task :capacitor-app:mergeDebugJavaResource
+2026-10-24T22:30:28.3922910Z > Task :capacitor-camera:checkDebugAarMetadata
+2026-10-24T22:30:28.3932811Z > Task :capacitor-app:syncDebugLibJars
+2026-10-24T22:30:28.4582760Z > Task :capacitor-app:bundleDebugAar
+2026-10-24T22:30:28.4583838Z > Task :capacitor-app:assembleDebug
+2026-10-24T22:30:28.4584880Z > Task :capacitor-camera:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:28.4586942Z > Task :capacitor-camera:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:28.4588053Z > Task :capacitor-camera:extractDebugAnnotations
+2026-10-24T22:30:28.4589036Z > Task :capacitor-camera:extractDeepLinksForAarDebug
+2026-10-24T22:30:28.4590078Z > Task :capacitor-camera:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:28.4591155Z > Task :capacitor-camera:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:28.4592659Z > Task :capacitor-camera:prepareDebugArtProfile
+2026-10-24T22:30:28.4593668Z > Task :capacitor-camera:prepareLintJarForPublish
+2026-10-24T22:30:28.5583321Z > Task :capacitor-camera:mergeDebugJavaResource
+2026-10-24T22:30:30.0582936Z > Task :capacitor-cordova-android-plugins:checkDebugAarMetadata
+2026-10-24T22:30:30.1601238Z > Task :capacitor-camera:syncDebugLibJars
+2026-10-24T22:30:30.1611052Z > Task :capacitor-camera:bundleDebugAar
+2026-10-24T22:30:30.1611909Z > Task :capacitor-camera:assembleDebug
+2026-10-24T22:30:30.1613316Z > Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:30.1614481Z > Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:30.5593687Z > Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+2026-10-24T22:30:30.5613357Z > Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+2026-10-24T22:30:30.5643185Z > Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:30.5647049Z > Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:30.5683685Z > Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+2026-10-24T22:30:30.5694039Z > Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+2026-10-24T22:30:30.5695477Z > Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+2026-10-24T22:30:30.5696793Z > Task :capacitor-haptics:checkDebugAarMetadata
+2026-10-24T22:30:30.5717101Z > Task :capacitor-cordova-android-plugins:syncDebugLibJars
+2026-10-24T22:30:30.5724480Z > Task :capacitor-cordova-android-plugins:bundleDebugAar
+2026-10-24T22:30:30.5725352Z > Task :capacitor-cordova-android-plugins:assembleDebug
+2026-10-24T22:30:30.5726208Z > Task :capacitor-haptics:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:30.5727100Z > Task :capacitor-haptics:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:30.5727849Z > Task :capacitor-haptics:extractDebugAnnotations
+2026-10-24T22:30:30.5728656Z > Task :capacitor-haptics:extractDeepLinksForAarDebug
+2026-10-24T22:30:30.5729483Z > Task :capacitor-haptics:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:30.5730303Z > Task :capacitor-haptics:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:30.5731045Z > Task :capacitor-haptics:prepareDebugArtProfile
+2026-10-24T22:30:30.5731842Z > Task :capacitor-haptics:prepareLintJarForPublish
+2026-10-24T22:30:30.5732830Z > Task :capacitor-haptics:mergeDebugJavaResource
+2026-10-24T22:30:30.5733591Z > Task :capacitor-preferences:checkDebugAarMetadata
+2026-10-24T22:30:30.5734299Z > Task :capacitor-haptics:syncDebugLibJars
+2026-10-24T22:30:30.5734918Z > Task :capacitor-haptics:bundleDebugAar
+2026-10-24T22:30:30.5735483Z > Task :capacitor-haptics:assembleDebug
+2026-10-24T22:30:30.5736033Z > Task :capacitor-preferences:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:30.5736912Z > Task :capacitor-preferences:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:30.6582589Z > Task :capacitor-preferences:extractDebugAnnotations
+2026-10-24T22:30:30.6590595Z > Task :capacitor-preferences:extractDeepLinksForAarDebug
+2026-10-24T22:30:30.6591790Z > Task :capacitor-preferences:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:30.6593303Z > Task :capacitor-preferences:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:30.6594420Z > Task :capacitor-preferences:prepareDebugArtProfile
+2026-10-24T22:30:30.6595556Z > Task :capacitor-preferences:prepareLintJarForPublish
+2026-10-24T22:30:30.6596501Z > Task :capacitor-preferences:mergeDebugJavaResource
+2026-10-24T22:30:30.6597645Z > Task :capacitor-share:checkDebugAarMetadata
+2026-10-24T22:30:30.6598372Z > Task :capacitor-preferences:syncDebugLibJars
+2026-10-24T22:30:30.6599083Z > Task :capacitor-preferences:bundleDebugAar
+2026-10-24T22:30:30.6599772Z > Task :capacitor-preferences:assembleDebug
+2026-10-24T22:30:30.6600554Z > Task :capacitor-share:stripDebugDebugSymbols NO-SOURCE
+2026-10-24T22:30:30.6601429Z > Task :capacitor-share:copyDebugJniLibsProjectAndLocalJars
+2026-10-24T22:30:30.6602806Z > Task :capacitor-share:extractDebugAnnotations
+2026-10-24T22:30:30.6603637Z > Task :capacitor-share:extractDeepLinksForAarDebug
+2026-10-24T22:30:30.6604491Z > Task :capacitor-share:mergeDebugGeneratedProguardFiles
+2026-10-24T22:30:30.6605385Z > Task :capacitor-share:mergeDebugConsumerProguardFiles
+2026-10-24T22:30:30.6606190Z > Task :capacitor-share:prepareDebugArtProfile
+2026-10-24T22:30:30.6606957Z > Task :capacitor-share:prepareLintJarForPublish
+2026-10-24T22:30:30.6607706Z > Task :capacitor-share:mergeDebugJavaResource
+2026-10-24T22:30:30.6608413Z > Task :capacitor-share:syncDebugLibJars
+2026-10-24T22:30:30.6609078Z > Task :capacitor-share:bundleDebugAar
+2026-10-24T22:30:30.6609724Z > Task :capacitor-share:assembleDebug
+2026-10-24T22:30:30.7513633Z
+2026-10-24T22:30:30.7541374Z [Incubating] Problems report is available at: file:///home/runner/work/nash-ai-markets/nash-ai-markets/android/build/reports/problems/problems-report.html
+2026-10-24T22:30:30.7544610Z
+2026-10-24T22:30:30.7545703Z Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+2026-10-24T22:30:30.7546602Z
+2026-10-24T22:30:30.7547853Z You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+2026-10-24T22:30:30.7551472Z
+2026-10-24T22:30:30.7553173Z For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+2026-10-24T22:30:30.7554446Z
+2026-10-24T22:30:30.7554833Z BUILD SUCCESSFUL in 2m 31s
+2026-10-24T22:30:30.7555512Z 248 actionable tasks: 248 executed
+2026-10-24T22:30:31.0861840Z Post job cleanup.
+2026-10-24T22:30:31.2161948Z (node:3358) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T22:30:31.2163116Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T22:30:31.2386936Z Post job cleanup.
+2026-10-24T22:30:31.3307249Z [command]/usr/bin/git version
+2026-10-24T22:30:31.3352934Z git version 2.55.0
+2026-10-24T22:30:31.3393052Z Temporarily overriding HOME='/home/runner/work/_temp/3a566224-a6a7-4fb4-a3fc-3f587cb33651' before making global git config changes
+2026-10-24T22:30:31.3394728Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T22:30:31.3398250Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T22:30:31.3438923Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T22:30:31.3488983Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T22:30:31.3738123Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T22:30:31.3775988Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T22:30:31.4254631Z Cleaning up orphan processes
+2026-10-24T22:30:31.4597131Z Terminate orphan process: pid (3292) (java)
+2026-10-24T22:30:31.4677405Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

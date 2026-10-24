@@ -1,0 +1,149 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> nash-ai-markets-bullseye@1.0.0-rc.2 build
+> bash scripts/build-verified.sh
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+Running verified vinext build...
+
+  vinext build  (Vite 8.0.16)
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+[vinext] middleware.ts is deprecated in Next.js 16. Rename to proxy.ts and export a default or named proxy function.
+[1/5] analyze client references...
+
+transforming...✓ 875 modules transformed.
+rendering chunks...
+[PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+  - vinext:google-fonts (25%)
+  - rsc:virtual-client-package (22%)
+  - vinext:react-canary (15%)
+  - vinext:jsx-in-js (7%)
+  - rsc:use-client (5%)
+See https://rolldown.rs/options/checks#plugintimings for more details.
+
+✓ built in 1m 21s
+[2/5] analyze server references...
+
+transforming...✓ 357 modules transformed.
+rendering chunks...
+✓ built in 513ms
+[3/5] build rsc environment...
+
+transforming...✓ 1167 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 2.36s
+[4/5] build client environment...
+
+transforming...✓ 385 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 816ms
+[5/5] build ssr environment...
+
+transforming...✓ 399 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 1.18s
+
+  Route (app)
+  ┌ ƒ /
+  ├ ? /about
+  ├ ƒ /admin/commercial
+  ├ ƒ /admin/founding-100
+  ├ ƒ /admin/visual-preview
+  ├ λ /api/auth/redirect-probe
+  ├ λ /api/auth/session
+  ├ λ /api/auth/supabase-config-probe
+  ├ λ /api/founding-member
+  ├ λ /api/ideas
+  ├ λ /api/ideas/:id
+  ├ λ /api/journal
+  ├ λ /api/market/candles
+  ├ λ /api/marketing/visit
+  ├ λ /api/membership/preview
+  ├ λ /api/onboarding
+  ├ λ /api/openai/health
+  ├ λ /api/pocket/analyse
+  ├ λ /api/pocket/apple-account
+  ├ λ /api/pocket/apple-notifications
+  ├ λ /api/pocket/billing-portal
+  ├ λ /api/pocket/build-manifest
+  ├ λ /api/pocket/crypto-derivatives
+  ├ λ /api/pocket/events
+  ├ λ /api/pocket/follow-up
+  ├ λ /api/pocket/google-account
+  ├ λ /api/pocket/ig-demo
+  ├ λ /api/pocket/levels
+  ├ λ /api/pocket/options-wall
+  ├ λ /api/pocket/preflight
+  ├ λ /api/pocket/review
+  ├ λ /api/pocket/subscription-access
+  ├ λ /api/pocket/torture
+  ├ λ /api/profile
+  ├ λ /api/second-opinion
+  ├ λ /api/stripe/checkout
+  ├ λ /api/stripe/portal
+  ├ λ /api/stripe/webhook
+  ├ λ /api/waitlist
+  ├ λ /api/youtube/oauth/callback
+  ├ ƒ /archive
+  ├ ƒ /archive/:date
+  ├ ƒ /auth/callback
+  ├ λ /auth/confirm
+  ├ ? /auth/implicit
+  ├ λ /auth/signout
+  ├ ƒ /brief
+  ├ ? /cancelled
+  ├ ? /contact
+  ├ ƒ /dashboard
+  ├ ƒ /dev/logo-concepts
+  ├ ƒ /dev/terminal-chart
+  ├ ƒ /founding-member
+  ├ ? /help
+  ├ ƒ /ideas
+  ├ ƒ /ideas/:id
+  ├ ? /join
+  ├ ƒ /journal
+  ├ ƒ /launch-preview
+  ├ ? /login
+  ├ ƒ /marketing-preview
+  ├ ? /membership-required
+  ├ ƒ /methodology
+  ├ ? /onboarding
+  ├ ƒ /performance
+  ├ ? /pocket
+  ├ ? /pocket-next
+  ├ ? /pocket/founding
+  ├ ? /pocket/founding/welcome
+  ├ ? /pocket/login
+  ├ ? /preferences
+  ├ ƒ /pricing
+  ├ ? /privacy
+  ├ ƒ /profile
+  ├ ƒ /replay
+  ├ ƒ /results
+  ├ ƒ /review
+  ├ ƒ /reviews
+  ├ ? /risk-disclaimer
+  ├ ƒ /second-opinion
+  ├ ƒ /terminal
+  ├ ƒ /terminal/diagnostics
+  ├ ? /terms
+  ├ ? /waitlist
+  └ ? /welcome
+
+  λ API  ƒ Dynamic  ? Unknown
+
+  ? Some routes could not be classified. vinext currently uses static analysis
+    and cannot detect dynamic API usage (headers(), cookies(), etc.) at build time.
+    Automatic classification will be improved in a future release.
+
+  Build complete. Run `vinext start` to start the production server.
+
+Validated Sites artifact: ESM Worker default.fetch and hosting manifest are present.

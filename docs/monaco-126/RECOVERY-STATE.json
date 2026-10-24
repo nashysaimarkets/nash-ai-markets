@@ -997,5 +997,40 @@
       "Apple account-holder agreements before later submission"
     ],
     "publicationResolution": "Latest Issue126 receipt has exact evidence commit; prior active-writer claims below are historical."
+  },
+  "premiumAndroidCandidate": {
+    "branch": "monaco-premium-android-rc-20261024-baf",
+    "writer": "premium-android-baf",
+    "writerStatus": "RELEASED_AFTER_PUBLICATION",
+    "claim": 6390233378,
+    "parentCheckpoint": "a3f59ad5e7d7ba0b800ee7fd4da8fdf6db1ea8b3",
+    "source": "58eb0f51404567c8914549d5efe84c1509935ec1",
+    "tree": "916be37f7fff600d386e376efd6795624cf94f02",
+    "checkpoint": "docs/ntp/premium-android-rc-2026-10-24/README.md",
+    "tests": {
+      "targetedNode": 70,
+      "premiumRegressions": 38,
+      "browser": 18,
+      "fail": 0,
+      "skip": 0
+    },
+    "ciRun": 40138586652,
+    "ciJob": 121005294627,
+    "productionBuild": "PASS_EXACT_SOURCE",
+    "android": "DEBUG_COMPILE_PASS_NOT_SIGNED_DEVICE",
+    "preview": "OFFLINE_BUILDABLE_NOT_DEPLOYED",
+    "independentReview": "ACCEPTED_OFFLINE_SCOPE",
+    "preserved": "Prior72 checks and genuine PostgreSQL17 multi-backend evidence unchanged",
+    "remainingEngineering": [
+      "Trusted Google bootstrap/OAuth/account-obfuscation/acknowledgement/notification/voided-reconciliation adapters",
+      "IG managed vault/runtime/provenance issuer configuration"
+    ],
+    "externalGates": [
+      "DEMO enablement/rights",
+      "matching private signed iPhone/Android packages and devices",
+      "commercial data/display permissions"
+    ],
+    "schedules": "OFF",
+    "publicationResolution": "Final Issue126 receipt contains evidence SHA; earlier writer claims are historical."
   }
 }
