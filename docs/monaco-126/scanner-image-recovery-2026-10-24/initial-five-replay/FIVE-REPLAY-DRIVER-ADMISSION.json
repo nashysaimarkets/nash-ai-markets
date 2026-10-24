@@ -1,0 +1,26 @@
+{
+  "kind": "FROZEN_FIVE_REPLAY_DRIVER_ADMISSION",
+  "sourceCommit": "156417b4443068309a33c3364438948499775fad",
+  "publishedDriverSha256": "e3ebd7e9a6e78f4e85f11e1ad6b344126e36bcdf5696e4d390695cd955e87f6e",
+  "reportingDriverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+  "productionFilesChanged": false,
+  "changes": [
+    "Resolve locked packages from sourceRoot while this evidence driver lives outside the worktree",
+    "Require retained paired inputs; no synthetic/default input",
+    "Retain actual browser outcomes without d001-specific positive/legacy-null assertions",
+    "Mark completed observation RECORDED, never accuracy PASS",
+    "Bound wait at55s for the existing legacy-then-recovery paths"
+  ],
+  "cases": [
+    "d002",
+    "d003",
+    "d004",
+    "d005",
+    "d006"
+  ],
+  "d005Disposition": "Current published collector/selector is ineligible; record HOLD without OCR",
+  "oraclePassedToRuntime": false,
+  "newProviderCalls": 0,
+  "paidCaseDispatchAuthorised": false,
+  "heldOut44": "UNTOUCHED"
+}

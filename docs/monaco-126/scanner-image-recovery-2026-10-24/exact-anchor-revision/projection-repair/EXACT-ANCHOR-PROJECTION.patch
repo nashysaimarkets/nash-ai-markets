@@ -1,0 +1,23 @@
+--- pre-fix/app/pocket/image-axis-verification.ts
++++ candidate/app/pocket/image-axis-verification.ts
+@@ -161,8 +161,18 @@
+   const levels: ImagePlacedPriceCandidate[] = candidates.levels.flatMap(candidate => {
+     const value = exactAxisPrice(candidate.price);
+     if (value === null || value < minimum || value > maximum) return [];
+-    const y = scale.row(value), rowPixels = y * region.height / 100;
+-    if (!finite(y) || rowPixels < p.top || rowPixels > p.bottom) return [];
++    // A price exactly printed at a verified tick already has an observed row.
++    // The fitted line may cross just outside an edge despite its valid residual.
++    // Use strict equality, never the corroboration epsilon or a nearest price.
++    const anchor = checked.anchors.find(observed => observed.price === value);
++    const y = anchor ? anchor.y : scale.row(value);
++    // Recover the row actually used by the reverified anchor. Containment must
++    // use original pixels, not a lossy percent->pixel round trip at a boundary.
++    // Missing exact evidence stays held; other prices retain the existing fit.
++    const rowPixels = anchor
++      ? checked.region.axisLabelRegionPixels.matchedGridRows.find(row => row / region.height * 100 === anchor.y)
++      : y * region.height / 100;
++    if (!finite(y) || !finite(rowPixels) || rowPixels < p.top || rowPixels > p.bottom) return [];
+     return [{ kind: candidate.kind, label: candidate.label, price: candidate.price, provenance: "UNVERIFIED" as const,
+       source: "PRIMARY" as const, placement: "IMAGE_AXIS" as const, x: p.left / region.width * 100, x2: p.right / region.width * 100, y, y2: y }];
+   });

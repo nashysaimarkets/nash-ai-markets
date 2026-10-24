@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: exact observed tick prices retain top and bottom rows despite fitted overshoot and percent roundoff
+not ok 1 - exact observed tick prices retain top and bottom rows despite fitted overshoot and percent roundoff
+  ---
+  duration_ms: 7.891382
+  type: 'test'
+  location: '/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/pocket-image-axis-verification.test.ts:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 4
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 4
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/pocket-image-axis-verification.test.ts:55:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1402:25)
+    Test.start (node:internal/test_runner/test:1262:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+  ...
+# Subtest: near-but-unequal and out-of-domain boundary prices are never snapped to observed ticks
+ok 2 - near-but-unequal and out-of-domain boundary prices are never snapped to observed ticks
+  ---
+  duration_ms: 4.977432
+  type: 'test'
+  ...
+# Subtest: non-anchor candidate prices retain the existing global linear interpolation
+ok 3 - non-anchor candidate prices retain the existing global linear interpolation
+  ---
+  duration_ms: 0.380315
+  type: 'test'
+  ...
+# Subtest: exact tick matching cannot bypass retained-evidence and confidence checks
+ok 4 - exact tick matching cannot bypass retained-evidence and confidence checks
+  ---
+  duration_ms: 0.6397
+  type: 'test'
+  ...
+# Subtest: an observed exact tick outside the plot stays held instead of being clipped to a boundary
+ok 5 - an observed exact tick outside the plot stays held instead of being clipped to a boundary
+  ---
+  duration_ms: 1.318841
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 4
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 36.626011

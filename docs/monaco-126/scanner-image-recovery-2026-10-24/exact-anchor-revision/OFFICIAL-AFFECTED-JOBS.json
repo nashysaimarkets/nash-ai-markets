@@ -1,0 +1,137 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 120900470073,
+      "run_id": 40103559042,
+      "workflow_name": "Pocket scanner image recovery affected acceptance",
+      "head_branch": "monaco-scanner-image-geometry-126-20261024",
+      "run_url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/actions/runs/40103559042",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOTWGF-c8AAAAcJjrFOQ",
+      "head_sha": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/actions/jobs/120900470073",
+      "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40103559042/job/120900470073",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-24T14:40:35Z",
+      "started_at": "2026-10-24T14:40:38Z",
+      "completed_at": "2026-10-24T14:42:39Z",
+      "name": "image-recovery",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-24T14:40:39Z",
+          "completed_at": "2026-10-24T14:40:39Z"
+        },
+        {
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-24T14:40:39Z",
+          "completed_at": "2026-10-24T14:40:41Z"
+        },
+        {
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-24T14:40:41Z",
+          "completed_at": "2026-10-24T14:40:47Z"
+        },
+        {
+          "name": "Confirm exact source and disabled automatic deployment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-24T14:40:47Z",
+          "completed_at": "2026-10-24T14:40:48Z"
+        },
+        {
+          "name": "Install unchanged locked dependencies and local OCR assets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-24T14:40:48Z",
+          "completed_at": "2026-10-24T14:41:04Z"
+        },
+        {
+          "name": "Verify affected recovery and legacy consumers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-24T14:41:04Z",
+          "completed_at": "2026-10-24T14:41:08Z"
+        },
+        {
+          "name": "Check complete source integration",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-24T14:41:08Z",
+          "completed_at": "2026-10-24T14:41:29Z"
+        },
+        {
+          "name": "Exercise both mounted image lifecycles and actual browser OCR",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-24T14:41:29Z",
+          "completed_at": "2026-10-24T14:41:42Z"
+        },
+        {
+          "name": "Compile production Next application",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-24T14:41:42Z",
+          "completed_at": "2026-10-24T14:42:37Z"
+        },
+        {
+          "name": "Retain exact-source acceptance receipts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-24T14:42:37Z",
+          "completed_at": "2026-10-24T14:42:37Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-24T14:42:38Z",
+          "completed_at": "2026-10-24T14:42:38Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-24T14:42:38Z",
+          "completed_at": "2026-10-24T14:42:38Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-24T14:42:38Z",
+          "completed_at": "2026-10-24T14:42:38Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/check-runs/120900470073",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000634,
+      "runner_name": "GitHub Actions 1000000634",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

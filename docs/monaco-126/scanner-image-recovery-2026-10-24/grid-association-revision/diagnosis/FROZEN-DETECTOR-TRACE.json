@@ -1,0 +1,771 @@
+{
+  "kind": "FROZEN_PIXEL_DETECTOR_BRANCH_DIAGNOSIS",
+  "sourceSha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+  "cases": [
+    {
+      "caseId": "d002",
+      "imageSha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+      "result": {
+        "status": "held",
+        "reason": "NO_COHERENT_GRID_RECTANGLE"
+      },
+      "trace": {
+        "edges": [
+          {
+            "rows": [
+              212,
+              300,
+              475,
+              563,
+              650
+            ],
+            "left": 91,
+            "right": 1249,
+            "leftEdges": [],
+            "rightEdges": []
+          }
+        ],
+        "grids": [],
+        "horizontal": [
+          {
+            "left": 91,
+            "right": 1356,
+            "y": 125
+          },
+          {
+            "left": 91,
+            "right": 1335,
+            "y": 125
+          },
+          {
+            "left": 91,
+            "right": 1326,
+            "y": 212
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 212
+          },
+          {
+            "left": 91,
+            "right": 1269,
+            "y": 300
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 300
+          },
+          {
+            "left": 91,
+            "right": 1289,
+            "y": 388
+          },
+          {
+            "left": 91,
+            "right": 1335,
+            "y": 388
+          },
+          {
+            "left": 91,
+            "right": 1325,
+            "y": 475
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 475
+          },
+          {
+            "left": 91,
+            "right": 1269,
+            "y": 563
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 563
+          },
+          {
+            "left": 91,
+            "right": 1347,
+            "y": 650
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 650
+          }
+        ],
+        "strongBands": [
+          {
+            "left": 91,
+            "right": 1356,
+            "y": 125
+          },
+          {
+            "left": 91,
+            "right": 1335,
+            "y": 125
+          },
+          {
+            "left": 91,
+            "right": 1326,
+            "y": 212
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 212
+          },
+          {
+            "left": 91,
+            "right": 1269,
+            "y": 300
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 300
+          },
+          {
+            "left": 91,
+            "right": 1289,
+            "y": 388
+          },
+          {
+            "left": 91,
+            "right": 1335,
+            "y": 388
+          },
+          {
+            "left": 91,
+            "right": 1325,
+            "y": 475
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 475
+          },
+          {
+            "left": 91,
+            "right": 1269,
+            "y": 563
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 563
+          },
+          {
+            "left": 91,
+            "right": 1347,
+            "y": 650
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 650
+          }
+        ],
+        "groups": [
+          [
+            {
+              "left": 91,
+              "right": 1356,
+              "y": 125
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1335,
+              "y": 125
+            },
+            {
+              "left": 91,
+              "right": 1335,
+              "y": 388
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1326,
+              "y": 212
+            },
+            {
+              "left": 91,
+              "right": 1325,
+              "y": 475
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 212
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 300
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 475
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 563
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 650
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1269,
+              "y": 300
+            },
+            {
+              "left": 91,
+              "right": 1269,
+              "y": 563
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1289,
+              "y": 388
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1347,
+              "y": 650
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "caseId": "d003",
+      "imageSha256": "b381e53f95db0e82937db5fc0667f8fb9fd2052c1f1a8b1497602d6ff1e2edce",
+      "result": {
+        "status": "held",
+        "reason": "NO_COHERENT_GRID_RECTANGLE"
+      },
+      "trace": {
+        "edges": [
+          {
+            "rows": [
+              213,
+              300,
+              475,
+              562
+            ],
+            "left": 91,
+            "right": 1270,
+            "leftEdges": [],
+            "rightEdges": []
+          }
+        ],
+        "grids": [],
+        "horizontal": [
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 125
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 213
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 300
+          },
+          {
+            "left": 91,
+            "right": 1306,
+            "y": 388
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 475
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 562
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 650
+          }
+        ],
+        "strongBands": [
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 125
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 213
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 300
+          },
+          {
+            "left": 91,
+            "right": 1306,
+            "y": 388
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 475
+          },
+          {
+            "left": 91,
+            "right": 1270,
+            "y": 562
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 650
+          }
+        ],
+        "groups": [
+          [
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 125
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 650
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1270,
+              "y": 213
+            },
+            {
+              "left": 91,
+              "right": 1270,
+              "y": 300
+            },
+            {
+              "left": 91,
+              "right": 1270,
+              "y": 475
+            },
+            {
+              "left": 91,
+              "right": 1270,
+              "y": 562
+            }
+          ],
+          [
+            {
+              "left": 91,
+              "right": 1306,
+              "y": 388
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "caseId": "d004",
+      "imageSha256": "d2277fadcea7c84ab500614f9d69e1ae7a7acae4b28f4e8cc6ec428711a640f7",
+      "result": {
+        "status": "held",
+        "reason": "NO_COHERENT_GRID_RECTANGLE"
+      },
+      "trace": {
+        "edges": [
+          {
+            "rows": [
+              105,
+              202,
+              300,
+              398,
+              495,
+              592,
+              690
+            ],
+            "left": 90,
+            "right": 1250,
+            "leftEdges": [
+              {
+                "x": 90,
+                "top": 105,
+                "bottom": 690
+              }
+            ],
+            "rightEdges": [
+              {
+                "x": 1250,
+                "top": 105,
+                "bottom": 690
+              }
+            ]
+          }
+        ],
+        "grids": [
+          {
+            "plot": {
+              "left": 90,
+              "right": 1250,
+              "top": 105,
+              "bottom": 690
+            },
+            "rows": [
+              202,
+              300.00000000000006,
+              398,
+              495.00000000000006,
+              591.9999999999999
+            ],
+            "missingTop": true,
+            "missingBottom": true
+          }
+        ],
+        "horizontal": [
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 105
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 202
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 300
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 398
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 495
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 592
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 690
+          }
+        ],
+        "strongBands": [
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 105
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 202
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 300
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 398
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 495
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 592
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 690
+          }
+        ],
+        "groups": [
+          [
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 105
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 202
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 300
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 398
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 495
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 592
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 690
+            }
+          ]
+        ],
+        "rectangles": [
+          {
+            "left": 90,
+            "right": 1250,
+            "top": 105,
+            "bottom": 690
+          }
+        ]
+      }
+    },
+    {
+      "caseId": "d006",
+      "imageSha256": "9029b022e8fa31139bf0abd98998a75c5e70948f40b1e66c634bda927b592eef",
+      "result": {
+        "status": "held",
+        "reason": "NO_COHERENT_GRID_RECTANGLE"
+      },
+      "trace": {
+        "edges": [
+          {
+            "rows": [
+              105,
+              202,
+              300,
+              398,
+              495,
+              592,
+              690
+            ],
+            "left": 90,
+            "right": 1250,
+            "leftEdges": [
+              {
+                "x": 90,
+                "top": 105,
+                "bottom": 690
+              }
+            ],
+            "rightEdges": [
+              {
+                "x": 1250,
+                "top": 105,
+                "bottom": 690
+              }
+            ]
+          }
+        ],
+        "grids": [
+          {
+            "plot": {
+              "left": 90,
+              "right": 1250,
+              "top": 105,
+              "bottom": 690
+            },
+            "rows": [
+              202,
+              300.00000000000006,
+              398,
+              495.00000000000006,
+              591.9999999999999
+            ],
+            "missingTop": true,
+            "missingBottom": true
+          }
+        ],
+        "horizontal": [
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 105
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 202
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 300
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 398
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 495
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 592
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 690
+          }
+        ],
+        "strongBands": [
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 105
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 202
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 300
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 398
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 495
+          },
+          {
+            "left": 90,
+            "right": 1250,
+            "y": 592
+          },
+          {
+            "left": 91,
+            "right": 1249,
+            "y": 690
+          }
+        ],
+        "groups": [
+          [
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 105
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 202
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 300
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 398
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 495
+            },
+            {
+              "left": 90,
+              "right": 1250,
+              "y": 592
+            },
+            {
+              "left": 91,
+              "right": 1249,
+              "y": 690
+            }
+          ]
+        ],
+        "rectangles": [
+          {
+            "left": 90,
+            "right": 1250,
+            "top": 105,
+            "bottom": 690
+          }
+        ]
+      }
+    }
+  ],
+  "sourceEdited": false,
+  "pixelThresholdsChanged": false,
+  "calibrationReads": 0,
+  "oracleReads": 0,
+  "bundleReads": 0,
+  "heldOutReads": 0,
+  "providerCalls": 0,
+  "networkCalls": 0,
+  "databaseCalls": 0
+}

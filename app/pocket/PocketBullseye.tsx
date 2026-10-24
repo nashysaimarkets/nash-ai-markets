@@ -4,6 +4,7 @@ import {canOverlayLevelLab,type LevelLabSource} from "./level-lab-source";
 import OriginalChartEvidence from "./OriginalChartEvidence";
 import { useOriginalChartMeasurement } from "./use-original-chart-measurement";
 import { sourceLevelPlacement, type OriginalChartMeasurement, type SourceLevelPlacement } from "./source-placement";
+import type { SourcePriceCandidates } from "./source-price-candidates";
 import NativeSubscriptionControls from "./NativeSubscriptionControls";
 import { pocketAuthenticatedFetch } from "./apple-storekit";
 
@@ -85,6 +86,7 @@ type Analysis = {
   relevantEventTypes: string[];
   plotBounds?: { left: number; top: number; right: number; bottom: number };
   priceScaleAnchors?: { price: number; y: number }[];
+  sourcePriceCandidates?: SourcePriceCandidates;
   currentPrice?: string;
   levels: Level[];
   contextBattlefield?: { currentPrice?: string; levels: Level[]; priceScaleAnchors?: { price: number; y: number }[]; plotBounds?: { left: number; top: number; right: number; bottom: number } } | null;

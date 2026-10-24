@@ -1,0 +1,146 @@
+{
+  "kind": "COMBINED_GRID_AND_EXACT_ANCHOR_PREPUBLICATION_SOURCE",
+  "createdAtUtc": "2026-10-24T14:37:15.510453+00:00",
+  "parentCommit": "7e8acec2d2f12734a4b570b0743f683be9c190d6",
+  "parentTree": "516543d233c2534a66f82b6134b6ff2a06f63d98",
+  "historicalSourceCommit": "156417b4443068309a33c3364438948499775fad",
+  "branch": "monaco-scanner-image-geometry-126-20261024",
+  "sourceFiles": [
+    {
+      "path": "app/api/pocket/analyse/route.ts",
+      "bytes": 41468,
+      "sha256": "4fe1cf78d907ee233e67013e3c5251dbc6ab6fc1cd20b960039bf10d6b6045bc"
+    },
+    {
+      "path": "app/pocket/PocketBullseye.tsx",
+      "bytes": 133166,
+      "sha256": "914f9a49c85027297479fd638dafd3365ceb2b3dea597ff3495f76de0145279c"
+    },
+    {
+      "path": "app/pocket/level-provenance.ts",
+      "bytes": 1811,
+      "sha256": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3"
+    },
+    {
+      "path": "app/pocket/original-pixel-levels.ts",
+      "bytes": 4555,
+      "sha256": "cb292b9dca085363455c06fa161ffd0c78ac0a095141d0075841c6212949efe8"
+    },
+    {
+      "path": "app/pocket/source-placement.ts",
+      "bytes": 3751,
+      "sha256": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542"
+    },
+    {
+      "path": "app/pocket/use-original-chart-measurement.ts",
+      "bytes": 5367,
+      "sha256": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260"
+    },
+    {
+      "path": "app/pocket/browser-image-axis-ocr.ts",
+      "bytes": 5083,
+      "sha256": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c"
+    },
+    {
+      "path": "app/pocket/image-axis-verification.ts",
+      "bytes": 14820,
+      "sha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3"
+    },
+    {
+      "path": "app/pocket/image-plot-region.ts",
+      "bytes": 20620,
+      "sha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48"
+    },
+    {
+      "path": "app/pocket/source-price-candidates.ts",
+      "bytes": 5496,
+      "sha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50"
+    },
+    {
+      "path": "tests/pocket-browser-image-axis-ocr.test.mjs",
+      "bytes": 5228,
+      "sha256": "27a9ca071ee2257288fa77849bfaca5c5a38a5fbf16d5f1f70cb094cde5003a8"
+    },
+    {
+      "path": "tests/pocket-image-axis-verification.test.ts",
+      "bytes": 20377,
+      "sha256": "f9486479c2c024088323abc0186dbf168ebae4a575a8769730911c9f33cfcdcf"
+    },
+    {
+      "path": "tests/pocket-image-plot-region.test.ts",
+      "bytes": 9036,
+      "sha256": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2"
+    },
+    {
+      "path": "tests/pocket-image-recovery-integration.test.ts",
+      "bytes": 12231,
+      "sha256": "04b258de3e4a8d19a40268e19d7643654664ad120bc587b075569bb0b6bdfe61"
+    },
+    {
+      "path": "tests/pocket-source-level-candidates.test.ts",
+      "bytes": 7178,
+      "sha256": "6d17156f2a222dfd471a56f4bc3af727af6f8c7da49bcb1aae14dec54ecabd5e"
+    },
+    {
+      "path": "tests/run-pocket-image-recovery-browser.mjs",
+      "bytes": 18498,
+      "sha256": "32d840cc5b758d29e8685cb4d07aee34d10f83ae5834c358101f7b86f4a7c4b5"
+    },
+    {
+      "path": "tests/support/pocket-image-plot-raster.ts",
+      "bytes": 4975,
+      "sha256": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a"
+    },
+    {
+      "path": "tests/support/pocket-image-recovery-browser.tsx",
+      "bytes": 10605,
+      "sha256": "e85b50c897346b0f19b853bf7f4f266d84ee68c260d84a008ed11a79ecd43e41"
+    },
+    {
+      "path": "scripts/verify-pocket-image-recovery-browser.mjs",
+      "bytes": 11362,
+      "sha256": "e3ebd7e9a6e78f4e85f11e1ad6b344126e36bcdf5696e4d390695cd955e87f6e"
+    },
+    {
+      "path": "scripts/verify-pocket-scanner-image-recovery.mjs",
+      "bytes": 2603,
+      "sha256": "590d1a520963d0594513217ef908e736d8ab296150763ddea836fe75be13a7a3"
+    },
+    {
+      "path": ".github/workflows/pocket-scanner-image-recovery-qa.yml",
+      "bytes": 3521,
+      "sha256": "1b9d0b9013d9a0a8ae38f59c1415cf1d1b07fda8e6d2fd5e72389fbdad2ce337"
+    },
+    {
+      "path": "vercel.json",
+      "bytes": 1392,
+      "sha256": "705fa2d8e53aa96571fb8d13cd60ff0def1e330a67386390aee0c158952e60d6"
+    }
+  ],
+  "changedFiles": [
+    "app/pocket/image-plot-region.ts",
+    "tests/pocket-image-plot-region.test.ts",
+    "tests/support/pocket-image-plot-raster.ts",
+    "app/pocket/image-axis-verification.ts",
+    "tests/pocket-image-axis-verification.test.ts"
+  ],
+  "browserRuntimeSourceHashes": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/pocket/use-original-chart-measurement.ts": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+    "app/pocket/source-placement.ts": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+    "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+    "app/pocket/image-plot-region.ts": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "app/pocket/image-axis-verification.ts": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+    "app/pocket/browser-image-axis-ocr.ts": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+    "app/pocket/level-provenance.ts": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+    "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4"
+  },
+  "productionSourceFrozen": true,
+  "hostedAcceptance": "PENDING",
+  "providerCalls": 0,
+  "paidCases": "HOLD",
+  "heldOut44": "UNTOUCHED",
+  "productionDeployment": false,
+  "mainMerge": false,
+  "schedules": "OFF"
+}

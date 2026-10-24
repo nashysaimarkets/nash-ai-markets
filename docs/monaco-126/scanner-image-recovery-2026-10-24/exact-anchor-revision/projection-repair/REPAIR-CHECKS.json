@@ -1,0 +1,72 @@
+{
+  "kind": "EXACT_OBSERVED_ANCHOR_PROJECTION_REPAIR_CHECKS",
+  "status": "FROZEN_READY_FOR_INDEPENDENT_SOURCE_REVIEW",
+  "baselineHelperSha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+  "sourceFiles": [
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/app/pocket/image-axis-verification.ts",
+      "sha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3"
+    },
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/pocket-image-axis-verification.test.ts",
+      "sha256": "f9486479c2c024088323abc0186dbf168ebae4a575a8769730911c9f33cfcdcf"
+    }
+  ],
+  "red": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/exact-anchor-projection/RED-RECEIPT.json",
+    "sha256": "f96f80a82042d7a18e50435bd91e67ee13fa081839b0f86b283f98e7dfe9ecae"
+  },
+  "redTap": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/exact-anchor-projection/SYNTHETIC-RED.tap",
+    "sha256": "9632a37afcf01f2e5c17eaf1da4d2e9a19ce98152b76c670be6491ca05dfcf3b"
+  },
+  "green": {
+    "command": "node --test-reporter=tap tests/pocket-image-axis-verification.test.ts",
+    "exitCode": 0,
+    "checks": 19,
+    "passed": 19,
+    "failed": 0,
+    "skipped": 0,
+    "tap": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/exact-anchor-projection/SYNTHETIC-GREEN.tap",
+      "sha256": "ca2691688cf157d968c7ecc330423afe783af7b11163e2b5e16980ad19187637"
+    }
+  },
+  "strictTypeScript": {
+    "command": "node /tmp/pocket-scanner-repair-deps/node_modules/typescript/lib/tsc.js --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions --strict --skipLibCheck --lib ES2023,DOM --typeRoots /tmp/pocket-scanner-repair-deps/node_modules/@types --types node app/pocket/image-axis-verification.ts tests/pocket-image-axis-verification.test.ts",
+    "exitCode": 0,
+    "log": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/exact-anchor-projection/STRICT-TS.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "diff": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/exact-anchor-projection/EXACT-ANCHOR-PROJECTION.patch",
+    "sha256": "534b42d74cf53c9835f5d349031166d873b58ac23f120ff7e81054786f96c0f9"
+  },
+  "policy": [
+    "All existing candidate, identity, retained-region, OCR-evidence, residual and price-domain guards run before the new branch.",
+    "Only strict parsed-number equality to a reverified anchor selects an observed row; samePrice epsilon is not used.",
+    "The matching original row comes from reverified matchedGridRows by exact equality of its forward percentage conversion to anchor.y. Missing exact row evidence abstains.",
+    "Containment uses that original measured row, avoiding a false outside result from percent-to-pixel roundoff.",
+    "Non-anchor prices keep the unchanged global linear fit. No clipping, extrapolation or nearest-price substitution.",
+    "Exact interior tick candidates also use their observed rows; final real-image metrics must be remeasured and cannot inherit pre-fix fitted-row numbers."
+  ],
+  "unchangedDetectorFiles": {
+    "app/pocket/image-plot-region.ts": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "tests/pocket-image-plot-region.test.ts": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2",
+    "tests/support/pocket-image-plot-raster.ts": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a"
+  },
+  "fitThresholdOriginalPixels": 1.5,
+  "diagnosticToleranceChanged": false,
+  "candidateProvenance": "UNVERIFIED",
+  "privateRasterReads": 0,
+  "calibrationReads": 0,
+  "bundleReads": 0,
+  "heldOutReads": 0,
+  "actualBrowserRuns": 0,
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "remoteWrites": 0,
+  "remaining": "Root performs fresh actual-browser replays after independent source acceptance; the synthetic pass is not a new real-image accuracy result."
+}

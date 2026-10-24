@@ -1,0 +1,199 @@
+{
+  "kind": "INDEPENDENT_GRID_ASSOCIATION_SOURCE_ACCEPTANCE",
+  "createdAt": "2026-10-24T14:25:09.098755+00:00",
+  "reviewer": "scanner_independent_review",
+  "status": "PASS_NARROW_SOURCE_REPAIR_AND_RECORDED_SYNTHETIC_CONTROLS",
+  "historicalSource": {
+    "commit": "156417b4443068309a33c3364438948499775fad",
+    "detectorSha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+    "acceptanceBoundary": "Prior exact-source CI remains historical to revision 156417. This changed detector has not yet received hosted CI or retained-image replay acceptance."
+  },
+  "candidateSourcePins": {
+    "app/pocket/image-plot-region.ts": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "tests/pocket-image-plot-region.test.ts": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2",
+    "tests/support/pocket-image-plot-raster.ts": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a"
+  },
+  "allThreeFrozenSnapshotsMatchCurrentSource": true,
+  "baselinePublicationManifestSha256": "5ce1490b1ae8a2cece9c37f91c91e7ef40829e42e57461a42c3ef2f5517dc3fe",
+  "baselineManifestComparison": {
+    "changedFiles": [
+      {
+        "path": "app/pocket/image-plot-region.ts",
+        "beforeSha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+        "afterSha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48"
+      },
+      {
+        "path": "tests/pocket-image-plot-region.test.ts",
+        "beforeSha256": "a3fc5ed207405148b41dcf91fd61a18fa3b6bd8aeb2e7ee273e12f41e6eafa4f",
+        "afterSha256": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2"
+      },
+      {
+        "path": "tests/support/pocket-image-plot-raster.ts",
+        "beforeSha256": "0e9e6eca0ca27ed15b4a41484094f01f1f648d96f06de013c5c56e136db13547",
+        "afterSha256": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a"
+      }
+    ],
+    "unchangedFileCount": 19,
+    "unchangedFiles": [
+      {
+        "path": "app/api/pocket/analyse/route.ts",
+        "sha256": "4fe1cf78d907ee233e67013e3c5251dbc6ab6fc1cd20b960039bf10d6b6045bc"
+      },
+      {
+        "path": "app/pocket/PocketBullseye.tsx",
+        "sha256": "914f9a49c85027297479fd638dafd3365ceb2b3dea597ff3495f76de0145279c"
+      },
+      {
+        "path": "app/pocket/level-provenance.ts",
+        "sha256": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3"
+      },
+      {
+        "path": "app/pocket/original-pixel-levels.ts",
+        "sha256": "cb292b9dca085363455c06fa161ffd0c78ac0a095141d0075841c6212949efe8"
+      },
+      {
+        "path": "app/pocket/source-placement.ts",
+        "sha256": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542"
+      },
+      {
+        "path": "app/pocket/use-original-chart-measurement.ts",
+        "sha256": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260"
+      },
+      {
+        "path": "app/pocket/browser-image-axis-ocr.ts",
+        "sha256": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c"
+      },
+      {
+        "path": "app/pocket/image-axis-verification.ts",
+        "sha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2"
+      },
+      {
+        "path": "app/pocket/source-price-candidates.ts",
+        "sha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50"
+      },
+      {
+        "path": "tests/pocket-browser-image-axis-ocr.test.mjs",
+        "sha256": "27a9ca071ee2257288fa77849bfaca5c5a38a5fbf16d5f1f70cb094cde5003a8"
+      },
+      {
+        "path": "tests/pocket-image-axis-verification.test.ts",
+        "sha256": "695357b6637e9074b7251d51d6175910b3a80e446830fc0a9c7a5e55354e6bb7"
+      },
+      {
+        "path": "tests/pocket-image-recovery-integration.test.ts",
+        "sha256": "04b258de3e4a8d19a40268e19d7643654664ad120bc587b075569bb0b6bdfe61"
+      },
+      {
+        "path": "tests/pocket-source-level-candidates.test.ts",
+        "sha256": "6d17156f2a222dfd471a56f4bc3af727af6f8c7da49bcb1aae14dec54ecabd5e"
+      },
+      {
+        "path": "tests/run-pocket-image-recovery-browser.mjs",
+        "sha256": "32d840cc5b758d29e8685cb4d07aee34d10f83ae5834c358101f7b86f4a7c4b5"
+      },
+      {
+        "path": "tests/support/pocket-image-recovery-browser.tsx",
+        "sha256": "e85b50c897346b0f19b853bf7f4f266d84ee68c260d84a008ed11a79ecd43e41"
+      },
+      {
+        "path": "scripts/verify-pocket-image-recovery-browser.mjs",
+        "sha256": "e3ebd7e9a6e78f4e85f11e1ad6b344126e36bcdf5696e4d390695cd955e87f6e"
+      },
+      {
+        "path": "scripts/verify-pocket-scanner-image-recovery.mjs",
+        "sha256": "590d1a520963d0594513217ef908e736d8ab296150763ddea836fe75be13a7a3"
+      },
+      {
+        "path": ".github/workflows/pocket-scanner-image-recovery-qa.yml",
+        "sha256": "1b9d0b9013d9a0a8ae38f59c1415cf1d1b07fda8e6d2fd5e72389fbdad2ce337"
+      },
+      {
+        "path": "vercel.json",
+        "sha256": "705fa2d8e53aa96571fb8d13cd60ff0def1e330a67386390aee0c158952e60d6"
+      }
+    ]
+  },
+  "unchangedLegacyReaders": {
+    "app/pocket/chart-grid-rows.ts": "3e330814d35db34f2cc133f01682391887c5b9fdae222ed491d6df161eb326d8",
+    "app/pocket/candle-pixels.ts": "8d24704b57cdba0d4fc4dbe575cc2ebcb45014a763ac76c8b54a7906513b2361"
+  },
+  "authorReceiptSha256": "eea717557d8c423af9e7e6b41f5400af01a021eb1da1864617349144aa0da8e1",
+  "productionPatchSha256": "84b6d69890bd8a0b812d44c55b344e4a2e94ffe35756707d3f98a2f988e54287",
+  "reviewedSourceSemantics": [
+    "Horizontal runs keep their maximum-gap and coverage limits, while gaps greater than five pixels now require observed red/green color in every missing column within y plus or minus four. The condition is a stricter association gate, not evidence inferred from one unrelated colored point.",
+    "The orthogonal vertical-edge scan, endpoint grouping and rectangle generation remain unchanged. Both top and bottom additionally require an observed strong horizontal band at that exact row, spanning to within the existing edge-search neighborhood of the measured sides.",
+    "Only missing, already measured outer border rows complement the legacy sampler. Every returned interior row remains in the complete sequence before the unchanged minimum-row and uniform-pitch checks. No synthetic interior rule or chosen regular subset is added.",
+    "Candle count/span, blank-gutter, stacked price-series, common-baseline volume, competing price-panel and axis-column ambiguity checks remain active. Source pixels are read without mutation.",
+    "The new bridge loop examines at most nine neighboring rows for each missing column in each of three contrast bands; it introduces no new unbounded pair search. The original four-million-pixel, horizontal-run, rectangle, candle and colored-component budgets remain unchanged.",
+    "No model ROI, case identity, reference coordinates, OCR prices, reference calibration or image-specific geometry enters the detector. No legacy grid/candle reader, OCR/axis fit policy, scale/unit conversion, semantic authority or one-original-pixel acceptance tolerance was changed."
+  ],
+  "syntheticEvidence": {
+    "redControls": {
+      "tests": 3,
+      "pass": 1,
+      "fail": 2,
+      "cancelled": 0,
+      "skipped": 0,
+      "individualOk": 1,
+      "individualNotOk": 2
+    },
+    "redMeaning": "Two intended recognition failures on the frozen detector; missing-horizontal-border negative control already passed. Failures were assertions, not import/runtime errors.",
+    "green": {
+      "tests": 18,
+      "pass": 18,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "individualOk": 18,
+      "individualNotOk": 0
+    },
+    "distinctCount": "18 tests total = 15 existing + 3 new; not an additional 18 on top of this same suite.",
+    "newCases": [
+      "Antialiased axis fringes: light and dark backgrounds, left and right axes, exact expected borders.",
+      "Inset panel with seven-tone-unit interior/page difference: exact measured borders and all six rows.",
+      "Either missing horizontal border with side endpoints retained: HOLD."
+    ],
+    "earlierChangedSourceRoundoffFailure": {
+      "summary": {
+        "tests": 18,
+        "pass": 17,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "individualOk": 17,
+        "individualNotOk": 1
+      },
+      "tapSha256": "c2f33ae65b5ff3c3f2da6df0e6b15cd8c8ef667e40741d480fc8fc4dc87359a0",
+      "disposition": "Only the new test assertion was corrected for percentage/pixel floating-point roundoff with less than 1e-9 pixel allowance. This is below the unchanged one-original-pixel diagnostic tolerance; the earlier failure log remains retained."
+    },
+    "strictNarrowTypeScript": {
+      "status": "PASS_RECORDED_EXIT_ZERO",
+      "emptyLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "verifiedEvidenceHashes": {
+      "grid-row-diagnosis/FROZEN-DETECTOR-TRACE.json": "f4799a6ddf8bcd07d7c90d96d8b4e244e51ea2cf73f7fa514cb78222d7c1bb73",
+      "grid-row-diagnosis/SYNTHETIC-RED-RECEIPT.json": "3eb3eb18c832aef64681b1f00ab36e847f04ef0a21a54a71cbf396ea62c2cfb0",
+      "grid-row-diagnosis/SYNTHETIC-RED.tap": "cfeb94366bd6a5265f32f22c68d84196c7495025bd00c84b7a0b97b961a66053",
+      "grid-row-diagnosis/SYNTHETIC-GREEN.tap": "f95e361fd65e346c892b634bd0e644643a8a20375e54315072d46751f7274a88",
+      "grid-row-diagnosis/STRICT-TS.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "nextStepBoundary": "The source is accepted for root to run fresh, separately named actual-browser observations on the retained development images. No result for that replay is asserted here. Preserve the old five initial observations and use grid-association-revision for new evidence.",
+  "limits": [
+    "Historical d002/d003/d004/d006 observations remain terminal HOLD until fresh source-bound results exist.",
+    "d005 remains without eligible exact-price horizontal hints; this detector change cannot invent candidates or verify semantic absence.",
+    "No accuracy, complete-six, held-out, semantic, deployment, physical-device, latency or paid-scope expansion acceptance."
+  ],
+  "reviewerEffects": {
+    "sourceEdits": 0,
+    "testsRun": 0,
+    "browserRuns": 0,
+    "rasterReads": 0,
+    "calibrationReads": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "remoteMutations": 0
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "kind": "INDEPENDENT_IMAGE_PLOT_DETECTOR_FINAL_SOURCE_ACCEPTANCE",
+  "createdAt": "2026-10-24T13:41:56.772043+00:00",
+  "reviewer": "scanner_independent_review",
+  "status": "ACCEPTED_BOUNDED_SOURCE_DETECTOR_FOR_CONTROLLED_INTEGRATION_NOT_ACCURACY_ACCEPTANCE",
+  "source": {
+    "path": "app/pocket/image-plot-region.ts",
+    "sha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7"
+  },
+  "tests": {
+    "path": "tests/pocket-image-plot-region.test.ts",
+    "sha256": "a3fc5ed207405148b41dcf91fd61a18fa3b6bd8aeb2e7ee273e12f41e6eafa4f",
+    "distinct": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "sourceAndRetainedLogIndependentlyVerified": true,
+    "reviewerReruns": 0
+  },
+  "authorReceipt": {
+    "path": "DETECTOR-FINAL-CHECKS.json",
+    "sha256": "b7f85838afe1d31edaac8d2fb0289913c8a61389719863c81d13cb4738c19aa3"
+  },
+  "strictNarrowTypecheck": "PASS_RETAINED_LOG_HASH_VERIFIED",
+  "closedFindings": [
+    {
+      "id": "TOUCHING_PANEL_OUTER_RECTANGLE",
+      "baseline": "INDEPENDENT-TOUCHING-PANELS.json",
+      "baselineSha256": "e71aa63b54ee615143cf092aaf5f6df60a9448b7190a30d74841ad9c0a616147",
+      "resolution": "Observed repeated candle series across an interior grid row or common-baseline flat red/green bar series forces AMBIGUOUS_PRICE_PANELS. It does not choose a subpanel or infer a divider. Both exact independent controls now exist in the author suite and passed."
+    },
+    {
+      "id": "QUADRATIC_COMPONENT_CARDINALITY",
+      "resolution": "Original raster cap is 4000000 pixels with no resizing. More than 256 accepted candle witnesses returns RASTER_TOO_COMPLEX before spread/pair comparisons. Common-baseline scan returns RASTER_TOO_COMPLEX above 1024 colored components or 128 qualifying flat bars before group comparisons. No prefix of evidence is accepted. A dense cluster too narrow for the wide-baseline early exit is now a focused passing HOLD control."
+    }
+  ],
+  "retainedRegression": {
+    "path": "DETECTOR-D001-FINAL-ASSAY.json",
+    "sha256": "00b59ae3397314d4638f7a1086924c22c4b6be8a563847d6f64ed463989a40cb",
+    "baseline": "DETECTOR-D001-ASSAY.json",
+    "baselineSha256": "f3409126930437bae4ce9ae1f358eac0103b8719dc1d75c875aff3b173bd4773",
+    "caseId": "d001",
+    "originalWidth": 1400,
+    "originalHeight": 850,
+    "allFourEdgeErrorsOriginalPixels": 0,
+    "resultIdenticalToFrozenBaseline": true,
+    "reviewMethod": "Read retained source-pinned author assay and script, verified hashes and exact result equality; did not repeat assay or read private image.",
+    "numericOcrPerformed": false,
+    "semanticAccuracyAccepted": false
+  },
+  "sourceAssessment": [
+    "Consumes only original raster and existing grid/candle pixel helpers; no model ROI, source-case identity, oracle, numeric price inputs or provider dependency.",
+    "Observed integer or half-stroke pixel centres are converted to full-image percentages using actual dimensions. There is no inferred unit conversion or repaired bound.",
+    "Ambiguous, unsupported, malformed or over-budget evidence remains held. The added guards only withhold results; neither creates new boundary candidates.",
+    "Measured text-region evidence remains nonnumeric. Subsequent OCR, numeric scale corroboration and current-image identity binding remain prerequisites for any price placement."
+  ],
+  "limits": [
+    "This accepts the specific reviewed bounded detector and closes demonstrated failures, not unique-panel proof for arbitrary images. Supported red/green candles, regular rectangular grids and adjacent glyph columns remain a deliberately narrow class.",
+    "Dense, borderless, clipped, unsupported-color, ambiguous or oversized inputs may hold. No generalization or physical-device performance claim follows from synthetic coverage or one retained development image.",
+    "The new four-million-pixel and component budgets reduce exposure; the detector remains synchronous. No worst-case mobile latency measurement has been made.",
+    "This receipt does not accept browser OCR, axis-policy changes, production route/UI wiring, semantic support/resistance correctness or the complete one-pixel benchmark."
+  ],
+  "reviewerActivity": {
+    "newBaselineSyntheticCounterexamples": 2,
+    "previouslyPassedTestsRerun": 0,
+    "productionEdits": 0,
+    "realOcrRuns": 0,
+    "privateChartReads": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "remoteMutations": 0
+  },
+  "next": "Resolve and review the separate browser OCR evidence-policy findings; then review current-image-bound horizontal placement integration and actual retained OCR result."
+}

@@ -1,0 +1,84 @@
+{
+  "kind": "POCKET_IMAGE_PLOT_ASSOCIATION_REPAIR_CHECKS",
+  "status": "READY_FOR_INDEPENDENT_SOURCE_REVIEW",
+  "acceptedBaselineCommit": "156417b4443068309a33c3364438948499775fad",
+  "acceptedBaselineDetectorSha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+  "sourceFiles": [
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/app/pocket/image-plot-region.ts",
+      "sha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48"
+    },
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/pocket-image-plot-region.test.ts",
+      "sha256": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2"
+    },
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/support/pocket-image-plot-raster.ts",
+      "sha256": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a"
+    }
+  ],
+  "legacyGridReaderUnchanged": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/app/pocket/chart-grid-rows.ts",
+    "sha256": "3e330814d35db34f2cc133f01682391887c5b9fdae222ed491d6df161eb326d8"
+  },
+  "diagnosis": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/grid-row-diagnosis/FROZEN-DETECTOR-TRACE.json",
+    "sha256": "f4799a6ddf8bcd07d7c90d96d8b4e244e51ea2cf73f7fa514cb78222d7c1bb73"
+  },
+  "redControls": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/grid-row-diagnosis/SYNTHETIC-RED-RECEIPT.json",
+    "sha256": "3eb3eb18c832aef64681b1f00ab36e847f04ef0a21a54a71cbf396ea62c2cfb0"
+  },
+  "redTap": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/grid-row-diagnosis/SYNTHETIC-RED.tap",
+    "sha256": "cfeb94366bd6a5265f32f22c68d84196c7495025bd00c84b7a0b97b961a66053"
+  },
+  "green": {
+    "command": "node --test-reporter=tap tests/pocket-image-plot-region.test.ts",
+    "exitCode": 0,
+    "checks": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "tap": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/grid-row-diagnosis/SYNTHETIC-GREEN.tap",
+      "sha256": "f95e361fd65e346c892b634bd0e644643a8a20375e54315072d46751f7274a88"
+    }
+  },
+  "strictTypeScript": {
+    "command": "node /tmp/pocket-scanner-repair-deps/node_modules/typescript/lib/tsc.js --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions --strict --skipLibCheck --lib ES2023,DOM --typeRoots /tmp/pocket-scanner-repair-deps/node_modules/@types --types node app/pocket/image-plot-region.ts tests/pocket-image-plot-region.test.ts",
+    "exitCode": 0,
+    "log": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/grid-row-diagnosis/STRICT-TS.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "changes": [
+    "Horizontal gaps above5pixels retain the existing maximum-gap bound but now require red/green candle pixels in every missing column within the existing y\u00b14 contrast neighborhood. Blank or merely text-fringe gaps no longer join.",
+    "The unchanged orthogonal border scan still determines the rectangle. Both top and bottom must have their own exact-y full-span strong horizontal band near the measured side edges.",
+    "Only missing already-measured outer border rows complement the legacy sampler. Every legacy interior row remains present; total-row, uniform-pitch, candle, ambiguity and complexity checks remain active."
+  ],
+  "unchanged": [
+    "contrast thresholds",
+    "coverage thresholds",
+    "maximum gap allowance",
+    "legacy chartGridRows implementation",
+    "one-original-pixel diagnostic tolerance",
+    "axis fit/word-confidence policy",
+    "4M original-pixel limit",
+    "candle/component/bar count budgets",
+    "stacked/split/volume ambiguity checks",
+    "model requests and provider configuration"
+  ],
+  "testOnlyRoundoffAdjustment": "After the first changed-source run, one new assertion compared291 against290.99999999999994. Its final assertion permits only1e-9pixel floating-point roundoff in the unchanged percentage/pixel conversion. Production accuracy thresholds were not changed; prior failed log retained.",
+  "privateRasterReplaysOnCandidate": 0,
+  "actualOcrRunsOnCandidate": 0,
+  "calibrationReads": 0,
+  "oracleReads": 0,
+  "bundleReads": 0,
+  "heldOutReads": 0,
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "remoteWrites": 0,
+  "nextStep": "Root performs actual-browser replays only after independent source acceptance. No claim is made yet that the four saved images recover on this candidate."
+}

@@ -1,0 +1,60 @@
+{
+  "sourceCommit": "156417b4443068309a33c3364438948499775fad",
+  "results": [
+    {
+      "caseId": "d002",
+      "responseSha256": "5e6f4782358211fa3476e7e0e5874b7a10bca663890f49936a1955a15d918960",
+      "candidateCount": 3,
+      "axisPriceCount": 4,
+      "levelInput": "PRESENT",
+      "rejectedLevels": 1,
+      "recoveryEligible": true,
+      "calibratedLevelCount": 4,
+      "scaleReadable": false
+    },
+    {
+      "caseId": "d003",
+      "responseSha256": "c9e1dd6873208e6669961cbfe509c89107aa6a19f1f89db56bd6d92571b5ad42",
+      "candidateCount": 2,
+      "axisPriceCount": 3,
+      "levelInput": "PRESENT",
+      "rejectedLevels": 1,
+      "recoveryEligible": true,
+      "calibratedLevelCount": 3,
+      "scaleReadable": false
+    },
+    {
+      "caseId": "d004",
+      "responseSha256": "016a49518c06d5ae924201212076ac3145d611e5b297cd522863c55328ec0ad7",
+      "candidateCount": 2,
+      "axisPriceCount": 2,
+      "levelInput": "PRESENT",
+      "rejectedLevels": 1,
+      "recoveryEligible": true,
+      "calibratedLevelCount": 3,
+      "scaleReadable": true
+    },
+    {
+      "caseId": "d005",
+      "responseSha256": "7b5b75c5f92242d4d40c1b5e293b778458450803d90e3e00074fef8a539d8409",
+      "candidateCount": 0,
+      "axisPriceCount": 2,
+      "levelInput": "PRESENT",
+      "rejectedLevels": 3,
+      "recoveryEligible": false,
+      "calibratedLevelCount": 3,
+      "scaleReadable": false
+    },
+    {
+      "caseId": "d006",
+      "responseSha256": "fced81e7db1382663b3110115641ba1353c5dc51bd22fe4e49f535d5e5762f17",
+      "candidateCount": 2,
+      "axisPriceCount": 3,
+      "levelInput": "PRESENT",
+      "rejectedLevels": 1,
+      "recoveryEligible": true,
+      "calibratedLevelCount": 3,
+      "scaleReadable": false
+    }
+  ]
+}

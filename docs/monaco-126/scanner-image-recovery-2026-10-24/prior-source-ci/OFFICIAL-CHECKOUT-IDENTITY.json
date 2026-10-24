@@ -1,0 +1,78 @@
+{
+  "source": {
+    "sha": "156417b4443068309a33c3364438948499775fad",
+    "node_id": "C_kwDOTWGF-doAKDE1NjQxN2I0NDQzMDY4MzA5YTMzYzMzNjQ0Mzg5NDg0OTk3NzVmYWQ",
+    "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/156417b4443068309a33c3364438948499775fad",
+    "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/156417b4443068309a33c3364438948499775fad",
+    "author": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:55:33Z"
+    },
+    "committer": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:55:33Z"
+    },
+    "tree": {
+      "sha": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/trees/471cffe98cea7f53324e81c4ffc5c70d798411fa"
+    },
+    "message": "Recover horizontal price placement from independently measured image pixels (#126)",
+    "parents": [
+      {
+        "sha": "fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "imageGateMerge": {
+    "sha": "61825ecfb7f3e46182a095c8b15d34a5ec1e956c",
+    "node_id": "C_kwDOTWGF-doAKDYxODI1ZWNmYjdmM2U0NjE4MmEwOTVjOGIxNWQzNGE1ZWMxZTk1NmM",
+    "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/61825ecfb7f3e46182a095c8b15d34a5ec1e956c",
+    "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/61825ecfb7f3e46182a095c8b15d34a5ec1e956c",
+    "author": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:56:00Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2026-10-24T13:56:00Z"
+    },
+    "tree": {
+      "sha": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/trees/471cffe98cea7f53324e81c4ffc5c70d798411fa"
+    },
+    "message": "Merge 156417b4443068309a33c3364438948499775fad into fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+    "parents": [
+      {
+        "sha": "fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c"
+      },
+      {
+        "sha": "156417b4443068309a33c3364438948499775fad",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/156417b4443068309a33c3364438948499775fad",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/156417b4443068309a33c3364438948499775fad"
+      }
+    ],
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq3LjwCRC1aQ7uu5UhlAAA6E4QADmxDsgrVN4fjPcHuKp+5X1U\nLE+zMyAssjEQiptgWPMbe/OcOdlf3cL2i6NiF1mdZHR10RRLiiQdDglg8qPXVIVV\nTPalPuwuypdx+5+W5yXdycYLrTt0SzQmHOznEyhnR05ooUGHiS8AthvYEQF0Qu1l\ndtS5eowEj3sO6p6o50GXvuNcsSdRPk/BM0U3wTEp2xhUR4QDVWCWkurX8YTdyWEN\nS6jI2DfBa+yaaqUMxdnwP7d3i8W0UR2YL+a8FxMh+NFwypABmSm2ouQvrAPi0oKn\n/6kObMXedRZxkjp3b4xS7qxvVv34tHPxE1sYgnWVeLvVGvRIlvwb7C8qsYkluKxB\nDMomrNB7+wKZEm18fmKuVgIOgFARFQIk2B9kPAOcerVKqgIpMdlwuwk5FYb1/f2a\nfOgVUl4wmxa2R87JYyTxGt7Xn139sQpTDexhdvfqBGGXHlzfznAKpS/DFxmiGOcn\n0sESDJxUfM2e5ghd3hLQl8gvPZz96X2t6PxvCJz6DG9RVggTbjHYC44Z+c0Mlqb3\n8feT4IZYcIGy/7EaQB6bspMa1hmjk14UVB2MI2liuVNYmNaq+Fc5rsHmmYtDkjps\nqYtReLqHyi22pN9IFhdavU48mi0WbQbo8enuG6qUvFec/PdBNdhr2UK5JuMQPRuz\nguXCZBIcoGhLeypqwwJ/\n=r6cG\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 471cffe98cea7f53324e81c4ffc5c70d798411fa\nparent fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c\nparent 156417b4443068309a33c3364438948499775fad\nauthor nashysaimarkets <hello@nashaimarkets.com> 1792850160 +0100\ncommitter GitHub <noreply@github.com> 1792850160 +0100\n\nMerge 156417b4443068309a33c3364438948499775fad into fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c\n",
+      "verified_at": "2026-10-24T13:56:01Z"
+    }
+  },
+  "completeTreesEqual": true
+}

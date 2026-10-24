@@ -1,0 +1,88 @@
+{
+  "kind": "POCKET_SCANNER_IMAGE_PLOT_FINAL_REVIEW_REPAIR_CHECKS",
+  "decision": "READY_FOR_INDEPENDENT_REVIEW_NOT_PRODUCTION_ACCURACY_ACCEPTANCE",
+  "source": [
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/app/pocket/image-plot-region.ts",
+      "sha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7"
+    },
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/pocket-image-plot-region.test.ts",
+      "sha256": "a3fc5ed207405148b41dcf91fd61a18fa3b6bd8aeb2e7ee273e12f41e6eafa4f"
+    },
+    {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair/tests/support/pocket-image-plot-raster.ts",
+      "sha256": "0e9e6eca0ca27ed15b4a41484094f01f1f648d96f06de013c5c56e136db13547"
+    }
+  ],
+  "specificChanges": [
+    "HOLD when repeated candle components occupy overlapping horizontal columns on opposite sides of an interior grid row.",
+    "HOLD when repeated flat red/green components share a baseline inside the candidate rectangle; these histogram witnesses were intentionally omitted by the candle-only reader.",
+    "Share an explicit 4000000 original-pixel cap and HOLD before detector tone allocation; no resizing.",
+    "Explicit budgets: at most256 accepted candle witnesses before spread/pair checks, at most1024 colored components and128 qualifying flat bars before baseline comparisons. Exceeding any budget HOLDs as RASTER_TOO_COMPLEX; nothing is silently truncated."
+  ],
+  "tests": {
+    "command": "node --test-reporter=tap tests/pocket-image-plot-region.test.ts",
+    "exitCode": 0,
+    "checks": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "capturedOutput": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/DETECTOR-FINAL-SYNTHETIC.tap",
+      "sha256": "96f2d9d261dcb844383b707e4014d3e9fdad91af1eda56a279ae0f53adf91ec1"
+    }
+  },
+  "strictTypeScript": {
+    "command": "node /tmp/pocket-scanner-repair-deps/node_modules/typescript/lib/tsc.js --noEmit --target ES2023 --module NodeNext --moduleResolution NodeNext --allowImportingTsExtensions --strict --skipLibCheck --lib ES2023,DOM --typeRoots /tmp/pocket-scanner-repair-deps/node_modules/@types --types node app/pocket/image-plot-region.ts tests/pocket-image-plot-region.test.ts",
+    "exitCode": 0,
+    "capturedOutput": {
+      "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/DETECTOR-FINAL-STRICT-TS.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "retainedRegression": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/DETECTOR-D001-FINAL-ASSAY.json",
+    "sha256": "00b59ae3397314d4638f7a1086924c22c4b6be8a563847d6f64ed463989a40cb"
+  },
+  "retainedRegressionScript": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/assay-image-plot-d001-final.mjs",
+    "sha256": "2ad38d4f0aa12b9be036a3f2fc538a6575857b68d719c7e00676a95e2ac0a52b"
+  },
+  "preservedBaseline": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/DETECTOR-D001-ASSAY.json",
+    "sha256": "f3409126930437bae4ce9ae1f358eac0103b8719dc1d75c875aff3b173bd4773"
+  },
+  "baselineLocalCheckProvenance": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/DETECTOR-INITIAL-LOCAL-CHECKS.json",
+    "sha256": "54c566ecb5dffa008a1b150ae7bbdfb63b54483a24ce9b69fd9ef2848b018c87"
+  },
+  "independentCounterexample": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/INDEPENDENT-TOUCHING-PANELS.json",
+    "sha256": "e71aa63b54ee615143cf092aaf5f6df60a9448b7190a30d74841ad9c0a616147"
+  },
+  "scope": {
+    "productionWiringChanged": false,
+    "numericOcrPerformedByThisAgent": false,
+    "providerCalls": 0,
+    "networkCalls": 0,
+    "databaseCalls": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0
+  },
+  "limits": [
+    "Visible regular rectangular grids with supported red/green candle pixels and one text column only; unsupported layouts HOLD.",
+    "The two known touching-panel counterexamples are covered; unique-panel detection is conservative evidence, not proof over arbitrary image layouts.",
+    "The retained d001 plot/ROI is unchanged with zero original-pixel edge errors; this does not establish numeric OCR, semantic price-level correctness or generalization.",
+    "The cap limits memory exposure; no worst-case physical-device latency measurement has been made.",
+    "Dense images beyond the explicit component budgets HOLD even when within the4M pixel cap; no subpanel selection or truncated evidence recovery."
+  ],
+  "previousReviewRepair": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/DETECTOR-REPAIRED-CHECKS.json",
+    "sha256": "e8166bece1b2bb52a6e6cbab2cb28977d1e9b8f1eb8f121f5c1ca3f7fd4a5041"
+  },
+  "previousSourceArchive": {
+    "path": "/workspace/scratch/616faf3e8649/scanner-image-geometry-repair-evidence/detector-touching-repair-b68b.ts",
+    "sha256": "b68b362f7cea1bfa9cb15b57e50fbd153cd2a73cc098dfb9ab02e760397456b0"
+  }
+}

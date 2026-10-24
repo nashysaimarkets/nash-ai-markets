@@ -1,0 +1,78 @@
+name: Pocket scanner image recovery affected acceptance
+
+on:
+  push:
+    branches: [monaco-scanner-image-geometry-126-20261024]
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'scripts/verify-pocket-*.mjs'
+      - '.github/workflows/pocket-scanner-image-recovery-qa.yml'
+      - 'vercel.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocket-scanner-image-recovery-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  image-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      GIT_COMMIT_SHA: ${{ github.sha }}
+      NEXT_PUBLIC_SUPABASE_URL: 'https://ci-placeholder.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_ci_placeholder'
+      POCKET_BENCHMARK_PILOT_ENABLED: 'false'
+      POCKET_REAL_BENCHMARK_DISPATCH: 'false'
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: 'false'
+      POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - name: Confirm exact source and disabled automatic deployment
+        run: |
+          test "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"
+          node -e "const c=require('./vercel.json');if(c.git.deploymentEnabled['monaco-scanner-image-geometry-126-20261024']!==false)process.exit(1)"
+      - name: Install unchanged locked dependencies and local OCR assets
+        run: |
+          npm ci --no-audit --no-fund --fetch-retries=0
+          node scripts/prepare-axis-ocr.mjs
+      - name: Verify affected recovery and legacy consumers
+        run: node scripts/verify-pocket-scanner-image-recovery.mjs
+      - name: Check complete source integration
+        run: |
+          npm run typecheck
+          npx eslint app/api/pocket/analyse/route.ts app/pocket/PocketBullseye.tsx app/pocket/source-price-candidates.ts app/pocket/image-plot-region.ts app/pocket/image-axis-verification.ts app/pocket/browser-image-axis-ocr.ts app/pocket/source-placement.ts app/pocket/use-original-chart-measurement.ts app/pocket/original-pixel-levels.ts app/pocket/level-provenance.ts
+          npm run security:scan
+          git diff --check
+      - name: Exercise both mounted image lifecycles and actual browser OCR
+        run: |
+          export POCKET_QA_BROWSER_EXECUTABLE_PATH="$(command -v google-chrome)"
+          test -n "$POCKET_QA_BROWSER_EXECUTABLE_PATH"
+          export POCKET_QA_BROWSER_OUT="$POCKET_IMAGE_RECOVERY_QA_OUTPUT/legacy-browser.json"
+          export POCKET_QA_IMAGE_RECOVERY_OUT="$POCKET_IMAGE_RECOVERY_QA_OUTPUT/recovery-browser.json"
+          export POCKET_IMAGE_RECOVERY_OUTPUT="$POCKET_IMAGE_RECOVERY_QA_OUTPUT/real-ocr-browser.json"
+          node tests/run-pocket-source-placement-browser.mjs
+          node tests/run-pocket-image-recovery-browser.mjs
+          node scripts/verify-pocket-image-recovery-browser.mjs
+      - name: Compile production Next application
+        run: npx next build --webpack
+      - name: Retain exact-source acceptance receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-scanner-image-recovery-${{ github.sha }}
+          path: ${{ env.POCKET_IMAGE_RECOVERY_QA_OUTPUT }}
+          if-no-files-found: error
+          retention-days: 30

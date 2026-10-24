@@ -1,0 +1,25 @@
+{
+  "kind": "FROZEN_COMBINED_REPAIR_RETAINED_IMAGE_REPLAY_PLAN",
+  "sourceManifestSha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+  "detectorSha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+  "axisHelperSha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+  "driverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+  "cases": [
+    "d001",
+    "d002",
+    "d003",
+    "d004",
+    "d006"
+  ],
+  "candidateSourceMustRemainFrozen": true,
+  "independentReviewRequiredBeforeExecution": true,
+  "oraclePassedToBrowser": false,
+  "calibrationReadAfterBrowserOnly": true,
+  "diagnosticToleranceOriginalPixels": 1,
+  "historicalObservationsPreserved": true,
+  "reasonForFreshMeasurement": "Exact observed-tick placement changes projected coordinates and must not inherit the earlier fitted-row results. Verify previously omitted boundary candidates and all other coordinates.",
+  "d005": "Unchanged exact-price eligibility HOLD; no eligible exact support/resistance prices. No OCR replay needed.",
+  "providerCallsAuthorised": 0,
+  "paidCaseDispatchAuthorised": false,
+  "heldOut44": "UNTOUCHED"
+}

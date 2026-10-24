@@ -1,0 +1,10 @@
+[
+  {
+    "path": "app/pocket/image-axis-verification.ts",
+    "sha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2"
+  },
+  {
+    "path": "tests/pocket-image-axis-verification.test.ts",
+    "sha256": "695357b6637e9074b7251d51d6175910b3a80e446830fc0a9c7a5e55354e6bb7"
+  }
+]

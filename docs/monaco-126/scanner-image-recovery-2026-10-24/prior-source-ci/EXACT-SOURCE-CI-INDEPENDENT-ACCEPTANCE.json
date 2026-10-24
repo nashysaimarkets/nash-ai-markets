@@ -1,0 +1,442 @@
+{
+  "kind": "INDEPENDENT_EXACT_SOURCE_IMAGE_RECOVERY_HOSTED_ACCEPTANCE",
+  "createdAt": "2026-10-24T14:04:20.552488+00:00",
+  "reviewer": "scanner_independent_review",
+  "status": "PASS_EXACT_SOURCE_ENGINEERING_AND_PUBLIC_ONE_PIXEL_GEOMETRY_GATES",
+  "candidate": {
+    "pullRequest": 147,
+    "branch": "monaco-scanner-image-geometry-126-20261024",
+    "sourceCommit": "156417b4443068309a33c3364438948499775fad",
+    "sourceTree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+    "parentCommit": "fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+    "sourceManifestSha256": "5ce1490b1ae8a2cece9c37f91c91e7ef40829e42e57461a42c3ef2f5517dc3fe",
+    "all22ManifestFileHashesAndSizesMatchedCurrentReviewedSource": true
+  },
+  "method": "Read retained official GitHub run/job/artifact/commit metadata and raw job logs. Independently hash and inspect official artifact ZIP/member bytes, parse each TAP log, bind reported source hashes to reviewed current files and manifest, and recompute public pixel errors from rendered data. No remote polls, workflow/browser/test reruns or private input reads.",
+  "affectedGate": {
+    "runId": 40100260065,
+    "jobId": 120890776823,
+    "attempt": 1,
+    "event": "push",
+    "conclusion": "success",
+    "officialCheckoutFromLog": "156417b4443068309a33c3364438948499775fad",
+    "exactSourceCheckoutConfirmed": true,
+    "completedAt": "2026-10-24T13:57:34Z",
+    "requiredSteps": [
+      {
+        "name": "Confirm exact source and disabled automatic deployment",
+        "conclusion": "success"
+      },
+      {
+        "name": "Install unchanged locked dependencies and local OCR assets",
+        "conclusion": "success"
+      },
+      {
+        "name": "Verify affected recovery and legacy consumers",
+        "conclusion": "success"
+      },
+      {
+        "name": "Check complete source integration",
+        "conclusion": "success"
+      },
+      {
+        "name": "Exercise both mounted image lifecycles and actual browser OCR",
+        "conclusion": "success"
+      },
+      {
+        "name": "Compile production Next application",
+        "conclusion": "success"
+      },
+      {
+        "name": "Retain exact-source acceptance receipts",
+        "conclusion": "success"
+      }
+    ],
+    "affectedTests": {
+      "files": 9,
+      "tests": 67,
+      "pass": 67,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "byFile": {
+        "tests/pocket-image-plot-region.test.ts": 15,
+        "tests/pocket-source-level-candidates.test.ts": 7,
+        "tests/pocket-image-axis-verification.test.ts": 14,
+        "tests/pocket-image-recovery-integration.test.ts": 9,
+        "tests/pocket-browser-image-axis-ocr.test.mjs": 4,
+        "tests/pocket-source-placement.test.ts": 7,
+        "tests/pocket-source-placement-render.test.ts": 6,
+        "tests/pocket-level-provenance.test.ts": 3,
+        "tests/pocket-analysis-cancellation.test.ts": 2
+      },
+      "allTestFileAndTapLogHashesVerified": true
+    },
+    "runtime": "v24.19.0",
+    "wholeProjectTypeScript": "PASS_COMPLETE_CHECKOUT",
+    "changedSourceLint": {
+      "errors": 0,
+      "warnings": 5,
+      "warningScope": "Unused declarations in PocketBullseye; no lint errors."
+    },
+    "secretPatternScan": {
+      "status": "PASS",
+      "versionControlCandidates": 1406
+    },
+    "gitDiffCheck": "PASS",
+    "productionNextBuild": {
+      "status": "PASS",
+      "compileSeconds": 14.1,
+      "fullBuildStep": "success",
+      "warnings": "Nonfatal Next/Supabase Edge Runtime API, middleware migration, cache and dependency deprecation warnings remained; no deployed compatibility claim."
+    },
+    "localFullTypecheckLimitationResolved": "The earlier incomplete local-tree TypeScript attempt was not counted as a pass. This complete-checkout gate now supplies the actual whole-project PASS."
+  },
+  "mountedBrowserChecks": {
+    "legacy": {
+      "checks": 12,
+      "pass": 12,
+      "errors": 0,
+      "externalRequests": 0,
+      "receiptSha256": "20edba3de7fa4b5b2828dc7d7f9491fb2b9e11a595eb55b7ee44ccdc1fe09423",
+      "reportedSourcePinsChecked": 4,
+      "boundary": "Controlled legacy OCR; actual source hook/selectors/overlays."
+    },
+    "recovery": {
+      "checks": 21,
+      "pass": 21,
+      "errors": 0,
+      "externalRequests": 0,
+      "receiptSha256": "a914fe4a9b4e30ff53ba06d084d0af6006ec493fbc9db2c79d734234650a1712",
+      "reportedSourcePinsChecked": 15,
+      "browser": "155.0.8059.39",
+      "independentReaderCalls": 15,
+      "legacyReaderCalls": 0,
+      "boundary": "Actual raster detector, helper, hook and SVG; controlled OCR completion/cancellation/error boundaries."
+    }
+  },
+  "actualPublicBrowserOcr": {
+    "receiptSha256": "299675aa92c325e341862a31ffd81e17fc480ff79a3d3d808314a1d377edbf0e",
+    "driverSha256": "e3ebd7e9a6e78f4e85f11e1ad6b344126e36bcdf5696e4d390695cd955e87f6e",
+    "driverMatchesReviewedPublishedSource": true,
+    "reportedSourcePinsChecked": 9,
+    "input": "PUBLIC_SYNTHETIC_ORIGINAL",
+    "dimensions": [
+      1000,
+      800
+    ],
+    "node": "v24.19.0",
+    "playwright": "1.55.1",
+    "chrome": "155.0.8059.39",
+    "sameOriginTesseract": "ACTUAL_EXECUTION",
+    "expectedCandidatePriceSet": [
+      "115",
+      "118"
+    ],
+    "candidateCount": 2,
+    "placedCount": 2,
+    "renderedLineCount": 2,
+    "allExpectedCandidatesPresent": true,
+    "toleranceOriginalPixels": 1,
+    "independentlyRecomputedGeometry": {
+      "edges": {
+        "left": 0.5,
+        "right": 0.5,
+        "top": 0.5,
+        "bottom": 0.5
+      },
+      "levels": [
+        {
+          "price": "115",
+          "projected": 0.5,
+          "rendered": 0.5,
+          "horizontalEndpoints": 0.5
+        },
+        {
+          "price": "118",
+          "projected": 0.5,
+          "rendered": 0.5,
+          "horizontalEndpoints": 0.5
+        }
+      ]
+    },
+    "maximumErrorOriginalPixels": 0.5,
+    "legacyAxis": "held",
+    "legacyCandlePixels": null,
+    "calibratedLevelsRemainEmpty": true,
+    "calibratedScaleReadableRemainsFalse": true,
+    "patternAndLiquidityMarks": 0,
+    "candidateSemantics": "UNVERIFIED",
+    "browserExceptions": 0,
+    "externalRequests": 0,
+    "providerCalls": 0,
+    "elapsedMsRecorded": 726,
+    "latencyLimit": "Recorded local hosted public-fixture time is not production HTTP, full scan or physical-device latency acceptance."
+  },
+  "officialArtifact": {
+    "id": 12562661993,
+    "runId": 40100260065,
+    "bytes": 14763,
+    "sha256": "39ec2fb821af6e8435657db1eee67776b691da13e2b489641cf5fcc2d786d099",
+    "officialMetadataDigestMatchesDownloadedBytes": true,
+    "zipMemberCount": 13,
+    "allExtractedFilesMatchZip": true,
+    "allMemberDigestsIndependentlyChecked": true,
+    "members": [
+      {
+        "path": "legacy-browser.json",
+        "bytes": 2495,
+        "sha256": "20edba3de7fa4b5b2828dc7d7f9491fb2b9e11a595eb55b7ee44ccdc1fe09423"
+      },
+      {
+        "path": "pocket-analysis-cancellation.test.ts.log",
+        "bytes": 768,
+        "sha256": "8ca4aa3e58e3dafb9724f85a1d14e6f385105c8de0c72987dc7f983e843cc3c9"
+      },
+      {
+        "path": "AFFECTED-REGRESSIONS.json",
+        "bytes": 3902,
+        "sha256": "09c8dc3ccb56a3d3100c0e9b433453f35ad063a1524653c386f8fa340e89e934"
+      },
+      {
+        "path": "pocket-browser-image-axis-ocr.test.mjs.log",
+        "bytes": 1030,
+        "sha256": "c0e889ca856bbbb8fc9a4cf768022863a725d219446bb53a68abaf766401890f"
+      },
+      {
+        "path": "pocket-image-axis-verification.test.ts.log",
+        "bytes": 3689,
+        "sha256": "51aa53bade30408d97c0304255f34090575eabd9121a033f4fc035b35e897c90"
+      },
+      {
+        "path": "pocket-image-plot-region.test.ts.log",
+        "bytes": 3507,
+        "sha256": "6f1e40f3373b0d6f203b2797cc41853782e4e308c720aaea653c1f6c6939e8a3"
+      },
+      {
+        "path": "pocket-image-recovery-integration.test.ts.log",
+        "bytes": 2498,
+        "sha256": "fd61a70430e32d3be05e0d557a3f7b87237ce71e928c916f514a5b817a2dbd24"
+      },
+      {
+        "path": "pocket-level-provenance.test.ts.log",
+        "bytes": 746,
+        "sha256": "ca134a1d97d16591d1674639b5278278486de27b3aa1ac26073f00aed3da7af7"
+      },
+      {
+        "path": "pocket-source-level-candidates.test.ts.log",
+        "bytes": 1750,
+        "sha256": "d333aa84c0af10cd62072c539fb2da09a2a8e9a0feb6ae7b534f85a615df2c80"
+      },
+      {
+        "path": "pocket-source-placement-render.test.ts.log",
+        "bytes": 1583,
+        "sha256": "af0d794b5fe7557cae1b7dc43d4cabd4fc4dbc259c553f9c220ef14f346e7f9d"
+      },
+      {
+        "path": "pocket-source-placement.test.ts.log",
+        "bytes": 1805,
+        "sha256": "9803323a53e39d8d4468a1cbd3bb0b1a33ea8cd60feda4d44eed6f4e7dc61f11"
+      },
+      {
+        "path": "real-ocr-browser.json",
+        "bytes": 10634,
+        "sha256": "299675aa92c325e341862a31ffd81e17fc480ff79a3d3d808314a1d377edbf0e"
+      },
+      {
+        "path": "recovery-browser.json",
+        "bytes": 5484,
+        "sha256": "a914fe4a9b4e30ff53ba06d084d0af6006ec493fbc9db2c79d734234650a1712"
+      }
+    ],
+    "downloadVerificationSha256": "20fe2f958e0a62ce061ebeda5b83770411e3501a380c7316e9d624459c68dce2",
+    "uniqueBrowserSourceOrTestPinsChecked": 18
+  },
+  "automaticImageGate": {
+    "runId": 40100263297,
+    "jobId": 120890786406,
+    "attempt": 1,
+    "event": "pull_request",
+    "conclusion": "success",
+    "completedAt": "2026-10-24T13:58:18Z",
+    "runHeadSha": "156417b4443068309a33c3364438948499775fad",
+    "actualCheckoutFromLog": "61825ecfb7f3e46182a095c8b15d34a5ec1e956c",
+    "checkoutKind": "GITHUB_PULL_REQUEST_MERGE_COMMIT",
+    "completeTreeEquivalence": {
+      "sourceTree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+      "mergeTree": "471cffe98cea7f53324e81c4ffc5c70d798411fa",
+      "equal": true,
+      "parents": [
+        "fc6c702e04dfc42765d5a9d3c4bc9bc7f793502c",
+        "156417b4443068309a33c3364438948499775fad"
+      ],
+      "meaning": "The PR gate ran the merge commit, not a direct source-head checkout. Official commit records prove that the complete checked-out tree equals the published candidate tree."
+    },
+    "nativeRasterTests": {
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "skipped": 0
+    },
+    "realBrowserRasterOcr": {
+      "cases": 6,
+      "readableCases": 5,
+      "correctlyHeldDegradedCases": 1,
+      "caseStatuses": [
+        {
+          "id": "range-clear",
+          "results": {
+            "verified": "verified",
+            "cropVerified": "verified",
+            "misaligned": "held",
+            "blurred": "held",
+            "missing": "held",
+            "ocr": "verified",
+            "cropOcr": "verified",
+            "missingOcr": "held"
+          }
+        },
+        {
+          "id": "double-top",
+          "results": {
+            "verified": "verified",
+            "cropVerified": "verified",
+            "misaligned": "held",
+            "blurred": "held",
+            "missing": "held",
+            "ocr": "verified",
+            "cropOcr": "verified",
+            "missingOcr": "held"
+          }
+        },
+        {
+          "id": "head-shoulders",
+          "results": {
+            "verified": "verified",
+            "cropVerified": "verified",
+            "misaligned": "held",
+            "blurred": "held",
+            "missing": "held",
+            "ocr": "verified",
+            "cropOcr": "verified",
+            "missingOcr": "held"
+          }
+        },
+        {
+          "id": "sweep-reclaim",
+          "results": {
+            "verified": "verified",
+            "cropVerified": "verified",
+            "misaligned": "held",
+            "blurred": "held",
+            "missing": "held",
+            "ocr": "verified",
+            "cropOcr": "verified",
+            "missingOcr": "held"
+          }
+        },
+        {
+          "id": "near-miss-chop",
+          "results": {
+            "verified": "verified",
+            "cropVerified": "verified",
+            "misaligned": "held",
+            "blurred": "held",
+            "missing": "held",
+            "ocr": "verified",
+            "cropOcr": "verified",
+            "missingOcr": "held"
+          }
+        },
+        {
+          "id": "degraded-no-signal",
+          "results": {
+            "verified": "held",
+            "cropVerified": "held",
+            "misaligned": "held",
+            "blurred": "held",
+            "missing": "held",
+            "ocr": "held",
+            "cropOcr": "held",
+            "missingOcr": "held"
+          }
+        }
+      ],
+      "allMisalignedBlurredMissingControls": "HELD",
+      "providerCalls": 0,
+      "externalRequests": 0,
+      "jsErrors": 0
+    },
+    "mobileDecisionChecks": 13,
+    "redesignMobileChecks": 10,
+    "levelLabSourceIsolationChecks": 4,
+    "mobileBrowser": "Chromium emulation; endpoints controlled where documented, not a physical device.",
+    "nextProductionBuild": "PASS",
+    "nextCompileSeconds": 12.2,
+    "isolatedSharpLibvipsTrace": "PASS",
+    "labelledPaidCorpus": "SKIPPED",
+    "artifactCount": 0
+  },
+  "retainedD001GeometrySeparateEvidence": {
+    "assaySha256": "ea8cccd80d4833e4b8a1b1b71013d0ce81f67182593d2df50a05d912dd0aa651",
+    "independentReviewSha256": "df8ce4d7e569207eebc680b709ae6c38ea62bb77f762c99aa292d1582760fedf",
+    "reviewer": "precision_contract_fix",
+    "plotEdges": {
+      "count": 4,
+      "maxErrorPx": 0
+    },
+    "ocrGridAnchors": {
+      "count": 7,
+      "maxErrorPx": 0.5
+    },
+    "projectedAndRenderedLevels": {
+      "count": 4,
+      "maxEndpointErrorPx": 0.2142028368219826
+    },
+    "status": "PASS_ON_ONE_RETAINED_DEVELOPMENT_IMAGE_GEOMETRY_ONLY",
+    "ciRelation": "This private retained replay was not a hosted CI input. It remains a separately hash-bound local assay and arithmetic review; neither was rerun here."
+  },
+  "deploymentAndScope": {
+    "candidateAutomaticDeployment": false,
+    "productionDeploymentAccepted": false,
+    "mainMergeAccepted": false,
+    "appleReleaseAccepted": false,
+    "fiveRemainingPaidCases": "HOLD",
+    "heldOut44": "UNTOUCHED",
+    "additionalProviderCalls": 0,
+    "additionalDatabaseCalls": 0
+  },
+  "limits": [
+    "These gates establish engineering behavior and measured geometric placement for the named public fixture and separately retained development image. They do not establish support/resistance semantics, candidate recall, pattern/liquidity accuracy or verified absence.",
+    "No overall six-case or held-out accuracy claim is supported. The automatic labelled paid corpus step was explicitly skipped; its absence is not scored as a pass.",
+    "The original paid first-case frozen v2 response/diagnostic and accounting remain immutable historical evidence. Offline recovery success does not rewrite that failed original geometry result or release its hold.",
+    "Source and hosted engineering acceptance do not imply production deployment, customer HTTP performance, physical-device latency, native release or completion of the full application.",
+    "Nonfatal lint/framework/build warnings are retained rather than described as zero-warning validation."
+  ],
+  "officialEvidenceFileHashes": {
+    "OFFICIAL-AFFECTED-RUN.json": "a3504b41c018b33a4cf36b427a21d1996d2426c0fd5aeb6272f78907e21de1f6",
+    "OFFICIAL-AFFECTED-JOBS.json": "80f2884a45ddfb11e12053f6fc207e618e4e5bb5ce2f2367a8272081900728a0",
+    "OFFICIAL-AFFECTED-ARTIFACTS.json": "a2050000eb443908ba788ea24f24e42d02fffb9ae599ef17122c62dd9e8ab08f",
+    "OFFICIAL-AFFECTED-JOB.log": "10c151bb3adc63290bb0e2521ae8be1ba7c85ac907a3b370186bd665e4c88ad4",
+    "OFFICIAL-IMAGE-RUN.json": "5b8555494680a33800c1eced9f1f71d51f48f8f5a3b40cd1eb788382f0777083",
+    "OFFICIAL-IMAGE-JOBS.json": "ad332e0b7d4091cc284a714d8d55fb5cf701e2bea389d93d194852c131d3054b",
+    "OFFICIAL-IMAGE-ARTIFACTS.json": "f7417e1fb877d3f5934f143cc38ad9e2905476e8f5ac6776507d09441efcd6f6",
+    "OFFICIAL-IMAGE-JOB.log": "0b5a69bcb9fdac4a25b971204937f4eba794b61d1d2dabc29670f23b9b279108",
+    "OFFICIAL-CHECKOUT-IDENTITY.json": "179134898fc141acca4d536a42648732f36624f57c73a081a3c810e0a309f3b2",
+    "PUBLICATION-SOURCE-MANIFEST.json": "5ce1490b1ae8a2cece9c37f91c91e7ef40829e42e57461a42c3ef2f5517dc3fe",
+    "INDEPENDENT-HOSTED-INTEGRITY-CHECK.json": "2a3366dd54c4fc3f4b92b47697a63d299bd311d53c964245a2a7237178c1c732"
+  },
+  "reviewerEffects": {
+    "remotePolls": 0,
+    "testReruns": 0,
+    "browserReruns": 0,
+    "privateChartReads": 0,
+    "privateKeyReads": 0,
+    "downloadCredentialReads": 0,
+    "heldOutReads": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "sourceEdits": 0,
+    "remoteMutations": 0
+  }
+}

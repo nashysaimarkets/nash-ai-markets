@@ -1,0 +1,338 @@
+{
+  "kind": "RETAINED_DEVELOPMENT_IMAGE_RECOVERY_OBSERVATION",
+  "status": "RECORDED",
+  "observedAtUtc": "2026-10-24T14:25:52.648Z",
+  "input": "RETAINED_MAIN_REPLAY",
+  "imageSha256": "b381e53f95db0e82937db5fc0667f8fb9fd2052c1f1a8b1497602d6ff1e2edce",
+  "mainResponseSha256": "c9e1dd6873208e6669961cbfe509c89107aa6a19f1f89db56bd6d92571b5ad42",
+  "sourceHashes": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/pocket/use-original-chart-measurement.ts": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+    "app/pocket/source-placement.ts": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+    "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+    "app/pocket/image-plot-region.ts": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "app/pocket/image-axis-verification.ts": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+    "app/pocket/browser-image-axis-ocr.ts": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+    "app/pocket/level-provenance.ts": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+    "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4"
+  },
+  "driverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+  "node": "v24.22.1",
+  "playwright": "1.55.1",
+  "browser": "140.0.7339.186",
+  "result": {
+    "dimensions": [
+      1400,
+      850
+    ],
+    "legacyAxis": {
+      "status": "held",
+      "reason": "Original model geometry is unavailable."
+    },
+    "pixelsNull": true,
+    "imageRecovery": {
+      "region": {
+        "status": "measured",
+        "width": 1400,
+        "height": 850,
+        "plotPixels": {
+          "left": 90,
+          "right": 1250,
+          "top": 125,
+          "bottom": 650
+        },
+        "plotPercent": {
+          "left": 6.428571428571428,
+          "right": 89.28571428571429,
+          "top": 14.705882352941178,
+          "bottom": 76.47058823529412
+        },
+        "gridRowPixels": [
+          125,
+          213.00000000000003,
+          300.00000000000006,
+          388,
+          475,
+          561.9999999999999,
+          650
+        ],
+        "axisLabelRegionPixels": {
+          "side": "right",
+          "left": 1259,
+          "right": 1336,
+          "top": 115,
+          "bottom": 655,
+          "matchedGridRows": [
+            125,
+            213.00000000000003,
+            300.00000000000006,
+            388,
+            475,
+            561.9999999999999,
+            650
+          ]
+        },
+        "evidence": {
+          "gridRows": 7,
+          "candles": 12,
+          "candleSpanPixels": 1088,
+          "borderEdges": 4,
+          "coherentPricePanels": 1,
+          "axisTextColumns": 1
+        }
+      },
+      "axis": {
+        "status": "verified",
+        "policy": "image-axis-v1",
+        "anchors": [
+          {
+            "price": 351.3292,
+            "y": 14.705882352941178
+          },
+          {
+            "price": 349.3011,
+            "y": 25.058823529411768
+          },
+          {
+            "price": 347.2731,
+            "y": 35.29411764705883
+          },
+          {
+            "price": 345.245,
+            "y": 45.64705882352941
+          },
+          {
+            "price": 343.2169,
+            "y": 55.88235294117647
+          },
+          {
+            "price": 341.1889,
+            "y": 66.11764705882351
+          },
+          {
+            "price": 339.1608,
+            "y": 76.47058823529412
+          }
+        ],
+        "matchedModelPrices": [
+          351.3292,
+          343.2169,
+          339.1608
+        ],
+        "maxResidualPixels": 0.42857142857148744,
+        "region": {
+          "status": "measured",
+          "width": 1400,
+          "height": 850,
+          "plotPixels": {
+            "left": 90,
+            "top": 125,
+            "right": 1250,
+            "bottom": 650
+          },
+          "plotPercent": {
+            "left": 6.428571428571428,
+            "top": 14.705882352941178,
+            "right": 89.28571428571429,
+            "bottom": 76.47058823529412
+          },
+          "gridRowPixels": [
+            125,
+            213.00000000000003,
+            300.00000000000006,
+            388,
+            475,
+            561.9999999999999,
+            650
+          ],
+          "axisLabelRegionPixels": {
+            "left": 1259,
+            "top": 115,
+            "right": 1336,
+            "bottom": 655,
+            "side": "right",
+            "matchedGridRows": [
+              125,
+              213.00000000000003,
+              300.00000000000006,
+              388,
+              475,
+              561.9999999999999,
+              650
+            ]
+          },
+          "evidence": {
+            "gridRows": 7,
+            "candles": 12,
+            "candleSpanPixels": 1088,
+            "borderEdges": 4,
+            "coherentPricePanels": 1,
+            "axisTextColumns": 1
+          }
+        },
+        "wordEvidence": [
+          {
+            "text": "351.3292",
+            "confidence": 96.765678,
+            "x": 1261,
+            "y": 123,
+            "width": 74,
+            "height": 12
+          },
+          {
+            "text": "349.3011",
+            "confidence": 96.143799,
+            "x": 1261,
+            "y": 211,
+            "width": 74,
+            "height": 12
+          },
+          {
+            "text": "347.2731",
+            "confidence": 95.661125,
+            "x": 1261,
+            "y": 298,
+            "width": 74,
+            "height": 12
+          },
+          {
+            "text": "345.2450",
+            "confidence": 96.528183,
+            "x": 1261,
+            "y": 386,
+            "width": 74.5,
+            "height": 12
+          },
+          {
+            "text": "343.2169",
+            "confidence": 96.496689,
+            "x": 1261,
+            "y": 473,
+            "width": 74,
+            "height": 12
+          },
+          {
+            "text": "341.1889",
+            "confidence": 96.619553,
+            "x": 1261,
+            "y": 560,
+            "width": 74,
+            "height": 12
+          },
+          {
+            "text": "339.1608",
+            "confidence": 95.430573,
+            "x": 1261,
+            "y": 648,
+            "width": 74,
+            "height": 12
+          }
+        ],
+        "modelPriceEvidence": [
+          351.3292,
+          343.2169,
+          339.1608
+        ]
+      }
+    },
+    "placement": {
+      "levels": [
+        {
+          "kind": "resistance",
+          "label": "Reported resistance candidate",
+          "price": "351.3292",
+          "provenance": "UNVERIFIED",
+          "source": "PRIMARY",
+          "placement": "IMAGE_AXIS",
+          "x": 6.428571428571428,
+          "x2": 89.28571428571429,
+          "y": 14.739459395526826,
+          "y2": 14.739459395526826
+        },
+        {
+          "kind": "support",
+          "label": "Reported support candidate",
+          "price": "339.1608",
+          "provenance": "UNVERIFIED",
+          "source": "PRIMARY",
+          "placement": "IMAGE_AXIS",
+          "x": 6.428571428571428,
+          "x2": 89.28571428571429,
+          "y": 76.45381791539754,
+          "y2": 76.45381791539754
+        }
+      ],
+      "reason": null
+    },
+    "provenance": [
+      {
+        "kind": "resistance",
+        "price": "351.3292",
+        "method": "AI_CANDIDATE",
+        "confidence": "LOW",
+        "precision": "POSITION_CHECKED",
+        "source": "PRIMARY_CHART",
+        "evidence": "Price position checked against the chart's printed scale. Support or resistance remains an unconfirmed suggestion."
+      },
+      {
+        "kind": "support",
+        "price": "339.1608",
+        "method": "AI_CANDIDATE",
+        "confidence": "LOW",
+        "precision": "POSITION_CHECKED",
+        "source": "PRIMARY_CHART",
+        "evidence": "Price position checked against the chart's printed scale. Support or resistance remains an unconfirmed suggestion."
+      }
+    ],
+    "candidateCount": 2,
+    "calibratedLevelCount": 3,
+    "calibratedScaleReadable": false,
+    "elapsedMs": 1712,
+    "rendered": [
+      {
+        "header": "ORIGINAL CHART LEVELS",
+        "status": "2 levels candidates placed from independent source pixels. Placement does not establish trading accuracy or hidden orders.",
+        "lines": [
+          {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 125.28540486197802,
+            "y2": 125.28540486197802
+          },
+          {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 649.8574522808791,
+            "y2": 649.8574522808791
+          }
+        ],
+        "polylines": 0,
+        "rectangles": 0
+      },
+      {
+        "header": "ORIGINAL CHART PATTERNS",
+        "status": "No patterns candidates passed original candle-endpoint checks.",
+        "lines": [],
+        "polylines": 0,
+        "rectangles": 0
+      },
+      {
+        "header": "ORIGINAL CHART LIQUIDITY",
+        "status": "No liquidity candidates passed original candle-endpoint checks.",
+        "lines": [],
+        "polylines": 0,
+        "rectangles": 0
+      }
+    ]
+  },
+  "errors": [],
+  "blockedExternalRequests": [],
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "limitations": [
+    "MAIN candidate replay through current calibration and mounted browser; no fresh provider/API request",
+    "Identity confirmation enabled for this controlled placement assay",
+    "No semantic support/resistance, pattern, liquidity, held-out corpus or physical-device latency acceptance",
+    "Independent one-pixel oracle comparison is separate and never supplied to the runtime"
+  ]
+}

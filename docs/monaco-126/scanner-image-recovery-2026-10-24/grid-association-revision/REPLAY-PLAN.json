@@ -1,0 +1,23 @@
+{
+  "kind": "FROZEN_RETAINED_IMAGE_REPLAY_PLAN",
+  "sourceManifestSha256": "b9bebc8ba984ed94a30618eefaacca5cc6e1c4de000a9c10444c698cde20653f",
+  "detectorSha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+  "driverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+  "cases": [
+    "d001",
+    "d002",
+    "d003",
+    "d004",
+    "d006"
+  ],
+  "candidateSourceMustRemainFrozen": true,
+  "independentReviewRequiredBeforeExecution": true,
+  "oraclePassedToBrowser": false,
+  "calibrationReadAfterBrowserOnly": true,
+  "diagnosticToleranceOriginalPixels": 1,
+  "historicalObservationsPreserved": true,
+  "d005": "Unchanged exact-price eligibility HOLD; approximate support/resistance prices and unsupported approximate pivot, no OCR replay needed",
+  "providerCallsAuthorised": 0,
+  "paidCaseDispatchAuthorised": false,
+  "heldOut44": "UNTOUCHED"
+}

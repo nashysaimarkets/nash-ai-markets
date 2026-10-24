@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "artifactId": 12563319937,
+  "runId": 40103559042,
+  "officialSize": 15208,
+  "officialSha256": "0426d184361f3cd09690d5a01936640498f644803074c0403652993e54e896a0",
+  "observedAtUtc": "2026-10-24T14:46:24.232999+00:00",
+  "members": [
+    {
+      "path": "AFFECTED-REGRESSIONS.json",
+      "bytes": 3902,
+      "sha256": "bfa84980ea25e7611a13609fd1a8b25e3fd565feed846d885eb865d070015d94"
+    },
+    {
+      "path": "legacy-browser.json",
+      "bytes": 2495,
+      "sha256": "d459fb02dad1c7454e6ccc4467c8b29a76e71fbe14814f9ef0056cb190a49237"
+    },
+    {
+      "path": "pocket-analysis-cancellation.test.ts.log",
+      "bytes": 768,
+      "sha256": "9a8b89c63a26ca82100fc37b6a7ee904b77c4b2781d98bbe8a57d2e9b40eb090"
+    },
+    {
+      "path": "pocket-browser-image-axis-ocr.test.mjs.log",
+      "bytes": 1029,
+      "sha256": "44f2c82275b34b3dde882eea91716c4f093a9788c8bd07ee08a77f59d06b1b6b"
+    },
+    {
+      "path": "pocket-image-axis-verification.test.ts.log",
+      "bytes": 4893,
+      "sha256": "31ac69a154dece38ed2f87a8fbfbb9c53b57a5bcd0bbfc0096cec14ab4923798"
+    },
+    {
+      "path": "pocket-image-plot-region.test.ts.log",
+      "bytes": 4230,
+      "sha256": "234301a4084b771aee446ff0f292905d9085baeeb8e73a049a0f47b226234cf2"
+    },
+    {
+      "path": "pocket-image-recovery-integration.test.ts.log",
+      "bytes": 2501,
+      "sha256": "c01435d727aabeafaf48f919fb18185186f97bc59a776475309633569c4bfb80"
+    },
+    {
+      "path": "pocket-level-provenance.test.ts.log",
+      "bytes": 747,
+      "sha256": "d6b22baf2edd79820228979a578f454a1ded4bc62a60d090c18083ca5361b6aa"
+    },
+    {
+      "path": "pocket-source-level-candidates.test.ts.log",
+      "bytes": 1753,
+      "sha256": "eab140b2e7cd98271a15b5f5a9c1e4d0b57823c9d9137325c8daba3f5c2d6bbd"
+    },
+    {
+      "path": "pocket-source-placement-render.test.ts.log",
+      "bytes": 1584,
+      "sha256": "d3ef988fffdebdf580d89c5ca010d517814a473f587c05eb0889c2425315ec7a"
+    },
+    {
+      "path": "pocket-source-placement.test.ts.log",
+      "bytes": 1805,
+      "sha256": "8d70d7f9e955f4f2b2ce26b9ba971f2736ac42344e89e1742e63079b008877f1"
+    },
+    {
+      "path": "real-ocr-browser.json",
+      "bytes": 10649,
+      "sha256": "f52f4d8201aabfe969700c4e58a7bafcdafd405d77868990b7eef0c53df92699"
+    },
+    {
+      "path": "recovery-browser.json",
+      "bytes": 5484,
+      "sha256": "bcc91a5b2ebcbf74fa778df6d28d2d9328a0229aae69e77fa0fe98b957062031"
+    }
+  ]
+}

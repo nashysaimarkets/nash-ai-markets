@@ -1,0 +1,27 @@
+{
+  "kind": "D005_EXACT_PRICE_ELIGIBILITY_CLARIFICATION",
+  "observedAtUtc": "2026-10-24T14:21:14.166379+00:00",
+  "caseId": "d005",
+  "historicalSelectorSourceCommit": "156417b4443068309a33c3364438948499775fad",
+  "historicalSelectorReceipt": {
+    "path": "../D005-SELECTOR-OBSERVATION.json",
+    "sha256": "4a1103460677435a484ffcf5baa7582c7a68e520d45f4f3b1cdd25c4b13dac88"
+  },
+  "mainResponseSha256": "7b5b75c5f92242d4d40c1b5e293b778458450803d90e3e00074fef8a539d8409",
+  "collectorSourceSha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+  "facts": [
+    "MAIN contains support and resistance candidates; their price strings explicitly carry the approximation marker U+2248.",
+    "The existing exact-price parser rejects those strings; the third candidate is an unsupported pivot with an approximate price.",
+    "No approximation marker is stripped and no exact numeric price is invented."
+  ],
+  "sourceKindAbsenceClaimed": false,
+  "eligibleHorizontalCandidates": 0,
+  "disposition": "HOLD_BEFORE_OCR",
+  "geometry": "UNMEASURED",
+  "semantics": "UNSCORED",
+  "verifiedAbsence": false,
+  "newBrowserRuns": 0,
+  "newProviderCalls": 0,
+  "calibrationReads": 0,
+  "scope": "Clarifies the preserved earlier selector observation; no collector or selector change."
+}

@@ -1,0 +1,530 @@
+﻿2026-10-24T14:40:39.1507245Z Current runner version: '2.338.0'
+2026-10-24T14:40:39.1546370Z ##[group]Runner Image Provisioner
+2026-10-24T14:40:39.1547777Z Hosted Compute Agent
+2026-10-24T14:40:39.1548779Z Version: 20261012.601
+2026-10-24T14:40:39.1550047Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-24T14:40:39.1551352Z Build Date: 2026-10-12T17:48:21Z
+2026-10-24T14:40:39.1552772Z Worker ID: {6315a6d7-a6d7-4b1d-84b8-3c38765c2c95}
+2026-10-24T14:40:39.1554068Z Region: eastus
+2026-10-24T14:40:39.1555153Z Cloud: Azure
+2026-10-24T14:40:39.1556510Z ##[endgroup]
+2026-10-24T14:40:39.1558975Z ##[group]Operating System
+2026-10-24T14:40:39.1560111Z Ubuntu
+2026-10-24T14:40:39.1561053Z 24.04.5
+2026-10-24T14:40:39.1562137Z LTS
+2026-10-24T14:40:39.1563140Z ##[endgroup]
+2026-10-24T14:40:39.1564264Z ##[group]Runner Image
+2026-10-24T14:40:39.1565351Z Image: ubuntu-24.04
+2026-10-24T14:40:39.1566739Z Version: 20261012.334.1
+2026-10-24T14:40:39.1569121Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T14:40:39.1572044Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-24T14:40:39.1573838Z ##[endgroup]
+2026-10-24T14:40:39.1576171Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T14:40:39.1579290Z Contents: read
+2026-10-24T14:40:39.1580421Z Metadata: read
+2026-10-24T14:40:39.1581421Z ##[endgroup]
+2026-10-24T14:40:39.1585044Z Secret source: Actions
+2026-10-24T14:40:39.1587057Z Cache mode: write
+2026-10-24T14:40:39.1588245Z Prepare workflow directory
+2026-10-24T14:40:39.2377059Z Prepare all required actions
+2026-10-24T14:40:39.2457293Z Getting action download info
+2026-10-24T14:40:39.4134845Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+2026-10-24T14:40:39.5314555Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-24T14:40:39.6233328Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-24T14:40:39.8287229Z Complete job name: image-recovery
+2026-10-24T14:40:39.9173665Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+2026-10-24T14:40:39.9174776Z with:
+2026-10-24T14:40:39.9175246Z   ref: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:39.9176153Z   persist-credentials: false
+2026-10-24T14:40:39.9176715Z   repository: nashysaimarkets/nash-ai-markets
+2026-10-24T14:40:39.9180738Z   token: ***
+2026-10-24T14:40:39.9181169Z   ssh-strict: true
+2026-10-24T14:40:39.9181595Z   ssh-user: git
+2026-10-24T14:40:39.9182013Z   clean: true
+2026-10-24T14:40:39.9182457Z   sparse-checkout-cone-mode: true
+2026-10-24T14:40:39.9182978Z   fetch-depth: 1
+2026-10-24T14:40:39.9183396Z   fetch-tags: false
+2026-10-24T14:40:39.9183835Z   show-progress: true
+2026-10-24T14:40:39.9184281Z   lfs: false
+2026-10-24T14:40:39.9184692Z   submodules: false
+2026-10-24T14:40:39.9185133Z   set-safe-directory: true
+2026-10-24T14:40:39.9186107Z env:
+2026-10-24T14:40:39.9186522Z   CI: true
+2026-10-24T14:40:39.9186935Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:40:39.9187562Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:39.9188337Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:40:39.9189189Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:40:39.9189914Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:40:39.9190474Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:40:39.9191075Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:40:39.9191779Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:40:39.9192412Z ##[endgroup]
+2026-10-24T14:40:40.0218483Z Syncing repository: nashysaimarkets/nash-ai-markets
+2026-10-24T14:40:40.0221337Z ##[group]Getting Git version info
+2026-10-24T14:40:40.0222622Z Working directory is '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T14:40:40.0225039Z [command]/usr/bin/git version
+2026-10-24T14:40:40.0304249Z git version 2.55.0
+2026-10-24T14:40:40.0344000Z ##[endgroup]
+2026-10-24T14:40:40.0354440Z Temporarily overriding HOME='/home/runner/work/_temp/9a23258e-907d-49d5-bedf-6a7b33d31506' before making global git config changes
+2026-10-24T14:40:40.0357765Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T14:40:40.0370988Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T14:40:40.0433134Z Deleting the contents of '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T14:40:40.0438923Z ##[group]Initializing the repository
+2026-10-24T14:40:40.0449122Z [command]/usr/bin/git init /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T14:40:40.0607676Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-24T14:40:40.0617340Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-24T14:40:40.0625907Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-24T14:40:40.0627300Z hint: call:
+2026-10-24T14:40:40.0627951Z hint:
+2026-10-24T14:40:40.0628816Z hint: 	git config --global init.defaultBranch <name>
+2026-10-24T14:40:40.0629773Z hint:
+2026-10-24T14:40:40.0631090Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-24T14:40:40.0632127Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-24T14:40:40.0632897Z hint:
+2026-10-24T14:40:40.0633326Z hint: 	git branch -m <name>
+2026-10-24T14:40:40.0633808Z hint:
+2026-10-24T14:40:40.0634462Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-24T14:40:40.0635529Z Initialized empty Git repository in /home/runner/work/nash-ai-markets/nash-ai-markets/.git/
+2026-10-24T14:40:40.0637814Z [command]/usr/bin/git remote add origin https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T14:40:40.0726849Z ##[endgroup]
+2026-10-24T14:40:40.0728187Z ##[group]Disabling automatic garbage collection
+2026-10-24T14:40:40.0729697Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-24T14:40:40.0768462Z ##[endgroup]
+2026-10-24T14:40:40.0769729Z ##[group]Setting up auth
+2026-10-24T14:40:40.0777479Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T14:40:40.0820074Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T14:40:40.1272647Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T14:40:40.1318963Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T14:40:40.1583468Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-24T14:40:40.1634869Z ##[endgroup]
+2026-10-24T14:40:40.1636151Z ##[group]Fetching the repository
+2026-10-24T14:40:40.1650620Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:40.8096894Z From https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T14:40:40.8099081Z  * branch            a3b108d59d4cd530b326a0e9a106e671aaead265 -> FETCH_HEAD
+2026-10-24T14:40:40.8103898Z ##[endgroup]
+2026-10-24T14:40:40.8106559Z ##[group]Determining the checkout info
+2026-10-24T14:40:40.8109241Z ##[endgroup]
+2026-10-24T14:40:40.8111530Z [command]/usr/bin/git sparse-checkout disable
+2026-10-24T14:40:40.8176068Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-24T14:40:40.8216610Z ##[group]Checking out the ref
+2026-10-24T14:40:40.8220794Z [command]/usr/bin/git checkout --progress --force a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:40.9338611Z Note: switching to 'a3b108d59d4cd530b326a0e9a106e671aaead265'.
+2026-10-24T14:40:40.9339591Z 
+2026-10-24T14:40:40.9340240Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-24T14:40:40.9341675Z changes and commit them, and you can discard any commits you make in this
+2026-10-24T14:40:40.9343141Z state without impacting any branches by switching back to a branch.
+2026-10-24T14:40:40.9343965Z 
+2026-10-24T14:40:40.9344593Z If you want to create a new branch to retain commits you create, you may
+2026-10-24T14:40:40.9346423Z do so (now or later) by using -c with the switch command. Example:
+2026-10-24T14:40:40.9347322Z 
+2026-10-24T14:40:40.9347751Z   git switch -c <new-branch-name>
+2026-10-24T14:40:40.9348384Z 
+2026-10-24T14:40:40.9348935Z Or undo this operation with:
+2026-10-24T14:40:40.9349871Z 
+2026-10-24T14:40:40.9350314Z   git switch -
+2026-10-24T14:40:40.9350843Z 
+2026-10-24T14:40:40.9351759Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-24T14:40:40.9353012Z 
+2026-10-24T14:40:40.9354041Z HEAD is now at a3b108d fix(pocket): retain measured chart borders and exact price tick positions
+2026-10-24T14:40:40.9357797Z ##[endgroup]
+2026-10-24T14:40:40.9400792Z [command]/usr/bin/git log -1 --format=%H
+2026-10-24T14:40:40.9466853Z a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:40.9478001Z ##[group]Removing auth
+2026-10-24T14:40:40.9482068Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T14:40:40.9519159Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T14:40:40.9747006Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T14:40:40.9776768Z http.https://github.com/.extraheader
+2026-10-24T14:40:40.9785266Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-24T14:40:40.9828274Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T14:40:41.0049626Z ##[endgroup]
+2026-10-24T14:40:41.0487110Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+2026-10-24T14:40:41.0488709Z with:
+2026-10-24T14:40:41.0489579Z   node-version: 24.19.0
+2026-10-24T14:40:41.0490535Z   cache: npm
+2026-10-24T14:40:41.0491416Z   always-auth: false
+2026-10-24T14:40:41.0492359Z   check-latest: false
+2026-10-24T14:40:41.0501672Z   token: ***
+2026-10-24T14:40:41.0502549Z env:
+2026-10-24T14:40:41.0503357Z   CI: true
+2026-10-24T14:40:41.0504251Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:40:41.0505467Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:41.0507220Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:40:41.0509001Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:40:41.0510521Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:40:41.0511722Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:40:41.0513017Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:40:41.0514556Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:40:41.0516075Z ##[endgroup]
+2026-10-24T14:40:41.1935939Z Attempting to download 24.19.0...
+2026-10-24T14:40:41.2044656Z (node:2330) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T14:40:41.2046207Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T14:40:41.5530879Z Acquiring 24.19.0 - x64 from https://github.com/actions/node-versions/releases/download/24.19.0-30872449280/node-24.19.0-linux-x64.tar.gz
+2026-10-24T14:40:41.9271127Z Extracting ...
+2026-10-24T14:40:41.9413807Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/490dbd68-6206-4438-8528-1f615f9a1877 -f /home/runner/work/_temp/79b962d9-211c-4f56-8fbb-1f6ffca6fb44
+2026-10-24T14:40:43.1886205Z Adding to the cache ...
+2026-10-24T14:40:45.4935754Z ##[group]Environment details
+2026-10-24T14:40:45.7286627Z node: v24.19.0
+2026-10-24T14:40:45.7287174Z npm: 11.17.0
+2026-10-24T14:40:45.7287618Z yarn: 1.22.22
+2026-10-24T14:40:45.7288624Z ##[endgroup]
+2026-10-24T14:40:45.7310811Z [command]/opt/hostedtoolcache/node/24.19.0/x64/bin/npm config get cache
+2026-10-24T14:40:45.8284252Z /home/runner/.npm
+2026-10-24T14:40:45.9086974Z Cache hit for: node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd
+2026-10-24T14:40:45.9197105Z (node:2330) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-24T14:40:46.9471050Z Received 243269632 of 306643656 (79.3%), 231.8 MBs/sec
+2026-10-24T14:40:47.2057795Z Received 306643656 of 306643656 (100.0%), 232.1 MBs/sec
+2026-10-24T14:40:47.2059218Z Cache Size: ~292 MB (306643656 B)
+2026-10-24T14:40:47.2102865Z [command]/usr/bin/tar -xf /home/runner/work/_temp/5c70ea7d-0486-49d9-a599-6db2d4f7063d/cache.tzst -P -C /home/runner/work/nash-ai-markets/nash-ai-markets --use-compress-program unzstd
+2026-10-24T14:40:47.7295546Z Cache restored successfully
+2026-10-24T14:40:47.9215314Z Cache restored from key: node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd
+2026-10-24T14:40:47.9461090Z ##[group]Run test "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"
+2026-10-24T14:40:47.9461608Z [36;1mtest "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"[0m
+2026-10-24T14:40:47.9462342Z [36;1mnode -e "const c=require('./vercel.json');if(c.git.deploymentEnabled['monaco-scanner-image-geometry-126-20261024']!==false)process.exit(1)"[0m
+2026-10-24T14:40:47.9880549Z shell: /usr/bin/bash -e {0}
+2026-10-24T14:40:47.9880969Z env:
+2026-10-24T14:40:47.9881232Z   CI: true
+2026-10-24T14:40:47.9881527Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:40:47.9881933Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:47.9882529Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:40:47.9883140Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:40:47.9883695Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:40:47.9884086Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:40:47.9884604Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:40:47.9885100Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:40:47.9885544Z ##[endgroup]
+2026-10-24T14:40:48.0309639Z ##[group]Run npm ci --no-audit --no-fund --fetch-retries=0
+2026-10-24T14:40:48.0310130Z [36;1mnpm ci --no-audit --no-fund --fetch-retries=0[0m
+2026-10-24T14:40:48.0310501Z [36;1mnode scripts/prepare-axis-ocr.mjs[0m
+2026-10-24T14:40:48.0375339Z shell: /usr/bin/bash -e {0}
+2026-10-24T14:40:48.0375857Z env:
+2026-10-24T14:40:48.0376063Z   CI: true
+2026-10-24T14:40:48.0376291Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:40:48.0376609Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:40:48.0377062Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:40:48.0377553Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:40:48.0377949Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:40:48.0378262Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:40:48.0378577Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:40:48.0378966Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:40:48.0379341Z ##[endgroup]
+2026-10-24T14:40:53.4691458Z npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+2026-10-24T14:40:53.6529961Z npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+2026-10-24T14:40:54.3894188Z npm warn deprecated jsrsasign@11.1.5: This package is no longer maintained.
+2026-10-24T14:40:54.7955819Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-24T14:41:03.9773082Z 
+2026-10-24T14:41:03.9773654Z added 659 packages in 16s
+2026-10-24T14:41:03.9798344Z npm warn allow-scripts 7 packages have install scripts not yet covered by allowScripts:
+2026-10-24T14:41:03.9799940Z npm warn allow-scripts   esbuild@0.18.20 (postinstall: node install.js)
+2026-10-24T14:41:03.9801226Z npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+2026-10-24T14:41:03.9809354Z npm warn allow-scripts   esbuild@0.28.1 (postinstall: node install.js)
+2026-10-24T14:41:03.9810613Z npm warn allow-scripts   tesseract.js@6.0.1 (postinstall: opencollective-postinstall || true)
+2026-10-24T14:41:03.9812064Z npm warn allow-scripts   unrs-resolver@1.11.1 (postinstall: napi-postinstall unrs-resolver 1.11.1 check)
+2026-10-24T14:41:03.9813110Z npm warn allow-scripts   workerd@1.20260515.1 (postinstall: node install.js)
+2026-10-24T14:41:03.9813731Z npm warn allow-scripts   esbuild@0.27.3 (postinstall: node install.js)
+2026-10-24T14:41:03.9814143Z npm warn allow-scripts
+2026-10-24T14:41:03.9814814Z npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+2026-10-24T14:41:04.2671725Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T14:41:04.3078074Z ##[group]Run node scripts/verify-pocket-scanner-image-recovery.mjs
+2026-10-24T14:41:04.3078703Z [36;1mnode scripts/verify-pocket-scanner-image-recovery.mjs[0m
+2026-10-24T14:41:04.3157305Z shell: /usr/bin/bash -e {0}
+2026-10-24T14:41:04.3157731Z env:
+2026-10-24T14:41:04.3158031Z   CI: true
+2026-10-24T14:41:04.3158359Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:41:04.3158792Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:41:04.3159233Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:41:04.3159692Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:41:04.3160314Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:41:04.3160816Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:41:04.3161399Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:41:04.3162039Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:41:04.3162596Z ##[endgroup]
+2026-10-24T14:41:06.0345266Z {"file":"tests/pocket-image-plot-region.test.ts","sourceSha256":"3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2","status":"PASS","tests":18,"pass":18,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"234301a4084b771aee446ff0f292905d9085baeeb8e73a049a0f47b226234cf2"}
+2026-10-24T14:41:06.1628057Z {"file":"tests/pocket-source-level-candidates.test.ts","sourceSha256":"6d17156f2a222dfd471a56f4bc3af727af6f8c7da49bcb1aae14dec54ecabd5e","status":"PASS","tests":7,"pass":7,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"eab140b2e7cd98271a15b5f5a9c1e4d0b57823c9d9137325c8daba3f5c2d6bbd"}
+2026-10-24T14:41:06.4224438Z {"file":"tests/pocket-image-axis-verification.test.ts","sourceSha256":"f9486479c2c024088323abc0186dbf168ebae4a575a8769730911c9f33cfcdcf","status":"PASS","tests":19,"pass":19,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"31ac69a154dece38ed2f87a8fbfbb9c53b57a5bcd0bbfc0096cec14ab4923798"}
+2026-10-24T14:41:07.1852582Z {"file":"tests/pocket-image-recovery-integration.test.ts","sourceSha256":"04b258de3e4a8d19a40268e19d7643654664ad120bc587b075569bb0b6bdfe61","status":"PASS","tests":9,"pass":9,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"c01435d727aabeafaf48f919fb18185186f97bc59a776475309633569c4bfb80"}
+2026-10-24T14:41:07.2726362Z {"file":"tests/pocket-browser-image-axis-ocr.test.mjs","sourceSha256":"27a9ca071ee2257288fa77849bfaca5c5a38a5fbf16d5f1f70cb094cde5003a8","status":"PASS","tests":4,"pass":4,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"44f2c82275b34b3dde882eea91716c4f093a9788c8bd07ee08a77f59d06b1b6b"}
+2026-10-24T14:41:07.4144194Z {"file":"tests/pocket-source-placement.test.ts","sourceSha256":"f418cbc8b5fedea9a8560deb4fa475226272fdf192e5fee396478a83c75fa8ff","status":"PASS","tests":7,"pass":7,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"8d70d7f9e955f4f2b2ce26b9ba971f2736ac42344e89e1742e63079b008877f1"}
+2026-10-24T14:41:08.3623655Z {"file":"tests/pocket-source-placement-render.test.ts","sourceSha256":"9edbac100e5ce6556a21e4a2f3d2db6606635ea2d79eafaa2832ddf46e62bdf9","status":"PASS","tests":6,"pass":6,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"d3ef988fffdebdf580d89c5ca010d517814a473f587c05eb0889c2425315ec7a"}
+2026-10-24T14:41:08.4549291Z {"file":"tests/pocket-level-provenance.test.ts","sourceSha256":"1f34e426075cba6497d2d2848813b19639a900b8e5c6a206f7c125ed9254b6c7","status":"PASS","tests":3,"pass":3,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"d6b22baf2edd79820228979a578f454a1ded4bc62a60d090c18083ca5361b6aa"}
+2026-10-24T14:41:08.5628962Z {"file":"tests/pocket-analysis-cancellation.test.ts","sourceSha256":"c09abb2c3d22f51e0447469303aaa3f076f14034da2f2e5801802482ff5b437e","status":"PASS","tests":2,"pass":2,"fail":0,"skipped":0,"cancelled":0,"exitCode":0,"logSha256":"9a8b89c63a26ca82100fc37b6a7ee904b77c4b2781d98bbe8a57d2e9b40eb090"}
+2026-10-24T14:41:08.5632464Z {"status":"PASS","totals":{"tests":75,"pass":75,"fail":0,"skipped":0,"cancelled":0},"suites":9}
+2026-10-24T14:41:08.5714404Z ##[group]Run npm run typecheck
+2026-10-24T14:41:08.5714755Z [36;1mnpm run typecheck[0m
+2026-10-24T14:41:08.5716602Z [36;1mnpx eslint app/api/pocket/analyse/route.ts app/pocket/PocketBullseye.tsx app/pocket/source-price-candidates.ts app/pocket/image-plot-region.ts app/pocket/image-axis-verification.ts app/pocket/browser-image-axis-ocr.ts app/pocket/source-placement.ts app/pocket/use-original-chart-measurement.ts app/pocket/original-pixel-levels.ts app/pocket/level-provenance.ts[0m
+2026-10-24T14:41:08.5718092Z [36;1mnpm run security:scan[0m
+2026-10-24T14:41:08.5718352Z [36;1mgit diff --check[0m
+2026-10-24T14:41:08.5782937Z shell: /usr/bin/bash -e {0}
+2026-10-24T14:41:08.5783205Z env:
+2026-10-24T14:41:08.5783412Z   CI: true
+2026-10-24T14:41:08.5783613Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:41:08.5783919Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:41:08.5784347Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:41:08.5784877Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:41:08.5785272Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:41:08.5785859Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:41:08.5786247Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:41:08.5786625Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:41:08.5786977Z ##[endgroup]
+2026-10-24T14:41:08.6831509Z 
+2026-10-24T14:41:08.6832338Z > nash-ai-markets-bullseye@1.0.0-rc.2 typecheck
+2026-10-24T14:41:08.6833159Z > tsc --noEmit --incremental false
+2026-10-24T14:41:08.6833540Z 
+2026-10-24T14:41:29.1836247Z 
+2026-10-24T14:41:29.1867051Z /home/runner/work/nash-ai-markets/nash-ai-markets/app/pocket/PocketBullseye.tsx
+2026-10-24T14:41:29.1924848Z ##[warning]  125:10  warning  'LockOnReveal' is defined but never used. Allowed unused vars must match /^_/u          @typescript-eslint/no-unused-vars
+2026-10-24T14:41:29.1939066Z ##[warning]  167:10  warning  'BullseyeCommandArena' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+2026-10-24T14:41:29.1942426Z ##[warning]  215:10  warning  'BubbleChartLab' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+2026-10-24T14:41:29.1945832Z ##[warning]  378:9   warning  'range' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+2026-10-24T14:41:29.1949342Z ##[warning]  526:10  warning  'SignalPulse' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+2026-10-24T14:41:29.1951011Z 
+2026-10-24T14:41:29.1951598Z ✖ 5 problems (0 errors, 5 warnings)
+2026-10-24T14:41:29.1951945Z 
+2026-10-24T14:41:29.5216286Z 
+2026-10-24T14:41:29.5217379Z > nash-ai-markets-bullseye@1.0.0-rc.2 security:scan
+2026-10-24T14:41:29.5218221Z > node scripts/check-secrets.mjs
+2026-10-24T14:41:29.5218566Z 
+2026-10-24T14:41:29.6911191Z Secret-pattern scan passed across 1459 version-control candidates.
+2026-10-24T14:41:29.7588206Z ##[group]Run export POCKET_QA_BROWSER_EXECUTABLE_PATH="$(command -v google-chrome)"
+2026-10-24T14:41:29.7588843Z [36;1mexport POCKET_QA_BROWSER_EXECUTABLE_PATH="$(command -v google-chrome)"[0m
+2026-10-24T14:41:29.7589307Z [36;1mtest -n "$POCKET_QA_BROWSER_EXECUTABLE_PATH"[0m
+2026-10-24T14:41:29.7589811Z [36;1mexport POCKET_QA_BROWSER_OUT="$POCKET_IMAGE_RECOVERY_QA_OUTPUT/legacy-browser.json"[0m
+2026-10-24T14:41:29.7590460Z [36;1mexport POCKET_QA_IMAGE_RECOVERY_OUT="$POCKET_IMAGE_RECOVERY_QA_OUTPUT/recovery-browser.json"[0m
+2026-10-24T14:41:29.7591173Z [36;1mexport POCKET_IMAGE_RECOVERY_OUTPUT="$POCKET_IMAGE_RECOVERY_QA_OUTPUT/real-ocr-browser.json"[0m
+2026-10-24T14:41:29.7591724Z [36;1mnode tests/run-pocket-source-placement-browser.mjs[0m
+2026-10-24T14:41:29.7592148Z [36;1mnode tests/run-pocket-image-recovery-browser.mjs[0m
+2026-10-24T14:41:29.7592568Z [36;1mnode scripts/verify-pocket-image-recovery-browser.mjs[0m
+2026-10-24T14:41:29.7654565Z shell: /usr/bin/bash -e {0}
+2026-10-24T14:41:29.7654828Z env:
+2026-10-24T14:41:29.7655018Z   CI: true
+2026-10-24T14:41:29.7655219Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:41:29.7655835Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:41:29.7656364Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:41:29.7656871Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:41:29.7657264Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:41:29.7657564Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:41:29.7657872Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:41:29.7658251Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:41:29.7658582Z ##[endgroup]
+2026-10-24T14:41:38.0454788Z {"kind":"INDEPENDENT_SOURCE_PLACEMENT_BROWSER_REVIEW","status":"PASS","observedAtUtc":"2026-10-24T14:41:38.042Z","checks":[{"name":"pending independent source read holds numeric placements and both consumers","status":"PASS"},{"name":"one measured result supplies two SVG consumers at corrected original pixel row","status":"PASS"},{"name":"identity revocation synchronously removes previous verified placement","status":"PASS"},{"name":"same image/report reconfirmation waits for a fresh bound result","status":"PASS"},{"name":"new confirmation object invalidates otherwise unchanged report binding","status":"PASS"},{"name":"replaced report ignores late completed response even when transport ignores abort","status":"PASS"},{"name":"image A to B to A cannot resurrect prior image-A measurement","status":"PASS"},{"name":"explicit held OCR response keeps all source placement withheld","status":"PASS"},{"name":"reader rejection remains held and never reuses prior verified coordinates","status":"PASS"},{"name":"shared view removal does not trigger another OCR read or clear valid parent evidence","status":"PASS"},{"name":"unmount aborts pending OCR and suppresses its later completion","status":"PASS"},{"name":"no browser exceptions, external network requests, or provider calls","status":"PASS"}],"errors":[],"blockedExternalRequests":[],"sourceBuild":{"sourceHashes":{"app/pocket/OriginalChartEvidence.tsx":"5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4","app/pocket/use-original-chart-measurement.ts":"3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260","app/pocket/source-placement.ts":"56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542","app/pocket/original-pixel-levels.ts":"cb292b9dca085363455c06fa161ffd0c78ac0a095141d0075841c6212949efe8"},"controlledBoundary":"browser-axis-ocr","bundleBytes":1239547,"providerCalls":0},"providerCalls":0,"databaseCalls":0,"privateChartReads":0,"limitations":["Synthetic local raster and controlled OCR boundary; no real OCR/scanner accuracy or latency acceptance"]}
+2026-10-24T14:41:40.3967774Z {"output":"/home/runner/work/nash-ai-markets/nash-ai-markets/qa/scanner-image-recovery/recovery-browser.json","kind":"POCKET_SCANNER_IMAGE_RECOVERY_BROWSER_LIFECYCLE","status":"PASS","observedAtUtc":"2026-10-24T14:41:40.392Z","browserVersion":"155.0.8059.39","checks":[{"name":"pending real-image measurement holds both consumers and uses only the new OCR boundary","status":"PASS"},{"name":"real verifier projects retained prices for two shared SVG views without granting semantic authority","status":"PASS"},{"name":"valid model bounds with false quality still grant no pattern or liquidity authority","status":"PASS"},{"name":"identity revocation removes all placements synchronously","status":"PASS"},{"name":"reconfirming the same source waits for a fresh measurement","status":"PASS"},{"name":"a changed confirmation object invalidates the current image and report measurement","status":"PASS"},{"name":"a late old-report response is ignored even when the controlled transport ignores abort","status":"PASS"},{"name":"image A to B to A never revives an old image result","status":"PASS"},{"name":"revocation during a pending read blocks its completion after reconfirmation","status":"PASS"},{"name":"explicit logarithmic scale holds before either OCR reader","status":"PASS"},{"name":"malformed scale limitations hold before either OCR reader","status":"PASS"},{"name":"a malformed candidate authority envelope holds before either OCR reader","status":"PASS"},{"name":"ambiguous touching panels publish a terminal hold without invoking OCR","status":"PASS"},{"name":"an over-budget original image holds before canvas readback and OCR","status":"PASS"},{"name":"an explicit independent OCR hold cannot reuse earlier placements","status":"PASS"},{"name":"a rejected independent read remains held without authority widening","status":"PASS"},{"name":"nonlinear controlled OCR words fail the real axis verifier in the mounted flow","status":"PASS"},{"name":"a bare verified-axis envelope cannot grant source placement","status":"PASS"},{"name":"removing a shared view neither restarts OCR nor creates a render loop","status":"PASS"},{"name":"unmount aborts a pending read and ignores its later completion","status":"PASS"},{"name":"no browser exceptions, legacy reader calls or external requests occurred","status":"PASS"}],"errors":[],"blockedExternalRequests":[],"observations":{"independentReaderCalls":15,"legacyReaderCalls":0,"originalRasterReadbacks":16},"sourceBuild":{"sourceHashes":{"app/pocket/use-original-chart-measurement.ts":"3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260","app/pocket/source-placement.ts":"56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542","app/pocket/OriginalChartEvidence.tsx":"5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4","app/pocket/image-plot-region.ts":"819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48","app/pocket/image-axis-verification.ts":"91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3","app/pocket/source-price-candidates.ts":"11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50","app/pocket/original-pixel-levels.ts":"cb292b9dca085363455c06fa161ffd0c78ac0a095141d0075841c6212949efe8","app/pocket/original-pixel-geometry.ts":"c517c9e42c4323de5f5faaebedcbdacac46273c05511bb08fb6911a4da2b0dd1","app/pocket/axis-verification.ts":"6e0a2e2d53cc062c9275107494ac658b217cf03e4e6f74756c4f48ec01c9f252","app/pocket/axis-reading-bounds.ts":"ec55aeefa99e028d9ca874fae9efb3cc7e6ce67367ea36a641d9c577fe3e484a","app/pocket/chart-grid-rows.ts":"3e330814d35db34f2cc133f01682391887c5b9fdae222ed491d6df161eb326d8","app/pocket/candle-pixels.ts":"8d24704b57cdba0d4fc4dbe575cc2ebcb45014a763ac76c8b54a7906513b2361","tests/support/pocket-image-plot-raster.ts":"950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a","tests/support/pocket-image-recovery-browser.tsx":"e85b50c897346b0f19b853bf7f4f266d84ee68c260d84a008ed11a79ecd43e41","tests/run-pocket-image-recovery-browser.mjs":"32d840cc5b758d29e8685cb4d07aee34d10f83ae5834c358101f7b86f4a7c4b5"},"bundleSha256":"2c7aab4bc98e8ab67def05e86b06fafebfb1f96b835de03b6fe5bf5244b5f841","bundleBytes":1201076,"controlledBoundaries":["browser-image-axis-ocr (deferred responses)","browser-axis-ocr (counted forbidden calls)"],"realProductionPaths":["React hook","image raster detector","axis word verifier","candidate projection","OriginalChartEvidence"],"providerCalls":0},"providerCalls":0,"databaseCalls":0,"privateChartReads":0,"heldOutReads":0,"screenshots":0,"limitations":["Synthetic public chart rasters and controlled OCR boundary; this checks mounted binding and authority behavior, not real OCR/scanner accuracy or physical-device latency."]}
+2026-10-24T14:41:42.3784676Z {"status":"PASS","output":"/home/runner/work/nash-ai-markets/nash-ai-markets/qa/scanner-image-recovery/real-ocr-browser.json","sha256":"f52f4d8201aabfe969700c4e58a7bafcdafd405d77868990b7eef0c53df92699","levels":2,"axis":"verified","errors":0,"providerCalls":0}
+2026-10-24T14:41:42.3944130Z ##[group]Run npx next build --webpack
+2026-10-24T14:41:42.3944483Z [36;1mnpx next build --webpack[0m
+2026-10-24T14:41:42.4008075Z shell: /usr/bin/bash -e {0}
+2026-10-24T14:41:42.4008358Z env:
+2026-10-24T14:41:42.4008565Z   CI: true
+2026-10-24T14:41:42.4008788Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:41:42.4009138Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:41:42.4009627Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:41:42.4010146Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:41:42.4010598Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:41:42.4010917Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:41:42.4011265Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:41:42.4011683Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:41:42.4012054Z ##[endgroup]
+2026-10-24T14:41:43.0280822Z ▲ Next.js 16.3.8 (webpack)
+2026-10-24T14:41:43.1030489Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T14:41:43.1186865Z ✓ Running next.config.ts took 90ms
+2026-10-24T14:41:43.1217945Z ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2026-10-24T14:41:43.1301441Z 
+2026-10-24T14:41:43.1336907Z ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+2026-10-24T14:41:43.1337548Z 
+2026-10-24T14:41:43.1337807Z   To migrate automatically, run:
+2026-10-24T14:41:43.1338410Z   npx @next/codemod@canary middleware-to-proxy .
+2026-10-24T14:41:43.1338852Z 
+2026-10-24T14:41:43.1339259Z   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+2026-10-24T14:41:43.1691928Z   Creating an optimized production build ...
+2026-10-24T14:41:43.7002882Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T14:41:55.5569842Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T14:41:57.7391639Z <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+2026-10-24T14:41:57.7416182Z <w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+2026-10-24T14:41:57.9089943Z ⚠ Compiled with warnings in 2.0s
+2026-10-24T14:41:57.9091978Z 
+2026-10-24T14:41:57.9092780Z ./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+2026-10-24T14:41:57.9094188Z A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+2026-10-24T14:41:57.9096159Z Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+2026-10-24T14:41:57.9096649Z 
+2026-10-24T14:41:57.9096934Z Import trace for requested module:
+2026-10-24T14:41:57.9097694Z ./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+2026-10-24T14:41:57.9098592Z ./node_modules/next/dist/esm/server/request/connection.js
+2026-10-24T14:41:57.9099365Z ./node_modules/next/dist/esm/server/web/exports/index.js
+2026-10-24T14:41:57.9100034Z ./node_modules/next/dist/esm/api/server.js
+2026-10-24T14:41:57.9100372Z 
+2026-10-24T14:41:57.9100842Z ./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+2026-10-24T14:41:57.9102027Z A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+2026-10-24T14:41:57.9103059Z Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+2026-10-24T14:41:57.9103525Z 
+2026-10-24T14:41:57.9103796Z Import trace for requested module:
+2026-10-24T14:41:57.9104576Z ./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+2026-10-24T14:41:57.9105417Z ./node_modules/next/dist/esm/server/request/connection.js
+2026-10-24T14:41:57.9106418Z ./node_modules/next/dist/esm/server/web/exports/index.js
+2026-10-24T14:41:57.9107111Z ./node_modules/next/dist/esm/api/server.js
+2026-10-24T14:41:57.9107441Z 
+2026-10-24T14:41:57.9108095Z ./node_modules/@supabase/supabase-js/dist/index.mjs
+2026-10-24T14:41:57.9109138Z A Node.js API is used (process.version at line: 27) which is not supported in the Edge Runtime.
+2026-10-24T14:41:57.9110172Z Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+2026-10-24T14:41:57.9110641Z 
+2026-10-24T14:41:57.9110893Z Import trace for requested module:
+2026-10-24T14:41:57.9111526Z ./node_modules/@supabase/supabase-js/dist/index.mjs
+2026-10-24T14:41:57.9112345Z ./node_modules/@supabase/ssr/dist/module/createBrowserClient.js
+2026-10-24T14:41:57.9113125Z ./node_modules/@supabase/ssr/dist/module/index.js
+2026-10-24T14:41:57.9113517Z 
+2026-10-24T14:41:58.4809495Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T14:42:06.6404332Z ✓ Compiled successfully in 20.7s
+2026-10-24T14:42:06.6428971Z   Running TypeScript ...
+2026-10-24T14:42:23.7773445Z   Finished TypeScript in 17.1s ...
+2026-10-24T14:42:23.7811832Z   Collecting page data using 3 workers ...
+2026-10-24T14:42:26.6226058Z   Generating static pages using 3 workers (0/40) ...
+2026-10-24T14:42:27.3781063Z   Generating static pages using 3 workers (10/40) 
+2026-10-24T14:42:27.3781886Z   Generating static pages using 3 workers (20/40) 
+2026-10-24T14:42:27.3783670Z [verified-macro-context] {"route":"/pocket-next","status":"unavailable","observationCount":0,"releaseCount":0,"availableSources":["BEA","BLS","Federal Reserve","New York Fed","Treasury"],"unavailableSources":["Census","SEC"],"durationMs":10}
+2026-10-24T14:42:27.3785164Z   Generating static pages using 3 workers (30/40) 
+2026-10-24T14:42:27.3786860Z ✓ Generating static pages using 3 workers (40/40) in 756ms
+2026-10-24T14:42:28.1429284Z   Finalizing page optimization ...
+2026-10-24T14:42:28.1436573Z   Collecting build traces ...
+2026-10-24T14:42:37.0333780Z 
+2026-10-24T14:42:37.0366507Z Route (app)
+2026-10-24T14:42:37.0367397Z ┌ ƒ /
+2026-10-24T14:42:37.0367975Z ├ ○ /_not-found
+2026-10-24T14:42:37.0368571Z ├ ○ /about
+2026-10-24T14:42:37.0369198Z ├ ƒ /admin/commercial
+2026-10-24T14:42:37.0369958Z ├ ƒ /admin/founding-100
+2026-10-24T14:42:37.0370687Z ├ ƒ /admin/visual-preview
+2026-10-24T14:42:37.0371452Z ├ ƒ /api/auth/redirect-probe
+2026-10-24T14:42:37.0372141Z ├ ƒ /api/auth/session
+2026-10-24T14:42:37.0372679Z ├ ƒ /api/auth/supabase-config-probe
+2026-10-24T14:42:37.0373260Z ├ ƒ /api/founding-member
+2026-10-24T14:42:37.0373910Z ├ ƒ /api/ideas
+2026-10-24T14:42:37.0374320Z ├ ƒ /api/ideas/[id]
+2026-10-24T14:42:37.0374694Z ├ ƒ /api/journal
+2026-10-24T14:42:37.0375089Z ├ ƒ /api/market/candles
+2026-10-24T14:42:37.0375523Z ├ ƒ /api/marketing/visit
+2026-10-24T14:42:37.0376264Z ├ ƒ /api/membership/preview
+2026-10-24T14:42:37.0376995Z ├ ƒ /api/onboarding
+2026-10-24T14:42:37.0377393Z ├ ƒ /api/openai/health
+2026-10-24T14:42:37.0377818Z ├ ƒ /api/pocket/analyse
+2026-10-24T14:42:37.0378269Z ├ ƒ /api/pocket/apple-account
+2026-10-24T14:42:37.0378815Z ├ ƒ /api/pocket/apple-notifications
+2026-10-24T14:42:37.0379631Z ├ ƒ /api/pocket/billing-portal
+2026-10-24T14:42:37.0380189Z ├ ƒ /api/pocket/build-manifest
+2026-10-24T14:42:37.0381018Z ├ ƒ /api/pocket/crypto-derivatives
+2026-10-24T14:42:37.0381528Z ├ ƒ /api/pocket/events
+2026-10-24T14:42:37.0381974Z ├ ƒ /api/pocket/follow-up
+2026-10-24T14:42:37.0382444Z ├ ƒ /api/pocket/levels
+2026-10-24T14:42:37.0382839Z ├ ƒ /api/pocket/options-wall
+2026-10-24T14:42:37.0383166Z ├ ƒ /api/pocket/preflight
+2026-10-24T14:42:37.0383475Z ├ ƒ /api/pocket/review
+2026-10-24T14:42:37.0383836Z ├ ƒ /api/pocket/subscription-access
+2026-10-24T14:42:37.0384183Z ├ ƒ /api/pocket/torture
+2026-10-24T14:42:37.0384463Z ├ ƒ /api/profile
+2026-10-24T14:42:37.0385037Z ├ ƒ /api/second-opinion
+2026-10-24T14:42:37.0386108Z ├ ƒ /api/stripe/checkout
+2026-10-24T14:42:37.0387031Z ├ ƒ /api/stripe/portal
+2026-10-24T14:42:37.0387617Z ├ ƒ /api/stripe/webhook
+2026-10-24T14:42:37.0388164Z ├ ƒ /api/waitlist
+2026-10-24T14:42:37.0388746Z ├ ƒ /api/youtube/oauth/callback
+2026-10-24T14:42:37.0389162Z ├ ƒ /archive
+2026-10-24T14:42:37.0389447Z ├ ƒ /archive/[date]
+2026-10-24T14:42:37.0389728Z ├ ƒ /auth/callback
+2026-10-24T14:42:37.0390265Z ├ ƒ /auth/confirm
+2026-10-24T14:42:37.0390546Z ├ ○ /auth/implicit
+2026-10-24T14:42:37.0390847Z ├ ƒ /auth/signout
+2026-10-24T14:42:37.0391101Z ├ ƒ /brief
+2026-10-24T14:42:37.0391336Z ├ ○ /cancelled
+2026-10-24T14:42:37.0391580Z ├ ○ /contact
+2026-10-24T14:42:37.0391838Z ├ ƒ /dashboard
+2026-10-24T14:42:37.0392635Z ├ ƒ /dev/logo-concepts
+2026-10-24T14:42:37.0393104Z ├ ƒ /dev/terminal-chart
+2026-10-24T14:42:37.0393600Z ├ ƒ /founding-member
+2026-10-24T14:42:37.0393978Z ├ ○ /help
+2026-10-24T14:42:37.0394199Z ├ ƒ /ideas
+2026-10-24T14:42:37.0394424Z ├ ƒ /ideas/[id]
+2026-10-24T14:42:37.0394653Z ├ ƒ /join
+2026-10-24T14:42:37.0394895Z ├ ƒ /journal
+2026-10-24T14:42:37.0395144Z ├ ƒ /launch-preview
+2026-10-24T14:42:37.0395390Z ├ ƒ /login
+2026-10-24T14:42:37.0395956Z ├ ○ /manifest.webmanifest
+2026-10-24T14:42:37.0396316Z ├ ƒ /marketing-preview
+2026-10-24T14:42:37.0396749Z ├ ƒ /membership-required
+2026-10-24T14:42:37.0397044Z ├ ƒ /methodology
+2026-10-24T14:42:37.0397324Z ├ ƒ /onboarding
+2026-10-24T14:42:37.0397724Z ├ ƒ /performance
+2026-10-24T14:42:37.0398000Z ├ ○ /pocket
+2026-10-24T14:42:37.0398231Z ├ ƒ /pocket-next
+2026-10-24T14:42:37.0398495Z ├ ƒ /pocket/founding
+2026-10-24T14:42:37.0398787Z ├ ○ /pocket/founding/welcome
+2026-10-24T14:42:37.0399079Z ├ ƒ /pocket/login
+2026-10-24T14:42:37.0399321Z ├ ƒ /preferences
+2026-10-24T14:42:37.0399561Z ├ ƒ /pricing
+2026-10-24T14:42:37.0399780Z ├ ○ /privacy
+2026-10-24T14:42:37.0399997Z ├ ƒ /profile
+2026-10-24T14:42:37.0400223Z ├ ƒ /replay
+2026-10-24T14:42:37.0400437Z ├ ƒ /results
+2026-10-24T14:42:37.0400652Z ├ ƒ /review
+2026-10-24T14:42:37.0400888Z ├ ƒ /reviews
+2026-10-24T14:42:37.0401146Z ├ ○ /risk-disclaimer
+2026-10-24T14:42:37.0403510Z ├ ○ /robots.txt
+2026-10-24T14:42:37.0403854Z ├ ƒ /second-opinion
+2026-10-24T14:42:37.0404121Z ├ ○ /sitemap.xml
+2026-10-24T14:42:37.0404353Z ├ ƒ /terminal
+2026-10-24T14:42:37.0404606Z ├ ƒ /terminal/diagnostics
+2026-10-24T14:42:37.0404860Z ├ ○ /terms
+2026-10-24T14:42:37.0405072Z ├ ƒ /waitlist
+2026-10-24T14:42:37.0405313Z └ ○ /welcome
+2026-10-24T14:42:37.0405434Z 
+2026-10-24T14:42:37.0405441Z 
+2026-10-24T14:42:37.0405854Z ƒ Proxy (Middleware)
+2026-10-24T14:42:37.0406016Z 
+2026-10-24T14:42:37.0406247Z ○  (Static)   prerendered as static content
+2026-10-24T14:42:37.0406654Z ƒ  (Dynamic)  server-rendered on demand
+2026-10-24T14:42:37.0406850Z 
+2026-10-24T14:42:37.1204755Z ##[group]Run actions/upload-artifact@v4
+2026-10-24T14:42:37.1205080Z with:
+2026-10-24T14:42:37.1205451Z   name: pocket-scanner-image-recovery-a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:42:37.1206249Z   path: qa/scanner-image-recovery
+2026-10-24T14:42:37.1206536Z   if-no-files-found: error
+2026-10-24T14:42:37.1207008Z   retention-days: 30
+2026-10-24T14:42:37.1207237Z   compression-level: 6
+2026-10-24T14:42:37.1207459Z   overwrite: false
+2026-10-24T14:42:37.1207685Z   include-hidden-files: false
+2026-10-24T14:42:37.1207923Z env:
+2026-10-24T14:42:37.1208099Z   CI: true
+2026-10-24T14:42:37.1208295Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T14:42:37.1208610Z   GIT_COMMIT_SHA: a3b108d59d4cd530b326a0e9a106e671aaead265
+2026-10-24T14:42:37.1209038Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T14:42:37.1209502Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T14:42:37.1209891Z   POCKET_BENCHMARK_PILOT_ENABLED: false
+2026-10-24T14:42:37.1210215Z   POCKET_REAL_BENCHMARK_DISPATCH: false
+2026-10-24T14:42:37.1210528Z   POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: false
+2026-10-24T14:42:37.1210910Z   POCKET_IMAGE_RECOVERY_QA_OUTPUT: qa/scanner-image-recovery
+2026-10-24T14:42:37.1211243Z ##[endgroup]
+2026-10-24T14:42:37.2912199Z (node:3303) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T14:42:37.2913392Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T14:42:37.3076993Z With the provided path, there will be 13 files uploaded
+2026-10-24T14:42:37.3077962Z Artifact name is valid!
+2026-10-24T14:42:37.3078452Z Root directory input is valid!
+2026-10-24T14:42:37.4996912Z Beginning upload of artifact content to blob storage
+2026-10-24T14:42:37.5383538Z (node:3303) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-24T14:42:37.5752733Z Uploaded bytes 15208
+2026-10-24T14:42:37.5947060Z Finished uploading artifact content to blob storage!
+2026-10-24T14:42:37.5948453Z SHA256 digest of uploaded artifact zip is 0426d184361f3cd09690d5a01936640498f644803074c0403652993e54e896a0
+2026-10-24T14:42:37.5949649Z Finalizing artifact upload
+2026-10-24T14:42:37.9881492Z Artifact pocket-scanner-image-recovery-a3b108d59d4cd530b326a0e9a106e671aaead265.zip successfully finalized. Artifact ID 12563319937
+2026-10-24T14:42:37.9883509Z Artifact pocket-scanner-image-recovery-a3b108d59d4cd530b326a0e9a106e671aaead265 has been successfully uploaded! Final size is 15208 bytes. Artifact ID is 12563319937
+2026-10-24T14:42:37.9887782Z Artifact download URL: https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40103559042/artifacts/12563319937
+2026-10-24T14:42:38.0082253Z Post job cleanup.
+2026-10-24T14:42:38.1344558Z (node:3316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T14:42:38.1346097Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T14:42:38.1350206Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd, not saving cache.
+2026-10-24T14:42:38.1486698Z Post job cleanup.
+2026-10-24T14:42:38.2455896Z [command]/usr/bin/git version
+2026-10-24T14:42:38.2530464Z git version 2.55.0
+2026-10-24T14:42:38.2589525Z Temporarily overriding HOME='/home/runner/work/_temp/46ad1027-6583-48d9-a9c5-a858ab474680' before making global git config changes
+2026-10-24T14:42:38.2591289Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T14:42:38.2598341Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T14:42:38.2663419Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T14:42:38.2716524Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T14:42:38.3045432Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T14:42:38.3137583Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T14:42:38.3734585Z Cleaning up orphan processes
+2026-10-24T14:42:38.4158570Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

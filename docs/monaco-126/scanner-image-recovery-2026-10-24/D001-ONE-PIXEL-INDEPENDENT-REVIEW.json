@@ -1,0 +1,678 @@
+{
+  "kind": "INDEPENDENT_D001_MOUNTED_BROWSER_ONE_PIXEL_GEOMETRY_REVIEW",
+  "reviewedAtUtc": "2026-10-24T13:50:57.603Z",
+  "reviewer": "precision_contract_fix",
+  "status": "PASS_GEOMETRY_ONLY",
+  "caseId": "v2-d001",
+  "sourceCaseId": "d001",
+  "inputs": {
+    "assayPath": "D001-REAL-BROWSER-ASSAY.json",
+    "assaySha256": "ea8cccd80d4833e4b8a1b1b71013d0ce81f67182593d2df50a05d912dd0aa651",
+    "bundleSha256": "91da0d22a88dcee0d27d342d524f77354d559312406d4f51fd579ba025e6f7a0",
+    "calibrationEntry": "artifacts/calibration",
+    "calibrationSha256": "e57e1420368b454f6751580d87641c052ca754c6abb6e2baf04109676f3171ae",
+    "imageSha256DeclaredByAssay": "6e12f80e278403b681583957555b312982fc2df7e76b3d0d576d717169a008ec",
+    "mainResponseSha256DeclaredByAssay": "6a271af7026e5b6c6447437d32ce4c67a262965a1df9c962439d892575468f06",
+    "originalSize": [
+      1400,
+      850
+    ],
+    "cropMapping": {
+      "kind": "identity",
+      "originalSize": [
+        1400,
+        850
+      ],
+      "precisionRect": null
+    }
+  },
+  "method": {
+    "referenceProcedure": "review-v2-d001-source-placement.mjs lines50-53: exact numeric tick match; otherwise linear interpolation between fixed price bounds",
+    "toleranceOriginalPixels": 1,
+    "addedTolerancePixels": 0,
+    "coordinateSystem": "Original image pixels; percentage coordinates multiplied by original dimensions/100; SVG line coordinates compared directly",
+    "referenceFieldsUsed": [
+      "kind",
+      "width",
+      "height",
+      "plot",
+      "ticks",
+      "priceMin",
+      "priceMax",
+      "cropMapping"
+    ],
+    "referenceNotUsedFor": [
+      "runtime detector",
+      "OCR",
+      "candidate extraction",
+      "projection",
+      "rendering",
+      "semantic labels"
+    ],
+    "renderedPairing": "Four DOM line records retain placement-array order; all four coordinate attributes must match the corresponding projected coordinates within 1e-9."
+  },
+  "sourcePins": {
+    "app/api/pocket/analysis-calibration.ts": {
+      "assaySha256": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+      "currentSha256": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+      "matches": true
+    },
+    "app/pocket/use-original-chart-measurement.ts": {
+      "assaySha256": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+      "currentSha256": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+      "matches": true
+    },
+    "app/pocket/source-placement.ts": {
+      "assaySha256": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+      "currentSha256": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+      "matches": true
+    },
+    "app/pocket/source-price-candidates.ts": {
+      "assaySha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+      "currentSha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+      "matches": true
+    },
+    "app/pocket/image-plot-region.ts": {
+      "assaySha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+      "currentSha256": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+      "matches": true
+    },
+    "app/pocket/image-axis-verification.ts": {
+      "assaySha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+      "currentSha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+      "matches": true
+    },
+    "app/pocket/browser-image-axis-ocr.ts": {
+      "assaySha256": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+      "currentSha256": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+      "matches": true
+    },
+    "app/pocket/level-provenance.ts": {
+      "assaySha256": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+      "currentSha256": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+      "matches": true
+    },
+    "app/pocket/OriginalChartEvidence.tsx": {
+      "assaySha256": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4",
+      "currentSha256": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4",
+      "matches": true
+    }
+  },
+  "allSourcePinsMatch": true,
+  "plotEdges": {
+    "left": {
+      "measured": 90,
+      "expected": 90,
+      "errorPx": 0,
+      "withinOnePixel": true
+    },
+    "top": {
+      "measured": 125,
+      "expected": 125,
+      "errorPx": 0,
+      "withinOnePixel": true
+    },
+    "right": {
+      "measured": 1250,
+      "expected": 1250,
+      "errorPx": 0,
+      "withinOnePixel": true
+    },
+    "bottom": {
+      "measured": 650,
+      "expected": 650,
+      "errorPx": 0,
+      "withinOnePixel": true
+    }
+  },
+  "anchors": [
+    {
+      "index": 0,
+      "price": 7757.31,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 125,
+      "expected": 125,
+      "errorPx": 0,
+      "withinOnePixel": true
+    },
+    {
+      "index": 1,
+      "price": 7752.3317,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 212,
+      "expected": 212.49941412788752,
+      "errorPx": 0.49941412788751904,
+      "withinOnePixel": true
+    },
+    {
+      "index": 2,
+      "price": 7747.3533,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 300.00000000000006,
+      "expected": 300.0005858721125,
+      "errorPx": 0.0005858721124241129,
+      "withinOnePixel": true
+    },
+    {
+      "index": 3,
+      "price": 7742.375,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 388,
+      "expected": 387.5,
+      "errorPx": 0.5,
+      "withinOnePixel": true
+    },
+    {
+      "index": 4,
+      "price": 7737.3967,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 475,
+      "expected": 474.9994141278875,
+      "errorPx": 0.0005858721124809563,
+      "withinOnePixel": true
+    },
+    {
+      "index": 5,
+      "price": 7732.4183,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 563,
+      "expected": 562.5005858721125,
+      "errorPx": 0.4994141278874622,
+      "withinOnePixel": true
+    },
+    {
+      "index": 6,
+      "price": 7727.44,
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "measured": 650,
+      "expected": 650,
+      "errorPx": 0,
+      "withinOnePixel": true
+    }
+  ],
+  "projectedCandidates": [
+    {
+      "index": 0,
+      "price": "7752.3317",
+      "kindClaim": "resistance",
+      "semanticStatus": "UNSCORED",
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 212.42806843392256,
+        "y2": 212.42806843392256
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 212.42806843392256,
+          "expected": 212.49941412788752,
+          "errorPx": 0.07134569396495749,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 212.42806843392256,
+          "expected": 212.49941412788752,
+          "errorPx": 0.07134569396495749,
+          "withinOnePixel": true
+        }
+      },
+      "maxCoordinateErrorPx": 0.07134569396495749,
+      "maxEndpointErrorPx": 0.07134569396495749,
+      "withinOnePixel": true
+    },
+    {
+      "index": 1,
+      "price": "7747.3533",
+      "kindClaim": "resistance",
+      "semanticStatus": "UNSCORED",
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 300.0006280278219,
+        "y2": 300.0006280278219
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 300.0006280278219,
+          "expected": 300.0005858721125,
+          "errorPx": 4.215570942278646e-05,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 300.0006280278219,
+          "expected": 300.0005858721125,
+          "errorPx": 4.215570942278646e-05,
+          "withinOnePixel": true
+        }
+      },
+      "maxCoordinateErrorPx": 4.215570942278646e-05,
+      "maxEndpointErrorPx": 4.215570942278646e-05,
+      "withinOnePixel": true
+    },
+    {
+      "index": 2,
+      "price": "7742.3750",
+      "kindClaim": "support",
+      "semanticStatus": "UNSCORED",
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 387.57142857142856,
+        "y2": 387.57142857142856
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 387.57142857142856,
+          "expected": 387.5,
+          "errorPx": 0.07142857142855519,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 387.57142857142856,
+          "expected": 387.5,
+          "errorPx": 0.07142857142855519,
+          "withinOnePixel": true
+        }
+      },
+      "maxCoordinateErrorPx": 0.07142857142855519,
+      "maxEndpointErrorPx": 0.07142857142855519,
+      "withinOnePixel": true
+    },
+    {
+      "index": 3,
+      "price": "7732.4183",
+      "kindClaim": "support",
+      "semanticStatus": "UNSCORED",
+      "referenceMethod": "EXACT_CALIBRATION_TICK",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 562.7147887089345,
+        "y2": 562.7147887089345
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 562.7147887089345,
+          "expected": 562.5005858721125,
+          "errorPx": 0.2142028368219826,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 562.7147887089345,
+          "expected": 562.5005858721125,
+          "errorPx": 0.2142028368219826,
+          "withinOnePixel": true
+        }
+      },
+      "maxCoordinateErrorPx": 0.2142028368219826,
+      "maxEndpointErrorPx": 0.2142028368219826,
+      "withinOnePixel": true
+    }
+  ],
+  "renderedSvgLines": [
+    {
+      "index": 0,
+      "price": "7752.3317",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 212.42806843392256,
+        "y2": 212.42806843392256
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 212.42806843392256,
+          "expected": 212.49941412788752,
+          "errorPx": 0.07134569396495749,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 212.42806843392256,
+          "expected": 212.49941412788752,
+          "errorPx": 0.07134569396495749,
+          "withinOnePixel": true
+        }
+      },
+      "placementDeltasPx": {
+        "x1": 0,
+        "x2": 0,
+        "y1": 0,
+        "y2": 0
+      },
+      "matchesProjectedCoordinates": true,
+      "maxCoordinateErrorPx": 0.07134569396495749,
+      "maxEndpointErrorPx": 0.07134569396495749,
+      "withinOnePixel": true
+    },
+    {
+      "index": 1,
+      "price": "7747.3533",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 300.0006280278219,
+        "y2": 300.0006280278219
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 300.0006280278219,
+          "expected": 300.0005858721125,
+          "errorPx": 4.215570942278646e-05,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 300.0006280278219,
+          "expected": 300.0005858721125,
+          "errorPx": 4.215570942278646e-05,
+          "withinOnePixel": true
+        }
+      },
+      "placementDeltasPx": {
+        "x1": 0,
+        "x2": 0,
+        "y1": 0,
+        "y2": 0
+      },
+      "matchesProjectedCoordinates": true,
+      "maxCoordinateErrorPx": 4.215570942278646e-05,
+      "maxEndpointErrorPx": 4.215570942278646e-05,
+      "withinOnePixel": true
+    },
+    {
+      "index": 2,
+      "price": "7742.3750",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 387.57142857142856,
+        "y2": 387.57142857142856
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 387.57142857142856,
+          "expected": 387.5,
+          "errorPx": 0.07142857142855519,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 387.57142857142856,
+          "expected": 387.5,
+          "errorPx": 0.07142857142855519,
+          "withinOnePixel": true
+        }
+      },
+      "placementDeltasPx": {
+        "x1": 0,
+        "x2": 0,
+        "y1": 0,
+        "y2": 0
+      },
+      "matchesProjectedCoordinates": true,
+      "maxCoordinateErrorPx": 0.07142857142855519,
+      "maxEndpointErrorPx": 0.07142857142855519,
+      "withinOnePixel": true
+    },
+    {
+      "index": 3,
+      "price": "7732.4183",
+      "coordinates": {
+        "x1": 90,
+        "x2": 1250.0000000000002,
+        "y1": 562.7147887089345,
+        "y2": 562.7147887089345
+      },
+      "errors": {
+        "x1": {
+          "measured": 90,
+          "expected": 90,
+          "errorPx": 0,
+          "withinOnePixel": true
+        },
+        "x2": {
+          "measured": 1250.0000000000002,
+          "expected": 1250,
+          "errorPx": 2.2737367544323206e-13,
+          "withinOnePixel": true
+        },
+        "y1": {
+          "measured": 562.7147887089345,
+          "expected": 562.5005858721125,
+          "errorPx": 0.2142028368219826,
+          "withinOnePixel": true
+        },
+        "y2": {
+          "measured": 562.7147887089345,
+          "expected": 562.5005858721125,
+          "errorPx": 0.2142028368219826,
+          "withinOnePixel": true
+        }
+      },
+      "placementDeltasPx": {
+        "x1": 0,
+        "x2": 0,
+        "y1": 0,
+        "y2": 0
+      },
+      "matchesProjectedCoordinates": true,
+      "maxCoordinateErrorPx": 0.2142028368219826,
+      "maxEndpointErrorPx": 0.2142028368219826,
+      "withinOnePixel": true
+    }
+  ],
+  "ocrWordGridAssociation": [
+    {
+      "text": "7757.3100",
+      "confidence": 91.196419,
+      "rawWordCentreYPx": 123,
+      "measuredGridAnchorYPx": 125,
+      "wordToGridDistancePx": 2,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    },
+    {
+      "text": "7752.3317",
+      "confidence": 92.17424,
+      "rawWordCentreYPx": 210,
+      "measuredGridAnchorYPx": 212,
+      "wordToGridDistancePx": 2,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    },
+    {
+      "text": "7747.3533",
+      "confidence": 91.659126,
+      "rawWordCentreYPx": 298,
+      "measuredGridAnchorYPx": 300.00000000000006,
+      "wordToGridDistancePx": 2.000000000000057,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    },
+    {
+      "text": "7742.3750",
+      "confidence": 91.977989,
+      "rawWordCentreYPx": 386,
+      "measuredGridAnchorYPx": 388,
+      "wordToGridDistancePx": 2,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    },
+    {
+      "text": "7737.3967",
+      "confidence": 92.468521,
+      "rawWordCentreYPx": 473,
+      "measuredGridAnchorYPx": 475,
+      "wordToGridDistancePx": 2,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    },
+    {
+      "text": "7732.4183",
+      "confidence": 90.14994,
+      "rawWordCentreYPx": 561,
+      "measuredGridAnchorYPx": 563,
+      "wordToGridDistancePx": 2,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    },
+    {
+      "text": "7727.4400",
+      "confidence": 89.955124,
+      "rawWordCentreYPx": 648,
+      "measuredGridAnchorYPx": 650,
+      "wordToGridDistancePx": 2,
+      "allowedAssociationDistancePx": 4.199999999999999,
+      "meaning": "Glyph-centre association only; one-pixel comparison uses the independently measured grid anchor."
+    }
+  ],
+  "summary": {
+    "plotEdges": {
+      "count": 4,
+      "maxErrorPx": 0
+    },
+    "ocrGridAnchors": {
+      "count": 7,
+      "maxErrorPx": 0.5
+    },
+    "projectedCandidates": {
+      "count": 4,
+      "maxRowErrorPx": 0.2142028368219826,
+      "maxEndpointErrorPx": 0.2142028368219826
+    },
+    "renderedSvgLines": {
+      "count": 4,
+      "maxRowErrorPx": 0.2142028368219826,
+      "maxEndpointErrorPx": 0.2142028368219826,
+      "maxPlacementDeltaPx": 0
+    },
+    "allWithinOnePixel": true
+  },
+  "safeguardsObserved": {
+    "legacyAxisHeld": true,
+    "legacyPixelsNull": true,
+    "calibratedLevelsRemainEmpty": true,
+    "calibratedScaleReadableRemainsFalse": true,
+    "unverifiedCandidateProvenance": true,
+    "renderedPatternMarks": 0,
+    "renderedLiquidityMarks": 0
+  },
+  "acceptance": {
+    "geometricPlacement": "PASS_ON_THIS_RETAINED_IMAGE",
+    "supportResistanceSemantics": "UNSCORED",
+    "candidateRecall": "UNSCORED",
+    "patternAccuracy": "UNSCORED",
+    "liquidityAccuracy": "UNSCORED",
+    "verifiedAbsence": "UNSCORED",
+    "heldoutGeneralization": "UNSCORED",
+    "physicalDeviceLatency": "NOT_ACCEPTED",
+    "deployedHttpLatency": "NOT_ACCEPTED",
+    "productionDeployment": "NOT_ASSESSED"
+  },
+  "effects": {
+    "browserRuns": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "networkCalls": 0,
+    "extraRasterReads": 0,
+    "privateKeyReads": 0,
+    "heldoutReads": 0,
+    "sourceEdits": 0,
+    "oracleEdits": 0,
+    "decodedBundleEntries": [
+      "artifacts/calibration"
+    ]
+  },
+  "limitations": [
+    "Independent arithmetic review of the hash-bound retained browser assay, not a new browser or device run.",
+    "Image and main-response hashes are bound by the assay; neither image nor main-response payload was reread in this review.",
+    "OCR glyph centres differ from grid anchors; the one-pixel metric evaluates the independently measured anchor/plot rows and rendered lines, not glyph-centre coordinates.",
+    "The runtime never received calibration according to the reviewed assay; this review accessed the calibration only after the retained browser result existed.",
+    "One retained chart supplies no overall six-case, held-out, semantic or physical-device latency acceptance."
+  ]
+}

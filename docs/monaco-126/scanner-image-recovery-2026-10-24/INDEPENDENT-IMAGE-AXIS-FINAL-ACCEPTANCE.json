@@ -1,0 +1,120 @@
+{
+  "kind": "INDEPENDENT_IMAGE_AXIS_AND_BROWSER_OCR_SOURCE_ACCEPTANCE",
+  "createdAt": "2026-10-24T13:44:54.371586+00:00",
+  "reviewer": "scanner_independent_review",
+  "status": "ACCEPTED_REVIEWED_HELPERS_AND_UNMOUNTED_WRAPPER_FOR_CONTROLLED_INTEGRATION",
+  "sourcePins": {
+    "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+    "app/pocket/image-axis-verification.ts": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+    "app/pocket/browser-image-axis-ocr.ts": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+    "app/pocket/image-plot-region.ts": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7"
+  },
+  "priorFindings": {
+    "receipt": "INDEPENDENT-IMAGE-AXIS-PRE-WIRING-REVIEW.json",
+    "sha256": "b736ff0bb5e2e890ca94b7a86eecbd23169b32c8761b1624ae89c9e4706b490b"
+  },
+  "closedFindings": [
+    {
+      "id": "MISSING_HELD_POLICY",
+      "resolution": "Every wrapper-held result now carries IMAGE_AXIS_POLICY; wrapper-inclusive narrow strict TypeScript passed."
+    },
+    {
+      "id": "PRIOR_CONTRADICTION_DISCARDED",
+      "resolution": "Only typed retryable:true holds permit a second read. Conflicts, competing columns, malformed/out-of-region evidence, non-monotonic values and invalid fits are terminal. All original-pixel words accumulate across attempts before verification, so an insufficient first pass also cannot be erased by a clean conflicting second subset."
+    },
+    {
+      "id": "PRE_WORKER_REGION_VALIDATION",
+      "resolution": "isMeasuredImagePlotRegion now runs before worker creation and includes the shared four-million-original-pixel cap."
+    }
+  ],
+  "verification": {
+    "unchangedCandidateSuite": {
+      "tests": 7,
+      "evidence": "HELPERS-IMPLEMENTATION.json",
+      "sha256": "c506aaa497ae76976a512707c0b6031c11d9111c7bcfd80dac24dd5ad5590431",
+      "sourceAndTestPinsUnchanged": true,
+      "rerun": false
+    },
+    "revisedAxisSuite": {
+      "tests": 14,
+      "pass": 14,
+      "fail": 0,
+      "skip": 0,
+      "newTests": 3,
+      "evidence": "HELPERS-RETRY-POLICY.json",
+      "sha256": "8e96ada32b5278d6bcc71dd7145e2a257954a02f25eccce44d9ad6ca0b698d42",
+      "sourceAndLogHashesChecked": true,
+      "reviewerRerun": false
+    },
+    "distinctCurrentHelperTests": 21,
+    "actualWrapperControlledResolution": {
+      "cases": 4,
+      "passed": 4,
+      "failed": 0,
+      "receipt": "INDEPENDENT-OCR-PASS-CONTRADICTION-FIXED.json",
+      "sha256": "4429e89c10b2c84b816a0e829dcad1ceaf88543012e07ce818b9cb678fcfbd0d",
+      "outcomes": [
+        {
+          "case": "conflicting-row",
+          "status": "held",
+          "recognitionPasses": 1,
+          "retainedWords": 0
+        },
+        {
+          "case": "competing-columns",
+          "status": "held",
+          "recognitionPasses": 1,
+          "retainedWords": 0
+        },
+        {
+          "case": "insufficient-then-conflicting",
+          "status": "held",
+          "recognitionPasses": 2,
+          "retainedWords": 0
+        },
+        {
+          "case": "insufficient-then-corroborated",
+          "status": "verified",
+          "recognitionPasses": 2,
+          "retainedWords": 9
+        }
+      ],
+      "adapters": "Controlled Tesseract responses and canvas dimensions; actual unchanged wrapper and real pure verification helper bundled locally. No real OCR or recognition-quality claim."
+    },
+    "wrapperInclusiveStrictTypecheck": {
+      "command": "node /tmp/pocket-scanner-repair-deps/node_modules/typescript/bin/tsc --noEmit --strict --target es2022 --lib es2023,dom --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --typeRoots /tmp/pocket-scanner-repair-deps/node_modules/@types --types node app/pocket/browser-image-axis-ocr.ts",
+      "exitCode": 0,
+      "log": "INDEPENDENT-WRAPPER-STRICT-TS.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "portableRegressionPrepared": {
+    "stagedPath": "public-tests/pocket-browser-image-axis-ocr.test.mjs",
+    "intendedRepoPath": "tests/pocket-browser-image-axis-ocr.test.mjs",
+    "sha256": "27a9ca071ee2257288fa77849bfaca5c5a38a5fbf16d5f1f70cb094cde5003a8",
+    "status": "Prepared for root to copy; actual four-case resolution above executed separately. Portable node:test adaptation not separately rerun by reviewer."
+  },
+  "sourceConclusions": [
+    "Untrusted MAIN support/resistance prices remain a separate bounded candidate side channel with UNVERIFIED semantics. Missing, malformed and explicit empty observations remain distinguishable; no inferred absence, coordinates or authority is restored.",
+    "At least three numeric OCR/grid ticks establish the linear axis; two exact widely separated MAIN numeric prices only corroborate magnitude. Legacy three-model-match policy is unchanged and separate.",
+    "Exact independent crop, confidence, numeric parsing, row association, monotonicity, coverage, 1.5-pixel fit and no-extrapolation requirements are preserved. Canvas x/y rounding uses actual scales.",
+    "Placement rechecks retained words, current measured region, candidate numeric readings, anchors and residual; changing a bare verified flag is insufficient. Geometric consistency does not authenticate image origin; that remains the owning hook responsibility.",
+    "Cancellation, deadline and cleanup logic is explicit. This review inspected those paths but did not run a real browser cancellation/timeout assay; eventual lifecycle tests remain separate."
+  ],
+  "integrationRequirements": [
+    "Collect candidates on completed MAIN before merge/calibration and attach the locally collected result after processing; overwrite or ignore any model-supplied field with the same name.",
+    "Compute detector evidence from the current original image and bind image/report/confirmation identity and epoch throughout the owning hook, including same-dimension image changes and A-B-A/reconfirmation transitions.",
+    "Keep explicit log/nonlinear/unknown-scale warnings held; do not allow independent horizontal placement to enable pattern/liquidity or promote model semantics.",
+    "Actual retained d001 OCR and unchanged one-pixel scoring are still pending and must be reported separately. One-pixel semantic accuracy, broad generalization, held-out performance and production readiness are not accepted here."
+  ],
+  "reviewerEffects": {
+    "productionEdits": 0,
+    "privateChartReads": 0,
+    "heldOutReads": 0,
+    "privateKeyReads": 0,
+    "realOcrRuns": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "remoteMutations": 0
+  }
+}

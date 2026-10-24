@@ -1,0 +1,40 @@
+{
+  "kind": "EXACT_OBSERVED_ANCHOR_PROJECTION_RED_CONTROL",
+  "helperSha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+  "testSha256": "f9486479c2c024088323abc0186dbf168ebae4a575a8769730911c9f33cfcdcf",
+  "command": "node --test-reporter=tap --test-name-pattern='exact observed tick prices|near-but-unequal|non-anchor candidate prices|exact tick matching|an observed exact tick' tests/pocket-image-axis-verification.test.ts",
+  "exitCode": 1,
+  "checks": 5,
+  "passedControls": 4,
+  "failedPositiveControls": 1,
+  "observedExactTickPlacements": 2,
+  "expectedExactTickPlacements": 4,
+  "syntheticRowsOriginalPixels": [
+    128.5,
+    302,
+    476.5,
+    650
+  ],
+  "syntheticImageHeight": 997,
+  "syntheticOcrPrices": [
+    160,
+    140,
+    120,
+    100
+  ],
+  "preconditions": "Axis verification passes with nonzero residual within unchanged1.5pixel bound; top percentage roundtrip is below actual top and bottom roundtrip is above actual bottom. Both exact boundary candidates are lost by the global fit.",
+  "greenControlsBeforeFix": [
+    "near-but-unequal inside endpoints and out-of-domain prices stay held",
+    "non-anchor global fit remains345.775pixels for price135",
+    "low-confidence or changed retained evidence holds",
+    "observed ticks outside plotting rectangle stay held"
+  ],
+  "tapSha256": "9632a37afcf01f2e5c17eaf1da4d2e9a19ce98152b76c670be6491ca05dfcf3b",
+  "productionChangedBeforeRed": false,
+  "privateRasterReads": 0,
+  "calibrationReads": 0,
+  "bundleReads": 0,
+  "heldOutReads": 0,
+  "providerCalls": 0,
+  "databaseCalls": 0
+}
