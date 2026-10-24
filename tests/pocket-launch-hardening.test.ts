@@ -299,7 +299,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(riskDesk, /pocket-risk-desk-v1/);
   assert.match(client, /EVENT RISK CONTEXT/);
   assert.match(client, /psResultSupportInput/);
-  assert.match(client, /could not be verified safely/);
+  assert.match(client, /No candidate has verified pixel placement on this source image/);
   assert.match(client, /ADD ANOTHER PHOTO/);
   assert.match(client, /reanalyseResult/);
   assert.match(client, /↻ REANALYSE/);
@@ -307,7 +307,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.match(client, /bypassCache: true/);
   assert.match(client, /SECOND VIEW ATTACHED/);
   assert.match(client, /FINDINGS UPDATED/);
-  assert.match(client, /SUPPORT AREA NOT VERIFIED/);
+  assert.match(client, /NO PLACED SUPPORT CANDIDATE/);
   assert.match(client, /CLEARER VIEW NEEDED/);
   assert.match(client, /6000/);
   assert.match(client, /psCinemaFx/);
@@ -319,7 +319,7 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.doesNotMatch(client, /READ THE FULL RESULT STORY/);
   assert.match(client, /CINEMATIC RESULT/);
   assert.match(client, /WRITTEN REPORT/);
-  assert.match(client, /CHAPTER 02 · VERIFIED EVIDENCE/);
+  assert.match(client, /CHAPTER 02 · REPORTED EVIDENCE/);
   assert.match(client, /SWING MAP/);
   assert.match(client, /THE PRICE BATTLEFIELD/);
   assert.match(client, /OPEN FULL WRITTEN REPORT/);
@@ -370,7 +370,9 @@ test("the complete Pocket journey retains privacy, failure and duplicate-request
   assert.doesNotMatch(client, /psXRayPatternLabels/);
   assert.match(client, /1 FOCUSED TOOL/);
   assert.match(client, /drawablePatterns/);
-  assert.match(client, /visualAreas/);
+  const decisionMap = client.slice(client.indexOf("function DecisionMap("), client.indexOf("function SourceChart("));
+  assert.match(decisionMap, /placement\.levels/);
+  assert.doesNotMatch(decisionMap, /analysis\.levels|visualAreas/, "unmeasured model areas must not bypass original-image placement");
   assert.match(client, /psClarityClassic/);
   assert.match(client, /psClarityBars/);
   assert.doesNotMatch(client, /psLockCore/);

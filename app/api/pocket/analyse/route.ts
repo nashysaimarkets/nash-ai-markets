@@ -380,7 +380,8 @@ export async function POST(request: Request) {
           ...(readingCrop ? [{ type: "input_image" as const, image_url: readingCrop, detail: "high" as const }] : []),
         ],
       }],
-      max_output_tokens: 1400,
+      // Precision v2: reasoning and the complete strict JSON share this cap.
+      max_output_tokens: 4000,
       text: { format: { type: "json_schema", name: "pocket_bullseye_precision_overlays", strict: true, schema: precisionOverlaySchema } },
       };
       return dispatchPocketAnalysisProviderCall(rescue ? "rescue_precision" : "primary_precision", precisionEnvelope as unknown as Record<string, unknown>, () => client.responses.create(precisionEnvelope));
@@ -388,6 +389,7 @@ export async function POST(request: Request) {
     const safePrecision = async (chartImage: string, label: string, readingCrop: string | null) => {
       try {
         const first = await requestPrecision(chartImage);
+        if (first.status !== "completed") return null;
         try {
           const parsed = first.output_text ? JSON.parse(first.output_text) as Record<string, unknown> : null;
           if (parsed && Array.isArray(parsed.levels)) {
@@ -404,6 +406,7 @@ export async function POST(request: Request) {
             const missingSide = !Number.isFinite(current) || !prices.some((price) => price < current) || !prices.some((price) => price > current);
             if (parsed.levels.length === 0 || missingSide) {
               const rescue = await requestPrecision(chartImage, true, readingCrop);
+              if (rescue.status !== "completed") return first;
               const rescued = rescue.output_text ? JSON.parse(rescue.output_text) as Record<string, unknown> : null;
               if (rescued) {
                 const merged = recoverPrecisionGeometry(parsed, rescued);
@@ -423,6 +426,7 @@ export async function POST(request: Request) {
       safePrecision(image, "primary", precisionImage || null),
       contextImage ? safePrecision(contextImage, "context", contextPrecisionImage || null) : Promise.resolve(null),
     ]);
+    if (response.status !== "completed") throw new Error(`Structured response was not completed (${response.status ?? "unknown"}).`);
     const output = response.output_text?.trim();
     if (!output) throw new Error(`Structured response was empty (${response.status ?? "unknown"}).`);
     let analysis: unknown;

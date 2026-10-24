@@ -1,0 +1,15 @@
+{
+  "kind": "UI_SOURCE_PLACEMENT_BASELINE_CONTROL",
+  "base": "889feaa0768768d03b86f6db1664cb40321e5adf",
+  "baselineSourceSha256": "53787af16d2d74d0be7f218a49f46416def7971ba601dba1c2f6f7d38136c4be",
+  "exitCode": 1,
+  "expectedFailures": 6,
+  "allFailuresAreAssertions": true,
+  "hasRuntimeError": false,
+  "summary": [
+    "\u2139 tests 6",
+    "\u2139 pass 0",
+    "\u2139 fail 6",
+    "\u2139 skipped 0"
+  ]
+}

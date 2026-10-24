@@ -1,0 +1,73 @@
+name: Pocket scanner repair affected acceptance
+
+on:
+  push:
+    branches: [monaco-scanner-repair-126-20261024]
+    paths:
+      - 'app/**'
+      - 'tests/**'
+      - 'scripts/verify-pocket-*.mjs'
+      - '.github/workflows/pocket-scanner-repair-qa.yml'
+      - 'vercel.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocket-scanner-repair-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  scanner-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      GIT_COMMIT_SHA: ${{ github.sha }}
+      NEXT_PUBLIC_SUPABASE_URL: 'https://ci-placeholder.supabase.co'
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_ci_placeholder'
+      POCKET_BENCHMARK_PILOT_ENABLED: 'false'
+      POCKET_REAL_BENCHMARK_DISPATCH: 'false'
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: 'false'
+      POCKET_SCANNER_QA_OUTPUT: qa/scanner-repair-ci
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+          cache: npm
+      - name: Confirm source and disabled automatic deployment
+        run: |
+          test "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"
+          node -e "const c=require('./vercel.json'); if(c.git.deploymentEnabled['monaco-scanner-repair-126-20261024']!==false)process.exit(1)"
+      - name: Install unchanged locked dependencies
+        run: npm ci --no-audit --no-fund --fetch-retries=0
+      - name: Run affected scanner and UI regressions
+        run: node scripts/verify-pocket-scanner-repair.mjs
+      - name: Typecheck and changed-source lint
+        run: |
+          npm run typecheck
+          npx eslint app/api/pocket/analyse/route.ts app/api/pocket/analysis-calibration.ts app/pocket/PocketBullseye.tsx app/pocket/OriginalChartEvidence.tsx app/pocket/source-placement.ts app/pocket/use-original-chart-measurement.ts
+          npm run security:scan
+          git diff --check
+      - name: Exercise actual React image lifecycle in Chromium
+        run: |
+          export POCKET_QA_BROWSER_EXECUTABLE_PATH="$(command -v google-chrome)"
+          test -n "$POCKET_QA_BROWSER_EXECUTABLE_PATH"
+          export POCKET_QA_BROWSER_OUT="$POCKET_SCANNER_QA_OUTPUT/source-placement-browser.json"
+          node tests/run-pocket-source-placement-browser.mjs
+          node -e "const fs=require('node:fs');const r=JSON.parse(fs.readFileSync(process.env.POCKET_QA_BROWSER_OUT,'utf8'));if(r.status!=='PASS'||r.checks?.length!==12||r.checks.some(c=>c.status!=='PASS')||r.errors?.length!==0||r.blockedExternalRequests?.length!==0)process.exit(1)"
+      - name: Compile the production Next application
+        run: npx next build --webpack
+      - name: Retain narrow acceptance receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-scanner-repair-${{ github.sha }}
+          path: ${{ env.POCKET_SCANNER_QA_OUTPUT }}
+          if-no-files-found: error
+          retention-days: 30
