@@ -7,6 +7,7 @@ import { getVerifiedMacroContext } from "../../../lib/verified-macro-context";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
 import { calibratePocketAnalysis } from "../analysis-calibration";
 import { recoverPrecisionGeometry } from "../precision-fallback";
+import { collectSourcePriceCandidates } from "../../../pocket/source-price-candidates";
 import { dispatchPocketAnalysisProviderCall, pocketTestProviderProject } from "../torture/provider-spend";
 
 export const runtime = "nodejs";
@@ -435,6 +436,9 @@ export async function POST(request: Request) {
     } catch {
       throw new Error(`Structured response was incomplete (${response.status ?? "unknown"}; ${output.length} chars).`);
     }
+    // Preserve exact MAIN price hints before geometry merging can discard them.
+    // They remain untrusted until the current image independently supplies an axis.
+    const sourcePriceCandidates = collectSourcePriceCandidates(analysis);
     if (analysis && typeof analysis === "object") {
       let precision: unknown = null;
       let contextPrecision: unknown = null;
@@ -492,6 +496,8 @@ export async function POST(request: Request) {
       }) as Record<string, unknown>;
       calibrated.contextBattlefield = { ...context, levels: contextCalibrated.levels };
     }
+    // Keep primary candidates out of the separately calibrated context chart.
+    calibrated.sourcePriceCandidates = sourcePriceCandidates;
     return NextResponse.json(
       { analysis: calibrated },
       { headers: pocketBudgetHeaders(budget) },

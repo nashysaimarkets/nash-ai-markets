@@ -1,10 +1,12 @@
 import { exactAxisPrice, type AxisVerification } from "./axis-verification.ts";
 import { axisReadingBounds } from "./axis-reading-bounds.ts";
+import type { SourcePriceCandidates } from "./source-price-candidates.ts";
 
 export type OriginalLevelReport = {
   evidenceQuality: { chartReadability: string; instrumentConfidence: string; timeframeConfidence: string; scaleReadable: boolean; candlesReadable: boolean; limitations?: string[] };
   plotBounds?: { left: number; right: number; top: number; bottom: number };
   priceScaleAnchors?: { price: number; y: number }[];
+  sourcePriceCandidates?: SourcePriceCandidates;
   levels: { kind: string; label: string; price: string; x: number; x2: number; y: number; y2: number; source?: string }[];
 };
 

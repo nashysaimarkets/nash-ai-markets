@@ -1,0 +1,70 @@
+{
+  "kind": "POCKET_IMAGE_AXIS_TYPED_RETRY_POLICY_REPAIR",
+  "createdAt": "2026-10-24T13:42:16.509364+00:00",
+  "supersedesAxisPinsIn": {
+    "file": "HELPERS-IMPLEMENTATION.json",
+    "sha256": "c506aaa497ae76976a512707c0b6031c11d9111c7bcfd80dac24dd5ad5590431"
+  },
+  "files": {
+    "app/pocket/image-axis-verification.ts": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+    "tests/pocket-image-axis-verification.test.ts": "695357b6637e9074b7251d51d6175910b3a80e446830fc0a9c7a5e55354e6bb7"
+  },
+  "typedContract": {
+    "held": "retryable?: true; omitted for terminal HOLD",
+    "retryable": [
+      "Fewer than three usable independent price rows",
+      "Insufficient vertical coverage after valid monotonicity and linear-fit checks",
+      "Insufficient exact or widely separated model numeric corroborations"
+    ],
+    "terminal": [
+      "Malformed/out-of-region/oversize evidence",
+      "Conflicting same-row prices",
+      "Competing columns",
+      "Non-monotonic prices, even with only two readings",
+      "Ambiguous numeric correspondence, even before sufficient coverage",
+      "Invalid linear fit, even before sufficient coverage"
+    ],
+    "callerRequirement": "Only retry when result.status is held and result.retryable is true; accumulate all original-pixel OCR words across attempts."
+  },
+  "verification": {
+    "tests": {
+      "command": "node --test --test-isolation=none --test-reporter=tap tests/pocket-image-axis-verification.test.ts",
+      "nodeVersion": "v24.22.1",
+      "exitCode": 0,
+      "tests": 14,
+      "pass": 14,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "log": "HELPERS-RETRY-GATE.tap",
+      "sha256": "625318b75738e9cfec674e97900f2852090788d1a7b0ca155f015f6852d72919"
+    },
+    "typecheck": {
+      "command": "node /tmp/pocket-scanner-repair-deps/node_modules/typescript/bin/tsc --noEmit --strict --target es2022 --lib es2023,dom --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --typeRoots /tmp/pocket-scanner-repair-deps/node_modules/@types --types node app/pocket/image-axis-verification.ts tests/pocket-image-axis-verification.test.ts",
+      "exitCode": 0,
+      "log": "HELPERS-RETRY-TYPECHECK.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "newRegressionTests": 3,
+    "unchangedCandidateSuiteNotRerun": {
+      "testsPreviouslyPassed": 7,
+      "sourceSha256": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+      "testSha256": "6d17156f2a222dfd471a56f4bc3af727af6f8c7da49bcb1aae14dec54ecabd5e"
+    },
+    "meaningfulCounterexample": "An insufficient first pass with two wrong numeric readings can be hidden by discarding it and verifying the clean second pass; accumulated words instead cause a terminal conflicting-row HOLD in either order."
+  },
+  "effects": {
+    "providerCalls": 0,
+    "networkCalls": 0,
+    "databaseCalls": 0,
+    "heldoutReads": 0,
+    "privateKeyReads": 0,
+    "ocrRuns": 0,
+    "unrelatedSuiteReruns": 0
+  },
+  "limits": [
+    "No OCR confidence/numeric/grid/span/fit threshold changed.",
+    "The caller browser wrapper must enforce retryability and accumulate earlier word evidence; root owns that wiring.",
+    "Real d001 OCR and one-pixel evaluation acceptance remain separate."
+  ]
+}

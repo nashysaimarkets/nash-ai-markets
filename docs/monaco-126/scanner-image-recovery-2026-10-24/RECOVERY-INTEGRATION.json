@@ -1,0 +1,79 @@
+{
+  "kind": "POCKET_IMAGE_RECOVERY_INTEGRATION_TESTS",
+  "createdAt": "2026-10-24T13:46:35.806551+00:00",
+  "ownedFile": {
+    "path": "tests/pocket-image-recovery-integration.test.ts",
+    "sha256": "04b258de3e4a8d19a40268e19d7643654664ad120bc587b075569bb0b6bdfe61"
+  },
+  "currentImportedSourcePins": {
+    "app/pocket/source-placement.ts": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+    "app/pocket/original-pixel-levels.ts": "cb292b9dca085363455c06fa161ffd0c78ac0a095141d0075841c6212949efe8",
+    "app/pocket/level-provenance.ts": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+    "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+    "app/pocket/image-axis-verification.ts": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+    "app/pocket/image-plot-region.ts": "344874ebbc252cf2d938838671bd5be39c21402e8cc9d8987088dc0da435eed7",
+    "tests/support/pocket-image-plot-raster.ts": "0e9e6eca0ca27ed15b4a41484094f01f1f648d96f06de013c5c56e136db13547"
+  },
+  "verification": {
+    "command": "node --test --test-isolation=none --test-reporter=tap tests/pocket-image-recovery-integration.test.ts",
+    "nodeVersion": "v24.22.1",
+    "tests": 9,
+    "pass": 9,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "exitCode": 0,
+    "log": "RECOVERY-INTEGRATION-FINAL.tap",
+    "logSha256": "fb427bbcaceea8ed98f87fb8cab787c8611db48c43c8038d509ecaf962ea85da",
+    "typecheck": {
+      "command": "node /tmp/pocket-scanner-repair-deps/node_modules/typescript/bin/tsc --noEmit --strict --target es2022 --lib es2023,dom --module esnext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --typeRoots /tmp/pocket-scanner-repair-deps/node_modules/@types --types node tests/pocket-image-recovery-integration.test.ts",
+      "exitCode": 0,
+      "log": "RECOVERY-INTEGRATION-TYPECHECK.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scope": "New integration test plus imported production/helpers only; hosted full-tree project check remains separate."
+    }
+  },
+  "coverage": [
+    "Actual detector plus synthetic original-pixel OCR words feed actual root source-placement wiring.",
+    "Invalid model bounds and false model quality do not suppress independently eligible horizontal placement.",
+    "Current image/report/identity and dimensions remain mandatory.",
+    "Absent/held/tampered independent proof cannot unlock fallback.",
+    "Missing/malformed/empty candidate envelope or fewer than two distinct numeric corroborations remain ineligible.",
+    "Explicit unsupported scale or malformed limitation data hold legacy and recovery paths without throwing.",
+    "A successful legacy placement takes priority.",
+    "Recovery leaves report and legacy axis/pixels unchanged; pattern/liquidity consumers remain held.",
+    "IMAGE_AXIS earns only AI_CANDIDATE/LOW/POSITION_CHECKED; bare UNVERIFIED or MODEL+UNVERIFIED remains AI_CANDIDATE/LOW/APPROXIMATE with position not checked. All markers override hostile USER VERIFIED labels."
+  ],
+  "preservedExistingTests": {
+    "tests/pocket-source-placement.test.ts": {
+      "tests": 7,
+      "sha256": "f418cbc8b5fedea9a8560deb4fa475226272fdf192e5fee396478a83c75fa8ff"
+    },
+    "tests/pocket-level-provenance.test.ts": {
+      "tests": 3,
+      "sha256": "1f34e426075cba6497d2d2848813b19639a900b8e5c6a206f7c125ed9254b6c7"
+    }
+  },
+  "effects": {
+    "productionEdits": 0,
+    "existingTestEdits": 0,
+    "unrelatedSuitesRun": 0,
+    "networkCalls": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "heldoutReads": 0,
+    "privateKeyReads": 0,
+    "ocrRuns": 0
+  },
+  "limits": [
+    "Pure source-placement/provenance integration controls; no React lifecycle/browser worker execution in this suite.",
+    "Synthetic word evidence is not actual d001 OCR or one-pixel benchmark acceptance."
+  ],
+  "updatedAt": "2026-10-24T13:47:22.815637+00:00",
+  "rootBoundaryFixControls": [
+    "Unknown scale type",
+    "Price scale is unknown",
+    "Uncertain price scale",
+    "Bare UNVERIFIED cannot acquire POSITION_CHECKED from numeric price or anchor count."
+  ]
+}

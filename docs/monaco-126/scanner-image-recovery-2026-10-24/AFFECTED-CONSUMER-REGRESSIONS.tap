@@ -1,0 +1,39 @@
+TAP version 13
+(node:3) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual full-analysis transport is abortable and cancellation preserves the fact lock
+ok 1 - actual full-analysis transport is abortable and cancellation preserves the fact lock
+  ---
+  duration_ms: 7.158904
+  type: 'test'
+  ...
+# Subtest: actual chart replacement aborts the full scan transport and clears confirmation
+ok 2 - actual chart replacement aborts the full scan transport and clears confirmation
+  ---
+  duration_ms: 3.464049
+  type: 'test'
+  ...
+# Subtest: actual DecisionMap holds all numeric model levels while independent measurement is pending
+ok 3 - actual DecisionMap holds all numeric model levels while independent measurement is pending
+  ---
+  duration_ms: 234.990671
+  type: 'test'
+  ...
+# Subtest: actual DecisionMap consumes the placed subset rather than raw numeric or visual-area candidates
+ok 4 - actual DecisionMap consumes the placed subset rather than raw numeric or visual-area candidates
+  ---
+  duration_ms: 101.765196
+  type: 'test'
+  ...
+# Subtest: actual health panel never calls model-readable levels verified without measured placement
+ok 5 - actual health panel never calls model-readable levels verified without measured placement
+  ---
+  duration_ms: 72.846654
+  type: 'test'
+  ...
+# Subtest: actual health count comes from source placement rather than the report's candidate count
+ok 6 - actual health count comes from source placement rather than the report's candidate count
+  ---
+  duration_ms: 54.242559
+  type: 'test'
+  ...
