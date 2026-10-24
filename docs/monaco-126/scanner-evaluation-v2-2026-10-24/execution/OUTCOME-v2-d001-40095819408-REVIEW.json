@@ -1,0 +1,229 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_FIRST_CASE_INDEPENDENT_OUTCOME_REVIEW",
+  "reviewedAt": "2026-10-24T13:06:00.824492+00:00",
+  "status": "EXECUTION_AND_ACCOUNTING_ACCEPTED_SCANNER_GEOMETRY_FAILED_HOLD_FURTHER_PAID_CASES",
+  "identity": {
+    "environment": "monaco-first-six-inference",
+    "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "backendRef": "neon:bitter-grass-28096464/br-aged-mode-zaa9u7lr/monaco_ledger",
+    "projectRef": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "keyTrackingId": "key_aD5pc20EZBLGECNC",
+    "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "evaluation": {
+      "scopeId": "pocket-scanner-evaluation-v2-20261024",
+      "attemptId": "v2-d001-attempt-1",
+      "caseId": "v2-d001",
+      "sourceCaseId": "d001",
+      "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+      "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+      "wrapperSha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+      "runId": "40095819408",
+      "jobId": "120877741515",
+      "runAttempt": "1",
+      "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029"
+    }
+  },
+  "operational": {
+    "officialRunStatus": "completed",
+    "officialRunConclusion": "success",
+    "jobConclusion": "success",
+    "terminalAt": "2026-10-24T13:01:03Z",
+    "jobCompletedAt": "2026-10-24T13:01:02Z",
+    "allWorkflowStepsSucceeded": true,
+    "sourceIntegrityStepsSucceeded": true,
+    "providerResponses": [
+      {
+        "slot": "main",
+        "status": "completed",
+        "usage": {
+          "input_tokens": 4711,
+          "output_tokens": 2268,
+          "total_tokens": 6979
+        },
+        "outputCap": 7000,
+        "rawSha256": "6a271af7026e5b6c6447437d32ce4c67a262965a1df9c962439d892575468f06",
+        "artifactId": 12561385609,
+        "jsonParsed": true,
+        "reportedLevelCount": 4
+      },
+      {
+        "slot": "primary_precision",
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2025,
+          "output_tokens": 2090,
+          "total_tokens": 4115
+        },
+        "outputCap": 4000,
+        "rawSha256": "cdaaf844e6c51ab0f33d0f3c9d12392c7d97c45ad95b7a5385cc2fe276c29803",
+        "artifactId": 12560554084,
+        "jsonParsed": true,
+        "reportedLevelCount": 6
+      },
+      {
+        "slot": "rescue_precision",
+        "status": "completed",
+        "usage": {
+          "input_tokens": 2070,
+          "output_tokens": 1792,
+          "total_tokens": 3862
+        },
+        "outputCap": 4000,
+        "rawSha256": "5575ffbe4d18e9fe4ca42a0637e43388590b99ed79cdc63966dc00b66090ab58",
+        "artifactId": 12560079854,
+        "jsonParsed": true,
+        "reportedLevelCount": 2
+      }
+    ],
+    "inputTokens": 8806,
+    "outputTokens": 6150,
+    "totalTokens": 14956,
+    "allThreeCompletedAndJsonParsed": true,
+    "precisionOutputsExceedPrior1400TokenCap": [
+      2090,
+      1792
+    ],
+    "diagnosticExecutionMs": 57781.60156899999,
+    "providerCallMs": {
+      "main": 25546.484381999995,
+      "primary_precision": 14863.445464000004,
+      "rescue_precision": 14775.61030700001
+    },
+    "deployedHttpLatencyMeasured": false
+  },
+  "retention": {
+    "rootAuthenticatedDecryptionReceiptSha256": "099fcf9c2ea81b09c6470fb0e50c78035d9e102afa197da6c02b8f2a3fc2c1ac",
+    "reviewerDidNotReadPrivateKey": true,
+    "archiveEnvelopeAndPlaintextHashesIndependentlyMatched": true,
+    "fourRetainedArtifacts": [
+      {
+        "artifactId": 12561385609,
+        "kind": "provider-response",
+        "slot": "main",
+        "archiveSha256": "4bce344fa149b1969276427a2d111a8b1a8b34b26ca27efd0881ec7f82b50000",
+        "envelopeSha256": "8cff290a06b65741db680c0eb188e5f3d5741c78027126cedebdd9b1a01b3e4c",
+        "wrappedSha256": "1ac7a807fd1c37750f239ef4725300fb0a71fe984d9e2b96dbbca457dbf75ae7",
+        "rawSha256": "6a271af7026e5b6c6447437d32ce4c67a262965a1df9c962439d892575468f06",
+        "rawBytes": 41868
+      },
+      {
+        "artifactId": 12560554084,
+        "kind": "provider-response",
+        "slot": "primary_precision",
+        "archiveSha256": "4e2ebed9f2577107e3452a35dfeb09235843de8ec25a17fefb0d7d635168b18f",
+        "envelopeSha256": "1308ca4cc45fea84fb3a24642e9fbc06f1d1c6d4a95d96b9f92ba340a9d8ff1e",
+        "wrappedSha256": "c5d374539361577fcd6d0a577bc7d39d08dee1be3a52d766f00fa481706c3baa",
+        "rawSha256": "cdaaf844e6c51ab0f33d0f3c9d12392c7d97c45ad95b7a5385cc2fe276c29803",
+        "rawBytes": 25841
+      },
+      {
+        "artifactId": 12560079854,
+        "kind": "provider-response",
+        "slot": "rescue_precision",
+        "archiveSha256": "33168c8dff11868c2189dc950a40965b7db2e4a491451f9899f73a51f1028b91",
+        "envelopeSha256": "9c04c80afdde29d5f066cf4a988310113fa227f922d75e0bb607e3195053dad4",
+        "wrappedSha256": "57169e0aa61917aa84bc60c9dc91529f3e7a2c140a8b4d0273276f0bceb36868",
+        "rawSha256": "5575ffbe4d18e9fe4ca42a0637e43388590b99ed79cdc63966dc00b66090ab58",
+        "rawBytes": 23967
+      },
+      {
+        "artifactId": 12560523103,
+        "kind": "diagnostic-output",
+        "slot": null,
+        "archiveSha256": "8f11259b1ee189a2fca31839b02ab19ed54f5d6f5e3f2e0bf0a58a86abfc14b7",
+        "envelopeSha256": "65db8901a54e554dbf3a93a916aec002de2d33723a00768e9a7484c53ad12af1",
+        "wrappedSha256": "f66ea4440fd47a7703d4c2ec08f38bf38e2d19ac04ed8ae24d04ee149f70b2c8",
+        "rawSha256": "4db39e031c3ed48b09f9a49e3b1cd79039b32922eec109709d076bbf17464250",
+        "rawBytes": 23777
+      }
+    ],
+    "officialArtifactCountIncludingPublicHandoff": 5,
+    "officialRunSha256": "f7cea9b5ee4fe712cf8e3e4dbf3f172aa10a80cf83feaa296e32542524f8617d",
+    "officialJobsSha256": "422f421268e68696a624f8b8a379104772b76820832bf44b7b568e51f1baa7b6",
+    "officialArtifactsSha256": "477297871acc0df69ce8910000db694d369197f2bbd57e4aaa23792035df1560",
+    "rawBytesUnchanged": true
+  },
+  "accounting": {
+    "ledgerObservedAt": "2026-10-24T13:01:59.36827+00:00",
+    "ledgerSha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd",
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "originalHistoryUnchanged": true,
+    "claims": 1,
+    "accounts": 1,
+    "submissions": 3,
+    "receipts": 3,
+    "unreceiptedSubmissions": 0,
+    "stops": 0,
+    "revocations": 0,
+    "receiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+    "originalHeldMicroUsd": 1506400,
+    "evaluationHeldMicroUsd": 330000,
+    "aggregateHeldMicroUsd": 1836400,
+    "remainingBelowSharedCeilingMicroUsd": 3163600,
+    "sharedCeilingMicroUsd": 5000000,
+    "actualMicroUsd": null,
+    "financiallySettled": false,
+    "usagePriceEstimateUsd": "0.0145015",
+    "usagePriceEstimateIsBillingAttestation": false,
+    "usagePriceEstimateBasis": "Previously verified default public rates: USD0.25/1M input, USD2.00/1M output. No cache discount. Full USD0.33 reservation remains held."
+  },
+  "cleanup": {
+    "receiptSha256": "77180425eb78aba004fbb61dcd11b7b7528d18831737827129b8ee6e0233db14",
+    "ownerObservedAt": "2026-10-24T13:01:35.493Z",
+    "canLogin": false,
+    "sessions": 0,
+    "memberships": 0,
+    "privilegeFlagsAllFalse": true,
+    "cleanupVerified": true,
+    "laterOwnerLedgerObservationAlsoNoLoginAndZeroSessions": true
+  },
+  "scannerOutcome": {
+    "originalPixelTolerance": 1,
+    "rawMainLevelCount": 4,
+    "rawMainConformantLevels": 0,
+    "rawMainNonconformantLevels": 4,
+    "rawMainLevelResidualPixels": [
+      42.49941412789698,
+      28.000585872119018,
+      13.5,
+      52.50058587210299
+    ],
+    "rawMainAxisResidualPixels": [
+      40.0,
+      52.50058587210299
+    ],
+    "mainPlotBoundsInverted": true,
+    "precisionCoordinatesFractionSizedDespitePercentContract": true,
+    "everyPrecisionAxisFailsEvenHypotheticalTimes100Conversion": true,
+    "postprocessedLevelCount": 0,
+    "postprocessedLiquidityState": "BLOCKED",
+    "postprocessedLiquidityReasons": [
+      "PLOT_BOUNDS_UNVERIFIED"
+    ],
+    "emptyPostprocessedOutputNotCountedAsAccuracyOrKnownAbsence": true,
+    "currentPriceAgreementIsCopiedConfirmedInputNotIndependentReading": true,
+    "originalOracleGeometryReceiptSha256": "c7d851784033a8f72bfb0aff196a2bb58b2337b0f2a51095c0ec288afabc83ff",
+    "scannerAccuracyAccepted": false,
+    "semanticAccuracy": "UNSCORED",
+    "heldOutEvaluationPerformed": false
+  },
+  "recommendation": {
+    "action": "HOLD_ALL_REMAINING_PAID_CASES",
+    "nextStep": "Use these retained raw responses to diagnose and correct the coordinate contract and invalid-bound handling offline, preserving the frozen v2 run, original oracle, raw bytes, and USD0.33 hold. Independently validate any repair before proposing a later execution.",
+    "secondCasePermitApprovedByThisReview": false,
+    "spendingPermissionAlreadyExists": true,
+    "newSpendingOrPermissionQuestionRequiredByThisReceipt": false,
+    "reason": "The larger output budget produced complete usable JSON, but the first chart still failed objective geometry. More paid charts do not resolve the now-concrete defect."
+  },
+  "provenance": "Official terminal metadata, encrypted archives, root authenticated decryption output and owner DB reconciliation were inspected from retained files only; no extra remote polling. Geometry independently recalculated from the exact existing d001 calibration, not from scorer assumptions.",
+  "reviewerSideEffects": {
+    "remoteMutations": 0,
+    "databaseCalls": 0,
+    "providerCalls": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0,
+    "testsRerun": 0,
+    "productionSourceEdits": 0
+  }
+}

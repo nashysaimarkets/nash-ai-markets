@@ -1,0 +1,87 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_PENDING_RUN_INDEPENDENT_REVIEW",
+  "reviewedAt": "2026-10-24T12:54:55.994Z",
+  "status": "ACTUAL_RUN_IDENTITY_ACCEPTED_SQL_PERMIT_PENDING",
+  "reviewer": "scanner_independent_review",
+  "run": {
+    "id": 40095819408,
+    "attempt": 1,
+    "name": "Pocket scanner evaluation v2 protected case",
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40095819408",
+    "event": "push",
+    "status": "waiting",
+    "conclusion": null,
+    "path": ".github/workflows/pocket-scanner-evaluation-v2-run.yml",
+    "headSha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+    "headBranch": "monaco-scanner-evaluation-v2-run-v2-d001",
+    "createdAt": "2026-10-24T12:53:40Z",
+    "updatedAt": "2026-10-24T12:53:41Z",
+    "repository": "nashysaimarkets/nash-ai-markets",
+    "repositoryPrivate": false,
+    "actor": "nashysaimarkets",
+    "triggeringActor": "nashysaimarkets"
+  },
+  "job": {
+    "id": 120877741515,
+    "runId": 40095819408,
+    "attempt": 1,
+    "name": "Pocket scanner evaluation v2",
+    "status": "waiting",
+    "conclusion": null,
+    "headSha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+    "headBranch": "monaco-scanner-evaluation-v2-run-v2-d001",
+    "steps": [],
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40095819408/job/120877741515"
+  },
+  "pendingDeployment": {
+    "environmentId": 24916350021,
+    "environmentName": "monaco-first-six-inference",
+    "reviewers": [
+      {
+        "type": "User",
+        "login": "nashysaimarkets",
+        "id": 304009440
+      }
+    ],
+    "currentUserCanApprove": true,
+    "waitTimer": 0
+  },
+  "bindings": {
+    "caseId": "v2-d001",
+    "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "workflowSha256": "6a82116895d76858b1bab6295f8fed2d3e173370d19ab7bd00b59cbdbfa81c0e"
+  },
+  "carryIn": {
+    "path": "CARRY-IN-v2-d001-40095819408.json",
+    "sha256": "889d0001ecb92d2a81ae7b9fca335a404fad70903eb1ffc9effc9064f65ef76f",
+    "observedAt": "2026-10-24T12:54:00.147341+00:00",
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "allElevenChecksTrue": true,
+    "originalCases": 6,
+    "originalSlots": 18,
+    "originalReceipts": 14,
+    "originalVoided": 4,
+    "originalAccounts": 6,
+    "originalHeldMicroUsd": 1506400,
+    "actualMicroUsd": null,
+    "runnerCanLogin": false,
+    "runnerSessions": 0,
+    "v2ScopeAlreadyInstalled": false,
+    "provenance": "Reviewer inspected root's fresh owner read, without making any hosted DB call."
+  },
+  "scope": {
+    "firstCaseBoundMicroUsd": 330000,
+    "followingCasesRequireIndependentReassessment": true,
+    "sqlPermitInstalled": false,
+    "providerOutcomeAvailable": false
+  },
+  "reviewerSideEffects": {
+    "remoteMutations": 0,
+    "databaseCalls": 0,
+    "providerCalls": 0,
+    "privateKeyReads": 0,
+    "repeatedTests": 0
+  }
+}

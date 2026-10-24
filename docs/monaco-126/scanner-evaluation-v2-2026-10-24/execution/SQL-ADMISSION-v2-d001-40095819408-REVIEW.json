@@ -1,0 +1,103 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_ACTUAL_SQL_ADMISSION_INDEPENDENT_REVIEW",
+  "reviewedAt": "2026-10-24T12:56:27.889157+00:00",
+  "status": "ACCEPTED_FOR_ROOT_SINGLE_TRANSACTION_INSTALL_POST_INSTALL_VERIFICATION_REQUIRED",
+  "caseId": "v2-d001",
+  "identity": {
+    "environment": "monaco-first-six-inference",
+    "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "backendRef": "neon:bitter-grass-28096464/br-aged-mode-zaa9u7lr/monaco_ledger",
+    "projectRef": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "keyTrackingId": "key_aD5pc20EZBLGECNC",
+    "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "evaluation": {
+      "scopeId": "pocket-scanner-evaluation-v2-20261024",
+      "attemptId": "v2-d001-attempt-1",
+      "caseId": "v2-d001",
+      "sourceCaseId": "d001",
+      "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+      "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+      "wrapperSha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+      "runId": "40095819408",
+      "jobId": "120877741515",
+      "runAttempt": "1",
+      "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029"
+    }
+  },
+  "expectedAdmission": {
+    "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+    "approvalBodySha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+    "admissionEvidenceSha256": "e6474ca7873819e5112e6a24189e4e971ffdf74b994f314bbd2ddea057cadb9b",
+    "reassessmentEvidenceSha256": "8c7e599768a74ef23cbb40d384a4ec942e308e6dd8e0d73ac4a1aba0e217196d",
+    "previousCaseReceiptSha256": null
+  },
+  "freshCarryIn": {
+    "fileSha256": "889d0001ecb92d2a81ae7b9fca335a404fad70903eb1ffc9effc9064f65ef76f",
+    "observedAt": "2026-10-24T12:54:00.147341+00:00",
+    "ageSecondsAtReview": 147.741816,
+    "allElevenChecksTrue": true,
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "originalHeldMicroUsd": 1506400,
+    "runnerCanLogin": false,
+    "runnerSessions": 0,
+    "v2Uninstalled": true,
+    "provenance": "Root owner SELECT retained output; reviewer made no hosted DB call."
+  },
+  "materialHashes": {
+    "combinedTransactionSha256": "f862409e1c561caefe69a26db928964d3d0c33810f00f8a79da4c611717adc59",
+    "combinedBodySha256": "26b34502ad1820896292ba671dc3a87f17b2a595eca4cafeb96f51aa61ca1013",
+    "migrationSha256": "a6231f2acd4efdbad7fa05b23dfee4ec496c2fb9c61327f2929d236705553161",
+    "admissionSqlSha256": "1bfddc7195312a4fac87402b80ac41817ab43c2ab4567cdb596fcac2a128a49b",
+    "manifestSha256": "12379df552c53703b72b9dc8069e10c4f2a2627734cd8c2021dbb36673c97ef5",
+    "postInstallObservationSqlSha256": "61c922171931a3dc0bcd5627dc97beaa7fd3d824884b7de809eff63667a676b8"
+  },
+  "atomicComposition": {
+    "migrationStatements": 22,
+    "admissionStatements": 6,
+    "totalStatements": 28,
+    "everyStatementHashMatched": true,
+    "onlyOuterBeginCommitTokensRemoved": true,
+    "concatenatedMigrationStatementsByteEqualAcceptedMigrationAfterOuterRemoval": true,
+    "concatenatedAdmissionStatementsByteEqualReviewedSqlAfterOuterRemoval": true,
+    "combinedBodyEncoding": "concatenated",
+    "singleOwnerRunSqlTransactionRequired": true,
+    "loginIncluded": false,
+    "providerDispatchIncluded": false
+  },
+  "admission": {
+    "namedPermitsInserted": 1,
+    "onlyPermittedCase": "v2-d001",
+    "permitValidUntil": "2026-10-24T13:40:00Z",
+    "permitWithinSixtyMinutes": true,
+    "priorReceiptHash": null,
+    "allEighteenNewPinsEqualFrozenPlan": true,
+    "oldTablesRowsChangedByAdmission": false,
+    "acceptedAdditiveMigrationBytesUnchanged": true,
+    "scopeAndPermitRejectExistingScopeOrRevocation": true,
+    "databaseTimeAndOwnerAndInactiveRunnerGuardsPresent": true
+  },
+  "money": {
+    "firstCaseReservationMicroUsd": 330000,
+    "maximumNewSixCasesMicroUsd": 1980000,
+    "originalHeldMicroUsd": 1506400,
+    "maximumCombinedMicroUsd": 3486400,
+    "sharedCeilingMicroUsd": 5000000,
+    "actualMicroUsd": null,
+    "financiallySettled": false
+  },
+  "nextRequiredEvidence": [
+    "Root committed installation receipt",
+    "Post-install owner observation: every named check true, exact scope/permit/pins, NOLOGIN and zero sessions",
+    "Bounded LOGIN and environment release performed only by root",
+    "Actual retained result/accounting review before any later case"
+  ],
+  "reviewerSideEffects": {
+    "remoteMutations": 0,
+    "databaseCalls": 0,
+    "providerCalls": 0,
+    "privateKeyReads": 0,
+    "testsRerun": 0
+  },
+  "reviewMethodNote": "Initial comparison assumed static scope summary and full owner approval had identical schemas. Corrected review mapping explicitly compares the full SQL approval to OWNER-APPROVAL.json and the exact renamed summary fields to RUN-ADMISSION.json; no execution source or prepared SQL changed."
+}

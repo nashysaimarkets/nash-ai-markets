@@ -1,0 +1,134 @@
+{
+  "kind": "SANITIZED_OFFICIAL_GITHUB_JOB_METADATA",
+  "sourceFileSha256": "422f421268e68696a624f8b8a379104772b76820832bf44b7b568e51f1baa7b6",
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 120877741515,
+      "run_id": 40095819408,
+      "run_attempt": 1,
+      "head_sha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+      "head_branch": "monaco-scanner-evaluation-v2-run-v2-d001",
+      "name": "Pocket scanner evaluation v2",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-24T12:58:33Z",
+      "completed_at": "2026-10-24T13:01:02Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-24T12:58:33Z",
+          "completed_at": "2026-10-24T12:58:34Z"
+        },
+        {
+          "name": "Require immutable reviewed pins and one named first attempt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-24T12:58:34Z",
+          "completed_at": "2026-10-24T12:58:34Z"
+        },
+        {
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-24T12:58:34Z",
+          "completed_at": "2026-10-24T12:58:35Z"
+        },
+        {
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-24T12:58:35Z",
+          "completed_at": "2026-10-24T12:58:36Z"
+        },
+        {
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-24T12:58:36Z",
+          "completed_at": "2026-10-24T12:58:41Z"
+        },
+        {
+          "name": "Verify actual checkouts and preserve the exact Node binary",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-24T12:58:41Z",
+          "completed_at": "2026-10-24T12:58:41Z"
+        },
+        {
+          "name": "Install the accepted locked runtime without install scripts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-24T12:58:41Z",
+          "completed_at": "2026-10-24T12:58:46Z"
+        },
+        {
+          "name": "Confirm source and evidence remain unchanged",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-24T12:58:46Z",
+          "completed_at": "2026-10-24T12:58:46Z"
+        },
+        {
+          "name": "Execute one admitted case",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-24T12:58:46Z",
+          "completed_at": "2026-10-24T13:00:59Z"
+        },
+        {
+          "name": "Confirm final source integrity",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-24T13:00:59Z",
+          "completed_at": "2026-10-24T13:00:59Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-24T13:00:59Z",
+          "completed_at": "2026-10-24T13:00:59Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-24T13:00:59Z",
+          "completed_at": "2026-10-24T13:00:59Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-24T13:00:59Z",
+          "completed_at": "2026-10-24T13:01:00Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-24T13:01:00Z",
+          "completed_at": "2026-10-24T13:01:00Z"
+        }
+      ]
+    }
+  ],
+  "sanitization": "Official job identity and step outcomes only; raw job logs and service URLs omitted."
+}

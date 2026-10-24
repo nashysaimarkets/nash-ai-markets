@@ -1,65 +1,64 @@
 # Pocket Bullseye: revised scanner evaluation
 
-## Current state
+## Current result — 24 October 2026
 
-The app repairs are implemented and independently checked in [draft PR144](https://github.com/nashysaimarkets/nash-ai-markets/pull/144). This successor prepares a separately identified evaluation of that exact app source. It does not change the app or declare its chart accuracy accepted.
+**One revised chart has completed; its execution and accounting passed, but its chart geometry failed. The remaining five cases are on HOLD.** A narrow bounds repair is now being prepared offline in an isolated branch. That repair is not yet independently verified and is not claimed fixed in this checkpoint.
 
-Preparation is complete in [draft PR145](https://github.com/nashysaimarkets/nash-ai-markets/pull/145): six private, single-chart bundles, 18 exact possible request bodies, a complete protected runner and 58 passing free acceptance checks. No provider request or hosted database call was made for this preparation. Paid execution remains **HOLD pending a new, explicit scope approval** and the final named-run admission. The new ledger migration is proposed code only and is not installed.
+The completed result and exact next step are in [execution/FIRST-CASE-OUTCOME.md](execution/FIRST-CASE-OUTCOME.md) and [execution/EXECUTION-CHECKPOINT.md](execution/EXECUTION-CHECKPOINT.md). These supersede earlier scope-approval, branch-permission, missing-key, uninstalled-migration and zero-new-call descriptions.
 
-The app source tested in PR144 is `2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc`; its final documentation checkpoint is `b118c7a38a35514eb4cbd4cc86b3341de91a5ca5`. The successor begins from that checkpoint and leaves the app files unchanged.
+The owner explicitly approved up to six revised cases, at most USD 1.98 additional inside the existing USD 5 ceiling, beginning with one case and reviewing it before any later case. [Scope approval 6384333029](https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029) and [exact branch/start approval 6384437116](https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384437116) are recorded and were acted on. No repeat spending or permission request is pending.
 
-## What is being compared
+## The completed first case
 
-The six original chart images, source inputs, reference coordinates and scoring protocol are preserved. Fresh attempt IDs are `v2-d001` through `v2-d006`, each mapped explicitly to source chart `d001` through `d006`. None resumes or resets an original send identity.
+Case `v2-d001`, source case `d001`, attempt `v2-d001-attempt-1`, ran once in [run 40095819408](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40095819408), job 120877741515. All three provider responses completed and parsed as JSON. Main used 2,268 output tokens; primary precision used 2,090; rescue used 1,792. Both precision responses exceed the former 1,400-token cap, and the 4,000-token limit allowed this case to finish the diagnostic path.
 
-The precision output cap is 4,000 tokens; the main cap remains 7,000. The model snapshot remains `gpt-5-mini-2025-08-07`, with the default service tier, low reasoning effort, structured responses and storage disabled. The exact repaired source supplies the request bodies and response handling. Incomplete model responses are retained as evidence, not parsed as completed results. Existing rescue eligibility remains unchanged, with at most one rescue per case and no automatic retries.
+Completion did not establish placement accuracy. All four raw main levels fail the preserved 1-original-pixel tolerance, with vertical errors of about 42.50, 28.00, 13.50 and 52.50 pixels. The main plot rectangle is inverted. Both precision outputs contain fraction-sized coordinates despite the full-image percentage contract; even a hypothetical multiplication by 100 leaves their anchors and levels outside tolerance. Accepted fallback/calibration code selects invalid main bounds, fabricates a 101% bottom edge and removes every level. The final liquidity chain is blocked. Empty output receives no accuracy or true-negative credit; copied confirmed current price is not an independent visual reading.
 
-The new evaluation must establish whether responses complete and whether the resulting coordinates meet the unchanged original-image diagnostics. A syntactically complete response, a successful test suite, or an empty result does not establish geometric or semantic accuracy. Pattern/support/resistance interpretation still lacks independent semantic labels; this work cannot award semantic acceptance or true-negative credit.
+The [outcome review](execution/OUTCOME-v2-d001-40095819408-REVIEW.json), [independent original-calibration calculation](execution/GEOMETRY-v2-d001-40095819408-REVIEW.json) and [causal review](execution/CAUSAL-v2-d001-40095819408-REVIEW.json) preserve the distinction between complete provider output, objective geometry failure and deterministic application handling. Pattern/support/resistance/liquidity semantics remain unscored. No held-out evaluation or deployed HTTP latency measurement occurred.
 
-## Scope and cost
+## Source and evidence stay fixed
 
-[Original owner approval 6165012632](https://github.com/nashysaimarkets/nash-ai-markets/pull/112#issuecomment-6165012632) allowed six runs under a cumulative USD 5 ceiling. Those six runs are complete. The next evaluation therefore requires a scope extension; the original six-run approval is not reused as permission for six more runs.
+| Role | Immutable identity |
+| --- | --- |
+| Evaluated application from draft PR144 | `2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc` |
+| Accepted evaluation runtime from draft PR145 | `20783ed5e8eb95a11df86b0d60766ffcbbf4fa79` |
+| First-case static evidence | `0d510d37af89e09b0360e1f1a555304d8ba46190` |
+| Executed wrapper | `6702f4c153b18b4caa1df82565c8bbf24bfb573b` |
+| Plan SHA256 | `cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109` |
 
-| Item | Conservative maximum |
+The six original images, source inputs, reference coordinates and scoring protocol are unchanged. New case IDs `v2-d001` through `v2-d006` map explicitly to source IDs `d001` through `d006`; none resumes an original attempt. Main remains capped at 7,000 output tokens; precision at 4,000. The model remains `gpt-5-mini-2025-08-07`, default tier, low reasoning effort, structured responses and storage disabled. Rescue eligibility and zero automatic retries remain unchanged.
+
+All six original main request bodies were byte-identical; each of the twelve revised precision/rescue bodies differed only in output cap. [MATERIAL-REVIEW.json](MATERIAL-REVIEW.json), [PLAN.json](PLAN.json) and [PREPARATION-RECEIPT.json](PREPARATION-RECEIPT.json) preserve those preparation facts. The plan’s original HOLD/preparation status is not runtime permission; the recorded owner approval, exact static admission and owner-installed per-run permit supplied the separate execution authority.
+
+## Ledger and cleanup
+
+**The additive v2 migration and first-case admission are already installed and consumed. Do not reinstall, reset, rerun the workflow, replay case 1 or reuse its attempt.** All original history remains unchanged; one new case has three submitted/receipted calls and one completed account, with no unresolved submission or stop.
+
+| Commitment or bound | USD |
 | --- | ---: |
-| Original six commitments retained | USD 1.5064 |
-| Each new named case, including optional rescue | USD 0.3300 |
-| Up to six new cases | USD 1.9800 |
-| Original plus proposed new maximum | USD 3.4864 |
-| Existing cumulative ceiling | USD 5.0000 |
+| Original six commitments retained | 1.5064 |
+| Full first revised-case reservation retained | 0.3300 |
+| Current combined commitments | 1.8364 |
+| Maximum additional scope originally approved | 1.9800 |
+| Original plus all six revised maximum | 3.4864 |
+| Existing shared ceiling | 5.0000 |
 
-These are reserved upper bounds, not a statement of actual charges. No original hold is released, no historical receipt is rewritten, and no second allowance is created. The proposed ledger retains the full USD 0.33 hold for every claimed case, including an unused rescue or an ambiguous outcome. It serializes old and new financial changes against the same original allowance.
+These are conservative commitments and limits, not actual charges. Actual billed cost remains unknown. The observed first-case usage implies a USD 0.0145015 estimate at the previously verified default prices; this releases no hold. [COST-BOUND.json](COST-BOUND.json) and the recorded [execution price recheck](execution/CURRENT-PRICE-RECHECK.json) retain the price basis. The pinned model’s recorded deprecation does not authorize substitution.
 
-The price calculation and source URLs are recorded in [COST-BOUND.json](COST-BOUND.json). Current official model documentation lists the pinned snapshot as deprecated; no replacement model is silently selected. Availability and price must be checked again before execution.
+Owner observations after the run verify NOLOGIN and zero sessions. All six temporary environment branch permissions were removed at 13:09:05 UTC. The original branch rule, required owner review, disabled administrator bypass and existing secret values remain intact. The next five cases are unadmitted and held; existing recorded approval is not a command to dispatch them automatically.
 
-## Concrete prepared material
+Genuine private results are saved separately as recorded in [execution/PRIVATE-RESULTS-ARCHIVE.json](execution/PRIVATE-RESULTS-ARCHIVE.json). The prepared private six-input archive remains 3,198,762 bytes, SHA256 `f3dbd600484f8639f0cc25d31242051efa0a7d99f93789d8ba78a08e8dd06933`, persistent identity `libfile_8978b600f01c8191a7fb222dc24d104f`. This documentation publishes no provider bodies, chart inputs, private keys or live transport URLs.
 
-- [PLAN.json](PLAN.json), SHA256 `cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109`, contains only identities, hashes and bounds. It is explicitly not execution authority.
-- [PREPARATION-RECEIPT.json](PREPARATION-RECEIPT.json) records all six bundle hashes and 18 scoped request pins. Raw chart images, request bodies and source data remain private.
-- Private input archive: `pocket-bullseye-scanner-evaluation-v2-prepared-inputs-2026-10-24.zip`, 3,198,762 bytes, SHA256 `f3dbd600484f8639f0cc25d31242051efa0a7d99f93789d8ba78a08e8dd06933`. It contains nine files and no credentials or result-decryption key. Persistent identity: `libfile_8978b600f01c8191a7fb222dc24d104f`.
+## Reuse completed engineering evidence
 
-## Execution boundary
+Exact runtime source `20783ed5e8eb95a11df86b0d60766ffcbbf4fa79`, tree `3f4c1742692db36257237fe35a0e780077098e00`, passed [free CI 40093995597](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40093995597), job 120872330390: **44 offline tests across seven suites plus 14 disposable PostgreSQL 17 scenarios**, zero failures or skips. The secret-pattern check passed across 1,396 candidates. [FREE-CI.json](FREE-CI.json), `ci/`, [FINAL-INDEPENDENT-ACCEPTANCE.json](FINAL-INDEPENDENT-ACCEPTANCE.json) and [SOURCE-IDENTITY.json](SOURCE-IDENTITY.json) preserve that source-specific evidence, including earlier failures and their fixes. Those preparation tests used synthetic responses and localhost PostgreSQL, not paid scanner answers.
 
-The entry accepts one named case per invocation. A future owner scope approval must identify the new evaluation, retained cumulative ceiling and maximum additional exposure. Separately reviewed admission must bind the exact executable source, plan, runtime, existing project/key identity, input bundle, output recipient, workflow run/job and first attempt. Missing or conflicting evidence returns HOLD before client or credential use.
+The [protected-path rehearsal](INDEPENDENT-PROTECTED-CONTROL.json) used the original private first-case input with fake SQL/provider/artifact effects and one documented in-memory fingerprint substitution. It remains a rehearsal, distinct from the now-completed genuine run. It was not repeated for this outcome publication.
 
-The database must enforce the same binding again before every submission. A claim can be consumed once. A submitted call with an unknown outcome keeps its hold and cannot be retried or resurrected. The next case requires retained provider receipts, a retained diagnostic, conservative accounting and a new operator reassessment. Revocation, cancellation, expiry and disagreement stop further dispatch.
+The prior app acceptance remains [run 40091820993](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091820993): 147 affected tests, 12 actual Chromium lifecycle checks, project typechecking and production compilation. [Image-source run 40091824575](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091824575) used the same app source. These engineering proofs do not grant scanner semantic or held-out acceptance.
 
-The hosted path reuses the accepted locked SDK versions, TLS settings and authenticated encryption. New evaluation metadata is inside the authenticated retained payload. An original source chart ID may label a physical encrypted artifact, but never substitutes for the new evaluation or attempt identity. Old bare payloads cannot count as new evaluation receipts.
+## Resume
 
-## Verified executable and remaining approval
+Continue the isolated offline repair with the retained case. Keep the evaluated runtime, paid result and original oracle immutable. Independently review the new bounds behavior and its user-visible consequences before considering another admitted case. A fail-closed bounds fix by itself is not accurate pixel extraction.
 
-The exact accepted evaluation source is `20783ed5e8eb95a11df86b0d60766ffcbbf4fa79`, tree `3f4c1742692db36257237fe35a0e780077098e00`. [Run 40093995597](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40093995597), job 120872330390, checked out that exact commit and passed **44 offline tests across seven suites plus 14 real disposable PostgreSQL 17 scenarios**, with zero failures, skips or cancellations. The existing secret-pattern scanner also passed across 1,396 version-control candidates. Full counts, artifact identity and earlier outcomes are retained in [FREE-CI.json](FREE-CI.json); the verified reports and TAP are in `ci/`.
-
-This workflow used synthetic responses and localhost PostgreSQL, with no protected environment or provider/hosted database secrets. Its strict verifier rejects empty or failed processes. The first SQL run exposed an operator-precedence error on valid receipt handling; that failure is preserved alongside the corrected passing run. A later independent review strengthened the invalid-key negative test with a valid downstream configuration, then proved that removing only the fingerprint predicate in a scratch mutation reaches the fake database constructor. The production guard itself is unchanged and rejects the fake key before any effect.
-
-Independent material review confirmed byte-identical original inputs, images, source data, calibration and scoring references. All six main request bodies are byte-identical to their originals; the sole difference in each of the twelve precision/rescue requests is the output cap. The effective diagnostic tolerance remains 1.0 original pixel. [MATERIAL-REVIEW.json](MATERIAL-REVIEW.json) records those checks.
-
-The independent complete protected-path rehearsal used the actual private first-chart bundle, synthetic SQL/provider/artifact effects and one explicitly documented fingerprint substitution in test memory. It exercised encrypted handoff, two simulated sends, response retention, the actual candidate diagnostic adapter and conservative accounting. It read no real provider credential and made no provider/hosted database request. [INDEPENDENT-PROTECTED-CONTROL.json](INDEPENDENT-PROTECTED-CONTROL.json) records that limitation; it is not live scanner evidence.
-
-The final independent review is retained as [FINAL-INDEPENDENT-ACCEPTANCE.json](FINAL-INDEPENDENT-ACCEPTANCE.json). [SOURCE-IDENTITY.json](SOURCE-IDENTITY.json) pins the executable, tests, workflow and concrete plan. Subsequent checkpoint edits contain documentation and retained evidence only; future execution must use the exact tested source above, independently admitted against a new scope approval. [EXECUTION-ORDER.md](EXECUTION-ORDER.md) gives the prepared sequence and required inputs.
-
-**The remaining owner decision is the scope extension:** up to six revised cases, a maximum USD 1.98 of additional reserved exposure inside the original USD 5 ceiling, starting with one named case and reassessing its retained result before any later case. An approval does not turn the present HOLD template into an executable admission automatically; the exact pending run/job and current account/price checks must still be recorded through the completed operator path.
-
-The prior app acceptance remains [run 40091820993](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091820993): 147 affected tests, 12 actual Chromium lifecycle checks, project typechecking and production compilation. [Image-source acceptance 40091824575](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091824575) used the same executable tree; paid corpus accuracy remained untested. These results are not new live scanner results.
-
-No production/main deployment, new credentials, hosted database activation, additional corpus cases or schedule changes are part of this preparation. Schedules remain off. The last independently recorded runner state is NOLOGIN with zero sessions after the original six-run cleanup; this preparation has not changed it.
+Read the latest Issue126 claim before writes; root remains the sole integration/execution writer under claim 6384437116 until explicitly released. No tests were rerun for this documentation bundle. No production deployment, main merge, store release, new credential or schedule change occurred in this first-case continuation. Schedules remain OFF.
