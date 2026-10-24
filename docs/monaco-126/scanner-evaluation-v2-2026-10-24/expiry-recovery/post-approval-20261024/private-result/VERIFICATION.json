@@ -1,0 +1,137 @@
+{
+  "recoveryProtocol": {
+    "proposalSha256": "b70a4e2371e6832ed7f7b717f0b4b8a0e9665a24ba45c9fe565f1cafe5820602",
+    "amendmentRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6387959150",
+    "amendmentBodySha256": "165808d342e28e0e2a21bf603b9c7d6b85e50a959997af2a7eaf694f2381d2e1",
+    "leaseSha256": "6fc484ec010183c5bd86cd90668e643e78d4a1a8c7a13f37c4c25c9fa1b6d686",
+    "originalPermitValidUntil": "2026-10-24T15:50:00+00:00",
+    "grantedAt": "2026-10-24T19:21:32.652332+00:00",
+    "leaseValidUntil": "2026-10-24T20:15:15.213499+00:00",
+    "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "rpcBeforeSha256": "00fd1d5ef2f81cc022c31f6160ca7022bef794513bec4ef8efbe66e98a0feb87",
+    "rpcAfterSha256": "f3d5660d04f08facf5409c8484e0d4f13a70e33508975df4a6dadda9add3b4df"
+  },
+  "kind": "POCKET_SCANNER_EVALUATION_V2_ROOT_VERIFIED_DECRYPTION",
+  "status": "VERIFIED",
+  "runId": "40105387615",
+  "jobId": "120905891814",
+  "caseId": "v2-d002",
+  "scopeId": "pocket-scanner-evaluation-v2-20261024",
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+  "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+  "ledgerSha256": "e061b406c98ec00ca9cf3bd8fe7d8ca397f2d64c126ac8c7cc3749cb6df488e4",
+  "officialRunSha256": "175e7d47f372d1e76795abdbc791cd5c1d649b7a08cc9ac0775a017ab33c100a",
+  "officialJobsSha256": "5d370311a63e0ed6e0928a5c741a68039b2b3958dc7a1865d8c217efed1c6d34",
+  "officialArtifactsSha256": "cd740a3d0e4a594603970b42213d8f4f5c95cde4cb380a607d35edd7c8486f59",
+  "responseCount": 3,
+  "diagnosticCount": 1,
+  "artifacts": [
+    {
+      "artifactId": 12573080597,
+      "artifactName": "monaco-encrypted-40105387615-20783ed5e8eb-d002-provider-response-main",
+      "kind": "provider-response",
+      "slot": "main",
+      "archiveSha256": "8efaea648840d28bc9ab1243b0c0b21996bdf9f15fa11b8a8afa179d673c1217",
+      "envelopeSha256": "66cdb976da992d80e0ca7f6da785505fc2e2cbb32e782034fae87c0f64daef86",
+      "wrappedSha256": "1e31683c54b6cc4aa17ffcce9543eddfe6a162ca9f06dec4fd280015bd982455",
+      "rawSha256": "60d9b74e140c79d62ba530e50c9dd19d40ef34677df3e6073a6dd985a7304ced",
+      "rawBytes": 41688,
+      "path": "/workspace/scratch/35c5363ca2aa/scan-two-resume/private-result/provider-response-main.json",
+      "provider": {
+        "status": "completed",
+        "incompleteReason": null,
+        "providerRequestId": "req_4941d2cfc115405492d1b76a963c04ab",
+        "responseId": "resp_0e1505c423cb7901016add05f32e1c87d283aebbe287240790",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "usage": {
+          "input_tokens": 4710,
+          "total_tokens": 6841,
+          "output_tokens": 2131
+        }
+      }
+    },
+    {
+      "artifactId": 12572940915,
+      "artifactName": "monaco-encrypted-40105387615-20783ed5e8eb-d002-provider-response-primary_precision",
+      "kind": "provider-response",
+      "slot": "primary_precision",
+      "archiveSha256": "69f42a1204d4211aef0a0926d5afc97775e59646d7d15fcb4ee03241fa23ec7d",
+      "envelopeSha256": "4d71e53bd0c7ae031cc396432693929b307d4e7235fb1144b3bbcb793b84f34c",
+      "wrappedSha256": "571fc2119de70b7b3e5727a0f20314404e670d7f17708a4ff96b72e4b91c7cfb",
+      "rawSha256": "dce18f29663090199aa7786699c051b2c8e946c28fca00273ec940fcebe2f15c",
+      "rawBytes": 24089,
+      "path": "/workspace/scratch/35c5363ca2aa/scan-two-resume/private-result/provider-response-primary_precision.json",
+      "provider": {
+        "status": "completed",
+        "incompleteReason": null,
+        "providerRequestId": "req_17f40698f6134f17bbccbf2ef0434f2f",
+        "responseId": "resp_049e7c5002fc9382016add060d5d6887d291fcf14b74ce9be5",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "usage": {
+          "input_tokens": 2025,
+          "total_tokens": 3839,
+          "output_tokens": 1814
+        }
+      }
+    },
+    {
+      "artifactId": 12573065749,
+      "artifactName": "monaco-encrypted-40105387615-20783ed5e8eb-d002-provider-response-rescue_precision",
+      "kind": "provider-response",
+      "slot": "rescue_precision",
+      "archiveSha256": "bf3bd334da1651a97302abbd705006ecad334dbb7746cffde8342fa7f50cd3a1",
+      "envelopeSha256": "3dbb31c6145aa5343dec4996dce550762005e2f37a76cbc3a09d61e57fe707dd",
+      "wrappedSha256": "0686f16f387a489dd98230380fade527d16ac2a51f6946c1276a26fe5c39d975",
+      "rawSha256": "12435f3c1732e5d8711c0dd5bb3fb541f78f935651d9634e7003e90e94986df2",
+      "rawBytes": 23603,
+      "path": "/workspace/scratch/35c5363ca2aa/scan-two-resume/private-result/provider-response-rescue_precision.json",
+      "provider": {
+        "status": "completed",
+        "incompleteReason": null,
+        "providerRequestId": "req_6f90404fc1f9422496411ff26bd7d44b",
+        "responseId": "resp_04464e5156c3cb5c016add061e01d487d28e736c2763db4923",
+        "model": "gpt-5-mini-2025-08-07",
+        "serviceTier": "default",
+        "usage": {
+          "input_tokens": 2070,
+          "total_tokens": 3643,
+          "output_tokens": 1573
+        }
+      }
+    },
+    {
+      "artifactId": 12573085586,
+      "artifactName": "monaco-encrypted-40105387615-20783ed5e8eb-d002-diagnostic-output-final",
+      "kind": "diagnostic-output",
+      "slot": null,
+      "archiveSha256": "ea6d09307ae8e291e1bdbae3a9f65c87f3c4089fe9efc7472cd71201dc291e1d",
+      "envelopeSha256": "6640f88b08fe05285eab63eb02f5f31d0a8a1b2f9e150a6b0338f2c852c2410e",
+      "wrappedSha256": "ae2868801c99888e8eb6099a652609c43c1212d62820ef916544148728edffd4",
+      "rawSha256": "38038955c03217e418be8eafe6c7e845ebd0631b0e5bd21cacd8fa5f8001fc3b",
+      "rawBytes": 26628,
+      "path": "/workspace/scratch/35c5363ca2aa/scan-two-resume/private-result/diagnostic-output-final.json"
+    }
+  ],
+  "receiptSha256": "67d65d3daa2986e8026477768a257058224c1cd93270fd56bec602b9d5cc92f3",
+  "originalHeldMicroUsd": 1506400,
+  "evaluationHeldMicroUsd": 660000,
+  "aggregateHeldMicroUsd": 2166400,
+  "remainingMicroUsd": 2833600,
+  "actualMicroUsd": null,
+  "financiallySettled": false,
+  "runnerCanLogin": false,
+  "runnerSessions": 0,
+  "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+  "previousLedgerSha256": "a3bbcc57ae067146df915209794d28c859902813a434c5438c2eed269860b9dd",
+  "previousCaseRowsPreserved": true,
+  "separateFreeBrowserSourceSha": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+  "freeBrowserMeasurementPerformed": false,
+  "scannerAccuracyAccepted": false,
+  "deployedHttpLatencyMeasured": false,
+  "rawBodiesPrinted": false,
+  "privateKeyPrinted": false,
+  "networkCalls": 0
+}

@@ -1,0 +1,39 @@
+{
+  "status": "EXECUTION_RECONCILED_GEOMETRY_FAILED",
+  "runId": "40105387615",
+  "jobId": "120905891814",
+  "attempt": 1,
+  "providerResponses": 3,
+  "allResponsesCompleted": true,
+  "timing": {
+    "executionMs": 63567.618216,
+    "providerCallMs": {
+      "main": 25898.024814999997,
+      "primary_precision": 15872.008203000005,
+      "rescue_precision": 19229.782382999983
+    },
+    "deployedHttpLatencyMs": null
+  },
+  "rawLevelPixelErrors": [
+    8.500004372153963,
+    22.99999999999954,
+    18.500004372155175,
+    14.49999562784558
+  ],
+  "postprocessedLevelPixelErrors": [
+    29.80000000000052,
+    52.3650000000003,
+    14.49999562784558
+  ],
+  "toleranceOriginalPixels": 1,
+  "semanticAccuracy": "UNSCORED",
+  "PR147RepairUnchanged": true,
+  "PR147ReplayPerformed": false,
+  "runnerCanLogin": false,
+  "runnerSessions": 0,
+  "heldTotalUSD": 2.1664,
+  "actualBilledUSD": null,
+  "nextCase": "HOLD",
+  "retries": 0,
+  "heldoutsRead": 0
+}
