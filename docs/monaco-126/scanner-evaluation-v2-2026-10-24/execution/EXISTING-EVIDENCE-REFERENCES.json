@@ -1,0 +1,60 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_EXISTING_EVIDENCE_REFERENCES",
+  "freshCredentialVerificationPerformed": false,
+  "credentialsRead": 0,
+  "privateKeysRead": 0,
+  "providerCalls": 0,
+  "hostedDatabaseCalls": 0,
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "projectRef": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+  "keyTrackingId": "key_aD5pc20EZBLGECNC",
+  "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e",
+  "recipientPublicKeySha256": "ee6a572a222e2f9f97df38f4d082935c582909095b720070a0399ee31a1773da",
+  "references": {
+    "processorHandling": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/source/docs/monaco-126/isolated-runner/PROCESSOR-SECURITY-ACCEPTANCE.json",
+      "sha256": "c8502a2306a8296ae715c072b9b88194667cad0913338c5e84af541ffbcdc583",
+      "meaning": "Historical acceptance for the existing recipient/retention settings; unchanged processor handling."
+    },
+    "neonIdentity": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/source/docs/monaco-126/isolated-runner/NEON-IDENTITY-EVIDENCE.json",
+      "sha256": "8d9dbdbe4728d038987ff61db304fd72add8cb575d237516f8d439b11b246a09",
+      "meaning": "Historical control-plane identity; current role and original accounting are checked separately in OWNER-CARRY-IN.sql."
+    },
+    "inferenceCredentialStorage": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/precision-output-proposal/docs/monaco-126/isolated-runner/INFERENCE-CREDENTIAL-STORAGE-RECEIPT.json",
+      "sha256": "0d8800d8b052454e2ce1a5b72addb3c059c4b8895fb0757942f7bd6294d854c8",
+      "meaning": "Historical storage receipt predates authentication; it is not a fresh authentication claim."
+    },
+    "ledgerCredentialStorage": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/precision-output-proposal/docs/monaco-126/isolated-runner/CREDENTIAL-STORAGE-RECEIPT.json",
+      "sha256": "70ad090cfd6ea00e6cf7b9845c3233bf0417ea9625ab88dc99c9632ba0e2ce5b",
+      "meaning": "Historical storage receipt; reuse existing environment secret without password reset or re-entry."
+    },
+    "originalExecutionReconciliation": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/CONTINUATION-FINAL-RECONCILIATION-40086015008.json",
+      "sha256": "cd0b05df7cad185a8201bf6dd1739b2b6ec41b8005cd42b14ffd98c0a66f1bc9",
+      "meaning": "Later retained provider/ledger evidence for14 genuine responses and the original fixed project/key binding."
+    },
+    "originalCheckpoint": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/FINAL-CHECKPOINT-RECEIPT-2026-10-24.json",
+      "sha256": "b529c2a06340d0f5013ca9eab9f4ef2731eafd9cb3c35db6e1c01f55ab4d136a",
+      "meaning": "Original six-case completion and last verified inactive runner checkpoint."
+    },
+    "existingPublicRecipient": {
+      "path": "/workspace/scratch/616faf3e8649/private-six/inputs/result-recipient.public.pem",
+      "sha256": "8cc174527beba404ebaccc42f1b2aa16f70c66a90c171f7ff7a11c590d3a8cb2",
+      "meaning": "Public PEM only; byte digest below differs from the accepted canonical DER fingerprint."
+    },
+    "cleanupSql": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/cleanup-paid-login.sql",
+      "sha256": "b8de5782a1f7015833bedbfd6ae4acf0137289c451e09aee2f8fb973e40224d4",
+      "meaning": "Byte-identical cleanup copied locally; execute separately from verification so a failing assertion cannot undo NOLOGIN."
+    },
+    "cleanupVerificationSql": {
+      "path": "/workspace/scratch/616faf3e8649/post-auth/verify-paid-login.sql",
+      "sha256": "0282ed54f235cba62db014eb93a5c67c6f37c4bfe52fe3a96d538fdf80778f96",
+      "meaning": "Independent observation of NOLOGIN and zero sessions after cleanup commits."
+    }
+  }
+}
