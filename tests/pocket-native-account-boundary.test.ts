@@ -29,7 +29,7 @@ test('account refuses upstream error content and invalid proof without disclosur
  await assert.rejects(account(async()=>new Response('secret',{status:500}))(),/Sign in to verify/);
  let calls=0;await assert.rejects(account(async()=>{calls++;return Response.json(valid);})('bad\r\nproof'));assert.equal(calls,0);
 });
-function native(getStatus:()=>Promise<unknown>){let calls=0;const fn=new Function('isAppleNativeApp','native','APPLE_MONTHLY_PRODUCT_ID','fetch','setTimeout',proofCode+';return pocketAuthenticatedFetch;')(()=>true,{getStatus},'fixture',async()=>{calls++;return new Response('{}');},clock);return {fn,calls:()=>calls};}
+function native(getStatus:()=>Promise<unknown>){let calls=0;const fn=new Function('isAppleNativeApp','native','APPLE_MONTHLY_PRODUCT_ID','fetch','setTimeout','const isGoogleNativeApp=()=>false;'+proofCode+';return pocketAuthenticatedFetch;')(()=>true,{getStatus},'fixture',async()=>{calls++;return new Response('{}');},clock);return {fn,calls:()=>calls};}
 test('cancelled noncooperative StoreKit wait terminates and late proof cannot fetch',async()=>{
  let release!:(v:unknown)=>void;const h=native(()=>new Promise(r=>release=r));const a=new AbortController();
  const pending=h.fn('/api/pocket/analyse',{signal:a.signal});a.abort();await assert.rejects(pending,/cancelled/);

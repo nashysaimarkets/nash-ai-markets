@@ -1,4 +1,5 @@
 "use client";
+import {isGoogleNativeApp,playAuthenticatedFetch} from "./play-billing";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import type { PluginListenerHandle } from "@capacitor/core";
@@ -174,6 +175,7 @@ export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccess
  * expiration and revocation. No proof is cached in local storage or used alone.
  * A native web subscriber may omit Apple evidence and use the existing guard. */
 export async function pocketAuthenticatedFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  if (isGoogleNativeApp()) return playAuthenticatedFetch(input,init);
   init.signal?.throwIfAborted();
   if (!isAppleNativeApp()) return fetch(input, init);
   // Native proof is private account evidence, not a general-purpose fetch header.

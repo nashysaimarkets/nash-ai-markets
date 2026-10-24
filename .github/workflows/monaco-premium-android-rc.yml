@@ -1,0 +1,44 @@
+name: Monaco premium Android isolated acceptance
+on:
+  push:
+    branches: [monaco-premium-android-rc-20261024-baf]
+    paths: ['app/**', 'android/**', 'tests/**', 'package*.json', '.github/workflows/monaco-premium-android-rc.yml']
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Locked dependencies without cache or artifact billing
+        run: npm ci --no-audit --no-fund
+      - name: Affected Android and scanner security tests
+        run: node --import tsx --test tests/pocket-android-rc.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-google-postgres-ports.test.mjs tests/pocket-native-request-boundary.test.ts tests/pocket-native-account-boundary.test.ts tests/pocket-next-integration.test.ts tests/ig-demo-chart-binding.test.ts
+      - name: Actual premium browser and mobile viewport
+        env:
+          POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
+        run: node tests/run-pocket-rc-browser.mjs
+      - name: TypeScript and production build
+        run: |
+          npm run typecheck
+          npm run build
+      - name: Debug Android compile only, synthetic backend pins
+        env:
+          CAPACITOR_SERVER_URL: https://offline-acceptance.invalid/pocket
+          CAPACITOR_SERVER_REVISION: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon

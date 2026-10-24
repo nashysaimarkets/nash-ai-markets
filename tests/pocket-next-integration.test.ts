@@ -50,10 +50,10 @@ test("professional preview exposes guarded existing cross-check and native subsc
   assert.match(source, /!demoMode && !deviceOnly/);
 });
 
-test('redesign workflows are isolated to a confirmed real source report; customer entrypoint is preserved',async()=>{
+test('redesign workflows are isolated to a confirmed real source report; candidate customer entrypoint mounts accepted premium workflow',async()=>{
  const source=await readFile(new URL('../app/pocket-next/PocketNext.tsx',import.meta.url),'utf8');
  assert.match(source,/!demoMode && !deviceOnly && image && activeSlot.confirmation && preflightAllowsAnalysis\(activeSlot.status\).*<PocketWorkflowDesk/);
  assert.match(source,/acceptWorkspaceReport\(chart, slot.revision, confirmation, report\)/);
  assert.match(source,/key=\{`workflow-\$\{activeChart\}-\$\{activeSlot.revision\}-\$\{activeSlot.reportRevision\?\?0\}`\}/);
- const customer=await readFile(new URL('../app/pocket/page.tsx',import.meta.url),'utf8');assert.match(customer,/<PocketBullseye macroContext=/);assert.doesNotMatch(customer,/<PocketNext/);
+ const customer=await readFile(new URL('../app/pocket/page.tsx',import.meta.url),'utf8');assert.match(customer,/<PocketNext macroContext=/);assert.doesNotMatch(customer,/<PocketBullseye/);
 });

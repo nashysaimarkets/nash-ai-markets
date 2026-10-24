@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import AndroidSubscriptionControls from "./AndroidSubscriptionControls";
+import {isGoogleNativeApp} from "./play-billing";
 import WebSubscriptionControls from "./WebSubscriptionControls";
 import { getAppleProductStatus, getAppleAccessStatus, isAppleNativeApp, purchaseAppleSubscription, restoreAppleSubscription, subscribeAppleAccessChanges, type AppleAccessStatus } from "./apple-storekit";
 import { nativeSubscriptionView, type NativeSubscriptionPhase } from "./native-subscription-view";
@@ -10,6 +12,7 @@ const subscribePlatform = () => () => {};
 const serverPlatform = (): boolean | null => null;
 
 export default function NativeSubscriptionControls() {
+  const android = useSyncExternalStore<boolean | null>(subscribePlatform, isGoogleNativeApp, serverPlatform);
   const [status, setStatus] = useState<AppleAccessStatus | null>(null);
   const native = useSyncExternalStore<boolean | null>(subscribePlatform, isAppleNativeApp, serverPlatform);
   const [phase, setPhase] = useState<NativeSubscriptionPhase>("CHECKING");
@@ -45,6 +48,7 @@ export default function NativeSubscriptionControls() {
     return () => { active = false; mounted.current = false; invalidateRevision(); void subscription.then(listener => listener?.remove()).catch(() => undefined); };
   }, [native, attempt]);
   const view = nativeSubscriptionView(status, phase);
+  if (android === true) return <AndroidSubscriptionControls />;
   if (native === false) return <WebSubscriptionControls />;
   if (native === null) return <section className="psPreflight" aria-label="Subscription access"><p role="status">Checking subscription options…</p></section>;
   async function run(kind: "purchase" | "restore") {

@@ -234,6 +234,12 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
       ? { ...slot, runState: "CANCELLED", message: slot.analysis ? reason + " The previous report is still shown." : reason } : slot));
   };
   useEffect(() => () => { chartEpoch.current.invalidate(); controllerRef.current?.abort(); uploads.current = uploads.current.map(n => n + 1); }, []);
+  useEffect(() => {
+    const stop = () => { if(document.visibilityState === 'hidden') {chartEpoch.current.invalidate();controllerRef.current?.abort();controllerRef.current=null;requestSource.current=null;requestActive.current=false;setBusyChart(null);setCharts(current=>current.map(slot=>slot.runState==='RUNNING'?{...slot,runState:'CANCELLED',message:'Analysis cancelled in the background.'}:slot));setNotice('Analysis cancelled while the app was in the background. Run a new check.');} };
+    const hide = () => {chartEpoch.current.invalidate();controllerRef.current?.abort();controllerRef.current=null;requestSource.current=null;requestActive.current=false;setBusyChart(null);setCharts(current=>current.map(slot=>slot.runState==='RUNNING'?{...slot,runState:'CANCELLED',message:'Analysis cancelled in the background.'}:slot));};
+    document.addEventListener('visibilitychange',stop);window.addEventListener('pagehide',hide);
+    return()=>{document.removeEventListener('visibilitychange',stop);window.removeEventListener('pagehide',hide);};
+  }, []);
   const centreRef = useRef<HTMLElement | null>(null);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartImageRef = useRef<HTMLImageElement | null>(null);

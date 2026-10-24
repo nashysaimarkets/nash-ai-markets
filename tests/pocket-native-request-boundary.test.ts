@@ -6,7 +6,7 @@ async function harness(nativeApp=true){
  const source=await readFile(new URL('../app/pocket/apple-storekit.ts',import.meta.url),'utf8');
  const code=stripTypeScriptTypes(source.slice(source.indexOf('export async function pocketAuthenticatedFetch')).replace(/^export /,''));
  let reads=0,proof:string|undefined='fresh-fixture';const calls:{url:string;init:RequestInit}[]=[];
- const fn=new Function('isAppleNativeApp','native','APPLE_MONTHLY_PRODUCT_ID','fetch',code+';return pocketAuthenticatedFetch;')(
+ const fn=new Function('isAppleNativeApp','native','APPLE_MONTHLY_PRODUCT_ID','fetch','const isGoogleNativeApp=()=>false;'+code+';return pocketAuthenticatedFetch;')(
  ()=>nativeApp,{getStatus:async()=>{reads++;return{signedTransactionInfo:proof};}},'existing-product',async(url:string,init:RequestInit)=>{calls.push({url,init});return new Response('{}');}
  ) as (url:string,init?:RequestInit)=>Promise<Response>;
  return{fn,calls,get reads(){return reads;},proof:(p:string|undefined)=>{proof=p;}};

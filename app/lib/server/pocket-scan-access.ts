@@ -5,6 +5,7 @@ type Identity = { id?: string; email?: string; email_confirmed_at?: string; is_a
 type AccessDependencies = {
   authenticate: () => Promise<Identity | null>;
   hasSubscription: (userId: string) => Promise<boolean>;
+  hasGoogleSubscription?: (userId: string) => Promise<boolean>;
   hasAppleSubscription?: (userId: string) => Promise<boolean>;
   hasFirstFreeAccess?: (user: Identity) => Promise<boolean>;
 };
@@ -19,6 +20,7 @@ export async function checkPocketScanAccess(deps: AccessDependencies): Promise<R
     try { if (await deps.hasSubscription(user.id)) return null; }
     catch { webUnavailable = true; }
     if (user.id && deps.hasAppleSubscription && await deps.hasAppleSubscription(user.id)) return null;
+    if (user.id && deps.hasGoogleSubscription && await deps.hasGoogleSubscription(user.id)) return null;
     // Independent signed Apple proof can succeed during a web-ledger outage.
     // A web outage must never become first-free permission or a false expiry.
     if (webUnavailable) throw new Error("Pocket web subscription lookup unavailable");
@@ -55,6 +57,11 @@ function pocketAccessDependencies(request: Request | undefined, allowFirstFree: 
       const { data, error } = await createAdminClient().rpc("has_pocket_web_subscription", { p_user_id: userId });
       if (error || typeof data !== "boolean") throw new Error("Pocket subscription lookup unavailable");
       return data;
+    },
+    hasGoogleSubscription: async (userId) => {
+      if (!request?.headers.get("x-pocket-google-token")) return false;
+      const {hasPocketGoogleSubscription} = await import("./pocket-google-access");
+      return hasPocketGoogleSubscription(request,userId);
     },
     hasAppleSubscription: async (userId) => {
       const proof = request?.headers?.get("x-pocket-apple-transaction");

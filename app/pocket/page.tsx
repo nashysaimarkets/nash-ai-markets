@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import PocketBullseye from "./PocketBullseye";
+import PocketNext from "../pocket-next/PocketNext";
+import "../pocket-next/pocket-next.css";
 import { createUnavailableMacroContext, getVerifiedMacroContext } from "../lib/verified-macro-context";
 import "./pocket.css";
 import "./pocket-launch-polish.css";
@@ -61,11 +62,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5,
   themeColor: "#0a0e13",
 };
 
 export default async function PocketPage() {
   const macroContext = await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
-  return <PocketBullseye macroContext={macroContext} />;
+  return <PocketNext macroContext={macroContext} />;
 }
