@@ -1,5 +1,5 @@
 {
-  "kind": "REVIEWED_SINGLE_FIRST_SIX_EXECUTION_CONFIGURATION",
+  "kind": "REVIEWED_ORIGINAL_ALLOWANCE_CONTINUATION_CONFIGURATION",
   "sourceBranch": "monaco-launch-completion-126-20261021-e48b82",
   "invocationBranch": "monaco-first-six-inference-126-20261021",
   "environment": "monaco-first-six-inference",
@@ -42,13 +42,13 @@
     "aggregateCapMicroUsd": 5000000,
     "requiredHeadroomMicroUsd": 1917600,
     "spentMicroUsd": 0,
-    "reservedMicroUsd": 0,
+    "reservedMicroUsd": 216800,
     "unresolvedMicroUsd": 0,
-    "availableMicroUsd": 5000000,
-    "priorBudgetImported": false,
-    "enabledAllowanceRows": 0,
+    "availableMicroUsd": 4783200,
+    "priorBudgetImported": true,
+    "enabledAllowanceRows": 1,
     "budgetEvidenceCutoffUtc": "2026-10-24T09:48:55.332Z",
-    "stateObservedAtUtc": "2026-10-24T09:48:55.332Z"
+    "stateObservedAtUtc": "2026-10-24T10:07:55.797Z"
   },
   "secrets": {
     "existingInferenceKeyEnvironmentSecret": "MONACO_FIRST_SIX_OPENAI_API_KEY",
@@ -70,11 +70,12 @@
     "runtimeRoleLoginEnabled": false,
     "inferenceGitHubSecretStored": true,
     "inferenceSecretPresenceEvidence": "docs/monaco-126/isolated-runner/INFERENCE-CREDENTIAL-STORAGE-RECEIPT.json",
-    "existingInferenceBindingVerified": true
+    "existingInferenceBindingVerified": true,
+    "providerAuthenticationVerified": true
   },
   "requiredEvidence": {
     "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
-    "existingCredentialBinding": "docs/monaco-126/isolated-runner/EXISTING-CREDENTIAL-BINDING-2026-10-24.json",
+    "existingCredentialBinding": "docs/monaco-126/isolated-runner/CONTINUATION-CREDENTIAL-BINDING-2026-10-24.json",
     "processorSecurityAcceptance": "docs/monaco-126/isolated-runner/PROCESSOR-SECURITY-ACCEPTANCE.json",
     "authoritativeBudgetCarryIn": "docs/monaco-126/isolated-runner/BUDGET-CARRY-IN-2026-10-24.json",
     "zeroCostCapacity": "qa/neon-ledger/COST-CAPACITY.json",
@@ -84,7 +85,8 @@
     "serverRoleAuthentication": "qa/neon-auth-probe/HOSTED-AUTHENTICATION.json",
     "currentLaunchAuthority": "docs/monaco-126/OWNER-LAUNCH-AMENDMENT-2026-10-21.json",
     "inferenceCredentialStorage": "docs/monaco-126/isolated-runner/INFERENCE-CREDENTIAL-STORAGE-RECEIPT.json",
-    "protectedCredentialAuthentication": "docs/monaco-126/isolated-runner/AUTH-SUCCESS-2026-10-24.json"
+    "protectedCredentialAuthentication": "docs/monaco-126/isolated-runner/AUTH-SUCCESS-2026-10-24.json",
+    "continuationAdmission": "docs/monaco-126/isolated-runner/CONTINUATION-ADMISSION-2026-10-24.json"
   },
   "paidScopeReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418",
   "planSha256": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0",
@@ -94,5 +96,6 @@
   "environmentUrl": "https://github.com/nashysaimarkets/nash-ai-markets/settings/environments/24916350021/edit",
   "invocationBranchExists": true,
   "credentialReplacementMeaning": "The owner-authorised restricted inference key was created and stored on 2026-10-21. Its actual tracking ID and protected-runner fingerprint are now bound to reviewed source. No further key creation is authorised; historical activity retains its original key IDs.",
-  "activationMeaning": "Reviewed one-shot configuration. Execution additionally requires matching atomic database admission, ordinary protected approval and a bounded LOGIN window; source publication alone cannot execute provider calls."
+  "activationMeaning": "Explicit continuation of the original first-six scope. The actual successor source, evidence and run must match an immutable append-only database authorization for untouched d002-d006. Normal protected approval and bounded LOGIN are required. No d001 replay, original-row reset or paid-scope expansion.",
+  "executionMode": "CONTINUATION_D002_D006"
 }
