@@ -1,1 +1,0 @@
-tests/pocket-monaco-internal-diagnostics.test.ts(43,218): error TS2339: Property 'reason' does not exist on type 'never'.

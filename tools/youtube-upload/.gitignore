@@ -1,6 +1,0 @@
-# Local env + tokens (never commit)
-.env.local
-.tokens/
-client_secret*.json
-node_modules/
-*.log

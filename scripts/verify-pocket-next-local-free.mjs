@@ -1,8 +1,0 @@
-// Render the actual candidate React view locally, then reuse the intercepted mobile acceptance script.
-import {build} from 'esbuild';import {createServer} from 'node:http';import {spawn} from 'node:child_process';
-const bundle=await build({stdin:{contents:`import React from 'react';import {createRoot} from 'react-dom/client';import PocketNext from './app/pocket-next/PocketNext.tsx';import './app/pocket-next/pocket-next.css';createRoot(document.getElementById('root')).render(<PocketNext/>);`,loader:'tsx',resolveDir:process.cwd()},bundle:true,write:false,outfile:'fixture.js',jsx:'automatic',platform:'browser',format:'iife',define:{'process.env.NODE_ENV':'"production"'}});
-const js=bundle.outputFiles.find(f=>f.path.endsWith('.js')).contents,css=bundle.outputFiles.find(f=>f.path.endsWith('.css'))?.text??'';
-const server=createServer((req,res)=>{if(req.url==='/pocket-next'){res.setHeader('content-type','text/html');res.end('<meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0}'+css+'</style><div id="root"></div><script src="/fixture.js"></script>');}else if(req.url==='/fixture.js'){res.setHeader('content-type','text/javascript');res.end(js);}else{res.writeHead(404);res.end();}});
-await new Promise(r=>server.listen(0,'127.0.0.1',r));
-try{const code=await new Promise((resolve,reject)=>{const child=spawn(process.execPath,['--import','tsx','scripts/verify-pocket-next-free.mjs',`http://127.0.0.1:${server.address().port}`],{stdio:'inherit'});child.on('error',reject);child.on('exit',resolve);});if(code!==0)process.exitCode=code??1;}
-finally{await new Promise(r=>server.close(r));}
