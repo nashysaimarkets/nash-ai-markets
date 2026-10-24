@@ -1,0 +1,38 @@
+{
+  "source": "8b9977e64262eacae62f3b59474bb69528564450",
+  "reviewType": "Read-only native/source evidence and additional boundary probes; no signed-device acceptance",
+  "pins": {
+    "app/pocket/apple-storekit.ts": "91d59ee2e78ec55fa025b21a3e36fc0c6a7e232a4d690d8b88f9b57e9358c142",
+    "app/lib/server/pocket-apple-access.ts": "1276f956dc43a71f7a38b23c4aad7ddf27a4e69b45918446291b3f7959f3090f",
+    "app/lib/server/pocket-apple-events.ts": "d79643520f7fc6063cf9de6106c4b69f7b230462d23ee241d5885d91806fc9b6",
+    "app/api/pocket/apple-account/route.ts": "c428585dc88463546e52959a76dac8ed51dd2039da071e1ee5a741daf95661f7",
+    "app/pocket/NativeSubscriptionControls.tsx": "a6fb2c260388b5d092938d241734ca4f62c49fa2c737d63a91f79d8858bc2c10",
+    "capacitor.config.ts": "89862dc2990652f55ecac2df7d04e00c1b8a9728b1cc6f1b6ded6e77cab5d305",
+    "docs/monaco-126/native-acceptance-current.md": "a30a850d74c52844c53c21947912c96b4012ee7857e584c911b3a39ceb08a7fd",
+    "docs/monaco-126/qa/completion/native-verify-independent-final.json": "a581e06688ca2e40b0f3f7b0c333de8927a04dbd98272cd00fa19e9cad849d8b"
+  },
+  "preservedPriorEvidence": "Existing6Appleaccess+3events,foreground/recovery/transport suites and independent8/8direct-restore receipt inspected, not rerun or added to newcount. Current source is later than historical native-acceptance-current frozenhashes.",
+  "newChecks": "ADDITIONAL-CHECKS.json9/9synthetic edge controls; some overlap prior semantic coverage; no paid/native calls",
+  "finding": "apple-account endpoint anonymous flag predicate differs from scan guard; synthetic anonymous+verified-email response accepted200. Hosted issuance of combination not established; no billedroute bypass claimed.",
+  "exactSignedDevicePrerequisites": [
+    "Existing authorizedMac/Xcode/signing resources and physicaliPhone",
+    "Candidate archive/IPA SHA256 plus actual embedded bundleID/version/build/team/provisioning and sourceSHA",
+    "Embedded capacitor.config serverURL must be immutable HTTPS/pocket and revision exact40SHA; compare actual /api/pocket/build-manifest and backend identity to this pin",
+    "Do not substitute Sitesv179shared-live or pocket-nextpreview for nativeNodebackend",
+    "Existing authorized sandbox account/product original com.nashaimarkets.pocketbullseye.monthly; preserve existing4.99foundingprice; no repurchase",
+    "Record restore/accountswitch/foregroundcancel/pending/expiry/grace/refund against samearchive+backend; fresh signed evidence and serverowner verification required",
+    "Appleverifier environment explicit, production cannot use sandbox; configured appID/bundle/product/pinnedroots/keyidentity proof without secret exposure",
+    "Authenticated accountUUID binding/legacyownership must failclosed; actual service writes/transactions separate approval gate"
+  ],
+  "safeNextOfflineChecks": [
+    "Root isolatedRLS privilege/ownership/event contracts with realPGroles; preserve sharedlive untouched",
+    "Inspect supplied signedarchive read-only if available, compare pins; do not generate/deploy newbinary without authorization",
+    "Potential narrow anonymousidentity predicate regression if root elects repair; review independently afterchange"
+  ],
+  "documentationLimit": "native-acceptance-current links docs/quality/pocket-native-integration-acceptance-2026-10-11.md which is absent in recovered8b997 tree; listed prerequisites reconstructed from retained document/current source.",
+  "blocked": "PhysicalStoreKit signedreceipt and realstore lifecycle evidence cannot be synthesized by Node tests.",
+  "sourceEditsByReviewer": 0,
+  "paidCalls": 0,
+  "databaseCalls": 0,
+  "heldoutAccess": false
+}

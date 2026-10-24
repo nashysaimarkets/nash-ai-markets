@@ -1,0 +1,20 @@
+[
+  {
+    project: 'opmgzchnmcgnsfwpmysc',
+    checksPassed: 19,
+    baselineSameEmailDifferentUuidVisible: true,
+    baselineUuidOnlyIsolation: 'FAIL',
+    privatePocketEntitlementBypass: 'NOT_DEMONSTRATED',
+    proposal: 'PASS_ISOLATED_ONLY',
+    liveApplied: false
+  },
+  {
+    project: 'pxlqvaddvghjjhenqmdh',
+    checksPassed: 19,
+    baselineSameEmailDifferentUuidVisible: true,
+    baselineUuidOnlyIsolation: 'FAIL',
+    privatePocketEntitlementBypass: 'NOT_DEMONSTRATED',
+    proposal: 'PASS_ISOLATED_ONLY',
+    liveApplied: false
+  }
+]

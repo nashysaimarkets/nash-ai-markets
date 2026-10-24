@@ -1,0 +1,52 @@
+{
+  "opmgzchnmcgnsfwpmysc": {
+    "policies": [
+      {
+        "name": "Members can read own membership",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "(lower(email) = lower(COALESCE((auth.jwt() ->> 'email'::text), ''::text)))",
+        "command": "SELECT",
+        "permissive": "PERMISSIVE"
+      },
+      {
+        "name": "Members can view their own membership",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "((lower(email) = lower(COALESCE((auth.jwt() ->> 'email'::text), ''::text))) OR (user_id = auth.uid()))",
+        "command": "SELECT",
+        "permissive": "PERMISSIVE"
+      },
+      {
+        "name": "members can read their own membership",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "(email = lower(TRIM(BOTH FROM COALESCE((auth.jwt() ->> 'email'::text), ''::text))))",
+        "command": "SELECT",
+        "permissive": "PERMISSIVE"
+      }
+    ],
+    "selectFingerprint": "63210f35e33efac3adaccc19e0eedd3f"
+  },
+  "pxlqvaddvghjjhenqmdh": {
+    "policies": [
+      {
+        "name": "members can read their own membership",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "using": "(email = lower(TRIM(BOTH FROM COALESCE((auth.jwt() ->> 'email'::text), ''::text))))",
+        "command": "SELECT",
+        "permissive": "PERMISSIVE"
+      }
+    ],
+    "selectFingerprint": "8711aa84e29a49566338f11a230ed33b"
+  }
+}

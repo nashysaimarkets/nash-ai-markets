@@ -1,0 +1,3 @@
+const original=globalThis.fetch;globalThis.fetch=(input,options)=>{const u=new URL(typeof input==='string'?input:input instanceof URL?input:input.url);if(!['127.0.0.1','localhost','::1'].includes(u.hostname))return Promise.reject(new Error('Offline HTTP test: external fetch blocked'));return original(input,options);};
+const https=require('node:https');https.request=https.get=()=>{throw Error('Offline HTTP test: external HTTPS blocked');};
+const fs=require('node:fs'),realNow=Date.now;Date.now=()=>realNow()+Number(fs.readFileSync('/workspace/scratch/35c5363ca2aa/staging-native-evidence/clock-offset.txt','utf8'));

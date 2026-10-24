@@ -1,0 +1,12 @@
+{
+  "id": "dpl_Df13PzRzVLK3scZ6hb7VwnDvfmuN",
+  "url": "nash-ai-markets-4usvjc865-nash-ai-markets.vercel.app",
+  "state": "READY",
+  "meta": {
+    "githubCommitRef": "fix/pocket-v1-1-release-blockers-2026-09-01",
+    "githubCommitSha": "cd70fb6d6b52082d4afc16bae77877e6303a04ac",
+    "githubCommitMessage": "feat(pocket): add Pattern Watch timeframe switching",
+    "githubRepo": "nash-ai-markets",
+    "githubOrg": "nashysaimarkets"
+  }
+}

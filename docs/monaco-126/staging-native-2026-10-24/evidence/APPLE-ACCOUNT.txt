@@ -1,0 +1,18 @@
+(node:14) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Apple account rejects absent before verifier (23.019837ms)
+✔ Apple account rejects anonymous before verifier (5.944361ms)
+✔ Apple account rejects email absent before verifier (3.282669ms)
+✔ Apple account rejects unconfirmed before verifier (4.79933ms)
+✔ verified account preserves entitled=false (4.285838ms)
+✔ verified account preserves entitled=true (4.656344ms)
+✔ oversized proof rejected before verifier (7.266806ms)
+✔ verifier unavailable does not expose account token (4.868955ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 338.524751

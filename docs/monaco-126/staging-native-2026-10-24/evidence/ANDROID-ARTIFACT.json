@@ -1,0 +1,20 @@
+{
+  "sha256": "291b006a8fd01b847ae3e26bedd7607b20a324bf178d573e322a83a58ec070a2",
+  "bytes": 4111360,
+  "zipSignaturePresent": true,
+  "endOfCentralDirectoryPresent": false,
+  "recoveredUnverifiedMetadata": [
+    {
+      "member": "base/assets/capacitor.config.json",
+      "appId": "com.nashaimarkets.pocketbullseye",
+      "server": {
+        "url": "https://nash-ai-markets-4usvjc865-nash-ai-markets.vercel.app/pocket",
+        "cleartext": false,
+        "allowNavigation": [
+          "nash-ai-markets-4usvjc865-nash-ai-markets.vercel.app"
+        ]
+      }
+    }
+  ],
+  "acceptance": "BLOCKED: archive integrity/signature cannot be verified"
+}

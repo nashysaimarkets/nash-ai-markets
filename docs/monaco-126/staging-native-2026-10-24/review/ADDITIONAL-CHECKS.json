@@ -1,0 +1,27 @@
+{
+  "source": "8b9977e64262eacae62f3b59474bb69528564450",
+  "additionalChecks": {
+    "pass": 9,
+    "fail": 0,
+    "cases": [
+      "fresh expiry 1000",
+      "grace expiry 1000",
+      "fresh expiry Infinity",
+      "grace expiry Infinity",
+      "fresh expiry undefined",
+      "grace expiry undefined",
+      "status envelope {\"bundleId\":\"other\"}",
+      "status envelope {\"environment\":\"Production\"}",
+      "fresh account mismatch"
+    ],
+    "scope": "Synthetic verified Apple dependencies; no actual signature/network"
+  },
+  "anonymousRouteProbe": {
+    "status": 200,
+    "verifierCalls": 1,
+    "entitled": true,
+    "scope": "Actual route with synthetic anonymous+verifiedemail combination; hosted issuance of that combination NOT established; not billed-route bypass"
+  },
+  "providerCalls": 0,
+  "databaseCalls": 0
+}

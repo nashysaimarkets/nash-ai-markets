@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"result\": {\n    \"deployments\": {\n      \"pagination\": {\n        \"count\": 1,\n        \"next\": 1791216969103,\n        \"prev\": 1791216969103\n      },\n      \"deployments\": [\n        {\n          \"id\": \"dpl_F3vk77Y7yPL9BWjBzrvmNgHGKSoQ\",\n          \"name\": \"nash-ai-markets\",\n          \"url\": \"nash-ai-markets-i71srdw21-nash-ai-markets.vercel.app\",\n          \"created\": 1791216969103,\n          \"state\": \"READY\",\n          \"target\": \"production\",\n          \"creator\": {\n            \"uid\": \"HNuVjFBZOP8aFLMALwKdAv0P\",\n            \"username\": \"nashysinners-sys\"\n          },\n          \"meta\": {\n            \"githubCommitRef\": \"main\",\n            \"githubCommitSha\": \"1d3d6ef7e19259e9ced7090a2dbb9cc07e39ca9b\",\n            \"githubCommitMessage\": \"Ready My Trade: verified decision card (#96)\\n\\nAdds the fail-closed Ready My Trade decision card and regression coverage after a fully green Bullseye quality gate.\",\n            \"githubRepo\": \"nash-ai-markets\",\n            \"githubOrg\": \"nashysaimarkets\"\n          },\n          \"inspectorUrl\": \"https://vercel.com/nash-ai-markets/nash-ai-markets/F3vk77Y7yPL9BWjBzrvmNgHGKSoQ\",\n          \"isRollbackCandidate\": true\n        }\n      ]\n    }\n  }\n}"
+    }
+  ],
+  "structuredContent": null,
+  "isError": false
+}

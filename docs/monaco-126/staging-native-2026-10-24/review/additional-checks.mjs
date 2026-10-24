@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {stripTypeScriptTypes} from 'node:module';
+import {verifyPocketAppleAccess} from '../staging-native-app/app/lib/server/pocket-apple-access.ts';
+const id='7a9d6268-93d5-43ec-bd05-15f074e35bcc',tx={bundleId:'com.nashaimarkets.pocketbullseye',productId:'com.nashaimarkets.pocketbullseye.monthly',environment:'Sandbox',appAccountToken:id,originalTransactionId:'10001',transactionId:'10002',type:'Auto-Renewable Subscription',expiresDate:2000};
+const renewal={originalTransactionId:'10001',environment:'Sandbox',productId:tx.productId,gracePeriodExpiresDate:2000};
+const statuses=(status=1)=>({bundleId:tx.bundleId,environment:'Sandbox',data:[{lastTransactions:[{status,originalTransactionId:'10001',signedTransactionInfo:'fresh',signedRenewalInfo:'renewal'}]}]});
+const base={environment:'Sandbox',now:()=>1000,verifyTransaction:async()=>tx,verifyRenewal:async()=>renewal,getStatuses:async()=>statuses()};
+const checks=[];
+for(const value of [1000,Infinity,undefined]){assert.equal(await verifyPocketAppleAccess(id,'proof',{...base,verifyTransaction:async p=>p==='proof'?tx:{...tx,expiresDate:value}}),false);checks.push('fresh expiry '+value);assert.equal(await verifyPocketAppleAccess(id,'proof',{...base,getStatuses:async()=>statuses(4),verifyRenewal:async()=>({...renewal,gracePeriodExpiresDate:value})}),false);checks.push('grace expiry '+value);}
+for(const changed of [{bundleId:'other'},{environment:'Production'}]){assert.equal(await verifyPocketAppleAccess(id,'proof',{...base,getStatuses:async()=>({...statuses(),...changed})}),false);checks.push('status envelope '+JSON.stringify(changed));}
+assert.equal(await verifyPocketAppleAccess(id,'proof',{...base,verifyTransaction:async p=>p==='proof'?tx:{...tx,appAccountToken:'another'}}),false);checks.push('fresh account mismatch');
+const s=readFileSync('../staging-native-app/app/api/pocket/apple-account/route.ts','utf8'),code=s.slice(s.indexOf('export async function GET')).replace('export async function','async function');const AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+let calls=0;const fn=await new AsyncFunction('createClient','hasPocketAppleSubscription',stripTypeScriptTypes(code)+';return GET;')(async()=>({auth:{getUser:async()=>({data:{user:{id,email:'synthetic@example.invalid',email_confirmed_at:'2026-01-01',is_anonymous:true}},error:null})}}),async()=>{calls++;return true;});const response=await fn(new Request('https://example.invalid/api/pocket/apple-account'));
+const result={source:'8b9977e64262eacae62f3b59474bb69528564450',additionalChecks:{pass:checks.length,fail:0,cases:checks,scope:'Synthetic verified Apple dependencies; no actual signature/network'},anonymousRouteProbe:{status:response.status,verifierCalls:calls,entitled:(await response.json()).entitled,scope:'Actual route with synthetic anonymous+verifiedemail combination; hosted issuance of that combination NOT established; not billed-route bypass'},providerCalls:0,databaseCalls:0};writeFileSync('ADDITIONAL-CHECKS.json',JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

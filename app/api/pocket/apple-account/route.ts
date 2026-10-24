@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   try {
     const client = await createClient();
     const { data: { user }, error } = await client.auth.getUser();
-    if (error || !user?.id || !user.email || !user.email_confirmed_at) return Response.json({ error: "Sign in with your verified Pocket account before using Apple access.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401, headers });
+    if (error || !user?.id || !user.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account before using Apple access.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401, headers });
     const proof = request.headers.get("x-pocket-apple-transaction");
     if (proof && proof.length > 16000) return Response.json({ error: "Apple transaction proof is too large." }, { status: 400, headers });
     // Validate server setup even before purchase, so missing configuration

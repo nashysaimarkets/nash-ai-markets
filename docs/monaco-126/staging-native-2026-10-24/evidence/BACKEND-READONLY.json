@@ -1,0 +1,692 @@
+{
+  "projects": {
+    "projects": [
+      {
+        "id": "opmgzchnmcgnsfwpmysc",
+        "ref": "opmgzchnmcgnsfwpmysc",
+        "organization_id": "pvepbcawhvzgpeqvpkjn",
+        "organization_slug": "pvepbcawhvzgpeqvpkjn",
+        "name": "nashaimarkets Project",
+        "region": "eu-west-2",
+        "status": "ACTIVE_HEALTHY",
+        "database": {
+          "host": "db.opmgzchnmcgnsfwpmysc.supabase.co",
+          "version": "17.6.1.141",
+          "postgres_engine": "17",
+          "release_channel": "ga"
+        },
+        "created_at": "2026-07-12T15:05:36.744351Z"
+      },
+      {
+        "id": "pxlqvaddvghjjhenqmdh",
+        "ref": "pxlqvaddvghjjhenqmdh",
+        "organization_id": "pvepbcawhvzgpeqvpkjn",
+        "organization_slug": "pvepbcawhvzgpeqvpkjn",
+        "name": "nashaimarkets-staging",
+        "region": "eu-west-2",
+        "status": "ACTIVE_HEALTHY",
+        "database": {
+          "host": "db.pxlqvaddvghjjhenqmdh.supabase.co",
+          "version": "17.6.1.155",
+          "postgres_engine": "17",
+          "release_channel": "ga"
+        },
+        "created_at": "2026-08-02T04:49:19.726441Z"
+      }
+    ]
+  },
+  "production": {
+    "result": {
+      "deployments": {
+        "pagination": {
+          "count": 1,
+          "next": 1791216969103,
+          "prev": 1791216969103
+        },
+        "deployments": [
+          {
+            "id": "dpl_F3vk77Y7yPL9BWjBzrvmNgHGKSoQ",
+            "name": "nash-ai-markets",
+            "url": "nash-ai-markets-i71srdw21-nash-ai-markets.vercel.app",
+            "created": 1791216969103,
+            "state": "READY",
+            "target": "production",
+            "creator": {
+              "uid": "HNuVjFBZOP8aFLMALwKdAv0P",
+              "username": "nashysinners-sys"
+            },
+            "meta": {
+              "githubCommitRef": "main",
+              "githubCommitSha": "1d3d6ef7e19259e9ced7090a2dbb9cc07e39ca9b",
+              "githubCommitMessage": "Ready My Trade: verified decision card (#96)\n\nAdds the fail-closed Ready My Trade decision card and regression coverage after a fully green Bullseye quality gate.",
+              "githubRepo": "nash-ai-markets",
+              "githubOrg": "nashysaimarkets"
+            },
+            "inspectorUrl": "https://vercel.com/nash-ai-markets/nash-ai-markets/F3vk77Y7yPL9BWjBzrvmNgHGKSoQ",
+            "isRollbackCandidate": true
+          }
+        ]
+      }
+    }
+  },
+  "candidateDeployments": {
+    "result": {
+      "deployments": {
+        "pagination": {
+          "count": 0
+        },
+        "deployments": []
+      }
+    }
+  },
+  "catalogs": {
+    "opmgzchnmcgnsfwpmysc": {
+      "rls": {
+        "role": "postgres",
+        "tables": [
+          {
+            "rls": true,
+            "table": "memberships",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": true,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_ai_monthly_usage",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_ai_response_cache",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_ai_usage_events",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_founding_members",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": true,
+            "authInsert": true,
+            "authSelect": true,
+            "authUpdate": true
+          },
+          {
+            "rls": true,
+            "table": "pocket_growth_daily",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          }
+        ],
+        "database": "postgres",
+        "policies": [
+          {
+            "name": "Members can read own membership",
+            "check": null,
+            "roles": [
+              "authenticated"
+            ],
+            "table": "memberships",
+            "using": "(lower(email) = lower(COALESCE((auth.jwt() ->> 'email'::text), ''::text)))",
+            "schema": "public",
+            "command": "SELECT"
+          },
+          {
+            "name": "Members can view their own membership",
+            "check": null,
+            "roles": [
+              "authenticated"
+            ],
+            "table": "memberships",
+            "using": "((lower(email) = lower(COALESCE((auth.jwt() ->> 'email'::text), ''::text))) OR (user_id = auth.uid()))",
+            "schema": "public",
+            "command": "SELECT"
+          },
+          {
+            "name": "members can read their own membership",
+            "check": null,
+            "roles": [
+              "authenticated"
+            ],
+            "table": "memberships",
+            "using": "(email = lower(TRIM(BOTH FROM COALESCE((auth.jwt() ->> 'email'::text), ''::text))))",
+            "schema": "public",
+            "command": "SELECT"
+          }
+        ]
+      },
+      "functions": [
+        {
+          "proname": "pocket_growth_report",
+          "arguments": "p_from date",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "70bf33c70a1f35e8da19daf992acd8e4",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "record_pocket_growth_event",
+          "arguments": "p_event text, p_platform text, p_source text, p_campaign text, p_flow text, p_is_test boolean, p_duration_ms integer",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "f3f704072125b4c33ba0e9a17d3cf77e",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "release_pocket_ai_analysis",
+          "arguments": "p_subject_hash text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "79b2afa3d2063b4f7898aee9a570e22c",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "reserve_pocket_ai_analysis",
+          "arguments": "p_subject_hash text, p_subject_limit integer, p_global_limit integer",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "7a2c7af8fac9f47250ace53121bc8b99",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_membership_from_stripe",
+          "arguments": "p_email text, p_plan text, p_status text, p_stripe_customer_id text, p_stripe_subscription_id text, p_current_period_end timestamp with time zone, p_billing_interval text, p_unit_amount integer, p_event_created_at bigint",
+          "security_definer": true,
+          "proconfig": [
+            "search_path=public, pg_temp"
+          ],
+          "definition_md5": "7bff684ea417163ec9662270b9b16010",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_pocket_founding_650",
+          "arguments": "p_email text, p_stripe_customer_id text, p_stripe_subscription_id text, p_subscription_active boolean, p_current_period_end timestamp with time zone, p_event_created_at bigint",
+          "security_definer": true,
+          "proconfig": [
+            "search_path=public, pg_temp"
+          ],
+          "definition_md5": "c836e76b257f6d0bf4610ca9d8717b3b",
+          "anon_execute": false,
+          "authenticated_execute": false
+        }
+      ]
+    },
+    "pxlqvaddvghjjhenqmdh": {
+      "rls": {
+        "role": "postgres",
+        "tables": [
+          {
+            "rls": true,
+            "table": "memberships",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": true,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_founding_members",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_ai_monthly_usage",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_ai_response_cache",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_ai_usage_events",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_growth_daily",
+            "schema": "public",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_web_identities",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_test_spend_ledgers",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_test_spend_reservations",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_web_subscriptions",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_first_free_policy",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_first_free_accounts",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_first_free_requests",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_apple_legacy_owners",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          },
+          {
+            "rls": true,
+            "table": "pocket_apple_verified_events",
+            "schema": "private",
+            "forceRls": false,
+            "anonSelect": false,
+            "authInsert": false,
+            "authSelect": false,
+            "authUpdate": false
+          }
+        ],
+        "database": "postgres",
+        "policies": [
+          {
+            "name": "members can read their own membership",
+            "check": null,
+            "roles": [
+              "authenticated"
+            ],
+            "table": "memberships",
+            "using": "(email = lower(TRIM(BOTH FROM COALESCE((auth.jwt() ->> 'email'::text), ''::text))))",
+            "schema": "public",
+            "command": "SELECT"
+          }
+        ]
+      },
+      "functions": [
+        {
+          "proname": "claim_pocket_first_free",
+          "arguments": "p_user_id uuid, p_email_hash text, p_phase text, p_image_key text, p_request_key text, p_lease uuid",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "2da20fd01c5e4f3798b6714f0827d27e",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "finish_pocket_first_free",
+          "arguments": "p_user_id uuid, p_email_hash text, p_phase text, p_image_key text, p_request_key text, p_lease uuid, p_dispatched boolean, p_response_status integer, p_response_body jsonb",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "ca1b4208bab6a1941dd14e2dc760748b",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "get_pocket_web_customer",
+          "arguments": "p_user_id uuid, p_email text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "9d15065c284b8184b18837c080260a79",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "has_pocket_web_subscription",
+          "arguments": "p_email text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "91a2e3446a6d84a9a1eb0f7734043a98",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "has_pocket_web_subscription",
+          "arguments": "p_user_id uuid",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "c9641b833173ce0f8293db4fc29907a8",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "is_pocket_apple_legacy_owner",
+          "arguments": "p_environment text, p_original_transaction_id text, p_user_id uuid",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "2f10c5f8ec38ca1f65a50f91407d2b0e",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "link_pocket_web_subscription_identity",
+          "arguments": "p_app_user_id uuid, p_email text, p_stripe_customer_id text, p_stripe_subscription_id text, p_evidence_ref text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "8cfea3a1f2e54041eb57ffe5b160e0c7",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "pocket_growth_report",
+          "arguments": "p_from date",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "70bf33c70a1f35e8da19daf992acd8e4",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "record_pocket_apple_event",
+          "arguments": "p_environment text, p_notification_id uuid, p_type text, p_subtype text, p_signed_date bigint, p_original_transaction_id text, p_digest text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "0d70ff32617daa78901abc92f8fc6ede",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "record_pocket_growth_event",
+          "arguments": "p_event text, p_platform text, p_source text, p_campaign text, p_flow text, p_is_test boolean, p_duration_ms integer",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "f3f704072125b4c33ba0e9a17d3cf77e",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "record_pocket_test_spend_receipt",
+          "arguments": "p_ledger_key text, p_request_key text, p_provider_request_id text, p_response_id text, p_model text, p_usage jsonb",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=pg_catalog"
+          ],
+          "definition_md5": "c894746a98c187b49932f4a38aebd627",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "release_pocket_ai_analysis",
+          "arguments": "p_subject_hash text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "79b2afa3d2063b4f7898aee9a570e22c",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "reserve_pocket_ai_analysis",
+          "arguments": "p_subject_hash text, p_subject_limit integer, p_global_limit integer",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "7a2c7af8fac9f47250ace53121bc8b99",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "reserve_pocket_first_free",
+          "arguments": "p_user_id uuid, p_email_hash text, p_phase text, p_image_key text, p_request_key text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "952f247690710d15ddb5f5dccdecafb2",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "reserve_pocket_test_spend",
+          "arguments": "p_ledger_key text, p_request_key text, p_project_ref text, p_owner_approval_ref text, p_estimated_microusd bigint",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=pg_catalog"
+          ],
+          "definition_md5": "924e0295d69d5556e5305be9339493c7",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "revoke_pocket_web_subscription",
+          "arguments": "p_stripe_subscription_id text, p_event_created_at bigint",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "d04a0d1b7d8fdf0bf50e8564d6b7d33f",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "settle_pocket_test_spend",
+          "arguments": "p_ledger_key text, p_request_key text, p_actual_microusd bigint, p_provider_request_id text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=pg_catalog"
+          ],
+          "definition_md5": "dece7de4b7008e3476f7f1e25d1b1cad",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "submit_pocket_test_spend",
+          "arguments": "p_ledger_key text, p_request_key text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=pg_catalog"
+          ],
+          "definition_md5": "e5c909cf7d240d29c7f0a1cd4f244b0f",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_membership_cancellation_from_stripe",
+          "arguments": "p_stripe_subscription_id text, p_cancel_at_period_end boolean, p_event_created_at bigint",
+          "security_definer": true,
+          "proconfig": [
+            "search_path=public, pg_temp"
+          ],
+          "definition_md5": "1c346c7d340d13719f27deec517254c2",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_membership_from_stripe",
+          "arguments": "p_email text, p_plan text, p_status text, p_stripe_customer_id text, p_stripe_subscription_id text, p_current_period_end timestamp with time zone, p_billing_interval text, p_unit_amount integer, p_event_created_at bigint",
+          "security_definer": true,
+          "proconfig": [
+            "search_path=public, pg_temp"
+          ],
+          "definition_md5": "7bff684ea417163ec9662270b9b16010",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_pocket_founding_650",
+          "arguments": "p_email text, p_stripe_customer_id text, p_stripe_subscription_id text, p_subscription_active boolean, p_current_period_end timestamp with time zone, p_event_created_at bigint",
+          "security_definer": true,
+          "proconfig": [
+            "search_path=public, pg_temp"
+          ],
+          "definition_md5": "c836e76b257f6d0bf4610ca9d8717b3b",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_pocket_web_subscription",
+          "arguments": "p_email text, p_stripe_customer_id text, p_stripe_subscription_id text, p_subscription_active boolean, p_current_period_end timestamp with time zone, p_event_created_at bigint",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "d496b0a4da08313108272cdaab932179",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "sync_pocket_web_subscription",
+          "arguments": "p_app_user_id uuid, p_email text, p_stripe_customer_id text, p_stripe_subscription_id text, p_subscription_active boolean, p_current_period_end timestamp with time zone, p_event_created_at bigint",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=\"\""
+          ],
+          "definition_md5": "94b7174a743cf8d226c9afc1501757a8",
+          "anon_execute": false,
+          "authenticated_execute": false
+        },
+        {
+          "proname": "void_pocket_test_spend",
+          "arguments": "p_ledger_key text, p_request_key text, p_reason text",
+          "security_definer": false,
+          "proconfig": [
+            "search_path=pg_catalog"
+          ],
+          "definition_md5": "512dad9b4bce3e1f80f2787cef89fb3b",
+          "anon_execute": false,
+          "authenticated_execute": false
+        }
+      ]
+    }
+  }
+}

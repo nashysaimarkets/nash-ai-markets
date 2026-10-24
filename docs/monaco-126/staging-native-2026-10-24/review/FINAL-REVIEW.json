@@ -1,0 +1,70 @@
+{
+  "status": "ACCEPTED_SOURCE_REPAIR_AND_UNINSTALLED_PROPOSAL",
+  "sourceBaseline": "8b9977e64262eacae62f3b59474bb69528564450",
+  "sourceHashes": {
+    "app/api/pocket/apple-account/route.ts": "fc150886f18c0352696523b22f2cc5cd4d8f3ab558e585ee78861c8fe9abbfe6",
+    "tests/pocket-apple-account-identity.test.ts": "f85513970566cc41dc6002f67f7be2d418c82dcfe8b3bc3e04279e60f1d0f03c",
+    "supabase/proposed/20261024_membership_uuid_read_policy.sql": "fd54c12fdc4ea7dba6530a252cb9d47991fb0c2a8ab9715253821d35d089456a"
+  },
+  "independentExecution": {
+    "appleAccountRoute": {
+      "pass": 8,
+      "fail": 0
+    },
+    "isolatedPostgresPolicies": {
+      "pass": 36,
+      "fail": 0,
+      "scope": "Independent rerun of root harness over disposable PGlite; actual catalog policy flags/roles/expressions reconstructed with synthetic memberships. Same36controls,not36additionalunique cases. Prior36run preserved; final38rootrun separately reviewed, no doublecount."
+    }
+  },
+  "evidenceHashes": {
+    "POLICY-FLAGS.json": "0c263b43ebc4dfcf438e56bb428a3186e7359107cc24d947e5f62ca8403a3585",
+    "BACKEND-READONLY.json": "a91e02b65f76772bd7867c0e2deec284f016cbbd3326da94978415479c0f7407",
+    "RLS.json": "71b2c5b576d41a50bdd39b77c843ae980dc10bc88f7e1c13e00a10cbdfefb175",
+    "rls.mjs": "9f62a1da580ef59ca39fc0f2b433432a730f65b2172f3ddf2423e9bf06068fee",
+    "APPLE-HTTP.json": "230718334628e71da6f18f5f2c34b787880dccbc3f196e8c0643db925f94f4ea",
+    "apple-http.mjs": "4a02a399f6e48d093fac9f6eaf235016878dc1ef7a56b09ffd854d04b6b6f87b",
+    "BUILD.txt": "fe85648008954d8b3afbafea6c097b219f65901e68a150620b4f359d06d24887",
+    "LINT.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "proposalReview": [
+    "Exact observedSELECTpolicyfingerprints checked includingnames/roles/permissive/expressions",
+    "ALLpolicyrefusal tested",
+    "NULLlegacybindingsrefusal tested and failedproposalpreservesvisibility",
+    "UnexpectedRESTRICTIVE/customroleSELECT driftrefusal tested",
+    "BoundUUIDvalidpositivespreserved includingchangedemail",
+    "Sameemail/newUUID visibilityreproducedunderbaseline anddeniedunderproposal",
+    "ServiceBYPASSRLSread and existingUPDATEpolicy preserved",
+    "Noownership/backfill/datachanges; fileoutsideinstalledmigrationdiscovery"
+  ],
+  "applicationReview": "Singleanonymouspredicate alignsAppleaccountwithpaidscanidentitygate; legitimateverifiedentitled/nonentitledresponses preserved. Syntheticidentitydefensealignment,notproofhostedanonymouscanobtainverifiedemail.",
+  "limitations": [
+    "No liveDDL/application, productionrelease or signeddeviceacceptance",
+    "PrivatePocketentitlementbypassNOTdemonstrated",
+    "Livecutoverstillrequiresindependentownershipaudit,transaction/locking/concurrencyplan and rollbackapproval; GUCflagcannotreplaceownerreview",
+    "RecoveredpartialAAB/missingcentraldirectorycannotprovevalidsignedbinary; sourceCI successisnotphysicaldeviceevidence",
+    "Proposal remains blocked on shared-live missing UUID schema and independently verified ownership; no hosted membership or Pocket paid bypass claim. PGlite doesnot establish liveconcurrency/privilege acceptance."
+  ],
+  "remainingReviewBlockers": [],
+  "nextGate": "Preserveexactsourcecommit and checkpoint; obtaincompleteverifiablesignedartifact plusimmutableapprovedbackend/deploymentpin before nativeacceptance; membershipproposal remainsuninstalled.",
+  "paidCalls": 0,
+  "heldoutAccess": false,
+  "reviewedAt": "2026-10-24T21:00:17.811566+00:00",
+  "finalDeltaReview": {
+    "status": "ACCEPTED_UNINSTALLED_ONLY",
+    "locking": "Approval guard precedes SHARE ROW EXCLUSIVE lock; guards and policy swap share transaction;2s lock timeout/10s statement timeout limit wait",
+    "schema": "Requires existing non-dropped UUID user_id column before data check; doesnot add/backfill it. Shared-live pxl currently lacks column, so proposal intentionally refuses",
+    "rootFinalRls": {
+      "pass": 38,
+      "fail": 0,
+      "reviewOnly": "Reviewed finalharness andreceipt incl2missingcolumncontrols; didnotrerununaffected36controls"
+    },
+    "rootActualBuiltHttp": {
+      "pass": 6,
+      "fail": 0,
+      "scope": "ActuallocalNextHTTP/cookie/getUser withsyntheticidentityupstream; verifiedpaidaccount503 due unavailableAppleverifierconfiguration correctly remainsblocked; no hostedStoreKitclaim"
+    },
+    "buildLog": "PASS",
+    "diffCheck": "PASS"
+  }
+}

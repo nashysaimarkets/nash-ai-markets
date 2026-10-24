@@ -1,0 +1,12 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"error\":{\"name\":\"HttpException\",\"message\":\"Failed to run sql query: ERROR:  42703: column \\\"user_id\\\" does not exist\\nLINE 1: BEGIN READ ONLY; SELECT EXISTS(SELECT 1 FROM public.memberships WHERE user_id IS NULL) AS unbound_legacy_membership_exists; COMMIT;\\n                                                                              ^\\n\"}}"
+    }
+  ],
+  "structuredContent": {
+    "error_code": "INVALID_ARGUMENT"
+  },
+  "isError": true
+}

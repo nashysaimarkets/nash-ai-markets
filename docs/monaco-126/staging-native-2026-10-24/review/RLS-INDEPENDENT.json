@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "project": "opmgzchnmcgnsfwpmysc",
+      "checksPassed": 18,
+      "baselineSameEmailDifferentUuidVisible": true,
+      "baselineUuidOnlyIsolation": "FAIL",
+      "privatePocketEntitlementBypass": "NOT_DEMONSTRATED",
+      "proposal": "PASS_ISOLATED_ONLY",
+      "liveApplied": false
+    },
+    {
+      "project": "pxlqvaddvghjjhenqmdh",
+      "checksPassed": 18,
+      "baselineSameEmailDifferentUuidVisible": true,
+      "baselineUuidOnlyIsolation": "FAIL",
+      "privatePocketEntitlementBypass": "NOT_DEMONSTRATED",
+      "proposal": "PASS_ISOLATED_ONLY",
+      "liveApplied": false
+    }
+  ],
+  "totalPassed": 36,
+  "scope": "Actual read-only observed policy expressions run in disposable PGlite with synthetic rows/roles. No hosted rows read or changed; this is not hosted session/RLS acceptance."
+}

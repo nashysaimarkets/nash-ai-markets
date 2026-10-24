@@ -1,0 +1,35 @@
+{
+  "results": [
+    {
+      "kind": "no-cookie",
+      "http": 401,
+      "result": "PASS"
+    },
+    {
+      "kind": "anonymous",
+      "http": 401,
+      "result": "PASS"
+    },
+    {
+      "kind": "unconfirmed",
+      "http": 401,
+      "result": "PASS"
+    },
+    {
+      "kind": "expired",
+      "http": 401,
+      "result": "PASS"
+    },
+    {
+      "kind": "revoked",
+      "http": 401,
+      "result": "PASS"
+    },
+    {
+      "kind": "paid",
+      "http": 503,
+      "result": "PASS"
+    }
+  ],
+  "scope": "Actual built Next route and cookie/getUser HTTP; synthetic identity upstream; no Apple credentials or signed purchase. Valid account503 proves missing verifier setup blocks purchase readiness."
+}

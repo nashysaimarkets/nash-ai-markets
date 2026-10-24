@@ -1,0 +1,28 @@
+{
+  "membershipPolicyReview": "Prepare/test offline only; live replacement notapproved",
+  "observedEvidenceSource": "Root read-only catalogue report; reviewer has not queried live database",
+  "risks": [
+    "Permissive SELECT policies combineOR; adding UUIDpolicy doesnot remove emailgrant",
+    "Null/legacy/stale user_id records may represent legitimateemail-boundmembers; narrowing silentlysuppressaccess",
+    "Rebinding/backfilling user_id changesownership and requires independently verifiedrecords",
+    "membershiprowvisibility not equivalentprivatePocketpaidRPCbypass"
+  ],
+  "requiredIsolatedCases": [
+    "AuthenticatedboundUUID seesownrow evendifferentemail",
+    "Sameemail/newUUID cannot see boundforeignrow underproposedpolicy",
+    "NullUUID legacyrow explicitlyblocked/identified migrationdependency, notsilentlydeclaredrepaircomplete",
+    "Allapplicablepermissivepolicies inventoried/replaced; service/adminbehaviorpreserved",
+    "Nochange toinsert/update/deletepolicies orcustomerbindings"
+  ],
+  "appleAccountPredicateReview": "Approve narrow sourcealignment adding user.is_anonymous toexisting401guard; no new entitlement logic",
+  "appleRouteRegressions": [
+    "verifiednonanonymous200withservertruth",
+    "anonymous+verifiedemail401andzeroAppleverifiercalls",
+    "missingemail/confirmation401",
+    "verifiednonentitled200false",
+    "verifierfailure503",
+    "oversizedproof400",
+    "private,no-storeheadersretained"
+  ],
+  "releaseBoundary": "No liveDDL/dataownershipchanges; signednative andhostedidentity remain separate gates"
+}
