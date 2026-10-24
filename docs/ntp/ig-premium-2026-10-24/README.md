@@ -30,7 +30,8 @@ Verified remote originals unchanged: PR117 `4a87e556de9b9cbc230b1a0b46a07c91875f
 | Actual IG login/account/positions | BLOCKED; no IG calls attempted |
 | Hosted auth/vault/shared quota/revocation | UNIMPLEMENTED deployment bindings; not proven by mocks |
 | Registered scanner chart provenance | UNBOUND in actual premium route; normal screenshots HOLD |
-| Production build | See BUILD-RESULT.txt |
+| Production build | PASS; existing offline font/identity fixtures and external network denial; BUILD_EXIT=0 |
+| Compiled Next customer route HTTP | PASS503/no-store; no activation |
 
 Reviewer reproduced oversized body consumption, missing result-panel mount, and stale chart/provenance display; all repaired. Independent reviewed source SHA256s are in REVIEW.md. Original transport/session tests cover401/403/429/5xx, wrong accounts, duplicate positions, cancellation/deadlines, no LIVE fallback and forbidden market data. Additional controls cover CSRF, injected identities/credentials, hostile streamed bodies, expired DTOs, late connect/disconnect, exact-vs-ES product matching, and actual loopback transport.
 
@@ -56,3 +57,5 @@ Rollback: keep customer route503 and page props absent; revoke private pilot ses
 ## Primary-source refresh
 
 Checked24October2026: https://labs.ig.com/faq.html (DEMO origin, session rejection, quotas); https://labs.ig.com/gettingstarted (separate DEMO/API setup); https://www.ig.com/uk/help-and-support/articles/682194-how-can-i-access-the-ig-api and https://www.ig.com/uk/customer-agreement (governing documents). The public pages do not attest approval for this application. Preserve the prior commercial draft and restrictions until IG confirms the applicable terms; no claim of legal compliance or partnership.
+
+Build history: first compile exposed a type import in the new loopback test; corrected before source commit. Next full compile/typecheck passed but prerender needed the prior offline identity fixture. Final build reused that existing configuration and network-denial hook and passed. Known pre-existing middleware deprecation and Supabase Edge process.version warnings remain; no claim of warning-free full build.

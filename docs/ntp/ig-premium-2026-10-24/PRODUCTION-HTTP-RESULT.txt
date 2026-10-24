@@ -1,0 +1,1 @@
+PASS: actual compiled Next server POST /api/pocket/ig-demo returns503 IG_DEMO_NOT_CONFIGURED and private,no-store. No broker adapter or credentials bound; external network disabled. Server/test in one isolated network namespace, explicit127.0.0.1 host.
