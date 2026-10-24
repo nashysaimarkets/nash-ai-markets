@@ -30,7 +30,7 @@ jobs:
       POCKET_BENCHMARK_PILOT_ENABLED: 'false'
       POCKET_REAL_BENCHMARK_DISPATCH: 'false'
       POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: 'false'
-      POCKET_SCANNER_QA_OUTPUT: ${{ runner.temp }}/pocket-scanner-qa
+      POCKET_SCANNER_QA_OUTPUT: qa/scanner-repair-ci
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -68,6 +68,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pocket-scanner-repair-${{ github.sha }}
-          path: ${{ runner.temp }}/pocket-scanner-qa
+          path: ${{ env.POCKET_SCANNER_QA_OUTPUT }}
           if-no-files-found: error
           retention-days: 30
