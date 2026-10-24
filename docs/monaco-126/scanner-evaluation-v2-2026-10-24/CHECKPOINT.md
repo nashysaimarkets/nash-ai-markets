@@ -4,7 +4,7 @@
 
 The app repairs are implemented and independently checked in [draft PR144](https://github.com/nashysaimarkets/nash-ai-markets/pull/144). This successor prepares a separately identified evaluation of that exact app source. It does not change the app or declare its chart accuracy accepted.
 
-Preparation has produced six private, single-chart bundles and 18 exact possible request bodies. No provider request or hosted database call was made for this preparation. Paid execution remains **HOLD pending a new, explicit scope approval** and the final named-run admission. The new ledger migration is proposed code only and is not installed.
+Preparation is complete in [draft PR145](https://github.com/nashysaimarkets/nash-ai-markets/pull/145): six private, single-chart bundles, 18 exact possible request bodies, a complete protected runner and 58 passing free acceptance checks. No provider request or hosted database call was made for this preparation. Paid execution remains **HOLD pending a new, explicit scope approval** and the final named-run admission. The new ledger migration is proposed code only and is not installed.
 
 The app source tested in PR144 is `2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc`; its final documentation checkpoint is `b118c7a38a35514eb4cbd4cc86b3341de91a5ca5`. The successor begins from that checkpoint and leaves the app files unchanged.
 
@@ -46,9 +46,19 @@ The database must enforce the same binding again before every submission. A clai
 
 The hosted path reuses the accepted locked SDK versions, TLS settings and authenticated encryption. New evaluation metadata is inside the authenticated retained payload. An original source chart ID may label a physical encrypted artifact, but never substitutes for the new evaluation or attempt identity. Old bare payloads cannot count as new evaluation receipts.
 
-## Verification and remaining work
+## Verified executable and remaining approval
 
-Free acceptance is in progress. The new workflow uses only synthetic requests and disposable localhost PostgreSQL 17, with no protected environment or provider/hosted database secrets. Its strict TAP verifier rejects failed, empty, cancelled or skipped suites. Final CI and independent-review receipts will be added after the complete implementation is frozen and checked.
+The exact accepted evaluation source is `20783ed5e8eb95a11df86b0d60766ffcbbf4fa79`, tree `3f4c1742692db36257237fe35a0e780077098e00`. [Run 40093995597](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40093995597), job 120872330390, checked out that exact commit and passed **44 offline tests across seven suites plus 14 real disposable PostgreSQL 17 scenarios**, with zero failures, skips or cancellations. The existing secret-pattern scanner also passed across 1,396 version-control candidates. Full counts, artifact identity and earlier outcomes are retained in [FREE-CI.json](FREE-CI.json); the verified reports and TAP are in `ci/`.
+
+This workflow used synthetic responses and localhost PostgreSQL, with no protected environment or provider/hosted database secrets. Its strict verifier rejects empty or failed processes. The first SQL run exposed an operator-precedence error on valid receipt handling; that failure is preserved alongside the corrected passing run. A later independent review strengthened the invalid-key negative test with a valid downstream configuration, then proved that removing only the fingerprint predicate in a scratch mutation reaches the fake database constructor. The production guard itself is unchanged and rejects the fake key before any effect.
+
+Independent material review confirmed byte-identical original inputs, images, source data, calibration and scoring references. All six main request bodies are byte-identical to their originals; the sole difference in each of the twelve precision/rescue requests is the output cap. The effective diagnostic tolerance remains 1.0 original pixel. [MATERIAL-REVIEW.json](MATERIAL-REVIEW.json) records those checks.
+
+The independent complete protected-path rehearsal used the actual private first-chart bundle, synthetic SQL/provider/artifact effects and one explicitly documented fingerprint substitution in test memory. It exercised encrypted handoff, two simulated sends, response retention, the actual candidate diagnostic adapter and conservative accounting. It read no real provider credential and made no provider/hosted database request. [INDEPENDENT-PROTECTED-CONTROL.json](INDEPENDENT-PROTECTED-CONTROL.json) records that limitation; it is not live scanner evidence.
+
+The final independent review is retained as [FINAL-INDEPENDENT-ACCEPTANCE.json](FINAL-INDEPENDENT-ACCEPTANCE.json). [SOURCE-IDENTITY.json](SOURCE-IDENTITY.json) pins the executable, tests, workflow and concrete plan. Subsequent checkpoint edits contain documentation and retained evidence only; future execution must use the exact tested source above, independently admitted against a new scope approval. [EXECUTION-ORDER.md](EXECUTION-ORDER.md) gives the prepared sequence and required inputs.
+
+**The remaining owner decision is the scope extension:** up to six revised cases, a maximum USD 1.98 of additional reserved exposure inside the original USD 5 ceiling, starting with one named case and reassessing its retained result before any later case. An approval does not turn the present HOLD template into an executable admission automatically; the exact pending run/job and current account/price checks must still be recorded through the completed operator path.
 
 The prior app acceptance remains [run 40091820993](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091820993): 147 affected tests, 12 actual Chromium lifecycle checks, project typechecking and production compilation. [Image-source acceptance 40091824575](https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091824575) used the same executable tree; paid corpus accuracy remained untested. These results are not new live scanner results.
 

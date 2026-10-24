@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: one named case consumes two exact slots, retains diagnostics and holds the full case ceiling
+ok 1 - one named case consumes two exact slots, retains diagnostics and holds the full case ceiling
+  ---
+  duration_ms: 31.098554
+  type: 'test'
+  ...
+# Subtest: existing completed empty-primary condition issues only the original conditional rescue
+ok 2 - existing completed empty-primary condition issues only the original conditional rescue
+  ---
+  duration_ms: 15.066464
+  type: 'test'
+  ...
+# Subtest: known precision output limit is retained as incomplete and never creates a rescue
+ok 3 - known precision output limit is retained as incomplete and never creates a rescue
+  ---
+  duration_ms: 9.821003
+  type: 'test'
+  ...
+# Subtest: known main output limit still accounts the distinct mandatory primary without fabricating main completion
+ok 4 - known main output limit still accounts the distinct mandatory primary without fabricating main completion
+  ---
+  duration_ms: 9.209085
+  type: 'test'
+  ...
+# Subtest: unknown claim acknowledgement stops without retry or next case
+ok 5 - unknown claim acknowledgement stops without retry or next case
+  ---
+  duration_ms: 19.574612
+  type: 'test'
+  ...
+# Subtest: unknown submit:main acknowledgement stops without retry or next case
+ok 6 - unknown submit:main acknowledgement stops without retry or next case
+  ---
+  duration_ms: 13.242951
+  type: 'test'
+  ...
+# Subtest: unknown send:main acknowledgement stops without retry or next case
+ok 7 - unknown send:main acknowledgement stops without retry or next case
+  ---
+  duration_ms: 25.551581
+  type: 'test'
+  ...
+# Subtest: unknown retain:provider-response:main acknowledgement stops without retry or next case
+ok 8 - unknown retain:provider-response:main acknowledgement stops without retry or next case
+  ---
+  duration_ms: 14.127526
+  type: 'test'
+  ...
+# Subtest: unknown receipt:main acknowledgement stops without retry or next case
+ok 9 - unknown receipt:main acknowledgement stops without retry or next case
+  ---
+  duration_ms: 13.605924
+  type: 'test'
+  ...
+# Subtest: unknown retain:diagnostic-output:null acknowledgement stops without retry or next case
+ok 10 - unknown retain:diagnostic-output:null acknowledgement stops without retry or next case
+  ---
+  duration_ms: 12.988591
+  type: 'test'
+  ...
+# Subtest: unknown finish acknowledgement stops without retry or next case
+ok 11 - unknown finish acknowledgement stops without retry or next case
+  ---
+  duration_ms: 13.323043
+  type: 'test'
+  ...
+# Subtest: cancellation before claim has zero effects; cancellation after submit preserves the uncertain hold
+ok 12 - cancellation before claim has zero effects; cancellation after submit preserves the uncertain hold
+  ---
+  duration_ms: 12.136487
+  type: 'test'
+  ...
+# Subtest: authority refusal, original identities and payload tampering stop before any provider effect
+ok 13 - authority refusal, original identities and payload tampering stop before any provider effect
+  ---
+  duration_ms: 38.036119
+  type: 'test'
+  ...
+# Subtest: duplicate provider IDs and unknown provider terminal status stop after retention without further sends
+ok 14 - duplicate provider IDs and unknown provider terminal status stop after retention without further sends
+  ---
+  duration_ms: 12.95468
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 253.323997

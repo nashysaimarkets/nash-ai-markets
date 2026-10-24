@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: real frozen application plan produces 18 new pinned requests and one 330000 named permit under the original cap
+ok 1 - real frozen application plan produces 18 new pinned requests and one 330000 named permit under the original cap
+  ---
+  duration_ms: 4.260319
+  type: 'test'
+  ...
+# Subtest: HOLD, missing approval, a naked boolean and the original comment never grant a fresh scope
+ok 2 - HOLD, missing approval, a naked boolean and the original comment never grant a fresh scope
+  ---
+  duration_ms: 2.182341
+  type: 'test'
+  ...
+# Subtest: approval must bind precise app, runtime, plan, scope, bounds and current window
+ok 3 - approval must bind precise app, runtime, plan, scope, bounds and current window
+  ---
+  duration_ms: 3.633695
+  type: 'test'
+  ...
+# Subtest: carry-in requires 14 receipts, 4 voids, 18 pins, 6 accounts, 1506400 held and a fresh inactive observation
+ok 4 - carry-in requires 14 receipts, 4 voids, 18 pins, 6 accounts, 1506400 held and a fresh inactive observation
+  ---
+  duration_ms: 3.442905
+  type: 'test'
+  ...
+# Subtest: old runs, attempts, case IDs and missing per-case reassessment are refused
+ok 5 - old runs, attempts, case IDs and missing per-case reassessment are refused
+  ---
+  duration_ms: 2.211838
+  type: 'test'
+  ...
+# Subtest: requests need new scope-bound fingerprints, exact 4000 precision limits and no old plan reuse
+ok 6 - requests need new scope-bound fingerprints, exact 4000 precision limits and no old plan reuse
+  ---
+  duration_ms: 1.433808
+  type: 'test'
+  ...
+# Subtest: proposed migration adds a new RPC, append-only evidence and shared parent cap guard without replacing old functions
+ok 7 - proposed migration adds a new RPC, append-only evidence and shared parent cap guard without replacing old functions
+  ---
+  duration_ms: 0.803669
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 26.631587

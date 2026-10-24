@@ -1,0 +1,396 @@
+{
+  "kind": "FINAL_INDEPENDENT_POCKET_SCANNER_EVALUATION_V2_PREPARATION_REVIEW",
+  "status": "PREPARATION_ACCEPTED_PAID_EXECUTION_HOLD",
+  "generatedAt": "2026-10-24T12:30:51.263640+00:00",
+  "reviewedSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "reviewedSourceTreeSha": "3f4c1742692db36257237fe35a0e780077098e00",
+  "acceptedAppSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "previousCheckpointSha": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "scopeId": "pocket-scanner-evaluation-v2-20261024",
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "reviewedSourceHashes": {
+    ".github/actions/pocket-scanner-evaluation-v2/action.yml": {
+      "sha256": "2c381806a94270731a304e69860712695e320a536e0334531ca507289189805e",
+      "gitBlobSha": "384a8370b574b2c7be086a33d0a0d507ad5062c5"
+    },
+    ".github/actions/pocket-scanner-evaluation-v2/entry.cjs": {
+      "sha256": "c769c6db1cf517a4b7f41bd26ee73c8d981109a0cf78bddd5c023b740edd02e8",
+      "gitBlobSha": "475d39d602d718be02c5a3e579e388e63baa3de4"
+    },
+    ".github/workflows/pocket-scanner-evaluation-v2-qa.yml": {
+      "sha256": "98f43072f8c12fd309f0b3df9909a7619f58ac9e61ce90b25e1fe618b18c25db",
+      "gitBlobSha": "1c1518f0572b9dc46e436c655812d79e4e51fe90"
+    },
+    "database/neon/proposed/20261024-scanner-evaluation-v2.sql": {
+      "sha256": "a6231f2acd4efdbad7fa05b23dfee4ec496c2fb9c61327f2929d236705553161",
+      "gitBlobSha": "50b84bd4008f72b52a5c232363767456692dd94c"
+    },
+    "docs/monaco-126/scanner-evaluation-v2-2026-10-24/PLAN.json": {
+      "sha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+      "gitBlobSha": "31eec1e31265765f8af8e74aefb0ee18ef1a986f"
+    },
+    "docs/monaco-126/scanner-evaluation-v2-2026-10-24/PREPARATION-RECEIPT.json": {
+      "sha256": "a5b4a9f9b5a2651e01bb78d876af3c5479ea6f38e092d364b75a7f0f68b6fda9",
+      "gitBlobSha": "ee9cfe3b738a4c2ac2a6add3ba6e223105ce0428"
+    },
+    "docs/monaco-126/scanner-evaluation-v2-2026-10-24/RUN-ADMISSION.HOLD.json": {
+      "sha256": "839fd696e3b6b9d93073b5e008ae85c64d8262ad1d9b0fb3c0ff98e2074db6e5",
+      "gitBlobSha": "8a006ff9ac269462434c685f942ebe018d3ded51"
+    },
+    "docs/monaco-126/scanner-evaluation-v2-2026-10-24/RUN-WORKFLOW.yml.template": {
+      "sha256": "f2efa94abe4692d7ed0e783dc9463fb5f62f7a9a2c466f809c762c04b3b6e1a8",
+      "gitBlobSha": "00edcff04dd6a4d3a8adfab017bea8b30add58e5"
+    },
+    "scripts/pocket-scanner-evaluation-v2-bridge.mjs": {
+      "sha256": "8684b93e55905712d2b39ba2a6f2d5c6de461773b5ea299d0b69c31c1755a839",
+      "gitBlobSha": "3a47b54cfc5396a6a758e635206e86b2524467bd"
+    },
+    "scripts/pocket-scanner-evaluation-v2-bundle.mjs": {
+      "sha256": "fc90b2f38b5b40c5fca9f615a2afa3cafe2282f2fe61ca4308705fdd57b5ba82",
+      "gitBlobSha": "6c20c8ef16f36a2c24862f61be841a3e446755da"
+    },
+    "scripts/pocket-scanner-evaluation-v2-diagnostics.mjs": {
+      "sha256": "450eab30580185bebb79fc62b88caab6530096358190e85a8be860d1986b69f5",
+      "gitBlobSha": "261ac6d6e49cac73daadb3cdcab31eac6ffa00b9"
+    },
+    "scripts/pocket-scanner-evaluation-v2-effects.mjs": {
+      "sha256": "e21d0640db8521d22ca0bc6b988f9f0d7811e354d50c4acf336b7d833ad39fd7",
+      "gitBlobSha": "dcce1fd929cc6d913a5c0cf8fe346f3a8d62e1b0"
+    },
+    "scripts/pocket-scanner-evaluation-v2-executor.mjs": {
+      "sha256": "9a40550a53d28aa3e965868d2237a31d9c943697928e476552cb83abb08828f5",
+      "gitBlobSha": "a6ea19d81d1631ae95ea4c576e51a58c1c1f1348"
+    },
+    "scripts/pocket-scanner-evaluation-v2-hosted-entry.mjs": {
+      "sha256": "1e1e3955e92ad8e8e75ac2dd7ae59d2b838645ca9f4dec35256e34d310967f7d",
+      "gitBlobSha": "475143e4908abb5c8264d80016e19f32ea689457"
+    },
+    "scripts/pocket-scanner-evaluation-v2-operator.mjs": {
+      "sha256": "643c400f15cc3e9b7f1c23fd1848ad0425d01ca8c2f128d138306b6e2b412d3e",
+      "gitBlobSha": "9304d8d38ad60a7c32b55fe5f83c8f863faa0e1f"
+    },
+    "scripts/pocket-scanner-evaluation-v2-prepare.mjs": {
+      "sha256": "f6b8d7a6b7ffb13e1d6e95d07fda2a4e909d003183a0a946f86301d837959d41",
+      "gitBlobSha": "c5f87b09231753449b60fca4db1ae9cdd929923f"
+    },
+    "scripts/pocket-scanner-evaluation-v2-protected-fixture.mjs": {
+      "sha256": "3f88467561e0914d54b1bd119048c7d287e7a16cd3daaa67964e8076612d4445",
+      "gitBlobSha": "19c1d5c333de6d03faa22fe048a344642c300120"
+    },
+    "scripts/pocket-scanner-evaluation-v2-source.mjs": {
+      "sha256": "6447e0f8b0f61fad858a92568467e6b099271f9f8976ec4fc87ab4c5ef62ebe7",
+      "gitBlobSha": "41fd50cd140b28e6cbce8caca0b30940dd595337"
+    },
+    "scripts/prepare-pocket-scanner-evaluation-v2-ledger.mjs": {
+      "sha256": "8d5986914a85114f23343a7e75cdd1ea765e82063bf4eaae559d4dd227f8c0be",
+      "gitBlobSha": "c7ec478a99fee17297d146820cd88059adbbba81"
+    },
+    "scripts/verify-pocket-scanner-evaluation-v2.mjs": {
+      "sha256": "bd1bb88b87c9726985b37d25a9a9855eac8ab30b2a834063f70f69acc733a9d1",
+      "gitBlobSha": "e876cdcd97c3dff6cf7c7fd5be21e080d75b491c"
+    },
+    "tests/pocket-scanner-evaluation-v2-diagnostics.test.mjs": {
+      "sha256": "f9c0d40b8462ce4706c06e71c16b5a8eb534771f00536ed1d95165bf21d07dde",
+      "gitBlobSha": "1f52ef2a9de1a6dcce5a386535affc24cf180af5"
+    },
+    "tests/pocket-scanner-evaluation-v2-effects.test.mjs": {
+      "sha256": "a83b97104cc7c9acc051e756a9751dd63d981ead55d11c52ca1dffb5abdc0888",
+      "gitBlobSha": "b3ca93bfb135d52f7bedee0f34a7287b88359b15"
+    },
+    "tests/pocket-scanner-evaluation-v2-executor.test.mjs": {
+      "sha256": "03d91d9ec95d2a50e71d8493165a288f0e0daebdae6f38d3f9848e9657a96826",
+      "gitBlobSha": "f20203f69b4d554028b33d9e11955d15ef76b7e1"
+    },
+    "tests/pocket-scanner-evaluation-v2-hosted.test.mjs": {
+      "sha256": "2451756a2c131b23ac021596e55b2239432510dc9214eaff4083a6106109e5d3",
+      "gitBlobSha": "42939d58fabdf7983e23088ab0284bfbe00db252"
+    },
+    "tests/pocket-scanner-evaluation-v2-ledger-admission.test.mjs": {
+      "sha256": "ea4b7a51e48fec0e73c0707f098836d4e995c4733cfafde8ed0d527c88a2e9d1",
+      "gitBlobSha": "7b7f5900c3be50408636ea921d2f557956d26767"
+    },
+    "tests/pocket-scanner-evaluation-v2-ledger-postgres.test.mjs": {
+      "sha256": "7a9559de9e7844cdc365880637d7a57896b5309168a707116c6bc7dee0054c0a",
+      "gitBlobSha": "6940aca5f5fcf54246074c1657cad366f36bdb41"
+    },
+    "tests/pocket-scanner-evaluation-v2-operator.test.mjs": {
+      "sha256": "6e369434d5049a2b317f6381049140515885bdd6c630bf90871297fcb8f5ab88",
+      "gitBlobSha": "75765848394c687a5eade3a7a3aa84ed8075426e"
+    },
+    "tests/pocket-scanner-evaluation-v2-source.test.mjs": {
+      "sha256": "21a190f38aea0422d6531a5835a18f5232b7f2a934ba9aa69d34d811b8b31794",
+      "gitBlobSha": "1c9f800fb3aabcd6abe4ca5b4dca5aaa3fba373a"
+    },
+    "tests/support/pocket-scanner-evaluation-v2-fixture.mjs": {
+      "sha256": "a0150acd33f49ae6fe541486850166af0acb6d043f02f72985282ad24f20805d",
+      "gitBlobSha": "99fc4709b062453105352591e462722dd86c320d"
+    },
+    "tests/support/pocket-scanner-evaluation-v2-ledger-fixture.mjs": {
+      "sha256": "1dcb7a572dd9dedfd1277bf8182ad0c3065818ced3feb513180b94720b3302da",
+      "gitBlobSha": "ab86d039e3b9e5b794354caa39df3b88fa8c0e96"
+    },
+    "vercel.json": {
+      "sha256": "bc79b744b26743d52145c46b23b87e53088d76e02d534626e37fd57e3174ec31",
+      "gitBlobSha": "78dd37273b18d8d7b0c2362dd0f864a0b590f6db"
+    }
+  },
+  "sourcePreservation": {
+    "originalExecutableTestDependencyFilesUnchanged": 924,
+    "entireAcceptedAppBlobSetUnchanged": 517,
+    "originalLedgerAndRuntimeNotRewritten": true,
+    "proposedAdditiveMigrationInstalled": false
+  },
+  "material": {
+    "cases": 6,
+    "sourceCaseIds": [
+      "d001",
+      "d002",
+      "d003",
+      "d004",
+      "d005",
+      "d006"
+    ],
+    "evaluationCaseIds": [
+      "v2-d001",
+      "v2-d002",
+      "v2-d003",
+      "v2-d004",
+      "v2-d005",
+      "v2-d006"
+    ],
+    "originalInputsImagesHistoryCalibrationLicenceOracleProtocolByteEqual": true,
+    "mainRequestsByteIdentical": 6,
+    "precisionRequestsOnlyCapChanged": 12,
+    "precisionMaxOutputTokensDelta": {
+      "before": 1400,
+      "after": 4000
+    },
+    "mainMaxOutputTokens": 7000,
+    "model": "gpt-5-mini-2025-08-07",
+    "effectiveOriginalPixelTolerance": 1.0,
+    "rescuePredicateUnchanged": true
+  },
+  "localAcceptance": {
+    "offlineSuites": 7,
+    "offlineTests": 44,
+    "failures": 0,
+    "skips": 0,
+    "hostedFixtureCorrectionRechecked": 7,
+    "fullProtectedComposition": "PASS_EXPLICIT_LOCAL_SYNTHETIC_CONTROL",
+    "controlledInput": "Original hash-pinned v2-d001 bundle",
+    "controlledKey": "Exactly one fingerprint constant substituted in memory only",
+    "controlledEffects": "Fake SQL/SDK/receiver/artifact services; no real credentials or network",
+    "mockProviderCalls": 2,
+    "mockArtifactUploads": 4,
+    "fixedProductionKeyGuard": "PASS_AND_MUTATION_SENSITIVE",
+    "isolatedSandboxFirstAttempt": "EPERM before tests; no false software pass counted"
+  },
+  "officialAcceptance": {
+    "run": {
+      "id": 40093995597,
+      "headSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40093995597"
+    },
+    "job": {
+      "id": 120872330390,
+      "headSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 2,
+          "name": "Initialize containers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 3,
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 4,
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 5,
+          "name": "Verify exact source and disabled automatic deployment",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 6,
+          "name": "Install accepted isolated runtime from its unchanged lock",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 7,
+          "name": "Run offline request, status, transport and approval boundaries",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 8,
+          "name": "Verify atomic accounting on disposable PostgreSQL 17",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 9,
+          "name": "Confirm source remains unchanged",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 10,
+          "name": "Retain free acceptance receipts",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 18,
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 19,
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 20,
+          "name": "Stop containers",
+          "status": "completed",
+          "conclusion": "success"
+        },
+        {
+          "number": 21,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "artifact": {
+      "id": 12559734021,
+      "name": "pocket-scanner-evaluation-v2-20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+      "sizeBytes": 10881,
+      "digest": "sha256:5cc8e06f7aeeb4bf39348961672453ef3bd6a5988ed0d4ae202b8f43aee54b39",
+      "expired": false,
+      "workflowRun": {
+        "id": 40093995597,
+        "repository_id": 1298236921,
+        "head_repository_id": 1298236921,
+        "head_branch": "monaco-scanner-evaluation-v2-126-20261024",
+        "head_sha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79"
+      }
+    },
+    "offline": {
+      "suites": 7,
+      "tests": 44,
+      "passed": 44,
+      "failed": 0,
+      "skipped": 0
+    },
+    "postgres": {
+      "version": 17,
+      "suites": 1,
+      "tests": 14,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    "secretPatternScanCandidates": 1396,
+    "exactCheckoutAndPostTestSourceIntegrity": "PASS",
+    "logsIndependentlyRetrieved": true,
+    "sourceBlobsIndependentlyMatched": true
+  },
+  "reviewedControls": [
+    "One named case per invocation; six fixed new case/attempt identities; at-most-once claim and slot submission.",
+    "Static evidence contains no self-referential commit/run/job identity; actual checkout commits and official GitHub run/job metadata bind the SQL permit.",
+    "Fixed project/key/model/runtime/plan identity and five independent owner approval/admission/reassessment/previous-receipt fields match the immutable database record before handoff.",
+    "Missing or stale approval, wrong source/run/attempt, revoked identity, changed original history, or mismatched evidence holds dispatch.",
+    "All new tables are append-only; old and new commitments serialize on the same original cap row; additive old-call trigger prevents concurrent cap bypass.",
+    "Original 14 receipts, 4 voids, 18 pins, 6 accounts and 1506400 microusd baseline are asserted; late receipts/accounting retain the full 330000 case hold.",
+    "Unknown submit/provider/private-retention/receipt/accounting acknowledgements stop without retry/refund; unresolved cases block all later permits.",
+    "Later cases require a new permit admitted after the exact preceding account and matching its current receipt digest.",
+    "Raw provider responses and diagnostics are independently encrypted and scoped; old bare/cross-case records cannot become v2 receipts.",
+    "Actual accepted route completion checks, geometry recovery and original scorer are reused; semantic acceptance and deployed HTTP latency remain unclaimed.",
+    "Protected workflow is an inert template; the only active new workflow is credential-free acceptance; invocation and relay branches receive explicit deployment-disabled configuration."
+  ],
+  "closedFindings": [
+    "Runtime/database environment and approval-reference disagreement aligned and covered by real bridge-to-PostgreSQL tests.",
+    "Self-referential evidence/run identity removed; official current-run metadata resolves the job and owner admission binds it after push.",
+    "Initial PostgreSQL receipt JSON-operator precedence defect reproduced in official CI and corrected with explicit parentheses.",
+    "Premature later-case permits cannot become usable automatically after an earlier case finishes.",
+    "Owner-stored approval/admission/reassessment/previous-receipt hashes now compare explicitly with runtime configuration.",
+    "Synthetic-key negative fixture now supplies valid Neon configuration; independent one-predicate mutation proves the key guard itself is decisive."
+  ],
+  "priorCiFailure": {
+    "runId": 40093249279,
+    "jobId": 120870089841,
+    "sourceSha": "2fe332bf4b64afd39e566a0d3aa9ea93df5c88cc",
+    "postgresPassed": 7,
+    "postgresTests": 11,
+    "cause": "JSON operator precedence rejected four valid receipt scenarios",
+    "preservedIn": "INTERMEDIATE-LEDGER-CI-REVIEW.json"
+  },
+  "money": {
+    "originalHeldMicroUsd": 1506400,
+    "newPerCaseHeldMicroUsd": 330000,
+    "maximumNewMicroUsd": 1980000,
+    "maximumCombinedMicroUsd": 3486400,
+    "unchangedAggregateCapMicroUsd": 5000000,
+    "actualMicroUsd": null,
+    "financiallySettled": false
+  },
+  "actions": {
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "heldoutPayloadReads": 0,
+    "realProviderCredentialReads": 0,
+    "protectedRunnerActivations": 0,
+    "productionAppEditsByReviewer": 0
+  },
+  "dispatch": {
+    "authorised": false,
+    "state": "HOLD",
+    "reason": "The original six-run approval is exhausted; new explicit scope approval and exact future run admission are required.",
+    "originalSixReplayAllowed": false,
+    "freshScopeResetAllowed": false,
+    "paidScannerAccuracy": "UNTESTED",
+    "semanticAccuracy": "UNSCORED",
+    "heldoutAccuracy": "UNTESTED",
+    "productionOrMainDeployment": "NOT_PERFORMED"
+  },
+  "evidenceFiles": {
+    "MATERIAL-REVIEW.json": "4d08675b824d946487f87e7fdbc3fb644f2ae5919097da91a1689acea0a86e4b",
+    "INTERMEDIATE-LEDGER-CI-REVIEW.json": "ac3c6c34a5d56448c3e6a53aa1beaf60d1e380e2545f52c9bc3760fc1f4f1a96",
+    "final-offline/OFFLINE-ACCEPTANCE.json": "e2353e35d05eb292b2c60d0640ac14e0048390f6554eab42d6ff03b737d579bc",
+    "HOSTED-KEY-REGRESSION.json": "325a42c03dc83864982df485fc872e0f7109f111a0869ccaacd708823a32f32a",
+    "INDEPENDENT-PROTECTED-CONTROL.json": "7952aefae80e09848e2ca83e5b39944dc7cdcbef316d83b9829daf50425f39b2",
+    "KEY-GUARD-PRODUCTION.json": "3097fd28a32d8e9b248b312bce8609958a527ff7ccb88fb0fe35b7588d7ef15b",
+    "KEY-GUARD-MUTATION.json": "54cef9fe439fa90c669dc554f4480fa0712d30c2169fa00278a25e37c649b369",
+    "OFFICIAL-FINAL-ACCEPTANCE-INPUT.json": "1a3d6c3d34073c40830c4c5a5500a2b386ee5aa82f10a5b2a554a896a443091f"
+  },
+  "remainingLimitations": [
+    "This accepts concrete preparation and control behavior only; it does not authenticate a new provider response or grant execution permission.",
+    "Future execution must independently recheck current fixed-model availability, price/key/project attribution and live original ledger state.",
+    "No live hosted database state was accessed in this review; original history preservation was checked in code and real disposable PostgreSQL fixtures.",
+    "The local full composition uses the genuine first input but explicitly simulated credentials/services and timings; it is not live scanner accuracy evidence."
+  ]
+}

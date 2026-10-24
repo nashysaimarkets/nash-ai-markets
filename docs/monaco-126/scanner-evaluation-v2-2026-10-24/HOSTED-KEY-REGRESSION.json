@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "counts": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "testSha256": "2451756a2c131b23ac021596e55b2239432510dc9214eaff4083a6106109e5d3",
+  "tapSha256": "30d29c68707e0defcb6f46b0f62df61e3102e589d8378e70004df5993981b395",
+  "providerCalls": 0,
+  "hostedDatabaseCalls": 0
+}
