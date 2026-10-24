@@ -7,7 +7,7 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.
 const browser=await chromium.launch({headless:true,executablePath:process.env.POCKET_QA_BROWSER_EXECUTABLE_PATH||'/usr/bin/google-chrome',args:['--no-sandbox']});const checks=[],errors=[];let scans=0,pending=[];
 async function waitPending(){const end=Date.now()+10000;while(!pending.length&&Date.now()<end)await new Promise(r=>setTimeout(r,10));assert.ok(pending.length,'analysis transport dispatched');}
 try{
- const page=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,reducedMotion:'reduce'});page.on('pageerror',e=>errors.push(e.message));
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,reducedMotion:'reduce'});const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async route=>{const url=route.request().url();if(!url.startsWith(origin))return route.abort();if(url.includes('/api/')){if(url.includes('/analyse')){scans++;pending.push(route);return;}return route.fulfill({status:503,json:{error:'Acceptance fixture: unavailable service'}});}return route.continue();});
  await page.goto(origin);await page.locator('.pnIntakeSlots button').first().waitFor();
  const axe=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();console.log('AXE',JSON.stringify(axe.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))));assert.equal(axe.violations.length,0);checks.push('iPhone-sized intake WCAG A/AA automated scan: zero violations');
