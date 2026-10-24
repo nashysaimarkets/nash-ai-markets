@@ -1,0 +1,524 @@
+{
+  "kind": "POCKET_SCANNER_REPAIR_HOSTED_ACCEPTANCE",
+  "status": "PASS",
+  "testedCommit": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "baseCheckpoint": "889feaa0768768d03b86f6db1664cb40321e5adf",
+  "repairRun": {
+    "id": 40091820993,
+    "jobId": 120865892616,
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091820993",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Confirm source and disabled automatic deployment",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Install unchanged locked dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Run affected scanner and UI regressions",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Typecheck and changed-source lint",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "Exercise actual React image lifecycle in Chromium",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "Compile the production Next application",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Retain narrow acceptance receipts",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19
+      },
+      {
+        "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 20
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 21
+      }
+    ]
+  },
+  "imageRun": {
+    "id": 40091824575,
+    "jobId": 120865902825,
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40091824575",
+    "conclusion": "success",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2
+      },
+      {
+        "name": "Run actions/setup-node@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3
+      },
+      {
+        "name": "Run chmod +x scripts/sites-env.sh scripts/install-ci.sh",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4
+      },
+      {
+        "name": "Run npm run install:ci",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5
+      },
+      {
+        "name": "Verify native rasterization without provider calls",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6
+      },
+      {
+        "name": "Install free browser test runtime",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7
+      },
+      {
+        "name": "Verify real browser pixels, customer Canvas crop and same-origin OCR",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8
+      },
+      {
+        "name": "Verify mobile decision workflows without providers",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9
+      },
+      {
+        "name": "Verify actual redesign mobile intake and successful mocked report",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10
+      },
+      {
+        "name": "Verify customer Level Lab source isolation without providers",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11
+      },
+      {
+        "name": "Build the Vercel Next.js function traces",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12
+      },
+      {
+        "name": "Rasterize from isolated production trace",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13
+      },
+      {
+        "name": "Report live-scan execution path",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 14
+      },
+      {
+        "name": "Run labelled image torture corpus",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 15
+      },
+      {
+        "name": "Post Run actions/setup-node@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 29
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 30
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 31
+      }
+    ],
+    "apiHeadSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "actualCheckout": "4ad942b0a9456f9c39c520523f0c62c9f69d9a7f",
+    "sourceTree": "18266d8c65141a608af72381c1b0372f2783f961",
+    "treeEqualsTestedExecutable": true
+  },
+  "tests": {
+    "status": "PASS",
+    "totals": {
+      "tests": 147,
+      "pass": 147,
+      "fail": 0,
+      "skipped": 0
+    },
+    "suites": 17
+  },
+  "perSuite": [
+    {
+      "file": "tests/pocket-precision-output-v2.test.ts",
+      "sourceSha256": "ef67c957aef9ea168d0bca8ed6d1ff406157e05200de3930f71d9dc363ca117a",
+      "status": "PASS",
+      "tests": 10,
+      "pass": 10,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "ef065cccac9d01562391d3e1c8d7502f3777cadc57629bf18b9bd1628e080cb3"
+    },
+    {
+      "file": "tests/pocket-calibration-observations-contract.test.ts",
+      "sourceSha256": "95ae5e5f754badefffb0458ef77c42ff2585fbad44b0d23cc89b3699ff9da09a",
+      "status": "PASS",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "73ae6203b4a3921a532f7dda28c44ad1939444e9cd0f0a80390556e0bb06245e"
+    },
+    {
+      "file": "tests/pocket-confirmed-facts.test.ts",
+      "sourceSha256": "51627fae3e41613486befc03528fad4c1283edebceb08695a313158235f34310",
+      "status": "PASS",
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "c2b05d7899dbf56a37b5cfdbdd7dfbc55a98e609faa02c12c317e57f4bdd4dd2"
+    },
+    {
+      "file": "tests/pocket-precision-fallback.test.ts",
+      "sourceSha256": "b9620dc8ca93a0432f18e0c11a7dde14b28d1c76e55152d6869209f9cd2216b6",
+      "status": "PASS",
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "14bf8864be6a9d9de06d701ba49cd62defef487fd2985c6af4258e2e7af79341"
+    },
+    {
+      "file": "tests/pocket-liquidity-chain-integration.test.ts",
+      "sourceSha256": "8310dcc24e6dcc4987cd6be595be5adf3dabb681e0ae85fad3d4b48d13824273",
+      "status": "PASS",
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "556e85eb89022a8444e8da4409aca00d745a1d7e1ce41f5e959383851763d181"
+    },
+    {
+      "file": "tests/pocket-liquidity-guard.test.ts",
+      "sourceSha256": "b0921e8e07b930ff7d0f54662f1965f2a01be5429af2e7e0c1abf463e742fb0e",
+      "status": "PASS",
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "780c3412d0f1e833c6f10ea380a451fbcd8bb561a4a0e8719f00a277d9d2d016"
+    },
+    {
+      "file": "tests/pocket-liquidity-event-evidence.test.ts",
+      "sourceSha256": "ea68a9034497472ba35791a12b50d38951effe8ca6b05907d4b50f4f649da184",
+      "status": "PASS",
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "c57f7ae9a70b377df8ef9c097a0d75c5fc1caa368a424f7b2ccbe351df2f7745"
+    },
+    {
+      "file": "tests/pocket-monaco-internal-diagnostics.test.ts",
+      "sourceSha256": "1d9d090d3fa492121c25b889188b1bf3f43ba1d292f908ed5bf26826a6d5d944",
+      "status": "PASS",
+      "tests": 29,
+      "pass": 29,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "0bd9591f1edfa33954ac68ac197f04628e7287abcfc801d4e4c8b3b6659eb9f4"
+    },
+    {
+      "file": "tests/pocket-launch-hardening.test.ts",
+      "sourceSha256": "2d123f65b7573eb2cc62404f537ba47a3c2a60f016562c9b298a4ff9ff91517e",
+      "status": "PASS",
+      "tests": 19,
+      "pass": 19,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "b22b189f64c6bd9f1e9b14949da5821d7a64fb185f17c05f9296bbd6866d2a87"
+    },
+    {
+      "file": "tests/pocket-source-placement.test.ts",
+      "sourceSha256": "f418cbc8b5fedea9a8560deb4fa475226272fdf192e5fee396478a83c75fa8ff",
+      "status": "PASS",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "3406f0cad76b11fe7558422715a5a098cb52dd858b31ca97c881cb7ebecb1891"
+    },
+    {
+      "file": "tests/pocket-source-placement-render.test.ts",
+      "sourceSha256": "9edbac100e5ce6556a21e4a2f3d2db6606635ea2d79eafaa2832ddf46e62bdf9",
+      "status": "PASS",
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "dbf4b182c65e3a020a4d5c01912418bd1bb94df3e520ff9fd6d86ef5d52aa3ba"
+    },
+    {
+      "file": "tests/pocket-original-levels.test.ts",
+      "sourceSha256": "186d5b5417dabd055649d272ebd9fffb8d718c6251fb515566e1ad8b6714edb8",
+      "status": "PASS",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "082f2a058db8c449eb406e5b6d433fca5127a296654931c3a616246164855b01"
+    },
+    {
+      "file": "tests/axis-verification.test.ts",
+      "sourceSha256": "9fe3f51a10cd06e1e4eb4219d890c45bbf8e980947f2446ac1f916b746fb9344",
+      "status": "PASS",
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "e207e572c5b030e87eb6a5a5186a1ef2f491a7a1f8ae8af4d4e4c0cd9caf4fb3"
+    },
+    {
+      "file": "tests/pocket-original-geometry.test.ts",
+      "sourceSha256": "784f42d07da26c68549d73af6709106bf16ae4531c694634a4bd4a5a642a5221",
+      "status": "PASS",
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "98bfa3212540bd97c077e996424834879e1ad17352b2ba3fff2ee37276acb61e"
+    },
+    {
+      "file": "tests/axis-reader-cache.test.ts",
+      "sourceSha256": "2c22834a11452bd6090d41c927f8d9272a3ba85ae9425a029b05ff3f9336c8e5",
+      "status": "PASS",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "66d7d6b64c789847f34fd024553cda89d10e6a75d1d2eeb4deecc49ba1e4bc22"
+    },
+    {
+      "file": "tests/pocket-next-integration.test.ts",
+      "sourceSha256": "8306af49dd6ea9f125a02bf088d300ce36ccd48b34fd43e25548b2f44ac8bec5",
+      "status": "PASS",
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "f90aa8f987758e7e9f6abbc415120c386ff52ee160b62dac481f5ad03f81c0e6"
+    },
+    {
+      "file": "tests/pocket-workflow-source-lifecycle.test.ts",
+      "sourceSha256": "a17bc8d9ab8098c9e43858026bb642f64755ed90dc1bdaff683df7e80be4e2b3",
+      "status": "PASS",
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "logSha256": "023c9581ec5950128a77add0df0b392eb723a95b028f2001e0abea30475a5e35"
+    }
+  ],
+  "browser": {
+    "kind": "INDEPENDENT_SOURCE_PLACEMENT_BROWSER_REVIEW",
+    "status": "PASS",
+    "observedAtUtc": "2026-10-24T11:56:32.976Z",
+    "checks": [
+      {
+        "name": "pending independent source read holds numeric placements and both consumers",
+        "status": "PASS"
+      },
+      {
+        "name": "one measured result supplies two SVG consumers at corrected original pixel row",
+        "status": "PASS"
+      },
+      {
+        "name": "identity revocation synchronously removes previous verified placement",
+        "status": "PASS"
+      },
+      {
+        "name": "same image/report reconfirmation waits for a fresh bound result",
+        "status": "PASS"
+      },
+      {
+        "name": "new confirmation object invalidates otherwise unchanged report binding",
+        "status": "PASS"
+      },
+      {
+        "name": "replaced report ignores late completed response even when transport ignores abort",
+        "status": "PASS"
+      },
+      {
+        "name": "image A to B to A cannot resurrect prior image-A measurement",
+        "status": "PASS"
+      },
+      {
+        "name": "explicit held OCR response keeps all source placement withheld",
+        "status": "PASS"
+      },
+      {
+        "name": "reader rejection remains held and never reuses prior verified coordinates",
+        "status": "PASS"
+      },
+      {
+        "name": "shared view removal does not trigger another OCR read or clear valid parent evidence",
+        "status": "PASS"
+      },
+      {
+        "name": "unmount aborts pending OCR and suppresses its later completion",
+        "status": "PASS"
+      },
+      {
+        "name": "no browser exceptions, external network requests, or provider calls",
+        "status": "PASS"
+      }
+    ],
+    "errors": [],
+    "blockedExternalRequests": [],
+    "sourceBuild": {
+      "sourceHashes": {
+        "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4",
+        "app/pocket/use-original-chart-measurement.ts": "f72c41f181f6b167210e8edc4ea0f8eec07b2cdafaa14836d298a6a1989431f7",
+        "app/pocket/source-placement.ts": "85ba9feee2edc823af74fbfaf50d186e682015b34de710dd1dc4bd95af1cb419",
+        "app/pocket/original-pixel-levels.ts": "8d32737a4f9168d6a6290370116a1fc0f9dbae40fe0d121981015d3f08337d17"
+      },
+      "controlledBoundary": "browser-axis-ocr",
+      "bundleBytes": 1154363,
+      "providerCalls": 0
+    },
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "privateChartReads": 0,
+    "limitations": [
+      "Synthetic local raster and controlled OCR boundary; no real OCR/scanner accuracy or latency acceptance"
+    ]
+  },
+  "typecheck": "PASS",
+  "changedSourceLint": {
+    "status": "PASS",
+    "errors": 0,
+    "warnings": 5
+  },
+  "secretScan": "PASS",
+  "nextProductionCompile": "PASS",
+  "productionTraceRasterization": "PASS",
+  "paidCorpus": "SKIPPED_NOT_AUTHORIZED_OR_EXECUTED",
+  "newProviderCalls": 0,
+  "databaseMutations": 0,
+  "previousFailures": [
+    {
+      "runId": 40091644567,
+      "head": "fbbce5c0f93799a1121d6d0efebf5cf844d4d81a",
+      "outcome": "WORKFLOW_FAILURE_BEFORE_JOBS",
+      "explanation": "Job environment used runner context before it was available; corrected evidence path.",
+      "serverSyntaxDetailRetained": false
+    },
+    {
+      "runId": 40091703602,
+      "head": "e5555e6d49088af283ef0d70f5f48825bc847dac",
+      "outcome": "HARNESS_FAILURE_BEFORE_BROWSER_SCENARIOS",
+      "explanation": "CommonJS Playwright dynamic import had no named Chromium export; corrected default-export handling.",
+      "affectedTestsAndTypecheckPassed": true
+    }
+  ],
+  "artifactId": 12559620932,
+  "limitations": [
+    "Controlled OCR in the new lifecycle harness; real OCR exercised separately in the existing image workflow on its own fixtures.",
+    "Browser acceptance is not physical-device, live provider, semantic trading accuracy or deployment acceptance.",
+    "The original one-pixel six-case diagnostic findings remain unchanged; the existing browser source-reader fit uses its unchanged1.5pixel tolerance.",
+    "Fresh4000-token completion, endpoint latency and accuracy remain unmeasured."
+  ],
+  "artifact": {
+    "id": 12559620932,
+    "digest": "sha256:f763b48b957e2a0090d28985961b167ac8597d799780750a28b9112f6f97e4cd"
+  }
+}
