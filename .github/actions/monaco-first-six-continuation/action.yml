@@ -1,5 +1,0 @@
-name: Monaco untouched-five protected continuation
-description: Continue only the five untouched charts using the reviewed source and original allowance.
-runs:
-  using: node24
-  main: entry.cjs

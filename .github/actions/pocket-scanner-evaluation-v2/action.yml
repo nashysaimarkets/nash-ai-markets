@@ -1,5 +1,0 @@
-name: Pocket scanner evaluation v2 single-case entry
-description: Requires independent new-scope and exact-run admission; never executes an old case identity.
-runs:
-  using: node24
-  main: entry.cjs
