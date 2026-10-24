@@ -1,5 +1,5 @@
 {
-  "kind": "PROTECTED_RUNNER_CREDENTIALS_STORED_RUNTIME_BINDING_PENDING_EXECUTION_DISABLED",
+  "kind": "REVIEWED_SINGLE_FIRST_SIX_EXECUTION_CONFIGURATION",
   "sourceBranch": "monaco-launch-completion-126-20261021-e48b82",
   "invocationBranch": "monaco-first-six-inference-126-20261021",
   "environment": "monaco-first-six-inference",
@@ -16,8 +16,8 @@
   },
   "acceptedRunAttempt": 1,
   "automaticWorkTasks": false,
-  "credentialedTriggerInstalled": false,
-  "realDispatchEnabled": false,
+  "credentialedTriggerInstalled": true,
+  "realDispatchEnabled": true,
   "ledger": {
     "provider": "Neon",
     "projectName": "monaco-first-six-ledger",
@@ -47,7 +47,8 @@
     "availableMicroUsd": 5000000,
     "priorBudgetImported": false,
     "enabledAllowanceRows": 0,
-    "budgetEvidenceCutoffUtc": "2026-10-21T19:17:33.937Z"
+    "budgetEvidenceCutoffUtc": "2026-10-24T09:48:55.332Z",
+    "stateObservedAtUtc": "2026-10-24T09:48:55.332Z"
   },
   "secrets": {
     "existingInferenceKeyEnvironmentSecret": "MONACO_FIRST_SIX_OPENAI_API_KEY",
@@ -60,36 +61,38 @@
     "ledgerRunnerPasswordIssued": true,
     "ledgerGitHubSecretStored": true,
     "neonConsoleConnectionVerified": true,
-    "credentialHandoffStatus": "BOTH_STORED_RUNTIME_BINDING_PENDING",
+    "credentialHandoffStatus": "PROTECTED_AUTHENTICATION_VERIFIED",
     "passwordIssueAttemptCompleted": false,
     "credentialValueObserved": false,
-    "ledgerCredentialAuthenticationVerified": false,
+    "ledgerCredentialAuthenticationVerified": true,
     "ledgerProviderManagedRoleAuthenticationVerified": true,
-    "ledgerGitHubSecretAuthenticationVerified": false,
+    "ledgerGitHubSecretAuthenticationVerified": true,
     "runtimeRoleLoginEnabled": false,
     "inferenceGitHubSecretStored": true,
     "inferenceSecretPresenceEvidence": "docs/monaco-126/isolated-runner/INFERENCE-CREDENTIAL-STORAGE-RECEIPT.json",
-    "existingInferenceBindingVerified": false
+    "existingInferenceBindingVerified": true
   },
   "requiredEvidence": {
     "setupApproval": "docs/monaco-126/isolated-runner/OWNER-SETUP-APPROVAL.json",
-    "existingCredentialBinding": null,
+    "existingCredentialBinding": "docs/monaco-126/isolated-runner/EXISTING-CREDENTIAL-BINDING-2026-10-24.json",
     "processorSecurityAcceptance": "docs/monaco-126/isolated-runner/PROCESSOR-SECURITY-ACCEPTANCE.json",
-    "authoritativeBudgetCarryIn": "docs/monaco-126/isolated-runner/BUDGET-CARRY-IN.json",
+    "authoritativeBudgetCarryIn": "docs/monaco-126/isolated-runner/BUDGET-CARRY-IN-2026-10-24.json",
     "zeroCostCapacity": "qa/neon-ledger/COST-CAPACITY.json",
     "neonIdentity": "docs/monaco-126/isolated-runner/NEON-IDENTITY-EVIDENCE.json",
     "neonAmendment": "docs/monaco-126/isolated-runner/OWNER-NEON-AMENDMENT.json",
     "ledgerCredentialStorage": "docs/monaco-126/isolated-runner/CREDENTIAL-STORAGE-RECEIPT.json",
     "serverRoleAuthentication": "qa/neon-auth-probe/HOSTED-AUTHENTICATION.json",
     "currentLaunchAuthority": "docs/monaco-126/OWNER-LAUNCH-AMENDMENT-2026-10-21.json",
-    "inferenceCredentialStorage": "docs/monaco-126/isolated-runner/INFERENCE-CREDENTIAL-STORAGE-RECEIPT.json"
+    "inferenceCredentialStorage": "docs/monaco-126/isolated-runner/INFERENCE-CREDENTIAL-STORAGE-RECEIPT.json",
+    "protectedCredentialAuthentication": "docs/monaco-126/isolated-runner/AUTH-SUCCESS-2026-10-24.json"
   },
   "paidScopeReceipt": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418",
   "planSha256": "9490af55e554f84d63d7afc1fe2442298afd6cdbe8f356d6d8d0517504420ff0",
-  "approvalMeaning": "Current owner full launch authority permits necessary setup and execution within the existing first-six paid scope; missing credentials, actual admission and immutable source binding still prevent execution. Additional purchase scope requires approval.",
+  "approvalMeaning": "Existing owner launch authority permits this one first-six diagnostic execution within the original aggregate $5 scope. The immutable binding is verified; matching atomic ledger admission, normal protected approval and bounded runner login are required before provider execution. No additional purchase is authorized.",
   "environmentInstalled": true,
   "environmentProtectionVerified": true,
   "environmentUrl": "https://github.com/nashysaimarkets/nash-ai-markets/settings/environments/24916350021/edit",
-  "invocationBranchExists": false,
-  "credentialReplacementMeaning": "The single owner-authorised restricted inference key was created and securely stored on 2026-10-21. Prospective binding pins its observed actual tracking ID. No further key creation is authorised; historical activity retains its original key IDs. Runtime binding remains pending."
+  "invocationBranchExists": true,
+  "credentialReplacementMeaning": "The owner-authorised restricted inference key was created and stored on 2026-10-21. Its actual tracking ID and protected-runner fingerprint are now bound to reviewed source. No further key creation is authorised; historical activity retains its original key IDs.",
+  "activationMeaning": "Reviewed one-shot configuration. Execution additionally requires matching atomic database admission, ordinary protected approval and a bounded LOGIN window; source publication alone cannot execute provider calls."
 }
