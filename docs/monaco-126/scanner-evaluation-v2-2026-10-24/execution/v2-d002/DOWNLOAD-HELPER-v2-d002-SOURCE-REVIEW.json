@@ -1,0 +1,59 @@
+{
+  "kind": "INDEPENDENT_V2_D002_DOWNLOAD_HELPER_SOURCE_COMPARISON",
+  "reviewer": "source_placement_ui",
+  "reviewedAtUtc": "2026-10-24T16:24:06.551949+00:00",
+  "status": "PASS_EXACT_IDENTIFIER_SUBSTITUTIONS_ONLY_NOT_EXECUTED",
+  "baseline": {
+    "path": "scanner-evaluation-v2-execution/download-official-artifact.py",
+    "sha256": "9eddb1eccd72675b4e4eb8e9155c690876df09828c02baf9f8f30f069fa61b10"
+  },
+  "candidate": {
+    "path": "scanner-evaluation-v2-execution/download-official-artifact-v2-d002.py",
+    "sha256": "46429e6bf89e14f10b6b22b69ee0c4f7dfb8e3431a44c21e3b7b2f197e81b9b3"
+  },
+  "preparationReceipt": {
+    "path": "scanner-evaluation-v2-execution/d002-preparation/DOWNLOAD-HELPER-PREPARATION.json",
+    "sha256": "e03e0e5e80f4bf9a781dacd5f85a11b5d101abf8b23761ff49c52916b15baf84"
+  },
+  "substitutions": [
+    {
+      "from": "40095819408",
+      "to": "40105387615",
+      "occurrences": 3
+    },
+    {
+      "from": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+      "to": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+      "occurrences": 1
+    },
+    {
+      "from": "-20783ed5e8eb-d001-",
+      "to": "-20783ed5e8eb-d002-",
+      "occurrences": 1
+    }
+  ],
+  "exactExpectedBytesMatch": true,
+  "runtimeSourceUnchanged": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "guardsUnchanged": [
+    "Official metadata must mark artifact unexpired and match exact run/wrapper.",
+    "Artifact naming retains the accepted runtime prefix, with only the source-case suffix changed to d002.",
+    "Official archive SHA256 must be a valid digest and match downloaded bytes.",
+    "HTTPS download, 45-second timeout and 10MiB archive cap remain unchanged.",
+    "Archive must contain exactly the configured expected entry, no directory/symlink, with the unchanged uncompressed-size cap.",
+    "Existing retained files may be reused only when byte-identical; different bytes are not overwritten.",
+    "Owner-only output modes and separate archive/payload SHA256 receipt fields remain unchanged."
+  ],
+  "scope": "Static source comparison against the accepted d001 helper only. This review neither authenticates future artifact metadata nor performs a download, decryption, live test or operational activation.",
+  "currentCaseState": "Expired-unused permit; same protected run waiting; no artifact is claimed to exist or have been downloaded.",
+  "effects": {
+    "helperExecution": 0,
+    "tests": 0,
+    "networkCalls": 0,
+    "databaseCalls": 0,
+    "providerCalls": 0,
+    "credentialReads": 0,
+    "privateKeyReads": 0,
+    "sourceEdits": 0,
+    "remoteWrites": 0
+  }
+}

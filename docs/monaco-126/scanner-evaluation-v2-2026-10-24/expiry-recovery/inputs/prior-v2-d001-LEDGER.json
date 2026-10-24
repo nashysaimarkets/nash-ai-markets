@@ -1,0 +1,201 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_INDEPENDENT_LEDGER_RECONCILIATION",
+  "claim": {
+    "case_id": "v2-d001",
+    "scope_id": "pocket-scanner-evaluation-v2-20261024",
+    "attempt_id": "v2-d001-attempt-1",
+    "claimed_at": "2026-10-24T13:00:01.028768+00:00",
+    "reserved_microusd": 330000
+  },
+  "scope": {
+    "scope_id": "pocket-scanner-evaluation-v2-20261024",
+    "singleton": true,
+    "created_at": "2026-10-24T12:56:53.928999+00:00",
+    "ledger_key": "monaco-first-six-aggregate",
+    "approved_at": "2026-10-24T12:40:25+00:00",
+    "plan_sha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "valid_until": "2026-10-25T12:40:25+00:00",
+    "approval_ref": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+    "app_source_sha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "approval_document": {
+      "kind": "POCKET_SCANNER_EVALUATION_V2_EXTENSION_APPROVAL",
+      "status": "APPROVED",
+      "retries": 0,
+      "scopeId": "pocket-scanner-evaluation-v2-20261024",
+      "approvedAt": "2026-10-24T12:40:25.000Z",
+      "approvedBy": "OWNER",
+      "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+      "validUntil": "2026-10-25T12:40:25.000Z",
+      "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+      "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+      "allowedCaseIds": [
+        "v2-d001",
+        "v2-d002",
+        "v2-d003",
+        "v2-d004",
+        "v2-d005",
+        "v2-d006"
+      ],
+      "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+      "approvalBodySha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+      "aggregateCapMicroUsd": 5000000,
+      "originalAllowanceRef": "comment-6165012632",
+      "originalHeldMicroUsd": 1506400,
+      "maximumAdditionalCases": 6,
+      "maximumAdditionalSends": 18,
+      "maximumAdditionalMicroUsd": 1980000
+    },
+    "runtime_source_sha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "original_pins_sha256": "90c4291252904ab977314d5c8010615bea2571c7efc5cddc0ae16df9f7d31165",
+    "original_held_microusd": 1506400,
+    "original_history_sha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "approval_evidence_sha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+    "maximum_additional_microusd": 1980000
+  },
+  "stops": [],
+  "permit": {
+    "case_id": "v2-d001",
+    "identity": {
+      "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+      "backendRef": "neon:bitter-grass-28096464/br-aged-mode-zaa9u7lr/monaco_ledger",
+      "evaluation": {
+        "jobId": "120877741515",
+        "runId": "40095819408",
+        "caseId": "v2-d001",
+        "scopeId": "pocket-scanner-evaluation-v2-20261024",
+        "attemptId": "v2-d001-attempt-1",
+        "runAttempt": "1",
+        "wrapperSha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+        "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+        "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+        "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+        "sourceCaseId": "d001"
+      },
+      "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+      "projectRef": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+      "environment": "monaco-first-six-inference",
+      "keyTrackingId": "key_aD5pc20EZBLGECNC",
+      "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e"
+    },
+    "scope_id": "pocket-scanner-evaluation-v2-20261024",
+    "attempt_id": "v2-d001-attempt-1",
+    "admitted_at": "2026-10-24T12:56:53.94601+00:00",
+    "valid_until": "2026-10-24T13:40:00+00:00",
+    "admission_evidence_sha256": "e6474ca7873819e5112e6a24189e4e971ffdf74b994f314bbd2ddea057cadb9b",
+    "previous_case_receipt_sha256": null,
+    "reassessment_evidence_sha256": "8c7e599768a74ef23cbb40d384a4ec942e308e6dd8e0d73ac4a1aba0e217196d"
+  },
+  "runner": {
+    "canLogin": false,
+    "sessions": 0,
+    "validUntil": "2026-10-24T13:18:13.376545+00:00"
+  },
+  "account": {
+    "case_id": "v2-d001",
+    "scope_id": "pocket-scanner-evaluation-v2-20261024",
+    "accounted_at": "2026-10-24T13:00:59.426395+00:00",
+    "receipt_sha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+    "diagnostic_sha256": "4db39e031c3ed48b09f9a49e3b1cd79039b32922eec109709d076bbf17464250",
+    "reserved_microusd": 330000,
+    "unused_rescue_voided": false,
+    "diagnostic_artifact_id": "12560523103"
+  },
+  "receipts": [
+    {
+      "slot": "main",
+      "model": "gpt-5-mini-2025-08-07",
+      "usage": {
+        "input_tokens": 4711,
+        "total_tokens": 6979,
+        "output_tokens": 2268
+      },
+      "case_id": "v2-d001",
+      "scope_id": "pocket-scanner-evaluation-v2-20261024",
+      "request_id": "v2-d001-main-17b26f3b09a97a71",
+      "response_id": "resp_01b820449810e32d016adcabd2ad9487d29410bfa322665a26",
+      "receipted_at": "2026-10-24T13:00:27.454403+00:00",
+      "service_tier": "default",
+      "response_sha256": "6a271af7026e5b6c6447437d32ce4c67a262965a1df9c962439d892575468f06",
+      "provider_request_id": "req_ec63e5e91f7b4895af5ae29b507dd7ea"
+    },
+    {
+      "slot": "primary_precision",
+      "model": "gpt-5-mini-2025-08-07",
+      "usage": {
+        "input_tokens": 2025,
+        "total_tokens": 4115,
+        "output_tokens": 2090
+      },
+      "case_id": "v2-d001",
+      "scope_id": "pocket-scanner-evaluation-v2-20261024",
+      "request_id": "v2-d001-primary_precision-49e111df97816cc5",
+      "response_id": "resp_025188363648e640016adcabebad1887d2a7d44753c75377f0",
+      "receipted_at": "2026-10-24T13:00:43.135507+00:00",
+      "service_tier": "default",
+      "response_sha256": "cdaaf844e6c51ab0f33d0f3c9d12392c7d97c45ad95b7a5385cc2fe276c29803",
+      "provider_request_id": "req_6d358e29b7784cea9f2544320c72227c"
+    },
+    {
+      "slot": "rescue_precision",
+      "model": "gpt-5-mini-2025-08-07",
+      "usage": {
+        "input_tokens": 2070,
+        "total_tokens": 3862,
+        "output_tokens": 1792
+      },
+      "case_id": "v2-d001",
+      "scope_id": "pocket-scanner-evaluation-v2-20261024",
+      "request_id": "v2-d001-rescue_precision-9b5edc72cc5ed49d",
+      "response_id": "resp_009824200f655527016adcabfb5b3c87d2a3315d29edaeb5f0",
+      "receipted_at": "2026-10-24T13:00:58.725875+00:00",
+      "service_tier": "default",
+      "response_sha256": "5575ffbe4d18e9fe4ca42a0637e43388590b99ed79cdc63966dc00b66090ab58",
+      "provider_request_id": "req_e3ff39baa2394eabab33ac765bd43482"
+    }
+  ],
+  "claimCount": 1,
+  "observedAt": "2026-10-24T13:01:59.36827+00:00",
+  "scopeCount": 1,
+  "currentUser": "monaco_ledger_owner",
+  "permitCount": 1,
+  "revocations": [],
+  "sessionUser": "monaco_ledger_owner",
+  "submissions": [
+    {
+      "slot": "main",
+      "case_id": "v2-d001",
+      "scope_id": "pocket-scanner-evaluation-v2-20261024",
+      "request_id": "v2-d001-main-17b26f3b09a97a71",
+      "fingerprint": "e93220c8132bdf5c330792a2d710d9d19a28d5236fc8570ceffc6f3b93891fbe",
+      "submitted_at": "2026-10-24T13:00:01.123935+00:00",
+      "request_sha256": "17b26f3b09a97a71ba7dea6cbbcc4c524b887db031ba4db7d50b7c4eca6e38cc"
+    },
+    {
+      "slot": "primary_precision",
+      "case_id": "v2-d001",
+      "scope_id": "pocket-scanner-evaluation-v2-20261024",
+      "request_id": "v2-d001-primary_precision-49e111df97816cc5",
+      "fingerprint": "3f3395ddd597ad1bc3afcac85b32215d602cbab9cc56394307cfdd0157f025f5",
+      "submitted_at": "2026-10-24T13:00:27.551879+00:00",
+      "request_sha256": "49e111df97816cc59b7486f4668dab4ef41c654305d0495382522997abe5fc93"
+    },
+    {
+      "slot": "rescue_precision",
+      "case_id": "v2-d001",
+      "scope_id": "pocket-scanner-evaluation-v2-20261024",
+      "request_id": "v2-d001-rescue_precision-9b5edc72cc5ed49d",
+      "fingerprint": "b30acc1ee43d694ed6817f2b5253a52c5713e6d2661ca900c30c50a2b73f6a86",
+      "submitted_at": "2026-10-24T13:00:43.220181+00:00",
+      "request_sha256": "9b5edc72cc5ed49d6ee5ce606d57bd20620657dfc7a6cbb7938361639cf205bb"
+    }
+  ],
+  "accountCount": 1,
+  "databaseName": "monaco_ledger",
+  "actualMicroUsd": null,
+  "financiallySettled": false,
+  "aggregateCapMicroUsd": 5000000,
+  "originalHeldMicroUsd": 1506400,
+  "computedReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447",
+  "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+  "evaluationHeldMicroUsd": 330000
+}

@@ -1,0 +1,42 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_ADMISSION_PROPOSAL",
+  "executed": false,
+  "mode": "next-case",
+  "identity": {
+    "environment": "monaco-first-six-inference",
+    "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "backendRef": "neon:bitter-grass-28096464/br-aged-mode-zaa9u7lr/monaco_ledger",
+    "projectRef": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "keyTrackingId": "key_aD5pc20EZBLGECNC",
+    "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "evaluation": {
+      "scopeId": "pocket-scanner-evaluation-v2-20261024",
+      "attemptId": "v2-d002-attempt-1",
+      "caseId": "v2-d002",
+      "sourceCaseId": "d002",
+      "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+      "evidenceSha": "778a47fce8405dca6b22f14a3c7b55e858f5e71e",
+      "wrapperSha": "b7f2927f2c9438b18a9ce042904259a4acd11323",
+      "runId": "40105387615",
+      "jobId": "120905891814",
+      "runAttempt": "1",
+      "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029"
+    }
+  },
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "expectedAdmission": {
+    "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+    "approvalBodySha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+    "admissionEvidenceSha256": "19f1d10da46e434799b7582ede0e213a0e77f01187eec3740020dd0e002a2773",
+    "reassessmentEvidenceSha256": "26f4def92e19eda7b9715afc7e4383229314f64b3275758711a896b8fdba816c",
+    "previousCaseReceiptSha256": "58b6efba5a71217e7a2f06c9c95362f79dfea50da4033e589245378717438447"
+  },
+  "originalHeldMicroUsd": 1506400,
+  "caseBoundMicroUsd": 330000,
+  "maximumAdditionalMicroUsd": 1980000,
+  "maximumCombinedMicroUsd": 3486400,
+  "financiallySettled": false,
+  "actualMicroUsd": null,
+  "admissionSqlSha256": "3de9235f6c10fce3ab76ed4261532eade0a0bcb63f0c0646ef6d15bdcc074c43"
+}

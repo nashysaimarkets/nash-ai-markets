@@ -1,0 +1,82 @@
+{
+  "kind": "POCKET_SCANNER_UNUSED_PERMIT_RECOVERY_ACTUAL_SQL_TESTS",
+  "status": "PASS_OFFLINE_SYNTHETIC_ONLY",
+  "observedAt": "2026-10-24T16:39:13.323Z",
+  "command": "timeout 90s node --test-reporter=tap scanner-evaluation-v2-execution/expiry-recovery/tests/expiry-recovery-pglite.test.mjs",
+  "workingDirectory": "/workspace/scratch/616faf3e8649",
+  "exitCode": 0,
+  "engine": "PostgreSQL 18.6 (PGlite 0.5.10) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+  "node": "v24.22.1",
+  "cachedPgliteRoot": "/workspace/scratch/29e2bd9f5a5a/qa-tools/node_modules/@electric-sql/pglite",
+  "tests": 21,
+  "passed": 21,
+  "failed": 0,
+  "skipped": 0,
+  "cancelled": 0,
+  "durationMs": 26855.885568,
+  "tap": {
+    "path": "tests/evidence/FINAL-PGLITE-SQL.tap",
+    "sha256": "9f6a9cc320f3a8d2c2a62519dbf8bb19c4f2e5fb086fd7c7fea7c543344cf769",
+    "bytes": 5531
+  },
+  "proposalSha256": "b70a4e2371e6832ed7f7b717f0b4b8a0e9665a24ba45c9fe565f1cafe5820602",
+  "installSqlSha256": "b44fb933c442c4e78b5e55af9581ea706569ed6fc3ef78faa62cdf27aefbb306",
+  "originalRpcBodySha256": "00fd1d5ef2f81cc022c31f6160ca7022bef794513bec4ef8efbe66e98a0feb87",
+  "amendedRpcBodySha256": "f3d5660d04f08facf5409c8484e0d4f13a70e33508975df4a6dadda9add3b4df",
+  "sourceHashes": {
+    "lease-schema.sql": "2718ea6f0f8ef7f244fbb1b1f967911c38e566efc24f6e8fe4541808bfb9586c",
+    "recovery-builder.mjs": "8ac79b5a9c863615b742b59c0d6343b501e437269b8a14f6229beca296ffc762",
+    "recovery-operations.mjs": "4f8448201233c36dcf37402d8473bb19f68c13e95c686dd409135514c9ebc877",
+    "tests/expiry-recovery-pglite.test.mjs": "981b34d12cf2473111cfc3cf874622746b4b3352916be57b7b2df5c5b4944460",
+    "tests/support/expiry-recovery-fixture.mjs": "3ed9a7be7b377e951767cc368b177b70e869b764d340960bf09945e41b7cbd22"
+  },
+  "exercised": {
+    "acceptedOldAndV2SqlUnchanged": true,
+    "actualNewInstallAndGrant": true,
+    "actualPublicRpc": true,
+    "actualGeneratedPrePostTerminalReadSql": true,
+    "naturallyExpiredUnchangedOriginalPermit": true,
+    "mandatorySubmissionsReceiptsAndAccount": true,
+    "duplicateClaimAndSendDenied": true,
+    "exactOwnerApprovalPromptAndBody": true,
+    "reverseQuestionWithRecomputedHashesRejected": true,
+    "declinedProposedNullCommentOnlyAuthorityRejected": true,
+    "missingNullTimestampsRejected": true,
+    "missingAndNullLeaseLookupFailClosed": true,
+    "immutableUpdateDeleteTruncateDenied": true,
+    "runnerCannotGrantReadPrivateOrCallPrivateHelpers": true,
+    "identitySourcePlanKeyRunScopeMismatchRejected": true,
+    "alreadyClaimedOrSubmittedRejected": true,
+    "expiredOriginalScopeAndLeaseBoundariesEnforced": true,
+    "revocationEnforced": true,
+    "lateReceiptsAndAccountingAfterExpiryOrRevocation": true,
+    "unknownSubmissionRetainsFullHold": true,
+    "syntheticBudget": {
+      "originalMicroUsd": 1506400,
+      "priorV2HeldMicroUsd": 330000,
+      "afterOneNewClaimMicroUsd": 2166400,
+      "aggregateCapMicroUsd": 5000000,
+      "financiallySettled": false,
+      "actualMicroUsd": null
+    },
+    "originalHistoryDigestAndFullScopePermitPinsPriorCaseRowsUnchanged": true
+  },
+  "boundaries": {
+    "networkCalls": 0,
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "hostedMutations": 0,
+    "realApprovalCreated": false,
+    "privateKeysRead": false,
+    "heldoutPayloadsRead": false,
+    "noProductionSourceEditsByTestAuthor": true,
+    "noAcceptedScannerSuiteReruns": true
+  },
+  "limitations": [
+    "PGlite 0.5.10 PostgreSQL 18.6 WASM, not PostgreSQL17 hosted validation.",
+    "One connection per disposable database; SET SESSION AUTHORIZATION tests SQL role checks, not network login/password/TLS or real active-session cleanup.",
+    "No concurrent database-session or lock-contention proof; prior PostgreSQL17 concurrency coverage is separate historical evidence.",
+    "Synthetic affirmative decisions and provider receipts are fixture data only; this receipt creates no owner amendment, lease, activation, dispatch or billing authority.",
+    "Use direct node --test-reporter=tap invocation: this environment failed/hung in Node --test process-isolation startup before meaningful assertions; those attempts are not SQL results."
+  ]
+}
