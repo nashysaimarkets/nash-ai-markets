@@ -2,7 +2,7 @@ import type { PixelRectangle, PlotRaster } from "../../app/pocket/image-plot-reg
 
 type Colour = [number, number, number];
 type Panel = { plot: PixelRectangle; axis?: "left" | "right" | "both" | "none"; candles?: "price" | "volume" | "none";
-  borders?: boolean; gridFractions?: number[]; stroke?: number; labels?: boolean };
+  borders?: boolean; gridFractions?: number[]; stroke?: number; labels?: boolean; antiAliasLabels?: boolean; plotBackground?: number };
 const digits: Record<string, string[]> = {
   "0": ["111", "101", "101", "101", "111"], "1": ["010", "110", "010", "010", "111"],
   "2": ["111", "001", "111", "100", "111"], "3": ["111", "001", "111", "001", "111"],
@@ -24,16 +24,26 @@ export function plotRaster({ width = 720, height = 480, dark = false, gridContra
         const i = (y * width + x) * 4; data[i] = rgb[0]; data[i + 1] = rgb[1]; data[i + 2] = rgb[2];
       }
   };
-  const label = (text: string, x: number, y: number) => {
+  const label = (text: string, x: number, y: number, antiAlias = false) => {
+    const cells: { left: number; top: number }[] = [];
     for (const [i, digit] of [...text].entries()) for (const [dy, row] of digits[digit].entries()) for (const [dx, cell] of [...row].entries()) {
-      if (cell === "1") fill(x + i * 8 + dx * 2, y + dy * 2, x + i * 8 + dx * 2 + 1, y + dy * 2 + 1, ink);
+      if (cell === "1") cells.push({ left: x + i * 8 + dx * 2, top: y + dy * 2 });
     }
+    // Rounded glyph edges have isolated low-coverage mid-height samples whose
+    // contrast overlaps a grid; the high-contrast digit cores remain separate.
+    const fringe = ink.map(value => Math.round(background + (value - background) * .075)) as Colour;
+    if (antiAlias) for (let i = 0; i < text.length; i++) {
+      fill(x + i * 8 - 1, y + 4, x + i * 8 - 1, y + 4, fringe);
+      fill(x + i * 8 + 6, y + 4, x + i * 8 + 6, y + 4, fringe);
+    }
+    for (const cell of cells) fill(cell.left, cell.top, cell.left + 1, cell.top + 1, ink);
   };
   const expected: PixelRectangle[] = [];
   for (const panel of panels) {
     const { left, top, right, bottom } = panel.plot, w = right - left, h = bottom - top;
     const stroke = panel.stroke ?? 1, fractions = panel.gridFractions ?? [0, .2, .4, .6, .8, 1];
     const rows = fractions.map(v => Math.round(top + h * v));
+    if (panel.plotBackground !== undefined) fill(left, top, right, bottom, [panel.plotBackground, panel.plotBackground, panel.plotBackground]);
     for (const y of rows) fill(left, y, right + stroke - 1, y + stroke - 1, grid);
     if (panel.borders !== false) {
       fill(left, top, left + stroke - 1, bottom + stroke - 1, grid);
@@ -42,8 +52,8 @@ export function plotRaster({ width = 720, height = 480, dark = false, gridContra
     const axis = panel.axis ?? "right";
     if (panel.labels !== false) for (const [index, y] of rows.entries()) {
       const text = String(12345 - index * 125);
-      if (axis === "right" || axis === "both") label(text, right + 9, y - 4);
-      if (axis === "left" || axis === "both") label(text, left - 9 - (text.length * 8 - 2), y - 4);
+      if (axis === "right" || axis === "both") label(text, right + 9, y - 4, panel.antiAliasLabels);
+      if (axis === "left" || axis === "both") label(text, left - 9 - (text.length * 8 - 2), y - 4, panel.antiAliasLabels);
     }
     const kind = panel.candles ?? "price";
     const centers = [.3, .42, .25, .5, .65, .55, .7, .38, .58, .48, .33, .44];

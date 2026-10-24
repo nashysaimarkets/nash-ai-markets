@@ -1,0 +1,96 @@
+{
+  "kind": "INDEPENDENT_EXACT_ANCHOR_BOUNDARY_POLICY_REVIEW",
+  "createdAt": "2026-10-24T14:31:51.547Z",
+  "reviewer": "scanner_independent_review",
+  "status": "PROPOSED_POLICY_SUPPORTED_SOURCE_PATCH_PENDING",
+  "baselineHelperSha256": "1689f43e6d2ea88e7aba96e44b5d802d441240b99bfbc1fa28368b3584cdebb2",
+  "cases": [
+    {
+      "caseId": "d002",
+      "receipt": {
+        "path": "grid-association-revision/D002-RETAINED-BROWSER-OBSERVATION.json",
+        "sha256": "c9097d897f9a002ae2a6b58c7dd19c073531bb5e70d42c460f147fa46ee0ad43"
+      },
+      "plotPixels": {
+        "left": 90,
+        "right": 1250,
+        "top": 125,
+        "bottom": 650
+      },
+      "candidateCount": 3,
+      "placedCount": 2,
+      "maxFitResidualPixels": 0.4285714285734201,
+      "endpoints": [
+        {
+          "price": 84654.0416,
+          "observedGridRow": 125,
+          "percentRoundTripRow": 125,
+          "fittedRow": 124.8571437902082
+        },
+        {
+          "price": 80651.4384,
+          "observedGridRow": 650,
+          "percentRoundTripRow": 650,
+          "fittedRow": 650.2857133526469
+        }
+      ]
+    },
+    {
+      "caseId": "d004",
+      "receipt": {
+        "path": "grid-association-revision/D004-RETAINED-BROWSER-OBSERVATION.json",
+        "sha256": "d3668196c8698f6edb43186cea8ad89bae818f1f7de89c46db40300364792864"
+      },
+      "plotPixels": {
+        "left": 90,
+        "right": 1250,
+        "top": 105,
+        "bottom": 690
+      },
+      "candidateCount": 2,
+      "placedCount": 1,
+      "maxFitResidualPixels": 0.5714285714285694,
+      "endpoints": [
+        {
+          "price": 779.2864,
+          "observedGridRow": 105,
+          "percentRoundTripRow": 105,
+          "fittedRow": 104.92857142858837
+        },
+        {
+          "price": 777.1636,
+          "observedGridRow": 690,
+          "percentRoundTripRow": 690,
+          "fittedRow": 689.9285714285859
+        }
+      ]
+    }
+  ],
+  "finding": "The accepted global fit can place an exactly observed top or bottom anchor outside the measured rectangle by a fraction of a pixel. Current strict pixel containment then drops that candidate. The cause is retained fitted-row arithmetic, not a demonstrated failure of numeric-domain checks.",
+  "requirements": [
+    "Keep identity, candidate provenance/schema, current-region binding, retained word evidence, contradiction checks, model-price corroboration, reverified anchors and fit validation before any placement branch.",
+    "Retain the unchanged minimum/maximum observed-price domain check first. Out-of-range prices must remain excluded.",
+    "Only strict parsed numeric equality to a reverified observed OCR/grid anchor may use an observed row. Do not use samePrice, close, nearest-price or a new epsilon.",
+    "Recover the original matched grid-row pixel value by exact forward percentage equality to the reverified anchor.y. If no unique original row exists, abstain; do not repair it.",
+    "Check containment using the original observed pixel value, then emit that value converted to percentage. Avoid using an inverse percentage roundtrip as new containment evidence.",
+    "All non-anchor prices retain the current fitted placement and strict range/rectangle rejection. No clipping, extrapolation, scale conversion, evidence dropping or tolerance relaxation.",
+    "Add red controls for fitted top and bottom overshoot, fractional percent roundtrip, near-but-unequal values and unchanged interior interpolation. Existing malformed/low-confidence/tampered evidence controls must still fail."
+  ],
+  "limitations": [
+    "No changed production source has been accepted by this policy review.",
+    "The five current receipts retain their original omissions; this proposed repair cannot retroactively complete them.",
+    "No semantic, absence, complete-six, held-out or deployment acceptance."
+  ],
+  "reviewerEffects": {
+    "testRuns": 0,
+    "browserRuns": 0,
+    "rasterReads": 0,
+    "calibrationReads": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "sourceEdits": 0,
+    "remoteMutations": 0
+  }
+}

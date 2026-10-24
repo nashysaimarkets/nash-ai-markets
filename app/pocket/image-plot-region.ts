@@ -32,14 +32,15 @@ const median = (values: number[]) => {
   const a = [...values].sort((x, y) => x - y), m = Math.floor(a.length / 2);
   return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
 };
-function runs(points: number[], maximumGap: number, minimumSpan: number, minimumCoverage: number) {
+function runs(points: number[], maximumGap: number, minimumSpan: number, minimumCoverage: number,
+  bridge?: (from: number, to: number) => boolean) {
   const result: Run[] = [];
   let run: Run | null = null;
   const finish = () => {
     if (run && run.last - run.first + 1 >= minimumSpan && run.count / (run.last - run.first + 1) >= minimumCoverage) result.push(run);
   };
   for (const point of points) {
-    if (!run || point - run.last - 1 > maximumGap) {
+    if (!run || point - run.last - 1 > maximumGap || (point - run.last - 1 > 5 && bridge && !bridge(run.last + 1, point - 1))) {
       finish(); run = { first: point, last: point, count: 1 };
     } else { run.last = point; run.count++; }
   }
@@ -76,6 +77,13 @@ export function detectImagePlotRegion(raster: PlotRaster): ImagePlotRegion {
   };
   const horizontal: { left: number; right: number; y: number }[] = [];
   const minimumWidth = Math.max(96, width * .2), minimumHeight = Math.max(80, height * .15);
+  const candleOccludesColumn = (x: number, y: number) => {
+    for (let row = y - 4; row <= y + 4; row++) {
+      const i = (row * width + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2];
+      if (data[i + 3] >= 240 && (r > 110 && r > g * 1.3 && r > b * 1.3 || g > 85 && g > r * 1.3 && g > b * .9)) return true;
+    }
+    return false;
+  };
   for (let y = 4; y < height - 4; y++) {
     // Nearby high-contrast text must not extend a softer grid rule. Overlapping
     // contrast bands preserve ordinary antialiasing without assuming a theme.
@@ -84,7 +92,15 @@ export function detectImagePlotRegion(raster: PlotRaster): ImagePlotRegion {
       const contrast = rule(x, y, false);
       for (let i = 0; i < limits.length; i++) if (contrast >= limits[i][0] && contrast <= limits[i][1]) bands[i].push(x);
     }
-    for (const active of bands) for (const r of runs(active, Math.max(6, Math.ceil(width * .025)), minimumWidth, .6)) {
+    // The long-gap allowance is for observed candle occlusion. A blank gap to
+    // a price label must not join its antialiased fringe to the grid. Every
+    // missing column needs candle colour in the existing contrast neighbourhood;
+    // one unrelated coloured pixel cannot justify bridging the whole gap.
+    const bridge = (from: number, to: number) => {
+      for (let x = from; x <= to; x++) if (!candleOccludesColumn(x, y)) return false;
+      return true;
+    };
+    for (const active of bands) for (const r of runs(active, Math.max(6, Math.ceil(width * .025)), minimumWidth, .6, bridge)) {
       if (!horizontal.some(v => v.y === y && v.left === r.first && v.right === r.last)) horizontal.push({ left: r.first, right: r.last, y });
     }
     if (horizontal.length > 2048) return hold("RASTER_TOO_COMPLEX");
@@ -139,6 +155,14 @@ export function detectImagePlotRegion(raster: PlotRaster): ImagePlotRegion {
   for (const plot of rectangles) {
     const bounds = percent(plot, width, height);
     const rows = chartGridRows(raster, bounds).map(y => y * height / 100).filter(y => y >= plot.top - 1 && y <= plot.bottom + 1);
+    // A panel's inside/outside backgrounds can differ while its border is
+    // directly visible. The sparse legacy sampler may omit that outer row.
+    // Complement only the two already measured full-span border strokes;
+    // retain every sampled interior row and never invent a missing rule.
+    const strongBorder = (y: number) => bands.some(b => b.y === y && Math.abs(b.left - plot.left) <= 5 && Math.abs(b.right - plot.right) <= 5);
+    if (!strongBorder(plot.top) || !strongBorder(plot.bottom)) continue;
+    for (const edge of [plot.top, plot.bottom]) if (!rows.some(y => Math.abs(y - edge) <= 1)) rows.push(edge);
+    rows.sort((a, b) => a - b);
     if (rows.length < 4 || Math.abs(rows[0] - plot.top) > 1 || Math.abs(rows.at(-1)! - plot.bottom) > 1) continue;
     const steps = rows.slice(1).map((y, i) => y - rows[i]), pitch = median(steps);
     if (pitch < 12 || steps.some(step => Math.abs(step - pitch) > Math.max(2, pitch * .035))) continue;

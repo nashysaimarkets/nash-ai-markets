@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: exact observed tick prices retain top and bottom rows despite fitted overshoot and percent roundoff
+ok 1 - exact observed tick prices retain top and bottom rows despite fitted overshoot and percent roundoff
+  ---
+  duration_ms: 4.573216
+  type: 'test'
+  ...
+# Subtest: near-but-unequal and out-of-domain boundary prices are never snapped to observed ticks
+ok 2 - near-but-unequal and out-of-domain boundary prices are never snapped to observed ticks
+  ---
+  duration_ms: 1.568927
+  type: 'test'
+  ...
+# Subtest: non-anchor candidate prices retain the existing global linear interpolation
+ok 3 - non-anchor candidate prices retain the existing global linear interpolation
+  ---
+  duration_ms: 0.383445
+  type: 'test'
+  ...
+# Subtest: exact tick matching cannot bypass retained-evidence and confidence checks
+ok 4 - exact tick matching cannot bypass retained-evidence and confidence checks
+  ---
+  duration_ms: 0.737992
+  type: 'test'
+  ...
+# Subtest: an observed exact tick outside the plot stays held instead of being clipped to a boundary
+ok 5 - an observed exact tick outside the plot stays held instead of being clipped to a boundary
+  ---
+  duration_ms: 1.469024
+  type: 'test'
+  ...
+# Subtest: new image-origin policy keeps three independent ticks while the legacy three-model-match rule stays intact
+ok 6 - new image-origin policy keeps three independent ticks while the legacy three-model-match rule stays intact
+  ---
+  duration_ms: 1.200191
+  type: 'test'
+  ...
+# Subtest: price projection uses only measured pixels and exact prices, preserving unverified semantics
+ok 7 - price projection uses only measured pixels and exact prices, preserving unverified semantics
+  ---
+  duration_ms: 1.202805
+  type: 'test'
+  ...
+# Subtest: detector holds, ambiguous panels and malformed pixel relationships cannot become usable geometry
+ok 8 - detector holds, ambiguous panels and malformed pixel relationships cannot become usable geometry
+  ---
+  duration_ms: 0.702208
+  type: 'test'
+  ...
+# Subtest: exact numeric corroboration rejects decimal loss, multiplied magnitude and nearby or duplicated matches
+ok 9 - exact numeric corroboration rejects decimal loss, multiplied magnitude and nearby or duplicated matches
+  ---
+  duration_ms: 1.382383
+  type: 'test'
+  ...
+# Subtest: strict OCR text, confidence, row snapping and original-pixel fit are retained
+ok 10 - strict OCR text, confidence, row snapping and original-pixel fit are retained
+  ---
+  duration_ms: 1.933443
+  type: 'test'
+  ...
+# Subtest: conflicting row values and competing columns are rejected in either OCR ordering
+ok 11 - conflicting row values and competing columns are rejected in either OCR ordering
+  ---
+  duration_ms: 0.844644
+  type: 'test'
+  ...
+# Subtest: clipped, out-of-region and malformed OCR evidence is never widened or repaired
+ok 12 - clipped, out-of-region and malformed OCR evidence is never widened or repaired
+  ---
+  duration_ms: 0.518516
+  type: 'test'
+  ...
+# Subtest: projection rechecks retained evidence and rejects changed axes, source regions and candidate magnitude
+ok 13 - projection rechecks retained evidence and rejects changed axes, source regions and candidate magnitude
+  ---
+  duration_ms: 1.226903
+  type: 'test'
+  ...
+# Subtest: unsupported, malformed, missing and empty candidates remain held without claiming verified absence
+ok 14 - unsupported, malformed, missing and empty candidates remain held without claiming verified absence
+  ---
+  duration_ms: 1.125188
+  type: 'test'
+  ...
+# Subtest: left-hand measured axes use the same plot and do not inherit right-axis clipping
+ok 15 - left-hand measured axes use the same plot and do not inherit right-axis clipping
+  ---
+  duration_ms: 0.465125
+  type: 'test'
+  ...
+# Subtest: actual detector output composes with original-pixel OCR-word controls without model geometry
+ok 16 - actual detector output composes with original-pixel OCR-word controls without model geometry
+  ---
+  duration_ms: 132.312257
+  type: 'test'
+  ...
+# Subtest: only insufficient usable readings, coverage or exact corroborations are eligible for a reread
+ok 17 - only insufficient usable readings, coverage or exact corroborations are eligible for a reread
+  ---
+  duration_ms: 0.685134
+  type: 'test'
+  ...
+# Subtest: contradictions, non-monotonicity and bad fits stay terminal even before coverage is sufficient
+ok 18 - contradictions, non-monotonicity and bad fits stay terminal even before coverage is sufficient
+  ---
+  duration_ms: 0.764251
+  type: 'test'
+  ...
+# Subtest: retaining first-pass words prevents a second clean subset from hiding earlier price conflicts
+ok 19 - retaining first-pass words prevents a second clean subset from hiding earlier price conflicts
+  ---
+  duration_ms: 0.771425
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 171.402578

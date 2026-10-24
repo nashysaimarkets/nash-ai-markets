@@ -24,6 +24,81 @@ function fixture() {
 }
 const held = (result: { status: string }) => assert.equal(result.status, "held");
 
+function roundedBoundaryFixture() {
+  // Half-pixel stroke centres and independently rounded raster rows need not
+  // lie exactly on a best-fit line. This height also gives a non-exact floating
+  // round trip at both plotting boundaries.
+  const rows = [128.5, 302, 476.5, 650], width = 1400, height = 997;
+  const plot = { left: 90, right: 1250, top: rows[0], bottom: rows.at(-1)! };
+  const region: MeasuredImagePlotRegion = {
+    status: "measured", width, height, plotPixels: plot,
+    plotPercent: { left: plot.left / width * 100, right: plot.right / width * 100,
+      top: plot.top / height * 100, bottom: plot.bottom / height * 100 },
+    gridRowPixels: rows, axisLabelRegionPixels: { side: "right", left: 1259, right: 1346, top: 118, bottom: 660, matchedGridRows: [...rows] },
+    evidence: { gridRows: rows.length, candles: 12, candleSpanPixels: 1000, borderEdges: 4, coherentPricePanels: 1, axisTextColumns: 1 },
+  };
+  const words: AxisWord[] = rows.map((y, i) => ({ text: String(160 - i * 20), confidence: 95, x: 1261, y, width: 60, height: 12 }));
+  const candidatesFor = (...prices: string[]) => collectSourcePriceCandidates({
+    levels: prices.map(price => ({ kind: "support", price })), priceScaleAnchors: [{ price: 160 }, { price: 100 }],
+  });
+  const axis = verifyImageAxisWords(words, region, [160, 100]);
+  if (axis.status !== "verified") throw new Error(axis.reason);
+  return { region, words, axis, candidatesFor };
+}
+
+test("exact observed tick prices retain top and bottom rows despite fitted overshoot and percent roundoff", () => {
+  const { region, axis, candidatesFor } = roundedBoundaryFixture();
+  assert.ok(axis.maxResidualPixels > 0 && axis.maxResidualPixels <= 1.5);
+  assert.ok(axis.anchors[0].y * region.height / 100 < region.plotPixels.top, "top roundtrip must exercise false out-of-bounds");
+  assert.ok(axis.anchors.at(-1)!.y * region.height / 100 > region.plotPixels.bottom, "bottom roundtrip must exercise false out-of-bounds");
+  const result = imagePixelPriceCandidates(candidatesFor("160", "140", "120", "100"), true, region, axis);
+  assert.equal(result.levels.length, 4);
+  assert.deepEqual(result.levels.map(level => level.y), region.gridRowPixels.map(row => row / region.height * 100));
+  assert.ok(result.levels.every(level => level.y2 === level.y && level.provenance === "UNVERIFIED"));
+});
+
+test("near-but-unequal and out-of-domain boundary prices are never snapped to observed ticks", () => {
+  const { region, axis, candidatesFor } = roundedBoundaryFixture();
+  const near = [160 - 1e-9, 100 + 1e-9];
+  assert.notEqual(near[0], 160); assert.notEqual(near[1], 100);
+  // These are inside the existing samePrice corroboration epsilon. That
+  // tolerance must never be reused to select an exact observed placement.
+  assert.ok(160 - near[0] < 160 * 1e-10); assert.ok(near[1] - 100 < 100 * 1e-10);
+  for (const price of [...near, 160 + 1e-9, 100 - 1e-9]) {
+    assert.deepEqual(imagePixelPriceCandidates(candidatesFor(String(price)), true, region, axis).levels, []);
+  }
+});
+
+test("non-anchor candidate prices retain the existing global linear interpolation", () => {
+  const { region, axis, candidatesFor } = roundedBoundaryFixture();
+  const result = imagePixelPriceCandidates(candidatesFor("135"), true, region, axis);
+  assert.equal(result.levels.length, 1);
+  // The four measured rows have global mean389.25 and slope-8.695 pixels/price.
+  // Local adjacent-anchor interpolation would instead return345.625.
+  assert.ok(Math.abs(result.levels[0].y * region.height / 100 - 345.775) < 1e-9);
+});
+
+test("exact tick matching cannot bypass retained-evidence and confidence checks", () => {
+  const { region, axis, candidatesFor } = roundedBoundaryFixture(), candidates = candidatesFor("160", "100");
+  for (const changed of [
+    { ...axis, wordEvidence: axis.wordEvidence.map(word => ({ ...word, confidence: 79 })) },
+    { ...axis, anchors: axis.anchors.map((anchor, i) => i ? anchor : { ...anchor, y: anchor.y + .01 }) },
+    { ...axis, maxResidualPixels: 0 },
+  ]) assert.deepEqual(imagePixelPriceCandidates(candidates, true, region, changed).levels, []);
+});
+
+test("an observed exact tick outside the plot stays held instead of being clipped to a boundary", () => {
+  const { region, words, candidatesFor } = roundedBoundaryFixture();
+  for (const [edge, value, price] of [["top", region.plotPixels.top + .5, "160"], ["bottom", region.plotPixels.bottom - .5, "100"]] as const) {
+    const changed: MeasuredImagePlotRegion = { ...region, plotPixels: { ...region.plotPixels, [edge]: value },
+      plotPercent: { ...region.plotPercent, [edge]: value / region.height * 100 } };
+    assert.ok(isMeasuredImagePlotRegion(changed));
+    const axis = verifyImageAxisWords(words, changed, [160, 100]);
+    assert.equal(axis.status, "verified");
+    assert.deepEqual(imagePixelPriceCandidates(candidatesFor(price), true, changed, axis).levels, []);
+  }
+});
+
 test("new image-origin policy keeps three independent ticks while the legacy three-model-match rule stays intact", () => {
   const { region, words, candidates, axis } = fixture();
   assert.equal(axis.policy, IMAGE_AXIS_POLICY); assert.equal(axis.anchors.length, 7); assert.deepEqual(axis.matchedModelPrices, [160, 100]);

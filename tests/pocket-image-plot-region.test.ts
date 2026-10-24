@@ -30,6 +30,35 @@ test("shift, size, dark theme and left-side labels do not use a fixed screen cro
     assert.ok(Math.abs(r.plotPercent.left * f.raster.width / 100 - r.plotPixels.left) < 1e-8);
   }
 });
+test("antialiased axis glyph fringes cannot extend the visible plotting borders", () => {
+  for (const dark of [false, true]) for (const axis of ["right", "left"] as const) {
+    const f = plotRaster({ width: 960, height: 640, dark, panels: [
+      { plot: { left: 190, right: 810, top: 110, bottom: 510 }, axis, antiAliasLabels: true },
+    ] });
+    const r = measured(detectImagePlotRegion(f.raster));
+    assert.deepEqual(r.plotPixels, f.expected[0]); assert.equal(r.axisLabelRegionPixels.side, axis);
+  }
+});
+test("visible inset-panel borders remain measured when only interior grid rows pass the legacy sampler", () => {
+  const f = plotRaster({ panels: [
+    { plot: { left: 60, right: 590, top: 55, bottom: 350 }, plotBackground: 252 },
+  ] });
+  const r = measured(detectImagePlotRegion(f.raster));
+  assert.deepEqual(r.plotPixels, f.expected[0]);
+  const expectedRows = [55, 114, 173, 232, 291, 350];
+  assert.equal(r.gridRowPixels.length, expectedRows.length);
+  // The legacy reader returns percentages; allow only floating-point roundoff
+  // when converting those unchanged measurements back to original pixels.
+  r.gridRowPixels.forEach((row, i) => assert.ok(Math.abs(row - expectedRows[i]) < 1e-9));
+});
+test("side-edge endpoints cannot invent a missing horizontal border in an inset panel", () => {
+  for (const edge of ["top", "bottom"] as const) {
+    const plot = { left: 60, right: 590, top: 55, bottom: 350 };
+    const f = plotRaster({ panels: [{ plot, plotBackground: 252 }] });
+    f.fill(plot.left + 1, plot[edge], plot.right - 1, plot[edge], [252, 252, 252]);
+    assert.equal(detectImagePlotRegion(f.raster).status, "held");
+  }
+});
 test("two-pixel grid strokes are measured at their centres", () => {
   const f = plotRaster({ panels: [{ plot: { left: 60, right: 590, top: 55, bottom: 350 }, stroke: 2 }] });
   const r = measured(detectImagePlotRegion(f.raster));
