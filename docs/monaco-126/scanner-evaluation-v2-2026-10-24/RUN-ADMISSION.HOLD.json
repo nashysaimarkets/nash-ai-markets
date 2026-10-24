@@ -1,0 +1,39 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_RUN_ADMISSION",
+  "status": "OFFLINE_PREPARED",
+  "caseId": "v2-d001",
+  "runtimeSourceSha": null,
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "scopeApproval": {
+    "status": "NOT_GRANTED",
+    "scopeId": "pocket-scanner-evaluation-v2-20261024",
+    "approvalRef": null,
+    "ownerDirectiveSha256": null,
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "maximumNewMicroUsd": 1980000,
+    "aggregateCapMicroUsd": 5000000
+  },
+  "admissionEvidenceSha256": null,
+  "reassessmentEvidenceSha256": null,
+  "neon": {
+    "organizationId": "org-icy-butterfly-11039021",
+    "projectId": "bitter-grass-28096464",
+    "branchId": "br-aged-mode-zaa9u7lr",
+    "endpointHost": "ep-silent-fire-za1s230f.c-2.eu-west-2.aws.neon.tech",
+    "databaseName": "monaco_ledger",
+    "roleName": "monaco_ledger_runner",
+    "controlPlaneEvidenceSha256": "32c788992c1909a8c704e35744f94ebb6df82fd121cff4878653a1d1da03dfc1"
+  },
+  "input": {
+    "bundleSha256": "91da0d22a88dcee0d27d342d524f77354d559312406d4f51fd579ba025e6f7a0",
+    "maxWaitMs": 300000
+  },
+  "output": {
+    "retentionDays": 7,
+    "recipientPublicKeyPem": null,
+    "recipientPublicKeySha256": "ee6a572a222e2f9f97df38f4d082935c582909095b720070a0399ee31a1773da"
+  },
+  "note": "This is an unapproved inert template. Materialize a separate reviewed evidence commit only after explicit new scope approval. Dynamic source/evidence/wrapper/run/job identities are derived at runtime and independently bound by a post-push SQL permit; no self-referential hash belongs here.",
+  "previousCaseReceiptSha256": null
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "git": {
+    "deploymentEnabled": {
+      "monaco-cap-hardening-20261018": false,
+      "monaco-reserved-accounting-20261019": false,
+      "monaco-release-integration-reviewed-20261018": false,
+      "monaco-master-126-20261019-b02d5dd": false,
+      "monaco-ui-126-20261019": false,
+      "monaco-scanner-126-20261019": false,
+      "monaco-product-126-20261019": false,
+      "monaco-ig-126-20261019": false,
+      "monaco-reliability-126-20261019": false,
+      "monaco-checkout-intent-proposal-126-20261019": false,
+      "monaco-completion-126-20261020-c10e55": false,
+      "monaco-release-completion-126-20261020-f8cd93": false,
+      "monaco-scanner-corpus-126-20261020-3e0cde": false,
+      "monaco-benchmark50-126-20261020-3e0cde": false,
+      "monaco-offline-executor-126-20261020-3e0cde": false,
+      "monaco-internal-diagnostics-126-20261021-3e0cde": false,
+      "monaco-isolated-runner-126-20261021-694d2e": false,
+      "monaco-neon-ledger-126-20261021-ac5040": false,
+      "monaco-launch-completion-126-20261021-e48b82": false,
+      "monaco-ledger-auth-126-20261021": false,
+      "monaco-first-six-inference-126-20261021": false,
+      "monaco-scanner-repair-126-20261024": false,
+      "monaco-scanner-evaluation-v2-126-20261024": false,
+      "monaco-scanner-evaluation-v2-run-v2-d001": false
+    }
+  }
+}

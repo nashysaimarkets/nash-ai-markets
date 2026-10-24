@@ -1,3 +1,19 @@
+# Current continuation — 24 October 2026: first revised case completed, five held
+
+Read [the current scanner checkpoint](scanner-evaluation-v2-2026-10-24/CHECKPOINT.md), [completed first-case outcome](scanner-evaluation-v2-2026-10-24/execution/FIRST-CASE-OUTCOME.md) and [execution checkpoint](scanner-evaluation-v2-2026-10-24/execution/EXECUTION-CHECKPOINT.md), then the latest Issue126 writer claim. **This section overrides the historical missing-key/setup/zero-call instructions below.** Historical tracks and prior owner approvals remain preserved.
+
+Original six-case history is complete and unchanged. Revised case `v2-d001` completed once in run `40095819408`, job `120877741515`, against frozen runtime `20783ed5e8eb95a11df86b0d60766ffcbbf4fa79`, app `2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc` and evidence `0d510d37af89e09b0360e1f1a555304d8ba46190`. All three new provider responses completed and were retained/accounted, but geometry failed. **The other five revised cases are HOLD.** No scanner semantic or held-out acceptance is claimed.
+
+The v2 migration, scope and first-case permit **are already installed**, and the first attempt is consumed. **Do not reinstall/reset, rerun the workflow, replay case 1, repeat key setup or ask again for the recorded scope/branch approvals.** Those approvals are recorded in comments 6384333029 and 6384437116. Root’s writer claim 6384437116 remains active until explicitly released; reviewers make no remote or paid changes.
+
+The full USD 0.33 new hold remains, alongside USD 1.5064 original commitments: USD 1.8364 total under USD 5. Actual billed cost is unknown. Cleanup verified NOLOGIN and zero sessions; all six temporary environment branch rules were removed at 13:09:05 UTC, preserving the original rule, owner-review gate, disabled administrator bypass and unchanged secrets. The genuine private result archive is identified in the current outcome checkpoint.
+
+Next: continue the owner-confirmed isolated **offline** bounds/coordinate repair on `monaco-scanner-geometry-repair-126-20261024`, alongside the separate independent pixel-derived plot-ROI candidate. Both are in progress and **not yet independently verified** at this outcome checkpoint. Keep those future app changes separate from the frozen paid runtime/result. Review the repair before considering any separately admitted later case. Reuse existing green engineering proofs; no tests were rerun for this outcome publication. No deployment, merge, store release or schedule change occurred; schedules remain OFF.
+
+---
+
+# Historical recovery snapshots — current override above controls resume actions
+
 # Current continuation: protected runner prepared, secure inference key missing
 
 Read LAUNCH-CHECKLIST-2026-10-21.md, OWNER-LAUNCH-AMENDMENT-2026-10-21.json and the newest Issue #126 receipt. Necessary launch work is authorised; extra purchases still need approval. All schedules remain off. Resume PR #142 from the published commit in the latest receipt, preserving other branches.

@@ -1,0 +1,13 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_OFFLINE_WRAPPER",
+  "caseId": "v2-d001",
+  "branch": "monaco-scanner-evaluation-v2-run-v2-d001",
+  "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+  "published": false,
+  "dispatchAuthorised": false,
+  "workflowPath": ".github/workflows/pocket-scanner-evaluation-v2-run.yml",
+  "workflowSha256": "6a82116895d76858b1bab6295f8fed2d3e173370d19ab7bd00b59cbdbfa81c0e",
+  "providerCalls": 0,
+  "databaseCalls": 0
+}

@@ -1,0 +1,84 @@
+name: Pocket scanner evaluation v2 protected case
+# INERT TEMPLATE: only an offline, separately reviewed materializer substitutes
+# immutable source/evidence pins and one case. This is not an active workflow.
+on:
+  push:
+    branches: [monaco-scanner-evaluation-v2-run-__CASE_ID__]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: monaco-first-six-existing-five-dollar-allowance
+  cancel-in-progress: false
+env:
+  REVIEWED_EVALUATION_SOURCE_SHA: __SOURCE_SHA__
+  REVIEWED_EVALUATION_EVIDENCE_SHA: __EVIDENCE_SHA__
+  POCKET_EVALUATION_CASE_ID: __CASE_ID__
+  NODE_OPTIONS: ''
+  NODE_PATH: ''
+jobs:
+  evaluation:
+    name: Pocket scanner evaluation v2
+    if: github.repository == 'nashysaimarkets/nash-ai-markets' && github.ref == 'refs/heads/monaco-scanner-evaluation-v2-run-__CASE_ID__' && github.run_attempt == 1 && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: monaco-first-six-inference
+    steps:
+      - name: Require immutable reviewed pins and one named first attempt
+        shell: bash
+        run: |
+          [[ "$REVIEWED_EVALUATION_SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$REVIEWED_EVALUATION_EVIDENCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$POCKET_EVALUATION_CASE_ID" =~ ^v2-d00[1-6]$ ]]
+          test "$GITHUB_RUN_ATTEMPT" = 1
+      - id: source_checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ env.REVIEWED_EVALUATION_SOURCE_SHA }}
+          persist-credentials: false
+          path: runner-source
+      - id: evidence_checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ env.REVIEWED_EVALUATION_EVIDENCE_SHA }}
+          persist-credentials: false
+          path: runner-evidence
+          sparse-checkout: docs/monaco-126/scanner-evaluation-v2-2026-10-24
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Verify actual checkouts and preserve the exact Node binary
+        shell: bash
+        run: |
+          test "$(git -C runner-source rev-parse HEAD)" = "$REVIEWED_EVALUATION_SOURCE_SHA"
+          test "$(git -C runner-evidence rev-parse HEAD)" = "$REVIEWED_EVALUATION_EVIDENCE_SHA"
+          test "$(node --version)" = v24.19.0
+          printf 'MONACO_PINNED_NODE_EXECUTABLE=%s\n' "$(node -p process.execPath)" >> "$GITHUB_ENV"
+      - name: Install the accepted locked runtime without install scripts
+        working-directory: runner-source
+        run: |
+          mkdir -p "$RUNNER_TEMP/monaco-first-six-runtime"
+          cp tools/monaco-first-six-runtime/package.json tools/monaco-first-six-runtime/package-lock.json "$RUNNER_TEMP/monaco-first-six-runtime/"
+          npm ci --prefix "$RUNNER_TEMP/monaco-first-six-runtime" --ignore-scripts --no-audit --no-fund --fetch-retries=0 --fetch-timeout=15000
+      - name: Confirm source and evidence remain unchanged
+        run: |
+          git -C runner-source diff --exit-code HEAD
+          test -z "$(git -C runner-source status --porcelain)"
+          git -C runner-evidence diff --exit-code HEAD
+          test -z "$(git -C runner-evidence status --porcelain)"
+      - name: Execute one admitted case
+        uses: ./runner-source/.github/actions/pocket-scanner-evaluation-v2
+        env:
+          MONACO_FIRST_SIX_OPENAI_API_KEY: ${{ secrets.MONACO_FIRST_SIX_OPENAI_API_KEY }}
+          MONACO_FIRST_SIX_LEDGER_KEY: ${{ secrets.MONACO_FIRST_SIX_LEDGER_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Confirm final source integrity
+        if: always() && steps.source_checkout.outcome == 'success' && steps.evidence_checkout.outcome == 'success'
+        run: |
+          git -C runner-source diff --exit-code HEAD
+          test -z "$(git -C runner-source status --porcelain)"
+          git -C runner-evidence diff --exit-code HEAD
+          test -z "$(git -C runner-evidence status --porcelain)"
+# No schedule, manual dispatch form, retry, matrix, plaintext upload or deploy.
+# The exact pending run/job is admitted separately after its IDs exist.
+# A retained diagnostic does not imply model accuracy or financial settlement.

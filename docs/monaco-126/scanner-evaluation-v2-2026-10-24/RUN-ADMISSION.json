@@ -1,0 +1,39 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_RUN_ADMISSION",
+  "status": "EXECUTION_APPROVED",
+  "caseId": "v2-d001",
+  "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "scopeApproval": {
+    "status": "APPROVED",
+    "scopeId": "pocket-scanner-evaluation-v2-20261024",
+    "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029",
+    "ownerDirectiveSha256": "f04851163218136baa0a633f00dd6398424fd32cd56ad6e19011b9b6d77311a2",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "maximumNewMicroUsd": 1980000,
+    "aggregateCapMicroUsd": 5000000
+  },
+  "admissionEvidenceSha256": "e6474ca7873819e5112e6a24189e4e971ffdf74b994f314bbd2ddea057cadb9b",
+  "reassessmentEvidenceSha256": "8c7e599768a74ef23cbb40d384a4ec942e308e6dd8e0d73ac4a1aba0e217196d",
+  "neon": {
+    "organizationId": "org-icy-butterfly-11039021",
+    "projectId": "bitter-grass-28096464",
+    "branchId": "br-aged-mode-zaa9u7lr",
+    "endpointHost": "ep-silent-fire-za1s230f.c-2.eu-west-2.aws.neon.tech",
+    "databaseName": "monaco_ledger",
+    "roleName": "monaco_ledger_runner",
+    "controlPlaneEvidenceSha256": "32c788992c1909a8c704e35744f94ebb6df82fd121cff4878653a1d1da03dfc1"
+  },
+  "input": {
+    "bundleSha256": "91da0d22a88dcee0d27d342d524f77354d559312406d4f51fd579ba025e6f7a0",
+    "maxWaitMs": 300000
+  },
+  "output": {
+    "retentionDays": 7,
+    "recipientPublicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEAtFQscz2d1/hjnj8DH+fv\nx62dSHM07+iOuZ5hnoeprp+9Ni8AVxXmhuIM1waGBUzZRjyIwwD7P+5a0I0k+eGj\nCmgCumCDvzjpSFO9iu9XeVnZCkd3pHyv8HMNkkMkwIUOqZS/Efd5b4f2dwPtXg+Z\nIWvx6anb7Sm+n+xd/tefXDQuQld6/JuYHIWsfcxXBXjZcxWIM1JjSVCziKDSwU7U\nqxD+JiMR56UU9VQmHHmXxhDWM5bK4YQHzHydBWXBY2wBtSuxCz67YcSQJWFQZtYr\nrD+DLkcLc0PrqEMIB5TeQashri2GDB+a2EfzdDV5B/6Yb0wd9m16Jq3o8XL5A0ac\nQrB6xj4IZLFuohUKmPJ4EV4kYeXuHiMIm3itk8OM781y/fG/AA348v1bkYZaNiSx\nBJn8T6Yhnv/efWvQckIXL8tQq+2kNuhxNJ7GVca9wfuWu/3DOVy3CbSFEoU4891J\nTejoy3BmpevQbd5ZggbfGYIFDQ9cYW9rWGEOCV6qJiT9AgMBAAE=\n-----END PUBLIC KEY-----\n",
+    "recipientPublicKeySha256": "ee6a572a222e2f9f97df38f4d082935c582909095b720070a0399ee31a1773da"
+  },
+  "note": "Recorded owner scope; one named case. Actual source/evidence/wrapper/run/job identities remain independently derived and require an exact post-push database permit. This local file does not activate or dispatch anything.",
+  "previousCaseReceiptSha256": null
+}

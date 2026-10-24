@@ -1,0 +1,85 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_ACTUAL_WRAPPER_INDEPENDENT_REVIEW",
+  "reviewedAt": "2026-10-24T12:54:25.024Z",
+  "reviewer": "scanner_independent_review",
+  "status": "ACTUAL_WRAPPER_ACCEPTED_PENDING_ACTUAL_RUN_AND_PERMIT_REVIEW",
+  "caseId": "v2-d001",
+  "branch": "monaco-scanner-evaluation-v2-run-v2-d001",
+  "wrapper": {
+    "sha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+    "treeSha": "a25ce41d6498404d64ad8792613b952425891170",
+    "parentSha": "bfe78c10327c58c0889ac4445fe61077a0ec7cee",
+    "officialCommitUrl": "https://github.com/nashysaimarkets/nash-ai-markets/commit/6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+    "changedBlobs": [
+      {
+        "path": "vercel.json",
+        "before": "78dd37273b18d8d7b0c2362dd0f864a0b590f6db",
+        "after": "78d2450456d86612e7bda10ca709c2007ada9159"
+      },
+      {
+        "path": ".github/workflows/pocket-scanner-evaluation-v2-run.yml",
+        "before": null,
+        "after": "7c077baa9a5525ae20a64ea2cf7affcf7e2dae69"
+      }
+    ],
+    "workflowSha256": "6a82116895d76858b1bab6295f8fed2d3e173370d19ab7bd00b59cbdbfa81c0e",
+    "workflowGitBlob": "7c077baa9a5525ae20a64ea2cf7affcf7e2dae69",
+    "vercelSha256": "542b9ff84fee2b0c28addc872f6932149b237418f1115d5c17f0cfb11b2ae2e6",
+    "vercelGitBlob": "78d2450456d86612e7bda10ca709c2007ada9159",
+    "exactReviewedBytesMatched": true,
+    "allOtherBlobsUnchangedFromParent": true
+  },
+  "binding": {
+    "runtimeSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+    "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "runId": null,
+    "jobId": null
+  },
+  "ownerPermission": {
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384437116",
+    "commentId": 6384437116,
+    "author": "nashysaimarkets",
+    "createdAt": "2026-10-24T12:51:56Z",
+    "updatedAt": "2026-10-24T12:51:56Z",
+    "independentlyFetched": true,
+    "sixExactBranchesExplicitlyApproved": true,
+    "spendingScopeApprovalUnchanged": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029"
+  },
+  "environment": {
+    "name": "monaco-first-six-inference",
+    "id": 24916350021,
+    "branchApplicationObservation": "Root-authenticated browser observation retained in BRANCH-PERMISSIONS-APPLIED.json at 2026-10-24 12:53:35 UTC; reviewer inspected the retained observation, did not operate browser.",
+    "requiredOwnerReviewRetainedPerObservation": true,
+    "adminBypassAllowed": false,
+    "secretValuesChanged": false,
+    "wildcardsAdded": false,
+    "branchNames": [
+      "monaco-scanner-evaluation-v2-run-v2-d001",
+      "monaco-scanner-evaluation-v2-run-v2-d002",
+      "monaco-scanner-evaluation-v2-run-v2-d003",
+      "monaco-scanner-evaluation-v2-run-v2-d004",
+      "monaco-scanner-evaluation-v2-run-v2-d005",
+      "monaco-scanner-evaluation-v2-run-v2-d006"
+    ]
+  },
+  "limits": {
+    "newFirstCaseMicroUsd": 330000,
+    "additionalSixCaseMicroUsd": 1980000,
+    "sharedCeilingMicroUsd": 5000000,
+    "nextCaseRequiresIndependentResultReassessment": true
+  },
+  "remainingChecks": [
+    "Actual protected run/job identity and pending state",
+    "Fresh carry-in and exact owner-installed SQL scope/permit/pins before bounded LOGIN and release",
+    "Retained result identity, accounting, stop conditions, and post-run inactive role"
+  ],
+  "sideEffects": {
+    "reviewerRemoteMutations": 0,
+    "reviewerDatabaseCalls": 0,
+    "reviewerProviderCalls": 0,
+    "reviewerPrivateKeyReads": 0,
+    "testsRerun": 0
+  }
+}

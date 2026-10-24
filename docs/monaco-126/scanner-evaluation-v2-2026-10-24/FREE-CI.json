@@ -1,0 +1,86 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_EXACT_SOURCE_ACCEPTANCE",
+  "status": "PASS",
+  "testedSourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "testedTreeSha": "3f4c1742692db36257237fe35a0e780077098e00",
+  "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "parentCheckpointSha": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "pullRequest": 145,
+  "runId": 40093995597,
+  "jobId": 120872330390,
+  "runAttempt": 1,
+  "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40093995597",
+  "node": "v24.19.0",
+  "offline": {
+    "suites": 7,
+    "tests": 44,
+    "passed": 44,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "disposablePostgres": {
+    "majorVersion": 17,
+    "suites": 1,
+    "tests": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "todo": 0
+  },
+  "secretPatternScan": {
+    "status": "PASS",
+    "versionControlCandidates": 1396
+  },
+  "sourceCheckoutVerified": true,
+  "sourceUnchangedAfterRun": true,
+  "artifact": {
+    "id": 12559734021,
+    "name": "pocket-scanner-evaluation-v2-20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "bytes": 10881,
+    "sha256": "5cc8e06f7aeeb4bf39348961672453ef3bd6a5988ed0d4ae202b8f43aee54b39",
+    "downloadAndReportHashesVerified": true
+  },
+  "priorRuns": [
+    {
+      "sourceSha": "2fe332bf4b64afd39e566a0d3aa9ea93df5c88cc",
+      "runId": 40093249279,
+      "jobId": 120870089841,
+      "status": "FAIL",
+      "offlinePassed": 7,
+      "postgresPassed": 7,
+      "postgresFailed": 4,
+      "reason": "Receipt JSON operator precedence; corrected explicit parentheses, original failure retained"
+    },
+    {
+      "sourceSha": "9e757b745c65a3e65806439dc630bc617ffc0b53",
+      "runId": 40093424826,
+      "jobId": 120870625396,
+      "status": "PASS",
+      "offlinePassed": 7,
+      "postgresPassed": 13
+    },
+    {
+      "sourceSha": "bd6d98a92aa9db8c8c8440849e801ee3be990678",
+      "runId": 40093860508,
+      "jobId": 120871923905,
+      "status": "PASS",
+      "note": "Complete source before final test-only valid-Neon fixture and CI secret scan gate"
+    }
+  ],
+  "providerCalls": 0,
+  "hostedDatabaseCalls": 0,
+  "paidExecutionAuthorised": false,
+  "modelAccuracy": "UNTESTED_BY_THIS_FREE_ACCEPTANCE",
+  "actualBilledMicroUsd": null,
+  "financiallySettled": false,
+  "proposedSqlInstalled": false,
+  "schedulesChanged": false,
+  "limitations": [
+    "Synthetic effects and disposable PostgreSQL establish control behavior, not live responses or chart accuracy",
+    "Existing app build/browser receipts belong to unchanged PR144 source",
+    "New owner scope approval and exact future named-run admission remain required"
+  ]
+}

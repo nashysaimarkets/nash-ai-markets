@@ -1,0 +1,17 @@
+OWNER SCOPE EXTENSION RECORDED — scanner evaluation v2, 24 October 2026.
+
+The owner replied exactly “Yes” in the current interactive chat to this concrete question: “Do you approve up to six revised scans, capped at US$1.98 additional cost within the existing US$5 test ceiling? I’ll start with one chart, maximum US$0.33, and review its result before proceeding.” This comment records that owner directive; it is written by the coordinating assistant and is not a claim that an earlier preparation comment granted approval.
+
+Approved scope: pocket-scanner-evaluation-v2-20261024; v2-d001 through v2-d006, at most six new single-attempt cases and 18 provider submissions, zero retries. Begin with v2-d001 only; independently review its retained outcome and accounting before admitting another named case. Preserve the original six cases, 14 receipts, four voids, 18 request pins, six accounts and USD 1.5064 conservative held commitment. Each new case reserves the full USD 0.33, maximum additional USD 1.98, maximum combined USD 3.4864 inside the original USD 5 ceiling. Held commitments are not actual billed costs. The original allowance reference remains comment-6165012632.
+
+Exact accepted runtime/source: 20783ed5e8eb95a11df86b0d60766ffcbbf4fa79.
+Accepted application source: 2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc.
+Plan SHA256: cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109.
+Preparation checkpoint: 83ac6a595d53a336d8f1b82ca7284f3470b16a05, draft PR145.
+Retain the existing original chart inputs, reference coordinates and effective one-pixel diagnostic tolerance; the prepared precision/rescue output limit is 4000. The other 44 corpus payloads are excluded.
+
+This approval includes the reviewed additive isolated-test ledger setup and the exact protected runner path using existing credentials, one independently bound pending run/job at a time, bounded runner LOGIN followed by NOLOGIN and zero-session verification. No new keys, automatic retries, production deployment, main merge, Apple release, price change or scheduled execution.
+
+ROOT WRITER CLAIM: monaco-scanner-evaluation-v2-execution-126-20261024. Prior writer claim 6383999765 is released by comment 6384250845; current PR145 head was reverified as 83ac6a595d53a336d8f1b82ca7284f3470b16a05 and latest Issue126 comments show no competing claim. Root alone performs repository writes, isolated ledger mutations and paid dispatch. Review agents are read-only/offline. Claim remains active until an explicit checkpoint release. Schedules remain OFF.
+
+Directive observed and recorded for execution at 2026-10-24 12:40:25 UTC. Execution approval will expire no later than 24 hours after this recording; each named run permit expires within 60 minutes.

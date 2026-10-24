@@ -1,0 +1,39 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_FREE_ACCEPTANCE",
+  "status": "PASS",
+  "mode": "DISPOSABLE_LOCALHOST_POSTGRESQL_17",
+  "node": "v24.19.0",
+  "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "sourceHashes": {
+    "app/api/pocket/analyse/route.ts": "7b47dcd1d25cc03213a3b0c9052fb24a10418c34f5ed76e5c06953a0c34d4ea7",
+    "app/api/pocket/analysis-calibration.ts": "dfb8f2a93c290ff92adc389583b11cf1bc3103c5615454c0ce781ecdee1f0edb",
+    "app/api/pocket/precision-fallback.ts": "a440dfd6d78aade5bbfb95e5ffdbe8e73d22e5cf72fc39355476e037725db711",
+    "app/api/pocket/liquidity-chain.ts": "f4f3280c36782d74593d13c2df437f5be23c862a35be63ef53d7a6c275da9262",
+    "app/pocket/liquidity-evidence.ts": "c294e785cbccc121e4b1a68556e20fbad7d8fc63487be64a47974d44f00c6a4f",
+    "app/pocket/axis-verification.ts": "6e0a2e2d53cc062c9275107494ac658b217cf03e4e6f74756c4f48ec01c9f252",
+    "scripts/pocket-monaco-internal-diagnostics.ts": "6a1296448dfd52de25ceedf19c8c5bcae606f762db6c5414f6ac618ea52269f7"
+  },
+  "suites": 1,
+  "tests": 14,
+  "passed": 14,
+  "results": [
+    {
+      "file": "tests/pocket-scanner-evaluation-v2-ledger-postgres.test.mjs",
+      "sha256": "7a9559de9e7844cdc365880637d7a57896b5309168a707116c6bc7dee0054c0a",
+      "status": "PASS",
+      "exitCode": 0,
+      "signal": null,
+      "processErrorCode": null,
+      "tests": 14,
+      "pass": 14,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  ],
+  "providerCalls": 0,
+  "hostedDatabaseCalls": 0,
+  "paidExecutionAuthorised": false,
+  "limitation": "Free synthetic checks establish control behavior, not live scanner accuracy or billing settlement"
+}

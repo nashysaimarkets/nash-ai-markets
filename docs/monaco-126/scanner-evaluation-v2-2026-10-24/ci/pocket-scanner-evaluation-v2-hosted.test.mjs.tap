@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: static approved evidence has no self/dynamic hashes and resolves to exact independently permitted identity
+ok 1 - static approved evidence has no self/dynamic hashes and resolves to exact independently permitted identity
+  ---
+  duration_ms: 6.563989
+  type: 'test'
+  ...
+# Subtest: default missing/unapproved scope cannot load runtime, resolve GitHub metadata or touch credentials
+ok 2 - default missing/unapproved scope cannot load runtime, resolve GitHub metadata or touch credentials
+  ---
+  duration_ms: 0.454929
+  type: 'test'
+  ...
+# Subtest: unmodified protected entry rejects a synthetic key before SQL, input or provider construction
+ok 3 - unmodified protected entry rejects a synthetic key before SQL, input or provider construction
+  ---
+  duration_ms: 1.158754
+  type: 'test'
+  ...
+# Subtest: one namedcase with metadata identity reaches the single injected executor once
+ok 4 - one namedcase with metadata identity reaches the single injected executor once
+  ---
+  duration_ms: 2.425396
+  type: 'test'
+  ...
+# Subtest: official run and current job metadata jointly resolve the dynamic numeric job identity
+ok 5 - official run and current job metadata jointly resolve the dynamic numeric job identity
+  ---
+  duration_ms: 20.483766
+  type: 'test'
+  ...
+# Subtest: mismatched run, ambiguous jobs, pagination and incomplete inventories fail before runtime
+ok 6 - mismatched run, ambiguous jobs, pagination and incomplete inventories fail before runtime
+  ---
+  duration_ms: 5.979606
+  type: 'test'
+  ...
+# Subtest: action process boundary runs only the pinned Node binary and single explicit v2case
+ok 7 - action process boundary runs only the pinned Node binary and single explicit v2case
+  ---
+  duration_ms: 1.115238
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54.103457

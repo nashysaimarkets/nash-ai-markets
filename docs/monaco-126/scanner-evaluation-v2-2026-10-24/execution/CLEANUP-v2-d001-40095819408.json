@@ -1,0 +1,24 @@
+{
+  "runId": "40095819408",
+  "cleanup": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[]"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "verification": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[\n  {\n    \"observed_at_utc\": \"2026-10-24T13:01:35.493Z\",\n    \"database_name\": \"monaco_ledger\",\n    \"observer\": \"monaco_ledger_owner\",\n    \"rolname\": \"monaco_ledger_runner\",\n    \"rolcanlogin\": false,\n    \"rolvaliduntil\": \"2026-10-24T13:18:13.376Z\",\n    \"rolsuper\": false,\n    \"rolcreatedb\": false,\n    \"rolcreaterole\": false,\n    \"rolinherit\": false,\n    \"rolreplication\": false,\n    \"rolbypassrls\": false,\n    \"memberships\": \"0\",\n    \"runner_sessions\": \"0\",\n    \"cleanup_verified\": true\n  }\n]"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "cleanupRequired": false
+}

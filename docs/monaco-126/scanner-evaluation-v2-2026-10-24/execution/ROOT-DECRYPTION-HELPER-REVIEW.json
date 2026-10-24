@@ -1,0 +1,36 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_ROOT_DECRYPTION_HELPER_INDEPENDENT_REVIEW",
+  "reviewedAt": "2026-10-24T13:00:21.266Z",
+  "status": "SOURCE_REVIEW_ACCEPTED_FOR_ROOT_ONLY_TERMINAL_RECONCILIATION",
+  "caseId": "v2-d001",
+  "runId": "40095819408",
+  "jobId": "120877741515",
+  "sourceHashes": {
+    "ROOT-ONLY-DECRYPT-v2-d001.mjs": "7ccb4cdb83944b5da8a5b800c43165d3297d52e7387cc22c57968323f732a733",
+    "RECONCILE-v2-d001-40095819408.sql": "68ef7f3a743b4d09f21c2c83a6b498abb2357244a3898bb5ee92986152125bc6"
+  },
+  "reviewedControls": [
+    "Reconciliation SQL is BEGIN READ ONLY, owner SELECT only, no dispatch RPC or mutation.",
+    "Helper verifies accepted local source hashes, frozen manifest identity, and frozen plan before ledger or artifact processing.",
+    "Complete first-case accounting, full reservation, receipt digest, exact submissions and immutable pins required; uncertain or stopped execution is refused.",
+    "Official terminal run and exact job/attempt/wrapper metadata, complete expected artifact names, numeric IDs, repository identity, archive size and digest must match.",
+    "ZIP extraction accepts exactly one regular record.encrypted.json entry with bounded size; no archive path writes.",
+    "Accepted openEvaluationArtifact authenticates encrypted envelope and logical evaluation record before private output.",
+    "Raw bytes are written unchanged only into a newly created private directory, using exclusive mode0600 files; key bytes and plaintext buffers are cleared after use.",
+    "Printed result contains hashes, usage/status, IDs and control outcomes; raw bodies and private key are not printed.",
+    "Scanner accuracy, financial settlement and deployed HTTP latency are not inferred from successful retention."
+  ],
+  "limitations": [
+    "Review is source inspection; reviewer did not invoke this root-only helper or read a private key.",
+    "Root must retain actual official terminal metadata, independent ledger reconciliation and post-run NOLOGIN/zero-session evidence.",
+    "An incomplete or stopped execution must be reported from actual evidence even if this complete-accounting helper refuses it."
+  ],
+  "sideEffects": {
+    "remoteMutations": 0,
+    "databaseCalls": 0,
+    "providerCalls": 0,
+    "privateKeyReads": 0,
+    "helperInvocations": 0,
+    "testsRerun": 0
+  }
+}

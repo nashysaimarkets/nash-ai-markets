@@ -1,0 +1,87 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_POST_INSTALL_INDEPENDENT_REVIEW",
+  "reviewedAt": "2026-10-24T12:57:45.946835+00:00",
+  "status": "POST_INSTALL_ACCEPTED_FOR_REVIEWED_BOUNDED_ACTIVATION_AND_FIRST_CASE_RELEASE",
+  "identity": {
+    "environment": "monaco-first-six-inference",
+    "sourceSha": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "backendRef": "neon:bitter-grass-28096464/br-aged-mode-zaa9u7lr/monaco_ledger",
+    "projectRef": "proj_LTmAIE2Ve7gUAFJ9M74ZxIBI",
+    "keyTrackingId": "key_aD5pc20EZBLGECNC",
+    "keyFingerprintSha256": "107e0cb3265e15aa25e3fa49c91512096f84b43d5fa834761c73c3cce2c99d0e",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+    "evaluation": {
+      "scopeId": "pocket-scanner-evaluation-v2-20261024",
+      "attemptId": "v2-d001-attempt-1",
+      "caseId": "v2-d001",
+      "sourceCaseId": "d001",
+      "appSourceSha": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+      "evidenceSha": "0d510d37af89e09b0360e1f1a555304d8ba46190",
+      "wrapperSha": "6702f4c153b18b4caa1df82565c8bbf24bfb573b",
+      "runId": "40095819408",
+      "jobId": "120877741515",
+      "runAttempt": "1",
+      "approvalRef": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6384333029"
+    }
+  },
+  "installation": {
+    "receiptSha256": "51e049e525aa077e58ec47b3e9ce2136919e1e96295e38aee57d4bd1b18c58ec",
+    "successfulStatementResults": 28,
+    "singleTransactionCompositionPreviouslyReviewed": true
+  },
+  "postInstall": {
+    "observationSha256": "f1f1abf4bb9c9dbd47ed2bcd352fc57bc68a43782e3777b72a83b13923af8c1e",
+    "observedAt": "2026-10-24T12:57:15.034794+00:00",
+    "observationAgeSeconds": 30.912041,
+    "checks": {
+      "one_scope": true,
+      "exact_owner": true,
+      "not_revoked": true,
+      "no_memberships": true,
+      "named_case_unsent": true,
+      "exact_current_scope": true,
+      "exact_current_permit": true,
+      "named_case_unclaimed": true,
+      "zero_runner_sessions": true,
+      "expected_permit_count": true,
+      "restricted_rpc_access": true,
+      "previous_cases_accounted": true,
+      "inactive_restricted_runner": true,
+      "original_history_unchanged": true,
+      "exact_all_eighteen_new_pins": true
+    },
+    "exactInstalledIdentityAndAuthorityHashesMatchAdmission": true,
+    "fullScopeApprovalDocumentMatchesOwnerApproval": true,
+    "permitValidUntil": "2026-10-24T13:40:00+00:00",
+    "originalHistorySha256": "4031aa388eecdac651a539a1af5ed861f0edc1944c748917001ba6546e4c2e64",
+    "originalHeldMicroUsd": 1506400,
+    "evaluationHeldMicroUsd": 0,
+    "actualMicroUsd": null,
+    "financiallySettled": false,
+    "runnerState": "NOLOGIN / zero sessions / restricted"
+  },
+  "approvedNextStep": {
+    "actor": "root only",
+    "activationSqlSha256": "bb74afa331c2f01ab53e45c41a03b4c6d63bf2a0055e808c1ed6c8957802d8f2",
+    "maximumLoginMinutes": 20,
+    "releaseOnlyRunId": "40095819408",
+    "releaseOnlyJobId": "120877741515",
+    "caseId": "v2-d001",
+    "attemptId": "v2-d001-attempt-1",
+    "reservationMicroUsd": 330000,
+    "nextCaseNotAdmitted": true
+  },
+  "remaining": [
+    "Root post-activation role observation and exact protected run release",
+    "Actual retained result/accounting review before any next case",
+    "Root post-run NOLOGIN and zero-session observation"
+  ],
+  "provenance": "Reviewer independently evaluated retained root owner transaction and owner SELECT responses; no reviewer DB call or mutation.",
+  "reviewerSideEffects": {
+    "databaseCalls": 0,
+    "providerCalls": 0,
+    "privateKeyReads": 0,
+    "remoteMutations": 0,
+    "testsRerun": 0
+  }
+}
