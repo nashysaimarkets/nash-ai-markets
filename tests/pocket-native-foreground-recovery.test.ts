@@ -44,7 +44,7 @@ async function actualForegroundBridge(options: {
     state.verifies.push(value);
     return options.verify ? options.verify(value) : { ...value, entitled: false };
   };
-  const code = stripTypeScriptTypes(source.slice(start, end).replace(/^export /, ""));
+  const code = stripTypeScriptTypes(source.slice(source.indexOf("async function nativeMetadata"), source.indexOf("async function account")) + source.slice(start, end).replace(/^export /, ""));
   const subscribe = new Function("native", "App", "verifyStatus", "isAppleNativeApp", "webStatus", "APPLE_MONTHLY_PRODUCT_ID", code + "\nreturn subscribeAppleAccessChanges;")(
     native, App, verifyStatus, () => options.isNative !== false, { ...status, isNative: false, entitled: false, signedTransactionInfo: undefined }, product,
   ) as (callback: (value: AppleAccessStatus, phase?: AppleAccessVerificationPhase) => void) => Promise<{ remove: () => Promise<void> }>;
@@ -227,7 +227,7 @@ async function actualDirectVerification(appState: () => Promise<{ isActive: bool
   const start = source.indexOf("async function verifyStatus");
   const end = source.indexOf("export async function getAppleProductStatus", start);
   assert.ok(start >= 0 && end > start, "exercise the shared direct purchase/restore verification boundary");
-  const code = stripTypeScriptTypes(source.slice(start, end));
+  const code = stripTypeScriptTypes(source.slice(source.indexOf("async function nativeMetadata"), source.indexOf("async function account")) + source.slice(start, end));
   return new Function("account", "App", code + "\nreturn verifyStatus;")(async () => ({ entitled }), { getState: appState }) as (value: AppleAccessStatus) => Promise<AppleAccessStatus>;
 }
 

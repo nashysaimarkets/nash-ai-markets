@@ -1,4 +1,4 @@
--- PROPOSAL ONLY. Not in migration discovery. No database writes authorised/executed.
+-- PROPOSAL ONLY. Not in migration discovery. Disposable acceptance only; never installed hosted.
 -- Requires independent database review and explicit installation/grant approval.
 BEGIN;
 CREATE SCHEMA ig_demo_private;
@@ -25,6 +25,30 @@ CREATE TABLE ig_demo_private.chart_provenance (
 );
 -- Populate only through approved server-verified source registration, never screenshot labels.
 REVOKE ALL ON ALL TABLES IN SCHEMA ig_demo_private FROM PUBLIC;
+-- Dedicated server role has no login or schema ownership. Never grant it to browser roles.
+CREATE ROLE ig_demo_runtime NOLOGIN NOSUPERUSER NOBYPASSRLS;
+GRANT USAGE ON SCHEMA ig_demo_private TO ig_demo_runtime;
+GRANT SELECT,INSERT,UPDATE ON ig_demo_private.sessions TO ig_demo_runtime;
+GRANT SELECT ON ig_demo_private.credentials,ig_demo_private.chart_provenance TO ig_demo_runtime;
+GRANT SELECT,INSERT,DELETE ON ig_demo_private.requests TO ig_demo_runtime;
+ALTER TABLE ig_demo_private.sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.sessions FORCE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.credentials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.credentials FORCE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.chart_provenance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.chart_provenance FORCE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE ig_demo_private.requests FORCE ROW LEVEL SECURITY;
+CREATE POLICY owner_boundary ON ig_demo_private.sessions TO ig_demo_runtime
+ USING(application=current_setting('ig_demo.application',true) AND owner_id::text=current_setting('ig_demo.owner_id',true))
+ WITH CHECK(application=current_setting('ig_demo.application',true) AND owner_id::text=current_setting('ig_demo.owner_id',true));
+CREATE POLICY owner_boundary ON ig_demo_private.credentials FOR SELECT TO ig_demo_runtime
+ USING(application=current_setting('ig_demo.application',true) AND owner_id::text=current_setting('ig_demo.owner_id',true));
+CREATE POLICY owner_boundary ON ig_demo_private.chart_provenance FOR SELECT TO ig_demo_runtime
+ USING(application=current_setting('ig_demo.application',true) AND owner_id::text=current_setting('ig_demo.owner_id',true));
+CREATE POLICY application_boundary ON ig_demo_private.requests TO ig_demo_runtime
+ USING(application=current_setting('ig_demo.application',true))
+ WITH CHECK(application=current_setting('ig_demo.application',true));
 -- No browser/anon/authenticated grants. Dedicated approved server role only;
--- actual role selection/grants deliberately remain outside this uninstalled proposal.
+-- Attaching an actual login to this role requires separate hosted approval.
 COMMIT;

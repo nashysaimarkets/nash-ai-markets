@@ -113,7 +113,7 @@ async function actualBridge(verifyStatus: (status: AppleAccessStatus) => Promise
   assert.ok(start >= 0 && end > start, "the actual event bridge must be present");
   let emit!: (status: AppleAccessStatus) => void;
   const native = { getStatus: async () => known, addListener: async (_event: string, callback: (status: AppleAccessStatus) => void) => { emit = callback; return { remove: async () => {} }; } };
-  const code = stripTypeScriptTypes(source.slice(start, end).replace(/^export /, ""));
+  const code = stripTypeScriptTypes(source.slice(source.indexOf("async function nativeMetadata"), source.indexOf("async function account")) + source.slice(start, end).replace(/^export /, ""));
   const subscribe = new Function("native", "App", "verifyStatus", "isAppleNativeApp", "webStatus", "APPLE_MONTHLY_PRODUCT_ID", code + "\nreturn subscribeAppleAccessChanges;")(native, { getState: appState, addListener: async () => ({ remove: async () => {} }) }, verifyStatus, () => true, { ...known, isNative: false }, known.productId) as NonNullable<Parameters<typeof mountRecovery>[0]["subscribe"]>;
   return { subscribe, emit: (status: AppleAccessStatus) => emit(status) };
 }

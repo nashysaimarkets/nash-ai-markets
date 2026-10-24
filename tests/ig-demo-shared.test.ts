@@ -10,7 +10,7 @@ function harness(){
  const cipher=createIgDemoCipher(Buffer.alloc(32,7));
  const creds={environment:'DEMO',ownerId:owner,apiKey:'fixture-key',identifier:'demo',password:'fixture-password',selectedAccountId:'DEMO1'};
  let sealed=cipher.seal(owner,'credential',creds);
- const store:IgDemoSharedStore={read:async id=>states.get(id)??null,revoke:async (id,expected)=>{if(expected!==undefined&&states.get(id)?.epoch!==expected)return null;const s={epoch:String(BigInt(states.get(id)?.epoch??'0')+1n),sealed:null};states.set(id,s);return s;},save:async(id,epoch,sealed)=>{if(states.get(id)?.epoch!==epoch)return false;states.set(id,{epoch,sealed:sealed||null});return true;},reserve:async()=>budget-->0};
+ const store:IgDemoSharedStore={read:async id=>states.get(id)??null,revoke:async (id,expected)=>{if(expected!==undefined&&states.get(id)?.epoch!==expected)return null;const s={epoch:String(BigInt(states.get(id)?.epoch??'0')+BigInt(1)),sealed:null};states.set(id,s);return s;},save:async(id,epoch,sealed)=>{if(states.get(id)?.epoch!==epoch)return false;states.set(id,{epoch,sealed:sealed||null});return true;},reserve:async()=>budget-->0};
  const options:IgDemoSharedOptions={origin:'https://preview.invalid',enabled:true,commercialApproval:true,displayRights:true,store,cipher,
  vaultRead:async()=>sealed,authorise:async()=>({ownerId:owner,permitted:allowed}),sourceRevision:revision,now:()=>now,
  transport:async(url,init)=>{calls++;assert.ok(String(url).startsWith('https://demo-api.ig.com/'));assert.ok(['POST','GET','DELETE'].includes(init?.method??'GET'));assert.ok(!String(url).includes('/otc'));

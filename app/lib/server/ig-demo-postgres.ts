@@ -8,11 +8,12 @@ export function createIgDemoPostgresStore(pool:IgDemoPgPool,application:string,l
   if(typeof window!=='undefined'||!/^[-a-zA-Z0-9_]{1,64}$/.test(application)||
     !Number.isInteger(limits.application)||limits.application<1||limits.application>60||
     !Number.isInteger(limits.account)||limits.account<1||limits.account>30)throw new Error('IG_DEMO_STORE_CONFIGURATION');
-  const owner=(id:string)=>{if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id))throw new Error('IG_DEMO_OWNER_REQUIRED');return id;};
-  async function transaction<T>(run:(c:IgDemoPgClient)=>Promise<T>):Promise<T>{
+  const owner=(id:string)=>{if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id))throw new Error('IG_DEMO_OWNER_REQUIRED');return id.toLowerCase();};
+  async function transaction<T>(run:(c:IgDemoPgClient)=>Promise<T>,ownerId?:string):Promise<T>{
     let c:IgDemoPgClient;
     try{c=await pool.connect();}catch{throw new Error('IG_DEMO_STORE_UNAVAILABLE');}
     try {await c.query('BEGIN');await c.query("SET LOCAL statement_timeout = '2s'");await c.query("SET LOCAL lock_timeout = '1s'");
+      await c.query("SELECT set_config('ig_demo.application',$1,true),set_config('ig_demo.owner_id',$2,true)",[application,ownerId===undefined?'':owner(ownerId)]);
       const result=await run(c);await c.query('COMMIT');return result;
     }catch{await c.query('ROLLBACK').catch(()=>{});throw new Error('IG_DEMO_STORE_UNAVAILABLE');}finally{c.release();}
   }
@@ -22,7 +23,7 @@ export function createIgDemoPostgresStore(pool:IgDemoPgPool,application:string,l
     return {epoch:r.epoch,sealed:r.sealed as string|null};
   };
   const store:IgDemoSharedStore={
-    read:async(id)=>transaction(async c=>state((await c.query('SELECT epoch::text, sealed FROM ig_demo_private.sessions WHERE application=$1 AND owner_id=$2',[application,owner(id)])).rows[0])),
+    read:async(id)=>transaction(async c=>state((await c.query('SELECT epoch::text, sealed FROM ig_demo_private.sessions WHERE application=$1 AND owner_id=$2',[application,owner(id)])).rows[0]),id),
     revoke:async(id,expectedEpoch)=>transaction(async c=>{
       if(expectedEpoch!==undefined){
         if(!/^[1-9][0-9]*$/.test(expectedEpoch))throw new Error('IG_DEMO_STORE_CONTRACT');
@@ -30,10 +31,10 @@ export function createIgDemoPostgresStore(pool:IgDemoPgPool,application:string,l
       }
       const r=await c.query('INSERT INTO ig_demo_private.sessions(application,owner_id,epoch,sealed) VALUES($1,$2,1,NULL) ON CONFLICT(application,owner_id) DO UPDATE SET epoch=ig_demo_private.sessions.epoch+1,sealed=NULL RETURNING epoch::text,sealed',[application,owner(id)]);
       const s=state(r.rows[0]);if(!s)throw new Error('IG_DEMO_STORE_CONTRACT');return s;
-    }),
+    },id),
     save:async(id,epoch,sealed)=>{
       if(!/^[1-9][0-9]*$/.test(epoch)||typeof sealed!=='string'||sealed.length>24000)throw new Error('IG_DEMO_STORE_CONTRACT');
-      return transaction(async c=>(await c.query('UPDATE ig_demo_private.sessions SET sealed=$4 WHERE application=$1 AND owner_id=$2 AND epoch=$3::bigint RETURNING epoch::text',[application,owner(id),epoch,sealed||null])).rows.length===1);
+      return transaction(async c=>(await c.query('UPDATE ig_demo_private.sessions SET sealed=$4 WHERE application=$1 AND owner_id=$2 AND epoch=$3::bigint RETURNING epoch::text',[application,owner(id),epoch,sealed||null])).rows.length===1,id);
     },
     reserve:async(account)=>{
       if(!/^[A-Za-z0-9_-]{1,30}$/.test(account))return false;
@@ -58,10 +59,10 @@ export function createIgDemoPostgresStore(pool:IgDemoPgPool,application:string,l
       if(typeof row.revision!=='string'||typeof row.epic!=='string'||!['CFD','SPREADBET','PHYSICAL'].includes(String(row.account_type)))throw new Error('IG_DEMO_PROVENANCE_CONTRACT');
       const expiresAt=new Date(row.expires_at as string).getTime();if(!Number.isFinite(expiresAt))throw new Error('IG_DEMO_PROVENANCE_CONTRACT');
       return {ownerId:id,revision:row.revision,expiresAt,identity:{source:'IG_DEMO',confirmed:true,epic:row.epic,accountType:row.account_type} as IgDemoChartIdentity};
-    }),
+    },id),
     vaultRead:async(id:string):Promise<string|null>=>transaction(async c=>{
       const r=(await c.query("SELECT sealed FROM ig_demo_private.credentials WHERE application=$1 AND owner_id=$2 AND environment='DEMO' AND enabled=true",[application,owner(id)])).rows[0];
       if(!r)return null;if(typeof r.sealed!=='string'||r.sealed.length>24000)throw new Error('IG_DEMO_VAULT_CONTRACT');return r.sealed;
-    }),
+    },id),
   });
 }
